@@ -1,0 +1,1 @@
+# For random little notes of things I can't forget
