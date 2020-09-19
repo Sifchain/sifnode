@@ -1,0 +1,1 @@
+{"Modules":[{"Key":"","Source":"","Dir":"."},{"Key":"aks","Source":"github.com/lukekhamilton/terraform-azurerm-aks","Dir":".terraform/modules/aks"},{"Key":"aks.ssh-key","Source":"./modules/ssh-key","Dir":".terraform/modules/aks/modules/ssh-key"}]}
