@@ -28,7 +28,7 @@ import (
 	// this line is used by starport scaffolding
 )
 
-const appName = "sifnode"
+const appName = "sif"
 
 var (
 	DefaultCLIHome  = os.ExpandEnv("$HOME/.sifcli")
