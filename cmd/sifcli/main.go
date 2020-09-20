@@ -42,7 +42,7 @@ func main() {
 
 	rootCmd := &cobra.Command{
 		Use:   "sifnodecli",
-		Short: "Command line interface for interacting with sifnoded",
+		Short: "Command line interface for interacting with sifd",
 	}
 
 	// Add --chain-id to persistent flags and mark it required

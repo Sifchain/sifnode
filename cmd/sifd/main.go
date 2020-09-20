@@ -38,7 +38,7 @@ func main() {
 	ctx := server.NewDefaultContext()
 	cobra.EnableCommandSorting = false
 	rootCmd := &cobra.Command{
-		Use:               "sifnoded",
+		Use:               "sifd",
 		Short:             "app Daemon (server)",
 		PersistentPreRunE: server.PersistentPreRunEFn(ctx),
 	}
