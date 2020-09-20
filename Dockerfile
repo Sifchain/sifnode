@@ -25,8 +25,7 @@ FROM alpine
 RUN apk add --update --no-cache $PACKAGES
 
 # Copy the compiled binaires over.
-COPY --from=build /go/bin/sifd /usr/bin/sifd
-COPY --from=build /go/bin/sifcli /usr/bin/sifcli
+COPY --from=build /go/bin/sifnoded /usr/bin/sifd
+COPY --from=build /go/bin/sifnodecli /usr/bin/sifcli
 
 CMD ["sifd", "start"]
-

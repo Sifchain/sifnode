@@ -41,7 +41,7 @@ func main() {
 	// with the cdc
 
 	rootCmd := &cobra.Command{
-		Use:   "sifnodecli",
+		Use:   "sifcli",
 		Short: "Command line interface for interacting with sifd",
 	}
 
