@@ -16,8 +16,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=SifChain \
 
 BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${TAG} -a
 
-BINARIES=./cmd/sifcli ./cmd/sifd
-
+BINARIES=./cmd/sifnodecli ./cmd/sifnoded
 
 install: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
