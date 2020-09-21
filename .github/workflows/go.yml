@@ -1,18 +1,12 @@
 name: Go
 
-on:
-  push:
-    branches: [ develop ]
-  pull_request:
-    branches: [ develop ]
+on: [push, pull_request]
 
 jobs:
-
   build:
-    name: Build
     runs-on: ubuntu-latest
-    steps:
 
+    steps:
     - name: Set up Go 1.x
       uses: actions/setup-go@v2
       with:
