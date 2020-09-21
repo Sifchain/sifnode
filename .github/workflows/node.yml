@@ -15,7 +15,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: '14.x'
-      - run: cd vue
       - run: npm install
       - run: npm run build --if-present
       - run: npm test --if-present
