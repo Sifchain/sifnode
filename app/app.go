@@ -10,6 +10,9 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/Sifchain/sifnode/x/sifnode"
+	sifnodekeeper "github.com/Sifchain/sifnode/x/sifnode/keeper"
+	sifnodetypes "github.com/Sifchain/sifnode/x/sifnode/types"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -22,18 +25,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-	"github.com/Sifchain/sifnode/x/sifnode"
-	sifnodekeeper "github.com/Sifchain/sifnode/x/sifnode/keeper"
-	sifnodetypes "github.com/Sifchain/sifnode/x/sifnode/types"
-  // this line is used by starport scaffolding
+	// this line is used by starport scaffolding
 )
 
 const appName = "sifnode"
 
 var (
-	DefaultCLIHome = os.ExpandEnv("$HOME/.sifnodecli")
+	DefaultCLIHome  = os.ExpandEnv("$HOME/.sifnodecli")
 	DefaultNodeHome = os.ExpandEnv("$HOME/.sifnoded")
-	ModuleBasics = module.NewBasicManager(
+	ModuleBasics    = module.NewBasicManager(
 		genutil.AppModuleBasic{},
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
@@ -41,7 +41,7 @@ var (
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		sifnode.AppModuleBasic{},
-    // this line is used by starport scaffolding # 2
+		// this line is used by starport scaffolding # 2
 	)
 
 	maccPerms = map[string][]string{
@@ -72,13 +72,13 @@ type NewApp struct {
 
 	subspaces map[string]params.Subspace
 
-	accountKeeper  auth.AccountKeeper
-	bankKeeper     bank.Keeper
-	stakingKeeper  staking.Keeper
-	supplyKeeper   supply.Keeper
-	paramsKeeper   params.Keeper
+	accountKeeper auth.AccountKeeper
+	bankKeeper    bank.Keeper
+	stakingKeeper staking.Keeper
+	supplyKeeper  supply.Keeper
+	paramsKeeper  params.Keeper
 	sifnodeKeeper sifnodekeeper.Keeper
-  // this line is used by starport scaffolding # 3
+	// this line is used by starport scaffolding # 3
 	mm *module.Manager
 
 	sm *module.SimulationManager
@@ -97,14 +97,14 @@ func NewInitApp(
 	bApp.SetAppVersion(version.Version)
 
 	keys := sdk.NewKVStoreKeys(
-    bam.MainStoreKey,
-    auth.StoreKey,
-    staking.StoreKey,
+		bam.MainStoreKey,
+		auth.StoreKey,
+		staking.StoreKey,
 		supply.StoreKey,
-    params.StoreKey,
-    sifnodetypes.StoreKey,
-    // this line is used by starport scaffolding # 5
-  )
+		params.StoreKey,
+		sifnodetypes.StoreKey,
+		// this line is used by starport scaffolding # 5
+	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
@@ -160,7 +160,7 @@ func NewInitApp(
 		keys[sifnodetypes.StoreKey],
 	)
 
-  // this line is used by starport scaffolding # 4
+	// this line is used by starport scaffolding # 4
 
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
@@ -169,7 +169,7 @@ func NewInitApp(
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
 		sifnode.NewAppModule(app.sifnodeKeeper, app.bankKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
-    // this line is used by starport scaffolding # 6
+		// this line is used by starport scaffolding # 6
 	)
 
 	app.mm.SetOrderEndBlockers(staking.ModuleName)
@@ -181,7 +181,7 @@ func NewInitApp(
 		sifnodetypes.ModuleName,
 		supply.ModuleName,
 		genutil.ModuleName,
-    // this line is used by starport scaffolding # 7
+		// this line is used by starport scaffolding # 7
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
