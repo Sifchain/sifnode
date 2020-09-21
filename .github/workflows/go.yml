@@ -1,18 +1,16 @@
-name: Go
+name: Golang CI
 
 on:
   push:
-    branches: [ develop ]
+    branches: [develop, master]
   pull_request:
-    branches: [ develop ]
+    branches: [develop, master]
 
 jobs:
-
   build:
-    name: Build
     runs-on: ubuntu-latest
-    steps:
 
+    steps:
     - name: Set up Go 1.x
       uses: actions/setup-go@v2
       with:
