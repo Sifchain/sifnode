@@ -3,10 +3,10 @@ name: Node.js CI
 on:
   push:
     branches: [develop, master]
-    paths: ['./vue/**']
+    paths: ['vue/**']
   pull_request:
     branches: [develop, master]
-    paths: ['./vue/**']
+    paths: ['vue/**']
 
 jobs:
   build:
