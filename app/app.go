@@ -28,11 +28,11 @@ import (
 	// this line is used by starport scaffolding
 )
 
-const appName = "sif"
+const appName = "sifnode"
 
 var (
-	DefaultCLIHome  = os.ExpandEnv("$HOME/.sifcli")
-	DefaultNodeHome = os.ExpandEnv("$HOME/.sifd")
+	DefaultCLIHome  = os.ExpandEnv("$HOME/.sifnodecli")
+	DefaultNodeHome = os.ExpandEnv("$HOME/.sifnoded")
 	ModuleBasics    = module.NewBasicManager(
 		genutil.AppModuleBasic{},
 		auth.AppModuleBasic{},
