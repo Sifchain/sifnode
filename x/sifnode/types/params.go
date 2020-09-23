@@ -14,8 +14,8 @@ const (
 
 // Parameter store keys
 var (
-	// TODO: Define your keys for the parameter store
-	// KeyParamName          = []byte("ParamName")
+// TODO: Define your keys for the parameter store
+// KeyParamName          = []byte("ParamName")
 )
 
 // ParamKeyTable for sifnode module
@@ -25,12 +25,12 @@ func ParamKeyTable() params.KeyTable {
 
 // Params - used for initializing default parameter for sifnode at genesis
 type Params struct {
-	// TODO: Add your Paramaters to the Paramter struct
+	// TODO: Add your `Parameters` to the `Parameter` struct
 	// KeyParamName string `json:"key_param_name"`
 }
 
 // NewParams creates a new Params object
-func NewParams(/* TODO: Pass in the paramters*/) Params {
+func NewParams( /* TODO: Pass in the parameter's*/ ) Params {
 	return Params{
 		// TODO: Create your Params Type
 	}
@@ -40,7 +40,7 @@ func NewParams(/* TODO: Pass in the paramters*/) Params {
 func (p Params) String() string {
 	return fmt.Sprintf(`
 	// TODO: Return all the params as a string
-	`, )
+	`)
 }
 
 // ParamSetPairs - Implements params.ParamSet
