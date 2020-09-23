@@ -1,6 +1,5 @@
 include ./build/Makefile
 
-CHAINNET?=localnet # Options; localnet, testnet, chaosnet ,mainnet
 GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
