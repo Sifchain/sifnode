@@ -1,6 +1,7 @@
 include ./build/local/Makefile
 
-NAMESPACE?=dev # Options dev,test,prod
+CHAINNET?=localnet # Options; localnet, testnet, chaosnet ,mainnet
+NAMESPACE?=dev # Optional dev,test,prod, node0, node1
 PROVIDER?=local# local, aws, gcp, az, do
 TAG=$(CHAINNET)
 
