@@ -30,7 +30,7 @@ type Params struct {
 }
 
 // NewParams creates a new Params object
-func NewParams( /* TODO: Pass in the paramters*/ ) Params {
+func NewParams( /* TODO: Pass in the parameter's*/ ) Params {
 	return Params{
 		// TODO: Create your Params Type
 	}
