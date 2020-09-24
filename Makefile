@@ -20,10 +20,14 @@ BINARIES=./cmd/sifnodecli ./cmd/sifnoded
 install: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
 
+clean-config:
+	@rm -rf ~/.sifnode*
+
+clean: clean-config
+	@rm -rf ${GOBIN}/sifnode*
 
 feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
 
 run:
 	go run ./cmd/sifd start
-
