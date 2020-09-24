@@ -28,4 +28,8 @@ RUN apk add --update --no-cache $PACKAGES
 COPY --from=build /go/bin/sifnoded /usr/bin/sifd
 COPY --from=build /go/bin/sifnodecli /usr/bin/sifcli
 
-CMD ["sifd", "start"]
+# Copy the scripts over.
+ADD ./build/scripts /scripts
+
+# Start.
+ENTRYPOINT ["/scripts/genesis.sh"]

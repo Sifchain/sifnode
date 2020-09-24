@@ -1,4 +1,4 @@
-include ./build/local/Makefile
+include ./build/terraform/providers/local/Makefile
 
 CHAINNET?=localnet # Options; localnet, testnet, chaosnet ,mainnet
 NAMESPACE?=dev # Optional dev,test,prod, node0, node1
