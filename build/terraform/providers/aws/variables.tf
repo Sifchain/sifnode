@@ -41,7 +41,7 @@ variable "node_group_settings" {
     desired_capacity = 1
     max_capacity     = 2
     min_capacity     = 1
-    instance_type    = "t2.micro"
+    instance_type    = "t2.small"
     disk_size        = 100
   }
 }
