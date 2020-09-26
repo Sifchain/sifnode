@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  sifnode1:
+    container_name: sifnode1
+    hostname: sifnode1
+    build:
+      context: ../../
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE: 1
+      VALIDATORS: 2
+      NET: ${NET}
+    entrypoint:
+      /scripts/genesis.sh
+    volumes:
+      - ../network:/network
+      - /tmp:/tmp
+    command: ["sifd", "start", "--log_level", "main:info,state:debug,*:error", "--rpc.laddr", "tcp://0.0.0.0:26657"]
+    networks:
+      sifchain:
+        ipv4_address: 172.32.1.1
+
+  sifnode2:
+    container_name: sifnode2
+    hostname: sifnode2
+    build:
+      context: ../../
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE: 2
+      VALIDATORS: 2
+      NET: ${NET}
+    entrypoint:
+      /scripts/genesis.sh
+    volumes:
+      - ../network:/network
+      - /tmp:/tmp
+    command: ["sifd", "start", "--log_level", "main:info,state:debug,*:error", "--rpc.laddr", "tcp://0.0.0.0:26657"]
+    networks:
+      sifchain:
+        ipv4_address: 172.32.2.1
+
+networks:
+  sifchain:
+    driver_opts:
+      com.docker.network.driver.mtu: 1500
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+      com.docker.network.bridge.host_binding_ipv4: "0.0.0.0"
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.32.0.0/16
