@@ -2,10 +2,8 @@ name: Golang CI
 
 on:
   push:
-    branches: [develop, master]
     paths: ['**.go']
   pull_request:
-    branches: [develop, master]
     paths: ['**.go']
 
 jobs:
