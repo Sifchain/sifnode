@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/Sifchain/sifnode/app"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/sethvargo/go-password/password"
 	"github.com/yelinaung/go-haikunator"
 	"gopkg.in/yaml.v2"
@@ -40,9 +42,10 @@ func main() {
 	network := flag.String("n", defaultNetwork, "The network [localnet|testnet|mainnet].")
 	chainID := flag.String("c", defaultChainID, "The ID of the chain.")
 	nodeType := flag.String("t", defaultNodeType, "The node type [validator|witness].")
+	peerAddress := flag.String("p", "", "The IP Address of the peer to sync with.")
 	flag.Parse()
 
-	genesis := NewGenesis(*network, *chainID, *nodeType)
+	genesis := NewGenesis(*network, *chainID, *nodeType, *peerAddress)
 	genesis.build()
 }
 
@@ -54,19 +57,39 @@ type Key struct {
 	PubKey  string `json:"pubkey" yaml:"pubkey"`
 }
 
-type Genesis struct {
-	network  string
-	chainID  string
-	nodeType string
-	moniker  haikunator.Name
+type Value struct {
+	Memo string `json:"memo"`
+}
+type Gentxs []Gentx
+type Gentx struct {
+	Type  string `json:"type"`
+	Value Value  `json:"value"`
+}
+type Genutil struct {
+	Gentxs Gentxs `json:"gentxs"`
+}
+type AppState struct {
+	Genutil Genutil `json:"genutil"`
+}
+type GenesisAppState struct {
+	AppState AppState `json:"app_state"`
 }
 
-func NewGenesis(network, chainID, nodeType string) Genesis {
+type Genesis struct {
+	network     string
+	chainID     string
+	nodeType    string
+	peerAddress string
+	moniker     haikunator.Name
+}
+
+func NewGenesis(network, chainID, nodeType, peerAddress string) Genesis {
 	return Genesis{
-		network:  network,
-		chainID:  chainID,
-		nodeType: nodeType,
-		moniker:  haikunator.New(time.Now().UTC().UnixNano()),
+		network:     network,
+		chainID:     chainID,
+		nodeType:    nodeType,
+		peerAddress: peerAddress,
+		moniker:     haikunator.New(time.Now().UTC().UnixNano()),
 	}
 }
 
@@ -89,9 +112,8 @@ func (g Genesis) localnet() {
 	g.setConfig("json", true, true)
 	g.generateGenesisTx(keyName, keyPwd)
 	g.collectGenesisTxns()
-
-	fmt.Printf("%s initialized.\n\nValidator Details\n-----------------\nName: %s\nAddress: %s\nPassword: %s\n",
-		g.network, keyName, keys[0].Address, keyPwd)
+	peerAddress := g.getPeerAddress()
+	g.nodeSummary(keyName, keys[0].Address, keyPwd, peerAddress)
 }
 
 // Look for the binaries. These differ between local and k8s environments.
@@ -199,6 +221,29 @@ func (g Genesis) collectGenesisTxns() {
 	g.cmd(*g.executable(daemon), "collect-gentxs")
 }
 
+// Get the peer address.
+func (g Genesis) getPeerAddress() string {
+	if _, err := os.Stat(g.genesisFile()); os.IsNotExist(err) {
+		panic(err)
+	}
+
+	content, err := ioutil.ReadFile(g.genesisFile())
+	if err != nil {
+		panic(err)
+	}
+
+	var genesisAppState GenesisAppState
+	if err := json.Unmarshal(content, &genesisAppState); err != nil {
+		panic(err)
+	}
+
+	return genesisAppState.AppState.Genutil.Gentxs[0].Value.Memo
+}
+
+func (g Genesis) genesisFile() string {
+	return fmt.Sprintf("%s/config/genesis.json", app.DefaultNodeHome)
+}
+
 // Removes any existing config in $HOME.
 func (g Genesis) reset() {
 	roots := []string{app.DefaultCLIHome, app.DefaultNodeHome}
@@ -257,4 +302,15 @@ func (g Genesis) cmdWithInput(name string, inputs [][]byte, args ...string) stri
 	}
 
 	return buf.String()
+}
+
+// Node summary.
+func (g Genesis) nodeSummary(keyName, address, keyPwd, peerAddress string) {
+	fmt.Println(heredoc.Doc(`
+		Validator Details
+		=================
+		Name: ` + keyName + `
+		Address: ` + address + ` (` + peerAddress + `)
+		Password: ` + keyPwd + `
+	`))
 }
