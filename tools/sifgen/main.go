@@ -97,7 +97,7 @@ func (g Genesis) localnet() {
 // Look for the binaries. These differ between local and k8s environments.
 func (g Genesis) executable(executableType string) *string {
 	if len(executables[executableType]) == 0 {
-		panic(fmt.Errorf("unknown type %s\n", executableType))
+		panic(fmt.Errorf("unknown type %s", executableType))
 	}
 
 	for _, exe := range executables[executableType] {
