@@ -15,6 +15,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: docker.pkg.github.com
-          repository: Sifchain/sifnode/sifnode
+          repository: sifchain/sifnode/sifnode
           tag_with_ref: true
 
