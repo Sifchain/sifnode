@@ -112,19 +112,20 @@ func (g Genesis) executable(executableType string) *string {
 
 // Initializes a new chain.
 func (g Genesis) initChain() {
-	g.cmd(exec.Command(*g.executable(daemon), "init", g.moniker.Haikunate(), "--chain-id", g.chainID))
+	g.cmd(*g.executable(daemon), "init", g.moniker.Haikunate(), "--chain-id", g.chainID)
 }
 
 // Sets the key ring storage.
 func (g Genesis) setKeyringStorage() {
-	g.cmd(exec.Command(*g.executable(cli), "config", "keyring-backend", "file"))
+	g.cmd(*g.executable(cli), "config", "keyring-backend", "file")
 }
 
 // Add a new validator key.
 func (g Genesis) addKey(name, pwd string) Keys {
 	r := g.cmdWithInput(
-		exec.Command(*g.executable(cli), "keys", "add", name),
+		*g.executable(cli),
 		[][]byte{[]byte(pwd + "\n"), []byte(pwd + "\n")},
+		"keys", "add", name,
 	)
 
 	yml, err := ioutil.ReadAll(strings.NewReader(r))
@@ -153,7 +154,7 @@ func (g Genesis) generatePassword() string {
 
 // Add genesis account.
 func (g Genesis) addGenesisAccount(address, coins string) {
-	g.cmd(exec.Command(*g.executable(daemon), "add-genesis-account", address, coins))
+	g.cmd(*g.executable(daemon), "add-genesis-account", address, coins)
 }
 
 // Set config.
@@ -166,35 +167,36 @@ func (g Genesis) setConfig(output string, indent, trust bool) {
 
 // Set chain-id.
 func (g Genesis) setConfigChainID() {
-	g.cmd(exec.Command(*g.executable(cli), "config", "chain-id", g.chainID))
+	g.cmd(*g.executable(cli), "config", "chain-id", g.chainID)
 }
 
 // Set the output type.
 func (g Genesis) setConfigOutput(output string) {
-	g.cmd(exec.Command(*g.executable(cli), "config", "output", output))
+	g.cmd(*g.executable(cli), "config", "output", output)
 }
 
 // Set indenting.
 func (g Genesis) setConfigIndent(indent bool) {
-	g.cmd(exec.Command(*g.executable(cli), "config", "indent", fmt.Sprintf("%v", indent)))
+	g.cmd(*g.executable(cli), "config", "indent", fmt.Sprintf("%v", indent))
 }
 
 // Trust the node?
 func (g Genesis) setConfigTrustNode(trust bool) {
-	g.cmd(exec.Command(*g.executable(cli), "config", "trust-node", fmt.Sprintf("%v", trust)))
+	g.cmd(*g.executable(cli), "config", "trust-node", fmt.Sprintf("%v", trust))
 }
 
 // Generate the genesis transaction.
 func (g Genesis) generateGenesisTx(name, pwd string) {
 	g.cmdWithInput(
-		exec.Command(*g.executable(daemon), "gentx", "--name", name, "--keyring-backend", "file"),
+		*g.executable(daemon),
 		[][]byte{[]byte(pwd + "\n"), []byte(pwd + "\n"), []byte(pwd + "\n")},
+		"gentx", "--name", name, "--keyring-backend", "file",
 	)
 }
 
 // Collect the genesis transactions.
 func (g Genesis) collectGenesisTxns() {
-	g.cmd(exec.Command(*g.executable(daemon), "collect-gentxs"))
+	g.cmd(*g.executable(daemon), "collect-gentxs")
 }
 
 // Removes any existing config in $HOME.
@@ -211,7 +213,8 @@ func (g Genesis) reset() {
 }
 
 //  Wrapper for exec.Command.
-func (g Genesis) cmd(c *exec.Cmd) string {
+func (g Genesis) cmd(name string, args ...string) string {
+	c := exec.Command(name, args...)
 	var out bytes.Buffer
 	c.Stdout = &out
 
@@ -224,7 +227,8 @@ func (g Genesis) cmd(c *exec.Cmd) string {
 }
 
 // Wrapper for exec.Command, with inputs.
-func (g Genesis) cmdWithInput(c *exec.Cmd, inputs [][]byte) string {
+func (g Genesis) cmdWithInput(name string, inputs [][]byte, args ...string) string {
+	c := exec.Command(name, args...)
 	stdin, err := c.StdinPipe()
 	if err != nil {
 		panic(err)
