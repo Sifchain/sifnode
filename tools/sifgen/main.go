@@ -27,7 +27,7 @@ const (
 // Because the binary names differ between local and what we end up with in the containers.
 var (
 	defaultNetwork  = os.Getenv("NETWORK")
-	defaultChainId  = os.Getenv("CHAIN_ID")
+	defaultChainID  = os.Getenv("CHAIN_ID")
 	defaultNodeType = os.Getenv("NODE_TYPE")
 	defaultCoins    = []string{"1000rowan", "100000000stake"}
 
@@ -39,11 +39,11 @@ var (
 
 func main() {
 	network := flag.String("n", defaultNetwork, "The network [localnet|testnet|mainnet].")
-	chainId := flag.String("c", defaultChainId, "The ID of the chain.")
+	chainID := flag.String("c", defaultChainID, "The ID of the chain.")
 	nodeType := flag.String("t", defaultNodeType, "The node type [validator|witness].")
 	flag.Parse()
 
-	genesis := NewGenesis(*network, *chainId, *nodeType)
+	genesis := NewGenesis(*network, *chainID, *nodeType)
 	genesis.build()
 }
 
@@ -57,15 +57,15 @@ type Key struct {
 
 type Genesis struct {
 	network  string
-	chainId  string
+	chainID  string
 	nodeType string
 	moniker  haikunator.Name
 }
 
-func NewGenesis(network, chainId, nodeType string) Genesis {
+func NewGenesis(network, chainID, nodeType string) Genesis {
 	return Genesis{
 		network:  network,
-		chainId:  chainId,
+		chainID:  chainID,
 		nodeType: nodeType,
 		moniker:  haikunator.New(time.Now().UTC().UnixNano()),
 	}
@@ -98,7 +98,7 @@ func (g Genesis) localnet() {
 // Look for the binaries. These differ between local and k8s environments.
 func (g Genesis) executable(executableType string) *string {
 	if len(executables[executableType]) == 0 {
-		panic(errors.New(fmt.Sprintf("unknown type %s\n", executableType)))
+		panic(fmt.Errorf("unknown type %s\n", executableType))
 	}
 
 	for _, exe := range executables[executableType] {
@@ -113,7 +113,7 @@ func (g Genesis) executable(executableType string) *string {
 
 // Initializes a new chain.
 func (g Genesis) initChain() {
-	g.cmd(exec.Command(*g.executable(daemon), "init", g.moniker.Haikunate(), "--chain-id", g.chainId))
+	g.cmd(exec.Command(*g.executable(daemon), "init", g.moniker.Haikunate(), "--chain-id", g.chainID))
 }
 
 // Sets the key ring storage.
@@ -159,15 +159,15 @@ func (g Genesis) addGenesisAccount(address, coins string) {
 
 // Set config.
 func (g Genesis) setConfig(output string, indent, trust bool) {
-	g.setConfigChainId()
+	g.setConfigChainID()
 	g.setConfigOutput(output)
 	g.setConfigIndent(indent)
 	g.setConfigTrustNode(trust)
 }
 
 // Set chain-id.
-func (g Genesis) setConfigChainId() {
-	g.cmd(exec.Command(*g.executable(cli), "config", "chain-id", g.chainId))
+func (g Genesis) setConfigChainID() {
+	g.cmd(exec.Command(*g.executable(cli), "config", "chain-id", g.chainID))
 }
 
 // Set the output type.
