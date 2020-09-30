@@ -7,9 +7,17 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - port: 26656
+      targetPort: 26656
       protocol: TCP
-      name: http
+      name: port-26656
+    - port: 26657
+      targetPort: 26657
+      protocol: TCP
+      name: port-26657
+    - port: 6060
+      targetPort: 6060
+      protocol: TCP
+      name: port-6060
   selector:
     {{- include "sifnode.selectorLabels" . | nindent 4 }}

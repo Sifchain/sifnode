@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/sifchain/sifnode
+  repository: docker.pkg.github.com/sifchain/sifnode/sifnode
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "develop"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -37,8 +37,8 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  type: ClusterIP
-  port: 80
+  type: LoadBalancer
+  port: 26656
 
 ingress:
   enabled: false
@@ -52,6 +52,10 @@ ingress:
   #  - secretName: sifnode-tls
   #    hosts:
   #      - sifnode.local
+
+secrets:
+  ghcr:
+    dockerconfigjson: 
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

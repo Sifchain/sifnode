@@ -20,10 +20,8 @@ spec:
       labels:
         {{- include "sifnode.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        - name: {{ include "sifnode.fullname" . }}-ghcr
       serviceAccountName: {{ include "sifnode.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -34,17 +32,25 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: http
-              containerPort: 80
+            - name: port-26656
+              containerPort: 26656
+              protocol: TCP
+            - name: port-26657
+              containerPort: 26657
+              protocol: TCP
+            - name: port-6060
+              containerPort: 6060
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
+            tcpSocket:
+              port: 26656
+            initialDelaySeconds: 5
+            periodSeconds: 10
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            tcpSocket:
+              port: 26656
+            initialDelaySeconds: 5
+            periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
