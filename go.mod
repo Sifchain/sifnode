@@ -3,6 +3,7 @@ module github.com/Sifchain/sifnode
 go 1.15
 
 require (
+	github.com/BurntSushi/toml v0.3.1
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/cosmos/cosmos-sdk v0.39.1
 	github.com/cucumber/godog v0.10.0
@@ -19,5 +20,7 @@ require (
 	github.com/tendermint/tm-db v0.5.1
 	github.com/yelinaung/go-haikunator v0.0.0-20150320004105-1249cae259af
 	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2 // indirect
+	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
 	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 )
