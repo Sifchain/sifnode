@@ -123,7 +123,7 @@ func (s *networksSuite) TestLocalnetValidator(c *C) {
 	err = network.Genesis()
 	c.Assert(err, IsNil)
 
-	c.Assert(node.Name(), NotNil)
+	c.Assert(node.Moniker(), NotNil)
 	c.Assert(*node.Address(nil), Equals, nodeAddress)
 	c.Assert(node.PeerAddress(), Equals, peerAddress)
 	c.Assert(node.KeyPassword(), NotNil)
@@ -147,7 +147,7 @@ func (s *networksSuite) TestLocalnetWitness(c *C) {
 	err = network.Genesis()
 	c.Assert(err, IsNil)
 
-	c.Assert(node.Name(), NotNil)
+	c.Assert(node.Moniker(), NotNil)
 	c.Assert(*node.Address(nil), Equals, nodeAddress)
 	c.Assert(node.KeyPassword(), NotNil)
 	c.Assert(node.GenesisURL(), Equals, genesisURL)

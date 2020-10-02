@@ -8,7 +8,7 @@ import (
 )
 
 type Witness struct {
-	name        string
+	moniker     string
 	address     string
 	peerAddress string
 	keyPassword string
@@ -20,7 +20,7 @@ func NewWitness(peerAddress, genesisURL string, utils NetworkUtils) *Witness {
 	keyPassword, _ := password.Generate(32, 5, 0, false, false)
 
 	return &Witness{
-		name:        haikunator.New(time.Now().UTC().UnixNano()).Haikunate(),
+		moniker:     haikunator.New(time.Now().UTC().UnixNano()).Haikunate(),
 		peerAddress: peerAddress,
 		keyPassword: keyPassword,
 		genesisURL:  genesisURL,
@@ -28,8 +28,8 @@ func NewWitness(peerAddress, genesisURL string, utils NetworkUtils) *Witness {
 	}
 }
 
-func (w *Witness) Name() string {
-	return w.name
+func (w *Witness) Moniker() string {
+	return w.moniker
 }
 
 func (w *Witness) Address(address *string) *string {

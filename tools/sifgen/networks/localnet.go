@@ -34,7 +34,7 @@ func (l Localnet) Setup() error {
 		return err
 	}
 
-	_, err = l.utils.InitChain(l.chainID, (*l.node).Name())
+	_, err = l.utils.InitChain(l.chainID, (*l.node).Moniker())
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (l Localnet) Genesis() error {
 
 // Generate a new key for a node.
 func (l Localnet) generateNodeKey() error {
-	output, err := l.utils.AddKey((*l.node).Name(), (*l.node).KeyPassword())
+	output, err := l.utils.AddKey((*l.node).Moniker(), (*l.node).KeyPassword())
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func (l Localnet) validatorGenesis(address string) error {
 		return err
 	}
 
-	_, err = l.utils.GenerateGenesisTxn((*l.node).Name(), (*l.node).KeyPassword())
+	_, err = l.utils.GenerateGenesisTxn((*l.node).Moniker(), (*l.node).KeyPassword())
 	if err != nil {
 		return err
 	}

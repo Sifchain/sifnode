@@ -62,7 +62,7 @@ func (s *sifgenSuite) TestNetworkNode(c *C) {
 
 	_, ok = (*node).(networks.NetworkNode)
 	c.Assert(ok, Equals, true)
-	c.Assert(assert.NotEmpty(c, (*node).Name()), Equals, true)
+	c.Assert(assert.NotEmpty(c, (*node).Moniker()), Equals, true)
 
 	// Test network node instantiation for a witness.
 	sifWitness := NewSifgen(witness, localnet, chainID, &peerAddress, &genesisURL)
@@ -76,7 +76,7 @@ func (s *sifgenSuite) TestNetworkNode(c *C) {
 
 	_, ok = (*node).(networks.NetworkNode)
 	c.Assert(ok, Equals, true)
-	c.Assert(assert.NotEmpty(c, (*node).Name()), Equals, true)
+	c.Assert(assert.NotEmpty(c, (*node).Moniker()), Equals, true)
 
 	sifRandom := NewSifgen(faker.Internet().Slug(), faker.Internet().Slug(), chainID, nil, nil)
 
@@ -101,7 +101,7 @@ func (s *sifgenSuite) TestNetwork(c *C) {
 
 	_, ok = (*node).(networks.NetworkNode)
 	c.Assert(ok, Equals, true)
-	c.Assert(assert.NotEmpty(c, (*node).Name()), Equals, true)
+	c.Assert(assert.NotEmpty(c, (*node).Moniker()), Equals, true)
 
 	network, err := NewNetwork(sifValidator, utils, *node)
 	c.Assert(err, IsNil)
@@ -121,7 +121,7 @@ func (s *sifgenSuite) TestNetwork(c *C) {
 
 	_, ok = (*node).(networks.NetworkNode)
 	c.Assert(ok, Equals, true)
-	c.Assert(assert.NotEmpty(c, (*node).Name()), Equals, true)
+	c.Assert(assert.NotEmpty(c, (*node).Moniker()), Equals, true)
 
 	network, err = NewNetwork(sifWitness, utils, *node)
 	c.Assert(err, IsNil)

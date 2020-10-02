@@ -74,7 +74,7 @@ func (s Sifgen) summary(node networks.NetworkNode) {
 	fmt.Println(heredoc.Doc(`
 		Node Details
 		============
-		Name: ` + node.Name() + `
+		Moniker: ` + node.Moniker() + `
 		Address: ` + address + `
 		Password: ` + node.KeyPassword() + `
 	`))

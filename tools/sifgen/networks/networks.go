@@ -19,7 +19,7 @@ type Network interface {
 
 // Network nodes (currently just supports validators and witnesses).
 type NetworkNode interface {
-	Name() string
+	Moniker() string
 	Address(*string) *string
 	PeerAddress() string
 	KeyPassword() string

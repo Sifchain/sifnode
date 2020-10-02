@@ -11,7 +11,7 @@ import (
 )
 
 type Validator struct {
-	name        string
+	moniker     string
 	address     string
 	peerAddress string
 	keyPassword string
@@ -23,14 +23,14 @@ func NewValidator(utils NetworkUtils) *Validator {
 	keyPassword, _ := password.Generate(32, 5, 0, false, false)
 
 	return &Validator{
-		name:        haikunator.New(time.Now().UTC().UnixNano()).Haikunate(),
+		moniker:     haikunator.New(time.Now().UTC().UnixNano()).Haikunate(),
 		keyPassword: keyPassword,
 		utils:       utils,
 	}
 }
 
-func (v *Validator) Name() string {
-	return v.name
+func (v *Validator) Moniker() string {
+	return v.moniker
 }
 
 func (v *Validator) Address(address *string) *string {
