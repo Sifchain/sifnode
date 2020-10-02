@@ -15,6 +15,6 @@ func main() {
 	genesisURL := flag.String("u", "", "The URL to download the Genesis file from.")
 	flag.Parse()
 
-	sif := sifgen.NewSifgen(*nodeType, *network, *chainID, *peerAddress, *genesisURL)
+	sif := sifgen.NewSifgen(*nodeType, *network, *chainID, peerAddress, genesisURL)
 	sif.Run()
 }

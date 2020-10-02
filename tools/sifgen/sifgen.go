@@ -2,7 +2,6 @@ package sifgen
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/tools/sifgen/networks"
@@ -23,11 +22,11 @@ type Sifgen struct {
 	nodeType    string
 	network     string
 	chainID     string
-	peerAddress string
-	genesisURL  string
+	peerAddress *string
+	genesisURL  *string
 }
 
-func NewSifgen(nodeType, network, chainID, peerAddress, genesisURL string) Sifgen {
+func NewSifgen(nodeType, network, chainID string, peerAddress, genesisURL *string) Sifgen {
 	return Sifgen{
 		nodeType:    nodeType,
 		network:     network,
@@ -39,10 +38,17 @@ func NewSifgen(nodeType, network, chainID, peerAddress, genesisURL string) Sifge
 
 func (s Sifgen) Run() {
 	utils := NetworkUtils()
-	node := NewNetworkNode(s, utils)
-	network := NewNetwork(s, utils, *node)
+	node, err := NewNetworkNode(s, utils)
+	if err != nil {
+		panic(err)
+	}
 
-	err := (*network).Setup()
+	network, err := NewNetwork(s, utils, *node)
+	if err != nil {
+		panic(err)
+	}
+
+	err = (*network).Setup()
 	if err != nil {
 		panic(err)
 	}
@@ -78,38 +84,38 @@ func NetworkUtils() networks.NetworkUtils {
 	return networks.NewUtils(app.DefaultNodeHome)
 }
 
-func NewNetworkNode(s Sifgen, utils networks.NetworkUtils) *networks.NetworkNode {
+func NewNetworkNode(s Sifgen, utils networks.NetworkUtils) (*networks.NetworkNode, error) {
 	var node networks.NetworkNode
 
 	switch s.nodeType {
 	case validator:
 		node = networks.NewValidator(utils)
 	case witness:
-		node = networks.NewWitness(s.peerAddress, s.genesisURL, utils)
+		node = networks.NewWitness(*s.peerAddress, *s.genesisURL, utils)
 	default:
-		notImplemented(s.nodeType)
+		return nil, notImplemented(s.nodeType)
 	}
 
-	return &node
+	return &node, nil
 }
 
-func NewNetwork(s Sifgen, utils networks.NetworkUtils, node networks.NetworkNode) *networks.Network {
+func NewNetwork(s Sifgen, utils networks.NetworkUtils, node networks.NetworkNode) (*networks.Network, error) {
 	var network networks.Network
 
 	switch s.network {
 	case localnet:
 		network = networks.NewLocalnet(app.DefaultNodeHome, app.DefaultCLIHome, s.chainID, node, utils)
 	case testnet:
-		notImplemented(s.network)
+		return nil, notImplemented(s.network)
 	case mainnet:
-		notImplemented(s.network)
+		return nil, notImplemented(s.network)
 	default:
-		notImplemented(s.network)
+		return nil, notImplemented(s.network)
 	}
 
-	return &network
+	return &network, nil
 }
 
-func notImplemented(item string) {
-	log.Fatal(fmt.Sprintf("%s not implemented", item))
+func notImplemented(item string) error {
+	return fmt.Errorf("%s not implemented", item)
 }
