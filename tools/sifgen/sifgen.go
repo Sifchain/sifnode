@@ -39,10 +39,17 @@ func NewSifgen(nodeType, network, chainID, peerAddress, genesisURL string) Sifge
 
 func (s Sifgen) Run() {
 	node := *s.newNode(s.nodeType)
-	network := s.newNetwork(s.network, s.chainID, &node)
-	(*network).Reset()
-	(*network).Setup()
-	(*network).Genesis()
+	network := s.newNetwork(s.network, s.chainID, node)
+
+	err := (*network).Setup()
+	if err != nil {
+		panic(err)
+	}
+
+	err = (*network).Genesis()
+	if err != nil {
+		panic(err)
+	}
 
 	s.summary(node)
 }
@@ -52,9 +59,9 @@ func (s Sifgen) newNode(nodeType string) *networks.NetworkNode {
 
 	switch nodeType {
 	case validator:
-		node = networks.NewValidator(app.DefaultNodeHome)
+		node = networks.NewValidator(s.networkUtils())
 	case witness:
-		node = networks.NewWitness(s.peerAddress, s.genesisURL, app.DefaultNodeHome)
+		node = networks.NewWitness(s.peerAddress, s.genesisURL, s.networkUtils())
 	default:
 		s.notImplemented(nodeType)
 	}
@@ -62,12 +69,12 @@ func (s Sifgen) newNode(nodeType string) *networks.NetworkNode {
 	return &node
 }
 
-func (s Sifgen) newNetwork(networkType, chainID string, node *networks.NetworkNode) *networks.Network {
+func (s Sifgen) newNetwork(networkType, chainID string, node networks.NetworkNode) *networks.Network {
 	var network networks.Network
 
 	switch networkType {
 	case localnet:
-		network = networks.NewLocalnet(app.DefaultNodeHome, app.DefaultCLIHome, chainID, node)
+		network = networks.NewLocalnet(app.DefaultNodeHome, app.DefaultCLIHome, chainID, node, s.networkUtils())
 	case testnet:
 		s.notImplemented(networkType)
 	case mainnet:
@@ -77,6 +84,10 @@ func (s Sifgen) newNetwork(networkType, chainID string, node *networks.NetworkNo
 	}
 
 	return &network
+}
+
+func (s Sifgen) networkUtils() networks.NetworkUtils {
+	return networks.NewUtils(app.DefaultNodeHome)
 }
 
 func (s Sifgen) notImplemented(item string) {

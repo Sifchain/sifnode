@@ -17,16 +17,16 @@ type Validator struct {
 	peerAddress string
 	keyPassword string
 	genesisURL  string
-	utils       Utils
+	utils       NetworkUtils
 }
 
-func NewValidator(defaultNodeHome string) *Validator {
+func NewValidator(utils NetworkUtils) *Validator {
 	keyPassword, _ := password.Generate(32, 5, 0, false, false)
 
 	return &Validator{
 		name:        haikunator.New(time.Now().UTC().UnixNano()).Haikunate(),
 		keyPassword: keyPassword,
-		utils:       NewUtils(defaultNodeHome),
+		utils:       utils,
 	}
 }
 
@@ -55,12 +55,18 @@ func (v *Validator) GenesisURL() string {
 	return v.genesisURL
 }
 
-func (v *Validator) CollectPeerAddress() {
-	var genesisAppState types.GenesisAppState
-	if err := json.Unmarshal([]byte(v.utils.ExportGenesis()), &genesisAppState); err != nil {
+func (v *Validator) CollectPeerAddress() error {
+	output, err := v.utils.ExportGenesis()
+	if err != nil {
+		return err
+	}
 
+	var genesisAppState types.GenesisAppState
+	if err := json.Unmarshal([]byte(*output), &genesisAppState); err != nil {
 		log.Fatal(err)
 	}
 
 	v.peerAddress = genesisAppState.AppState.Genutil.Gentxs[0].Value.Memo
+
+	return nil
 }

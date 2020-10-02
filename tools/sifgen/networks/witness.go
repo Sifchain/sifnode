@@ -13,10 +13,10 @@ type Witness struct {
 	peerAddress string
 	keyPassword string
 	genesisURL  string
-	utils       Utils
+	utils       NetworkUtils
 }
 
-func NewWitness(peerAddress, genesisURL, defaultNodeHome string) *Witness {
+func NewWitness(peerAddress, genesisURL string, utils NetworkUtils) *Witness {
 	keyPassword, _ := password.Generate(32, 5, 0, false, false)
 
 	return &Witness{
@@ -24,7 +24,7 @@ func NewWitness(peerAddress, genesisURL, defaultNodeHome string) *Witness {
 		peerAddress: peerAddress,
 		keyPassword: keyPassword,
 		genesisURL:  genesisURL,
-		utils:       NewUtils(defaultNodeHome),
+		utils:       utils,
 	}
 }
 
@@ -53,4 +53,4 @@ func (w *Witness) GenesisURL() string {
 	return w.genesisURL
 }
 
-func (w *Witness) CollectPeerAddress() {}
+func (w *Witness) CollectPeerAddress() error { return nil }

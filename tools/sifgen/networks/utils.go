@@ -34,47 +34,60 @@ func NewUtils(defaultNodeHome string) Utils {
 	}
 }
 
-func (u Utils) InitChain(chainID, moniker string) {
-	u.ShellExec(u.sifDaemon, "init", moniker, "--chain-id", chainID)
+func (u Utils) Reset(paths []string) error {
+	for _, path := range paths {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			err = os.RemoveAll(path)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
-func (u Utils) SetKeyRingStorage() {
-	u.ShellExec(u.sifCLI, "config", "keyring-backend", "file")
+func (u Utils) InitChain(chainID, moniker string) (*string, error) {
+	return u.shellExec(u.sifDaemon, "init", moniker, "--chain-id", chainID)
 }
 
-func (u Utils) SetConfigChainID(chainID string) {
-	u.ShellExec(u.sifCLI, "config", "chain-id", chainID)
+func (u Utils) SetKeyRingStorage() (*string, error) {
+	return u.shellExec(u.sifCLI, "config", "keyring-backend", "file")
 }
 
-func (u Utils) SetConfigIndent(indent bool) {
-	u.ShellExec(u.sifCLI, "config", "indent", fmt.Sprintf("%v", indent))
+func (u Utils) SetConfigChainID(chainID string) (*string, error) {
+	return u.shellExec(u.sifCLI, "config", "chain-id", chainID)
 }
 
-func (u Utils) SetConfigTrustNode(indent bool) {
-	u.ShellExec(u.sifCLI, "config", "trust-node", fmt.Sprintf("%v", indent))
+func (u Utils) SetConfigIndent(indent bool) (*string, error) {
+	return u.shellExec(u.sifCLI, "config", "indent", fmt.Sprintf("%v", indent))
 }
 
-func (u Utils) AddKey(name, keyPassword string) string {
-	return u.ShellExecInput(u.sifCLI, [][]byte{[]byte(keyPassword + "\n"), []byte(keyPassword + "\n")}, "keys", "add", name)
+func (u Utils) SetConfigTrustNode(indent bool) (*string, error) {
+	return u.shellExec(u.sifCLI, "config", "trust-node", fmt.Sprintf("%v", indent))
 }
 
-func (u Utils) AddGenesisAccount(address string, coins []string) {
-	u.ShellExec(u.sifDaemon, "add-genesis-account", address, strings.Join(coins[:], ","))
+func (u Utils) AddKey(name, keyPassword string) (*string, error) {
+	return u.shellExecInput(u.sifCLI, [][]byte{[]byte(keyPassword + "\n"), []byte(keyPassword + "\n")}, "keys", "add", name)
 }
 
-func (u Utils) GenerateGenesisTxn(name, keyPassword string) {
-	u.ShellExecInput(u.sifDaemon,
+func (u Utils) AddGenesisAccount(address string, coins []string) (*string, error) {
+	return u.shellExec(u.sifDaemon, "add-genesis-account", address, strings.Join(coins[:], ","))
+}
+
+func (u Utils) GenerateGenesisTxn(name, keyPassword string) (*string, error) {
+	return u.shellExecInput(u.sifDaemon,
 		[][]byte{[]byte(keyPassword + "\n"), []byte(keyPassword + "\n"), []byte(keyPassword + "\n")},
 		"gentx", "--name", name, "--keyring-backend", "file",
 	)
 }
 
-func (u Utils) CollectGenesisTxns() {
-	u.ShellExec(u.sifDaemon, "collect-gentxs")
+func (u Utils) CollectGenesisTxns() (*string, error) {
+	return u.shellExec(u.sifDaemon, "collect-gentxs")
 }
 
-func (u Utils) ExportGenesis() string {
-	return u.ShellExec(u.sifDaemon, "export")
+func (u Utils) ExportGenesis() (*string, error) {
+	return u.shellExec(u.sifDaemon, "export")
 }
 
 func (u Utils) GenesisFilePath() string {
@@ -106,17 +119,19 @@ func (u Utils) ScrapePeerGenesis(url string) types.Genesis {
 	return genesis
 }
 
-func (u Utils) SaveGenesis(genesis types.Genesis) {
+func (u Utils) SaveGenesis(genesis types.Genesis) error {
 	err := ioutil.WriteFile(u.GenesisFilePath(), *genesis.Result.Genesis, 0600)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func (u Utils) ReplacePeerConfig(peerAddresses []string) {
+func (u Utils) ReplacePeerConfig(peerAddresses []string) error {
 	contents, err := ioutil.ReadFile(u.ConfigFilePath())
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	lines := strings.Split(string(contents), "\n")
@@ -127,35 +142,39 @@ func (u Utils) ReplacePeerConfig(peerAddresses []string) {
 	}
 
 	output := strings.Join(lines, "\n")
+
 	err = ioutil.WriteFile(u.ConfigFilePath(), []byte(output), 0600)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
-func (u Utils) ShellExec(cmd string, args ...string) string {
+func (u Utils) shellExec(cmd string, args ...string) (*string, error) {
 	c := exec.Command(cmd, args...)
 	var out bytes.Buffer
 	c.Stdout = &out
 
 	err := c.Run()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return out.String()
+	result := out.String()
+	return &result, nil
 }
 
-func (u Utils) ShellExecInput(cmd string, inputs [][]byte, args ...string) string {
+func (u Utils) shellExecInput(cmd string, inputs [][]byte, args ...string) (*string, error) {
 	c := exec.Command(cmd, args...)
 	stdin, err := c.StdinPipe()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	stdout, err := c.StdoutPipe()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	buf := bytes.NewBuffer(nil)
@@ -172,8 +191,9 @@ func (u Utils) ShellExecInput(cmd string, inputs [][]byte, args ...string) strin
 	}
 
 	if err := c.Wait(); err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return buf.String()
+	result := buf.String()
+	return &result, nil
 }
