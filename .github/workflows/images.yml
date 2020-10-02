@@ -20,6 +20,7 @@ jobs:
 
   deploy_to_eks:
     name: Deploy a node for each PR
+    needs: push_sifnode_to_registry
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
