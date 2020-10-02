@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+        with:
+          ref: feature/helm-chart
       - name: Declare git variables
         id: vars
         shell: bash
