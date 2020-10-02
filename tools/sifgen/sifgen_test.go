@@ -43,12 +43,14 @@ func (s *sifgenSuite) TestSifgen(c *C) {
 }
 
 func (s *sifgenSuite) TestNetworkUtils(c *C) {
+	// Ensure we get back a valid network utils struct.
 	utils := NetworkUtils()
 	_, ok := utils.(networks.NetworkUtils)
 	c.Assert(ok, Equals, true)
 }
 
 func (s *sifgenSuite) TestNetworkNode(c *C) {
+	// Test network node instantiation for a validator.
 	sifValidator := NewSifgen(validator, localnet, chainID, nil, nil)
 
 	utils := NetworkUtils()
@@ -62,6 +64,7 @@ func (s *sifgenSuite) TestNetworkNode(c *C) {
 	c.Assert(ok, Equals, true)
 	c.Assert(assert.NotEmpty(c, (*node).Name()), Equals, true)
 
+	// Test network node instantiation for a witness.
 	sifWitness := NewSifgen(witness, localnet, chainID, &peerAddress, &genesisURL)
 
 	utils = NetworkUtils()
@@ -86,6 +89,7 @@ func (s *sifgenSuite) TestNetworkNode(c *C) {
 }
 
 func (s *sifgenSuite) TestNetwork(c *C) {
+	// Test network instantiation, as a validator.
 	sifValidator := NewSifgen(validator, localnet, chainID, nil, nil)
 
 	utils := NetworkUtils()
@@ -105,6 +109,7 @@ func (s *sifgenSuite) TestNetwork(c *C) {
 	_, ok = (*network).(networks.Network)
 	c.Assert(ok, Equals, true)
 
+	// Test network instantiation, as a witness.
 	sifWitness := NewSifgen(witness, localnet, chainID, &peerAddress, &genesisURL)
 
 	utils = NetworkUtils()

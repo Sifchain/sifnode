@@ -27,6 +27,7 @@ func NewLocalnet(defaultNodeHome, defaultCLIHome, chainID string, node NetworkNo
 	}
 }
 
+// Setup the network; clear any existing config, initialize the blockchain, set the config and perform genesis.
 func (l Localnet) Setup() error {
 	err := l.utils.Reset([]string{l.defaultNodeHome, l.defaultCLIHome})
 	if err != nil {
@@ -83,6 +84,7 @@ func (l Localnet) Genesis() error {
 	return nil
 }
 
+// Generate a new key for a node.
 func (l Localnet) generateNodeKey() error {
 	output, err := l.utils.AddKey((*l.node).Name(), (*l.node).KeyPassword())
 	if err != nil {
@@ -106,6 +108,7 @@ func (l Localnet) generateNodeKey() error {
 	return nil
 }
 
+// Generates the initial transaction(s) for genesis, for a validator.
 func (l Localnet) validatorGenesis(address string) error {
 	_, err := l.utils.AddGenesisAccount(address, Coins)
 	if err != nil {
@@ -130,6 +133,7 @@ func (l Localnet) validatorGenesis(address string) error {
 	return nil
 }
 
+// Download the peer's genesis file and update the witness' peer config with the validator's peer address.
 func (l Localnet) witnessGenesis(address string) error {
 	genesis, err := l.utils.ScrapePeerGenesis((*l.node).GenesisURL())
 	if err != nil {

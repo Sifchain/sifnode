@@ -112,6 +112,7 @@ func Test(t *testing.T) { TestingT(t) }
 
 func (s *networksSuite) SetUpSuite(c *C) {}
 
+// Tests for a network validator.
 func (s *networksSuite) TestLocalnetValidator(c *C) {
 	node := NewValidator(mockNetworkUtils{})
 	network := NewLocalnet(defaultNodeHome, defaultCLIHome, faker.Lorem().Word(), node, mockNetworkUtils{})
@@ -135,6 +136,7 @@ func (s *networksSuite) TestLocalnetValidator(c *C) {
 	c.Assert(node.PeerAddress(), Equals, peerAddress)
 }
 
+// Tests for a network witness.
 func (s *networksSuite) TestLocalnetWitness(c *C) {
 	node := NewWitness(peerAddress, genesisURL, mockNetworkUtils{})
 	network := NewLocalnet(defaultNodeHome, defaultCLIHome, faker.Lorem().Word(), node, mockNetworkUtils{})

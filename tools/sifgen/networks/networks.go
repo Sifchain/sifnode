@@ -11,11 +11,13 @@ var (
 	}
 )
 
+// Network (localnet/testnet/mainnet).
 type Network interface {
 	Setup() error
 	Genesis() error
 }
 
+// Network nodes (currently just supports validators and witnesses).
 type NetworkNode interface {
 	Name() string
 	Address(*string) *string
@@ -25,6 +27,7 @@ type NetworkNode interface {
 	CollectPeerAddress() error
 }
 
+// Network utils performs all the underlying tasks.
 type NetworkUtils interface {
 	Reset([]string) error
 	InitChain(string, string) (*string, error)
