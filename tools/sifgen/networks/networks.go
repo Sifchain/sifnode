@@ -39,7 +39,7 @@ type NetworkUtils interface {
 	ExportGenesis() (*string, error)
 	GenesisFilePath() string
 	ConfigFilePath() string
-	ScrapePeerGenesis(string) types.Genesis
+	ScrapePeerGenesis(string) (types.Genesis, error)
 	SaveGenesis(types.Genesis) error
 	ReplacePeerConfig([]string) error
 }

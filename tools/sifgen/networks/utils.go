@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -98,25 +97,26 @@ func (u Utils) ConfigFilePath() string {
 	return fmt.Sprintf("%s/%s", u.configPath, ConfigFile)
 }
 
-func (u Utils) ScrapePeerGenesis(url string) types.Genesis {
+func (u Utils) ScrapePeerGenesis(url string) (types.Genesis, error) {
+	var genesis types.Genesis
+
 	response, err := http.Get(fmt.Sprintf("%s", url))
 	if err != nil {
-		log.Fatal(err)
+		return genesis, err
 	}
 
 	defer response.Body.Close()
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Fatal(err)
+		return genesis, err
 	}
 
-	var genesis types.Genesis
 	if err := json.Unmarshal(body, &genesis); err != nil {
-		log.Fatal(err)
+		return genesis, err
 	}
 
-	return genesis
+	return genesis, nil
 }
 
 func (u Utils) SaveGenesis(genesis types.Genesis) error {

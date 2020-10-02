@@ -101,7 +101,10 @@ func (u mockNetworkUtils) ConfigFilePath() string {
 	return fmt.Sprintf("%s/%s", defaultNodeHome, configFile)
 }
 
-func (u mockNetworkUtils) ScrapePeerGenesis(url string) types.Genesis     { return types.Genesis{} }
+func (u mockNetworkUtils) ScrapePeerGenesis(url string) (types.Genesis, error) {
+	return types.Genesis{}, nil
+}
+
 func (u mockNetworkUtils) SaveGenesis(genesis types.Genesis) error        { return nil }
 func (u mockNetworkUtils) ReplacePeerConfig(peerAddresses []string) error { return nil }
 

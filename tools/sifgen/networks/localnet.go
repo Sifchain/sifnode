@@ -131,7 +131,12 @@ func (l Localnet) validatorGenesis(address string) error {
 }
 
 func (l Localnet) witnessGenesis(address string) error {
-	err := l.utils.SaveGenesis(l.utils.ScrapePeerGenesis((*l.node).GenesisURL()))
+	genesis, err := l.utils.ScrapePeerGenesis((*l.node).GenesisURL())
+	if err != nil {
+		return err
+	}
+
+	err = l.utils.SaveGenesis(genesis)
 	if err != nil {
 		return err
 	}

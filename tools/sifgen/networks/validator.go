@@ -2,7 +2,6 @@ package networks
 
 import (
 	"encoding/json"
-	"log"
 	"time"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/networks/types"
@@ -63,7 +62,7 @@ func (v *Validator) CollectPeerAddress() error {
 
 	var genesisAppState types.GenesisAppState
 	if err := json.Unmarshal([]byte(*output), &genesisAppState); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	v.peerAddress = genesisAppState.AppState.Genutil.Gentxs[0].Value.Memo
