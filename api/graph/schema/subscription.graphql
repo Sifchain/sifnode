@@ -1,0 +1,3 @@
+type Subscription {
+    NewBlock: EventDataNewBlock
+}
