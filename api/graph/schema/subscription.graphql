@@ -1,3 +1,2 @@
-type Subscription {
-    NewBlock: EventDataNewBlock
-}
+#type Subscription {
+#}

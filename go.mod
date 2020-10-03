@@ -6,7 +6,6 @@ require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/cosmos/cosmos-sdk v0.39.1
 	github.com/cucumber/godog v0.10.0
-	github.com/davecgh/go-spew v1.1.1
 	github.com/golang/mock v1.4.3 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/spf13/cobra v1.0.0

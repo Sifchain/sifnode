@@ -129,6 +129,8 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
 #    mutation: Mutation
 #    subscription: Subscription
 #}
+
+scalar Time
 `, BuiltIn: false},
 	{Name: "graph/schema/subscription.graphql", Input: `#type Subscription {
 #}`, BuiltIn: false},
