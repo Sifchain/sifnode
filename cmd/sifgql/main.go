@@ -18,8 +18,6 @@ var (
 	flagPort = flag.Uint("port", 8081, "The port where the service is exposed.")
 )
 
-const defaultPort = "8081"
-
 func main() {
 	flag.Parse()
 
