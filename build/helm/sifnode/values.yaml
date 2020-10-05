@@ -55,7 +55,8 @@ ingress:
 
 secrets:
   ghcr:
-    dockerconfigjson: 
+    enabled: false
+    dockerconfigjson: <github-container-registry-token>
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
