@@ -29,7 +29,7 @@ $ kubectl create secret docker-registry --dry-run=client ghcr --docker-server=do
 Get the output from the last command and put it in the Helm's values.yaml file as a value of `dockerconfigjson`. Once the encrypted value is added to the values.yaml file we can install our chart:
 
 ```
-$ make deploy-sifnode
+$ make deploy-sifnode nodename=<nodename>
 ```
 
 # Destroy
@@ -37,5 +37,5 @@ $ make deploy-sifnode
 For destroying the sifnode chart just execute the destroy command:
 
 ```
-$ make destroy-sifnode
+$ make destroy-sifnode nodename=<nodename>
 ```
