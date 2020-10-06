@@ -2,120 +2,73 @@ package sifgen
 
 import (
 	"fmt"
+	"time"
 
-	"github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/tools/sifgen/networks"
+	"github.com/Sifchain/sifnode/tools/sifgen/bank"
+	"github.com/Sifchain/sifnode/tools/sifgen/node"
 
-	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/yelinaung/go-haikunator"
+
+	"gopkg.in/yaml.v3"
 )
 
-const (
-	validator = "validator"
-	witness   = "witness"
-
-	localnet = "localnet"
-	testnet  = "testnet"
-	mainnet  = "mainnet"
-)
+type Output struct {
+	ChainID                   string `yaml:"chain_id"`
+	Moniker                   string `yaml:"moniker"`
+	KeyAddress                string `yaml:"key_address"`
+	KeyPassword               string `yaml:"key_password"`
+	PeerAddress               string `yaml:"peer_address"`
+	ValidatorPublicKeyAddress string `yaml:"validator_public_key_address"`
+}
 
 type Sifgen struct {
-	nodeType    string
-	network     string
-	chainID     string
-	peerAddress *string
-	genesisURL  *string
+	chainID string
 }
 
-func NewSifgen(nodeType, network, chainID string, peerAddress, genesisURL *string) Sifgen {
+func NewSifgen(chainID string) Sifgen {
 	return Sifgen{
-		nodeType:    nodeType,
-		network:     network,
-		chainID:     chainID,
-		peerAddress: peerAddress,
-		genesisURL:  genesisURL,
+		chainID: chainID,
 	}
 }
 
-func (s Sifgen) Run() {
-	utils := NetworkUtils()
-	node, err := NewNetworkNode(s, utils)
-	if err != nil {
+func (s Sifgen) NodeCreate(seedAddress, genesisURL *string) {
+	moniker := haikunator.New(time.Now().UTC().UnixNano()).Haikunate()
+	nd := node.NewNode(s.chainID, &moniker, seedAddress, genesisURL)
+
+	if err := nd.Setup(); err != nil {
 		panic(err)
 	}
 
-	network, err := NewNetwork(s, utils, *node)
-	if err != nil {
+	if err := nd.Genesis(bank.NewBank(s.chainID).DefaultDeposit()); err != nil {
 		panic(err)
 	}
 
-	err = (*network).Setup()
-	if err != nil {
+	s.summary(nd)
+}
+
+func (s Sifgen) NodePromote(moniker, validatorPublicKey, keyPassword, bondAmount string) {
+	nd := node.NewNode(s.chainID, &moniker, nil, nil)
+	if err := nd.Promote(validatorPublicKey, keyPassword, bondAmount); err != nil {
 		panic(err)
 	}
+}
 
-	err = (*network).Genesis()
-	if err != nil {
+func (s Sifgen) Transfer(fromKeyPassword, fromKeyAddress, toKeyAddress, amount string) {
+	if err := bank.NewBank(s.chainID).Transfer(fromKeyPassword, fromKeyAddress, toKeyAddress, amount); err != nil {
 		panic(err)
 	}
-
-	s.summary(*node)
 }
 
-func (s Sifgen) summary(node networks.NetworkNode) {
-	var address string
-
-	_, isValidator := node.(*networks.Validator)
-	if isValidator {
-		address = fmt.Sprintf("%s (%s)", *node.Address(nil), node.PeerAddress())
-	} else {
-		address = fmt.Sprintf("%s", *node.Address(nil))
+func (s Sifgen) summary(node *node.Node) {
+	output := Output{
+		ChainID:                   node.ChainID(),
+		Moniker:                   node.Moniker(),
+		KeyAddress:                *node.NodeKeyAddress(nil),
+		KeyPassword:               node.NodeKeyPassword(),
+		PeerAddress:               node.NodePeerAddress(),
+		ValidatorPublicKeyAddress: node.NodeValidatorPublicKeyAddress(),
 	}
 
-	fmt.Println(heredoc.Doc(`
-		Node Details
-		============
-		Moniker: ` + node.Moniker() + `
-		Address: ` + address + `
-		Password: ` + node.KeyPassword() + `
-	`))
-}
-
-func NetworkUtils() networks.NetworkUtils {
-	return networks.NewUtils(app.DefaultNodeHome)
-}
-
-func NewNetworkNode(s Sifgen, utils networks.NetworkUtils) (*networks.NetworkNode, error) {
-	var node networks.NetworkNode
-
-	switch s.nodeType {
-	case validator:
-		node = networks.NewValidator(utils)
-	case witness:
-		node = networks.NewWitness(*s.peerAddress, *s.genesisURL, utils)
-	default:
-		return nil, notImplemented(s.nodeType)
-	}
-
-	return &node, nil
-}
-
-func NewNetwork(s Sifgen, utils networks.NetworkUtils, node networks.NetworkNode) (*networks.Network, error) {
-	var network networks.Network
-
-	switch s.network {
-	case localnet:
-		network = networks.NewLocalnet(app.DefaultNodeHome, app.DefaultCLIHome, s.chainID, node, utils)
-	case testnet:
-		return nil, notImplemented(s.network)
-	case mainnet:
-		return nil, notImplemented(s.network)
-	default:
-		return nil, notImplemented(s.network)
-	}
-
-	return &network, nil
-}
-
-func notImplemented(item string) error {
-	return fmt.Errorf("%s not implemented", item)
+	yml, _ := yaml.Marshal(output)
+	fmt.Println(string(yml))
 }

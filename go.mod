@@ -6,6 +6,7 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/cosmos/cosmos-sdk v0.39.1
 	github.com/cucumber/godog v0.10.0
+	github.com/ghodss/yaml v1.0.0
 	github.com/golang/mock v1.4.3 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/onsi/ginkgo v1.8.0 // indirect
