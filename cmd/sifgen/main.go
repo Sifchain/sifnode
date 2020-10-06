@@ -1,11 +1,6 @@
 package main
 
 import (
-	//"flag"
-	//"os"
-	//
-	//"github.com/Sifchain/sifnode/tools/sifgen"
-
 	"github.com/Sifchain/sifnode/tools/sifgen"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +28,7 @@ func main() {
 	networkLocalnetNodePromoteCmd := &cobra.Command{
 		Use:   "promote [chain-id] [moniker] [validator-public-key] [key-password] [bond-amount]",
 		Short: "Promote the node to full validator.",
-		Args:  cobra.MaximumNArgs(1),
+		Args:  cobra.MaximumNArgs(5),
 		Run: func(cmd *cobra.Command, args []string) {
 			sifgen.NewSifgen(args[0]).NodePromote(args[1], args[2], args[3], args[4])
 		},

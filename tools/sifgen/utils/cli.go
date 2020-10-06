@@ -39,7 +39,7 @@ type CLIUtils interface {
 	ReplacePeerConfig([]string) error
 	TransferFunds(string, string, string, string) (*string, error)
 	ValidatorPublicKeyAddress() (*string, error)
-	CreateValidator(string, string, string, string, string) (*string, error)
+	CreateValidator(string, string, string, string) (*string, error)
 }
 
 type CLI struct {
@@ -189,7 +189,7 @@ func (c CLI) ValidatorPublicKeyAddress() (*string, error) {
 	return c.shellExec(c.sifDaemon, "tendermint", "show-validator")
 }
 
-func (c CLI) CreateValidator(chainID, moniker, validatorPublicKey, keyPassword, bondAmount string) (*string, error) {
+func (c CLI) CreateValidator(moniker, validatorPublicKey, keyPassword, bondAmount string) (*string, error) {
 	return c.shellExecInput(c.sifCLI,
 		[][]byte{
 			[]byte(keyPassword + "\n"),
@@ -202,10 +202,12 @@ func (c CLI) CreateValidator(chainID, moniker, validatorPublicKey, keyPassword, 
 		"--amount", bondAmount,
 		"--pubkey", validatorPublicKey,
 		"--moniker", moniker,
-		"--chain-id", chainID,
-		" --min-self-delegation", "1",
+		"--chain-id", c.chainID,
+		"--min-self-delegation", "1",
 		"--gas", "auto",
-		"--from", moniker)
+		"--from", moniker,
+		"--keyring-backend", "file",
+		"-y")
 }
 
 func (c CLI) shellExec(cmd string, args ...string) (*string, error) {
@@ -224,6 +226,10 @@ func (c CLI) shellExec(cmd string, args ...string) (*string, error) {
 
 func (c CLI) shellExecInput(cmd string, inputs [][]byte, args ...string) (*string, error) {
 	cm := exec.Command(cmd, args...)
+
+	var stderr bytes.Buffer
+	cm.Stderr = &stderr
+
 	stdin, err := cm.StdinPipe()
 	if err != nil {
 		return nil, err
@@ -248,6 +254,7 @@ func (c CLI) shellExecInput(cmd string, inputs [][]byte, args ...string) (*strin
 	}
 
 	if err := cm.Wait(); err != nil {
+		fmt.Println(stderr.String())
 		return nil, err
 	}
 

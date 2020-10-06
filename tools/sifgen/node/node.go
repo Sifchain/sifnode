@@ -85,7 +85,7 @@ func (n *Node) Genesis(deposit []string) error {
 
 // Promote to a full validator.
 func (n *Node) Promote(validatorPublicKey, keyPassword, bondAmount string) error {
-	_, err := n.CLI.CreateValidator(n.chainID, n.moniker, validatorPublicKey, keyPassword, bondAmount)
+	_, err := n.CLI.CreateValidator(n.moniker, validatorPublicKey, keyPassword, bondAmount)
 	if err != nil {
 		return err
 	}
