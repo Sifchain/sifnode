@@ -2,28 +2,27 @@ package keeper
 
 import (
 	"fmt"
-
-	"github.com/tendermint/tendermint/crypto"
+	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/utx0/sifnode/x/clp/types"
 )
 
 // Keeper of the clp store
 type Keeper struct {
 	storeKey   sdk.StoreKey
 	cdc        *codec.Codec
-	paramspace types.ParamSubspace
+	bankKeeper types.BankKeeper
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, paramspace types.ParamSubspace) Keeper {
+func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankkeeper types.BankKeeper, paramspace types.ParamSubspace) Keeper {
 	keeper := Keeper{
 		storeKey:   key,
 		cdc:        cdc,
-		paramspace: paramspace.WithKeyTable(types.ParamKeyTable()),
+		bankKeeper: bankkeeper,
+		//paramspace: paramspace.WithKeyTable(types.ParamKeyTable()),
 	}
 	return keeper
 }
@@ -33,25 +32,10 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// Get returns the pubkey from the adddress-pubkey relation
-func (k Keeper) Get(ctx sdk.Context, key string) (/* TODO: Fill out this type */, error) {
-	store := ctx.KVStore(k.storeKey)
-	var item /* TODO: Fill out this type */
-	byteKey := []byte(key)
-	err := k.cdc.UnmarshalBinaryLengthPrefixed(store.Get(byteKey), &item)
-	if err != nil {
-		return nil, err
-	}
-	return item, nil
+func (k Keeper) SetAsset(ctx sdk.Context, assetName string, asset types.Asset) {
+
 }
 
-func (k Keeper) set(ctx sdk.Context, key string, value /* TODO: fill out this type */ ) {
-	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshalBinaryLengthPrefixed(value)
-	store.Set([]byte(key), bz)
-}
-
-func (k Keeper) delete(ctx sdk.Context, key string) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete([]byte(key))
+func (k Keeper) GetAsset(tx sdk.Context, assetName string) types.Asset {
+	return types.Asset{}
 }

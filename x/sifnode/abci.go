@@ -1,9 +1,9 @@
 package sifnode
 
 import (
+	"github.com/Sifchain/sifnode/x/sifnode/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/Sifchain/sifnode/x/sifnode/keeper"
 	// abci "github.com/tendermint/tendermint/abci/types"
 )
 

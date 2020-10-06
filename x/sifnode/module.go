@@ -8,15 +8,15 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/Sifchain/sifnode/x/sifnode/client/cli"
+	"github.com/Sifchain/sifnode/x/sifnode/client/rest"
+	"github.com/Sifchain/sifnode/x/sifnode/keeper"
+	"github.com/Sifchain/sifnode/x/sifnode/types"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/Sifchain/sifnode/x/sifnode/client/cli"
-	"github.com/Sifchain/sifnode/x/sifnode/client/rest"
-	"github.com/Sifchain/sifnode/x/sifnode/keeper"
-	"github.com/Sifchain/sifnode/x/sifnode/types"
 )
 
 // Type check to ensure the interface is properly implemented
