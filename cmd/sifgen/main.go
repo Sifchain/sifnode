@@ -11,10 +11,10 @@ func main() {
 	_nodeCmd := nodeCmd()
 	_nodeCmd.AddCommand(nodeCreateCmd(), nodePromoteCmd())
 
-	_bankCmd := bankCmd()
-	_bankCmd.AddCommand(bankTransferCmd())
+	_faucetCmd := faucetCmd()
+	_faucetCmd.AddCommand(faucetTransferCmd())
 
-	rootCmd.AddCommand(_nodeCmd, _bankCmd)
+	rootCmd.AddCommand(_nodeCmd, _faucetCmd)
 	_ = rootCmd.Execute()
 }
 
@@ -52,18 +52,18 @@ func nodePromoteCmd() *cobra.Command {
 	}
 }
 
-func bankCmd() *cobra.Command {
+func faucetCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "bank",
-		Short: "Bank operations.",
+		Use:   "faucet",
+		Short: "Faucet operations.",
 		Args:  cobra.MinimumNArgs(1),
 	}
 }
 
-func bankTransferCmd() *cobra.Command {
+func faucetTransferCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "transfer [chain-id] [from-password] [from-address] [to-address] [amount]",
-		Short: "Transfer coins from one account to another.",
+		Use:   "transfer [chain-id] [faucet-password] [faucet-address] [to-address] [amount]",
+		Short: "Transfer coins from the faucet to an account.",
 		Args:  cobra.MinimumNArgs(5),
 		Run: func(cmd *cobra.Command, args []string) {
 			sifgen.NewSifgen(args[0]).Transfer(args[1], args[2], args[3], args[4])
