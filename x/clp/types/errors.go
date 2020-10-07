@@ -7,5 +7,7 @@ import (
 // TODO: Fill out some custom errors for the module
 // You can see how they are constructed below:
 var (
-	ErrInvalid = sdkerrors.Register(ModuleName, 1, "custom error message")
+	ErrInvalid                    = sdkerrors.Register(ModuleName, 1, "Invalid")
+	ErrPoolDoesNotExist           = sdkerrors.Register(ModuleName, 2, "Pool does not exist")
+	LiquidityProviderDoesNotExist = sdkerrors.Register(ModuleName, 3, "Liquidity Provider does not exist")
 )
