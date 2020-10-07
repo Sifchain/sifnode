@@ -18,6 +18,7 @@ require (
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.33.8
 	github.com/tendermint/tm-db v0.5.1
+  github.com/tendermint/cosmos-rosetta-gateway v0.1.0
 	github.com/yelinaung/go-haikunator v0.0.0-20150320004105-1249cae259af
 	golang.org/x/net v0.0.0-20200520182314-0ba52f642ac2 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
