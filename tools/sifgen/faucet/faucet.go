@@ -1,22 +1,27 @@
-package bank
+package faucet
 
 import (
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 )
 
-type Bank struct {
+type Reserve interface {
+	DefaultDeposit() []string
+	Transfer(string, string, string, string) error
+}
+
+type Faucet struct {
 	chainID string
 	CLI     utils.CLIUtils
 }
 
-func NewBank(chainID string) Bank {
-	return Bank{
+func NewFaucet(chainID string) Faucet {
+	return Faucet{
 		chainID: chainID,
 		CLI:     utils.NewCLI(chainID),
 	}
 }
 
-func (b Bank) DefaultDeposit() []string {
+func (f Faucet) DefaultDeposit() []string {
 	return []string{
 		"1000000000000000stake",
 		"1000000000000rowan",

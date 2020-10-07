@@ -77,10 +77,10 @@ func (n *Node) Setup() error {
 // Genesis init.
 func (n *Node) Genesis(deposit []string) error {
 	if n.seedAddress == nil {
-		return n.seedGenesis(n.nodeKeyAddress, deposit)
+		return n.seedGenesis(deposit)
 	}
 
-	return n.validatorGenesis(n.nodeKeyAddress)
+	return n.validatorGenesis()
 }
 
 // Promote to a full validator.
@@ -175,8 +175,8 @@ func (n *Node) generateNodeKeyPassword() error {
 }
 
 // Generates the initial transaction(s) for genesis, for a seed.
-func (n *Node) seedGenesis(address string, deposit []string) error {
-	_, err := n.CLI.AddGenesisAccount(address, deposit)
+func (n *Node) seedGenesis(deposit []string) error {
+	_, err := n.CLI.AddGenesisAccount(n.nodeKeyAddress, deposit)
 	if err != nil {
 		return err
 	}
@@ -200,7 +200,7 @@ func (n *Node) seedGenesis(address string, deposit []string) error {
 }
 
 // Download the genesis file and update the peer config with the seeder's address.
-func (n *Node) validatorGenesis(address string) error {
+func (n *Node) validatorGenesis() error {
 	genesis, err := n.CLI.ScrapePeerGenesis(*n.genesisURL)
 	if err != nil {
 		return err

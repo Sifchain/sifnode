@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Sifchain/sifnode/tools/sifgen/bank"
+	"github.com/Sifchain/sifnode/tools/sifgen/faucet"
 	"github.com/Sifchain/sifnode/tools/sifgen/node"
 
 	"github.com/yelinaung/go-haikunator"
-
 	"gopkg.in/yaml.v3"
 )
 
@@ -39,7 +38,7 @@ func (s Sifgen) NodeCreate(seedAddress, genesisURL *string) {
 		panic(err)
 	}
 
-	if err := nd.Genesis(bank.NewBank(s.chainID).DefaultDeposit()); err != nil {
+	if err := nd.Genesis(faucet.NewFaucet(s.chainID).DefaultDeposit()); err != nil {
 		panic(err)
 	}
 
@@ -54,7 +53,7 @@ func (s Sifgen) NodePromote(moniker, validatorPublicKey, keyPassword, bondAmount
 }
 
 func (s Sifgen) Transfer(fromKeyPassword, fromKeyAddress, toKeyAddress, amount string) {
-	if err := bank.NewBank(s.chainID).Transfer(fromKeyPassword, fromKeyAddress, toKeyAddress, amount); err != nil {
+	if err := faucet.NewFaucet(s.chainID).Transfer(fromKeyPassword, fromKeyAddress, toKeyAddress, amount); err != nil {
 		panic(err)
 	}
 }

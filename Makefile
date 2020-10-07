@@ -38,6 +38,9 @@ clean-config:
 clean: clean-config
 	@rm -rf ${GOBIN}/sif*
 
+tests:
+	@go test -v -coverprofile .testCoverage.txt ./...
+
 feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
 
