@@ -8,6 +8,6 @@ import (
 // You can see how they are constructed below:
 var (
 	ErrInvalid                    = sdkerrors.Register(ModuleName, 1, "Invalid")
-	ErrPoolDoesNotExist           = sdkerrors.Register(ModuleName, 1, "Pool does not exists")
-	LiquidityProviderDoesNotExist = sdkerrors.Register(ModuleName, 1, "Liquidity Provider does not exists")
+	ErrPoolDoesNotExist           = sdkerrors.Register(ModuleName, 2, "Pool does not exist")
+	LiquidityProviderDoesNotExist = sdkerrors.Register(ModuleName, 3, "Liquidity Provider does not exist")
 )

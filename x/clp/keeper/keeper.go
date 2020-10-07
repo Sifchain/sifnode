@@ -16,7 +16,7 @@ type Keeper struct {
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankkeeper types.BankKeeper, paramspace types.ParamSubspace) Keeper {
+func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankkeeper types.BankKeeper) Keeper {
 	keeper := Keeper{
 		storeKey:   key,
 		cdc:        cdc,
@@ -36,13 +36,13 @@ func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) {
 		return
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetPoolKey(pool.ExternalAsset.SourceChain, pool.ExternalAsset.Ticker)
+	key := types.GetPoolKey(pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
 	store.Set(key, k.cdc.MustMarshalBinaryBare(pool))
 }
-func (k Keeper) GetPool(ctx sdk.Context, ticker string, native string) (types.Pool, error) {
+func (k Keeper) GetPool(ctx sdk.Context, ticker string, sourceChain string) (types.Pool, error) {
 	var pool types.Pool
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetPoolKey(ticker, native)
+	key := types.GetPoolKey(ticker, sourceChain)
 	if !k.Exists(ctx, key) {
 		return pool, types.ErrPoolDoesNotExist
 	}
@@ -64,9 +64,9 @@ func (k Keeper) GetPools(ctx sdk.Context) []types.Pool {
 	return poolList
 }
 
-func (k Keeper) DestroyPool(ctx sdk.Context, ticker string, native string) {
+func (k Keeper) DestroyPool(ctx sdk.Context, ticker string, sourceChain string) {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetPoolKey(ticker, native)
+	key := types.GetPoolKey(ticker, sourceChain)
 	if !k.Exists(ctx, key) {
 		return
 	}
