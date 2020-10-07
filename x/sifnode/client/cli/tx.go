@@ -5,10 +5,10 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Sifchain/sifnode/x/sifnode/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/Sifchain/sifnode/x/sifnode/types"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -22,7 +22,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	}
 
 	sifnodeTxCmd.AddCommand(flags.PostCommands(
-    // this line is used by starport scaffolding
+	// this line is used by starport scaffolding
 	)...)
 
 	return sifnodeTxCmd
