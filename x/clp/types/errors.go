@@ -10,4 +10,6 @@ var (
 	ErrInvalid                    = sdkerrors.Register(ModuleName, 1, "Invalid")
 	ErrPoolDoesNotExist           = sdkerrors.Register(ModuleName, 2, "Pool does not exist")
 	LiquidityProviderDoesNotExist = sdkerrors.Register(ModuleName, 3, "Liquidity Provider does not exist")
+	InValidAsset                  = sdkerrors.Register(ModuleName, 4, "Asset is invalid")
+	InValidAmount                 = sdkerrors.Register(ModuleName, 5, "Amount is invalid")
 )
