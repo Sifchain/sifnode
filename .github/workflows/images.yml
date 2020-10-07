@@ -15,14 +15,17 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v2
         with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: docker.pkg.github.com
-          repository: sifchain/sifnode/sifnode
-          tag_with_ref: true
+          push: true
+          tags: latest
 
   deploy_to_eks:
     name: Deploy a node for each PR
