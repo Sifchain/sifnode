@@ -60,4 +60,3 @@ jobs:
           helm repo add stable https://kubernetes-charts.storage.googleapis.com
           helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard
           helm upgrade node-${{ steps.vars.outputs.sha_short }} build/helm/sifnode --install -n node-${{ steps.vars.outputs.sha_short }} --create-namespace --set secrets.ghcr.enabled=true --set secrets.ghcr.dockerconfigjson=${{ secrets.GHCR_SECRET }} --set image.tag=${{ steps.vars.outputs.sha_short }} --wait
-          
