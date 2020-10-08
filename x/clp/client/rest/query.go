@@ -65,7 +65,7 @@ func getLiquidityProviderHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryLiquidityProvider)
 		var params types.QueryReqLiquidityProvider
 		params.Ticker = r.URL.Query().Get("ticker")
-		params.Ip = r.URL.Query().Get("ip")
+		params.LpAddress = r.URL.Query().Get("lpAddress")
 		bz, err := cliCtx.Codec.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

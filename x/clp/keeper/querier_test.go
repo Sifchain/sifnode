@@ -10,18 +10,16 @@ import (
 	"testing"
 )
 
-func TestNewQuerier(t *testing.T) {
+func TestQueryGetPool(t *testing.T) {
 	cdc := codec.New()
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
-
 	//Set Data
-	pool, pools, lp := SetData(keeper, ctx)
+	pool, _, _ := SetData(keeper, ctx)
 	querier := NewQuerier(keeper)
-
 	//Test Pool
 	queryPool := types.QueryReqGetPool{
 		Ticker:      pool.ExternalAsset.Ticker,
@@ -37,10 +35,20 @@ func TestNewQuerier(t *testing.T) {
 	err = keeper.cdc.UnmarshalJSON(qpool, &p)
 	assert.NoError(t, err)
 	assert.Equal(t, pool.ExternalAsset, p.ExternalAsset)
+}
 
-	//Test Pools
+func TestQueryGetPools(t *testing.T) {
+	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	//Set Data
+	_, pools, _ := SetData(keeper, ctx)
+	querier := NewQuerier(keeper)
 	query.Path = ""
 	query.Data = nil
+	//Test Pools
 	qpools, err := querier(ctx, []string{"allpools"}, query)
 	assert.NoError(t, err)
 	var poolist []types.Pool
@@ -48,11 +56,22 @@ func TestNewQuerier(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Greater(t, len(poolist), 0, "More than one pool added")
 	assert.LessOrEqual(t, len(poolist), len(pools), "Set pool will ignore duplicates")
+}
 
+func TestQueryGetLiquidityProvider(t *testing.T) {
+	cdc := codec.New()
+	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	//Set Data
+	_, _, lp := SetData(keeper, ctx)
+	querier := NewQuerier(keeper)
 	//Test Get Liquidity Provider
 	queryLp := types.QueryReqLiquidityProvider{
-		Ticker: lp.Asset.Ticker,
-		Ip:     lp.LiquidityProviderAddress,
+		Ticker:    lp.Asset.Ticker,
+		LpAddress: lp.LiquidityProviderAddress,
 	}
 	qlp, errRes := cdc.MarshalJSON(queryLp)
 	require.NoError(t, errRes)
@@ -70,12 +89,10 @@ func TestNewQuerier(t *testing.T) {
 func SetData(keeper Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {
 	pool := generateRandomPool(1)[0]
 	keeper.SetPool(ctx, pool)
-
 	pools := generateRandomPool(10)
 	for _, p := range pools {
 		keeper.SetPool(ctx, p)
 	}
-
 	lp := generateRandomLP(1)[0]
 	keeper.SetLiquidityProvider(ctx, lp)
 	return pool, pools, lp

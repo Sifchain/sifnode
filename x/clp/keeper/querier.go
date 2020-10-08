@@ -19,7 +19,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 		case types.QueryLiquidityProvider:
 			return queryLiquidityProvider(ctx, req, keeper)
 		default:
-			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown nameservice query endpoint")
+			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown clp query endpoint")
 		}
 	}
 }
@@ -59,7 +59,7 @@ func queryLiquidityProvider(ctx sdk.Context, req abci.RequestQuery, keeper Keepe
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	lp, err := keeper.GetLiquidityProvider(ctx, params.Ticker, params.Ip)
+	lp, err := keeper.GetLiquidityProvider(ctx, params.Ticker, params.LpAddress)
 	if err != nil {
 		return nil, err
 	}

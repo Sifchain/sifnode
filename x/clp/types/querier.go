@@ -12,6 +12,6 @@ type QueryReqGetPool struct {
 }
 
 type QueryReqLiquidityProvider struct {
-	Ticker string `json:"ticker"`
-	Ip     string `json:"ip"`
+	Ticker    string `json:"ticker"`
+	LpAddress string `json:"lp_address"`
 }
