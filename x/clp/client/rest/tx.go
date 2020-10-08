@@ -10,22 +10,59 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
+	"github.com/gorilla/mux"
 	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 )
 
-type createPoolReq struct {
-	BaseReq             rest.BaseReq `json:"base_req"`
-	Signer              string       `json:"signer"`
-	ExternalAsset       clp.Asset    `json:"external_asset"`
-	NativeAssetAmount   uint         `json:"native_asset_amount"`
-	ExternalAssetAmount uint         `json:"external_asset_amount"`
+func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
+	r.HandleFunc(
+		"/clp/createpool",
+		createPooHandler(cliCtx),
+	).Methods("POST")
+	r.HandleFunc(
+		"/clp/addLiquidity",
+		addLiquidityHandler(cliCtx),
+	).Methods("POST")
+	r.HandleFunc(
+		"/clp/addLiquidity",
+		removeLiquidityHandler(cliCtx),
+	).Methods("POST")
+	r.HandleFunc(
+		"/clp/swap",
+		swapHandler(cliCtx),
+	).Methods("POST")
 }
+
+type (
+	AddLiquidityReq struct {
+		BaseReq             rest.BaseReq `json:"base_req"`
+		Signer              string       `json:"signer"`
+		ExternalAsset       clp.Asset    `json:"external_asset"`
+		NativeAssetAmount   uint         `json:"native_asset_amount"`
+		ExternalAssetAmount uint         `json:"external_asset_amount"`
+	}
+
+	RemoveLiquidityReq struct {
+		BaseReq       rest.BaseReq `json:"base_req"`
+		Signer        string       `json:"signer"`
+		ExternalAsset clp.Asset    `json:"external_asset"`
+		WBasisPoints  uint         `json:"w_basis_points"`
+		Asymmetry     uint         `json:"asymmetry"`
+	}
+	CreatePoolReq struct {
+		BaseReq             rest.BaseReq `json:"base_req"`
+		Signer              string       `json:"signer"`
+		ExternalAsset       clp.Asset    `json:"external_asset"`
+		NativeAssetAmount   uint         `json:"native_asset_amount"`
+		ExternalAssetAmount uint         `json:"external_asset_amount"`
+	}
+)
 
 func createPooHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req createPoolReq
+		var req CreatePoolReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return
@@ -49,17 +86,9 @@ func createPooHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-type addLiquidityReq struct {
-	BaseReq             rest.BaseReq `json:"base_req"`
-	Signer              string       `json:"signer"`
-	ExternalAsset       clp.Asset    `json:"external_asset"`
-	NativeAssetAmount   uint         `json:"native_asset_amount"`
-	ExternalAssetAmount uint         `json:"external_asset_amount"`
-}
-
 func addLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req addLiquidityReq
+		var req AddLiquidityReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return
@@ -83,17 +112,9 @@ func addLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-type removeLiquidityReq struct {
-	BaseReq       rest.BaseReq `json:"base_req"`
-	Signer        string       `json:"signer"`
-	ExternalAsset clp.Asset    `json:"external_asset"`
-	WBasisPoints  uint         `json:"w_basis_points"`
-	Asymmetry     uint         `json:"asymmetry"`
-}
-
 func removeLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req removeLiquidityReq
+		var req RemoveLiquidityReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return
