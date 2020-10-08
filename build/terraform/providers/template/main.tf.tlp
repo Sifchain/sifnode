@@ -1,0 +1,15 @@
+
+terraform {
+  backend "remote" {
+    hostname = "app.terraform.io"
+    organization = "{org}"
+    workspaces {
+      name = "{workspace}"
+    }
+  }
+}
+
+// configurate eg eks modules...
+module "sifchain" {
+  source = ""
+}
