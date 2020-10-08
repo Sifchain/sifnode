@@ -4,7 +4,7 @@ import connectToWallet from "./connectToWallet";
 import createPool from "./createPool";
 import destroyPool from "./destroyPool";
 import removeLiquidity from "./removeLiquidity";
-import selectToken from "./selectToken";
+import queryListOfAvailableTokens from "./queryListOfAvailableTokens";
 import setQuantityOfToken from "./setQuantityOfToken";
 import swapTokens from "./swapTokens";
 
@@ -25,8 +25,7 @@ export function createUsecases(context: Context) {
     ...createPool(context),
     ...destroyPool(context),
     ...removeLiquidity(context),
-    ...selectToken(context),
-    ...setQuantityOfToken(context),
+    ...queryListOfAvailableTokens(context),
     ...setQuantityOfToken(context),
     ...swapTokens(context),
   };
