@@ -18,7 +18,7 @@ import (
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	r.HandleFunc(
-		"/clp/createpool",
+		"/clp/createPool",
 		createPooHandler(cliCtx),
 	).Methods("POST")
 	r.HandleFunc(
@@ -26,7 +26,7 @@ func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 		addLiquidityHandler(cliCtx),
 	).Methods("POST")
 	r.HandleFunc(
-		"/clp/addLiquidity",
+		"/clp/removeLiquidity",
 		removeLiquidityHandler(cliCtx),
 	).Methods("POST")
 	r.HandleFunc(
