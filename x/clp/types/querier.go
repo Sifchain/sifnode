@@ -1,21 +1,17 @@
 package types
 
-// Query endpoints supported by the clp querier
 const (
-// TODO: Describe query parameters, update <action> with your query
-// Query<Action>    = "<action>"
+	QueryPool              = "pool"
+	QueryPools             = "allpools"
+	QueryLiquidityProvider = "liquidityProvider"
 )
 
-/*
-Below you will be able how to set your own queries:
-
-
-// QueryResList Queries Result Payload for a query
-type QueryResList []string
-
-// implement fmt.Stringer
-func (n QueryResList) String() string {
-	return strings.Join(n[:], "\n")
+type QueryReqGetPool struct {
+	Ticker      string `json:"ticker"`
+	SourceChain string `json:"source_chain"`
 }
 
-*/
+type QueryReqLiquidityProvider struct {
+	Ticker string `json:"ticker"`
+	Ip     string `json:"ip"`
+}
