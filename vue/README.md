@@ -1,5 +1,10 @@
 # sifnode
 
+### Requests
+Not exhaustive, or prioritized. But a place to put them, for now:
+
+- [ ] Localization (Per Andy Chiang)
+
 ## Project setup
 
 ```
