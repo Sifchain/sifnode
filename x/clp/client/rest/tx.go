@@ -58,6 +58,13 @@ type (
 		NativeAssetAmount   uint         `json:"native_asset_amount"`
 		ExternalAssetAmount uint         `json:"external_asset_amount"`
 	}
+	SwapReq struct {
+		BaseReq       rest.BaseReq `json:"base_req"`
+		Signer        string       `json:"signer"`
+		SentAsset     clp.Asset    `json:"sent_asset"`
+		ReceivedAsset clp.Asset    `json:"received_asset"`
+		SentAmount    uint         `json:"sent_amount"`
+	}
 )
 
 func createPooHandler(cliCtx context.CLIContext) http.HandlerFunc {
@@ -138,17 +145,9 @@ func removeLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-type swapReq struct {
-	BaseReq       rest.BaseReq `json:"base_req"`
-	Signer        string       `json:"signer"`
-	SentAsset     clp.Asset    `json:"sent_asset"`
-	ReceivedAsset clp.Asset    `json:"received_asset"`
-	SentAmount    uint         `json:"sent_amount"`
-}
-
 func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req swapReq
+		var req SwapReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
 			return
