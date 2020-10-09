@@ -1,18 +1,64 @@
-// import { action, observable } from "mobx";
+import { action, computed, observable } from "mobx";
+import { MARKETCAP_TOKEN_ORDER } from "../constants";
+import * as TOKENS from "../constants/tokens";
+import { AssetAmount, createAssetAmount, Asset } from "../entities";
+
+function getTokenBySymbol(symbol: string) {
+  const tokenStore = TOKENS as { [symbol: string]: Asset };
+  return tokenStore[symbol];
+}
+
+type AssetAmountMap = Map<string, AssetAmount>;
 
 // This is the reactive store that is shared with our frontend
-// XXX: Make observable later
-export class State {}
+// Trying to keep this flat
+export class State {
+  constructor(o?: Partial<State>) {
+    Object.assign(this, o);
+  }
+
+  // constants
+  marketcapTokenOrder: string[] = MARKETCAP_TOKEN_ORDER;
+
+  // reactive props
+  @observable userBalances: AssetAmountMap = new Map();
+
+  @computed get availableAssetAccounts() {
+    // toAssetAmount
+    const ordered: AssetAmount[] = [];
+    this.userBalances.forEach((balance) => {
+      ordered.push(balance);
+    });
+
+    for (let i = 0; i < Math.min(this.marketcapTokenOrder.length, 20); i++) {
+      const symbol = this.marketcapTokenOrder[i];
+      const token = this.userBalances.get(symbol);
+      if (!token) ordered.push(createAssetAmount(getTokenBySymbol(symbol), 0n));
+    }
+
+    return ordered;
+  }
+}
 
 // This is a bag of functions to mutate our state
-// XXX; Work out how to compose this
+// Lets break this up when it gets too big
 export class StoreActions {
   constructor(public state: State) {}
-  // @action.bound
-  // addToken(token: Token) {
-  //   this.state.error = '';
-  //   this.state.tokens.push(token);
-  // }
+
+  @action.bound
+  setUserBalances(balances: AssetAmount[]) {
+    this.state.userBalances = balances.reduce((map, balance) => {
+      map.set(balance.asset.symbol, balance);
+      return map;
+    }, new Map<string, AssetAmount>());
+  }
+}
+
+export const store = createStore();
+
+// Covenience function for creating the global store
+export function createStore(state?: Partial<State>) {
+  return new StoreActions(new State(state));
 }
 
 // For reference here is Uniswaps redux store shape:
@@ -79,7 +125,3 @@ export class StoreActions {
 //     selectedListUrl: "tokens.uniswap.eth",
 //   },
 // };
-
-export const state = new State();
-
-export const store = new StoreActions(state);

@@ -1,4 +1,12 @@
-import { CurrencyAmount } from "./CurrencyAmount";
 import { Token } from "./Token";
 
-export type TokenAmount = CurrencyAmount & { token: Token; amount: BigInt };
+export type TokenAmount = { amount: BigInt; token: Token };
+
+export function createTokenAmount(amount: BigInt, token: Token): TokenAmount {
+  return {
+    amount,
+    token,
+  };
+}
+
+export const amountToToken = (tokenAmount: TokenAmount) => tokenAmount.token;

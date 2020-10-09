@@ -1,11 +1,10 @@
 import { Context } from ".";
-import { Token } from "../entities";
+import { amountToToken } from "../entities";
 
-export default ({ api, store }: Context) => ({
-  async selectToken(token: Token) {
-    // "Get <LIST>"
-    // USERINPUT: Select Token (From <LIST>)
-    // PUT: Selected Sell Token	-> LocalStorage: Transaction: Object: [sellToken: String]
-    // RENDER: TransactionWindow.vue
+export default ({ api, store }: Context<"walletService">) => ({
+  async updateListOfAvailableTokens() {
+    const walletBalances = await api.walletService.getAssetBalances();
+
+    store.setUserBalances(walletBalances);
   },
 });

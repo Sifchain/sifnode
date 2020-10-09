@@ -1,10 +1,23 @@
 import { ChainId } from "./ChainId";
+import { Asset } from "./Asset";
 
-// On chain tokens
-export type Token = {
+export type Token = Asset & {
   chainId: ChainId;
   address: string;
-  decimals: number;
-  symbol?: string;
-  name?: string;
 };
+
+export function createToken(
+  chainId: ChainId,
+  address: string,
+  decimals: number,
+  symbol: string,
+  name: string
+): Token {
+  return {
+    chainId,
+    address,
+    decimals,
+    symbol,
+    name,
+  };
+}

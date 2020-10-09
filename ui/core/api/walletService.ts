@@ -1,25 +1,7 @@
-import { CurrencyAmount, Currency, Token, TokenAmount } from "../entities";
-
-type CurrencyBalances = {
-  [address: string]: CurrencyAmount | undefined;
-};
-
-type TokenBalances = {
-  [address: string]: TokenAmount | undefined;
-};
+import { AssetAmount } from "../entities";
 
 export const walletService = {
-  async getCurrencyBalances(
-    account: string,
-    currencies: Currency[]
-  ): Promise<CurrencyBalances> {
-    return {};
-  },
-
-  async getTokenBalances(
-    account: string,
-    currencies: Token[]
-  ): Promise<TokenBalances> {
-    return {};
+  async getAssetBalances(): Promise<AssetAmount[]> {
+    return [];
   },
 };
