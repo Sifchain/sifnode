@@ -87,9 +87,9 @@ func (k Keeper) SetLiquidityProvider(ctx sdk.Context, lp types.LiquidityProvider
 	store.Set(key, k.cdc.MustMarshalBinaryBare(lp))
 }
 
-func (k Keeper) GetLiquidityProvider(ctx sdk.Context, ticker string, ip string) (types.LiquidityProvider, error) {
+func (k Keeper) GetLiquidityProvider(ctx sdk.Context, ticker string, lpAddress string) (types.LiquidityProvider, error) {
 	var lp types.LiquidityProvider
-	key := types.GetLiquidityProviderKey(ticker, ip)
+	key := types.GetLiquidityProviderKey(ticker, lpAddress)
 	store := ctx.KVStore(k.storeKey)
 	if !k.Exists(ctx, key) {
 		return lp, types.LiquidityProviderDoesNotExist
@@ -99,8 +99,8 @@ func (k Keeper) GetLiquidityProvider(ctx sdk.Context, ticker string, ip string) 
 	return lp, nil
 }
 
-func (k Keeper) DestroyLiquidityProvider(ctx sdk.Context, ticker string, ip string) {
-	key := types.GetLiquidityProviderKey(ticker, ip)
+func (k Keeper) DestroyLiquidityProvider(ctx sdk.Context, ticker string, lpAddress string) {
+	key := types.GetLiquidityProviderKey(ticker, lpAddress)
 	if !k.Exists(ctx, key) {
 		return
 	}
