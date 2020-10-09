@@ -12,4 +12,5 @@ var (
 	LiquidityProviderDoesNotExist = sdkerrors.Register(ModuleName, 3, "Liquidity Provider does not exist")
 	InValidAsset                  = sdkerrors.Register(ModuleName, 4, "Asset is invalid")
 	InValidAmount                 = sdkerrors.Register(ModuleName, 5, "Amount is invalid")
+	PoolListIsEmpty               = sdkerrors.Register(ModuleName, 6, "PoolList Is Empty")
 )
