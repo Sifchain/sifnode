@@ -2,17 +2,13 @@ package utils
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/tools/sifgen/node/types"
 )
 
 const (
@@ -22,6 +18,7 @@ const (
 
 type CLIUtils interface {
 	Reset() error
+	CurrentChainID() (*string, error)
 	InitChain(string, string) (*string, error)
 	SetKeyRingStorage() (*string, error)
 	SetConfigChainID(string) (*string, error)
@@ -34,9 +31,6 @@ type CLIUtils interface {
 	ExportGenesis() (*string, error)
 	GenesisFilePath() string
 	ConfigFilePath() string
-	ScrapePeerGenesis(string) (types.Genesis, error)
-	SaveGenesis(types.Genesis) error
-	ReplacePeerConfig([]string) error
 	TransferFunds(string, string, string, string) (*string, error)
 	ValidatorPublicKeyAddress() (*string, error)
 	CreateValidator(string, string, string, string) (*string, error)
@@ -70,6 +64,10 @@ func (c CLI) Reset() error {
 	}
 
 	return nil
+}
+
+func (c CLI) CurrentChainID() (*string, error) {
+	return c.shellExec(c.sifCLI, "config", "chain-id", "--get")
 }
 
 func (c CLI) InitChain(chainID, moniker string) (*string, error) {
@@ -121,60 +119,6 @@ func (c CLI) GenesisFilePath() string {
 
 func (c CLI) ConfigFilePath() string {
 	return fmt.Sprintf("%s/%s", c.configPath, ConfigFile)
-}
-
-func (c CLI) ScrapePeerGenesis(url string) (types.Genesis, error) {
-	var genesis types.Genesis
-
-	response, err := http.Get(fmt.Sprintf("%s", url))
-	if err != nil {
-		return genesis, err
-	}
-
-	defer response.Body.Close()
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return genesis, err
-	}
-
-	if err := json.Unmarshal(body, &genesis); err != nil {
-		return genesis, err
-	}
-
-	return genesis, nil
-}
-
-func (c CLI) SaveGenesis(genesis types.Genesis) error {
-	err := ioutil.WriteFile(c.GenesisFilePath(), *genesis.Result.Genesis, 0600)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c CLI) ReplacePeerConfig(peerAddresses []string) error {
-	contents, err := ioutil.ReadFile(c.ConfigFilePath())
-	if err != nil {
-		return err
-	}
-
-	lines := strings.Split(string(contents), "\n")
-	for i, line := range lines {
-		if strings.Contains(line, "persistent_peers = \"\"") {
-			lines[i] = fmt.Sprintf("persistent_peers = \"%s\"", strings.Join(peerAddresses[:], ","))
-		}
-	}
-
-	output := strings.Join(lines, "\n")
-
-	err = ioutil.WriteFile(c.ConfigFilePath(), []byte(output), 0600)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (c CLI) TransferFunds(keyPassword, fromAddress, toAddress, coins string) (*string, error) {

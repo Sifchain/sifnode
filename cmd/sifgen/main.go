@@ -9,7 +9,7 @@ func main() {
 	rootCmd := &cobra.Command{Use: "sifgen"}
 
 	_nodeCmd := nodeCmd()
-	_nodeCmd.AddCommand(nodeCreateCmd(), nodePromoteCmd())
+	_nodeCmd.AddCommand(nodeCreateCmd(), nodePromoteCmd(), nodePeerCmd())
 
 	_faucetCmd := faucetCmd()
 	_faucetCmd.AddCommand(faucetTransferCmd())
@@ -48,6 +48,17 @@ func nodePromoteCmd() *cobra.Command {
 		Args:  cobra.MaximumNArgs(5),
 		Run: func(cmd *cobra.Command, args []string) {
 			sifgen.NewSifgen(args[0]).NodePromote(args[1], args[2], args[3], args[4])
+		},
+	}
+}
+
+func nodePeerCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "update-peers [chain-id] [moniker] [[peer-address],...]",
+		Short: "Update peers.",
+		Args:  cobra.MaximumNArgs(5),
+		Run: func(cmd *cobra.Command, args []string) {
+			sifgen.NewSifgen(args[0]).NodePeers(args[1], args[2:])
 		},
 	}
 }

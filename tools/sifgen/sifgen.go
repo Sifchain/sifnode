@@ -2,6 +2,7 @@ package sifgen
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/faucet"
@@ -35,11 +36,11 @@ func (s Sifgen) NodeCreate(seedAddress, genesisURL *string) {
 	nd := node.NewNode(s.chainID, &moniker, seedAddress, genesisURL)
 
 	if err := nd.Setup(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	if err := nd.Genesis(faucet.NewFaucet(s.chainID).DefaultDeposit()); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	s.summary(nd)
@@ -47,14 +48,29 @@ func (s Sifgen) NodeCreate(seedAddress, genesisURL *string) {
 
 func (s Sifgen) NodePromote(moniker, validatorPublicKey, keyPassword, bondAmount string) {
 	nd := node.NewNode(s.chainID, &moniker, nil, nil)
+	if err := nd.Validate(); err != nil {
+		log.Fatal(err)
+	}
+
 	if err := nd.Promote(validatorPublicKey, keyPassword, bondAmount); err != nil {
-		panic(err)
+		log.Fatal(err)
+	}
+}
+
+func (s Sifgen) NodePeers(moniker string, peerList []string) {
+	nd := node.NewNode(s.chainID, &moniker, nil, nil)
+	if err := nd.Validate(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := nd.UpdatePeerList(peerList); err != nil {
+		log.Fatal(err)
 	}
 }
 
 func (s Sifgen) Transfer(fromKeyPassword, fromKeyAddress, toKeyAddress, amount string) {
 	if err := faucet.NewFaucet(s.chainID).Transfer(fromKeyPassword, fromKeyAddress, toKeyAddress, amount); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 

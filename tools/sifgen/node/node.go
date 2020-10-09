@@ -2,12 +2,17 @@ package node
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
+	"net/http"
+	"os"
 	"strings"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/node/types"
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 
+	"github.com/BurntSushi/toml"
 	"github.com/sethvargo/go-password/password"
 	"gopkg.in/yaml.v3"
 )
@@ -32,6 +37,19 @@ func NewNode(chainID string, moniker, seedAddress, genesisURL *string) *Node {
 		genesisURL:  genesisURL,
 		CLI:         utils.NewCLI(chainID),
 	}
+}
+
+// Validate config.
+func (n *Node) Validate() error {
+	if err := n.validateChainID(); err != nil {
+		return err
+	}
+
+	if err := n.validateMoniker(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Pre-flight setup.
@@ -93,14 +111,14 @@ func (n *Node) Promote(validatorPublicKey, keyPassword, bondAmount string) error
 	return nil
 }
 
-// Get node moniker.
-func (n *Node) Moniker() string {
-	return n.moniker
-}
-
 // Get Chain ID.
 func (n *Node) ChainID() string {
 	return n.chainID
+}
+
+// Get node moniker.
+func (n *Node) Moniker() string {
+	return n.moniker
 }
 
 // Set/Get the node key address.
@@ -133,6 +151,16 @@ func (n *Node) NodeValidatorPublicKeyAddress() string {
 // Get the node seed address.
 func (n *Node) SeedAddress() *string {
 	return n.seedAddress
+}
+
+// Update the peer list.
+func (n *Node) UpdatePeerList(peerList []string) error {
+	err := n.replacePeerConfig(peerList)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Generate a new key for a node.
@@ -199,19 +227,119 @@ func (n *Node) seedGenesis(deposit []string) error {
 	return nil
 }
 
+// Validate Chain ID.
+func (n *Node) validateChainID() error {
+	chainID, err := n.CLI.CurrentChainID()
+	if err != nil {
+		return err
+	}
+
+	if strings.TrimSpace(*chainID) != n.chainID {
+		return errors.New("chain ID does not match")
+	}
+
+	return nil
+}
+
+// Validate the moniker.
+func (n *Node) validateMoniker() error {
+	config, err := n.parseConfig()
+	if err != nil {
+		return err
+	}
+
+	if config.Moniker != n.moniker {
+		return errors.New("moniker does not match")
+	}
+
+	return nil
+}
+
 // Download the genesis file and update the peer config with the seeder's address.
 func (n *Node) validatorGenesis() error {
-	genesis, err := n.CLI.ScrapePeerGenesis(*n.genesisURL)
+	genesis, err := n.downloadGenesis()
 	if err != nil {
 		return err
 	}
 
-	err = n.CLI.SaveGenesis(genesis)
+	if err = n.saveGenesis(genesis); err != nil {
+		return err
+	}
+
+	err = n.replacePeerConfig([]string{*n.seedAddress})
 	if err != nil {
 		return err
 	}
 
-	err = n.CLI.ReplacePeerConfig([]string{*n.seedAddress})
+	return nil
+}
+
+// Download the genesis.
+func (n *Node) downloadGenesis() (types.Genesis, error) {
+	var genesis types.Genesis
+
+	response, err := http.Get(fmt.Sprintf("%s", *n.genesisURL))
+	if err != nil {
+		return genesis, err
+	}
+
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return genesis, err
+	}
+
+	if err := json.Unmarshal(body, &genesis); err != nil {
+		return genesis, err
+	}
+
+	return genesis, nil
+}
+
+// Replace peer config.
+func (n *Node) replacePeerConfig(peerAddresses []string) error {
+	config, err := n.parseConfig()
+	if err != nil {
+		return err
+	}
+
+	file, err := os.Create(n.CLI.ConfigFilePath())
+	if err != nil {
+		return err
+	}
+
+	config.P2P.PersistentPeers = strings.Join(peerAddresses[:], ",")
+	if err := toml.NewEncoder(file).Encode(config); err != nil {
+		return err
+	}
+
+	if err := file.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Parse config.toml.
+func (n *Node) parseConfig() (types.Config, error) {
+	var config types.Config
+
+	content, err := ioutil.ReadFile(n.CLI.ConfigFilePath())
+	if err != nil {
+		return config, err
+	}
+
+	if _, err := toml.Decode(string(content), &config); err != nil {
+		return config, err
+	}
+
+	return config, nil
+}
+
+// Save the genesis.
+func (n *Node) saveGenesis(genesis types.Genesis) error {
+	err := ioutil.WriteFile(n.CLI.GenesisFilePath(), *genesis.Result.Genesis, 0600)
 	if err != nil {
 		return err
 	}
