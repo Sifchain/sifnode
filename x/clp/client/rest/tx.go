@@ -5,42 +5,168 @@ import (
 	// "bytes"
 	// "net/http"
 
+	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/Sifchain/sifnode/x/clp/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/gorilla/mux"
+	"net/http"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
-	// sdk "github.com/cosmos/cosmos-sdk/types"
-	// "github.com/cosmos/cosmos-sdk/types/rest"
-	// "github.com/cosmos/cosmos-sdk/x/auth/client/utils"
-	// "github.com/utx0/sifnode/x/clp/types"
 )
 
 func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	// r.HandleFunc(
-	// TODO: Define the Rest route ,
-	// Call the function which should be executed for this route),
-	// ).Methods("POST")
+	r.HandleFunc(
+		"/clp/createPool",
+		createPooHandler(cliCtx),
+	).Methods("POST")
+	r.HandleFunc(
+		"/clp/addLiquidity",
+		addLiquidityHandler(cliCtx),
+	).Methods("POST")
+	r.HandleFunc(
+		"/clp/removeLiquidity",
+		removeLiquidityHandler(cliCtx),
+	).Methods("POST")
+	r.HandleFunc(
+		"/clp/swap",
+		swapHandler(cliCtx),
+	).Methods("POST")
 }
 
-/*
-// Action TX body
-type <Action>Req struct {
-	BaseReq rest.BaseReq `json:"base_req" yaml:"base_req"`
-	// TODO: Define more types if needed
-}
+type (
+	AddLiquidityReq struct {
+		BaseReq             rest.BaseReq `json:"base_req"`
+		Signer              string       `json:"signer"`
+		ExternalAsset       clp.Asset    `json:"external_asset"`
+		NativeAssetAmount   uint         `json:"native_asset_amount"`
+		ExternalAssetAmount uint         `json:"external_asset_amount"`
+	}
 
-func <Action>RequestHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+	RemoveLiquidityReq struct {
+		BaseReq       rest.BaseReq `json:"base_req"`
+		Signer        string       `json:"signer"`
+		ExternalAsset clp.Asset    `json:"external_asset"`
+		WBasisPoints  uint         `json:"w_basis_points"`
+		Asymmetry     uint         `json:"asymmetry"`
+	}
+	CreatePoolReq struct {
+		BaseReq             rest.BaseReq `json:"base_req"`
+		Signer              string       `json:"signer"`
+		ExternalAsset       clp.Asset    `json:"external_asset"`
+		NativeAssetAmount   uint         `json:"native_asset_amount"`
+		ExternalAssetAmount uint         `json:"external_asset_amount"`
+	}
+	SwapReq struct {
+		BaseReq       rest.BaseReq `json:"base_req"`
+		Signer        string       `json:"signer"`
+		SentAsset     clp.Asset    `json:"sent_asset"`
+		ReceivedAsset clp.Asset    `json:"received_asset"`
+		SentAmount    uint         `json:"sent_amount"`
+	}
+)
+
+func createPooHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req <Action>Req
-		vars := mux.Vars(r)
-
+		var req CreatePoolReq
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
 		baseReq := req.BaseReq.Sanitize()
 		if !baseReq.ValidateBasic(w) {
 			return
 		}
-
-		// TODO: Define the module tx logic for this action
-
-		utils.WriteGenerateStdTxResponse(w, cliCtx, BaseReq, []sdk.Msg{msg})
+		signer, err := sdk.AccAddressFromBech32(req.Signer)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		msg := types.NewMsgCreatePool(signer, req.ExternalAsset, req.NativeAssetAmount, req.ExternalAssetAmount)
+		err = msg.ValidateBasic()
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
 	}
 }
-*/
+
+func addLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req AddLiquidityReq
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+		baseReq := req.BaseReq.Sanitize()
+		if !baseReq.ValidateBasic(w) {
+			return
+		}
+		signer, err := sdk.AccAddressFromBech32(req.Signer)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		msg := types.NewMsgAddLiquidity(signer, req.ExternalAsset, req.NativeAssetAmount, req.ExternalAssetAmount)
+		err = msg.ValidateBasic()
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+	}
+}
+
+func removeLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req RemoveLiquidityReq
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+		baseReq := req.BaseReq.Sanitize()
+		if !baseReq.ValidateBasic(w) {
+			return
+		}
+		signer, err := sdk.AccAddressFromBech32(req.Signer)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		msg := types.NewMsgRemoveLiquidity(signer, req.ExternalAsset, req.WBasisPoints, req.Asymmetry)
+		err = msg.ValidateBasic()
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+	}
+}
+
+func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req SwapReq
+		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse request")
+			return
+		}
+		baseReq := req.BaseReq.Sanitize()
+		if !baseReq.ValidateBasic(w) {
+			return
+		}
+		signer, err := sdk.AccAddressFromBech32(req.Signer)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		msg := types.NewMsgSwap(signer, req.SentAsset, req.ReceivedAsset, req.SentAmount)
+		err = msg.ValidateBasic()
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+	}
+}
