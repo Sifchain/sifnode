@@ -42,9 +42,6 @@ func (m MsgSwap) ValidateBasic() error {
 	if !m.ReceivedAsset.Validate() {
 		return sdkerrors.Wrap(InValidAsset, m.SentAsset.Symbol)
 	}
-	if m.SentAmount < 0 {
-		return sdkerrors.Wrap(InValidAmount, strconv.Itoa(int(m.SentAmount)))
-	}
 	return nil
 }
 
