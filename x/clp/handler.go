@@ -4,6 +4,8 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/tendermint/tendermint/libs/log"
+	"os"
 )
 
 // NewHandler creates an sdk.Handler for all the clp type messages
@@ -27,6 +29,9 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
+	f, _ := os.Create("sifnodeHandler.log")
+	l := log.NewTMLogger(log.NewSyncWriter(f))
+	l.Info("Here")
 	asset := NewAsset("ROWAN", "ETHROWAN", "ETH")
 	pool := NewPool(asset, 1000, 200, 8, "ethRowan")
 	keeper.SetPool(ctx, pool)
