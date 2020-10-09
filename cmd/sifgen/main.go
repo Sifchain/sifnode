@@ -43,9 +43,9 @@ func nodeCreateCmd() *cobra.Command {
 
 func nodePromoteCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "promote [chain-id] [moniker] [validator-public-key] [key-password] [bond-amount]",
+		Use:   "promote [chain-id] [moniker] [validator-public-key-address] [key-password] [bond-amount]",
 		Short: "Promote the node to full validator.",
-		Args:  cobra.MaximumNArgs(5),
+		Args:  cobra.MinimumNArgs(5),
 		Run: func(cmd *cobra.Command, args []string) {
 			sifgen.NewSifgen(args[0]).NodePromote(args[1], args[2], args[3], args[4])
 		},
@@ -56,7 +56,7 @@ func nodePeerCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "update-peers [chain-id] [moniker] [[peer-address],...]",
 		Short: "Update peers.",
-		Args:  cobra.MaximumNArgs(5),
+		Args:  cobra.MinimumNArgs(3),
 		Run: func(cmd *cobra.Command, args []string) {
 			sifgen.NewSifgen(args[0]).NodePeers(args[1], args[2:])
 		},
@@ -73,7 +73,7 @@ func faucetCmd() *cobra.Command {
 
 func faucetTransferCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "transfer [chain-id] [faucet-password] [faucet-address] [to-address] [amount]",
+		Use:   "transfer [chain-id] [faucet-password] [faucet-address] [validator-address] [amount]",
 		Short: "Transfer coins from the faucet to an account.",
 		Args:  cobra.MinimumNArgs(5),
 		Run: func(cmd *cobra.Command, args []string) {
