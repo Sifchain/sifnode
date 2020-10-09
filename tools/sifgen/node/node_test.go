@@ -44,8 +44,14 @@ var (
 	nodeGenesisFixturePath        = fmt.Sprintf("%s/%s", "../../../test/unit/fixtures", nodeGenesisFixtureFile)
 	tmpDir                        *string
 	nodePeerList                  = []string{
-		fmt.Sprintf("%s@%s/%s:26656", faker.RandomString(40), faker.Internet().IpV4Address(), faker.Internet().Slug()),
-		fmt.Sprintf("%s@%s/%s:26656", faker.RandomString(40), faker.Internet().IpV4Address(), faker.Internet().Slug()),
+		fmt.Sprintf("%s@%s:%v",
+			faker.RandomString(40),
+			faker.Internet().IpV4Address(),
+			faker.Number().NumberInt(5)),
+		fmt.Sprintf("%s@%s:%v",
+			faker.RandomString(40),
+			faker.Internet().IpV4Address(),
+			faker.Number().NumberInt(5)),
 	}
 )
 
