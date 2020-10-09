@@ -1,30 +1,71 @@
 package keeper
 
-import ()
+import (
+	"github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	abci "github.com/tendermint/tendermint/abci/types"
+)
 
-//// NewQuerier creates a new querier for clp clients.
-//func NewQuerier(k Keeper) sdk.Querier {
-//	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, error) {
-//		switch path[0] {
-//		case types.QueryParams:
-//			return queryParams(ctx, k)
-//			// TODO: Put the modules query routes
-//		default:
-//			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown clp query endpoint")
-//		}
-//	}
-//}
-//
-//func queryParams(ctx sdk.Context, k Keeper) ([]byte, error) {
-//	params := k.GetParams(ctx)
-//
-//	res, err := codec.MarshalJSONIndent(types.ModuleCdc, params)
-//	if err != nil {
-//		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
-//	}
-//
-//	return res, nil
-//}
+// NewQuerier is the module level router for state queries
+func NewQuerier(keeper Keeper) sdk.Querier {
+	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err error) {
+		switch path[0] {
+		case types.QueryPool:
+			return queryPool(ctx, req, keeper)
+		case types.QueryPools:
+			return queryPools(ctx, keeper)
+		case types.QueryLiquidityProvider:
+			return queryLiquidityProvider(ctx, req, keeper)
+		default:
+			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown clp query endpoint")
+		}
+	}
+}
 
-// TODO: Add the modules query functions
-// They will be similar to the above one: queryParams()
+func queryPool(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, error) {
+	var params types.QueryReqGetPool
+
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
+	}
+	pool, err := keeper.GetPool(ctx, params.Ticker, params.SourceChain)
+	if err != nil {
+		return nil, err
+	}
+	res, err := codec.MarshalJSONIndent(keeper.cdc, pool)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return res, nil
+}
+func queryPools(ctx sdk.Context, keeper Keeper) ([]byte, error) {
+	poolList := keeper.GetPools(ctx)
+	if len(poolList) == 0 {
+		return nil, types.PoolListIsEmpty
+	}
+	res, err := codec.MarshalJSONIndent(keeper.cdc, poolList)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return res, nil
+}
+func queryLiquidityProvider(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, error) {
+	var params types.QueryReqLiquidityProvider
+
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
+	}
+	lp, err := keeper.GetLiquidityProvider(ctx, params.Ticker, params.LpAddress)
+	if err != nil {
+		return nil, err
+	}
+	res, err := codec.MarshalJSONIndent(keeper.cdc, lp)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return res, nil
+}

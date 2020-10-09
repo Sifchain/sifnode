@@ -1,7 +1,6 @@
 package types
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -47,14 +46,4 @@ func (a Asset) Equals(a2 Asset) bool {
 
 func (a Asset) IsEmpty() bool {
 	return a.SourceChain == "" || a.Symbol == "" || a.Ticker == ""
-}
-
-// MarshalJSON implement Marshaler interface
-func (a Asset) MarshalJSON() ([]byte, error) {
-	return json.Marshal(a)
-}
-
-// UnmarshalJSON implement Unmarshaler interface
-func (a *Asset) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, a)
 }
