@@ -11,10 +11,10 @@ sifnodecli config trust-node true
 sifnodecli config chain-id namechain
 sifnodecli config keyring-backend test
 
-sifnodecli keys add jack
-sifnodecli keys add alice
+sifnodecli keys add shadowfiend
+sifnodecli keys add akasha
 
-sifnoded add-genesis-account $(sifnodecli keys show shadofiend -a) 1000nametoken,100000000stake
+sifnoded add-genesis-account $(sifnodecli keys show shadowfiend -a) 1000nametoken,100000000stake
 sifnoded add-genesis-account $(sifnodecli keys show akasha -a) 1000nametoken,100000000stake
 
 sifnoded gentx --name jack --keyring-backend test
