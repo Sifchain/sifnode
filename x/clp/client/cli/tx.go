@@ -2,21 +2,18 @@ package cli
 
 import (
 	"fmt"
-	"github.com/Sifchain/sifnode/x/clp"
-
-	"github.com/spf13/cobra"
-
+	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client"
-
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/spf13/cobra"
 )
 
 // GetTxCmd returns the transaction commands for this module
 func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	clpTxCmd := &cobra.Command{
-		Use:                        clp.ModuleName,
-		Short:                      fmt.Sprintf("%s transactions subcommands", clp.ModuleName),
+		Use:                        types.ModuleName,
+		Short:                      fmt.Sprintf("%s transactions subcommands", types.ModuleName),
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
