@@ -2,6 +2,7 @@ package rest
 
 import (
 	"fmt"
+	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"net/http"
 
@@ -33,7 +34,7 @@ func getPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 		//Generate Router
-		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryPool)
+		route := fmt.Sprintf("custom/%s/%s", clp.QuerierRoute, types.QueryPool)
 		//Generate Params
 		var params types.QueryReqGetPool
 		params.Ticker = r.URL.Query().Get("ticker")
@@ -62,7 +63,7 @@ func getLiquidityProviderHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryLiquidityProvider)
+		route := fmt.Sprintf("custom/%s/%s", clp.QuerierRoute, types.QueryLiquidityProvider)
 		var params types.QueryReqLiquidityProvider
 		params.Ticker = r.URL.Query().Get("ticker")
 		params.LpAddress = r.URL.Query().Get("lpAddress")
@@ -89,7 +90,7 @@ func getPoolsHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryPools)
+		route := fmt.Sprintf("custom/%s/%s", clp.QuerierRoute, types.QueryPools)
 
 		res, height, err := cliCtx.QueryWithData(route, nil)
 		if err != nil {

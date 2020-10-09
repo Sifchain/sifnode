@@ -1,31 +1,26 @@
 package cli
 
 import (
-//"fmt"
-//"strings"
-//
-//"github.com/spf13/cobra"
-//
-//"github.com/cosmos/cosmos-sdk/client"
-//"github.com/cosmos/cosmos-sdk/client/context"
-//"github.com/cosmos/cosmos-sdk/client/flags"
-//"github.com/cosmos/cosmos-sdk/codec"
-//sdk "github.com/cosmos/cosmos-sdk/types"
-//
-//"github.com/utx0/sifnode/x/clp/types"
+	"fmt"
+	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/spf13/cobra"
 )
 
 // GetQueryCmd returns the cli query commands for this module
-//func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
-//	// Group clp queries under a subcommand
-//	clpQueryCmd := &cobra.Command{
-//		Use:                        types.ModuleName,
-//		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
-//		DisableFlagParsing:         true,
-//		SuggestionsMinimumDistance: 2,
-//		RunE:                       client.ValidateCmd,
-//	}
-//
+func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	// Group clp queries under a subcommand
+	clpQueryCmd := &cobra.Command{
+		Use:                        clp.ModuleName,
+		Short:                      fmt.Sprintf("Querying commands for the %s module", clp.ModuleName),
+		DisableFlagParsing:         true,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
+	}
+	return clpQueryCmd
+}
+
 //	clpQueryCmd.AddCommand(
 //		flags.GetCommands(
 //		// TODO: Add query Cmds
