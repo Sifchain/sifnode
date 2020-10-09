@@ -24,7 +24,6 @@ export class State {
   @observable userBalances: AssetAmountMap = new Map();
 
   @computed get availableAssetAccounts() {
-    // toAssetAmount
     const ordered: AssetAmount[] = [];
     this.userBalances.forEach((balance) => {
       ordered.push(balance);
