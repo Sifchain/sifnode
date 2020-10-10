@@ -1,8 +1,9 @@
 import { Token } from "./Token";
+import JSBI from "jsbi";
 
-export type TokenAmount = { amount: BigInt; token: Token };
+export type TokenAmount = { amount: JSBI; token: Token };
 
-export function createTokenAmount(amount: BigInt, token: Token): TokenAmount {
+export function createTokenAmount(amount: JSBI, token: Token): TokenAmount {
   return {
     amount,
     token,

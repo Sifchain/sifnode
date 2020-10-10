@@ -1,7 +1,11 @@
 import { AssetAmount } from "../entities";
 
-export const walletService = {
-  async getAssetBalances(): Promise<AssetAmount[]> {
-    return [];
-  },
-};
+function createWalletService() {
+  return {
+    async getAssetBalances(): Promise<AssetAmount[]> {
+      return [];
+    },
+  };
+}
+
+export const walletService = createWalletService();
