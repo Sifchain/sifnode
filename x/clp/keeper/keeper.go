@@ -51,7 +51,7 @@ func (k Keeper) GetPool(ctx sdk.Context, ticker string, sourceChain string) (typ
 	return pool, nil
 }
 
-func (k Keeper) GetPools(ctx sdk.Context) []types.Pool {
+func (k Keeper) GetPools(ctx sdk.Context) types.Pools {
 	var poolList []types.Pool
 	iterator := k.GetPoolsIterator(ctx)
 	defer iterator.Close()

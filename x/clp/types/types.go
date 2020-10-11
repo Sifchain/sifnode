@@ -13,6 +13,8 @@ type Pool struct {
 	PoolAddress          string `json:"pool_address"`
 }
 
+type Pools []Pool
+
 func (p Pool) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`ExternalAsset: %s
 	NativeAssetBalance: %d
@@ -59,4 +61,34 @@ func (l LiquidityProvider) Validate() bool {
 // NewLiquidityProvider returns a new LiquidityProvider
 func NewLiquidityProvider(asset Asset, liquidityProviderUnits uint, liquidityProviderAddress string) LiquidityProvider {
 	return LiquidityProvider{Asset: asset, LiquidityProviderUnits: liquidityProviderUnits, LiquidityProviderAddress: liquidityProviderAddress}
+}
+
+// ----------------------------------------------------------------------------
+// Client Types
+
+type PoolResponse struct {
+	Pool
+	Height int64 `json:"height"`
+}
+
+func NewPoolResponse(pool Pool, height int64) PoolResponse {
+	return PoolResponse{Pool: pool, Height: height}
+}
+
+type PoolsResponse struct {
+	Pools
+	Height int64 `json:"height"`
+}
+
+func NewPoolsResponse(pools Pools, height int64) PoolsResponse {
+	return PoolsResponse{Pools: pools, Height: height}
+}
+
+type LiquidityProviderResponse struct {
+	LiquidityProvider
+	Height int64 `json:"height"`
+}
+
+func NewLiquidityProviderResponse(liquidityProvider LiquidityProvider, height int64) LiquidityProviderResponse {
+	return LiquidityProviderResponse{LiquidityProvider: liquidityProvider, Height: height}
 }
