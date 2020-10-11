@@ -8,7 +8,7 @@ import { ETH, USDC } from "../constants";
 const SUPPORTED_TOKENS = [USDC];
 
 type WindowWithPossibleMetaMask = typeof window & {
-  etherium?: MetaMaskProvider;
+  ethereum?: MetaMaskProvider;
   web3: OldMetaMaskProvider;
 };
 
@@ -23,10 +23,9 @@ async function getWeb3(): Promise<Web3 | null> {
   const win = window as WindowWithPossibleMetaMask;
 
   if (!mmp || !win) return null;
-
-  if (win.etherium) {
-    const web3 = new Web3(win.etherium);
-    await win.etherium.enable();
+  if (win.ethereum) {
+    const web3 = new Web3(win.ethereum);
+    await win.ethereum.enable();
     return web3;
   }
 

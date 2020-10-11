@@ -9,9 +9,9 @@ async function getWeb3() {
     const win = window;
     if (!mmp || !win)
         return null;
-    if (win.etherium) {
-        const web3 = new Web3(win.etherium);
-        await win.etherium.enable();
+    if (win.ethereum) {
+        const web3 = new Web3(win.ethereum);
+        await win.ethereum.enable();
         return web3;
     }
     if (win.web3) {
