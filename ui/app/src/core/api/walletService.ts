@@ -81,7 +81,7 @@ function createWalletService(getWeb3: () => Promise<Web3 | null>) {
           const balanceOfErc = await contract.methods.balanceOf(account).call();
 
           console.log({ balanceOfErc, token: token.symbol });
-          assetAmounts.push(AssetAmount.create(USDC, balanceOfErc));
+          assetAmounts.push(AssetAmount.create(token, balanceOfErc));
         }
       }
 
