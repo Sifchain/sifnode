@@ -1,0 +1,49 @@
+{
+  "version": "0.1.0",
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint"
+  },
+  "peerDependencies": {},
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "name": "sif-core",
+  "author": "Rudi Yardley",
+  "module": "dist/sif-core.esm.js",
+  "dependencies": {
+    "@metamask/detect-provider": "^1.1.0",
+    "big.js": "^6.0.1",
+    "decimal.js-light": "^2.5.1",
+    "jsbi": "^3.1.4",
+    "mobx": "^6.0.1",
+    "tiny-invariant": "^1.1.0",
+    "toformat": "^2.0.0",
+    "web3": "^1.3.0"
+  },
+  "devDependencies": {
+    "@metamask/inpage-provider": "^7.0.0",
+    "@size-limit/preset-small-lib": "^4.6.0",
+    "@types/big.js": "^6.0.0",
+    "http-server": "^0.12.3",
+    "size-limit": "^4.6.0",
+    "tsdx": "^0.14.0",
+    "tslib": "^2.0.3",
+    "typescript": "^4.0.3"
+  }
+}

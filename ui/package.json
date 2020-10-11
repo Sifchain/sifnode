@@ -1,0 +1,15 @@
+{
+  "name": "sichain-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "lerna": "^3.22.1"
+  },
+  "workspaces": {
+    "packages": [
+      "sif-core",
+      "app"
+    ]
+  }
+}
