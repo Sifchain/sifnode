@@ -1,6 +1,6 @@
-import { Context } from ".";
+import { Context } from '.';
 
-export default ({ api, store }: Context<"walletService">) => ({
+export default ({ api, store }: Context<'walletService'>) => ({
   async updateListOfAvailableTokens() {
     const walletBalances = await api.walletService.getAssetBalances();
 

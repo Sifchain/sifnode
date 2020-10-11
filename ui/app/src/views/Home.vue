@@ -17,12 +17,16 @@ export default (Vue as VueConstructor<
 >).extend({
   name: "Home",
   data() {
-    return { balances: [] };
+    return { balances: [] } as { balances: string[] };
   },
   async mounted() {
-    this.balances = (await api.walletService.getAssetBalances()).map(
-      (amount) => amount.asset.symbol + ":" + amount.toFixed()
-    );
+    const balances = await api.walletService.getAssetBalances();
+    const balanceStrings: string[] = balances.map((amount: AssetAmount) => {
+      const str = amount.asset.symbol + ":" + amount.toFixed();
+      return str;
+    }) as string[];
+
+    this.balances = balanceStrings;
   },
 });
 </script>

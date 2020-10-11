@@ -1,691 +1,692 @@
-import { ChainId, createCoin, createToken } from "../entities";
+import { ChainId, createCoin, createToken } from '../entities';
 
-export const ETH = createCoin(18, "ETH", "Etherium");
-export const ROWAN = createCoin(2, "ROWAN", "Rowan");
+export const ETH = createCoin(6, 'ETH', 'Etherium');
+export const ROWAN = createCoin(2, 'ROWAN', 'Rowan');
+
 export const ZRX = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "ZRX",
-  "0x"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'ZRX',
+  '0x'
 );
 
 export const AAVE = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "AAVE",
-  "Aave [New]"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'AAVE',
+  'Aave [New]'
 );
 
 export const ELF = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "ELF",
-  "elf"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'ELF',
+  'elf'
 );
 
 export const AION = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "AION",
-  "Aion"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'AION',
+  'Aion'
 );
 
 export const AMPL = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "AMPL",
-  "Ampleforth"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'AMPL',
+  'Ampleforth'
 );
 
 export const ANKR = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "ANKR",
-  "Ankr"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'ANKR',
+  'Ankr'
 );
 
 export const ANT = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "ANT",
-  "Aragon"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'ANT',
+  'Aragon'
 );
 
 export const BAL = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "BAL",
-  "Balancer"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'BAL',
+  'Balancer'
 );
 
 export const BNANA = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "BNANA",
-  "Chimpion"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'BNANA',
+  'Chimpion'
 );
 
 export const BNT = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "BNT",
-  "Bancor Network Token"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'BNT',
+  'Bancor Network Token'
 );
 
 export const BAND = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "BAND",
-  "Band Protocol"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'BAND',
+  'Band Protocol'
 );
 
 export const BAT = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "BAT",
-  "Basic Attention Token"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'BAT',
+  'Basic Attention Token'
 );
 
 export const BNB = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "BNB",
-  "Binance Coin"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'BNB',
+  'Binance Coin'
 );
 
 export const BUSD = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "BUSD",
-  "Binance USD"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'BUSD',
+  'Binance USD'
 );
 
 export const BTMX = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "BTMX",
-  "Bitmax Token"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'BTMX',
+  'Bitmax Token'
 );
 
 export const BTM = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "BTM",
-  "Bytom"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'BTM',
+  'Bytom'
 );
 
 export const CEL = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "CEL",
-  "Celsius Network"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'CEL',
+  'Celsius Network'
 );
 
 export const LINK = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "LINK",
-  "Chainlink"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'LINK',
+  'Chainlink'
 );
 
 export const CHZ = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "CHZ",
-  "Chiliz"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'CHZ',
+  'Chiliz'
 );
 
 export const COMP = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "COMP",
-  "Compound"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'COMP',
+  'Compound'
 );
 
 export const CRO = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "CRO",
-  "Crypto.com Coin"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'CRO',
+  'Crypto.com Coin'
 );
 
 export const CRV = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "CRV",
-  "Curve DAO Token"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'CRV',
+  'Curve DAO Token'
 );
 
 export const DAI = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "DAI",
-  "Dai"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'DAI',
+  'Dai'
 );
 
 export const MANA = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "MANA",
-  "Decentraland"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'MANA',
+  'Decentraland'
 );
 
 export const DX = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "DX",
-  "DxChain Token"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'DX',
+  'DxChain Token'
 );
 
 export const ENG = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "ENG",
-  "Enigma"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'ENG',
+  'Enigma'
 );
 
 export const ENJ = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "ENJ",
-  "Enjin Coin"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'ENJ',
+  'Enjin Coin'
 );
 
 export const LEND = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "LEND",
-  "Aave"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'LEND',
+  'Aave'
 );
 
 export const FTM = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "FTM",
-  "Fantom"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'FTM',
+  'Fantom'
 );
 
 export const FET = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "FET",
-  "FirstEnergy Token"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'FET',
+  'FirstEnergy Token'
 );
 
 export const GNO = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "GNO",
-  "Gnosis"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'GNO',
+  'Gnosis'
 );
 
 export const GNT = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "GNT",
-  "Golem"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'GNT',
+  'Golem'
 );
 
 export const ONE = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "ONE",
-  "One Hundred Coin"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'ONE',
+  'One Hundred Coin'
 );
 
 export const SNX = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "SNX",
-  "Synthetix Network Token"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'SNX',
+  'Synthetix Network Token'
 );
 
 export const HOT = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "HOT",
-  "Hydro Protocol"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'HOT',
+  'Hydro Protocol'
 );
 
 export const HT = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "HT",
-  "Huobi Token"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'HT',
+  'Huobi Token'
 );
 
 export const HUSD = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "HUSD",
-  "HUSD"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'HUSD',
+  'HUSD'
 );
 
 export const RLC = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "RLC",
-  "iExec RLC"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'RLC',
+  'iExec RLC'
 );
 
 export const IOST = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "IOST",
-  "IOST"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'IOST',
+  'IOST'
 );
 
 export const IOTX = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "IOTX",
-  "IoTeX"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'IOTX',
+  'IoTeX'
 );
 
 export const KEEP = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "KEEP",
-  "Keep Network"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'KEEP',
+  'Keep Network'
 );
 
 export const KCS = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "KCS",
-  "KuCoin Shares"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'KCS',
+  'KuCoin Shares'
 );
 
 export const KNC = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "KNC",
-  "Kyber Network"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'KNC',
+  'Kyber Network'
 );
 
 export const LEO = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "LEO",
-  "LEO Token"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'LEO',
+  'LEO Token'
 );
 
 export const LPT = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "LPT",
-  "Livepeer"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'LPT',
+  'Livepeer'
 );
 
 export const LRC = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "LRC",
-  "Loopring"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'LRC',
+  'Loopring'
 );
 
 export const MKR = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "MKR",
-  "Maker"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'MKR',
+  'Maker'
 );
 
 export const MATIC = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "MATIC",
-  "Matic Network"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'MATIC',
+  'Matic Network'
 );
 
 export const MCO = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "MCO",
-  "MCO"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'MCO',
+  'MCO'
 );
 
 export const MXC = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "MXC",
-  "MXC"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'MXC',
+  'MXC'
 );
 
 export const NEXO = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "NEXO",
-  "NEXO"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'NEXO',
+  'NEXO'
 );
 
 export const NMR = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "NMR",
-  "Numeraire"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'NMR',
+  'Numeraire'
 );
 
 export const NXM = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "NXM",
-  "Nexus Mutual"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'NXM',
+  'Nexus Mutual'
 );
 
 export const OCEAN = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "OCEAN",
-  "Ocean Protocol"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'OCEAN',
+  'Ocean Protocol'
 );
 
 export const OKB = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "OKB",
-  "OKB"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'OKB',
+  'OKB'
 );
 
 export const OMG = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "OMG",
-  "OMG Network"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'OMG',
+  'OMG Network'
 );
 
 export const TRAC = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "TRAC",
-  "OriginTrail"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'TRAC',
+  'OriginTrail'
 );
 
 export const PAXG = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "PAXG",
-  "PAX Gold"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'PAXG',
+  'PAX Gold'
 );
 
 export const PAX = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "PAX",
-  "PayperEx"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'PAX',
+  'PayperEx'
 );
 
 export const NPXS = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "NPXS",
-  "Pundi X"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'NPXS',
+  'Pundi X'
 );
 
 export const QNT = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "QNT",
-  "Quant"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'QNT',
+  'Quant'
 );
 
 export const REN = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "REN",
-  "REN"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'REN',
+  'REN'
 );
 
 export const RSR = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "RSR",
-  "Reserve Rights Token"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'RSR',
+  'Reserve Rights Token'
 );
 
 export const RPL = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "RPL",
-  "Rocket Pool"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'RPL',
+  'Rocket Pool'
 );
 
 export const SRM = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "SRM",
-  "Serum"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'SRM',
+  'Serum'
 );
 
 export const AGI = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "AGI",
-  "SingularityNET"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'AGI',
+  'SingularityNET'
 );
 
 export const EURS = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "EURS",
-  "STASIS EURO"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'EURS',
+  'STASIS EURO'
 );
 
 export const SNT = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "SNT",
-  "Status"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'SNT',
+  'Status'
 );
 
 export const STORJ = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "STORJ",
-  "Storj"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'STORJ',
+  'Storj'
 );
 
 export const SUSHI = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "SUSHI",
-  "Sushi"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'SUSHI',
+  'Sushi'
 );
 
 export const SXP = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "SXP",
-  "Swipe"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'SXP',
+  'Swipe'
 );
 
 export const CHSB = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "CHSB",
-  "SwissBorg"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'CHSB',
+  'SwissBorg'
 );
 
 export const USDT = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "USDT",
-  "Tether"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'USDT',
+  'Tether'
 );
 
 export const THETA = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "THETA",
-  "Theta Network"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'THETA',
+  'Theta Network'
 );
 
 export const TUSD = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "TUSD",
-  "TrueUSD"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'TUSD',
+  'TrueUSD'
 );
 
 export const UMA = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "UMA",
-  "UMA"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'UMA',
+  'UMA'
 );
 
 export const UBT = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "UBT",
-  "Unibright"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'UBT',
+  'Unibright'
 );
 
 export const UNI = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "UNI",
-  "UNIVERSE Token"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'UNI',
+  'UNIVERSE Token'
 );
 
 export const UQC = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "UQC",
-  "Uquid Coin"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'UQC',
+  'Uquid Coin'
 );
 
 export const USDC = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "USDC",
-  "USD Coin"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'USDC',
+  'USD Coin'
 );
 
 export const UTK = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "UTK",
-  "UTRUST"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'UTK',
+  'UTRUST'
 );
 
 export const WIC = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "WIC",
-  "Wi Coin"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'WIC',
+  'Wi Coin'
 );
 
 export const WBTC = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "WBTC",
-  "Wrapped Bitcoin"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'WBTC',
+  'Wrapped Bitcoin'
 );
 
 export const STAKE = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "STAKE",
-  "xDAI Stake"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'STAKE',
+  'xDAI Stake'
 );
 
 export const YFI = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "YFI",
-  "yearn.finance"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'YFI',
+  'yearn.finance'
 );
 
 export const ZIL = createToken(
   ChainId.ETH_MAINNET,
-  "0x51491077somehashsxsdsdsdsd986ca",
-  18,
-  "ZIL",
-  "Zilliqa"
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', //USDC Contract address
+  6,
+  'ZIL',
+  'Zilliqa'
 );
