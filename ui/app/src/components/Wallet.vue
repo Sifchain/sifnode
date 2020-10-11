@@ -1,20 +1,25 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
+      {{JSON.stringify(balances)}}
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-// import {api} from '../../../core'
-import * as x from '../../../core'
+import { onMounted, ref, reactive } from 'vue'
+import { api, entities } from '../../../core'
 
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
-
-export default defineComponent({
+export default {
   name: 'Wallet',
-  setup(props) {
-    console.log(x)
+  setup() {
+    let balances = ref<entities.AssetAmount[]>([])
+    const getAssetBalance = async () => {
+      balances.value = await api.walletService.getAssetBalances()
+    }
+    // BigInt Error
+    onMounted(getAssetBalance)
+    return {
+      balances
+    }
   }
-});
+};
 </script>
