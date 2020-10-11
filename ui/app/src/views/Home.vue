@@ -9,8 +9,8 @@
 
 <script lang="ts">
 import Vue, { VueConstructor } from "vue";
-import { api } from "sif-core";
-import { AssetAmount } from "sif-core/dist/entities";
+import { api } from "../core";
+import { AssetAmount } from "../core/entities";
 
 export default (Vue as VueConstructor<Vue & { balances: string[] }>).extend({
   name: "Home",

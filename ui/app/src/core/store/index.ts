@@ -1,8 +1,8 @@
-import JSBI from 'jsbi';
-import { action, computed, observable } from 'mobx';
-import { MARKETCAP_TOKEN_ORDER } from '../constants';
-import * as TOKENS from '../constants/tokens';
-import { AssetAmount, Asset } from '../entities';
+import JSBI from "jsbi";
+import { action, computed, observable } from "mobx";
+import { MARKETCAP_TOKEN_ORDER } from "../constants";
+import * as TOKENS from "../constants/tokens";
+import { AssetAmount, Asset } from "../entities";
 
 function getTokenBySymbol(symbol: string) {
   const tokenStore = TOKENS as { [symbol: string]: Asset };
@@ -26,7 +26,7 @@ export class State {
 
   @computed get availableAssetAccounts() {
     const ordered: AssetAmount[] = [];
-    this.userBalances.forEach(balance => {
+    this.userBalances.forEach((balance) => {
       ordered.push(balance);
     });
 

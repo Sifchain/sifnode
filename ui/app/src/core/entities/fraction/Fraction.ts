@@ -1,10 +1,11 @@
-import invariant from 'tiny-invariant';
-import JSBI from 'jsbi';
-import _Decimal from 'decimal.js-light';
-import _Big, { RoundingMode } from 'big.js';
-import toFormat from 'toformat';
+import invariant from "tiny-invariant";
+import JSBI from "jsbi";
+import _Decimal from "decimal.js-light";
+import _Big, { RoundingMode } from "big.js";
+import toFormat from "toformat";
 
 export type BigintIsh = JSBI | bigint | string;
+
 export enum Rounding {
   ROUND_DOWN,
   ROUND_HALF_UP,
@@ -24,7 +25,7 @@ export const _1000 = JSBI.BigInt(1000);
 export function parseBigintIsh(bigintIsh: BigintIsh): JSBI {
   return bigintIsh instanceof JSBI
     ? bigintIsh
-    : typeof bigintIsh === 'bigint'
+    : typeof bigintIsh === "bigint"
     ? JSBI.BigInt(bigintIsh.toString())
     : JSBI.BigInt(bigintIsh);
 }
@@ -153,7 +154,7 @@ export class Fraction {
 
   public toSignificant(
     significantDigits: number,
-    format: object = { groupSeparator: '' },
+    format: object = { groupSeparator: "" },
     rounding: Rounding = Rounding.ROUND_HALF_UP
   ): string {
     invariant(
@@ -174,7 +175,7 @@ export class Fraction {
 
   public toFixed(
     decimalPlaces: number,
-    format: object = { groupSeparator: '' },
+    format: object = { groupSeparator: "" },
     rounding: Rounding = Rounding.ROUND_HALF_UP
   ): string {
     invariant(

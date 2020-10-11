@@ -1,7 +1,7 @@
-import { Asset } from './Asset';
-import invariant from 'tiny-invariant';
-import _Big from 'big.js';
-import toFormat from 'toformat';
+import { Asset } from "./Asset";
+import invariant from "tiny-invariant";
+import _Big from "big.js";
+import toFormat from "toformat";
 
 import {
   BigintIsh,
@@ -9,8 +9,8 @@ import {
   parseBigintIsh,
   Rounding,
   TEN,
-} from './fraction/Fraction';
-import JSBI from 'jsbi';
+} from "./fraction/Fraction";
+import JSBI from "jsbi";
 const Big = toFormat(_Big);
 
 export class AssetAmount extends Fraction {
@@ -21,7 +21,7 @@ export class AssetAmount extends Fraction {
     );
   }
   public toSignificant(
-    significantDigits: number = 6,
+    significantDigits = 6,
     format?: object,
     rounding: Rounding = Rounding.ROUND_DOWN
   ): string {
@@ -29,15 +29,15 @@ export class AssetAmount extends Fraction {
   }
 
   public toFixed(
-    decimalPlaces: number = this.asset.decimals,
+    decimalPlaces = this.asset.decimals,
     format?: object,
     rounding: Rounding = Rounding.ROUND_DOWN
   ): string {
-    invariant(decimalPlaces <= this.asset.decimals, 'DECIMALS');
+    invariant(decimalPlaces <= this.asset.decimals, "DECIMALS");
     return super.toFixed(decimalPlaces, format, rounding);
   }
 
-  public toExact(format: object = { groupSeparator: '' }): string {
+  public toExact(format: object = { groupSeparator: "" }): string {
     Big.DP = this.asset.decimals;
     return new Big(this.numerator.toString())
       .div(this.denominator.toString())
