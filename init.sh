@@ -17,7 +17,7 @@ sifnodecli keys add akasha
 sifnoded add-genesis-account $(sifnodecli keys show shadowfiend -a) 1000nametoken,100000000stake
 sifnoded add-genesis-account $(sifnodecli keys show akasha -a) 1000nametoken,100000000stake
 
-sifnoded gentx --name jack --keyring-backend test
+sifnoded gentx --name shadowfiend --keyring-backend test
 
 echo "Collecting genesis txs..."
 sifnoded collect-gentxs
