@@ -52,7 +52,7 @@ function createWalletService(getWeb3: () => Promise<Web3 | null>) {
         const ethBalance = await eth.getBalance(account);
 
         assetAmounts.push(
-          AssetAmount.create(ETH, web3.utils.fromWei(ethBalance, "milli"))
+          AssetAmount.create(ETH, web3.utils.fromWei(ethBalance, "microether"))
         );
 
         for (const token of SUPPORTED_TOKENS) {
