@@ -1,0 +1,1 @@
+{"version":3,"file":"slashingService.js","sourceRoot":"","sources":["../../src/api/slashingService.ts"],"names":[],"mappings":"AAAA,sLAAsL;AAKtL,MAAM,CAAC,MAAM,eAAe,GAAG;IAC7B,KAAK,CAAC,eAAe,CACnB,IAAY,EACZ,KAAa;QAEb,OAAO,EAAE,CAAC;IACZ,CAAC;IAED,KAAK,CAAC,oBAAoB,CACxB,aAAqB,EACrB,IAAiB,IACF,CAAC;IAElB,KAAK,CAAC,aAAa,KAAiC,CAAC;CACtD,CAAC"}
