@@ -1,12 +1,8 @@
 // This test must be run in an environment that supports ganace
 
-import Web3 from "web3";
 import { getSupportedTokens } from "./utils/getSupportedTokens";
 import { createWalletService } from "./walletService";
-
-async function getWeb3() {
-  return new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-}
+import { getWeb3 } from "../../test/getWeb3";
 
 test("it should connect without error", async () => {
   const web3 = await getWeb3();
