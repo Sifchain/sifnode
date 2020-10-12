@@ -14,6 +14,7 @@ const (
 
 var (
 	NewKeeper             = keeper.NewKeeper
+	NewQuerier            = keeper.NewQuerier
 	NewMsgSwap            = types.NewMsgSwap
 	NewMsgAddLiquidity    = types.NewMsgAddLiquidity
 	NewMsgRemoveLiquidity = types.NewMsgRemoveLiquidity
@@ -21,6 +22,11 @@ var (
 	NewLiquidityProvider  = types.NewLiquidityProvider
 	NewAsset              = types.NewAsset
 	NewPool               = types.NewPool
+	RegisterCodec         = types.RegisterCodec
+	NewGenesisState       = types.NewGenesisState
+	DefaultGenesisState   = types.DefaultGenesisState
+
+	ModuleCdc = types.ModuleCdc
 )
 
 type (
@@ -32,4 +38,5 @@ type (
 	Pool               = types.Pool
 	LiquidityProvider  = types.LiquidityProvider
 	Asset              = types.Asset
+	GenesisState       = types.GenesisState
 )
