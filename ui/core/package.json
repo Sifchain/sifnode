@@ -8,7 +8,8 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest"
+    "run-fixture-migrations": "cd fixtures/ethereum && truffle migrate --reset",
+    "test": "concurrently -k \"ganache-cli\" \"yarn run-fixture-migrations && jest\""
   },
   "files": [
     "lib/**/*"
@@ -34,10 +35,14 @@
     "@types/big.js": "^6.0.0",
     "@types/jest": "^26.0.14",
     "babel-jest": "^26.5.2",
+    "concurrently": "^5.3.0",
     "jest": "^24.9.0",
     "typescript": "~3.9.3"
   },
   "jest": {
-    "testMatch": ["**/**.test.ts", "**/tests/unit/*.js"]
+    "testMatch": [
+      "**/**.test.ts",
+      "**/tests/unit/*.js"
+    ]
   }
 }
