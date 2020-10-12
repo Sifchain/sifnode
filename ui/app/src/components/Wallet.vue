@@ -5,13 +5,13 @@
 </template>
 
 <script lang="ts">
-import { onMounted, ref, reactive } from 'vue'
+import { onMounted, ref } from 'vue'
 import { api, entities } from '../../../core'
 
 export default {
   name: 'Wallet',
   setup() {
-    let balances = ref<entities.AssetAmount[]>([])
+    const balances = ref<entities.AssetAmount[]>([])
     const getAssetBalance = async () => {
       balances.value = await api.walletService.getAssetBalances()
     }
