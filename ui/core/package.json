@@ -1,13 +1,15 @@
 {
-  "name": "core",
+  "license": "SIF",
+  "name": "ui-core",
   "version": "1.0.0",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest"
   },
-  "main": "lib/index.js",
-  "module": "lib/index.js",
   "files": [
     "lib/**/*"
   ],
@@ -35,8 +37,6 @@
     "jest": "^24.9.0",
     "typescript": "~3.9.3"
   },
-  "license": "MIT",
-  "types": "lib/index.d.ts",
   "jest": {
     "testMatch": ["**/**.test.ts", "**/tests/unit/*.js"]
   }
