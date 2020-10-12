@@ -2,6 +2,8 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"io"
 	"os"
 
@@ -37,7 +39,7 @@ var (
 		staking.AppModuleBasic{},
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
-		// this line is used by starport scaffolding # 2
+		clp.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -51,6 +53,7 @@ func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
 
 	ModuleBasics.RegisterCodec(cdc)
+	vesting.RegisterCodec(cdc) // Need to verify if we need this
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 
@@ -73,6 +76,7 @@ type NewApp struct {
 	stakingKeeper staking.Keeper
 	supplyKeeper  supply.Keeper
 	paramsKeeper  params.Keeper
+	clpKeeper     clp.Keeper
 	// this line is used by starport scaffolding # 3
 	mm *module.Manager
 
@@ -97,6 +101,7 @@ func NewInitApp(
 		staking.StoreKey,
 		supply.StoreKey,
 		params.StoreKey,
+		clp.StoreKey,
 		// this line is used by starport scaffolding # 5
 	)
 
@@ -148,6 +153,11 @@ func NewInitApp(
 		staking.NewMultiStakingHooks(),
 	)
 
+	app.clpKeeper = clp.NewKeeper(
+		app.cdc,
+		keys[clp.StoreKey],
+		app.bankKeeper)
+
 	// this line is used by starport scaffolding # 4
 
 	app.mm = module.NewManager(
@@ -156,6 +166,7 @@ func NewInitApp(
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
+		clp.NewAppModule(app.clpKeeper, app.bankKeeper),
 		// this line is used by starport scaffolding # 6
 	)
 
@@ -167,6 +178,7 @@ func NewInitApp(
 		bank.ModuleName,
 		supply.ModuleName,
 		genutil.ModuleName,
+		clp.ModuleName,
 		// this line is used by starport scaffolding # 7
 	)
 
@@ -219,6 +231,19 @@ func (app *NewApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.Re
 	return app.mm.EndBlock(ctx, req)
 }
 
+func (app *NewApp) Codec() *codec.Codec {
+	return app.cdc
+}
+
+func (app *NewApp) GetKey(storeKey string) *sdk.KVStoreKey {
+	return app.keys[storeKey]
+}
+
+// GetTKey returns the TransientStoreKey for the provided store key
+func (app *NewApp) GetTKey(storeKey string) *sdk.TransientStoreKey {
+	return app.tKeys[storeKey]
+}
+
 func (app *NewApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
@@ -230,10 +255,6 @@ func (app *NewApp) ModuleAccountAddrs() map[string]bool {
 	}
 
 	return modAccAddrs
-}
-
-func (app *NewApp) Codec() *codec.Codec {
-	return app.cdc
 }
 
 func (app *NewApp) SimulationManager() *module.SimulationManager {

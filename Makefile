@@ -32,6 +32,7 @@ lint-verbose: lint-pre
 install: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
 
+
 clean-config:
 	@rm -rf ~/.sifnode*
 

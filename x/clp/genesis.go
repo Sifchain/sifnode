@@ -1,21 +1,20 @@
 package clp
 
 import (
+	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/utx0/sifnode/x/clp/types"
 )
 
-// InitGenesis initialize default parameters
-// and the keeper's address to pubkey map
-func InitGenesis(ctx sdk.Context, k Keeper /* TODO: Define what keepers the module needs */, data types.GenesisState) {
-	// TODO: Define logic for when you would like to initialize a new genesis
+func InitGenesis(ctx sdk.Context, keeper Keeper, bankKeeper types.BankKeeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
+	return []abci.ValidatorUpdate{}
 }
 
-// ExportGenesis writes the current store values
-// to a genesis file, which can be imported again
-// with InitGenesis
-func ExportGenesis(ctx sdk.Context, k Keeper) (data GenesisState) {
-	// TODO: Define logic for exporting state
-	return types.NewGenesisState()
+func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
+	return GenesisState{}
+}
+
+// ValidateGenesis validates the clp genesis parameters
+func ValidateGenesis(data GenesisState) error {
+	return nil
 }
