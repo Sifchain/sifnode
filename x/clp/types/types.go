@@ -44,8 +44,8 @@ type LiquidityProvider struct {
 
 func (l LiquidityProvider) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`ExternalAsset: %s
-	NativeAssetBalance: %d
-	NativeAssetBalance: %d`, l.Asset, l.LiquidityProviderAddress, l.LiquidityProviderUnits))
+	LiquidityProviderUnits: %d
+	liquidityOroviderAddress: %s`, l.Asset, l.LiquidityProviderUnits, l.LiquidityProviderAddress))
 }
 
 func (l LiquidityProvider) Validate() bool {

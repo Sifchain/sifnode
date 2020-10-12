@@ -2,19 +2,20 @@ package clp
 
 import (
 	"encoding/json"
-
+	"fmt"
+	"github.com/Sifchain/sifnode/x/clp/client/cli"
+	"github.com/Sifchain/sifnode/x/clp/client/rest"
+	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/utx0/sifnode/x/clp/client/cli"
-	"github.com/utx0/sifnode/x/clp/client/rest"
-	"github.com/utx0/sifnode/x/clp/keeper"
 )
 
 // Type check to ensure the interface is properly implemented
@@ -33,23 +34,23 @@ func (AppModuleBasic) Name() string {
 
 // RegisterCodec registers the clp module's types for the given codec.
 func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
-	types.RegisterCodec(cdc)
+	RegisterCodec(cdc)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the clp
 // module.
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
-	return types.ModuleCdc.MustMarshalJSON(types.DefaultGenesisState())
+	return ModuleCdc.MustMarshalJSON(DefaultGenesisState())
 }
 
 // ValidateGenesis performs genesis state validation for the clp module.
 func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
-	var data types.GenesisState
-	err := types.ModuleCdc.UnmarshalJSON(bz, &data)
+	var data GenesisState
+	err := ModuleCdc.UnmarshalJSON(bz, &data)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", ModuleName, err)
 	}
-	return types.ValidateGenesis(data)
+	return ValidateGenesis(data)
 }
 
 // RegisterRESTRoutes registers the REST routes for the clp module.
@@ -73,22 +74,22 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper keeper.Keeper
-	// TODO: Add keepers that your application depends on
+	keeper     keeper.Keeper
+	bankKeeper types.BankKeeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper /*TODO: Add Keepers that your application depends on*/) AppModule {
+func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         k,
-		// TODO: Add keepers that your application depends on
+		bankKeeper:     bankKeeper,
 	}
 }
 
 // Name returns the clp module's name.
 func (AppModule) Name() string {
-	return types.ModuleName
+	return ModuleName
 }
 
 // RegisterInvariants registers the clp module invariants.
@@ -96,7 +97,7 @@ func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // Route returns the message routing key for the clp module.
 func (AppModule) Route() string {
-	return types.RouterKey
+	return RouterKey
 }
 
 // NewHandler returns an sdk.Handler for the clp module.
@@ -106,28 +107,27 @@ func (am AppModule) NewHandler() sdk.Handler {
 
 // QuerierRoute returns the clp module's querier route name.
 func (AppModule) QuerierRoute() string {
-	return types.QuerierRoute
+	return QuerierRoute
 }
 
 // NewQuerierHandler returns the clp module sdk.Querier.
 func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return types.NewQuerier(am.keeper)
+	return NewQuerier(am.keeper)
 }
 
 // InitGenesis performs genesis initialization for the clp module. It returns
 // no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
-	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	InitGenesis(ctx, am.keeper, genesisState)
-	return []abci.ValidatorUpdate{}
+	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	return InitGenesis(ctx, am.keeper, am.bankKeeper, genesisState)
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the clp
 // module.
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 	gs := ExportGenesis(ctx, am.keeper)
-	return types.ModuleCdc.MustMarshalJSON(gs)
+	return ModuleCdc.MustMarshalJSON(gs)
 }
 
 // BeginBlock returns the begin blocker for the clp module.

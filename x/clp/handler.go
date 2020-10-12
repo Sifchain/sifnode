@@ -27,6 +27,9 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
+	asset := NewAsset("ROWAN", "ETHROWAN", "ETH")
+	pool := NewPool(asset, 1000, 200, 8, "ethRowan")
+	keeper.SetPool(ctx, pool)
 	return &sdk.Result{}, nil
 }
 
