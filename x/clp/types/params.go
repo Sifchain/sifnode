@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/x/params"
@@ -8,14 +9,15 @@ import (
 
 // Default parameter namespace
 const (
-	DefaultParamspace = ModuleName
+	DefaultParamspace                  = ModuleName
+	DefaultMinCreatePoolThreshold uint = 100
 )
 
 // Parameter store keys
 var (
-
-// KeyParamName          = []byte("ParamName")
+	KeyMinCreatePoolThreshold = []byte("MinCreatePoolThreshold")
 )
+var _ params.ParamSet = (*Params)(nil)
 
 // ParamKeyTable for clp module
 func ParamKeyTable() params.KeyTable {
@@ -24,31 +26,56 @@ func ParamKeyTable() params.KeyTable {
 
 // Params - used for initializing default parameter for clp at genesis
 type Params struct {
-
-	// KeyParamName string `json:"key_param_name"`
+	MinCreatePoolThreshold uint `json:"min_create_pool_threshold"`
 }
 
 // NewParams creates a new Params object
-func NewParams( /* TODO: Pass in the parameters*/ ) Params {
-	return Params{}
+func NewParams(minThreshold uint) Params {
+	return Params{
+		MinCreatePoolThreshold: minThreshold,
+	}
 }
 
 // String implements the stringer interface for Params
 func (p Params) String() string {
 	return fmt.Sprintf(`
-	// TODO: Return all the params as a string
-	`)
+	MinCreatePoolThreshold : %d
+	`, p.MinCreatePoolThreshold)
 }
 
 // ParamSetPairs - Implements params.ParamSet
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
-		// TODO: Pair your key with the param
-		// params.NewParamSetPair(KeyParamName, &p.ParamName),
+		params.NewParamSetPair(KeyMinCreatePoolThreshold, &p.MinCreatePoolThreshold, validateMinCreatePoolThreshold),
 	}
 }
 
 // DefaultParams defines the parameters for this module
 func DefaultParams() Params {
-	return NewParams( /* TODO: Pass in your default Params */ )
+	return NewParams(DefaultMinCreatePoolThreshold)
+}
+
+func (p Params) Validate() error {
+	if err := validateMinCreatePoolThreshold(p.MinCreatePoolThreshold); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateMinCreatePoolThreshold(i interface{}) error {
+	v, ok := i.(uint)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v == 0 {
+		return fmt.Errorf("min create pool threshold must be positive: %d", v)
+	}
+	return nil
+}
+
+func (p Params) Equal(p2 Params) bool {
+	bz1 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p)
+	bz2 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p2)
+	return bytes.Equal(bz1, bz2)
 }

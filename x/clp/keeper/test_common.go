@@ -123,8 +123,8 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk
 	sk := staking.NewKeeper(cdc, keyStaking, supplyKeeper, pk.Subspace(staking.DefaultParamspace))
 	sk.SetParams(ctx, staking.DefaultParams())
 
-	keeper := NewKeeper(cdc, keyClp, bankKeeper)
-
+	keeper := NewKeeper(cdc, keyClp, bankKeeper, pk.Subspace(types.DefaultParamspace))
+	keeper.SetParams(ctx, types.DefaultParams())
 	initCoins := sdk.NewCoins(sdk.NewCoin(sk.BondDenom(ctx), initTokens))
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sk.BondDenom(ctx), initTokens.MulRaw(int64(len(TestAddrs)))))
 	supplyKeeper.SetSupply(ctx, supply.NewSupply(totalSupply))
