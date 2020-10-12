@@ -37,21 +37,10 @@ var (
 	valOpPk1    = ed25519.GenPrivKey().PubKey()
 	valOpPk2    = ed25519.GenPrivKey().PubKey()
 	valOpPk3    = ed25519.GenPrivKey().PubKey()
-	valOpAddr1  = sdk.ValAddress(valOpPk1.Address())
-	valOpAddr2  = sdk.ValAddress(valOpPk2.Address())
-	valOpAddr3  = sdk.ValAddress(valOpPk3.Address())
-	valAccAddr1 = sdk.AccAddress(valOpPk1.Address()) // generate acc addresses for these validator keys too
+	valAccAddr1 = sdk.AccAddress(valOpPk1.Address())
 	valAccAddr2 = sdk.AccAddress(valOpPk2.Address())
 	valAccAddr3 = sdk.AccAddress(valOpPk3.Address())
 
-	valConsPk1   = ed25519.GenPrivKey().PubKey()
-	valConsPk2   = ed25519.GenPrivKey().PubKey()
-	valConsPk3   = ed25519.GenPrivKey().PubKey()
-	valConsAddr1 = sdk.ConsAddress(valConsPk1.Address())
-	valConsAddr2 = sdk.ConsAddress(valConsPk2.Address())
-
-	// TODO move to common testing package for all modules
-	// test addresses
 	TestAddrs = []sdk.AccAddress{
 		delAddr1, delAddr2, delAddr3,
 		valAccAddr1, valAccAddr2, valAccAddr3,
@@ -77,16 +66,11 @@ func MakeTestCodec() *codec.Codec {
 // test input with default values
 func CreateTestInputDefault(t *testing.T, isCheckTx bool, initPower int64) (
 	sdk.Context, Keeper) {
-
-	communityTax := sdk.NewDecWithPrec(2, 2)
-
-	ctx, keeper := CreateTestInputAdvanced(t, isCheckTx, initPower, communityTax)
+	ctx, keeper := CreateTestInputAdvanced(t, isCheckTx, initPower)
 	return ctx, keeper
 }
 
-// hogpodge of all sorts of input required for testing
-func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64,
-	communityTax sdk.Dec) (sdk.Context, Keeper) {
+func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk.Context, Keeper) {
 
 	initTokens := sdk.TokensFromConsensusPower(initPower)
 
