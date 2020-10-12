@@ -165,10 +165,10 @@ func (m MsgCreatePool) ValidateBasic() error {
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(InValidAsset, m.ExternalAsset.Symbol)
 	}
-	if m.NativeAssetAmount < 0 {
+	if !(m.NativeAssetAmount > 0) {
 		return sdkerrors.Wrap(InValidAmount, strconv.Itoa(int(m.NativeAssetAmount)))
 	}
-	if m.ExternalAssetAmount < 0 {
+	if !(m.ExternalAssetAmount > 0) {
 		return sdkerrors.Wrap(InValidAmount, strconv.Itoa(int(m.NativeAssetAmount)))
 	}
 	return nil
