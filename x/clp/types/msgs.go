@@ -79,10 +79,10 @@ func (m MsgRemoveLiquidity) ValidateBasic() error {
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(InValidAsset, m.ExternalAsset.Symbol)
 	}
-	if m.WBasisPoints < 0 {
+	if !(m.WBasisPoints > 0) {
 		return sdkerrors.Wrap(InValidAmount, strconv.Itoa(int(m.WBasisPoints)))
 	}
-	if m.Asymmetry < 0 {
+	if !(m.Asymmetry > 0) {
 		return sdkerrors.Wrap(InValidAmount, strconv.Itoa(int(m.Asymmetry)))
 	}
 	return nil
@@ -122,10 +122,10 @@ func (m MsgAddLiquidity) ValidateBasic() error {
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(InValidAsset, m.ExternalAsset.Symbol)
 	}
-	if m.NativeAssetAmount < 0 {
+	if !(m.NativeAssetAmount > 0) {
 		return sdkerrors.Wrap(InValidAmount, strconv.Itoa(int(m.NativeAssetAmount)))
 	}
-	if m.ExternalAssetAmount < 0 {
+	if !(m.ExternalAssetAmount > 0) {
 		return sdkerrors.Wrap(InValidAmount, strconv.Itoa(int(m.NativeAssetAmount)))
 	}
 	return nil
