@@ -13,14 +13,22 @@ jobs:
     name: Push Docker image to GitHub Packages
     runs-on: ubuntu-latest
     steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Declare git variables
+        id: vars
+        shell: bash
+        run: |
+          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
       - name: Push to GitHub Packages
-        uses: docker/build-push-action@v2
+        uses: mr-smithers-excellent/docker-build-push@v4
         with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: docker.pkg.github.com
-          repository: sifchain/sifnode/sifnode
-          tag_with_ref: true
+          registry: ghcr.io
+          image: sifchain/sifnode
+          tag: ${{ steps.vars.outputs.sha_short }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }} 
 
   deploy_to_eks:
     name: Deploy a node for each PR
@@ -51,4 +59,5 @@ jobs:
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
           helm repo add stable https://kubernetes-charts.storage.googleapis.com
           helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard
-          helm upgrade node-${{ steps.vars.outputs.sha_short }} build/helm/sifnode --install -n node-${{ steps.vars.outputs.sha_short }} --create-namespace --set secrets.ghcr.enabled=true --set secrets.ghcr.dockerconfigjson=${{ secrets.GHCR_SECRET }} --set image.tag=develop --wait
+          helm upgrade node-${{ steps.vars.outputs.sha_short }} build/helm/sifnode --install -n node-${{ steps.vars.outputs.sha_short }} --create-namespace --set secrets.ghcr.enabled=true --set secrets.ghcr.dockerconfigjson=${{ secrets.GHCR_SECRET }} --set image.tag=${{ steps.vars.outputs.sha_short }} --wait
+          
