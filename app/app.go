@@ -25,6 +25,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/cosmos/peggy/x/ethbridge"
+	"github.com/cosmos/peggy/x/oracle"
 	// this line is used by starport scaffolding
 )
 
@@ -41,6 +43,8 @@ var (
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		sifnode.AppModuleBasic{},
+		ethbridge.AppModuleBasic{},
+		oracle.AppModuleBasic{},
 		// this line is used by starport scaffolding # 2
 	)
 
@@ -72,12 +76,14 @@ type NewApp struct {
 
 	subspaces map[string]params.Subspace
 
-	accountKeeper auth.AccountKeeper
-	bankKeeper    bank.Keeper
-	stakingKeeper staking.Keeper
-	supplyKeeper  supply.Keeper
-	paramsKeeper  params.Keeper
-	sifnodeKeeper sifnodekeeper.Keeper
+	accountKeeper   auth.AccountKeeper
+	bankKeeper      bank.Keeper
+	stakingKeeper   staking.Keeper
+	supplyKeeper    supply.Keeper
+	paramsKeeper    params.Keeper
+	sifnodeKeeper   sifnodekeeper.Keeper
+	ethbridgeKeeper ethbridge.Keeper
+	oracleKeeper    oracle.Keeper
 	// this line is used by starport scaffolding # 3
 	mm *module.Manager
 
@@ -103,6 +109,8 @@ func NewInitApp(
 		supply.StoreKey,
 		params.StoreKey,
 		sifnodetypes.StoreKey,
+		ethbridge.StoreKey,
+		oracle.StoreKey,
 		// this line is used by starport scaffolding # 5
 	)
 
@@ -159,6 +167,11 @@ func NewInitApp(
 		app.cdc,
 		keys[sifnodetypes.StoreKey],
 	)
+
+	app.oracleKeeper = oracle.NewKeeper(app.cdc, keys[oracle.StoreKey],
+		app.stakingKeeper, oracle.DefaultConsensusNeeded,
+	)
+	app.ethbridgeKeeper = ethbridge.NewKeeper(app.cdc, app.supplyKeeper, app.oracleKeeper)
 
 	// this line is used by starport scaffolding # 4
 

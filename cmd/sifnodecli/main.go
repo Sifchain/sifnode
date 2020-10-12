@@ -24,6 +24,7 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/Sifchain/sifnode/app"
+	"github.com/cosmos/peggy/x/ethbridge/types"
 	// this line is used by starport scaffolding
 )
 
@@ -83,6 +84,9 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		Short:   "Querying subcommands",
 	}
 
+	queryCmd.PersistentFlags().String(types.FlagEthereumChainID, "", "Ethereum chain ID")
+	queryCmd.PersistentFlags().String(types.FlagTokenContractAddr, "", "Token address representing a unique asset type")
+
 	queryCmd.AddCommand(
 		authcmd.GetAccountCmd(cdc),
 		flags.LineBreak,
@@ -104,6 +108,9 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		Use:   "tx",
 		Short: "Transactions subcommands",
 	}
+
+	txCmd.PersistentFlags().String(types.FlagEthereumChainID, "", "Ethereum chain ID")
+	txCmd.PersistentFlags().String(types.FlagTokenContractAddr, "", "Token address representing a unique asset type")
 
 	txCmd.AddCommand(
 		bankcmd.SendTxCmd(cdc),

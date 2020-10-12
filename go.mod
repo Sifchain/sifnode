@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/cosmos/cosmos-sdk v0.39.1
+	github.com/cosmos/peggy v0.0.0-20200813153536-d163155675ca
 	github.com/cucumber/godog v0.10.0
 	github.com/golang/mock v1.4.3 // indirect
 	github.com/gorilla/mux v1.8.0
