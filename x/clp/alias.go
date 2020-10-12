@@ -27,8 +27,7 @@ var (
 	NewGenesisState       = types.NewGenesisState
 	DefaultGenesisState   = types.DefaultGenesisState
 	NewParams             = types.NewParams
-
-	ModuleCdc = types.ModuleCdc
+	ModuleCdc             = types.ModuleCdc
 )
 
 type (
