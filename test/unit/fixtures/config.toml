@@ -1,0 +1,90 @@
+proxy_app = ""
+moniker = "moniker"
+db_backend = ""
+db_dir = ""
+log_level = ""
+log_format = ""
+genesis_file = ""
+priv_validator_key_file = ""
+priv_validator_state_file = ""
+priv_validator_laddr = ""
+node_key_file = ""
+abci = ""
+prof_laddr = ""
+fast_sync = false
+filter_peers = false
+
+[p2p]
+  laddr = ""
+  external_address = ""
+  seeds = ""
+  persistent_peers = ""
+  addr_book_file = ""
+  unconditional_peer_ids = ""
+  persistent_peers_max_dial_period = ""
+  flush_throttle_timeout = ""
+  private_peer_ids = ""
+  handshake_timeout = ""
+  dial_timeout = ""
+  max_num_inbound_peers = 0
+  max_num_outbound_peers = 0
+  max_packet_msg_payload_size = 0
+  send_rate = 0
+  recv_rate = 0
+  upnp = false
+  addr_book_strict = false
+  pex = false
+  seed_mode = false
+  allow_duplicate_ip = false
+
+[rpc]
+  laddr = ""
+  grpc_laddr = ""
+  grpc_max_open_connections = 0
+  unsafe = false
+  max_open_connections = 0
+  max_subscription_clients = 0
+  max_subscriptions_per_client = 0
+  timeout_broadcast_tx_commit = ""
+  max_body_bytes = 0
+  max_header_bytes = 0
+  tls_cert_file = ""
+  tls_key_file = ""
+
+[consensus]
+  wal_file = ""
+  timeout_propose = ""
+  timeout_propose_delta = ""
+  timeout_prevote = ""
+  timeout_prevote_delta = ""
+  timeout_precommit = ""
+  timeout_precommit_delta = ""
+  timeout_commit = ""
+  skip_timeout_commit = false
+  create_empty_blocks = false
+  create_empty_blocks_interval = ""
+  peer_gossip_sleep_duration = ""
+  peer_query_maj23_sleep_duration = ""
+
+[mempool]
+  recheck = false
+  broadcast = false
+  wal_dir = ""
+  size = 0
+  max_txs_bytes = 0
+  cache_size = 0
+  max_tx_bytes = 0
+
+[instrumentation]
+  prometheus = false
+  prometheus_listen_addr = ""
+  max_open_connections = 0
+  namespace = ""
+
+[tx_index]
+  indexer = ""
+  index_keys = ""
+  index_all_keys = false
+
+[fastsync]
+  version = ""
