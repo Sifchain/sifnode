@@ -70,6 +70,20 @@ func calculatePoolUnits(oldPoolUnits uint, nativeAssetBalance uint, externalAsse
 }
 
 func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) (*sdk.Result, error) {
+
+	//pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker, msg.ExternalAsset.SourceChain)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//getLiquidityProvider(lpAddress) if it exists
+	//newPoolUnits, lpUnits = calculatePoolUnits(pool.poolUnits, pool.nativeAssetBalance, pool.externalAssetBalance, nativeAssetAmount, externalAssetAmount)
+	//set pool.poolUnits to newPoolUnits
+	//add nativeAssetAmount to pool.nativeAssetBalance
+	//add externalAssetAmount to pool.externalAssetBalance
+	//setPool()
+	//add lpUnits to liquidityProvider.lpUnits
+	//setLiquidityProvider()
+
 	return &sdk.Result{}, nil
 }
 
