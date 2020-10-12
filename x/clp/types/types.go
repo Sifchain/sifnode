@@ -13,8 +13,6 @@ type Pool struct {
 	PoolAddress          string `json:"pool_address"`
 }
 
-type Pools []Pool
-
 func (p Pool) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`ExternalAsset: %s
 	NativeAssetBalance: %d
@@ -34,9 +32,16 @@ func (p Pool) Validate() bool {
 }
 
 // NewPool returns a new Pool
-func NewPool(externalAsset Asset, nativeAssetBalance uint, externalAssetBalance uint, poolUnits uint, poolAddress string) Pool {
-	return Pool{ExternalAsset: externalAsset, NativeAssetBalance: nativeAssetBalance, ExternalAssetBalance: externalAssetBalance, PoolUnits: poolUnits, PoolAddress: poolAddress}
+func NewPool(externalAsset Asset, nativeAssetBalance uint, externalAssetBalance uint, poolUnits uint) Pool {
+	pool := Pool{ExternalAsset: externalAsset,
+		NativeAssetBalance:   nativeAssetBalance,
+		ExternalAssetBalance: externalAssetBalance,
+		PoolUnits:            poolUnits}
+	pool.PoolAddress = GetPoolAddress(pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	return pool
 }
+
+type Pools []Pool
 
 type LiquidityProvider struct {
 	Asset                    Asset  `json:"asset"`

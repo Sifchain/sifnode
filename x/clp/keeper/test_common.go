@@ -162,7 +162,7 @@ func generateRandomPool(numberOfPools int) []types.Pool {
 		// initialize global pseudo random generator
 		externalToken := tokens[rand.Intn(len(tokens))]
 		externalAsset := types.NewAsset("ROWAN", "c"+"ROWAN"+externalToken, externalToken)
-		pool := types.NewPool(externalAsset, 1, 1, 1, "poolAddress"+externalToken)
+		pool := types.NewPool(externalAsset, 1, 1, 1)
 		poolList = append(poolList, pool)
 	}
 	return poolList
