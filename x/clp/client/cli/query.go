@@ -36,7 +36,7 @@ func GetCmdPool(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		Use:   "pool [ticker] [sourceChain]",
 		Short: "Get Details for a pool",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query details for a liquidity pool using the ticker and sourcechain.
+			fmt.Sprintf(`Query details for a liquidity pool .
 Example:
 $ %s pool ETH ROWAN`,
 				version.ClientName,
@@ -91,7 +91,14 @@ func GetCmdLiquidityProvider(queryRoute string, cdc *codec.Codec) *cobra.Command
 	return &cobra.Command{
 		Use:   "lp [ticker] [lpAddress]",
 		Short: "Get Liquidity Provider",
-		Args:  cobra.ExactArgs(2),
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Query details for a liquidity provioder.
+Example:
+$ %s pool ETH sif1h2zjknvr3xlpk22q4dnv396ahftzqhyeth7egd`,
+				version.ClientName,
+			),
+		),
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 

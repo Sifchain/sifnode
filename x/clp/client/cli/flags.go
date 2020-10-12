@@ -54,6 +54,6 @@ func init() {
 	FsReceivedAssetSourceChain.String(FlagReceivedAssetSourceChain, "", "SoureChain for Received Asset")
 	FsReceivedAssetSymbol.String(FlagReceivedAssetSymbol, "", "Symbol for Received Asset")
 	FsReceivedAssetTicker.String(FlagReceivedAssetTicker, "", "Ticker for Received Asset")
-	FsAmount.String(FlagAmount, "", "Ticker for Received Asset")
+	FsAmount.String(FlagAmount, "", "Sent amount")
 
 }

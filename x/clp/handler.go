@@ -32,7 +32,7 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
 	poolUnits, lpunits := calculatePoolUnits(0, 0, 0, nativeBalance, externalBalance)
-	pool := NewPool(asset, 1000, 200, poolUnits)
+	pool := NewPool(asset, nativeBalance, externalBalance, poolUnits)
 	lp := NewLiquidityProvider(asset, lpunits, msg.Signer.String())
 	keeper.SetPool(ctx, pool)
 	keeper.SetLiquidityProvider(ctx, lp)
