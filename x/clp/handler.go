@@ -28,6 +28,10 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
+	MinThreshold := keeper.GetParams(ctx).MinCreatePoolThreshold
+	if (msg.ExternalAssetAmount + msg.NativeAssetAmount) < MinThreshold {
+		return nil, types.TotalAmountTooLow
+	}
 	asset := msg.ExternalAsset
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
