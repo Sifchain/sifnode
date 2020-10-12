@@ -8,8 +8,8 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "run-fixture-migrations": "cd fixtures/ethereum && truffle migrate --reset",
-    "test": "concurrently -k \"ganache-cli\" \"yarn run-fixture-migrations && jest\""
+    "migrate": "cd fixtures/ethereum && truffle migrate --reset",
+    "test": "concurrently -k \"ganache-cli\" \"yarn migrate && jest\""
   },
   "files": [
     "lib/**/*"
