@@ -5,7 +5,6 @@ import (
 	// "bytes"
 	// "net/http"
 
-	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/rest"
@@ -39,7 +38,7 @@ type (
 	AddLiquidityReq struct {
 		BaseReq             rest.BaseReq `json:"base_req"`
 		Signer              string       `json:"signer"`
-		ExternalAsset       clp.Asset    `json:"external_asset"`
+		ExternalAsset       types.Asset  `json:"external_asset"`
 		NativeAssetAmount   uint         `json:"native_asset_amount"`
 		ExternalAssetAmount uint         `json:"external_asset_amount"`
 	}
@@ -47,22 +46,22 @@ type (
 	RemoveLiquidityReq struct {
 		BaseReq       rest.BaseReq `json:"base_req"`
 		Signer        string       `json:"signer"`
-		ExternalAsset clp.Asset    `json:"external_asset"`
+		ExternalAsset types.Asset  `json:"external_asset"`
 		WBasisPoints  uint         `json:"w_basis_points"`
 		Asymmetry     uint         `json:"asymmetry"`
 	}
 	CreatePoolReq struct {
 		BaseReq             rest.BaseReq `json:"base_req"`
 		Signer              string       `json:"signer"`
-		ExternalAsset       clp.Asset    `json:"external_asset"`
+		ExternalAsset       types.Asset  `json:"external_asset"`
 		NativeAssetAmount   uint         `json:"native_asset_amount"`
 		ExternalAssetAmount uint         `json:"external_asset_amount"`
 	}
 	SwapReq struct {
 		BaseReq       rest.BaseReq `json:"base_req"`
 		Signer        string       `json:"signer"`
-		SentAsset     clp.Asset    `json:"sent_asset"`
-		ReceivedAsset clp.Asset    `json:"received_asset"`
+		SentAsset     types.Asset  `json:"sent_asset"`
+		ReceivedAsset types.Asset  `json:"received_asset"`
 		SentAmount    uint         `json:"sent_amount"`
 	}
 )
