@@ -8,7 +8,7 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
-    "@cosmjs/launchpad": "^0.22.3",
+    "@cosmjs/launchpad": "^0.23.0",
     "axios": "^0.20.0",
     "bip39": "^3.0.2",
     "core-js": "^3.6.5",
