@@ -44,8 +44,5 @@ tests:
 feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
 
-validator-genesis:
-	@go run ./tools/sifgen/main.go
-
 run:
 	go run ./cmd/sifd start
