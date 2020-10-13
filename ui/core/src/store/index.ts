@@ -1,8 +1,7 @@
 import JSBI from "jsbi";
-import { action, computed, observable } from "mobx";
-import { MARKETCAP_TOKEN_ORDER } from "../constants";
 import * as TOKENS from "../constants/tokens";
 import { AssetAmount, Asset } from "../entities";
+import { reactive, computed } from "@vue/reactivity";
 
 function getTokenBySymbol(symbol: string) {
   const tokenStore = TOKENS as { [symbol: string]: Asset };
@@ -11,58 +10,57 @@ function getTokenBySymbol(symbol: string) {
 
 type AssetAmountMap = Map<string, AssetAmount>;
 
-// This is the reactive store that is shared with our frontend
-// Trying to keep this flat
-export class State {
-  constructor(o?: Partial<State>) {
-    Object.assign(this, o);
-  }
+export type State = {
+  userBalances: AssetAmountMap;
+  marketcapTokenOrder: string[];
+  availableAssetAccounts: readonly AssetAmount[];
+};
 
-  // constants
-  marketcapTokenOrder: string[] = MARKETCAP_TOKEN_ORDER;
+export type Actions = {
+  setUserBalances: (balances: AssetAmount[]) => void;
+};
 
-  // reactive props
-  @observable userBalances: AssetAmountMap = new Map();
-
-  @computed get availableAssetAccounts() {
+export function createStore(initialState?: Partial<State>) {
+  const availableAssetAccounts = (computed<AssetAmount[]>(() => {
     const ordered: AssetAmount[] = [];
-    this.userBalances.forEach((balance) => {
-      ordered.push(balance);
-    });
+    for (const balance of state.userBalances) {
+      ordered.push(balance[1]);
+    }
 
-    for (let i = 0; i < Math.min(this.marketcapTokenOrder.length, 20); i++) {
-      const symbol = this.marketcapTokenOrder[i];
-      const token = this.userBalances.get(symbol);
-      if (!token)
+    for (let i = 0; i < Math.min(state.marketcapTokenOrder.length, 20); i++) {
+      const symbol = state.marketcapTokenOrder[i];
+      const token = state.userBalances.get(symbol);
+      const tokenSymbol = getTokenBySymbol(symbol);
+      if (!token && tokenSymbol) {
         ordered.push(
           AssetAmount.create(getTokenBySymbol(symbol), JSBI.BigInt(0))
         );
+      }
     }
 
     return ordered;
-  }
-}
+  }) as unknown) as AssetAmount[];
 
-// This is a bag of functions to mutate our state
-// Lets break this up when it gets too big
-export class StoreActions {
-  constructor(public state: State) {}
+  const state = reactive<State>({
+    marketcapTokenOrder: [],
+    userBalances: new Map(),
+    availableAssetAccounts,
+    ...initialState,
+  }) as State;
 
-  @action.bound
-  setUserBalances(balances: AssetAmount[]) {
-    this.state.userBalances = balances.reduce((map, balance) => {
+  const setUserBalances = (balances: AssetAmount[]) => {
+    state.userBalances = balances.reduce((map, balance) => {
       map.set(balance.asset.symbol, balance);
       return map;
     }, new Map<string, AssetAmount>());
-  }
-}
+  };
 
-export const store = createStore();
-
-// Covenience function for creating the global store
-export function createStore(state?: Partial<State>) {
-  return new StoreActions(new State(state));
+  return {
+    state,
+    setUserBalances,
+  };
 }
+export type Store = ReturnType<typeof createStore>;
 
 // For reference here is Uniswaps redux store shape:
 //

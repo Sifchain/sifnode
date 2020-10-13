@@ -1,25 +1,31 @@
 <template>
   <div class="home">
-      {{JSON.stringify(balances)}}
+    <table>
+      <tr v-for="assetAmount in state.availableAssetAccounts" :key="assetAmount.asset.symbol">
+        <td align="right">{{assetAmount.toFixed(6)}}</td>
+        <td align="left">{{assetAmount.asset.symbol}}</td>
+      </tr>
+    </table>
   </div>
 </template>
 
 <script lang="ts">
-import { onMounted, ref } from 'vue'
-import { api, entities } from '../../../core'
+import { State,UseCases } from '../../../core'
+import {onMounted, inject} from 'vue'
 
 export default {
   name: 'Wallet',
   setup() {
-    const balances = ref<entities.AssetAmount[]>([])
-    const getAssetBalance = async () => {
-      balances.value = await api.walletService.getAssetBalances()
-    }
-    // BigInt Error
-    onMounted(getAssetBalance)
-    return {
-      balances
-    }
+    const state = inject<State>('state')
+    const usecases = inject<UseCases>('usecases')
+  
+    onMounted(async () => {
+      if(usecases){
+        await usecases.updateListOfAvailableTokens()
+      }
+    })
+
+    return {state}
   }
 };
 </script>

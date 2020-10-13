@@ -1,8 +1,9 @@
 import queryListOfAvailableTokens from "./queryListOfAvailableTokens";
 import { createStore } from "../store";
 import { AssetAmount } from "../entities";
-import { USDC, USDT } from "../constants/tokens";
+
 import JSBI from "jsbi";
+import { USDC, USDT } from "../constants/tokens";
 
 const assetAmounts = [USDC, USDT].map((tok) =>
   AssetAmount.create(tok, JSBI.BigInt(100))
@@ -14,6 +15,8 @@ describe("queryListOfAvailableTokens", () => {
       marketcapTokenOrder: ["BNB", "USDT", "LINK", "CRO", "USDC"],
     });
 
+    const { state } = store;
+
     beforeEach(async () => {
       await queryListOfAvailableTokens({
         api: {
@@ -22,7 +25,7 @@ describe("queryListOfAvailableTokens", () => {
           },
         },
         store,
-        state: store.state,
+        state,
       }).updateListOfAvailableTokens();
     });
 

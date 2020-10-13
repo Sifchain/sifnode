@@ -1,20 +1,32 @@
 <template>
   <div class="home">
-    <HelloWorld msg="Welcome"/>
     <Wallet/>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
-import Wallet from '@/components/Wallet.vue';
+
+import Wallet from '@/components/Wallet.vue'
+
+import { defineComponent, provide } from 'vue';
+import { createStore,createApi, getWeb3, createUsecases, getFakeTokens } from '../../../core';
 
 export default defineComponent({
   name: 'Home',
-  components: {
-    HelloWorld,
-    Wallet
+  setup() { 
+    const store = createStore()
+    const { state } = store;
+    const api = createApi({ getWeb3, getSupportedTokens: getFakeTokens })
+    const usecases = createUsecases({ store, state, api})
+
+    provide('api', api) 
+    provide('state', store.state)
+    provide('usecases', usecases)
+
   },
+  components: {
+    Wallet
+  }
+  
 });
 </script>

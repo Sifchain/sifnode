@@ -1,5 +1,5 @@
 import { createAsset, Asset } from "./Asset";
 
-export type Coin = Asset;
+export const Coin = Asset;
 
-export const createCoin = createAsset;
+export const createCoin = Coin.create;
