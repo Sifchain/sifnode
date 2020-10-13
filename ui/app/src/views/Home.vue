@@ -12,7 +12,7 @@ import { defineComponent, provide } from 'vue';
 import { createStore,createApi, getWeb3, createUsecases, getFakeTokens } from '../../../core';
 
 export default defineComponent({
-  name: 'App',
+  name: 'Home',
   setup() { 
     const store = createStore()
     const { state } = store;
