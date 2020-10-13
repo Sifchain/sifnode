@@ -11,5 +11,7 @@ run: build
 
 test:
 	openapi-spec-validator --schema 2.0 swagger.yml
+	openapi-spec-validator clp_get.yml
+	openapi-spec-validator clp_post.yml
 
 .PHONY: test
