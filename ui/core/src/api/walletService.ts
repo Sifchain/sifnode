@@ -1,11 +1,11 @@
-import { AssetAmount } from "../entities";
+import { AssetAmount, Token } from "../entities";
 import detectMetaMaskProvider from "@metamask/detect-provider";
 
 import Web3 from "web3";
 import { AbstractProvider } from "web3-core";
-import { ETH, USDC } from "../constants";
+import { ETH } from "../constants";
 
-const SUPPORTED_TOKENS = [USDC];
+// const SUPPORTED_TOKENS = [ATK, BTK];
 
 type WindowWithPossibleMetaMask = typeof window & {
   ethereum?: MetaMaskProvider;
@@ -36,7 +36,10 @@ async function getWeb3(): Promise<Web3 | null> {
   return null;
 }
 
-function createWalletService(getWeb3: () => Promise<Web3 | null>) {
+export function createWalletService(
+  getWeb3: () => Promise<Web3 | null>,
+  supportedTokens: Token[]
+) {
   return {
     async getAssetBalances(): Promise<AssetAmount[]> {
       const web3 = await getWeb3();
@@ -45,48 +48,50 @@ function createWalletService(getWeb3: () => Promise<Web3 | null>) {
         return [];
       }
       const { eth } = web3;
-      const accounts = await eth.getAccounts();
-      const assetAmounts: AssetAmount[] = [];
-      for (const account of accounts) {
-        const ethBalance = await eth.getBalance(account);
+      const [account] = await eth.getAccounts();
 
-        assetAmounts.push(
-          AssetAmount.create(ETH, web3.utils.fromWei(ethBalance, "microether"))
+      const assetAmounts: AssetAmount[] = [];
+
+      // This is going to give us all the acounts on the node.
+      // Not sure if this is the right thing to do here.
+      // So Commenting it out for now
+      // for (const account of mainAccount) {
+      const ethBalance = await eth.getBalance(account);
+
+      assetAmounts.push(AssetAmount.create(ETH, ethBalance));
+
+      for (const token of supportedTokens) {
+        const contract = new eth.Contract(
+          [
+            // balanceOf
+            {
+              constant: true,
+              inputs: [{ name: "_owner", type: "address" }],
+              name: "balanceOf",
+              outputs: [{ name: "balance", type: "uint256" }],
+              type: "function",
+            },
+            // decimals
+            {
+              constant: true,
+              inputs: [],
+              name: "decimals",
+              outputs: [{ name: "", type: "uint8" }],
+              type: "function",
+            },
+          ],
+          token.address
         );
 
-        for (const token of SUPPORTED_TOKENS) {
-          const contract = new eth.Contract(
-            [
-              // balanceOf
-              {
-                constant: true,
-                inputs: [{ name: "_owner", type: "address" }],
-                name: "balanceOf",
-                outputs: [{ name: "balance", type: "uint256" }],
-                type: "function",
-              },
-              // decimals
-              {
-                constant: true,
-                inputs: [],
-                name: "decimals",
-                outputs: [{ name: "", type: "uint8" }],
-                type: "function",
-              },
-            ],
-            token.address
-          );
+        const balanceOfErc = await contract.methods.balanceOf(account).call();
 
-          const balanceOfErc = await contract.methods.balanceOf(account).call();
-
-          console.log({ balanceOfErc, token: token.symbol });
-          assetAmounts.push(AssetAmount.create(token, balanceOfErc));
-        }
+        assetAmounts.push(AssetAmount.create(token, balanceOfErc));
       }
+      // }
 
       return assetAmounts;
     },
   };
 }
 
-export const walletService = createWalletService(getWeb3);
+export const walletService = createWalletService(getWeb3, []);
