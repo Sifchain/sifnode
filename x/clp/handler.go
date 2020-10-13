@@ -70,21 +70,46 @@ func calculatePoolUnits(oldPoolUnits uint, nativeAssetBalance uint, externalAsse
 }
 
 func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) (*sdk.Result, error) {
+	createNewLP := false
+	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker, msg.ExternalAsset.SourceChain)
+	if err != nil {
+		return nil, err
+	}
+	newPoolUnits, lpUnits := calculatePoolUnits(pool.PoolUnits, pool.NativeAssetBalance, pool.ExternalAssetBalance, msg.NativeAssetAmount, msg.ExternalAssetAmount)
+	lp, err := keeper.GetLiquidityProvider(ctx, msg.ExternalAsset.Ticker, msg.Signer.String())
+	if err != nil {
+		createNewLP = true
+	}
 
-	//pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker, msg.ExternalAsset.SourceChain)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//getLiquidityProvider(lpAddress) if it exists
-	//newPoolUnits, lpUnits = calculatePoolUnits(pool.poolUnits, pool.nativeAssetBalance, pool.externalAssetBalance, nativeAssetAmount, externalAssetAmount)
-	//set pool.poolUnits to newPoolUnits
-	//add nativeAssetAmount to pool.nativeAssetBalance
-	//add externalAssetAmount to pool.externalAssetBalance
-	//setPool()
-	//add lpUnits to liquidityProvider.lpUnits
-	//setLiquidityProvider()
+	pool.PoolUnits = newPoolUnits
+	pool.NativeAssetBalance = pool.NativeAssetBalance + msg.NativeAssetAmount
+	pool.ExternalAssetBalance = pool.ExternalAssetBalance + msg.ExternalAssetAmount
+	if createNewLP {
+		lp := NewLiquidityProvider(msg.ExternalAsset, lpUnits, msg.Signer.String())
+		ctx.EventManager().EmitEvents(sdk.Events{
+			sdk.NewEvent(
+				types.EventTypeCreateLiquidityProvider,
+				sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+			),
+		})
+	} else {
+		lp.LiquidityProviderUnits = lp.LiquidityProviderUnits + lpUnits
+	}
+	keeper.SetPool(ctx, pool)
+	keeper.SetLiquidityProvider(ctx, lp)
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeAddLiquidity,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer.String()),
+		),
+	})
 
-	return &sdk.Result{}, nil
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
 func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiquidity) (*sdk.Result, error) {

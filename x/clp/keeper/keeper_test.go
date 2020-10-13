@@ -7,7 +7,7 @@ import (
 
 func TestKeeper_SetPool(t *testing.T) {
 
-	pool := generateRandomPool(1)[0]
+	pool := GenerateRandomPool(1)[0]
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	keeper.SetPool(ctx, pool)
 	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
@@ -16,7 +16,7 @@ func TestKeeper_SetPool(t *testing.T) {
 }
 
 func TestKeeper_GetPools(t *testing.T) {
-	pools := generateRandomPool(10)
+	pools := GenerateRandomPool(10)
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	for _, pool := range pools {
 		keeper.SetPool(ctx, pool)
@@ -27,7 +27,7 @@ func TestKeeper_GetPools(t *testing.T) {
 }
 
 func TestKeeper_DestroyPool(t *testing.T) {
-	pool := generateRandomPool(1)[0]
+	pool := GenerateRandomPool(1)[0]
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	keeper.SetPool(ctx, pool)
 	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
@@ -39,7 +39,7 @@ func TestKeeper_DestroyPool(t *testing.T) {
 }
 
 func TestKeeper_SetLiquidityProvider(t *testing.T) {
-	lp := generateRandomLP(1)[0]
+	lp := GenerateRandomLP(1)[0]
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	keeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
@@ -48,7 +48,7 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 }
 
 func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
-	lp := generateRandomLP(1)[0]
+	lp := GenerateRandomLP(1)[0]
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	keeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)

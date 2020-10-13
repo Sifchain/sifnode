@@ -5,6 +5,7 @@ package types
 const (
 	EventTypeCreatePool              = "created_new_pool"
 	EventTypeCreateLiquidityProvider = "created_new_liquidity_provider"
+	EventTypeAddLiquidity            = "added_liqudity"
 	AttributeKeyPool                 = "pool"
 	AttributeKeyLiquidityProvider    = "liquidity_provider"
 	AttributeValueCategory           = ModuleName

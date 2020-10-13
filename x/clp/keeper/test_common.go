@@ -1,9 +1,11 @@
 package keeper
 
 import (
+	"bytes"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
 	"math/rand"
+	"strconv"
 	"testing"
 	"time"
 
@@ -134,7 +136,7 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk
 	return ctx, keeper
 }
 
-func generateRandomPool(numberOfPools int) []types.Pool {
+func GenerateRandomPool(numberOfPools int) []types.Pool {
 	var poolList []types.Pool
 	tokens := []string{"ETH", "BTC", "EOS", "BCH", "BNB", "USDT", "ADA", "TRX"}
 	rand.Seed(time.Now().Unix())
@@ -142,13 +144,13 @@ func generateRandomPool(numberOfPools int) []types.Pool {
 		// initialize global pseudo random generator
 		externalToken := tokens[rand.Intn(len(tokens))]
 		externalAsset := types.NewAsset("ROWAN", "c"+"ROWAN"+externalToken, externalToken)
-		pool := types.NewPool(externalAsset, 1, 1, 1)
+		pool := types.NewPool(externalAsset, 1000, 100, 1)
 		poolList = append(poolList, pool)
 	}
 	return poolList
 }
 
-func generateRandomLP(numberOfLp int) []types.LiquidityProvider {
+func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	var lpList []types.LiquidityProvider
 	tokens := []string{"ETH", "BTC", "EOS", "BCH", "BNB", "USDT", "ADA", "TRX"}
 	rand.Seed(time.Now().Unix())
@@ -159,4 +161,33 @@ func generateRandomLP(numberOfLp int) []types.LiquidityProvider {
 		lpList = append(lpList, lp)
 	}
 	return lpList
+}
+
+func GenerateAddress() sdk.AccAddress {
+	var buffer bytes.Buffer
+	buffer.WriteString("A58856F0FD53BF058B4909A21AEC019107BA6")
+	buffer.WriteString(strconv.Itoa(100))
+	res, _ := sdk.AccAddressFromHex(buffer.String())
+	bech := res.String()
+	addr := buffer.String()
+	res, err := sdk.AccAddressFromHex(addr)
+
+	if err != nil {
+		panic(err)
+	}
+
+	bechexpected := res.String()
+	if bech != bechexpected {
+		panic("Bech encoding doesn't match reference")
+	}
+
+	bechres, err := sdk.AccAddressFromBech32(bech)
+	if err != nil {
+		panic(err)
+	}
+	if !bytes.Equal(bechres, res) {
+		panic("Bech decode and hex decode don't match")
+	}
+	return res
+
 }
