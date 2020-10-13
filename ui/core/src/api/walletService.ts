@@ -1,48 +1,21 @@
 import { AssetAmount, Token } from "../entities";
-import detectMetaMaskProvider from "@metamask/detect-provider";
-
-import Web3 from "web3";
-import { AbstractProvider } from "web3-core";
 import { ETH } from "../constants";
+import { Web3Getter } from "./utils/getWeb3";
 
-// const SUPPORTED_TOKENS = [ATK, BTK];
-
-type WindowWithPossibleMetaMask = typeof window & {
-  ethereum?: MetaMaskProvider;
-  web3: OldMetaMaskProvider;
+export type WalletServiceContext = {
+  getWeb3: Web3Getter;
+  getSupportedTokens: () => Promise<Map<string, Token>>;
 };
 
-type MetaMaskProvider = AbstractProvider & { enable: () => Promise<void> };
-type OldMetaMaskProvider = AbstractProvider & {
-  currentProvider: AbstractProvider;
-};
-
-// Not sure if this is
-async function getWeb3(): Promise<Web3 | null> {
-  const mmp = await detectMetaMaskProvider();
-  const win = window as WindowWithPossibleMetaMask;
-
-  if (!mmp || !win) return null;
-  if (win.ethereum) {
-    const web3 = new Web3(win.ethereum);
-    await win.ethereum.enable();
-    return web3;
-  }
-
-  if (win.web3) {
-    return new Web3(win.web3.currentProvider);
-  }
-
-  return null;
-}
-
-export function createWalletService(
-  getWeb3: () => Promise<Web3 | null>,
-  supportedTokens: Token[]
-) {
+export default function createWalletService({
+  getWeb3,
+  getSupportedTokens,
+}: WalletServiceContext) {
   return {
     async getAssetBalances(): Promise<AssetAmount[]> {
       const web3 = await getWeb3();
+      const supportedTokens = await getSupportedTokens();
+
       if (!web3) {
         alert("Cannot connect to wallet");
         return [];
@@ -60,7 +33,7 @@ export function createWalletService(
 
       assetAmounts.push(AssetAmount.create(ETH, ethBalance));
 
-      for (const token of supportedTokens) {
+      for (const [_, token] of supportedTokens) {
         const contract = new eth.Contract(
           [
             // balanceOf
@@ -93,5 +66,3 @@ export function createWalletService(
     },
   };
 }
-
-export const walletService = createWalletService(getWeb3, []);

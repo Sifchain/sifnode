@@ -8,13 +8,12 @@ import queryListOfAvailableTokens from "./queryListOfAvailableTokens";
 import setQuantityOfToken from "./setQuantityOfToken";
 import swapTokens from "./swapTokens";
 
-import { Api, FullApi } from "../api/types";
-import * as api from "../api";
-import { State, store } from "../store";
+import { FullApi, Api } from "../api";
+import { State, Store } from "../store";
 
 export type Context<T extends keyof FullApi = keyof FullApi> = Api<
   T,
-  { state: State; store: typeof store }
+  { state: State; store: Store }
 >;
 
 export function createUsecases(context: Context) {
@@ -30,7 +29,5 @@ export function createUsecases(context: Context) {
     ...swapTokens(context),
   };
 }
-
-export const usecases = createUsecases({ api, state: store.state, store });
 
 export type UseCases = ReturnType<typeof createUsecases>;
