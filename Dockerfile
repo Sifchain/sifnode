@@ -30,6 +30,3 @@ COPY --from=build /go/bin/sifnodecli /usr/bin/sifcli
 
 # Copy the scripts over.
 ADD ./build/scripts /scripts
-
-# Start.
-ENTRYPOINT ["/scripts/genesis.sh"]
