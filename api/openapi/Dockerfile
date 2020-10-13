@@ -1,11 +1,11 @@
 FROM swaggerapi/swagger-ui:latest
 
-ENV URLS '[{url:"swagger.yml",name:"SifChain"}]'
+COPY *.yml /usr/share/nginx/html/
 
 # Don't attempt spec validation at swagger.io
 #ENV VALIDATOR_URL ""
 
-COPY ./swagger.yml /usr/share/nginx/html/
+ENV URLS '[{url:"swagger.yml",name:"cosmos-sdk"}, {url:"clp_get.yml", name:"clp_get"}, {url:"clp_post.yml", name: "clp_post"}]'
 
 RUN chmod 644 /usr/share/nginx/html/swagger.yml
 
