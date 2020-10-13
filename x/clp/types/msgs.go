@@ -56,11 +56,11 @@ func (m MsgSwap) GetSigners() []sdk.AccAddress {
 type MsgRemoveLiquidity struct {
 	Signer        sdk.AccAddress
 	ExternalAsset Asset
-	WBasisPoints  uint
-	Asymmetry     uint
+	WBasisPoints  int
+	Asymmetry     int
 }
 
-func NewMsgRemoveLiquidity(signer sdk.AccAddress, externalAsset Asset, wBasisPoints uint, asymmetry uint) MsgRemoveLiquidity {
+func NewMsgRemoveLiquidity(signer sdk.AccAddress, externalAsset Asset, wBasisPoints int, asymmetry int) MsgRemoveLiquidity {
 	return MsgRemoveLiquidity{Signer: signer, ExternalAsset: externalAsset, WBasisPoints: wBasisPoints, Asymmetry: asymmetry}
 }
 

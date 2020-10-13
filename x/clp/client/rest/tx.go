@@ -47,8 +47,8 @@ type (
 		BaseReq       rest.BaseReq `json:"base_req"`
 		Signer        string       `json:"signer"`
 		ExternalAsset types.Asset  `json:"external_asset"`
-		WBasisPoints  uint         `json:"w_basis_points"`
-		Asymmetry     uint         `json:"asymmetry"`
+		WBasisPoints  int          `json:"w_basis_points"`
+		Asymmetry     int          `json:"asymmetry"`
 	}
 	CreatePoolReq struct {
 		BaseReq             rest.BaseReq `json:"base_req"`

@@ -112,8 +112,8 @@ func GetCmdRemoveLiquidity(cdc *codec.Codec) *cobra.Command {
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSourceChain),
 				viper.GetString(FlagAssetSymbol),
 				viper.GetString(FlagAssetTicker))
-			wBasis := viper.GetUint(FlagWBasisPoints)
-			asymmetry := viper.GetUint(FlagAsymmetry)
+			wBasis := viper.GetInt(FlagWBasisPoints)
+			asymmetry := viper.GetInt(FlagAsymmetry)
 			signer := cliCtx.GetFromAddress()
 			msg := types.NewMsgRemoveLiquidity(signer, externalAsset, wBasis, asymmetry)
 
