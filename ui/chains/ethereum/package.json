@@ -4,6 +4,9 @@
   "main": "index.js",
   "author": "Sifchain",
   "license": "UNLICENSED",
+  "scripts": {
+    "migrate": "truffle migrate --reset"
+  },
   "dependencies": {
     "@openzeppelin/contracts": "2.5.1"
   },

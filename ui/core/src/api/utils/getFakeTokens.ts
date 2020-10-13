@@ -16,8 +16,8 @@ function parseTruffleJson(
 
 export async function getFakeTokens() {
   // gonna load the json and parse the code for all our fake tokens
-  const atkJson = require("../../../../fixtures/ethereum/build/contracts/AliceToken.json");
-  const btkJson = require("../../../../fixtures/ethereum/build/contracts/BobToken.json");
+  const atkJson = require("../../../../chains/ethereum/build/contracts/AliceToken.json");
+  const btkJson = require("../../../../chains/ethereum/build/contracts/BobToken.json");
 
   // Return the tokens parsed as assets
   return [

@@ -1,5 +1,5 @@
 {
-  "packages": ["sif-core", "app"],
+  "packages": ["core", "app"],
   "npmClient": "yarn",
   "useWorkspaces": true,
   "version": "0.0.0"

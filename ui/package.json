@@ -1,15 +1,23 @@
 {
-  "name": "sichain-monorepo",
+  "name": "sifchain-monorepo",
   "version": "0.0.0",
   "private": true,
   "license": "UNLICENSED",
+  "scripts": {
+    "chain:migrate": "cd ./chains/ethereum && yarn migrate",
+    "chain:start": "ganache-cli",
+    "core:run-test": "cd core && yarn test",
+    "core:test": "concurrently -k -s first \"yarn chain:start\" \"yarn chain:migrate && yarn core:run-test\""
+  },
   "devDependencies": {
+    "concurrently": "^5.3.0",
     "lerna": "^3.22.1"
   },
   "workspaces": {
     "packages": [
-      "sif-core",
-      "app"
+      "core",
+      "app",
+      "chains/etherium"
     ]
   }
 }
