@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "main": "lib/index.js",
   "module": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "types": "src/index.ts",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
