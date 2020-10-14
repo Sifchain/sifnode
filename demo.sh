@@ -29,3 +29,7 @@ yes Y | sifnodecli tx clp remove-liquidity --from user1 --sourceChain ROWAN --sy
 echo "swap"
 sleep 3
 yes Y |  sifnodecli tx clp swap --from user1 --sentSourceChain ROWAN --sentSymbol EOSROWAN --sentTicker EOS --receivedSourceChain ROWAN --receivedSymbol EOSROWAN --receivedTicker EOS --sentAmount 1000
+
+echo "decommission pool"
+sleep 3
+yes Y | sifnodecli tx clp decommission-pool --from user1 --ticker EOS --sourceChain ROWAN

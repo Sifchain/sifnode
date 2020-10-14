@@ -51,7 +51,6 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 		//send withdrawExternalAsset to liquidityProvider.lpAddress
 		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
 	}
-
 	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
