@@ -120,6 +120,7 @@ func NewInitApp(
 	app.subspaces[auth.ModuleName] = app.paramsKeeper.Subspace(auth.DefaultParamspace)
 	app.subspaces[bank.ModuleName] = app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
+	app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
 
 	app.accountKeeper = auth.NewAccountKeeper(
 		app.cdc,
@@ -156,7 +157,8 @@ func NewInitApp(
 	app.clpKeeper = clp.NewKeeper(
 		app.cdc,
 		keys[clp.StoreKey],
-		app.bankKeeper)
+		app.bankKeeper,
+		app.subspaces[clp.ModuleName])
 
 	// this line is used by starport scaffolding # 4
 

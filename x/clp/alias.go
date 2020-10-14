@@ -6,10 +6,11 @@ import (
 )
 
 const (
-	ModuleName   = types.ModuleName
-	RouterKey    = types.RouterKey
-	StoreKey     = types.StoreKey
-	QuerierRoute = types.QuerierRoute
+	ModuleName        = types.ModuleName
+	RouterKey         = types.RouterKey
+	StoreKey          = types.StoreKey
+	QuerierRoute      = types.QuerierRoute
+	DefaultParamspace = types.DefaultParamspace
 )
 
 var (
@@ -25,8 +26,8 @@ var (
 	RegisterCodec         = types.RegisterCodec
 	NewGenesisState       = types.NewGenesisState
 	DefaultGenesisState   = types.DefaultGenesisState
-
-	ModuleCdc = types.ModuleCdc
+	NewParams             = types.NewParams
+	ModuleCdc             = types.ModuleCdc
 )
 
 type (

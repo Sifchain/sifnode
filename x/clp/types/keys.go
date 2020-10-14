@@ -24,8 +24,12 @@ var (
 )
 
 func GetPoolKey(ticker string, native string) []byte {
-	key := []byte(fmt.Sprintf("%s_%s", ticker, native))
+	key := []byte(GetPoolAddress(ticker, native))
 	return append(PoolPrefix, key...)
+}
+
+func GetPoolAddress(ticker string, native string) string {
+	return fmt.Sprintf("%s_%s", ticker, native)
 }
 
 func GetLiquidityProviderKey(ticker string, lp string) []byte {

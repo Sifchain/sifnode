@@ -31,6 +31,12 @@ func (a Asset) Validate() bool {
 	if len(strings.TrimSpace(a.SourceChain)) == 0 {
 		return false
 	}
+	if a.SourceChain != NativeToken {
+		return false
+	}
+	if a.SourceChain == a.Ticker {
+		return false
+	}
 	if len(strings.TrimSpace(a.Symbol)) == 0 {
 		return false
 	}

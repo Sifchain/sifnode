@@ -2,6 +2,7 @@ package clp
 
 import (
 	"fmt"
+	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -27,10 +28,45 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
-	asset := NewAsset("ROWAN", "ETHROWAN", "ETH")
-	pool := NewPool(asset, 1000, 200, 8, "ethRowan")
+	MinThreshold := keeper.GetParams(ctx).MinCreatePoolThreshold
+	if (msg.ExternalAssetAmount + msg.NativeAssetAmount) < MinThreshold {
+		return nil, types.TotalAmountTooLow
+	}
+	asset := msg.ExternalAsset
+	nativeBalance := msg.NativeAssetAmount
+	externalBalance := msg.ExternalAssetAmount
+	poolUnits, lpunits := calculatePoolUnits(0, 0, 0, nativeBalance, externalBalance)
+	pool := NewPool(asset, nativeBalance, externalBalance, poolUnits)
+	lp := NewLiquidityProvider(asset, lpunits, msg.Signer.String())
 	keeper.SetPool(ctx, pool)
-	return &sdk.Result{}, nil
+	keeper.SetLiquidityProvider(ctx, lp)
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeCreatePool,
+			sdk.NewAttribute(types.AttributeKeyPool, pool.String()),
+		),
+		sdk.NewEvent(
+			types.EventTypeCreateLiquidityProvider,
+			sdk.NewAttribute(types.AttributeKeyLiquidityProvider, lp.String()),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer.String()),
+		),
+	})
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
+}
+
+func calculatePoolUnits(oldPoolUnits uint, nativeAssetBalance uint, externalAssetBalance uint,
+	nativeAssetAmount uint, externalAssetAmount uint) (uint, uint) {
+	R := nativeAssetBalance + nativeAssetAmount
+	A := externalAssetBalance + externalAssetAmount
+	r := nativeAssetAmount
+	a := externalAssetAmount
+	lpUnits := ((R + A) * (r*A + R*a)) / (4 * R * A)
+	poolUnits := oldPoolUnits + lpUnits
+	return poolUnits, lpUnits
 }
 
 func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) (*sdk.Result, error) {
