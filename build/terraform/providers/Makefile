@@ -1,8 +1,8 @@
 ROOT_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 CHAINNET := "localnet"
+STATE_BACKEND := "local"
 AWS_REGION := "us-west-1"
-AWS_STATE_BACKEND := "local"
 AWS_STATE_BUCKET_NAME := "state"
 AWS_CIDR := "10.0.0.0/16"
 AWS_CLUSTER_VERSION := 1.17
