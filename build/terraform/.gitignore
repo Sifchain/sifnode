@@ -3,6 +3,6 @@
 terraform.tfstate
 terraform.tfvars
 *.tfstate*
-aws
-az
-gcp
+providers/aws
+providers/az
+providers/gcp
