@@ -5,7 +5,7 @@ on:
     branches: [develop, master]
     paths: ['ui/**']
   pull_request:
-    branches: [develop, master, frontend-ui]
+    branches: [develop, master, frontend-ui] # Temporarily add frontend-ui until we merge it
     paths: ['ui/**']
 
 jobs:
