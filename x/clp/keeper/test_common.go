@@ -119,17 +119,13 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 	}
 	supplyKeeper := supply.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
-
 	sk := staking.NewKeeper(cdc, keyStaking, supplyKeeper, pk.Subspace(staking.DefaultParamspace))
 	sk.SetParams(ctx, staking.DefaultParams())
-
-	keeper := NewKeeper(cdc, keyClp, bankKeeper)
-
+	keeper := NewKeeper(cdc, keyClp, bankKeeper, pk.Subspace(types.DefaultParamspace))
+	keeper.SetParams(ctx, types.DefaultParams())
 	initCoins := sdk.NewCoins(sdk.NewCoin(sk.BondDenom(ctx), initTokens))
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sk.BondDenom(ctx), initTokens.MulRaw(int64(len(TestAddrs)))))
 	supplyKeeper.SetSupply(ctx, supply.NewSupply(totalSupply))
-
-	// fill all the addresses with some coins, set the loose pool tokens simultaneously
 	for _, addr := range TestAddrs {
 		_, err := bankKeeper.AddCoins(ctx, addr, initCoins)
 		require.Nil(t, err)
@@ -146,7 +142,7 @@ func generateRandomPool(numberOfPools int) []types.Pool {
 		// initialize global pseudo random generator
 		externalToken := tokens[rand.Intn(len(tokens))]
 		externalAsset := types.NewAsset("ROWAN", "c"+"ROWAN"+externalToken, externalToken)
-		pool := types.NewPool(externalAsset, 1, 1, 1, "poolAddress"+externalToken)
+		pool := types.NewPool(externalAsset, 1, 1, 1)
 		poolList = append(poolList, pool)
 	}
 	return poolList
@@ -157,7 +153,6 @@ func generateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	tokens := []string{"ETH", "BTC", "EOS", "BCH", "BNB", "USDT", "ADA", "TRX"}
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < numberOfLp; i++ {
-		// initialize global pseudo random generator
 		externalToken := tokens[rand.Intn(len(tokens))]
 		asset := types.NewAsset("ROWAN", "c"+"ROWAN"+externalToken, externalToken)
 		lp := types.NewLiquidityProvider(asset, 1, "192.0.1.1")

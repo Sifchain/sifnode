@@ -32,9 +32,16 @@ func (p Pool) Validate() bool {
 }
 
 // NewPool returns a new Pool
-func NewPool(externalAsset Asset, nativeAssetBalance uint, externalAssetBalance uint, poolUnits uint, poolAddress string) Pool {
-	return Pool{ExternalAsset: externalAsset, NativeAssetBalance: nativeAssetBalance, ExternalAssetBalance: externalAssetBalance, PoolUnits: poolUnits, PoolAddress: poolAddress}
+func NewPool(externalAsset Asset, nativeAssetBalance uint, externalAssetBalance uint, poolUnits uint) Pool {
+	pool := Pool{ExternalAsset: externalAsset,
+		NativeAssetBalance:   nativeAssetBalance,
+		ExternalAssetBalance: externalAssetBalance,
+		PoolUnits:            poolUnits}
+	pool.PoolAddress = GetPoolAddress(pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	return pool
 }
+
+type Pools []Pool
 
 type LiquidityProvider struct {
 	Asset                    Asset  `json:"asset"`
@@ -59,4 +66,34 @@ func (l LiquidityProvider) Validate() bool {
 // NewLiquidityProvider returns a new LiquidityProvider
 func NewLiquidityProvider(asset Asset, liquidityProviderUnits uint, liquidityProviderAddress string) LiquidityProvider {
 	return LiquidityProvider{Asset: asset, LiquidityProviderUnits: liquidityProviderUnits, LiquidityProviderAddress: liquidityProviderAddress}
+}
+
+// ----------------------------------------------------------------------------
+// Client Types
+
+type PoolResponse struct {
+	Pool
+	Height int64 `json:"height"`
+}
+
+func NewPoolResponse(pool Pool, height int64) PoolResponse {
+	return PoolResponse{Pool: pool, Height: height}
+}
+
+type PoolsResponse struct {
+	Pools
+	Height int64 `json:"height"`
+}
+
+func NewPoolsResponse(pools Pools, height int64) PoolsResponse {
+	return PoolsResponse{Pools: pools, Height: height}
+}
+
+type LiquidityProviderResponse struct {
+	LiquidityProvider
+	Height int64 `json:"height"`
+}
+
+func NewLiquidityProviderResponse(liquidityProvider LiquidityProvider, height int64) LiquidityProviderResponse {
+	return LiquidityProviderResponse{LiquidityProvider: liquidityProvider, Height: height}
 }

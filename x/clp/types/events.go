@@ -1,15 +1,12 @@
 package types
 
 // clp module event types
+
+
 const (
-	// TODO: Create your event types
-	// EventType<Action>    		= "action"
-
-	// TODO: Create keys fo your events, the values will be derivided from the msg
-	// AttributeKeyAddress  		= "address"
-
-	// TODO: Some events may not have values for that reason you want to emit that something happened.
-	// AttributeValueDoubleSign = "double_sign"
-
-	AttributeValueCategory = ModuleName
+	EventTypeCreatePool              = "created_new_pool"
+	EventTypeCreateLiquidityProvider = "created_new_liquidity_provider"
+	AttributeKeyPool                 = "pool"
+	AttributeKeyLiquidityProvider    = "liquidity_provider"
+	AttributeValueCategory           = ModuleName
 )
