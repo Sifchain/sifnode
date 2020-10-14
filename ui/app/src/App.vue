@@ -1,11 +1,36 @@
 <template>
   <div>
     <div id="nav">
-      <router-link to="/">Home</router-link>
+      <router-link to="/">Wallet</router-link>
     </div>
-    <router-view/>
+    <router-view />
   </div>
 </template>
+
+<script lang="ts">
+import { defineComponent, provide } from "vue";
+import {
+  createStore,
+  createApi,
+  getWeb3,
+  createUsecases,
+  getFakeTokens,
+} from "../../core";
+
+export default defineComponent({
+  name: "App",
+  setup() {
+    const store = createStore();
+    const { state } = store;
+    const api = createApi({ getWeb3, getSupportedTokens: getFakeTokens });
+    const usecases = createUsecases({ store, state, api });
+
+    provide("api", api);
+    provide("state", store.state);
+    provide("usecases", usecases);
+  },
+});
+</script>
 
 <style>
 #app {

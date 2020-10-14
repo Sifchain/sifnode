@@ -4,13 +4,11 @@ import Web3 from "web3";
 import { HttpProvider } from "web3-core";
 import { getFakeTokens } from "./getFakeTokens";
 
-async function getProductionTokens(): Promise<Map<string, Token>> {
-  return new Map(); //
+async function getProductionTokens(): Promise<Token[]> {
+  return []; //
 }
 
-export async function getSupportedTokens(
-  web3: Web3
-): Promise<Map<string, Token>> {
+export async function getSupportedTokens(web3: Web3): Promise<Token[]> {
   const provider = web3.eth.currentProvider as HttpProvider;
   const host = provider.host;
 
