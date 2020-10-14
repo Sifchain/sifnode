@@ -2,6 +2,8 @@ ROOT_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 CHAINNET := "localnet"
 AWS_REGION := "us-west-1"
+AWS_STATE_BACKEND := "local"
+AWS_STATE_BUCKET_NAME := "state"
 AWS_CIDR := "10.0.0.0/16"
 AWS_CLUSTER_VERSION := 1.17
 AWS_CLUSTER_NAME := "sifnode"
@@ -17,7 +19,10 @@ gotpl:
 
 create-new-aws-environment: gotpl
 	@mkdir -p .live/sifchain-aws-$(CHAINNET)
-	@gotpl $(ROOT_DIR)/template/aws/*.tf.tpl --set chainnet=$(CHAINNET) \
+	@gotpl $(ROOT_DIR)/template/aws/state/$(STATE_BACKEND).tf.tpl $(ROOT_DIR)/template/aws/cluster.tf.tpl \
+		--set chainnet=$(CHAINNET) \
+		--set aws.state.bucket_name=$(AWS_STATE_BUCKET_NAME) \
+		--set aws.state.bucket_key=sifchain-aws-$(CHAINNET).state \
 		--set aws.region=$(AWS_REGION) \
 		--set aws.cidr=$(AWS_CIDR) \
 		--set aws.cluster.version=$(AWS_CLUSTER_VERSION) \
