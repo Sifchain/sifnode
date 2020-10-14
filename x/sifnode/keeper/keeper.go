@@ -5,10 +5,10 @@ import (
 
 	"github.com/tendermint/tendermint/libs/log"
 
+	"github.com/Sifchain/sifnode/x/sifnode/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/Sifchain/sifnode/x/sifnode/types"
 )
 
 // Keeper of the sifnode store

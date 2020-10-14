@@ -32,6 +32,7 @@ lint-verbose: lint-pre
 install: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
 
+
 clean-config:
 	@rm -rf ~/.sifnode*
 
@@ -45,4 +46,4 @@ feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
 
 run:
-	go run ./cmd/sifd start
+	go run ./cmd/sifnoded start

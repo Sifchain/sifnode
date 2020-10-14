@@ -34,7 +34,6 @@ func main() {
 	cdc := app.MakeCodec()
 
 	app.SetConfig()
-
 	ctx := server.NewDefaultContext()
 	cobra.EnableCommandSorting = false
 	rootCmd := &cobra.Command{
