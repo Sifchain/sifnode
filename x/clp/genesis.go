@@ -7,6 +7,7 @@ import (
 )
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, bankKeeper types.BankKeeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
+	keeper.SetParams(ctx, data.Params)
 	return []abci.ValidatorUpdate{}
 }
 
