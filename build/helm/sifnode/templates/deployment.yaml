@@ -32,7 +32,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "sifgen node create sifchain; sifnoded start"]
+          args: ["-c", "sifgen node create $SIF_ID; sifnoded start"]
           ports:
             - name: port-26656
               containerPort: 26656
@@ -48,6 +48,8 @@ spec:
               value: sifnodecli
             - name: SIF_DAEMON
               value: sifnoded
+            - name: SIF_ID
+              value: sifchain
           livenessProbe:
             tcpSocket:
               port: 26656
