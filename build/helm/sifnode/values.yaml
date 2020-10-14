@@ -36,6 +36,12 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+sifnode:
+  env:
+    sifCli: sifnodecli
+    sifDaemon: sifnoded
+    sifId: sifchain
+
 service:
   type: LoadBalancer
   port: 26656
