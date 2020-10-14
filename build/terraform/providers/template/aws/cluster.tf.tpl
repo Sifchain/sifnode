@@ -10,16 +10,23 @@ provider "kubernetes" {
   version                = "~> 1.9"
 }
 
-module sifnode {
-    source                          = "github.com/sifchain/environments/providers/aws/eks"
-    chain_id                        = {{.chain_id}}
-    aws_cidr                        = {{.aws.cidr}}
-    aws_cluster_version             = {{.aws.cluster.version}}
-    aws_cluster_name                = "{{.aws.cluster.name}}"
-    aws_cluster_ami_type            = "{{.aws.cluster.ami_type}}"
-    aws_cluster_desired_capacity    = {{.aws.cluster.desired_capacity}}
-    aws_cluster_max_capacity        = {{.aws.cluster.max_capacity}}
-    aws_cluster_min_capacity        = {{.aws.cluster.min_capacity}}
-    aws_cluster_instance_type       = {{.aws.cluster.instance_type}}
-    aws_cluster_disk_size           = {{.aws.cluster.disk_size}}
+module sifchain {
+    source                  = "../../build/terraform/providers/aws"
+    chainnet                = "{{.chainnet}}"
+    vpc_cidr                = "{{.aws.cidr}}"
+    cluster_version         = {{.aws.cluster.version}}
+    cluster_name            = "{{.aws.cluster.name}}"
+    tags = {
+        Terraform           = true
+        Sifnode             = true
+        ChainNet            = "{{.chainnet}}"
+    }
+    node_group_settings = {
+        ami_type            = "{{.aws.cluster.ami_type}}"
+        desired_capacity    = {{.aws.cluster.desired_capacity}}
+        max_capacity        = {{.aws.cluster.max_capacity}}
+        min_capacity        = {{.aws.cluster.min_capacity}}
+        instance_type       = "{{.aws.cluster.instance_type}}"
+        disk_size           = {{.aws.cluster.disk_size}}
+    }
 }

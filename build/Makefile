@@ -15,6 +15,9 @@ build-cluster:
 ifeq '$(PROVIDER)' 'local'
 	echo "local setup..."
 	make microk8s-cluster-start
-else ifeq '$(PROVIDER)' 'aws'
-	make build-aws-cluster
+endif
+
+create-new-environment:
+ifeq '$(PROVIDER)' 'aws'
+	make create-new-aws-environment
 endif
