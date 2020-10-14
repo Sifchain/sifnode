@@ -32,7 +32,7 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --silent && cd ./chains/etherium && yarn install --frozen-lockfile --silent
+        run: yarn install --frozen-lockfile --silent && cd ./chains/ethereum && yarn install --frozen-lockfile --silent
         env:
           CI: true
       - name: Test Frontend
