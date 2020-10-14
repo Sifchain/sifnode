@@ -36,6 +36,8 @@ func TestKeeper_DestroyPool(t *testing.T) {
 	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
 	_, err = keeper.GetPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
 	assert.Error(t, err, "Pool should be deleted")
+	// This should do nothing.
+	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
 }
 
 func TestKeeper_SetLiquidityProvider(t *testing.T) {
@@ -54,7 +56,11 @@ func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
 	assert.NoError(t, err, "Error in get liquidityProvider")
 	assert.Equal(t, getlp, lp)
+	assert.True(t, keeper.GetLiquidityProviderIterator(ctx).Valid())
 	keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
 	_, err = keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
 	assert.Error(t, err, "LiquidityProvider has been deleted")
+	// This should do nothing
+	keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
+	assert.False(t, keeper.GetLiquidityProviderIterator(ctx).Valid())
 }
