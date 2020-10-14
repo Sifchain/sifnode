@@ -1,19 +1,8 @@
-import JSBI from "jsbi";
-import * as TOKENS from "../constants/tokens";
-import { AssetAmount, Asset } from "../entities";
-import { reactive, computed } from "@vue/reactivity";
-
-function getTokenBySymbol(symbol: string) {
-  const tokenStore = TOKENS as { [symbol: string]: Asset };
-  return tokenStore[symbol];
-}
-
-type AssetAmountMap = Map<string, AssetAmount>;
+import { AssetAmount } from "../entities";
+import { reactive } from "@vue/reactivity";
 
 export type State = {
-  userBalances: AssetAmountMap;
-  marketcapTokenOrder: string[];
-  availableAssetAccounts: readonly AssetAmount[];
+  tokenBalances: AssetAmount[];
 };
 
 export type Actions = {
@@ -21,47 +10,24 @@ export type Actions = {
 };
 
 export function createStore(initialState?: Partial<State>) {
-  const availableAssetAccounts = (computed<AssetAmount[]>(() => {
-    const ordered: AssetAmount[] = [];
-    for (const balance of state.userBalances) {
-      ordered.push(balance[1]);
-    }
-
-    for (let i = 0; i < Math.min(state.marketcapTokenOrder.length, 20); i++) {
-      const symbol = state.marketcapTokenOrder[i];
-      const token = state.userBalances.get(symbol);
-      const tokenSymbol = getTokenBySymbol(symbol);
-      if (!token && tokenSymbol) {
-        ordered.push(
-          AssetAmount.create(getTokenBySymbol(symbol), JSBI.BigInt(0))
-        );
-      }
-    }
-
-    return ordered;
-  }) as unknown) as AssetAmount[];
-
   const state = reactive<State>({
-    marketcapTokenOrder: [],
-    userBalances: new Map(),
-    availableAssetAccounts,
     ...initialState,
+    tokenBalances: [],
   }) as State;
 
-  const setUserBalances = (balances: AssetAmount[]) => {
-    state.userBalances = balances.reduce((map, balance) => {
-      map.set(balance.asset.symbol, balance);
-      return map;
-    }, new Map<string, AssetAmount>());
+  const setTokenBalances = (tokenBalances: AssetAmount[]) => {
+    state.tokenBalances = tokenBalances;
   };
-
   return {
     state,
-    setUserBalances,
+    setTokenBalances,
   };
 }
 export type Store = ReturnType<typeof createStore>;
 
+//
+// ==============================================================================
+//
 // For reference here is Uniswaps redux store shape:
 //
 // NOTE: Uniswap attempt to reuse their redux state for both pool and swap
