@@ -1,0 +1,1062 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="7b81c893-32db-4ded-bcaa-9a8cf91cbe5e" created="3.4.0" activeEnvironment="test" name="Project 1" updated="3.4.0 2020-09-16T12:11:44Z" encryptionMode="Not encrypted" xmlns:con="http://eviware.com/soapui/config">
+  <con:settings/>
+  <con:interface xsi:type="con:RestService" id="f0b2d26f-58d8-454f-b6ed-f204bb9e1021" name="clp" type="rest_ex" wadlVersion="https://swagger.io/openapiv3/specification" definitionUrl="file:/Users/metta/Dropbox/Code/__blockchain__/sifchain/sifnode/api/openapi/clp_get.yml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <con:description>defaultDescription</con:description>
+    <con:settings/>
+    <con:definitionCache type="TEXT" rootPart="file:/Users/metta/Dropbox/Code/__blockchain__/sifchain/sifnode/api/openapi/clp_get.yml">
+      <con:part>
+        <con:url>file:/Users/metta/Dropbox/Code/__blockchain__/sifchain/sifnode/api/openapi/clp_get.yml</con:url>
+        <con:content>openapi: 3.0.1
+info:
+  title: defaultTitle
+  description: defaultDescription
+  version: '0.1'
+servers:
+  - url: 'http://0.0.0.0:1317'
+paths:
+  /clp/getPools:
+    get:
+      description: Auto generated using Swagger Inspector
+      responses:
+        '200':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        external_asset:
+                          type: object
+                          properties:
+                            symbol:
+                              type: string
+                            ticker:
+                              type: string
+                            source_chain:
+                              type: string
+                        external_asset_balance:
+                          type: string
+                        native_asset_balance:
+                          type: string
+                        pool_units:
+                          type: string
+                        pool_address:
+                          type: string
+                  height:
+                    type: string
+              examples:
+                '0':
+                  value: |-
+                    {
+                      "height": "415",
+                      "result": [
+                        {
+                          "external_asset": {
+                            "source_chain": "ROWAN",
+                            "symbol": "EOSROWAN",
+                            "ticker": "EOS"
+                          },
+                          "native_asset_balance": "1",
+                          "external_asset_balance": "1000",
+                          "pool_units": "500",
+                          "pool_address": "EOS_ROWAN"
+                        },
+                        {
+                          "external_asset": {
+                            "source_chain": "ROWAN",
+                            "symbol": "BTCROWAN",
+                            "ticker": "ETH"
+                          },
+                          "native_asset_balance": "1",
+                          "external_asset_balance": "1000",
+                          "pool_units": "500",
+                          "pool_address": "ETH_ROWAN"
+                        }
+                      ]
+                    }
+      servers:
+        - url: 'http://0.0.0.0:1317'
+    servers:
+      - url: 'http://0.0.0.0:1317'
+  /clp/getLiquidityProvider:
+    get:
+      description: Auto generated using Swagger Inspector
+      parameters:
+        - name: ticker
+          in: query
+          schema:
+            type: string
+          example: EOS
+        - name: lpAddress
+          in: query
+          schema:
+            type: string
+          example: sif18agvfsynv8phnxxvs75t2te0286eu8t6msgc0r
+      responses:
+        '200':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      liquidity_provider_units:
+                        type: string
+                      liquidity_provider_address:
+                        type: string
+                      asset:
+                        type: object
+                        properties:
+                          symbol:
+                            type: string
+                          ticker:
+                            type: string
+                          source_chain:
+                            type: string
+                  height:
+                    type: string
+              examples:
+                '0':
+                  value: |-
+                    {
+                      "height": "451",
+                      "result": {
+                        "asset": {
+                          "source_chain": "ROWAN",
+                          "symbol": "EOSROWAN",
+                          "ticker": "EOS"
+                        },
+                        "liquidity_provider_units": "500",
+                        "liquidity_provider_address": "sif18agvfsynv8phnxxvs75t2te0286eu8t6msgc0r"
+                      }
+                    }
+      servers:
+        - url: 'http://0.0.0.0:1317'
+    servers:
+      - url: 'http://0.0.0.0:1317'
+  /clp/getPool:
+    get:
+      description: Auto generated using Swagger Inspector
+      parameters:
+        - name: ticker
+          in: query
+          schema:
+            type: string
+          example: EOS
+        - name: sourceChain
+          in: query
+          schema:
+            type: string
+          example: ROWAN
+      responses:
+        '200':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      external_asset:
+                        type: object
+                        properties:
+                          symbol:
+                            type: string
+                          ticker:
+                            type: string
+                          source_chain:
+                            type: string
+                      external_asset_balance:
+                        type: string
+                      native_asset_balance:
+                        type: string
+                      pool_units:
+                        type: string
+                      pool_address:
+                        type: string
+                  height:
+                    type: string
+              examples:
+                '0':
+                  value: |-
+                    {
+                      "height": "422",
+                      "result": {
+                        "external_asset": {
+                          "source_chain": "ROWAN",
+                          "symbol": "EOSROWAN",
+                          "ticker": "EOS"
+                        },
+                        "native_asset_balance": "1",
+                        "external_asset_balance": "1000",
+                        "pool_units": "500",
+                        "pool_address": "EOS_ROWAN"
+                      }
+                    }
+      servers:
+        - url: 'http://0.0.0.0:1317'
+    servers:
+      - url: 'http://0.0.0.0:1317'</con:content>
+        <con:type>https://swagger.io/openapiv3/specification</con:type>
+      </con:part>
+    </con:definitionCache>
+    <con:endpoints>
+      <con:endpoint>http://0.0.0.0:1317</con:endpoint>
+      <con:endpoint>http://localhost:8089/</con:endpoint>
+    </con:endpoints>
+    <con:environmentSpec>
+      <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+        <con:authProfile>Inherit From Parent</con:authProfile>
+      </con:entry>
+    </con:environmentSpec>
+    <con:resource name="/clp/getPools" path="/clp/getPools" id="8ac0b32e-e272-4342-ab96-7590ab0f86e6">
+      <con:settings/>
+      <con:parameters/>
+      <con:method name="GET" id="7a905c4c-f37d-4225-beeb-a7e7666e74aa" method="GET">
+        <con:description>Auto generated using Swagger Inspector</con:description>
+        <con:settings/>
+        <con:parameters/>
+        <con:representation type="RESPONSE">
+          <con:mediaType>application/json</con:mediaType>
+          <con:status>200</con:status>
+          <con:params/>
+          <con:description>Auto generated using Swagger Inspector</con:description>
+          <con:sampleContent>{
+  "result" : [ {
+    "external_asset" : {
+      "symbol" : "string",
+      "ticker" : "string",
+      "source_chain" : "string"
+    },
+    "external_asset_balance" : "string",
+    "native_asset_balance" : "string",
+    "pool_units" : "string",
+    "pool_address" : "string"
+  } ],
+  "height" : "string"
+}</con:sampleContent>
+        </con:representation>
+        <con:request name="Request 1" id="33bf9788-7897-40d7-9253-ae0340019ffd" mediaType="application/json">
+          <con:settings/>
+          <con:endpoint>http://0.0.0.0:1317</con:endpoint>
+          <con:credentials>
+            <con:selectedAuthProfile>No Authorization</con:selectedAuthProfile>
+            <con:authType>No Authorization</con:authType>
+          </con:credentials>
+          <con:parameters/>
+          <con:environmentSpec>
+            <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+              <con:authProfile>Inherit From Parent</con:authProfile>
+            </con:entry>
+          </con:environmentSpec>
+        </con:request>
+        <con:environmentSpec>
+          <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+            <con:authProfile>Inherit From Parent</con:authProfile>
+          </con:entry>
+        </con:environmentSpec>
+      </con:method>
+      <con:environmentSpec>
+        <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+          <con:authProfile>Inherit From Parent</con:authProfile>
+        </con:entry>
+      </con:environmentSpec>
+    </con:resource>
+    <con:resource name="/clp/getLiquidityProvider" path="/clp/getLiquidityProvider" id="0fb4d14e-1b4e-42dd-8464-bfdd75683915">
+      <con:settings/>
+      <con:parameters/>
+      <con:method name="GET" id="3db05272-a38d-467e-9bb5-6539811e8183" method="GET">
+        <con:description>Auto generated using Swagger Inspector</con:description>
+        <con:settings/>
+        <con:parameters>
+          <con:parameter>
+            <con:name>ticker</con:name>
+            <con:style>QUERY</con:style>
+          </con:parameter>
+          <con:parameter>
+            <con:name>lpAddress</con:name>
+            <con:style>QUERY</con:style>
+          </con:parameter>
+        </con:parameters>
+        <con:representation type="RESPONSE">
+          <con:mediaType>application/json</con:mediaType>
+          <con:status>200</con:status>
+          <con:params/>
+          <con:description>Auto generated using Swagger Inspector</con:description>
+          <con:sampleContent>{
+  "result" : {
+    "liquidity_provider_units" : "string",
+    "liquidity_provider_address" : "string",
+    "asset" : {
+      "symbol" : "string",
+      "ticker" : "string",
+      "source_chain" : "string"
+    }
+  },
+  "height" : "string"
+}</con:sampleContent>
+        </con:representation>
+        <con:request name="Request 1" id="0398008c-7d07-4dba-9f7e-30f0c48b72d3" mediaType="application/json">
+          <con:settings/>
+          <con:endpoint>http://0.0.0.0:1317</con:endpoint>
+          <con:credentials>
+            <con:selectedAuthProfile>No Authorization</con:selectedAuthProfile>
+            <con:authType>No Authorization</con:authType>
+          </con:credentials>
+          <con:parameters/>
+          <con:environmentSpec>
+            <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+              <con:authProfile>Inherit From Parent</con:authProfile>
+            </con:entry>
+          </con:environmentSpec>
+        </con:request>
+        <con:environmentSpec>
+          <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+            <con:authProfile>Inherit From Parent</con:authProfile>
+          </con:entry>
+        </con:environmentSpec>
+      </con:method>
+      <con:environmentSpec>
+        <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+          <con:authProfile>Inherit From Parent</con:authProfile>
+        </con:entry>
+      </con:environmentSpec>
+    </con:resource>
+    <con:resource name="/clp/getPool" path="/clp/getPool" id="6ba234f9-432e-4cb1-be08-1c0e2ffd2ff2">
+      <con:settings/>
+      <con:parameters/>
+      <con:method name="GET" id="41664c34-91c2-43b3-abbd-320d17406101" method="GET">
+        <con:description>Auto generated using Swagger Inspector</con:description>
+        <con:settings/>
+        <con:parameters>
+          <con:parameter>
+            <con:name>ticker</con:name>
+            <con:style>QUERY</con:style>
+          </con:parameter>
+          <con:parameter>
+            <con:name>sourceChain</con:name>
+            <con:style>QUERY</con:style>
+          </con:parameter>
+        </con:parameters>
+        <con:representation type="RESPONSE">
+          <con:mediaType>application/json</con:mediaType>
+          <con:status>200</con:status>
+          <con:params/>
+          <con:description>Auto generated using Swagger Inspector</con:description>
+          <con:sampleContent>{
+  "result" : {
+    "external_asset" : {
+      "symbol" : "string",
+      "ticker" : "string",
+      "source_chain" : "string"
+    },
+    "external_asset_balance" : "string",
+    "native_asset_balance" : "string",
+    "pool_units" : "string",
+    "pool_address" : "string"
+  },
+  "height" : "string"
+}</con:sampleContent>
+        </con:representation>
+        <con:request name="Request 1" id="8eedcaac-2ce3-4ce5-976a-61a0670e17fc" mediaType="application/json">
+          <con:settings/>
+          <con:endpoint>http://0.0.0.0:1317</con:endpoint>
+          <con:credentials>
+            <con:selectedAuthProfile>No Authorization</con:selectedAuthProfile>
+            <con:authType>No Authorization</con:authType>
+          </con:credentials>
+          <con:parameters/>
+          <con:environmentSpec>
+            <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+              <con:authProfile>Inherit From Parent</con:authProfile>
+            </con:entry>
+          </con:environmentSpec>
+        </con:request>
+        <con:environmentSpec>
+          <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+            <con:authProfile>Inherit From Parent</con:authProfile>
+          </con:entry>
+        </con:environmentSpec>
+      </con:method>
+      <con:environmentSpec>
+        <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+          <con:authProfile>Inherit From Parent</con:authProfile>
+        </con:entry>
+      </con:environmentSpec>
+    </con:resource>
+    <con:resource name="/clp/removeLiquidity" path="/clp/removeLiquidity" id="908960de-d59d-43a0-982d-3d06a1a6c635">
+      <con:settings/>
+      <con:parameters/>
+      <con:method name="POST" id="7cbb0bb4-96a8-467e-9764-58daff3e9d7a" method="POST">
+        <con:description>Auto generated using Swagger Inspector</con:description>
+        <con:settings/>
+        <con:parameters/>
+        <con:representation type="RESPONSE">
+          <con:mediaType>application/json</con:mediaType>
+          <con:status>200</con:status>
+          <con:params/>
+          <con:description>Auto generated using Swagger Inspector</con:description>
+          <con:sampleContent>{
+  "type" : "string",
+  "value" : {
+    "msg" : [ {
+      "type" : "string",
+      "value" : {
+        "Signer" : "string",
+        "Asymmetry" : "string",
+        "ExternalAsset" : {
+          "symbol" : "string",
+          "ticker" : "string",
+          "source_chain" : "string"
+        },
+        "WBasisPoints" : "string"
+      }
+    } ],
+    "fee" : {
+      "amount" : [ "string" ],
+      "gas" : "string"
+    },
+    "memo" : "string"
+  }
+}</con:sampleContent>
+        </con:representation>
+        <con:representation type="REQUEST">
+          <con:mediaType>application/json</con:mediaType>
+          <con:params/>
+          <con:sampleContent>{
+  "base_req": {
+    "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+    "chain_id": "sifnode"
+  },
+  "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+  "external_asset": {
+    "source_chain" : "ROWAN",
+    "symbol" : "ETHROWAN",
+    "ticker" :"ETH"
+  },
+  "w_basis_points": "1000",
+  "asymmetry": "10"
+}</con:sampleContent>
+        </con:representation>
+        <con:request name="0" id="72ae031b-3f6d-4686-b38d-1e47bd6ccd74" mediaType="application/json">
+          <con:settings/>
+          <con:endpoint>http://0.0.0.0:1317</con:endpoint>
+          <con:request>{
+  "base_req": {
+    "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+    "chain_id": "sifnode"
+  },
+  "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+  "external_asset": {
+    "source_chain" : "ROWAN",
+    "symbol" : "ETHROWAN",
+    "ticker" :"ETH"
+  },
+  "w_basis_points": "1000",
+  "asymmetry": "10"
+}</con:request>
+          <con:credentials>
+            <con:selectedAuthProfile>No Authorization</con:selectedAuthProfile>
+            <con:authType>No Authorization</con:authType>
+          </con:credentials>
+          <con:parameters/>
+          <con:environmentSpec>
+            <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+              <con:authProfile>Inherit From Parent</con:authProfile>
+            </con:entry>
+          </con:environmentSpec>
+        </con:request>
+        <con:environmentSpec>
+          <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+            <con:authProfile>Inherit From Parent</con:authProfile>
+          </con:entry>
+        </con:environmentSpec>
+      </con:method>
+      <con:environmentSpec>
+        <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+          <con:authProfile>Inherit From Parent</con:authProfile>
+        </con:entry>
+      </con:environmentSpec>
+    </con:resource>
+    <con:resource name="/clp/addLiquidity" path="/clp/addLiquidity" id="4f3acd17-5b11-4de6-bb18-42d1c1cd33d9">
+      <con:settings/>
+      <con:parameters/>
+      <con:method name="POST" id="2e23d1b2-f9e7-48de-8d58-4774198e0b3f" method="POST">
+        <con:description>Auto generated using Swagger Inspector</con:description>
+        <con:settings/>
+        <con:parameters/>
+        <con:representation type="RESPONSE">
+          <con:mediaType>application/json</con:mediaType>
+          <con:status>200</con:status>
+          <con:params/>
+          <con:description>Auto generated using Swagger Inspector</con:description>
+          <con:sampleContent>{
+  "type" : "string",
+  "value" : {
+    "msg" : [ {
+      "type" : "string",
+      "value" : {
+        "Signer" : "string",
+        "ExternalAsset" : {
+          "symbol" : "string",
+          "ticker" : "string",
+          "source_chain" : "string"
+        },
+        "NativeAssetAmount" : "string",
+        "ExternalAssetAmount" : "string"
+      }
+    } ],
+    "fee" : {
+      "amount" : [ "string" ],
+      "gas" : "string"
+    },
+    "memo" : "string"
+  }
+}</con:sampleContent>
+        </con:representation>
+        <con:representation type="REQUEST">
+          <con:mediaType>application/json</con:mediaType>
+          <con:params/>
+          <con:sampleContent>{
+  "base_req": {
+    "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+    "chain_id": "sifnode"
+  },
+  "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+  "external_asset": {
+    "source_chain" : "ROWAN",
+    "symbol" : "ETHROWAN",
+    "ticker" :"ETH"
+  },
+  "native_asset_amount": "1000",
+  "external_asset_amount": "10"
+}</con:sampleContent>
+        </con:representation>
+        <con:request name="0" id="0ee43be5-3270-4132-a5f0-aa699398e2f0" mediaType="application/json">
+          <con:settings/>
+          <con:endpoint>http://0.0.0.0:1317</con:endpoint>
+          <con:request>{
+  "base_req": {
+    "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+    "chain_id": "sifnode"
+  },
+  "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+  "external_asset": {
+    "source_chain" : "ROWAN",
+    "symbol" : "ETHROWAN",
+    "ticker" :"ETH"
+  },
+  "native_asset_amount": "1000",
+  "external_asset_amount": "10"
+}</con:request>
+          <con:credentials>
+            <con:selectedAuthProfile>No Authorization</con:selectedAuthProfile>
+            <con:authType>No Authorization</con:authType>
+          </con:credentials>
+          <con:parameters/>
+          <con:environmentSpec>
+            <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+              <con:authProfile>Inherit From Parent</con:authProfile>
+            </con:entry>
+          </con:environmentSpec>
+        </con:request>
+        <con:environmentSpec>
+          <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+            <con:authProfile>Inherit From Parent</con:authProfile>
+          </con:entry>
+        </con:environmentSpec>
+      </con:method>
+      <con:environmentSpec>
+        <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+          <con:authProfile>Inherit From Parent</con:authProfile>
+        </con:entry>
+      </con:environmentSpec>
+    </con:resource>
+    <con:resource name="/clp/swap" path="/clp/swap" id="ed636b38-0821-4b07-bf5b-0c73ff691b99">
+      <con:settings/>
+      <con:parameters/>
+      <con:method name="POST" id="7e8dfdcb-34cd-4d51-96e0-986ec062aa75" method="POST">
+        <con:description>Auto generated using Swagger Inspector</con:description>
+        <con:settings/>
+        <con:parameters/>
+        <con:representation type="RESPONSE">
+          <con:mediaType>application/json</con:mediaType>
+          <con:status>200</con:status>
+          <con:params/>
+          <con:description>Auto generated using Swagger Inspector</con:description>
+          <con:sampleContent>{
+  "type" : "string",
+  "value" : {
+    "msg" : [ {
+      "type" : "string",
+      "value" : {
+        "Signer" : "string",
+        "SentAmount" : "string",
+        "ReceivedAsset" : {
+          "symbol" : "string",
+          "ticker" : "string",
+          "source_chain" : "string"
+        },
+        "SentAsset" : {
+          "symbol" : "string",
+          "ticker" : "string",
+          "source_chain" : "string"
+        }
+      }
+    } ],
+    "fee" : {
+      "amount" : [ "string" ],
+      "gas" : "string"
+    },
+    "memo" : "string"
+  }
+}</con:sampleContent>
+        </con:representation>
+        <con:representation type="REQUEST">
+          <con:mediaType>application/json</con:mediaType>
+          <con:params/>
+          <con:sampleContent>{
+  "base_req": {
+    "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+    "chain_id": "sifnode"
+  },
+  "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+  "sent_asset": {
+    "source_chain" : "ROWAN",
+    "symbol" : "ETHROWAN",
+    "ticker" :"ETH"
+  },
+  "received_asset": {
+    "source_chain" : "ROWAN",
+    "symbol" : "ETHROWAN",
+    "ticker" :"ETH"
+  },
+  "sent_amount": "10"
+}</con:sampleContent>
+        </con:representation>
+        <con:request name="0" id="8508a033-f385-4a52-bb6c-2027023082a2" mediaType="application/json">
+          <con:settings/>
+          <con:endpoint>http://0.0.0.0:1317</con:endpoint>
+          <con:request>{
+  "base_req": {
+    "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+    "chain_id": "sifnode"
+  },
+  "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+  "sent_asset": {
+    "source_chain" : "ROWAN",
+    "symbol" : "ETHROWAN",
+    "ticker" :"ETH"
+  },
+  "received_asset": {
+    "source_chain" : "ROWAN",
+    "symbol" : "ETHROWAN",
+    "ticker" :"ETH"
+  },
+  "sent_amount": "10"
+}</con:request>
+          <con:credentials>
+            <con:selectedAuthProfile>No Authorization</con:selectedAuthProfile>
+            <con:authType>No Authorization</con:authType>
+          </con:credentials>
+          <con:parameters/>
+          <con:environmentSpec>
+            <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+              <con:authProfile>Inherit From Parent</con:authProfile>
+            </con:entry>
+          </con:environmentSpec>
+        </con:request>
+        <con:environmentSpec>
+          <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+            <con:authProfile>Inherit From Parent</con:authProfile>
+          </con:entry>
+        </con:environmentSpec>
+      </con:method>
+      <con:environmentSpec>
+        <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+          <con:authProfile>Inherit From Parent</con:authProfile>
+        </con:entry>
+      </con:environmentSpec>
+    </con:resource>
+    <con:resource name="/clp/createPool" path="/clp/createPool" id="2de4203f-91dc-4a92-9e0d-2430998097d4">
+      <con:settings/>
+      <con:parameters/>
+      <con:method name="POST" id="951ce9f2-fc0c-4442-8bfe-a3b19752be50" method="POST">
+        <con:description>Auto generated using Swagger Inspector</con:description>
+        <con:settings/>
+        <con:parameters/>
+        <con:representation type="RESPONSE">
+          <con:mediaType>application/json</con:mediaType>
+          <con:status>200</con:status>
+          <con:params/>
+          <con:description>Auto generated using Swagger Inspector</con:description>
+          <con:sampleContent>{
+  "type" : "string",
+  "value" : {
+    "msg" : [ {
+      "type" : "string",
+      "value" : {
+        "Signer" : "string",
+        "ExternalAsset" : {
+          "symbol" : "string",
+          "ticker" : "string",
+          "source_chain" : "string"
+        },
+        "NativeAssetAmount" : "string",
+        "ExternalAssetAmount" : "string"
+      }
+    } ],
+    "fee" : {
+      "amount" : [ "string" ],
+      "gas" : "string"
+    },
+    "memo" : "string"
+  }
+}</con:sampleContent>
+        </con:representation>
+        <con:representation type="REQUEST">
+          <con:mediaType>application/json</con:mediaType>
+          <con:params/>
+          <con:sampleContent>{
+  "base_req": {
+    "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+    "chain_id": "sifnode"
+  },
+  "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+  "external_asset": {
+    "source_chain" : "ROWAN",
+    "symbol" : "ETHROWAN",
+    "ticker" :"ETH"
+  },
+  "native_asset_amount": "1000",
+  "external_asset_amount": "10"
+}</con:sampleContent>
+        </con:representation>
+        <con:request name="0" id="b352298c-773b-418d-91e8-6b1060d1a4ca" mediaType="application/json">
+          <con:settings/>
+          <con:endpoint>http://0.0.0.0:1317</con:endpoint>
+          <con:request>{
+  "base_req": {
+    "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+    "chain_id": "sifnode"
+  },
+  "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+  "external_asset": {
+    "source_chain" : "ROWAN",
+    "symbol" : "ETHROWAN",
+    "ticker" :"ETH"
+  },
+  "native_asset_amount": "1000",
+  "external_asset_amount": "10"
+}</con:request>
+          <con:credentials>
+            <con:selectedAuthProfile>No Authorization</con:selectedAuthProfile>
+            <con:authType>No Authorization</con:authType>
+          </con:credentials>
+          <con:parameters/>
+          <con:environmentSpec>
+            <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+              <con:authProfile>Inherit From Parent</con:authProfile>
+            </con:entry>
+          </con:environmentSpec>
+        </con:request>
+        <con:environmentSpec>
+          <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+            <con:authProfile>Inherit From Parent</con:authProfile>
+          </con:entry>
+        </con:environmentSpec>
+      </con:method>
+      <con:environmentSpec>
+        <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+          <con:authProfile>Inherit From Parent</con:authProfile>
+        </con:entry>
+      </con:environmentSpec>
+    </con:resource>
+  </con:interface>
+  <con:restMockService id="f16dba37-80a7-41a1-80c8-f8cb1a1da0d4" port="8089" path="/" host="localhost" name="clp Virtual Service">
+    <con:settings/>
+    <con:properties/>
+    <con:constraints>
+      <con:congestion>0</con:congestion>
+      <con:inputBandwidth>-1</con:inputBandwidth>
+      <con:outputBandwidth>-1</con:outputBandwidth>
+      <con:maxThreadPoolCapacity>20</con:maxThreadPoolCapacity>
+      <con:coreThreadPoolCapacity>5</con:coreThreadPoolCapacity>
+      <con:virtError>
+        <con:start>0</con:start>
+        <con:endless>true</con:endless>
+      </con:virtError>
+    </con:constraints>
+    <con:headerValidator type="NONE"/>
+    <con:restMockAction name="/clp/getPools" method="GET" resourcePath="/clp/getPools" id="808fd115-bbb5-4647-af3e-659a2f2ecab0">
+      <con:settings/>
+      <con:dispatchStyle>SEQUENCE</con:dispatchStyle>
+      <con:dispatchConfig/>
+      <con:dispatchXPath/>
+      <con:routeScript/>
+      <con:response name="Response 1" id="3c68c049-7ae5-4adf-a27c-20325bbd4f56" httpResponseStatus="200" mediaType="application/json" compressedBodyContent="aced00057372002f636f6d2e657669776172652e736f617075692e696d706c2e737570706f72742e436f6d7072657373656456616c7565000b8b02c748eeab0200025a000a636f6d707265737365645b0004646174617400025b4278700070" dataSource="">
+        <con:settings/>
+        <con:responseContent>{
+  "result" : [ {
+    "external_asset" : {
+      "symbol" : "string",
+      "ticker" : "string",
+      "source_chain" : "string"
+    },
+    "external_asset_balance" : "string",
+    "native_asset_balance" : "string",
+    "pool_units" : "string",
+    "pool_address" : "string"
+  } ],
+  "height" : "string"
+}</con:responseContent>
+      </con:response>
+    </con:restMockAction>
+    <con:restMockAction name="/clp/getLiquidityProvider" method="GET" resourcePath="/clp/getLiquidityProvider" id="a4f660c7-09c3-4168-a977-1fd59c41a82f">
+      <con:settings/>
+      <con:dispatchStyle>SEQUENCE</con:dispatchStyle>
+      <con:dispatchConfig/>
+      <con:dispatchXPath/>
+      <con:routeScript/>
+      <con:response name="Response 1" id="43d34f85-f47c-4053-ab6c-1f50144a1577" httpResponseStatus="200" mediaType="application/json" compressedBodyContent="aced00057372002f636f6d2e657669776172652e736f617075692e696d706c2e737570706f72742e436f6d7072657373656456616c7565000b8b02c748eeab0200025a000a636f6d707265737365645b0004646174617400025b4278700070" dataSource="">
+        <con:settings/>
+        <con:responseContent>{
+  "result" : {
+    "liquidity_provider_units" : "string",
+    "liquidity_provider_address" : "string",
+    "asset" : {
+      "symbol" : "string",
+      "ticker" : "string",
+      "source_chain" : "string"
+    }
+  },
+  "height" : "string"
+}</con:responseContent>
+      </con:response>
+    </con:restMockAction>
+    <con:restMockAction name="/clp/getPool" method="GET" resourcePath="/clp/getPool" id="1ef57fcf-0660-4e6e-ac6f-3c3aaff8665a">
+      <con:settings/>
+      <con:dispatchStyle>SEQUENCE</con:dispatchStyle>
+      <con:dispatchConfig/>
+      <con:dispatchXPath/>
+      <con:routeScript/>
+      <con:response name="Response 1" id="8acfd8cb-8f28-44cd-8c30-0c5c31e14632" httpResponseStatus="200" mediaType="application/json" compressedBodyContent="aced00057372002f636f6d2e657669776172652e736f617075692e696d706c2e737570706f72742e436f6d7072657373656456616c7565000b8b02c748eeab0200025a000a636f6d707265737365645b0004646174617400025b4278700070" dataSource="">
+        <con:settings/>
+        <con:responseContent>{
+  "result" : {
+    "external_asset" : {
+      "symbol" : "string",
+      "ticker" : "string",
+      "source_chain" : "string"
+    },
+    "external_asset_balance" : "string",
+    "native_asset_balance" : "string",
+    "pool_units" : "string",
+    "pool_address" : "string"
+  },
+  "height" : "string"
+}</con:responseContent>
+      </con:response>
+    </con:restMockAction>
+    <con:restMockAction name="/clp/removeLiquidity" method="POST" resourcePath="/clp/removeLiquidity" id="d49d8cc3-fc03-4856-adfb-d09df1a061f4">
+      <con:settings/>
+      <con:dispatchStyle>SEQUENCE</con:dispatchStyle>
+      <con:dispatchConfig/>
+      <con:dispatchXPath/>
+      <con:routeScript/>
+      <con:response name="Response 1" id="e27a1b83-d041-4179-a503-707f12de522f" httpResponseStatus="200" mediaType="application/json" compressedBodyContent="aced00057372002f636f6d2e657669776172652e736f617075692e696d706c2e737570706f72742e436f6d7072657373656456616c7565000b8b02c748eeab0200025a000a636f6d707265737365645b0004646174617400025b4278700070" dataSource="">
+        <con:settings/>
+        <con:responseContent>{
+  "type" : "string",
+  "value" : {
+    "msg" : [ {
+      "type" : "string",
+      "value" : {
+        "Signer" : "string",
+        "Asymmetry" : "string",
+        "ExternalAsset" : {
+          "symbol" : "string",
+          "ticker" : "string",
+          "source_chain" : "string"
+        },
+        "WBasisPoints" : "string"
+      }
+    } ],
+    "fee" : {
+      "amount" : [ "string" ],
+      "gas" : "string"
+    },
+    "memo" : "string"
+  }
+}</con:responseContent>
+      </con:response>
+    </con:restMockAction>
+    <con:restMockAction name="/clp/addLiquidity" method="POST" resourcePath="/clp/addLiquidity" id="436308da-2c39-406b-8cb4-7db01f015538">
+      <con:settings/>
+      <con:dispatchStyle>SEQUENCE</con:dispatchStyle>
+      <con:dispatchConfig/>
+      <con:dispatchXPath/>
+      <con:routeScript/>
+      <con:response name="Response 1" id="d4567985-08a9-430e-9006-2754b9e39414" httpResponseStatus="200" mediaType="application/json" compressedBodyContent="aced00057372002f636f6d2e657669776172652e736f617075692e696d706c2e737570706f72742e436f6d7072657373656456616c7565000b8b02c748eeab0200025a000a636f6d707265737365645b0004646174617400025b4278700070" dataSource="">
+        <con:settings/>
+        <con:responseContent>{
+  "type" : "string",
+  "value" : {
+    "msg" : [ {
+      "type" : "string",
+      "value" : {
+        "Signer" : "string",
+        "ExternalAsset" : {
+          "symbol" : "string",
+          "ticker" : "string",
+          "source_chain" : "string"
+        },
+        "NativeAssetAmount" : "string",
+        "ExternalAssetAmount" : "string"
+      }
+    } ],
+    "fee" : {
+      "amount" : [ "string" ],
+      "gas" : "string"
+    },
+    "memo" : "string"
+  }
+}</con:responseContent>
+      </con:response>
+    </con:restMockAction>
+    <con:restMockAction name="/clp/swap" method="POST" resourcePath="/clp/swap" id="2a073157-3724-44c2-9c84-9effbca37648">
+      <con:settings/>
+      <con:dispatchStyle>SEQUENCE</con:dispatchStyle>
+      <con:dispatchConfig/>
+      <con:dispatchXPath/>
+      <con:routeScript/>
+      <con:response name="Response 1" id="245635c2-2b9d-483f-980d-90b6c1328c9e" httpResponseStatus="200" mediaType="application/json" compressedBodyContent="aced00057372002f636f6d2e657669776172652e736f617075692e696d706c2e737570706f72742e436f6d7072657373656456616c7565000b8b02c748eeab0200025a000a636f6d707265737365645b0004646174617400025b4278700070" dataSource="">
+        <con:settings/>
+        <con:responseContent>{
+  "type" : "string",
+  "value" : {
+    "msg" : [ {
+      "type" : "string",
+      "value" : {
+        "Signer" : "string",
+        "SentAmount" : "string",
+        "ReceivedAsset" : {
+          "symbol" : "string",
+          "ticker" : "string",
+          "source_chain" : "string"
+        },
+        "SentAsset" : {
+          "symbol" : "string",
+          "ticker" : "string",
+          "source_chain" : "string"
+        }
+      }
+    } ],
+    "fee" : {
+      "amount" : [ "string" ],
+      "gas" : "string"
+    },
+    "memo" : "string"
+  }
+}</con:responseContent>
+      </con:response>
+    </con:restMockAction>
+    <con:restMockAction name="/clp/createPool" method="POST" resourcePath="/clp/createPool" id="b217e1a2-11d6-4cc2-aa8e-f7c767b79cdc">
+      <con:settings/>
+      <con:dispatchStyle>SEQUENCE</con:dispatchStyle>
+      <con:dispatchConfig/>
+      <con:dispatchXPath/>
+      <con:routeScript/>
+      <con:response name="Response 1" id="958eac9d-f086-487e-9901-97d024615a0a" httpResponseStatus="200" mediaType="application/json" compressedBodyContent="aced00057372002f636f6d2e657669776172652e736f617075692e696d706c2e737570706f72742e436f6d7072657373656456616c7565000b8b02c748eeab0200025a000a636f6d707265737365645b0004646174617400025b4278700070" dataSource="">
+        <con:settings/>
+        <con:responseContent>{
+  "type" : "string",
+  "value" : {
+    "msg" : [ {
+      "type" : "string",
+      "value" : {
+        "Signer" : "string",
+        "ExternalAsset" : {
+          "symbol" : "string",
+          "ticker" : "string",
+          "source_chain" : "string"
+        },
+        "NativeAssetAmount" : "string",
+        "ExternalAssetAmount" : "string"
+      }
+    } ],
+    "fee" : {
+      "amount" : [ "string" ],
+      "gas" : "string"
+    },
+    "memo" : "string"
+  }
+}</con:responseContent>
+      </con:response>
+    </con:restMockAction>
+  </con:restMockService>
+  <con:properties/>
+  <con:wssContainer/>
+  <con:databaseConnectionContainer/>
+  <con:jmsConnectionContainer/>
+  <con:oAuth2ProfileContainer/>
+  <con:oAuth1ProfileContainer/>
+  <con:reporting>
+    <con:xmlTemplates/>
+    <con:parameters/>
+  </con:reporting>
+  <con:eventHandlers type="RequestFilter.filterRequest" name="RequestFilter.filterRequest">
+    <con:script>// Sample event script to add custom HTTP header to all outgoing REST, SOAP and HTTP(S) calls
+// This code is often used for adding custom authentication to ReadyAPI functional tests
+
+// If hardcoding the token, uncomment and change line 5
+// token = '4567'
+
+// If your token is parameterized in Project level custom property, uncomment line 8
+// token = request.parent.testCase.testSuite.project.getProperty('auth_token').getValue()
+
+// To modify all outgoing calls, remove comments from lines 11 to 16
+// headers = request.requestHeaders
+// if (headers.containsKey('auth_token2') == false) {
+//   headers.put('auth_token2', token)
+//   request.requestHeaders = headers
+// }</con:script>
+  </con:eventHandlers>
+  <con:eventHandlers type="TestRunListener.afterStep" name="TestRunListener.afterStep">
+    <con:script>// Save all test step results into files
+// Change the directory path in line 5 to a location where you want to store details
+// then uncomment lines 5 to 10
+
+// filePath = 'C:\\tempOutputDirectory\\'
+// fos = new java.io.FileOutputStream(filePath + testStepResult.testStep.label + '.txt', true)
+// pw = new java.io.PrintWriter(fos)
+// testStepResult.writeTo(pw)
+// pw.close()
+// fos.close()</con:script>
+  </con:eventHandlers>
+  <con:environment id="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693" name="test" index="0">
+    <con:service type="REST" name="clp">
+      <con:endpoint authProfile="No Authorization"/>
+    </con:service>
+    <con:databaseConnectionContainer/>
+    <con:jmsConnectionContainer/>
+  </con:environment>
+  <con:authRepository/>
+  <con:environmentSpec>
+    <con:entry environmentId="d3f69bbb-0156-4ec1-bd25-f09fbbb4e693">
+      <con:authProfile>No Authorization</con:authProfile>
+    </con:entry>
+  </con:environmentSpec>
+  <con:tags/>
+</con:soapui-project>
