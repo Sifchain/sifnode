@@ -1,3 +1,5 @@
+ROOT_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
 CHAIN_ID := "sifchain"
 AWS_REGION := "us-west-1"
 AWS_CIDR := "10.0.0.0/16"
@@ -19,9 +21,9 @@ help: ## Show this help message
 gotpl:
 	@go get -u github.com/belitre/gotpl
 
-generate-terraform-aws: gotpl
-	@mkdir -p aws
-	@gotpl ./template/aws/*.tf.tpl --set chain_id=$(CHAIN_ID) \
+generate-aws-cluster-config: gotpl
+	@mkdir -p $(ROOT_DIR)/.environments/providers/aws/eks
+	@gotpl $(ROOT_DIR)/template/aws/*.tf.tpl --set chain_id=$(CHAIN_ID) \
 		--set aws.region=$(AWS_REGION) \
 		--set aws.cidr=$(AWS_CIDR) \
 		--set aws.cluster.version=$(AWS_CLUSTER_VERSION) \
@@ -31,12 +33,12 @@ generate-terraform-aws: gotpl
 		--set aws.cluster.max_capacity=$(AWS_CLUSTER_MAX_CAPACITY) \
 		--set aws.cluster.min_capacity=$(AWS_CLUSTER_MIN_CAPACITY) \
 		--set aws.cluster.instance_type=$(AWS_CLUSTER_INSTANCE_TYPE) \
-		--set aws.cluster.disk_size=$(AWS_CLUSTER_DISK_SIZE) > ./aws/sifchain.tf
+		--set aws.cluster.disk_size=$(AWS_CLUSTER_DISK_SIZE) > $(ROOT_DIR)/.environments/providers/aws/eks/$(CHAIN_ID).tf
 
-aws: ## AWS deployment
-	cd aws && terraform init && terraform apply
+build-aws-cluster: generate-aws-cluster-config ## AWS deployment
+	cd $(ROOT_DIR)/.environments/providers/aws/eks && terraform init && terraform apply
 
-aws-destroy: ## Destroy the AWS infrastructure
-	cd aws && terraform destroy
+destroy-aws-cluster: ## Destroy the AWS infrastructure
+	cd $(ROOT_DIR)/.environments/providers/aws/eks && terraform destroy
 
 .PHONY: aws aws-destroy

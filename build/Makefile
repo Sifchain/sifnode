@@ -1,4 +1,4 @@
-include ./build/terraform/providers/local/Makefile
+include ./build/terraform/providers/Makefile
 
 CHAINNET?=localnet # Options; localnet, testnet, chaosnet ,mainnet
 NAMESPACE?=dev # Optional dev,test,prod, node0, node1
@@ -14,5 +14,7 @@ run-image: build-image
 build-cluster:
 ifeq '$(PROVIDER)' 'local'
 	echo "local setup..."
-	Make microk8s-cluster-start
+	make microk8s-cluster-start
+else ifeq '$(PROVIDER)' 'aws'
+	make build-aws-cluster
 endif
