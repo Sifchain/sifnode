@@ -2,7 +2,7 @@
   <div class="home">
     <table>
       <tr
-        v-for="assetAmount in state.availableAssetAccounts"
+        v-for="assetAmount in state.tokenBalances"
         :key="assetAmount.asset.symbol"
       >
         <td align="right">{{ assetAmount.toFixed(6) }}</td>
@@ -24,7 +24,7 @@ export default {
 
     onMounted(async () => {
       if (usecases) {
-        await usecases.updateListOfAvailableTokens();
+        await usecases.updateAvailableTokens();
       }
     });
 

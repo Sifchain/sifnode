@@ -1,4 +1,4 @@
-import { Token, TokenAmount } from "../entities";
+import { Asset, Token, TokenAmount } from "../entities";
 import { Context } from ".";
 import { BigintIsh } from "src/entities/fraction/Fraction";
 import JSBI from "jsbi";
@@ -26,6 +26,10 @@ function toTokenAmount(amount: BigintIsh) {
   };
 }
 
+const notInAssetList = (assets: Asset[]) => (asset: Asset) => {
+  return !assets.find(({ symbol }) => symbol === asset.symbol);
+};
+
 export default ({ api, store }: Context<"walletService" | "tokenService">) => ({
   async updateAvailableTokens() {
     const walletBalances = await api.walletService.getAssetBalances({
@@ -39,7 +43,7 @@ export default ({ api, store }: Context<"walletService" | "tokenService">) => ({
     const walletTokens = walletBalances.map((assetAmount) => assetAmount.asset);
 
     const availableEmptyTokenAccounts = topERCTokens
-      .filter((token) => !walletTokens.includes(token))
+      .filter(notInAssetList(walletTokens))
       .map(toTokenAmount(JSBI.BigInt("0")));
 
     store.setTokenBalances([...walletBalances, ...availableEmptyTokenAccounts]);
