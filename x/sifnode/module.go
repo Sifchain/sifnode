@@ -8,15 +8,18 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/Sifchain/sifnode/x/sifnode/client/cli"
+	"github.com/Sifchain/sifnode/x/sifnode/client/rest"
+	"github.com/Sifchain/sifnode/x/sifnode/keeper"
+	"github.com/Sifchain/sifnode/x/sifnode/types"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/Sifchain/sifnode/x/sifnode/client/cli"
-	"github.com/Sifchain/sifnode/x/sifnode/client/rest"
-	"github.com/Sifchain/sifnode/x/sifnode/keeper"
-	"github.com/Sifchain/sifnode/x/sifnode/types"
+	"github.com/cosmos/peggy/x/ethbridge"
+	"github.com/cosmos/peggy/x/oracle"
+
 )
 
 // Type check to ensure the interface is properly implemented
@@ -78,16 +81,21 @@ type AppModule struct {
 	keeper     keeper.Keeper
 	coinKeeper bank.Keeper
 	// TODO: Add keepers that your application depends on
-
+	// peggy part
+	OracleKeeper oracle.Keeper
+	BridgeKeeper ethbridge.Keeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper, bankKeeper bank.Keeper) AppModule {
+func NewAppModule(k keeper.Keeper, bankKeeper bank.Keeper, oracleKeeper oracle.Keeper, bridgeKeeper ethbridge.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         k,
 		coinKeeper:     bankKeeper,
 		// TODO: Add keepers that your application depends on
+		// peggy part
+		OracleKeeper: oracleKeeper,
+		BridgeKeeper: bridgeKeeper,
 	}
 }
 
