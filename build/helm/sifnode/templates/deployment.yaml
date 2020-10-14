@@ -43,6 +43,11 @@ spec:
             - name: port-6060
               containerPort: 6060
               protocol: TCP
+          env:
+            - name: SIF_CLI
+              value: sifnodecli
+            - name: SIF_DAEMON
+              value: sifnoded
           livenessProbe:
             tcpSocket:
               port: 26656
