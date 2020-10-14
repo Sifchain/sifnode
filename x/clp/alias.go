@@ -11,6 +11,7 @@ const (
 	StoreKey          = types.StoreKey
 	QuerierRoute      = types.QuerierRoute
 	DefaultParamspace = types.DefaultParamspace
+	NativeToken       = types.NativeToken
 )
 
 var (
@@ -20,6 +21,7 @@ var (
 	NewMsgAddLiquidity     = types.NewMsgAddLiquidity
 	NewMsgRemoveLiquidity  = types.NewMsgRemoveLiquidity
 	NewMsgCreatePool       = types.NewMsgCreatePool
+	NewMsgDecommissionPool = types.NewMsgDecommissionPool
 	NewLiquidityProvider   = types.NewLiquidityProvider
 	NewAsset               = types.NewAsset
 	NewPool                = types.NewPool
@@ -35,13 +37,14 @@ var (
 )
 
 type (
-	Keeper             = keeper.Keeper
-	MsgCreatePool      = types.MsgCreatePool
-	MsgAddLiquidity    = types.MsgAddLiquidity
-	MsgRemoveLiquidity = types.MsgRemoveLiquidity
-	MsgSwap            = types.MsgSwap
-	Pool               = types.Pool
-	LiquidityProvider  = types.LiquidityProvider
-	Asset              = types.Asset
-	GenesisState       = types.GenesisState
+	Keeper              = keeper.Keeper
+	MsgDecommissionPool = types.MsgDecommissionPool
+	MsgCreatePool       = types.MsgCreatePool
+	MsgAddLiquidity     = types.MsgAddLiquidity
+	MsgRemoveLiquidity  = types.MsgRemoveLiquidity
+	MsgSwap             = types.MsgSwap
+	Pool                = types.Pool
+	LiquidityProvider   = types.LiquidityProvider
+	Asset               = types.Asset
+	GenesisState        = types.GenesisState
 )
