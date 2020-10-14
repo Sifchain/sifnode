@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: vue
+        working-directory: ui
 
     steps:
       - uses: actions/checkout@v2
