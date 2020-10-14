@@ -4,12 +4,14 @@ export * from "./utils/getSupportedTokens";
 export * from "./utils/getWeb3";
 
 import walletService, { WalletServiceContext } from "./walletService";
+import tokenService, { TokenServiceContext } from "./tokenService";
 
-type ApiContext = WalletServiceContext; // add contexts from other APIs
+type ApiContext = WalletServiceContext & TokenServiceContext; // add contexts from other APIs
 
 export function createApi(context: ApiContext) {
   return {
     walletService: walletService(context),
+    tokenService: tokenService(context),
   };
 }
 

@@ -14,14 +14,14 @@ function parseTruffleJson(
   return createToken(1, address, 6, symbol, name);
 }
 
-export async function getFakeTokens(): Promise<Map<string, Token>> {
+export async function getFakeTokens(): Promise<Token[]> {
   // gonna load the json and parse the code for all our fake tokens
   const atkJson = require("../../../../chains/ethereum/build/contracts/AliceToken.json");
   const btkJson = require("../../../../chains/ethereum/build/contracts/BobToken.json");
 
   // Return the tokens parsed as assets
-  return new Map([
-    ["ATK", parseTruffleJson("AliceToken", "ATK", atkJson)],
-    ["BTK", parseTruffleJson("BobToken", "BTK", btkJson)],
-  ]);
+  return [
+    parseTruffleJson("AliceToken", "ATK", atkJson),
+    parseTruffleJson("BobToken", "BTK", btkJson),
+  ];
 }

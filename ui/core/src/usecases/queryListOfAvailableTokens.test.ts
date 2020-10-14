@@ -1,69 +1,39 @@
 import queryListOfAvailableTokens from "./queryListOfAvailableTokens";
-import { createStore } from "../store";
-import { AssetAmount } from "../entities";
+import { createStore, Store } from "../store";
+import { AssetAmount, Token } from "../entities";
 
 import JSBI from "jsbi";
-import { USDC, USDT } from "../constants/tokens";
+import { USDC, USDT, BNB, CRO, FET } from "../constants/tokens";
 
-const assetAmounts = [USDC, USDT].map((tok) =>
-  AssetAmount.create(tok, JSBI.BigInt(100))
-);
+const toBalance = (balance: number) => (tok: Token) =>
+  AssetAmount.create(tok, JSBI.BigInt(balance));
+
+const assetAmounts = [USDC, USDT].map(toBalance(100));
 
 describe("queryListOfAvailableTokens", () => {
   describe("updateListOfAvailableTokens", () => {
-    const store = createStore({
-      marketcapTokenOrder: ["BNB", "USDT", "LINK", "CRO", "USDC"],
-    });
-
-    const { state } = store;
-
+    let store: Store;
     beforeEach(async () => {
+      store = createStore();
       await queryListOfAvailableTokens({
         api: {
           walletService: {
             getAssetBalances: jest.fn(() => Promise.resolve(assetAmounts)),
           },
+          tokenService: {
+            getTopERC20Tokens: jest.fn(() =>
+              Promise.resolve([BNB, CRO, USDC, USDT, FET])
+            ),
+          },
         },
         store,
-        state,
-      }).updateListOfAvailableTokens();
+        state: store.state,
+      }).updateAvailableTokens();
     });
 
-    it("should store the tokens in the wallet", () => {
-      expect(store.state.userBalances.get("USDC")?.asset).toEqual(USDC);
-    });
-
-    it("should not contain other tokens", () => {
-      expect(store.state.userBalances.get("ETH")).toBeUndefined();
-    });
-
-    it("should deliver tokens in order", () => {
-      expect(
-        store.state.availableAssetAccounts.map(
-          ({ asset: { symbol }, amount }) => ({ symbol, amount })
-        )
-      ).toEqual([
-        {
-          symbol: "USDC",
-          amount: JSBI.BigInt(100),
-        },
-        {
-          symbol: "USDT",
-          amount: JSBI.BigInt(100),
-        },
-        {
-          symbol: "BNB",
-          amount: JSBI.BigInt(0),
-        },
-        {
-          symbol: "LINK",
-          amount: JSBI.BigInt(0),
-        },
-        {
-          symbol: "CRO",
-          amount: JSBI.BigInt(0),
-        },
-      ]);
+    it("should store the available tokens", () => {
+      const others = [BNB, CRO, FET].map(toBalance(0));
+      expect(store.state.tokenBalances).toEqual([...assetAmounts, ...others]);
     });
   });
 });
