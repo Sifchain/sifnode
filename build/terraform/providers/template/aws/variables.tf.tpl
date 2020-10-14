@@ -1,6 +1,7 @@
 variable "region" {
   description = "AWS region"
   type        = string
+  default     = "{{.aws.region}}"
 }
 
 variable "az" {
@@ -11,18 +12,19 @@ variable "az" {
 variable "vpc_cidr" {
   description = "VPC cidr"
   type        = string
-  default     = "10.0.0.0/16"
+  default     = "{{.aws.cidr}}"
 }
 
 variable "cluster_version" {
   description = "EKS cluster version"
   type        = string
-  default     = "1.17"
+  default     = "{{.aws.cluster.version}}"
 }
 
 variable "cluster_name" {
   description = "EKS cluster name"
   type        = string
+  default     = "{{.aws.cluster.name}}"
 }
 
 variable "tags" {
@@ -31,6 +33,7 @@ variable "tags" {
   default = {
     Terraform = true
     Sifnode   = true
+    ChainID   = "{{.chain_id}}"
   }
 }
 
@@ -38,10 +41,11 @@ variable "node_group_settings" {
   description = "Cluster node group settings"
   type        = map(string)
   default = {
-    desired_capacity = 1
-    max_capacity     = 2
-    min_capacity     = 1
-    instance_type    = "t2.small"
-    disk_size        = 100
+    ami_type         = "{{.aws.cluster.ami_type}}"
+    desired_capacity = {{.aws.cluster.desired_capacity}}
+    max_capacity     = {{.aws.cluster.max_capacity}}
+    min_capacity     = {{.aws.cluster.min_capacity}}
+    instance_type    = "{{.aws.cluster.instance_type}}"
+    disk_size        = {{.aws.cluster.disk_size}}
   }
 }
