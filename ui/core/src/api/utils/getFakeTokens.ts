@@ -14,6 +14,9 @@ function parseTruffleJson(
   return createToken(1, address, 6, symbol, name);
 }
 
+// The reason we have to get fake tokens instead of just loading up a
+// json list is that everytime truffle compiles we have new addresses
+// and we need to keep track of that
 export async function getFakeTokens(): Promise<Token[]> {
   // gonna load the json and parse the code for all our fake tokens
   const atkJson = require("../../../../chains/ethereum/build/contracts/AliceToken.json");

@@ -7,6 +7,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
+    "strict": true,
     "experimentalDecorators": true,
     "declaration": true,
     "outDir": "./lib",

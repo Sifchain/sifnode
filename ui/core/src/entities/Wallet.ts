@@ -1,4 +1,4 @@
-import { AssetAmount } from "./AssetAmount";
+import { Balance } from "./Balance";
 
 export type Wallet = {
   addresses: WalletAddress[];
@@ -6,5 +6,5 @@ export type Wallet = {
 
 export type WalletAddress = {
   address: string;
-  assetAmount: AssetAmount;
+  balance: Balance;
 };

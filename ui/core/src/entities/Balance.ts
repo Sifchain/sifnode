@@ -13,7 +13,7 @@ import {
 import JSBI from "jsbi";
 const Big = toFormat(_Big);
 
-export class AssetAmount extends Fraction {
+export class Balance extends Fraction {
   constructor(public asset: Asset, public amount: BigintIsh) {
     super(
       parseBigintIsh(amount),
@@ -43,11 +43,13 @@ export class AssetAmount extends Fraction {
       .div(this.denominator.toString())
       .toFormat(format);
   }
-  static create(asset: Asset, amount: BigintIsh): AssetAmount {
-    return new AssetAmount(asset, amount);
+  static create(asset: Asset, amount: BigintIsh): Balance {
+    return new Balance(asset, amount);
   }
 }
 
-export type AssetBalancesByAddress = {
-  [address: string]: AssetAmount | undefined;
-};
+export type Balances = Balance[];
+
+// export type AssetBalancesByAddress = {
+//   [address: string]: Balance | undefined;
+// };
