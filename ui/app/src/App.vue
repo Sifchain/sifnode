@@ -2,17 +2,23 @@
   <div>
     <div id="nav">
       <router-link to="/">Wallet</router-link> |
+      <router-link to="/cosmos">CWallet</router-link> |
       <router-link to="/list">List</router-link>
     </div>
+    {{CWalletStore}}
     <router-view />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { CWalletStore } from "../../core/src/store/wallet"
 
 export default defineComponent({
   name: "App",
+  setup() {
+    return {CWalletStore}
+  }
 });
 </script>
 
