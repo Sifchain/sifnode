@@ -44,7 +44,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	nativeAssetBalance := pool.NativeAssetBalance
 	externalAssetBalance := pool.ExternalAssetBalance
 	for _, lp := range lpList {
-		withdrawNativeAsset, withdrawExternalAsset, _ := calculateWithdrawl(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, 10000, 0)
+		withdrawNativeAsset, withdrawExternalAsset, _ := calculateWithdrawl(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, 5000, 0)
 		poolUnits = poolUnits - lp.LiquidityProviderUnits
 		nativeAssetBalance = nativeAssetBalance - withdrawNativeAsset
 		externalAssetBalance = externalAssetBalance - withdrawExternalAsset
@@ -262,7 +262,7 @@ func calculateWithdrawl(poolUnits uint, nativeAssetBalance uint,
 	)
 
 	externalAssetBasis = ((asymmetry + 1) / 2) * wBasisPoints * 2
-	//nativeAssetPercent = wBasisPoints * 2 - externalAssetBasis
+	nativeAssetBasis = (wBasisPoints * 2) - externalAssetBasis
 
 	if nativeAssetBasis == 0 {
 		nativeAssetUnits = 0
