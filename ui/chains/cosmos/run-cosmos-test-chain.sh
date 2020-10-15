@@ -29,4 +29,4 @@ echo "Validating genesis file..."
 sifnoded validate-genesis
 
 echo "Starting test chain"
-sifnodecli rest-server --unsafe-cors
+sifnodecli rest-server --unsafe-cors --trace
