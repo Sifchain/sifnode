@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
 	"math/rand"
@@ -144,7 +145,10 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 		// initialize global pseudo random generator
 		externalToken := tokens[rand.Intn(len(tokens))]
 		externalAsset := types.NewAsset("ROWAN", "c"+"ROWAN"+externalToken, externalToken)
-		pool := types.NewPool(externalAsset, 1000, 100, 1)
+		pool, err := types.NewPool(externalAsset, 1000, 100, 1)
+		if err != nil {
+			fmt.Println("Error Generating new pool :", err)
+		}
 		poolList = append(poolList, pool)
 	}
 	return poolList

@@ -2,27 +2,28 @@ package types
 
 import (
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"strings"
 )
 
 type Pool struct {
-	ExternalAsset        Asset  `json:"external_asset"`
-	NativeAssetBalance   uint   `json:"native_asset_balance"`
-	ExternalAssetBalance uint   `json:"external_asset_balance"`
-	PoolUnits            uint   `json:"pool_units"`
-	PoolAddress          string `json:"pool_address"`
+	ExternalAsset        Asset          `json:"external_asset"`
+	NativeAssetBalance   uint           `json:"native_asset_balance"`
+	ExternalAssetBalance uint           `json:"external_asset_balance"`
+	PoolUnits            uint           `json:"pool_units"`
+	PoolAddress          sdk.AccAddress `json:"pool_address"`
 }
 
 func (p Pool) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`ExternalAsset: %s
 	NativeAssetBalance: %d
 	NativeAssetBalance: %d
-	PoolUnits : %s
-	PoolAddress :%d`, p.ExternalAsset, p.ExternalAssetBalance, p.NativeAssetBalance, p.PoolAddress, p.PoolUnits))
+	PoolUnits : %d
+	PoolAddress :%s`, p.ExternalAsset, p.ExternalAssetBalance, p.NativeAssetBalance, p.PoolUnits, p.PoolAddress))
 }
 
 func (p Pool) Validate() bool {
-	if len(strings.TrimSpace(p.PoolAddress)) == 0 {
+	if p.PoolAddress.Empty() {
 		return false
 	}
 	if !p.ExternalAsset.Validate() {
@@ -32,13 +33,17 @@ func (p Pool) Validate() bool {
 }
 
 // NewPool returns a new Pool
-func NewPool(externalAsset Asset, nativeAssetBalance uint, externalAssetBalance uint, poolUnits uint) Pool {
+func NewPool(externalAsset Asset, nativeAssetBalance uint, externalAssetBalance uint, poolUnits uint) (Pool, error) {
 	pool := Pool{ExternalAsset: externalAsset,
 		NativeAssetBalance:   nativeAssetBalance,
 		ExternalAssetBalance: externalAssetBalance,
 		PoolUnits:            poolUnits}
-	pool.PoolAddress = GetPoolAddress(pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
-	return pool
+	pooladdr, err := GetAddress(pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	if err != nil {
+		return Pool{}, err
+	}
+	pool.PoolAddress = pooladdr
+	return pool, nil
 }
 
 type Pools []Pool

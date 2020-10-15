@@ -5,6 +5,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/pkg/errors"
 	"strconv"
 )
 
@@ -51,7 +52,10 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 		//send withdrawExternalAsset to liquidityProvider.lpAddress
 		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
 	}
-	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	err = keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	if err != nil {
+		return nil, errors.Wrap(types.ErrUnableToDestroyPool, err.Error())
+	}
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeDecommissionPool,
@@ -76,9 +80,15 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
 	poolUnits, lpunits := calculatePoolUnits(0, 0, 0, nativeBalance, externalBalance)
-	pool := NewPool(asset, nativeBalance, externalBalance, poolUnits)
+	pool, err := NewPool(asset, nativeBalance, externalBalance, poolUnits)
+	if err != nil {
+		return nil, errors.Wrap(types.ErrUnableToCreatePool, err.Error())
+	}
 	lp := NewLiquidityProvider(asset, lpunits, msg.Signer.String())
-	keeper.SetPool(ctx, pool)
+	err = keeper.SetPool(ctx, pool)
+	if err != nil {
+		return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
+	}
 	keeper.SetLiquidityProvider(ctx, lp)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -127,7 +137,10 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	} else {
 		lp.LiquidityProviderUnits = lp.LiquidityProviderUnits + lpUnits
 	}
-	keeper.SetPool(ctx, pool)
+	err = keeper.SetPool(ctx, pool)
+	if err != nil {
+		return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
+	}
 	keeper.SetLiquidityProvider(ctx, lp)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -160,8 +173,10 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	pool.PoolUnits = pool.PoolUnits - lp.LiquidityProviderUnits + lpUnitsLeft
 	pool.NativeAssetBalance = pool.NativeAssetBalance - withdrawNativeAssetAmount
 	pool.ExternalAssetBalance = pool.ExternalAssetBalance - withdrawExternalAssetAmount
-	keeper.SetPool(ctx, pool)
-
+	err = keeper.SetPool(ctx, pool)
+	if err != nil {
+		return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
+	}
 	if lpUnitsLeft == 0 {
 		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
 	} else {
@@ -212,7 +227,10 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		pool.ExternalAssetBalance = X + x
 		pool.NativeAssetBalance = Y - swapResult
 	}
-	keeper.SetPool(ctx, pool)
+	err = keeper.SetPool(ctx, pool)
+	if err != nil {
+		return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
+	}
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeSwap,
