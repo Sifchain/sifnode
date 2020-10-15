@@ -8,6 +8,7 @@
 // import setQuantityOfToken from "./setQuantityOfToken";
 // import swapTokens from "./swapTokens";
 import walletActions from "./walletActions";
+import tokenActions from "./tokenActions";
 import { Api, WithApi } from "../api";
 import { Store, WithStore } from "../store";
 
@@ -19,6 +20,7 @@ export type ActionContext<
 export function createActions(context: ActionContext) {
   return {
     ...walletActions(context),
+    ...tokenActions(context),
     // ...addLiquidity(context),
     // ...broadcastTx(context),
     // ...connectToWallet(context),

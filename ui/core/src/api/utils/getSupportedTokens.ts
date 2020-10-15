@@ -1,4 +1,4 @@
-import { Token } from "src/entities";
+import { Token } from "../../entities";
 import Web3 from "web3";
 
 import { HttpProvider } from "web3-core";

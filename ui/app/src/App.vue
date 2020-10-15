@@ -1,37 +1,18 @@
 <template>
   <div>
     <div id="nav">
-      <router-link to="/">Wallet</router-link>
+      <router-link to="/">Wallet</router-link> |
+      <router-link to="/list">List</router-link>
     </div>
     <router-view />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, provide } from "vue";
-import {
-  createStore,
-  createApi,
-  getWeb3,
-  createActions,
-  getFakeTokens as getSupportedTokens,
-} from "../../core";
+import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "App",
-  setup() {
-    const api = createApi({
-      getWeb3,
-      getSupportedTokens,
-    });
-
-    const store = createStore();
-    const actions = createActions({ store, api });
-    console.log({ actions });
-    provide("api", api);
-    provide("store", store);
-    provide("actions", actions);
-  },
 });
 </script>
 

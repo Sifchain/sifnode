@@ -1,6 +1,6 @@
 import { ChainId, createCoin, createToken } from "../entities";
 
-// This should probably be pulled in from JSON
+// This should probably be relocated to a token service
 
 export const ETH = createCoin(18, "ETH", "Etherium");
 export const ROWAN = createCoin(2, "ROWAN", "Rowan");

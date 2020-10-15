@@ -23,24 +23,23 @@
 </template>
 
 <script lang="ts">
-import { Store, Actions } from "../../../core";
-import { onMounted, inject } from "vue";
+import { onMounted } from "vue";
+import { useCore } from "../core/useCore";
 
 export default {
   name: "Wallet",
   setup() {
-    const store = inject<Store>("store");
-    const actions = inject<Actions>("actions");
+    const { store, actions } = useCore();
 
     onMounted(async () => {
-      await actions?.refreshWalletBalances();
+      await actions.refreshWalletBalances();
     });
 
     async function handleConnectClicked() {
-      await actions?.connectToWallet();
+      await actions.connectToWallet();
     }
     async function handleDisconnectClicked() {
-      await actions?.disconnectWallet();
+      await actions.disconnectWallet();
     }
 
     return { store, handleDisconnectClicked, handleConnectClicked };
