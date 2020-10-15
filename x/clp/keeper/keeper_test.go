@@ -5,6 +5,23 @@ import (
 	"testing"
 )
 
+func TestKeeper_Extra(t *testing.T) {
+	pool := generateRandomPool(1)[0]
+	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	_ = keeper.Logger(ctx)
+	pool.ExternalAsset.Ticker = ""
+	keeper.SetPool(ctx, pool)
+	getpools := keeper.GetPools(ctx)
+	assert.Equal(t, len(getpools), 0, "No pool added")
+
+	lp := generateRandomLP(1)[0]
+	lp.Asset.SourceChain = ""
+	keeper.SetLiquidityProvider(ctx, lp)
+	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
+	assert.Error(t, err)
+	assert.NotEqual(t, getlp, lp)
+}
+
 func TestKeeper_SetPool(t *testing.T) {
 
 	pool := generateRandomPool(1)[0]
