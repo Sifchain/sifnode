@@ -10,6 +10,35 @@ import (
 	"testing"
 )
 
+func TestQueryErrorPool(t *testing.T) {
+	cdc := codec.New()
+	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	//Set Data
+	pool, _, _ := SetData(keeper, ctx)
+	querier := NewQuerier(keeper)
+	//Test Pool
+	queryPool := types.QueryReqGetPool{
+		Ticker:      pool.ExternalAsset.Ticker,
+		SourceChain: pool.ExternalAsset.SourceChain,
+	}
+	qp, errRes := cdc.MarshalJSON(queryPool)
+	require.NoError(t, errRes)
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	_, err := querier(ctx, []string{"bogus"}, query)
+	assert.Error(t, err)
+	_, err = querier(ctx, []string{"pool"}, query)
+	assert.Error(t, err)
+	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	query.Path = ""
+	query.Data = qp
+	_, err = querier(ctx, []string{"pool"}, query)
+	// Should fail after it is deleted.
+	assert.Error(t, err)
+}
+
 func TestQueryGetPool(t *testing.T) {
 	cdc := codec.New()
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
@@ -37,6 +66,20 @@ func TestQueryGetPool(t *testing.T) {
 	assert.Equal(t, pool.ExternalAsset, p.ExternalAsset)
 }
 
+func TestQueryErrorPools(t *testing.T) {
+	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	querier := NewQuerier(keeper)
+	query.Path = ""
+	query.Data = nil
+	//Test Pools
+	_, err := querier(ctx, []string{"allpools"}, query)
+	assert.Error(t, err)
+}
+
 func TestQueryGetPools(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	query := abci.RequestQuery{
@@ -56,6 +99,31 @@ func TestQueryGetPools(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Greater(t, len(poolist), 0, "More than one pool added")
 	assert.LessOrEqual(t, len(poolist), len(pools), "Set pool will ignore duplicates")
+}
+
+func TestQueryErrorLiquidityProvider(t *testing.T) {
+	cdc := codec.New()
+	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	querier := NewQuerier(keeper)
+	_, err := querier(ctx, []string{"liquidityProvider"}, query)
+	assert.Error(t, err)
+	//Set Data
+	_, _, lp := SetData(keeper, ctx)
+	//Test Get Liquidity Provider
+	queryLp := types.QueryReqLiquidityProvider{
+		Ticker:    "", //lp.Asset.Ticker,
+		LpAddress: lp.LiquidityProviderAddress,
+	}
+	qlp, errRes := cdc.MarshalJSON(queryLp)
+	require.NoError(t, errRes)
+	query.Path = ""
+	query.Data = qlp
+	_, err = querier(ctx, []string{"liquidityProvider"}, query)
+	assert.Error(t, err)
 }
 
 func TestQueryGetLiquidityProvider(t *testing.T) {
