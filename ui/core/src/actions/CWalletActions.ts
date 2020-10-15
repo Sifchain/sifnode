@@ -1,4 +1,5 @@
 import { ActionContext } from "..";
+import { validateMnemonic } from "bip39"
 
 
 import {Ref, ComputedRef} from "@vue/reactivity"
@@ -7,7 +8,7 @@ import { cosmosSignin } from "../api/walletService/Cosmos"
 
 
 // howto not duplicate mnemonic: ICWalletStore["mnemonic"]
-export async function connectToWallet(mnemonic: ICWalletStore["mnemonic"]) {
+export async function signInCosmosWallet(mnemonic: ICWalletStore["mnemonic"]) {
   // set mnemonic in store (definitely won't do IRL)
   CWalletStore.mnemonic = mnemonic
 
@@ -16,7 +17,6 @@ export async function connectToWallet(mnemonic: ICWalletStore["mnemonic"]) {
   await cosmosSignin(mnemonic)
 }
 
-import { validateMnemonic } from "bip39"
 
 function mnemonicIsValid(mnemonic:ICWalletStore["mnemonic"]): Boolean {
   if (!mnemonic) {throw "Mnemonic must be defined"}
