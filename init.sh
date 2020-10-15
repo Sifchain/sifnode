@@ -11,13 +11,13 @@ sifnodecli config trust-node true
 sifnodecli config chain-id namechain
 sifnodecli config keyring-backend test
 
-sifnodecli keys add shadowfiend
-sifnodecli keys add akasha
+sifnodecli keys add user1
+sifnodecli keys add user2
 
-sifnoded add-genesis-account $(sifnodecli keys show shadowfiend -a) 1000nametoken,100000000stake
-sifnoded add-genesis-account $(sifnodecli keys show akasha -a) 1000nametoken,100000000stake
+sifnoded add-genesis-account $(sifnodecli keys show user1 -a) 1000nametoken,100000000stake
+sifnoded add-genesis-account $(sifnodecli keys show user2 -a) 1000nametoken,100000000stake
 
-sifnoded gentx --name shadowfiend --keyring-backend test
+sifnoded gentx --name user1 --keyring-backend test
 
 echo "Collecting genesis txs..."
 sifnoded collect-gentxs
