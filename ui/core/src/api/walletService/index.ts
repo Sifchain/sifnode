@@ -60,40 +60,5 @@ export default function createWalletService({
     // deposit(params: TxParams): Promise<TxHash>
 
     // purgeClient(): void
-
-    // async getAssetBalances({
-    //   limit = -1,
-    //   supportedTokens = [],
-    // }: {
-    //   supportedTokens?: Token[];
-    //   limit?: number;
-    // }): Promise<Balance[]> {
-    //   if (!this.isConnected()) {
-    //     console.log("Cannot connect to wallet");
-    //     return [];
-    //   }
-
-    //   const assetAmounts: Balance[] = [];
-
-    //   // This is going to give us all the acounts on the node.
-    //   // Not sure if this is the right thing to do here.
-    //   // So Commenting it out for now
-    //   // for (const account of mainAccount) {
-
-    //   assetAmounts.push(Balance.create(ETH, ethBalance));
-
-    //   for (let i = 0; i < supportedTokens.length; i++) {
-    //     if (limit > -1 && i > limit) break;
-
-    //     const token = supportedTokens[i];
-    //     const contract = new eth.Contract(generalTokenAbi, token.address);
-    //     const balanceOfErc = await contract.methods.balanceOf(account).call();
-
-    //     assetAmounts.push(Balance.create(token, balanceOfErc));
-    //   }
-    //   // }
-
-    //   return assetAmounts;
-    // },
   };
 }

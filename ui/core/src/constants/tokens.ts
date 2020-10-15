@@ -1,11 +1,13 @@
 import { ChainId, createCoin, createToken } from "../entities";
 
+// This should probably be pulled in from JSON
+
 export const ETH = createCoin(18, "ETH", "Etherium");
 export const ROWAN = createCoin(2, "ROWAN", "Rowan");
 
 export const ZRX = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "ZRX",
   "0x"
@@ -13,7 +15,7 @@ export const ZRX = createToken(
 
 export const AAVE = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "AAVE",
   "Aave [New]"
@@ -21,7 +23,7 @@ export const AAVE = createToken(
 
 export const ELF = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "ELF",
   "elf"
@@ -29,7 +31,7 @@ export const ELF = createToken(
 
 export const AION = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "AION",
   "Aion"
@@ -37,7 +39,7 @@ export const AION = createToken(
 
 export const AMPL = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "AMPL",
   "Ampleforth"
@@ -45,7 +47,7 @@ export const AMPL = createToken(
 
 export const ANKR = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "ANKR",
   "Ankr"
@@ -53,7 +55,7 @@ export const ANKR = createToken(
 
 export const ANT = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "ANT",
   "Aragon"
@@ -61,7 +63,7 @@ export const ANT = createToken(
 
 export const BAL = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "BAL",
   "Balancer"
@@ -69,7 +71,7 @@ export const BAL = createToken(
 
 export const BNANA = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "BNANA",
   "Chimpion"
@@ -77,7 +79,7 @@ export const BNANA = createToken(
 
 export const BNT = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "BNT",
   "Bancor Network Token"
@@ -85,7 +87,7 @@ export const BNT = createToken(
 
 export const BAND = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "BAND",
   "Band Protocol"
@@ -93,7 +95,7 @@ export const BAND = createToken(
 
 export const BAT = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "BAT",
   "Basic Attention Token"
@@ -101,7 +103,7 @@ export const BAT = createToken(
 
 export const BNB = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "BNB",
   "Binance Coin"
@@ -109,7 +111,7 @@ export const BNB = createToken(
 
 export const BUSD = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "BUSD",
   "Binance USD"
@@ -117,7 +119,7 @@ export const BUSD = createToken(
 
 export const BTMX = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "BTMX",
   "Bitmax Token"
@@ -125,7 +127,7 @@ export const BTMX = createToken(
 
 export const BTM = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "BTM",
   "Bytom"
@@ -133,7 +135,7 @@ export const BTM = createToken(
 
 export const CEL = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "CEL",
   "Celsius Network"
@@ -141,7 +143,7 @@ export const CEL = createToken(
 
 export const LINK = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "LINK",
   "Chainlink"
@@ -149,7 +151,7 @@ export const LINK = createToken(
 
 export const CHZ = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "CHZ",
   "Chiliz"
@@ -157,7 +159,7 @@ export const CHZ = createToken(
 
 export const COMP = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "COMP",
   "Compound"
@@ -165,7 +167,7 @@ export const COMP = createToken(
 
 export const CRO = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "CRO",
   "Crypto.com Coin"
@@ -173,7 +175,7 @@ export const CRO = createToken(
 
 export const CRV = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "CRV",
   "Curve DAO Token"
@@ -181,7 +183,7 @@ export const CRV = createToken(
 
 export const DAI = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "DAI",
   "Dai"
@@ -189,7 +191,7 @@ export const DAI = createToken(
 
 export const MANA = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "MANA",
   "Decentraland"
@@ -197,7 +199,7 @@ export const MANA = createToken(
 
 export const DX = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "DX",
   "DxChain Token"
@@ -205,7 +207,7 @@ export const DX = createToken(
 
 export const ENG = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "ENG",
   "Enigma"
@@ -213,7 +215,7 @@ export const ENG = createToken(
 
 export const ENJ = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "ENJ",
   "Enjin Coin"
@@ -221,7 +223,7 @@ export const ENJ = createToken(
 
 export const LEND = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "LEND",
   "Aave"
@@ -229,7 +231,7 @@ export const LEND = createToken(
 
 export const FTM = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "FTM",
   "Fantom"
@@ -237,7 +239,7 @@ export const FTM = createToken(
 
 export const FET = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "FET",
   "FirstEnergy Token"
@@ -245,7 +247,7 @@ export const FET = createToken(
 
 export const GNO = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "GNO",
   "Gnosis"
@@ -253,7 +255,7 @@ export const GNO = createToken(
 
 export const GNT = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "GNT",
   "Golem"
@@ -261,7 +263,7 @@ export const GNT = createToken(
 
 export const ONE = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "ONE",
   "One Hundred Coin"
@@ -269,7 +271,7 @@ export const ONE = createToken(
 
 export const SNX = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "SNX",
   "Synthetix Network Token"
@@ -277,7 +279,7 @@ export const SNX = createToken(
 
 export const HOT = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "HOT",
   "Hydro Protocol"
@@ -285,7 +287,7 @@ export const HOT = createToken(
 
 export const HT = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "HT",
   "Huobi Token"
@@ -293,7 +295,7 @@ export const HT = createToken(
 
 export const HUSD = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "HUSD",
   "HUSD"
@@ -301,7 +303,7 @@ export const HUSD = createToken(
 
 export const RLC = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "RLC",
   "iExec RLC"
@@ -309,7 +311,7 @@ export const RLC = createToken(
 
 export const IOST = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "IOST",
   "IOST"
@@ -317,7 +319,7 @@ export const IOST = createToken(
 
 export const IOTX = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "IOTX",
   "IoTeX"
@@ -325,7 +327,7 @@ export const IOTX = createToken(
 
 export const KEEP = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "KEEP",
   "Keep Network"
@@ -333,7 +335,7 @@ export const KEEP = createToken(
 
 export const KCS = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "KCS",
   "KuCoin Shares"
@@ -341,7 +343,7 @@ export const KCS = createToken(
 
 export const KNC = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "KNC",
   "Kyber Network"
@@ -349,7 +351,7 @@ export const KNC = createToken(
 
 export const LEO = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "LEO",
   "LEO Token"
@@ -357,7 +359,7 @@ export const LEO = createToken(
 
 export const LPT = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "LPT",
   "Livepeer"
@@ -365,7 +367,7 @@ export const LPT = createToken(
 
 export const LRC = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "LRC",
   "Loopring"
@@ -373,7 +375,7 @@ export const LRC = createToken(
 
 export const MKR = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "MKR",
   "Maker"
@@ -381,7 +383,7 @@ export const MKR = createToken(
 
 export const MATIC = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "MATIC",
   "Matic Network"
@@ -389,7 +391,7 @@ export const MATIC = createToken(
 
 export const MCO = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "MCO",
   "MCO"
@@ -397,7 +399,7 @@ export const MCO = createToken(
 
 export const MXC = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "MXC",
   "MXC"
@@ -405,7 +407,7 @@ export const MXC = createToken(
 
 export const NEXO = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "NEXO",
   "NEXO"
@@ -413,7 +415,7 @@ export const NEXO = createToken(
 
 export const NMR = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "NMR",
   "Numeraire"
@@ -421,7 +423,7 @@ export const NMR = createToken(
 
 export const NXM = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "NXM",
   "Nexus Mutual"
@@ -429,7 +431,7 @@ export const NXM = createToken(
 
 export const OCEAN = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "OCEAN",
   "Ocean Protocol"
@@ -437,7 +439,7 @@ export const OCEAN = createToken(
 
 export const OKB = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "OKB",
   "OKB"
@@ -445,7 +447,7 @@ export const OKB = createToken(
 
 export const OMG = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "OMG",
   "OMG Network"
@@ -453,7 +455,7 @@ export const OMG = createToken(
 
 export const TRAC = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "TRAC",
   "OriginTrail"
@@ -461,7 +463,7 @@ export const TRAC = createToken(
 
 export const PAXG = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "PAXG",
   "PAX Gold"
@@ -469,7 +471,7 @@ export const PAXG = createToken(
 
 export const PAX = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "PAX",
   "PayperEx"
@@ -477,7 +479,7 @@ export const PAX = createToken(
 
 export const NPXS = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "NPXS",
   "Pundi X"
@@ -485,7 +487,7 @@ export const NPXS = createToken(
 
 export const QNT = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "QNT",
   "Quant"
@@ -493,7 +495,7 @@ export const QNT = createToken(
 
 export const REN = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "REN",
   "REN"
@@ -501,7 +503,7 @@ export const REN = createToken(
 
 export const RSR = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "RSR",
   "Reserve Rights Token"
@@ -509,7 +511,7 @@ export const RSR = createToken(
 
 export const RPL = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "RPL",
   "Rocket Pool"
@@ -517,7 +519,7 @@ export const RPL = createToken(
 
 export const SRM = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "SRM",
   "Serum"
@@ -525,7 +527,7 @@ export const SRM = createToken(
 
 export const AGI = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "AGI",
   "SingularityNET"
@@ -533,7 +535,7 @@ export const AGI = createToken(
 
 export const EURS = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "EURS",
   "STASIS EURO"
@@ -541,7 +543,7 @@ export const EURS = createToken(
 
 export const SNT = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "SNT",
   "Status"
@@ -549,7 +551,7 @@ export const SNT = createToken(
 
 export const STORJ = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "STORJ",
   "Storj"
@@ -557,7 +559,7 @@ export const STORJ = createToken(
 
 export const SUSHI = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "SUSHI",
   "Sushi"
@@ -565,7 +567,7 @@ export const SUSHI = createToken(
 
 export const SXP = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "SXP",
   "Swipe"
@@ -573,7 +575,7 @@ export const SXP = createToken(
 
 export const CHSB = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "CHSB",
   "SwissBorg"
@@ -581,7 +583,7 @@ export const CHSB = createToken(
 
 export const USDT = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "USDT",
   "Tether"
@@ -589,7 +591,7 @@ export const USDT = createToken(
 
 export const THETA = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "THETA",
   "Theta Network"
@@ -597,7 +599,7 @@ export const THETA = createToken(
 
 export const TUSD = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "TUSD",
   "TrueUSD"
@@ -605,7 +607,7 @@ export const TUSD = createToken(
 
 export const UMA = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "UMA",
   "UMA"
@@ -613,7 +615,7 @@ export const UMA = createToken(
 
 export const UBT = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "UBT",
   "Unibright"
@@ -621,7 +623,7 @@ export const UBT = createToken(
 
 export const UNI = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "UNI",
   "UNIVERSE Token"
@@ -629,7 +631,7 @@ export const UNI = createToken(
 
 export const UQC = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "UQC",
   "Uquid Coin"
@@ -637,7 +639,7 @@ export const UQC = createToken(
 
 export const USDC = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "USDC",
   "USD Coin"
@@ -645,7 +647,7 @@ export const USDC = createToken(
 
 export const UTK = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "UTK",
   "UTRUST"
@@ -653,7 +655,7 @@ export const UTK = createToken(
 
 export const WIC = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "WIC",
   "Wi Coin"
@@ -661,7 +663,7 @@ export const WIC = createToken(
 
 export const WBTC = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "WBTC",
   "Wrapped Bitcoin"
@@ -669,7 +671,7 @@ export const WBTC = createToken(
 
 export const STAKE = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "STAKE",
   "xDAI Stake"
@@ -677,7 +679,7 @@ export const STAKE = createToken(
 
 export const YFI = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "YFI",
   "yearn.finance"
@@ -685,7 +687,7 @@ export const YFI = createToken(
 
 export const ZIL = createToken(
   ChainId.ETH_MAINNET,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
   6,
   "ZIL",
   "Zilliqa"
