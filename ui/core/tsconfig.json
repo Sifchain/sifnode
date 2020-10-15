@@ -19,5 +19,5 @@
     "./src/**/*.tsx",
     "./src/**/*.vue",
   ],
-  "exclude": ["node_modules", "**/_tbd"]
+  "exclude": ["node_modules"]
 }
