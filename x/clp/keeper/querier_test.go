@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestQueryError(t *testing.T) {
+func TestQueryErrorPool(t *testing.T) {
 	cdc := codec.New()
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	//Set Data
@@ -66,7 +66,7 @@ func TestQueryGetPool(t *testing.T) {
 	assert.Equal(t, pool.ExternalAsset, p.ExternalAsset)
 }
 
-func TestQueryExtraPools(t *testing.T) {
+func TestQueryErrorPools(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	query := abci.RequestQuery{
 		Path: "",
@@ -101,7 +101,7 @@ func TestQueryGetPools(t *testing.T) {
 	assert.LessOrEqual(t, len(poolist), len(pools), "Set pool will ignore duplicates")
 }
 
-func TestQueryExtraLiquidityProvider(t *testing.T) {
+func TestQueryErrorLiquidityProvider(t *testing.T) {
 	cdc := codec.New()
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	query := abci.RequestQuery{
