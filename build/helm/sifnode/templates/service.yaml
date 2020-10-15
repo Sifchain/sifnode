@@ -4,6 +4,8 @@ metadata:
   name: {{ include "sifnode.fullname" . }}
   labels:
     {{- include "sifnode.labels" . | nindent 4 }}
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
 spec:
   type: {{ .Values.service.type }}
   ports:
