@@ -8,36 +8,58 @@
     <button @click="submit">
       Connect Wallet
     </button>
-    {{localMnemonic}}
-    {{CWalletStore}}
-      <!-- <c-sign-in /> -->
+
+    <button @click="()=> {
+      errorMessage = null
+      localMnemonic = null
+    }">
+      clear
+    </button>
+      Local mnemonic value: {{localMnemonic}} <br>
+      Core store: {{CWalletStore}}
+    <div style="color:salmon; font-weight: bold">{{errorMessage}}</div>
+
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, isRef, computed,  toRef, isReactive } from "vue";
+import { defineComponent, ref, computed } from "vue";
 
 import CSignIn from "@/components/CSignIn.vue"
 import { CWalletStore, WalletStore } from "../../../core/src/store/wallet"
-import { connectToWallet } from "../../../core/src/actions/CWalletActions"
+import { signInCosmosWallet } from "../../../core/src/actions/CWalletActions"
 
 export default defineComponent({
   name: "CWallet",
-  components: {
-    CSignIn
-  },
   setup() {
+    // local reactive variables
     const localMnemonic = ref()
+    const errorMessage = ref()
+    // submit to actions
     async function submit() {
-      if (!localMnemonic) return
-      const parsedMnemonic = computed(() => {
-        // return (localMnemonic.value + "TRANSFORM").trim()
-        return (localMnemonic.value).trim()
+      errorMessage.value = ""
+      if (!localMnemonic.value) { 
+        return errorMessage.value = "Mnemonic required to send" 
+      }
 
+      const parsedMnemonic = computed(() => {
+        return (localMnemonic.value).trim()
       })
-      await connectToWallet(parsedMnemonic.value)
+
+      try {
+        await signInCosmosWallet(parsedMnemonic.value)
+      } catch(error) { 
+        errorMessage.value = error 
+      }
+
     }
-    return {CWalletStore, submit, localMnemonic}
+
+    return {
+      CWalletStore, 
+      submit, 
+      errorMessage,
+      localMnemonic
+    }
   },
 });
 </script>
