@@ -37,7 +37,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	pool := GenerateRandomPool(1)[0]
 	signer := GenerateAddress()
-	msg := NewMsgRemoveLiquidity(signer, pool.ExternalAsset, 1, 1)
+	msg := NewMsgRemoveLiquidity(signer, pool.ExternalAsset, 10000, 1)
 	res, err := handleMsgRemoveLiquidity(ctx, keeper, msg)
 	require.Error(t, err)
 	require.Nil(t, res)
@@ -80,7 +80,7 @@ func TestDecommisionPool(t *testing.T) {
 	res, err := handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	msgrm := NewMsgRemoveLiquidity(signer, pool.ExternalAsset, 5000, 1)
+	msgrm := NewMsgRemoveLiquidity(signer, pool.ExternalAsset, 10000, -1)
 	res, err = handleMsgRemoveLiquidity(ctx, keeper, msgrm)
 	require.NoError(t, err)
 	require.NotNil(t, res)

@@ -44,7 +44,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	nativeAssetBalance := pool.NativeAssetBalance
 	externalAssetBalance := pool.ExternalAssetBalance
 	for _, lp := range lpList {
-		withdrawNativeAsset, withdrawExternalAsset, _ := calculateWithdrawl(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, 5000, 0)
+		withdrawNativeAsset, withdrawExternalAsset, _ := calculateWithdrawl(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, 10000, 1)
 		poolUnits = poolUnits - lp.LiquidityProviderUnits
 		nativeAssetBalance = nativeAssetBalance - withdrawNativeAsset
 		externalAssetBalance = externalAssetBalance - withdrawExternalAsset
@@ -253,42 +253,41 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 func calculateWithdrawl(poolUnits uint, nativeAssetBalance uint,
 	externalAssetBalance uint, lpUnits uint, wBasisPoints int, asymmetry int) (uint, uint, uint) {
 	var (
-		nativeAssetBasis            int
-		externalAssetBasis          int
 		nativeAssetUnits            int
 		withdrawNativeAssetAmount   int
 		externalAssetUnits          int
 		withdrawExternalAssetAmount int
 	)
 
-	externalAssetBasis = ((asymmetry + 1) / 2) * wBasisPoints * 2
-	nativeAssetBasis = (wBasisPoints * 2) - externalAssetBasis
-
-	if nativeAssetBasis == 0 {
-		nativeAssetUnits = 0
-		withdrawNativeAssetAmount = 0
+	unitsToClaim := int(lpUnits) / (10000 / wBasisPoints)
+	if asymmetry == 0 {
+		externalAssetUnits = unitsToClaim
+		nativeAssetUnits = unitsToClaim
 	} else {
-		nativeAssetUnits = int(lpUnits) / (10000 / nativeAssetBasis)
-		withdrawNativeAssetAmount = int(nativeAssetBalance) / (int(poolUnits) / nativeAssetUnits)
+		externalAssetUnits = unitsToClaim + (unitsToClaim / (10000 / asymmetry))
+		nativeAssetUnits = unitsToClaim - (unitsToClaim / (10000 / asymmetry))
 	}
-	if externalAssetBasis == 0 {
-		externalAssetUnits = 0
+	if externalAssetUnits == 0 {
 		withdrawExternalAssetAmount = 0
 	} else {
-		externalAssetUnits = int(lpUnits) / (10000 / externalAssetBasis)
 		withdrawExternalAssetAmount = int(externalAssetBalance) / (int(poolUnits) / externalAssetUnits)
 	}
-	lpUnitsLeft := int(lpUnits) - ((nativeAssetUnits + externalAssetUnits) / 2)
-	if lpUnitsLeft < 0 {
-		lpUnitsLeft = 0
+	if nativeAssetUnits == 0 {
+		withdrawNativeAssetAmount = 0
+	} else {
+		withdrawNativeAssetAmount = int(nativeAssetBalance) / (int(poolUnits) / nativeAssetUnits)
 	}
+	lpUnitsLeft := lpUnits - uint(unitsToClaim)
 	if withdrawNativeAssetAmount < 0 {
 		withdrawNativeAssetAmount = 0
 	}
 	if withdrawExternalAssetAmount < 0 {
 		withdrawExternalAssetAmount = 0
 	}
-	return uint(withdrawNativeAssetAmount), uint(withdrawExternalAssetAmount), uint(lpUnitsLeft)
+	if lpUnitsLeft < 0 {
+		lpUnitsLeft = 0
+	}
+	return uint(withdrawNativeAssetAmount), uint(withdrawExternalAssetAmount), lpUnitsLeft
 }
 
 func calculatePoolUnits(oldPoolUnits uint, nativeAssetBalance uint, externalAssetBalance uint,
