@@ -1,11 +1,12 @@
 <template>
   <div>
+    Wallet store access in App component: {{CWalletStore}}
+
     <div id="nav">
       <router-link to="/">Wallet</router-link> |
       <router-link to="/cosmos">CWallet</router-link> |
       <router-link to="/list">List</router-link>
     </div>
-    {{CWalletStore}}
     <router-view />
   </div>
 </template>
