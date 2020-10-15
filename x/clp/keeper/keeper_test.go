@@ -6,7 +6,7 @@ import (
 )
 
 func TestKeeper_Errors(t *testing.T) {
-	pool := generateRandomPool(1)[0]
+	pool := GenerateRandomPool(1)[0]
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	_ = keeper.Logger(ctx)
 	pool.ExternalAsset.Ticker = ""
@@ -14,7 +14,7 @@ func TestKeeper_Errors(t *testing.T) {
 	getpools := keeper.GetPools(ctx)
 	assert.Equal(t, len(getpools), 0, "No pool added")
 
-	lp := generateRandomLP(1)[0]
+	lp := GenerateRandomLP(1)[0]
 	lp.Asset.SourceChain = ""
 	keeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
