@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestKeeper_Extra(t *testing.T) {
+func TestKeeper_Errors(t *testing.T) {
 	pool := generateRandomPool(1)[0]
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	_ = keeper.Logger(ctx)
