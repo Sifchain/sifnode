@@ -10,6 +10,9 @@ ENV GOOS=linux
 ENV SIF_CLI=sifnodecli
 ENV SIF_DAEMON=sifnoded
 
+# Empty dir for the db data
+RUN mkdir /data
+
 WORKDIR /sif
 COPY go.mod go.sum ./
 RUN go mod download

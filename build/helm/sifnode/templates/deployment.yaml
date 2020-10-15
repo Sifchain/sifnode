@@ -32,7 +32,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "sifgen node create $SIF_ID; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
+          args: ["-c", "sifgen node create $SIF_ID; sifnoded start --rpc.laddr tcp://0.0.0.0:26657 --db_dir /data"]
           ports:
             - name: port-26656
               containerPort: 26656
@@ -62,6 +62,13 @@ spec:
             periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - name: persistent-storage
+            mountPath: /data
+      volumes:
+      - name: persistent-storage
+        persistentVolumeClaim:
+          claimName: ebs-claim
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
