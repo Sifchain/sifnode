@@ -10,6 +10,35 @@ import (
 	"testing"
 )
 
+func TestQueryError(t *testing.T) {
+	cdc := codec.New()
+	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	//Set Data
+	pool, _, _ := SetData(keeper, ctx)
+	querier := NewQuerier(keeper)
+	//Test Pool
+	queryPool := types.QueryReqGetPool{
+		Ticker:      pool.ExternalAsset.Ticker,
+		SourceChain: pool.ExternalAsset.SourceChain,
+	}
+	qp, errRes := cdc.MarshalJSON(queryPool)
+	require.NoError(t, errRes)
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	_, err := querier(ctx, []string{"bogus"}, query)
+	assert.Error(t, err)
+	_, err = querier(ctx, []string{"pool"}, query)
+	assert.Error(t, err)
+	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	query.Path = ""
+	query.Data = qp
+	_, err = querier(ctx, []string{"pool"}, query)
+	// Should fail after it is deleted.
+	assert.Error(t, err)
+}
+
 func TestQueryGetPool(t *testing.T) {
 	cdc := codec.New()
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
