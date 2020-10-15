@@ -7,7 +7,6 @@ import (
 // TODO: Fill out some custom errors for the module
 // You can see how they are constructed below:
 var (
-	ErrBalanceTooHigh                = sdkerrors.Register(ModuleName, 11, "Pool Balance too high to be decommissioned")
 	ErrInvalid                       = sdkerrors.Register(ModuleName, 1, "invalid")
 	ErrPoolDoesNotExist              = sdkerrors.Register(ModuleName, 2, "pool does not exist")
 	ErrLiquidityProviderDoesNotExist = sdkerrors.Register(ModuleName, 3, "liquidity Provider does not exist")
@@ -18,6 +17,7 @@ var (
 	ErrNotEnoughAssetTokens          = sdkerrors.Register(ModuleName, 8, "not enough received asset tokens to swap")
 	ErrInvalidAsymmetry              = sdkerrors.Register(ModuleName, 9, "Asymmetry has to be 1,-1 or 0")
 	ErrInvalidWBasis                 = sdkerrors.Register(ModuleName, 10, "WBasisPoints has to be positive")
+	ErrBalanceTooHigh                = sdkerrors.Register(ModuleName, 11, "Pool Balance too high to be decommissioned")
 	ErrUnableToSetPool               = sdkerrors.Register(ModuleName, 12, "Unable to set pool")
 	ErrUnableToDestroyPool           = sdkerrors.Register(ModuleName, 13, "Unable to destroy pool")
 	ErrUnableToCreatePool            = sdkerrors.Register(ModuleName, 14, "Unable to create pool")

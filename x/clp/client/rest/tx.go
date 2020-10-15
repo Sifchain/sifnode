@@ -34,7 +34,7 @@ func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	).Methods("POST")
 	r.HandleFunc(
 		"/clp/decommissionPool",
-		decommissionPooHandler(cliCtx),
+		decommissionPoolHandler(cliCtx),
 	).Methods("POST")
 }
 
@@ -102,7 +102,7 @@ func createPooHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func decommissionPooHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func decommissionPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req DecommissionPoolReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
