@@ -167,13 +167,13 @@ func NewInitApp(
 		staking.NewMultiStakingHooks(),
 	)
 
-	// peggy part
 	app.sifnodeKeeper = sifnodekeeper.NewKeeper(
 		app.bankKeeper,
 		app.cdc,
 		keys[sifnodetypes.StoreKey],
 	)
 
+	// peggy part
 	app.oracleKeeper = oracle.NewKeeper(app.cdc, keys[oracle.StoreKey],
 		app.stakingKeeper, oracle.DefaultConsensusNeeded,
 	)
@@ -186,9 +186,10 @@ func NewInitApp(
 		auth.NewAppModule(app.accountKeeper),
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		sifnode.NewAppModule(app.sifnodeKeeper, app.bankKeeper, app.oracleKeeper, app.ethbridgeKeeper),
+		sifnode.NewAppModule(app.sifnodeKeeper, app.bankKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
 		// this line is used by starport scaffolding # 6
+		// peggy part
 		oracle.NewAppModule(app.oracleKeeper),
 		ethbridge.NewAppModule(app.oracleKeeper, app.supplyKeeper, app.accountKeeper, app.ethbridgeKeeper, app.cdc),
 	)
@@ -202,6 +203,8 @@ func NewInitApp(
 		sifnodetypes.ModuleName,
 		supply.ModuleName,
 		genutil.ModuleName,
+		oracle.ModuleName,
+		ethbridge.ModuleName,
 		// peggy part
 		// oracle.NewAppModule(app.OracleKeeper),
 		// ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.BridgeKeeper, app.cdc),
