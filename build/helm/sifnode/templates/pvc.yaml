@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: ebs-claim
+  name: {{ .Values.pvc.name }}
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ebs-sc
+  storageClassName: {{ .Values.pvc.storageclass }}
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ .Values.pvc.size }}

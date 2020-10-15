@@ -63,12 +63,12 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-          - name: persistent-storage
+          - name: data
             mountPath: /data
       volumes:
-      - name: persistent-storage
+      - name: data
         persistentVolumeClaim:
-          claimName: ebs-claim
+          claimName: {{ .Values.pvc.storageclass }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

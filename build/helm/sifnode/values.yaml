@@ -46,6 +46,11 @@ service:
   type: LoadBalancer
   port: 26656
 
+pvc:
+  name: ebs-claim
+  storageclass: ebs-sc
+  size: 10Gi
+
 ingress:
   enabled: false
   annotations: {}
