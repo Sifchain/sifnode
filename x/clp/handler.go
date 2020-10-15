@@ -261,7 +261,7 @@ func calculateWithdrawl(poolUnits uint, nativeAssetBalance uint,
 		withdrawExternalAssetAmount int
 	)
 
-	externalAssetBasis = ((asymmetry + 1) / 2) * int(wBasisPoints) * 2
+	externalAssetBasis = ((asymmetry + 1) / 2) * wBasisPoints * 2
 	//nativeAssetPercent = wBasisPoints * 2 - externalAssetBasis
 
 	if nativeAssetBasis == 0 {

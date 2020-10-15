@@ -47,7 +47,10 @@ func GetPoolAddress(ticker string, native string) (string, error) {
 
 func GetAddress(ticker, native string) (sdk.AccAddress, error) {
 	addressBytes := []byte(fmt.Sprintf("%s_%s", ticker, native))
-	paddedbytes, _ := pkcs7Pad(addressBytes, 20)
+	paddedbytes, err := pkcs7Pad(addressBytes, 20)
+	if err != nil {
+		return nil, err
+	}
 	hx := hex.EncodeToString(paddedbytes)
 	return sdk.AccAddressFromHex(hx)
 }
