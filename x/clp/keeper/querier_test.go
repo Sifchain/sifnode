@@ -66,6 +66,20 @@ func TestQueryGetPool(t *testing.T) {
 	assert.Equal(t, pool.ExternalAsset, p.ExternalAsset)
 }
 
+func TestQueryExtraPools(t *testing.T) {
+	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	querier := NewQuerier(keeper)
+	query.Path = ""
+	query.Data = nil
+	//Test Pools
+	_, err := querier(ctx, []string{"allpools"}, query)
+	assert.Error(t, err)
+}
+
 func TestQueryGetPools(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	query := abci.RequestQuery{
@@ -85,6 +99,31 @@ func TestQueryGetPools(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Greater(t, len(poolist), 0, "More than one pool added")
 	assert.LessOrEqual(t, len(poolist), len(pools), "Set pool will ignore duplicates")
+}
+
+func TestQueryExtraLiquidityProvider(t *testing.T) {
+	cdc := codec.New()
+	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	query := abci.RequestQuery{
+		Path: "",
+		Data: []byte{},
+	}
+	querier := NewQuerier(keeper)
+	_, err := querier(ctx, []string{"liquidityProvider"}, query)
+	assert.Error(t, err)
+	//Set Data
+	_, _, lp := SetData(keeper, ctx)
+	//Test Get Liquidity Provider
+	queryLp := types.QueryReqLiquidityProvider{
+		Ticker:    "", //lp.Asset.Ticker,
+		LpAddress: lp.LiquidityProviderAddress,
+	}
+	qlp, errRes := cdc.MarshalJSON(queryLp)
+	require.NoError(t, errRes)
+	query.Path = ""
+	query.Data = qlp
+	_, err = querier(ctx, []string{"liquidityProvider"}, query)
+	assert.Error(t, err)
 }
 
 func TestQueryGetLiquidityProvider(t *testing.T) {
