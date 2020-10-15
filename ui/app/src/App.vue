@@ -13,21 +13,24 @@ import {
   createStore,
   createApi,
   getWeb3,
-  createUsecases,
-  getFakeTokens,
+  createActions,
+  getFakeTokens as getSupportedTokens,
 } from "../../core";
 
 export default defineComponent({
   name: "App",
   setup() {
-    const store = createStore();
-    const { state } = store;
-    const api = createApi({ getWeb3, getSupportedTokens: getFakeTokens });
-    const usecases = createUsecases({ store, state, api });
+    const api = createApi({
+      getWeb3,
+      getSupportedTokens,
+    });
 
+    const store = createStore();
+    const actions = createActions({ store, api });
+    console.log({ actions });
     provide("api", api);
-    provide("state", store.state);
-    provide("usecases", usecases);
+    provide("store", store);
+    provide("actions", actions);
   },
 });
 </script>

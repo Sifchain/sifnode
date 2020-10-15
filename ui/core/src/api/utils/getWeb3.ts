@@ -1,20 +1,20 @@
-import detectMetaMaskProvider from "@metamask/detect-provider";
+import detectEthProvider from "@metamask/detect-provider";
 import { AbstractProvider } from "web3-core";
 import Web3 from "web3";
 
-type MetaMaskProvider = AbstractProvider & { enable: () => Promise<void> };
-type OldMetaMaskProvider = AbstractProvider & {
+type EthProvider = AbstractProvider & { enable: () => Promise<void> };
+type OldEthProvider = AbstractProvider & {
   currentProvider: AbstractProvider;
 };
 
 type WindowWithPossibleMetaMask = typeof window & {
-  ethereum?: MetaMaskProvider;
-  web3: OldMetaMaskProvider;
+  ethereum?: EthProvider;
+  web3: OldEthProvider;
 };
 
 // Not sure if this is
 export const getWeb3: Web3Getter = async () => {
-  const mmp = await detectMetaMaskProvider();
+  const mmp = await detectEthProvider();
   const win = window as WindowWithPossibleMetaMask;
 
   if (!mmp || !win) return null;

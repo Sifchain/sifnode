@@ -5,7 +5,7 @@ import { HttpProvider } from "web3-core";
 import { getFakeTokens } from "./getFakeTokens";
 
 async function getProductionTokens(): Promise<Token[]> {
-  return []; //
+  return []; // Return from JSON
 }
 
 export async function getSupportedTokens(web3: Web3): Promise<Token[]> {
