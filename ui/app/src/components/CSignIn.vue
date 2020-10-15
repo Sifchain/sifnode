@@ -9,7 +9,7 @@
         </div>
         <div class="button" @click="buttonClick">
           <div class="button__icon">
-            <c-icon-lock />
+            <!-- <c-icon-lock /> -->
           </div>
           <div class="button__text">
             {{ address ? "Log out" : "Sign in " }}
@@ -30,7 +30,7 @@
                   class="dropdown__textarea__icon"
                   @click="mnemonicGenerate()"
                 >
-                  <c-icon-magic />
+                  <!-- <c-icon-magic /> -->
                 </div>
               </div>
               <div
@@ -53,14 +53,14 @@
 </template>
 
 <script lang="ts">
-import CIconLock from "./CIconLock";
-import CIconMagic from "./CIconMagic";
+// import CIconLock from "./CIconLock";
+// import CIconMagic from "./CIconMagic";
 
 import * as bip39 from "bip39";
 export default {
   components: {
-    CIconLock,
-    CIconMagic,
+    // CIconLock,
+    // CIconMagic,
   },
   props: ["foo"],
   data() {
