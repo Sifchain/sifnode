@@ -44,7 +44,7 @@ func queryPool(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, e
 func queryPools(ctx sdk.Context, keeper Keeper) ([]byte, error) {
 	poolList := keeper.GetPools(ctx)
 	if len(poolList) == 0 {
-		return nil, types.PoolListIsEmpty
+		return nil, types.ErrPoolListIsEmpty
 	}
 	res, err := codec.MarshalJSONIndent(keeper.cdc, poolList)
 	if err != nil {
