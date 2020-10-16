@@ -1,5 +1,6 @@
 export * from "./Asset";
-export * from "./AssetAmount";
+export * from "./Address";
+export * from "./Balance";
 export * from "./Auth";
 export * from "./Bank";
 export * from "./ChainId";

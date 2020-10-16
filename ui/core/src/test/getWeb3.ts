@@ -17,7 +17,7 @@ let snapshotId: any;
 
 function runBeforeEachHooks() {
   beforeEach(async () => {
-    globalThis.web3 = await getWeb3();
+    (globalThis as any).web3 = await getWeb3();
     let snapshot = await timeMachine.takeSnapshot();
     snapshotId = snapshot["result"];
   });

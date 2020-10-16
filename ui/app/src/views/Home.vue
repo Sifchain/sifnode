@@ -10,7 +10,7 @@ import Wallet from "@/components/Wallet.vue";
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "Home",
+  name: "HomePage",
   components: {
     Wallet,
   },

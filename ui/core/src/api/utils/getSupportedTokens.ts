@@ -1,11 +1,11 @@
-import { Token } from "src/entities";
+import { Token } from "../../entities";
 import Web3 from "web3";
 
 import { HttpProvider } from "web3-core";
 import { getFakeTokens } from "./getFakeTokens";
 
 async function getProductionTokens(): Promise<Token[]> {
-  return []; //
+  return []; // Return from JSON
 }
 
 export async function getSupportedTokens(web3: Web3): Promise<Token[]> {

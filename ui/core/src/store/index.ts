@@ -1,29 +1,24 @@
-import { AssetAmount } from "../entities";
 import { reactive } from "@vue/reactivity";
+import { wallet, WalletStore } from "./wallet";
+import { asset, AssetStore } from "./asset";
 
-export type State = {
-  tokenBalances: AssetAmount[];
+export type Store = {
+  wallet: WalletStore;
+  asset: AssetStore;
 };
 
-export type Actions = {
-  setUserBalances: (balances: AssetAmount[]) => void;
-};
+export function createStore() {
+  const state = reactive<Store>({
+    wallet,
+    asset,
+  }) as Store;
 
-export function createStore(initialState?: Partial<State>) {
-  const state = reactive<State>({
-    ...initialState,
-    tokenBalances: [],
-  }) as State;
-
-  const setTokenBalances = (tokenBalances: AssetAmount[]) => {
-    state.tokenBalances = tokenBalances;
-  };
-  return {
-    state,
-    setTokenBalances,
-  };
+  return state;
 }
-export type Store = ReturnType<typeof createStore>;
+
+export type WithStore<T extends keyof Store = keyof Store> = {
+  store: Pick<Store, T>;
+};
 
 //
 // ==============================================================================

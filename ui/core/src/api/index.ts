@@ -15,11 +15,8 @@ export function createApi(context: ApiContext) {
   };
 }
 
-export type FullApi = ReturnType<typeof createApi>;
+export type Api = ReturnType<typeof createApi>;
 
-export type Api<
-  T extends keyof FullApi = keyof FullApi,
-  U extends object = {}
-> = {
-  api: Pick<FullApi, T>;
-} & U;
+export type WithApi<T extends keyof Api = keyof Api> = {
+  api: Pick<Api, T>;
+};
