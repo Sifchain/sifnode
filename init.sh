@@ -8,7 +8,7 @@ sifnoded init test --chain-id=sifnode
 sifnodecli config output json
 sifnodecli config indent true
 sifnodecli config trust-node true
-sifnodecli config chain-id namechain
+sifnodecli config chain-id sifchain
 sifnodecli config keyring-backend test
 
 sifnodecli keys add user1
