@@ -300,7 +300,7 @@ func calculateWithdrawl(poolUnits uint, nativeAssetBalance uint,
 	} else {
 		withdrawNativeAssetAmount = int(nativeAssetBalance) / (int(poolUnits) / nativeAssetUnits)
 	}
-	lpUnitsLeft := lpUnits - uint(unitsToClaim)
+	lpUnitsLeft := int(lpUnits) - unitsToClaim
 	if withdrawNativeAssetAmount < 0 {
 		withdrawNativeAssetAmount = 0
 	}
@@ -310,7 +310,7 @@ func calculateWithdrawl(poolUnits uint, nativeAssetBalance uint,
 	if lpUnitsLeft < 0 {
 		lpUnitsLeft = 0
 	}
-	return uint(withdrawNativeAssetAmount), uint(withdrawExternalAssetAmount), lpUnitsLeft
+	return uint(withdrawNativeAssetAmount), uint(withdrawExternalAssetAmount), uint(lpUnitsLeft)
 }
 
 func calculatePoolUnits(oldPoolUnits uint, nativeAssetBalance uint, externalAssetBalance uint,
