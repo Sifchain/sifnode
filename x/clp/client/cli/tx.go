@@ -30,6 +30,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		GetCmdAddLiquidity(cdc),
 		GetCmdRemoveLiquidity(cdc),
 		GetCmdSwap(cdc),
+		GetCmdDecommissionPool(cdc),
 	)...)
 
 	return clpTxCmd
@@ -64,6 +65,29 @@ func GetCmdCreatePool(cdc *codec.Codec) *cobra.Command {
 	cmd.MarkFlagRequired(FlagAssetTicker)
 	cmd.MarkFlagRequired(FlagExternalAssetAmount)
 	cmd.MarkFlagRequired(FlagNativeAssetAmount)
+
+	return cmd
+}
+
+func GetCmdDecommissionPool(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "decommission-pool",
+		Short: "decommission liquidity pool",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			sourceChain := viper.GetString(FlagAssetSourceChain)
+			ticker := viper.GetString(FlagAssetTicker)
+			signer := cliCtx.GetFromAddress()
+			msg := types.NewMsgDecommissionPool(signer, ticker, sourceChain)
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+	cmd.Flags().AddFlagSet(FsAssetSourceChain)
+	cmd.Flags().AddFlagSet(FsAssetTicker)
+	cmd.MarkFlagRequired(FlagAssetSourceChain)
+	cmd.MarkFlagRequired(FlagAssetTicker)
 
 	return cmd
 }
@@ -112,8 +136,8 @@ func GetCmdRemoveLiquidity(cdc *codec.Codec) *cobra.Command {
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSourceChain),
 				viper.GetString(FlagAssetSymbol),
 				viper.GetString(FlagAssetTicker))
-			wBasis := viper.GetUint(FlagWBasisPoints)
-			asymmetry := viper.GetUint(FlagAsymmetry)
+			wBasis := viper.GetInt(FlagWBasisPoints)
+			asymmetry := viper.GetInt(FlagAsymmetry)
 			signer := cliCtx.GetFromAddress()
 			msg := types.NewMsgRemoveLiquidity(signer, externalAsset, wBasis, asymmetry)
 

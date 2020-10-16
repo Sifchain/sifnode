@@ -33,18 +33,25 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) {
+func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) error {
 	if !pool.Validate() {
-		return
+		return types.ErrUnableToSetPool
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetPoolKey(pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	key, err := types.GetPoolKey(pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	if err != nil {
+		return err
+	}
 	store.Set(key, k.cdc.MustMarshalBinaryBare(pool))
+	return nil
 }
 func (k Keeper) GetPool(ctx sdk.Context, ticker string, sourceChain string) (types.Pool, error) {
 	var pool types.Pool
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetPoolKey(ticker, sourceChain)
+	key, err := types.GetPoolKey(ticker, sourceChain)
+	if err != nil {
+		return pool, err
+	}
 	if !k.Exists(ctx, key) {
 		return pool, types.ErrPoolDoesNotExist
 	}
@@ -54,7 +61,7 @@ func (k Keeper) GetPool(ctx sdk.Context, ticker string, sourceChain string) (typ
 }
 
 func (k Keeper) GetPools(ctx sdk.Context) types.Pools {
-	var poolList []types.Pool
+	var poolList types.Pools
 	iterator := k.GetPoolsIterator(ctx)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
@@ -66,13 +73,17 @@ func (k Keeper) GetPools(ctx sdk.Context) types.Pools {
 	return poolList
 }
 
-func (k Keeper) DestroyPool(ctx sdk.Context, ticker string, sourceChain string) {
+func (k Keeper) DestroyPool(ctx sdk.Context, ticker string, sourceChain string) error {
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetPoolKey(ticker, sourceChain)
+	key, err := types.GetPoolKey(ticker, sourceChain)
+	if err != nil {
+		return err
+	}
 	if !k.Exists(ctx, key) {
-		return
+		return types.ErrPoolDoesNotExist
 	}
 	store.Delete(key)
+	return nil
 }
 
 func (k Keeper) GetPoolsIterator(ctx sdk.Context) sdk.Iterator {
@@ -94,7 +105,7 @@ func (k Keeper) GetLiquidityProvider(ctx sdk.Context, ticker string, lpAddress s
 	key := types.GetLiquidityProviderKey(ticker, lpAddress)
 	store := ctx.KVStore(k.storeKey)
 	if !k.Exists(ctx, key) {
-		return lp, types.LiquidityProviderDoesNotExist
+		return lp, types.ErrLiquidityProviderDoesNotExist
 	}
 	bz := store.Get(key)
 	k.cdc.MustUnmarshalBinaryBare(bz, &lp)
@@ -108,6 +119,21 @@ func (k Keeper) DestroyLiquidityProvider(ctx sdk.Context, ticker string, lpAddre
 	}
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(key)
+}
+
+func (k Keeper) GetLiqudityProvidersForAsset(ctx sdk.Context, asset types.Asset) []types.LiquidityProvider {
+	var lpList []types.LiquidityProvider
+	iterator := k.GetLiquidityProviderIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var lp types.LiquidityProvider
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
+		if lp.Asset == asset {
+			lpList = append(lpList, lp)
+		}
+	}
+	return lpList
 }
 
 func (k Keeper) GetLiquidityProviderIterator(ctx sdk.Context) sdk.Iterator {
