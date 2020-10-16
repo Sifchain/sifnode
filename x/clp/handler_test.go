@@ -84,7 +84,7 @@ func TestDecommisionPool(t *testing.T) {
 	res, err = handleMsgRemoveLiquidity(ctx, keeper, msgrm)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	msg := NewMsgDecommissionPool(signer, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	msg := NewMsgDecommissionPool(signer, pool.ExternalAsset.Ticker)
 	res, err = handleMsgDecommissionPool(ctx, keeper, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)

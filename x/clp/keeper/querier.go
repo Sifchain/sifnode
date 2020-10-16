@@ -31,7 +31,7 @@ func queryPool(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, e
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	pool, err := keeper.GetPool(ctx, params.Ticker, params.SourceChain)
+	pool, err := keeper.GetPool(ctx, params.Ticker)
 	if err != nil {
 		return nil, err
 	}

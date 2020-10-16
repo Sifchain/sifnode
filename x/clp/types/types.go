@@ -38,7 +38,9 @@ func NewPool(externalAsset Asset, nativeAssetBalance uint, externalAssetBalance 
 		NativeAssetBalance:   nativeAssetBalance,
 		ExternalAssetBalance: externalAssetBalance,
 		PoolUnits:            poolUnits}
-	pooladdr, err := GetAddress(pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	nativeAsset := GetNativeAsset()
+	pooladdr, err := GetAddress(pool.ExternalAsset.Ticker, nativeAsset.Ticker)
+
 	if err != nil {
 		return Pool{}, err
 	}

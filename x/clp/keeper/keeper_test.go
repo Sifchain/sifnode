@@ -27,7 +27,7 @@ func TestKeeper_SetPool(t *testing.T) {
 	pool := GenerateRandomPool(1)[0]
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	keeper.SetPool(ctx, pool)
-	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker)
 	assert.NoError(t, err, "Error in get pool")
 	assert.Equal(t, getpool, pool)
 }
@@ -47,14 +47,14 @@ func TestKeeper_DestroyPool(t *testing.T) {
 	pool := GenerateRandomPool(1)[0]
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	keeper.SetPool(ctx, pool)
-	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker)
 	assert.NoError(t, err, "Error in get pool")
 	assert.Equal(t, getpool, pool)
-	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
-	_, err = keeper.GetPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
+	_, err = keeper.GetPool(ctx, pool.ExternalAsset.Ticker)
 	assert.Error(t, err, "Pool should be deleted")
 	// This should do nothing.
-	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
 }
 
 func TestKeeper_SetLiquidityProvider(t *testing.T) {

@@ -37,7 +37,7 @@ func getPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		//Generate Params
 		var params types.QueryReqGetPool
 		params.Ticker = r.URL.Query().Get("ticker")
-		params.SourceChain = r.URL.Query().Get("sourceChain")
+		params.SourceChain = types.GetNativeAsset().Ticker //r.URL.Query().Get("sourceChain")
 
 		bz, err := cliCtx.Codec.MarshalJSON(params)
 		if err != nil {

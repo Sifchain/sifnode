@@ -32,7 +32,8 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissionPool) (*sdk.Result, error) {
-	pool, err := keeper.GetPool(ctx, msg.Ticker, msg.SourceChain)
+
+	pool, err := keeper.GetPool(ctx, msg.Ticker)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
@@ -52,7 +53,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 		//send withdrawExternalAsset to liquidityProvider.lpAddress
 		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
 	}
-	err = keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	err = keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToDestroyPool, err.Error())
 	}
@@ -76,11 +77,15 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 	if (msg.ExternalAssetAmount + msg.NativeAssetAmount) < MinThreshold { // Need to verify
 		return nil, types.ErrTotalAmountTooLow
 	}
+	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker)
+	if err == nil {
+		return nil, types.ErrUnableToCreatePool
+	}
 	asset := msg.ExternalAsset
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
 	poolUnits, lpunits := calculatePoolUnits(0, 0, 0, nativeBalance, externalBalance)
-	pool, err := NewPool(asset, nativeBalance, externalBalance, poolUnits)
+	pool, err = NewPool(asset, nativeBalance, externalBalance, poolUnits)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
@@ -112,7 +117,7 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 
 func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) (*sdk.Result, error) {
 	createNewLP := false
-	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker, msg.ExternalAsset.SourceChain)
+	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
@@ -159,7 +164,7 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 }
 
 func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiquidity) (*sdk.Result, error) {
-	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker, msg.ExternalAsset.SourceChain)
+	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
@@ -204,25 +209,39 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		liquidityFee uint
 		tradeSlip    uint
 	)
-	// TODO :Will change this to a comparison with ASSET when we add a Native ASSET through genesis
-	if msg.SentAsset.SourceChain != NativeChain && msg.ReceivedAsset.SourceChain != NativeChain {
-		lp, ts, err := swapOne(ctx, keeper, msg)
+	sentAmount := msg.SentAmount
+	sentAsset := msg.SentAsset
+	receivedAsset := msg.ReceivedAsset
+	nativeAsset := types.GetNativeAsset()
+	if msg.SentAsset != nativeAsset && msg.ReceivedAsset != nativeAsset {
+		inPool, err := keeper.GetPool(ctx, msg.SentAsset.Ticker)
+		if err != nil {
+			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
+		}
+		emitAmount, lp, ts, err := swapOne(ctx, keeper, sentAsset, sentAmount, nativeAsset, inPool)
 		if err != nil {
 			return nil, err
 		}
+		sentAmount = emitAmount
+		sentAsset = nativeAsset
 		liquidityFee = liquidityFee + lp
 		tradeSlip = tradeSlip + ts
 	}
-	lp, ts, err := swapOne(ctx, keeper, msg)
+	outPool, err := keeper.GetPool(ctx, msg.ReceivedAsset.Ticker)
+	if err != nil {
+		return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.ReceivedAsset.String())
+	}
+	emitAmount, lp, ts, err := swapOne(ctx, keeper, sentAsset, sentAmount, receivedAsset, outPool)
 	if err != nil {
 		return nil, err
 	}
 	liquidityFee = liquidityFee + lp
 	tradeSlip = tradeSlip + ts
+
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeSwap,
-			sdk.NewAttribute(types.AttributeKeySwapAmount, strconv.FormatInt(int64(msg.SentAmount), 10)),
+			sdk.NewAttribute(types.AttributeKeySwapAmount, strconv.FormatInt(int64(emitAmount), 10)),
 			sdk.NewAttribute(types.AttributeKeyLiquidityFee, strconv.FormatInt(int64(liquidityFee), 10)),
 			sdk.NewAttribute(types.AttributeKeyTradeSlip, strconv.FormatInt(int64(tradeSlip), 10)),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
@@ -238,39 +257,36 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 
 //------------------------------------------------------------------------------------------------------------------
 
-func swapOne(ctx sdk.Context, keeper Keeper, msg MsgSwap) (uint, uint, error) {
-	pool, err := keeper.GetPool(ctx, msg.SentAsset.Ticker, msg.SentAsset.SourceChain)
-	if err != nil {
-		return 0, 0, types.ErrPoolDoesNotExist
-	}
+func swapOne(ctx sdk.Context, keeper Keeper, from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint, error) {
+
 	var X uint
 	var Y uint
-	if msg.ReceivedAsset.Symbol == NativeToken {
+	if to == GetNativeAsset() {
 		Y = pool.NativeAssetBalance
 		X = pool.ExternalAssetBalance
 	} else {
 		X = pool.NativeAssetBalance
 		Y = pool.ExternalAssetBalance
 	}
-	x := msg.SentAmount
+	x := sentAmount
 	liquidityFee := calcLiquidityFee(X, x, Y)
 	tradeSlip := calcTradeSlip(X, x)
 	swapResult := calcSwapResult(X, x, Y)
 	if swapResult >= Y {
-		return 0, 0, types.ErrNotEnoughAssetTokens
+		return 0, 0, 0, types.ErrNotEnoughAssetTokens
 	}
-	if msg.SentAsset.Symbol == NativeToken {
+	if from == GetNativeAsset() {
 		pool.NativeAssetBalance = X + x
 		pool.ExternalAssetBalance = Y - swapResult
 	} else {
 		pool.ExternalAssetBalance = X + x
 		pool.NativeAssetBalance = Y - swapResult
 	}
-	err = keeper.SetPool(ctx, pool)
+	err := keeper.SetPool(ctx, pool)
 	if err != nil {
-		return 0, 0, errors.Wrap(types.ErrUnableToSetPool, err.Error())
+		return 0, 0, 0, errors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
-	return liquidityFee, tradeSlip, nil
+	return swapResult, liquidityFee, tradeSlip, nil
 }
 
 func calculateWithdrawl(poolUnits uint, nativeAssetBalance uint,

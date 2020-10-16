@@ -16,13 +16,12 @@ var (
 )
 
 type MsgDecommissionPool struct {
-	Signer      sdk.AccAddress `json:"signer"`
-	Ticker      string         `json:"ticker"`
-	SourceChain string         `json:"source_chain"`
+	Signer sdk.AccAddress `json:"signer"`
+	Ticker string         `json:"ticker"`
 }
 
-func NewMsgDecommissionPool(signer sdk.AccAddress, ticker string, sourceChain string) MsgDecommissionPool {
-	return MsgDecommissionPool{Signer: signer, Ticker: ticker, SourceChain: sourceChain}
+func NewMsgDecommissionPool(signer sdk.AccAddress, ticker string) MsgDecommissionPool {
+	return MsgDecommissionPool{Signer: signer, Ticker: ticker}
 }
 
 func (m MsgDecommissionPool) Route() string {
@@ -36,9 +35,6 @@ func (m MsgDecommissionPool) Type() string {
 func (m MsgDecommissionPool) ValidateBasic() error {
 	if m.Signer.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
-	}
-	if len(strings.TrimSpace(m.SourceChain)) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, m.Signer.String())
 	}
 	if len(strings.TrimSpace(m.Ticker)) == 0 {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, m.Signer.String())

@@ -20,8 +20,9 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
-	NativeToken = "ROWAN"
-	NativeChain = "SifChain"
+	NativeTicker = "ROWAN"
+	NativeChain  = "SIFCHAIN"
+	NativeSymbol = "RWN"
 )
 
 var (

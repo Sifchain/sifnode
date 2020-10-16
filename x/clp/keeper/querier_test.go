@@ -31,7 +31,7 @@ func TestQueryErrorPool(t *testing.T) {
 	assert.Error(t, err)
 	_, err = querier(ctx, []string{"pool"}, query)
 	assert.Error(t, err)
-	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
 	query.Path = ""
 	query.Data = qp
 	_, err = querier(ctx, []string{"pool"}, query)

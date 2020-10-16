@@ -33,7 +33,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 func GetCmdPool(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "pool [ticker] [sourceChain]",
+		Use:   "pool [ticker]",
 		Short: "Get Details for a pool",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query details for a liquidity pool .
@@ -42,12 +42,12 @@ $ %s pool ETH ROWAN`,
 				version.ClientName,
 			),
 		),
-		Args: cobra.ExactArgs(2),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			ticker := args[0]
-			sourceChain := args[1]
+			sourceChain := types.GetNativeAsset().Ticker
 			params := types.NewQueryReqGetPool(ticker, sourceChain)
 			bz, err := cliCtx.Codec.MarshalJSON(params)
 			if err != nil {

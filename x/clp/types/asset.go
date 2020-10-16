@@ -31,12 +31,6 @@ func (a Asset) Validate() bool {
 	if len(strings.TrimSpace(a.SourceChain)) == 0 {
 		return false
 	}
-	if a.SourceChain != NativeToken {
-		return false
-	}
-	if a.SourceChain == a.Ticker {
-		return false
-	}
 	if len(strings.TrimSpace(a.Symbol)) == 0 {
 		return false
 	}
@@ -52,4 +46,13 @@ func (a Asset) Equals(a2 Asset) bool {
 
 func (a Asset) IsEmpty() bool {
 	return a.SourceChain == "" || a.Symbol == "" || a.Ticker == ""
+}
+
+func GetNativeAsset() Asset {
+	return Asset{
+		SourceChain: NativeChain,
+		Symbol:      NativeSymbol,
+		Ticker:      NativeTicker,
+	}
+
 }
