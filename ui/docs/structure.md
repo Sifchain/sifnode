@@ -4,7 +4,7 @@ We are following architecture influenced by clean architecture.
 
 https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 
-<img src="https://blog.cleancoder.com/uncle-bob/images/2012-08-13-the-clean-architecture/CleanArchitecture.jpg" />
+<img src="FEArchitecture.png" />
 
 The main premise here is that we have a domain consisting of actions and entities which communicate with the outside world over `api` and `store` channels.
 
@@ -74,6 +74,30 @@ To test our blockchain backed apps we use ganache-cli and truffle to create a lo
 You can find the token contracts [here](../chains/etherium/contracts).
 
 Our API setup asks for getters to supply environment information. It may make sense to convert this to a function that returns a config object we inject everywhere.
+
+To test manually run the app using serve which includes ganache running in the background
+
+```bash
+./ui> yarn app:serve
+```
+
+Make note of the first private key that gets generated:
+
+<img src="./ganache-keys.png" />
+
+Then fire up the app on http://localhost:8080/.
+
+Go to metamask. Click on the right corner menu and select "Import Account"
+
+<img src="./metamask1.png" width="300" />
+
+Paste your private key there and you will load up your account on metamask.
+
+<img src="./metamask2.png" width="300" />
+
+Hit import and select this account. Be sure to have this account selected. Reload the page click the connect wallet button and run through the procedure to connect your wallet in metamask.
+
+You should see the balances of your wallet in the application.
 
 #### Testing stores
 
