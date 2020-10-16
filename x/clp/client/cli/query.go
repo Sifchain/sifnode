@@ -33,7 +33,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 func GetCmdPool(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "pool [ticker]",
+		Use:   "pool [External Asset ticker]",
 		Short: "Get Details for a pool",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query details for a liquidity pool .
@@ -89,7 +89,7 @@ func GetCmdPools(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 func GetCmdLiquidityProvider(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "lp [ticker] [lpAddress]",
+		Use:   "lp [External Asset ticker] [lpAddress]",
 		Short: "Get Liquidity Provider",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query details for a liquidity provioder.
