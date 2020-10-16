@@ -24,7 +24,7 @@ import (
 	"github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/Sifchain/sifnode/app"
-	"github.com/cosmos/peggy/x/ethbridge/types"
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	// this line is used by starport scaffolding
 )
 

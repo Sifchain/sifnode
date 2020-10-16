@@ -10,6 +10,8 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	"github.com/Sifchain/sifnode/x/oracle"
 	"github.com/Sifchain/sifnode/x/sifnode"
 	sifnodekeeper "github.com/Sifchain/sifnode/x/sifnode/keeper"
 	sifnodetypes "github.com/Sifchain/sifnode/x/sifnode/types"
@@ -25,10 +27,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-
-	// peggy part
-	"github.com/cosmos/peggy/x/ethbridge"
-	"github.com/cosmos/peggy/x/oracle"
 	// this line is used by starport scaffolding
 )
 
@@ -45,7 +43,6 @@ var (
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		sifnode.AppModuleBasic{},
-		// peggy part
 		ethbridge.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		// this line is used by starport scaffolding # 2
@@ -79,13 +76,12 @@ type NewApp struct {
 
 	subspaces map[string]params.Subspace
 
-	accountKeeper auth.AccountKeeper
-	bankKeeper    bank.Keeper
-	stakingKeeper staking.Keeper
-	supplyKeeper  supply.Keeper
-	paramsKeeper  params.Keeper
-	sifnodeKeeper sifnodekeeper.Keeper
-	// pegy part
+	accountKeeper   auth.AccountKeeper
+	bankKeeper      bank.Keeper
+	stakingKeeper   staking.Keeper
+	supplyKeeper    supply.Keeper
+	paramsKeeper    params.Keeper
+	sifnodeKeeper   sifnodekeeper.Keeper
 	ethbridgeKeeper ethbridge.Keeper
 	oracleKeeper    oracle.Keeper
 	// this line is used by starport scaffolding # 3
@@ -113,7 +109,6 @@ func NewInitApp(
 		supply.StoreKey,
 		params.StoreKey,
 		sifnodetypes.StoreKey,
-		// peggy part
 		ethbridge.StoreKey,
 		oracle.StoreKey,
 		// this line is used by starport scaffolding # 5
@@ -173,7 +168,6 @@ func NewInitApp(
 		keys[sifnodetypes.StoreKey],
 	)
 
-	// peggy part
 	app.oracleKeeper = oracle.NewKeeper(app.cdc, keys[oracle.StoreKey],
 		app.stakingKeeper, oracle.DefaultConsensusNeeded,
 	)
@@ -189,7 +183,6 @@ func NewInitApp(
 		sifnode.NewAppModule(app.sifnodeKeeper, app.bankKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
 		// this line is used by starport scaffolding # 6
-		// peggy part
 		oracle.NewAppModule(app.oracleKeeper),
 		ethbridge.NewAppModule(app.oracleKeeper, app.supplyKeeper, app.accountKeeper, app.ethbridgeKeeper, app.cdc),
 	)
@@ -205,9 +198,6 @@ func NewInitApp(
 		genutil.ModuleName,
 		oracle.ModuleName,
 		ethbridge.ModuleName,
-		// peggy part
-		// oracle.NewAppModule(app.OracleKeeper),
-		// ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.BridgeKeeper, app.cdc),
 		// this line is used by starport scaffolding # 7
 	)
 
