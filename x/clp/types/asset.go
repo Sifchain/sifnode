@@ -22,16 +22,11 @@ func NewAsset(sourceChain string, symbol string, ticker string) Asset {
 
 // implement fmt.Stringer
 func (a Asset) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`SourceChain: %s
-Symbol: %s
-Ticker: %s`, a.SourceChain, a.Symbol, a.Ticker))
+	return strings.TrimSpace(fmt.Sprintf(`SourceChain: %s Symbol: %s Ticker: %s`, a.SourceChain, a.Symbol, a.Ticker))
 }
 
 func (a Asset) Validate() bool {
 	if len(strings.TrimSpace(a.SourceChain)) == 0 {
-		return false
-	}
-	if a.SourceChain != NativeToken {
 		return false
 	}
 	if a.SourceChain == a.Ticker {
