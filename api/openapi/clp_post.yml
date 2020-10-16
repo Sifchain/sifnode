@@ -1,11 +1,95 @@
 openapi: 3.0.1
 info:
-  title: defaultTitle
-  description: defaultDescription
+  title: CLP_GET_REQUESTS
+  description: CLP_GET_REQUESTS
   version: '0.1'
 servers:
   - url: 'http://0.0.0.0:1317'
 paths:
+  /clp/decommissionPool:
+    post:
+      description: Auto generated using Swagger Inspector
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticker:
+                  type: string
+                source_chain:
+                  type: string
+                base_req:
+                  type: object
+                  properties:
+                    chain_id:
+                      type: string
+                    from:
+                      type: string
+                signer:
+                  type: string
+            examples:
+              '0':
+                value: |+
+                  {
+                    "base_req": {
+                      "from": "sif1a2nxtdc4tx292y0kqu94a7gqqnusy43j2t80l5",
+                      "chain_id": "sifnode"
+                    },
+                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+                     "source_chain" : "ROWAN",
+                     "ticker" :"EOS"
+                  }
+
+      responses:
+        '200':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  value:
+                    type: object
+                    properties:
+                      msg:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            value:
+                              type: object
+                              properties:
+                                ticker:
+                                  type: string
+                                source_chain:
+                                  type: string
+                                signer:
+                                  type: string
+                      fee:
+                        type: object
+                        properties:
+                          amount:
+                            type: array
+                            items:
+                              type: string
+                          gas:
+                            type: string
+                      memo:
+                        type: string
+                      signatures: {}
+              examples:
+                '0':
+                  value: >-
+                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/DecommissionPool","value":{"signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ticker":"EOS","source_chain":"ROWAN"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
+      servers:
+        - url: 'http://0.0.0.0:1317'
+    servers:
+      - url: 'http://0.0.0.0:1317'
   /clp/removeLiquidity:
     post:
       description: Auto generated using Swagger Inspector
