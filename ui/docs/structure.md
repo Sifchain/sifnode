@@ -67,7 +67,7 @@ export default function createFooService(context: FooServiceContext) {
 }
 ```
 
-#### Etherium based blockchain development.
+### Etherium based blockchain development.
 
 To test our blockchain backed apps we use ganache-cli and truffle to create a local etherium chain that is migrated to contain a couple of fake tokens.
 
@@ -99,7 +99,7 @@ Hit import and select this account. Be sure to have this account selected. Reloa
 
 You should see the balances of your wallet in the application.
 
-#### Testing stores
+### Testing stores
 
 Stores are created using factory functions so that their state can be set upon creation. The store is the state our view responds to. It makes sense to test the actions and resultant store effects together as a usecase as we require no further dependencies. We can supply stores to actions in a similar way to the way we supply apis.
 
