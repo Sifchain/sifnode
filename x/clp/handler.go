@@ -226,7 +226,6 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		sentAsset = nativeAsset
 		liquidityFee = liquidityFee + lp
 		tradeSlip = tradeSlip + ts
-		fmt.Println("Swap one ", emitAmount)
 	}
 
 	outPool, err := keeper.GetPool(ctx, msg.ReceivedAsset.Ticker)
@@ -239,7 +238,6 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	}
 	liquidityFee = liquidityFee + lp
 	tradeSlip = tradeSlip + ts
-	fmt.Println("Swap two ", emitAmount)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeSwap,
@@ -288,7 +286,6 @@ func swapOne(ctx sdk.Context, keeper Keeper, from Asset, sentAmount uint, to Ass
 	if err != nil {
 		return 0, 0, 0, errors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
-	fmt.Println(pool.String())
 	return swapResult, liquidityFee, tradeSlip, nil
 }
 
