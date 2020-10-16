@@ -15,7 +15,7 @@ require (
 	github.com/sethvargo/go-password v0.2.0
 	github.com/spf13/cobra v1.1.0
 	github.com/spf13/viper v1.7.1
-	github.com/tendermint/cosmos-rosetta-gateway v0.1.0
+	github.com/tendermint/cosmos-rosetta-gateway v0.1.1
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.33.8
 	github.com/tendermint/tm-db v0.5.1
