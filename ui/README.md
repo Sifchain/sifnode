@@ -12,5 +12,6 @@
 ## Having more control
 
 `yarn chain:start` - Start the background blockchain
+`yarn chain:migrate` - Migrate the background blockchain must have the chain started
 `yarn app:serve:nochain` - Serve frontend app with no background chain
 `yarn core:test:nochain` - Run core tests with no background chain
