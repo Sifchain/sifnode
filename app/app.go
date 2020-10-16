@@ -2,6 +2,8 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"io"
 	"os"
 
@@ -46,6 +48,7 @@ var (
 		ethbridge.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		// this line is used by starport scaffolding # 2
+		clp.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -59,6 +62,7 @@ func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
 
 	ModuleBasics.RegisterCodec(cdc)
+	vesting.RegisterCodec(cdc) // Need to verify if we need this
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 
@@ -76,14 +80,15 @@ type NewApp struct {
 
 	subspaces map[string]params.Subspace
 
-	accountKeeper   auth.AccountKeeper
-	bankKeeper      bank.Keeper
-	stakingKeeper   staking.Keeper
-	supplyKeeper    supply.Keeper
-	paramsKeeper    params.Keeper
-	sifnodeKeeper   sifnodekeeper.Keeper
+	accountKeeper auth.AccountKeeper
+	bankKeeper    bank.Keeper
+	stakingKeeper staking.Keeper
+	supplyKeeper  supply.Keeper
+	paramsKeeper  params.Keeper
+	sifnodeKeeper sifnodekeeper.Keeper
 	ethbridgeKeeper ethbridge.Keeper
 	oracleKeeper    oracle.Keeper
+	clpKeeper     clp.Keeper
 	// this line is used by starport scaffolding # 3
 	mm *module.Manager
 
@@ -111,6 +116,7 @@ func NewInitApp(
 		sifnodetypes.StoreKey,
 		ethbridge.StoreKey,
 		oracle.StoreKey,
+		clp.StoreKey,
 		// this line is used by starport scaffolding # 5
 	)
 
@@ -129,6 +135,7 @@ func NewInitApp(
 	app.subspaces[auth.ModuleName] = app.paramsKeeper.Subspace(auth.DefaultParamspace)
 	app.subspaces[bank.ModuleName] = app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
+	app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
 
 	app.accountKeeper = auth.NewAccountKeeper(
 		app.cdc,
@@ -173,6 +180,12 @@ func NewInitApp(
 	)
 	app.ethbridgeKeeper = ethbridge.NewKeeper(app.cdc, app.supplyKeeper, app.oracleKeeper)
 
+	app.clpKeeper = clp.NewKeeper(
+		app.cdc,
+		keys[clp.StoreKey],
+		app.bankKeeper,
+		app.subspaces[clp.ModuleName])
+
 	// this line is used by starport scaffolding # 4
 
 	app.mm = module.NewManager(
@@ -182,6 +195,7 @@ func NewInitApp(
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
 		sifnode.NewAppModule(app.sifnodeKeeper, app.bankKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
+		clp.NewAppModule(app.clpKeeper, app.bankKeeper),
 		// this line is used by starport scaffolding # 6
 		oracle.NewAppModule(app.oracleKeeper),
 		ethbridge.NewAppModule(app.oracleKeeper, app.supplyKeeper, app.accountKeeper, app.ethbridgeKeeper, app.cdc),
@@ -196,6 +210,7 @@ func NewInitApp(
 		sifnodetypes.ModuleName,
 		supply.ModuleName,
 		genutil.ModuleName,
+		clp.ModuleName,
 		oracle.ModuleName,
 		ethbridge.ModuleName,
 		// this line is used by starport scaffolding # 7
@@ -250,6 +265,19 @@ func (app *NewApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.Re
 	return app.mm.EndBlock(ctx, req)
 }
 
+func (app *NewApp) Codec() *codec.Codec {
+	return app.cdc
+}
+
+func (app *NewApp) GetKey(storeKey string) *sdk.KVStoreKey {
+	return app.keys[storeKey]
+}
+
+// GetTKey returns the TransientStoreKey for the provided store key
+func (app *NewApp) GetTKey(storeKey string) *sdk.TransientStoreKey {
+	return app.tKeys[storeKey]
+}
+
 func (app *NewApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
@@ -261,10 +289,6 @@ func (app *NewApp) ModuleAccountAddrs() map[string]bool {
 	}
 
 	return modAccAddrs
-}
-
-func (app *NewApp) Codec() *codec.Codec {
-	return app.cdc
 }
 
 func (app *NewApp) SimulationManager() *module.SimulationManager {
