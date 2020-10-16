@@ -47,3 +47,7 @@ feature-tests:
 
 run:
 	go run ./cmd/sifnoded start
+
+utest:
+	@go test ./x/clp/keeper/
+	@go test ./x/clp

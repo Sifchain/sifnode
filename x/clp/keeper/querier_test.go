@@ -155,13 +155,13 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 }
 
 func SetData(keeper Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {
-	pool := generateRandomPool(1)[0]
+	pool := GenerateRandomPool(1)[0]
 	keeper.SetPool(ctx, pool)
-	pools := generateRandomPool(10)
+	pools := GenerateRandomPool(10)
 	for _, p := range pools {
 		keeper.SetPool(ctx, p)
 	}
-	lp := generateRandomLP(1)[0]
+	lp := GenerateRandomLP(1)[0]
 	keeper.SetLiquidityProvider(ctx, lp)
 	return pool, pools, lp
 
