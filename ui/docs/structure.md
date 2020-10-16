@@ -105,4 +105,4 @@ Stores are created using factory functions so that their state can be set upon c
 
 ### Testing Views
 
-Testing views is not as important as testing core code so we can defer to e2e testing for that. That is why it is ok to share direct global service instances with Vue components. However complex render functionality or computed properties should be contained within stores or render actions.
+Testing views is not as important as testing core code so we can defer to e2e testing for that. That is why it is ok to share configured action and store instances with Vue components. However complex render functionality or computed properties should be contained within stores or render actions.
