@@ -48,7 +48,7 @@ func GetPoolAddress(ticker string, native string) (string, error) {
 }
 
 func GetAddress(ticker, native string) (sdk.AccAddress, error) {
-	addressBytes := []byte(fmt.Sprintf("%s_%s", ticker, native))
+	addressBytes := []byte(fmt.Sprintf("%s%s_%s", sdk.GetConfig().GetBech32ConsensusAddrPrefix(), ticker, native))
 	paddedbytes, err := pkcs7Pad(addressBytes, 20)
 	if err != nil {
 		return nil, err
