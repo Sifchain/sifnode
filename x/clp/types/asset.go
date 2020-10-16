@@ -48,7 +48,7 @@ func (a Asset) IsEmpty() bool {
 	return a.SourceChain == "" || a.Symbol == "" || a.Ticker == ""
 }
 
-func GetNativeAsset() Asset {
+func GetSettlementAsset() Asset {
 	return Asset{
 		SourceChain: NativeChain,
 		Symbol:      NativeSymbol,

@@ -212,7 +212,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	sentAmount := msg.SentAmount
 	sentAsset := msg.SentAsset
 	receivedAsset := msg.ReceivedAsset
-	nativeAsset := types.GetNativeAsset()
+	nativeAsset := types.GetSettlementAsset()
 	if msg.SentAsset != nativeAsset && msg.ReceivedAsset != nativeAsset {
 		inPool, err := keeper.GetPool(ctx, msg.SentAsset.Ticker)
 		if err != nil {

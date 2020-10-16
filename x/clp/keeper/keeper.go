@@ -38,7 +38,7 @@ func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) error {
 		return types.ErrUnableToSetPool
 	}
 	store := ctx.KVStore(k.storeKey)
-	key, err := types.GetPoolKey(pool.ExternalAsset.Ticker, types.GetNativeAsset().Ticker)
+	key, err := types.GetPoolKey(pool.ExternalAsset.Ticker, types.GetSettlementAsset().Ticker)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) error {
 func (k Keeper) GetPool(ctx sdk.Context, ticker string) (types.Pool, error) {
 	var pool types.Pool
 	store := ctx.KVStore(k.storeKey)
-	key, err := types.GetPoolKey(ticker, types.GetNativeAsset().Ticker)
+	key, err := types.GetPoolKey(ticker, types.GetSettlementAsset().Ticker)
 	if err != nil {
 		return pool, err
 	}
@@ -75,7 +75,7 @@ func (k Keeper) GetPools(ctx sdk.Context) types.Pools {
 
 func (k Keeper) DestroyPool(ctx sdk.Context, ticker string) error {
 	store := ctx.KVStore(k.storeKey)
-	key, err := types.GetPoolKey(ticker, types.GetNativeAsset().Ticker)
+	key, err := types.GetPoolKey(ticker, types.GetSettlementAsset().Ticker)
 	if err != nil {
 		return err
 	}
