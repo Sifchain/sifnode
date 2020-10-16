@@ -21,6 +21,7 @@ const (
 	QuerierRoute = ModuleName
 
 	NativeToken = "ROWAN"
+	NativeChain = "SifChain"
 )
 
 var (

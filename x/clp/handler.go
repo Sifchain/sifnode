@@ -196,13 +196,52 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		),
 	})
 
-	return &sdk.Result{}, nil
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
 func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, error) {
+	var (
+		liquidityFee uint
+		tradeSlip    uint
+	)
+	// TODO :Will change this to a comparison with ASSET when we add a Native ASSET through genesis
+	if msg.SentAsset.SourceChain != NativeChain && msg.ReceivedAsset.SourceChain != NativeChain {
+		lp, ts, err := swapOne(ctx, keeper, msg)
+		if err != nil {
+			return nil, err
+		}
+		liquidityFee = liquidityFee + lp
+		tradeSlip = tradeSlip + ts
+	}
+	lp, ts, err := swapOne(ctx, keeper, msg)
+	if err != nil {
+		return nil, err
+	}
+	liquidityFee = liquidityFee + lp
+	tradeSlip = tradeSlip + ts
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeSwap,
+			sdk.NewAttribute(types.AttributeKeySwapAmount, strconv.FormatInt(int64(msg.SentAmount), 10)),
+			sdk.NewAttribute(types.AttributeKeyLiquidityFee, strconv.FormatInt(int64(liquidityFee), 10)),
+			sdk.NewAttribute(types.AttributeKeyTradeSlip, strconv.FormatInt(int64(tradeSlip), 10)),
+			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer.String()),
+		),
+	})
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
+}
+
+//------------------------------------------------------------------------------------------------------------------
+
+func swapOne(ctx sdk.Context, keeper Keeper, msg MsgSwap) (uint, uint, error) {
 	pool, err := keeper.GetPool(ctx, msg.SentAsset.Ticker, msg.SentAsset.SourceChain)
 	if err != nil {
-		return nil, types.ErrPoolDoesNotExist
+		return 0, 0, types.ErrPoolDoesNotExist
 	}
 	var X uint
 	var Y uint
@@ -218,7 +257,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	tradeSlip := calcTradeSlip(X, x)
 	swapResult := calcSwapResult(X, x, Y)
 	if swapResult >= Y {
-		return nil, types.ErrNotEnoughAssetTokens
+		return 0, 0, types.ErrNotEnoughAssetTokens
 	}
 	if msg.SentAsset.Symbol == NativeToken {
 		pool.NativeAssetBalance = X + x
@@ -229,26 +268,10 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	}
 	err = keeper.SetPool(ctx, pool)
 	if err != nil {
-		return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
+		return 0, 0, errors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeSwap,
-			sdk.NewAttribute(types.AttributeKeySwapAmount, strconv.FormatInt(int64(msg.SentAmount), 10)),
-			sdk.NewAttribute(types.AttributeKeyLiquidityFee, strconv.FormatInt(int64(liquidityFee), 10)),
-			sdk.NewAttribute(types.AttributeKeyTradeSlip, strconv.FormatInt(int64(tradeSlip), 10)),
-			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer.String()),
-		),
-	})
-	return &sdk.Result{}, nil
+	return liquidityFee, tradeSlip, nil
 }
-
-//------------------------------------------------------------------------------------------------------------------
 
 func calculateWithdrawl(poolUnits uint, nativeAssetBalance uint,
 	externalAssetBalance uint, lpUnits uint, wBasisPoints int, asymmetry int) (uint, uint, uint) {

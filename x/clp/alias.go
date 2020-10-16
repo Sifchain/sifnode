@@ -12,6 +12,7 @@ const (
 	QuerierRoute      = types.QuerierRoute
 	DefaultParamspace = types.DefaultParamspace
 	NativeToken       = types.NativeToken
+	NativeChain       = types.NativeChain
 )
 
 var (
