@@ -1,9 +1,13 @@
+import { initProvider } from "@metamask/inpage-provider";
 import { ActionContext } from "..";
 
 export default ({
   api,
   store,
 }: ActionContext<"EtheriumService", "wallet" | "asset">) => ({
+  async init() {
+    api.EtheriumService.onConnected(this.refreshWalletBalances);
+  },
   async disconnectWallet() {
     await api.EtheriumService.disconnect();
     store.wallet.etheriumIsConnected = false;
@@ -13,7 +17,6 @@ export default ({
     await api.EtheriumService.connect();
     const isConnected = api.EtheriumService.isConnected();
     store.wallet.etheriumIsConnected = isConnected;
-    await this.refreshWalletBalances();
   },
   async refreshWalletBalances() {
     const balances = await api.EtheriumService.getBalance();

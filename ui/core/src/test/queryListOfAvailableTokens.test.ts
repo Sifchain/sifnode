@@ -18,6 +18,7 @@ describe("queryListOfAvailableTokens", () => {
       const actions = await walletActions({
         api: {
           EtheriumService: {
+            onConnected: () => Promise.resolve(),
             onDisconnected: () => Promise.resolve(),
             getAddress: () => "",
             getBalance: jest.fn(() => Promise.resolve(walletBalances)),

@@ -13,7 +13,7 @@
 import { defineComponent, onMounted } from "vue";
 import { computed } from "@vue/reactivity";
 
-import { useCore } from "../core/useCore";
+import { useCore } from "../hooks/useCore";
 import { Balance } from "../../../core/src";
 export default defineComponent({
   name: "ListPage",

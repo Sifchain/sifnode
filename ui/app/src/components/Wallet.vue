@@ -30,7 +30,7 @@
 
 <script lang="ts">
 import { onMounted } from "vue";
-import { useCore } from "../core/useCore";
+import { useCore } from "../hooks/useCore";
 
 export default {
   name: "Wallet",
@@ -38,7 +38,7 @@ export default {
     const { store, actions } = useCore();
 
     onMounted(async () => {
-      await actions.refreshWalletBalances();
+      await actions.init();
     });
 
     async function handleConnectClicked() {

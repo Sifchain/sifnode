@@ -6,15 +6,6 @@ import { Address, Asset, Balances, Token } from "../entities";
 import etheriumService, { EtheriumServiceContext } from "./EtheriumService";
 import tokenService, { TokenServiceContext } from "./TokenService";
 
-type ApiContext = EtheriumServiceContext & TokenServiceContext; // add contexts from other APIs
-
-export function createApi(context: ApiContext) {
-  return {
-    EtheriumService: etheriumService(context),
-    TokenService: tokenService(context),
-  };
-}
-
 export type Api = ReturnType<typeof createApi>;
 
 export type WithApi<T extends keyof Api = keyof Api> = {
@@ -23,9 +14,19 @@ export type WithApi<T extends keyof Api = keyof Api> = {
 
 export type IWalletService = {
   onDisconnected(handler: (...a: any[]) => void): void;
+  onConnected(handler: (...a: any[]) => void): void;
   getAddress(): Address | null;
   isConnected(): boolean;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   getBalance(address?: Address, asset?: Asset | Token): Promise<Balances>;
 };
+
+type ApiContext = EtheriumServiceContext & TokenServiceContext; // add contexts from other APIs
+
+export function createApi(context: ApiContext) {
+  return {
+    EtheriumService: etheriumService(context),
+    TokenService: tokenService(context),
+  };
+}

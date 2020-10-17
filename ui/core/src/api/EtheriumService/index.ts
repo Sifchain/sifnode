@@ -3,7 +3,9 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ETH } from "../../constants";
 import { Asset, Balance, Token } from "../../entities";
-import { IpcProvider, provider, WebsocketProvider } from "web3-core";
+import { provider } from "web3-core";
+import { IWalletService } from "..";
+import { Web3ProviderLoader } from "./Web3ProviderLoader";
 
 type Address = string;
 type Balances = Balance[];
@@ -48,37 +50,29 @@ async function getEtheriumBalance(web3: Web3, address: Address) {
   return Balance.create(ETH, ethBalance);
 }
 
-function isEventEmittingProvider(
-  provider?: provider
-): provider is WebsocketProvider | IpcProvider {
-  if (!provider || typeof provider === "string") return false;
-  return typeof (provider as any).on === "function";
-}
-
-export type IWalletService = {
-  onDisconnected(handler: (...a: any[]) => void): void;
-  getAddress(): Address | null;
-  isConnected(): boolean;
-  connect(): Promise<void>;
-  disconnect(): Promise<void>;
-  getBalance(address?: Address, asset?: Asset | Token): Promise<Balances>;
-};
-
 type ListenerFn = (...a: any[]) => void;
 
 export class EtheriumService implements IWalletService {
   private web3: Web3 | null = null;
   private supportedTokens: Token[] = [];
   private address: Address | null = null;
-  private handleDisconnect: ListenerFn = () => {};
+  // private handleDisconnect: ListenerFn = () => {};
+  private providerLoader: Web3ProviderLoader;
 
   constructor(
-    private getWeb3Provider: () => Promise<provider>,
+    getWeb3Provider: () => Promise<provider>,
     private getSupportedTokens: () => Promise<Token[]>
-  ) {}
+  ) {
+    this.providerLoader = new Web3ProviderLoader(getWeb3Provider);
+    this.providerLoader.load();
+  }
 
   onDisconnected(handler: ListenerFn) {
-    this.handleDisconnect = handler;
+    this.providerLoader.on("disconnected", handler);
+  }
+
+  onConnected(handler: ListenerFn) {
+    this.providerLoader.on("connected", handler);
   }
 
   getAddress(): Address | null {
@@ -92,26 +86,13 @@ export class EtheriumService implements IWalletService {
   async connect() {
     this.supportedTokens = await this.getSupportedTokens();
 
-    const provider = await this.getWeb3Provider();
-
-    if (!provider) {
-      throw new Error("Cound not connect to wallet");
-    }
-
-    if (isEventEmittingProvider(provider)) {
-      provider.on("disconnect", this.handleDisconnect);
-    }
-
-    this.web3 = new Web3(provider);
+    this.web3 = new Web3(this.providerLoader.getProvider());
 
     [this.address] = await this.web3.eth.getAccounts();
+    await this.providerLoader.attemptConnection();
   }
 
   async disconnect() {
-    const provider = this.web3?.currentProvider;
-    if (isEventEmittingProvider(provider)) {
-      provider.on("disconnect", this.handleDisconnect);
-    }
     this.web3 = null;
   }
 

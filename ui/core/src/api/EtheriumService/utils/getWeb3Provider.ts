@@ -1,6 +1,6 @@
 import detectMetaMaskProvider from "@metamask/detect-provider";
 import Web3 from "web3";
-import { AbstractProvider } from "web3-core";
+import { AbstractProvider, provider } from "web3-core";
 
 import { Token } from "../../../entities";
 
@@ -14,23 +14,13 @@ type WindowWithPossibleMetaMask = typeof window & {
 };
 
 // Detect mossible metamask provider from browser
-export const getWeb3Provider = async () => {
+export const getWeb3Provider = async (): Promise<provider> => {
   const mmp = await detectMetaMaskProvider();
   const win = window as WindowWithPossibleMetaMask;
 
   if (!mmp || !win) return null;
-  if (win.ethereum) {
-    // Let's test for Metamask
-    if (win.ethereum.request) {
-      // If metamask lets try and connect
-      try {
-        await win.ethereum.request({ method: "eth_requestAccounts" });
-      } catch (err) {
-        console.error(err);
-        return null;
-      }
-    }
-    return win.ethereum;
+  if (mmp) {
+    return mmp as provider;
   }
 
   // if a wallet has left web3 on the page we can use the current provider
