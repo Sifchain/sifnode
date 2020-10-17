@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
+rm $(which sifnoded) 2> /dev/null || echo sifnoded not install yet ...
+rm $(which sifnodecli) 2> /dev/null || echo sifnodecli not install yet ...
+
 rm -rf ~/.sifnoded
 rm -rf ~/.sifnodecli
+
+make install
 
 sifnoded init test --chain-id=sifnode
 
