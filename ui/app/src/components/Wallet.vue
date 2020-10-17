@@ -29,6 +29,7 @@
 </template>
 
 <script lang="ts">
+import { onMounted } from "vue";
 import { useCore } from "../hooks/useCore";
 
 export default {
@@ -36,9 +37,14 @@ export default {
   setup() {
     const { store, actions } = useCore();
 
+    onMounted(() => {
+      actions.init();
+    });
+
     async function handleConnectClicked() {
       await actions.connectToWallet();
     }
+
     async function handleDisconnectClicked() {
       await actions.disconnectWallet();
     }

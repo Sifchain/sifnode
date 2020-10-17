@@ -2,7 +2,10 @@
   <div>
     <div id="nav">
       <router-link to="/">Wallet</router-link> |
-      <router-link to="/list">List all balances</router-link>
+      <router-link to="/list">List all balances</router-link> |
+      <router-link to="/transfer-ethereum"
+        >Ethereum Network Transfer
+      </router-link>
     </div>
     <router-view />
   </div>

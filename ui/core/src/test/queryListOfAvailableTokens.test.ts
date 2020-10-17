@@ -20,7 +20,9 @@ describe("queryListOfAvailableTokens", () => {
           EtheriumService: {
             onConnected: () => Promise.resolve(),
             onDisconnected: () => Promise.resolve(),
+            onChange: () => {},
             getAddress: () => Promise.resolve(""),
+            transfer: () => Promise.resolve(""),
             getBalance: jest.fn(() => Promise.resolve(walletBalances)),
             connect: jest.fn(() => Promise.resolve()),
             disconnect: jest.fn(() => Promise.resolve()),

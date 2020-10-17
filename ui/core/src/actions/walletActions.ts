@@ -7,20 +7,22 @@ export default ({
 }: ActionContext<"EtheriumService", "wallet" | "asset">) => ({
   // TODO: Move this out
   async init() {
-    api.EtheriumService.onConnected(this.refreshWalletBalances);
+    api.EtheriumService.onChange(this.handleChange);
+  },
+
+  async handleChange() {
+    console.log("handleChange");
+    const balances = await api.EtheriumService.getBalance();
+    const isConnected = api.EtheriumService.isConnected();
+
+    console.log({ balances, isConnected });
+    store.wallet.etheriumIsConnected = isConnected;
+    store.wallet.balances = balances;
   },
   async disconnectWallet() {
     await api.EtheriumService.disconnect();
-    store.wallet.etheriumIsConnected = false;
-    store.wallet.balances = [];
   },
   async connectToWallet() {
     await api.EtheriumService.connect();
-    const isConnected = api.EtheriumService.isConnected();
-    store.wallet.etheriumIsConnected = isConnected;
-  },
-  async refreshWalletBalances() {
-    const balances = await api.EtheriumService.getBalance();
-    store.wallet.balances = balances;
   },
 });

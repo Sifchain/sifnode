@@ -1,5 +1,6 @@
 import { EventEmitter2 } from "eventemitter2";
 import { IpcProvider, provider, WebsocketProvider } from "web3-core";
+import { CONNECTED, DISCONNECTED } from "./events";
 
 function isEventEmittingProvider(
   provider?: provider
@@ -7,16 +8,15 @@ function isEventEmittingProvider(
   if (!provider || typeof provider === "string") return false;
   return typeof (provider as any).on === "function";
 }
+
 type MetaMaskProvider = WebsocketProvider & {
   request?: (a: any) => Promise<void>;
   isConnected(): boolean;
 };
+
 function isMetaMaskProvider(provider?: provider): provider is MetaMaskProvider {
   return typeof (provider as any).request === "function";
 }
-
-const CONNECTED = "connect";
-const DISCONNECTED = "disconnect";
 
 // Load a provider and delegate the connect and disconnect events to it
 export class Web3ProviderLoader extends EventEmitter2 {
