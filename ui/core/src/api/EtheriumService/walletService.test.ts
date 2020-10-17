@@ -1,26 +1,25 @@
 // This test must be run in an environment that supports ganace
 
-import { getFakeTokens } from "../utils/getFakeTokens";
+import { getFakeTokens } from "./utils/getFakeTokens";
 import createWalletService from ".";
-import { getWeb3 } from "../../test/getWeb3";
+import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { Balance } from "../../entities";
 import { ETH } from "../../constants";
-import { wallet } from "src/store/wallet";
 
-describe("walletService", () => {
-  let walletService: ReturnType<typeof createWalletService>;
+describe("EtheriumService", () => {
+  let EtheriumService: ReturnType<typeof createWalletService>;
 
   beforeEach(async () => {
     const supportedTokens = await getFakeTokens();
-    walletService = createWalletService({
-      getWeb3,
+    EtheriumService = createWalletService({
+      getWeb3Provider,
       getSupportedTokens: async () => supportedTokens,
     });
   });
   test("it should connect without error", async () => {
     let causedError = false;
     try {
-      await walletService.connect();
+      await EtheriumService.connect();
     } catch (err) {
       causedError = true;
     }
@@ -28,12 +27,12 @@ describe("walletService", () => {
   });
   test("that it returns the correct wallet amounts", async () => {
     const supportedTokens = await getFakeTokens();
-    const walletService = createWalletService({
-      getWeb3,
+    const EtheriumService = createWalletService({
+      getWeb3Provider,
       getSupportedTokens: async () => supportedTokens,
     });
-    await walletService.connect();
-    const balances = await walletService.getBalance();
+    await EtheriumService.connect();
+    const balances = await EtheriumService.getBalance();
 
     const ATK = supportedTokens.find(({ symbol }) => symbol === "ATK");
     const BTK = supportedTokens.find(({ symbol }) => symbol === "BTK");
@@ -49,7 +48,7 @@ describe("walletService", () => {
     );
   });
   test("isConnected", async () => {
-    expect(walletService.isConnected()).toBe(false);
-    await walletService.connect();
+    expect(EtheriumService.isConnected()).toBe(false);
+    await EtheriumService.connect();
   });
 });

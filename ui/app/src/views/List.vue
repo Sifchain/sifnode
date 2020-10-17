@@ -1,7 +1,6 @@
 <template>
   <div class="list">
     <table>
-      <input type="text" placeholder="Search... (TBC)" />
       <tr v-for="assetAmount in balances" :key="assetAmount.asset.symbol">
         <td align="right">{{ assetAmount.toFixed(6) }}</td>
         <td align="left">{{ assetAmount.asset.symbol }}</td>

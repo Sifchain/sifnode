@@ -1,4 +1,4 @@
-import { Address, Asset, Token } from "../entities";
+import { Token } from "../../entities";
 
 export type TokenServiceContext = {
   getSupportedTokens: () => Promise<Token[]>;

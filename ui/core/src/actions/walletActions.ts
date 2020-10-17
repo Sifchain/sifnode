@@ -3,21 +3,20 @@ import { ActionContext } from "..";
 export default ({
   api,
   store,
-}: ActionContext<"walletService", "wallet" | "asset">) => ({
+}: ActionContext<"EtheriumService", "wallet" | "asset">) => ({
   async disconnectWallet() {
-    await api.walletService.disconnect();
-    store.wallet.isConnected = false;
+    await api.EtheriumService.disconnect();
+    store.wallet.etheriumIsConnected = false;
     store.wallet.balances = [];
   },
   async connectToWallet() {
-    await api.walletService.connect();
-    store.wallet.isConnected = api.walletService.isConnected();
+    await api.EtheriumService.connect();
+    const isConnected = api.EtheriumService.isConnected();
+    store.wallet.etheriumIsConnected = isConnected;
     await this.refreshWalletBalances();
-    // How do we listen for connection status?
-    // What happens when the wallet drops off?
   },
   async refreshWalletBalances() {
-    const balances = await api.walletService.getBalance();
+    const balances = await api.EtheriumService.getBalance();
     store.wallet.balances = balances;
   },
 });

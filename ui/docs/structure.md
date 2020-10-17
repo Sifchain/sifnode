@@ -60,7 +60,7 @@ In the same way that Actions have their dependencies injected we can inject depe
 export default function createFooService(context: FooServiceContext) {
   return {
     async doStuff() {
-      const web3 = await context.getWeb3();
+      const provider = await context.getWeb3Provider();
       // ...
     },
   };

@@ -3,10 +3,10 @@ import { Balance } from "../entities";
 
 export type WalletStore = {
   balances: Balance[];
-  isConnected: boolean;
+  etheriumIsConnected: boolean;
 };
 
 export const wallet = reactive({
   balances: [],
-  isConnected: false,
+  etheriumIsConnected: false,
 }) as WalletStore;

@@ -1,4 +1,4 @@
-import walletActions from "./walletActions";
+import walletActions from "../actions/walletActions";
 import { createStore, Store } from "../store";
 import { Balance, Token } from "../entities";
 
@@ -15,17 +15,21 @@ describe("queryListOfAvailableTokens", () => {
 
     beforeEach(async () => {
       store = createStore();
-      await walletActions({
+      const actions = await walletActions({
         api: {
-          walletService: {
+          EtheriumService: {
+            onDisconnected: () => Promise.resolve(),
+            getAddress: () => "",
             getBalance: jest.fn(() => Promise.resolve(walletBalances)),
-            connect: jest.fn(() => Promise.resolve(true)),
+            connect: jest.fn(() => Promise.resolve()),
             disconnect: jest.fn(() => Promise.resolve()),
             isConnected: () => true,
           },
         },
         store,
-      }).refreshWalletBalances();
+      });
+
+      await actions.connectToWallet();
     });
 
     it("should store the available tokens", () => {

@@ -1,13 +1,13 @@
 import {
   createStore,
   createApi,
-  getWeb3,
   createActions,
+  getWeb3Provider,
   getFakeTokens as getSupportedTokens,
 } from "../../../core";
 
 const api = createApi({
-  getWeb3,
+  getWeb3Provider,
   getSupportedTokens,
 });
 
