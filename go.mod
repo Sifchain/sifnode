@@ -7,14 +7,17 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/cosmos/cosmos-sdk v0.39.1
 	github.com/cucumber/godog v0.10.0
+	github.com/ethereum/go-ethereum v1.9.18
 	github.com/golang/mock v1.4.3 // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
+	github.com/gorilla/mux v1.8.0
 	github.com/onsi/ginkgo v1.11.0 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/sethvargo/go-password v0.2.0
 	github.com/spf13/cobra v1.1.0
 	github.com/spf13/viper v1.7.1
+	github.com/stretchr/testify v1.6.1
 	github.com/tendermint/cosmos-rosetta-gateway v0.1.1
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.33.8
