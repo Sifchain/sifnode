@@ -1,15 +1,19 @@
 package clp
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestCreatePool(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
-	pool := GenerateRandomPool(1)[0]
 	signer := GenerateAddress()
-	msgCreatePool := NewMsgCreatePool(signer, pool.ExternalAsset, pool.NativeAssetBalance, pool.ExternalAssetBalance)
+	asset := NewAsset("ETHEREUM", "ETH", "eth")
+	externalCoin := sdk.NewCoin(asset.Ticker, sdk.NewInt(10000))
+	nattiveCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(10000))
+	keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nattiveCoin})
+	msgCreatePool := NewMsgCreatePool(signer, asset, 1000, 1000)
 	res, err := handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)

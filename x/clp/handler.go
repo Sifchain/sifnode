@@ -77,18 +77,34 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 	if (msg.ExternalAssetAmount + msg.NativeAssetAmount) < MinThreshold { // Need to verify
 		return nil, types.ErrTotalAmountTooLow
 	}
-	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker)
-	if err == nil {
+	if keeper.ExistsPool(ctx, msg.ExternalAsset.Ticker) {
 		return nil, types.ErrUnableToCreatePool
 	}
+
 	asset := msg.ExternalAsset
+	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(msg.ExternalAssetAmount)))
+	nativeAssetCoin := sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(msg.NativeAssetAmount)))
+	if !keeper.BankKeeper.HasCoins(ctx, msg.Signer, sdk.Coins{externalAssetCoin, nativeAssetCoin}) {
+		return nil, types.ErrBalanceNotAvailable
+	}
+	_, err := keeper.BankKeeper.SubtractCoins(ctx, msg.Signer, sdk.Coins{externalAssetCoin, nativeAssetCoin})
+	if err != nil {
+		return nil, types.ErrUnableToSubtractBalance
+	}
+
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
 	poolUnits, lpunits := calculatePoolUnits(0, 0, 0, nativeBalance, externalBalance)
-	pool, err = NewPool(asset, nativeBalance, externalBalance, poolUnits)
+	pool, err := NewPool(asset, nativeBalance, externalBalance, poolUnits)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
+
+	_, err = keeper.BankKeeper.AddCoins(ctx, pool.PoolAddress, sdk.Coins{externalAssetCoin, nativeAssetCoin})
+	if err != nil {
+		return nil, err
+	}
+
 	lp := NewLiquidityProvider(asset, lpunits, msg.Signer.String())
 	err = keeper.SetPool(ctx, pool)
 	if err != nil {
