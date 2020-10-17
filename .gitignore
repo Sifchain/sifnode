@@ -6,3 +6,4 @@ frontend/.cache
 .live
 .DS_Store
 .testCoverage.txt
+.environments
