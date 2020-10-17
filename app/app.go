@@ -23,6 +23,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
+	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/oracle"
 )
 
@@ -39,12 +40,14 @@ var (
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		oracle.AppModuleBasic{},
+		ethbridge.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
 	}
 )
 
@@ -69,14 +72,15 @@ type NewApp struct {
 
 	subspaces map[string]params.Subspace
 
-	accountKeeper auth.AccountKeeper
+	AccountKeeper auth.AccountKeeper
 	bankKeeper    bank.Keeper
 	StakingKeeper staking.Keeper
-	supplyKeeper  supply.Keeper
+	SupplyKeeper  supply.Keeper
 	paramsKeeper  params.Keeper
 
 	// Peggy keepers
-	OracleKeeper oracle.Keeper
+	EthBridgeKeeper ethbridge.Keeper
+	OracleKeeper    oracle.Keeper
 
 	mm *module.Manager
 
@@ -102,7 +106,7 @@ func NewInitApp(
 		supply.StoreKey,
 		params.StoreKey,
 		oracle.StoreKey,
-		// this line is used by starport scaffolding # 5
+		ethbridge.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -121,7 +125,7 @@ func NewInitApp(
 	app.subspaces[bank.ModuleName] = app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
 
-	app.accountKeeper = auth.NewAccountKeeper(
+	app.AccountKeeper = auth.NewAccountKeeper(
 		app.cdc,
 		keys[auth.StoreKey],
 		app.subspaces[auth.ModuleName],
@@ -129,15 +133,15 @@ func NewInitApp(
 	)
 
 	app.bankKeeper = bank.NewBaseKeeper(
-		app.accountKeeper,
+		app.AccountKeeper,
 		app.subspaces[bank.ModuleName],
 		app.ModuleAccountAddrs(),
 	)
 
-	app.supplyKeeper = supply.NewKeeper(
+	app.SupplyKeeper = supply.NewKeeper(
 		app.cdc,
 		keys[supply.StoreKey],
-		app.accountKeeper,
+		app.AccountKeeper,
 		app.bankKeeper,
 		maccPerms,
 	)
@@ -145,7 +149,7 @@ func NewInitApp(
 	stakingKeeper := staking.NewKeeper(
 		app.cdc,
 		keys[staking.StoreKey],
-		app.supplyKeeper,
+		app.SupplyKeeper,
 		app.subspaces[staking.ModuleName],
 	)
 
@@ -160,13 +164,20 @@ func NewInitApp(
 		oracle.DefaultConsensusNeeded,
 	)
 
+	app.EthBridgeKeeper = ethbridge.NewKeeper(
+		app.cdc,
+		app.SupplyKeeper,
+		app.OracleKeeper,
+	)
+
 	app.mm = module.NewManager(
-		genutil.NewAppModule(app.accountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx),
-		auth.NewAppModule(app.accountKeeper),
-		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
-		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		staking.NewAppModule(app.StakingKeeper, app.accountKeeper, app.supplyKeeper),
+		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx),
+		auth.NewAppModule(app.AccountKeeper),
+		bank.NewAppModule(app.bankKeeper, app.AccountKeeper),
+		supply.NewAppModule(app.SupplyKeeper, app.AccountKeeper),
+		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
+		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
 	)
 
 	app.mm.SetOrderEndBlockers(staking.ModuleName)
@@ -177,7 +188,8 @@ func NewInitApp(
 		bank.ModuleName,
 		supply.ModuleName,
 		genutil.ModuleName,
-		// this line is used by starport scaffolding # 7
+		oracle.ModuleName,
+		ethbridge.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
@@ -188,8 +200,8 @@ func NewInitApp(
 
 	app.SetAnteHandler(
 		auth.NewAnteHandler(
-			app.accountKeeper,
-			app.supplyKeeper,
+			app.AccountKeeper,
+			app.SupplyKeeper,
 			auth.DefaultSigVerificationGasConsumer,
 		),
 	)
