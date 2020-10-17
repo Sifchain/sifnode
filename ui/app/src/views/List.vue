@@ -1,11 +1,14 @@
 <template>
   <div class="list">
-    <table>
-      <tr v-for="assetAmount in balances" :key="assetAmount.asset.symbol">
-        <td align="right">{{ assetAmount.toFixed(6) }}</td>
-        <td align="left">{{ assetAmount.asset.symbol }}</td>
-      </tr>
-    </table>
+    <div v-if="walletConnected">
+      <table>
+        <tr v-for="assetAmount in balances" :key="assetAmount.asset.symbol">
+          <td align="left">{{ assetAmount.asset.symbol }}</td>
+          <td align="right">{{ assetAmount.toFixed(2) }}</td>
+        </tr>
+      </table>
+    </div>
+    <div v-else>No wallet connected</div>
   </div>
 </template>
 
@@ -21,6 +24,10 @@ export default defineComponent({
     const { store, actions } = useCore();
 
     const balances = computed(() => {
+      // This is trying to simulate mixing real wallet accounts with
+      // potential destination swap accounts. It looks the same as the wallet page
+      // But eventually will have extra accounts that the wallet doesn't have depending
+      // on What is in the top20 tokens
       const balanceSymbols = store.wallet.balances.map((t) => t.asset.symbol);
       const tokensNotInBalances = store.asset.top20Tokens.filter((token) => {
         return !balanceSymbols.includes(token.symbol);
@@ -34,15 +41,22 @@ export default defineComponent({
       return allBalances;
     });
 
+    const walletConnected = computed(() => store.wallet.etheriumIsConnected);
+
     onMounted(async () => {
       await actions.refreshWalletBalances();
-      await actions.refreshTokens();
     });
 
     return {
       balances,
+      walletConnected,
     };
   },
   components: {},
 });
 </script>
+<style scoped>
+table {
+  margin: 0 auto;
+}
+</style>

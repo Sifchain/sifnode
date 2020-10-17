@@ -5,6 +5,7 @@ export default ({
   api,
   store,
 }: ActionContext<"EtheriumService", "wallet" | "asset">) => ({
+  // TODO: Move this out
   async init() {
     api.EtheriumService.onConnected(this.refreshWalletBalances);
   },

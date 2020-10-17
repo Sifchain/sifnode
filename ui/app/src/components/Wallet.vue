@@ -14,8 +14,8 @@
           v-for="assetAmount in store.wallet.balances"
           :key="assetAmount.asset.symbol"
         >
-          <td align="right">{{ assetAmount.toFixed(6) }}</td>
           <td align="left">{{ assetAmount.asset.symbol }}</td>
+          <td align="right">{{ assetAmount.toFixed(2) }}</td>
         </tr>
       </table>
       <button
@@ -29,17 +29,12 @@
 </template>
 
 <script lang="ts">
-import { onMounted } from "vue";
 import { useCore } from "../hooks/useCore";
 
 export default {
   name: "Wallet",
   setup() {
     const { store, actions } = useCore();
-
-    onMounted(async () => {
-      await actions.init();
-    });
 
     async function handleConnectClicked() {
       await actions.connectToWallet();
