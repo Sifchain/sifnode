@@ -77,6 +77,7 @@ type NewApp struct {
 
 	accountKeeper auth.AccountKeeper
 	bankKeeper    bank.Keeper
+	bank.ViewKeeper
 	stakingKeeper staking.Keeper
 	supplyKeeper  supply.Keeper
 	paramsKeeper  params.Keeper
