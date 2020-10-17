@@ -16,15 +16,16 @@ export const wallet = reactive({
 
 
 export interface ICWalletStore extends  WalletStore {
-  mnemonic?: string, // bip valudated string
   account?: Account,
   client?: SigningCosmosClient
 } 
 
+export function createWallet() {
+  return 
+}
 export const CWalletStore = reactive({
   balances: [],
   isConnected: false,
-  mnemonic: undefined,
   account: undefined,
   client: undefined
 }) as ICWalletStore;
