@@ -2,7 +2,7 @@ import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import { ETH } from "../../constants";
 import { Asset, Balance, Token } from "../../entities";
-import { provider } from "web3-core";
+import { provider, TransactionReceipt } from "web3-core";
 import { IWalletService, TxParams, TxHash } from "..";
 import { Web3ProviderLoader } from "./Web3ProviderLoader";
 import JSBI from "jsbi";
@@ -115,16 +115,30 @@ async function transferEther(
   amount: JSBI
 ) {
   return new Promise<string>((resolve, reject) => {
+    let hash: string;
+    let receipt: TransactionReceipt;
+
+    function resolvePromise() {
+      if (receipt && hash) resolve(hash);
+    }
+
     web3.eth
       .sendTransaction({
         from: fromAddress,
         to: toAddress,
         value: amount.toString(),
       })
-      .on("transactionHash", (hash) => {
-        resolve(hash);
+      .on("transactionHash", (_hash: string) => {
+        hash = _hash;
+        resolvePromise();
       })
-      .on("error", (err) => reject(err));
+      .on("receipt", (_receipt) => {
+        receipt = _receipt;
+        resolvePromise();
+      })
+      .on("error", (err: any) => {
+        reject(err);
+      });
   });
 }
 
@@ -270,7 +284,7 @@ export class EtheriumService implements IWalletService {
         "Transaction attempted but 'from' address cannot be determined!"
       );
     }
-    console.log({ asset });
+
     const hash = isToken(asset)
       ? await transferToken(this.web3, from, recipient, amount, asset)
       : await transferEther(this.web3, from, recipient, amount);
