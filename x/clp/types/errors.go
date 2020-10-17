@@ -27,4 +27,5 @@ var (
 	ErrBalanceNotAvailable           = sdkerrors.Register(ModuleName, 18, "user does not have enough balance of the required coin")
 	ErrUnableToSubtractBalance       = sdkerrors.Register(ModuleName, 19, "unable to subtract balance")
 	ErrUnableToAddBalance            = sdkerrors.Register(ModuleName, 20, "unable to add balance")
+	ErrNotEnoughLiquidity            = sdkerrors.Register(ModuleName, 20, "pool does not have sufficient balance")
 )
