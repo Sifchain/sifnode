@@ -22,7 +22,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-	// this line is used by starport scaffolding
+
+	"github.com/Sifchain/sifnode/x/oracle"
 )
 
 const appName = "sifnode"
@@ -37,7 +38,7 @@ var (
 		staking.AppModuleBasic{},
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
-		// this line is used by starport scaffolding # 2
+		oracle.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -70,10 +71,13 @@ type NewApp struct {
 
 	accountKeeper auth.AccountKeeper
 	bankKeeper    bank.Keeper
-	stakingKeeper staking.Keeper
+	StakingKeeper staking.Keeper
 	supplyKeeper  supply.Keeper
 	paramsKeeper  params.Keeper
-	// this line is used by starport scaffolding # 3
+
+	// Peggy keepers
+	OracleKeeper oracle.Keeper
+
 	mm *module.Manager
 
 	sm *module.SimulationManager
@@ -97,6 +101,7 @@ func NewInitApp(
 		staking.StoreKey,
 		supply.StoreKey,
 		params.StoreKey,
+		oracle.StoreKey,
 		// this line is used by starport scaffolding # 5
 	)
 
@@ -144,19 +149,24 @@ func NewInitApp(
 		app.subspaces[staking.ModuleName],
 	)
 
-	app.stakingKeeper = *stakingKeeper.SetHooks(
+	app.StakingKeeper = *stakingKeeper.SetHooks(
 		staking.NewMultiStakingHooks(),
 	)
 
-	// this line is used by starport scaffolding # 4
+	app.OracleKeeper = oracle.NewKeeper(
+		app.cdc,
+		keys[oracle.StoreKey],
+		app.StakingKeeper,
+		oracle.DefaultConsensusNeeded,
+	)
 
 	app.mm = module.NewManager(
-		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
+		genutil.NewAppModule(app.accountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.accountKeeper),
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
-		// this line is used by starport scaffolding # 6
+		staking.NewAppModule(app.StakingKeeper, app.accountKeeper, app.supplyKeeper),
+		oracle.NewAppModule(app.OracleKeeper),
 	)
 
 	app.mm.SetOrderEndBlockers(staking.ModuleName)
