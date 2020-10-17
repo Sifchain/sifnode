@@ -15,7 +15,7 @@ export type WithApi<T extends keyof Api = keyof Api> = {
 export type IWalletService = {
   onDisconnected(handler: (...a: any[]) => void): void;
   onConnected(handler: (...a: any[]) => void): void;
-  getAddress(): Address | null;
+  getAddress(): Promise<Address | null>;
   isConnected(): boolean;
   connect(): Promise<void>;
   disconnect(): Promise<void>;

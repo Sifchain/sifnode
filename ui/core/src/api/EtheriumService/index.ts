@@ -68,31 +68,40 @@ export class EtheriumService implements IWalletService {
   }
 
   onDisconnected(handler: ListenerFn) {
-    this.providerLoader.on("disconnected", handler);
+    this.providerLoader.on("disconnect", handler);
   }
 
   onConnected(handler: ListenerFn) {
-    this.providerLoader.on("connected", handler);
+    this.providerLoader.on("connect", handler);
   }
 
-  getAddress(): Address | null {
+  async getAddress(): Promise<Address | null> {
+    if (!this.address) {
+      [this.address] = (await this.web3?.eth.getAccounts()) ?? [];
+    }
+
     return this.address;
   }
 
   isConnected() {
-    return Boolean(this.web3);
+    return !!this.web3 || this.providerLoader.isConnected();
   }
 
   async connect() {
-    this.supportedTokens = await this.getSupportedTokens();
+    try {
+      this.supportedTokens = await this.getSupportedTokens();
+      this.web3 = new Web3(this.providerLoader.getProvider());
+      const accounts = await this.web3.eth.getAccounts();
+      [this.address] = accounts;
 
-    this.web3 = new Web3(this.providerLoader.getProvider());
-
-    [this.address] = await this.web3.eth.getAccounts();
-    await this.providerLoader.attemptConnection();
+      await this.providerLoader.connect();
+    } catch (err) {
+      this.web3 = null;
+    }
   }
 
   async disconnect() {
+    this.providerLoader.disconnect();
     this.web3 = null;
   }
 
@@ -101,7 +110,7 @@ export class EtheriumService implements IWalletService {
     asset?: Asset | Token
   ): Promise<Balances> {
     const supportedTokens = this.supportedTokens;
-    const addr = address || this.getAddress();
+    const addr = address || (await this.getAddress());
 
     if (!this.web3 || !addr) return [];
 

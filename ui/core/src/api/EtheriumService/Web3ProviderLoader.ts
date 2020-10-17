@@ -9,12 +9,16 @@ function isEventEmittingProvider(
 }
 type MetaMaskProvider = WebsocketProvider & {
   request?: (a: any) => Promise<void>;
+  isConnected(): boolean;
 };
 function isMetaMaskProvider(provider?: provider): provider is MetaMaskProvider {
   return typeof (provider as any).request === "function";
 }
 
-// Load a provider and delegate the connected and disconnected events to it
+const CONNECTED = "connect";
+const DISCONNECTED = "disconnect";
+
+// Load a provider and delegate the connect and disconnect events to it
 export class Web3ProviderLoader extends EventEmitter2 {
   public provider: provider | null = null;
 
@@ -22,39 +26,51 @@ export class Web3ProviderLoader extends EventEmitter2 {
     super();
   }
 
+  isConnected() {
+    if (isMetaMaskProvider(this.provider)) {
+      return this.provider.isConnected();
+    }
+    return false;
+  }
+
   async load() {
     this.provider = await this._getProvider();
 
     if (isEventEmittingProvider(this.provider)) {
       // Forward events to parent
-      this.provider.on("connected", () => {
-        this.emit("connected");
+      this.provider.on(CONNECTED, () => {
+        this.emit(CONNECTED);
       });
 
-      this.provider.on("disconnected", () => {
-        this.emit("disconnected");
+      this.provider.on(DISCONNECTED, () => {
+        this.emit(DISCONNECTED);
+      });
+
+      this.provider.on("message", () => {
+        const msg = arguments;
+        console.log({ msg });
       });
     }
 
     return this.provider;
+  }
+
+  async disconnect() {
+    this.emit(DISCONNECTED);
   }
 
   getProvider() {
     return this.provider;
   }
 
-  async attemptConnection() {
+  async connect() {
     // Let's test for Metamask
     if (isMetaMaskProvider(this.provider)) {
       if (this.provider.request) {
         // If metamask lets try and connect
-        try {
-          await this.provider.request({ method: "eth_requestAccounts" });
-        } catch (err) {
-          console.error(err);
-        }
+        await this.provider.request({ method: "eth_requestAccounts" });
       }
     }
-    this.emit("connected");
+    this.emit(CONNECTED);
   }
 }
