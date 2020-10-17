@@ -1,5 +1,5 @@
 import {  ICWalletStore, CWalletStore } from "../../store/wallet"
-
+import { Mnemonic } from "../../entities/Wallet" 
 import axios from "axios";
 import {
   Secp256k1HdWallet,
@@ -12,8 +12,8 @@ import {
 const API = "http://localhost:1317";
 const ADDR_PREFIX = "sif";
 
-export async function cosmosSignin( mnemonic: ICWalletStore["mnemonic"] ) {
-
+export async function cosmosSignin( mnemonic: Mnemonic ): 
+  Promise<{account: Account, client: SigningCosmosClient}> {
   try {
     if (!mnemonic) { throw "No mnemonic. Can't generate wallet."}
     const wallet = await Secp256k1HdWallet.fromMnemonic(
@@ -21,32 +21,15 @@ export async function cosmosSignin( mnemonic: ICWalletStore["mnemonic"] ) {
       makeCosmoshubPath(0),
       ADDR_PREFIX
     );
-    // localStorage.setItem("mnemonic", mnemonic);
     const [{ address }] = await wallet.getAccounts();
     const url = `${API}/auth/accounts/${address}`;
     const acc = (await axios.get(url)).data;
     const account: Account = acc.result.value;
-    console.log(account)
-    CWalletStore.account = account
-    // commit("set", { key: "account", value: account });
     const client = new SigningCosmosClient(API, address, wallet);
-    console.log(client)
-    CWalletStore.client = client
-
-    // commit("set", { key: "client", value: client });
-    // // dispatch("delegationsFetch");
-    // // dispatch("transfersIncomingFetch");
-    // // dispatch("transfersOutgoingFetch");
-    // try {
-    //   await dispatch("bankBalancesGet");
-    // } catch {
-    //   console.log("Error in getting a bank balance.");
-    // }
-    // resolve(account);
+    return {account, client}
   } catch (error) {
     throw error
   }
-
 }
 
 
