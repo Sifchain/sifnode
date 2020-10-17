@@ -41,8 +41,3 @@ clean: clean-config
 tests:
 	@go test -v -coverprofile .testCoverage.txt ./...
 
-feature-tests:
-	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
-
-run:
-	go run ./cmd/sifd start
