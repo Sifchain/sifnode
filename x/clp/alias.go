@@ -11,7 +11,8 @@ const (
 	StoreKey          = types.StoreKey
 	QuerierRoute      = types.QuerierRoute
 	DefaultParamspace = types.DefaultParamspace
-	NativeToken       = types.NativeToken
+	NativeToken       = types.NativeTicker
+	NativeChain       = types.NativeChain
 )
 
 var (
@@ -34,6 +35,7 @@ var (
 	GenerateRandomPool     = keeper.GenerateRandomPool
 	GenerateRandomLP       = keeper.GenerateRandomLP
 	GenerateAddress        = keeper.GenerateAddress
+	GetNativeAsset         = types.GetSettlementAsset
 )
 
 type (

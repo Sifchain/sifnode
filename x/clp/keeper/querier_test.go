@@ -18,8 +18,7 @@ func TestQueryErrorPool(t *testing.T) {
 	querier := NewQuerier(keeper)
 	//Test Pool
 	queryPool := types.QueryReqGetPool{
-		Ticker:      pool.ExternalAsset.Ticker,
-		SourceChain: pool.ExternalAsset.SourceChain,
+		Ticker: pool.ExternalAsset.Ticker,
 	}
 	qp, errRes := cdc.MarshalJSON(queryPool)
 	require.NoError(t, errRes)
@@ -31,7 +30,7 @@ func TestQueryErrorPool(t *testing.T) {
 	assert.Error(t, err)
 	_, err = querier(ctx, []string{"pool"}, query)
 	assert.Error(t, err)
-	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker, pool.ExternalAsset.SourceChain)
+	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
 	query.Path = ""
 	query.Data = qp
 	_, err = querier(ctx, []string{"pool"}, query)
@@ -51,8 +50,7 @@ func TestQueryGetPool(t *testing.T) {
 	querier := NewQuerier(keeper)
 	//Test Pool
 	queryPool := types.QueryReqGetPool{
-		Ticker:      pool.ExternalAsset.Ticker,
-		SourceChain: pool.ExternalAsset.SourceChain,
+		Ticker: pool.ExternalAsset.Ticker,
 	}
 	qp, errRes := cdc.MarshalJSON(queryPool)
 	require.NoError(t, errRes)

@@ -62,10 +62,9 @@ type (
 		ExternalAssetAmount uint         `json:"external_asset_amount"`
 	}
 	DecommissionPoolReq struct {
-		BaseReq     rest.BaseReq `json:"base_req"`
-		Signer      string       `json:"signer"`
-		Ticker      string       `json:"ticker"`
-		SourceChain string       `json:"source_chain"`
+		BaseReq rest.BaseReq `json:"base_req"`
+		Signer  string       `json:"signer"`
+		Ticker  string       `json:"ticker"`
 	}
 	SwapReq struct {
 		BaseReq       rest.BaseReq `json:"base_req"`
@@ -118,7 +117,7 @@ func decommissionPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		msg := types.NewMsgDecommissionPool(signer, req.Ticker, req.SourceChain)
+		msg := types.NewMsgDecommissionPool(signer, req.Ticker)
 		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

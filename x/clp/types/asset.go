@@ -22,14 +22,13 @@ func NewAsset(sourceChain string, symbol string, ticker string) Asset {
 
 // implement fmt.Stringer
 func (a Asset) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`SourceChain: %s Symbol: %s Ticker: %s`, a.SourceChain, a.Symbol, a.Ticker))
+	return strings.TrimSpace(fmt.Sprintf(`SourceChain: %s
+Symbol: %s
+Ticker: %s`, a.SourceChain, a.Symbol, a.Ticker))
 }
 
 func (a Asset) Validate() bool {
 	if len(strings.TrimSpace(a.SourceChain)) == 0 {
-		return false
-	}
-	if a.SourceChain == a.Ticker {
 		return false
 	}
 	if len(strings.TrimSpace(a.Symbol)) == 0 {
@@ -47,4 +46,13 @@ func (a Asset) Equals(a2 Asset) bool {
 
 func (a Asset) IsEmpty() bool {
 	return a.SourceChain == "" || a.Symbol == "" || a.Ticker == ""
+}
+
+func GetSettlementAsset() Asset {
+	return Asset{
+		SourceChain: NativeChain,
+		Symbol:      NativeSymbol,
+		Ticker:      NativeTicker,
+	}
+
 }

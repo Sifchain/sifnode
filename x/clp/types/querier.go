@@ -7,12 +7,11 @@ const (
 )
 
 type QueryReqGetPool struct {
-	Ticker      string `json:"ticker"`
-	SourceChain string `json:"source_chain"`
+	Ticker string `json:"ticker"`
 }
 
-func NewQueryReqGetPool(ticker string, sourceChain string) QueryReqGetPool {
-	return QueryReqGetPool{Ticker: ticker, SourceChain: sourceChain}
+func NewQueryReqGetPool(ticker string) QueryReqGetPool {
+	return QueryReqGetPool{Ticker: ticker}
 }
 
 type QueryReqLiquidityProvider struct {
