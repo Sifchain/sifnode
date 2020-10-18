@@ -1,21 +1,27 @@
 <template>
   <div class="home">
-    <button v-if="!store.wallet.isConnected" @click="handleConnectClicked">
+    <button
+      v-if="!store.wallet.etheriumIsConnected"
+      @click="handleConnectClicked"
+    >
       Connect Wallet
     </button>
 
-    <div v-if="store.wallet.isConnected">
+    <div v-if="store.wallet.etheriumIsConnected">
       <p>Wallet Connected!</p>
       <table>
         <tr
           v-for="assetAmount in store.wallet.balances"
           :key="assetAmount.asset.symbol"
         >
-          <td align="right">{{ assetAmount.toFixed(6) }}</td>
           <td align="left">{{ assetAmount.asset.symbol }}</td>
+          <td align="right">{{ assetAmount.toFixed(2) }}</td>
         </tr>
       </table>
-      <button v-if="store.wallet.isConnected" @click="handleDisconnectClicked">
+      <button
+        v-if="store.wallet.etheriumIsConnected"
+        @click="handleDisconnectClicked"
+      >
         Disconnect
       </button>
     </div>
@@ -23,21 +29,17 @@
 </template>
 
 <script lang="ts">
-import { onMounted } from "vue";
-import { useCore } from "../core/useCore";
+import { useCore } from "../hooks/useCore";
 
 export default {
   name: "Wallet",
   setup() {
     const { store, actions } = useCore();
 
-    onMounted(async () => {
-      await actions.refreshWalletBalances();
-    });
-
     async function handleConnectClicked() {
       await actions.connectToWallet();
     }
+
     async function handleDisconnectClicked() {
       await actions.disconnectWallet();
     }

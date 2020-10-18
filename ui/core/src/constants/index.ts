@@ -104,3 +104,4 @@ export const MARKETCAP_TOKEN_ORDER = [
   "TRAC",
   "BNANA",
 ];
+

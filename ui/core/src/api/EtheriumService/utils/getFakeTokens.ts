@@ -1,4 +1,4 @@
-import { createToken, Token } from "../../entities";
+import { createToken, Token } from "../../../entities";
 
 // Parse Truffle json for the most recent address
 function parseTruffleJson(
@@ -19,8 +19,8 @@ function parseTruffleJson(
 // and we need to keep track of that
 export async function getFakeTokens(): Promise<Token[]> {
   // gonna load the json and parse the code for all our fake tokens
-  const atkJson = require("../../../../chains/ethereum/build/contracts/AliceToken.json");
-  const btkJson = require("../../../../chains/ethereum/build/contracts/BobToken.json");
+  const atkJson = require("../../../../../chains/ethereum/build/contracts/AliceToken.json");
+  const btkJson = require("../../../../../chains/ethereum/build/contracts/BobToken.json");
 
   // Return the tokens parsed as assets
   return [

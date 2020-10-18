@@ -1,20 +1,29 @@
 <template>
   <div>
     <div id="nav">
-      <router-link to="/">Wallet</router-link> |
+      <router-link to="/">EthWallet</router-link> |
+      <router-link to="/transfer-ethereum"
+        >Ethereum Network Transfer
+      </router-link>
       <router-link to="/sifwallet">SifWallet</router-link> |
       <router-link to="/swap">Swap</router-link> |
-      <router-link to="/list">List</router-link> 
+      <router-link to="/list">List all balances</router-link> |
     </div>
     <router-view />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-
+import { defineComponent, onMounted } from "vue";
+import { useCore } from "./hooks/useCore";
 export default defineComponent({
   name: "App",
+  setup() {
+    const { actions } = useCore();
+    onMounted(async () => {
+      await actions.refreshTokens();
+    });
+  },
 });
 </script>
 
