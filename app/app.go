@@ -12,9 +12,6 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/Sifchain/sifnode/x/sifnode"
-	sifnodekeeper "github.com/Sifchain/sifnode/x/sifnode/keeper"
-	sifnodetypes "github.com/Sifchain/sifnode/x/sifnode/types"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -42,7 +39,6 @@ var (
 		staking.AppModuleBasic{},
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
-		sifnode.AppModuleBasic{},
 		clp.AppModuleBasic{},
 	)
 
@@ -77,11 +73,9 @@ type NewApp struct {
 
 	accountKeeper auth.AccountKeeper
 	bankKeeper    bank.Keeper
-	bank.ViewKeeper
 	stakingKeeper staking.Keeper
 	supplyKeeper  supply.Keeper
 	paramsKeeper  params.Keeper
-	sifnodeKeeper sifnodekeeper.Keeper
 	clpKeeper     clp.Keeper
 	// this line is used by starport scaffolding # 3
 	mm *module.Manager
@@ -107,7 +101,6 @@ func NewInitApp(
 		staking.StoreKey,
 		supply.StoreKey,
 		params.StoreKey,
-		sifnodetypes.StoreKey,
 		clp.StoreKey,
 		// this line is used by starport scaffolding # 5
 	)
@@ -161,12 +154,6 @@ func NewInitApp(
 		staking.NewMultiStakingHooks(),
 	)
 
-	app.sifnodeKeeper = sifnodekeeper.NewKeeper(
-		app.bankKeeper,
-		app.cdc,
-		keys[sifnodetypes.StoreKey],
-	)
-
 	app.clpKeeper = clp.NewKeeper(
 		app.cdc,
 		keys[clp.StoreKey],
@@ -180,7 +167,6 @@ func NewInitApp(
 		auth.NewAppModule(app.accountKeeper),
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		sifnode.NewAppModule(app.sifnodeKeeper, app.bankKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
 		clp.NewAppModule(app.clpKeeper, app.bankKeeper),
 		// this line is used by starport scaffolding # 6
@@ -192,7 +178,6 @@ func NewInitApp(
 		staking.ModuleName,
 		auth.ModuleName,
 		bank.ModuleName,
-		sifnodetypes.ModuleName,
 		supply.ModuleName,
 		genutil.ModuleName,
 		clp.ModuleName,
