@@ -1,11 +1,13 @@
 <template>
   <div>
     <div id="nav">
-      <router-link to="/">Wallet</router-link> |
-      <router-link to="/list">List all balances</router-link> |
+      <router-link to="/">EthWallet</router-link> |
       <router-link to="/transfer-ethereum"
         >Ethereum Network Transfer
       </router-link>
+      <router-link to="/sifwallet">SifWallet</router-link> |
+      <router-link to="/swap">Swap</router-link> |
+      <router-link to="/list">List all balances</router-link> |
     </div>
     <router-view />
   </div>

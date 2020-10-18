@@ -8,3 +8,6 @@ export type WalletAddress = {
   address: string;
   balance: Balance;
 };
+
+export type Mnemonic =  string
+export type SifAddress = string
