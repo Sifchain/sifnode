@@ -5,7 +5,7 @@ variable "region" {
 
 variable "az" {
   description = "AWS availability zones"
-  default     = ["a", "b", "c"]
+  default     = ["a", "c"] // issues with aws az "b" currently
 }
 
 variable "vpc_cidr" {
