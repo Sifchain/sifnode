@@ -15,7 +15,7 @@ describe("queryListOfAvailableTokens", () => {
 
     beforeEach(async () => {
       store = createStore();
-      const actions = await walletActions({
+      const actions = walletActions({
         api: {
           EtheriumService: {
             onConnected: () => Promise.resolve(),
@@ -31,8 +31,10 @@ describe("queryListOfAvailableTokens", () => {
         },
         store,
       });
-
+      // Because our mock service isn't an event emitter we need to run these explicitly
+      await actions.init();
       await actions.connectToWallet();
+      await actions.handleChange();
     });
 
     it("should store the available tokens", () => {

@@ -11,11 +11,8 @@ export default ({
   },
 
   async handleChange() {
-    console.log("handleChange");
     const balances = await api.EtheriumService.getBalance();
     const isConnected = api.EtheriumService.isConnected();
-
-    console.log({ balances, isConnected });
     store.wallet.etheriumIsConnected = isConnected;
     store.wallet.balances = balances;
   },
