@@ -14,18 +14,19 @@ export default ({
     },
     async connectToWallet() {
       await api.EtheriumService.connect();
+      actions.updateBalances();
     },
   };
 
   const etheriumState = api.EtheriumService.getState();
 
-  effect(() => {
+  effect(async () => {
     store.wallet.etheriumIsConnected = etheriumState.connected;
-    actions.updateBalances();
+    await actions.updateBalances();
   });
 
-  effect(() => {
-    actions.updateBalances(etheriumState.log);
+  effect(async () => {
+    await actions.updateBalances(etheriumState.log);
   });
 
   return actions;

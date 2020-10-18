@@ -2,9 +2,8 @@
 export * from "./EtheriumService/utils/getFakeTokens";
 export * from "./EtheriumService/utils/getWeb3Provider";
 
-import { Ref } from "@vue/reactivity";
 import JSBI from "jsbi";
-import { Address, Asset, Balance, Balances, Token } from "../entities";
+import { Address, Asset, Balances, Token } from "../entities";
 import etheriumService, { EtheriumServiceContext } from "./EtheriumService";
 import tokenService, { TokenServiceContext } from "./TokenService";
 
