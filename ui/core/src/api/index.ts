@@ -25,8 +25,9 @@ export type TxParams = {
 export type TxHash = string;
 
 export type IWalletService = {
-  getReactive: () => {
+  getState: () => {
     address: Address;
+    accounts: Address[];
     connected: boolean;
     log: string;
   };

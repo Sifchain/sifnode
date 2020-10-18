@@ -20,15 +20,12 @@ describe("queryListOfAvailableTokens", () => {
         connected: false,
         address: "",
         log: "",
+        accounts: [],
       });
       const actions = walletActions({
         api: {
           EtheriumService: {
-            // onConnected: () => Promise.resolve(),
-            // onDisconnected: () => Promise.resolve(),
-            // onChange: () => {},
-            // getAddress: () => Promise.resolve(""),
-            getReactive: () => etheriumState,
+            getState: () => etheriumState,
             transfer: async () => "",
             getBalance: jest.fn(async () => walletBalances),
             connect: jest.fn(async () => {
@@ -42,7 +39,6 @@ describe("queryListOfAvailableTokens", () => {
         },
         store,
       });
-      // Because our mock service isn't an event emitter we need to run these explicitly
       await actions.connectToWallet();
     });
 

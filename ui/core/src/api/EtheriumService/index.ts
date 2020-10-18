@@ -38,8 +38,9 @@ export class EtheriumService implements IWalletService {
   private state: {
     connected: boolean;
     address: Address;
+    accounts: Address[];
     log: string;
-  } = reactive({ connected: false, address: "", log: "unset" });
+  } = reactive({ connected: false, accounts: [], address: "", log: "unset" });
 
   constructor(
     getWeb3Provider: () => Promise<provider>,
@@ -58,15 +59,15 @@ export class EtheriumService implements IWalletService {
     });
   }
 
-  getReactive() {
+  getState() {
     return this.state;
   }
 
-  async getAddress(): Promise<Address | null> {
-    if (!this.state.address) {
-      [this.state.address] = (await this.web3?.eth.getAccounts()) ?? [];
-    }
+  private async updateAccounts() {
+    this.state.accounts = (await this.web3?.eth.getAccounts()) ?? [];
+  }
 
+  getAddress(): Address {
     return this.state.address;
   }
 
@@ -82,8 +83,10 @@ export class EtheriumService implements IWalletService {
         throw new Error("Cannot connect because provider is not yet loaded!");
 
       this.web3 = new Web3(this.provider);
-      const accounts = await this.web3.eth.getAccounts();
-      [this.state.address] = accounts;
+
+      await this.updateAccounts();
+
+      [this.state.address] = this.state.accounts;
 
       // Let's test for Metamask
       if (isMetaMaskProvider(this.provider)) {
@@ -99,12 +102,12 @@ export class EtheriumService implements IWalletService {
       this.web3 = null;
     }
   }
+
   addWeb3Subscription() {
     this.blockSubscription = this.web3?.eth.subscribe(
       "newBlockHeaders",
       (error, result) => {
-        console.log({ result });
-        this.state.log = result.hash;
+        this.state.log = result?.hash ?? "null";
       }
     );
   }
@@ -162,7 +165,8 @@ export class EtheriumService implements IWalletService {
     }
 
     const { amount, recipient, asset } = params;
-    const from = await this.getAddress();
+    const from = this.getAddress();
+
     if (!from) {
       throw new Error(
         "Transaction attempted but 'from' address cannot be determined!"
