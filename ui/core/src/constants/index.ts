@@ -1,4 +1,5 @@
 export * from "./tokens";
+export * from "./env"
 
 // TODO: dummy arbitrary list replace with dynamic list? https://www.finder.com.au/erc20-tokens
 export const MARKETCAP_TOKEN_ORDER = [

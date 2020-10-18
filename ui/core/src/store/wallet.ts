@@ -8,5 +8,5 @@ export type WalletStore = {
 
 export const wallet = reactive({
   balances: [],
-  isConnected: false,
+  isConnected: false
 }) as WalletStore;
