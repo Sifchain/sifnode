@@ -1,25 +1,13 @@
-provider "aws" {
-  region = {{.aws.region}}
-}
-
-provider "kubernetes" {
-  host                   = element(concat(data.aws_eks_cluster.cluster[*].endpoint, list("")), 0)
-  cluster_ca_certificate = base64decode(element(concat(data.aws_eks_cluster.cluster[*].certificate_authority.0.data, list("")), 0))
-  token                  = element(concat(data.aws_eks_cluster_auth.cluster[*].token, list("")), 0)
-  load_config_file       = false
-  version                = "~> 1.9"
-}
-
 module sifchain {
     source                  = "../../build/terraform/providers/aws"
-    chainnet                = "{{.chainnet}}"
+    region                  = "us-west-1"
     vpc_cidr                = "{{.aws.cidr}}"
     cluster_version         = {{.aws.cluster.version}}
-    cluster_name            = "{{.aws.cluster.name}}"
+    cluster_name            = "sifchain-aws-{{.chainnet}}"
     tags = {
         Terraform           = true
-        Sifnode             = true
-        ChainNet            = "{{.chainnet}}"
+        Project             =  "sifchain"
+        Chainnet            = "{{.chainnet}}"
     }
     node_group_settings = {
         ami_type            = "{{.aws.cluster.ami_type}}"

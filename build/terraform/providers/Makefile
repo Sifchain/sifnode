@@ -1,6 +1,7 @@
 ROOT_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 CHAINNET := "localnet"
+PROVIDER ?= "aws"
 STATE_BACKEND := "local"
 AWS_REGION := "us-west-1"
 AWS_STATE_BUCKET_NAME := "state"
@@ -18,11 +19,12 @@ gotpl:
 	@go get -u github.com/belitre/gotpl
 
 create-new-aws-environment: gotpl
-	@mkdir -p .live/sifchain-aws-$(CHAINNET)
-	@gotpl $(ROOT_DIR)/template/aws/state/$(STATE_BACKEND).tf.tpl $(ROOT_DIR)/template/aws/cluster.tf.tpl \
+	@mkdir -p .live/
+	@mkdir .live/sifchain-$(PROVIDER)-$(CHAINNET) # this will stop overwriting existing
+	@gotpl $(ROOT_DIR)/template/$(PROVIDER)/state/$(STATE_BACKEND).tf.tpl $(ROOT_DIR)/template/$(PROVIDER)/cluster.tf.tpl \
 		--set chainnet=$(CHAINNET) \
 		--set aws.state.bucket_name=$(AWS_STATE_BUCKET_NAME) \
-		--set aws.state.bucket_key=sifchain-aws-$(CHAINNET).state \
+		--set aws.state.bucket_key=sifchain-$(PROVIDER)-$(CHAINNET).state \
 		--set aws.region=$(AWS_REGION) \
 		--set aws.cidr=$(AWS_CIDR) \
 		--set aws.cluster.version=$(AWS_CLUSTER_VERSION) \
@@ -32,6 +34,8 @@ create-new-aws-environment: gotpl
 		--set aws.cluster.max_capacity=$(AWS_CLUSTER_MAX_CAPACITY) \
 		--set aws.cluster.min_capacity=$(AWS_CLUSTER_MIN_CAPACITY) \
 		--set aws.cluster.instance_type=$(AWS_CLUSTER_INSTANCE_TYPE) \
-		--set aws.cluster.disk_size=$(AWS_CLUSTER_DISK_SIZE) > .live/sifchain-aws-$(CHAINNET)/main.tf
+		--set aws.cluster.disk_size=$(AWS_CLUSTER_DISK_SIZE) > .live/sifchain-$(PROVIDER)-$(CHAINNET)/main.tf
+	@gotpl $(ROOT_DIR)/template/$(PROVIDER)/.envrc.tpl > .live/sifchain-$(PROVIDER)-$(CHAINNET)/.envrc \
+		--set chainnet=$(CHAINNET)
+	cd .live/sifchain-$(PROVIDER)-$(CHAINNET) && terraform init && terraform apply
 
-.PHONY: aws aws-destroy
