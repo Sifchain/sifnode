@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Home from "../views/Home.vue";
 import List from "../views/List.vue";
-import CWallet from '@/views/CWallet.vue'
+import SifWallet from '@/views/SifWallet.vue'
+import Swap from '@/views/Swap.vue'
+
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -10,9 +12,14 @@ const routes: Array<RouteRecordRaw> = [
     component: Home,
   },
   {
-    path: '/cosmos',
-    name: 'CWallet',
-    component: CWallet
+    path: '/sifwallet',
+    name: 'SifWallet',
+    component: SifWallet
+  },
+  {
+    path: '/swap',
+    name: 'Swap',
+    component: Swap
   },
   {
     path: "/list",
