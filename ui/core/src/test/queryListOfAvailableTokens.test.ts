@@ -5,6 +5,7 @@ import { Balance, Token } from "../entities";
 import JSBI from "jsbi";
 import { USDC, USDT, BNB, CRO, FET } from "../constants/tokens";
 import { reactive } from "@vue/reactivity";
+import { getMockWalletService } from "./utils/getMockWalletService";
 
 const toBalance = (balance: number) => (tok: Token) =>
   Balance.create(tok, JSBI.BigInt(balance));
@@ -24,18 +25,7 @@ describe("queryListOfAvailableTokens", () => {
       });
       const actions = walletActions({
         api: {
-          EtheriumService: {
-            getState: () => etheriumState,
-            transfer: async () => "",
-            getBalance: jest.fn(async () => walletBalances),
-            connect: jest.fn(async () => {
-              etheriumState.connected = true;
-            }),
-            disconnect: jest.fn(async () => {
-              etheriumState.connected = false;
-            }),
-            isConnected: () => true,
-          },
+          EtheriumService: getMockWalletService(etheriumState, walletBalances),
         },
         store,
       });

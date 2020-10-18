@@ -7,6 +7,7 @@ import { Balance } from "../../entities";
 import { ETH } from "../../constants";
 import { TEN } from "src/entities/fraction/Fraction";
 import JSBI from "jsbi";
+import B from "../../entities/utils/B";
 
 describe("EtheriumService", () => {
   let EtheriumService: ReturnType<typeof createWalletService>;
@@ -78,7 +79,7 @@ describe("EtheriumService", () => {
     const ATK = supportedTokens.find(({ symbol }) => symbol === "ATK");
 
     await EtheriumService.transfer({
-      amount: JSBI.BigInt(10 * 10 ** ATK!.decimals),
+      amount: B("10.000000", ATK!.decimals),
       recipient: state.accounts[1],
       asset: ATK,
     });
@@ -89,14 +90,14 @@ describe("EtheriumService", () => {
     expect(
       balanceAccount0
         .find(({ asset: { symbol } }) => symbol === "ATK")
-        ?.toFixed()
-    ).toEqual("9990.000000");
+        ?.toFixed(2)
+    ).toEqual("9990.00");
 
     expect(
       balanceAccount1
         .find(({ asset: { symbol } }) => symbol === "ATK")
-        ?.toFixed()
-    ).toEqual("10.000000");
+        ?.toFixed(2)
+    ).toEqual("10.00");
   });
 
   test("transfer ETH", async () => {
@@ -113,7 +114,7 @@ describe("EtheriumService", () => {
       origBalanceAccount0
         .find(({ asset: { symbol } }) => symbol === "ETH")
         ?.toFixed()
-    ).toEqual("99.950481140000000000");
+    ).toEqual(Balance.n(ETH, "99.95048114").toFixed());
 
     await EtheriumService.transfer({
       amount: JSBI.BigInt(10 * 10 ** 18),

@@ -11,6 +11,7 @@ import {
   TEN,
 } from "./fraction/Fraction";
 import JSBI from "jsbi";
+import B from "./utils/B";
 const Big = toFormat(_Big);
 
 export class Balance extends Fraction {
@@ -45,6 +46,12 @@ export class Balance extends Fraction {
   }
   static create(asset: Asset, amount: BigintIsh): Balance {
     return new Balance(asset, amount);
+  }
+
+  // Conveniance method for initializing a balance with a number
+  // Balance.n(ETH, 10)
+  static n(asset: Asset, amount: string | number) {
+    return new Balance(asset, B(amount, asset.decimals));
   }
 }
 
