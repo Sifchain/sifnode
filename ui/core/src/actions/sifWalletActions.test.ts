@@ -4,7 +4,7 @@ import {
   generateMnemonicAction, 
   signInCosmosWallet, 
   getCosmosBalanceAction  
-} from "./CWalletActions"
+} from "./sifWalletActions"
 
 const mnemonic = "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow"
 const account =  {
