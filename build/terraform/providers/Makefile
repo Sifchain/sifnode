@@ -35,5 +35,7 @@ create-new-aws-environment: gotpl
 		--set aws.cluster.min_capacity=$(AWS_CLUSTER_MIN_CAPACITY) \
 		--set aws.cluster.instance_type=$(AWS_CLUSTER_INSTANCE_TYPE) \
 		--set aws.cluster.disk_size=$(AWS_CLUSTER_DISK_SIZE) > .live/sifchain-$(PROVIDER)-$(CHAINNET)/main.tf
+	@gotpl $(ROOT_DIR)/template/$(PROVIDER)/.envrc.tpl > .live/sifchain-$(PROVIDER)-$(CHAINNET)/.envrc \
+		--set chainnet=$(CHAINNET)
 	cd .live/sifchain-$(PROVIDER)-$(CHAINNET) && terraform init && terraform apply
 
