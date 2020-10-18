@@ -1,11 +1,10 @@
 <template>
   <div>
-    Wallet store access in App component: {{CWalletStore}}
-
     <div id="nav">
       <router-link to="/">Wallet</router-link> |
-      <router-link to="/cosmos">CWallet</router-link> |
-      <router-link to="/list">List</router-link>
+      <router-link to="/sifwallet">SifWallet</router-link> |
+      <router-link to="/swap">Swap</router-link> |
+      <router-link to="/list">List</router-link> 
     </div>
     <router-view />
   </div>
@@ -13,13 +12,9 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { CWalletStore } from "../../core/src/store/wallet"
 
 export default defineComponent({
   name: "App",
-  setup() {
-    return {CWalletStore}
-  }
 });
 </script>
 
