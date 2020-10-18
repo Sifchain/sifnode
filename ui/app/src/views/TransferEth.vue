@@ -1,6 +1,9 @@
 <template>
   <div class="list">
     <div v-if="walletConnected">
+      <span>Transfer </span><input v-model="amount" type="number" /><span>
+        ETH to
+      </span>
       <input v-model="accountAddresText" placeholder="0x12347..." />
       <button @click="transfer">Transfer</button>
     </div>
@@ -10,9 +13,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-
 import { computed, ref } from "@vue/reactivity";
-// import { getFakeTokens } from "../../../core";
 import JSBI from "jsbi";
 import { useCore } from "../hooks/useCore";
 
@@ -22,26 +23,23 @@ export default defineComponent({
     const { api, store } = useCore();
     const accountAddresText = ref("");
     const walletConnected = computed(() => store.wallet.etheriumIsConnected);
-
-    // onMounted(async () => {
-    // await actions.init();
-    // });
+    const amount = ref(10);
 
     async function transfer() {
       if (accountAddresText.value === "")
         throw new Error("Account must be supplied");
-      // const toks = await getFakeTokens();
-      // const ATK = toks.find((tok) => tok.symbol === "ATK");
-      // if (!ATK) throw new Error("ATK not found");
+
       const hash = await api.EtheriumService.transfer({
-        amount: JSBI.BigInt("10000000000000000000"),
+        amount: JSBI.multiply(
+          JSBI.BigInt(amount.value),
+          JSBI.BigInt("1000000000000000000")
+        ),
         recipient: accountAddresText.value,
-        // asset: ATK,
       });
       console.log(hash);
     }
 
-    return { transfer, walletConnected, accountAddresText };
+    return { transfer, amount, walletConnected, accountAddresText };
   },
   components: {},
 });
