@@ -2,7 +2,6 @@ import {
   Secp256k1HdWallet,
   SigningCosmosClient,
   makeCosmoshubPath,
-  coins,
   CosmosClient,
   Account
 } from "@cosmjs/launchpad"
