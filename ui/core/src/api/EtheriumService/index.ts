@@ -1,15 +1,15 @@
+import { reactive } from "@vue/reactivity";
 import Web3 from "web3";
-import { AbiItem } from "web3-utils";
-import { ETH } from "../../constants";
+import { provider, WebsocketProvider } from "web3-core";
+import { IWalletService, TxHash, TxParams } from "..";
 import { Asset, Balance, Token } from "../../entities";
-import { provider, TransactionReceipt } from "web3-core";
-import { IWalletService, TxParams, TxHash } from "..";
-import { Web3ProviderLoader } from "./Web3ProviderLoader";
-import JSBI from "jsbi";
-import { EventEmitter2 } from "eventemitter2";
-import { CHANGE, CONNECTED, DISCONNECTED } from "./events";
-
-// import { asset } from "src/store/asset";
+import {
+  getEtheriumBalance,
+  getTokenBalance,
+  isEventEmittingProvider,
+  isToken,
+  transferAsset,
+} from "./utils/ethereumUtils";
 
 type Address = string;
 type Balances = Balance[];
@@ -19,220 +19,104 @@ export type EtheriumServiceContext = {
   getSupportedTokens: () => Promise<Token[]>;
 };
 
-// Hmm maybe we need to load each token from compiled json? Or is every ERC-20 token the same?
-const generalTokenAbi: AbiItem[] = [
-  // balanceOf
-  {
-    constant: true,
-    inputs: [{ name: "_owner", type: "address" }],
-    name: "balanceOf",
-    outputs: [{ name: "balance", type: "uint256" }],
-    type: "function",
-  },
-  // decimals
-  {
-    constant: true,
-    inputs: [],
-    name: "decimals",
-    outputs: [{ name: "", type: "uint8" }],
-    type: "function",
-  },
-  // transfer
-  {
-    constant: false,
-    inputs: [
-      {
-        name: "_to",
-        type: "address",
-      },
-      {
-        name: "_value",
-        type: "uint256",
-      },
-    ],
-    name: "transfer",
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-      },
-    ],
-    type: "function",
-  },
-];
+type MetaMaskProvider = WebsocketProvider & {
+  request?: (a: any) => Promise<void>;
+  isConnected(): boolean;
+};
 
-function isToken(value?: Asset | Token): value is Token {
-  return value ? Object.keys(value).includes("address") : false;
+function isMetaMaskProvider(provider?: provider): provider is MetaMaskProvider {
+  return typeof (provider as any).request === "function";
 }
-
-function getTokenContract(web3: Web3, asset: Token) {
-  return new web3.eth.Contract(generalTokenAbi, asset.address);
-}
-
-async function getTokenBalance(web3: Web3, address: Address, asset: Token) {
-  const contract = getTokenContract(web3, asset);
-  const tokenBalance = await contract.methods.balanceOf(address).call();
-  return Balance.create(asset, tokenBalance);
-}
-
-async function transferToken(
-  web3: Web3,
-  fromAddress: Address,
-  toAddress: Address,
-  amount: JSBI,
-  asset: Token
-) {
-  const contract = getTokenContract(web3, asset);
-  return new Promise<string>((resolve, reject) => {
-    let hash: string;
-    let receipt: boolean;
-
-    function resolvePromise() {
-      if (receipt && hash) resolve(hash);
-    }
-
-    contract.methods
-      .transfer(toAddress, JSBI.toNumber(amount))
-      .send({ from: fromAddress })
-      .on("transactionHash", (_hash: string) => {
-        hash = _hash;
-        resolvePromise();
-      })
-      .on("receipt", (_receipt: boolean) => {
-        receipt = _receipt;
-        resolvePromise();
-      })
-      .on("error", (err: any) => {
-        reject(err);
-      });
-  });
-}
-
-async function transferEther(
-  web3: Web3,
-  fromAddress: Address,
-  toAddress: Address,
-  amount: JSBI
-) {
-  return new Promise<string>((resolve, reject) => {
-    let hash: string;
-    let receipt: TransactionReceipt;
-
-    function resolvePromise() {
-      if (receipt && hash) resolve(hash);
-    }
-
-    web3.eth
-      .sendTransaction({
-        from: fromAddress,
-        to: toAddress,
-        value: amount.toString(),
-      })
-      .on("transactionHash", (_hash: string) => {
-        hash = _hash;
-        resolvePromise();
-      })
-      .on("receipt", (_receipt) => {
-        receipt = _receipt;
-        resolvePromise();
-      })
-      .on("error", (err: any) => {
-        reject(err);
-      });
-  });
-}
-
-async function getEtheriumBalance(web3: Web3, address: Address) {
-  const ethBalance = await web3.eth.getBalance(address);
-  return Balance.create(ETH, ethBalance);
-}
-
-type ListenerFn = (...a: any[]) => void;
 
 export class EtheriumService implements IWalletService {
   private web3: Web3 | null = null;
   private supportedTokens: Token[] = [];
-  private address: Address | null = null;
-  private providerLoader: Web3ProviderLoader; // loader for the provider
-  private emitter: EventEmitter2; // event emitter
-  private connected: boolean = false;
+  private blockSubscription: any;
+  private provider: provider | undefined;
+
+  // This is shared reactive state
+  private state: {
+    connected: boolean;
+    address: Address;
+    log: string;
+  } = reactive({ connected: false, address: "", log: "unset" });
 
   constructor(
     getWeb3Provider: () => Promise<provider>,
     private getSupportedTokens: () => Promise<Token[]>
   ) {
-    this.emitter = new EventEmitter2();
-    this.providerLoader = new Web3ProviderLoader(getWeb3Provider);
-    this.providerLoader.load();
-    this.providerLoader.on(DISCONNECTED, () => {
-      this.emitter.emit(CHANGE);
+    getWeb3Provider().then((provider) => {
+      if (isEventEmittingProvider(provider)) {
+        provider.on("connect", () => {
+          this.state.connected = true;
+        });
+        provider.on("disconnect", () => {
+          this.state.connected = false;
+        });
+      }
+      this.provider = provider;
     });
-    this.providerLoader.on(CONNECTED, () => {
-      this.emitter.emit(CHANGE);
-    });
   }
 
-  onDisconnected(handler: ListenerFn) {
-    if (!this.providerLoader.listeners(DISCONNECTED).includes(handler)) {
-      this.providerLoader.on(DISCONNECTED, (...args: any[]) => {
-        this.connected = false;
-        handler(...args);
-      });
-    }
-  }
-
-  onConnected(handler: ListenerFn) {
-    if (!this.providerLoader.listeners(CONNECTED).includes(handler)) {
-      this.providerLoader.on(CONNECTED, (...args: any[]) => {
-        this.connected = true;
-        handler(...args);
-      });
-    }
-  }
-
-  onChange(handler: ListenerFn) {
-    if (!this.emitter.listeners(CHANGE).includes(handler)) {
-      this.emitter.on(CHANGE, handler);
-    }
-  }
-
-  private reportChange() {
-    const { address, connected } = this;
-    this.emitter.emit(CHANGE, { address, connected });
+  getReactive() {
+    return this.state;
   }
 
   async getAddress(): Promise<Address | null> {
-    if (!this.address) {
-      [this.address] = (await this.web3?.eth.getAccounts()) ?? [];
+    if (!this.state.address) {
+      [this.state.address] = (await this.web3?.eth.getAccounts()) ?? [];
     }
 
-    return this.address;
+    return this.state.address;
   }
 
   isConnected() {
-    return this.connected;
+    return this.state.connected;
   }
 
   async connect() {
     try {
       this.supportedTokens = await this.getSupportedTokens();
-      this.web3 = new Web3(this.providerLoader.getProvider());
-      const accounts = await this.web3.eth.getAccounts();
-      [this.address] = accounts;
 
-      await this.providerLoader.connect();
-      this.connected = true;
-      this.reportChange();
+      if (!this.provider)
+        throw new Error("Cannot connect because provider is not yet loaded!");
+
+      this.web3 = new Web3(this.provider);
+      const accounts = await this.web3.eth.getAccounts();
+      [this.state.address] = accounts;
+
+      // Let's test for Metamask
+      if (isMetaMaskProvider(this.provider)) {
+        if (this.provider.request) {
+          // If metamask lets try and connect
+          await this.provider.request({ method: "eth_requestAccounts" });
+        }
+      }
+      this.state.connected = true;
+
+      this.addWeb3Subscription();
     } catch (err) {
       this.web3 = null;
     }
   }
+  addWeb3Subscription() {
+    this.blockSubscription = this.web3?.eth.subscribe(
+      "newBlockHeaders",
+      (error, result) => {
+        console.log({ result });
+        this.state.log = result.hash;
+      }
+    );
+  }
+
+  removeWeb3Subscription() {
+    this.blockSubscription?.unsubscribe();
+  }
 
   async disconnect() {
-    this.connected = false;
+    this.removeWeb3Subscription();
+    this.state.connected = false;
     this.web3 = null;
-    this.providerLoader.disconnect();
-    this.reportChange();
   }
 
   async getBalance(
@@ -285,11 +169,7 @@ export class EtheriumService implements IWalletService {
       );
     }
 
-    const hash = isToken(asset)
-      ? await transferToken(this.web3, from, recipient, amount, asset)
-      : await transferEther(this.web3, from, recipient, amount);
-    this.reportChange();
-    return hash;
+    return await transferAsset(this.web3, from, recipient, amount, asset);
   }
 
   static create({
@@ -298,23 +178,6 @@ export class EtheriumService implements IWalletService {
   }: EtheriumServiceContext): IWalletService {
     return new EtheriumService(getWeb3Provider, getSupportedTokens);
   }
-
-  // FOLLOWING ARE YTI:
-
-  // setPhrase(phrase: string): Address
-  // setNetwork(net: Network): void
-  // getNetwork(): Network
-
-  // getExplorerAddressUrl(address: Address): string
-  // getExplorerTxUrl(txID: string): string
-  // getTransactions(params?: TxHistoryParams): Promise<TxsPage>
-
-  // getFees(): Promise<Fees>
-
-  // transfer(params: TxParams): Promise<TxHash>
-  // deposit(params: TxParams): Promise<TxHash>
-
-  // purgeClient(): void
 }
 
 export default EtheriumService.create;

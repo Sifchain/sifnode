@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from "vue";
+import { defineComponent } from "vue";
 import { computed } from "@vue/reactivity";
 
 import { useCore } from "../hooks/useCore";
@@ -21,7 +21,7 @@ import { Balance } from "../../../core/src";
 export default defineComponent({
   name: "ListPage",
   setup() {
-    const { store, actions } = useCore();
+    const { store } = useCore();
 
     const balances = computed(() => {
       // This is trying to simulate mixing real wallet accounts with
@@ -43,9 +43,9 @@ export default defineComponent({
 
     const walletConnected = computed(() => store.wallet.etheriumIsConnected);
 
-    onMounted(async () => {
-      await actions.init()
-    });
+    // onMounted(async () => {
+    //   await actions.init()
+    // });
 
     return {
       balances,

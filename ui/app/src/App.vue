@@ -19,7 +19,6 @@ export default defineComponent({
   setup() {
     const { actions } = useCore();
     onMounted(async () => {
-      actions.init();
       await actions.refreshTokens();
     });
   },

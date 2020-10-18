@@ -4,6 +4,7 @@ import { Balance, Token } from "../entities";
 
 import JSBI from "jsbi";
 import { USDC, USDT, BNB, CRO, FET } from "../constants/tokens";
+import { reactive } from "@vue/reactivity";
 
 const toBalance = (balance: number) => (tok: Token) =>
   Balance.create(tok, JSBI.BigInt(balance));
@@ -15,26 +16,34 @@ describe("queryListOfAvailableTokens", () => {
 
     beforeEach(async () => {
       store = createStore();
+      const etheriumState = reactive({
+        connected: false,
+        address: "",
+        log: "",
+      });
       const actions = walletActions({
         api: {
           EtheriumService: {
-            onConnected: () => Promise.resolve(),
-            onDisconnected: () => Promise.resolve(),
-            onChange: () => {},
-            getAddress: () => Promise.resolve(""),
-            transfer: () => Promise.resolve(""),
-            getBalance: jest.fn(() => Promise.resolve(walletBalances)),
-            connect: jest.fn(() => Promise.resolve()),
-            disconnect: jest.fn(() => Promise.resolve()),
+            // onConnected: () => Promise.resolve(),
+            // onDisconnected: () => Promise.resolve(),
+            // onChange: () => {},
+            // getAddress: () => Promise.resolve(""),
+            getReactive: () => etheriumState,
+            transfer: async () => "",
+            getBalance: jest.fn(async () => walletBalances),
+            connect: jest.fn(async () => {
+              etheriumState.connected = true;
+            }),
+            disconnect: jest.fn(async () => {
+              etheriumState.connected = false;
+            }),
             isConnected: () => true,
           },
         },
         store,
       });
       // Because our mock service isn't an event emitter we need to run these explicitly
-      await actions.init();
       await actions.connectToWallet();
-      await actions.handleChange();
     });
 
     it("should store the available tokens", () => {

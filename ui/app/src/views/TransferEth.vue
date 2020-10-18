@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from "vue";
+import { defineComponent } from "vue";
 
 import { computed, ref } from "@vue/reactivity";
 // import { getFakeTokens } from "../../../core";
@@ -19,13 +19,13 @@ import { useCore } from "../hooks/useCore";
 export default defineComponent({
   name: "ListPage",
   setup() {
-    const { api, actions, store } = useCore();
+    const { api, store } = useCore();
     const accountAddresText = ref("");
     const walletConnected = computed(() => store.wallet.etheriumIsConnected);
 
-    onMounted(async () => {
-      await actions.init();
-    });
+    // onMounted(async () => {
+    // await actions.init();
+    // });
 
     async function transfer() {
       if (accountAddresText.value === "")
