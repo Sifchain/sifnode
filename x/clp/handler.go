@@ -55,7 +55,10 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 		if err != nil {
 			return nil, errors.Wrap(types.ErrUnableToDestroyPool, err.Error())
 		}
-		keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, lpAddess, sdk.Coins{withdrawNativeCoins, withdrawExternalCoins})
+		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, lpAddess, sdk.Coins{withdrawNativeCoins, withdrawExternalCoins})
+		if err != nil {
+			return nil, errors.Wrap(types.ErrUnableToAddBalance, err.Error())
+		}
 		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
 	}
 	// TODO : Do we check if nativeBalance and external balance is still left in the pool before we delete it ?
@@ -101,7 +104,6 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
-
 	err = keeper.BankKeeper.SendCoins(ctx, msg.Signer, pool.PoolAddress, sdk.Coins{externalAssetCoin, nativeAssetCoin})
 	if err != nil {
 		return nil, err
@@ -283,7 +285,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	if err != nil {
 		return nil, err
 	}
-	sentCoin := sdk.NewCoin(msg.SentAsset.Ticker, sdk.NewIntFromUint64(uint64(sentAmount)))
+	sentCoin := sdk.NewCoin(msg.ReceivedAsset.Ticker, sdk.NewIntFromUint64(uint64(sentAmount)))
 	err = keeper.BankKeeper.SendCoins(ctx, outPool.PoolAddress, msg.Signer, sdk.Coins{sentCoin})
 	if err != nil {
 		return nil, err

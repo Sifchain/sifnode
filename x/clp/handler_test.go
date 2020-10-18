@@ -93,25 +93,45 @@ func TestRemoveLiquidity(t *testing.T) {
 
 func TestSwap(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
-	asset1 := NewAsset("ETHEREUM", "ETH", "eth")
-	asset2 := NewAsset("TEZOS", "XCT", "xct")
 	signer := GenerateAddress()
+	asset1 := NewAsset("ETHEREUM", "ETH", "eth")
+	asset2 := NewAsset("DASH", "DASH", "dash")
+
+	intitalBalance := 10000
+	poolbalance := 1000
+	externalCoin1 := sdk.NewCoin(asset1.Ticker, sdk.NewInt(int64(intitalBalance)))
+	externalCoin2 := sdk.NewCoin(asset2.Ticker, sdk.NewInt(int64(intitalBalance)))
+	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(intitalBalance)))
+	// Signer is given ETH and RWN ( Signer will creat pool and become LP)
+
+	keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin1, nativeCoin})
+	keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin2})
+
 	msg := NewMsgSwap(signer, asset1, asset2, 1)
 	res, err := handleMsgSwap(ctx, keeper, msg)
 	require.Error(t, err)
 	require.Nil(t, res)
-	msgCreatePool := NewMsgCreatePool(signer, asset1, 10000, 10000)
+	msgCreatePool := NewMsgCreatePool(signer, asset1, uint(poolbalance), uint(poolbalance))
 	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	msgCreatePool = NewMsgCreatePool(signer, asset2, 10000, 10000)
+
+	msgCreatePool = NewMsgCreatePool(signer, asset2, uint(poolbalance), uint(poolbalance))
 	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	msg = NewMsgSwap(signer, asset1, asset2, 1000)
+
+	msg = NewMsgSwap(signer, asset1, asset2, 100)
 	res, err = handleMsgSwap(ctx, keeper, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+
+	CoinsExt1 := sdk.NewCoin(asset1.Ticker, sdk.NewInt(8900))
+	CoinsNative := sdk.NewCoin(NativeTicker, sdk.NewInt(8000))
+	CoinsExt2 := sdk.NewCoin(asset2.Ticker, sdk.NewInt(9082))
+	ok := keeper.BankKeeper.HasCoins(ctx, signer, sdk.Coins{CoinsExt1, CoinsNative, CoinsExt2})
+	assert.True(t, ok, "")
+
 }
 
 func TestDecommisionPool(t *testing.T) {
@@ -120,15 +140,33 @@ func TestDecommisionPool(t *testing.T) {
 	signer := GenerateAddress()
 	pool.NativeAssetBalance = 100
 	pool.ExternalAssetBalance = 1
-	msgCreatePool := NewMsgCreatePool(signer, pool.ExternalAsset, pool.NativeAssetBalance, pool.ExternalAssetBalance)
+
+	intitalBalance := 10000
+	poolbalance := 100
+	asset := NewAsset("ETHEREUM", "ETH", "eth")
+	externalCoin := sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(intitalBalance)))
+	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(intitalBalance)))
+	// Signer is given ETH and RWN ( Signer will creat pool and become LP)
+	keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+
+	msgCreatePool := NewMsgCreatePool(signer, asset, uint(poolbalance), uint(poolbalance))
 	res, err := handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	msgrm := NewMsgRemoveLiquidity(signer, pool.ExternalAsset, 10000, -1)
+
+	// SIGNER became new LP
+	lpNewBalance := intitalBalance - poolbalance
+	lpCoinsExt := sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(lpNewBalance)))
+	lpCoinsNative := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(lpNewBalance)))
+	ok := keeper.BankKeeper.HasCoins(ctx, signer, sdk.Coins{lpCoinsExt, lpCoinsNative})
+	assert.True(t, ok, "")
+
+	msgrm := NewMsgRemoveLiquidity(signer, asset, 5001, -1)
 	res, err = handleMsgRemoveLiquidity(ctx, keeper, msgrm)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	msg := NewMsgDecommissionPool(signer, pool.ExternalAsset.Ticker)
+
+	msg := NewMsgDecommissionPool(signer, asset.Ticker)
 	res, err = handleMsgDecommissionPool(ctx, keeper, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -136,5 +174,12 @@ func TestDecommisionPool(t *testing.T) {
 	res, err = handleMsgAddLiquidity(ctx, keeper, msgN)
 	require.Error(t, err)
 	require.Nil(t, res)
+
+	// LP refunded coins when decommison
+	lpNewBalance = intitalBalance
+	lpCoinsExt = sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(lpNewBalance)))
+	lpCoinsNative = sdk.NewCoin(NativeTicker, sdk.NewInt(int64(lpNewBalance)))
+	ok = keeper.BankKeeper.HasCoins(ctx, signer, sdk.Coins{lpCoinsExt, lpCoinsNative})
+	assert.True(t, ok, "")
 
 }
