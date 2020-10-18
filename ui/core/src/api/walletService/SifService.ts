@@ -1,19 +1,18 @@
-import {  ICWalletStore, CWalletStore } from "../../store/wallet"
-import { Mnemonic } from "../../entities/Wallet" 
-import axios from "axios";
 import {
   Secp256k1HdWallet,
   SigningCosmosClient,
   makeCosmoshubPath,
   coins,
+  CosmosClient,
   Account
-} from "@cosmjs/launchpad";
+} from "@cosmjs/launchpad"
 
-const API = "http://localhost:1317";
-const ADDR_PREFIX = "sif";
+import { ADDR_PREFIX, API } from "../../constants"
+import { Mnemonic, SifAddress } from "../../entities/Wallet" 
 
+// Warning This creates a client object used to *sign* TX
 export async function cosmosSignin( mnemonic: Mnemonic ): 
-  Promise<{account: Account, client: SigningCosmosClient}> {
+  Promise<SigningCosmosClient> {
   try {
     if (!mnemonic) { throw "No mnemonic. Can't generate wallet."}
     const wallet = await Secp256k1HdWallet.fromMnemonic(
@@ -22,17 +21,25 @@ export async function cosmosSignin( mnemonic: Mnemonic ):
       ADDR_PREFIX
     );
     const [{ address }] = await wallet.getAccounts();
-    const url = `${API}/auth/accounts/${address}`;
-    const acc = (await axios.get(url)).data;
-    const account: Account = acc.result.value;
-    const client = new SigningCosmosClient(API, address, wallet);
-    return {account, client}
+    return new SigningCosmosClient(API, address, wallet);
   } catch (error) {
     throw error
   }
 }
 
-
+export async function getCosmosBalance( address: SifAddress ): 
+  Promise<Account | Error>  { 
+    if (!address) throw "Address undefined. Fail"
+    if (address.length !== 42) throw "Address not valid (length). Fail" // this is simple check, limited to default address type (check bech32)
+    const client = new CosmosClient(API)
+    try {
+      const account = await client.getAccount(address)
+      if (!account) throw "No Address found on chain"
+      return account
+    } catch (error) {
+      throw error
+    }
+  }
 
 
 // SEND() -- for TX
