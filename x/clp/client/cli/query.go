@@ -47,8 +47,7 @@ $ %s pool ETH ROWAN`,
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			ticker := args[0]
-			sourceChain := types.GetSettlementAsset().Ticker
-			params := types.NewQueryReqGetPool(ticker, sourceChain)
+			params := types.NewQueryReqGetPool(ticker)
 			bz, err := cliCtx.Codec.MarshalJSON(params)
 			if err != nil {
 				return err

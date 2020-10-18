@@ -126,6 +126,7 @@ func TestSwap(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
+	// TODO USE FORMULA
 	CoinsExt1 := sdk.NewCoin(asset1.Ticker, sdk.NewInt(8900))
 	CoinsNative := sdk.NewCoin(NativeTicker, sdk.NewInt(8000))
 	CoinsExt2 := sdk.NewCoin(asset2.Ticker, sdk.NewInt(9082))
