@@ -43,10 +43,6 @@ export default defineComponent({
 
     const walletConnected = computed(() => store.wallet.etheriumIsConnected);
 
-    // onMounted(async () => {
-    //   await actions.init()
-    // });
-
     return {
       balances,
       walletConnected,
