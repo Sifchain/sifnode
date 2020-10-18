@@ -10,3 +10,4 @@ export type WalletAddress = {
 };
 
 export type Mnemonic =  string
+export type SifAddress = string
