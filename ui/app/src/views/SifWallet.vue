@@ -1,5 +1,5 @@
 <template>
-  <div class="df fdc" style="background: linear-gradient(90deg, black, transparent); padding: 16px">
+  <div class="df fdc">
     <div class="wallet-container mb8 df fdc aifs">
 
       <div class="df fdc w100" v-if="!sifWallet.isConnected">

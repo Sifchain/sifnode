@@ -28,7 +28,7 @@ export async function cosmosSignin( mnemonic: Mnemonic ):
 }
 
 export async function getCosmosBalance( address: SifAddress ): 
-  Promise<Account | Error>  { 
+  Promise<Account>  { 
     if (!address) throw "Address undefined. Fail"
     if (address.length !== 42) throw "Address not valid (length). Fail" // this is simple check, limited to default address type (check bech32)
     const client = new CosmosClient(API)
