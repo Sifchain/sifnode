@@ -3,7 +3,7 @@ import { Balance } from "../entities";
 
 export type WalletStore = {
   balances: Balance[];
-  isConnected: boolean
+  isConnected: boolean;
 };
 
 export const wallet = reactive({
