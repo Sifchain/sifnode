@@ -3,10 +3,10 @@ import {
   SigningCosmosClient,
   makeCosmoshubPath,
   CosmosClient,
-  Account
+  Account,
+  coins
 } from "@cosmjs/launchpad"
-import { SifWalletStore } from "src/store/wallet";
-
+import { SifWalletStore } from "../../store/wallet";
 import { ADDR_PREFIX, API } from "../../constants"
 import { Mnemonic, SifAddress } from "../../entities/Wallet" 
 import { SifTransaction } from "../../entities/Transaction" 
@@ -42,30 +42,34 @@ export async function getCosmosBalance( address: SifAddress ):
     }
   }
 
-  export async function sendSifToken(
-    sifWallet: SifWalletStore, 
-    sifTransaction: any
+  export async function signAndBroadcast(
+    sifWalletClient: SifWalletStore["client"], 
+    sifTransaction: SifTransaction
   ): Promise<any> {
-    if (!sifWallet.client) throw "No signed in client. Sign in with mnemonic."
+    if (!sifWalletClient) throw "No signed in client. Sign in with mnemonic."
     if (!sifTransaction) throw "No user input data. Define who, what, and for how much."
-
-    const from_address = sifWallet.client.senderAddress;
+    // this seems like anti-pattern, with SifWallet.vue, "undefined" as culprit
+    // but is alternative to define in vue with empty string?
+    if (!sifTransaction.denom) throw "No denom."
+    // https://github.com/tendermint/vue/blob/develop/src/store/cosmos.js#L91
     const msg = {
       type: "cosmos-sdk/MsgSend",
       value: {
         amount: [
           {
-            sifTransaction.amount,
-            sifTransaction.denom,
+           amount: sifTransaction.amount,
+           denom: sifTransaction.denom,
           },
         ],
-        from_address,
-        sifTransaction.to_address,
+        from_address: sifWalletClient.senderAddress,
+        to_address: sifTransaction.to_address,
       },
     };
+
     const fee = {
-      amount: coins(0, denom),
-      gas: "200000",
+      amount: coins(0, sifTransaction.denom),
+      gas: "2",
     };
-    return await state.client.signAndPost([msg], fee, memo);
+    console.log(JSON.stringify((msg)))
+    return await sifWalletClient.signAndBroadcast([msg], fee, "cool");
   }
