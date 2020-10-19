@@ -2,8 +2,8 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Home from "../views/Home.vue";
 import List from "../views/List.vue";
 import TransferEth from "../views/TransferEth.vue";
-import SifWallet from '@/views/SifWallet.vue'
-import Swap from '@/views/Swap.vue'
+import SifWallet from "@/views/SifWallet.vue";
+import Swap from "@/views/Swap.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -12,14 +12,14 @@ const routes: Array<RouteRecordRaw> = [
     component: Home,
   },
   {
-    path: '/sifwallet',
-    name: 'SifWallet',
-    component: SifWallet
+    path: "/sifwallet",
+    name: "SifWallet",
+    component: SifWallet,
   },
   {
-    path: '/swap',
-    name: 'Swap',
-    component: Swap
+    path: "/swap",
+    name: "Swap",
+    component: Swap,
   },
   {
     path: "/list",
@@ -27,7 +27,7 @@ const routes: Array<RouteRecordRaw> = [
     component: List,
   },
   {
-    path: "/transfer-ethereum",
+    path: "/ethtransfer",
     name: "TransferEth",
     component: TransferEth,
   },

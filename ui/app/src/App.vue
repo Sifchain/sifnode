@@ -1,13 +1,13 @@
 <template>
   <div>
+    <p>Proof of technical capability</p>
     <div id="nav">
+      <!-- <router-link to="/list">List</router-link> | -->
       <router-link to="/">EthWallet</router-link> |
-      <router-link to="/transfer-ethereum"
-        >Ethereum Network Transfer
-      </router-link>
+      <router-link to="/ethtransfer">EthTransfer</router-link> |
       <router-link to="/sifwallet">SifWallet</router-link> |
-      <router-link to="/swap">Swap</router-link> |
-      <router-link to="/list">List all balances</router-link> |
+      <router-link to="/siftransfer">SifTransfer</router-link>
+      <!-- <router-link to="/swap">Swap</router-link> -->
     </div>
     <router-view />
   </div>
