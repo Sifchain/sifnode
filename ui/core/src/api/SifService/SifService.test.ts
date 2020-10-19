@@ -1,3 +1,4 @@
+import { coins } from "@cosmjs/launchpad";
 import createSifService from ".";
 
 const badMnemonic =
@@ -61,6 +62,8 @@ describe("sifService", () => {
       memo: "",
     };
     const address = await sifService.setPhrase(mnemonic);
-    const result = await sifService.transfer(sifTransaction);
+    await sifService.transfer(sifTransaction);
+    const balances = await sifService.getBalance(address);
+    expect(balances).toEqual(coins(950, "nametoken"));
   });
 });

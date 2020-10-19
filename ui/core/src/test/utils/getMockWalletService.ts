@@ -1,5 +1,5 @@
-import { IWalletService } from "src/api";
-import { Balance } from "src/entities";
+import { IWalletService } from "../../api/IWalletService";
+import { Balance } from "../../entities";
 
 export function getMockWalletService(
   state: {

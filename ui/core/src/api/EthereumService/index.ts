@@ -1,7 +1,8 @@
 import { reactive } from "@vue/reactivity";
 import Web3 from "web3";
 import { provider, WebsocketProvider } from "web3-core";
-import { IWalletService, TxHash, TxParams } from "..";
+import { TxHash, TxParams } from "..";
+import { IWalletService } from "../IWalletService";
 import { Asset, Balance, Token } from "../../entities";
 import {
   getEtheriumBalance,
