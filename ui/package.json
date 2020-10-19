@@ -14,7 +14,7 @@
     "chain:build": "concurrently -r \"yarn chain:cosmos:build\" \"yarn chain:ether:build\"",
     "chain:start": "concurrently -r -k \"yarn chain:cosmos:start\" \"yarn chain:ether:start\"",
     "core:test:nochain": "cd core && yarn test",
-    "core:test": "concurrently -r -k -s first \"yarn chain:start\" \"sleep 20 && yarn chain:migrate && yarn core:test:nochain\"",
+    "core:test": "concurrently -r -k -s first \"yarn chain:start\" \"sleep 5 && yarn chain:migrate && yarn core:test:nochain\"",
     "test": "yarn core:test"
   },
   "devDependencies": {
