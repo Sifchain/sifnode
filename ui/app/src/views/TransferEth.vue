@@ -31,36 +31,46 @@ import { getFakeTokens } from "../../../core";
 export default defineComponent({
   name: "ListPage",
   setup() {
-    const { api, store } = useCore();
+    const { api, actions, store } = useCore();
     const accountAddressText = ref("");
     const tokenAccountAddress = ref("");
     const amountATK = ref(900);
     const walletConnected = computed(() => store.wallet.eth.isConnected);
     const amount = ref(10);
 
+    // Utility function to get ATK token
+    async function getATK() {
+      const tokens = await getFakeTokens();
+      const ATK = tokens.find(({ symbol }) => symbol === "ATK");
+      if (!ATK) throw new Error("doesnt return ATK");
+      return ATK;
+    }
+
     async function transfer() {
       if (accountAddressText.value === "")
         throw new Error("Account must be supplied");
 
-      const hash = await api.EthereumService.transfer({
-        amount: B(amount.value, 18),
-        recipient: accountAddressText.value,
-      });
+      const hash = await actions.transferEthWallet(
+        amount.value,
+        accountAddressText.value
+      );
+
       console.log(hash);
     }
 
     async function transferATK() {
+      console.log("transferATK");
       if (tokenAccountAddress.value === "")
         throw new Error("Account must be supplied");
-      const tokens = await getFakeTokens();
-      const ATK = tokens.find(({ symbol }) => symbol === "ATK");
-      if (!ATK) throw new Error("doesnt return ATK");
 
-      const hash = await api.EthereumService.transfer({
-        amount: B(amountATK.value, ATK.decimals),
-        recipient: tokenAccountAddress.value,
-        asset: ATK,
-      });
+      const ATK = await getATK();
+
+      const hash = await actions.transferEthWallet(
+        amountATK.value,
+        tokenAccountAddress.value,
+        ATK
+      );
+
       console.log(hash);
     }
 
