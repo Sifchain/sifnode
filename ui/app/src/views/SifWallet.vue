@@ -1,7 +1,10 @@
 <template>
   <div class="df fdc sifwallet-container">
     <div class="wallet-container mb8 df fdc aifs">
-      <div class="df fdc w100 mb8" v-if="!sifWallet.balances">
+      <div
+        class="df fdc w100 mb8"
+        v-if="store.wallet.sif.balances.length === 0"
+      >
         <!-- Best way here is to have input address, to get balances first,
              then if want to transact, add mnemonic. Also need to add create
         -->
@@ -13,12 +16,12 @@
         <input
           class="mb8 monospace"
           placeholder="sifAddress (todo)"
-          v-model="sifWallet.address"
+          v-model="store.wallet.sif.address"
         />
-        <button class="mb8" @click="getBalance">Get Balance</button>
+        <!-- <button class="mb8" @click="getBalance">Get Balance</button> -->
 
         <textarea
-          v-if="!sifWallet.isConnected"
+          v-if="!store.wallet.sif.isConnected"
           class="mb8"
           v-model="localMnemonic"
           placeholder="Mnemonic..."
@@ -30,10 +33,13 @@
 
       <div v-else class="df fdc aifs w100">
         <div class="df fdr address-container w100 mb8">
-          <div v-if="sifWallet.isConnected" class="df connected-dot mr8"></div>
+          <div
+            v-if="store.wallet.sif.isConnected"
+            class="df connected-dot mr8"
+          ></div>
           <div class="df fdc aifs">
-            Address: {{ sifWallet.address }}
-            <div v-for="coin in sifWallet.balances.balance" :key="coin.denom">
+            Address: {{ store.wallet.sif.address }}
+            <div v-for="coin in store.wallet.sif.balances" :key="coin.denom">
               Balance: {{ coin.amount }}{{ coin.denom }}
             </div>
           </div>
@@ -50,7 +56,7 @@
           v-model="amount"
         />
 
-        <div class="mb8 w100" v-if="!sifWallet.isConnected">
+        <div class="mb8 w100" v-if="!store.wallet.sif.isConnected">
           <p class="mb8">Input mnemonic below to sign transaction.</p>
           <textarea
             class="mb8 w100"
@@ -61,7 +67,7 @@
             <button @click="signIn" class="mr8">Connect Wallet</button>
           </div>
         </div>
-        <button v-if="sifWallet.isConnected" @click="send" class="mb8">
+        <button v-if="store.wallet.sif.isConnected" @click="send" class="mb8">
           Send
         </button>
       </div>
@@ -90,41 +96,28 @@ export default defineComponent({
 
     let errorMessage = ref();
 
-    // const initSifWallet = {
-    //   isConnected: false,
-    //   client: undefined,
-    //   address: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-    //   balances: undefined,
-    // };
-
-    // const sifWallet = reactive({ ...initSifWallet });
-
-    const initSifTxUserInput: SifTransaction = {
-      amount: undefined,
-      // denom: undefined,
-      asset: undefined,
-      recipient: undefined,
-      memo: "",
-    };
-    const sifTxUserInput = reactive({ ...initSifTxUserInput });
-
     const amount = ref(50);
     const sendTo = ref("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5");
 
+    // Getting rid of this because we have reactivity
     // async function getBalance() {
     //   errorMessage.value = "";
-    //   if (!sifWallet.address) {
+    //   if (!store.wallet.sif.address) {
     //     return (errorMessage.value = "No address. Must be defined.");
     //   }
-    //   sifWallet.balances = await actions.getCosmosAction(sifWallet.address);
+    //   await actions.getCosmosBalances(store.wallet.sif.address);
     // }
 
     async function send() {
-      // if (!sifWallet.client) {
-      //   return (errorMessage.value = "Not connected");
-      // }
-      // const client = sifWallet.client;
-      // await sendTransaction(sifWallet["client"], sifTxUserInput)
+      if (!store.wallet.sif.isConnected) {
+        return (errorMessage.value = "Not connected");
+      }
+
+      await actions.sendCosmosTransaction({
+        asset: "nametoken",
+        amount: amount.value.toString(),
+        recipient: sendTo.value,
+      });
     }
 
     async function signIn() {
@@ -134,14 +127,6 @@ export default defineComponent({
       }
       try {
         await actions.signInCosmosWallet(localMnemonic.value.trim());
-        // store.wallet.
-        // sifWallet.address = sifWallet.client.senderAddress;
-        // sifWallet.isConnected = true;
-        // if (!sifWallet.balances) {
-        //   sifWallet.balances = await actions.getCosmosAction(
-        //     sifWallet.address
-        //   );
-        // }
       } catch (error) {
         errorMessage.value = error;
       }
@@ -150,12 +135,11 @@ export default defineComponent({
     async function reset() {
       localMnemonic.value = "";
       errorMessage.value = "";
-      // Object.assign(sifWallet, initSifWallet);
+      actions.signOutCosmosWallet();
     }
 
     return {
-      // store,
-      sifwallet: store.wallet.sif,
+      store,
       sendTo,
       amount,
       // getBalance,

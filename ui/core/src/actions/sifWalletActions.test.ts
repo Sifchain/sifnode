@@ -1,4 +1,4 @@
-// import { signInCosmosWallet, getCosmosAction } from "./sifWalletActions";
+// import { signInCosmosWallet, getCosmosBalances } from "./sifWalletActions";
 
 // const mnemonic =
 //   "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow";
@@ -32,20 +32,20 @@ describe("connectToWallet", () => {
   // it("should throw if no address", async () => {
   //   //https://github.com/facebook/jest/issues/1700
   //   try {
-  //     await getCosmosAction("");
+  //     await getCosmosBalances("");
   //   } catch (e) {
   //     expect(e).toEqual("Address undefined. Fail");
   //   }
   // });
   // it("should throw if no address", async () => {
   //   try {
-  //     await getCosmosAction(badAddress);
+  //     await getCosmosBalances(badAddress);
   //   } catch (e) {
   //     expect(e).toEqual("No Address found on chain");
   //   }
   // });
   it("should use address to get balance", async () => {
-    //   expect(await getCosmosAction(account.address)).toEqual(account);
+    //   expect(await getCosmosBalances(account.address)).toEqual(account);
     expect(1).toBe(1);
   });
 });

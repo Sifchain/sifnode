@@ -6,11 +6,11 @@ import {
   coins,
   Coin,
 } from "@cosmjs/launchpad";
-// import { SifWalletStore } from "../../store/wallet";
+
 import { ADDR_PREFIX, API } from "../../constants";
 import { Mnemonic, SifAddress } from "../../entities/Wallet";
 import { SifTransaction } from "../../entities/Transaction";
-import { Address } from "src/entities";
+import { Address } from "../../entities";
 import { reactive } from "@vue/reactivity";
 
 export type SifServiceContext = {};
@@ -20,8 +20,15 @@ export default function createSifService(_context: SifServiceContext) {
     connected: boolean;
     address: Address;
     accounts: Address[];
+    balances: Coin[];
     log: string; // latest transaction hash
-  } = reactive({ connected: false, accounts: [], address: "", log: "unset" });
+  } = reactive({
+    connected: false,
+    accounts: [],
+    address: "",
+    balances: [],
+    log: "unset",
+  });
 
   let client: SigningCosmosClient | null = null;
 
@@ -52,11 +59,20 @@ export default function createSifService(_context: SifServiceContext) {
         client = new SigningCosmosClient(API, state.address, wallet);
 
         state.log = "signed in";
-
+        state.connected = true;
+        this.getBalance(state.address);
         return state.address;
       } catch (error) {
         throw error;
       }
+    },
+
+    purgeClient() {
+      state.address = "";
+      state.connected = false;
+      state.balances = [];
+      state.accounts = [];
+      state.log = "";
     },
 
     async getBalance(address?: SifAddress): Promise<readonly Coin[]> {
@@ -72,6 +88,7 @@ export default function createSifService(_context: SifServiceContext) {
 
         if (!account) throw "No Address found on chain";
 
+        state.balances = account.balance as Coin[];
         return account.balance;
       } catch (error) {
         throw error;
@@ -101,11 +118,15 @@ export default function createSifService(_context: SifServiceContext) {
       };
 
       const fee = {
-        amount: coins(500, params.asset),
-        gas: "200000", // need high gas fee
+        amount: coins(0, params.asset),
+        gas: "200000", // need gas fee for tx to work - see genesis file
       };
 
-      return await client.signAndBroadcast([msg], fee, "cool");
+      const txHash = await client.signAndBroadcast([msg], fee, "cool");
+
+      this.getBalance(state.address);
+
+      return txHash;
     },
   };
 }

@@ -26,7 +26,8 @@ export default ({
   });
 
   effect(async () => {
-    await actions.updateBalances(etheriumState.log);
+    etheriumState.log; // trigger on log change
+    await actions.updateBalances();
   });
 
   return actions;

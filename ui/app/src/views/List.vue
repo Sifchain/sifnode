@@ -28,20 +28,22 @@ export default defineComponent({
       // potential destination swap accounts. It looks the same as the wallet page
       // But eventually will have extra accounts that the wallet doesn't have depending
       // on What is in the top20 tokens
-      const balanceSymbols = store.wallet.balances.map((t) => t.asset.symbol);
+      const balanceSymbols = store.wallet.eth.balances.map(
+        (t) => t.asset.symbol
+      );
       const tokensNotInBalances = store.asset.top20Tokens.filter((token) => {
         return !balanceSymbols.includes(token.symbol);
       });
 
       const allBalances = [
-        ...store.wallet.balances,
+        ...store.wallet.eth.balances,
         ...tokensNotInBalances.map((token) => Balance.create(token, "0")),
       ];
 
       return allBalances;
     });
 
-    const walletConnected = computed(() => store.wallet.etheriumIsConnected);
+    const walletConnected = computed(() => store.wallet.eth.isConnected);
 
     return {
       balances,
