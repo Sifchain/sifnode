@@ -1,17 +1,14 @@
 <template>
   <div class="home">
-    <button
-      v-if="!store.wallet.etheriumIsConnected"
-      @click="handleConnectClicked"
-    >
+    <button v-if="!store.wallet.eth.isConnected" @click="handleConnectClicked">
       Connect Wallet
     </button>
 
-    <div v-if="store.wallet.etheriumIsConnected">
+    <div v-if="store.wallet.eth.isConnected">
       <p>Wallet Connected!</p>
       <table>
         <tr
-          v-for="assetAmount in store.wallet.balances"
+          v-for="assetAmount in store.wallet.eth.balances"
           :key="assetAmount.asset.symbol"
         >
           <td align="left">{{ assetAmount.asset.symbol }}</td>
@@ -19,7 +16,7 @@
         </tr>
       </table>
       <button
-        v-if="store.wallet.etheriumIsConnected"
+        v-if="store.wallet.eth.isConnected"
         @click="handleDisconnectClicked"
       >
         Disconnect

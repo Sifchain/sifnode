@@ -64,6 +64,7 @@ export class EthereumService implements IWalletService {
   }
 
   private async updateAccounts() {
+    if (!this.web3) return;
     this.state.accounts = (await this.web3?.eth.getAccounts()) ?? [];
   }
 
@@ -127,32 +128,36 @@ export class EthereumService implements IWalletService {
     asset?: Asset | Token
   ): Promise<Balances> {
     const supportedTokens = this.supportedTokens;
-    const addr = address || (await this.getAddress());
+    const addr = address || this.getAddress();
 
     if (!this.web3 || !addr) return [];
-
+    console.log("getBalance: about to attempt balances...");
     const web3 = this.web3;
 
     if (asset) {
+      console.log("we have an asset: asset: " + asset.symbol);
       if (!isToken(asset)) {
+        console.log("It is NOT a token!" + asset.symbol);
         // Asset must be eth
         const ethBalance = await getEtheriumBalance(web3, addr);
         return [ethBalance];
       }
 
       // Asset must be ERC-20
+      console.log("It IS a token!" + asset.symbol);
       const tokenBalance = await getTokenBalance(web3, addr, asset);
       return [tokenBalance];
     }
 
     // No address no asset get everything
+    console.log("Fetching everything....");
     const balances = await Promise.all([
       getEtheriumBalance(web3, addr),
       ...supportedTokens.map((token: Token) => {
         return getTokenBalance(web3, addr, token);
       }),
     ]);
-
+    console.log({ balances });
     return balances;
   }
 

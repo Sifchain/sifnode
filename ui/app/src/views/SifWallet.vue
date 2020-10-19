@@ -18,7 +18,6 @@
           placeholder="sifAddress (todo)"
           v-model="store.wallet.sif.address"
         />
-        <!-- <button class="mb8" @click="getBalance">Get Balance</button> -->
 
         <textarea
           v-if="!store.wallet.sif.isConnected"
@@ -78,8 +77,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, reactive, readonly } from "vue";
-// import { SifWalletStore } from "../../../core/src/store/wallet";
+import { defineComponent, readonly } from "vue";
+import { ref, computed, reactive } from "@vue/reactivity";
 
 import { SifTransaction } from "../../../core/src/entities/Transaction";
 import { useCore } from "../hooks/useCore";
@@ -98,15 +97,6 @@ export default defineComponent({
 
     const amount = ref(50);
     const sendTo = ref("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5");
-
-    // Getting rid of this because we have reactivity
-    // async function getBalance() {
-    //   errorMessage.value = "";
-    //   if (!store.wallet.sif.address) {
-    //     return (errorMessage.value = "No address. Must be defined.");
-    //   }
-    //   await actions.getCosmosBalances(store.wallet.sif.address);
-    // }
 
     async function send() {
       if (!store.wallet.sif.isConnected) {
@@ -142,7 +132,6 @@ export default defineComponent({
       store,
       sendTo,
       amount,
-      // getBalance,
       signIn,
       errorMessage,
       localMnemonic,
