@@ -5,7 +5,7 @@ help: ## Show this help message
 	@egrep '^(.+)\:\ ##\ (.+)' ${MAKEFILE_LIST} | column -t -c 2 -s ':#'
 
 NODE=$(nodename)
-CHAINNET=$(chainnet)
+CHAINNET?=testnet
 
 helm: ## Install Helm 3 dependency
 	@echo Installing Helm 3 binary
