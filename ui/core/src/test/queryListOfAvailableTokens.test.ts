@@ -33,7 +33,7 @@ describe("queryListOfAvailableTokens", () => {
     });
 
     it("should store the available tokens", () => {
-      expect(store.wallet.balances).toEqual([
+      expect(store.wallet.eth.balances).toEqual([
         toBalance(100)(USDC),
         toBalance(100)(USDT),
       ]);

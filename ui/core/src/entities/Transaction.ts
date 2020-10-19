@@ -8,8 +8,8 @@ export type EncodedTransaction = { tx: string };
 export type BroadcastingResult = any;
 
 export type SifTransaction = {
+  asset?: string;
   amount?: string;
-  denom?: string;
-  to_address?: SifAddress;
+  recipient?: SifAddress;
   memo?: string;
 };

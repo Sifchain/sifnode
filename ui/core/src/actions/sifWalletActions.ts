@@ -1,37 +1,25 @@
-import { Account, SigningCosmosClient } from "@cosmjs/launchpad";
 import { SifTransaction } from "../entities";
-import { SifWalletStore } from "../store/wallet";
-import { validateMnemonic, generateMnemonic } from "bip39";
-import {
-  cosmosSignin,
-  getCosmosBalance,
-  signAndBroadcast,
-} from "../api/SifService";
+import { validateMnemonic } from "bip39";
 import { Mnemonic, SifAddress } from "../entities/Wallet";
+import { ActionContext } from ".";
 
-export async function getCosmosBalanceAction(address: SifAddress) {
-  // check if sif prefix
-  return await getCosmosBalance(address);
-}
-export async function signInCosmosWallet(
-  mnemonic: Mnemonic
-): Promise<SigningCosmosClient> {
-  if (!mnemonic) throw "Mnemonic must be defined";
-  if (!mnemonicIsValid(mnemonic)) throw "Invalid Mnemonic. Not sent.";
-  return await cosmosSignin(mnemonic);
-}
+export default ({ api }: ActionContext<"SifService">) => {
+  const actions = {
+    async getCosmosAction(address: SifAddress) {
+      // check if sif prefix
+      return await api.SifService.getBalance(address);
+    },
 
-export function mnemonicIsValid(mnemonic: Mnemonic): Boolean {
-  return validateMnemonic(mnemonic);
-}
+    async signInCosmosWallet(mnemonic: Mnemonic): Promise<string> {
+      if (!mnemonic) throw "Mnemonic must be defined";
+      if (!validateMnemonic(mnemonic)) throw "Invalid Mnemonic. Not sent.";
+      return await api.SifService.setPhrase(mnemonic);
+    },
 
-export function generateMnemonicAction(): Mnemonic {
-  return generateMnemonic();
-}
+    async sendTransaction(sifTransaction: SifTransaction) {
+      return await api.SifService.transfer(sifTransaction);
+    },
+  };
 
-export async function sendTransaction(
-  sifWalletClient: SifWalletStore["client"],
-  sifTransaction: SifTransaction
-) {
-  return await signAndBroadcast(sifWalletClient, sifTransaction);
-}
+  return actions;
+};

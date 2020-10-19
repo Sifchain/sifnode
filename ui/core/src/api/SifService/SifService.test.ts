@@ -1,4 +1,4 @@
-import * as sifService from ".";
+import createSifService from ".";
 
 const badMnemonic =
   "Ever have that feeling where you’re not sure if you’re awake or dreaming?";
@@ -20,53 +20,47 @@ const account = {
 // This is redundant. CWalletActions and SifService should be combined imo
 describe("sifService", () => {
   it("should use mnemeonic to sign into cosmos wallet", async () => {
+    const sifService = createSifService({});
     // catch Error["Bad mnemonic"]??
     test.todo("more tests on bad mnemonic ");
 
     try {
-      await sifService.cosmosSignin("");
+      await sifService.setPhrase("");
     } catch (error) {
       expect(error).toEqual("No mnemonic. Can't generate wallet.");
     }
 
-    expect(await sifService.cosmosSignin(mnemonic)).toMatchObject({
-      senderAddress: account.address,
-    });
+    expect(await sifService.setPhrase(mnemonic)).toBe(account.address);
   });
 
   it("should get cosmos balance", async () => {
+    const sifService = createSifService({});
     try {
-      await sifService.getCosmosBalance("");
+      await sifService.getBalance("");
     } catch (error) {
       expect(error).toEqual("Address undefined. Fail");
     }
     try {
-      await sifService.getCosmosBalance("asdfasdsdf");
+      await sifService.getBalance("asdfasdsdf");
     } catch (error) {
       expect(error).toEqual("Address not valid (length). Fail");
     }
 
-    expect(await sifService.getCosmosBalance(account.address)).toMatchObject(
-      account
+    expect(await sifService.getBalance(account.address)).toMatchObject(
+      account.balance
     );
   });
 
   // Skipping until we can get deterministic ordering
-  it.skip("should signAndBroadcast transaction", async () => {
+  it("should transfer transaction", async () => {
+    const sifService = createSifService({});
     const sifTransaction = {
       amount: "50",
-      denom: "nametoken",
-      to_address: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
+      asset: "nametoken",
+      recipient: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
       memo: "",
     };
-    const sifWalletClient = await sifService.cosmosSignin(mnemonic);
-    const result = await sifService.signAndBroadcast(
-      sifWalletClient,
-      sifTransaction
-    );
-    console.log(result);
-    //   ?? json: cannot unmarshal number into Go value of type string (HTTP 400)
-    // https://github.com/cosmos/cosmos-sdk/issues/1503
-    // https://github.com/cosmos/cosmos-sdk/search?q=cannot+unmarshal+number+into+Go+value+of+type+string&type=issues
+    const address = await sifService.setPhrase(mnemonic);
+    const result = await sifService.transfer(sifTransaction);
   });
 });

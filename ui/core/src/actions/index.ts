@@ -9,6 +9,7 @@
 // import swapTokens from "./swapTokens";
 import walletActions from "./walletActions";
 import tokenActions from "./tokenActions";
+import sifWalletActions from "./sifWalletActions";
 import { Api, WithApi } from "../api";
 import { Store, WithStore } from "../store";
 
@@ -21,7 +22,7 @@ export function createActions(context: ActionContext) {
   return {
     ...walletActions(context),
     ...tokenActions(context),
-    // ...addLiquidity(context),
+    ...sifWalletActions(context),
     // ...broadcastTx(context),
     // ...connectToWallet(context),
     // ...createPool(context),

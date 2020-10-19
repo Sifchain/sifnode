@@ -6,6 +6,7 @@ import JSBI from "jsbi";
 import { Address, Asset, Balances, Token } from "../entities";
 import EthereumService, { EthereumServiceContext } from "./EthereumService";
 import tokenService, { TokenServiceContext } from "./TokenService";
+import sifService, { SifServiceContext } from "./SifService";
 
 export type Api = ReturnType<typeof createApi>;
 
@@ -53,11 +54,14 @@ export type IWalletService = {
   // purgeClient(): void
 };
 
-type ApiContext = EthereumServiceContext & TokenServiceContext; // add contexts from other APIs
+type ApiContext = EthereumServiceContext &
+  TokenServiceContext &
+  SifServiceContext; // add contexts from other APIs
 
 export function createApi(context: ApiContext) {
   return {
     EthereumService: EthereumService(context),
     TokenService: tokenService(context),
+    SifService: sifService(context),
   };
 }

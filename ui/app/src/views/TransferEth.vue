@@ -35,7 +35,7 @@ export default defineComponent({
     const accountAddressText = ref("");
     const tokenAccountAddress = ref("");
     const amountATK = ref(900);
-    const walletConnected = computed(() => store.wallet.etheriumIsConnected);
+    const walletConnected = computed(() => store.wallet.eth.isConnected);
     const amount = ref(10);
 
     async function transfer() {

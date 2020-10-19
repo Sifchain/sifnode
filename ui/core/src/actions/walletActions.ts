@@ -7,7 +7,7 @@ export default ({
 }: ActionContext<"EthereumService", "wallet" | "asset">) => {
   const actions = {
     async updateBalances(_?: string) {
-      store.wallet.balances = await api.EthereumService.getBalance();
+      store.wallet.eth.balances = await api.EthereumService.getBalance();
     },
     async disconnectWallet() {
       await api.EthereumService.disconnect();
@@ -21,7 +21,7 @@ export default ({
   const etheriumState = api.EthereumService.getState();
 
   effect(async () => {
-    store.wallet.etheriumIsConnected = etheriumState.connected;
+    store.wallet.eth.isConnected = etheriumState.connected;
     await actions.updateBalances();
   });
 
