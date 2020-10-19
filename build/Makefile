@@ -6,10 +6,10 @@ PROVIDER?=local# local, aws, gcp, az, do
 TAG=$(CHAINNET)
 
 build-image:
-	docker build -t sifnode:$(TAG) .
+	docker build -t sifchain/sifnode:$(TAG) .
 
 run-image: build-image
-	docker run sifnode:$(TAG)
+	docker run sifchain/sifnode:$(TAG)
 
 build-cluster:
 ifeq '$(PROVIDER)' 'local'
