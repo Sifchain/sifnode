@@ -1,6 +1,6 @@
 import { SigningCosmosClient } from "@cosmjs/launchpad";
 import { validateMnemonic, generateMnemonic } from "bip39";
-import { cosmosSignin, getCosmosBalance } from "../api/SifService/SifService";
+import { cosmosSignin, getCosmosBalance } from "../api/SifService";
 import { Mnemonic, SifAddress } from "../entities/Wallet";
 
 export async function getCosmosBalanceAction(address: SifAddress) {
