@@ -14,7 +14,7 @@ import {
 type Address = string;
 type Balances = Balance[];
 
-export type EtheriumServiceContext = {
+export type EthereumServiceContext = {
   getWeb3Provider: () => Promise<provider>;
   getSupportedTokens: () => Promise<Token[]>;
 };
@@ -28,7 +28,7 @@ function isMetaMaskProvider(provider?: provider): provider is MetaMaskProvider {
   return typeof (provider as any).request === "function";
 }
 
-export class EtheriumService implements IWalletService {
+export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
   private supportedTokens: Token[] = [];
   private blockSubscription: any;
@@ -179,9 +179,9 @@ export class EtheriumService implements IWalletService {
   static create({
     getWeb3Provider,
     getSupportedTokens,
-  }: EtheriumServiceContext): IWalletService {
-    return new EtheriumService(getWeb3Provider, getSupportedTokens);
+  }: EthereumServiceContext): IWalletService {
+    return new EthereumService(getWeb3Provider, getSupportedTokens);
   }
 }
 
-export default EtheriumService.create;
+export default EthereumService.create;

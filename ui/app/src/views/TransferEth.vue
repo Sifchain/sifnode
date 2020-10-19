@@ -42,7 +42,7 @@ export default defineComponent({
       if (accountAddressText.value === "")
         throw new Error("Account must be supplied");
 
-      const hash = await api.EtheriumService.transfer({
+      const hash = await api.EthereumService.transfer({
         amount: B(amount.value, 18),
         recipient: accountAddressText.value,
       });
@@ -56,7 +56,7 @@ export default defineComponent({
       const ATK = tokens.find(({ symbol }) => symbol === "ATK");
       if (!ATK) throw new Error("doesnt return ATK");
 
-      const hash = await api.EtheriumService.transfer({
+      const hash = await api.EthereumService.transfer({
         amount: B(amountATK.value, ATK.decimals),
         recipient: tokenAccountAddress.value,
         asset: ATK,

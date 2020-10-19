@@ -4,21 +4,21 @@ import { ActionContext } from "..";
 export default ({
   api,
   store,
-}: ActionContext<"EtheriumService", "wallet" | "asset">) => {
+}: ActionContext<"EthereumService", "wallet" | "asset">) => {
   const actions = {
     async updateBalances(_?: string) {
-      store.wallet.balances = await api.EtheriumService.getBalance();
+      store.wallet.balances = await api.EthereumService.getBalance();
     },
     async disconnectWallet() {
-      await api.EtheriumService.disconnect();
+      await api.EthereumService.disconnect();
     },
     async connectToWallet() {
-      await api.EtheriumService.connect();
+      await api.EthereumService.connect();
       actions.updateBalances();
     },
   };
 
-  const etheriumState = api.EtheriumService.getState();
+  const etheriumState = api.EthereumService.getState();
 
   effect(async () => {
     store.wallet.etheriumIsConnected = etheriumState.connected;

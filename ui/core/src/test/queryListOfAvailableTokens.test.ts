@@ -25,7 +25,7 @@ describe("queryListOfAvailableTokens", () => {
       });
       const actions = walletActions({
         api: {
-          EtheriumService: getMockWalletService(etheriumState, walletBalances),
+          EthereumService: getMockWalletService(etheriumState, walletBalances),
         },
         store,
       });

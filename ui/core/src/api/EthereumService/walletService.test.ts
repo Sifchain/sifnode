@@ -9,12 +9,12 @@ import { TEN } from "src/entities/fraction/Fraction";
 import JSBI from "jsbi";
 import B from "../../entities/utils/B";
 
-describe("EtheriumService", () => {
-  let EtheriumService: ReturnType<typeof createWalletService>;
+describe("EthereumService", () => {
+  let EthereumService: ReturnType<typeof createWalletService>;
 
   beforeEach(async () => {
     const supportedTokens = await getFakeTokens();
-    EtheriumService = createWalletService({
+    EthereumService = createWalletService({
       getWeb3Provider,
       getSupportedTokens: async () => supportedTokens,
     });
@@ -23,7 +23,7 @@ describe("EtheriumService", () => {
   test("it should connect without error", async () => {
     let causedError = false;
     try {
-      await EtheriumService.connect();
+      await EthereumService.connect();
     } catch (err) {
       causedError = true;
     }
@@ -32,12 +32,12 @@ describe("EtheriumService", () => {
 
   test("that it returns the correct wallet amounts", async () => {
     const supportedTokens = await getFakeTokens();
-    const EtheriumService = createWalletService({
+    const EthereumService = createWalletService({
       getWeb3Provider,
       getSupportedTokens: async () => supportedTokens,
     });
-    await EtheriumService.connect();
-    const balances = await EtheriumService.getBalance();
+    await EthereumService.connect();
+    const balances = await EthereumService.getBalance();
 
     const ATK = supportedTokens.find(({ symbol }) => symbol === "ATK");
     const BTK = supportedTokens.find(({ symbol }) => symbol === "BTK");
@@ -55,20 +55,20 @@ describe("EtheriumService", () => {
   });
 
   test("isConnected", async () => {
-    expect(EtheriumService.isConnected()).toBe(false);
-    await EtheriumService.connect();
-    expect(EtheriumService.isConnected()).toBe(true);
+    expect(EthereumService.isConnected()).toBe(false);
+    await EthereumService.connect();
+    expect(EthereumService.isConnected()).toBe(true);
   });
 
   test("transfer ERC-20 to smart contract", async () => {
     const supportedTokens = await getFakeTokens();
-    const EtheriumService = createWalletService({
+    const EthereumService = createWalletService({
       getWeb3Provider,
       getSupportedTokens: async () => supportedTokens,
     });
-    await EtheriumService.connect();
-    const state = EtheriumService.getState();
-    const origBalanceAccount0 = await EtheriumService.getBalance();
+    await EthereumService.connect();
+    const state = EthereumService.getState();
+    const origBalanceAccount0 = await EthereumService.getBalance();
 
     expect(
       origBalanceAccount0
@@ -78,14 +78,14 @@ describe("EtheriumService", () => {
 
     const ATK = supportedTokens.find(({ symbol }) => symbol === "ATK");
 
-    await EtheriumService.transfer({
+    await EthereumService.transfer({
       amount: B("10.000000", ATK!.decimals),
       recipient: state.accounts[1],
       asset: ATK,
     });
 
-    const balanceAccount0 = await EtheriumService.getBalance();
-    const balanceAccount1 = await EtheriumService.getBalance(state.accounts[1]);
+    const balanceAccount0 = await EthereumService.getBalance();
+    const balanceAccount1 = await EthereumService.getBalance(state.accounts[1]);
 
     expect(
       balanceAccount0
@@ -102,13 +102,13 @@ describe("EtheriumService", () => {
 
   test("transfer ETH", async () => {
     const supportedTokens = await getFakeTokens();
-    const EtheriumService = createWalletService({
+    const EthereumService = createWalletService({
       getWeb3Provider,
       getSupportedTokens: async () => supportedTokens,
     });
-    await EtheriumService.connect();
-    const state = EtheriumService.getState();
-    const origBalanceAccount0 = await EtheriumService.getBalance();
+    await EthereumService.connect();
+    const state = EthereumService.getState();
+    const origBalanceAccount0 = await EthereumService.getBalance();
 
     expect(
       origBalanceAccount0
@@ -116,13 +116,13 @@ describe("EtheriumService", () => {
         ?.toFixed()
     ).toEqual(Balance.n(ETH, "99.95048114").toFixed());
 
-    await EtheriumService.transfer({
+    await EthereumService.transfer({
       amount: JSBI.BigInt(10 * 10 ** 18),
       recipient: state.accounts[1],
     });
 
-    const balanceAccount0 = await EtheriumService.getBalance();
-    const balanceAccount1 = await EtheriumService.getBalance(state.accounts[1]);
+    const balanceAccount0 = await EthereumService.getBalance();
+    const balanceAccount1 = await EthereumService.getBalance(state.accounts[1]);
 
     expect(
       balanceAccount0

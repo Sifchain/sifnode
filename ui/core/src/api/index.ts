@@ -1,10 +1,10 @@
 // Everything here represents services that are effectively remote data storage
-export * from "./EtheriumService/utils/getFakeTokens";
-export * from "./EtheriumService/utils/getWeb3Provider";
+export * from "./EthereumService/utils/getFakeTokens";
+export * from "./EthereumService/utils/getWeb3Provider";
 
 import JSBI from "jsbi";
 import { Address, Asset, Balances, Token } from "../entities";
-import etheriumService, { EtheriumServiceContext } from "./EtheriumService";
+import EthereumService, { EthereumServiceContext } from "./EthereumService";
 import tokenService, { TokenServiceContext } from "./TokenService";
 
 export type Api = ReturnType<typeof createApi>;
@@ -53,11 +53,11 @@ export type IWalletService = {
   // purgeClient(): void
 };
 
-type ApiContext = EtheriumServiceContext & TokenServiceContext; // add contexts from other APIs
+type ApiContext = EthereumServiceContext & TokenServiceContext; // add contexts from other APIs
 
 export function createApi(context: ApiContext) {
   return {
-    EtheriumService: etheriumService(context),
+    EthereumService: EthereumService(context),
     TokenService: tokenService(context),
   };
 }
