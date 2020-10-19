@@ -4,12 +4,13 @@ CHAINNET?=localnet # Options; localnet, testnet, chaosnet ,mainnet
 NAMESPACE?=dev # Optional dev,test,prod, node0, node1
 PROVIDER?=local# local, aws, gcp, az, do
 TAG=$(CHAINNET)
+BINARY?=sifnoded
 
 build-image:
-	docker build -t sifchain/sifnode:$(TAG) .
+	docker build -t sifchain/$(BINARY):$(TAG) -f cmd/$(BINARY)/Dockerfile .
 
 run-image: build-image
-	docker run sifchain/sifnode:$(TAG)
+	docker run sifchain/$(BINARY):$(TAG)
 
 build-cluster:
 ifeq '$(PROVIDER)' 'local'

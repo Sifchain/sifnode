@@ -1,4 +1,4 @@
-name: Publish Mainnet Image
+name: Publish Mainnet Images
 
 on:
   release:
@@ -7,16 +7,23 @@ on:
 
 jobs:
   mainnet:
-    name: Build and push mainnet image
+    name: mainnet
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Build image
-        run: make CHAINNET=mainnet build-image
-      - name: Push to Docker Hub
-        uses: docker/build-push-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: sifchain/sifnode:mainnet
+
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build images
+        run: |
+          make CHAINNET=mainnet BINARY=sifnoded build-image
+          make CHAINNET=mainnet BINARY=sifnodecli build-image
+          make CHAINNET=mainnet BINARY=sifcfg build-image
+
+      - name: Push images
+        run: |
+          docker push sifchain/sifnoded:mainnet
+          docker push sifchain/sifnodecli:mainnet
+          docker push sifchain/sifcrg:mainnet
