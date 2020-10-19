@@ -3,7 +3,7 @@ import {
   SigningCosmosClient
 } from "@cosmjs/launchpad";
 import { validateMnemonic, generateMnemonic } from "bip39"
-import { cosmosSignin, getCosmosBalance } from "../api/walletService/SifService"
+import { cosmosSignin, getCosmosBalance, sendSifToken } from "../api/walletService/SifService"
 import { Mnemonic, SifAddress } from "../entities/Wallet"
 
 export async function getCosmosBalanceAction(
@@ -25,4 +25,8 @@ export function mnemonicIsValid(mnemonic: Mnemonic): Boolean {
 
 export function generateMnemonicAction(): Mnemonic {
   return generateMnemonic()
+}
+
+export function sendTransaction() {
+  return sendSifToken()
 }
