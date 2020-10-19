@@ -40,6 +40,8 @@ jobs:
         run: yarn install --frozen-lockfile --silent && cd ./chains/ethereum && yarn install --frozen-lockfile --silent
         env:
           CI: true
+      - name: Build test chains
+        run: yarn chain:build
       - name: Test Frontend
         run: yarn test
         env:
