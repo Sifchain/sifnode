@@ -1,20 +1,63 @@
-#name: Publish Docker image
-#on:
-#  push:
-#    branches: [develop, master]
-#jobs:
-#  push_sifnode_to_registry:
-#    name: Push Docker image to GitHub Packages
+name: Publish Docker image
+
+on:
+  push:
+    branches:
+      - '**'
+
+env:
+  CLUSTER_NAME: "sifchain-dev"
+
+jobs:
+  push_sifnode_to_registry:
+    name: Push Docker image to GitHub Packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Declare git variables
+        id: vars
+        shell: bash
+        run: |
+          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+      - name: Push to GitHub Packages
+        uses: mr-smithers-excellent/docker-build-push@v4
+        with:
+          registry: ghcr.io
+          image: sifchain/sifnode
+          tag: ${{ steps.vars.outputs.sha_short }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }} 
+
+#  deploy_to_eks:
+#    name: Deploy a node for each PR
+#    needs: push_sifnode_to_registry
 #    runs-on: ubuntu-latest
 #    steps:
 #      - name: Check out the repo
 #        uses: actions/checkout@v2
-#      - name: Push to GitHub Packages
-#        uses: docker/build-push-action@v2
 #        with:
-#          username: ${{ github.actor }}
-#          password: ${{ secrets.GITHUB_TOKEN }}
-#          registry: docker.pkg.github.com
-#          repository: sifchain/sifnode/sifnode
-#          tag_with_ref: true
+#          ref: feature/helm-chart
+#      - name: Declare git variables
+#        id: vars
+#        shell: bash
+#        run: |
+#          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+#          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ secrets.AWS_REGION }}
+#      - name: Initialize kubectl
+#        run: |
+#          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ env.CLUSTER_NAME }}
+#      - name: Helm install and deploy
+#        run: |
+#          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+#          helm repo add stable https://kubernetes-charts.storage.googleapis.com
+#          helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard
+#          helm upgrade node-${{ steps.vars.outputs.sha_short }} build/helm/sifnode --install -n node-${{ steps.vars.outputs.sha_short }} --create-namespace --set secrets.ghcr.enabled=true --set secrets.ghcr.dockerconfigjson=${{ secrets.GHCR_SECRET }} --set image.tag=${{ steps.vars.outputs.sha_short }} --wait
 #
