@@ -29,7 +29,7 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ . Values.image.repository }}:{{ .Values.sifnode.env.chainNet }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.sifnode.env.chainNet }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
           args: ["-c", "sifgen node create $SIF_ID; sifnoded start --rpc.laddr tcp://0.0.0.0:26657 --db_dir /data"]
