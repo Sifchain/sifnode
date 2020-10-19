@@ -5,6 +5,7 @@ help: ## Show this help message
 	@egrep '^(.+)\:\ ##\ (.+)' ${MAKEFILE_LIST} | column -t -c 2 -s ':#'
 
 NODE=$(nodename)
+CHAINNET=$(chainnet)
 
 helm: ## Install Helm 3 dependency
 	@echo Installing Helm 3 binary
@@ -21,7 +22,7 @@ deploy-sifnode: ## Sifnode deployment to Kubernetes
 		echo "The 'nodename' argument is not defined"; \
 		exit 1; \
 	fi
-	@helm upgrade $(NODE) ./sifnode --install -n $(NODE) --create-namespace --wait; \
+	@helm upgrade $(NODE) ./sifnode --set CHAINNET=$(CHAINNET) --install -n $(NODE) --create-namespace --wait; \
 
 destroy-sifnode: ## Destroy the Sifnode deployment
 	@echo Destroy the Sifnode deployment
