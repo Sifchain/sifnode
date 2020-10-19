@@ -10,7 +10,7 @@
     "chain:cosmos:start": "cd ./chains/cosmos && ./run-cosmos-test-chain.sh",
     "chain:migrate": "cd ./chains/ethereum && yarn migrate",
     "chain:ether:build": "cd ./chains/ethereum && truffle build",
-    "chain:ether:start": "ganache-cli",
+    "chain:ether:start": "yarn ganache-cli",
     "chain:build": "concurrently -r \"yarn chain:cosmos:build\" \"yarn chain:ether:build\"",
     "chain:start": "concurrently -k \"yarn chain:cosmos:start\" \"yarn chain:ether:start\"",
     "core:test:nochain": "cd core && yarn test",
