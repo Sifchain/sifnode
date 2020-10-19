@@ -16,6 +16,10 @@ jobs:
         working-directory: ui
 
     steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: '14.x'
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
         with:
@@ -31,13 +35,6 @@ jobs:
 
       - name: Build
         run: go build -v ./...
-
-      - uses: actions/checkout@v2
-
-      - name: Use Node.js
-        uses: actions/setup-node@v2.1.2
-        with:
-          node-version: '14.x'
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -64,4 +61,4 @@ jobs:
       - name: Test Frontend
         run: yarn test
         env:
-          CI: 1
+          CI: true
