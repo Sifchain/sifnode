@@ -20,7 +20,7 @@ export const wallet = reactive({
   how we want them to work in /app
 */
 export type SifWalletStore = {
-  isConnected: boolean
+  isConnected?: boolean
   client?: SigningCosmosClient
   address?: SifAddress
   balances?: Account
