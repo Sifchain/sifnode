@@ -1,0 +1,22 @@
+name: Publish Mainnet Image
+
+on:
+  release:
+    type: created
+    branches: master
+
+jobs:
+  mainnet:
+    name: Build and push mainnet image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Build image
+        run: make CHAINNET=mainnet build-image
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: sifchain/sifnode:mainnet
