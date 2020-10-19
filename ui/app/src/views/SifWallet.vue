@@ -3,6 +3,10 @@
     <div class="wallet-container mb8 df fdc aifs">
 
       <div class="df fdc w100" v-if="!sifWallet.isConnected">
+        <!-- Best way here is to have input address, to get balances first,
+             then if want to transact, add mnemonic. Also need to add create
+        -->
+        <input class="mb8 monospace" placeholder="sifAddress (todo)"/>
         <textarea
           v-if="!sifWallet.isConnected"
           class="mb8"
@@ -24,18 +28,15 @@
           <div class="df connected-dot mr8"></div>
           <div class="df fdc aifs">
             Address: {{sifWallet.address}}
-          <div v-for="coin in sifWallet.balances" :key="coin.denom">
-            Balance: {{coin.amount}}{{coin.denom}}
+            <div v-for="coin in sifWallet.balances.balance" :key="coin.denom">
+              Balance: {{coin.amount}}{{coin.denom}}
+            </div>
           </div>
         </div>
-      </div>
-
-        
         <button @click="reset">
           Clear
         </button>
       </div>
-
 
       <div style="color:salmon; font-weight: bold">{{errorMessage}}</div>
 
@@ -45,43 +46,37 @@
 
 <script lang="ts">
 import { defineComponent, ref, computed, reactive, readonly } from "vue";
-
-import CSignIn from "@/components/CSignIn.vue"
-// import { CWalletStore, WalletStore } from "../../../core/src/store/wallet"
-import { signInCosmosWallet, getCosmosBalanceAction } from "../../../core/src/actions/CWalletActions"
+import { signInCosmosWallet, getCosmosBalanceAction } from "../../../core/src/actions/sifWalletActions"
+import {SifWalletStore} from "../../../core/src/store/wallet"
 
 export default defineComponent({
   name: "SifWallet",
   setup() {
     // local reactive variables
-    const localMnemonic = ref("race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow")
+    const localMnemonic = ref()
     let errorMessage = ref()
-    const initSifWallet = {
+    const initSifWallet: SifWalletStore = {
       isConnected: false,
       client: undefined,
       address: undefined,
       balances: undefined
-    }
+    } 
     const sifWallet = reactive({...initSifWallet})
-
-  const activeSifAddress = readonly(sifWallet.client)
-    // submit to actions
+    
     async function submit() {
       errorMessage.value = ""
       if (!localMnemonic.value) { return errorMessage.value = "Mnemonic required to send" }
-
       try {
-        // assign local store
         sifWallet.client = await signInCosmosWallet(localMnemonic.value.trim())
         sifWallet.address = sifWallet.client.senderAddress
         sifWallet.isConnected = true
-        sifWallet.balances = (await getCosmosBalanceAction(sifWallet.address)).balance
+        sifWallet.balances = await getCosmosBalanceAction(sifWallet.address)
       } catch(error) { 
         errorMessage.value = error 
       }
 
     }
-    // reset
+
     async function reset() {
       localMnemonic.value = ""
       errorMessage.value = ""
@@ -118,7 +113,7 @@ export default defineComponent({
 .pb8 {padding-bottom: 8px}
 .pb12 {padding-bottom: 12px}
 
-
+.monospace {font-family: monospace}
 .wallet-container {
   width: 500px;
   font-family: monospace
