@@ -20,7 +20,7 @@ jobs:
         run: |
           make CHAINNET=mainnet BINARY=sifnoded build-image
           make CHAINNET=mainnet BINARY=sifnodecli build-image
-          make CHAINNET=mainnet BINARY=sifcfg build-image
+          make CHAINNET=mainnet BINARY=sifcrg build-image
 
       - name: Push images
         run: |
