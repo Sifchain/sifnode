@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sifnode.fullname" . }}
+  labels:
+    {{- include "sifnode.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "sifnode.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "sifnode.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ include "sifnode.fullname" . }}-ghcr
+      serviceAccountName: {{ include "sifnode.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh"]
+          args: ["-c", "sifgen node create $SIF_ID; sifnoded start --rpc.laddr tcp://0.0.0.0:26657 --db_dir /data"]
+          ports:
+            - name: port-26656
+              containerPort: 26656
+              protocol: TCP
+            - name: port-26657
+              containerPort: 26657
+              protocol: TCP
+            - name: port-6060
+              containerPort: 6060
+              protocol: TCP
+          env:
+            - name: SIF_CLI
+              value: {{ .Values.sifnode.env.sifCli }}
+            - name: SIF_DAEMON
+              value: {{ .Values.sifnode.env.sifDaemon }}
+            - name: SIF_ID
+              value: {{ .Values.sifnode.env.sifId }}
+          livenessProbe:
+            tcpSocket:
+              port: 26656
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 26656
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - name: data
+            mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Values.pvc.name }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
