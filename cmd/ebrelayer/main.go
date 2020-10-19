@@ -63,7 +63,7 @@ func init() {
 		generateBindingsCmd(),
 	)
 
-	DefaultCLIHome := os.ExpandEnv("$HOME/.ebcli")
+	DefaultCLIHome := os.ExpandEnv("$HOME/.sifnodecli")
 	executor := cli.PrepareMainCmd(rootCmd, EnvPrefix, os.ExpandEnv(DefaultCLIHome))
 	err := executor.Execute()
 	if err != nil {
