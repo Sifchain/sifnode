@@ -66,7 +66,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, computed, reactive, readonly } from "vue";
-import { signInCosmosWallet, getCosmosBalanceAction } from "../../../core/src/actions/sifWalletActions"
+import { signInCosmosWallet, getCosmosBalanceAction, sendTransaction } from "../../../core/src/actions/sifWalletActions"
 import {SifWalletStore} from "../../../core/src/store/wallet"
 
 import {SifTransaction} from "../../../core/src/entities/Transaction"
@@ -103,7 +103,9 @@ export default defineComponent({
     }
 
     async function send() {
-       
+      if(!sifWallet.client) { return errorMessage.value = "Not connected"}
+      const client = sifWallet.client
+      // await sendTransaction(sifWallet["client"], sifTxUserInput)
     }
 
     async function signIn() {
