@@ -5,9 +5,11 @@ import {
   CosmosClient,
   Account
 } from "@cosmjs/launchpad"
+import { SifWalletStore } from "src/store/wallet";
 
 import { ADDR_PREFIX, API } from "../../constants"
 import { Mnemonic, SifAddress } from "../../entities/Wallet" 
+import { SifTransaction } from "../../entities/Transaction" 
 
 // Warning This creates a client object used to *sign* TX
 export async function cosmosSignin( mnemonic: Mnemonic ): 
@@ -40,26 +42,30 @@ export async function getCosmosBalance( address: SifAddress ):
     }
   }
 
+  export async function sendSifToken(
+    sifWallet: SifWalletStore, 
+    sifTransaction: any
+  ): Promise<any> {
+    if (!sifWallet.client) throw "No signed in client. Sign in with mnemonic."
+    if (!sifTransaction) throw "No user input data. Define who, what, and for how much."
 
-// SEND() -- for TX
-// async function validateAddressOnChain() {
-
-//   if (this.valid.to_address && this.valid.amount && !this.inFlight) {
-//     const payload = {
-//       amount: this.amount,
-//       denom: this.denom,
-//       to_address: this.to_address,
-//       memo: this.memo,
-//     };
-//     this.txResult = "";
-//     this.inFlight = true;
-//     this.txResult = await this.$store.dispatch("cosmos/tokenSend", payload);
-//     if (!this.txResult.code) {
-//       this.amount = "";
-//       this.to_address = "";
-//       this.memo = "";
-//     }
-//     this.inFlight = false;
-//     await this.$store.dispatch("cosmos/bankBalancesGet");
-  
-// }
+    const from_address = sifWallet.client.senderAddress;
+    const msg = {
+      type: "cosmos-sdk/MsgSend",
+      value: {
+        amount: [
+          {
+            sifTransaction.amount,
+            sifTransaction.denom,
+          },
+        ],
+        from_address,
+        sifTransaction.to_address,
+      },
+    };
+    const fee = {
+      amount: coins(0, denom),
+      gas: "200000",
+    };
+    return await state.client.signAndPost([msg], fee, memo);
+  }
