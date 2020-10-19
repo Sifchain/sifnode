@@ -4,7 +4,7 @@
       <router-link to="/">EthWallet</router-link> |
       <router-link to="/transfer-ethereum"
         >Ethereum Network Transfer
-      </router-link>
+      </router-link> | 
       <router-link to="/sifwallet">SifWallet</router-link> |
       <router-link to="/swap">Swap</router-link> |
       <router-link to="/list">List all balances</router-link> |
