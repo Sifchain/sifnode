@@ -1,5 +1,7 @@
 import { reactive } from "@vue/reactivity";
-import { Balance } from "../entities";
+import { SigningCosmosClient, Account } from "@cosmjs/launchpad";
+
+import { Balance, SifAddress } from "../entities";
 
 export type WalletStore = {
   balances: Balance[];
@@ -12,3 +14,14 @@ export const wallet = reactive({
   etheriumIsConnected: false,
   isConnected: false
 }) as WalletStore;
+
+/*
+ combining wallets premature without understand
+  how we want them to work in /app
+*/
+export type SifWalletStore = {
+  isConnected: boolean
+  client?: SigningCosmosClient
+  address?: SifAddress
+  balances?: Account
+} 

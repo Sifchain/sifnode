@@ -1,13 +1,10 @@
-import { validateMnemonic, generateMnemonic } from "bip39"
-// import { CWalletStore, ICWalletStore } from "../store/wallet"
-import { cosmosSignin, getCosmosBalance } from "../api/walletService/SifService"
-
-import { Mnemonic, SifAddress } from "../entities/Wallet"
-
 import {
   Account,
   SigningCosmosClient
 } from "@cosmjs/launchpad";
+import { validateMnemonic, generateMnemonic } from "bip39"
+import { cosmosSignin, getCosmosBalance } from "../api/walletService/SifService"
+import { Mnemonic, SifAddress } from "../entities/Wallet"
 
 export async function getCosmosBalanceAction(
   address: SifAddress) {

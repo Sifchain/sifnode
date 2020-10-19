@@ -29,6 +29,6 @@ echo "Validating genesis file..."
 sifnoded validate-genesis
 
 echo "Starting test chain"
-sifnoded start
+sifnoded start --log_level="main:info,state:error,statesync:info,*:error"
 
 sifnodecli rest-server  --unsafe-cors --trace
