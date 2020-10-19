@@ -1,4 +1,19 @@
 #!/usr/bin/env bash
+parallelizr() {
+  for cmd in "$@"; do {
+    echo "Process \"$cmd\" started";
+    $cmd & pid=$!
+    PID_LIST+=" $pid";
+  } done
+
+  trap "kill $PID_LIST" SIGINT
+
+  echo "Parallel processes have started";
+
+  wait $PID_LIST
+
+  echo "All processes have completed";
+}
 
 parallelizr() {
   for cmd in "$@"; do {
@@ -47,8 +62,6 @@ sifnoded validate-genesis
 echo "Starting test chain"
 
 parallelizr "sifnoded start" "sifnodecli rest-server  --unsafe-cors --trace"
-
-
 
 #sifnoded start --log_level="main:info,state:error,statesync:info,*:error"
 

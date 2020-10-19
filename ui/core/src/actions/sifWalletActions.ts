@@ -1,6 +1,12 @@
-import { SigningCosmosClient } from "@cosmjs/launchpad";
+import { Account, SigningCosmosClient } from "@cosmjs/launchpad";
+import { SifTransaction } from "../entities";
+import { SifWalletStore } from "../store/wallet";
 import { validateMnemonic, generateMnemonic } from "bip39";
-import { cosmosSignin, getCosmosBalance } from "../api/SifService";
+import {
+  cosmosSignin,
+  getCosmosBalance,
+  signAndBroadcast,
+} from "../api/SifService";
 import { Mnemonic, SifAddress } from "../entities/Wallet";
 
 export async function getCosmosBalanceAction(address: SifAddress) {
@@ -21,4 +27,11 @@ export function mnemonicIsValid(mnemonic: Mnemonic): Boolean {
 
 export function generateMnemonicAction(): Mnemonic {
   return generateMnemonic();
+}
+
+export async function sendTransaction(
+  sifWalletClient: SifWalletStore["client"],
+  sifTransaction: SifTransaction
+) {
+  return await signAndBroadcast(sifWalletClient, sifTransaction);
 }

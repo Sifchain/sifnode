@@ -1,12 +1,16 @@
 <template>
-  <div class="df fdc">
+  <div class="df fdc sifwallet-container">
     <div class="wallet-container mb8 df fdc aifs">
 
-      <div class="df fdc w100" v-if="!sifWallet.isConnected">
+      <div class="df fdc w100 mb8" v-if="!sifWallet.balances">
         <!-- Best way here is to have input address, to get balances first,
              then if want to transact, add mnemonic. Also need to add create
         -->
-        <input class="mb8 monospace" placeholder="sifAddress (todo)"/>
+        <p class="mb8">You may either input your pubkey to get balances. Or input your mnemonic to get balances and be ready to sign a transaction. 
+          You may add mnemonic later.</p>
+        <input class="mb8 monospace" placeholder="sifAddress (todo)" v-model="sifWallet.address"/>
+        <button class="mb8" @click="getBalance">Get Balance</button>
+
         <textarea
           v-if="!sifWallet.isConnected"
           class="mb8"
@@ -14,18 +18,15 @@
           placeholder="Mnemonic..."
         ></textarea>
         <div class="df">
-          <button @click="submit" class="mr8">
+          <button @click="signIn" class="mr8">
             Connect Wallet
-          </button>
-          <button @click="reset">
-            Clear
           </button>
         </div>
       </div>
 
       <div v-else class="df fdc aifs w100">
         <div class="df fdr address-container w100 mb8">
-          <div class="df connected-dot mr8"></div>
+          <div v-if="sifWallet.isConnected" class="df connected-dot mr8"></div>
           <div class="df fdc aifs">
             Address: {{sifWallet.address}}
             <div v-for="coin in sifWallet.balances.balance" :key="coin.denom">
@@ -33,11 +34,30 @@
             </div>
           </div>
         </div>
+
+        <input class="mb8 monospace w100" placeholder="sendTo" v-model="sendTo"/>
+        <input class="mb8 monospace w100" placeholder="amount" v-model="amount"/>
+
+        <div class="mb8 w100" v-if="!sifWallet.isConnected">
+          <p class="mb8">Input mnemonic below to sign transaction.</p>
+          <textarea
+            class="mb8 w100"
+            v-model="localMnemonic"
+            placeholder="Mnemonic..."
+          ></textarea>
+          <div class="df mb8">
+            <button @click="signIn" class="mr8">
+              Connect Wallet
+            </button>
+          </div>
+        </div>
+        <button v-if="sifWallet.isConnected" @click="send" class="mb8">
+          Send
+        </button>       
+      </div>
         <button @click="reset">
           Clear
         </button>
-      </div>
-
       <div style="color:salmon; font-weight: bold">{{errorMessage}}</div>
 
     </div>
@@ -46,31 +66,58 @@
 
 <script lang="ts">
 import { defineComponent, ref, computed, reactive, readonly } from "vue";
-import { signInCosmosWallet, getCosmosBalanceAction } from "../../../core/src/actions/sifWalletActions"
+import { signInCosmosWallet, getCosmosBalanceAction, sendTransaction } from "../../../core/src/actions/sifWalletActions"
 import {SifWalletStore} from "../../../core/src/store/wallet"
+
+import {SifTransaction} from "../../../core/src/entities/Transaction"
 
 export default defineComponent({
   name: "SifWallet",
   setup() {
     // local reactive variables
-    const localMnemonic = ref()
+    const localMnemonic = ref("race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow")
     let errorMessage = ref()
     const initSifWallet: SifWalletStore = {
       isConnected: false,
       client: undefined,
-      address: undefined,
+      address: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
       balances: undefined
     } 
     const sifWallet = reactive({...initSifWallet})
+
+    const initSifTxUserInput: SifTransaction = {
+      amount: undefined,
+      denom: undefined,
+      to_address: undefined,
+      memo: ""
+    }
+    const sifTxUserInput = reactive({...initSifTxUserInput})
     
-    async function submit() {
+    const amount = ref(50)
+    const sendTo = ref("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5")
+
+    async function getBalance() {
+      errorMessage.value = ""
+      if (!sifWallet.address) { return errorMessage.value = "No address. Must be defined." }
+      sifWallet.balances = await getCosmosBalanceAction(sifWallet.address)
+    }
+
+    async function send() {
+      if(!sifWallet.client) { return errorMessage.value = "Not connected"}
+      const client = sifWallet.client
+      // await sendTransaction(sifWallet["client"], sifTxUserInput)
+    }
+
+    async function signIn() {
       errorMessage.value = ""
       if (!localMnemonic.value) { return errorMessage.value = "Mnemonic required to send" }
       try {
         sifWallet.client = await signInCosmosWallet(localMnemonic.value.trim())
         sifWallet.address = sifWallet.client.senderAddress
         sifWallet.isConnected = true
-        sifWallet.balances = await getCosmosBalanceAction(sifWallet.address)
+        if (!sifWallet.balances) {
+          sifWallet.balances = await getCosmosBalanceAction(sifWallet.address)
+        }
       } catch(error) { 
         errorMessage.value = error 
       }
@@ -85,17 +132,21 @@ export default defineComponent({
 
     return {
       sifWallet,
-      submit, 
+      sendTo,
+      amount,
+      getBalance,
+      signIn, 
       errorMessage,
       localMnemonic,
-      reset
+      reset,
+      send
     }
   },
 });
 </script>
 
 <style scoped>
-
+.sifwallet-container {text-align: left;}
 .df {display: flex}
 .fdc {flex-direction: column}
 .aic {align-items: center;}
@@ -114,6 +165,7 @@ export default defineComponent({
 .pb12 {padding-bottom: 12px}
 
 .monospace {font-family: monospace}
+.tal {text-align: left}
 .wallet-container {
   width: 500px;
   font-family: monospace
@@ -122,4 +174,5 @@ export default defineComponent({
 .connected-dot { width: 10px; height: 10px; border-radius: 10px; margin-top: 4px; background: darkseagreen}
 button { padding: 6px; width: fit-content; }
 textarea {height: 100px; padding: 6px}
+p {margin: 0}
 </style>

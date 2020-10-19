@@ -50,4 +50,22 @@ describe("sifService", () => {
       account
     );
   });
+
+  it("should signAndBroadcast transaction", async () => {
+    const sifTransaction = {
+      amount: "50",
+      denom: "nametoken",
+      to_address: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
+      memo: "",
+    };
+    const sifWalletClient = await sifService.cosmosSignin(mnemonic);
+    const result = await sifService.signAndBroadcast(
+      sifWalletClient,
+      sifTransaction
+    );
+    console.log(result);
+    //   ?? json: cannot unmarshal number into Go value of type string (HTTP 400)
+    // https://github.com/cosmos/cosmos-sdk/issues/1503
+    // https://github.com/cosmos/cosmos-sdk/search?q=cannot+unmarshal+number+into+Go+value+of+type+string&type=issues
+  });
 });
