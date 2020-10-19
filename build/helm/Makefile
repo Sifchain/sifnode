@@ -22,7 +22,7 @@ deploy-sifnode: ## Sifnode deployment to Kubernetes
 		echo "The 'nodename' argument is not defined"; \
 		exit 1; \
 	fi
-	@helm upgrade $(NODE) ./sifnode --set CHAINNET=$(CHAINNET) --install -n $(NODE) --create-namespace --wait; \
+	@helm upgrade $(NODE) ./sifnode --set env.CHAINNET=$(CHAINNET) --install -n $(NODE) --create-namespace --wait; \
 
 destroy-sifnode: ## Destroy the Sifnode deployment
 	@echo Destroy the Sifnode deployment
