@@ -3,12 +3,12 @@
 rm -rf ~/.sifnoded
 rm -rf ~/.sifnodecli
 
-sifnoded init test --chain-id=sifnode
+sifnoded init test --chain-id=sifchain
 
 sifnodecli config output json
 sifnodecli config indent true
 sifnodecli config trust-node true
-sifnodecli config chain-id namechain
+sifnodecli config chain-id sifchain
 sifnodecli config keyring-backend test
 
 echo "Generating deterministic account - shadowfiend"
@@ -29,6 +29,9 @@ echo "Validating genesis file..."
 sifnoded validate-genesis
 
 echo "Starting test chain"
-sifnoded start --log_level="main:info,state:error,statesync:info,*:error"
+
+sifnoded start & 
+
+#sifnoded start --log_level="main:info,state:error,statesync:info,*:error"
 
 sifnodecli rest-server  --unsafe-cors --trace

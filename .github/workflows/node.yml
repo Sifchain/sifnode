@@ -1,11 +1,7 @@
 name: Node.js CI
 
 on:
-  push:
-    branches: [develop, master]
-    paths: ['ui/**']
   pull_request:
-    branches: [develop, master, frontend-ui] # Temporarily add frontend-ui until we merge it
     paths: ['ui/**']
 
 jobs:
@@ -16,14 +12,30 @@ jobs:
         working-directory: ui
 
     steps:
-      - uses: actions/checkout@v2
       - name: Use Node.js
         uses: actions/setup-node@v2.1.2
         with:
           node-version: '14.x'
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Get dependencies
+        run: |
+          go get -v -t -d ./...
+
+      - name: Build
+        run: go build -v ./...
+
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
+
       - name: Cache Node.js modules
         id: yarn-cache
         uses: actions/cache@v1
@@ -31,11 +43,18 @@ jobs:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: ${{ runner.os }}-yarn-
+
       - name: Install dependencies
         run: yarn install --frozen-lockfile --silent && cd ./chains/ethereum && yarn install --frozen-lockfile --silent
         env:
           CI: true
+
+      - name: Build test chains
+        run: yarn chain:build
+        env:
+          CI: true
+
       - name: Test Frontend
         run: yarn test
         env:
-          CI: 1
+          CI: true
