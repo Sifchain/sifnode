@@ -15,7 +15,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=SifChain \
 
 BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${TAG} -a
 
-BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen ./cmd/ebrelayer
+BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen ./cmd/sifcrg ./cmd/ebrelayer
 
 all: lint install
 
