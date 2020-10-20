@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-# killall sifnoded sifnodecli
+killall sifnoded sifnodecli
 
-# rm $(which sifnoded) 2> /dev/null || echo sifnoded not install yet ...
-# rm $(which sifnodecli) 2> /dev/null || echo sifnodecli not install yet ...
+rm $(which sifnoded) 2> /dev/null || echo sifnoded not install yet ...
+rm $(which sifnodecli) 2> /dev/null || echo sifnodecli not install yet ...
 
 rm -rf ~/.sifnoded
 rm -rf ~/.sifnodecli
 
-# make install
+make install
 
 sifnoded init test --chain-id=sifchain
 
