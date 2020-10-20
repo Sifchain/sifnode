@@ -32,7 +32,7 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissionPool) (*sdk.Result, error) {
-
+	// Verify pool
 	pool, err := keeper.GetPool(ctx, msg.Ticker)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
@@ -40,10 +40,13 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	if pool.ExternalAssetBalance+pool.NativeAssetBalance > keeper.GetParams(ctx).MinCreatePoolThreshold {
 		return nil, types.ErrBalanceTooHigh
 	}
+	// Get all LP's for the pool
 	lpList := keeper.GetLiqudityProvidersForAsset(ctx, pool.ExternalAsset)
 	poolUnits := pool.PoolUnits
 	nativeAssetBalance := pool.NativeAssetBalance
 	externalAssetBalance := pool.ExternalAssetBalance
+	// iterate over Lp list and refund them there tokens
+	// Return both RWN and EXTERNAL ASSET
 	for _, lp := range lpList {
 		withdrawNativeAsset, withdrawExternalAsset, _ := calculateWithdrawl(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, 10000, 1)
 		poolUnits = poolUnits - lp.LiquidityProviderUnits
@@ -62,6 +65,8 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
 	}
 	// TODO : Do we check if nativeBalance and external balance is still left in the pool before we delete it ?
+	// Pool should be empty at this point
+	// Destroy the pool
 	err = keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToDestroyPool, err.Error())
