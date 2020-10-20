@@ -1,6 +1,6 @@
 module sifchain {
     source                  = "../../build/terraform/providers/aws"
-    region                  = "us-west-1"
+    region                  = "{{.aws.region}}"
     vpc_cidr                = "{{.aws.cidr}}"
     cluster_version         = {{.aws.cluster.version}}
     cluster_name            = "sifchain-aws-{{.chainnet}}"
