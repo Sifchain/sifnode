@@ -34,10 +34,6 @@ export default ({ api, store }: ActionContext<"SifService", "wallet">) => {
 
   effect(() => {
     store.wallet.sif.address = state.address;
-    // if (state.address)
-    //   store.wallet.sif.balances = await actions.getCosmosBalances(
-    //     state.address
-    //   );
   });
 
   effect(() => {
