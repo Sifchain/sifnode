@@ -38,5 +38,8 @@ describe("queryListOfAvailableTokens", () => {
         toBalance(100)(USDT),
       ]);
     });
+
+    // TODO: This test should also conver the list of tokens built for the
+    // swap dropdowns including the busness logic of what swaps are allowed
   });
 });
