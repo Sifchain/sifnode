@@ -30,6 +30,3 @@ export const getWeb3Provider = async (): Promise<provider> => {
 
   return null;
 };
-
-// export type Web3Getter = () => Promise<Web3 | null>;
-export type TokensGetter = () => Promise<Token[]>;
