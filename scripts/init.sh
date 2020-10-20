@@ -5,8 +5,8 @@
 # rm $(which sifnoded) 2> /dev/null || echo sifnoded not install yet ...
 # rm $(which sifnodecli) 2> /dev/null || echo sifnodecli not install yet ...
 
-# rm -rf ~/.sifnoded
-# rm -rf ~/.sifnodecli
+rm -rf ~/.sifnoded
+rm -rf ~/.sifnodecli
 
 # make install
 
