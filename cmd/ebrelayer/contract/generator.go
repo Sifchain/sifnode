@@ -59,11 +59,7 @@ func CompileContracts(contracts BridgeContracts) error {
 
 // GenerateBindings generates bindings for each contract
 func GenerateBindings(contracts BridgeContracts) error {
-	fmt.Printf("in GenerateBindings")
-
 	for _, contract := range contracts {
-		fmt.Printf("in for ")
-
 		genBindingCmd := strings.Replace(BaseBindingGenCmd, ContractText, contract.String(), -1)
 		err := execCmd(genBindingCmd)
 		if err != nil {
