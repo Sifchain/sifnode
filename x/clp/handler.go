@@ -82,15 +82,18 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 }
 
 func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
+	// Verify min threshold
 	MinThreshold := keeper.GetParams(ctx).MinCreatePoolThreshold
 	if (msg.ExternalAssetAmount + msg.NativeAssetAmount) < MinThreshold { // Need to verify
 		return nil, types.ErrTotalAmountTooLow
 	}
+	// Check if pool already exists
 	if keeper.ExistsPool(ctx, msg.ExternalAsset.Ticker) {
 		return nil, types.ErrUnableToCreatePool
 	}
 
 	asset := msg.ExternalAsset
+	// Verify user has balance to create a new pool
 	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(msg.ExternalAssetAmount)))
 	nativeAssetCoin := sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(msg.NativeAssetAmount)))
 	if !keeper.BankKeeper.HasCoins(ctx, msg.Signer, sdk.Coins{externalAssetCoin, nativeAssetCoin}) {
@@ -104,11 +107,12 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
+	// Send coins from suer to pool
 	err = keeper.BankKeeper.SendCoins(ctx, msg.Signer, pool.PoolAddress, sdk.Coins{externalAssetCoin, nativeAssetCoin})
 	if err != nil {
 		return nil, err
 	}
-
+	// Pool creator becomes the first LP
 	lp := NewLiquidityProvider(asset, lpunits, msg.Signer.String())
 	err = keeper.SetPool(ctx, pool)
 	if err != nil {
@@ -137,22 +141,24 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 
 func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) (*sdk.Result, error) {
 	createNewLP := false
+	// Get pool
 	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
 	newPoolUnits, lpUnits := calculatePoolUnits(pool.PoolUnits, pool.NativeAssetBalance, pool.ExternalAssetBalance, msg.NativeAssetAmount, msg.ExternalAssetAmount)
+	// Get lp , if lp doesnt exist create lp
 	lp, err := keeper.GetLiquidityProvider(ctx, msg.ExternalAsset.Ticker, msg.Signer.String())
 	if err != nil {
 		createNewLP = true
 	}
-
+	// Verify user has coins to add liquidity
 	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(msg.ExternalAssetAmount)))
 	nativeAssetCoin := sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(msg.NativeAssetAmount)))
 	if !keeper.BankKeeper.HasCoins(ctx, msg.Signer, sdk.Coins{externalAssetCoin, nativeAssetCoin}) {
 		return nil, types.ErrBalanceNotAvailable
 	}
-
+	// Send from user to pool
 	err = keeper.BankKeeper.SendCoins(ctx, msg.Signer, pool.PoolAddress, sdk.Coins{externalAssetCoin, nativeAssetCoin})
 	if err != nil {
 		return nil, err
@@ -161,6 +167,7 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	pool.PoolUnits = newPoolUnits
 	pool.NativeAssetBalance = pool.NativeAssetBalance + msg.NativeAssetAmount
 	pool.ExternalAssetBalance = pool.ExternalAssetBalance + msg.ExternalAssetAmount
+	// Create lp if needed
 	if createNewLP {
 		lp := NewLiquidityProvider(msg.ExternalAsset, lpUnits, msg.Signer.String())
 		ctx.EventManager().EmitEvents(sdk.Events{
@@ -173,10 +180,12 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	} else {
 		lp.LiquidityProviderUnits = lp.LiquidityProviderUnits + lpUnits
 	}
+	// Save new pool balances
 	err = keeper.SetPool(ctx, pool)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
+	// Save LP
 	keeper.SetLiquidityProvider(ctx, lp)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -195,14 +204,18 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 }
 
 func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiquidity) (*sdk.Result, error) {
+	// Get pool
 	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
+	//Get LP
 	lp, err := keeper.GetLiquidityProvider(ctx, msg.ExternalAsset.Ticker, msg.Signer.String())
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
 	}
+
+	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft := calculateWithdrawl(pool.PoolUnits,
 		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
 		msg.WBasisPoints, msg.Asymmetry)
@@ -210,6 +223,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount)))
 	nativeAssetCoin := sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
 
+	// Send coins from pool to user
 	if !keeper.BankKeeper.HasCoins(ctx, pool.PoolAddress, sdk.Coins{externalAssetCoin, nativeAssetCoin}) {
 		return nil, types.ErrNotEnoughLiquidity
 	}
@@ -256,36 +270,57 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	sentAmount := msg.SentAmount
 	sentAsset := msg.SentAsset
 	receivedAsset := msg.ReceivedAsset
+	// Get native asset
 	nativeAsset := types.GetSettlementAsset()
+	// If its one swap , this pool would be RWN:RWN ( Ex User sends RWN wants ETH)
+	// If its two swap . this pool would be RWN:EXTERNAL1 ( Ex User sends ETH wants XCT , ETH is EXTERNAL1)
+	//CASE 1 : RWN:RWN
+	//CASE 2 : RWN:ETH
+	inPool, err := keeper.GetPool(ctx, msg.SentAsset.Ticker)
+	if err != nil {
+		return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
+	}
+	// If its one swap , this pool would be RWN:EXTERNAL ( Ex User sends RWN wants ETH , ETH IS EXTERNAL )
+	// If its two swap . this pool would be RWN:EXTERNAL2 ( Ex User sends ETH wants XCT , XCT is EXTERNAL2)
+	//CASE 1 : RWN:ETH
+	//CASE 2 : RWN:XCT
+	outPool, err := keeper.GetPool(ctx, msg.ReceivedAsset.Ticker)
+	if err != nil {
+		return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.ReceivedAsset.String())
+	}
+
+	// Deducting Balance from the user , Sent Asset is the asset the user is sending to the Pool
+	// Case 1 . Deducting his RWN and adding to RWN:RWN pool
+	// Case 2 , Deduction his ETH and adding to RWN:ETH pool
+	sentCoin := sdk.NewCoin(msg.SentAsset.Ticker, sdk.NewIntFromUint64(uint64(sentAmount)))
+	err = keeper.BankKeeper.SendCoins(ctx, msg.Signer, inPool.PoolAddress, sdk.Coins{sentCoin})
+	if err != nil {
+		return nil, err
+	}
+	// Check if its a two way swap, swapping non native fro non native .
+	// If its one way we can skip this if condition and add balance to users account from outpool
 	if msg.SentAsset != nativeAsset && msg.ReceivedAsset != nativeAsset {
-		inPool, err := keeper.GetPool(ctx, msg.SentAsset.Ticker)
-		if err != nil {
-			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
-		}
+		// Swap 1 - In asset for Native
 		emitAmount, lp, ts, err := swapOne(ctx, keeper, sentAsset, sentAmount, nativeAsset, inPool)
 		if err != nil {
 			return nil, err
 		}
-		sentCoin := sdk.NewCoin(msg.SentAsset.Ticker, sdk.NewIntFromUint64(uint64(sentAmount)))
-		err = keeper.BankKeeper.SendCoins(ctx, msg.Signer, inPool.PoolAddress, sdk.Coins{sentCoin})
-		if err != nil {
-			return nil, err
-		}
+		// Emit amount is for In asset - Native asset swap
 		sentAmount = emitAmount
 		sentAsset = nativeAsset
 		liquidityFee = liquidityFee + lp
 		tradeSlip = tradeSlip + ts
 
 	}
-	outPool, err := keeper.GetPool(ctx, msg.ReceivedAsset.Ticker)
-	if err != nil {
-		return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.ReceivedAsset.String())
-	}
+	// Calculating amount user receives
 	emitAmount, lp, ts, err := swapOne(ctx, keeper, sentAsset, sentAmount, receivedAsset, outPool)
 	if err != nil {
 		return nil, err
 	}
-	sentCoin := sdk.NewCoin(msg.ReceivedAsset.Ticker, sdk.NewIntFromUint64(uint64(sentAmount)))
+	// Adding balance to users account ,Received Asset is the asset the user wants to receive
+	// Case 1 . Adding his ETH and deducting from  RWN:ETH pool
+	// Case 2 , Adding his XCT and deducting from  RWN:XCT pool
+	sentCoin = sdk.NewCoin(msg.ReceivedAsset.Ticker, sdk.NewIntFromUint64(uint64(sentAmount)))
 	err = keeper.BankKeeper.SendCoins(ctx, outPool.PoolAddress, msg.Signer, sdk.Coins{sentCoin})
 	if err != nil {
 		return nil, err
