@@ -1,19 +1,17 @@
 
-## demo part 3, end to end
+## end to end test
 1. start truffle ethereum and deploy contract
+2. cd testnet-contracts
 yarn develop
+
+2. open other console 
 yarn migrate
 truffle exec scripts/setOracleAndBridgeBank.js
 
 ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 user1 --chain-id=sifchain
 
 
-2. start cosmos chain
-sifnodecli query account $(sifnodecli keys show validator -a)
-sifnodecli tx send validator $(sifnodecli keys show testuser -a) 10atom --yes
-sifnodecli query account $(sifnodecli keys show testuser -a)
-
-3. start ebrelayer
+1. start ebrelayer
 ebrelayer generate
 // the adderss should be from yarn peggy:address
 ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator --chain-id=peggy
