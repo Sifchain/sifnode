@@ -1,7 +1,7 @@
 version: 1
 accounts:
   - name: user1
-    coins: ["1000token", "100000000stake"]
+    coins: ["1000token", "100000000stake" ,"1000000000eth","1000000000rwn" ,"1000000000dash"]
   - name: user2
     coins: ["500token"]
 validator:
