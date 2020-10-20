@@ -65,13 +65,13 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-          - name: data
-            mountPath: /data
+#          - name: data
+#            mountPath: /data
       volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName: {{ .Values.pvc.name }}
-      {{- with .Values.nodeSelector }}
+#      - name: data
+#        persistentVolumeClaim:
+#          claimName: {{ .Values.pvc.name }}
+#      {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
