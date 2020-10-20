@@ -114,6 +114,7 @@ module.exports = async () => {
        ******************************************/
       // Get current accounts
       const accounts = await web3.eth.getAccounts();
+      console.log("account is ", accounts[9], cosmosRecipient, coinDenom, amount)
 
         // Send approve transaction
       if(coinDenom != "eth") {
@@ -125,7 +126,7 @@ module.exports = async () => {
 
         instance = await tokenContract.at(coinDenom)
         const { logs } = await instance.approve(bridgeContractAddress, amount, {
-          from: accounts[9],
+          from: accounts[1],
           value: 0,
           gas: 300000 // 300,000 Gwei
         });
@@ -150,7 +151,7 @@ module.exports = async () => {
       const { logs: logs2 } = await contract.deployed().then(function (instance) {
         console.log("Connected to contract, sending burn...");
         return instance.burn(cosmosRecipient, coinDenom, amount, {
-          from: accounts[9],
+          from: accounts[1],
           value: coinDenom === NULL_ADDRESS ? amount : 0,
           gas: 300000 // 300,000 Gwei
         });
