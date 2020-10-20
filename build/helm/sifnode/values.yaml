@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/sifchain/sifnode
+  repository: sifchain/sifnoded
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "develop"
@@ -38,6 +38,7 @@ securityContext: {}
 
 sifnode:
   env:
+    chainNet: ""
     sifCli: sifnodecli
     sifDaemon: sifnoded
     sifId: sifchain
