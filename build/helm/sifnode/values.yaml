@@ -43,6 +43,11 @@ sifnode:
     sifDaemon: sifnoded
     sifId: sifchain
 
+sifnodecli:
+  image:
+    repository: sifchain/sifnodecli
+    tag: "develop"
+
 service:
   type: LoadBalancer
   port: 26656
