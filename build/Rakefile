@@ -1,4 +1,5 @@
 require 'rake'
+require 'rbconfig'
 
 desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
@@ -70,20 +71,25 @@ end
 
 desc "Install require dependencies"
 namespace :dependencies do
-  # TODO Make cross platformed
   desc "Install terraform and Helm for OSX"
   task :install do
-    puts "Installing Terraform"
-    system("brew install terraform")
+    case detect_os
+    when :macosx
+      puts "Installing Terraform"
+      system("brew install terraform")
 
-    puts "Installing aws-iam-authenticator"
-    system("brew install aws-iam-authenticator")
+      puts "Installing aws-iam-authenticator"
+      system("brew install aws-iam-authenticator")
 
-    puts "Installing kubectl"
-    system("brew install kubernetes-cli")
+      puts "Installing kubectl"
+      system("brew install kubernetes-cli")
 
-    puts "Installing Helm 3"
-    system("brew install helm")
+      puts "Installing Helm 3"
+      system("brew install helm")
+    when :linux
+    else
+      puts "Sorry not currently supported!"
+    end
   end
 end
 
@@ -134,4 +140,22 @@ end
 # image_repository returns the arg with a image_repository if set or the default setting
 def image_repository(args)
   args[:image_repository] ? "#{args[:image_repository]}" : "sifchain/sifnoded"
+end
+
+def detect_os
+  @os ||= (
+  host_os = RbConfig::CONFIG['host_os']
+  case host_os
+  when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
+    :windows
+  when /darwin|mac os/
+    :macosx
+  when /linux/
+    :linux
+  when /solaris|bsd/
+    :unix
+  else
+    raise Error::WebDriverError, "unknown os: #{host_os.inspect}"
+  end
+  )
 end
