@@ -1,4 +1,4 @@
-import walletActions from "../actions/walletActions";
+import walletActions from "../actions/ethWalletActions";
 import { createStore, Store } from "../store";
 import { Balance, Token } from "../entities";
 

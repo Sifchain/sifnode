@@ -1,8 +1,9 @@
 import { Balance } from "./Balance";
 import { createAsset } from "./Asset";
+import { ChainId } from "./ChainId";
 
-const USD = createAsset(2, "USD", "US Dollar");
-const ETH = createAsset(18, "ETH", "Ethereum");
+const USD = createAsset("USD", 2, "US Dollar", ChainId.ETHEREUM);
+const ETH = createAsset("ETH", 18, "Ethereum", ChainId.ETHEREUM);
 
 test("it should be able to handle whole integars", () => {
   const f = new Balance(USD, "10012");

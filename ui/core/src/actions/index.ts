@@ -7,11 +7,11 @@
 // import queryListOfAvailableTokens from "./queryListOfAvailableTokens";
 // import setQuantityOfToken from "./setQuantityOfToken";
 // import swapTokens from "./swapTokens";
-import walletActions from "./walletActions";
-import tokenActions from "./tokenActions";
-import sifWalletActions from "./sifWalletActions";
 import { Api, WithApi } from "../api";
 import { Store, WithStore } from "../store";
+import ethWalletActions from "./ethWalletActions";
+import sifWalletActions from "./sifWalletActions";
+import tokenActions from "./tokenActions";
 
 export type ActionContext<
   T extends keyof Api = keyof Api,
@@ -20,9 +20,9 @@ export type ActionContext<
 
 export function createActions(context: ActionContext) {
   return {
-    ...walletActions(context),
-    ...tokenActions(context),
+    ...ethWalletActions(context),
     ...sifWalletActions(context),
+    ...tokenActions(context),
     // ...broadcastTx(context),
     // ...connectToWallet(context),
     // ...createPool(context),

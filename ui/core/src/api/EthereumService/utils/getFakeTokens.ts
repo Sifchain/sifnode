@@ -1,4 +1,4 @@
-import { createToken, Token } from "../../../entities";
+import { ChainId, createToken, Token } from "../../../entities";
 
 // Parse Truffle json for the most recent address
 function parseTruffleJson(
@@ -11,7 +11,7 @@ function parseTruffleJson(
   const entries = Object.entries(jobj.networks);
   const [last] = entries.slice(-1);
   const { address } = last[1];
-  return createToken(1, address, 6, symbol, name);
+  return createToken(symbol, 6, name, ChainId.ETHEREUM, address);
 }
 
 // The reason we have to get fake tokens instead of just loading up a
