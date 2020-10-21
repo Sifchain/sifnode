@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/faucet"
+	"github.com/Sifchain/sifnode/tools/sifgen/network"
 	"github.com/Sifchain/sifnode/tools/sifgen/node"
 
 	"github.com/yelinaung/go-haikunator"
@@ -29,6 +30,11 @@ func NewSifgen(chainID string) Sifgen {
 	return Sifgen{
 		chainID: chainID,
 	}
+}
+
+func (s Sifgen) NetworkCreate(count int, outputDir, startingIPAddress string) {
+	net := network.NewNetwork(s.chainID)
+	_ = net.Build(count, outputDir, startingIPAddress)
 }
 
 func (s Sifgen) NodeCreate(genesisURL *string) {

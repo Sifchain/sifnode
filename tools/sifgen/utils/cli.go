@@ -16,18 +16,25 @@ const (
 	ConfigFile  = "config.toml"
 )
 
+var (
+	DefaultNodeHome = app.DefaultNodeHome
+	DefaultCLIHome  = app.DefaultCLIHome
+)
+
 type CLIUtils interface {
 	Reset() error
+	CreateDir(string) error
 	CurrentChainID() (*string, error)
-	InitChain(string, string) (*string, error)
+	NodeID(nodeDir string) (*string, error)
+	InitChain(string, string, string) (*string, error)
 	SetKeyRingStorage() (*string, error)
 	SetConfigChainID(string) (*string, error)
 	SetConfigIndent(bool) (*string, error)
 	SetConfigTrustNode(bool) (*string, error)
-	AddKey(string, string) (*string, error)
-	AddGenesisAccount(string, []string) (*string, error)
-	GenerateGenesisTxn(string, string, string) (*string, error)
-	CollectGenesisTxns() (*string, error)
+	AddKey(string, string, string) (*string, error)
+	AddGenesisAccount(string, string, []string) (*string, error)
+	GenerateGenesisTxn(string, string, string, string, string, string, string) (*string, error)
+	CollectGenesisTxns(string, string) (*string, error)
 	ExportGenesis() (*string, error)
 	GenesisFilePath() string
 	ConfigFilePath() string
@@ -66,12 +73,20 @@ func (c CLI) Reset() error {
 	return nil
 }
 
+func (c CLI) CreateDir(path string) error {
+	return os.MkdirAll(path, 0755)
+}
+
 func (c CLI) CurrentChainID() (*string, error) {
 	return c.shellExec(c.sifCLI, "config", "chain-id", "--get")
 }
 
-func (c CLI) InitChain(chainID, moniker string) (*string, error) {
-	return c.shellExec(c.sifDaemon, "init", moniker, "--chain-id", chainID)
+func (c CLI) NodeID(nodeDir string) (*string, error) {
+	return c.shellExec(c.sifDaemon, "tendermint", "show-node-id", "--home", nodeDir)
+}
+
+func (c CLI) InitChain(chainID, moniker, nodeDir string) (*string, error) {
+	return c.shellExec(c.sifDaemon, "init", moniker, "--chain-id", chainID, "--home", nodeDir)
 }
 
 func (c CLI) SetKeyRingStorage() (*string, error) {
@@ -90,23 +105,28 @@ func (c CLI) SetConfigTrustNode(indent bool) (*string, error) {
 	return c.shellExec(c.sifCLI, "config", "trust-node", fmt.Sprintf("%v", indent))
 }
 
-func (c CLI) AddKey(name, keyPassword string) (*string, error) {
-	return c.shellExecInput(c.sifCLI, [][]byte{[]byte(keyPassword + "\n"), []byte(keyPassword + "\n")}, "keys", "add", name)
+func (c CLI) AddKey(name, keyPassword, cliDir string) (*string, error) {
+	return c.shellExecInput(c.sifCLI,
+		[][]byte{
+			[]byte(keyPassword + "\n"),
+			[]byte(keyPassword + "\n"),
+		}, "keys", "add", name, "--home", cliDir, "--keyring-backend", "file")
 }
 
-func (c CLI) AddGenesisAccount(address string, coins []string) (*string, error) {
-	return c.shellExec(c.sifDaemon, "add-genesis-account", address, strings.Join(coins[:], ","))
+func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {
+	return c.shellExec(c.sifDaemon, "add-genesis-account", address, strings.Join(coins[:], ","), "--home", nodeDir)
 }
 
-func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount string) (*string, error) {
+func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, cliDir, outputFile, nodeID string) (*string, error) {
 	return c.shellExecInput(c.sifDaemon,
 		[][]byte{[]byte(keyPassword + "\n"), []byte(keyPassword + "\n"), []byte(keyPassword + "\n")},
 		"gentx", "--name", name, "--amount", bondAmount, "--keyring-backend", "file",
+		"--home", nodeDir, "--home-client", cliDir, "--output-document", outputFile, "--node-id", nodeID,
 	)
 }
 
-func (c CLI) CollectGenesisTxns() (*string, error) {
-	return c.shellExec(c.sifDaemon, "collect-gentxs")
+func (c CLI) CollectGenesisTxns(gentxDir, nodeDir string) (*string, error) {
+	return c.shellExec(c.sifDaemon, "collect-gentxs", "--gentx-dir", gentxDir, "--home", nodeDir)
 }
 
 func (c CLI) ExportGenesis() (*string, error) {

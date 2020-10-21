@@ -18,6 +18,7 @@ require (
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/otiai10/copy v1.2.0 // indirect
+	github.com/pelletier/go-toml v1.8.1
 	github.com/sethvargo/go-password v0.2.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1

@@ -31,10 +31,10 @@ type Node struct {
 
 func NewNode(chainID string, moniker, genesisURL *string) *Node {
 	return &Node{
-		chainID:     chainID,
-		moniker:     *moniker,
-		genesisURL:  genesisURL,
-		CLI:         utils.NewCLI(chainID),
+		chainID:    chainID,
+		moniker:    *moniker,
+		genesisURL: genesisURL,
+		CLI:        utils.NewCLI(chainID),
 	}
 }
 
@@ -58,7 +58,7 @@ func (n *Node) Setup() error {
 		return err
 	}
 
-	_, err = n.CLI.InitChain(n.chainID, n.moniker)
+	_, err = n.CLI.InitChain(n.chainID, n.moniker, utils.DefaultNodeHome)
 	if err != nil {
 		return err
 	}
@@ -171,7 +171,7 @@ func (n *Node) generateNodeKeyAddress() error {
 		return err
 	}
 
-	output, err := n.CLI.AddKey(n.moniker, n.nodeKeyPassword)
+	output, err := n.CLI.AddKey(n.moniker, n.nodeKeyPassword, utils.DefaultCLIHome)
 	if err != nil {
 		return err
 	}
@@ -231,17 +231,30 @@ func (n *Node) generateNodeKeyPassword() error {
 
 // Generates the initial transaction(s) for genesis, for a seed.
 func (n *Node) seedGenesis(deposit []string) error {
-	_, err := n.CLI.AddGenesisAccount(n.nodeKeyAddress, deposit)
+	_, err := n.CLI.AddGenesisAccount(n.nodeKeyAddress, utils.DefaultNodeHome, deposit)
 	if err != nil {
 		return err
 	}
 
-	_, err = n.CLI.GenerateGenesisTxn(n.moniker, n.nodeKeyPassword, types.Bond)
+	nodeID, _ := n.CLI.NodeID(utils.DefaultNodeHome)
+	outputDir := fmt.Sprintf("%s/config/gentx", utils.DefaultNodeHome)
+	outputFile := fmt.Sprintf("%s/gentx-%v.json", outputDir, nodeID)
+
+	_, err = n.CLI.GenerateGenesisTxn(
+		n.moniker,
+		n.nodeKeyPassword,
+		types.Bond,
+		utils.DefaultNodeHome,
+		utils.DefaultCLIHome,
+		outputFile,
+		*nodeID,
+	)
+
 	if err != nil {
 		return err
 	}
 
-	_, err = n.CLI.CollectGenesisTxns()
+	_, err = n.CLI.CollectGenesisTxns(outputDir, utils.DefaultNodeHome)
 	if err != nil {
 		return err
 	}

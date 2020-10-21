@@ -11,8 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Sifchain/sifnode/tools/sifgen/faucet"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/yelinaung/go-haikunator"
 	. "gopkg.in/check.v1"
@@ -57,15 +55,17 @@ var (
 
 type mockCLIUtils struct{}
 
-func (c mockCLIUtils) Reset() error                                       { return nil }
-func (c mockCLIUtils) CurrentChainID() (*string, error)                   { return &chainID, nil }
-func (c mockCLIUtils) InitChain(chainID, moniker string) (*string, error) { return nil, nil }
-func (c mockCLIUtils) SetKeyRingStorage() (*string, error)                { return nil, nil }
-func (c mockCLIUtils) SetConfigChainID(chainID string) (*string, error)   { return nil, nil }
-func (c mockCLIUtils) SetConfigIndent(indent bool) (*string, error)       { return nil, nil }
-func (c mockCLIUtils) SetConfigTrustNode(trust bool) (*string, error)     { return nil, nil }
+func (c mockCLIUtils) Reset() error                                                { return nil }
+func (c mockCLIUtils) CreateDir(path string) error                                 { return nil }
+func (c mockCLIUtils) CurrentChainID() (*string, error)                            { return &chainID, nil }
+func (c mockCLIUtils) NodeID(nodeDir string) (*string, error)                      { return nil, nil }
+func (c mockCLIUtils) InitChain(chainID, moniker, nodeDir string) (*string, error) { return nil, nil }
+func (c mockCLIUtils) SetKeyRingStorage() (*string, error)                         { return nil, nil }
+func (c mockCLIUtils) SetConfigChainID(chainID string) (*string, error)            { return nil, nil }
+func (c mockCLIUtils) SetConfigIndent(indent bool) (*string, error)                { return nil, nil }
+func (c mockCLIUtils) SetConfigTrustNode(trust bool) (*string, error)              { return nil, nil }
 
-func (c mockCLIUtils) AddKey(name, keyPassword string) (*string, error) {
+func (c mockCLIUtils) AddKey(name, keyPassword, cliDir string) (*string, error) {
 	key := heredoc.Doc(`
 - name: foobar
   type: local
@@ -78,15 +78,15 @@ func (c mockCLIUtils) AddKey(name, keyPassword string) (*string, error) {
 	return &key, nil
 }
 
-func (c mockCLIUtils) AddGenesisAccount(name string, coins []string) (*string, error) {
+func (c mockCLIUtils) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {
 	return nil, nil
 }
 
-func (c mockCLIUtils) GenerateGenesisTxn(name, keyPassword, bondAmount string) (*string, error) {
+func (c mockCLIUtils) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, cliDir, outputFile, nodeID string) (*string, error) {
 	return nil, nil
 }
 
-func (c mockCLIUtils) CollectGenesisTxns() (*string, error) { return nil, nil }
+func (c mockCLIUtils) CollectGenesisTxns(gentxDir, nodeDir string) (*string, error) { return nil, nil }
 
 func (c mockCLIUtils) ExportGenesis() (*string, error) {
 	genesis := heredoc.Doc(`
@@ -193,12 +193,6 @@ func (s *nodeSuite) TestValidate(c *C) {
 
 func (s *nodeSuite) TestSetup(c *C) {
 	err := s.node.Setup()
-	c.Assert(err, IsNil)
-}
-
-func (s *nodeSuite) TestGenesis(c *C) {
-	s.node.genesisURL = nil
-	err := s.node.Genesis(faucet.NewFaucet(chainID).DefaultDeposit())
 	c.Assert(err, IsNil)
 }
 
