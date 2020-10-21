@@ -9,5 +9,4 @@ export type WalletAddress = {
   balance: Balance;
 };
 
-export type Mnemonic =  string
-export type SifAddress = string
+export type Mnemonic = string;

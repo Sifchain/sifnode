@@ -1,6 +1,6 @@
-import { SifTransaction } from "../entities";
+import { Address, TxParams } from "../entities";
 import { validateMnemonic } from "bip39";
-import { Mnemonic, SifAddress } from "../entities/Wallet";
+import { Mnemonic } from "../entities/Wallet";
 import { ActionContext } from ".";
 import { effect } from "@vue/reactivity";
 
@@ -8,7 +8,7 @@ export default ({ api, store }: ActionContext<"SifService", "wallet">) => {
   const state = api.SifService.getState();
 
   const actions = {
-    async getCosmosBalances(address: SifAddress) {
+    async getCosmosBalances(address: Address) {
       // TODO: validate sif prefix
       return await api.SifService.getBalance(address);
     },
@@ -19,8 +19,8 @@ export default ({ api, store }: ActionContext<"SifService", "wallet">) => {
       return await api.SifService.setPhrase(mnemonic);
     },
 
-    async sendCosmosTransaction(sifTransaction: SifTransaction) {
-      return await api.SifService.transfer(sifTransaction);
+    async sendCosmosTransaction(params: TxParams) {
+      return await api.SifService.transfer(params);
     },
 
     async signOutCosmosWallet() {

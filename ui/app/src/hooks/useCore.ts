@@ -7,6 +7,9 @@ import {
 } from "../../../core";
 
 const api = createApi({
+  // TODO: switch on env
+  sifAddrPrefix: "sif",
+  sifApiUrl: "http://127.0.0.1:1317",
   getWeb3Provider,
   getSupportedTokens,
 });

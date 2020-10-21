@@ -4,6 +4,7 @@ import { ChainId, createCoin, createToken } from "../entities";
 
 export const ETH = createCoin("ETH", 18, "Etherium", ChainId.ETHEREUM);
 export const ROWAN = createCoin("ROWAN", 2, "Rowan", ChainId.SIFCHAIN);
+export const NCN = createCoin("nametoken", 0, "nametoken", ChainId.SIFCHAIN);
 
 export const ZRX = createToken(
   "ZRX",

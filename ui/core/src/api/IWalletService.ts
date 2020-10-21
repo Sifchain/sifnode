@@ -1,22 +1,22 @@
-import { TxHash, TxParams } from ".";
-import { Address, Asset, Balances, Token } from "../entities";
+import { TxHash, TxParams, Address, Asset, Balance, Token } from "../entities";
 
 export type IWalletService = {
   getState: () => {
     address: Address;
     accounts: Address[];
     connected: boolean;
+    balances: Balance[];
     log: string;
   };
   isConnected(): boolean;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   transfer(params: TxParams): Promise<TxHash>;
-  getBalance(address?: Address, asset?: Asset | Token): Promise<Balances>;
+  getBalance(address?: Address, asset?: Asset | Token): Promise<Balance[]>;
 
   // FOLLOWING ARE YTI:
 
-  // setPhrase(phrase: string): Address
+  setPhrase(phrase: string): Promise<Address>;
   // setNetwork(net: Network): void
   // getNetwork(): Network
 
@@ -29,5 +29,5 @@ export type IWalletService = {
   // transfer(params: TxParams): Promise<TxHash>
   // deposit(params: TxParams): Promise<TxHash>
 
-  // purgeClient(): void
+  purgeClient(): void;
 };

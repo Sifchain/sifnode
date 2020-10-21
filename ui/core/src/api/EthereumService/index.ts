@@ -1,9 +1,8 @@
 import { reactive } from "@vue/reactivity";
 import Web3 from "web3";
 import { provider, WebsocketProvider } from "web3-core";
-import { TxHash, TxParams } from "..";
 import { IWalletService } from "../IWalletService";
-import { Asset, Balance, Token } from "../../entities";
+import { TxHash, TxParams, Asset, Balance, Token } from "../../entities";
 import {
   getEtheriumBalance,
   getTokenBalance,
@@ -40,8 +39,15 @@ export class EthereumService implements IWalletService {
     connected: boolean;
     address: Address;
     accounts: Address[];
+    balances: Balance[];
     log: string;
-  } = reactive({ connected: false, accounts: [], address: "", log: "unset" });
+  } = reactive({
+    connected: false,
+    accounts: [],
+    balances: [],
+    address: "",
+    log: "unset",
+  });
 
   constructor(
     getWeb3Provider: () => Promise<provider>,
@@ -153,6 +159,8 @@ export class EthereumService implements IWalletService {
         return getTokenBalance(web3, addr, token);
       }),
     ]);
+
+    this.state.balances = balances;
     return balances;
   }
 
@@ -174,6 +182,15 @@ export class EthereumService implements IWalletService {
     }
 
     return await transferAsset(this.web3, from, recipient, amount, asset);
+  }
+
+  async setPhrase() {
+    // We currently delegate auth to metamask so this is irrelavent
+    return "";
+  }
+
+  purgeClient() {
+    // We currently delegate auth to metamask so this is irrelavent
   }
 
   static create({

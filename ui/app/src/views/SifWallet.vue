@@ -39,7 +39,7 @@
           <div class="df fdc aifs">
             Address: {{ store.wallet.sif.address }}
             <div v-for="coin in store.wallet.sif.balances" :key="coin.denom">
-              Balance: {{ coin.amount }}{{ coin.denom }}
+              Balance: {{ coin.amount.toString() }} {{ coin.asset.symbol }}
             </div>
           </div>
         </div>
@@ -79,9 +79,9 @@
 <script lang="ts">
 import { defineComponent, readonly } from "vue";
 import { ref, computed, reactive } from "@vue/reactivity";
-
-import { SifTransaction } from "../../../core/src/entities/Transaction";
 import { useCore } from "../hooks/useCore";
+import { Asset, ChainId } from "../../../core/src";
+import JSBI from "jsbi";
 
 export default defineComponent({
   name: "SifWallet",
@@ -104,8 +104,8 @@ export default defineComponent({
       }
 
       await actions.sendCosmosTransaction({
-        asset: "nametoken",
-        amount: amount.value.toString(),
+        asset: Asset.create("nametoken", 18, "Nametoken", ChainId.SIFCHAIN),
+        amount: JSBI.BigInt(amount.value),
         recipient: sendTo.value,
       });
     }

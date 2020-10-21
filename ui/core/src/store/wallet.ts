@@ -1,6 +1,6 @@
 import { reactive } from "@vue/reactivity";
 
-import { Address, Balance, SifBalance } from "../entities";
+import { Address, Balance } from "../entities";
 
 export type WalletStore = {
   eth: {
@@ -9,7 +9,7 @@ export type WalletStore = {
     address: Address;
   };
   sif: {
-    balances: readonly SifBalance[]; // 🤔 why readonly?
+    balances: Balance[];
     isConnected: boolean;
     address: Address;
   };

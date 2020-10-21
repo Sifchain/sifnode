@@ -56,9 +56,9 @@ export class Balance extends Fraction {
   }
 }
 
-export type Balances = Balance[];
+// export type Balances = Balance[];
 
-export type SifBalance = SifCoin; // This is deliberate should eventually be consolodated with './Coin'
+// export type SifBalance = SifCoin; // This is deliberate should eventually be consolodated with './Coin'
 
 // export type AssetBalancesByAddress = {
 //   [address: string]: Balance | undefined;
