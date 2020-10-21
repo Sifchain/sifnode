@@ -204,6 +204,9 @@ func (s *nodeSuite) TestSetup(c *C) {
 func (s *nodeSuite) TestGenesis(c *C) {
 	err := s.node.Genesis(faucet.NewFaucet(chainID).DefaultDeposit())
 	c.Assert(err, IsNil)
+	s.node.seedAddress = nil
+	err = s.node.Genesis(faucet.NewFaucet(chainID).DefaultDeposit())
+	c.Assert(err, IsNil)
 }
 
 func (s *nodeSuite) TestChainID(c *C) {
@@ -235,6 +238,11 @@ func (s *nodeSuite) TestNodePeerAddress(c *C) {
 func (s *nodeSuite) TestNodeValidatorPublicKeyAddress(c *C) {
 	c.Assert(s.node.collectNodeValidatorPublicKeyAddress(), IsNil)
 	c.Assert(s.node.NodeValidatorPublicKeyAddress(), Equals, nodeValidatorPublicKeyAddress)
+}
+
+func (s *nodeSuite) TestPromote(c *C) {
+	err := s.node.Promote(s.node.nodeValidatorPublicKeyAddress, "password", "1000stake")
+	c.Assert(err, IsNil)
 }
 
 func (s *nodeSuite) TestSeedAddress(c *C) {
