@@ -91,11 +91,11 @@ func (p ProphecyClaimEvent) String() string {
 
 // CosmosMsg contains data from MsgBurn and MsgLock events
 type CosmosMsg struct {
-	ClaimType        Event
 	CosmosSender     []byte
-	EthereumReceiver common.Address
 	Symbol           string
 	Amount           *big.Int
+	EthereumReceiver common.Address
+	ClaimType        Event
 }
 
 // NewCosmosMsg creates a new CosmosMsg
