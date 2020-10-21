@@ -28,12 +28,12 @@ func TestQueryErrorPool(t *testing.T) {
 	}
 	_, err := querier(ctx, []string{"bogus"}, query)
 	assert.Error(t, err)
-	_, err = querier(ctx, []string{"pool"}, query)
+	_, err = querier(ctx, []string{types.QueryPool}, query)
 	assert.Error(t, err)
 	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
 	query.Path = ""
 	query.Data = qp
-	_, err = querier(ctx, []string{"pool"}, query)
+	_, err = querier(ctx, []string{types.QueryPool}, query)
 	// Should fail after it is deleted.
 	assert.Error(t, err)
 }
@@ -56,7 +56,7 @@ func TestQueryGetPool(t *testing.T) {
 	require.NoError(t, errRes)
 	query.Path = ""
 	query.Data = qp
-	qpool, err := querier(ctx, []string{"pool"}, query)
+	qpool, err := querier(ctx, []string{types.QueryPool}, query)
 	assert.NoError(t, err)
 	var p types.Pool
 	err = keeper.cdc.UnmarshalJSON(qpool, &p)
@@ -74,7 +74,7 @@ func TestQueryErrorPools(t *testing.T) {
 	query.Path = ""
 	query.Data = nil
 	//Test Pools
-	_, err := querier(ctx, []string{"allpools"}, query)
+	_, err := querier(ctx, []string{types.QueryPools}, query)
 	assert.Error(t, err)
 }
 
@@ -90,7 +90,7 @@ func TestQueryGetPools(t *testing.T) {
 	query.Path = ""
 	query.Data = nil
 	//Test Pools
-	qpools, err := querier(ctx, []string{"allpools"}, query)
+	qpools, err := querier(ctx, []string{types.QueryPools}, query)
 	assert.NoError(t, err)
 	var poolist []types.Pool
 	err = keeper.cdc.UnmarshalJSON(qpools, &poolist)
@@ -107,7 +107,7 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 		Data: []byte{},
 	}
 	querier := NewQuerier(keeper)
-	_, err := querier(ctx, []string{"liquidityProvider"}, query)
+	_, err := querier(ctx, []string{types.QueryLiquidityProvider}, query)
 	assert.Error(t, err)
 	//Set Data
 	_, _, lp := SetData(keeper, ctx)
@@ -120,7 +120,7 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 	require.NoError(t, errRes)
 	query.Path = ""
 	query.Data = qlp
-	_, err = querier(ctx, []string{"liquidityProvider"}, query)
+	_, err = querier(ctx, []string{types.QueryLiquidityProvider}, query)
 	assert.Error(t, err)
 }
 
@@ -143,7 +143,7 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	require.NoError(t, errRes)
 	query.Path = ""
 	query.Data = qlp
-	qliquidityprovider, err := querier(ctx, []string{"liquidityProvider"}, query)
+	qliquidityprovider, err := querier(ctx, []string{types.QueryLiquidityProvider}, query)
 	assert.NoError(t, err)
 	var l types.LiquidityProvider
 	err = keeper.cdc.UnmarshalJSON(qliquidityprovider, &l)
