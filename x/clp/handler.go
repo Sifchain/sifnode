@@ -306,9 +306,13 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// If its one way we can skip this if condition and add balance to users account from outpool
 	if msg.SentAsset != nativeAsset && msg.ReceivedAsset != nativeAsset {
 
-		emitAmount, lp, ts, err := swapOne(ctx, keeper, sentAsset, sentAmount, nativeAsset, inPool)
+		emitAmount, lp, ts, finalPool, err := swapOne(sentAsset, sentAmount, nativeAsset, inPool)
 		if err != nil {
 			return nil, err
+		}
+		err = keeper.SetPool(ctx, finalPool)
+		if err != nil {
+			return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
 		}
 		sentAmount = emitAmount
 		sentAsset = nativeAsset
@@ -319,9 +323,13 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		err = keeper.BankKeeper.SendCoins(ctx, outPool.PoolAddress, inPool.PoolAddress, sdk.Coins{interpoolCoin})
 	}
 	// Calculating amount user receives
-	emitAmount, lp, ts, err := swapOne(ctx, keeper, sentAsset, sentAmount, receivedAsset, outPool)
+	emitAmount, lp, ts, finalPool, err := swapOne(sentAsset, sentAmount, receivedAsset, outPool)
 	if err != nil {
 		return nil, err
+	}
+	err = keeper.SetPool(ctx, finalPool)
+	if err != nil {
+		return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
 	// Adding balance to users account ,Received Asset is the asset the user wants to receive
 	// Case 1 . Adding his ETH and deducting from  RWN:ETH pool
@@ -352,24 +360,24 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 
 //------------------------------------------------------------------------------------------------------------------
 
-func swapOne(ctx sdk.Context, keeper Keeper, from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint, error) {
+func swapOne(from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint, Pool, error) {
 
 	var X uint
 	var Y uint
 
-	if to == GetNativeAsset() { //RWN
+	if to == GetNativeAsset() {
 		Y = pool.NativeAssetBalance
 		X = pool.ExternalAssetBalance
 	} else {
 		X = pool.NativeAssetBalance
 		Y = pool.ExternalAssetBalance
 	}
-	x := sentAmount // X is added to RWN:ETH
+	x := sentAmount
 	liquidityFee := calcLiquidityFee(X, x, Y)
 	tradeSlip := calcTradeSlip(X, x)
 	swapResult := calcSwapResult(X, x, Y)
 	if swapResult >= Y {
-		return 0, 0, 0, types.ErrNotEnoughAssetTokens
+		return 0, 0, 0, Pool{}, types.ErrNotEnoughAssetTokens
 	}
 	if from == GetNativeAsset() {
 		pool.NativeAssetBalance = X + x
@@ -378,11 +386,8 @@ func swapOne(ctx sdk.Context, keeper Keeper, from Asset, sentAmount uint, to Ass
 		pool.ExternalAssetBalance = X + x
 		pool.NativeAssetBalance = Y - swapResult
 	}
-	err := keeper.SetPool(ctx, pool)
-	if err != nil {
-		return 0, 0, 0, errors.Wrap(types.ErrUnableToSetPool, err.Error())
-	}
-	return swapResult, liquidityFee, tradeSlip, nil
+
+	return swapResult, liquidityFee, tradeSlip, pool, nil
 }
 
 func calculateWithdrawal(poolUnits uint, nativeAssetBalance uint,
