@@ -1,32 +1,5 @@
 require 'rake'
 
-def path(args)
-  "../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"
-end
-
-def check_args(args)
-  if args[:chainnet] == nil
-    puts "Please provider a chainnet argument E.g testnet, mainnet, etc"
-    exit
-  end
-
-  case args[:provider]
-  when "aws"
-  when "az"
-    puts "Build me!"
-    exit
-  when "gcp"
-    puts "Build me!"
-    exit
-  when "do"
-    puts "Build me!"
-    exit
-  else
-    puts "Please provide a cloud host provider. E.g aws"
-    exit
-  end
-end
-
 namespace :cluster do
   desc "Scaffold new cluster environment configuration from template"
   task :scaffold, [:chainnet, :provider] do |t, args|
@@ -72,15 +45,6 @@ namespace :cluster do
   end
 end
 
-def kubeconfig(args)
- "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:chainnet]}"
-end
-
-# ns = namespace for kubes
-def ns(args)
-  args[:namespace] ? "#{args[:namespace]}" : "sifnode"
-end
-
 namespace :sifnode do
   desc "Install sifnode on cluster"
   task :install, [:chainnet, :provider, :namespace] do |t, args|
@@ -110,3 +74,40 @@ namespace :dependencies do
     system("brew install helm")
   end
 end
+
+def path(args)
+  "../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"
+end
+
+def check_args(args)
+  if args[:chainnet] == nil
+    puts "Please provider a chainnet argument E.g testnet, mainnet, etc"
+    exit
+  end
+
+  case args[:provider]
+  when "aws"
+  when "az"
+    puts "Build me!"
+    exit
+  when "gcp"
+    puts "Build me!"
+    exit
+  when "do"
+    puts "Build me!"
+    exit
+  else
+    puts "Please provide a cloud host provider. E.g aws"
+    exit
+  end
+end
+
+def kubeconfig(args)
+  "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:chainnet]}"
+end
+
+# ns = namespace for kubes
+def ns(args)
+  args[:namespace] ? "#{args[:namespace]}" : "sifnode"
+end
+
