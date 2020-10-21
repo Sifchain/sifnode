@@ -49,16 +49,16 @@ module "eks" {
   tags         = merge({ "Name" = var.cluster_name }, var.tags)
 
   node_groups_defaults = {
-    ami_type  = var.node_group_settings["ami_type"]
-    disk_size = var.node_group_settings["disk_size"]
+    ami_type  = var.ami_type
+    disk_size = var.disk_size
   }
 
   node_groups = {
     main = {
-      desired_capacity = var.node_group_settings["desired_capacity"]
-      max_capacity     = var.node_group_settings["max_capacity"]
-      min_capacity     = var.node_group_settings["min_capacity"]
-      instance_type    = var.node_group_settings["instance_type"]
+      desired_capacity = var.desired_capacity
+      max_capacity     = var.max_capacity
+      min_capacity     = var.min_capacity
+      instance_type    = var.instance_type
 
       k8s_labels = {
         Environment = "${var.cluster_name}-${var.region}"
