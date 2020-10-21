@@ -47,9 +47,15 @@ end
 
 namespace :sifnode do
   desc "Install sifnode on cluster"
-  task :install, [:chainnet, :provider, :namespace] do |t, args|
+  task :install, [:chainnet, :provider, :namespace, :image,:image_tag] do |t, args|
     check_args(args)
-    cmd = "helm upgrade #{ns(args)} ../build/helm/sifnode --set sifnode.env.chainNet=#{args[:chainnet]} --install -n #{ns(args)} --create-namespace"
+
+    cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
+        --set sifnode.env.chainnet=#{args[:chainnet]} --install -n #{ns(args)} --create-namespace \
+        --set image.tag=#{image_tag(args)} \
+        --set image.repository=#{image_repository(args)}
+    }
+
     system({"KUBECONFIG" => kubeconfig(args) }, cmd)
   end
 
@@ -111,3 +117,10 @@ def ns(args)
   args[:namespace] ? "#{args[:namespace]}" : "sifnode"
 end
 
+def image_tag(args)
+    args[:image_tag] ? "#{args[:image_tag]}" : "testnet"
+end
+
+def image_repository(args)
+  args[:image_repository] ? "#{args[:image_repository]}" : "sifchain/sifnoded"
+end
