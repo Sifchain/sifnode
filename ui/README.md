@@ -137,8 +137,15 @@ Our API setup asks for getters to supply environment information. It may make se
 To test manually run the app using serve which includes ganache running in the background
 
 ```bash
-./ui> yarn app:serve
+./ui> yarn app:serve:all
 ```
+
+> Alternatively you can run the following processes in separate terminals:
+>
+> 1. `yarn chain:eth`
+> 1. `yarn chain:sif`
+> 1. `yarn chain:migrate` - Will run migrations and then exit
+> 1. `yarn app:serve`
 
 Make note of the first private key that gets generated:
 
