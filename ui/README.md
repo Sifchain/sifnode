@@ -142,12 +142,12 @@ To test manually run the app using serve which includes ganache running in the b
 
 > Alternatively you can run the following processes in separate terminals:
 >
-> 1. `yarn chain:eth`
-> 1. `yarn chain:sif`
-> 1. `yarn chain:migrate` - Will run migrations and then exit
-> 1. `yarn app:serve`
+> 1. `yarn chain:eth` - Will run ganache
+> 1. `yarn chain:sif` - Will run a built sifnode
+> 1. `yarn chain:migrate` - Will run migrations against the running blockchains then exit
+> 1. `yarn app:serve` - Will run the Vue app
 
-Make note of the first private key that gets generated:
+From the terminal window running ganache make note of the first private key that gets generated:
 
 <img src="./docs/ganache-keys.png" />
 
