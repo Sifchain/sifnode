@@ -8,6 +8,9 @@ ENV GOPATH=/go
 ENV CGO_ENABLED=0
 ENV GOOS=linux
 
+# Empty dir for the db data
+RUN mkdir /data
+
 WORKDIR /sif
 COPY go.mod go.sum ./
 RUN go mod download
@@ -24,9 +27,5 @@ FROM alpine
 
 RUN apk add --update --no-cache $PACKAGES
 
-# Copy the compiled binaires over.
-COPY --from=build /go/bin/sifnoded /usr/bin/sifd
-COPY --from=build /go/bin/sifnodecli /usr/bin/sifcli
-
-# Copy the scripts over.
-ADD ./build/scripts /scripts
+# Copy the compiled binairy over.
+COPY --from=build /go/bin/sifnodecli /usr/bin/sifnodecli

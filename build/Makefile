@@ -3,7 +3,7 @@ include ./build/terraform/providers/Makefile
 CHAINNET?=localnet # Options; localnet, testnet, chaosnet ,mainnet
 NAMESPACE?=dev # Optional dev,test,prod, node0, node1
 PROVIDER?=local# local, aws, gcp, az, do
-TAG=$(CHAINNET)
+BINARY?=sifnoded
 
 build-image:
 	docker build -t sifchain/$(BINARY):$(CHAINNET) -f cmd/$(BINARY)/Dockerfile .
