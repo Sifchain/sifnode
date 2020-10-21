@@ -1,0 +1,109 @@
+require 'rake'
+
+def path(args)
+  "../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"
+end
+
+def check_args(args)
+  if args[:chainnet] == nil
+    puts "Please provider a chainnet argument E.g testnet, mainnet, etc"
+    exit
+  end
+
+  case args[:provider]
+  when "aws"
+  when "az"
+    puts "Build me!"
+    exit
+  when "gcp"
+    puts "Build me!"
+    exit
+  when "do"
+    puts "Build me!"
+    exit
+  else
+    puts "Please provide a cloud host provider. E.g aws"
+    exit
+  end
+end
+
+namespace :cluster do
+  desc "Scaffold new cluster environment configuration from template"
+  task :scaffold, [:chainnet, :provider] do |t, args|
+    check_args(args)
+
+    # create path location
+    system('mkdir -p ../.live')
+    system("mkdir #{path(args)}") or exit
+
+    # create config from template
+    system("go run github.com/belitre/gotpl ./terraform/template/aws/cluster.tf.tpl \
+      --set chainnet=#{args[:chainnet]} \
+      > #{path(args)}/main.tf
+    ")
+
+    system("go run github.com/belitre/gotpl ./terraform/template/aws/.envrc.tpl \
+      --set chainnet=#{args[:chainnet]} \
+      > #{path(args)}/.envrc
+    ")
+
+
+    # init terraform
+    system("cd #{path(args)} && terraform init")
+
+    puts "Cluster configuration scaffolding complete: #{path(args)}"
+    puts "Now run `rake cluster:create[#{args[:chainnet]},#{args[:provider]}]` to deploy your cluster"
+  end
+
+  desc "Create cluster"
+  task :create, [:chainnet, :provider] do |t, args|
+    check_args(args)
+    puts "Deploy cluster config: #{path(args)}"
+    system("cd #{path(args)} && terraform apply") or exit 1
+    puts "Cluster #{path(args)} created successfully"
+    puts "Now run `rake sifnode:install[#{args[:chainnet]},#{args[:provider]}]` to deploy sifnode to your cluster"
+  end
+
+  task :destroy, [:chainnet, :provider] do |t, args|
+    check_args(args)
+    puts "Destroy running cluster: #{path(args)}"
+    system("cd #{path(args)} && terraform destroy") or exit 1
+    puts "Cluster #{path(args)} destroyed successfully"
+  end
+end
+
+def kubeconfig(args)
+ "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:chainnet]}"
+end
+
+# ns = namespace for kubes
+def ns(args)
+  args[:namespace] ? "#{args[:namespace]}" : "sifnode"
+end
+
+namespace :sifnode do
+  desc "Install sifnode on cluster"
+  task :install, [:chainnet, :provider, :namespace] do |t, args|
+    check_args(args)
+    cmd = "helm upgrade #{ns(args)} ../build/helm/sifnode --set sifnode.env.chainNet=#{args[:chainnet]} --install -n #{ns(args)} --create-namespace"
+    system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+  end
+
+  task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
+    check_args(args)
+    cmd = "helm delete #{ns(args)} -n #{ns(args)}"
+    system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+  end
+end
+
+namespace :dependencies do
+  # TODO Make cross platformed
+  desc "Install terraform and Helm for OSX"
+  task :install do
+    puts "Installing Terraform"
+    system("brew install terraform")
+
+    puts "Installing Helm 3"
+    system("brew install helm")
+  end
+end
