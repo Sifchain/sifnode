@@ -173,15 +173,20 @@ func (s *nodeSuite) SetUpTest(c *C) {
 	}
 }
 
+func (s *nodeSuite) TestNewNode(c *C) {
+	node := NewNode(chainID, &moniker, &nodeSeedAddress, genesisURL)
+	c.Assert(node, NotNil)
+}
+
 func (s *nodeSuite) TestValidate(c *C) {
 	err := s.node.Validate()
 	c.Assert(err, IsNil)
 
-	s.node.chainID = faker.Lorem().Word()
+	s.node.moniker = faker.Lorem().Word()
 	err = s.node.Validate()
 	c.Assert(err, NotNil)
 
-	s.node.moniker = faker.Lorem().Word()
+	s.node.chainID = faker.Lorem().Word()
 	err = s.node.Validate()
 	c.Assert(err, NotNil)
 
