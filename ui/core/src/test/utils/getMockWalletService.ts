@@ -6,12 +6,15 @@ export function getMockWalletService(
     address: string;
     accounts: string[];
     connected: boolean;
+    balances: Balance[];
     log: string;
   },
   walletBalances: Balance[],
   service: Partial<IWalletService> = {}
 ): IWalletService {
   return {
+    setPhrase: async () => "",
+    purgeClient: () => {},
     getState: () => state,
     transfer: async () => "",
     getBalance: jest.fn(async () => walletBalances),

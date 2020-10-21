@@ -21,6 +21,7 @@ describe("queryListOfAvailableTokens", () => {
         connected: false,
         address: "",
         log: "",
+        balances: [],
         accounts: [],
       });
       const actions = walletActions({

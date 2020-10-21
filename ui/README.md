@@ -4,14 +4,17 @@
 
 #### Prerequisites
 
+- [Go](https://golang.org/doc/install) (to build the sifchain to test against)
 - [Node 14](https://nodejs.org/en/)
 - [Yarn Classic](https://classic.yarnpkg.com/en/docs/install#mac-stable)
+- A linux like environment
 
-#### Install dependencies
+#### Setup
 
-1. `cd ./ui`
-1. `yarn`
-1. `yarn build`
+1. Install the base sifnode repo in your go directory: `~/go/src/github.com/Sifchain/sifnode`
+1. `cd ./ui` - To work on the frontend UI
+1. `yarn` - Install dependencies
+1. `yarn build` - Build the blockchains to test against
 
 #### Launching locally
 
