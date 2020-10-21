@@ -144,6 +144,7 @@ func (n *Network) Build(count int, outputDir, startingIPAddress string) error {
 		}
 
 		// GenerateTXs.
+		// TODO: Set the IP Address.
 		if i != 0 {
 			dir := fmt.Sprintf("%s/%s/%s/%s", nodesDir, n.chainID, keylist[0][0].Moniker, ".sifnoded")
 			_, _ = cli.GenerateGenesisTxn(
@@ -173,6 +174,8 @@ func (n *Network) Build(count int, outputDir, startingIPAddress string) error {
 	// CollectTXs.
 	rootNodeDir := fmt.Sprintf("%s/%s/%s/%s", nodesDir, n.chainID, keylist[0][0].Moniker, ".sifnoded")
 	_, _ = cli.CollectGenesisTxns(gentxsDir, rootNodeDir)
+
+	// TODO: update the peer lists in the config files.
 
 	fmt.Printf("%+v\n", keylist)
 
