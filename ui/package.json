@@ -30,5 +30,8 @@
       "app",
       "chains/etherium"
     ]
+  },
+  "dependencies": {
+    "codecov": "^3.8.0"
   }
 }
