@@ -11,19 +11,22 @@
 
 1. `cd ./ui`
 1. `yarn`
+1. `yarn build`
 
-## Structure
+#### Launching locally
 
-| Path       | Description                      |
-| ---------- | -------------------------------- |
-| `./app`    | A Vue interface that uses core.  |
-| `./chains` | Blockchain projects for testing. |
-| `./core`   | All business functionality.      |
+`yarn app:serve:all`
+
+#### Run tests in core
+
+`yarn test`
 
 ## Run App and Core tests
 
 | Command                | Description                                                |
 | ---------------------- | ---------------------------------------------------------- |
+| `yarn test`            | Alias for `core:test:all`                                  |
+| `yarn build`           | Build core, all chains and the frontend app                |
 | `yarn app:serve:all`   | Serve frontend app with the background blockchains         |
 | `yarn core:test:all`   | Run tests on `core` module with the background blockchains |
 | `yarn chain:start:all` | Start the background blockchains                           |
@@ -39,7 +42,15 @@
 | `yarn core:test`     | Run core tests with no background chain                       |
 | `yarn core:watch`    | Compile core code in watch mode                               |
 
-# Architecture
+## Folder structure
+
+| Path       | Description                      |
+| ---------- | -------------------------------- |
+| `./app`    | A Vue interface that uses core.  |
+| `./chains` | Blockchain projects for testing. |
+| `./core`   | All business functionality.      |
+
+## Architecture
 
 We are following architecture influenced by clean architecture.
 
@@ -47,7 +58,9 @@ https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 
 <img src="./docs/FEArchitecture.png" />
 
-The main premise here is that we have a domain consisting of actions and entities which communicate with the outside world over `api` and `store` channels.
+_Example action/service dependencies_
+
+The main premise here is that we have a domain consisting of **actions** and **entities** which communicate with the outside world over `api` and `store` channels.
 
 | Section         | Description                                                                                                   |
 | --------------- | ------------------------------------------------------------------------------------------------------------- |

@@ -5,17 +5,20 @@
   "license": "UNLICENSED",
   "scripts": {
     "app:serve": "cd ./app && yarn serve",
+    "app:build": "cd ./app && yarn build",
     "app:serve:all": "concurrently -r -k -s first \"yarn chain:start:all\" \"yarn chain:migrate && yarn app:serve\" ",
     "chain:sif:build": "cd ../ && make install",
     "chain:sif": "cd ./chains/cosmos && ./run-cosmos-test-chain.sh",
     "chain:migrate": "cd ./chains/ethereum && yarn migrate",
-    "chain:eth:build": "cd ./chains/ethereum && truffle build",
+    "chain:eth:build": "cd ./chains/ethereum && yarn install --frozen-lockfile --silent && truffle build",
     "chain:eth": "yarn ganache-cli",
     "chain:build": "concurrently -r \"yarn chain:sif:build\" \"yarn chain:eth:build\"",
     "chain:start:all": "concurrently -r -k \"yarn chain:sif\" \"yarn chain:eth\"",
     "core:test": "cd core && yarn test",
     "core:watch": "cd core && yarn watch",
+    "core:build": "cd core && yarn build",
     "core:test:all": "concurrently -r -k -s first \"yarn chain:start:all\" \"sleep 5 && yarn chain:migrate && yarn core:test\"",
+    "build": "yarn core:build && yarn chain:build && yarn app:build",
     "test": "yarn core:test:all"
   },
   "devDependencies": {
