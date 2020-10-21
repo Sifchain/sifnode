@@ -1,6 +1,6 @@
 # Frontend repo
 
-- `./core` - all business functionality
+- `./core` - All business functionality
 - `./app` - A Vue interface that uses Core
 - `./chains` - Blockchain testing
 
@@ -17,3 +17,4 @@
 `yarn chain:migrate` - Migrate the background blockchain must have the chain started
 `yarn app:serve` - Serve frontend app with no background chain
 `yarn core:test` - Run core tests with no background chain
+`yarn core:watch` - Compile core code in watch mode
