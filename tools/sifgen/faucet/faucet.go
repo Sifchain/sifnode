@@ -23,7 +23,6 @@ func NewFaucet(chainID string) Faucet {
 
 func (f Faucet) DefaultDeposit() []string {
 	return []string{
-		"1000000000000000stake",
-		"1000000000000rowan",
+		"1000000000000000000000trowan",
 	}
 }

@@ -31,9 +31,9 @@ func NewSifgen(chainID string) Sifgen {
 	}
 }
 
-func (s Sifgen) NodeCreate(seedAddress, genesisURL *string) {
+func (s Sifgen) NodeCreate(genesisURL *string) {
 	moniker := haikunator.New(time.Now().UTC().UnixNano()).Haikunate()
-	nd := node.NewNode(s.chainID, &moniker, seedAddress, genesisURL)
+	nd := node.NewNode(s.chainID, &moniker, genesisURL)
 
 	if err := nd.Setup(); err != nil {
 		log.Fatal(err)
@@ -47,7 +47,7 @@ func (s Sifgen) NodeCreate(seedAddress, genesisURL *string) {
 }
 
 func (s Sifgen) NodePromote(moniker, validatorPublicKey, keyPassword, bondAmount string) {
-	nd := node.NewNode(s.chainID, &moniker, nil, nil)
+	nd := node.NewNode(s.chainID, &moniker, nil)
 	if err := nd.Validate(); err != nil {
 		log.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func (s Sifgen) NodePromote(moniker, validatorPublicKey, keyPassword, bondAmount
 }
 
 func (s Sifgen) NodePeers(moniker string, peerList []string) {
-	nd := node.NewNode(s.chainID, &moniker, nil, nil)
+	nd := node.NewNode(s.chainID, &moniker, nil)
 	if err := nd.Validate(); err != nil {
 		log.Fatal(err)
 	}

@@ -24,16 +24,15 @@ type Node struct {
 	nodeKeyPassword               string
 	nodePeerAddress               string
 	nodeValidatorPublicKeyAddress string
-	seedAddress                   *string
+	seedAddress                   string
 	genesisURL                    *string
 	CLI                           utils.CLIUtils
 }
 
-func NewNode(chainID string, moniker, seedAddress, genesisURL *string) *Node {
+func NewNode(chainID string, moniker, genesisURL *string) *Node {
 	return &Node{
 		chainID:     chainID,
 		moniker:     *moniker,
-		seedAddress: seedAddress,
 		genesisURL:  genesisURL,
 		CLI:         utils.NewCLI(chainID),
 	}
@@ -84,8 +83,11 @@ func (n *Node) Setup() error {
 		return err
 	}
 
-	err = n.generateNodeKeyAddress()
-	if err != nil {
+	if err = n.generateNodeKeyAddress(); err != nil {
+		return err
+	}
+
+	if err = n.replaceStakingDenom(); err != nil {
 		return err
 	}
 
@@ -94,7 +96,7 @@ func (n *Node) Setup() error {
 
 // Genesis init.
 func (n *Node) Genesis(deposit []string) error {
-	if n.seedAddress == nil {
+	if n.genesisURL == nil {
 		return n.seedGenesis(deposit)
 	}
 
@@ -149,7 +151,7 @@ func (n *Node) NodeValidatorPublicKeyAddress() string {
 }
 
 // Get the node seed address.
-func (n *Node) SeedAddress() *string {
+func (n *Node) SeedAddress() string {
 	return n.seedAddress
 }
 
@@ -191,6 +193,31 @@ func (n *Node) generateNodeKeyAddress() error {
 	return nil
 }
 
+// Replace the staking demon.
+func (n *Node) replaceStakingDenom() error {
+	if n.genesisURL != nil {
+		return nil
+	}
+
+	var genesis types.Genesis
+
+	body, err := ioutil.ReadFile(n.CLI.GenesisFilePath())
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(body, &genesis); err != nil {
+		return err
+	}
+
+	genesis.AppState.Staking.Params.BondDenom = types.BondDenom
+	if err = n.saveGenesis(genesis); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Generate a password for the new node key.
 func (n *Node) generateNodeKeyPassword() error {
 	keyPassword, err := password.Generate(32, 5, 0, false, false)
@@ -209,7 +236,7 @@ func (n *Node) seedGenesis(deposit []string) error {
 		return err
 	}
 
-	_, err = n.CLI.GenerateGenesisTxn(n.moniker, n.nodeKeyPassword)
+	_, err = n.CLI.GenerateGenesisTxn(n.moniker, n.nodeKeyPassword, types.Bond)
 	if err != nil {
 		return err
 	}
@@ -266,7 +293,8 @@ func (n *Node) validatorGenesis() error {
 		return err
 	}
 
-	err = n.replacePeerConfig([]string{*n.seedAddress})
+	n.seedAddress = genesis.AppState.Genutil.Gentxs[0].Value.Memo
+	err = n.replacePeerConfig([]string{n.seedAddress})
 	if err != nil {
 		return err
 	}
@@ -339,8 +367,12 @@ func (n *Node) parseConfig() (types.Config, error) {
 
 // Save the genesis.
 func (n *Node) saveGenesis(genesis types.Genesis) error {
-	err := ioutil.WriteFile(n.CLI.GenesisFilePath(), *genesis.Result.Genesis, 0600)
+	content, err := json.Marshal(genesis)
 	if err != nil {
+		return err
+	}
+
+	if err = ioutil.WriteFile(n.CLI.GenesisFilePath(), content, 0600); err != nil {
 		return err
 	}
 
@@ -354,7 +386,7 @@ func (n *Node) collectNodePeerAddress() error {
 		return err
 	}
 
-	var genesisAppState types.GenesisAppState
+	var genesisAppState types.Genesis
 	if err := json.Unmarshal([]byte(*output), &genesisAppState); err != nil {
 		return err
 	}

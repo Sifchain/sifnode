@@ -26,7 +26,7 @@ type CLIUtils interface {
 	SetConfigTrustNode(bool) (*string, error)
 	AddKey(string, string) (*string, error)
 	AddGenesisAccount(string, []string) (*string, error)
-	GenerateGenesisTxn(string, string) (*string, error)
+	GenerateGenesisTxn(string, string, string) (*string, error)
 	CollectGenesisTxns() (*string, error)
 	ExportGenesis() (*string, error)
 	GenesisFilePath() string
@@ -98,10 +98,10 @@ func (c CLI) AddGenesisAccount(address string, coins []string) (*string, error) 
 	return c.shellExec(c.sifDaemon, "add-genesis-account", address, strings.Join(coins[:], ","))
 }
 
-func (c CLI) GenerateGenesisTxn(name, keyPassword string) (*string, error) {
+func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount string) (*string, error) {
 	return c.shellExecInput(c.sifDaemon,
 		[][]byte{[]byte(keyPassword + "\n"), []byte(keyPassword + "\n"), []byte(keyPassword + "\n")},
-		"gentx", "--name", name, "--keyring-backend", "file",
+		"gentx", "--name", name, "--amount", bondAmount, "--keyring-backend", "file",
 	)
 }
 
@@ -170,7 +170,6 @@ func (c CLI) shellExec(cmd string, args ...string) (*string, error) {
 
 func (c CLI) shellExecInput(cmd string, inputs [][]byte, args ...string) (*string, error) {
 	cm := exec.Command(cmd, args...)
-
 	var stderr bytes.Buffer
 	cm.Stderr = &stderr
 

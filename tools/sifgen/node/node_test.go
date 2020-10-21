@@ -82,7 +82,7 @@ func (c mockCLIUtils) AddGenesisAccount(name string, coins []string) (*string, e
 	return nil, nil
 }
 
-func (c mockCLIUtils) GenerateGenesisTxn(name, keyPassword string) (*string, error) {
+func (c mockCLIUtils) GenerateGenesisTxn(name, keyPassword, bondAmount string) (*string, error) {
 	return nil, nil
 }
 
@@ -167,7 +167,7 @@ func (s *nodeSuite) SetUpTest(c *C) {
 	s.node = &Node{
 		chainID:     chainID,
 		moniker:     moniker,
-		seedAddress: &nodeSeedAddress,
+		seedAddress: nodeSeedAddress,
 		genesisURL:  genesisURL,
 		CLI:         mockCLIUtils{},
 	}
@@ -197,6 +197,7 @@ func (s *nodeSuite) TestSetup(c *C) {
 }
 
 func (s *nodeSuite) TestGenesis(c *C) {
+	s.node.genesisURL = nil
 	err := s.node.Genesis(faucet.NewFaucet(chainID).DefaultDeposit())
 	c.Assert(err, IsNil)
 }
@@ -234,7 +235,7 @@ func (s *nodeSuite) TestNodeValidatorPublicKeyAddress(c *C) {
 
 func (s *nodeSuite) TestSeedAddress(c *C) {
 	_nodeSeedAddress := s.node.SeedAddress()
-	c.Assert(*_nodeSeedAddress, Equals, nodeSeedAddress)
+	c.Assert(_nodeSeedAddress, Equals, nodeSeedAddress)
 }
 
 func (s *nodeSuite) TestUpdatePeerList(c *C) {

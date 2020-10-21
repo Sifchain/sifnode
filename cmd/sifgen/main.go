@@ -33,9 +33,9 @@ func nodeCreateCmd() *cobra.Command {
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 1 {
-				sifgen.NewSifgen(args[0]).NodeCreate(nil, nil)
-			} else if len(args) == 3 {
-				sifgen.NewSifgen(args[0]).NodeCreate(&args[1], &args[2])
+				sifgen.NewSifgen(args[0]).NodeCreate( nil)
+			} else if len(args) == 2 {
+				sifgen.NewSifgen(args[0]).NodeCreate(&args[1])
 			}
 		},
 	}
