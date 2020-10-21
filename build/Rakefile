@@ -103,6 +103,9 @@ namespace :dependencies do
     puts "Installing Terraform"
     system("brew install terraform")
 
+    puts "Installing kubectl"
+    system("brew install kubernetes-cli")
+
     puts "Installing Helm 3"
     system("brew install helm")
   end
