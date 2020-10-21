@@ -48,7 +48,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	// iterate over Lp list and refund them there tokens
 	// Return both RWN and EXTERNAL ASSET
 	for _, lp := range lpList {
-		withdrawNativeAsset, withdrawExternalAsset, _ := calculateWithdrawl(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, 10000, 1)
+		withdrawNativeAsset, withdrawExternalAsset, _ := calculateWithdrawal(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, 10000, 1)
 		poolUnits = poolUnits - lp.LiquidityProviderUnits
 		nativeAssetBalance = nativeAssetBalance - withdrawNativeAsset
 		externalAssetBalance = externalAssetBalance - withdrawExternalAsset
@@ -221,7 +221,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	}
 
 	//Calculate amount to withdraw
-	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft := calculateWithdrawl(pool.PoolUnits,
+	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft := calculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
 		msg.WBasisPoints, msg.Asymmetry)
 
@@ -279,7 +279,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	nativeAsset := types.GetSettlementAsset()
 	// If its one swap , this pool would be RWN:RWN ( Ex User sends RWN wants ETH)
 	// If its two swap . this pool would be RWN:EXTERNAL1 ( Ex User sends ETH wants XCT , ETH is EXTERNAL1)
-	//CASE 1 : RWN:RWN
+	//CASE 1 : RWN:ETH
 	//CASE 2 : RWN:ETH
 	inPool, err := keeper.GetPool(ctx, msg.SentAsset.Ticker)
 	if err != nil {
@@ -295,7 +295,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	}
 
 	// Deducting Balance from the user , Sent Asset is the asset the user is sending to the Pool
-	// Case 1 . Deducting his RWN and adding to RWN:RWN pool
+	// Case 1 . Deducting his RWN and adding to RWN:ETH pool
 	// Case 2 , Deduction his ETH and adding to RWN:ETH pool
 	sentCoin := sdk.NewCoin(msg.SentAsset.Ticker, sdk.NewIntFromUint64(uint64(sentAmount)))
 	err = keeper.BankKeeper.SendCoins(ctx, msg.Signer, inPool.PoolAddress, sdk.Coins{sentCoin})
@@ -305,17 +305,18 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// Check if its a two way swap, swapping non native fro non native .
 	// If its one way we can skip this if condition and add balance to users account from outpool
 	if msg.SentAsset != nativeAsset && msg.ReceivedAsset != nativeAsset {
-		// Swap 1 - In asset for Native
+
 		emitAmount, lp, ts, err := swapOne(ctx, keeper, sentAsset, sentAmount, nativeAsset, inPool)
 		if err != nil {
 			return nil, err
 		}
-		// Emit amount is for In asset - Native asset swap
 		sentAmount = emitAmount
 		sentAsset = nativeAsset
 		liquidityFee = liquidityFee + lp
 		tradeSlip = tradeSlip + ts
-
+		interpoolCoin := sdk.NewCoin(nativeAsset.Ticker, sdk.NewIntFromUint64(uint64(emitAmount)))
+		// Case 2 - Transfer from RWN:ETH -> RWN:DASH
+		err = keeper.BankKeeper.SendCoins(ctx, outPool.PoolAddress, inPool.PoolAddress, sdk.Coins{interpoolCoin})
 	}
 	// Calculating amount user receives
 	emitAmount, lp, ts, err := swapOne(ctx, keeper, sentAsset, sentAmount, receivedAsset, outPool)
@@ -355,14 +356,15 @@ func swapOne(ctx sdk.Context, keeper Keeper, from Asset, sentAmount uint, to Ass
 
 	var X uint
 	var Y uint
-	if to == GetNativeAsset() {
+
+	if to == GetNativeAsset() { //RWN
 		Y = pool.NativeAssetBalance
 		X = pool.ExternalAssetBalance
 	} else {
 		X = pool.NativeAssetBalance
 		Y = pool.ExternalAssetBalance
 	}
-	x := sentAmount
+	x := sentAmount // X is added to RWN:ETH
 	liquidityFee := calcLiquidityFee(X, x, Y)
 	tradeSlip := calcTradeSlip(X, x)
 	swapResult := calcSwapResult(X, x, Y)
@@ -383,7 +385,7 @@ func swapOne(ctx sdk.Context, keeper Keeper, from Asset, sentAmount uint, to Ass
 	return swapResult, liquidityFee, tradeSlip, nil
 }
 
-func calculateWithdrawl(poolUnits uint, nativeAssetBalance uint,
+func calculateWithdrawal(poolUnits uint, nativeAssetBalance uint,
 	externalAssetBalance uint, lpUnits uint, wBasisPoints int, asymmetry int) (uint, uint, uint) {
 	var (
 		nativeAssetUnits            int

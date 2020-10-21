@@ -16,7 +16,7 @@ func TestCreatePool(t *testing.T) {
 	asset := NewAsset("ETHEREUM", "ETH", "eth")
 	externalCoin := sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(intitalBalance)))
 	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(intitalBalance)))
-	keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 
 	ok := keeper.BankKeeper.HasCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 	assert.True(t, ok, "")
@@ -40,7 +40,7 @@ func TestAddLiqudity(t *testing.T) {
 	asset := NewAsset("ETHEREUM", "ETH", "eth")
 	externalCoin := sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(intitalBalance)))
 	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(intitalBalance)))
-	keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 
 	msg := NewMsgAddLiquidity(signer, asset, uint(addLiqudityAmount), uint(addLiqudityAmount))
 	res, err := handleMsgAddLiquidity(ctx, keeper, msg)
@@ -67,11 +67,11 @@ func TestRemoveLiquidity(t *testing.T) {
 
 	intitalBalance := 10000
 	wBasis := 1000
+	asymmetry := 1
 	asset := NewAsset("ETHEREUM", "ETH", "eth")
 	externalCoin := sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(intitalBalance)))
 	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(intitalBalance)))
-	keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
-
+	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 	msg := NewMsgRemoveLiquidity(signer, asset, wBasis, 1)
 	res, err := handleMsgRemoveLiquidity(ctx, keeper, msg)
 	require.Error(t, err)
@@ -80,14 +80,12 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	msg = NewMsgRemoveLiquidity(signer, asset, wBasis, 1)
+	coins := CalculateWithdraw(t, keeper, ctx, asset, signer, uint(wBasis), uint(asymmetry))
+	msg = NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handleMsgRemoveLiquidity(ctx, keeper, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	//subtracted during create added during remove
-	externalCoin = sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(intitalBalance-wBasis+(wBasis/10))))
-	nativeCoin = sdk.NewCoin(NativeTicker, sdk.NewInt(int64(intitalBalance-wBasis+(wBasis/10))))
-	ok := keeper.BankKeeper.HasCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+	ok := keeper.BankKeeper.HasCoins(ctx, signer, coins)
 	assert.True(t, ok, "")
 }
 
@@ -103,9 +101,8 @@ func TestSwap(t *testing.T) {
 	externalCoin2 := sdk.NewCoin(asset2.Ticker, sdk.NewInt(int64(intitalBalance)))
 	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(intitalBalance)))
 	// Signer is given ETH and RWN ( Signer will creat pool and become LP)
-
-	keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin1, nativeCoin})
-	keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin2})
+	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin1, nativeCoin})
+	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin2})
 
 	msg := NewMsgSwap(signer, asset1, asset2, 1)
 	res, err := handleMsgSwap(ctx, keeper, msg)
@@ -148,7 +145,7 @@ func TestDecommisionPool(t *testing.T) {
 	externalCoin := sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(intitalBalance)))
 	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(intitalBalance)))
 	// Signer is given ETH and RWN ( Signer will creat pool and become LP)
-	keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 
 	msgCreatePool := NewMsgCreatePool(signer, asset, uint(poolbalance), uint(poolbalance))
 	res, err := handleMsgCreatePool(ctx, keeper, msgCreatePool)
@@ -182,5 +179,19 @@ func TestDecommisionPool(t *testing.T) {
 	lpCoinsNative = sdk.NewCoin(NativeTicker, sdk.NewInt(int64(lpNewBalance)))
 	ok = keeper.BankKeeper.HasCoins(ctx, signer, sdk.Coins{lpCoinsExt, lpCoinsNative})
 	assert.True(t, ok, "")
+
+}
+
+func CalculateWithdraw(t *testing.T, keeper Keeper, ctx sdk.Context, asset Asset, signer sdk.AccAddress, wBasisPoints uint, asymmetry uint) sdk.Coins {
+	pool, err := keeper.GetPool(ctx, asset.Ticker)
+	assert.NoError(t, err)
+	lp, err := keeper.GetLiquidityProvider(ctx, asset.Ticker, signer.String())
+	assert.NoError(t, err)
+	withdrawNativeAssetAmount, withdrawExternalAssetAmount, _ := calculateWithdrawal(pool.PoolUnits,
+		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
+		int(wBasisPoints), int(asymmetry))
+	externalAssetCoin := sdk.NewCoin(asset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount)))
+	nativeAssetCoin := sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
+	return sdk.Coins{externalAssetCoin, nativeAssetCoin}
 
 }
