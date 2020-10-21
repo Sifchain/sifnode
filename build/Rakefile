@@ -1,5 +1,6 @@
 require 'rake'
 
+desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
   desc "Scaffold new cluster environment configuration from template"
   task :scaffold, [:chainnet, :provider] do |t, args|
@@ -45,6 +46,7 @@ namespace :cluster do
   end
 end
 
+desc "Manage sifnode install, upgrade, etc processes"
 namespace :sifnode do
   desc "Install sifnode on cluster"
   task :install, [:chainnet, :provider, :namespace, :image,:image_tag] do |t, args|
@@ -66,6 +68,7 @@ namespace :sifnode do
   end
 end
 
+desc "Install require dependencies"
 namespace :dependencies do
   # TODO Make cross platformed
   desc "Install terraform and Helm for OSX"
@@ -81,10 +84,12 @@ namespace :dependencies do
   end
 end
 
+# path returns the path of the terraform config that is generated as part of the scaffold task
 def path(args)
   "../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 
+# check_args checks to make sure the required args are passed in
 def check_args(args)
   if args[:chainnet] == nil
     puts "Please provider a chainnet argument E.g testnet, mainnet, etc"
@@ -108,19 +113,22 @@ def check_args(args)
   end
 end
 
+# kubeconfig returns the path to the kubeconfig file based on the args
 def kubeconfig(args)
   "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 
-# ns = namespace for kubes
+# ns = namespace for kubes returns the arg with the namespace if set or the default setting
 def ns(args)
   args[:namespace] ? "#{args[:namespace]}" : "sifnode"
 end
 
+# image_tag returns the arg for image_tag if set or the default tag setting
 def image_tag(args)
     args[:image_tag] ? "#{args[:image_tag]}" : "testnet"
 end
 
+# image_repository returns the arg with a image_repository if set or the default setting
 def image_repository(args)
   args[:image_repository] ? "#{args[:image_repository]}" : "sifchain/sifnoded"
 end
