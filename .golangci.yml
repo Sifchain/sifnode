@@ -49,6 +49,8 @@ issues:
         - stylecheck
 
 linters-settings:
+  goconst:
+    min-occurrences: 4
   dogsled:
     max-blank-identifiers: 6
   maligned:
