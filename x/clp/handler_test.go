@@ -201,7 +201,7 @@ func CalculateWithdraw(t *testing.T, keeper Keeper, ctx sdk.Context, asset Asset
 	assert.NoError(t, err)
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, swapAmount := calculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
-		int(wBasisPoints), int(asymmetry))
+		int(wBasisPoints), asymmetry)
 	externalAssetCoin := sdk.Coin{}
 	nativeAssetCoin := sdk.Coin{}
 	if asymmetry > 0 {
