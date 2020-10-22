@@ -365,6 +365,9 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		interpoolCoin := sdk.NewCoin(nativeAsset.Ticker, sdk.NewIntFromUint64(uint64(emitAmount)))
 		// Case 2 - Transfer from RWN:ETH -> RWN:DASH
 		err = keeper.BankKeeper.SendCoins(ctx, outPool.PoolAddress, inPool.PoolAddress, sdk.Coins{interpoolCoin})
+		if err != nil {
+			return nil, errors.Wrap(types.ErrUnableToAddBalance, "Interpool Transfer")
+		}
 	}
 	// Calculating amount user receives
 	emitAmount, lp, ts, finalPool, err := swapOne(sentAsset, sentAmount, receivedAsset, outPool)
