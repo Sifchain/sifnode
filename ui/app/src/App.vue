@@ -161,11 +161,14 @@ table {
   border-spacing: 0;
 }
 </style>
+
 <style scoped>
 .header-bar {
+  height: 4rem; /* TODO: dynamize */
   padding: 1rem;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
   box-sizing: border-box;
   border-bottom: 1px solid #ccc;

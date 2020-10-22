@@ -1,0 +1,52 @@
+<template>
+  <p>Select a token</p>
+  <input class="search-input" v-model="searchText" />
+  <p>Token Name</p>
+  <hr />
+  <div class="token-list">
+    <button
+      v-for="token in filteredTokens"
+      :key="token.symbol"
+      @click="selectToken(token.symbol)"
+    >
+      {{ token.symbol }}
+    </button>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent } from "vue";
+import { computed, ref } from "@vue/reactivity";
+import { useCore } from "../../hooks/useCore";
+
+export default defineComponent({
+  name: "SelectTokenDialog",
+  emits: ["close"],
+  props: { localBalance: Object },
+  setup(props, context) {
+    const searchText = ref("");
+    const { store } = useCore();
+
+    const filteredTokens = computed(() => {
+      return store.asset.topTokens.filter(
+        ({ symbol }) =>
+          symbol.toLowerCase().indexOf(searchText.value.toLowerCase().trim()) >
+          -1
+      );
+    });
+
+    function selectToken(symbol: string) {
+      if (props && props.localBalance)
+        props.localBalance.symbol = symbol; /* eslint-disable-line */ //because this is a dirty HACK
+      context.emit("close");
+    }
+    return { filteredTokens, searchText, selectToken };
+  },
+});
+</script>
+<style scoped>
+.token-list {
+  display: flex;
+  flex-direction: column;
+}
+</style>

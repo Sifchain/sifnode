@@ -4,6 +4,7 @@ import {
   createActions,
   getWeb3Provider,
   getFakeTokens as getSupportedTokens,
+  getFakeAssets as getSupportedAssets,
 } from "../../../core";
 
 const api = createApi({
@@ -12,6 +13,7 @@ const api = createApi({
   sifApiUrl: "http://127.0.0.1:1317",
   getWeb3Provider,
   getSupportedTokens,
+  getSupportedAssets,
 });
 
 const store = createStore();

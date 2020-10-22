@@ -5,18 +5,19 @@
     :class="{ open: isOpen }"
     @click="$emit('close')"
   >
-    <div class="modal-dialog" :class="{ open: isOpen }" @click.stop>
+    <Panel :class="{ open: isOpen }" @click.stop>
       <button class="modal-dialog-close" @click="$emit('close')">x</button>
       <div class="modal-title" v-if="title">{{ title }}</div>
       <div class="modal-body">
         <slot />
       </div>
-    </div>
+    </Panel>
   </div>
 </template>
 
 <script>
 import { defineComponent } from "vue";
+import Panel from "@/components/panel/Panel";
 
 // https://medium.com/js-dojo/vue-js-manage-your-modal-window-s-effortlessly-using-eventbus-518977195eed
 export default defineComponent({
@@ -24,6 +25,7 @@ export default defineComponent({
     isOpen: Boolean,
     title: String,
   },
+  components: { Panel },
   setup() {
     return {};
   },
@@ -35,8 +37,8 @@ export default defineComponent({
   background: none;
   border: none;
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 1rem;
+  right: 1rem;
 }
 .modal-backdrop {
   background: rgba(0, 0, 0, 0.1);
@@ -50,15 +52,7 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
 }
-.modal-dialog {
-  position: relative;
-  min-width: 30rem;
-  background: rgb(255, 255, 255);
-  padding: 1.5rem 2rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border-radius: 0.3rem;
-}
+
 .modal-title {
   font-weight: bold;
   font-size: 1.3rem;

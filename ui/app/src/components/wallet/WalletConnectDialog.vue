@@ -14,6 +14,7 @@ import SifWalletPanel from "./SifWalletPanel.vue";
 
 export default defineComponent({
   name: "WalletConnectDialog",
+  emits: ["close"],
   components: { EtheriumWalletPanel, SifWalletPanel },
   setup(_, { emit }) {
     function handleClose() {

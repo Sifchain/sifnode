@@ -10,7 +10,7 @@ import { onMounted, onUnmounted } from "vue";
 import { ref } from "@vue/reactivity";
 import { ModalBus } from "./ModalBus";
 import Modal from "./Modal.vue";
-
+import { markRaw } from "vue";
 export default {
   setup() {
     const component = ref<unknown>(null);
@@ -29,7 +29,9 @@ export default {
       ModalBus.on(
         "open",
         (payload: { component: unknown; title: string; props: unknown }) => {
-          component.value = payload.component;
+          component.value = payload.component
+            ? markRaw(payload.component as object)
+            : undefined;
           title.value = payload.title;
           props.value = payload.props;
         }

@@ -1,4 +1,10 @@
-import { ChainId, createToken, Token } from "../../../entities";
+import {
+  Asset,
+  ChainId,
+  createCoin,
+  createToken,
+  Token,
+} from "../../../entities";
 
 // Parse Truffle json for the most recent address
 function parseTruffleJson(
@@ -27,4 +33,10 @@ export async function getFakeTokens(): Promise<Token[]> {
     parseTruffleJson("AliceToken", "ATK", atkJson),
     parseTruffleJson("BobToken", "BTK", btkJson),
   ];
+}
+
+export async function getFakeAssets(): Promise<Asset[]> {
+  const ETH = createCoin("ETH", 18, "Ethereum", ChainId.ETHEREUM);
+  const RWN = createCoin("RWN", 18, "Rowan", ChainId.SIFCHAIN);
+  return [ETH, RWN];
 }
