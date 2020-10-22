@@ -47,8 +47,6 @@ type CLIUtils interface {
 
 type CLI struct {
 	chainID    string
-	sifDaemon  string
-	sifCLI     string
 	configPath string
 }
 
