@@ -27,6 +27,10 @@ RUN make install
 ENV PACKAGES curl jq bind-tools
 FROM alpine
 
+EXPOSE 1317
+EXPOSE 26656
+EXPOSE 26657
+
 RUN apk add --update --no-cache $PACKAGES
 
 # Copy the compiled binaires over.
@@ -34,4 +38,4 @@ COPY --from=build /go/bin/sifnoded /usr/bin/sifnoded
 COPY --from=build /go/bin/sifnodecli /usr/bin/sifnodecli
 COPY --from=build /go/bin/sifgen /usr/bin/sifgen
 
-CMD ["sifnoded", "start", "--home", "/sifnode/.sifnoded"]
+CMD ["sifnoded", "start"]

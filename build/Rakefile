@@ -1,5 +1,6 @@
 require 'rake'
 require 'rbconfig'
+require 'yaml'
 
 desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
@@ -101,9 +102,24 @@ end
 
 desc "network operations"
 namespace :network do
-  desc "Create a new network"
-  task :create, %i[chainnet validator_count build_dir seed_ip_address] do |t, args|
-    system("sifgen network create #{args[:chainnet]} #{args[:validator_count]} #{args[:build_dir]} #{args[:seed_ip_address]}")
+  desc "build and launch a new network"
+  task :compose, %i[chainnet validator_count build_dir seed_ip_address seed_network_address] do |t, args|
+    network_create({chainnet: args[:chainnet], validator_count: args[:validator_count],
+                    build_dir: args[:build_dir], seed_ip_address: args[:seed_ip_address]})
+    network_boot({chainnet: args[:chainnet], network_config: "#{args[:build_dir]}/#{args[:chainnet]}.yml",
+                  seed_network_address: args[:seed_network_address]})
+  end
+
+  desc "build the config and generate the keys for a new network"
+  task :build, %i[chainnet validator_count build_dir seed_ip_address] do |t, args|
+    network_create({chainnet: args[:chainnet], validator_count: args[:validator_count],
+                    build_dir: args[:build_dir], seed_ip_address: args[:seed_ip_address]})
+  end
+
+  desc "boot the new network"
+  task :launch, %i[chainnet network_config seed_network_address] do |t, args|
+    network_boot({chainnet: args[:chainnet], network_config: "#{build_dir}/#{chainnet}.yml",
+                  seed_network_address: args[:seed_network_address]})
   end
 end
 
@@ -172,4 +188,23 @@ def detect_os
     raise Error::WebDriverError, "unknown os: #{host_os.inspect}"
   end
   )
+end
+
+# Creates the config for a new network.
+def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:)
+  system("sifgen network create #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{build_dir}/#{chainnet}.yml")
+end
+
+# Boot the new network.
+def network_boot(chainnet:, network_config:, seed_network_address:)
+  network = YAML.load_file(network_config)
+  FileUtils.rm_f(network_config)
+
+  cmd = "CHAINNET=#{chainnet} "
+  network.each_with_index do |node, idx|
+    cmd += "MONIKER#{idx+1}=#{node['moniker']} IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
+  end
+
+  cmd += "IPV4_SUBNET=#{seed_network_address} docker-compose -f ./build/docker-compose.yml up --build"
+  system(cmd)
 end

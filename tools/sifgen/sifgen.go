@@ -2,6 +2,8 @@ package sifgen
 
 import (
 	"github.com/Sifchain/sifnode/tools/sifgen/network"
+	"io/ioutil"
+	"log"
 )
 
 type Sifgen struct {
@@ -14,7 +16,16 @@ func NewSifgen(chainID string) Sifgen {
 	}
 }
 
-func (s Sifgen) NetworkCreate(count int, outputDir, startingIPAddress string) {
+func (s Sifgen) NetworkCreate(count int, outputDir, startingIPAddress string, outputFile *string) {
 	net := network.NewNetwork(s.chainID)
-	_ = net.Build(count, outputDir, startingIPAddress)
+	summary, err := net.Build(count, outputDir, startingIPAddress)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	if err = ioutil.WriteFile(*outputFile, []byte(*summary), 0600); err != nil {
+		log.Fatal(err)
+		return
+	}
 }

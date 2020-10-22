@@ -26,12 +26,12 @@ func networkCmd() *cobra.Command {
 
 func networkCreateCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "create [chain-id] [node-count] [output-dir] [seed-ip-address]",
+		Use:   "create [chain-id] [node-count] [output-dir] [seed-ip-address] [output-file]",
 		Short: "Create a new network.",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			count, _ := strconv.Atoi(args[1])
-			sifgen.NewSifgen(args[0]).NetworkCreate(count, args[2], args[3])
+			sifgen.NewSifgen(args[0]).NetworkCreate(count, args[2], args[3], &args[4])
 		},
 	}
 }

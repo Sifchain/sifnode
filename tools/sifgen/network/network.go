@@ -25,9 +25,9 @@ func NewNetwork(chainID string) *Network {
 	}
 }
 
-func (n *Network) Build(count int, outputDir, seedIPv4Addr string) error {
+func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, error) {
 	if err := n.CLI.Reset([]string{outputDir}); err != nil {
-		return err
+		return nil, err
 	}
 
 	initDirs := []string{
@@ -36,7 +36,7 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) error {
 	}
 
 	if err := n.createDirs(initDirs); err != nil {
-		return err
+		return nil, err
 	}
 
 	gentxDir := fmt.Sprintf("%s/%s", outputDir, GentxsDir)
@@ -45,73 +45,72 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) error {
 	for _, node := range nodes {
 		appDirs := []string{node.NodeHomeDir, node.CLIHomeDir, node.CLIConfigDir}
 		if err := n.createDirs(appDirs); err != nil {
-			return err
+			return nil, err
 		}
 
 		if err := n.setDefaultConfig(fmt.Sprintf("%s/%s/%s/%s", node.HomeDir, CLIHomeDir, ConfigDir, utils.ConfigFile)); err != nil {
-			return err
+			return nil, err
 		}
 
 		if err := n.generateKey(node); err != nil {
-			return err
+			return nil, err
 		}
 
 		if err := n.initChain(node); err != nil {
-			return err
+			return nil, err
 		}
 
 		if err := n.setValidatorAddress(node); err != nil {
-			return err
+			return nil, err
 		}
 
 		if err := n.setValidatorConsensusAddress(node); err != nil {
-			return err
+			return nil, err
 		}
 
 		if err := n.replaceStakingBondDenom(node); err != nil {
-			return err
+			return nil, err
 		}
 
 		if err := n.setNodeID(node); err != nil {
-			return err
+			return nil, err
 		}
 
 		if !node.Seed {
 			seedNode := n.getSeedNode(nodes)
 			if err := n.addGenesis(node.Address, seedNode.NodeHomeDir); err != nil {
-				return err
+				return nil, err
 			}
 
 			if err := n.generateTx(node, seedNode.NodeHomeDir, gentxDir); err != nil {
-				return err
+				return nil, err
 			}
 		} else {
 			if err := n.addGenesis(node.Address, node.NodeHomeDir); err != nil {
-				return err
+				return nil, err
 			}
 
 			if err := n.generateTx(node, node.NodeHomeDir, gentxDir); err != nil {
-				return err
+				return nil, err
 			}
 		}
 	}
 
 	seedNode := n.getSeedNode(nodes)
 	if err := n.collectGenTxs(gentxDir, seedNode.NodeHomeDir); err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := n.setPeers(nodes); err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := n.copyGenesis(nodes); err != nil {
-		return err
+		return nil, err
 	}
 
-	n.summary(nodes)
-
-	return nil
+	summary := n.summary(nodes)
+	return &summary, nil
 }
 
 func (n *Network) initNodes(count int, outputDir, seedIPv4Addr string) []*Node {
@@ -370,7 +369,7 @@ func (n *Network) copyGenesis(nodes []*Node) error {
 				fmt.Sprintf("%s/%s/%s", node.NodeHomeDir, ConfigDir, utils.GenesisFile),
 				input,
 				0600,
-				)
+			)
 			if err != nil {
 				return err
 			}
@@ -380,9 +379,7 @@ func (n *Network) copyGenesis(nodes []*Node) error {
 	return nil
 }
 
-func (n *Network) summary(nodes []*Node) {
-	for _, node := range nodes {
-		yml, _ := yaml.Marshal(node)
-		fmt.Println(string(yml))
-	}
+func (n *Network) summary(nodes []*Node) string {
+	yml, _ := yaml.Marshal(nodes)
+	return string(yml)
 }

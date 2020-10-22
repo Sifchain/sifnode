@@ -10,7 +10,7 @@ services:
       - 28000:26656
       - 28001:26657
     volumes:
-      - ../build/networks/nodes/${CHAINNET}/${MONIKER1}:/sifnode:Z
+      - ../build/networks/nodes/${CHAINNET}/${MONIKER1}:/root:Z
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS1}
@@ -24,7 +24,7 @@ services:
       - 28002:26656
       - 28003:26657
     volumes:
-      - ../build/networks/nodes/${CHAINNET}/${MONIKER2}:/sifnode:Z
+      - ../build/networks/nodes/${CHAINNET}/${MONIKER2}:/root:Z
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS2}
@@ -38,7 +38,7 @@ services:
       - 28004:26656
       - 28005:26657
     volumes:
-      - ../build/networks/nodes/${CHAINNET}/${MONIKER3}:/sifnode:Z
+      - ../build/networks/nodes/${CHAINNET}/${MONIKER3}:/root:Z
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS3}
@@ -52,7 +52,7 @@ services:
       - 28006:26656
       - 28007:26657
     volumes:
-      - ../build/networks/nodes/${CHAINNET}/${MONIKER4}:/sifnode:Z
+      - ../build/networks/nodes/${CHAINNET}/${MONIKER4}:/root:Z
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS4}
