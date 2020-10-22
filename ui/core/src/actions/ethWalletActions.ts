@@ -8,6 +8,8 @@ export default ({
   api,
   store,
 }: ActionContext<"EthereumService", "wallet" | "asset">) => {
+  const etheriumState = api.EthereumService.getState();
+
   const actions = {
     async updateBalances(_?: string) {
       store.wallet.eth.balances = await api.EthereumService.getBalance();
@@ -17,7 +19,6 @@ export default ({
     },
     async connectToWallet() {
       await api.EthereumService.connect();
-      actions.updateBalances();
     },
     async transferEthWallet(
       amount: number,
@@ -33,16 +34,22 @@ export default ({
     },
   };
 
-  const etheriumState = api.EthereumService.getState();
-
-  effect(async () => {
+  effect(() => {
     store.wallet.eth.isConnected = etheriumState.connected;
-    await actions.updateBalances();
+  });
+
+  effect(() => {
+    console.log("address changed" + etheriumState.address);
+    store.wallet.eth.address = etheriumState.address;
+  });
+
+  effect(() => {
+    store.wallet.eth.balances = etheriumState.balances;
   });
 
   effect(async () => {
     etheriumState.log; // trigger on log change
-    await actions.updateBalances();
+    await api.EthereumService.getBalance();
   });
 
   return actions;

@@ -37,6 +37,7 @@ describe("EthereumService", () => {
       getSupportedTokens: async () => supportedTokens,
     });
     await EthereumService.connect();
+
     const balances = await EthereumService.getBalance();
 
     const ATK = supportedTokens.find(({ symbol }) => symbol === "ATK");

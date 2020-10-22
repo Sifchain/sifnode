@@ -1,21 +1,23 @@
 <template>
   <div>
-    <p>Proof of technical capability</p>
-    <div id="nav">
-      <!-- <router-link to="/list">List</router-link> | -->
-      <router-link to="/">EthWallet</router-link> |
-      <router-link to="/ethtransfer">EthTransfer</router-link> |
-      <router-link to="/sifwallet">SifWallet</router-link>
-      <!-- <router-link to="/siftransfer">SifTransfer</router-link> -->
-      <!-- <router-link to="/swap">Swap</router-link> -->
+    <div class="header-bar">
+      <div class="header-nav">
+        <router-link to="/swap">Swap</router-link>
+        <router-link to="/pool">Pool</router-link>
+      </div>
+      <WalletButton />
     </div>
     <router-view />
+    <ModalRoot />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
 import { useCore } from "./hooks/useCore";
+import ModalRoot from "@/components/modal/ModalRoot.vue";
+import WalletButton from "@/components/wallet/WalletButton.vue";
+
 export default defineComponent({
   name: "App",
   setup() {
@@ -24,28 +26,26 @@ export default defineComponent({
       await actions.refreshTokens();
     });
   },
+  components: { ModalRoot, WalletButton },
 });
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+body {
+  padding: 0;
+  margin: 0;
 }
-
-#nav {
-  padding: 30px;
+</style>
+<style scoped>
+.header-bar {
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  border-bottom: 1px solid #ccc;
 }
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
+.header-nav > * {
+  margin-right: 1rem;
 }
 </style>
