@@ -3,7 +3,7 @@ module github.com/Sifchain/sifnode
 go 1.15
 
 require (
-	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/BurntSushi/toml v0.3.1
 	github.com/MakeNowJust/heredoc/v2 v2.0.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.1.0 // indirect
 	github.com/belitre/gotpl v0.0.0-20200305160433-cfded0e75742 // indirect

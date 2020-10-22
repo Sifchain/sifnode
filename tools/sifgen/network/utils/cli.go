@@ -35,7 +35,7 @@ type CLIUtils interface {
 	SetConfigTrustNode(bool) (*string, error)
 	AddKey(string, string, string) (*string, error)
 	AddGenesisAccount(string, string, []string) (*string, error)
-	GenerateGenesisTxn(string, string, string, string, string, string, string, string) (*string, error)
+	GenerateGenesisTxn(string, string, string, string, string, string, string, string, string) (*string, error)
 	CollectGenesisTxns(string, string) (*string, error)
 	ExportGenesis() (*string, error)
 	GenesisFilePath() string
@@ -127,11 +127,12 @@ func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string
 	return c.shellExec(c.sifDaemon, "add-genesis-account", address, strings.Join(coins[:], ","), "--home", nodeDir)
 }
 
-func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, cliDir, outputFile, nodeID, pubKey string) (*string, error) {
+func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, cliDir, outputFile, nodeID, pubKey, ipV4Addr string) (*string, error) {
 	return c.shellExecInput(c.sifDaemon,
 		[][]byte{[]byte(keyPassword + "\n"), []byte(keyPassword + "\n"), []byte(keyPassword + "\n")},
 		"gentx", "--name", name, "--amount", bondAmount, "--keyring-backend", "file",
-		"--home", nodeDir, "--home-client", cliDir, "--output-document", outputFile, "--node-id", nodeID, "--pubkey", pubKey,
+		"--home", nodeDir, "--home-client", cliDir, "--output-document", outputFile,
+		"--node-id", nodeID, "--pubkey", pubKey, "--ip", ipV4Addr,
 	)
 }
 
