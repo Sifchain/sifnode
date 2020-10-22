@@ -38,7 +38,7 @@ securityContext: {}
 
 sifnode:
   env:
-    chainNet: ""
+    chainnet: ""
     sifCli: sifnodecli
     sifDaemon: sifnoded
     sifId: sifchain

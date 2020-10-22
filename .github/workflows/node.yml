@@ -2,23 +2,65 @@ name: Node.js CI
 
 on:
   pull_request:
-    paths: ['vue/**']
+    paths: ['ui/**']
 
 jobs:
   build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: vue
+        working-directory: ui
 
     steps:
-      - uses: actions/checkout@v2
       - name: Use Node.js
         uses: actions/setup-node@v2.1.2
         with:
           node-version: '14.x'
-      - run: npm install
-      - run: npm run build --if-present
-      - run: npm test --if-present
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Get dependencies
+        run: |
+          go get -v -t -d ./...
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Cache Node.js modules
+        id: yarn-cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --silent
         env:
           CI: true
+
+      - name: Build test chains
+        run: yarn build
+        env:
+          CI: true
+
+      - name: Test Frontend
+        run: yarn test
+        env:
+          CI: true
+      
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./ui/core/coverage
