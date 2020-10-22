@@ -6,11 +6,15 @@ import (
 )
 
 const (
-	BondDenom  = "trowan"
-	BondAmount = 100000000
+	TokenDenom = "trwn"
+	BondAmount = "100000000"
+	FundAmount = "10000000000000000000000"
 )
 
-var Bond = fmt.Sprintf("%v%v", BondAmount, BondDenom)
+var (
+	ToBond = fmt.Sprintf("%s%s", BondAmount, TokenDenom)
+	ToFund = []string{fmt.Sprintf("%s%s", FundAmount, TokenDenom)}
+)
 
 type AuthAccountValueCoin struct {
 	Denom  string `json:"denom"`

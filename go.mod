@@ -3,8 +3,8 @@ module github.com/Sifchain/sifnode
 go 1.15
 
 require (
-	github.com/BurntSushi/toml v0.3.1
-	github.com/MakeNowJust/heredoc/v2 v2.0.1
+	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/MakeNowJust/heredoc/v2 v2.0.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.1.0 // indirect
 	github.com/belitre/gotpl v0.0.0-20200305160433-cfded0e75742 // indirect
 	github.com/cosmos/cosmos-sdk v0.39.1
@@ -33,5 +33,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	k8s.io/apimachinery v0.19.2 // indirect
 	k8s.io/helm v2.16.12+incompatible // indirect
-	syreclabs.com/go/faker v1.2.2
+	syreclabs.com/go/faker v1.2.2 // indirect
 )
