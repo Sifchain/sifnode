@@ -4,7 +4,7 @@ require 'rbconfig'
 desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
   desc "Scaffold new cluster environment configuration from template"
-  task :scaffold, [:chainnet, :provider] do |t, args|
+  task :scaffold, %i[chainnet provider] do |t, args|
     check_args(args)
 
     # create path location
@@ -31,7 +31,7 @@ namespace :cluster do
   end
 
   desc "Create cluster"
-  task :create, [:chainnet, :provider] do |t, args|
+  task :create, %i[chainnet provider] do |t, args|
     check_args(args)
     puts "Deploy cluster config: #{path(args)}"
     system("cd #{path(args)} && terraform apply") or exit 1
@@ -39,7 +39,7 @@ namespace :cluster do
     puts "Now run `rake sifnode:install[#{args[:chainnet]},#{args[:provider]}]` to deploy sifnode to your cluster"
   end
 
-  task :destroy, [:chainnet, :provider] do |t, args|
+  task :destroy, %i[chainnet provider] do |t, args|
     check_args(args)
     puts "Destroy running cluster: #{path(args)}"
     system("cd #{path(args)} && terraform destroy") or exit 1
@@ -50,7 +50,7 @@ end
 desc "Manage sifnode install, upgrade, etc processes"
 namespace :sifnode do
   desc "Install sifnode on cluster"
-  task :install, [:chainnet, :provider, :namespace, :image,:image_tag] do |t, args|
+  task :install, %i[chainnet provider namespace image image_tag] do |t, args|
     check_args(args)
 
     cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
@@ -62,7 +62,7 @@ namespace :sifnode do
     system({"KUBECONFIG" => kubeconfig(args) }, cmd)
   end
 
-  task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
+  task :uninstall, %i[chainnet provider namespace] do |t, args|
     check_args(args)
     cmd = "helm delete #{ns(args)} -n #{ns(args)}"
     system({"KUBECONFIG" => kubeconfig(args) }, cmd)
@@ -102,7 +102,7 @@ end
 desc "network operations"
 namespace :network do
   desc "Create a new network"
-  task :create, [:chainnet, :validator_count, :build_dir, :seed_ip_address] do |t, args|
+  task :create, %i[chainnet validator_count build_dir seed_ip_address] do |t, args|
     system("sifgen network create #{args[:chainnet]} #{args[:validator_count]} #{args[:build_dir]} #{args[:seed_ip_address]}")
   end
 end
