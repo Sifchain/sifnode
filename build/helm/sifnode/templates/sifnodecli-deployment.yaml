@@ -32,7 +32,7 @@ spec:
               containerPort: 1317          
           env:
             - name: NODE_HOST
-              value: "tcp://{{ include "sifnode.fullname" . }}.{{ .Chart.Name }}.svc.cluster.local:26657"
+              value: "tcp://{{ .Chart.Name }}.{{ .Release.Namespace }}.svc.cluster.local:26657"
           livenessProbe:
             tcpSocket:
               port: 1317
