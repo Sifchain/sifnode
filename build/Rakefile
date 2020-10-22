@@ -99,6 +99,14 @@ namespace :dependencies do
   end
 end
 
+desc "network operations"
+namespace :network do
+  desc "Create a new network"
+  task :create, [:chainnet, :validator_count, :build_dir, :seed_ip_address] do |t, args|
+    system("sifgen network create #{args[:chainnet]} #{args[:validator_count]} #{args[:build_dir]} #{args[:seed_ip_address]}")
+  end
+end
+
 # path returns the path of the terraform config that is generated as part of the scaffold task
 def path(args)
   "../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"

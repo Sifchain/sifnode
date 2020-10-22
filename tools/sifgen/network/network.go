@@ -26,6 +26,10 @@ func NewNetwork(chainID string) *Network {
 }
 
 func (n *Network) Build(count int, outputDir, seedIPv4Addr string) error {
+	if err := n.CLI.Reset([]string{outputDir}); err != nil {
+		return err
+	}
+
 	initDirs := []string{
 		fmt.Sprintf("%s/%s", outputDir, NodesDir),
 		fmt.Sprintf("%s/%s", outputDir, GentxsDir),
