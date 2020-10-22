@@ -16,7 +16,7 @@ type Pool struct {
 
 func (p Pool) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`ExternalAsset: %s
-	NativeAssetBalance: %d
+	ExternalAssetBalance: %d
 	NativeAssetBalance: %d
 	PoolUnits : %d
 	PoolAddress :%s`, p.ExternalAsset, p.ExternalAssetBalance, p.NativeAssetBalance, p.PoolUnits, p.PoolAddress))

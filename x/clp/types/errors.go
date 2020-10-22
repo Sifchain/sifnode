@@ -28,4 +28,5 @@ var (
 	ErrUnableToSubtractBalance       = sdkerrors.Register(ModuleName, 19, "unable to subtract balance")
 	ErrUnableToAddBalance            = sdkerrors.Register(ModuleName, 20, "unable to add balance")
 	ErrNotEnoughLiquidity            = sdkerrors.Register(ModuleName, 21, "pool does not have sufficient balance")
+	ErrSwapping                      = sdkerrors.Register(ModuleName, 22, "error doing a swap")
 )

@@ -29,6 +29,11 @@ echo "removing Liquidity"
 sleep 8
 yes Y | sifnodecli tx clp remove-liquidity --from user1 --sourceChain ETHEREUM --symbol ETH --ticker ceth --wBasis 5001 --asymmetry -1
 
+echo "removing more Liquidity"
+sleep 8
+yes Y | sifnodecli tx clp remove-liquidity --from user1 --sourceChain ETHEREUM --symbol ETH --ticker ceth --wBasis 5001 --asymmetry -1
+
+
 
 echo "decommission pool"
 sleep 8

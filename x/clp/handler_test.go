@@ -14,7 +14,7 @@ func TestCreatePool(t *testing.T) {
 	initialBalance := 10000 // Initial account balance for all assets created
 	poolBalance := 1000     // Amount funded to pool , This same amount is used both for native and external asset
 
-	asset := NewAsset("ETHEREUM", "ETH", "eth")
+	asset := NewAsset("ETHEREUM", "ETH", "ceth")
 	externalCoin := sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(initialBalance)))
 	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(initialBalance)))
 	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
@@ -41,7 +41,7 @@ func TestAddLiqudity(t *testing.T) {
 	poolBalance := 1000     // Amount funded to pool , This same amount is used both for native and external asset
 	addLiquidityAmount := 1000
 
-	asset := NewAsset("ETHEREUM", "ETH", "eth")
+	asset := NewAsset("ETHEREUM", "ETH", "ceth")
 	externalCoin := sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(initialBalance)))
 	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(initialBalance)))
 	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
@@ -72,10 +72,10 @@ func TestRemoveLiquidity(t *testing.T) {
 	//Parameters for Remove Liquidity
 	initialBalance := 10000 // Initial account balance for all assets created
 	poolBalance := 1000     // Amount funded to pool , This same amount is used both for native and external asset
-	wBasis := 1000
+	wBasis := 5001
 	asymmetry := 1
 
-	asset := NewAsset("ETHEREUM", "ETH", "eth")
+	asset := NewAsset("ETHEREUM", "ETH", "ceth")
 	externalCoin := sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(initialBalance)))
 	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(initialBalance)))
 	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
@@ -144,16 +144,13 @@ func TestSwap(t *testing.T) {
 
 func TestDecommisionPool(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
-	pool := GenerateRandomPool(1)[0]
 	signer := GenerateAddress()
-	pool.NativeAssetBalance = 100
-	pool.ExternalAssetBalance = 1
 
 	//Parameters for Decommission
 	initialBalance := 10000 // Initial account balance for all assets created
 	poolBalance := 100      // Amount funded to pool , This same amount is used both for native and external asset
 
-	asset := NewAsset("ETHEREUM", "ETH", "eth")
+	asset := NewAsset("ETHEREUM", "ETH", "ceth")
 	externalCoin := sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(initialBalance)))
 	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(initialBalance)))
 	// Signer is given ETH and RWN ( Signer will creat pool and become LP)
@@ -171,7 +168,8 @@ func TestDecommisionPool(t *testing.T) {
 	ok := keeper.BankKeeper.HasCoins(ctx, signer, sdk.Coins{lpCoinsExt, lpCoinsNative})
 	assert.True(t, ok, "")
 
-	msgrm := NewMsgRemoveLiquidity(signer, asset, 5001, -1)
+	msgrm := NewMsgRemoveLiquidity(signer, asset, 5001, 1)
+
 	res, err = handleMsgRemoveLiquidity(ctx, keeper, msgrm)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -180,13 +178,15 @@ func TestDecommisionPool(t *testing.T) {
 	res, err = handleMsgDecommissionPool(ctx, keeper, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	msgN := NewMsgAddLiquidity(signer, pool.ExternalAsset, pool.NativeAssetBalance, pool.ExternalAssetBalance)
+
+	msgN := NewMsgAddLiquidity(signer, asset, 1000, 1000)
 	res, err = handleMsgAddLiquidity(ctx, keeper, msgN)
 	require.Error(t, err)
 	require.Nil(t, res)
 
 	// LP refunded coins when decommison
 	lpNewBalance = initialBalance
+
 	lpCoinsExt = sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(lpNewBalance)))
 	lpCoinsNative = sdk.NewCoin(NativeTicker, sdk.NewInt(int64(lpNewBalance)))
 	ok = keeper.BankKeeper.HasCoins(ctx, signer, sdk.Coins{lpCoinsExt, lpCoinsNative})
@@ -199,11 +199,28 @@ func CalculateWithdraw(t *testing.T, keeper Keeper, ctx sdk.Context, asset Asset
 	assert.NoError(t, err)
 	lp, err := keeper.GetLiquidityProvider(ctx, asset.Ticker, signer.String())
 	assert.NoError(t, err)
-	withdrawNativeAssetAmount, withdrawExternalAssetAmount, _ := calculateWithdrawal(pool.PoolUnits,
+	withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, swapAmount := calculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
 		int(wBasisPoints), int(asymmetry))
-	externalAssetCoin := sdk.NewCoin(asset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount)))
-	nativeAssetCoin := sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
+	externalAssetCoin := sdk.Coin{}
+	nativeAssetCoin := sdk.Coin{}
+	if asymmetry > 0 {
+		swapResult, _, _, _, err := swapOne(GetNativeAsset(), swapAmount, asset, pool)
+		assert.NoError(t, err)
+		externalAssetCoin = sdk.NewCoin(asset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount+swapResult)))
+		nativeAssetCoin = sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
+	}
+	if asymmetry < 0 {
+		swapResult, _, _, _, err := swapOne(asset, swapAmount, GetNativeAsset(), pool)
+		assert.NoError(t, err)
+		externalAssetCoin = sdk.NewCoin(asset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount)))
+		nativeAssetCoin = sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount+swapResult)))
+	}
+	if asymmetry == 0 {
+		externalAssetCoin = sdk.NewCoin(asset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount)))
+		nativeAssetCoin = sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
+	}
+
 	return sdk.Coins{externalAssetCoin, nativeAssetCoin}
 
 }
