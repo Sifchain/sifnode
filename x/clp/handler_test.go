@@ -96,5 +96,42 @@ func TestDecommisionPool(t *testing.T) {
 	res, err = handleMsgAddLiquidity(ctx, keeper, msgN)
 	require.Error(t, err)
 	require.Nil(t, res)
+}
 
+func TestNewHandler(t *testing.T) {
+	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	asset1 := NewAsset("ETHEREUM", "ETH", "ETH")
+	asset2 := NewAsset("TEZOS", "XCT", "XCT")
+	pool := GenerateRandomPool(1)[0]
+	signer := GenerateAddress()
+	pool.NativeAssetBalance = 100
+	pool.ExternalAssetBalance = 1
+	handler := NewHandler(keeper)
+	msgCreatePool := NewMsgCreatePool(signer, pool.ExternalAsset, pool.NativeAssetBalance, pool.ExternalAssetBalance)
+	res, err := handler(ctx, msgCreatePool)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	msgAddLiquidity := NewMsgAddLiquidity(signer, pool.ExternalAsset, pool.NativeAssetBalance, pool.ExternalAssetBalance)
+	res, err = handler(ctx, msgAddLiquidity)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	msgRemoveLiquidity := NewMsgRemoveLiquidity(signer, pool.ExternalAsset, 10, 1)
+	res, err = handler(ctx, msgRemoveLiquidity)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	msgSwap := NewMsgSwap(signer, asset1, asset2, 1000)
+	res, err = handler(ctx, msgSwap)
+	require.Error(t, err)
+	require.Nil(t, res)
+	msgRemoveLiquidity = NewMsgRemoveLiquidity(signer, pool.ExternalAsset, 10000, -1)
+	res, err = handler(ctx, msgRemoveLiquidity)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	msgDecommissionPool := NewMsgDecommissionPool(signer, pool.ExternalAsset.Ticker)
+	res, err = handler(ctx, msgDecommissionPool)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	res, err = handler(ctx, nil)
+	require.Error(t, err)
+	require.Nil(t, res)
 }
