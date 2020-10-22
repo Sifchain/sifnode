@@ -55,13 +55,12 @@ var (
 			faker.Number().NumberInt(5)),
 	}
 	mockError					  = sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "Mock fake error")
-	errReset, errCurrentChainID, errInitChain, errSetKeyRingStorage, errSetConfigChainID, errSetConfigIndent, errSetConfigTrustNode, errAddKey error
+	errReset, errCurrentChainID, errInitChain, errSetKeyRingStorage, errSetConfigChainID, errSetConfigIndent, errSetConfigTrustNode, errAddKey, errCreateValidator error
+	errAddGenesisAccount, errGenerateGenesisTxn, errCollectGenesisTxns, errTransferFunds, errExportGenesis, errValidatorPublicKeyAddress error
 
 )
 
-type mockCLIUtils struct {
-	//errReset, errCurrentChainID, errInitChain, errSetKeyRingStorage, errSetConfigChainID, errSetConfigIndent, errSetConfigTrustNode, errGenerateNodeKeyAddress error
-}
+type mockCLIUtils struct {}
 
 func (c mockCLIUtils) Reset() error                                       { return errReset }
 func (c mockCLIUtils) CurrentChainID() (*string, error)                   { return &chainID, errCurrentChainID }
@@ -85,14 +84,14 @@ func (c mockCLIUtils) AddKey(name, keyPassword string) (*string, error) {
 }
 
 func (c mockCLIUtils) AddGenesisAccount(name string, coins []string) (*string, error) {
-	return nil, nil
+	return nil, errAddGenesisAccount
 }
 
 func (c mockCLIUtils) GenerateGenesisTxn(name, keyPassword string) (*string, error) {
-	return nil, nil
+	return nil, errGenerateGenesisTxn
 }
 
-func (c mockCLIUtils) CollectGenesisTxns() (*string, error) { return nil, nil }
+func (c mockCLIUtils) CollectGenesisTxns() (*string, error) { return nil, errCollectGenesisTxns }
 
 func (c mockCLIUtils) ExportGenesis() (*string, error) {
 	genesis := heredoc.Doc(`
@@ -119,7 +118,7 @@ func (c mockCLIUtils) ExportGenesis() (*string, error) {
   }
 }
 `)
-	return &genesis, nil
+	return &genesis, errExportGenesis
 }
 
 func (c mockCLIUtils) GenesisFilePath() string {
@@ -131,15 +130,15 @@ func (c mockCLIUtils) ConfigFilePath() string {
 }
 
 func (c mockCLIUtils) TransferFunds(keyPassword, fromAddress, toAddress, coins string) (*string, error) {
-	return nil, nil
+	return nil, errTransferFunds
 }
 
 func (c mockCLIUtils) ValidatorPublicKeyAddress() (*string, error) {
-	return &nodeValidatorPublicKeyAddress, nil
+	return &nodeValidatorPublicKeyAddress, errValidatorPublicKeyAddress
 }
 
 func (c mockCLIUtils) CreateValidator(string, string, string, string) (*string, error) {
-	return nil, nil
+	return nil, errCreateValidator
 }
 
 func Test(t *testing.T) { TestingT(t) }
