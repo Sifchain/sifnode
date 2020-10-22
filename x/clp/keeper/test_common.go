@@ -141,7 +141,7 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk
 
 func GenerateRandomPool(numberOfPools int) []types.Pool {
 	var poolList []types.Pool
-	tokens := []string{"eth", "btc", "eos", "bch", "bnb", "usdt", "ada", "trx"}
+	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < numberOfPools; i++ {
 		// initialize global pseudo random generator
@@ -158,7 +158,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 
 func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	var lpList []types.LiquidityProvider
-	tokens := []string{"eth", "btc", "eos", "bch", "bnb", "usdt", "ada", "trx"}
+	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < numberOfLp; i++ {
 		externalToken := tokens[rand.Intn(len(tokens))]

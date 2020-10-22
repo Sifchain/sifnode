@@ -99,8 +99,8 @@ func TestRemoveLiquidity(t *testing.T) {
 func TestSwap(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	signer := GenerateAddress()
-	assetEth := NewAsset("ETHEREUM", "ETH", "eth")
-	assetDash := NewAsset("DASH", "DASH", "dash")
+	assetEth := NewAsset("ETHEREUM", "ETH", "ceth")
+	assetDash := NewAsset("DASH", "DASH", "cdash")
 
 	// Test Parameters for swap
 	initialBalance := 10000 // Initial account balance for all assets created
