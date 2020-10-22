@@ -15,7 +15,7 @@ sifnoded start
 cd testnet-contracts
 ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 user1 --chain-id=sifchain
 
-### case 1: lock eth and send to cosmos test user from eth operator account
+### case 1: lock eth and send to cosmos user2 from eth operator account
 1. check the balance of operator before lock
 yarn peggy:getTokenBalance  0x627306090abaB3A6e1400e9345bC60c78a8BEf57 eth
 2. check the ballance of contract before lock
@@ -44,14 +44,14 @@ sifnodecli tx ethbridge burn $(sifnodecli keys show user2 -a) 0xf17f52151EbEF6C7
 yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732 eth
 sifnodecli query account $(sifnodecli keys show user2 -a)
 
-### case 3: lock atom in cosmos then issue the token in ethereum
+### case 3: lock rowan in cosmos then issue the token in ethereum
 sifnodecli tx ethbridge lock $(sifnodecli keys show user2 -a) 0xf17f52151EbEF6C7334FAD080c5704D77216b732 1 rwn  --ethereum-chain-id=5777 --from=user2 --yes
 
 1. check the balance of validator peggyatom in ethereum
 yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732  0x409Ba3dd291bb5D48D5B4404F5EFa207441F6CbA
 sifnodecli query account $(sifnodecli keys show user2 -a)
 
-### case 4: burn atom in ethereum and atom will be back to cosmos
+### case 4: burn rowan in ethereum and rowan will be back to cosmos
 yarn peggy:burn $(sifnodecli keys show user2 -a) 0x409Ba3dd291bb5D48D5B4404F5EFa207441F6CbA 1
 1. check balance after burn 
 yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732  0x409Ba3dd291bb5D48D5B4404F5EFa207441F6CbA
