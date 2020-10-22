@@ -38,4 +38,4 @@ COPY --from=build /go/bin/sifnoded /usr/bin/sifnoded
 COPY --from=build /go/bin/sifnodecli /usr/bin/sifnodecli
 COPY --from=build /go/bin/sifgen /usr/bin/sifgen
 
-CMD ["sifnoded", "start"]
+CMD ["sifnoded", "start", "--rpc.laddr", "tcp://0.0.0.0:26657"]

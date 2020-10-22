@@ -55,8 +55,6 @@ type CLI struct {
 func NewCLI(chainID string) CLI {
 	return CLI{
 		chainID:    chainID,
-		sifDaemon:  os.Getenv("SIF_DAEMON"),
-		sifCLI:     os.Getenv("SIF_CLI"),
 		configPath: fmt.Sprintf("%s/config", app.DefaultNodeHome),
 	}
 }
@@ -79,43 +77,43 @@ func (c CLI) CreateDir(path string) error {
 }
 
 func (c CLI) CurrentChainID() (*string, error) {
-	return c.shellExec(c.sifCLI, "config", "chain-id", "--get")
+	return c.shellExec("sifnodecli", "config", "chain-id", "--get")
 }
 
 func (c CLI) NodeID(nodeDir string) (*string, error) {
-	return c.shellExec(c.sifDaemon, "tendermint", "show-node-id", "--home", nodeDir)
+	return c.shellExec("sifnoded", "tendermint", "show-node-id", "--home", nodeDir)
 }
 
 func (c CLI) ValidatorAddress(nodeDir string) (*string, error) {
-	return c.shellExec(c.sifDaemon, "tendermint", "show-validator", "--home", nodeDir)
+	return c.shellExec("sifnoded", "tendermint", "show-validator", "--home", nodeDir)
 }
 
 func (c CLI) ValidatorConsensusAddress(nodeDir string) (*string, error) {
-	return c.shellExec(c.sifDaemon, "tendermint", "show-address", "--home", nodeDir)
+	return c.shellExec("sifnoded", "tendermint", "show-address", "--home", nodeDir)
 }
 
 func (c CLI) InitChain(chainID, moniker, nodeDir string) (*string, error) {
-	return c.shellExec(c.sifDaemon, "init", moniker, "--chain-id", chainID, "--home", nodeDir)
+	return c.shellExec("sifnoded", "init", moniker, "--chain-id", chainID, "--home", nodeDir)
 }
 
 func (c CLI) SetKeyRingStorage() (*string, error) {
-	return c.shellExec(c.sifCLI, "config", "keyring-backend", "file")
+	return c.shellExec("sifnodecli", "config", "keyring-backend", "file")
 }
 
 func (c CLI) SetConfigChainID(chainID string) (*string, error) {
-	return c.shellExec(c.sifCLI, "config", "chain-id", chainID)
+	return c.shellExec("sifnodecli", "config", "chain-id", chainID)
 }
 
 func (c CLI) SetConfigIndent(indent bool) (*string, error) {
-	return c.shellExec(c.sifCLI, "config", "indent", fmt.Sprintf("%v", indent))
+	return c.shellExec("sifnodecli", "config", "indent", fmt.Sprintf("%v", indent))
 }
 
 func (c CLI) SetConfigTrustNode(indent bool) (*string, error) {
-	return c.shellExec(c.sifCLI, "config", "trust-node", fmt.Sprintf("%v", indent))
+	return c.shellExec("sifnodecli", "config", "trust-node", fmt.Sprintf("%v", indent))
 }
 
 func (c CLI) AddKey(name, keyPassword, cliDir string) (*string, error) {
-	return c.shellExecInput(c.sifCLI,
+	return c.shellExecInput("sifnodecli",
 		[][]byte{
 			[]byte(keyPassword + "\n"),
 			[]byte(keyPassword + "\n"),
@@ -123,11 +121,11 @@ func (c CLI) AddKey(name, keyPassword, cliDir string) (*string, error) {
 }
 
 func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {
-	return c.shellExec(c.sifDaemon, "add-genesis-account", address, strings.Join(coins[:], ","), "--home", nodeDir)
+	return c.shellExec("sifnoded", "add-genesis-account", address, strings.Join(coins[:], ","), "--home", nodeDir)
 }
 
 func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, cliDir, outputFile, nodeID, pubKey, ipV4Addr string) (*string, error) {
-	return c.shellExecInput(c.sifDaemon,
+	return c.shellExecInput("sifnoded",
 		[][]byte{[]byte(keyPassword + "\n"), []byte(keyPassword + "\n"), []byte(keyPassword + "\n")},
 		"gentx", "--name", name, "--amount", bondAmount, "--keyring-backend", "file",
 		"--home", nodeDir, "--home-client", cliDir, "--output-document", outputFile,
@@ -136,11 +134,11 @@ func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, cliDir, 
 }
 
 func (c CLI) CollectGenesisTxns(gentxDir, nodeDir string) (*string, error) {
-	return c.shellExec(c.sifDaemon, "collect-gentxs", "--gentx-dir", gentxDir, "--home", nodeDir)
+	return c.shellExec("sifnoded", "collect-gentxs", "--gentx-dir", gentxDir, "--home", nodeDir)
 }
 
 func (c CLI) ExportGenesis() (*string, error) {
-	return c.shellExec(c.sifDaemon, "export")
+	return c.shellExec("sifnoded", "export")
 }
 
 func (c CLI) GenesisFilePath() string {
@@ -152,7 +150,7 @@ func (c CLI) ConfigFilePath() string {
 }
 
 func (c CLI) TransferFunds(keyPassword, fromAddress, toAddress, coins string) (*string, error) {
-	return c.shellExecInput(c.sifCLI,
+	return c.shellExecInput("sifnodecli",
 		[][]byte{
 			[]byte(keyPassword + "\n"),
 			[]byte(keyPassword + "\n"),
@@ -160,11 +158,11 @@ func (c CLI) TransferFunds(keyPassword, fromAddress, toAddress, coins string) (*
 }
 
 func (c CLI) ValidatorPublicKeyAddress() (*string, error) {
-	return c.shellExec(c.sifDaemon, "tendermint", "show-validator")
+	return c.shellExec("sifnoded", "tendermint", "show-validator")
 }
 
 func (c CLI) CreateValidator(moniker, validatorPublicKey, keyPassword, bondAmount string) (*string, error) {
-	return c.shellExecInput(c.sifCLI,
+	return c.shellExecInput("sifnodecli",
 		[][]byte{
 			[]byte(keyPassword + "\n"),
 			[]byte(keyPassword + "\n"),
