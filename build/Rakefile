@@ -203,6 +203,8 @@ end
 
 # Boot the new network.
 def network_boot(chainnet:, network_config:, seed_network_address:)
+  network_image(chainnet)
+
   network = YAML.load_file(network_config)
   FileUtils.rm_f(network_config)
 
@@ -211,6 +213,11 @@ def network_boot(chainnet:, network_config:, seed_network_address:)
     cmd += "MONIKER#{idx+1}=#{node['moniker']} IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
   end
 
-  cmd += "IPV4_SUBNET=#{seed_network_address} docker-compose -f ./build/docker-compose.yml up --build"
+  cmd += "IPV4_SUBNET=#{seed_network_address} docker-compose -f ./build/docker-compose.yml up"
   system(cmd)
+end
+
+# Create a docker image for the new network
+def network_image(chainnet)
+  system("docker build -f ./cmd/sifnoded/Dockerfile -t sifchain/sifnode:#{chainnet} .")
 end

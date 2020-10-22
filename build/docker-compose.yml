@@ -2,9 +2,7 @@ version: '3'
 
 services:
   sifnode1:
-    build:
-      context: ../
-      dockerfile: ./cmd/sifnoded/Dockerfile
+    image: sifchain/sifnode:${CHAINNET}
     ports:
       - 1501:1317
       - 28000:26656
@@ -16,9 +14,7 @@ services:
         ipv4_address: ${IPV4_ADDRESS1}
 
   sifnode2:
-    build:
-      context: ../
-      dockerfile: ./cmd/sifnoded/Dockerfile
+    image: sifchain/sifnode:${CHAINNET}
     ports:
       - 1502:1317
       - 28002:26656
@@ -30,9 +26,7 @@ services:
         ipv4_address: ${IPV4_ADDRESS2}
 
   sifnode3:
-    build:
-      context: ../
-      dockerfile: ./cmd/sifnoded/Dockerfile
+    image: sifchain/sifnode:${CHAINNET}
     ports:
       - 1503:1317
       - 28004:26656
@@ -44,9 +38,7 @@ services:
         ipv4_address: ${IPV4_ADDRESS3}
 
   sifnode4:
-    build:
-      context: ../
-      dockerfile: ./cmd/sifnoded/Dockerfile
+    image: sifchain/sifnode:${CHAINNET}
     ports:
       - 1504:1317
       - 28006:26656
