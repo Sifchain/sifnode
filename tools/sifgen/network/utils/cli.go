@@ -125,9 +125,17 @@ func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string
 func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, cliDir, outputFile, nodeID, pubKey, ipV4Addr string) (*string, error) {
 	return c.shellExecInput("sifnoded",
 		[][]byte{[]byte(keyPassword + "\n"), []byte(keyPassword + "\n"), []byte(keyPassword + "\n")},
-		"gentx", "--name", name, "--amount", bondAmount, "--keyring-backend", "file",
-		"--home", nodeDir, "--home-client", cliDir, "--output-document", outputFile,
-		"--node-id", nodeID, "--pubkey", pubKey, "--ip", ipV4Addr,
+		"gentx",
+		"--name", name,
+		"--details", name,
+		"--amount", bondAmount,
+		"--keyring-backend", "file",
+		"--home", nodeDir,
+		"--home-client", cliDir,
+		"--output-document", outputFile,
+		"--node-id", nodeID,
+		"--pubkey", pubKey,
+		"--ip", ipV4Addr,
 	)
 }
 
