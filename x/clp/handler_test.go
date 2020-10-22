@@ -87,7 +87,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	coins := CalculateWithdraw(t, keeper, ctx, asset, signer, uint(wBasis), uint(asymmetry))
+	coins := CalculateWithdraw(t, keeper, ctx, asset, signer.String(), uint(wBasis), asymmetry)
 	msg = NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handleMsgRemoveLiquidity(ctx, keeper, msg)
 	require.NoError(t, err)
@@ -194,10 +194,10 @@ func TestDecommisionPool(t *testing.T) {
 
 }
 
-func CalculateWithdraw(t *testing.T, keeper Keeper, ctx sdk.Context, asset Asset, signer sdk.AccAddress, wBasisPoints uint, asymmetry uint) sdk.Coins {
+func CalculateWithdraw(t *testing.T, keeper Keeper, ctx sdk.Context, asset Asset, signer string, wBasisPoints uint, asymmetry int) sdk.Coins {
 	pool, err := keeper.GetPool(ctx, asset.Ticker)
 	assert.NoError(t, err)
-	lp, err := keeper.GetLiquidityProvider(ctx, asset.Ticker, signer.String())
+	lp, err := keeper.GetLiquidityProvider(ctx, asset.Ticker, signer)
 	assert.NoError(t, err)
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, swapAmount := calculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
@@ -233,5 +233,6 @@ func CalculateSwapReceived(t *testing.T, keeper Keeper, ctx sdk.Context, assetSe
 	emitAmount, _, _, _, err := swapOne(assetSent, swapAmount, GetNativeAsset(), inPool)
 	assert.NoError(t, err)
 	emitAmount2, _, _, _, err := swapOne(GetNativeAsset(), emitAmount, assetReceived, outPool)
+	assert.NoError(t, err)
 	return emitAmount2
 }
