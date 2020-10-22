@@ -318,7 +318,7 @@ func (n *Network) generatePeerList(nodes []*Node, idx int) []string {
 	var peers []string
 	for i, node := range nodes {
 		if i != idx {
-			peers = append(peers, fmt.Sprintf("%s@%s:26657", node.NodeID, node.IPv4Address))
+			peers = append(peers, fmt.Sprintf("%s@%s:26656", node.NodeID, node.IPv4Address))
 		}
 	}
 
