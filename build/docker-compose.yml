@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+  sifnode1:
+    build:
+      context: ../
+      dockerfile: ./cmd/sifnoded/Dockerfile
+    ports:
+      - 1501:1317
+      - 28000:26656
+      - 28001:26657
+    volumes:
+      - ../build/networks/nodes/${CHAINNET}/${MONIKER1}:/sifnode:Z
+    networks:
+      sifchain:
+        ipv4_address: ${IPV4_ADDRESS1}
+
+  sifnode2:
+    build:
+      context: ../
+      dockerfile: ./cmd/sifnoded/Dockerfile
+    ports:
+      - 1502:1317
+      - 28002:26656
+      - 28003:26657
+    volumes:
+      - ../build/networks/nodes/${CHAINNET}/${MONIKER2}:/sifnode:Z
+    networks:
+      sifchain:
+        ipv4_address: ${IPV4_ADDRESS2}
+
+  sifnode3:
+    build:
+      context: ../
+      dockerfile: ./cmd/sifnoded/Dockerfile
+    ports:
+      - 1503:1317
+      - 28004:26656
+      - 28005:26657
+    volumes:
+      - ../build/networks/nodes/${CHAINNET}/${MONIKER3}:/sifnode:Z
+    networks:
+      sifchain:
+        ipv4_address: ${IPV4_ADDRESS3}
+
+  sifnode4:
+    build:
+      context: ../
+      dockerfile: ./cmd/sifnoded/Dockerfile
+    ports:
+      - 1504:1317
+      - 28006:26656
+      - 28007:26657
+    volumes:
+      - ../build/networks/nodes/${CHAINNET}/${MONIKER4}:/sifnode:Z
+    networks:
+      sifchain:
+        ipv4_address: ${IPV4_ADDRESS4}
+
+networks:
+  sifchain:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        -
+          subnet: ${IPV4_SUBNET}

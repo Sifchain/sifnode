@@ -105,16 +105,13 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) error {
 		return err
 	}
 
+	if err := n.copyGenesis(nodes); err != nil {
+		return err
+	}
+
 	n.summary(nodes)
 
 	return nil
-}
-
-func (n *Network) summary(nodes []*Node) {
-	for _, node := range nodes {
-		yml, _ := yaml.Marshal(node)
-		fmt.Println(string(yml))
-	}
 }
 
 func (n *Network) initNodes(count int, outputDir, seedIPv4Addr string) []*Node {
@@ -356,4 +353,36 @@ func (n *Network) setPeers(nodes []*Node) error {
 	}
 
 	return nil
+}
+
+func (n *Network) copyGenesis(nodes []*Node) error {
+	seedNode := n.getSeedNode(nodes)
+	srcFile := fmt.Sprintf("%s/%s/%s", seedNode.NodeHomeDir, ConfigDir, utils.GenesisFile)
+
+	for _, node := range nodes {
+		if !node.Seed {
+			input, err := ioutil.ReadFile(srcFile)
+			if err != nil {
+				return err
+			}
+
+			err = ioutil.WriteFile(
+				fmt.Sprintf("%s/%s/%s", node.NodeHomeDir, ConfigDir, utils.GenesisFile),
+				input,
+				0600,
+				)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (n *Network) summary(nodes []*Node) {
+	for _, node := range nodes {
+		yml, _ := yaml.Marshal(node)
+		fmt.Println(string(yml))
+	}
 }

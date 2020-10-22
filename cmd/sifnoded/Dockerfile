@@ -33,3 +33,5 @@ RUN apk add --update --no-cache $PACKAGES
 COPY --from=build /go/bin/sifnoded /usr/bin/sifnoded
 COPY --from=build /go/bin/sifnodecli /usr/bin/sifnodecli
 COPY --from=build /go/bin/sifgen /usr/bin/sifgen
+
+CMD ["sifnoded", "start", "--home", "/sifnode/.sifnoded"]
