@@ -55,27 +55,19 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 26657
-            initialDelaySeconds: 15
+            initialDelaySeconds: 5
             periodSeconds: 10
           readinessProbe:
             tcpSocket:
               port: 26657
-            initialDelaySeconds: 15
+            initialDelaySeconds: 5
             periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
+#          volumeMounts:
 #          - name: data
 #            mountPath: /data
-        - name: {{ .Chart.Name }}-cli
-          image: "{{ .Values.sifnodecli.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/bin/sh"]
-          args: ["-c", "sifnodecli rest-server --laddr tcp://0.0.0.0:1317 --node $NODE_HOST --trace"]
-          env:
-            - name: NODE_HOST
-              value: "tcp://{{ include "sifnode.fullname" . }}.{{ .Chart.Name }}.svc.cluster.local:26657"
-      volumes:
+#      volumes:
 #      - name: data
 #        persistentVolumeClaim:
 #          claimName: {{ .Values.pvc.name }}
