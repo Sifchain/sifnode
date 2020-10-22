@@ -249,7 +249,6 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 			return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
 		}
 	}
-
 	//if asymmetry is negative we need to swap from external to native
 	if msg.Asymmetry < 0 {
 		swapResult, _, _, swappedPool, err := swapOne(msg.ExternalAsset, swapAmount, GetNativeAsset(), pool)
