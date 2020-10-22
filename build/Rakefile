@@ -118,7 +118,13 @@ namespace :network do
 
   desc "boot the new network"
   task :launch, %i[chainnet network_config seed_network_address] do |t, args|
-    network_boot({chainnet: args[:chainnet], network_config: "#{build_dir}/#{chainnet}.yml",
+    network_config = "#{build_dir}/#{chainnet}.yml"
+    if !File.file?(network_config)
+      puts "the file #{network_config} does not exist!"
+      exit(1)
+    end
+
+    network_boot({chainnet: args[:chainnet], network_config: network_config,
                   seed_network_address: args[:seed_network_address]})
   end
 end
