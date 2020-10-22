@@ -52,7 +52,7 @@ export default defineComponent({
 }
 .modal-dialog {
   position: relative;
-  width: 30rem;
+  min-width: 30rem;
   background: rgb(255, 255, 255);
   padding: 1.5rem 2rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),

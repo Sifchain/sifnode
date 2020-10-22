@@ -23,12 +23,11 @@ export default defineComponent({
     async function handleMetamaskClicked() {
       connecting.value = true;
 
-      await actions.connectToWallet();
+      await actions.ethWallet.connectToWallet();
 
       connecting.value = false;
 
       ModalBus.emit("open", {
-        title: "Your Wallet",
         component: WalletConnectedVue,
       });
     }

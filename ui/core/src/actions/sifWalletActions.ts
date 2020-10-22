@@ -13,7 +13,7 @@ export default ({ api, store }: ActionContext<"SifService", "wallet">) => {
       return await api.SifService.getBalance(address);
     },
 
-    async signInCosmosWallet(mnemonic: Mnemonic): Promise<string> {
+    async connect(mnemonic: Mnemonic): Promise<string> {
       if (!mnemonic) throw "Mnemonic must be defined";
       if (!validateMnemonic(mnemonic)) throw "Invalid Mnemonic. Not sent.";
       return await api.SifService.setPhrase(mnemonic);
@@ -23,7 +23,7 @@ export default ({ api, store }: ActionContext<"SifService", "wallet">) => {
       return await api.SifService.transfer(params);
     },
 
-    async signOutCosmosWallet() {
+    async disconnect() {
       api.SifService.purgeClient();
     },
   };

@@ -45,6 +45,11 @@ export class Balance extends Fraction {
       .div(this.denominator.toString())
       .toFormat(format);
   }
+
+  public toString() {
+    return `${this.asset.symbol} ${this.toFixed()}`;
+  }
+
   static create(asset: Asset, amount: BigintIsh): Balance {
     return new Balance(asset, amount);
   }

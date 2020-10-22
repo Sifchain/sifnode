@@ -20,9 +20,9 @@ export type ActionContext<
 
 export function createActions(context: ActionContext) {
   return {
-    ...ethWalletActions(context),
-    ...sifWalletActions(context),
-    ...tokenActions(context),
+    ethWallet: ethWalletActions(context),
+    sifWallet: sifWalletActions(context),
+    token: tokenActions(context),
     // ...broadcastTx(context),
     // ...connectToWallet(context),
     // ...createPool(context),

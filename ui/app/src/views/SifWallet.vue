@@ -77,8 +77,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, readonly } from "vue";
-import { ref, computed, reactive } from "@vue/reactivity";
+import { defineComponent } from "vue";
+import { ref } from "@vue/reactivity";
 import { useCore } from "../hooks/useCore";
 import { Asset, ChainId } from "../../../core/src";
 import JSBI from "jsbi";
@@ -93,7 +93,7 @@ export default defineComponent({
       "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow"
     );
 
-    let errorMessage = ref();
+    const errorMessage = ref();
 
     const amount = ref(50);
     const sendTo = ref("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5");
@@ -103,7 +103,7 @@ export default defineComponent({
         return (errorMessage.value = "Not connected");
       }
 
-      await actions.sendCosmosTransaction({
+      await actions.sifWallet.sendCosmosTransaction({
         asset: Asset.create("nametoken", 18, "Nametoken", ChainId.SIFCHAIN),
         amount: JSBI.BigInt(amount.value),
         recipient: sendTo.value,
@@ -116,7 +116,7 @@ export default defineComponent({
         return (errorMessage.value = "Mnemonic required to send");
       }
       try {
-        await actions.signInCosmosWallet(localMnemonic.value.trim());
+        await actions.sifWallet.connect(localMnemonic.value.trim());
       } catch (error) {
         errorMessage.value = error;
       }
@@ -125,7 +125,7 @@ export default defineComponent({
     async function reset() {
       localMnemonic.value = "";
       errorMessage.value = "";
-      actions.signOutCosmosWallet();
+      actions.sifWallet.disconnect();
     }
 
     return {

@@ -10,8 +10,8 @@ import { defineComponent } from "vue";
 import { computed } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
 import { ModalBus } from "@/components/modal/ModalBus";
-import WalletConnectSelectorVue from "./WalletConnectSelector.vue";
-import WalletConnectedVue from "./WalletConnected.vue";
+import WalletConnectDialog from "./WalletConnectDialog.vue";
+
 function shorten(str: string) {
   return str.slice(0, 5) + "...";
 }
@@ -22,20 +22,12 @@ export default defineComponent({
     const { store } = useCore();
 
     async function handleClicked() {
-      const dialog = !store.wallet.eth.isConnected
-        ? {
-            component: WalletConnectSelectorVue,
-            title: "Select your wallet",
-          }
-        : {
-            component: WalletConnectedVue,
-            title: "Your wallet",
-          };
-
-      ModalBus.emit("open", dialog);
+      ModalBus.emit("open", { component: WalletConnectDialog });
     }
 
-    const connected = computed(() => store.wallet.eth.isConnected);
+    const connected = computed(
+      () => store.wallet.eth.isConnected || store.wallet.sif.isConnected
+    );
     const connectedText = computed(() =>
       [store.wallet.eth.address, store.wallet.sif.address]
         .filter(Boolean)
