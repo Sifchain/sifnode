@@ -7,3 +7,4 @@ frontend/.cache
 .DS_Store
 .testCoverage.txt
 .environments
+build/networks
