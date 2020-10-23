@@ -7,8 +7,6 @@ ENV GOBIN=/go/bin
 ENV GOPATH=/go
 ENV CGO_ENABLED=0
 ENV GOOS=linux
-ENV SIF_CLI=sifnodecli
-ENV SIF_DAEMON=sifnoded
 
 # Empty dir for the db data
 RUN mkdir /data
