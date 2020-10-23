@@ -13,7 +13,7 @@ import (
 type Keeper struct {
 	storeKey   sdk.StoreKey
 	cdc        *codec.Codec
-	bankKeeper types.BankKeeper
+	BankKeeper types.BankKeeper
 	paramstore params.Subspace
 }
 
@@ -22,7 +22,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankkeeper types.BankKeeper, 
 	keeper := Keeper{
 		storeKey:   key,
 		cdc:        cdc,
-		bankKeeper: bankkeeper,
+		BankKeeper: bankkeeper,
 		paramstore: paramstore.WithKeyTable(types.ParamKeyTable()),
 	}
 	return keeper
@@ -58,6 +58,14 @@ func (k Keeper) GetPool(ctx sdk.Context, ticker string) (types.Pool, error) {
 	bz := store.Get(key)
 	k.cdc.MustUnmarshalBinaryBare(bz, &pool)
 	return pool, nil
+}
+
+func (k Keeper) ExistsPool(ctx sdk.Context, ticker string) bool {
+	key, err := types.GetPoolKey(ticker, types.GetSettlementAsset().Ticker)
+	if err != nil {
+		return false
+	}
+	return k.Exists(ctx, key)
 }
 
 func (k Keeper) GetPools(ctx sdk.Context) types.Pools {
