@@ -7,6 +7,14 @@ import (
 	"testing"
 )
 
+func TestHandler(t *testing.T) {
+	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	handler := NewHandler(keeper)
+	res, err := handler(ctx, nil)
+	require.Error(t, err)
+	require.Nil(t, res)
+}
+
 func TestCreatePool(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	signer := GenerateAddress()
@@ -21,16 +29,35 @@ func TestCreatePool(t *testing.T) {
 
 	ok := keeper.BankKeeper.HasCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 	assert.True(t, ok, "")
-	msgCreatePool := NewMsgCreatePool(signer, asset, uint(poolBalance), uint(poolBalance))
+
+	MinThreshold := keeper.GetParams(ctx).MinCreatePoolThreshold
+	// Will fail if we are below minimum
+	msgCreatePool := NewMsgCreatePool(signer, asset, uint(MinThreshold-1), 0)
 	res, err := handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	require.Error(t, err)
+	require.Nil(t, res)
+
+	// Will fail if we ask for too much.
+	msgCreatePool = NewMsgCreatePool(signer, asset, uint(initialBalance+1), uint(initialBalance+1))
+	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	require.Error(t, err)
+	require.Nil(t, res)
+
+	// Ask for the right amount.
+	msgCreatePool = NewMsgCreatePool(signer, asset, uint(poolBalance), uint(poolBalance))
+	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+
+	// Can't create it a second time.
+	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	require.Error(t, err)
+	require.Nil(t, res)
 
 	externalCoin = sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(initialBalance-poolBalance)))
 	nativeCoin = sdk.NewCoin(NativeTicker, sdk.NewInt(int64(initialBalance-poolBalance)))
 	ok = keeper.BankKeeper.HasCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 	assert.True(t, ok, "")
-
 }
 
 func TestAddLiqudity(t *testing.T) {
