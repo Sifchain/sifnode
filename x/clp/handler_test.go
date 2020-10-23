@@ -99,6 +99,7 @@ func TestRemoveLiquidity(t *testing.T) {
 func TestSwap(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	signer := GenerateAddress()
+	handler := NewHandler(keeper)
 	assetEth := NewAsset("ETHEREUM", "ETH", "ceth")
 	assetDash := NewAsset("DASH", "DASH", "cdash")
 
@@ -115,7 +116,7 @@ func TestSwap(t *testing.T) {
 	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin2})
 
 	msg := NewMsgSwap(signer, assetEth, assetDash, 1)
-	res, err := handleMsgSwap(ctx, keeper, msg)
+	res, err := handler(ctx, msg)
 	require.Error(t, err)
 	require.Nil(t, res)
 	msgCreatePool := NewMsgCreatePool(signer, assetEth, uint(poolBalance), uint(poolBalance))
@@ -145,6 +146,7 @@ func TestSwap(t *testing.T) {
 func TestDecommisionPool(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	signer := GenerateAddress()
+	handler := NewHandler(keeper)
 
 	//Parameters for Decommission
 	initialBalance := 10000 // Initial account balance for all assets created
@@ -157,7 +159,7 @@ func TestDecommisionPool(t *testing.T) {
 	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 
 	msgCreatePool := NewMsgCreatePool(signer, asset, uint(poolBalance), uint(poolBalance))
-	res, err := handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	res, err := handler(ctx, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
@@ -170,17 +172,17 @@ func TestDecommisionPool(t *testing.T) {
 
 	msgrm := NewMsgRemoveLiquidity(signer, asset, 5001, 1)
 
-	res, err = handleMsgRemoveLiquidity(ctx, keeper, msgrm)
+	res, err = handler(ctx, msgrm)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
 	msg := NewMsgDecommissionPool(signer, asset.Ticker)
-	res, err = handleMsgDecommissionPool(ctx, keeper, msg)
+	res, err = handler(ctx, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
 	msgN := NewMsgAddLiquidity(signer, asset, 1000, 1000)
-	res, err = handleMsgAddLiquidity(ctx, keeper, msgN)
+	res, err = handler(ctx, msgN)
 	require.Error(t, err)
 	require.Nil(t, res)
 

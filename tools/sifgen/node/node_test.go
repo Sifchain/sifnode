@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -53,17 +54,24 @@ var (
 			faker.Internet().IpV4Address(),
 			faker.Number().NumberInt(5)),
 	}
+	mockError                                                                                                                                                      = sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "Mock fake error")
+	errReset, errCurrentChainID, errInitChain, errSetKeyRingStorage, errSetConfigChainID, errSetConfigIndent, errSetConfigTrustNode, errAddKey, errCreateValidator error
+	errAddGenesisAccount, errGenerateGenesisTxn, errCollectGenesisTxns, errTransferFunds, errExportGenesis, errValidatorPublicKeyAddress                           error
 )
 
 type mockCLIUtils struct{}
 
-func (c mockCLIUtils) Reset() error                                       { return nil }
-func (c mockCLIUtils) CurrentChainID() (*string, error)                   { return &chainID, nil }
-func (c mockCLIUtils) InitChain(chainID, moniker string) (*string, error) { return nil, nil }
-func (c mockCLIUtils) SetKeyRingStorage() (*string, error)                { return nil, nil }
-func (c mockCLIUtils) SetConfigChainID(chainID string) (*string, error)   { return nil, nil }
-func (c mockCLIUtils) SetConfigIndent(indent bool) (*string, error)       { return nil, nil }
-func (c mockCLIUtils) SetConfigTrustNode(trust bool) (*string, error)     { return nil, nil }
+func (c mockCLIUtils) Reset() error                                       { return errReset }
+func (c mockCLIUtils) CurrentChainID() (*string, error)                   { return &chainID, errCurrentChainID }
+func (c mockCLIUtils) InitChain(chainID, moniker string) (*string, error) { return nil, errInitChain }
+func (c mockCLIUtils) SetKeyRingStorage() (*string, error)                { return nil, errSetKeyRingStorage }
+func (c mockCLIUtils) SetConfigChainID(chainID string) (*string, error) {
+	return nil, errSetConfigChainID
+}
+func (c mockCLIUtils) SetConfigIndent(indent bool) (*string, error) { return nil, errSetConfigIndent }
+func (c mockCLIUtils) SetConfigTrustNode(trust bool) (*string, error) {
+	return nil, errSetConfigTrustNode
+}
 
 func (c mockCLIUtils) AddKey(name, keyPassword string) (*string, error) {
 	key := heredoc.Doc(`
@@ -75,18 +83,18 @@ func (c mockCLIUtils) AddKey(name, keyPassword string) (*string, error) {
   threshold: 0
   pubkeys: []
 `)
-	return &key, nil
+	return &key, errAddKey
 }
 
 func (c mockCLIUtils) AddGenesisAccount(name string, coins []string) (*string, error) {
-	return nil, nil
+	return nil, errAddGenesisAccount
 }
 
 func (c mockCLIUtils) GenerateGenesisTxn(name, keyPassword string) (*string, error) {
-	return nil, nil
+	return nil, errGenerateGenesisTxn
 }
 
-func (c mockCLIUtils) CollectGenesisTxns() (*string, error) { return nil, nil }
+func (c mockCLIUtils) CollectGenesisTxns() (*string, error) { return nil, errCollectGenesisTxns }
 
 func (c mockCLIUtils) ExportGenesis() (*string, error) {
 	genesis := heredoc.Doc(`
@@ -113,7 +121,7 @@ func (c mockCLIUtils) ExportGenesis() (*string, error) {
   }
 }
 `)
-	return &genesis, nil
+	return &genesis, errExportGenesis
 }
 
 func (c mockCLIUtils) GenesisFilePath() string {
@@ -125,15 +133,15 @@ func (c mockCLIUtils) ConfigFilePath() string {
 }
 
 func (c mockCLIUtils) TransferFunds(keyPassword, fromAddress, toAddress, coins string) (*string, error) {
-	return nil, nil
+	return nil, errTransferFunds
 }
 
 func (c mockCLIUtils) ValidatorPublicKeyAddress() (*string, error) {
-	return &nodeValidatorPublicKeyAddress, nil
+	return &nodeValidatorPublicKeyAddress, errValidatorPublicKeyAddress
 }
 
 func (c mockCLIUtils) CreateValidator(string, string, string, string) (*string, error) {
-	return nil, nil
+	return nil, errCreateValidator
 }
 
 func Test(t *testing.T) { TestingT(t) }
@@ -171,17 +179,23 @@ func (s *nodeSuite) SetUpTest(c *C) {
 		genesisURL:  genesisURL,
 		CLI:         mockCLIUtils{},
 	}
+	//fmt.Println("SetUpTest, cli=", &s.node.CLI)
+}
+
+func (s *nodeSuite) TestNewNode(c *C) {
+	node := NewNode(chainID, &moniker, &nodeSeedAddress, genesisURL)
+	c.Assert(node, NotNil)
 }
 
 func (s *nodeSuite) TestValidate(c *C) {
 	err := s.node.Validate()
 	c.Assert(err, IsNil)
 
-	s.node.chainID = faker.Lorem().Word()
+	s.node.moniker = faker.Lorem().Word()
 	err = s.node.Validate()
 	c.Assert(err, NotNil)
 
-	s.node.moniker = faker.Lorem().Word()
+	s.node.chainID = faker.Lorem().Word()
 	err = s.node.Validate()
 	c.Assert(err, NotNil)
 
@@ -194,10 +208,37 @@ func (s *nodeSuite) TestValidate(c *C) {
 func (s *nodeSuite) TestSetup(c *C) {
 	err := s.node.Setup()
 	c.Assert(err, IsNil)
+	errReset = mockError
+	err = s.node.Setup()
+	c.Assert(err, NotNil)
+	errReset = nil
+	errSetKeyRingStorage = mockError
+	err = s.node.Setup()
+	c.Assert(err, NotNil)
+	errSetKeyRingStorage = nil
+	errSetConfigChainID = mockError
+	err = s.node.Setup()
+	c.Assert(err, NotNil)
+	errSetConfigChainID = nil
+	errSetConfigIndent = mockError
+	err = s.node.Setup()
+	c.Assert(err, NotNil)
+	errSetConfigIndent = nil
+	errSetConfigTrustNode = mockError
+	err = s.node.Setup()
+	c.Assert(err, NotNil)
+	errSetConfigTrustNode = nil
+	errAddKey = mockError
+	err = s.node.Setup()
+	c.Assert(err, NotNil)
+	errAddKey = nil
 }
 
 func (s *nodeSuite) TestGenesis(c *C) {
 	err := s.node.Genesis(faucet.NewFaucet(chainID).DefaultDeposit())
+	c.Assert(err, IsNil)
+	s.node.seedAddress = nil
+	err = s.node.Genesis(faucet.NewFaucet(chainID).DefaultDeposit())
 	c.Assert(err, IsNil)
 }
 
@@ -230,6 +271,11 @@ func (s *nodeSuite) TestNodePeerAddress(c *C) {
 func (s *nodeSuite) TestNodeValidatorPublicKeyAddress(c *C) {
 	c.Assert(s.node.collectNodeValidatorPublicKeyAddress(), IsNil)
 	c.Assert(s.node.NodeValidatorPublicKeyAddress(), Equals, nodeValidatorPublicKeyAddress)
+}
+
+func (s *nodeSuite) TestPromote(c *C) {
+	err := s.node.Promote(s.node.nodeValidatorPublicKeyAddress, "password", "1000stake")
+	c.Assert(err, IsNil)
 }
 
 func (s *nodeSuite) TestSeedAddress(c *C) {
