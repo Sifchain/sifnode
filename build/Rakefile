@@ -1,5 +1,7 @@
 require 'rake'
 require 'rbconfig'
+require 'yaml'
+require 'digest'
 
 desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
@@ -21,7 +23,6 @@ namespace :cluster do
       --set chainnet=#{args[:chainnet]} \
       > #{path(args)}/.envrc
     ")
-
 
     # init terraform
     system("cd #{path(args)} && terraform init")
@@ -50,7 +51,7 @@ end
 desc "Manage sifnode install, upgrade, etc processes"
 namespace :sifnode do
   desc "Install sifnode on cluster"
-  task :install, [:chainnet, :provider, :namespace, :image,:image_tag] do |t, args|
+  task :install, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
     check_args(args)
 
     cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
@@ -96,6 +97,46 @@ namespace :dependencies do
     else
       puts "Sorry not currently supported!"
     end
+  end
+end
+
+desc "network operations"
+namespace :network do
+  desc "build and launch a new network"
+  task :compose, [:chainnet, :validator_count, :build_dir, :seed_ip_address, :seed_network_address] do |t, args|
+    network_config = "#{args[:build_dir]}/#{Digest::SHA256.hexdigest args[:chainnet]}.yml"
+
+    network_create({chainnet: args[:chainnet], validator_count: args[:validator_count],
+                    build_dir: args[:build_dir], seed_ip_address: args[:seed_ip_address],
+                    network_config: network_config})
+
+    network_boot({chainnet: args[:chainnet], network_config: network_config,
+                  seed_network_address: args[:seed_network_address]})
+  end
+
+  desc "build the config and generate the keys for a new network"
+  task :build, [:chainnet, :validator_count, :build_dir, :seed_ip_address] do |t, args|
+    network_create({chainnet: args[:chainnet], validator_count: args[:validator_count],
+                    build_dir: args[:build_dir], seed_ip_address: args[:seed_ip_address]})
+  end
+
+  desc "boot the new network"
+  task :launch, [:chainnet, :network_config, :seed_network_address] do |t, args|
+    if !File.file?(network_config)
+      puts "the file #{network_config} does not exist!"
+      exit(1)
+    end
+
+    network_boot({chainnet: args[:chainnet], network_config: network_config,
+                  seed_network_address: args[:seed_network_address]})
+  end
+end
+
+desc "node operations"
+namespace :node do
+  desc "create a new node and configure it to connect to an existing network"
+  task :create, [:chainnet, :peer_address, :genesis_url] do |t, args|
+    system("sifgen node create #{args[:chainnet]} #{args[:peer_address]} #{args[:genesis_url]}")
   end
 end
 
@@ -164,4 +205,29 @@ def detect_os
     raise Error::WebDriverError, "unknown os: #{host_os.inspect}"
   end
   )
+end
+
+# Creates the config for a new network.
+def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:, network_config:)
+  system("sifgen network create #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{network_config}")
+end
+
+# Boot the new network.
+def network_boot(chainnet:, network_config:, seed_network_address:)
+  network_image(chainnet)
+
+  network = YAML.load_file(network_config)
+
+  cmd = "CHAINNET=#{chainnet} "
+  network.each_with_index do |node, idx|
+    cmd += "MONIKER#{idx+1}=#{node['moniker']} IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
+  end
+
+  cmd += "IPV4_SUBNET=#{seed_network_address} docker-compose -f ./docker-compose.yml up"
+  system(cmd)
+end
+
+# Create a docker image for the new network
+def network_image(chainnet)
+  system("docker build -f ../cmd/sifnoded/Dockerfile -t sifchain/sifnode:#{chainnet} .")
 end
