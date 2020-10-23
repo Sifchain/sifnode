@@ -13,9 +13,13 @@ export default {
 <style lang="scss">
 .main {
   width: 100vw;
-  min-height: calc(100vh - 81px); // account for menu height
+  min-height: calc(100vh - 80px); // account for menu height
+  margin-top: 80px;
   display: flex;
   justify-content: center;
   align-items: center;
+  background: url('../../assets/World_Background_opt.jpg');
+  background-size: cover;
+  background-position: bottom center;
 }
 </style>
