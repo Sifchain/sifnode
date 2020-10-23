@@ -1,8 +1,7 @@
 <template>
   <button 
     class="btn"
-    :class="classBinding"
-    @click="$emit('click')"
+    :class="classes"
   >
     <slot></slot>
   </button>
@@ -33,7 +32,7 @@ export default {
 
   data() {
     return {
-      classBinding: {
+      classes: {
         'btn--disabled': this.disabled, 
         'btn--block': this.block,
         'btn--primary': this.primary,
@@ -42,10 +41,6 @@ export default {
       }
     }
   },
-
-  mounted() {
-    this.primary = this.secondary ? false : true;
-  }
 }
 </script>
 
@@ -107,6 +102,7 @@ export default {
   &--secondary {
     background: $c_gray_100;
     color: $c_text;
+    transition: background $trans_fast;
 
     &:hover {
       background: $c_gray_300;

@@ -5,7 +5,15 @@
       <Menu />
     </div>
     <div class="header__right">
-      <SifButton>Rowan</SifButton>
+      <SifButton primary class="mr-4">Rowan</SifButton>
+      <Dropdown>
+        %
+        <template v-slot:dropdown>
+          <div>
+            Dropdown content!
+          </div>
+        </template>
+      </Dropdown>
     </div>
   </header>
 </template>
@@ -13,11 +21,13 @@
 <script>
 import Menu from './Menu.vue';
 import SifButton from '../Elements/SifButton.vue';
+import Dropdown from '../Elements/Dropdown.vue';
 
 export default {
   components: {
     Menu,
     SifButton,
+    Dropdown,
   }
 }
 </script>
