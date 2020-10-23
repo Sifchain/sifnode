@@ -4,7 +4,12 @@
     <label class="balance right-col"
       ><BalanceField :symbol="localBalance.symbol"
     /></label>
-    <input class="input" type="number" v-model="localBalance.amount" />
+    <input
+      class="input"
+      type="number"
+      v-model="localBalance.amount"
+      @click="$event.target.select()"
+    />
 
     <button @click="handleSelectClicked(localBalance)" class="button right-col">
       <span v-if="localBalance.symbol !== null">

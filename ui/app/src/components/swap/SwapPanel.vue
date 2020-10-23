@@ -8,7 +8,7 @@
       <div class="arrow">↓</div>
       <CurrencyField label="To" v-model="toBalance" />
     </div>
-    <div class="info-area"></div>
+
     <div class="actions">
       <div v-if="!connected">
         <div>No wallet connected 🅧</div>
@@ -73,10 +73,6 @@ export default defineComponent({
 }
 .wallet-status {
   margin-bottom: 1rem;
-}
-.info-area {
-  border: 1px solid#eee;
-  min-height: 7rem;
 }
 .field-wrappers {
   margin-bottom: 1rem;
