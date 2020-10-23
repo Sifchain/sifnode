@@ -158,6 +158,7 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	newPoolUnits, lpUnits := calculatePoolUnits(pool.PoolUnits, pool.NativeAssetBalance, pool.ExternalAssetBalance, msg.NativeAssetAmount, msg.ExternalAssetAmount)
 	// Get lp , if lp doesnt exist create lp
 	lp, err := keeper.GetLiquidityProvider(ctx, msg.ExternalAsset.Ticker, msg.Signer.String())
+	// Doesn't look like this can occur, as creating a pool creates this as well.  Not sure if this is a valid scenario
 	if err != nil {
 		createNewLP = true
 	}
@@ -177,6 +178,7 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	pool.NativeAssetBalance = pool.NativeAssetBalance + msg.NativeAssetAmount
 	pool.ExternalAssetBalance = pool.ExternalAssetBalance + msg.ExternalAssetAmount
 	// Create lp if needed
+	// Doesn't look like this can occur, as creating a pool creates this as well.  Not sure if this is a valid scenario
 	if createNewLP {
 		lp := NewLiquidityProvider(msg.ExternalAsset, lpUnits, msg.Signer.String())
 		ctx.EventManager().EmitEvents(sdk.Events{
