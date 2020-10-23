@@ -9,6 +9,7 @@ module.exports = {
       sass: {
         additionalData: `
           @import "normalize-scss";
+          @import "@/scss/reset.scss";
           @import "@/scss/typography.scss";
           @import "@/scss/variables.scss";
           @import "@/scss/utilities.scss";
