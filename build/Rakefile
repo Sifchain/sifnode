@@ -229,5 +229,5 @@ end
 
 # Create a docker image for the new network
 def network_image(chainnet)
-  system("docker build -f ./cmd/sifnoded/Dockerfile -t sifchain/sifnode:#{chainnet} .")
+  system("docker build -f ../cmd/sifnoded/Dockerfile -t sifchain/sifnode:#{chainnet} .")
 end
