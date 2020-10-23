@@ -57,3 +57,8 @@ variable "disk_size" {
   default = 100
 }
 
+variable "policy_name" {
+  description = "Policy name for the AWS EBS CSI Driver"
+  type        = string
+  default     = "Amazon_EBS_CSI_Driver"
+}
