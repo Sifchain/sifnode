@@ -51,3 +51,6 @@ build-image:
 
 run-image: build-image
 	docker run sifchain/$(BINARY):$(CHAINNET)
+
+sh-image: build-image
+	docker run -it sifchain/$(BINARY):$(CHAINNET) sh
