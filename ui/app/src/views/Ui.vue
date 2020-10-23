@@ -13,7 +13,13 @@
     <!-- SifCard -->
       <SifApp>
         <template v-slot:header>
-          HEADER
+          <div class="d-flex j-between">
+            <IconButton label="Swap" active />
+            <IconButton label="Swap" />
+            <IconButton label="Swap" disabled />
+            <IconButton label="Swap" disabled />
+            <IconButton label="Swap" disabled />
+          </div>
         </template>
         <div>
           <InputGroup>
@@ -37,6 +43,7 @@
 
 <script>
 import SifButton from '../components/Elements/SifButton.vue';
+import IconButton from '../components/Elements/IconButton.vue';
 import InputGroup from '../components/Elements/InputGroup.vue';
 import SifApp from '../components/Blocks/SifApp.vue';
 import CurrencyForm from '../components/Blocks/CurrencyForm.vue';
@@ -45,6 +52,7 @@ import SwapPanel from '../components/Blocks/SwapPanel.vue';
 export default {
   components: {
     SifButton,
+    IconButton,
     SifApp,
     InputGroup,
     CurrencyForm,
