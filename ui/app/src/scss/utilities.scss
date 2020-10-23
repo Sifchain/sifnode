@@ -27,3 +27,8 @@
         padding-right: $i * 0.1rem;
     }
 }
+
+// text utilities
+.text--small {
+    font-size: $fs_sm;
+}
