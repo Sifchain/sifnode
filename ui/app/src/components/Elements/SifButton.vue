@@ -19,6 +19,10 @@ export default {
       type: Boolean,
       default: false
     },
+    medium: {
+      type: Boolean,
+      default: false
+    },
     className: {
       type: String,
     },
@@ -35,6 +39,7 @@ export default {
       classes: {
         'btn--disabled': this.disabled, 
         'btn--block': this.block,
+        'btn--medium': this.medium,
         'btn--primary': this.primary,
         'btn--secondary': this.secondary,
         className: this.className,
@@ -115,6 +120,10 @@ export default {
     display: block;
     width: 100%;
     margin: 0;
+  }
+
+  &--medium {
+    padding: 0 30px;
   }
 }
 </style>

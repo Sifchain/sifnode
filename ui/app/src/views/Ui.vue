@@ -16,7 +16,16 @@
           HEADER
         </template>
         <div>
+          <InputGroup>
+            <CurrencyForm label="From" />
+          </InputGroup>
+
+          <InputGroup>
+            <CurrencyForm label="To" />
+          </InputGroup>
+
           <p class="text--small">No wallet connected</p>
+
           <SifButton primary block>Connect to Wallet</SifButton>
         </div>
       </SifApp>
@@ -26,12 +35,16 @@
 
 <script>
 import SifButton from '../components/Elements/SifButton.vue';
+import InputGroup from '../components/Elements/InputGroup.vue';
 import SifApp from '../components/Blocks/SifApp.vue';
+import CurrencyForm from '../components/Blocks/CurrencyForm.vue';
 
 export default {
   components: {
     SifButton,
     SifApp,
+    InputGroup,
+    CurrencyForm,
   }
 }
 </script>
