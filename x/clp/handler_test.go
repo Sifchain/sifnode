@@ -1,7 +1,6 @@
 package clp
 
 import (
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -100,49 +99,39 @@ func TestRemoveLiquidity(t *testing.T) {
 	//Parameters for Remove Liquidity
 	initialBalance := 10000 // Initial account balance for all assets created
 	poolBalance := 1000     // Amount funded to pool , This same amount is used both for native and external asset
-	wBasis := 5001
-	asymmetry := 1
+	wBasis := 1000
+	asymmetry := 10000
 
 	asset := NewAsset("ETHEREUM", "ETH", "ceth")
 	externalCoin := sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(initialBalance)))
 	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(initialBalance)))
 	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
-	currentCoins := keeper.BankKeeper.GetCoins(ctx, signer)
-	fmt.Println("current_coins=", currentCoins)
 
 	msg := NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err := handleMsgRemoveLiquidity(ctx, keeper, msg)
 	require.Error(t, err)
 	require.Nil(t, res)
-	currentCoins = keeper.BankKeeper.GetCoins(ctx, signer)
-	fmt.Println("current_coins=", currentCoins)
 
 	msgCreatePool := NewMsgCreatePool(signer, asset, uint(poolBalance), uint(poolBalance))
 	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	currentCoins = keeper.BankKeeper.GetCoins(ctx, signer)
-	fmt.Println("current_coins=", currentCoins)
 
 	coins := CalculateWithdraw(t, keeper, ctx, asset, signer.String(), uint(wBasis), asymmetry)
 	msg = NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handleMsgRemoveLiquidity(ctx, keeper, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	currentCoins = keeper.BankKeeper.GetCoins(ctx, signer)
-	fmt.Println("current_coins=", currentCoins, "coins=", coins)
 	ok := keeper.BankKeeper.HasCoins(ctx, signer, coins)
 	assert.True(t, ok, "")
 
 	wBasis = 1000
-	asymmetry = -1
+	asymmetry = -10000
 	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), uint(wBasis), asymmetry)
 	msg = NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handleMsgRemoveLiquidity(ctx, keeper, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	currentCoins = keeper.BankKeeper.GetCoins(ctx, signer)
-	fmt.Println("current_coins=", currentCoins, "coins=", coins)
 	ok = keeper.BankKeeper.HasCoins(ctx, signer, coins)
 	assert.True(t, ok, "")
 
@@ -153,8 +142,6 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handleMsgRemoveLiquidity(ctx, keeper, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	currentCoins = keeper.BankKeeper.GetCoins(ctx, signer)
-	fmt.Println("current_coins=", currentCoins, "coins=", coins)
 	ok = keeper.BankKeeper.HasCoins(ctx, signer, coins)
 	assert.True(t, ok, "")
 }
