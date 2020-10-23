@@ -20,7 +20,7 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
-	NativeTicker = "ROWAN"
+	NativeTicker = "rwn"
 	NativeChain  = "SIFCHAIN"
 	NativeSymbol = "RWN"
 )
@@ -48,7 +48,7 @@ func GetPoolAddress(ticker string, native string) (string, error) {
 }
 
 func GetAddress(ticker, native string) (sdk.AccAddress, error) {
-	addressBytes := []byte(fmt.Sprintf("%s_%s", ticker, native)) //sdk.GetConfig().GetBech32ConsensusAddrPrefix(),
+	addressBytes := []byte(fmt.Sprintf("%s_%s", ticker, native))
 	paddedbytes, err := pkcs7Pad(addressBytes, 20)
 	if err != nil {
 		return nil, err

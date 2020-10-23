@@ -11,8 +11,9 @@ const (
 	StoreKey          = types.StoreKey
 	QuerierRoute      = types.QuerierRoute
 	DefaultParamspace = types.DefaultParamspace
-	NativeToken       = types.NativeTicker
+	NativeSymbol      = types.NativeSymbol
 	NativeChain       = types.NativeChain
+	NativeTicker      = types.NativeTicker
 )
 
 var (

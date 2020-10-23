@@ -115,6 +115,7 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk
 	ctx := sdk.NewContext(ms, abci.Header{ChainID: "foochainid"}, isCheckTx, log.NewNopLogger())
 	accountKeeper := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
 	bankKeeper := bank.NewBaseKeeper(accountKeeper, pk.Subspace(bank.DefaultParamspace), blacklistedAddrs)
+
 	maccPerms := map[string][]string{
 		auth.FeeCollectorName:     nil,
 		types.ModuleName:          nil,
@@ -140,7 +141,7 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk
 
 func GenerateRandomPool(numberOfPools int) []types.Pool {
 	var poolList []types.Pool
-	tokens := []string{"ETH", "BTC", "EOS", "BCH", "BNB", "USDT", "ADA", "TRX"}
+	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < numberOfPools; i++ {
 		// initialize global pseudo random generator
@@ -157,12 +158,12 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 
 func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	var lpList []types.LiquidityProvider
-	tokens := []string{"ETH", "BTC", "EOS", "BCH", "BNB", "USDT", "ADA", "TRX"}
+	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < numberOfLp; i++ {
 		externalToken := tokens[rand.Intn(len(tokens))]
 		asset := types.NewAsset("ROWAN", "c"+"ROWAN"+externalToken, externalToken)
-		lp := types.NewLiquidityProvider(asset, 1, "192.0.1.1")
+		lp := types.NewLiquidityProvider(asset, 1, "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
 		lpList = append(lpList, lp)
 	}
 	return lpList

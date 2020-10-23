@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"strings"
 )
 
@@ -37,7 +38,8 @@ func (a Asset) Validate() bool {
 	if len(strings.TrimSpace(a.Ticker)) == 0 {
 		return false
 	}
-	return true
+	coin := sdk.NewCoin(a.Ticker, sdk.OneInt())
+	return coin.IsValid()
 }
 
 func (a Asset) Equals(a2 Asset) bool {
