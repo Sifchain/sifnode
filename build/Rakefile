@@ -107,32 +107,31 @@ end
 
 desc "network operations"
 namespace :network do
-  # desc "build and launch a new network"
-  # task :compose, [:chainnet, :validator_count, :build_dir, :seed_ip_address, :seed_network_address] do |t, args|
-  #
-  #   network_create({chainnet: args[:chainnet], validator_count: args[:validator_count],
-  #                   build_dir: args[:build_dir], seed_ip_address: args[:seed_ip_address],
-  #                   network_config: network_config})
-  #
-  #   network_boot({chainnet: args[:chainnet], network_config: network_config,
-  #                 seed_network_address: args[:seed_network_address]})
-  # end
-
   desc "create the config and generate the keys for a new network"
   task :create, [:chainnet] do |t, args|
+    if args[:chainnet] == nil
+      puts "Please provide chainnet argument. ie testnet, mainnet"
+      exit 1
+    end
+
     network_create({chainnet: args[:chainnet], validator_count: 4,
                     build_dir: "networks", seed_ip_address: "192.168.2.1",network_config: network_config(args[:chainnet])})
   end
 
   desc "boot the new network"
   task :boot, [:chainnet] do |t, args|
+    if args[:chainnet] == nil
+      puts "Please provide chainnet argument. ie testnet, mainnet"
+      exit(1)
+    end
+
     if !File.file?(network_config(args[:chainnet]))
       puts "the file #{network_config(args[:chainnet])} does not exist!"
       exit(1)
     end
 
-    network_boot({chainnet: args[:chainnet], network_config: network_config(args[:chainnet]),
-                  seed_network_address: "192.168.2.0/24"})
+    build_docker_image(args[:chainnet])
+    boot_docker_network({chainnet: args[:chainnet], seed_network_address: "192.168.2.0/24"})
   end
 end
 
@@ -217,10 +216,8 @@ def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:, ne
 end
 
 # Boot the new network.
-def network_boot(chainnet:, network_config:, seed_network_address:)
-  network_image(chainnet)
-
-  network = YAML.load_file(network_config)
+def boot_docker_network(chainnet:, seed_network_address:)
+  network = YAML.load_file(network_config(chainnet))
 
   cmd = "CHAINNET=#{chainnet} "
   network.each_with_index do |node, idx|
@@ -231,7 +228,7 @@ def network_boot(chainnet:, network_config:, seed_network_address:)
   system(cmd)
 end
 
-# Create a docker image for the new network
-def network_image(chainnet)
-  system("docker build -f ../cmd/sifnoded/Dockerfile -t sifchain/sifnode:#{chainnet} .")
+# Build docker image for the new network
+def build_docker_image(chainnet)
+  system("cd .. && docker build -f ./cmd/sifnoded/Dockerfile -t sifchain/sifnoded:#{chainnet} .")
 end
