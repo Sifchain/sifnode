@@ -1,7 +1,7 @@
 require 'rake'
-require 'rbconfig'
 require 'yaml'
 require 'digest'
+Dir["./lib/*.rb"].each {|file| require file }
 
 desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
@@ -100,11 +100,6 @@ namespace :dependencies do
   end
 end
 
-def network_config(chainnet)
-  "networks/#{Digest::SHA256.hexdigest chainnet}.yml"
-end
-
-
 desc "network operations"
 namespace :network do
   desc "create the config and generate the keys for a new network"
@@ -192,23 +187,6 @@ def image_repository(args)
   args[:image_repository] ? "#{args[:image_repository]}" : "sifchain/sifnoded"
 end
 
-def detect_os
-  @os ||= (
-  host_os = RbConfig::CONFIG['host_os']
-  case host_os
-  when /mswin|msys|mingw|cygwin|bccwin|wince|emc/
-    :windows
-  when /darwin|mac os/
-    :macosx
-  when /linux/
-    :linux
-  when /solaris|bsd/
-    :unix
-  else
-    raise Error::WebDriverError, "unknown os: #{host_os.inspect}"
-  end
-  )
-end
 
 # Creates the config for a new network.
 def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:, network_config:)
@@ -232,3 +210,9 @@ end
 def build_docker_image(chainnet)
   system("cd .. && docker build -f ./cmd/sifnoded/Dockerfile -t sifchain/sifnoded:#{chainnet} .")
 end
+
+def network_config(chainnet)
+  "networks/#{Digest::SHA256.hexdigest chainnet}.yml"
+end
+
+
