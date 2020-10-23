@@ -4,6 +4,7 @@ import List from "../views/List.vue";
 import TransferEth from "../views/TransferEth.vue";
 import SifWallet from "@/views/SifWallet.vue";
 import Swap from "@/views/Swap.vue";
+import Ui from "@/views/Ui.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -30,6 +31,13 @@ const routes: Array<RouteRecordRaw> = [
     path: "/ethtransfer",
     name: "TransferEth",
     component: TransferEth,
+  },
+
+  // route for UI elements showcase - To Be Deleted
+  {
+    path: "/ui",
+    name: "Ui",
+    component: Ui,
   },
 ];
 
