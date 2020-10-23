@@ -32,7 +32,7 @@ func TestCreatePool(t *testing.T) {
 
 	MinThreshold := keeper.GetParams(ctx).MinCreatePoolThreshold
 	// Will fail if we are below minimum
-	msgCreatePool := NewMsgCreatePool(signer, asset, uint(MinThreshold-1), 0)
+	msgCreatePool := NewMsgCreatePool(signer, asset, MinThreshold-1, 0)
 	res, err := handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.Error(t, err)
 	require.Nil(t, res)
