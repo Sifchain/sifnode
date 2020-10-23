@@ -16,6 +16,7 @@ export default {
   min-height: calc(100vh - 80px); // account for menu height
   margin-top: 80px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   background: url('../../assets/World_Background_opt.jpg');
