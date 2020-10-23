@@ -223,7 +223,7 @@ def network_boot(chainnet:, network_config:, seed_network_address:)
     cmd += "MONIKER#{idx+1}=#{node['moniker']} IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
   end
 
-  cmd += "IPV4_SUBNET=#{seed_network_address} docker-compose -f ./build/docker-compose.yml up"
+  cmd += "IPV4_SUBNET=#{seed_network_address} docker-compose -f ./docker-compose.yml up"
   system(cmd)
 end
 
