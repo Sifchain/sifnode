@@ -1,5 +1,5 @@
-include ./build/Makefile
-
+CHAINNET?=localnet # Options; localnet, testnet, chaosnet ,mainnet
+BINARY?=sifnoded
 GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
@@ -49,3 +49,9 @@ run:
 utest:
 	@go test ./x/clp/keeper/
 	@go test ./x/clp
+
+build-image:
+	docker build -t sifchain/$(BINARY):$(CHAINNET) -f ./cmd/$(BINARY)/Dockerfile .
+
+run-image: build-image
+	docker run sifchain/$(BINARY):$(CHAINNET)

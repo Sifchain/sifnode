@@ -1,0 +1,16 @@
+{
+  "name": "ethereum",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Sifchain",
+  "license": "UNLICENSED",
+  "scripts": {
+    "migrate": "truffle migrate --reset"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "2.5.1"
+  },
+  "devDependencies": {
+    "concurrently": "^5.3.0"
+  }
+}
