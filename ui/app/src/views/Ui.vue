@@ -24,6 +24,8 @@
             <CurrencyForm label="To" />
           </InputGroup>
 
+          <SwapPanel />
+
           <p class="text--small">No wallet connected</p>
 
           <SifButton primary block>Connect to Wallet</SifButton>
@@ -38,6 +40,7 @@ import SifButton from '../components/Elements/SifButton.vue';
 import InputGroup from '../components/Elements/InputGroup.vue';
 import SifApp from '../components/Blocks/SifApp.vue';
 import CurrencyForm from '../components/Blocks/CurrencyForm.vue';
+import SwapPanel from '../components/Blocks/SwapPanel.vue';
 
 export default {
   components: {
@@ -45,6 +48,7 @@ export default {
     SifApp,
     InputGroup,
     CurrencyForm,
+    SwapPanel
   }
 }
 </script>
