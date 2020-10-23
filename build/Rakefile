@@ -1,11 +1,12 @@
 require 'rake'
 require 'rbconfig'
 require 'yaml'
+require 'digest'
 
 desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
   desc "Scaffold new cluster environment configuration from template"
-  task :scaffold, %i[chainnet provider] do |t, args|
+  task :scaffold, [:chainnet, :provider] do |t, args|
     check_args(args)
 
     # create path location
@@ -23,7 +24,6 @@ namespace :cluster do
       > #{path(args)}/.envrc
     ")
 
-
     # init terraform
     system("cd #{path(args)} && terraform init")
 
@@ -32,7 +32,7 @@ namespace :cluster do
   end
 
   desc "Create cluster"
-  task :create, %i[chainnet provider] do |t, args|
+  task :create, [:chainnet, :provider] do |t, args|
     check_args(args)
     puts "Deploy cluster config: #{path(args)}"
     system("cd #{path(args)} && terraform apply") or exit 1
@@ -40,7 +40,7 @@ namespace :cluster do
     puts "Now run `rake sifnode:install[#{args[:chainnet]},#{args[:provider]}]` to deploy sifnode to your cluster"
   end
 
-  task :destroy, %i[chainnet provider] do |t, args|
+  task :destroy, [:chainnet, :provider] do |t, args|
     check_args(args)
     puts "Destroy running cluster: #{path(args)}"
     system("cd #{path(args)} && terraform destroy") or exit 1
@@ -51,7 +51,7 @@ end
 desc "Manage sifnode install, upgrade, etc processes"
 namespace :sifnode do
   desc "Install sifnode on cluster"
-  task :install, %i[chainnet provider namespace image image_tag] do |t, args|
+  task :install, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
     check_args(args)
 
     cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
@@ -63,7 +63,7 @@ namespace :sifnode do
     system({"KUBECONFIG" => kubeconfig(args) }, cmd)
   end
 
-  task :uninstall, %i[chainnet provider namespace] do |t, args|
+  task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
     check_args(args)
     cmd = "helm delete #{ns(args)} -n #{ns(args)}"
     system({"KUBECONFIG" => kubeconfig(args) }, cmd)
@@ -103,22 +103,25 @@ end
 desc "network operations"
 namespace :network do
   desc "build and launch a new network"
-  task :compose, %i[chainnet validator_count build_dir seed_ip_address seed_network_address] do |t, args|
+  task :compose, [:chainnet, :validator_count, :build_dir, :seed_ip_address, :seed_network_address] do |t, args|
+    network_config = "#{args[:build_dir]}/#{Digest::SHA256.hexdigest args[:chainnet]}.yml"
+
     network_create({chainnet: args[:chainnet], validator_count: args[:validator_count],
-                    build_dir: args[:build_dir], seed_ip_address: args[:seed_ip_address]})
-    network_boot({chainnet: args[:chainnet], network_config: "#{args[:build_dir]}/#{args[:chainnet]}.yml",
+                    build_dir: args[:build_dir], seed_ip_address: args[:seed_ip_address],
+                    network_config: network_config})
+
+    network_boot({chainnet: args[:chainnet], network_config: network_config,
                   seed_network_address: args[:seed_network_address]})
   end
 
   desc "build the config and generate the keys for a new network"
-  task :build, %i[chainnet validator_count build_dir seed_ip_address] do |t, args|
+  task :build, [:chainnet, :validator_count, :build_dir, :seed_ip_address] do |t, args|
     network_create({chainnet: args[:chainnet], validator_count: args[:validator_count],
                     build_dir: args[:build_dir], seed_ip_address: args[:seed_ip_address]})
   end
 
   desc "boot the new network"
-  task :launch, %i[chainnet network_config seed_network_address] do |t, args|
-    network_config = "#{build_dir}/#{chainnet}.yml"
+  task :launch, [:chainnet, :network_config, :seed_network_address] do |t, args|
     if !File.file?(network_config)
       puts "the file #{network_config} does not exist!"
       exit(1)
@@ -126,6 +129,14 @@ namespace :network do
 
     network_boot({chainnet: args[:chainnet], network_config: network_config,
                   seed_network_address: args[:seed_network_address]})
+  end
+end
+
+desc "node operations"
+namespace :node do
+  desc "create a new node and configure it to connect to an existing network"
+  task :create, [:chainnet, :peer_address, :genesis_url] do |t, args|
+    system("sifgen node create #{args[:chainnet]} #{args[:peer_address]} #{args[:genesis_url]}")
   end
 end
 
@@ -197,8 +208,8 @@ def detect_os
 end
 
 # Creates the config for a new network.
-def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:)
-  system("sifgen network create #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{build_dir}/#{chainnet}.yml")
+def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:, network_config:)
+  system("sifgen network create #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{network_config}")
 end
 
 # Boot the new network.
@@ -206,7 +217,6 @@ def network_boot(chainnet:, network_config:, seed_network_address:)
   network_image(chainnet)
 
   network = YAML.load_file(network_config)
-  FileUtils.rm_f(network_config)
 
   cmd = "CHAINNET=#{chainnet} "
   network.each_with_index do |node, idx|

@@ -10,15 +10,15 @@ import (
 )
 
 const (
-	NodeHomeDir = ".sifnoded"
-	CLIHomeDir  = ".sifnodecli"
-	ConfigDir   = "config"
-	GentxsDir   = "gentxs"
-	NodesDir    = "nodes"
+	NodeHomeDir   = ".sifnoded"
+	CLIHomeDir    = ".sifnodecli"
+	ConfigDir     = "config"
+	GentxsDir     = "gentxs"
+	ValidatorsDir = "validators"
 )
 
-type Nodes []Node
-type Node struct {
+type Validators []Validator
+type Validator struct {
 	ChainID                   string `yaml:"chain_id"`
 	NodeID                    string `yaml:"node_id"`
 	IPv4Address               string `yaml:"ipv4_address"`
@@ -35,11 +35,11 @@ type Node struct {
 	Seed                      bool   `yaml:"is_seed"`
 }
 
-func NewNode(rootDir, chainID string, seed bool, lastIPv4Addr string) *Node {
+func NewValidator(rootDir, chainID string, seed bool, lastIPv4Addr string) *Validator {
 	moniker := haikunator.New(time.Now().UTC().UnixNano()).Haikunate()
-	homeDir := fmt.Sprintf("%s/%s/%s/%s", rootDir, NodesDir, chainID, moniker)
+	homeDir := fmt.Sprintf("%s/%s/%s/%s", rootDir, ValidatorsDir, chainID, moniker)
 
-	return &Node{
+	return &Validator{
 		IPv4Address:  nextIP(lastIPv4Addr),
 		ChainID:      chainID,
 		HomeDir:      homeDir,

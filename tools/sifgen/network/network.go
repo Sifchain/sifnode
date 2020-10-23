@@ -7,9 +7,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/BurntSushi/toml"
+	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/network/types"
-	"github.com/Sifchain/sifnode/tools/sifgen/network/utils"
+	"github.com/Sifchain/sifnode/tools/sifgen/utils"
+
+	"github.com/BurntSushi/toml"
 	"gopkg.in/yaml.v3"
 )
 
@@ -31,7 +33,7 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 	}
 
 	initDirs := []string{
-		fmt.Sprintf("%s/%s", outputDir, NodesDir),
+		fmt.Sprintf("%s/%s", outputDir, ValidatorsDir),
 		fmt.Sprintf("%s/%s", outputDir, GentxsDir),
 	}
 
@@ -40,81 +42,81 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 	}
 
 	gentxDir := fmt.Sprintf("%s/%s", outputDir, GentxsDir)
-	nodes := n.initNodes(count, outputDir, seedIPv4Addr)
+	validators := n.initValidators(count, outputDir, seedIPv4Addr)
 
-	for _, node := range nodes {
-		appDirs := []string{node.NodeHomeDir, node.CLIHomeDir, node.CLIConfigDir}
+	for _, validator := range validators {
+		appDirs := []string{validator.NodeHomeDir, validator.CLIHomeDir, validator.CLIConfigDir}
 		if err := n.createDirs(appDirs); err != nil {
 			return nil, err
 		}
 
-		if err := n.setDefaultConfig(fmt.Sprintf("%s/%s/%s/%s", node.HomeDir, CLIHomeDir, ConfigDir, utils.ConfigFile)); err != nil {
+		if err := n.setDefaultConfig(fmt.Sprintf("%s/%s/%s/%s", validator.HomeDir, CLIHomeDir, ConfigDir, utils.ConfigFile)); err != nil {
 			return nil, err
 		}
 
-		if err := n.generateKey(node); err != nil {
+		if err := n.generateKey(validator); err != nil {
 			return nil, err
 		}
 
-		if err := n.initChain(node); err != nil {
+		if err := n.initChain(validator); err != nil {
 			return nil, err
 		}
 
-		if err := n.setValidatorAddress(node); err != nil {
+		if err := n.setValidatorAddress(validator); err != nil {
 			return nil, err
 		}
 
-		if err := n.setValidatorConsensusAddress(node); err != nil {
+		if err := n.setValidatorConsensusAddress(validator); err != nil {
 			return nil, err
 		}
 
-		if err := n.replaceStakingBondDenom(node); err != nil {
+		if err := n.replaceStakingBondDenom(validator); err != nil {
 			return nil, err
 		}
 
-		if err := n.setNodeID(node); err != nil {
+		if err := n.setValidatorID(validator); err != nil {
 			return nil, err
 		}
 
-		if !node.Seed {
-			seedNode := n.getSeedNode(nodes)
-			if err := n.addGenesis(node.Address, seedNode.NodeHomeDir); err != nil {
+		if !validator.Seed {
+			seedValidator := n.getSeedValidator(validators)
+			if err := n.addGenesis(validator.Address, seedValidator.NodeHomeDir); err != nil {
 				return nil, err
 			}
 
-			if err := n.generateTx(node, seedNode.NodeHomeDir, gentxDir); err != nil {
+			if err := n.generateTx(validator, seedValidator.NodeHomeDir, gentxDir); err != nil {
 				return nil, err
 			}
 		} else {
-			if err := n.addGenesis(node.Address, node.NodeHomeDir); err != nil {
+			if err := n.addGenesis(validator.Address, validator.NodeHomeDir); err != nil {
 				return nil, err
 			}
 
-			if err := n.generateTx(node, node.NodeHomeDir, gentxDir); err != nil {
+			if err := n.generateTx(validator, validator.NodeHomeDir, gentxDir); err != nil {
 				return nil, err
 			}
 		}
 	}
 
-	seedNode := n.getSeedNode(nodes)
-	if err := n.collectGenTxs(gentxDir, seedNode.NodeHomeDir); err != nil {
+	seedValidator := n.getSeedValidator(validators)
+	if err := n.collectGenTxs(gentxDir, seedValidator.NodeHomeDir); err != nil {
 		return nil, err
 	}
 
-	if err := n.setPeers(nodes); err != nil {
+	if err := n.setPeers(validators); err != nil {
 		return nil, err
 	}
 
-	if err := n.copyGenesis(nodes); err != nil {
+	if err := n.copyGenesis(validators); err != nil {
 		return nil, err
 	}
 
-	summary := n.summary(nodes)
+	summary := n.summary(validators)
 	return &summary, nil
 }
 
-func (n *Network) initNodes(count int, outputDir, seedIPv4Addr string) []*Node {
-	var nodes []*Node
+func (n *Network) initValidators(count int, outputDir, seedIPv4Addr string) []*Validator {
+	var validators []*Validator
 	var lastIPv4Addr string
 
 	for i := 0; i < count; i++ {
@@ -127,13 +129,13 @@ func (n *Network) initNodes(count int, outputDir, seedIPv4Addr string) []*Node {
 			lastIPv4Addr = seedIPv4Addr
 		}
 
-		node := NewNode(outputDir, n.chainID, seed, lastIPv4Addr)
-		nodes = append(nodes, node)
+		validator := NewValidator(outputDir, n.chainID, seed, lastIPv4Addr)
+		validators = append(validators, validator)
 
-		lastIPv4Addr = node.IPv4Address
+		lastIPv4Addr = validator.IPv4Address
 	}
 
-	return nodes
+	return validators
 }
 
 func (n *Network) createDirs(toCreate []string) error {
@@ -147,7 +149,7 @@ func (n *Network) createDirs(toCreate []string) error {
 }
 
 func (n *Network) setDefaultConfig(configPath string) error {
-	config := types.CLIConfig{
+	config := common.CLIConfig{
 		ChainID:        n.chainID,
 		Indent:         true,
 		KeyringBackend: "file",
@@ -170,8 +172,8 @@ func (n *Network) setDefaultConfig(configPath string) error {
 	return nil
 }
 
-func (n *Network) generateKey(node *Node) error {
-	output, err := n.CLI.AddKey(node.Moniker, node.Password, fmt.Sprintf("%s/%s", node.HomeDir, CLIHomeDir))
+func (n *Network) generateKey(validator *Validator) error {
+	output, err := n.CLI.AddKey(validator.Moniker, validator.Password, fmt.Sprintf("%s/%s", validator.HomeDir, CLIHomeDir))
 	if err != nil {
 		return err
 	}
@@ -181,21 +183,21 @@ func (n *Network) generateKey(node *Node) error {
 		return err
 	}
 
-	var keys types.Keys
+	var keys common.Keys
 
 	err = yaml.Unmarshal(yml, &keys)
 	if err != nil {
 		return err
 	}
 
-	node.Address = keys[0].Address
-	node.PubKey = keys[0].PubKey
+	validator.Address = keys[0].Address
+	validator.PubKey = keys[0].PubKey
 
 	return nil
 }
 
-func (n *Network) initChain(node *Node) error {
-	_, err := n.CLI.InitChain(node.ChainID, node.Moniker, node.NodeHomeDir)
+func (n *Network) initChain(validator *Validator) error {
+	_, err := n.CLI.InitChain(validator.ChainID, validator.Moniker, validator.NodeHomeDir)
 	if err != nil {
 		return err
 	}
@@ -203,32 +205,32 @@ func (n *Network) initChain(node *Node) error {
 	return nil
 }
 
-func (n *Network) setValidatorAddress(node *Node) error {
-	output, err := n.CLI.ValidatorAddress(node.NodeHomeDir)
+func (n *Network) setValidatorAddress(validator *Validator) error {
+	output, err := n.CLI.ValidatorAddress(validator.NodeHomeDir)
 	if err != nil {
 		return err
 	}
 
-	node.ValidatorAddress = strings.TrimSuffix(*output, "\n")
+	validator.ValidatorAddress = strings.TrimSuffix(*output, "\n")
 
 	return nil
 }
 
-func (n *Network) setValidatorConsensusAddress(node *Node) error {
-	output, err := n.CLI.ValidatorConsensusAddress(node.NodeHomeDir)
+func (n *Network) setValidatorConsensusAddress(validator *Validator) error {
+	output, err := n.CLI.ValidatorConsensusAddress(validator.NodeHomeDir)
 	if err != nil {
 		return err
 	}
 
-	node.ValidatorConsensusAddress = strings.TrimSuffix(*output, "\n")
+	validator.ValidatorConsensusAddress = strings.TrimSuffix(*output, "\n")
 
 	return nil
 }
 
-func (n *Network) replaceStakingBondDenom(node *Node) error {
+func (n *Network) replaceStakingBondDenom(validator *Validator) error {
 	var genesis types.Genesis
 
-	genesisPath := fmt.Sprintf("%s/config/%s", node.NodeHomeDir, utils.GenesisFile)
+	genesisPath := fmt.Sprintf("%s/config/%s", validator.NodeHomeDir, utils.GenesisFile)
 
 	body, err := ioutil.ReadFile(genesisPath)
 	if err != nil {
@@ -252,29 +254,29 @@ func (n *Network) replaceStakingBondDenom(node *Node) error {
 	return nil
 }
 
-func (n *Network) setNodeID(node *Node) error {
-	output, err := n.CLI.NodeID(node.NodeHomeDir)
+func (n *Network) setValidatorID(validator *Validator) error {
+	output, err := n.CLI.NodeID(validator.NodeHomeDir)
 	if err != nil {
 		return err
 	}
 
-	node.NodeID = strings.TrimSuffix(*output, "\n")
+	validator.NodeID = strings.TrimSuffix(*output, "\n")
 
 	return nil
 }
 
-func (n *Network) getSeedNode(nodes []*Node) *Node {
-	for _, node := range nodes {
-		if node.Seed {
-			return node
+func (n *Network) getSeedValidator(validators []*Validator) *Validator {
+	for _, validator := range validators {
+		if validator.Seed {
+			return validator
 		}
 	}
 
-	return &Node{}
+	return &Validator{}
 }
 
-func (n *Network) addGenesis(address, nodeHomeDir string) error {
-	_, err := n.CLI.AddGenesisAccount(address, nodeHomeDir, types.ToFund)
+func (n *Network) addGenesis(address, validatorHomeDir string) error {
+	_, err := n.CLI.AddGenesisAccount(address, validatorHomeDir, types.ToFund)
 	if err != nil {
 		return err
 	}
@@ -282,17 +284,17 @@ func (n *Network) addGenesis(address, nodeHomeDir string) error {
 	return nil
 }
 
-func (n *Network) generateTx(node *Node, nodeDir, outputDir string) error {
+func (n *Network) generateTx(validator *Validator, validatorDir, outputDir string) error {
 	_, err := n.CLI.GenerateGenesisTxn(
-		node.Moniker,
-		node.Password,
+		validator.Moniker,
+		validator.Password,
 		types.ToBond,
-		nodeDir,
-		node.CLIHomeDir,
-		fmt.Sprintf("%s/%s.json", outputDir, node.Moniker),
-		node.NodeID,
-		node.ValidatorAddress,
-		node.IPv4Address,
+		validatorDir,
+		validator.CLIHomeDir,
+		fmt.Sprintf("%s/%s.json", outputDir, validator.Moniker),
+		validator.NodeID,
+		validator.ValidatorAddress,
+		validator.IPv4Address,
 	)
 	if err != nil {
 		return err
@@ -301,8 +303,8 @@ func (n *Network) generateTx(node *Node, nodeDir, outputDir string) error {
 	return nil
 }
 
-func (n *Network) collectGenTxs(gentxDir, nodeDir string) error {
-	_, err := n.CLI.CollectGenesisTxns(gentxDir, nodeDir)
+func (n *Network) collectGenTxs(gentxDir, validatorDir string) error {
+	_, err := n.CLI.CollectGenesisTxns(gentxDir, validatorDir)
 	if err != nil {
 		return err
 	}
@@ -310,22 +312,22 @@ func (n *Network) collectGenTxs(gentxDir, nodeDir string) error {
 	return nil
 }
 
-func (n *Network) generatePeerList(nodes []*Node, idx int) []string {
+func (n *Network) generatePeerList(validators []*Validator, idx int) []string {
 	var peers []string
-	for i, node := range nodes {
+	for i, validator := range validators {
 		if i != idx {
-			peers = append(peers, fmt.Sprintf("%s@%s:26656", node.NodeID, node.IPv4Address))
+			peers = append(peers, fmt.Sprintf("%s@%s:26656", validator.NodeID, validator.IPv4Address))
 		}
 	}
 
 	return peers
 }
 
-func (n *Network) setPeers(nodes []*Node) error {
-	for i, node := range nodes {
-		var config types.NodeConfig
+func (n *Network) setPeers(validators []*Validator) error {
+	for i, validator := range validators {
+		var config common.NodeConfig
 
-		configFile := fmt.Sprintf("%s/%s/%s", node.NodeHomeDir, ConfigDir, utils.ConfigFile)
+		configFile := fmt.Sprintf("%s/%s/%s", validator.NodeHomeDir, ConfigDir, utils.ConfigFile)
 
 		content, err := ioutil.ReadFile(configFile)
 		if err != nil {
@@ -341,7 +343,7 @@ func (n *Network) setPeers(nodes []*Node) error {
 			return err
 		}
 
-		config.P2P.PersistentPeers = strings.Join(n.generatePeerList(nodes, i)[:], ",")
+		config.P2P.PersistentPeers = strings.Join(n.generatePeerList(validators, i)[:], ",")
 		if err := toml.NewEncoder(file).Encode(config); err != nil {
 			return err
 		}
@@ -354,19 +356,19 @@ func (n *Network) setPeers(nodes []*Node) error {
 	return nil
 }
 
-func (n *Network) copyGenesis(nodes []*Node) error {
-	seedNode := n.getSeedNode(nodes)
-	srcFile := fmt.Sprintf("%s/%s/%s", seedNode.NodeHomeDir, ConfigDir, utils.GenesisFile)
+func (n *Network) copyGenesis(validators []*Validator) error {
+	seedValidator := n.getSeedValidator(validators)
+	srcFile := fmt.Sprintf("%s/%s/%s", seedValidator.NodeHomeDir, ConfigDir, utils.GenesisFile)
 
-	for _, node := range nodes {
-		if !node.Seed {
+	for _, validator := range validators {
+		if !validator.Seed {
 			input, err := ioutil.ReadFile(srcFile)
 			if err != nil {
 				return err
 			}
 
 			err = ioutil.WriteFile(
-				fmt.Sprintf("%s/%s/%s", node.NodeHomeDir, ConfigDir, utils.GenesisFile),
+				fmt.Sprintf("%s/%s/%s", validator.NodeHomeDir, ConfigDir, utils.GenesisFile),
 				input,
 				0600,
 			)
@@ -379,7 +381,7 @@ func (n *Network) copyGenesis(nodes []*Node) error {
 	return nil
 }
 
-func (n *Network) summary(nodes []*Node) string {
-	yml, _ := yaml.Marshal(nodes)
+func (n *Network) summary(validators []*Validator) string {
+	yml, _ := yaml.Marshal(validators)
 	return string(yml)
 }
