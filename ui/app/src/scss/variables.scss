@@ -1,0 +1,48 @@
+/*
+ *  COLORS and GRADIENTS:
+ */
+
+$c_gold: #CAA93A;
+$c_gold_dark: #9C7919;
+
+$c_white: #ffffff;
+$c_gray_50: #FAFAFA;  // use for btn on white, use for non-white panels
+$c_gray_100: #F4F4F4;
+$c_gray_200: #E6E6E6;
+$c_gray_300: #DEDEDE;
+$c_gray_400: #ccc;
+$c_gray_700: #818181; // switch bg, disabled font on dark, gradients
+$c_gray_800: #333;
+$c_gray_900: #272727;
+$c_black: #000;
+
+// main copy color
+$c_text: $c_gray_900;
+
+$g_gold: linear-gradient(to right, $c_gold, $c_gold_dark);
+$g_gray: linear-gradient(180deg, $c_gray_50 0%, $c_gray_100 100%);
+$g_gray_reverse: linear-gradient(180deg, $c_gray_50 0%, $c_gray_200 100%);
+
+
+/*
+ *  BOX SHADOW:
+ */
+
+$bs_default: 0px 0px 35px rgba($c_black, 0.41);
+
+
+/*
+ *  BORDERS:
+ */
+
+ // border radius
+$br_sm: 6px;
+$br_md: 10px;
+$br_lg: 15px;
+
+
+/*
+ *  TRANSITIONS:
+ */
+
+$trans_fast: 0.2s ease;
