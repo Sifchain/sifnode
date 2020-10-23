@@ -1,7 +1,7 @@
 <template>
   <button 
     class="btn"
-    :class="{ 'btn--disabled': disabled, 'btn--block': block }"
+    :class="classBinding"
     @click="$emit('click')"
   >
     <slot></slot>
@@ -20,6 +20,31 @@ export default {
       type: Boolean,
       default: false
     },
+    className: {
+      type: String,
+    },
+    primary: {
+      type: Boolean,
+    },
+    secondary: {
+      type: Boolean,
+    }
+  },
+
+  data() {
+    return {
+      classBinding: {
+        'btn--disabled': this.disabled, 
+        'btn--block': this.block,
+        'btn--primary': this.primary,
+        'btn--secondary': this.secondary,
+        className: this.className,
+      }
+    }
+  },
+
+  mounted() {
+    this.primary = this.secondary ? false : true;
   }
 }
 </script>
@@ -27,7 +52,6 @@ export default {
 <style lang="scss">
 .btn {
   @include resetButton;
-
   position: relative;
   display: inline-block;
   height: 30px;
@@ -38,8 +62,6 @@ export default {
   line-height: $lh_btn;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: white;
-  background: $c_gold;
   border-radius: $br_sm;
   transform: perspective(1px) translateZ(0);
   cursor: pointer;
@@ -48,26 +70,9 @@ export default {
     margin-right: 0.5em;
   }
 
-  &::before {
-    content: '';
-    display: block;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    background: $g_gold;
-    z-index: -1;
-    opacity: 0;
-    transition: opacity $trans_fast;
-  }
-
-  &:hover::before {
-    opacity: 1;
-  }
-
   &--disabled {
     cursor: default;
+    pointer-events: none;
     background: $c_gray_400;
     color: $c_gray_800;
 
@@ -76,6 +81,40 @@ export default {
     }
   }
 
+  &--primary {
+    color: white;
+    background: $c_gold;
+
+    &::before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: $g_gold;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity $trans_fast;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+  }
+
+  &--secondary {
+    background: $c_gray_100;
+    color: $c_text;
+
+    &:hover {
+      background: $c_gray_300;
+    }
+  }
+
+  // sizes: 
+  // block spans the full width of parent
   &--block {
     display: block;
     width: 100%;

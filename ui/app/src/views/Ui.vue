@@ -1,12 +1,13 @@
 <template>
   <div>
-    <div class="mt-2">
-      <SifButton>Rowan</SifButton>
-      <SifButton disabled>Rowan</SifButton>
+    <div class="mt-6">
+      <SifButton primary>Primary</SifButton>
+      <SifButton secondary>Secondary</SifButton>
+      <SifButton disabled>Disabled</SifButton>
     </div>
 
-    <div class="mt-2">
-      <SifButton block>Rowan</SifButton>
+    <div class="mt-6">
+      <SifButton primary block>Primary Block</SifButton>
     </div>
   </div>
 </template>
