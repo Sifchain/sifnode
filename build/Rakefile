@@ -100,35 +100,39 @@ namespace :dependencies do
   end
 end
 
+def network_config(chainnet)
+  "networks/#{Digest::SHA256.hexdigest chainnet}.yml"
+end
+
+
 desc "network operations"
 namespace :network do
-  desc "build and launch a new network"
-  task :compose, [:chainnet, :validator_count, :build_dir, :seed_ip_address, :seed_network_address] do |t, args|
-    network_config = "#{args[:build_dir]}/#{Digest::SHA256.hexdigest args[:chainnet]}.yml"
+  # desc "build and launch a new network"
+  # task :compose, [:chainnet, :validator_count, :build_dir, :seed_ip_address, :seed_network_address] do |t, args|
+  #
+  #   network_create({chainnet: args[:chainnet], validator_count: args[:validator_count],
+  #                   build_dir: args[:build_dir], seed_ip_address: args[:seed_ip_address],
+  #                   network_config: network_config})
+  #
+  #   network_boot({chainnet: args[:chainnet], network_config: network_config,
+  #                 seed_network_address: args[:seed_network_address]})
+  # end
 
-    network_create({chainnet: args[:chainnet], validator_count: args[:validator_count],
-                    build_dir: args[:build_dir], seed_ip_address: args[:seed_ip_address],
-                    network_config: network_config})
-
-    network_boot({chainnet: args[:chainnet], network_config: network_config,
-                  seed_network_address: args[:seed_network_address]})
-  end
-
-  desc "build the config and generate the keys for a new network"
-  task :build, [:chainnet, :validator_count, :build_dir, :seed_ip_address] do |t, args|
-    network_create({chainnet: args[:chainnet], validator_count: args[:validator_count],
-                    build_dir: args[:build_dir], seed_ip_address: args[:seed_ip_address]})
+  desc "create the config and generate the keys for a new network"
+  task :create, [:chainnet] do |t, args|
+    network_create({chainnet: args[:chainnet], validator_count: 4,
+                    build_dir: "networks", seed_ip_address: "192.168.2.1",network_config: network_config(args[:chainnet])})
   end
 
   desc "boot the new network"
-  task :launch, [:chainnet, :network_config, :seed_network_address] do |t, args|
-    if !File.file?(network_config)
-      puts "the file #{network_config} does not exist!"
+  task :boot, [:chainnet] do |t, args|
+    if !File.file?(network_config(args[:chainnet]))
+      puts "the file #{network_config(args[:chainnet])} does not exist!"
       exit(1)
     end
 
-    network_boot({chainnet: args[:chainnet], network_config: network_config,
-                  seed_network_address: args[:seed_network_address]})
+    network_boot({chainnet: args[:chainnet], network_config: network_config(args[:chainnet]),
+                  seed_network_address: "192.168.2.0/24"})
   end
 end
 
