@@ -1,6 +1,6 @@
 ## Sifgen
 
-### Initialize a net network
+### Initialize a new network
 
 To initialize a new network, run:
 
@@ -19,3 +19,19 @@ Where:
 
 
 This will then output all the necessary keys and genesis files that are required to boot a new network.
+
+### Create a new node
+
+In addition to creating a new network, you can also create a node (listener/witness) to connect to an existing network, by running:
+
+```
+sifgen node create <chain-id> <peer-address> <genesis-url>
+```
+
+Where:
+
+| Parameter   | Description     |
+| -----------| ----------------|
+| `chain-id` | The Chain ID.   |
+| `peer-address` | The peer address of the existing network node/validator to connect to. |
+| `genesis-url` | The URL of the genesis file to use. |
