@@ -37,6 +37,6 @@ export async function getFakeTokens(): Promise<Token[]> {
 
 export async function getFakeAssets(): Promise<Asset[]> {
   const ETH = createCoin("ETH", 18, "Ethereum", ChainId.ETHEREUM);
-  const RWN = createCoin("RWN", 18, "Rowan", ChainId.SIFCHAIN);
+  const RWN = createCoin("nametoken", 6, "nametoken", ChainId.SIFCHAIN);
   return [ETH, RWN];
 }

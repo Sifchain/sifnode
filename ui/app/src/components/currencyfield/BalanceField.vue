@@ -1,5 +1,5 @@
 <template>
-  <span v-if="available !== null">Balance: {{ available }}</span>
+  <span v-if="available !== '0'">Available: {{ available }}</span>
 </template>
 
 <script lang="ts">
@@ -15,12 +15,14 @@ export default defineComponent({
       return [...store.wallet.eth.balances, ...store.wallet.sif.balances];
     });
 
-    const available = computed(
-      () =>
-        balances.value
-          .find((bal) => bal.asset.symbol === props.symbol)
-          ?.toFixed(2) ?? "0"
-    );
+    const available = computed(() => {
+      const found = balances.value.find(
+        (bal) => bal.asset.symbol === props.symbol
+      );
+      if (!found) return "0";
+
+      return found.toFixed(Math.min(found.asset.decimals, 2));
+    });
 
     return { available };
   },
