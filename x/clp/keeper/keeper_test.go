@@ -20,6 +20,7 @@ func TestKeeper_Errors(t *testing.T) {
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
 	assert.Error(t, err)
 	assert.NotEqual(t, getlp, lp)
+	assert.NotNil(t, GenerateAddress())
 }
 
 func TestKeeper_SetPool(t *testing.T) {
