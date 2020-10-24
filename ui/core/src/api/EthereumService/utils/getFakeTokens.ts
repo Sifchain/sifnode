@@ -1,10 +1,4 @@
-import {
-  Asset,
-  ChainId,
-  createCoin,
-  createToken,
-  Token,
-} from "../../../entities";
+import { Asset, ChainId, Coin, Token } from "../../../entities";
 
 // Parse Truffle json for the most recent address
 function parseTruffleJson(
@@ -17,7 +11,13 @@ function parseTruffleJson(
   const entries = Object.entries(jobj.networks);
   const [last] = entries.slice(-1);
   const { address } = last[1];
-  return createToken(symbol, 6, name, ChainId.ETHEREUM, address);
+  return Token({
+    symbol,
+    decimals: 6,
+    name,
+    chainId: ChainId.ETHEREUM,
+    address,
+  });
 }
 
 // The reason we have to get fake tokens instead of just loading up a
@@ -36,7 +36,18 @@ export async function getFakeTokens(): Promise<Token[]> {
 }
 
 export async function getFakeAssets(): Promise<Asset[]> {
-  const ETH = createCoin("ETH", 18, "Ethereum", ChainId.ETHEREUM);
-  const RWN = createCoin("nametoken", 6, "nametoken", ChainId.SIFCHAIN);
+  const ETH = Coin({
+    symbol: "ETH",
+    decimals: 18,
+    name: "Ethereum",
+    chainId: ChainId.ETHEREUM,
+  });
+  const RWN = Coin({
+    symbol: "nametoken",
+    decimals: 6,
+    name: "nametoken",
+    chainId: ChainId.SIFCHAIN,
+  });
+
   return [ETH, RWN];
 }

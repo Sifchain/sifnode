@@ -1,5 +1,12 @@
-import { createAsset, Asset } from "./Asset";
+import { ChainId } from "./ChainId";
 
-export const Coin = Asset;
+export function Coin(p: {
+  symbol: string;
+  decimals: number;
+  name: string;
+  chainId: ChainId;
+}) {
+  return p;
+}
 
-export const createCoin = Coin.create;
+export type Coin = ReturnType<typeof Coin>;
