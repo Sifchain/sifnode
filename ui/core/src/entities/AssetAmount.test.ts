@@ -1,6 +1,7 @@
-import { AssetAmountFraction, AssetAmount } from "./AssetAmount";
+import { AssetAmount } from "./AssetAmount";
 import { Network } from "./Network";
 import { Coin } from "./Coin";
+import JSBI from "jsbi";
 
 const USD = Coin({
   symbol: "USD",
@@ -17,7 +18,7 @@ const ETH = Coin({
 });
 
 test("it should be able to handle whole integars", () => {
-  const f = new AssetAmountFraction(USD, "10012");
+  const f = AssetAmount(USD, JSBI.BigInt("10012"));
   expect(f.toFixed(2)).toBe("100.12");
 });
 

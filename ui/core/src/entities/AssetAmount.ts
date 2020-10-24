@@ -15,7 +15,7 @@ import B from "./utils/B";
 
 const Big = toFormat(_Big);
 
-export class AssetAmountFraction extends Fraction {
+class _AssetAmount extends Fraction {
   constructor(public asset: Asset, public amount: BigintIsh) {
     super(
       parseBigintIsh(amount),
@@ -52,17 +52,19 @@ export class AssetAmountFraction extends Fraction {
   }
 }
 
-export type AssetAmount = AssetAmountFraction;
+export type AssetAmount = _AssetAmount;
 
-// Conveniance method for initializing a balance with a number
-// AssetAmount(ETH, 10)
-// If amount is in JSBI then the amount this creates will be in base units (ie Wei)
-// Otherwise the amount will be in natural units
+/**
+ * Represents an amount of an Asset
+ *
+ * @param asset The Asset for the denomination
+ * @param amount If amount is in JSBI then the amount this creates will be in base units (eg. Wei) otherwise the amount will be in natural units
+ */
 export function AssetAmount(
   asset: Asset,
   amount: string | number | JSBI
 ): AssetAmount {
   const jsbiAmount =
     amount instanceof JSBI ? amount : B(amount, asset.decimals);
-  return new AssetAmountFraction(asset, jsbiAmount);
+  return new _AssetAmount(asset, jsbiAmount);
 }
