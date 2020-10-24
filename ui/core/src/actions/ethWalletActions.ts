@@ -39,7 +39,6 @@ export default ({
   });
 
   effect(() => {
-    console.log("address changed" + etheriumState.address);
     store.wallet.eth.address = etheriumState.address;
   });
 

@@ -4,14 +4,12 @@ import {
   makeCosmoshubPath,
   CosmosClient,
   coins,
-  Coin,
 } from "@cosmjs/launchpad";
 
 import { Mnemonic } from "../../entities/Wallet";
-import { Address, Asset, Balance, ChainId, TxParams } from "../../entities";
+import { Address, Balance, ChainId, Coin, TxParams } from "../../entities";
 import { reactive } from "@vue/reactivity";
 import { IWalletService } from "../IWalletService";
-import { CONNECTED } from "../EthereumService/events";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
@@ -103,7 +101,12 @@ export default function createSifService({
 
         state.balances = account.balance.map(({ amount, denom }) => {
           // HACK: Following should be a lookup of tokens loaded from genesis somehow
-          const asset = Asset.create(denom, 0, denom, ChainId.SIFCHAIN);
+          const asset = Coin({
+            symbol: denom,
+            decimals: 0,
+            name: denom,
+            chainId: ChainId.SIFCHAIN,
+          });
           return Balance.n(asset, amount);
         });
         return state.balances;
