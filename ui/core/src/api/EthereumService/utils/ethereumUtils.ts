@@ -6,51 +6,11 @@ import {
   TransactionReceipt,
   WebsocketProvider,
 } from "web3-core";
-import { AbiItem } from "web3-utils";
+
 import { ETH } from "../../../constants";
 import { Address, Asset, Balance, Token } from "../../../entities";
 
-// TODO: Hmm maybe we need to load each token from compiled json? Or is every ERC-20 token the same?
-const erc20TokenAbi: AbiItem[] = [
-  // balanceOf
-  {
-    constant: true,
-    inputs: [{ name: "_owner", type: "address" }],
-    name: "balanceOf",
-    outputs: [{ name: "balance", type: "uint256" }],
-    type: "function",
-  },
-  // decimals
-  {
-    constant: true,
-    inputs: [],
-    name: "decimals",
-    outputs: [{ name: "", type: "uint8" }],
-    type: "function",
-  },
-  // transfer
-  {
-    constant: false,
-    inputs: [
-      {
-        name: "_to",
-        type: "address",
-      },
-      {
-        name: "_value",
-        type: "uint256",
-      },
-    ],
-    name: "transfer",
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-      },
-    ],
-    type: "function",
-  },
-];
+import erc20TokenAbi from "./erc20TokenAbi";
 
 export function isToken(value?: Asset | Token): value is Token {
   return value ? Object.keys(value).includes("address") : false;
