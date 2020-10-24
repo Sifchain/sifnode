@@ -20,6 +20,7 @@ export function getMockWalletService(
     getBalance: jest.fn(async () => walletBalances),
     connect: jest.fn(async () => {
       state.connected = true;
+      state.balances = walletBalances;
     }),
     disconnect: jest.fn(async () => {
       state.connected = false;
