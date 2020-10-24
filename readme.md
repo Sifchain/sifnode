@@ -21,23 +21,3 @@ sifnoded start
 For additional help, check out our demo video https://www.youtube.com/watch?v=1kjdjCEcYak&feature=youtu.be&ab_channel=utx0_
 
 You can also ask questions at our Discord channel - https://discord.gg/SE2dg8
-
-## Configure
-
-Initialization parameters of your app are stored in `config.yml`.
-
-### `accounts`
-
-A list of user accounts created during genesis of your application.
-
-| Key   | Required | Type            | Description                                       |
-| ----- | -------- | --------------- | ------------------------------------------------- |
-| name  | Y        | String          | Local name of the key pair                        |
-| coins | Y        | List of Strings | Initial coins with denominations (e.g. "100coin") |
-
-## Learn more
-
-- [Starport](https://github.com/tendermint/starport)
-- [Cosmos SDK documentation](https://docs.cosmos.network)
-- [Cosmos Tutorials](https://tutorials.cosmos.network)
-- [Channel on Discord](https://discord.gg/W8trcGV)
