@@ -1,3 +1,4 @@
+import { Asset } from "./Asset";
 import { Network } from "./Network";
 
 export function Token(p: {
@@ -7,6 +8,7 @@ export function Token(p: {
   network: Network;
   address: string;
 }) {
+  Asset.set(p.symbol, p);
   return p;
 }
 
