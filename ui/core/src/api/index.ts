@@ -1,6 +1,7 @@
 // Everything here represents services that are effectively remote data storage
 export * from "./EthereumService/utils/getFakeTokens";
 export * from "./EthereumService/utils/getWeb3Provider";
+export * from "./EthereumService/utils/getSupportedTokens";
 
 import EthereumService, { EthereumServiceContext } from "./EthereumService";
 import tokenService, { TokenServiceContext } from "./TokenService";

@@ -2,11 +2,12 @@ import { Asset } from "./Asset";
 import { Network } from "./Network";
 
 export function Token(p: {
-  symbol: string;
+  address: string;
   decimals: number;
+  imageUrl?: string;
   name: string;
   network: Network;
-  address: string;
+  symbol: string;
 }) {
   Asset.set(p.symbol, p);
   return p;

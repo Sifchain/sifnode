@@ -4,13 +4,14 @@
   <p>Token Name</p>
   <hr />
   <div class="token-list">
-    <button
+    <div
+      class="token-button"
       v-for="token in filteredTokens"
       :key="token.symbol"
       @click="selectToken(token.symbol)"
     >
-      {{ token.symbol }}
-    </button>
+      <AssetItem :symbol="token.symbol" />
+    </div>
   </div>
 </template>
 
@@ -18,10 +19,11 @@
 import { defineComponent } from "vue";
 import { computed, ref } from "@vue/reactivity";
 import { useCore } from "../../hooks/useCore";
-
+import AssetItem from "./AssetItem.vue";
 export default defineComponent({
   name: "SelectTokenDialog",
   emits: ["close"],
+  components: { AssetItem },
   props: { localBalance: Object },
   setup(props, context) {
     const searchText = ref("");
@@ -48,5 +50,13 @@ export default defineComponent({
 .token-list {
   display: flex;
   flex-direction: column;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.token-button {
+  text-align: left;
+  background: transparent;
+  border: none;
+  margin-bottom: 0.5rem;
 }
 </style>

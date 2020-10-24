@@ -27,8 +27,12 @@ export async function getTokenBalance(
   asset: Token
 ) {
   const contract = getTokenContract(web3, asset);
-  const decimals = await contract.methods.decimals().call();
-  const tokenBalance = await contract.methods.balanceOf(address).call();
+  let tokenBalance = "0";
+  try {
+    tokenBalance = await contract.methods.balanceOf(address).call();
+  } catch (err) {
+    console.log(`Error fetching balance for ${asset.symbol}`);
+  }
   return AssetAmount(asset, B(tokenBalance, 0));
 }
 

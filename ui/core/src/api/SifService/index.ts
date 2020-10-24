@@ -17,8 +17,8 @@ export type SifServiceContext = {
 };
 
 export default function createSifService({
-  sifAddrPrefix = "sif",
-  sifApiUrl = "http://127.0.0.1:1317",
+  sifAddrPrefix,
+  sifApiUrl,
 }: SifServiceContext): IWalletService {
   const {} = sifAddrPrefix;
   const state: {

@@ -1,4 +1,5 @@
 import { Asset, Network, Coin, Token } from "../../../entities";
+import { getSupportedTokens } from "./getSupportedTokens";
 
 // Parse Truffle json for the most recent address
 function parseTruffleJson(
@@ -24,14 +25,18 @@ function parseTruffleJson(
 // json list is that everytime truffle compiles we have new addresses
 // and we need to keep track of that
 export async function getFakeTokens(): Promise<Token[]> {
+  // add real tokens for testing
+  const realTokens = await getSupportedTokens();
+
   // gonna load the json and parse the code for all our fake tokens
   const atkJson = require("../../../../../chains/ethereum/build/contracts/AliceToken.json");
   const btkJson = require("../../../../../chains/ethereum/build/contracts/BobToken.json");
 
   // Return the tokens parsed as assets
   return [
-    parseTruffleJson("AliceToken", "ATK", atkJson),
-    parseTruffleJson("BobToken", "BTK", btkJson),
+    parseTruffleJson("AliceToken", "atk", atkJson),
+    parseTruffleJson("BobToken", "btk", btkJson),
+    ...realTokens,
   ];
 }
 

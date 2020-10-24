@@ -168,7 +168,7 @@ export class EthereumService implements IWalletService {
     // No address no asset get everything
     balances = await Promise.all([
       getEtheriumBalance(web3, addr),
-      ...supportedTokens.map((token: Token) => {
+      ...supportedTokens.slice(0, 10).map((token: Token) => {
         return getTokenBalance(web3, addr, token);
       }),
     ]);
