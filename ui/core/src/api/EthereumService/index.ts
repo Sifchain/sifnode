@@ -49,12 +49,15 @@ export class EthereumService implements IWalletService {
     accounts: Address[];
     balances: Balance[];
     log: string;
-  } = reactive(initState);
+  };
 
   constructor(
     getWeb3Provider: () => Promise<provider>,
     private getSupportedTokens: () => Promise<Token[]>
   ) {
+    // init state
+    this.state = reactive({ ...initState });
+
     getWeb3Provider().then((provider) => {
       if (isEventEmittingProvider(provider)) {
         provider.on("connect", () => {
