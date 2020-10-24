@@ -1,4 +1,4 @@
-import { AssetAmountFraction, AssetAmountN } from "./AssetAmount";
+import { AssetAmountFraction, AssetAmount } from "./AssetAmount";
 import { Network } from "./Network";
 import { Coin } from "./Coin";
 
@@ -22,8 +22,8 @@ test("it should be able to handle whole integars", () => {
 });
 
 test("Shorthand", () => {
-  expect(AssetAmountN(USD, "100.12").toFixed()).toBe("100.12");
-  expect(AssetAmountN(ETH, "10.1234567").toFixed()).toBe(
+  expect(AssetAmount(USD, "100.12").toFixed()).toBe("100.12");
+  expect(AssetAmount(ETH, "10.1234567").toFixed()).toBe(
     "10.123456700000000000"
   );
 });

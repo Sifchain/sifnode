@@ -55,10 +55,10 @@ export class AssetAmountFraction extends Fraction {
 export type AssetAmount = AssetAmountFraction;
 
 // Conveniance method for initializing a balance with a number
-// AssetAmountN(ETH, 10)
+// AssetAmount(ETH, 10)
 // If amount is in JSBI then the amount this creates will be in base units (ie Wei)
 // Otherwise the amount will be in natural units
-export function AssetAmountN(
+export function AssetAmount(
   asset: Asset,
   amount: string | number | JSBI
 ): AssetAmount {

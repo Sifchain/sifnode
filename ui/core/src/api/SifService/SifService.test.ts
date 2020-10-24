@@ -1,6 +1,6 @@
 import JSBI from "jsbi";
 import { NCN } from "../../constants";
-import { AssetAmountN } from "../../entities";
+import { AssetAmount } from "../../entities";
 import createSifService, { SifServiceContext } from ".";
 
 const badMnemonic =
@@ -11,7 +11,7 @@ const mnemonic =
 
 const account = {
   address: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-  balance: [AssetAmountN(NCN, "1000")],
+  balance: [AssetAmount(NCN, "1000")],
   pubkey: {
     type: "tendermint/PubKeySecp256k1",
     value: "AvUEsFHbsr40nTSmWh7CWYRZHGwf4cpRLtJlaRO4VAoq",
@@ -69,6 +69,6 @@ describe("sifService", () => {
       memo: "",
     });
     const [balance] = await sifService.getBalance(address);
-    expect(balance).toEqual(AssetAmountN(NCN, "950"));
+    expect(balance).toEqual(AssetAmount(NCN, "950"));
   });
 });
