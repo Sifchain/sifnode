@@ -1,4 +1,4 @@
-export enum ChainId {
+export enum Network {
   SIFCHAIN,
   ETHEREUM,
 }

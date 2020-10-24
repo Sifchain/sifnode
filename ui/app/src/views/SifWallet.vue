@@ -80,7 +80,7 @@
 import { defineComponent } from "vue";
 import { ref } from "@vue/reactivity";
 import { useCore } from "../hooks/useCore";
-import { Asset, ChainId } from "../../../core/src";
+import { Coin, Network } from "../../../core/src";
 import JSBI from "jsbi";
 
 export default defineComponent({
@@ -104,7 +104,12 @@ export default defineComponent({
       }
 
       await actions.sifWallet.sendCosmosTransaction({
-        asset: Asset.create("nametoken", 18, "Nametoken", ChainId.SIFCHAIN),
+        asset: Coin({
+          symbol: "nametoken",
+          decimals: 18,
+          name: "Nametoken",
+          network: Network.SIFCHAIN,
+        }),
         amount: JSBI.BigInt(amount.value),
         recipient: sendTo.value,
       });

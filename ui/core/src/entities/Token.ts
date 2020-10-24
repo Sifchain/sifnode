@@ -1,10 +1,10 @@
-import { ChainId } from "./ChainId";
+import { Network } from "./Network";
 
 export function Token(p: {
   symbol: string;
   decimals: number;
   name: string;
-  chainId: ChainId;
+  network: Network;
   address: string;
 }) {
   return p;

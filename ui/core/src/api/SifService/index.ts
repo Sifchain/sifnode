@@ -7,7 +7,7 @@ import {
 } from "@cosmjs/launchpad";
 
 import { Mnemonic } from "../../entities/Wallet";
-import { Address, AssetAmount, ChainId, Coin, TxParams } from "../../entities";
+import { Address, AssetAmount, Network, Coin, TxParams } from "../../entities";
 import { reactive } from "@vue/reactivity";
 import { IWalletService } from "../IWalletService";
 
@@ -105,7 +105,7 @@ export default function createSifService({
             symbol: denom,
             decimals: 0,
             name: denom,
-            chainId: ChainId.SIFCHAIN,
+            network: Network.SIFCHAIN,
           });
           return AssetAmount.n(asset, amount);
         });

@@ -1,4 +1,4 @@
-import { Asset, ChainId, Coin, Token } from "../../../entities";
+import { Asset, Network, Coin, Token } from "../../../entities";
 
 // Parse Truffle json for the most recent address
 function parseTruffleJson(
@@ -15,7 +15,7 @@ function parseTruffleJson(
     symbol,
     decimals: 6,
     name,
-    chainId: ChainId.ETHEREUM,
+    network: Network.ETHEREUM,
     address,
   });
 }
@@ -40,13 +40,13 @@ export async function getFakeAssets(): Promise<Asset[]> {
     symbol: "ETH",
     decimals: 18,
     name: "Ethereum",
-    chainId: ChainId.ETHEREUM,
+    network: Network.ETHEREUM,
   });
   const RWN = Coin({
     symbol: "nametoken",
     decimals: 6,
     name: "nametoken",
-    chainId: ChainId.SIFCHAIN,
+    network: Network.SIFCHAIN,
   });
 
   return [ETH, RWN];

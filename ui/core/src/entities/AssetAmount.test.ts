@@ -1,19 +1,19 @@
 import { AssetAmount } from "./AssetAmount";
-import { ChainId } from "./ChainId";
+import { Network } from "./Network";
 import { Coin } from "./Coin";
 
 const USD = Coin({
   symbol: "USD",
   decimals: 2,
   name: "US Dollar",
-  chainId: ChainId.ETHEREUM,
+  network: Network.ETHEREUM,
 });
 
 const ETH = Coin({
   symbol: "ETH",
   decimals: 18,
   name: "Ethereum",
-  chainId: ChainId.ETHEREUM,
+  network: Network.ETHEREUM,
 });
 
 test("it should be able to handle whole integars", () => {
