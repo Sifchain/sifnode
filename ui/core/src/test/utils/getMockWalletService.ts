@@ -1,15 +1,15 @@
 import { IWalletService } from "../../api/IWalletService";
-import { Balance } from "../../entities";
+import { AssetAmount } from "../../entities";
 
 export function getMockWalletService(
   state: {
     address: string;
     accounts: string[];
     connected: boolean;
-    balances: Balance[];
+    balances: AssetAmount[];
     log: string;
   },
-  walletBalances: Balance[],
+  walletBalances: AssetAmount[],
   service: Partial<IWalletService> = {}
 ): IWalletService {
   return {

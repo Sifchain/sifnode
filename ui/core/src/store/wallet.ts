@@ -1,15 +1,15 @@
 import { reactive } from "@vue/reactivity";
 
-import { Address, Balance } from "../entities";
+import { Address, AssetAmount } from "../entities";
 
 export type WalletStore = {
   eth: {
-    balances: Balance[];
+    balances: AssetAmount[];
     isConnected: boolean;
     address: Address;
   };
   sif: {
-    balances: Balance[];
+    balances: AssetAmount[];
     isConnected: boolean;
     address: Address;
   };

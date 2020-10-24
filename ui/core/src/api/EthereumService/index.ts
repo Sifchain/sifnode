@@ -2,7 +2,7 @@ import { reactive } from "@vue/reactivity";
 import Web3 from "web3";
 import { provider, WebsocketProvider } from "web3-core";
 import { IWalletService } from "../IWalletService";
-import { TxHash, TxParams, Asset, Balance, Token } from "../../entities";
+import { TxHash, TxParams, Asset, AssetAmount, Token } from "../../entities";
 import {
   getEtheriumBalance,
   getTokenBalance,
@@ -12,7 +12,7 @@ import {
 } from "./utils/ethereumUtils";
 
 type Address = string;
-type Balances = Balance[];
+type Balances = AssetAmount[];
 
 export type EthereumServiceContext = {
   getWeb3Provider: () => Promise<provider>;
@@ -47,7 +47,7 @@ export class EthereumService implements IWalletService {
     connected: boolean;
     address: Address;
     accounts: Address[];
-    balances: Balance[];
+    balances: AssetAmount[];
     log: string;
   };
 

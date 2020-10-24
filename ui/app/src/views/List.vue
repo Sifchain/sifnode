@@ -17,7 +17,7 @@ import { defineComponent } from "vue";
 import { computed } from "@vue/reactivity";
 
 import { useCore } from "../hooks/useCore";
-import { Balance } from "../../../core/src";
+import { AssetAmount } from "../../../core/src";
 export default defineComponent({
   name: "ListPage",
   setup() {
@@ -37,7 +37,7 @@ export default defineComponent({
 
       const allBalances = [
         ...store.wallet.eth.balances,
-        ...tokensNotInBalances.map((token) => Balance.create(token, "0")),
+        ...tokensNotInBalances.map((token) => AssetAmount.create(token, "0")),
       ];
 
       return allBalances;

@@ -3,7 +3,7 @@
 import { getFakeTokens } from "./utils/getFakeTokens";
 import createWalletService from ".";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
-import { Balance } from "../../entities";
+import { AssetAmount } from "../../entities";
 import { ETH } from "../../constants";
 import { TEN } from "src/entities/fraction/Fraction";
 import JSBI from "jsbi";
@@ -45,13 +45,13 @@ describe("EthereumService", () => {
 
     expect(balances[0].toFixed()).toEqual(
       // TODO: Work out a better way to deal with natural amounts eg 99.95048114 ETH
-      Balance.create(ETH, "99950481140000000000").toFixed()
+      AssetAmount.create(ETH, "99950481140000000000").toFixed()
     );
     expect(balances[1].toFixed()).toEqual(
-      Balance.create(ATK!, "10000000000").toFixed()
+      AssetAmount.create(ATK!, "10000000000").toFixed()
     );
     expect(balances[2].toFixed()).toEqual(
-      Balance.create(BTK!, "10000000000").toFixed()
+      AssetAmount.create(BTK!, "10000000000").toFixed()
     );
   });
 
@@ -115,7 +115,7 @@ describe("EthereumService", () => {
       origBalanceAccount0
         .find(({ asset: { symbol } }) => symbol === "ETH")
         ?.toFixed()
-    ).toEqual(Balance.n(ETH, "99.95048114").toFixed());
+    ).toEqual(AssetAmount.n(ETH, "99.95048114").toFixed());
 
     await EthereumService.transfer({
       amount: JSBI.BigInt(10 * 10 ** 18),

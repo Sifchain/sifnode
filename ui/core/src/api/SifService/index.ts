@@ -7,7 +7,7 @@ import {
 } from "@cosmjs/launchpad";
 
 import { Mnemonic } from "../../entities/Wallet";
-import { Address, Balance, ChainId, Coin, TxParams } from "../../entities";
+import { Address, AssetAmount, ChainId, Coin, TxParams } from "../../entities";
 import { reactive } from "@vue/reactivity";
 import { IWalletService } from "../IWalletService";
 
@@ -25,7 +25,7 @@ export default function createSifService({
     connected: boolean;
     address: Address;
     accounts: Address[];
-    balances: Balance[];
+    balances: AssetAmount[];
     log: string; // latest transaction hash
   } = reactive({
     connected: false,
@@ -86,7 +86,7 @@ export default function createSifService({
       state.log = "";
     },
 
-    async getBalance(address?: Address): Promise<Balance[]> {
+    async getBalance(address?: Address): Promise<AssetAmount[]> {
       if (!address) throw "Address undefined. Fail";
 
       if (address.length !== 42) throw "Address not valid (length). Fail"; // this is simple check, limited to default address type (check bech32)
@@ -107,7 +107,7 @@ export default function createSifService({
             name: denom,
             chainId: ChainId.SIFCHAIN,
           });
-          return Balance.n(asset, amount);
+          return AssetAmount.n(asset, amount);
         });
         return state.balances;
       } catch (error) {
