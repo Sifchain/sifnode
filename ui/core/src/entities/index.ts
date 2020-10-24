@@ -10,6 +10,5 @@ export * from "./Sifdist";
 export * from "./Slashing";
 export * from "./Staking";
 export * from "./Token";
-export * from "./TokenAmount";
 export * from "./Transaction";
 export * from "./Wallet";

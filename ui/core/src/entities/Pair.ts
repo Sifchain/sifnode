@@ -1,6 +1,6 @@
-import { TokenAmount } from "./TokenAmount";
+import { Balance } from "./Balance";
 
 export type Pair = {
-  tokenAmountA: TokenAmount;
-  tokenAmountB: TokenAmount;
+  tokenAmountA: Balance;
+  tokenAmountB: Balance;
 };
