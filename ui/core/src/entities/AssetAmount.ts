@@ -15,7 +15,7 @@ import B from "./utils/B";
 
 const Big = toFormat(_Big);
 
-class _AssetAmount extends Fraction {
+export class _AssetAmount extends Fraction {
   constructor(public asset: Asset, public amount: BigintIsh) {
     super(
       parseBigintIsh(amount),
