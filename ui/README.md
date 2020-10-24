@@ -1,6 +1,6 @@
 # Frontend repo
 
-🚧 This is currently under construction. 🚧
+🚧 This is currently under construction and may not work. 🚧
 
 ## Installation
 
