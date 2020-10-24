@@ -8,11 +8,12 @@ import {
 } from "web3-core";
 
 import { ETH } from "../../../constants";
-import { Address, Asset, AssetAmount, Token } from "../../../entities";
+import { Address, Asset, AssetAmountN, Token } from "../../../entities";
+import B from "../../../entities/utils/B";
 
 import erc20TokenAbi from "./erc20TokenAbi";
 
-export function isToken(value?: Asset | Token): value is Token {
+export function isToken(value?: Asset): value is Token {
   return value ? Object.keys(value).includes("address") : false;
 }
 
@@ -26,8 +27,9 @@ export async function getTokenBalance(
   asset: Token
 ) {
   const contract = getTokenContract(web3, asset);
+  const decimals = await contract.methods.decimals().call();
   const tokenBalance = await contract.methods.balanceOf(address).call();
-  return AssetAmount.create(asset, tokenBalance);
+  return AssetAmountN(asset, B(tokenBalance, 0));
 }
 
 export function isEventEmittingProvider(
@@ -123,5 +125,5 @@ export async function transferEther(
 
 export async function getEtheriumBalance(web3: Web3, address: Address) {
   const ethBalance = await web3.eth.getBalance(address);
-  return AssetAmount.create(ETH, ethBalance);
+  return AssetAmountN(ETH, web3.utils.fromWei(ethBalance));
 }

@@ -1,6 +1,6 @@
 import walletActions from "../actions/ethWalletActions";
 import { createStore, Store } from "../store";
-import { AssetAmount, Token } from "../entities";
+import { AssetAmountN, Token } from "../entities";
 
 import JSBI from "jsbi";
 import { USDC, USDT, BNB, CRO, FET } from "../constants/tokens";
@@ -8,7 +8,7 @@ import { reactive } from "@vue/reactivity";
 import { getMockWalletService } from "./utils/getMockWalletService";
 
 const toBalance = (balance: number) => (tok: Token) =>
-  AssetAmount.create(tok, JSBI.BigInt(balance));
+  AssetAmountN(tok, balance);
 
 describe("queryListOfAvailableTokens", () => {
   describe("updateAvailableTokens", () => {

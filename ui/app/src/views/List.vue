@@ -37,7 +37,7 @@ export default defineComponent({
 
       const allBalances = [
         ...store.wallet.eth.balances,
-        ...tokensNotInBalances.map((token) => AssetAmount.create(token, "0")),
+        ...tokensNotInBalances.map((token) => AssetAmountN(token, "0")),
       ];
 
       return allBalances;
