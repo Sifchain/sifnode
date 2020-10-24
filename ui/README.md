@@ -1,5 +1,7 @@
 # Frontend repo
 
+🚧 This is currently under construction. 🚧
+
 ## Installation
 
 #### Prerequisites
