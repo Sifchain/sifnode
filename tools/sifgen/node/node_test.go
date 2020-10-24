@@ -200,6 +200,11 @@ func (s *nodeSuite) TestValidate(c *C) {
 	s.node.moniker = moniker
 	err = s.node.Validate()
 	c.Assert(err, IsNil)
+
+	errCurrentChainID = mockError
+	err = s.node.Validate()
+	c.Assert(err, NotNil)
+	errCurrentChainID = nil
 }
 
 func (s *nodeSuite) TestSetup(c *C) {
@@ -209,6 +214,10 @@ func (s *nodeSuite) TestSetup(c *C) {
 	err = s.node.Setup()
 	c.Assert(err, NotNil)
 	errReset = nil
+	errInitChain = mockError
+	err = s.node.Setup()
+	c.Assert(err, NotNil)
+	errInitChain = nil
 	errSetKeyRingStorage = mockError
 	err = s.node.Setup()
 	c.Assert(err, NotNil)
@@ -237,6 +246,18 @@ func (s *nodeSuite) TestGenesis(c *C) {
 	s.node.seedAddress = nil
 	err = s.node.Genesis(faucet.NewFaucet(chainID).DefaultDeposit())
 	c.Assert(err, IsNil)
+	errAddGenesisAccount = mockError
+	err = s.node.Genesis(faucet.NewFaucet(chainID).DefaultDeposit())
+	c.Assert(err, NotNil)
+	errAddGenesisAccount = nil
+	errGenerateGenesisTxn = mockError
+	err = s.node.Genesis(faucet.NewFaucet(chainID).DefaultDeposit())
+	c.Assert(err, NotNil)
+	errGenerateGenesisTxn = nil
+	errCollectGenesisTxns = mockError
+	err = s.node.Genesis(faucet.NewFaucet(chainID).DefaultDeposit())
+	c.Assert(err, NotNil)
+	errCollectGenesisTxns = nil
 }
 
 func (s *nodeSuite) TestChainID(c *C) {
@@ -262,6 +283,9 @@ func (s *nodeSuite) TestNodeKeyPassword(c *C) {
 func (s *nodeSuite) TestNodePeerAddress(c *C) {
 	c.Assert(s.node.NodePeerAddress(), NotNil)
 	c.Assert(s.node.collectNodePeerAddress(), IsNil)
+	errExportGenesis = mockError
+	c.Assert(s.node.collectNodePeerAddress(), NotNil)
+	errExportGenesis = nil
 	c.Assert(s.node.NodePeerAddress(), Equals, nodePeerAddress)
 }
 

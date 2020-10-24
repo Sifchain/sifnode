@@ -7,6 +7,14 @@ import (
 	"testing"
 )
 
+func TestHandler(t *testing.T) {
+	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	handler := NewHandler(keeper)
+	res, err := handler(ctx, nil)
+	require.Error(t, err)
+	require.Nil(t, res)
+}
+
 func TestCreatePool(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	signer := GenerateAddress()
@@ -21,16 +29,35 @@ func TestCreatePool(t *testing.T) {
 
 	ok := keeper.BankKeeper.HasCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 	assert.True(t, ok, "")
-	msgCreatePool := NewMsgCreatePool(signer, asset, uint(poolBalance), uint(poolBalance))
+
+	MinThreshold := keeper.GetParams(ctx).MinCreatePoolThreshold
+	// Will fail if we are below minimum
+	msgCreatePool := NewMsgCreatePool(signer, asset, MinThreshold-1, 0)
 	res, err := handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	require.Error(t, err)
+	require.Nil(t, res)
+
+	// Will fail if we ask for too much.
+	msgCreatePool = NewMsgCreatePool(signer, asset, uint(initialBalance+1), uint(initialBalance+1))
+	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	require.Error(t, err)
+	require.Nil(t, res)
+
+	// Ask for the right amount.
+	msgCreatePool = NewMsgCreatePool(signer, asset, uint(poolBalance), uint(poolBalance))
+	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+
+	// Can't create it a second time.
+	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
+	require.Error(t, err)
+	require.Nil(t, res)
 
 	externalCoin = sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(initialBalance-poolBalance)))
 	nativeCoin = sdk.NewCoin(NativeTicker, sdk.NewInt(int64(initialBalance-poolBalance)))
 	ok = keeper.BankKeeper.HasCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 	assert.True(t, ok, "")
-
 }
 
 func TestAddLiqudity(t *testing.T) {
@@ -72,27 +99,50 @@ func TestRemoveLiquidity(t *testing.T) {
 	//Parameters for Remove Liquidity
 	initialBalance := 10000 // Initial account balance for all assets created
 	poolBalance := 1000     // Amount funded to pool , This same amount is used both for native and external asset
-	wBasis := 5001
-	asymmetry := 1
+	wBasis := 1000
+	asymmetry := 10000
 
 	asset := NewAsset("ETHEREUM", "ETH", "ceth")
 	externalCoin := sdk.NewCoin(asset.Ticker, sdk.NewInt(int64(initialBalance)))
 	nativeCoin := sdk.NewCoin(NativeTicker, sdk.NewInt(int64(initialBalance)))
 	_, _ = keeper.BankKeeper.AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+
 	msg := NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err := handleMsgRemoveLiquidity(ctx, keeper, msg)
 	require.Error(t, err)
 	require.Nil(t, res)
+
 	msgCreatePool := NewMsgCreatePool(signer, asset, uint(poolBalance), uint(poolBalance))
 	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
+
 	coins := CalculateWithdraw(t, keeper, ctx, asset, signer.String(), uint(wBasis), asymmetry)
 	msg = NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handleMsgRemoveLiquidity(ctx, keeper, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	ok := keeper.BankKeeper.HasCoins(ctx, signer, coins)
+	assert.True(t, ok, "")
+
+	wBasis = 1000
+	asymmetry = -10000
+	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), uint(wBasis), asymmetry)
+	msg = NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
+	res, err = handleMsgRemoveLiquidity(ctx, keeper, msg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	ok = keeper.BankKeeper.HasCoins(ctx, signer, coins)
+	assert.True(t, ok, "")
+
+	wBasis = 1000
+	asymmetry = 0
+	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), uint(wBasis), asymmetry)
+	msg = NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
+	res, err = handleMsgRemoveLiquidity(ctx, keeper, msg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	ok = keeper.BankKeeper.HasCoins(ctx, signer, coins)
 	assert.True(t, ok, "")
 }
 

@@ -20,6 +20,7 @@ func TestKeeper_Errors(t *testing.T) {
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
 	assert.Error(t, err)
 	assert.NotEqual(t, getlp, lp)
+	assert.NotNil(t, GenerateAddress())
 }
 
 func TestKeeper_SetPool(t *testing.T) {
@@ -30,6 +31,7 @@ func TestKeeper_SetPool(t *testing.T) {
 	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker)
 	assert.NoError(t, err, "Error in get pool")
 	assert.Equal(t, getpool, pool)
+	assert.Equal(t, keeper.ExistsPool(ctx, pool.ExternalAsset.Ticker), true)
 }
 
 func TestKeeper_GetPools(t *testing.T) {
@@ -64,6 +66,8 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
 	assert.NoError(t, err, "Error in get liquidityProvider")
 	assert.Equal(t, getlp, lp)
+	lpList := keeper.GetLiqudityProvidersForAsset(ctx, lp.Asset)
+	assert.Equal(t, lp, lpList[0])
 }
 
 func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
