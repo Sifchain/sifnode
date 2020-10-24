@@ -19,21 +19,37 @@ describe("Pair", () => {
     address: "1234",
     network: Network.ETHEREUM,
   });
+  const ETH = Token({
+    decimals: 18,
+    symbol: "eth",
+    name: "Ethereum",
+    address: "1234",
+    network: Network.ETHEREUM,
+  });
 
   // TODO: Confirm with Blockscience
 
   test("when equal it should be 1.0", () => {
-    const pair = Pair({ a: AssetAmount(ATK, "10"), b: AssetAmount(BTK, "10") });
+    const pair = Pair(AssetAmount(ATK, "10"), AssetAmount(BTK, "10"));
     expect(pair.priceA().toFixed()).toEqual("1.000000000000000000");
   });
 
   describe("when half", () => {
-    const pair = Pair({ a: AssetAmount(ATK, "5"), b: AssetAmount(BTK, "10") });
+    const pair = Pair(AssetAmount(ATK, "5"), AssetAmount(BTK, "10"));
+
     test("priceA should be 2", () => {
       expect(pair.priceA().toFixed()).toEqual("2.000000000000000000"); // In terms of B
     });
+
     test("priceB should be 0.5", () => {
       expect(pair.priceB().toFixed()).toEqual("0.500000");
+    });
+
+    test("can match assets", () => {
+      expect(pair.contains(ATK, BTK)).toBe(true);
+      expect(pair.contains(BTK, ATK)).toBe(true);
+      expect(pair.contains(ATK, ATK)).toBe(false);
+      expect(pair.contains(ATK, ETH)).toBe(false);
     });
   });
 });

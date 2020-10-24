@@ -7,10 +7,10 @@ const assetMap = new Map<string, Asset>();
 
 export const Asset = {
   set(key: string, value: Asset) {
-    assetMap.set(key, value);
+    assetMap.set(key.toLowerCase(), value);
   },
   get(key: string): Asset {
-    const found = assetMap.get(key);
+    const found = assetMap.get(key.toLowerCase());
     if (!found)
       throw new Error(
         `Attempt to retrieve the asset with key ${key} before it had been created.`
