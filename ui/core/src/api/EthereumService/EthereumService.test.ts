@@ -1,20 +1,60 @@
 // This test must be run in an environment that supports ganace
 
 import { getFakeTokens } from "./utils/getFakeTokens";
-import createWalletService from ".";
+import createEthereumService from ".";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
-import { AssetAmount } from "../../entities";
-import { ETH } from "../../constants";
-import { TEN } from "src/entities/fraction/Fraction";
+import { Asset, AssetAmount, Network, Token } from "../../entities";
+
 import JSBI from "jsbi";
 import B from "../../entities/utils/B";
 
+// const ATK = Token({
+//   decimals: 6,
+//   symbol: "atk",
+//   name: "AppleToken",
+//   address: "123",
+//   network: Network.ETHEREUM,
+// });
+// const BTK = Token({
+//   decimals: 6,
+//   symbol: "btk",
+//   name: "BananaToken",
+//   address: "1234",
+//   network: Network.ETHEREUM,
+// });
+// const ETH = Token({
+//   decimals: 18,
+//   symbol: "eth",
+//   name: "Ethereum",
+//   address: "1235",
+//   network: Network.ETHEREUM,
+// });
 describe("EthereumService", () => {
-  let EthereumService: ReturnType<typeof createWalletService>;
+  let EthereumService: ReturnType<typeof createEthereumService>;
+  let ATK: Asset;
+  let BTK: Asset;
+  let ETH: Asset;
 
   beforeEach(async () => {
     const supportedTokens = await getFakeTokens();
-    EthereumService = createWalletService({
+    const a = supportedTokens.find(
+      ({ symbol }) => symbol.toUpperCase() === "ATK"
+    );
+    const b = supportedTokens.find(
+      ({ symbol }) => symbol.toUpperCase() === "BTK"
+    );
+    const c = supportedTokens.find(
+      ({ symbol }) => symbol.toUpperCase() === "ETH"
+    );
+
+    if (!a) throw new Error("ATK not returned");
+    if (!b) throw new Error("BTK not returned");
+    if (!c) throw new Error("ETH not returned");
+    ATK = a;
+    BTK = b;
+    ETH = c;
+
+    EthereumService = createEthereumService({
       getWeb3Provider,
       loadAssets: async () => supportedTokens,
     });
@@ -30,28 +70,25 @@ describe("EthereumService", () => {
     expect(causedError).toBeFalsy();
   });
 
-  test.only("that it returns the correct wallet amounts", async () => {
-    const supportedTokens = await getFakeTokens();
-    const EthereumService = createWalletService({
-      getWeb3Provider,
-      loadAssets: async () => supportedTokens,
-    });
+  test("that it returns the correct wallet amounts", async () => {
+    // const supportedTokens = await getFakeTokens();
+    // const EthereumService = createEthereumService({
+    //   getWeb3Provider,
+    //   loadAssets: async () => supportedTokens,
+    // });
     await EthereumService.connect();
 
     const balances = await EthereumService.getBalance();
-
-    const ATK = supportedTokens.find(({ symbol }) => symbol === "ATK");
-    const BTK = supportedTokens.find(({ symbol }) => symbol === "BTK");
 
     expect(balances[0].toFixed()).toEqual(
       // TODO: Work out a better way to deal with natural amounts eg 99.95048114 ETH
       AssetAmount(ETH, "99.950481140000000000").toFixed()
     );
     expect(balances[1].toFixed()).toEqual(
-      AssetAmount(ATK!, "10000.000000").toFixed()
+      AssetAmount(ATK, "10000.000000").toFixed()
     );
     expect(balances[2].toFixed()).toEqual(
-      AssetAmount(BTK!, "10000.000000").toFixed()
+      AssetAmount(BTK, "10000.000000").toFixed()
     );
   });
 
@@ -62,25 +99,18 @@ describe("EthereumService", () => {
   });
 
   test("transfer ERC-20 to smart contract", async () => {
-    const supportedTokens = await getFakeTokens();
-    const EthereumService = createWalletService({
-      getWeb3Provider,
-      loadAssets: async () => supportedTokens,
-    });
     await EthereumService.connect();
     const state = EthereumService.getState();
     const origBalanceAccount0 = await EthereumService.getBalance();
 
     expect(
       origBalanceAccount0
-        .find(({ asset: { symbol } }) => symbol === "ATK")
+        .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ATK")
         ?.toFixed()
     ).toEqual("10000.000000");
 
-    const ATK = supportedTokens.find(({ symbol }) => symbol === "ATK");
-
     await EthereumService.transfer({
-      amount: B("10.000000", ATK!.decimals),
+      amount: B("10.000000", ATK.decimals),
       recipient: state.accounts[1],
       asset: ATK,
     });
@@ -90,30 +120,25 @@ describe("EthereumService", () => {
 
     expect(
       balanceAccount0
-        .find(({ asset: { symbol } }) => symbol === "ATK")
+        .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ATK")
         ?.toFixed(2)
     ).toEqual("9990.00");
 
     expect(
       balanceAccount1
-        .find(({ asset: { symbol } }) => symbol === "ATK")
+        .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ATK")
         ?.toFixed(2)
     ).toEqual("10.00");
   });
 
   test("transfer ETH", async () => {
-    const supportedTokens = await getFakeTokens();
-    const EthereumService = createWalletService({
-      getWeb3Provider,
-      loadAssets: async () => supportedTokens,
-    });
     await EthereumService.connect();
     const state = EthereumService.getState();
     const origBalanceAccount0 = await EthereumService.getBalance();
 
     expect(
       origBalanceAccount0
-        .find(({ asset: { symbol } }) => symbol === "ETH")
+        .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ETH")
         ?.toFixed()
     ).toEqual(AssetAmount(ETH, "99.95048114").toFixed());
 

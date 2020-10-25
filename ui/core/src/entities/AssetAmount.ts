@@ -127,7 +127,7 @@ export function AssetAmount(
   const jsbiAmount =
     unfractionedAmount instanceof JSBI
       ? unfractionedAmount
-      : B(unfractionedAmount, asset.decimals);
+      : B(unfractionedAmount, asset?.decimals);
 
   return new _AssetAmount(asset, jsbiAmount);
 }
