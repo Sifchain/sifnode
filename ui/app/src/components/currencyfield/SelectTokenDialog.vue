@@ -20,15 +20,17 @@ import { defineComponent } from "vue";
 import { computed, ref } from "@vue/reactivity";
 import { useCore } from "../../hooks/useCore";
 import AssetItem from "./AssetItem.vue";
+import { useSwap } from "@/hooks/useSwap";
+
 export default defineComponent({
   name: "SelectTokenDialog",
   emits: ["close"],
   components: { AssetItem },
-  props: { localBalance: Object },
+  props: { label: String },
   setup(props, context) {
     const searchText = ref("");
     const { store } = useCore();
-
+    const swapState = useSwap();
     const filteredTokens = computed(() => {
       return store.asset.topTokens.filter(
         ({ symbol }) =>
@@ -38,8 +40,10 @@ export default defineComponent({
     });
 
     function selectToken(symbol: string) {
-      if (props && props.localBalance)
-        props.localBalance.symbol = symbol; /* eslint-disable-line */ //because this is a dirty HACK
+      const label = props.label?.toLowerCase() as "from" | "to";
+
+      swapState[label].symbol.value = symbol;
+
       context.emit("close");
     }
     return { filteredTokens, searchText, selectToken };

@@ -1,24 +1,4 @@
-<template>
-  <div class="currency-field">
-    <label class="label">{{ label }}</label>
-    <label class="balance right-col"
-      ><BalanceField :symbol="localBalance.symbol"
-    /></label>
-    <input
-      class="input"
-      type="number"
-      v-model="localBalance.amount"
-      @click="$event.target.select()"
-    />
 
-    <button @click="handleSelectClicked(localBalance)" class="button right-col">
-      <span class="select-button" v-if="localBalance.symbol !== null">
-        <AssetItem :symbol="localBalance.symbol" /><span>▾</span></span
-      >
-      <span v-else>Select</span>
-    </button>
-  </div>
-</template>
 
 
 <script lang="ts">
@@ -37,20 +17,50 @@ export type BalanceShape = {
 export default defineComponent({
   props: {
     label: String,
-    modelValue: Object,
+    modelkey: String,
+    amount: String,
+    symbol: String,
+    available: String,
   },
   components: { BalanceField, AssetItem },
   setup(props, context) {
     const { handleClicked: handleSelectClicked } = useSelectTokens();
-    const localBalance = computed({
-      get: () => props.modelValue,
-      set: (balance) => context.emit("update:modelValue", balance),
+    const localAmount = computed({
+      get: () => props.amount,
+      set: (amount) => context.emit("update:amount", amount),
     });
 
-    return { handleSelectClicked, localBalance };
+    const localSymbol = computed({
+      get: () => props.symbol,
+      set: (symbol) => context.emit("update:symbol", symbol),
+    });
+
+    return { handleSelectClicked, localSymbol, localAmount };
   },
 });
 </script>
+
+<template>
+  <div class="currency-field">
+    <label class="label">{{ label }}</label>
+    <label class="balance right-col"
+      ><BalanceField :symbol="localSymbol"
+    /></label>
+    <input
+      class="input"
+      type="number"
+      v-model="localAmount"
+      @click="$event.target.select()"
+    />
+
+    <button @click="handleSelectClicked(modelkey)" class="button right-col">
+      <span class="select-button" v-if="localSymbol !== null">
+        <AssetItem :symbol="localSymbol" /><span>▾</span></span
+      >
+      <span v-else>Select</span>
+    </button>
+  </div>
+</template>
 
 <style scoped>
 .currency-field {

@@ -16,7 +16,7 @@ describe("EthereumService", () => {
     const supportedTokens = await getFakeTokens();
     EthereumService = createWalletService({
       getWeb3Provider,
-      getSupportedTokens: async () => supportedTokens,
+      loadAssets: async () => supportedTokens,
     });
   });
 
@@ -34,7 +34,7 @@ describe("EthereumService", () => {
     const supportedTokens = await getFakeTokens();
     const EthereumService = createWalletService({
       getWeb3Provider,
-      getSupportedTokens: async () => supportedTokens,
+      loadAssets: async () => supportedTokens,
     });
     await EthereumService.connect();
 
@@ -65,7 +65,7 @@ describe("EthereumService", () => {
     const supportedTokens = await getFakeTokens();
     const EthereumService = createWalletService({
       getWeb3Provider,
-      getSupportedTokens: async () => supportedTokens,
+      loadAssets: async () => supportedTokens,
     });
     await EthereumService.connect();
     const state = EthereumService.getState();
@@ -105,7 +105,7 @@ describe("EthereumService", () => {
     const supportedTokens = await getFakeTokens();
     const EthereumService = createWalletService({
       getWeb3Provider,
-      getSupportedTokens: async () => supportedTokens,
+      loadAssets: async () => supportedTokens,
     });
     await EthereumService.connect();
     const state = EthereumService.getState();

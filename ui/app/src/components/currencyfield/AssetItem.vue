@@ -1,7 +1,7 @@
 <template>
   <div class="row">
     <img v-if="token.imageUrl" width="16" :src="token.imageUrl" />
-    <div class="placeholder" v-else></div>
+    <div class="placeholder" :style="backgroundStyle" v-else></div>
     <span>{{ token.symbol.toUpperCase() }}</span>
   </div>
 </template>
@@ -9,6 +9,8 @@
 <script lang="ts">
 import { computed, defineComponent } from "vue";
 import { Asset } from "../../../../core";
+import ColorHash from "color-hash";
+
 export default defineComponent({
   props: {
     symbol: String,
@@ -17,7 +19,16 @@ export default defineComponent({
     const token = computed(() =>
       props.symbol ? Asset.get(props.symbol) : undefined
     );
-    return { token };
+
+    const backgroundStyle = computed(() => {
+      const colorHash = new ColorHash();
+
+      const color = props.symbol ? colorHash.hex(props.symbol) : [];
+
+      return `background: ${color};`;
+    });
+
+    return { token, backgroundStyle };
   },
 });
 </script>

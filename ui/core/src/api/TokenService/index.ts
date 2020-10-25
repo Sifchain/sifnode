@@ -1,28 +1,26 @@
 import { Asset, Token } from "../../entities";
+import { isToken } from "../../entities/utils/isToken";
 
 export type TokenServiceContext = {
-  getSupportedTokens: () => Promise<Token[]>;
-  getSupportedAssets: () => Promise<Asset[]>;
+  loadAssets: () => Promise<Asset[]>;
 };
 
 export default function createTokenService({
-  getSupportedTokens,
-  getSupportedAssets,
+  loadAssets,
 }: TokenServiceContext) {
   // // define map to store all assets
-  const _assets: Asset[] = [];
+  let _assets: Asset[] = [];
 
   // async fetch the supported tokens and store in the map
-  async function loadAssets() {
-    const tokens = await getSupportedTokens();
-    const assets = await getSupportedAssets();
-    _assets.push(...assets, ...tokens);
-  }
-  const assetsLoadedPromise = loadAssets();
+  const cacheLoadedAssets = async () => {
+    _assets = await loadAssets();
+  };
+
+  const cacheIsReady = cacheLoadedAssets();
 
   return {
     async getTopAssets() {
-      await assetsLoadedPromise;
+      await cacheIsReady;
       return _assets;
     },
 

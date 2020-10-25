@@ -37,6 +37,10 @@ describe("Pair", () => {
   describe("when half", () => {
     const pair = Pair(AssetAmount(ATK, "5"), AssetAmount(BTK, "10"));
 
+    test("pair has symbol", () => {
+      expect(pair.symbol()).toEqual("atk_btk");
+    });
+
     test("priceA should be 2", () => {
       expect(pair.priceA().toFixed()).toEqual("2.000000000000000000"); // In terms of B
     });

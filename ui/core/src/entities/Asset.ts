@@ -11,10 +11,17 @@ export const Asset = {
   },
   get(key: string): Asset {
     const found = assetMap.get(key.toLowerCase());
-    if (!found)
+    if (!found) {
+      console.log(
+        "Available keys: " +
+          Array.from(assetMap.keys())
+            .sort()
+            .join(",")
+      );
       throw new Error(
         `Attempt to retrieve the asset with key ${key} before it had been created.`
       );
+    }
     return found;
   },
 };

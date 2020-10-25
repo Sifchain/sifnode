@@ -14,7 +14,7 @@ type TokenData = {
   decimals: number;
 };
 
-export async function getSupportedTokens(): Promise<Token[]> {
+export async function loadAssets(): Promise<Token[]> {
   const tokens: TokenData[] = require("../../../../data/ethereum_tokens.json");
   return tokens.map((t) =>
     Token({

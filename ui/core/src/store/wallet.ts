@@ -1,4 +1,4 @@
-import { reactive } from "@vue/reactivity";
+import { reactive, computed } from "@vue/reactivity";
 
 import { Address, AssetAmount } from "../entities";
 
@@ -15,7 +15,7 @@ export type WalletStore = {
   };
 };
 
-export const wallet = reactive({
+export const wallet = reactive<WalletStore>({
   eth: {
     isConnected: false,
     address: "",

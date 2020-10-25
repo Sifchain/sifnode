@@ -10,12 +10,9 @@ import {
 import { ETH } from "../../../constants";
 import { Address, Asset, AssetAmount, Token } from "../../../entities";
 import B from "../../../entities/utils/B";
+import { isToken } from "../../../entities/utils/isToken";
 
 import erc20TokenAbi from "./erc20TokenAbi";
-
-export function isToken(value?: Asset): value is Token {
-  return value ? Object.keys(value).includes("address") : false;
-}
 
 export function getTokenContract(web3: Web3, asset: Token) {
   return new web3.eth.Contract(erc20TokenAbi, asset.address);

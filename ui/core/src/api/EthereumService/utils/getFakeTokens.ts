@@ -1,5 +1,5 @@
 import { Asset, Network, Coin, Token } from "../../../entities";
-import { getSupportedTokens } from "./getSupportedTokens";
+import { loadAssets } from "./loadAssets";
 
 // Parse Truffle json for the most recent address
 function parseTruffleJson(
@@ -24,25 +24,9 @@ function parseTruffleJson(
 // The reason we have to get fake tokens instead of just loading up a
 // json list is that everytime truffle compiles we have new addresses
 // and we need to keep track of that
-export async function getFakeTokens(): Promise<Token[]> {
-  // add real tokens for testing
-  const realTokens = await getSupportedTokens();
-
-  // gonna load the json and parse the code for all our fake tokens
-  const atkJson = require("../../../../../chains/ethereum/build/contracts/AliceToken.json");
-  const btkJson = require("../../../../../chains/ethereum/build/contracts/BobToken.json");
-
-  // Return the tokens parsed as assets
-  return [
-    parseTruffleJson("AliceToken", "atk", atkJson),
-    parseTruffleJson("BobToken", "btk", btkJson),
-    ...realTokens,
-  ];
-}
-
-export async function getFakeAssets(): Promise<Asset[]> {
+export async function getFakeTokens(): Promise<Asset[]> {
   const ETH = Coin({
-    symbol: "ETH",
+    symbol: "eth",
     decimals: 18,
     name: "Ethereum",
     network: Network.ETHEREUM,
@@ -54,5 +38,19 @@ export async function getFakeAssets(): Promise<Asset[]> {
     network: Network.SIFCHAIN,
   });
 
-  return [ETH, RWN];
+  // gonna load the json and parse the code for all our fake tokens
+  const atkJson = require("../../../../../chains/ethereum/build/contracts/AliceToken.json");
+  const btkJson = require("../../../../../chains/ethereum/build/contracts/BobToken.json");
+
+  // add real tokens for testing
+  const realTokens = await loadAssets();
+
+  // Return the tokens parsed as assets
+  return [
+    parseTruffleJson("AliceToken", "atk", atkJson),
+    parseTruffleJson("BobToken", "btk", btkJson),
+    ETH,
+    RWN,
+    ...realTokens,
+  ];
 }

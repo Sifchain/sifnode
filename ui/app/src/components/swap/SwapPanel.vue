@@ -4,9 +4,19 @@
   <Panel class="swap-panel">
     <PanelNav />
     <div class="field-wrappers">
-      <CurrencyField label="From" v-model="fromBalance" />
+      <CurrencyField
+        label="From"
+        modelkey="from"
+        v-model:amount="fromAmount"
+        v-model:symbol="fromSymbol"
+      />
       <div class="arrow">↓</div>
-      <CurrencyField label="To" v-model="toBalance" />
+      <CurrencyField
+        label="To"
+        modelkey="to"
+        v-model:amount="toAmount"
+        v-model:symbol="toSymbol"
+      />
     </div>
 
     <div class="actions">
@@ -18,30 +28,34 @@
       </div>
       <div v-else>
         <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
-        <button class="big-button" :disabled="!canSwap">Select token</button>
+        <button class="big-button" :disabled="!canSwap">
+          {{ nextStepMessage }}
+        </button>
       </div>
     </div>
   </Panel>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent } from "vue";
-import { reactive, computed } from "@vue/reactivity";
+import { computed } from "@vue/reactivity";
 
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
-import Panel from "@/components/panel/Panel";
+import Panel from "@/components/panel/Panel.vue";
 import PanelNav from "@/components/swap/PanelNav.vue";
-import { Asset, AssetAmount, Pair } from "../../../../core";
+import { useSwap } from "@/hooks/useSwap";
+import { useCore } from "@/hooks/useCore";
 
 export default defineComponent({
   components: { Panel, PanelNav, CurrencyField },
 
   setup() {
-    const swapState = reactive({
-      from: { amount: "0", symbol: null, available: null },
-      to: { amount: "0", symbol: null, available: null },
-    });
+    const { api, store } = useCore();
+    const {
+      from: { symbol: fromSymbol, amount: fromAmount },
+      to: { symbol: toSymbol, amount: toAmount },
+    } = useSwap();
 
     const {
       connected,
@@ -51,38 +65,43 @@ export default defineComponent({
       addrLen: 8,
     });
 
+    const marketPair = computed(() => {
+      if (!fromSymbol.value || !toSymbol.value) return false;
+      return api.MarketService.find(fromSymbol.value, toSymbol.value);
+    });
+
+    const balances = computed(() => {
+      return [...store.wallet.eth.balances, ...store.wallet.sif.balances];
+    });
+
+    const fromHasBalance = computed(() => {
+      const fromBal = balances.value.find(
+        ({ asset: { symbol } }) => fromSymbol.value === symbol
+      );
+      return !!fromBal?.greaterThan(fromAmount.value);
+    });
+
+    const nextStepMessage = computed(() => {
+      if (!marketPair.value) return "Select tokens";
+      if (!fromHasBalance.value) return "Insufficient funds";
+      return "Swap";
+    });
+
     const canSwap = computed(() => {
-      console.log(`${swapState.from.symbol} - ${swapState.to.symbol}`);
-      if (!swapState.from.symbol) return false;
-      if (!swapState.to.symbol) return false;
-
-      // Setup a new fake pools
-      const ATK = Asset.get("ATK");
-      const BTK = Asset.get("BTK");
-      const ETH = Asset.get("ETH");
-
-      // Setup a bunch of pairs
-
-      const pairs = [];
-
-      pairs.push(Pair(AssetAmount(ATK, 150), AssetAmount(BTK, 100)));
-      pairs.push(Pair(AssetAmount(ATK, 100), AssetAmount(ETH, 5)));
-      pairs.push(Pair(AssetAmount(BTK, 150), AssetAmount(ETH, 5)));
-
-      const FROM = Asset.get(swapState.from.symbol);
-      const TO = Asset.get(swapState.to.symbol);
-
-      const pair = pairs.find((p) => p.contains(FROM, TO));
-
-      return Boolean(pair);
+      return marketPair.value && fromHasBalance.value;
     });
 
     return {
       connected,
       connectedText,
-      fromBalance: swapState.from,
+      nextStepMessage,
       handleWalletClick,
-      toBalance: swapState.to,
+      fromAmount,
+      fromSymbol,
+
+      toAmount,
+      toSymbol,
+
       canSwap,
     };
   },

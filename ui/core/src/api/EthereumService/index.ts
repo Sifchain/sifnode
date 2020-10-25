@@ -7,16 +7,16 @@ import {
   getEtheriumBalance,
   getTokenBalance,
   isEventEmittingProvider,
-  isToken,
   transferAsset,
 } from "./utils/ethereumUtils";
+import { isToken } from "../../entities/utils/isToken";
 
 type Address = string;
 type Balances = AssetAmount[];
 
 export type EthereumServiceContext = {
   getWeb3Provider: () => Promise<provider>;
-  getSupportedTokens: () => Promise<Token[]>;
+  loadAssets: () => Promise<Asset[]>;
 };
 
 type MetaMaskProvider = WebsocketProvider & {
@@ -38,7 +38,7 @@ const initState = {
 
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
-  private supportedTokens: Token[] = [];
+  private supportedTokens: Asset[] = [];
   private blockSubscription: any;
   private provider: provider | undefined;
 
@@ -53,7 +53,7 @@ export class EthereumService implements IWalletService {
 
   constructor(
     getWeb3Provider: () => Promise<provider>,
-    private getSupportedTokens: () => Promise<Token[]>
+    private loadAssets: () => Promise<Asset[]>
   ) {
     // init state
     this.state = reactive({ ...initState });
@@ -99,7 +99,7 @@ export class EthereumService implements IWalletService {
 
   async connect() {
     try {
-      this.supportedTokens = await this.getSupportedTokens();
+      this.supportedTokens = await this.loadAssets();
 
       if (!this.provider)
         throw new Error("Cannot connect because provider is not yet loaded!");
@@ -168,8 +168,9 @@ export class EthereumService implements IWalletService {
     // No address no asset get everything
     balances = await Promise.all([
       getEtheriumBalance(web3, addr),
-      ...supportedTokens.slice(0, 10).map((token: Token) => {
-        return getTokenBalance(web3, addr, token);
+      ...supportedTokens.slice(0, 10).map((token: Asset) => {
+        if (isToken(token)) return getTokenBalance(web3, addr, token);
+        return AssetAmount(token, "0");
       }),
     ]);
 
@@ -207,9 +208,9 @@ export class EthereumService implements IWalletService {
 
   static create({
     getWeb3Provider,
-    getSupportedTokens,
+    loadAssets,
   }: EthereumServiceContext): IWalletService {
-    return new EthereumService(getWeb3Provider, getSupportedTokens);
+    return new EthereumService(getWeb3Provider, loadAssets);
   }
 }
 

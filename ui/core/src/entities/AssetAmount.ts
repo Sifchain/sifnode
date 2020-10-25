@@ -6,6 +6,8 @@ import toFormat from "toformat";
 import {
   BigintIsh,
   Fraction,
+  IFraction,
+  isFraction,
   parseBigintIsh,
   Rounding,
   TEN,
@@ -14,10 +16,15 @@ import JSBI from "jsbi";
 import B from "./utils/B";
 
 const Big = toFormat(_Big);
-
-export class _AssetAmount extends Fraction {
+export interface IAssetAmount extends IFraction {
+  toFixed(decimalPlaces?: number, format?: object, rounding?: Rounding): string;
+  asset: Asset;
+  amount: BigintIsh;
+}
+export class _AssetAmount implements IAssetAmount {
+  private fraction: IFraction;
   constructor(public asset: Asset, public amount: BigintIsh) {
-    super(
+    this.fraction = new Fraction(
       parseBigintIsh(amount),
       JSBI.exponentiate(TEN, JSBI.BigInt(asset.decimals))
     );
@@ -28,7 +35,7 @@ export class _AssetAmount extends Fraction {
     format?: object,
     rounding: Rounding = Rounding.ROUND_DOWN
   ): string {
-    return super.toSignificant(significantDigits, format, rounding);
+    return this.fraction.toSignificant(significantDigits, format, rounding);
   }
 
   public toFixed(
@@ -37,22 +44,67 @@ export class _AssetAmount extends Fraction {
     rounding: Rounding = Rounding.ROUND_DOWN
   ): string {
     invariant(decimalPlaces <= this.asset.decimals, "DECIMALS");
-    return super.toFixed(decimalPlaces, format, rounding);
+    return this.fraction.toFixed(decimalPlaces, format, rounding);
   }
 
   public toExact(format: object = { groupSeparator: "" }): string {
     Big.DP = this.asset.decimals;
-    return new Big(this.numerator.toString())
-      .div(this.denominator.toString())
+    return new Big(this.fraction.numerator.toString())
+      .div(this.fraction.denominator.toString())
       .toFormat(format);
   }
 
-  public toString() {
-    return `${this.asset.symbol} ${this.toFixed()}`;
+  public get quotient() {
+    return this.fraction.quotient;
   }
+
+  public get remainder() {
+    return this.fraction.remainder;
+  }
+  public get numerator() {
+    return this.fraction.numerator;
+  }
+  public get denominator() {
+    return this.fraction.denominator;
+  }
+
+  public invert() {
+    return this.fraction.invert();
+  }
+  public add(other: IFraction | BigintIsh) {
+    return this.fraction.add(other);
+  }
+
+  public subtract(other: IFraction | BigintIsh) {
+    return this.fraction.subtract(other);
+  }
+
+  public lessThan(other: IFraction | BigintIsh) {
+    return this.fraction.lessThan(other);
+  }
+
+  public equalTo(other: IFraction | BigintIsh) {
+    return this.fraction.equalTo(other);
+  }
+
+  public greaterThan(other: IFraction | BigintIsh) {
+    return this.fraction.greaterThan(other);
+  }
+
+  public multiply(other: IFraction | BigintIsh) {
+    return this.fraction.multiply(other);
+  }
+
+  public divide(other: IFraction | BigintIsh) {
+    return this.fraction.divide(other);
+  }
+
+  // public toString() {
+  //   return this.fraction.toString();
+  // }
 }
 
-export type AssetAmount = _AssetAmount;
+export type AssetAmount = IAssetAmount;
 
 /**
  * Represents an amount of an Asset
@@ -62,9 +114,14 @@ export type AssetAmount = _AssetAmount;
  */
 export function AssetAmount(
   asset: Asset,
-  amount: string | number | JSBI
+  amount: string | number | JSBI | IFraction
 ): AssetAmount {
+  const unfractionedAmount = isFraction(amount) ? amount.quotient : amount;
+
   const jsbiAmount =
-    amount instanceof JSBI ? amount : B(amount, asset.decimals);
+    unfractionedAmount instanceof JSBI
+      ? unfractionedAmount
+      : B(unfractionedAmount, asset.decimals);
+
   return new _AssetAmount(asset, jsbiAmount);
 }
