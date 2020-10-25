@@ -17,7 +17,7 @@ import { defineComponent } from "vue";
 import { computed } from "@vue/reactivity";
 
 import { useCore } from "../hooks/useCore";
-import { AssetAmount } from "../../../core/src";
+import { AssetAmount } from "../../../core";
 export default defineComponent({
   name: "ListPage",
   setup() {

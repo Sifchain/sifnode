@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
-import { Asset } from "../../../../core/src";
+import { Asset } from "../../../../core";
 export default defineComponent({
   props: { asset: Object as PropType<Asset> },
 });

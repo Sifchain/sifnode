@@ -8,6 +8,7 @@
         label="From"
         modelkey="from"
         @focus="handleFromFocused"
+        @blur="handleBlur"
         v-model:amount="fromAmount"
         v-model:symbol="fromSymbol"
       />
@@ -16,6 +17,7 @@
         label="To"
         modelkey="to"
         @focus="handleToFocused"
+        @blur="handleBlur"
         v-model:amount="toAmount"
         v-model:symbol="toSymbol"
       />
@@ -62,7 +64,7 @@ export default defineComponent({
       to: { symbol: toSymbol, amount: toAmount },
     } = useSwap();
 
-    const selectedField = ref<"from" | "to">("from");
+    const selectedField = ref<"from" | "to" | null>(null);
     const {
       connected,
       handleClicked: handleWalletClick,
@@ -97,6 +99,10 @@ export default defineComponent({
       selectedField.value = "to";
     }
 
+    function handleBlur() {
+      selectedField.value = null;
+    }
+
     return {
       connected,
       connectedText,
@@ -106,6 +112,7 @@ export default defineComponent({
       fromSymbol,
       handleFromFocused,
       handleToFocused,
+      handleBlur,
       toAmount,
       toSymbol,
       canSwap,

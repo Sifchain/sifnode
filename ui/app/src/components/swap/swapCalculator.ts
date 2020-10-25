@@ -42,7 +42,7 @@ export function useSwapCalculator(input: {
   toAmount: Ref<string>;
   toSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
-  selectedField: Ref<"from" | "to">;
+  selectedField: Ref<"from" | "to" | null>;
   marketPairFinder: (a: Asset | string, b: Asset | string) => Pair | null;
 }) {
   const marketPair = computed(() => {
@@ -75,6 +75,24 @@ export function useSwapCalculator(input: {
   });
 
   effect(() => {
+    if (input.selectedField.value === null) {
+      const fromAsset = fromField.asset.value;
+      if (fromAsset) {
+        input.fromAmount.value = AssetAmount(
+          fromAsset,
+          input.fromAmount.value
+        ).toFixed();
+      }
+
+      const toAsset = fromField.asset.value;
+      if (toAsset) {
+        input.toAmount.value = AssetAmount(
+          toAsset,
+          input.toAmount.value
+        ).toFixed();
+      }
+    }
+
     if (
       input.selectedField.value === "from" &&
       marketPair.value &&

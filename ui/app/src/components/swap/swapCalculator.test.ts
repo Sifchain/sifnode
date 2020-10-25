@@ -6,7 +6,7 @@ import {
   Network,
   Pair,
   Token,
-} from "../../../../core/src";
+} from "../../../../core";
 import { useSwapCalculator, useField } from "./swapCalculator";
 
 const TOKENS = {
@@ -40,7 +40,7 @@ describe("swapCalculator", () => {
   const toAmount: Ref<string> = ref("0");
   const toSymbol: Ref<string | null> = ref(null);
   const balances = ref([]) as Ref<IAssetAmount[]>;
-  const selectedField: Ref<"from" | "to"> = ref("from");
+  const selectedField: Ref<"from" | "to" | null> = ref("from");
   const marketPairFinder = jest.fn();
 
   // output
@@ -81,6 +81,9 @@ describe("swapCalculator", () => {
     selectedField.value = "to";
     toAmount.value = "100";
     expect(fromAmount.value).toBe("50.000000000000000000");
+    expect(toAmount.value).toBe("100");
+    selectedField.value = "from";
+    expect(toAmount.value).toBe("100.000000");
 
     selectedField.value = "from";
     fromAmount.value = "10000";
@@ -90,7 +93,7 @@ describe("swapCalculator", () => {
   });
 });
 
-// TODO delete me this is an implementation detail
+// TODO eventually delete me as this is an implementation detail
 describe("useField", () => {
   let amount: Ref<string>;
   let symbol: Ref<string | null>;
