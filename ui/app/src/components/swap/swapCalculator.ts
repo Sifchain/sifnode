@@ -63,8 +63,8 @@ export function useSwapCalculator(input: {
   const toField = useField(input.toAmount, input.toSymbol);
 
   const priceAmount = computed(() => {
-    if (!fromField.asset.value || !marketPair.value) return "";
-    return marketPair.value.priceAsset(fromField.asset.value).toFixed();
+    if (!fromField.asset.value || !marketPair.value) return null;
+    return marketPair.value.priceAsset(fromField.asset.value);
   });
 
   const nextStepMessage = computed(() => {

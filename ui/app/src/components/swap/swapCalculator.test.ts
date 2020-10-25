@@ -45,7 +45,7 @@ describe("swapCalculator", () => {
 
   // output
   let nextStepMessage: Ref<string>;
-  let priceAmount: Ref<string>;
+  let priceAmount: Ref<IAssetAmount | null>;
 
   beforeEach(() => {
     ({ nextStepMessage, priceAmount } = useSwapCalculator({
@@ -89,7 +89,7 @@ describe("swapCalculator", () => {
     fromAmount.value = "10000";
     expect(nextStepMessage.value).toBe("Insufficient funds");
 
-    expect(priceAmount.value).toBe("2.000000000000000000");
+    expect(priceAmount.value?.toFixed()).toBe("2.000000000000000000");
   });
 });
 

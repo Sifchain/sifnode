@@ -77,7 +77,7 @@ export default defineComponent({
       return [...store.wallet.eth.balances, ...store.wallet.sif.balances];
     });
 
-    const { nextStepMessage } = useSwapCalculator({
+    const { nextStepMessage, priceAmount } = useSwapCalculator({
       balances,
       fromAmount,
       toAmount,
