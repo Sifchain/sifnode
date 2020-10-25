@@ -20,6 +20,7 @@ export interface IAssetAmount extends IFraction {
   toFixed(decimalPlaces?: number, format?: object, rounding?: Rounding): string;
   asset: Asset;
   amount: JSBI;
+  toFormatted: () => string;
 }
 export class _AssetAmount implements IAssetAmount {
   private fraction: IFraction;
@@ -99,9 +100,14 @@ export class _AssetAmount implements IAssetAmount {
     return this.fraction.divide(other);
   }
 
-  // public toString() {
-  //   return this.fraction.toString();
-  // }
+  // NOTE: This might eventually take a format string
+  public toFormatted() {
+    return [this.toFixed(), this.asset.symbol.toUpperCase()].join(" ");
+  }
+
+  public toString() {
+    return this.toFormatted();
+  }
 }
 
 export type AssetAmount = IAssetAmount;

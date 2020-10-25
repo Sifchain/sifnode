@@ -28,3 +28,8 @@ test("Shorthand", () => {
     "10.123456700000000000"
   );
 });
+
+test("Formatted", () => {
+  const f = AssetAmount(USD, "100.12");
+  expect(f.toFormatted()).toBe("100.12 USD");
+});

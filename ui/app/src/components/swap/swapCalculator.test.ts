@@ -45,10 +45,10 @@ describe("swapCalculator", () => {
 
   // output
   let nextStepMessage: Ref<string>;
-  let priceAmount: Ref<IAssetAmount | null>;
+  let priceMessage: Ref<string | null>;
 
   beforeEach(() => {
-    ({ nextStepMessage, priceAmount } = useSwapCalculator({
+    ({ nextStepMessage, priceMessage } = useSwapCalculator({
       balances,
       fromAmount,
       toAmount,
@@ -89,7 +89,7 @@ describe("swapCalculator", () => {
     fromAmount.value = "10000";
     expect(nextStepMessage.value).toBe("Insufficient funds");
 
-    expect(priceAmount.value?.toFixed()).toBe("2.000000000000000000");
+    expect(priceMessage.value).toBe("2.000000000000000000 BTK per ATK");
   });
 });
 

@@ -57,6 +57,10 @@ describe("Pair", () => {
       expect(pair.priceAsset(BTK).toFixed()).toEqual("0.500000");
     });
 
+    test("oppositeAsset", () => {
+      expect(pair.oppositeAsset(BTK)).toEqual(ATK);
+    });
+
     test("can match assets", () => {
       expect(pair.contains(ATK, BTK)).toBe(true);
       expect(pair.contains(BTK, ATK)).toBe(true);

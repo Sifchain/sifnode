@@ -22,7 +22,7 @@
         v-model:symbol="toSymbol"
       />
     </div>
-
+    <div class="">{{ priceMessage }}</div>
     <div class="actions">
       <div v-if="!connected">
         <div>No wallet connected 🅧</div>
@@ -32,7 +32,11 @@
       </div>
       <div v-else>
         <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
-        <button class="big-button" :disabled="!canSwap">
+        <button
+          class="big-button"
+          :disabled="!canSwap"
+          @click="alert('Simulating swap!')"
+        >
           {{ nextStepMessage }}
         </button>
       </div>
@@ -77,7 +81,7 @@ export default defineComponent({
       return [...store.wallet.eth.balances, ...store.wallet.sif.balances];
     });
 
-    const { nextStepMessage, priceAmount } = useSwapCalculator({
+    const { nextStepMessage, priceMessage } = useSwapCalculator({
       balances,
       fromAmount,
       toAmount,
@@ -115,6 +119,7 @@ export default defineComponent({
       handleBlur,
       toAmount,
       toSymbol,
+      priceMessage,
       canSwap,
     };
   },

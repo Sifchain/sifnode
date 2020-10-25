@@ -35,7 +35,16 @@ export function Pair(a: AssetAmount, b: AssetAmount) {
     },
 
     hasAsset(asset: Asset) {
-      return amounts.filter(hasAsset(asset)).length > 0;
+      return amounts.filter((amount) => amount.asset === asset).length > 0;
+    },
+
+    oppositeAsset(asset: Asset) {
+      if (!hasAsset(asset)) {
+        return null;
+      }
+      return amounts
+        .map((amount) => amount.asset)
+        .filter((a) => a !== asset)[0];
     },
 
     symbol() {

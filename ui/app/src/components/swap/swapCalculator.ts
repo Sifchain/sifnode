@@ -62,9 +62,14 @@ export function useSwapCalculator(input: {
   const fromField = useField(input.fromAmount, input.fromSymbol);
   const toField = useField(input.toAmount, input.toSymbol);
 
-  const priceAmount = computed(() => {
-    if (!fromField.asset.value || !marketPair.value) return null;
-    return marketPair.value.priceAsset(fromField.asset.value);
+  const priceMessage = computed(() => {
+    const asset = fromField.asset.value;
+    const pair = marketPair.value;
+    if (!asset || !pair) return null;
+
+    return `${pair
+      .priceAsset(asset)
+      .toFormatted()} per ${asset?.symbol.toUpperCase()}`;
   });
 
   const nextStepMessage = computed(() => {
@@ -121,7 +126,7 @@ export function useSwapCalculator(input: {
   });
 
   return {
-    priceAmount,
+    priceMessage,
     nextStepMessage,
     toAmount: input.toAmount,
     fromAmount: input.fromAmount,
