@@ -35,7 +35,7 @@
         <button
           class="big-button"
           :disabled="!canSwap"
-          @click="alert('Simulating swap!')"
+          @click="handleSwapClicked"
         >
           {{ nextStepMessage }}
         </button>
@@ -81,7 +81,12 @@ export default defineComponent({
       return [...store.wallet.eth.balances, ...store.wallet.sif.balances];
     });
 
-    const { nextStepMessage, priceMessage } = useSwapCalculator({
+    const {
+      nextStepMessage,
+      fromFieldAmount,
+      toFieldAmount,
+      priceMessage,
+    } = useSwapCalculator({
       balances,
       fromAmount,
       toAmount,
@@ -92,7 +97,7 @@ export default defineComponent({
     });
 
     const canSwap = computed(() => {
-      return nextStepMessage.value === "Swap"; // XXX:
+      return nextStepMessage.value === "Swap";
     });
 
     function handleFromFocused() {
@@ -101,6 +106,12 @@ export default defineComponent({
 
     function handleToFocused() {
       selectedField.value = "to";
+    }
+
+    function handleSwapClicked() {
+      alert(
+        `Swapping ${fromFieldAmount.value?.toFormatted()} for ${toFieldAmount.value?.toFormatted()}!`
+      );
     }
 
     function handleBlur() {
@@ -116,6 +127,7 @@ export default defineComponent({
       fromSymbol,
       handleFromFocused,
       handleToFocused,
+      handleSwapClicked,
       handleBlur,
       toAmount,
       toSymbol,

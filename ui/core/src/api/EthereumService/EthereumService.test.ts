@@ -8,27 +8,6 @@ import { Asset, AssetAmount, Network, Token } from "../../entities";
 import JSBI from "jsbi";
 import B from "../../entities/utils/B";
 
-// const ATK = Token({
-//   decimals: 6,
-//   symbol: "atk",
-//   name: "AppleToken",
-//   address: "123",
-//   network: Network.ETHEREUM,
-// });
-// const BTK = Token({
-//   decimals: 6,
-//   symbol: "btk",
-//   name: "BananaToken",
-//   address: "1234",
-//   network: Network.ETHEREUM,
-// });
-// const ETH = Token({
-//   decimals: 18,
-//   symbol: "eth",
-//   name: "Ethereum",
-//   address: "1235",
-//   network: Network.ETHEREUM,
-// });
 describe("EthereumService", () => {
   let EthereumService: ReturnType<typeof createEthereumService>;
   let ATK: Asset;

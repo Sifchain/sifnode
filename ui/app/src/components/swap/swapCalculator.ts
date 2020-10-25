@@ -74,6 +74,11 @@ export function useSwapCalculator(input: {
 
   const nextStepMessage = computed(() => {
     if (!marketPair.value) return "Select tokens";
+    if (
+      fromField.fieldAmount.value?.equalTo("0") &&
+      toField.fieldAmount.value?.equalTo("0")
+    )
+      return "You cannot swap 0";
     if (!balance.value?.greaterThan(fromField.fieldAmount.value || "0"))
       return "Insufficient funds";
     return "Swap";
@@ -128,6 +133,8 @@ export function useSwapCalculator(input: {
   return {
     priceMessage,
     nextStepMessage,
+    fromFieldAmount: fromField.fieldAmount,
+    toFieldAmount: toField.fieldAmount,
     toAmount: input.toAmount,
     fromAmount: input.fromAmount,
   };
