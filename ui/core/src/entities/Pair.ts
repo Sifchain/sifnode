@@ -3,6 +3,10 @@ import { AssetAmount } from "./AssetAmount";
 
 export type Pair = ReturnType<typeof Pair>;
 
+const hasAsset = (asset: Asset) => (amount: AssetAmount) => {
+  return amount.asset === asset;
+};
+
 export function Pair(a: AssetAmount, b: AssetAmount) {
   const amounts = [a, b];
 
@@ -16,6 +20,22 @@ export function Pair(a: AssetAmount, b: AssetAmount) {
     priceB() {
       const asset = a.asset;
       return AssetAmount(asset, a.divide(b).toFixed(asset.decimals));
+    },
+
+    priceAsset(asset: Asset) {
+      if (a.asset === asset) {
+        return this.priceA();
+      }
+
+      if (b.asset === asset) {
+        return this.priceB();
+      }
+
+      throw new Error(`Asset not ${asset.symbol} found in pair.`);
+    },
+
+    hasAsset(asset: Asset) {
+      return amounts.filter(hasAsset(asset)).length > 0;
     },
 
     symbol() {

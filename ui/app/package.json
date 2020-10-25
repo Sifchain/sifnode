@@ -53,7 +53,8 @@
       {
         "files": [
           "**/__tests__/*.{j,t}s?(x)",
-          "**/tests/unit/**/*.spec.{j,t}s?(x)"
+          "**/tests/unit/**/*.spec.{j,t}s?(x)",
+          "**/*.test.{j,t}s?(x)"
         ],
         "env": {
           "jest": true
@@ -67,6 +68,10 @@
     "not dead"
   ],
   "jest": {
+    "testMatch": [
+      "**/**.test.ts",
+      "**/tests/unit/*.js"
+    ],
     "preset": "@vue/cli-plugin-unit-jest/presets/typescript-and-babel",
     "transform": {
       "^.+\\.vue$": "vue-jest"

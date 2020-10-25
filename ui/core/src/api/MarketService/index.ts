@@ -51,7 +51,7 @@ export default function createMarketService({
     find(asset1: Asset | string, asset2: Asset | string) {
       if (!pairsGenerated.isResolved()) return null;
       const key = [asset1, asset2].map(toAssetSymbol).join("_");
-      return pairs.get(key);
+      return pairs.get(key) ?? null;
     },
   };
 }

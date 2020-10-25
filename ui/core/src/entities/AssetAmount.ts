@@ -19,11 +19,11 @@ const Big = toFormat(_Big);
 export interface IAssetAmount extends IFraction {
   toFixed(decimalPlaces?: number, format?: object, rounding?: Rounding): string;
   asset: Asset;
-  amount: BigintIsh;
+  amount: JSBI;
 }
 export class _AssetAmount implements IAssetAmount {
   private fraction: IFraction;
-  constructor(public asset: Asset, public amount: BigintIsh) {
+  constructor(public asset: Asset, public amount: JSBI) {
     this.fraction = new Fraction(
       parseBigintIsh(amount),
       JSBI.exponentiate(TEN, JSBI.BigInt(asset.decimals))
@@ -115,7 +115,7 @@ export type AssetAmount = IAssetAmount;
 export function AssetAmount(
   asset: Asset,
   amount: string | number | JSBI | IFraction
-): AssetAmount {
+): IAssetAmount {
   const unfractionedAmount = isFraction(amount) ? amount.quotient : amount;
 
   const jsbiAmount =

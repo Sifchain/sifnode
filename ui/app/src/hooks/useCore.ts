@@ -19,7 +19,7 @@ const api = createApi({
     // Setup a new fake pools
     return [
       [
-        { name: "atk", value: 150 },
+        { name: "atk", value: 200 },
         { name: "btk", value: 100 },
       ],
       [

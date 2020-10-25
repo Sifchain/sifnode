@@ -50,6 +50,7 @@ export default defineComponent({
       class="input"
       type="number"
       v-model="localAmount"
+      @focus="$emit('focus', $event.target)"
       @click="$event.target.select()"
     />
 

@@ -24,7 +24,9 @@ function parseTruffleJson(
 // The reason we have to get fake tokens instead of just loading up a
 // json list is that everytime truffle compiles we have new addresses
 // and we need to keep track of that
+let _memoized: Asset[] | null = null;
 export async function getFakeTokens(): Promise<Asset[]> {
+  if (_memoized) return _memoized;
   const ETH = Coin({
     symbol: "eth",
     decimals: 18,
@@ -41,16 +43,12 @@ export async function getFakeTokens(): Promise<Asset[]> {
   // gonna load the json and parse the code for all our fake tokens
   const atkJson = require("../../../../../chains/ethereum/build/contracts/AliceToken.json");
   const btkJson = require("../../../../../chains/ethereum/build/contracts/BobToken.json");
-
+  const ATK = parseTruffleJson("AliceToken", "atk", atkJson);
+  const BTK = parseTruffleJson("BobToken", "btk", btkJson);
   // add real tokens for testing
   const realTokens = await loadAssets();
-
+  console.log({ Asset });
   // Return the tokens parsed as assets
-  return [
-    parseTruffleJson("AliceToken", "atk", atkJson),
-    parseTruffleJson("BobToken", "btk", btkJson),
-    ETH,
-    RWN,
-    ...realTokens,
-  ];
+  _memoized = [ATK, BTK, ETH, RWN, ...realTokens];
+  return _memoized;
 }

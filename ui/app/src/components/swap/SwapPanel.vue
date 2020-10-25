@@ -7,6 +7,7 @@
       <CurrencyField
         label="From"
         modelkey="from"
+        @focus="handleFromFocused"
         v-model:amount="fromAmount"
         v-model:symbol="fromSymbol"
       />
@@ -14,6 +15,7 @@
       <CurrencyField
         label="To"
         modelkey="to"
+        @focus="handleToFocused"
         v-model:amount="toAmount"
         v-model:symbol="toSymbol"
       />
@@ -38,7 +40,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { computed } from "@vue/reactivity";
+import { computed, ref } from "@vue/reactivity";
 
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
@@ -47,16 +49,20 @@ import PanelNav from "@/components/swap/PanelNav.vue";
 import { useSwap } from "@/hooks/useSwap";
 import { useCore } from "@/hooks/useCore";
 
+import { useSwapCalculator } from "./swapCalculator";
+
 export default defineComponent({
   components: { Panel, PanelNav, CurrencyField },
 
   setup() {
     const { api, store } = useCore();
+    const marketPairFinder = api.MarketService.find;
     const {
       from: { symbol: fromSymbol, amount: fromAmount },
       to: { symbol: toSymbol, amount: toAmount },
     } = useSwap();
 
+    const selectedField = ref<"from" | "to">("from");
     const {
       connected,
       handleClicked: handleWalletClick,
@@ -65,31 +71,31 @@ export default defineComponent({
       addrLen: 8,
     });
 
-    const marketPair = computed(() => {
-      if (!fromSymbol.value || !toSymbol.value) return false;
-      return api.MarketService.find(fromSymbol.value, toSymbol.value);
-    });
-
     const balances = computed(() => {
       return [...store.wallet.eth.balances, ...store.wallet.sif.balances];
     });
 
-    const fromHasBalance = computed(() => {
-      const fromBal = balances.value.find(
-        ({ asset: { symbol } }) => fromSymbol.value === symbol
-      );
-      return !!fromBal?.greaterThan(fromAmount.value);
-    });
-
-    const nextStepMessage = computed(() => {
-      if (!marketPair.value) return "Select tokens";
-      if (!fromHasBalance.value) return "Insufficient funds";
-      return "Swap";
+    const { nextStepMessage } = useSwapCalculator({
+      balances,
+      fromAmount,
+      toAmount,
+      fromSymbol,
+      selectedField,
+      toSymbol,
+      marketPairFinder,
     });
 
     const canSwap = computed(() => {
-      return marketPair.value && fromHasBalance.value;
+      return nextStepMessage.value === "Swap"; // XXX:
     });
+
+    function handleFromFocused() {
+      selectedField.value = "from";
+    }
+
+    function handleToFocused() {
+      selectedField.value = "to";
+    }
 
     return {
       connected,
@@ -98,10 +104,10 @@ export default defineComponent({
       handleWalletClick,
       fromAmount,
       fromSymbol,
-
+      handleFromFocused,
+      handleToFocused,
       toAmount,
       toSymbol,
-
       canSwap,
     };
   },

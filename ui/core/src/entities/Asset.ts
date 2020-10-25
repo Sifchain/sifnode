@@ -2,8 +2,8 @@ import { Coin } from "./Coin";
 import { Token } from "./Token";
 
 export type Asset = Token | Coin;
-
 const assetMap = new Map<string, Asset>();
+console.log("assetMap initialized!");
 
 export const Asset = {
   set(key: string, value: Asset) {
