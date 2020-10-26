@@ -31,9 +31,10 @@ install: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
 
 clean-config:
+	@echo "Are you sure you wish to clear-config? This will destroy your private keys [y/N] " && read ans && [ $${ans:-N} = y ]
 	@rm -rf ~/.sifnode*
 
-clean: clean-config
+clean:
 	@rm -rf ${GOBIN}/sif*
 
 tests:
