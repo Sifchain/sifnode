@@ -1,4 +1,4 @@
-name: Publish Testnet Images
+name: Build and deploy PR.
 
 on:
   pull_request:
