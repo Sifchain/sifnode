@@ -61,7 +61,7 @@ jobs:
 
       - name: Deploy node to cluster
         run: |
-          rake 'cluster:sifnode:deploy[testnet-${{ github.actor }},aws,${{ github.ref }},sifchain/sifnoded,${{ github.sha }}]'
+          rake 'cluster:sifnode:deploy[testnet-${{ github.actor }},aws,${{ github.actor }},sifchain/sifnoded,${{ github.sha }}]'
 
       - name: Cluster status
         run: |
