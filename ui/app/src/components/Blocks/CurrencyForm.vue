@@ -5,16 +5,7 @@
       </div>
       <div class="currency-form__balance">
         <span>Balance: 1200,7356</span>
-
-        <SifSelect>
-          <template v-slot:activator>
-            <SifButton primary medium>Select</SifButton>
-          </template>
-          <div>
-            Token Name
-          </div>
-        </SifSelect>
-        
+        <SifSelect :tokens="tokens" @change="onChange" />
       </div>
     </div>
 </template>
@@ -36,6 +27,35 @@ export default {
     SifButton,
     SifInput,
     SifSelect,
+  },
+
+  data() {
+    return {
+      tokens: [
+        {
+          icon: '',
+          name: 'ETH',
+        },
+        {
+          icon: '',
+          name: '0xBTC',
+        },
+        {
+          icon: '',
+          name: 'aDAI',
+        },
+        {
+          icon: '',
+          name: 'AMN',
+        },
+      ]
+    }
+  },
+
+  methods: {
+    onChange(event, data) {
+      console.log(data);
+    }
   }
 }
 </script>
