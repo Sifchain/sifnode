@@ -28,6 +28,7 @@ require (
 	github.com/tendermint/tm-db v0.5.1
 	github.com/yelinaung/go-haikunator v0.0.0-20150320004105-1249cae259af
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
+	golang.org/x/tools v0.0.0-20200921210052-fa0125251cc4
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776

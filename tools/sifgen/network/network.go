@@ -1,14 +1,13 @@
 package network
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
-	"github.com/Sifchain/sifnode/tools/sifgen/network/types"
+	"github.com/Sifchain/sifnode/tools/sifgen/genesis"
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 
 	"github.com/BurntSushi/toml"
@@ -70,7 +69,7 @@ func (n *Network) Build(count int, outputDir, seedIPv4Addr string) (*string, err
 			return nil, err
 		}
 
-		if err := n.replaceStakingBondDenom(validator); err != nil {
+		if err := genesis.ReplaceStakingBondDenom(validator.NodeHomeDir); err != nil {
 			return nil, err
 		}
 
@@ -227,33 +226,6 @@ func (n *Network) setValidatorConsensusAddress(validator *Validator) error {
 	return nil
 }
 
-func (n *Network) replaceStakingBondDenom(validator *Validator) error {
-	var genesis types.Genesis
-
-	genesisPath := fmt.Sprintf("%s/config/%s", validator.NodeHomeDir, utils.GenesisFile)
-
-	body, err := ioutil.ReadFile(genesisPath)
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(body, &genesis); err != nil {
-		return err
-	}
-
-	genesis.AppState.Staking.Params.BondDenom = types.TokenDenom
-	content, err := json.Marshal(genesis)
-	if err != nil {
-		return err
-	}
-
-	if err = ioutil.WriteFile(genesisPath, content, 0600); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (n *Network) setValidatorID(validator *Validator) error {
 	output, err := n.CLI.NodeID(validator.NodeHomeDir)
 	if err != nil {
@@ -276,7 +248,7 @@ func (n *Network) getSeedValidator(validators []*Validator) *Validator {
 }
 
 func (n *Network) addGenesis(address, validatorHomeDir string) error {
-	_, err := n.CLI.AddGenesisAccount(address, validatorHomeDir, types.ToFund)
+	_, err := n.CLI.AddGenesisAccount(address, validatorHomeDir, common.ToFund)
 	if err != nil {
 		return err
 	}
@@ -288,7 +260,7 @@ func (n *Network) generateTx(validator *Validator, validatorDir, outputDir strin
 	_, err := n.CLI.GenerateGenesisTxn(
 		validator.Moniker,
 		validator.Password,
-		types.ToBond,
+		common.ToBond,
 		validatorDir,
 		validator.CLIHomeDir,
 		fmt.Sprintf("%s/%s.json", outputDir, validator.Moniker),
