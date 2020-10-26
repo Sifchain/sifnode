@@ -3,6 +3,7 @@
     <div class="header__left">
       <div class="header__logo">S</div>
       <Menu />
+      <SifSwitch label="Typeface Cursive" v-model="typefaceCursive" />
     </div>
     <div class="header__right">
       <SifButton primary class="mr-4">Rowan</SifButton>
@@ -21,14 +22,22 @@
 <script>
 import Menu from './Menu.vue';
 import SifButton from '../Elements/SifButton.vue';
+import SifSwitch from '../Elements/SifSwitch.vue';
 import Dropdown from '../Elements/Dropdown.vue';
 
 export default {
   components: {
     Menu,
     SifButton,
+    SifSwitch,
     Dropdown,
-  }
+  },
+
+  data() {
+    return {
+      typefaceCursive: true,
+    }
+  },
 }
 </script>
 
