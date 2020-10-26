@@ -28,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WORKING_DIRECTORY: ./build
+    needs: build
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
