@@ -2,7 +2,8 @@ name: Publish Testnet Images
 
 on:
   pull_request:
-    branches: feature/*
+    branches:
+      - 'feature/*'
 
 jobs:
   build:
