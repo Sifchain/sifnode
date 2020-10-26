@@ -9,34 +9,34 @@
 *Proposed*
 
 ## Context
-In this ADR, the two possible solutions for Sifchain are listed, and the pros and cons are compared with each other. It explain the reason behind the current implementation and what's the ideal architecture would be like.
+In this ADR, the two possible solutions for Sifchain are listed, and the pros and cons are compared with each other. This ADR explains the reason behind the current implementation and what the ideal architecture would be like.
 ### Summary
 
-In Sifchain, there are two major programmes, Peggy and Sifnode. Peggy works as the bridge to other blockchain system like Ethereum, Bitcoin, EOS, Polkadot and so on, transfer assets to Cosmos also for the opposite direction. Sifnode is based on Cosmos SDK, its major functionality is to provide the liquidity and token swap. By combine two componets again, it is possible to provide the liquility with transfered ETH, BTC, EOS and so on. Swap is the same, then Sifchain user can swap the RWN (Sifchain native token) with transfered ETH, BTC, EOS and so on.
+In Sifchain's MVP, there are two major programs, Peggy and Sifnode. Peggy works as the bridge to Ethereum and can transfer assets to and from a Cosmos SDK blockchain. Sifnode is based on Cosmos SDK, its major functionality is to provide liquidity pools and enable token swaps. By combine the two components again, it is possible to provide liquidity with pegged tokens whose source tokens are on Ethereum. 
 
 From architecture point of view, there are two solutions for Sifchain.
-1. Both Peggy and Sifnode have their own ledger, they communicate and transfer value via IBC. It is an ideal solution considering the flexibility and scaling out. But the IBC, at the time write the ADR, is not mature enough for development. 
+1. Peggy and Sifnode each have their own ledger.  Pegged tokens are created in Peggy's peg zone ledger which can communicate and transfer value to Sifnode's ledger (Sifchain) via IBC. It is an ideal solution as described in more detail here - https://blog.cosmos.network/the-internet-of-blockchains-how-cosmos-does-interoperability-starting-with-the-ethereum-peg-zone-8744d4d2bc3f. However, IBC, at the time write the ADR, is not mature enough for development. 
 
-2. Peggy and Sifnode co-exist in the same ledger, they share the accout and balance. The solution couple the Peggy Sifnode, but it is easier to implement for now. If consider the IBC's availability, it is maybe the only solution to deliver.
+2. Peggy and Sifnode co-exist in the same ledger, they share accounts and balances. This solution delivers Peggy as its own module in Sifnode.  It's not ideal, but it is easier to implement while IBC matures.
 
 ### Pros and Cons
 
-1. seperate chain solution
+1. Seperate Ledger Solution
 
-Pros: Peggy and Sifnode can develop and extend seperately, totally decoupled. Peggy will connect more blockchain system like EOS, BTS, Polkadot, ETC and so on, even the other Cosmos based chain instead of Sifchain, with enable IBC. Peggy focus on recording the cross chain assets transfer. Design the its own incentive algorithm, consensus strategy and native token.
+Pros: Peggy and Sifnode can develop and extend seperately, totally decoupled. Peggy can be focused on recording cross chain assets transfers with its own validator set, tokenized incentives for maintaining consensus, and its own native token.  This validator set would be dedicated to supporting other Cosmos SDK chains besides Sifchain.
 
-Cons: Peggy and Sifnode need IBC support, which not used in production environment yet. For customer, they need two transactions to provide liquidity. At first, transfer asset to Peggy. Then transfer asset from Peggy to Sifnode via IBC.
+Cons: Peggy and Sifnode would need IBC support, which is not currently used in any production environment yet.  Sifchain users who want to swap or pool with an Ethereum token would need two transactions.  The first would be transferring an asset from Ethereum to Peggy's peg zone.  The second would be transferring the pegged asset from the peg zone to Sifchain via IBC.
 
-2. shared ledger solution
+2. Shared Ledger Solution
 
-Pros: It is much easier to deploy and maintenence since all operations like cross-transfer, add liquidity and swap are processed by single chain. No dependency on the service of IBC.
+Pros: It is much easier to deploy and maintenence since all operations like cross-chain token transfer, adding liquidity, and swapping tokens would be processed by a single chain.  There would be no dependency on IBC.
 
-Cons: For the long term, the system is hard to scale out. For example, all node validators for sifnode must deploy the Ethereum node and pay for high gas fee.
-It increase the cose of validators.
+Cons: For the long term, the system is hard to scale out. For example, all Sifnode operators would also need to deploy a Ethereum node process Ethereum's high gas fees.  This increases the labor costs of running a Sifnode validator in a way that is unsustainable as Sifchain bridges to more blockchains besides Ethereum.
+
 ## Decision
-We choose the second solution to implement now. The major reason is the IBC still in development, not mature for production environment usage for the time we write the ARD. We will keep our eyes on the maturity of IBC, give our judgement when it is could be trid and even be switched.
+We choose the second solution to implement now. The major reason is the IBC still in development and not mature enough for production usage at this time. We will keep our eyes on the maturity of IBC and make a switch when we judge it is ready.
 
-In our development, We need decouple the cross-chain functions (as peggy) and liquidilty/swap at the module level. It will avoid too much efforts to split them if IBC is availale.
+We will decouple the cross-chain transfer functions (native to Peggy) and liquidity and swap (native to Sifnode) at the module level. This will make it easier for us to update to IBC when needed
 
 ## Consequences
 
@@ -46,11 +46,12 @@ In our development, We need decouple the cross-chain functions (as peggy) and li
 
 ### Negative
 
-- Not yet
+- Nothing major
 
 ### Neutral
 
-- Not yet
+- Nothing major
 
 ## References
 
+https://blog.cosmos.network/the-internet-of-blockchains-how-cosmos-does-interoperability-starting-with-the-ethereum-peg-zone-8744d4d2bc3f
