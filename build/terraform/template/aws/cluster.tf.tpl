@@ -22,7 +22,7 @@ terraform {
 // Sifchain terraform module
 module sifchain {
     source                  = "github.com/sifchain/sifnode/build/terraform/providers/aws"
-    region                  = "us-west-2"
+    region                  = "us-west-1"
     cluster_name            = "sifchain-aws-{{.chainnet}}"
     tags = {
         Terraform           = true
