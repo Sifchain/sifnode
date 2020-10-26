@@ -24,7 +24,7 @@ module "vpc" {
   name           = var.cluster_name
   cidr           = var.vpc_cidr
   azs            = var.az
-  public_subnets = [cidrsubnet(var.vpc_cidr, 4, 1), cidrsubnet(var.vpc_cidr, 4, 2)]
+  public_subnets = [cidrsubnet(var.vpc_cidr, 4, 1), cidrsubnet(var.vpc_cidr, 4, 2), cidrsubnet(var.vpc_cidr, 4, 3)]
 
   enable_dns_hostnames = true
   enable_dns_support   = true
