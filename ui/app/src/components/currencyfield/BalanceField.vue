@@ -1,7 +1,3 @@
-<template>
-  <span v-if="available !== '0'">Available: {{ available }}</span>
-</template>
-
 <script lang="ts">
 import { useCore } from "@/hooks/useCore";
 import { computed } from "@vue/reactivity";
@@ -28,3 +24,7 @@ export default defineComponent({
   },
 });
 </script>
+
+<template>
+  <span v-if="available !== '0'">Available: {{ available }}</span>
+</template>

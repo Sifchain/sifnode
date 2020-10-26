@@ -4,9 +4,9 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { computed } from "@vue/reactivity";
-import { useSelectTokens } from "./useSelectToken";
+import { useSelectTokenDialog } from "@/components/tokenSelector/useSelectToken";
 import BalanceField from "./BalanceField.vue";
-import AssetItem from "./AssetItem.vue";
+import AssetItem from "@/components/tokenSelector/AssetItem.vue";
 
 export type BalanceShape = {
   symbol: string;
@@ -24,7 +24,7 @@ export default defineComponent({
   },
   components: { BalanceField, AssetItem },
   setup(props, context) {
-    const { handleClicked: handleSelectClicked } = useSelectTokens();
+    const { openDialog: handleSelectClicked } = useSelectTokenDialog();
     const localAmount = computed({
       get: () => props.amount,
       set: (amount) => context.emit("update:amount", amount),

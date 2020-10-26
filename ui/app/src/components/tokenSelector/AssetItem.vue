@@ -1,11 +1,3 @@
-<template>
-  <div class="row">
-    <img v-if="token.imageUrl" width="16" :src="token.imageUrl" />
-    <div class="placeholder" :style="backgroundStyle" v-else></div>
-    <span>{{ token.symbol.toUpperCase() }}</span>
-  </div>
-</template>
-
 <script lang="ts">
 import { computed, defineComponent } from "vue";
 import { Asset } from "../../../../core";
@@ -32,6 +24,14 @@ export default defineComponent({
   },
 });
 </script>
+
+<template>
+  <div class="row">
+    <img v-if="token.imageUrl" width="16" :src="token.imageUrl" />
+    <div class="placeholder" :style="backgroundStyle" v-else></div>
+    <span>{{ token.symbol.toUpperCase() }}</span>
+  </div>
+</template>
 
 <style scoped>
 .row {
