@@ -1,0 +1,67 @@
+name: Publish Testnet Images
+
+on:
+  pull_request:
+    branches: feature/*
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build image
+        run: |
+          make CHAINNET=${{ github.sha }} BINARY=sifnoded build-image
+
+      - name: Push image
+        run: |
+          docker push sifchain/sifnoded:${{ github.sha }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    working-directory: build
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Setup ruby
+        uses: actions/setup-ruby@v1
+
+      - name: Setup terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.12.25
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Scaffold cluster
+        working-directory: build
+        run: |
+          rake 'cluster:scaffold[testnet-${{ github.sha }},aws]'
+
+      - name: Deploy cluster
+        run: |
+          rake 'cluster:deploy[testnet-${{ github.sha }},aws]'
+
+      - name: Create k8s config
+        uses: chrislennon/action-aws-cli@v1.1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws eks --region us-west-1 update-kubeconfig \
+                  --name sifchain-aws-testnet-${{ github.sha }} \
+                  --kubeconfig ../.live/sifchain-aws-testnet-${{ github.sha }}/kubeconfig_sifchain-aws-testnet-${{ github.sha }}
+
+      - name: Deploy node to cluster
+        run: |
+          rake 'cluster:sifnode:deploy[testnet-${{ github.sha }},aws,${{ github.actor }},sifchain/sifnoded,${{ github.sha }}]'
+
+      - name: Cluster status
+        run: |
+          rake 'cluster:status[testnet-${{ github.sha }},aws]'
