@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"time"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -23,6 +24,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	// this line is used by starport scaffolding
+
+	"github.com/Sifchain/sifnode/x/faucet"
 )
 
 const appName = "sifnode"
@@ -37,13 +40,14 @@ var (
 		staking.AppModuleBasic{},
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
-		// this line is used by starport scaffolding # 2
+		faucet.AppModule{},
 	)
 
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		faucet.ModuleName:         {supply.Minter},
 	}
 )
 
@@ -73,7 +77,10 @@ type NewApp struct {
 	stakingKeeper staking.Keeper
 	supplyKeeper  supply.Keeper
 	paramsKeeper  params.Keeper
-	// this line is used by starport scaffolding # 3
+
+	// cli faucet
+	faucetKeeper faucet.Keeper
+
 	mm *module.Manager
 
 	sm *module.SimulationManager
@@ -97,7 +104,7 @@ func NewInitApp(
 		staking.StoreKey,
 		supply.StoreKey,
 		params.StoreKey,
-		// this line is used by starport scaffolding # 5
+		faucet.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -148,7 +155,14 @@ func NewInitApp(
 		staking.NewMultiStakingHooks(),
 	)
 
-	// this line is used by starport scaffolding # 4
+	app.faucetKeeper = faucet.NewKeeper(
+		app.supplyKeeper,
+		app.stakingKeeper,
+		10*1000000,
+		24*time.Hour,
+		keys[faucet.StoreKey],
+		app.cdc,
+	)
 
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.accountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
@@ -156,7 +170,7 @@ func NewInitApp(
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
-		// this line is used by starport scaffolding # 6
+		faucet.NewAppModule(app.faucetKeeper),
 	)
 
 	app.mm.SetOrderEndBlockers(staking.ModuleName)
