@@ -1,21 +1,39 @@
-CHAINNET?=localnet # Options; localnet, testnet, chaosnet ,mainnet
+CHAINNET?=testnet # Options; testnet, mainnet
 BINARY?=sifnoded
 GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
+TIMESTAMP:=$(shell date +%s)
+
+ifeq (mainnet,${CHAINNET})
+	BUILD_TAGS=mainnet
+else
+	BUILD_TAGS=testnet
+endif
+
+whitespace :=
+whitespace += $(whitespace)
+comma := ,
+build_tags_comma_sep := $(subst $(whitespace),$(comma),$(BUILD_TAGS))
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnodecli \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
-BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${CHAINNET} -a
+BUILD_FLAGS := -ldflags '$(ldflags)' -tags $(BUILD_TAGS) -a
 
 BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen ./cmd/sifcrg
 
 all: lint install
+
+build-config:
+	echo $(CHAINNET)
+	echo $(BUILD_TAGS)
+	echo $(BUILD_FLAGS)
 
 lint-pre:
 	@test -z $(gofmt -l .)
@@ -30,11 +48,13 @@ lint-verbose: lint-pre
 install: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
 
+start:
+	sifnodecli rest-server & sifnoded start
+
 clean-config:
 	@echo "Are you sure you wish to clear-config? This will destroy your private keys [y/N] " && read ans && [ $${ans:-N} = y ]
 	@rm -rf ~/.sifnode*
 
-TIMESTAMP = $(shell date +%s)
 backup-config:
 	mkdir -p .backups
 	tar -cvf .backups/sifnode-config-${TIMESTAMP}.tar -C ~/ .sifnoded .sifnodecli
@@ -47,10 +67,6 @@ tests:
 
 feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
-
-run:
-	go run ./cmd/sifd start
-
 
 build-image:
 	docker build -t sifchain/$(BINARY):$(CHAINNET) -f ./cmd/$(BINARY)/Dockerfile .
