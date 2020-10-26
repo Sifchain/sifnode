@@ -9,7 +9,7 @@ type (
 	Keys       types.Keys
 	NodeConfig types.NodeConfig
 	CLIConfig  types.CLIConfig
-	Genesis types.Genesis
+	Genesis    types.Genesis
 )
 
 const (

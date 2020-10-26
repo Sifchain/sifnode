@@ -27,8 +27,8 @@ const (
 
 type Node struct {
 	ChainID     string    `yaml:"chain_id"`
-	PeerAddress *string    `yaml:"-"`
-	GenesisURL  *string    `yaml:"-"`
+	PeerAddress *string   `yaml:"-"`
+	GenesisURL  *string   `yaml:"-"`
 	Moniker     string    `yaml:"moniker"`
 	Address     string    `yaml:"address"`
 	Password    string    `yaml:"password"`
@@ -138,7 +138,11 @@ func (n *Node) seedGenesis() error {
 
 	outputFile := fmt.Sprintf("%s/%s", gentxDir, "gentx.json")
 	nodeID, _ := n.CLI.NodeID(app.DefaultNodeHome)
+
 	pubKey, err := n.CLI.ValidatorAddress(app.DefaultNodeHome)
+	if err != nil {
+		return err
+	}
 
 	_, err = n.CLI.GenerateGenesisTxn(
 		n.Moniker,
