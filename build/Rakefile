@@ -37,6 +37,11 @@ namespace :cluster do
     puts "Deploy cluster config: #{path(args)}"
     system("cd #{path(args)} && terraform apply") or exit 1
     puts "Cluster #{path(args)} created successfully"
+
+    puts "Deploy the EBS CSI plugin on k8s"
+    cmd = %Q{kubectl apply -k "github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/?ref=master"}
+    system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+
     puts "Now run `rake sifnode:install[#{args[:chainnet]},#{args[:provider]}]` to deploy sifnode to your cluster"
   end
 
@@ -48,6 +53,7 @@ namespace :cluster do
     puts "Cluster #{path(args)} updated successfully"
   end
 
+  desc "Destroy cluster"
   task :destroy, [:chainnet, :provider] do |t, args|
     check_args(args)
     puts "Destroy running cluster: #{path(args)}"
@@ -96,9 +102,18 @@ namespace :dependencies do
       puts "Installing Helm 3"
       system("brew install helm")
     when :linux
-      # TODO complete....
+      puts "Linux CLIs directory"
+      system('mkdir -p $HOME/bin')
+      system('export PATH=$PATH:$HOME/bin')
+      system("echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc")
+
       puts "Installing aws-iam-authenticator"
-      system("curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.8/2020-09-18/bin/linux/amd64/aws-iam-authenticator")
+      system("curl -o $HOME/bin/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.8/2020-09-18/bin/linux/amd64/aws-iam-authenticator")
+      system("chmod +x $HOME/bin/aws-iam-authenticator")
+
+      puts "Installing kubectl"
+      system('curl -o $HOME/bin/kubectl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"')
+      system("chmod +x $HOME/bin/kubectl")
 
       puts "Installig helm"
       system("curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash")
