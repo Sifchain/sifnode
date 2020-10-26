@@ -37,7 +37,7 @@ jobs:
       - name: Setup terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 0.12.25
+          terraform_version: 0.13.5
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Scaffold cluster
