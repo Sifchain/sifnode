@@ -34,6 +34,11 @@ clean-config:
 	@echo "Are you sure you wish to clear-config? This will destroy your private keys [y/N] " && read ans && [ $${ans:-N} = y ]
 	@rm -rf ~/.sifnode*
 
+TIMESTAMP = $(shell date +%s)
+backup-config:
+	mkdir -p .backups
+	tar -cvf .backups/sifnode-config-${TIMESTAMP}.tar -C ~/ .sifnoded .sifnodecli
+
 clean:
 	@rm -rf ${GOBIN}/sif*
 
