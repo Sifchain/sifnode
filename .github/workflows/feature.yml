@@ -43,11 +43,11 @@ jobs:
       - name: Scaffold cluster
         working-directory: build
         run: |
-          rake 'cluster:scaffold[testnet-${{ github.sha }},aws]'
+          rake 'cluster:scaffold[testnet-${{ github.actor }},aws]'
 
       - name: Deploy cluster
         run: |
-          rake 'cluster:deploy[testnet-${{ github.sha }},aws]'
+          rake 'cluster:deploy[testnet-${{ github.actor }},aws]'
 
       - name: Create k8s config
         uses: chrislennon/action-aws-cli@v1.1
@@ -56,13 +56,13 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           aws eks --region us-west-1 update-kubeconfig \
-                  --name sifchain-aws-testnet-${{ github.sha }} \
-                  --kubeconfig ../.live/sifchain-aws-testnet-${{ github.sha }}/kubeconfig_sifchain-aws-testnet-${{ github.sha }}
+                  --name sifchain-aws-testnet-${{ github.actor }} \
+                  --kubeconfig ../.live/sifchain-aws-testnet-${{ github.actor }}/kubeconfig_sifchain-aws-testnet-${{ github.actor }}
 
       - name: Deploy node to cluster
         run: |
-          rake 'cluster:sifnode:deploy[testnet-${{ github.sha }},aws,${{ github.actor }},sifchain/sifnoded,${{ github.sha }}]'
+          rake 'cluster:sifnode:deploy[testnet-${{ github.actor }},aws,${{ github.ref }},sifchain/sifnoded,${{ github.sha }}]'
 
       - name: Cluster status
         run: |
-          rake 'cluster:status[testnet-${{ github.sha }},aws]'
+          rake 'cluster:status[testnet-${{ github.actor }},aws]'
