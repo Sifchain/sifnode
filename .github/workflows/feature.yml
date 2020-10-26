@@ -26,7 +26,8 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    working-directory: build
+    env:
+      WORKING_DIRECTORY: ./build
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -41,11 +42,12 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Scaffold cluster
-        working-directory: build
+        working-directory: ${{env.WORKING_DIRECTORY}}
         run: |
           rake 'cluster:scaffold[testnet-${{ github.actor }},aws]'
 
       - name: Deploy cluster
+        working-directory: ${{env.WORKING_DIRECTORY}}
         run: |
           rake 'cluster:deploy[testnet-${{ github.actor }},aws]'
 
@@ -56,15 +58,18 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Create k8s config
+        working-directory: ${{env.WORKING_DIRECTORY}}
         run: |
           aws eks --region us-west-2 update-kubeconfig \
                   --name sifchain-aws-testnet-${{ github.actor }} \
                   --kubeconfig ../.live/sifchain-aws-testnet-${{ github.actor }}/kubeconfig_sifchain-aws-testnet-${{ github.actor }}
 
       - name: Deploy node to cluster
+        working-directory: ${{env.WORKING_DIRECTORY}}
         run: |
           rake 'cluster:sifnode:deploy[testnet-${{ github.actor }},aws,${{ github.actor }},sifchain/sifnoded,${{ github.sha }}]'
 
       - name: Cluster status
+        working-directory: ${{env.WORKING_DIRECTORY}}
         run: |
           rake 'cluster:status[testnet-${{ github.actor }},aws]'
