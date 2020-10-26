@@ -1,11 +1,11 @@
 <template>
   <div class="dropdown__wrapper">
-		<SifButton secondary @click="toggleDropdown"><slot></slot></SifButton>
+	  <SifButton secondary @click="toggleDropdown"><slot></slot></SifButton>
     <div class="dropdown" v-show="toggle">
-			<div class="dropdown__inner">
-				<slot name="dropdown"></slot>
-			</div>
-		</div>
+      <div class="dropdown__inner">
+        <slot name="dropdown"></slot>
+      </div>
+    </div>
   </div>
 </template>
 
