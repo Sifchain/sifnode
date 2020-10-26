@@ -5,7 +5,16 @@
       </div>
       <div class="currency-form__balance">
         <span>Balance: 1200,7356</span>
-        <SifButton primary medium>Select</SifButton>
+
+        <SifSelect>
+          <template v-slot:activator>
+            <SifButton primary medium>Select</SifButton>
+          </template>
+          <div>
+            Token Name
+          </div>
+        </SifSelect>
+        
       </div>
     </div>
 </template>
@@ -13,6 +22,7 @@
 <script>
 import SifButton from '../Elements/SifButton.vue';
 import SifInput from '../Elements/SifInput.vue';
+import SifSelect from '../Elements/SifSelect.vue';
 
 export default {
   props: {
@@ -25,6 +35,7 @@ export default {
   components: {
     SifButton,
     SifInput,
+    SifSelect,
   }
 }
 </script>
