@@ -288,15 +288,13 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	if !externalAssetCoin.IsZero() && !externalAssetCoin.IsNegative() {
 		sendCoins = sendCoins.Add(externalAssetCoin)
 	}
-	if externalAssetCoin.Amount.Int64() >= int64(poolOriginalEB) {
+	if externalAssetCoin.Amount.Int64() >= int64(poolOriginalEB) || nativeAssetCoin.Amount.Int64() >= int64(poolOriginalNB) {
 		return nil, types.ErrPoolTooShallow
 	}
 	if !nativeAssetCoin.IsZero() && !nativeAssetCoin.IsNegative() {
 		sendCoins = sendCoins.Add(nativeAssetCoin)
 	}
-	if nativeAssetCoin.Amount.Int64() >= int64(poolOriginalNB) {
-		return nil, types.ErrPoolTooShallow
-	}
+
 	if !sendCoins.Empty() {
 		if !keeper.BankKeeper.HasCoins(ctx, pool.PoolAddress, sendCoins) {
 			return nil, types.ErrNotEnoughLiquidity

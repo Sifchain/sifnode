@@ -170,8 +170,14 @@ func TestRemoveLiquidity(t *testing.T) {
 	assert.Equal(t, keeper.BankKeeper.GetCoins(ctx, signer).AmountOf(externalDenom).Int64(), externalAmountOLD.Int64())
 	ok = keeper.BankKeeper.HasCoins(ctx, signer, coins)
 	assert.True(t, ok, "")
-}
 
+	wBasis = 10000
+	asymmetry = 0
+	msg = NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
+	res, err = handleMsgRemoveLiquidity(ctx, keeper, msg)
+	require.Error(t, err)
+	require.Nil(t, res, "Cannot withdraw pool is too shallow")
+}
 func TestSwap(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	signer := GenerateAddress()
