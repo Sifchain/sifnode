@@ -19,7 +19,7 @@ ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F859733
 1. check the balance of operator before lock
 yarn peggy:getTokenBalance  0x627306090abaB3A6e1400e9345bC60c78a8BEf57 eth
 2. check the ballance of contract before lock
-yarn peggy:getTokenBalance  0x30753E4A8aad7F8597332E813735Def5dD395028  eth
+yarn peggy:getTokenBalance  0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4  eth
 3. check the user balance before lock
 sifnodecli query account $(sifnodecli keys show user2 -a)
 
@@ -28,7 +28,7 @@ yarn peggy:lock $(sifnodecli keys show user2 -a) 0x00000000000000000000000000000
 4. check the balance of operator before lock
 yarn peggy:getTokenBalance  0x627306090abaB3A6e1400e9345bC60c78a8BEf57 eth
 5. check the ballance of contract before lock
-yarn peggy:getTokenBalance  0x30753E4A8aad7F8597332E813735Def5dD395028  eth
+yarn peggy:getTokenBalance  0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4  eth
 6. check the user2 balance before lock
 sifnodecli query account $(sifnodecli keys show user2 -a)
 
@@ -47,7 +47,7 @@ sifnodecli query account $(sifnodecli keys show user2 -a)
 ### case 3: lock rowan in cosmos then issue the token in ethereum
 sifnodecli tx ethbridge lock $(sifnodecli keys show user2 -a) 0xf17f52151EbEF6C7334FAD080c5704D77216b732 1 rwn  --ethereum-chain-id=5777 --from=user2 --yes
 
-1. check the balance of validator peggyatom in ethereum
+1. check the balance of user2 peggyatom in ethereum
 yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732  0x409Ba3dd291bb5D48D5B4404F5EFa207441F6CbA
 sifnodecli query account $(sifnodecli keys show user2 -a)
 
