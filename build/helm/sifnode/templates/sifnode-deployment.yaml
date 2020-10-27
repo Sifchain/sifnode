@@ -32,7 +32,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "sifgen node create $SIF_ID; sifnoded start --rpc.laddr tcp://0.0.0.0:26657 --db_dir /data"]
+          args: ["-c", "sifgen node create $SIF_ID; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
           ports:
             - name: port-26656
               containerPort: 26656

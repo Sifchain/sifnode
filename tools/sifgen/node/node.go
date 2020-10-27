@@ -21,10 +21,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const (
-	DefaultBond = "100trwn"
-)
-
 type Node struct {
 	ChainID     string    `yaml:"chain_id"`
 	PeerAddress *string   `yaml:"-"`
@@ -126,7 +122,7 @@ func (n *Node) networkGenesis() error {
 }
 
 func (n *Node) seedGenesis() error {
-	_, err := n.CLI.AddGenesisAccount(n.Address, app.DefaultNodeHome, []string{DefaultBond})
+	_, err := n.CLI.AddGenesisAccount(n.Address, app.DefaultNodeHome, []string{common.ToBond})
 	if err != nil {
 		return err
 	}
@@ -147,7 +143,7 @@ func (n *Node) seedGenesis() error {
 	_, err = n.CLI.GenerateGenesisTxn(
 		n.Moniker,
 		n.Password,
-		DefaultBond,
+		common.ToBond,
 		app.DefaultNodeHome,
 		app.DefaultCLIHome,
 		outputFile,

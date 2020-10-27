@@ -28,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WORKING_DIRECTORY: ./build
+      WORKSPACE_PREFIX: sifchain-aws
+      WORKSPACE_NAME: feature-testnets
     needs: build
     steps:
       - name: Check out the repo
@@ -35,22 +37,6 @@ jobs:
 
       - name: Setup ruby
         uses: actions/setup-ruby@v1
-
-      - name: Setup terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 0.13.5
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-      - name: Scaffold cluster
-        working-directory: ${{ env.WORKING_DIRECTORY }}
-        run: |
-          rake 'cluster:scaffold[testnet-${{ github.actor }},aws]'
-
-      - name: Deploy cluster
-        working-directory: ${{ env.WORKING_DIRECTORY }}
-        run: |
-          rake 'cluster:deploy[testnet-${{ github.actor }},aws]'
 
       - name: Install AWS CLI
         uses: chrislennon/action-aws-cli@v1.1
@@ -65,14 +51,12 @@ jobs:
       - name: Create k8s config
         working-directory: ${{env.WORKING_DIRECTORY}}
         run: |
-          aws eks --region us-west-2 update-kubeconfig \
-                  --name sifchain-aws-testnet-${{ github.actor }} \
-                  --kubeconfig ../.live/sifchain-aws-testnet-${{ github.actor }}/kubeconfig_sifchain-aws-testnet-${{ github.actor }}
+          aws eks --region us-west-2 update-kubeconfig --name ${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
 
       - name: Deploy node to cluster
         working-directory: ${{ env.WORKING_DIRECTORY }}
         run: |
-          rake 'cluster:sifnode:deploy[testnet-${{ github.actor }},aws,${{ github.actor }},sifchain/sifnoded,${{ github.sha }}]'
+          rake 'cluster:sifnode:deploy[${{ env.WORKSPACE_NAME }},aws,${{ github.actor }},sifchain/sifnoded,${{ github.sha }}]'
 
       - name: Cluster status
         working-directory: ${{ env.WORKING_DIRECTORY }}
