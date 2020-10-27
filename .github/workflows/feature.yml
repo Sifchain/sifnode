@@ -13,10 +13,6 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
 
-      - name: Push to GitHub Packages
-        uses: docker/build-push-action@v1
-        with:
-
       - name: Build and push image
         uses: docker/build-push-action@v2
         with:
