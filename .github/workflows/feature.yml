@@ -19,10 +19,12 @@ jobs:
       - name: Build image
         run: |
           make CHAINNET=${{ github.sha }} BINARY=sifnoded build-image
+          make CHAINNET=${{ github.sha }} BINARY=sifnodecli build-image
 
       - name: Push image
         run: |
           docker push sifchain/sifnoded:${{ github.sha }}
+          docker push sifchain/sifnodecli:${{ github.sha }}
 
   deploy:
     runs-on: ubuntu-latest
