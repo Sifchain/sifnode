@@ -4,9 +4,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/spf13/viper"
-	"time"
 
 	"github.com/spf13/cobra"
 
@@ -99,9 +100,9 @@ func GetPublishKey(cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			kb, errkb := keys.NewKeyring(sdk.KeyringServiceName(), viper.GetString(flags.FlagKeyringBackend), viper.GetString(flags.FlagHome), inBuf)
-			if errkb != nil {
-				return errkb
+			kb, err := keys.NewKeyring(sdk.KeyringServiceName(), viper.GetString(flags.FlagKeyringBackend), viper.GetString(flags.FlagHome), inBuf)
+			if err != nil {
+				return err
 			}
 
 			// check local key
@@ -131,13 +132,13 @@ func GetCmdInitial(cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			//txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			kb, errkb := keys.NewKeyring(sdk.KeyringServiceName(), viper.GetString(flags.FlagKeyringBackend), viper.GetString(flags.FlagHome), inBuf)
-			if errkb != nil {
-				return errkb
+			kb, err := keys.NewKeyring(sdk.KeyringServiceName(), viper.GetString(flags.FlagKeyringBackend), viper.GetString(flags.FlagHome), inBuf)
+			if err != nil {
+				return err
 			}
 
 			// check local key
-			_, err := kb.Get(types.ModuleName)
+			_, err = kb.Get(types.ModuleName)
 			if err == nil {
 				return errors.New("faucet existed")
 			}
