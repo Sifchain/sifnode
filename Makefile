@@ -48,6 +48,9 @@ lint-verbose: lint-pre
 install: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
 
+init:
+	./scripts/init.sh
+
 start:
 	sifnodecli rest-server & sifnoded start
 
