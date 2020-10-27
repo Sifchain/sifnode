@@ -25,7 +25,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	// this line is used by starport scaffolding
 
-	"github.com/Sifchain/sifnode/x/faucet"
+	"github.com/Sifchain/sifnode/x/faucetv1"
 )
 
 const appName = "sifnode"
@@ -40,14 +40,14 @@ var (
 		staking.AppModuleBasic{},
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
-		faucet.AppModule{},
+		faucetv1.AppModule{},
 	)
 
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
-		faucet.ModuleName:         {supply.Minter},
+		faucetv1.ModuleName:       {supply.Minter},
 	}
 )
 
@@ -79,7 +79,7 @@ type NewApp struct {
 	paramsKeeper  params.Keeper
 
 	// cli faucet
-	faucetKeeper faucet.Keeper
+	faucetKeeper faucetv1.Keeper
 
 	mm *module.Manager
 
@@ -104,7 +104,7 @@ func NewInitApp(
 		staking.StoreKey,
 		supply.StoreKey,
 		params.StoreKey,
-		faucet.StoreKey,
+		faucetv1.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -155,12 +155,12 @@ func NewInitApp(
 		staking.NewMultiStakingHooks(),
 	)
 
-	app.faucetKeeper = faucet.NewKeeper(
+	app.faucetKeeper = faucetv1.NewKeeper(
 		app.supplyKeeper,
 		app.stakingKeeper,
 		10*1000000,
 		24*time.Hour,
-		keys[faucet.StoreKey],
+		keys[faucetv1.StoreKey],
 		app.cdc,
 	)
 
@@ -170,7 +170,7 @@ func NewInitApp(
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
-		faucet.NewAppModule(app.faucetKeeper),
+		faucetv1.NewAppModule(app.faucetKeeper),
 	)
 
 	app.mm.SetOrderEndBlockers(staking.ModuleName)

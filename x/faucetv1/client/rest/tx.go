@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Sifchain/sifnode/x/faucet/internal/types"
+	"github.com/Sifchain/sifnode/x/faucetv1/internal/types"
 )
 
 // PostProposalReq defines the properties of a proposal request's body.

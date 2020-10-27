@@ -1,4 +1,4 @@
-package faucet
+package faucetv1
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/Sifchain/sifnode/x/faucet/internal/types"
+	"github.com/Sifchain/sifnode/x/faucetv1/internal/types"
 )
 
 // NewHandler returns a handler for "faucet" type messages.

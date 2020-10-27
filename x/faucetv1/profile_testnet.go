@@ -1,6 +1,6 @@
 // +build testnet
 
-package faucet
+package faucetv1
 
 // faucet should only be added to testnet.
 const profile = TESTNET

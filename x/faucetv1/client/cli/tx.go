@@ -18,7 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
-	"github.com/Sifchain/sifnode/x/faucet/internal/types"
+	"github.com/Sifchain/sifnode/x/faucetv1/internal/types"
 )
 
 // GetTxCmd return faucet sub-command for tx

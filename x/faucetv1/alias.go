@@ -1,8 +1,8 @@
-package faucet
+package faucetv1
 
 import (
-	"github.com/Sifchain/sifnode/x/faucet/internal/keeper"
-	"github.com/Sifchain/sifnode/x/faucet/internal/types"
+	"github.com/Sifchain/sifnode/x/faucetv1/internal/keeper"
+	"github.com/Sifchain/sifnode/x/faucetv1/internal/types"
 )
 
 const (

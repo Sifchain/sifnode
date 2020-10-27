@@ -1,4 +1,4 @@
-package faucet
+package faucetv1
 
 import (
 	"encoding/json"
@@ -13,8 +13,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/Sifchain/sifnode/x/faucet/client/cli"
-	"github.com/Sifchain/sifnode/x/faucet/client/rest"
+	"github.com/Sifchain/sifnode/x/faucetv1/client/cli"
+	"github.com/Sifchain/sifnode/x/faucetv1/client/rest"
 )
 
 // type check to ensure the interface is properly implemented

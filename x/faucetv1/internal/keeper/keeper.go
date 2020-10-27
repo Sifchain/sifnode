@@ -7,7 +7,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	"time"
 
-	"github.com/Sifchain/sifnode/x/faucet/internal/types"
+	"github.com/Sifchain/sifnode/x/faucetv1/internal/types"
 )
 
 const FaucetStoreKey = "DefaultFaucetStoreKey"
