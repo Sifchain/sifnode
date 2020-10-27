@@ -13,7 +13,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 
 BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${CHAINNET} -a
 
-BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen ./cmd/sifcrg
+BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen ./cmd/sifcrg ./cmd/ebrelayer
 
 all: lint install
 
