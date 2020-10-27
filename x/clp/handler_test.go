@@ -99,7 +99,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	nativeDenom := GetNativeAsset().Ticker
 	//Parameters for Remove Liquidity
 	initialBalance := 10000 // Initial account balance for all assets created
-	poolBalance := 1000     // Amount funded to pool , This same amount is used both for native and external asset
+	poolBalance := 100      // Amount funded to pool , This same amount is used both for native and external asset
 	wBasis := 1000
 	asymmetry := 10000
 
