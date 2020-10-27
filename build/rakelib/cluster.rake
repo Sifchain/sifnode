@@ -127,7 +127,7 @@ def image_tag(args)
   args[:image_tag] ? "#{args[:image_tag]}" : "testnet"
 end
 
-# image_repository returns the arg with a image_repository if set or the default setting
+# image_repository returns the arg with a image if set or the default setting
 def image_repository(args)
-  args[:image_repository] ? "#{args[:image_repository]}" : "sifchain/sifnoded"
+  args[:image] ? "#{args[:image]}" : "sifchain/sifnoded"
 end
