@@ -19,7 +19,7 @@ jobs:
         run: |
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
 
-      - name: Push to GitHub Packages
+      - name: Build and push image
         uses: mr-smithers-excellent/docker-build-push@v4
         with:
           registry: ghcr.io
@@ -29,44 +29,44 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
 
-#  deploy:
-#    runs-on: ubuntu-latest
-#    env:
-#      WORKING_DIRECTORY: ./build
-#      WORKSPACE_PREFIX: sifchain-aws
-#      WORKSPACE_NAME: feature-testnets
-#    needs: build
-#    steps:
-#      - name: Check out the repo
-#        uses: actions/checkout@v2
-#
-#      - name: Setup ruby
-#        uses: actions/setup-ruby@v1
-#
-#      - name: Install AWS CLI
-#        uses: chrislennon/action-aws-cli@v1.1
-#
-#      - name: Set AWS credentials
-#        uses: aws-actions/configure-aws-credentials@v1
-#        with:
-#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#          aws-region: us-west-2
-#
-#      - name: Create k8s config
-#        working-directory: ${{env.WORKING_DIRECTORY}}
-#        run: |
-#          mkdir -p ../.live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
-#          aws eks --region us-west-2 update-kubeconfig \
-#                  --name ${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }} \
-#                  --kubeconfig ../.live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}/kubeconfig_${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
-#
-#      - name: Deploy node to cluster
-#        working-directory: ${{ env.WORKING_DIRECTORY }}
-#        run: |
-#          rake 'cluster:sifnode:deploy[${{ env.WORKSPACE_NAME }},aws,${{ github.actor }},ghcr.io/sifchain/sifnode,${{ github.sha }}]'
-#
-#      - name: Cluster status
-#        working-directory: ${{ env.WORKING_DIRECTORY }}
-#        run: |
-#          rake 'cluster:status[testnet-${{ github.actor }},aws]'
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      WORKING_DIRECTORY: ./build
+      WORKSPACE_PREFIX: sifchain-aws
+      WORKSPACE_NAME: feature-testnets
+    needs: build
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Setup ruby
+        uses: actions/setup-ruby@v1
+
+      - name: Install AWS CLI
+        uses: chrislennon/action-aws-cli@v1.1
+
+      - name: Set AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - name: Create k8s config
+        working-directory: ${{env.WORKING_DIRECTORY}}
+        run: |
+          mkdir -p ../.live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
+          aws eks --region us-west-2 update-kubeconfig \
+                  --name ${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }} \
+                  --kubeconfig ../.live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}/kubeconfig_${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
+
+      - name: Deploy node to cluster
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: |
+          rake 'cluster:sifnode:deploy[${{ env.WORKSPACE_NAME }},aws,${{ github.actor }},ghcr.io/sifchain/sifnode,${{ github.sha }}]'
+
+      - name: Cluster status
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: |
+          rake 'cluster:status[testnet-${{ github.actor }},aws]'
