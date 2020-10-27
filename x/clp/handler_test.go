@@ -99,7 +99,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	nativeDenom := GetNativeAsset().Ticker
 	//Parameters for Remove Liquidity
 	initialBalance := 10000 // Initial account balance for all assets created
-	poolBalance := 100      // Amount funded to pool , This same amount is used both for native and external asset
+	poolBalance := 1000     // Amount funded to pool , This same amount is used both for native and external asset
 	wBasis := 1000
 	asymmetry := 10000
 
@@ -113,6 +113,8 @@ func TestRemoveLiquidity(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, res)
 
+	wBasis = 1000
+	asymmetry = 10000
 	msgCreatePool := NewMsgCreatePool(signer, asset, uint(poolBalance), uint(poolBalance))
 	res, err = handleMsgCreatePool(ctx, keeper, msgCreatePool)
 	require.NoError(t, err)
@@ -177,6 +179,14 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handleMsgRemoveLiquidity(ctx, keeper, msg)
 	require.Error(t, err)
 	require.Nil(t, res, "Cannot withdraw pool is too shallow")
+
+	wBasis = 10000
+	asymmetry = 100
+	msg = NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
+	res, err = handleMsgRemoveLiquidity(ctx, keeper, msg)
+	require.Error(t, err)
+	require.Nil(t, res, "Cannot withdraw pool is too shallow")
+
 }
 func TestSwap(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
