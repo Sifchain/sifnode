@@ -225,15 +225,19 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
 	}
-
 	//Calculate amount to withdraw
+	poolOriginalEB := pool.ExternalAssetBalance
+	poolOriginalNB := pool.NativeAssetBalance
+
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := calculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
 		msg.WBasisPoints, msg.Asymmetry)
 
 	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount)))
 	nativeAssetCoin := sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
+
 	// Send coins from pool to user
+
 	pool.PoolUnits = pool.PoolUnits - lp.LiquidityProviderUnits + lpUnitsLeft
 	pool.NativeAssetBalance = pool.NativeAssetBalance - withdrawNativeAssetAmount
 	pool.ExternalAssetBalance = pool.ExternalAssetBalance - withdrawExternalAssetAmount
@@ -244,7 +248,9 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		}
 		if swapResult != 0 {
 			swapCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(swapResult)))
-			externalAssetCoin.Add(swapCoin)
+			swapAmountInCoin := sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(swapAmount)))
+			externalAssetCoin = externalAssetCoin.Add(swapCoin)
+			nativeAssetCoin = nativeAssetCoin.Sub(swapAmountInCoin)
 		}
 		err = keeper.SetPool(ctx, swappedPool)
 		if err != nil {
@@ -259,7 +265,11 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		}
 		if swapResult != 0 {
 			swapCoin := sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(swapResult)))
-			nativeAssetCoin.Add(swapCoin)
+			swapAmountInCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(swapAmount)))
+
+			nativeAssetCoin = nativeAssetCoin.Add(swapCoin)
+			externalAssetCoin = externalAssetCoin.Sub(swapAmountInCoin)
+
 		}
 		err = keeper.SetPool(ctx, swappedPool)
 		if err != nil {
@@ -273,19 +283,25 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 			return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
 		}
 	}
+
 	sendCoins := sdk.Coins{}
 	if !externalAssetCoin.IsZero() && !externalAssetCoin.IsNegative() {
 		sendCoins = sendCoins.Add(externalAssetCoin)
-
+	}
+	if externalAssetCoin.Amount.Int64() >= int64(poolOriginalEB) {
+		return nil, types.ErrPoolTooShallow
 	}
 	if !nativeAssetCoin.IsZero() && !nativeAssetCoin.IsNegative() {
 		sendCoins = sendCoins.Add(nativeAssetCoin)
 	}
+	if nativeAssetCoin.Amount.Int64() >= int64(poolOriginalNB) {
+		return nil, types.ErrPoolTooShallow
+	}
 	if !sendCoins.Empty() {
-		if !keeper.BankKeeper.HasCoins(ctx, pool.PoolAddress, sdk.Coins{externalAssetCoin, nativeAssetCoin}) {
+		if !keeper.BankKeeper.HasCoins(ctx, pool.PoolAddress, sendCoins) {
 			return nil, types.ErrNotEnoughLiquidity
 		}
-		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, msg.Signer, sdk.Coins{externalAssetCoin, nativeAssetCoin})
+		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, msg.Signer, sendCoins)
 		if err != nil {
 			return nil, err
 		}
