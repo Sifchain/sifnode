@@ -23,7 +23,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: docker.pkg.github.com
           repository: sifchain/sifnode/sifnoded
-          tag_with_ref: true
+          tag: ${{ github.sha }}
 
 #  deploy:
 #    runs-on: ubuntu-latest
