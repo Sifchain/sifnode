@@ -226,6 +226,9 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		return nil, types.ErrLiquidityProviderDoesNotExist
 	}
 	//Calculate amount to withdraw
+	poolOriginalEB := pool.ExternalAssetBalance
+	poolOriginalNB := pool.NativeAssetBalance
+
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := calculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
 		msg.WBasisPoints, msg.Asymmetry)
@@ -285,8 +288,14 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	if !externalAssetCoin.IsZero() && !externalAssetCoin.IsNegative() {
 		sendCoins = sendCoins.Add(externalAssetCoin)
 	}
+	if externalAssetCoin.Amount.Int64() >= int64(poolOriginalEB) {
+		return nil, types.ErrPoolTooShallow
+	}
 	if !nativeAssetCoin.IsZero() && !nativeAssetCoin.IsNegative() {
 		sendCoins = sendCoins.Add(nativeAssetCoin)
+	}
+	if nativeAssetCoin.Amount.Int64() >= int64(poolOriginalNB) {
+		return nil, types.ErrPoolTooShallow
 	}
 	if !sendCoins.Empty() {
 		if !keeper.BankKeeper.HasCoins(ctx, pool.PoolAddress, sendCoins) {
