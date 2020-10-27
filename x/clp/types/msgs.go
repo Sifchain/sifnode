@@ -119,7 +119,7 @@ func (m MsgRemoveLiquidity) ValidateBasic() error {
 	if !(m.WBasisPoints > 0) || m.WBasisPoints >= 10000 {
 		return sdkerrors.Wrap(ErrInvalidWBasis, strconv.Itoa(m.WBasisPoints))
 	}
-	if m.Asymmetry >= 10000 || m.Asymmetry <= -10000 {
+	if m.Asymmetry > 10000 || m.Asymmetry < -10000 {
 		return sdkerrors.Wrap(ErrInvalidAsymmetry, strconv.Itoa(m.Asymmetry))
 	}
 	return nil
