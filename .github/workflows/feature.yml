@@ -18,7 +18,7 @@ jobs:
 
       - name: Build and tag image
         run: |
-          make CHAINNET=sifnode/sifnoded:${{ github.sha }} BINARY=sifnoded build-image
+          make CHAINNET=${{ github.sha }} BINARY=sifnoded build-image
           docker tag sifnode/sifnoded:${{ github.sha }} ghcr.io/sifchain/sifnode/sifnoded:${{ github.sha }}
 
       - name: Push image
