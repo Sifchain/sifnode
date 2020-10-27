@@ -19,11 +19,11 @@ jobs:
       - name: Build and tag image
         run: |
           make CHAINNET=${{ github.sha }} BINARY=sifnoded build-image
-          docker tag sifchain/sifnoded:${{ github.sha }} ghcr.io/sifchain/sifnoded:${{ github.sha }}
+          docker tag sifchain/sifnoded:${{ github.sha }} ghcr.io/sifchain/sifchain/sifnoded:${{ github.sha }}
 
       - name: Push image
         run: |
-          docker push ghcr.io/sifchain/sifnoded:${{ github.sha }}
+          docker push ghcr.io/sifchain/sifchain/sifnoded:${{ github.sha }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
       - name: Deploy node to cluster
         working-directory: ${{ env.WORKING_DIRECTORY }}
         run: |
-          rake 'cluster:sifnode:deploy[${{ env.WORKSPACE_NAME }},aws,${{ github.actor }},ghcr.io/sifchain/sifnoded,${{ github.sha }}]'
+          rake 'cluster:sifnode:deploy[${{ env.WORKSPACE_NAME }},aws,${{ github.actor }},ghcr.io/sifchain/sifchain/sifnoded,${{ github.sha }}]'
 
       - name: Cluster status
         working-directory: ${{ env.WORKING_DIRECTORY }}
