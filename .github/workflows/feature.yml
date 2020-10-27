@@ -23,7 +23,7 @@ jobs:
         uses: mr-smithers-excellent/docker-build-push@v4
         with:
           registry: ghcr.io
-          image: sifchain/sifnoded
+          image: sifchain/sifnode
           dockerfile: ./cmd/sifnoded/Dockerfile
           tag: ${{ steps.vars.outputs.sha_short }}
           username: ${{ github.repository_owner }}
@@ -64,7 +64,7 @@ jobs:
 #      - name: Deploy node to cluster
 #        working-directory: ${{ env.WORKING_DIRECTORY }}
 #        run: |
-#          rake 'cluster:sifnode:deploy[${{ env.WORKSPACE_NAME }},aws,${{ github.actor }},ghcr.io/sifchain/sifchain/sifnoded,${{ github.sha }}]'
+#          rake 'cluster:sifnode:deploy[${{ env.WORKSPACE_NAME }},aws,${{ github.actor }},ghcr.io/sifchain/sifnode,${{ github.sha }}]'
 #
 #      - name: Cluster status
 #        working-directory: ${{ env.WORKING_DIRECTORY }}
