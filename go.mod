@@ -4,7 +4,6 @@ go 1.15
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/allegro/bigcache v1.2.1-0.20190218064605-e24eb225f156 // indirect
 	github.com/aristanetworks/goarista v0.0.0-20170210015632-ea17b1a17847 // indirect
 	github.com/btcsuite/btcd v0.21.0-beta // indirect
@@ -17,10 +16,11 @@ require (
 	github.com/fjl/memsize v0.0.0-20180418122429-ca190fb6ffbc // indirect
 	github.com/gballet/go-libpcsclite v0.0.0-20190607065134-2772fd86a8ff // indirect
 	github.com/golang/mock v1.4.3 // indirect
+	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/golang/snappy v0.0.2-0.20200707131729-196ae77b8a26 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/google/gofuzz v1.1.1-0.20200604201612-c04b05f3adfa // indirect
-	github.com/google/uuid v1.1.1 // indirect
+	github.com/google/uuid v1.1.2 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/huin/goupnp v1.0.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2-0.20160603034137-1fa385a6f458 // indirect
@@ -61,5 +61,4 @@ require (
 	gopkg.in/olebedev/go-duktape.v3 v3.0.0-20200619000410-60c24ae608a6 // indirect
 	gopkg.in/urfave/cli.v1 v1.20.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
-	syreclabs.com/go/faker v1.2.2
 )

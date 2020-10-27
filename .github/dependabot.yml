@@ -11,6 +11,6 @@ updates:
       interval: daily
     open-pull-requests-limit: 10
   - package-ecosystem: "npm"
-    directory: "/vue"
+    directory: "/ui"
     schedule:
       interval: "daily"
