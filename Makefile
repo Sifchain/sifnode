@@ -45,7 +45,6 @@ feature-tests:
 run:
 	go run ./cmd/sifd start
 
-
 build-image:
 	docker build -t sifchain/$(BINARY):$(CHAINNET) -f ./cmd/$(BINARY)/Dockerfile .
 

@@ -20,8 +20,6 @@ spec:
       labels:
         {{- include "sifnode.selectorLabels" . | nindent 8 }}
     spec:
-      imagePullSecrets:
-        - name: {{ include "sifnode.fullname" . }}-ghcr
       serviceAccountName: {{ include "sifnode.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -32,7 +30,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "sifgen node create $SIF_ID; sifnoded start --rpc.laddr tcp://0.0.0.0:26657 --db_dir /data"]
+          args: ["-c", "sifgen node create $CHAINNET; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
           ports:
             - name: port-26656
               containerPort: 26656
@@ -46,10 +44,6 @@ spec:
           env:
             - name: CHAINNET
               value: {{ .Values.sifnode.env.chainnet }}
-            - name: SIF_CLI
-              value: {{ .Values.sifnode.env.sifCli }}
-            - name: SIF_DAEMON
-              value: {{ .Values.sifnode.env.sifDaemon }}
             - name: SIF_ID
               value: {{ .Values.sifnode.env.sifId }}
           livenessProbe:
