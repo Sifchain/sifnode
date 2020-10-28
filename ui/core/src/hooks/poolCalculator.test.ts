@@ -1,13 +1,6 @@
 import { Ref, ref } from "@vue/reactivity";
-import {
-  Asset,
-  AssetAmount,
-  IAssetAmount,
-  Network,
-  Pair,
-  Token,
-} from "../../../../core";
-import { usePoolCalculator, useField } from "./usePoolCalculator";
+import { IAssetAmount, Network, Token } from "../entities";
+import { usePoolCalculator } from "./poolCalculator";
 
 const TOKENS = {
   atk: Token({

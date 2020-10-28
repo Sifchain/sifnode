@@ -2,19 +2,18 @@
 import { defineComponent, ref } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
-import { useSwap } from "@/hooks/useSwap";
-// import { useWallet } from "@/hooks/useWallet";
-// import { useCore } from "@/hooks/useCore";
+
 import { useWalletButton } from "@/components/wallet/useWalletButton";
+
 export default defineComponent({
   components: { Layout, CurrencyPairPanel },
   setup() {
     const selectedField = ref<"from" | "to" | null>(null);
-    // const { store } = useCore();
-    const {
-      from: { amount: fromAmount, symbol: fromSymbol },
-      to: { amount: toAmount, symbol: toSymbol },
-    } = useSwap();
+
+    const fromAmount = ref("0");
+    const fromSymbol = ref<string | null>(null);
+    const toAmount = ref("0");
+    const toSymbol = ref<string | null>(null);
 
     function handleFromFocused() {
       selectedField.value = "from";
@@ -23,9 +22,11 @@ export default defineComponent({
     function handleToFocused() {
       selectedField.value = "to";
     }
+
     function handleBlur() {
       /**/
     }
+
     const priceMessage = ref("");
 
     const {
