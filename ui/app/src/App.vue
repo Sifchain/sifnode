@@ -2,8 +2,11 @@
   <div>
     <div class="header-bar">
       <div class="header-nav">
-        <router-link to="/swap">Swap</router-link>
-        <router-link to="/pool">Pool</router-link>
+        <router-link to="/">🏠</router-link>
+        <router-link to="/discover">Discover</router-link>
+        <router-link to="/new-wallet">New wallet</router-link>
+        <router-link to="/convert">Convert</router-link>
+        <router-link to="/deposit">Deposit</router-link>
       </div>
       <WalletButton />
     </div>

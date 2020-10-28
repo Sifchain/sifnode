@@ -11,7 +11,7 @@
     "chain:sif": "cd ./chains/cosmos && ./run-cosmos-test-chain.sh",
     "chain:migrate": "cd ./chains/ethereum && yarn migrate",
     "chain:eth:build": "cd ./chains/ethereum && yarn install --frozen-lockfile --silent && truffle build",
-    "chain:eth": "yarn ganache-cli",
+    "chain:eth": "yarn ganache-cli -m \"race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow\"",
     "chain:build": "concurrently -r \"yarn chain:sif:build\" \"yarn chain:eth:build\"",
     "chain:start:all": "concurrently -r -k \"yarn chain:sif\" \"yarn chain:eth\"",
     "core:test": "cd core && yarn test",

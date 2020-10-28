@@ -5,6 +5,8 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 // import SifWallet from "@/views/SifWallet.vue";
 import Swap from "@/views/SwapPage.vue";
 import Pool from "@/views/PoolPage.vue";
+import AddLiquidity from "@/views/AddLiquidityPage.vue";
+import CreatePair from "@/views/CreatePairPage.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -20,6 +22,16 @@ const routes: Array<RouteRecordRaw> = [
     path: "/pool",
     name: "Pool",
     component: Pool,
+  },
+  {
+    path: "/pool/add-liquidity",
+    name: "AddLiquidity",
+    component: AddLiquidity,
+  },
+  {
+    path: "/pool/create-pair",
+    name: "CreatePair",
+    component: CreatePair,
   },
 ];
 

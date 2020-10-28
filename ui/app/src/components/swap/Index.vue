@@ -1,47 +1,44 @@
 
 
 <template>
-  <Panel class="swap-panel">
-    <PanelNav />
-    <div class="field-wrappers">
-      <CurrencyField
-        label="From"
-        modelkey="from"
-        @focus="handleFromFocused"
-        @blur="handleBlur"
-        v-model:amount="fromAmount"
-        v-model:symbol="fromSymbol"
-      />
-      <div class="arrow">↓</div>
-      <CurrencyField
-        label="To"
-        modelkey="to"
-        @focus="handleToFocused"
-        @blur="handleBlur"
-        v-model:amount="toAmount"
-        v-model:symbol="toSymbol"
-      />
+  <div class="field-wrappers">
+    <CurrencyField
+      label="From"
+      modelkey="from"
+      @focus="handleFromFocused"
+      @blur="handleBlur"
+      v-model:amount="fromAmount"
+      v-model:symbol="fromSymbol"
+    />
+    <div class="arrow">↓</div>
+    <CurrencyField
+      label="To"
+      modelkey="to"
+      @focus="handleToFocused"
+      @blur="handleBlur"
+      v-model:amount="toAmount"
+      v-model:symbol="toSymbol"
+    />
+  </div>
+  <div class="">{{ priceMessage }}</div>
+  <div class="actions">
+    <div v-if="!connected">
+      <div>No wallet connected 🅧</div>
+      <button class="big-button" @click="handleWalletClick">
+        Connect wallet
+      </button>
     </div>
-    <div class="">{{ priceMessage }}</div>
-    <div class="actions">
-      <div v-if="!connected">
-        <div>No wallet connected 🅧</div>
-        <button class="big-button" @click="handleWalletClick">
-          Connect wallet
-        </button>
-      </div>
-      <div v-else>
-        <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
-        <button
-          class="big-button"
-          :disabled="!canSwap"
-          @click="handleSwapClicked"
-        >
-          {{ nextStepMessage }}
-        </button>
-      </div>
+    <div v-else>
+      <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
+      <button
+        class="big-button"
+        :disabled="!canSwap"
+        @click="handleSwapClicked"
+      >
+        {{ nextStepMessage }}
+      </button>
     </div>
-  </Panel>
+  </div>
 </template>
 
 <script lang="ts">
@@ -50,15 +47,14 @@ import { computed, ref } from "@vue/reactivity";
 
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
-import Panel from "@/components/panel/Panel.vue";
-import PanelNav from "@/components/swap/PanelNav.vue";
+
 import { useSwap } from "@/hooks/useSwap";
 import { useCore } from "@/hooks/useCore";
 
 import { useSwapCalculator } from "./swapCalculator";
 
 export default defineComponent({
-  components: { Panel, PanelNav, CurrencyField },
+  components: { CurrencyField },
 
   setup() {
     const { api, store } = useCore();

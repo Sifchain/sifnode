@@ -6,10 +6,9 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import SwapPanel from "@/components/swap/SwapPanel.vue";
+import SwapPanel from "@/components/swap/Index.vue";
 import Layout from "@/components/layout/Layout.vue";
 export default defineComponent({
-  name: "SwapPage",
   components: { Layout, SwapPanel },
 });
 </script>
