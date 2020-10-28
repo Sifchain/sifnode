@@ -33,7 +33,7 @@ securityContext: {}
 image:
   repository: sifchain/sifnoded
   pullPolicy: IfNotPresent
-  tag: "develop"
+  tag: "testnet"
 
 sifnode:
   env:
