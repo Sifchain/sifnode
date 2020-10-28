@@ -20,10 +20,10 @@
       v-model:symbol="toSymbol"
     />
   </div>
-  <div class="">{{ priceMessage }}</div>
+  <div>{{ priceMessage }}</div>
   <div class="actions">
     <div v-if="!connected">
-      <div>No wallet connected 🅧</div>
+      <div class="wallet-status">No wallet connected 🅧</div>
       <button class="big-button" @click="handleWalletClick">
         Connect wallet
       </button>
