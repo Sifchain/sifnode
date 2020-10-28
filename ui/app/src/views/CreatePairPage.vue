@@ -1,14 +1,92 @@
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import Layout from "@/components/layout/Layout.vue";
+import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
+import { useSwap } from "@/hooks/useSwap";
+// import { useWallet } from "@/hooks/useWallet";
+// import { useCore } from "@/hooks/useCore";
+import { useWalletButton } from "@/components/wallet/useWalletButton";
 export default defineComponent({
-  components: { Layout },
+  components: { Layout, CurrencyPairPanel },
+  setup() {
+    const selectedField = ref<"from" | "to" | null>(null);
+    // const { store } = useCore();
+    const {
+      from: { amount: fromAmount, symbol: fromSymbol },
+      to: { amount: toAmount, symbol: toSymbol },
+    } = useSwap();
+
+    function handleFromFocused() {
+      selectedField.value = "from";
+    }
+
+    function handleToFocused() {
+      selectedField.value = "to";
+    }
+    function handleBlur() {
+      /**/
+    }
+    const priceMessage = ref("");
+
+    const {
+      connected,
+      handleClicked: handleWalletClick,
+      connectedText,
+    } = useWalletButton({
+      addrLen: 8,
+    });
+
+    return {
+      fromAmount,
+      fromSymbol,
+      handleFromFocused,
+      handleBlur,
+      toAmount,
+      toSymbol,
+      handleToFocused,
+      priceMessage,
+      connected,
+      handleWalletClick,
+      connectedText,
+      // canClickAction,
+      // handleActionClicked,
+      // nextActionMessage,
+    };
+  },
 });
 </script>
 
 <template>
   <Layout class="pool" backLink="/pool">
-    <h1>Create Pair</h1>
+    <CurrencyPairPanel
+      v-model:fromAmount="fromAmount"
+      v-model:fromSymbol="fromSymbol"
+      @from-focus="handleFromFocused"
+      @from-blur="handleBlur"
+      v-model:toAmount="toAmount"
+      v-model:toSymbol="toSymbol"
+      @to-focus="handleToFocused"
+      @to-blur="handleBlur"
+    />
+    <div>{{ priceMessage }}</div>
+    <div class="actions">
+      <div v-if="!connected">
+        <div class="wallet-status">No wallet connected 🅧</div>
+        <button class="big-button" @click="handleWalletClick">
+          Connect wallet
+        </button>
+      </div>
+      <div v-else>
+        <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
+        <button
+          class="big-button"
+          :disabled="!canClickAction"
+          @click="handleActionClicked"
+        >
+          {{ nextActionMessage }}
+        </button>
+      </div>
+    </div>
   </Layout>
 </template>
 

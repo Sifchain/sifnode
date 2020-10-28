@@ -71,6 +71,7 @@ export default defineComponent({
       fromFieldAmount,
       toFieldAmount,
       priceMessage,
+      canSwap,
     } = useSwapCalculator({
       balances,
       fromAmount,
@@ -79,10 +80,6 @@ export default defineComponent({
       selectedField,
       toSymbol,
       marketPairFinder,
-    });
-
-    const canSwap = computed(() => {
-      return nextStepMessage.value === "Swap";
     });
 
     function handleFromFocused() {
