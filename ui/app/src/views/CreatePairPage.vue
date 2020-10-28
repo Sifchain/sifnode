@@ -8,7 +8,7 @@ export default defineComponent({
 
 <template>
   <Layout class="pool" backLink="/pool">
-    <h1>Create liquidity</h1>
+    <h1>Create Pair</h1>
   </Layout>
 </template>
 
