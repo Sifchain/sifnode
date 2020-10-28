@@ -36,6 +36,7 @@ var (
 	GenerateRandomPool     = keeper.GenerateRandomPool
 	GenerateRandomLP       = keeper.GenerateRandomLP
 	GenerateAddress        = keeper.GenerateAddress
+	GenerateAddress2       = keeper.GenerateAddress2
 	GetNativeAsset         = types.GetSettlementAsset
 )
 

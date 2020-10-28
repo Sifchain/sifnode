@@ -187,6 +187,20 @@ func TestRemoveLiquidity(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, res, "Cannot withdraw pool is too shallow")
 
+	newLP := GenerateAddress2()
+	_, _ = keeper.BankKeeper.AddCoins(ctx, newLP, sdk.Coins{externalCoin, nativeCoin})
+	msgAdd := NewMsgAddLiquidity(newLP, asset, uint(1000), uint(1000))
+	res, err = handleMsgAddLiquidity(ctx, keeper, msgAdd)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+
+	wBasis = 10000
+	asymmetry = 10000
+	msg = NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
+	res, err = handleMsgRemoveLiquidity(ctx, keeper, msg)
+	require.NoError(t, err)
+	require.NotNil(t, res, "Can withdraw now as new LP has added liquidity")
+
 }
 func TestSwap(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)

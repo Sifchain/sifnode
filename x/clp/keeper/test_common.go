@@ -195,5 +195,32 @@ func GenerateAddress() sdk.AccAddress {
 		panic("Bech decode and hex decode don't match")
 	}
 	return res
+}
 
+func GenerateAddress2() sdk.AccAddress {
+	var buffer bytes.Buffer
+	buffer.WriteString("A58856F0FD53BF058B4909A21AEC019107BA7")
+	buffer.WriteString(strconv.Itoa(100))
+	res, _ := sdk.AccAddressFromHex(buffer.String())
+	bech := res.String()
+	addr := buffer.String()
+	res, err := sdk.AccAddressFromHex(addr)
+
+	if err != nil {
+		panic(err)
+	}
+
+	bechexpected := res.String()
+	if bech != bechexpected {
+		panic("Bech encoding doesn't match reference")
+	}
+
+	bechres, err := sdk.AccAddressFromBech32(bech)
+	if err != nil {
+		panic(err)
+	}
+	if !bytes.Equal(bechres, res) {
+		panic("Bech decode and hex decode don't match")
+	}
+	return res
 }
