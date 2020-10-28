@@ -38,7 +38,7 @@ require (
 	github.com/sethvargo/go-password v0.2.0
 	github.com/spf13/afero v1.4.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
-	github.com/spf13/cobra v1.1.0
+	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	github.com/status-im/keycard-go v0.0.0-20190316090335-8537d3370df4 // indirect
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570 // indirect
@@ -53,7 +53,6 @@ require (
 	github.com/wsddn/go-ecdh v0.0.0-20161211032359-48726bab9208 // indirect
 	github.com/yelinaung/go-haikunator v0.0.0-20150320004105-1249cae259af
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
-	golang.org/x/tools v0.0.0-20200921210052-fa0125251cc4
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
