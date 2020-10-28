@@ -1,14 +1,14 @@
 // Manage state file with terraform cloud
-terraform {
-    backend "remote" {
-        hostname = "app.terraform.io"
-        organization = "Sifchain"
-
-        workspaces {
-            name = "sifchain-aws-feature-testnets"
-        }
-    }
-}
+// terraform {
+//    backend "remote" {
+//        hostname = "app.terraform.io"
+//        organization = ""
+//
+//        workspaces {
+//            name = ""
+//        }
+//    }
+// }
 
 // Manage state files with s3
 // terraform {

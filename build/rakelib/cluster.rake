@@ -48,7 +48,7 @@ namespace :cluster do
   task :destroy, [:chainnet, :provider] do |t, args|
     check_args(args)
     puts "Destroy running cluster: #{path(args)}"
-    system("cd #{path(args)} && terraform destroy -auto-approve") or exit 1
+    system("cd #{path(args)} && terraform destroy") or exit 1
     puts "Cluster #{path(args)} destroyed successfully"
   end
 
