@@ -7,9 +7,9 @@
       modelkey="from"
       @focus="handleFromFocused"
       @blur="handleFromBlur"
-      :amount="from.amount"
+      :amount="fromAmount"
       @update:amount="handleFromUpdateAmount"
-      :symbol="from.symbol"
+      :symbol="fromSymbol"
       @update:symbol="handleFromUpdateSymbol"
     />
     <div class="arrow">↓</div>
@@ -18,30 +18,11 @@
       modelkey="to"
       @focus="handleToFocused"
       @blur="handleToBlur"
-      :amount="to.amount"
+      :amount="toAmount"
       @update:amount="handleToUpdateAmount"
-      :symbol="to.symbol"
+      :symbol="toSymbol"
       @update:symbol="handleToUpdateSymbol"
     />
-  </div>
-  <div>{{ priceMessage }}</div>
-  <div class="actions">
-    <div v-if="!connected">
-      <div class="wallet-status">No wallet connected 🅧</div>
-      <button class="big-button" @click="handleWalletClick">
-        Connect wallet
-      </button>
-    </div>
-    <div v-else>
-      <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
-      <button
-        class="big-button"
-        :disabled="!canSwap"
-        @click="handleSwapClicked"
-      >
-        {{ nextStepMessage }}
-      </button>
-    </div>
   </div>
 </template>
 
@@ -52,35 +33,42 @@ import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
 export default defineComponent({
   components: { CurrencyField },
   props: {
+    priceMessage: String,
     fromAmount: String,
-    toAmount: String,
     fromSymbol: String,
+    toAmount: String,
     toSymbol: String,
+    connected: Boolean,
+    nextStepMessage: String,
+    canSwap: Boolean,
+    connectedText: String,
   },
   emits: [
     "from-focus",
     "from-blur",
     "to-focus",
     "to-blur",
+    "swap-clicked",
+    "connect-clicked",
     "update:toAmount",
     "update:toSymbol",
     "update:fromAmount",
     "update:fromSymbol",
   ],
   setup(props, context) {
-    function handleFromUpdateAmount(value: string) {
-      context.emit("update:fromAmount", value);
+    function handleFromUpdateAmount(amount: string) {
+      context.emit("update:fromAmount", amount);
     }
-    function handleFromUpdateSymbol(value: string) {
-      context.emit("update:fromSymbol", value);
-    }
-
-    function handleToUpdateAmount(value: string) {
-      context.emit("update:toAmount", value);
+    function handleFromUpdateSymbol(symbol: string) {
+      context.emit("update:fromSymbol", symbol);
     }
 
-    function handleToUpdateSymbol(value: string) {
-      context.emit("update:toSymbol", value);
+    function handleToUpdateAmount(amount: string) {
+      context.emit("update:toAmount", amount);
+    }
+
+    function handleToUpdateSymbol(symbol: string) {
+      context.emit("update:toSymbol", symbol);
     }
     function handleFromFocused() {
       context.emit("from-focus");
@@ -95,8 +83,6 @@ export default defineComponent({
       context.emit("to-blur");
     }
     return {
-      from: { amount: props.fromAmount, symbol: props.fromSymbol },
-      to: { amount: props.toAmount, symbol: props.toSymbol },
       handleFromUpdateAmount,
       handleFromUpdateSymbol,
       handleToUpdateAmount,
@@ -111,21 +97,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.swap-panel {
-  max-width: 30rem;
-}
 .arrow {
   text-align: center;
   padding: 1rem;
-}
-.actions {
-  padding-top: 1rem;
-}
-.big-button {
-  width: 100%;
-}
-.wallet-status {
-  margin-bottom: 1rem;
 }
 .field-wrappers {
   margin-bottom: 1rem;

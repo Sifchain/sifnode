@@ -3,10 +3,10 @@
     <div class="header-bar">
       <div class="header-nav">
         <router-link to="/">🏠</router-link>
-        <router-link to="/discover">Discover</router-link>
-        <router-link to="/new-wallet">New wallet</router-link>
-        <router-link to="/convert">Convert</router-link>
-        <router-link to="/deposit">Deposit</router-link>
+        <router-link to="/">Discover</router-link>
+        <router-link to="/">New wallet</router-link>
+        <router-link to="/">Convert</router-link>
+        <router-link to="/">Deposit</router-link>
       </div>
       <WalletButton />
     </div>

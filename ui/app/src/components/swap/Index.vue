@@ -1,25 +1,16 @@
 
 
 <template>
-  <div class="field-wrappers">
-    <CurrencyField
-      label="From"
-      modelkey="from"
-      @focus="handleFromFocused"
-      @blur="handleBlur"
-      v-model:amount="fromAmount"
-      v-model:symbol="fromSymbol"
-    />
-    <div class="arrow">↓</div>
-    <CurrencyField
-      label="To"
-      modelkey="to"
-      @focus="handleToFocused"
-      @blur="handleBlur"
-      v-model:amount="toAmount"
-      v-model:symbol="toSymbol"
-    />
-  </div>
+  <CurrencyPairPanel
+    v-model:fromAmount="fromAmount"
+    v-model:fromSymbol="fromSymbol"
+    @from-focus="handleFromFocused"
+    @from-blur="handleBlur"
+    v-model:toAmount="toAmount"
+    v-model:toSymbol="toSymbol"
+    @to-focus="handleToFocused"
+    @to-blur="handleBlur"
+  />
   <div>{{ priceMessage }}</div>
   <div class="actions">
     <div v-if="!connected">
@@ -42,27 +33,25 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
 import { computed, ref } from "@vue/reactivity";
-
-import { useWalletButton } from "@/components/wallet/useWalletButton";
-import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
-
-import { useSwap } from "@/hooks/useSwap";
+import { defineComponent } from "vue";
 import { useCore } from "@/hooks/useCore";
-
+import { useSwap } from "@/hooks/useSwap";
 import { useSwapCalculator } from "./swapCalculator";
+import { useWalletButton } from "@/components/wallet/useWalletButton";
+import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 
 export default defineComponent({
-  components: { CurrencyField },
+  components: { CurrencyPairPanel },
 
   setup() {
     const { api, store } = useCore();
     const marketPairFinder = api.MarketService.find;
+    const swapState = useSwap();
     const {
       from: { symbol: fromSymbol, amount: fromAmount },
       to: { symbol: toSymbol, amount: toAmount },
-    } = useSwap();
+    } = swapState;
 
     const selectedField = ref<"from" | "to" | null>(null);
     const {
@@ -119,14 +108,14 @@ export default defineComponent({
       connectedText,
       nextStepMessage,
       handleWalletClick,
-      fromAmount,
-      fromSymbol,
       handleFromFocused,
       handleToFocused,
       handleSwapClicked,
       handleBlur,
-      toAmount,
-      toSymbol,
+      fromAmount: swapState.from.amount,
+      toAmount: swapState.to.amount,
+      fromSymbol: swapState.from.symbol,
+      toSymbol: swapState.to.symbol,
       priceMessage,
       canSwap,
     };
@@ -135,13 +124,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.swap-panel {
-  max-width: 30rem;
-}
-.arrow {
-  text-align: center;
-  padding: 1rem;
-}
 .actions {
   padding-top: 1rem;
 }
@@ -149,9 +131,6 @@ export default defineComponent({
   width: 100%;
 }
 .wallet-status {
-  margin-bottom: 1rem;
-}
-.field-wrappers {
   margin-bottom: 1rem;
 }
 </style>
