@@ -30,7 +30,7 @@ namespace :cluster do
   task :deploy, [:chainnet, :provider] do |t, args|
     check_args(args)
     puts "Deploy cluster config: #{path(args)}"
-    system("cd #{path(args)} && terraform apply") or exit 1
+    system("cd #{path(args)} && terraform apply -auto-approve") or exit 1
     puts "Cluster #{path(args)} created successfully"
     puts "Now run `rake sifnode:install[#{args[:chainnet]},#{args[:provider]}]` to deploy sifnode to your cluster"
   end
@@ -127,7 +127,7 @@ def image_tag(args)
   args[:image_tag] ? "#{args[:image_tag]}" : "testnet"
 end
 
-# image_repository returns the arg with a image_repository if set or the default setting
+# image_repository returns the arg with a image if set or the default setting
 def image_repository(args)
-  args[:image_repository] ? "#{args[:image_repository]}" : "sifchain/sifnoded"
+  args[:image] ? "#{args[:image]}" : "sifchain/sifnoded"
 end
