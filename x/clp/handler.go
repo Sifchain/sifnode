@@ -225,18 +225,23 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
 	}
-
 	//Calculate amount to withdraw
+	poolOriginalEB := pool.ExternalAssetBalance
+	poolOriginalNB := pool.NativeAssetBalance
+
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := calculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
 		msg.WBasisPoints, msg.Asymmetry)
 
 	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount)))
 	nativeAssetCoin := sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
-	// Send coins from pool to user
+
 	pool.PoolUnits = pool.PoolUnits - lp.LiquidityProviderUnits + lpUnitsLeft
 	pool.NativeAssetBalance = pool.NativeAssetBalance - withdrawNativeAssetAmount
 	pool.ExternalAssetBalance = pool.ExternalAssetBalance - withdrawExternalAssetAmount
+	if (msg.Asymmetry != 0) && (pool.ExternalAssetBalance == 0 || pool.NativeAssetBalance == 0) {
+		return nil, errors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil before adjusting asymmetry")
+	}
 	if msg.Asymmetry > 0 {
 		swapResult, _, _, swappedPool, err := swapOne(GetNativeAsset(), swapAmount, msg.ExternalAsset, pool)
 		if err != nil {
@@ -244,12 +249,11 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		}
 		if swapResult != 0 {
 			swapCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(swapResult)))
-			externalAssetCoin.Add(swapCoin)
+			swapAmountInCoin := sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(swapAmount)))
+			externalAssetCoin = externalAssetCoin.Add(swapCoin)
+			nativeAssetCoin = nativeAssetCoin.Sub(swapAmountInCoin)
 		}
-		err = keeper.SetPool(ctx, swappedPool)
-		if err != nil {
-			return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
-		}
+		pool = swappedPool
 	}
 	//if asymmetry is negative we need to swap from external to native
 	if msg.Asymmetry < 0 {
@@ -259,33 +263,36 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		}
 		if swapResult != 0 {
 			swapCoin := sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(swapResult)))
-			nativeAssetCoin.Add(swapCoin)
+			swapAmountInCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(swapAmount)))
+
+			nativeAssetCoin = nativeAssetCoin.Add(swapCoin)
+			externalAssetCoin = externalAssetCoin.Sub(swapAmountInCoin)
+
 		}
-		err = keeper.SetPool(ctx, swappedPool)
-		if err != nil {
-			return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
-		}
+		pool = swappedPool
 	}
-	// if asymmetry is 0 , just set pool
-	if msg.Asymmetry == 0 {
-		err = keeper.SetPool(ctx, pool)
-		if err != nil {
-			return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
-		}
-	}
+
 	sendCoins := sdk.Coins{}
 	if !externalAssetCoin.IsZero() && !externalAssetCoin.IsNegative() {
 		sendCoins = sendCoins.Add(externalAssetCoin)
-
+	}
+	if externalAssetCoin.Amount.Int64() >= int64(poolOriginalEB) || nativeAssetCoin.Amount.Int64() >= int64(poolOriginalNB) {
+		return nil, errors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil after adjusting asymmetry")
 	}
 	if !nativeAssetCoin.IsZero() && !nativeAssetCoin.IsNegative() {
 		sendCoins = sendCoins.Add(nativeAssetCoin)
 	}
+	// Setting pool after all calculations of withdraw and then swap
+	err = keeper.SetPool(ctx, pool)
+	if err != nil {
+		return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
+	}
+	// Send coins from pool to user
 	if !sendCoins.Empty() {
-		if !keeper.BankKeeper.HasCoins(ctx, pool.PoolAddress, sdk.Coins{externalAssetCoin, nativeAssetCoin}) {
+		if !keeper.BankKeeper.HasCoins(ctx, pool.PoolAddress, sendCoins) {
 			return nil, types.ErrNotEnoughLiquidity
 		}
-		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, msg.Signer, sdk.Coins{externalAssetCoin, nativeAssetCoin})
+		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, msg.Signer, sendCoins)
 		if err != nil {
 			return nil, err
 		}
