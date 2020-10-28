@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/cosmos/cosmos-sdk/x/gov"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
@@ -25,6 +26,11 @@ import (
 
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/oracle"
+
+	"github.com/cosmos/cosmos-sdk/x/upgrade"
+	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
+	// upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
+	// upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
 const appName = "sifnode"
@@ -37,8 +43,12 @@ var (
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		staking.AppModuleBasic{},
+		gov.NewAppModuleBasic(
+			upgradeclient.ProposalHandler,
+		),
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
+		upgrade.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
 	)
@@ -47,6 +57,7 @@ var (
 		auth.FeeCollectorName:     nil,
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		gov.ModuleName:            {auth.Burner},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
 	}
 )
@@ -77,6 +88,8 @@ type NewApp struct {
 	StakingKeeper staking.Keeper
 	SupplyKeeper  supply.Keeper
 	paramsKeeper  params.Keeper
+	UpgradeKeeper upgrade.Keeper
+	govKeeper     gov.Keeper
 
 	// Peggy keepers
 	EthBridgeKeeper ethbridge.Keeper
@@ -105,6 +118,7 @@ func NewInitApp(
 		staking.StoreKey,
 		supply.StoreKey,
 		params.StoreKey,
+		upgrade.StoreKey,
 		oracle.StoreKey,
 		ethbridge.StoreKey,
 	)
@@ -146,14 +160,14 @@ func NewInitApp(
 		maccPerms,
 	)
 
-	stakingKeeper := staking.NewKeeper(
+	app.StakingKeeper = staking.NewKeeper(
 		app.cdc,
 		keys[staking.StoreKey],
 		app.SupplyKeeper,
 		app.subspaces[staking.ModuleName],
 	)
 
-	app.StakingKeeper = *stakingKeeper.SetHooks(
+	app.StakingKeeper = *app.StakingKeeper.SetHooks(
 		staking.NewMultiStakingHooks(),
 	)
 
@@ -170,17 +184,45 @@ func NewInitApp(
 		app.OracleKeeper,
 	)
 
+	// TODO review how to handle skipUpgradeHeights
+	app.UpgradeKeeper = upgrade.NewKeeper(map[int64]bool{}, keys[upgrade.StoreKey], cdc)
+
+	// register the proposal types
+	govRouter := gov.NewRouter()
+	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
+		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
+
+	app.govKeeper = gov.NewKeeper(
+		cdc,
+		keys[gov.StoreKey],
+		app.subspaces[gov.ModuleName],
+		app.SupplyKeeper,
+		app.StakingKeeper,
+		govRouter,
+	)
+
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.AccountKeeper),
 		bank.NewAppModule(app.bankKeeper, app.AccountKeeper),
 		supply.NewAppModule(app.SupplyKeeper, app.AccountKeeper),
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
+		upgrade.NewAppModule(app.UpgradeKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
 	)
 
-	app.mm.SetOrderEndBlockers(staking.ModuleName)
+	// there is nothing left over in the validator fee pool, so as to keep the
+	// CanWithdrawInvariant invariant.
+	app.mm.SetOrderBeginBlockers(
+		upgrade.ModuleName,
+		staking.ModuleName,
+	)
+
+	app.mm.SetOrderEndBlockers(
+		gov.ModuleName,
+		staking.ModuleName,
+	)
 
 	app.mm.SetOrderInitGenesis(
 		staking.ModuleName,
