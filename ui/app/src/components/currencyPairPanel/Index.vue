@@ -4,10 +4,10 @@
   <div class="field-wrappers">
     <CurrencyField
       label="From"
-      modelkey="from"
       @focus="handleFromFocused"
       @blur="handleFromBlur"
       :amount="fromAmount"
+      @select-symbol="$emit('from-symbol-clicked')"
       @update:amount="handleFromUpdateAmount"
       :symbol="fromSymbol"
       @update:symbol="handleFromUpdateSymbol"
@@ -15,10 +15,10 @@
     <div class="arrow">↓</div>
     <CurrencyField
       label="To"
-      modelkey="to"
       @focus="handleToFocused"
       @blur="handleToBlur"
       :amount="toAmount"
+      @select-symbol="$emit('to-symbol-clicked')"
       @update:amount="handleToUpdateAmount"
       :symbol="toSymbol"
       @update:symbol="handleToUpdateSymbol"
@@ -48,6 +48,8 @@ export default defineComponent({
     "from-blur",
     "to-focus",
     "to-blur",
+    "to-symbol-clicked",
+    "from-symbol-clicked",
     "swap-clicked",
     "connect-clicked",
     "update:toAmount",

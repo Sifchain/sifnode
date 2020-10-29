@@ -3,17 +3,14 @@ import { defineComponent } from "vue";
 import { ref } from "@vue/reactivity";
 import { useCore } from "../../hooks/useCore";
 import AssetItem from "./AssetItem.vue";
-import { useSwap } from "@/hooks/useSwap";
 import { useTokenListing } from "./useSelectToken";
 
 export default defineComponent({
   name: "SelectTokenDialog",
-  emits: ["close"],
   components: { AssetItem },
-  props: { label: String },
+  emits: ["token-selected"],
   setup(props, context) {
     const { store } = useCore();
-    const swapState = useSwap();
 
     const searchText = ref("");
 
@@ -25,12 +22,9 @@ export default defineComponent({
     });
 
     function selectToken(symbol: string) {
-      const label = props.label?.toLowerCase() as "from" | "to";
-
-      swapState[label].symbol.value = symbol;
-
-      context.emit("close");
+      context.emit("token-selected", symbol);
     }
+
     return { filteredTokens, searchText, selectToken };
   },
 });

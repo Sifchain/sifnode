@@ -11,14 +11,12 @@
       <WalletButton />
     </div>
     <router-view />
-    <ModalRoot />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
 import { useCore } from "./hooks/useCore";
-import ModalRoot from "@/components/modal/ModalRoot.vue";
 import WalletButton from "@/components/wallet/WalletButton.vue";
 
 export default defineComponent({
@@ -29,7 +27,7 @@ export default defineComponent({
       await actions.token.refreshTokens();
     });
   },
-  components: { ModalRoot, WalletButton },
+  components: { WalletButton },
 });
 </script>
 

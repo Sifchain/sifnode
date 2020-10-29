@@ -7,6 +7,7 @@ import Swap from "@/views/SwapPage.vue";
 import Pool from "@/views/PoolPage.vue";
 import AddLiquidity from "@/views/AddLiquidityPage.vue";
 import CreatePair from "@/views/CreatePairPage.vue";
+import TestModal from "@/views/TestModal.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -22,6 +23,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/pool",
     name: "Pool",
     component: Pool,
+  },
+  {
+    path: "/testmodal",
+    name: "TestModal",
+    component: TestModal,
   },
   {
     path: "/pool/add-liquidity",

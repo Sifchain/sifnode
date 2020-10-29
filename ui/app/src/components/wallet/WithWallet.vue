@@ -2,10 +2,16 @@
 <template>
   <Modal>
     <template v-slot:activator="{ requestOpen }">
-      <button @click="requestOpen">
-        <span v-if="!connected">Connect Wallet</span
-        ><span v-else>{{ connectedText }}</span>
-      </button>
+      <slot
+        v-if="!connected"
+        name="disconnected"
+        :connectClicked="requestOpen"
+      ></slot>
+      <slot
+        v-if="connected"
+        name="connected"
+        :connectedText="connectedText"
+      ></slot>
     </template>
     <template v-slot:default="{ requestClose }">
       <div>
@@ -27,7 +33,7 @@ import SifWalletPanel from "./SifWalletPanel.vue";
 
 import Modal from "@/components/modal/Modal.vue";
 export default defineComponent({
-  name: "WalletButton",
+  name: "WithWallet",
   components: { Modal, EtheriumWalletPanel, SifWalletPanel },
   setup() {
     const { connected, connectedText } = useWalletButton({

@@ -31,7 +31,7 @@ export default defineComponent({
 
     const {
       connected,
-      handleClicked: handleWalletClick,
+
       connectedText,
     } = useWalletButton({
       addrLen: 8,
@@ -47,7 +47,7 @@ export default defineComponent({
       handleToFocused,
       priceMessage,
       connected,
-      handleWalletClick,
+      // handleWalletClick,
       connectedText,
       // canClickAction,
       // handleActionClicked,

@@ -50,10 +50,12 @@ export default defineComponent({
 </script>
 
 <template>
-  <div v-if="connected">
-    <p>{{ address }}</p>
-    <BalanceTable :balances="balances" />
-    <button @click="handleDisconnectClicked">DisconnectWallet</button>
+  <div>
+    <div v-if="connected">
+      <p>{{ address }}</p>
+      <BalanceTable :balances="balances" />
+      <button @click="handleDisconnectClicked">DisconnectWallet</button>
+    </div>
+    <button v-else @click="handleConnectClicked">Connect to Metamask</button>
   </div>
-  <button v-else @click="handleConnectClicked">Connect to Metamask</button>
 </template>

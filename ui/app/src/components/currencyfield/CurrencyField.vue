@@ -4,7 +4,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { computed } from "@vue/reactivity";
-import { useSelectTokenDialog } from "@/components/tokenSelector/useSelectToken";
+import Modal from "@/components/modal/Modal.vue";
 import BalanceField from "./BalanceField.vue";
 import AssetItem from "@/components/tokenSelector/AssetItem.vue";
 
@@ -17,14 +17,13 @@ export type BalanceShape = {
 export default defineComponent({
   props: {
     label: String,
-    modelkey: String,
     amount: String,
     symbol: String,
     available: String,
   },
-  components: { BalanceField, AssetItem },
+  emits: ["select-symbol", "update:amount", "update:symbol"],
+  components: { BalanceField, AssetItem, Modal },
   setup(props, context) {
-    const { openDialog: handleSelectClicked } = useSelectTokenDialog();
     const localAmount = computed({
       get: () => props.amount,
       set: (amount) => context.emit("update:amount", amount),
@@ -35,7 +34,7 @@ export default defineComponent({
       set: (symbol) => context.emit("update:symbol", symbol),
     });
 
-    return { handleSelectClicked, localSymbol, localAmount };
+    return { localSymbol, localAmount };
   },
 });
 </script>
@@ -55,12 +54,16 @@ export default defineComponent({
       @click="$event.target.select()"
     />
 
-    <button @click="handleSelectClicked(modelkey)" class="button right-col">
-      <span class="select-button" v-if="localSymbol !== null">
-        <AssetItem :symbol="localSymbol" /><span>▾</span></span
-      >
-      <span v-else>Select</span>
-    </button>
+    <Modal>
+      <template v-slot:activator>
+        <button @click="$emit('select-symbol')" class="button right-col">
+          <span class="select-button" v-if="localSymbol !== null">
+            <AssetItem :symbol="localSymbol" /><span>▾</span></span
+          >
+          <span v-else>Select</span>
+        </button>
+      </template>
+    </Modal>
   </div>
 </template>
 
