@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import Panel from "@/components/panel/Panel.vue";
+import Panel from "@/components/shared/Panel.vue";
 import { ref, defineComponent } from "vue";
 
 export default defineComponent({

@@ -10,7 +10,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from "vue";
-import Modal from "@/components/modal/Modal.vue";
+import Modal from "@/components/shared/Modal.vue";
 export default defineComponent({
   components: { Modal },
   setup() {

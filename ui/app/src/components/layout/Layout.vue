@@ -12,7 +12,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import Panel from "@/components/panel/Panel.vue";
+import Panel from "@/components/shared/Panel.vue";
 import PanelNav from "@/components/navigation/PanelNav.vue";
 export default defineComponent({
   components: { Panel, PanelNav },

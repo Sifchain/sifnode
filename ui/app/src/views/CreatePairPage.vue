@@ -5,7 +5,7 @@ import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import WithWallet from "@/components/wallet/WithWallet.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
-import Modal from "@/components/modal/Modal.vue";
+import Modal from "@/components/shared/Modal.vue";
 import { PoolState, usePoolCalculator } from "../../../core/src";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";

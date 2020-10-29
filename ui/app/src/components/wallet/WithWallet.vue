@@ -32,7 +32,7 @@ import { useWalletButton } from "./useWalletButton";
 import EtheriumWalletPanel from "./EtheriumWalletPanel.vue";
 import SifWalletPanel from "./SifWalletPanel.vue";
 
-import Modal from "@/components/modal/Modal.vue";
+import Modal from "@/components/shared/Modal.vue";
 export default defineComponent({
   name: "WithWallet",
   components: { Modal, EtheriumWalletPanel, SifWalletPanel },

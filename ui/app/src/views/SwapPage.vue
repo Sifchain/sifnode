@@ -8,7 +8,7 @@ import { useCore } from "@/hooks/useCore";
 import { SwapState, useSwapCalculator } from "../../../core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
-import Modal from "@/components/modal/Modal.vue";
+import Modal from "@/components/shared/Modal.vue";
 import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
 import WithWallet from "@/components/wallet/WithWallet.vue";
 export default defineComponent({

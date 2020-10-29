@@ -4,7 +4,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { computed } from "@vue/reactivity";
-import Modal from "@/components/modal/Modal.vue";
+import Modal from "@/components/shared/Modal.vue";
 import BalanceField from "./BalanceField.vue";
 import AssetItem from "@/components/tokenSelector/AssetItem.vue";
 
