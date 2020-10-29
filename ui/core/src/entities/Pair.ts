@@ -14,11 +14,13 @@ export function Pair(a: AssetAmount, b: AssetAmount) {
     amounts,
     priceA() {
       const asset = b.asset;
+      if (a.equalTo("0")) return null;
       return AssetAmount(asset, b.divide(a).toFixed(asset.decimals));
     },
 
     priceB() {
       const asset = a.asset;
+      if (b.equalTo("0")) return null;
       return AssetAmount(asset, a.divide(b).toFixed(asset.decimals));
     },
 

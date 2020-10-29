@@ -6,6 +6,9 @@ import WithWallet from "@/components/wallet/WithWallet.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
 import Modal from "@/components/modal/Modal.vue";
+import { usePoolCalculator } from "../../../core/src";
+import { useCore } from "@/hooks/useCore";
+import { useWallet } from "@/hooks/useWallet";
 
 export default defineComponent({
   components: {
@@ -16,6 +19,8 @@ export default defineComponent({
     WithWallet,
   },
   setup() {
+    const { store, api } = useCore();
+    const marketPairFinder = api.MarketService.find;
     const selectedField = ref<"from" | "to" | null>(null);
 
     const fromAmount = ref("0");
@@ -45,6 +50,22 @@ export default defineComponent({
       addrLen: 8,
     });
 
+    const { balances } = useWallet(store);
+
+    const {
+      aPerBRatioMessage,
+      bPerARatioMessage,
+      shareOfPool,
+    } = usePoolCalculator({
+      balances,
+      fromAmount,
+      toAmount,
+      fromSymbol,
+      selectedField,
+      toSymbol,
+      marketPairFinder,
+    });
+
     return {
       fromAmount,
       fromSymbol,
@@ -55,6 +76,8 @@ export default defineComponent({
       handleToFocused,
       priceMessage,
       connected,
+      aPerBRatioMessage,
+      bPerARatioMessage,
       nextStepMessage: "banana",
       handleFromSymbolClicked(next: () => void) {
         selectedField.value = "from";
@@ -74,7 +97,7 @@ export default defineComponent({
         }
         selectedField.value = null;
       },
-      // handleWalletClick,
+      shareOfPool,
       connectedText,
       // canClickAction,
       // handleActionClicked,
@@ -104,7 +127,9 @@ export default defineComponent({
         <SelectTokenDialog @token-selected="requestClose" />
       </template>
     </Modal>
-    <div>{{ priceMessage }}</div>
+    <div>{{ aPerBRatioMessage }}</div>
+    <div>{{ bPerARatioMessage }}</div>
+    <div>{{ shareOfPool }}</div>
     <div class="actions">
       <WithWallet>
         <template v-slot:disconnected="{ requestDialog }">

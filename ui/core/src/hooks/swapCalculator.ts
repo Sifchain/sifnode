@@ -1,6 +1,7 @@
 import { Ref, computed, effect } from "@vue/reactivity";
 import { Asset, AssetAmount, IAssetAmount, Pair } from "../entities";
 import { useField } from "./useField";
+import { assetPriceMessage } from "./utils";
 
 function useBalances(balances: Ref<AssetAmount[]>) {
   return computed(() => {
@@ -47,11 +48,7 @@ export function useSwapCalculator(input: {
   const priceMessage = computed(() => {
     const asset = fromField.asset.value;
     const pair = marketPair.value;
-    if (!asset || !pair) return null;
-
-    return `${pair
-      .priceAsset(asset)
-      .toFormatted()} per ${asset?.symbol.toUpperCase()}`;
+    return assetPriceMessage(asset, pair);
   });
 
   const nextStepMessage = computed(() => {
@@ -98,10 +95,13 @@ export function useSwapCalculator(input: {
       fromField.fieldAmount.value
     ) {
       const asset = fromField.asset.value;
-      input.toAmount.value = marketPair.value
-        .priceAsset(asset)
-        .multiply(fromField.fieldAmount.value)
-        .toFixed(asset.decimals);
+      const assetPrice = marketPair.value.priceAsset(asset);
+
+      input.toAmount.value = assetPrice
+        ? assetPrice
+            .multiply(fromField.fieldAmount.value)
+            .toFixed(asset.decimals)
+        : "0";
     }
 
     // Changing the "to" field recalculates the "to" amount
@@ -112,10 +112,10 @@ export function useSwapCalculator(input: {
       toField.fieldAmount.value
     ) {
       const asset = toField.asset.value;
-      input.fromAmount.value = marketPair.value
-        .priceAsset(asset)
-        .multiply(toField.fieldAmount.value)
-        .toFixed(asset.decimals);
+      const assetPrice = marketPair.value.priceAsset(asset);
+      input.fromAmount.value = assetPrice
+        ? assetPrice.multiply(toField.fieldAmount.value).toFixed(asset.decimals)
+        : "0";
     }
   });
 
