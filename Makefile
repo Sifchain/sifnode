@@ -1,21 +1,19 @@
-include ./build/Makefile
-
+CHAINNET?=localnet # Options; localnet, testnet, chaosnet ,mainnet
+BINARY?=sifnoded
 GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
 
-
-ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=SifChain \
-		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifd \
-		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifcli \
+ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
+		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
+		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnodecli \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-		  -X github.com/cosmos/cosmos-sdk/version.BuildTags=$(TAG)
 
-BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${TAG} -a
+BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${CHAINNET} -a
 
-BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen
+BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen ./cmd/sifcrg ./cmd/ebrelayer
 
 all: lint install
 
@@ -31,7 +29,6 @@ lint-verbose: lint-pre
 
 install: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
-
 
 clean-config:
 	@rm -rf ~/.sifnode*
@@ -51,3 +48,11 @@ run:
 utest:
 	@go test ./x/clp/keeper/
 	@go test ./x/clp
+build-image:
+	docker build -t sifchain/$(BINARY):$(CHAINNET) -f ./cmd/$(BINARY)/Dockerfile .
+
+run-image: build-image
+	docker run sifchain/$(BINARY):$(CHAINNET)
+
+sh-image: build-image
+	docker run -it sifchain/$(BINARY):$(CHAINNET) sh

@@ -1,3 +1,15 @@
+provider "aws" {
+  region = var.region
+}
+
+provider "kubernetes" {
+  host                   = element(concat(data.aws_eks_cluster.cluster[*].endpoint, list("")), 0)
+  cluster_ca_certificate = base64decode(element(concat(data.aws_eks_cluster.cluster[*].certificate_authority.0.data, list("")), 0))
+  token                  = element(concat(data.aws_eks_cluster_auth.cluster[*].token, list("")), 0)
+  load_config_file       = false
+  version                = "~> 1.9"
+}
+
 data "aws_eks_cluster" "cluster" {
   name = module.eks.cluster_id
 }
@@ -37,16 +49,16 @@ module "eks" {
   tags         = merge({ "Name" = var.cluster_name }, var.tags)
 
   node_groups_defaults = {
-    ami_type  = var.node_group_settings["ami_type"]
-    disk_size = var.node_group_settings["disk_size"]
+    ami_type  = var.ami_type
+    disk_size = var.disk_size
   }
 
   node_groups = {
     main = {
-      desired_capacity = var.node_group_settings["desired_capacity"]
-      max_capacity     = var.node_group_settings["max_capacity"]
-      min_capacity     = var.node_group_settings["min_capacity"]
-      instance_type    = var.node_group_settings["instance_type"]
+      desired_capacity = var.desired_capacity
+      max_capacity     = var.max_capacity
+      min_capacity     = var.min_capacity
+      instance_type    = var.instance_type
 
       k8s_labels = {
         Environment = "${var.cluster_name}-${var.region}"
