@@ -7,11 +7,13 @@ export function useTokenListing({
   store,
   walletLimit,
   tokenLimit,
+  selectedTokens,
 }: {
   searchText: Ref<string>;
   store: Store;
   walletLimit: number;
   tokenLimit: number;
+  selectedTokens: string[];
 }) {
   const { balances } = useWallet(store);
 
@@ -31,14 +33,18 @@ export function useTokenListing({
   });
 
   const filteredTokens = computed(() => {
-    if (searchText.value) {
-      return fullTokenList.value.filter(
-        ({ symbol }) =>
-          symbol.toLowerCase().indexOf(searchText.value.toLowerCase().trim()) >
-          -1
-      );
-    }
-    return limitedTokenList.value;
+    const list = searchText.value
+      ? fullTokenList.value.filter(
+          ({ symbol }) =>
+            symbol
+              .toLowerCase()
+              .indexOf(searchText.value.toLowerCase().trim()) > -1
+        )
+      : limitedTokenList.value;
+
+    return list.map((item) =>
+      selectedTokens.includes(item.symbol) ? { disabled: true, ...item } : item
+    );
   });
 
   return { filteredTokens };
