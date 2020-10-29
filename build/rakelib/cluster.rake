@@ -54,17 +54,36 @@ namespace :cluster do
 
   desc "Manage sifnode deploy, upgrade, etc processes"
   namespace :sifnode do
-    desc "Deploy a single sifnode on to your cluster"
-    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
-      check_args(args)
+    namespace :deploy do
+      desc "Deploy a single standalone sifnode on to your cluster"
+      task :standalone, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
+        check_args(args)
 
-      cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
-        --set sifnode.env.chainnet=#{args[:chainnet]} --install -n #{ns(args)} --create-namespace \
-        --set image.tag=#{image_tag(args)} \
-        --set image.repository=#{image_repository(args)}
-      }
+        cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
+          --set sifnode.env.chainnet=#{args[:chainnet]} \
+          --install -n #{ns(args)} --create-namespace \
+          --set image.tag=#{image_tag(args)} \
+          --set image.repository=#{image_repository(args)}
+        }
 
-      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      end
+
+      desc "Deploy a single network-aware sifnode on to your cluster"
+      task :peer, [:chainnet, :provider, :namespace, :image, :image_tag, :peer_address, :genesis_url] do |t, args|
+        check_args(args)
+
+        cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
+          --install -n #{ns(args)} --create-namespace \
+          --set sifnode.env.chainnet=#{args[:chainnet]} \
+          --set sifnode.env.genesisURL=#{args[:genesis_url]} \
+          --set sifnode.env.peerAddress=#{args[:peer_address]} \
+          --set image.tag=#{image_tag(args)} \
+          --set image.repository=#{image_repository(args)}
+        }
+
+        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      end
     end
 
     task :uninstall, [:chainnet, :provider, :namespace] do |t, args|

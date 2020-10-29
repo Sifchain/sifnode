@@ -77,7 +77,7 @@ jobs:
       - name: Deploy node to cluster
         working-directory: ${{ env.WORKING_DIRECTORY }}
         run: |
-          rake 'cluster:sifnode:deploy[${{ env.WORKSPACE_NAME }},aws,${{ env.GITHUB_REF_SLUG }},sifchain/sifnoded,${{ steps.vars.outputs.sha_short }}]'
+          rake 'cluster:sifnode:deploy:standalone[${{ env.WORKSPACE_NAME }},aws,${{ env.GITHUB_REF_SLUG }},sifchain/sifnoded,${{ steps.vars.outputs.sha_short }}]'
 
       - name: Cluster status
         working-directory: ${{ env.WORKING_DIRECTORY }}
