@@ -6,10 +6,11 @@ const assetMap = new Map<string, Asset>();
 
 export const Asset = {
   set(key: string, value: Asset) {
+    if (!key) return;
     assetMap.set(key.toLowerCase(), value);
   },
   get(key: string): Asset {
-    const found = assetMap.get(key.toLowerCase());
+    const found = key ? assetMap.get(key.toLowerCase()) : false;
     if (!found) {
       console.log(
         "Available keys: " +

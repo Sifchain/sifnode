@@ -6,9 +6,10 @@ import WithWallet from "@/components/wallet/WithWallet.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
 import Modal from "@/components/modal/Modal.vue";
-import { usePoolCalculator } from "../../../core/src";
+import { PoolState, usePoolCalculator } from "../../../core/src";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
+import { computed } from "@vue/reactivity";
 
 export default defineComponent({
   components: {
@@ -28,18 +29,6 @@ export default defineComponent({
     const toAmount = ref("0");
     const toSymbol = ref<string | null>(null);
 
-    function handleFromFocused() {
-      selectedField.value = "from";
-    }
-
-    function handleToFocused() {
-      selectedField.value = "to";
-    }
-
-    function handleBlur() {
-      /**/
-    }
-
     const priceMessage = ref("");
 
     const {
@@ -56,6 +45,9 @@ export default defineComponent({
       aPerBRatioMessage,
       bPerARatioMessage,
       shareOfPool,
+      fromFieldAmount,
+      toFieldAmount,
+      state,
     } = usePoolCalculator({
       balances,
       fromAmount,
@@ -69,16 +61,30 @@ export default defineComponent({
     return {
       fromAmount,
       fromSymbol,
-      handleFromFocused,
-      handleBlur,
+
       toAmount,
       toSymbol,
-      handleToFocused,
+
       priceMessage,
       connected,
       aPerBRatioMessage,
       bPerARatioMessage,
-      nextStepMessage: "banana",
+
+      nextStepMessage: computed(() => {
+        switch (state.value) {
+          case PoolState.SELECT_TOKENS:
+            return "Select Tokens";
+          case PoolState.ZERO_AMOUNTS:
+            return "Please enter an amount";
+          case PoolState.INSUFFICIENT_FUNDS:
+            return "Insufficient Funds";
+          case PoolState.VALID_INPUT:
+            return "Add Liquidity";
+        }
+      }),
+      nextStepAllowed: computed(() => {
+        return state.value === PoolState.VALID_INPUT;
+      }),
       handleFromSymbolClicked(next: () => void) {
         selectedField.value = "from";
         next();
@@ -88,6 +94,10 @@ export default defineComponent({
         next();
       },
       handleSelectClosed(data: string) {
+        if (typeof data !== "string") {
+          return;
+        }
+        
         if (selectedField.value === "from") {
           fromSymbol.value = data;
         }
@@ -97,11 +107,22 @@ export default defineComponent({
         }
         selectedField.value = null;
       },
+      handleNextStepClicked() {
+        alert(
+          `Create Liquidity ${fromFieldAmount.value?.toFormatted()} alongside ${toFieldAmount.value?.toFormatted()}!`
+        );
+      },
+      handleBlur() {
+        selectedField.value = null;
+      },
+      handleFromFocused() {
+        selectedField.value = "from";
+      },
+      handleToFocused() {
+        selectedField.value = "to";
+      },
       shareOfPool,
       connectedText,
-      // canClickAction,
-      // handleActionClicked,
-      // nextActionMessage,
     };
   },
 });
@@ -133,16 +154,18 @@ export default defineComponent({
     <div class="actions">
       <WithWallet>
         <template v-slot:disconnected="{ requestDialog }">
-          <div class="wallet-status">No wallet connected 🅧</div>
-          <button @click="requestDialog">Connect Wallet</button>
+          <div class="wallet-status">No wallet connected &times;</div>
+          <button class="big-button" @click="requestDialog">
+            Connect Wallet
+          </button>
         </template>
         <template v-slot:connected="{ connectedText }"
           ><div>
             <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
             <button
               class="big-button"
-              :disabled="!canSwap"
-              @click="handleSwapClicked"
+              :disabled="!nextStepAllowed"
+              @click="handleNextStepClicked"
             >
               {{ nextStepMessage }}
             </button>
@@ -152,4 +175,10 @@ export default defineComponent({
     </div>
   </Layout>
 </template>
+
+<style scoped>
+.big-button {
+  width: 100%;
+}
+</style>
 

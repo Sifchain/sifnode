@@ -1,4 +1,3 @@
-import { Asset } from "./Asset";
 import { AssetAmount } from "./AssetAmount";
 import { Network } from "./Network";
 import { Pair } from "./Pair";
@@ -31,7 +30,7 @@ describe("Pair", () => {
 
   test("when equal it should be 1.0", () => {
     const pair = Pair(AssetAmount(ATK, "10"), AssetAmount(BTK, "10"));
-    expect(pair.priceA().toFixed()).toEqual("1.000000000000000000");
+    expect(pair.priceA()?.toFixed()).toEqual("1.000000000000000000");
   });
 
   describe("when half", () => {
@@ -42,19 +41,19 @@ describe("Pair", () => {
     });
 
     test("priceA should be 2", () => {
-      expect(pair.priceA().toFixed()).toEqual("2.000000000000000000"); // In terms of B
+      expect(pair.priceA()?.toFixed()).toEqual("2.000000000000000000"); // In terms of B
     });
 
     test("priceB should be 0.5", () => {
-      expect(pair.priceB().toFixed()).toEqual("0.500000");
+      expect(pair.priceB()?.toFixed()).toEqual("0.500000");
     });
 
     test("price by asset", () => {
-      expect(pair.priceAsset(ATK).toFixed()).toEqual("2.000000000000000000");
+      expect(pair.priceAsset(ATK)?.toFixed()).toEqual("2.000000000000000000");
     });
 
     test("price by asset", () => {
-      expect(pair.priceAsset(BTK).toFixed()).toEqual("0.500000");
+      expect(pair.priceAsset(BTK)?.toFixed()).toEqual("0.500000");
     });
 
     test("oppositeAsset", () => {

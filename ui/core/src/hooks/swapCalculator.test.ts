@@ -1,6 +1,6 @@
 import { Ref, ref } from "@vue/reactivity";
 import { AssetAmount, IAssetAmount, Network, Pair, Token } from "../entities";
-import { useSwapCalculator } from "./swapCalculator";
+import { SwapState, useSwapCalculator } from "./swapCalculator";
 
 const TOKENS = {
   atk: Token({
@@ -37,11 +37,11 @@ describe("swapCalculator", () => {
   const marketPairFinder = jest.fn();
 
   // output
-  let nextStepMessage: Ref<string>;
+  let state: Ref<SwapState>;
   let priceMessage: Ref<string | null>;
 
   beforeEach(() => {
-    ({ nextStepMessage, priceMessage } = useSwapCalculator({
+    ({ state, priceMessage } = useSwapCalculator({
       balances,
       fromAmount,
       toAmount,
@@ -54,13 +54,14 @@ describe("swapCalculator", () => {
 
   test("calculates wallet not attached", () => {
     selectedField.value = "from";
-    expect(nextStepMessage.value).toBe("Select tokens");
+    expect(state.value).toBe(SwapState.SELECT_TOKENS);
+
     marketPairFinder.mockImplementationOnce(() =>
       Pair(AssetAmount(TOKENS.atk, "1000"), AssetAmount(TOKENS.btk, "2000"))
     );
     fromSymbol.value = "atk";
     toSymbol.value = "btk";
-    expect(nextStepMessage.value).toBe("You cannot swap 0");
+    expect(state.value).toBe(SwapState.ZERO_AMOUNTS);
 
     balances.value = [
       AssetAmount(TOKENS.eth, "1234"),
@@ -69,7 +70,7 @@ describe("swapCalculator", () => {
     ];
     fromAmount.value = "100";
     expect(toAmount.value).toBe("200.000000");
-    expect(nextStepMessage.value).toBe("Swap"); // Should be something else if values are 0
+    expect(state.value).toBe(SwapState.VALID_INPUT);
 
     selectedField.value = "to";
     toAmount.value = "100";
@@ -80,7 +81,8 @@ describe("swapCalculator", () => {
 
     selectedField.value = "from";
     fromAmount.value = "10000";
-    expect(nextStepMessage.value).toBe("Insufficient funds");
+
+    expect(state.value).toBe(SwapState.INSUFFICIENT_FUNDS);
 
     expect(priceMessage.value).toBe("2.000000000000000000 BTK per ATK");
   });

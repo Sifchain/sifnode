@@ -21,6 +21,7 @@ export default defineComponent({
     symbol: String,
     available: String,
   },
+  inheritAttrs: false,
   emits: ["select-symbol", "update:amount", "update:symbol"],
   components: { BalanceField, AssetItem, Modal },
   setup(props, context) {
@@ -46,6 +47,7 @@ export default defineComponent({
       ><BalanceField :symbol="localSymbol"
     /></label>
     <input
+      v-bind="$attrs"
       class="input"
       type="number"
       v-model="localAmount"

@@ -4,6 +4,7 @@
   <div class="field-wrappers">
     <CurrencyField
       label="From"
+      tabindex="1"
       @focus="handleFromFocused"
       @blur="handleFromBlur"
       :amount="fromAmount"
@@ -15,6 +16,7 @@
     <div class="arrow">↓</div>
     <CurrencyField
       label="To"
+      tabindex="2"
       @focus="handleToFocused"
       @blur="handleToBlur"
       :amount="toAmount"

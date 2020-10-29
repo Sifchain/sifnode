@@ -5,7 +5,7 @@ import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { computed, ref } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import { useSwapCalculator } from "../../../core";
+import { SwapState, useSwapCalculator } from "../../../core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/modal/Modal.vue";
@@ -38,11 +38,10 @@ export default defineComponent({
     });
 
     const {
-      nextStepMessage,
+      state,
       fromFieldAmount,
       toFieldAmount,
       priceMessage,
-      canSwap,
     } = useSwapCalculator({
       balances,
       fromAmount,
@@ -56,7 +55,18 @@ export default defineComponent({
     return {
       connected,
       connectedText,
-      nextStepMessage,
+      nextStepMessage: computed(() => {
+        switch (state.value) {
+          case SwapState.SELECT_TOKENS:
+            return "Select Tokens";
+          case SwapState.ZERO_AMOUNTS:
+            return "Please enter an amount";
+          case SwapState.INSUFFICIENT_FUNDS:
+            return "Insufficient Funds";
+          case SwapState.VALID_INPUT:
+            return "Swap";
+        }
+      }),
       handleFromSymbolClicked(next: () => void) {
         selectedField.value = "from";
         next();
@@ -66,6 +76,10 @@ export default defineComponent({
         next();
       },
       handleSelectClosed(data: string) {
+        if (typeof data !== "string") {
+          return;
+        }
+
         if (selectedField.value === "from") {
           fromSymbol.value = data;
         }
@@ -81,7 +95,7 @@ export default defineComponent({
       handleToFocused() {
         selectedField.value = "to";
       },
-      handleSwapClicked() {
+      handleNextStepClicked() {
         alert(
           `Swapping ${fromFieldAmount.value?.toFormatted()} for ${toFieldAmount.value?.toFormatted()}!`
         );
@@ -89,12 +103,15 @@ export default defineComponent({
       handleBlur() {
         selectedField.value = null;
       },
+
       fromAmount,
       toAmount,
       fromSymbol,
       toSymbol,
       priceMessage,
-      canSwap,
+      nextStepAllowed: computed(() => {
+        return state.value === SwapState.VALID_INPUT;
+      }),
     };
   },
 });
@@ -126,15 +143,17 @@ export default defineComponent({
       <WithWallet>
         <template v-slot:disconnected="{ requestDialog }">
           <div class="wallet-status">No wallet connected 🅧</div>
-          <button @click="requestDialog">Connect Wallet</button>
+          <button class="big-button" @click="requestDialog">
+            Connect Wallet
+          </button>
         </template>
         <template v-slot:connected="{ connectedText }"
           ><div>
             <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
             <button
               class="big-button"
-              :disabled="!canSwap"
-              @click="handleSwapClicked"
+              :disabled="!nextStepAllowed"
+              @click="handleNextStepClicked"
             >
               {{ nextStepMessage }}
             </button>

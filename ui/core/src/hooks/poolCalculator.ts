@@ -1,10 +1,16 @@
-import { computed } from "@vue/reactivity";
+import { computed, effect } from "@vue/reactivity";
 import { Ref } from "vue";
 import { Asset, AssetAmount, IAssetAmount, Pair } from "../entities";
 import { Fraction } from "../entities/fraction/Fraction";
-import B from "../entities/utils/B";
 import { useField } from "./useField";
-import { assetPriceMessage } from "./utils";
+import { assetPriceMessage, useBalances } from "./utils";
+
+export enum PoolState {
+  SELECT_TOKENS,
+  ZERO_AMOUNTS,
+  INSUFFICIENT_FUNDS,
+  VALID_INPUT,
+}
 
 export function usePoolCalculator(input: {
   fromAmount: Ref<string>;
@@ -21,6 +27,20 @@ export function usePoolCalculator(input: {
   const liquidityPair = computed(() => {
     if (!fromField.fieldAmount.value || !toField.fieldAmount.value) return null;
     return Pair(fromField.fieldAmount.value, toField.fieldAmount.value);
+  });
+
+  const balanceMap = useBalances(input.balances);
+
+  const fromBalance = computed(() => {
+    return input.fromSymbol.value
+      ? balanceMap.value.get(input.fromSymbol.value) ?? null
+      : null;
+  });
+
+  const toBalance = computed(() => {
+    return input.toSymbol.value
+      ? balanceMap.value.get(input.toSymbol.value) ?? null
+      : null;
   });
 
   const aPerBRatioMessage = computed(() => {
@@ -59,21 +79,66 @@ export function usePoolCalculator(input: {
     // TODO: Naive calculation need to check this is correct
     // Work out the total share of the pool by adding
     // all the amounts up and dividing by the liquidity pair
+    if (!liquidityPairSum || liquidityPairSum.equalTo("0")) return "";
     return `${liquidityPairSum
       .divide(marketPairSum.add(liquidityPairSum))
       .multiply(new Fraction("100"))
       .toFixed(2)}%`;
   });
 
-  const nextStepMessage = computed(() => {
-    return "";
+  const fromBalanceOverdrawn = computed(
+    () => !fromBalance.value?.greaterThan(fromField.fieldAmount.value || "0")
+  );
+  const toBalanceOverdrawn = computed(
+    () => !toBalance.value?.greaterThan(toField.fieldAmount.value || "0")
+  );
+
+  const state = computed(() => {
+    if (!input.fromSymbol.value || !input.toSymbol.value)
+      return PoolState.SELECT_TOKENS;
+    if (
+      fromField.fieldAmount.value?.equalTo("0") &&
+      toField.fieldAmount.value?.equalTo("0")
+    )
+      return PoolState.ZERO_AMOUNTS;
+    if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value) {
+      return PoolState.INSUFFICIENT_FUNDS;
+    }
+
+    return PoolState.VALID_INPUT;
+  });
+
+  const nextStepAllowed = computed(() => {
+    state.value === PoolState.VALID_INPUT;
+  });
+
+  effect(() => {
+    // Deselect a field formats all values
+    if (input.selectedField.value === null) {
+      const fromAsset = fromField.asset.value;
+      if (fromAsset) {
+        input.fromAmount.value = AssetAmount(
+          fromAsset,
+          input.fromAmount.value
+        ).toFixed();
+      }
+
+      const toAsset = fromField.asset.value;
+      if (toAsset) {
+        input.toAmount.value = AssetAmount(
+          toAsset,
+          input.toAmount.value
+        ).toFixed();
+      }
+    }
   });
 
   return {
     aPerBRatioMessage,
     bPerARatioMessage,
     shareOfPool,
-    nextStepMessage,
+    state,
+    nextStepAllowed,
     fromFieldAmount: fromField.fieldAmount,
     toFieldAmount: toField.fieldAmount,
     toAmount: input.toAmount,

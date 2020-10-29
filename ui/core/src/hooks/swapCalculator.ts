@@ -1,17 +1,13 @@
 import { Ref, computed, effect } from "@vue/reactivity";
 import { Asset, AssetAmount, IAssetAmount, Pair } from "../entities";
 import { useField } from "./useField";
-import { assetPriceMessage } from "./utils";
+import { assetPriceMessage, useBalances } from "./utils";
 
-function useBalances(balances: Ref<AssetAmount[]>) {
-  return computed(() => {
-    const map = new Map<string, AssetAmount>();
-
-    for (const item of balances.value) {
-      map.set(item.asset.symbol, item);
-    }
-    return map;
-  });
+export enum SwapState {
+  SELECT_TOKENS,
+  ZERO_AMOUNTS,
+  INSUFFICIENT_FUNDS,
+  VALID_INPUT,
 }
 
 export function useSwapCalculator(input: {
@@ -49,22 +45,6 @@ export function useSwapCalculator(input: {
     const asset = fromField.asset.value;
     const pair = marketPair.value;
     return assetPriceMessage(asset, pair);
-  });
-
-  const nextStepMessage = computed(() => {
-    if (!marketPair.value) return "Select tokens";
-    if (
-      fromField.fieldAmount.value?.equalTo("0") &&
-      toField.fieldAmount.value?.equalTo("0")
-    )
-      return "You cannot swap 0";
-    if (!balance.value?.greaterThan(fromField.fieldAmount.value || "0"))
-      return "Insufficient funds";
-    return "Swap";
-  });
-
-  const canSwap = computed(() => {
-    return nextStepMessage.value === "Swap";
   });
 
   effect(() => {
@@ -119,10 +99,21 @@ export function useSwapCalculator(input: {
     }
   });
 
+  const state = computed(() => {
+    if (!marketPair.value) return SwapState.SELECT_TOKENS;
+    if (
+      fromField.fieldAmount.value?.equalTo("0") &&
+      toField.fieldAmount.value?.equalTo("0")
+    )
+      return SwapState.ZERO_AMOUNTS;
+    if (!balance.value?.greaterThan(fromField.fieldAmount.value || "0"))
+      return SwapState.INSUFFICIENT_FUNDS;
+    return SwapState.VALID_INPUT;
+  });
+
   return {
-    canSwap,
     priceMessage,
-    nextStepMessage,
+    state,
     fromFieldAmount: fromField.fieldAmount,
     toFieldAmount: toField.fieldAmount,
     toAmount: input.toAmount,

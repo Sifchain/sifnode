@@ -1,6 +1,13 @@
 import { Ref, ref } from "@vue/reactivity";
-import { AssetAmount, IAssetAmount, Network, Pair, Token } from "../entities";
-import { usePoolCalculator } from "./poolCalculator";
+import {
+  Asset,
+  AssetAmount,
+  IAssetAmount,
+  Network,
+  Pair,
+  Token,
+} from "../entities";
+import { PoolState, usePoolCalculator } from "./poolCalculator";
 
 const TOKENS = {
   atk: Token({
@@ -26,6 +33,7 @@ const TOKENS = {
   }),
 };
 
+// TODO: All the maths here are pretty naive need to double check with blockscience
 describe("usePoolCalculator", () => {
   // input
   const fromAmount: Ref<string> = ref("0");
@@ -41,8 +49,14 @@ describe("usePoolCalculator", () => {
   let aPerBRatioMessage: Ref<string>;
   let bPerARatioMessage: Ref<string>;
   let shareOfPool: Ref<string>;
+  let state: Ref<PoolState>;
   beforeEach(() => {
-    ({ aPerBRatioMessage, bPerARatioMessage, shareOfPool } = usePoolCalculator({
+    ({
+      state,
+      aPerBRatioMessage,
+      bPerARatioMessage,
+      shareOfPool,
+    } = usePoolCalculator({
       balances,
       fromAmount,
       toAmount,
@@ -51,6 +65,12 @@ describe("usePoolCalculator", () => {
       toSymbol,
       marketPairFinder,
     }));
+
+    balances.value = [];
+    fromAmount.value = "0";
+    toAmount.value = "0";
+    fromSymbol.value = null;
+    toSymbol.value = null;
   });
 
   test("poolCalculator ratio messages", () => {
@@ -61,6 +81,7 @@ describe("usePoolCalculator", () => {
 
     expect(aPerBRatioMessage.value).toBe("0.500000 BTK per ATK");
     expect(bPerARatioMessage.value).toBe("2.000000 ATK per BTK");
+    expect(shareOfPool.value).toBe("100.00%");
   });
 
   test("Can handle division by zero", () => {
@@ -68,8 +89,10 @@ describe("usePoolCalculator", () => {
     toAmount.value = "0";
     fromSymbol.value = "atk";
     toSymbol.value = "btk";
+    expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
     expect(aPerBRatioMessage.value).toBe("");
     expect(bPerARatioMessage.value).toBe("");
+    expect(shareOfPool.value).toBe("");
   });
 
   test("Calculate against a given pool", () => {
@@ -82,9 +105,21 @@ describe("usePoolCalculator", () => {
     fromSymbol.value = "atk";
     toSymbol.value = "btk";
 
-    // TODO: All the maths here are pretty naive need to double check with blockscience
     expect(aPerBRatioMessage.value).toBe("1.000000 BTK per ATK");
     expect(bPerARatioMessage.value).toBe("1.000000 ATK per BTK");
     expect(shareOfPool.value).toBe("33.33%");
+  });
+
+  test("Insufficient balances", () => {
+    balances.value = [
+      AssetAmount(Asset.get("atk"), "10000"),
+      AssetAmount(Asset.get("btk"), "10000"),
+    ];
+    fromAmount.value = "1000000";
+    toAmount.value = "1000";
+    fromSymbol.value = "atk";
+    toSymbol.value = "btk";
+
+    expect(state.value).toBe(PoolState.INSUFFICIENT_FUNDS);
   });
 });
