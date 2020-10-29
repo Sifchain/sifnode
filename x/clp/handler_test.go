@@ -96,7 +96,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	ctx, keeper := CreateTestInputDefault(t, false, 1000)
 	signer := GenerateAddress()
 	externalDenom := "ceth"
-	nativeDenom := GetNativeAsset().Ticker
+	nativeDenom := GetSettlementAsset().Ticker
 	//Parameters for Remove Liquidity
 	initialBalance := 10000 // Initial account balance for all assets created
 	poolBalance := 1000     // Amount funded to pool , This same amount is used both for native and external asset
@@ -313,20 +313,20 @@ func CalculateWithdraw(t *testing.T, keeper Keeper, ctx sdk.Context, asset Asset
 	externalAssetCoin := sdk.Coin{}
 	nativeAssetCoin := sdk.Coin{}
 	if asymmetry > 0 {
-		swapResult, _, _, _, err := swapOne(GetNativeAsset(), swapAmount, asset, pool)
+		swapResult, _, _, _, err := swapOne(GetSettlementAsset(), swapAmount, asset, pool)
 		assert.NoError(t, err)
 		externalAssetCoin = sdk.NewCoin(asset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount+swapResult)))
-		nativeAssetCoin = sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
+		nativeAssetCoin = sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
 	}
 	if asymmetry < 0 {
-		swapResult, _, _, _, err := swapOne(asset, swapAmount, GetNativeAsset(), pool)
+		swapResult, _, _, _, err := swapOne(asset, swapAmount, GetSettlementAsset(), pool)
 		assert.NoError(t, err)
 		externalAssetCoin = sdk.NewCoin(asset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount)))
-		nativeAssetCoin = sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount+swapResult)))
+		nativeAssetCoin = sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount+swapResult)))
 	}
 	if asymmetry == 0 {
 		externalAssetCoin = sdk.NewCoin(asset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount)))
-		nativeAssetCoin = sdk.NewCoin(GetNativeAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
+		nativeAssetCoin = sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
 	}
 
 	return sdk.Coins{externalAssetCoin, nativeAssetCoin}
@@ -338,9 +338,9 @@ func CalculateSwapReceived(t *testing.T, keeper Keeper, ctx sdk.Context, assetSe
 	assert.NoError(t, err)
 	outPool, err := keeper.GetPool(ctx, assetReceived.Ticker)
 	assert.NoError(t, err)
-	emitAmount, _, _, _, err := swapOne(assetSent, swapAmount, GetNativeAsset(), inPool)
+	emitAmount, _, _, _, err := swapOne(assetSent, swapAmount, GetSettlementAsset(), inPool)
 	assert.NoError(t, err)
-	emitAmount2, _, _, _, err := swapOne(GetNativeAsset(), emitAmount, assetReceived, outPool)
+	emitAmount2, _, _, _, err := swapOne(GetSettlementAsset(), emitAmount, assetReceived, outPool)
 	assert.NoError(t, err)
 	return emitAmount2
 }
