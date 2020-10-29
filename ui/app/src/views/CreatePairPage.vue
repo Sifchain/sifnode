@@ -2,11 +2,19 @@
 import { defineComponent, ref } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
-
+import WithWallet from "@/components/wallet/WithWallet.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
+import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
+import Modal from "@/components/modal/Modal.vue";
 
 export default defineComponent({
-  components: { Layout, CurrencyPairPanel },
+  components: {
+    Layout,
+    Modal,
+    CurrencyPairPanel,
+    SelectTokenDialog,
+    WithWallet,
+  },
   setup() {
     const selectedField = ref<"from" | "to" | null>(null);
 
@@ -47,6 +55,25 @@ export default defineComponent({
       handleToFocused,
       priceMessage,
       connected,
+      nextStepMessage: "banana",
+      handleFromSymbolClicked(next: () => void) {
+        selectedField.value = "from";
+        next();
+      },
+      handleToSymbolClicked(next: () => void) {
+        selectedField.value = "to";
+        next();
+      },
+      handleSelectClosed(data: string) {
+        if (selectedField.value === "from") {
+          fromSymbol.value = data;
+        }
+
+        if (selectedField.value === "to") {
+          toSymbol.value = data;
+        }
+        selectedField.value = null;
+      },
       // handleWalletClick,
       connectedText,
       // canClickAction,
@@ -59,34 +86,44 @@ export default defineComponent({
 
 <template>
   <Layout class="pool" backLink="/pool">
-    <CurrencyPairPanel
-      v-model:fromAmount="fromAmount"
-      v-model:fromSymbol="fromSymbol"
-      @from-focus="handleFromFocused"
-      @from-blur="handleBlur"
-      v-model:toAmount="toAmount"
-      v-model:toSymbol="toSymbol"
-      @to-focus="handleToFocused"
-      @to-blur="handleBlur"
-    />
+    <Modal @close="handleSelectClosed">
+      <template v-slot:activator="{ requestOpen }">
+        <CurrencyPairPanel
+          v-model:fromAmount="fromAmount"
+          v-model:fromSymbol="fromSymbol"
+          @from-focus="handleFromFocused"
+          @from-blur="handleBlur"
+          @from-symbol-clicked="handleFromSymbolClicked(requestOpen)"
+          v-model:toAmount="toAmount"
+          v-model:toSymbol="toSymbol"
+          @to-focus="handleToFocused"
+          @to-blur="handleBlur"
+          @to-symbol-clicked="handleToSymbolClicked(requestOpen)"
+      /></template>
+      <template v-slot:default="{ requestClose }">
+        <SelectTokenDialog @token-selected="requestClose" />
+      </template>
+    </Modal>
     <div>{{ priceMessage }}</div>
     <div class="actions">
-      <div v-if="!connected">
-        <div class="wallet-status">No wallet connected 🅧</div>
-        <button class="big-button" @click="handleWalletClick">
-          Connect wallet
-        </button>
-      </div>
-      <div v-else>
-        <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
-        <button
-          class="big-button"
-          :disabled="!canClickAction"
-          @click="handleActionClicked"
+      <WithWallet>
+        <template v-slot:disconnected="{ requestDialog }">
+          <div class="wallet-status">No wallet connected 🅧</div>
+          <button @click="requestDialog">Connect Wallet</button>
+        </template>
+        <template v-slot:connected="{ connectedText }"
+          ><div>
+            <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
+            <button
+              class="big-button"
+              :disabled="!canSwap"
+              @click="handleSwapClicked"
+            >
+              {{ nextStepMessage }}
+            </button>
+          </div></template
         >
-          {{ nextActionMessage }}
-        </button>
-      </div>
+      </WithWallet>
     </div>
   </Layout>
 </template>
