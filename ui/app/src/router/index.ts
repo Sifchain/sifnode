@@ -8,6 +8,7 @@ import Pool from "@/views/PoolPage.vue";
 import AddLiquidity from "@/views/AddLiquidityPage.vue";
 import CreatePair from "@/views/CreatePairPage.vue";
 import TestModal from "@/views/TestModal.vue";
+import Ui from "@/views/Ui.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -38,6 +39,13 @@ const routes: Array<RouteRecordRaw> = [
     path: "/pool/create-pair",
     name: "CreatePair",
     component: CreatePair,
+  },
+
+  // route for UI elements showcase - To Be Deleted
+  {
+    path: "/ui",
+    name: "Ui",
+    component: Ui,
   },
 ];
 
