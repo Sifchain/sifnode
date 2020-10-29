@@ -54,9 +54,9 @@ namespace :cluster do
 
   desc "Manage sifnode deploy, upgrade, etc processes"
   namespace :sifnode do
-    namespace :standalone do
+    namespace :deploy do
       desc "Deploy a single standalone sifnode on to your cluster"
-      task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
+      task :standalone, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
         check_args(args)
 
         cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
@@ -68,11 +68,9 @@ namespace :cluster do
 
         system({"KUBECONFIG" => kubeconfig(args) }, cmd)
       end
-    end
 
-    namespace :network do
       desc "Deploy a single network-aware sifnode on to your cluster"
-      task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :peer_address, :genesis_url] do |t, args|
+      task :network, [:chainnet, :provider, :namespace, :image, :image_tag, :peer_address, :genesis_url] do |t, args|
         check_args(args)
 
         cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
