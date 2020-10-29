@@ -54,21 +54,24 @@ var (
 			faker.Internet().IpV4Address(),
 			faker.Number().NumberInt(5)),
 	}
-	mockError					  = sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "Mock fake error")
+	mockError                                                                                                                                                      = sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "Mock fake error")
 	errReset, errCurrentChainID, errInitChain, errSetKeyRingStorage, errSetConfigChainID, errSetConfigIndent, errSetConfigTrustNode, errAddKey, errCreateValidator error
-	errAddGenesisAccount, errGenerateGenesisTxn, errCollectGenesisTxns, errTransferFunds, errExportGenesis, errValidatorPublicKeyAddress error
-
+	errAddGenesisAccount, errGenerateGenesisTxn, errCollectGenesisTxns, errTransferFunds, errExportGenesis, errValidatorPublicKeyAddress                           error
 )
 
-type mockCLIUtils struct {}
+type mockCLIUtils struct{}
 
 func (c mockCLIUtils) Reset() error                                       { return errReset }
 func (c mockCLIUtils) CurrentChainID() (*string, error)                   { return &chainID, errCurrentChainID }
 func (c mockCLIUtils) InitChain(chainID, moniker string) (*string, error) { return nil, errInitChain }
 func (c mockCLIUtils) SetKeyRingStorage() (*string, error)                { return nil, errSetKeyRingStorage }
-func (c mockCLIUtils) SetConfigChainID(chainID string) (*string, error)   { return nil, errSetConfigChainID }
-func (c mockCLIUtils) SetConfigIndent(indent bool) (*string, error)       { return nil, errSetConfigIndent }
-func (c mockCLIUtils) SetConfigTrustNode(trust bool) (*string, error)     { return nil, errSetConfigTrustNode }
+func (c mockCLIUtils) SetConfigChainID(chainID string) (*string, error) {
+	return nil, errSetConfigChainID
+}
+func (c mockCLIUtils) SetConfigIndent(indent bool) (*string, error) { return nil, errSetConfigIndent }
+func (c mockCLIUtils) SetConfigTrustNode(trust bool) (*string, error) {
+	return nil, errSetConfigTrustNode
+}
 
 func (c mockCLIUtils) AddKey(name, keyPassword string) (*string, error) {
 	key := heredoc.Doc(`
