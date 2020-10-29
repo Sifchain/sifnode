@@ -1,5 +1,7 @@
 package txs
 
+// DONTCOVER
+
 import (
 	"context"
 	"log"
