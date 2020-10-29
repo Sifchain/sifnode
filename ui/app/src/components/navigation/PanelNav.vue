@@ -1,27 +1,24 @@
 <template>
   <div class="panel-nav">
-    <router-link class="link" to="/swap">Swap</router-link>
-    <router-link class="link" to="/pool">Pool</router-link>
+    <PanelNavItem to="/swap" label="Swap"></PanelNavItem>
+    <PanelNavItem to="/pool" label="Pool"></PanelNavItem>
+    <PanelNavItem to="/" label="Soon" disabled></PanelNavItem>
+    <PanelNavItem to="/" label="Soon" disabled></PanelNavItem>
+    <PanelNavItem to="/" label="Soon" disabled></PanelNavItem>
   </div>
 </template>
-<style scoped>
+<script>
+import PanelNavItem from './PanelNavItem.vue';
+export default {
+  components: {
+    PanelNavItem
+  }
+}
+</script>
+<style lang="scss" scoped>
 .panel-nav {
-  margin-bottom: 1rem;
   display: flex;
-}
-.link {
-  color: rgb(10, 10, 10);
-  height: 3rem;
-  width: 3rem;
-  border-radius: 1rem;
-  background: #aaa;
-  margin-right: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.router-link-active {
-  color: rgb(95, 95, 95);
+  justify-content: space-between;
+  background: $c_gray_900;
 }
 </style>

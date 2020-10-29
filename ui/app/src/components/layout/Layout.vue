@@ -1,7 +1,9 @@
 <template>
   <div class="layout">
     <Panel class="swap-panel">
-      <PanelNav />
+      <template v-slot:header>
+        <PanelNav />
+      </template>
       <div v-if="backLink">
         <router-link class="back-link" :to="backLink">◀</router-link>
       </div>
@@ -22,7 +24,7 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .back-link {
   display: block;
   width: 1rem;
@@ -36,14 +38,16 @@ export default defineComponent({
   border-radius: 1rem;
 }
 .layout {
-  background: #f9f9f9;
+  background: url('../../assets/World_Background_opt.jpg');
+  background-size: cover;
+  background-position: bottom center;
   box-sizing: border-box;
-  padding-top: 3rem;
+  padding-top: $header_height;
   width: 100%;
-  height: calc(100vh - 4rem); /* TODO: header height */
+  height: 100vh; /* TODO: header height */
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
 }
 </style>

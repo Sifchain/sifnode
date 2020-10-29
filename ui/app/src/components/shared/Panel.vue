@@ -1,16 +1,35 @@
 <template>
-  <div class="panel">
-    <slot></slot>
-  </div>
+    <div class="panel">
+      <div class="header">
+        <slot name="header"></slot>
+      </div>
+
+      <div class="body">
+        <slot></slot>
+      </div>
+
+      <div class="footer">
+        <slot name="footer"></slot>
+      </div>
+    </div> <!-- main app card -->
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .panel {
-  position: relative;
-  background: rgb(255, 255, 255);
-  padding: 1.5rem 2rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border-radius: 0.3rem;
+  width: 410px;
+  border-radius: $br_lg;
+  overflow: hidden;
+
+  .header {
+    padding: 20px 20px 10px 20px;
+    background: $c_gray_900;
+    color: $c_gray_400;
+  }
+
+  .body {
+    padding: 15px;
+    background: $g_gray;
+    color: $c_gray_700;
+  }
 }
 </style>
