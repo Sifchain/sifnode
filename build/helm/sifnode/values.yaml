@@ -37,10 +37,10 @@ image:
 
 sifnode:
   env:
-    chainnet: ""
-    sifCli: sifnodecli
-    sifDaemon: sifnoded
+    chainnet:
     sifId: sifchain
+    genesisURL:
+    peerAddress:
 
 sifnodecli:
 
