@@ -60,7 +60,7 @@ describe("swapCalculator", () => {
     );
     fromSymbol.value = "atk";
     toSymbol.value = "btk";
-    expect(nextStepMessage.value).toBe("Insufficient funds");
+    expect(nextStepMessage.value).toBe("You cannot swap 0");
 
     balances.value = [
       AssetAmount(TOKENS.eth, "1234"),
