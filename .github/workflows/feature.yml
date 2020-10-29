@@ -71,10 +71,16 @@ jobs:
                   --name ${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }} \
                   --kubeconfig ../.live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}/kubeconfig_${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
 
+      - name: Update the ref var
+        run: |
+        ref="${github_ref////-}"
+        echo $ref
+        echo "::set-env name=ref::$ref"
+
       - name: Deploy node to cluster
         working-directory: ${{ env.WORKING_DIRECTORY }}
         run: |
-          rake 'cluster:sifnode:deploy[${{ env.WORKSPACE_NAME }},aws,${{ github.actor }},sifchain/sifnoded,${{ steps.vars.outputs.sha_short }}]'
+          rake 'cluster:sifnode:deploy[${{ env.WORKSPACE_NAME }},aws,${{ github.actor }}-${{ github.ref}},sifchain/sifnoded,${{ steps.vars.outputs.sha_short }}]'
 
       - name: Cluster status
         working-directory: ${{ env.WORKING_DIRECTORY }}
