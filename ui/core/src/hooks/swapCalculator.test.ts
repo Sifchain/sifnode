@@ -1,13 +1,6 @@
 import { Ref, ref } from "@vue/reactivity";
-import {
-  Asset,
-  AssetAmount,
-  IAssetAmount,
-  Network,
-  Pair,
-  Token,
-} from "../../../../core";
-import { useSwapCalculator, useField } from "./swapCalculator";
+import { AssetAmount, IAssetAmount, Network, Pair, Token } from "../entities";
+import { useSwapCalculator } from "./swapCalculator";
 
 const TOKENS = {
   atk: Token({
@@ -67,7 +60,7 @@ describe("swapCalculator", () => {
     );
     fromSymbol.value = "atk";
     toSymbol.value = "btk";
-    expect(nextStepMessage.value).toBe("Insufficient funds");
+    expect(nextStepMessage.value).toBe("You cannot swap 0");
 
     balances.value = [
       AssetAmount(TOKENS.eth, "1234"),
@@ -90,30 +83,5 @@ describe("swapCalculator", () => {
     expect(nextStepMessage.value).toBe("Insufficient funds");
 
     expect(priceMessage.value).toBe("2.000000000000000000 BTK per ATK");
-  });
-});
-
-// TODO eventually delete me as this is an implementation detail
-describe("useField", () => {
-  let amount: Ref<string>;
-  let symbol: Ref<string | null>;
-
-  let asset: Ref<Asset | null>;
-  let fieldAmount: Ref<IAssetAmount | null>;
-
-  beforeEach(() => {
-    amount = ref("0");
-    symbol = ref<string | null>(null);
-    ({ asset, fieldAmount } = useField(amount, symbol));
-  });
-
-  it("should reflect correct values", () => {
-    symbol.value = "atk";
-    amount.value = "12";
-
-    expect(asset.value?.symbol).toBe("atk");
-    expect(fieldAmount.value?.toFixed()).toBe("12.000000");
-    amount.value = "123.123123";
-    expect(fieldAmount.value?.toFixed()).toBe("123.123123");
   });
 });

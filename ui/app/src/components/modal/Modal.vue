@@ -1,46 +1,56 @@
 <template>
-  <div
-    class="modal-backdrop"
-    v-show="isOpen"
-    :class="{ open: isOpen }"
-    @click="$emit('close')"
-  >
-    <Panel :class="{ open: isOpen }" @click.stop>
-      <button class="modal-dialog-close" @click="$emit('close')">x</button>
-      <div class="modal-title" v-if="title">{{ title }}</div>
-      <div class="modal-body">
-        <slot />
+  <div class="modal">
+    <div class="activator">
+      <slot name="activator" :requestOpen="requestOpen"></slot>
+    </div>
+    <teleport to="body">
+      <div class="backdrop" v-if="isOpen" @click="requestClose">
+        <Panel :class="{ open: isOpen }" @click.stop>
+          <div class="close" @click="requestClose">&times;</div>
+          <slot :requestClose="requestClose"></slot>
+        </Panel>
       </div>
-    </Panel>
+    </teleport>
   </div>
 </template>
 
-<script>
-import { defineComponent } from "vue";
-import Panel from "@/components/panel/Panel";
+<script lang="ts">
+import Panel from "@/components/panel/Panel.vue";
+import { ref, defineComponent } from "vue";
 
-// https://medium.com/js-dojo/vue-js-manage-your-modal-window-s-effortlessly-using-eventbus-518977195eed
 export default defineComponent({
-  props: {
-    isOpen: Boolean,
-    title: String,
-  },
   components: { Panel },
-  setup() {
-    return {};
+  setup(props, context) {
+    const isOpen = ref(false);
+    const selected = ref(null);
+    return {
+      isOpen,
+      selected,
+      requestOpen() {
+        isOpen.value = true;
+      },
+      requestClose(returnedData?: unknown) {
+        isOpen.value = false;
+        context.emit("close", returnedData);
+      },
+    };
   },
+  emits: ["close"],
 });
 </script>
-
 <style scoped>
-.modal-dialog-close {
+.activator {
+  cursor: pointer;
+}
+.close {
+  cursor: pointer;
   background: none;
   border: none;
   position: absolute;
   top: 1rem;
   right: 1rem;
 }
-.modal-backdrop {
+.backdrop {
   background: rgba(0, 0, 0, 0.1);
   position: fixed;
   top: 0;
@@ -52,14 +62,5 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
 }
-
-.modal-title {
-  font-weight: bold;
-  font-size: 1.3rem;
-  margin-bottom: 1rem;
-  color: rgb(0, 0, 0);
-}
-.modal-body {
-  color: rgb(0, 0, 0);
-}
 </style>
+

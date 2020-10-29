@@ -1,29 +1,6 @@
-import { computed, effect } from "@vue/reactivity";
-import { Ref } from "vue";
-import { Asset, AssetAmount, IAssetAmount, Pair } from "../../../../core";
-
-function buildAsset(val: string | null) {
-  return val === null ? val : Asset.get(val);
-}
-
-function buildAssetAmount(asset: Asset | null, amount: string) {
-  return asset ? AssetAmount(asset, amount) : asset;
-}
-
-export function useField(amount: Ref<string>, symbol: Ref<string | null>) {
-  const asset = computed(() => {
-    return buildAsset(symbol.value);
-  });
-
-  const fieldAmount = computed(() => {
-    return buildAssetAmount(asset.value, amount.value);
-  });
-
-  return {
-    fieldAmount,
-    asset,
-  };
-}
+import { Ref, computed, effect } from "@vue/reactivity";
+import { Asset, AssetAmount, IAssetAmount, Pair } from "../entities";
+import { useField } from "./useField";
 
 function useBalances(balances: Ref<AssetAmount[]>) {
   return computed(() => {
@@ -45,6 +22,7 @@ export function useSwapCalculator(input: {
   selectedField: Ref<"from" | "to" | null>;
   marketPairFinder: (a: Asset | string, b: Asset | string) => Pair | null;
 }) {
+  // We use a market pair to work out the rate
   const marketPair = computed(() => {
     if (!input.fromSymbol.value || !input.toSymbol.value) return null;
     return (
@@ -52,16 +30,20 @@ export function useSwapCalculator(input: {
       null
     );
   });
-  const balanceMap = useBalances(input.balances);
+
+  // get the balance of the from account
   const balance = computed(() => {
+    const balanceMap = useBalances(input.balances);
     return input.fromSymbol.value
       ? balanceMap.value.get(input.fromSymbol.value) ?? null
       : null;
   });
 
+  // Get field amounts as domain objects
   const fromField = useField(input.fromAmount, input.fromSymbol);
   const toField = useField(input.toAmount, input.toSymbol);
 
+  // Create a price message
   const priceMessage = computed(() => {
     const asset = fromField.asset.value;
     const pair = marketPair.value;
@@ -84,7 +66,12 @@ export function useSwapCalculator(input: {
     return "Swap";
   });
 
+  const canSwap = computed(() => {
+    return nextStepMessage.value === "Swap";
+  });
+
   effect(() => {
+    // Deselect a field formats all values
     if (input.selectedField.value === null) {
       const fromAsset = fromField.asset.value;
       if (fromAsset) {
@@ -103,6 +90,7 @@ export function useSwapCalculator(input: {
       }
     }
 
+    // Changing the "from" field recalculates the "to" amount
     if (
       input.selectedField.value === "from" &&
       marketPair.value &&
@@ -116,6 +104,7 @@ export function useSwapCalculator(input: {
         .toFixed(asset.decimals);
     }
 
+    // Changing the "to" field recalculates the "to" amount
     if (
       input.selectedField.value === "to" &&
       marketPair.value &&
@@ -131,6 +120,7 @@ export function useSwapCalculator(input: {
   });
 
   return {
+    canSwap,
     priceMessage,
     nextStepMessage,
     fromFieldAmount: fromField.fieldAmount,

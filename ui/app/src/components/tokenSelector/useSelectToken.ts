@@ -1,11 +1,8 @@
-import { ModalBus } from "@/components/modal/ModalBus";
 import { computed } from "@vue/reactivity";
 import { Ref } from "vue";
 import { Store } from "../../../../core/src";
 
 import { useWallet } from "../../hooks/useWallet";
-
-import SelectTokenDialog from "./SelectTokenDialog.vue";
 
 export function useTokenListing({
   searchText,
@@ -47,15 +44,4 @@ export function useTokenListing({
   });
 
   return { filteredTokens };
-}
-
-export function useSelectTokenDialog() {
-  async function openDialog(label: string) {
-    ModalBus.emit("open", {
-      component: SelectTokenDialog,
-      props: { label },
-    });
-  }
-
-  return { openDialog };
 }

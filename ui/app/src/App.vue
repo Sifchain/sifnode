@@ -2,21 +2,31 @@
   <div>
     <div class="header-bar">
       <div class="header-nav">
-        <router-link to="/swap">Swap</router-link>
-        <router-link to="/pool">Pool</router-link>
+        <router-link to="/">🏠</router-link>
+        <router-link to="/">Discover</router-link>
+        <router-link to="/">New wallet</router-link>
+        <router-link to="/">Convert</router-link>
+        <router-link to="/">Deposit</router-link>
       </div>
-      <WalletButton />
+      <WithWallet>
+        <template v-slot:disconnected="{ requestDialog }">
+          <button @click="requestDialog">Connect Wallet</button>
+        </template>
+        <template v-slot:connected="{ connectedText, requestDialog }">
+          <button @click="requestDialog">
+            {{ connectedText }}
+          </button>
+        </template>
+      </WithWallet>
     </div>
     <router-view />
-    <ModalRoot />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
 import { useCore } from "./hooks/useCore";
-import ModalRoot from "@/components/modal/ModalRoot.vue";
-import WalletButton from "@/components/wallet/WalletButton.vue";
+import WithWallet from "@/components/wallet/WithWallet.vue";
 
 export default defineComponent({
   name: "App",
@@ -26,7 +36,7 @@ export default defineComponent({
       await actions.token.refreshTokens();
     });
   },
-  components: { ModalRoot, WalletButton },
+  components: { WithWallet },
 });
 </script>
 
