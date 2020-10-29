@@ -267,7 +267,6 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 
 			nativeAssetCoin = nativeAssetCoin.Add(swapCoin)
 			externalAssetCoin = externalAssetCoin.Sub(swapAmountInCoin)
-
 		}
 		pool = swappedPool
 	}
