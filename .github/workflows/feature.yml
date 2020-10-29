@@ -71,12 +71,15 @@ jobs:
                   --name ${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }} \
                   --kubeconfig ../.live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}/kubeconfig_${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
 
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v2.x
+
       - name: Deploy node to cluster
         working-directory: ${{ env.WORKING_DIRECTORY }}
         run: |
-          rake 'cluster:sifnode:deploy[${{ env.WORKSPACE_NAME }},aws,${{ github.actor }},sifchain/sifnoded,${{ steps.vars.outputs.sha_short }}]'
+          rake 'cluster:sifnode:deploy[${{ env.WORKSPACE_NAME }},aws,${{ env.GITHUB_REF_SLUG }},sifchain/sifnoded,${{ steps.vars.outputs.sha_short }}]'
 
       - name: Cluster status
         working-directory: ${{ env.WORKING_DIRECTORY }}
         run: |
-          rake 'cluster:status[testnet-${{ github.actor }},aws]'
+          rake 'cluster:status[${{ env.WORKSPACE_NAME }},aws]'
