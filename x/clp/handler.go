@@ -225,10 +225,10 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
 	}
-	//Calculate amount to withdraw
+
 	poolOriginalEB := pool.ExternalAssetBalance
 	poolOriginalNB := pool.NativeAssetBalance
-
+	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := calculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
 		msg.WBasisPoints, msg.Asymmetry)
@@ -236,12 +236,16 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount)))
 	nativeAssetCoin := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
 
+	// Subtract Value from pool
 	pool.PoolUnits = pool.PoolUnits - lp.LiquidityProviderUnits + lpUnitsLeft
 	pool.NativeAssetBalance = pool.NativeAssetBalance - withdrawNativeAssetAmount
 	pool.ExternalAssetBalance = pool.ExternalAssetBalance - withdrawExternalAssetAmount
+	// Check if withdrawl makes pool too shallow , checking only for asymetric withdraw.
 	if (msg.Asymmetry != 0) && (pool.ExternalAssetBalance == 0 || pool.NativeAssetBalance == 0) {
 		return nil, errors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil before adjusting asymmetry")
 	}
+
+	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry > 0 {
 		swapResult, _, _, swappedPool, err := swapOne(GetSettlementAsset(), swapAmount, msg.ExternalAsset, pool)
 		if err != nil {
@@ -255,7 +259,6 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		}
 		pool = swappedPool
 	}
-	//if asymmetry is negative we need to swap from external to native
 	if msg.Asymmetry < 0 {
 		swapResult, _, _, swappedPool, err := swapOne(msg.ExternalAsset, swapAmount, GetSettlementAsset(), pool)
 		if err != nil {
@@ -270,16 +273,18 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		}
 		pool = swappedPool
 	}
-
+	//Calculate final withdraw amount after swap
 	sendCoins := sdk.Coins{}
 	if !externalAssetCoin.IsZero() && !externalAssetCoin.IsNegative() {
 		sendCoins = sendCoins.Add(externalAssetCoin)
 	}
-	if externalAssetCoin.Amount.Int64() >= int64(poolOriginalEB) || nativeAssetCoin.Amount.Int64() >= int64(poolOriginalNB) {
-		return nil, errors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil after adjusting asymmetry")
-	}
+
 	if !nativeAssetCoin.IsZero() && !nativeAssetCoin.IsNegative() {
 		sendCoins = sendCoins.Add(nativeAssetCoin)
+	}
+	// Verify if Swap makes the pool too shallow in one of the assets
+	if externalAssetCoin.Amount.Int64() >= int64(poolOriginalEB) || nativeAssetCoin.Amount.Int64() >= int64(poolOriginalNB) {
+		return nil, errors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil after adjusting asymmetry")
 	}
 	// Setting pool after all calculations of withdraw and then swap
 	err = keeper.SetPool(ctx, pool)
