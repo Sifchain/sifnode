@@ -59,6 +59,14 @@ func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	return burnEth
 }
 
+func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver EthereumAddress,
+	coinsAmount int64, coinsSymbol string) MsgLock {
+	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
+	require.NoError(t, err)
+	lockEth := NewMsgLock(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol)
+	return lockEth
+}
+
 func CreateTestQueryEthProphecyResponse(
 	cdc *codec.Codec, t *testing.T, validatorAddress sdk.ValAddress, claimType ClaimType,
 ) QueryEthProphecyResponse {
