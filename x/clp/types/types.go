@@ -51,9 +51,9 @@ func NewPool(externalAsset Asset, nativeAssetBalance uint, externalAssetBalance 
 type Pools []Pool
 
 type LiquidityProvider struct {
-	Asset                    Asset  `json:"asset"`
-	LiquidityProviderUnits   uint   `json:"liquidity_provider_units"`
-	LiquidityProviderAddress string `json:"liquidity_provider_address"`
+	Asset                    Asset          `json:"asset"`
+	LiquidityProviderUnits   uint           `json:"liquidity_provider_units"`
+	LiquidityProviderAddress sdk.AccAddress `json:"liquidity_provider_address"`
 }
 
 func (l LiquidityProvider) String() string {
@@ -71,7 +71,7 @@ func (l LiquidityProvider) Validate() bool {
 }
 
 // NewLiquidityProvider returns a new LiquidityProvider
-func NewLiquidityProvider(asset Asset, liquidityProviderUnits uint, liquidityProviderAddress string) LiquidityProvider {
+func NewLiquidityProvider(asset Asset, liquidityProviderUnits uint, liquidityProviderAddress sdk.AccAddress) LiquidityProvider {
 	return LiquidityProvider{Asset: asset, LiquidityProviderUnits: liquidityProviderUnits, LiquidityProviderAddress: liquidityProviderAddress}
 }
 

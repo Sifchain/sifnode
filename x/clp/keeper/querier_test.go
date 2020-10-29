@@ -112,6 +112,7 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 	//Set Data
 	_, _, lp := SetData(keeper, ctx)
 	//Test Get Liquidity Provider
+
 	queryLp := types.QueryReqLiquidityProvider{
 		Ticker:    "", //lp.Asset.Ticker,
 		LpAddress: lp.LiquidityProviderAddress,

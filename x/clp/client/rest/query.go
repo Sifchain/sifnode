@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/clp/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -64,7 +65,12 @@ func getLiquidityProviderHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryLiquidityProvider)
 		var params types.QueryReqLiquidityProvider
 		params.Ticker = r.URL.Query().Get("ticker")
-		params.LpAddress = r.URL.Query().Get("lpAddress")
+		addressString := r.URL.Query().Get("lpAddress")
+		lpAddess, err := sdk.AccAddressFromBech32(addressString)
+		if err != nil {
+			return
+		}
+		params.LpAddress = lpAddess
 		bz, err := cliCtx.Codec.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

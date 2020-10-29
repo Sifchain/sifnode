@@ -59,7 +59,7 @@ func queryLiquidityProvider(ctx sdk.Context, req abci.RequestQuery, keeper Keepe
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	lp, err := keeper.GetLiquidityProvider(ctx, params.Ticker, params.LpAddress)
+	lp, err := keeper.GetLiquidityProvider(ctx, params.Ticker, params.LpAddress.String())
 	if err != nil {
 		return nil, err
 	}

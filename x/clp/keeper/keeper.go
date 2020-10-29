@@ -104,7 +104,7 @@ func (k Keeper) SetLiquidityProvider(ctx sdk.Context, lp types.LiquidityProvider
 		return
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetLiquidityProviderKey(lp.Asset.Ticker, lp.LiquidityProviderAddress)
+	key := types.GetLiquidityProviderKey(lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	store.Set(key, k.cdc.MustMarshalBinaryBare(lp))
 }
 

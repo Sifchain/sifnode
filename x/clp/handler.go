@@ -54,19 +54,15 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 		externalAssetBalance = externalAssetBalance - withdrawExternalAsset
 		withdrawNativeCoins := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAsset)))
 		withdrawExternalCoins := sdk.NewCoin(msg.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAsset)))
-		lpAddess, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
-		if err != nil {
-			return nil, errors.Wrap(types.ErrUnableToDestroyPool, err.Error())
-		}
-		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, lpAddess, sdk.Coins{withdrawNativeCoins})
+		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, lp.LiquidityProviderAddress, sdk.Coins{withdrawNativeCoins})
 		if err != nil {
 			return nil, errors.Wrap(types.ErrUnableToAddBalance, err.Error())
 		}
-		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, lpAddess, sdk.Coins{withdrawExternalCoins})
+		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, lp.LiquidityProviderAddress, sdk.Coins{withdrawExternalCoins})
 		if err != nil {
 			return nil, errors.Wrap(types.ErrUnableToAddBalance, err.Error())
 		}
-		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
+		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	}
 	// TODO : Do we check if nativeBalance and external balance is still left in the pool before we delete it ?
 	// Pool should be empty at this point
@@ -122,7 +118,7 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 		return nil, err
 	}
 	// Pool creator becomes the first LP
-	lp := NewLiquidityProvider(asset, lpunits, msg.Signer.String())
+	lp := NewLiquidityProvider(asset, lpunits, msg.Signer)
 	err = keeper.SetPool(ctx, pool)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
@@ -180,7 +176,7 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	// Create lp if needed
 	// Doesn't look like this can occur, as creating a pool creates this as well.  Not sure if this is a valid scenario
 	if createNewLP {
-		lp := NewLiquidityProvider(msg.ExternalAsset, lpUnits, msg.Signer.String())
+		lp := NewLiquidityProvider(msg.ExternalAsset, lpUnits, msg.Signer)
 		ctx.EventManager().EmitEvents(sdk.Events{
 			sdk.NewEvent(
 				types.EventTypeCreateLiquidityProvider,
@@ -303,7 +299,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	}
 
 	if lpUnitsLeft == 0 {
-		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress)
+		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	} else {
 		lp.LiquidityProviderUnits = lpUnitsLeft
 		keeper.SetLiquidityProvider(ctx, lp)

@@ -163,7 +163,8 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	for i := 0; i < numberOfLp; i++ {
 		externalToken := tokens[rand.Intn(len(tokens))]
 		asset := types.NewAsset("ROWAN", "c"+"ROWAN"+externalToken, externalToken)
-		lp := types.NewLiquidityProvider(asset, 1, "sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
+		lpAddess, _ := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
+		lp := types.NewLiquidityProvider(asset, 1, lpAddess)
 		lpList = append(lpList, lp)
 	}
 	return lpList

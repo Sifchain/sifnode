@@ -5,6 +5,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	"strings"
 
@@ -102,7 +103,11 @@ $ %s pool ETH sif1h2zjknvr3xlpk22q4dnv396ahftzqhyeth7egd`,
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			ticker := args[0]
-			lpAddress := args[1]
+			lpAddressString := args[1]
+			lpAddress, err := sdk.AccAddressFromBech32(lpAddressString)
+			if err != nil {
+				return err
+			}
 			params := types.NewQueryReqLiquidityProvider(ticker, lpAddress)
 			bz, err := cliCtx.Codec.MarshalJSON(params)
 			if err != nil {
