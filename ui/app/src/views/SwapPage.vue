@@ -135,7 +135,10 @@ export default defineComponent({
         />
       </template>
       <template v-slot:default="{ requestClose }">
-        <SelectTokenDialog @token-selected="requestClose" />
+        <SelectTokenDialog
+          :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
+          @token-selected="requestClose"
+        />
       </template>
     </Modal>
     <div>{{ priceMessage }}</div>

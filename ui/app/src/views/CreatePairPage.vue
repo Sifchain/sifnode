@@ -79,7 +79,7 @@ export default defineComponent({
           case PoolState.INSUFFICIENT_FUNDS:
             return "Insufficient Funds";
           case PoolState.VALID_INPUT:
-            return "Add Liquidity";
+            return "Create Pool";
         }
       }),
       nextStepAllowed: computed(() => {
@@ -97,7 +97,7 @@ export default defineComponent({
         if (typeof data !== "string") {
           return;
         }
-        
+
         if (selectedField.value === "from") {
           fromSymbol.value = data;
         }
@@ -109,7 +109,7 @@ export default defineComponent({
       },
       handleNextStepClicked() {
         alert(
-          `Create Liquidity ${fromFieldAmount.value?.toFormatted()} alongside ${toFieldAmount.value?.toFormatted()}!`
+          `Create Pool ${fromFieldAmount.value?.toFormatted()} alongside ${toFieldAmount.value?.toFormatted()}!`
         );
       },
       handleBlur() {
@@ -145,7 +145,10 @@ export default defineComponent({
           @to-symbol-clicked="handleToSymbolClicked(requestOpen)"
       /></template>
       <template v-slot:default="{ requestClose }">
-        <SelectTokenDialog @token-selected="requestClose" />
+        <SelectTokenDialog
+          :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
+          @token-selected="requestClose"
+        />
       </template>
     </Modal>
     <div>{{ aPerBRatioMessage }}</div>

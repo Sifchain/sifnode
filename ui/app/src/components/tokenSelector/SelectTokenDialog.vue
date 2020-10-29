@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, PropType } from "vue";
 import { ref } from "@vue/reactivity";
 import { useCore } from "../../hooks/useCore";
 import AssetItem from "./AssetItem.vue";
@@ -9,6 +9,7 @@ export default defineComponent({
   name: "SelectTokenDialog",
   components: { AssetItem },
   emits: ["token-selected"],
+  props: { selectedTokens: Array as PropType<string[]> },
   setup(props, context) {
     const { store } = useCore();
 
@@ -19,6 +20,7 @@ export default defineComponent({
       store,
       tokenLimit: 20,
       walletLimit: 10,
+      selectedTokens: props.selectedTokens || [],
     });
 
     function selectToken(symbol: string) {
@@ -36,14 +38,15 @@ export default defineComponent({
   <p>Token Name</p>
   <hr />
   <div class="token-list">
-    <div
+    <button
       class="token-button"
       v-for="token in filteredTokens"
+      :disabled="token.disabled"
       :key="token.symbol"
       @click="selectToken(token.symbol)"
     >
       <AssetItem :symbol="token.symbol" />
-    </div>
+    </button>
   </div>
 </template>
 
