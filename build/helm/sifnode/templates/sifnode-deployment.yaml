@@ -30,7 +30,11 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
+          {{- if .Values.sifnode.env.peerAddress }}
+          args: ["-c", "sifgen node create $CHAINNET $PEER_ADDRESS $GENESIS_URL; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
+          {{- else }}
           args: ["-c", "sifgen node create $CHAINNET; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
+          {{- end }}
           ports:
             - name: port-26656
               containerPort: 26656
@@ -46,6 +50,10 @@ spec:
               value: {{ .Values.sifnode.env.chainnet }}
             - name: SIF_ID
               value: {{ .Values.sifnode.env.sifId }}
+            - name: PEER_ADDRESS
+              value: {{ .Values.sifnode.env.peerAddress }}
+            - name: GENESIS_URL
+              value: {{ .Values.sifnode.env.genesisURL }}
           livenessProbe:
             tcpSocket:
               port: 26657
