@@ -5,12 +5,13 @@
       <slot
         v-if="!connected"
         name="disconnected"
-        :connectClicked="requestOpen"
+        :requestDialog="requestOpen"
       ></slot>
       <slot
         v-if="connected"
         name="connected"
         :connectedText="connectedText"
+        :requestDialog="requestOpen"
       ></slot>
     </template>
     <template v-slot:default="{ requestClose }">

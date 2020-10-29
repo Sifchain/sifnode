@@ -8,7 +8,16 @@
         <router-link to="/">Convert</router-link>
         <router-link to="/">Deposit</router-link>
       </div>
-      <WalletButton />
+      <WithWallet>
+        <template v-slot:disconnected="{ requestDialog }">
+          <button @click="requestDialog">Connect Wallet</button>
+        </template>
+        <template v-slot:connected="{ connectedText, requestDialog }">
+          <button @click="requestDialog">
+            {{ connectedText }}
+          </button>
+        </template>
+      </WithWallet>
     </div>
     <router-view />
   </div>
@@ -17,7 +26,7 @@
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
 import { useCore } from "./hooks/useCore";
-import WalletButton from "@/components/wallet/WalletButton.vue";
+import WithWallet from "@/components/wallet/WithWallet.vue";
 
 export default defineComponent({
   name: "App",
@@ -27,7 +36,7 @@ export default defineComponent({
       await actions.token.refreshTokens();
     });
   },
-  components: { WalletButton },
+  components: { WithWallet },
 });
 </script>
 

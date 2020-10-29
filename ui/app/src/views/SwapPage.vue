@@ -124,9 +124,9 @@ export default defineComponent({
     <div>{{ priceMessage }}</div>
     <div class="actions">
       <WithWallet>
-        <template v-slot:disconnected="{ connectClicked }">
+        <template v-slot:disconnected="{ requestDialog }">
           <div class="wallet-status">No wallet connected 🅧</div>
-          <button @click="connectClicked">Connect Wallet</button>
+          <button @click="requestDialog">Connect Wallet</button>
         </template>
         <template v-slot:connected="{ connectedText }"
           ><div>
