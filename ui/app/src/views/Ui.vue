@@ -1,15 +1,5 @@
 <template>
   <div>
-    <div class="mt-6">
-      <SifButton primary>Primary</SifButton>
-      <SifButton secondary>Secondary</SifButton>
-      <SifButton disabled>Disabled</SifButton>
-    </div>
-
-    <div class="mt-6 mb-6">
-      <SifButton primary block>Primary Block</SifButton>
-    </div>
-
     <!-- SifCard -->
       <SifApp>
         <template v-slot:header>
@@ -42,12 +32,12 @@
 </template>
 
 <script>
-import SifButton from '../components/Elements/SifButton.vue';
-import IconButton from '../components/Elements/IconButton.vue';
-import InputGroup from '../components/Elements/InputGroup.vue';
-import SifApp from '../components/Blocks/SifApp.vue';
-import CurrencyForm from '../components/Blocks/CurrencyForm.vue';
-import SwapPanel from '../components/Blocks/SwapPanel.vue';
+import SifButton from '../components/shared/SifButton.vue';
+import IconButton from '../components/shared/IconButton.vue';
+import InputGroup from '../components/shared/InputGroup.vue';
+import SifApp from '../components/shared/SifApp.vue';
+import CurrencyForm from '../components/shared/CurrencyForm.vue';
+import SwapPanel from '../components/shared/SwapPanel.vue';
 
 export default {
   components: {

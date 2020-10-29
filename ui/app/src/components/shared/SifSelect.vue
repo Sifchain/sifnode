@@ -27,8 +27,8 @@
 </template>
 
 <script>
-import SifInput from '../Elements/SifInput.vue';
-import SifButton from '../Elements/SifButton.vue';
+import SifInput from './SifInput.vue';
+import SifButton from './SifButton.vue';
 
 export default {
   components: {

@@ -11,9 +11,9 @@
 </template>
 
 <script>
-import SifButton from '../Elements/SifButton.vue';
-import SifInput from '../Elements/SifInput.vue';
-import SifSelect from '../Elements/SifSelect.vue';
+import SifButton from './SifButton.vue';
+import SifInput from './SifInput.vue';
+import SifSelect from './SifSelect.vue';
 
 export default {
   props: {

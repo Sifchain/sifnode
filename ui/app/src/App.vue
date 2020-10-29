@@ -21,8 +21,8 @@
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
 import { useCore } from "./hooks/useCore";
-import Header from './components/Layout/Header.vue';
-import Main from './components/Layout/Main.vue';
+import Header from './components/shared/Header.vue';
+import Main from './components/shared/Main.vue';
 
 export default defineComponent({
   name: "App",

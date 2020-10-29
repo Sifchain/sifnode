@@ -21,9 +21,9 @@
 
 <script>
 import Menu from './Menu.vue';
-import SifButton from '../Elements/SifButton.vue';
-import SifSwitch from '../Elements/SifSwitch.vue';
-import Dropdown from '../Elements/Dropdown.vue';
+import SifButton from './SifButton.vue';
+import SifSwitch from './SifSwitch.vue';
+import Dropdown from './Dropdown.vue';
 
 export default {
   components: {
