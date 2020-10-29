@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-echo "Minting Peggyeth using ethbridge"
+echo "Minting ceth ( minted from Peggy) using ethbridge"
 ## Case 1
 ## 1. send tx to cosmos after get the lock event in ethereum
 sifnodecli tx ethbridge create-claim 0x30753E4A8aad7F8597332E813735Def5dD395028 3 eth 0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 \
@@ -52,7 +52,7 @@ $(sifnodecli keys show user2 -a) $(sifnodecli keys show user1 -a --bech val) \
 sifnodecli q auth account $(sifnodecli keys show user2 -a)
 
 
-echo "Creating pools for peggyeth and cdash"
+echo "Creating pools for ceth ( minted from Peggy) and cdash"
 sleep 8
 yes Y | sifnodecli tx clp create-pool --from user2 --sourceChain ETHEREUM --symbol ETH --ticker ceth --nativeAmount 99 --externalAmount 99
 sleep 8
@@ -92,3 +92,5 @@ yes Y | sifnodecli tx clp remove-liquidity --from user2 --sourceChain ETHEREUM -
 echo "decommission pool"
 sleep 8
 yes Y | sifnodecli tx clp decommission-pool --from user2 --ticker ceth
+
+echo "sifnodecli query clp pools -> should list only 1 pool cdash"
