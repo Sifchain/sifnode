@@ -36,6 +36,9 @@ clean-config:
 clean: clean-config
 	@rm -rf ${GOBIN}/sif*
 
+coverage:
+	@go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+
 tests:
 	@go test -v -coverprofile .testCoverage.txt ./...
 
