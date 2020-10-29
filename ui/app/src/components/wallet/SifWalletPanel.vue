@@ -1,5 +1,6 @@
 <script lang="ts">
-import { computed, defineComponent, ref, Ref } from "vue";
+import { computed, defineComponent } from "vue";
+import { ref, Ref } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
 import BalanceTable from "./BalanceTable.vue";
 
