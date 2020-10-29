@@ -18,6 +18,12 @@
 1. `yarn` - Install dependencies
 1. `yarn build` - Build the blockchains to test against
 
+##### Use existing mnemonic for ethereum testnet
+- cd ./ui/chains/ethereum
+- cp .env.example .env
+- fill in memnonic
+- if its the same seed in metamask one gets all 10 accounts inside it for free
+
 #### Launching locally
 
 `yarn app:serve:all`
