@@ -28,4 +28,8 @@ func TestIsWebsocketURL(t *testing.T) {
 func TestSetupWebsocketEthClient(t *testing.T) {
 	_, err := SetupWebsocketEthClient(InvalidWebSocket)
 	require.Error(t, err, "invalid websocket eth client URL: "+InvalidWebSocket)
+	_, err = SetupWebsocketEthClient(ValidLocalWebSocket)
+	require.Error(t, err, "invalid websocket eth client URL: "+InvalidWebSocket)
+	_, err = SetupWebsocketEthClient(ValidTestnetWebSocket)
+	require.Error(t, err, "invalid websocket eth client URL: "+InvalidWebSocket)
 }
