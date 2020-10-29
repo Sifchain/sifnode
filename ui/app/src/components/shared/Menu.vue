@@ -1,16 +1,19 @@
 <template>
   <div class="menu">
-    <div class="item">
-      <a class="link active" href="#">Discover</a>
+    <div>
+      <router-link class="logo" to="/">S</router-link>
     </div>
     <div class="item">
-      <a class="link" href="#">New Wallet</a>
+      <router-link class="link" to="/">Discover</router-link>
     </div>
     <div class="item">
-      <a class="link" href="#">Convert</a>
+      <router-link class="link" to="/">New wallet</router-link>
     </div>
     <div class="item">
-      <a class="link" href="#">Deposit</a>
+      <router-link class="link" to="/">Convert</router-link>
+    </div>
+    <div class="item">
+      <router-link class="link" to="/">Deposit</router-link>
     </div>
   </div>
 </template>
@@ -27,6 +30,14 @@ export default {
 
   .item {
     margin-right: 35px;
+  }
+
+  .logo {
+    @include resetLink;
+    font-family: $f_special;
+    font-size: 40px;
+    font-weight: normal;
+    margin-right: 46px;
   }
 
   .link {

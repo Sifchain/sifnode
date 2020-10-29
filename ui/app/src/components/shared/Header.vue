@@ -1,20 +1,11 @@
 <template>
   <header class="header">
     <div class="left">
-      <div class="logo">S</div>
       <Menu />
       <SifSwitch label="Typeface Cursive" v-model="typefaceCursive" />
     </div>
     <div class="right">
-      <SifButton primary class="mr-4">Rowan</SifButton>
-      <Dropdown>
-        %
-        <template v-slot:dropdown>
-          <div>
-            Dropdown content!
-          </div>
-        </template>
-      </Dropdown>
+      <slot name="right"></slot>
     </div>
   </header>
 </template>
@@ -47,7 +38,7 @@ export default {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 80px;
+  height: $header_height;
   padding: 0 2rem;
   display: flex;
   justify-content: space-between;
@@ -55,15 +46,9 @@ export default {
   background: white;
   border-bottom: $divider;
 
-  .left {
+  .left,
+  .right {
     display: flex;
-  }
-
-  .logo {
-    font-family: $f_special;
-    font-size: 40px;
-    font-weight: normal;
-    margin-right: 46px;
   }
 }
 </style>

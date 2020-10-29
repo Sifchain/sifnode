@@ -1,24 +1,20 @@
 <template>
-  <div>
-    <div class="header-bar">
-      <div class="header-nav">
-        <router-link to="/">🏠</router-link>
-        <router-link to="/">Discover</router-link>
-        <router-link to="/">New wallet</router-link>
-        <router-link to="/">Convert</router-link>
-        <router-link to="/">Deposit</router-link>
-      </div>
-      <WithWallet>
-        <template v-slot:disconnected="{ requestDialog }">
-          <button @click="requestDialog">Connect Wallet</button>
-        </template>
-        <template v-slot:connected="{ connectedText, requestDialog }">
-          <button @click="requestDialog">
-            {{ connectedText }}
-          </button>
-        </template>
-      </WithWallet>
-    </div>
+  <div class="main">
+    <Header>
+      <template v-slot:right>
+        <WithWallet>
+          <template v-slot:disconnected="{ requestDialog }">
+            <SifButton primary @click="requestDialog">Connect Wallet</SifButton>
+          </template>
+          <template v-slot:connected="{ connectedText, requestDialog }">
+            <SifButton primary @click="requestDialog">
+              {{ connectedText }}
+            </SifButton>
+          </template>
+        </WithWallet>
+      </template>
+    </Header>
+    
     <router-view />
   </div>
 </template>
@@ -29,13 +25,15 @@ import { useCore } from "./hooks/useCore";
 import WithWallet from "@/components/wallet/WithWallet.vue";
 import Header from './components/shared/Header.vue';
 import Main from './components/shared/Main.vue';
+import SifButton from './components/shared/SifButton.vue';
 
 export default defineComponent({
   name: "App",
   components: {
     Header,
     Main,
-    WithWallet
+    WithWallet,
+    SifButton
   },
 
   setup() {
@@ -59,17 +57,9 @@ a {
   font-weight: bold;
 }
 
-.header-bar {
-  height: 4rem; /* TODO: dynamize */
-  padding: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  box-sizing: border-box;
-  border-bottom: 1px solid #ccc;
+.main {
+  min-height: 100vh;
 }
-.header-nav > * {
-  margin-right: 1rem;
-}
+
+
 </style>
