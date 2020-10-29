@@ -240,7 +240,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	pool.PoolUnits = pool.PoolUnits - lp.LiquidityProviderUnits + lpUnitsLeft
 	pool.NativeAssetBalance = pool.NativeAssetBalance - withdrawNativeAssetAmount
 	pool.ExternalAssetBalance = pool.ExternalAssetBalance - withdrawExternalAssetAmount
-	// Check if withdrawl makes pool too shallow , checking only for asymetric withdraw.
+	// Check if withdrawal makes pool too shallow , checking only for asymetric withdraw.
 	if (msg.Asymmetry != 0) && (pool.ExternalAssetBalance == 0 || pool.NativeAssetBalance == 0) {
 		return nil, errors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil before adjusting asymmetry")
 	}
