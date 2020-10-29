@@ -1,9 +1,9 @@
 <template>
-  <div class="icon-button__wrapper">
+  <div class="wrapper">
     <div class="icon-button" :class="classes">
 
     </div>
-    <div class="icon-button__label" v-if="label">
+    <div class="label" v-if="label">
       {{ label }}
     </div>
   </div>
@@ -23,24 +23,23 @@ export default {
       type: Boolean,
       default: false
     },
-    active: {
-      type: Boolean,
-      default: false
-    },
   },
 
   data() {
     return {
       classes: {
-        'icon-button--disabled': this.disabled,
-        'icon-button--active': this.active,
+        'disabled': this.disabled,
+        'active': this.active,
       }
     }
   }
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+.wrapper {
+  width: 55px;
+}
 .icon-button {
   position: relative;
   width: 55px;
@@ -72,11 +71,7 @@ export default {
     background: linear-gradient(to bottom, #707070 0%, #575757 90%);
   }
 
-  &__wrapper {
-    width: 55px;
-  }
-
-  &__label {
+  .label {
     color: $c_gray_400;
     transition: color $trans_fast;
   }
@@ -89,21 +84,21 @@ export default {
     }
   }
 
-  &--disabled {
+  &.disabled {
     pointer-events: none;
     border-color: transparent;
     opacity: 0.38;
 
-    & ~ .icon-button__label {
+    & ~ .label {
       color: rgba($c_gray_700, 0.38);
     }
   }
 
-  &--active {
+  &.active {
     border-color: $c_blue;
     pointer-events: none;
 
-    & ~ .icon-button__label {
+    & ~ .label {
       color: $c_white;
     }
 

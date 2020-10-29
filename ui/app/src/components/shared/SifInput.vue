@@ -1,6 +1,6 @@
 <template>
-  <div class="sif-input__wrapper">
-    <label class="sif-input__label">{{ label }}</label>
+  <div class="sif-input-wrapper">
+    <label class="label">{{ label }}</label>
     <input class="sif-input" type="text" :class="classes" :placeholder="placeholder">
   </div>
 </template>
@@ -24,22 +24,23 @@ export default {
   data() {
     return {
       classes: {
-        'sif-input--gold': this.gold,
+        'gold': this.gold,
       }
     }
   }
 }
 </script>
 
-<style lang="scss">
-.sif-input {
-  &__wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-  }
+<style lang="scss" scoped>
+.sif-input-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
 
+.sif-input {
   height: 30px;
   width: 100%;
   padding: 0 8px;
@@ -55,7 +56,7 @@ export default {
     outline: none;
   }
 
-  &--gold {
+  &.gold {
     border-color: $c_gold;
   }
 }

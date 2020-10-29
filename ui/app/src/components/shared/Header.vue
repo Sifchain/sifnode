@@ -1,11 +1,11 @@
 <template>
   <header class="header">
-    <div class="header__left">
-      <div class="header__logo">S</div>
+    <div class="left">
+      <div class="logo">S</div>
       <Menu />
       <SifSwitch label="Typeface Cursive" v-model="typefaceCursive" />
     </div>
-    <div class="header__right">
+    <div class="right">
       <SifButton primary class="mr-4">Rowan</SifButton>
       <Dropdown>
         %
@@ -41,7 +41,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .header {
   position: fixed;
   top: 0;
@@ -55,12 +55,11 @@ export default {
   background: white;
   border-bottom: $divider;
 
-  &__left {
+  .left {
     display: flex;
-
   }
 
-  &__logo {
+  .logo {
     font-family: $f_special;
     font-size: 40px;
     font-weight: normal;

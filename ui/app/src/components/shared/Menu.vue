@@ -1,16 +1,16 @@
 <template>
   <div class="menu">
-    <div class="menu__item">
-      <a class="menu__link menu__link--active" href="#">Discover</a>
+    <div class="item">
+      <a class="link active" href="#">Discover</a>
     </div>
-    <div class="menu__item">
-      <a class="menu__link" href="#">New Wallet</a>
+    <div class="item">
+      <a class="link" href="#">New Wallet</a>
     </div>
-    <div class="menu__item">
-      <a class="menu__link" href="#">Convert</a>
+    <div class="item">
+      <a class="link" href="#">Convert</a>
     </div>
-    <div class="menu__item">
-      <a class="menu__link" href="#">Deposit</a>
+    <div class="item">
+      <a class="link" href="#">Deposit</a>
     </div>
   </div>
 </template>
@@ -21,15 +21,15 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .menu {
   display: flex;
 
-  &__item {
+  .item {
     margin-right: 35px;
   }
 
-  &__link {
+  .link {
     @include resetLink;
     font-size: $fs_lg;
     font-weight: normal;
@@ -40,7 +40,7 @@ export default {
       opacity: 0.5;
     }
 
-    &--active {
+    &.active {
       font-weight: bold;
       pointer-events: none;
     }

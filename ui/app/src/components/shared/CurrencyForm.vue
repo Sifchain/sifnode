@@ -1,9 +1,9 @@
 <template>
    <div class="currency-form text--small">
-      <div class="currency-form__input">
+      <div class="input">
         <SifInput :label="label" />
       </div>
-      <div class="currency-form__balance">
+      <div class="balance">
         <span>Balance: 1200,7356</span>
         <SifSelect :tokens="tokens" @change="onChange" />
       </div>
@@ -60,21 +60,21 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .currency-form {
   display: flex;
 
-  &__input,
-  &__balance {
+  .input,
+  .balance {
     display: flex;
     flex-direction: column;
   }
 
-  &__balance {
+  .balance {
     align-items: flex-end;
   }
 
-  &__input {
+  .input {
     align-items: flex-start;
     flex-grow: 1;
     margin-right: 10px;

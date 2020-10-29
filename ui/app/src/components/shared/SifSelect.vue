@@ -1,20 +1,20 @@
 <template>
   <div class="sif-select">
-    <div class="sif-select__activator" @click="openMenu">
+    <div class="activator" @click="openMenu">
       <SifButton primary block v-if="!selected">Select</SifButton>
       <SifButton secondary block v-else>{{ selected.name }}</SifButton>
     </div>
-    <div class="sif-select__wrapper" v-if="isOpen" @click="closeMenu">
-      <div class="sif-select__content" @click.stop>
-        <div class="sif-select__close" @click="closeMenu">&times;</div>
-        <div class="sif-select__header">
-          <h3 class="sif-select__title">Select a token</h3>
+    <div class="wrapper" v-if="isOpen" @click="closeMenu">
+      <div class="content" @click.stop>
+        <div class="close" @click="closeMenu">&times;</div>
+        <div class="header">
+          <h3 class="title">Select a token</h3>
           <SifInput gold placeholder="Search name or paste address" />
-          <h4 class="sif-select__list-title">Token Name</h4>
+          <h4 class="list-title">Token Name</h4>
         </div>
-        <div class="sif-select__body">
+        <div class="body">
           <div 
-            class="sif-select__option" 
+            class="option" 
             v-for="(token, index) in tokens" 
             :key="index"
             @click="selectOption($event, token)">
@@ -64,9 +64,9 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .sif-select {
-  &__wrapper {
+  .wrapper {
     position: fixed;
     top: 0;
     left: 0;
@@ -78,11 +78,11 @@ export default {
     z-index: $zi_modal;
   }
 
-  &__activator {
+  .activator {
     width: 128px;
   }
 
-  &__content {
+  .content {
     position: relative;
     width: 410px;
     min-height: 60vh;
@@ -95,7 +95,7 @@ export default {
     box-shadow: $bs_default;
   }
 
-  &__close {
+  .close {
     position: absolute;
     top: 16px;
     right: 20px;
@@ -105,24 +105,25 @@ export default {
     cursor: pointer;
   }
 
-  &__header {
+  .header {
+    position: relative;
     padding: 16px;
   }
 
-  &__title {
+  .title {
     font-size: $fs_lg;
     color: $c_text;
     margin-bottom: 1em;
     text-align: left;
   }
 
-  &__list-title {
+  .list-title {
     color: $c_text;
     text-align: left;
     margin-top: 30px;
   }
 
-  &__body {
+  .body {
     padding-top: 14px;
     flex-grow: 1;
     overflow-y: scroll;
@@ -130,7 +131,7 @@ export default {
     border-right: $divider;
   }
 
-  &__option {
+  .option {
     margin-bottom: 22px;
     font-size: $fs_md;
     font-weight: bold;

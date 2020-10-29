@@ -1,24 +1,24 @@
 <template>
-  <div class="sif-app__wrapper">
-    <div class="sif-app__before">
+  <div class="wrapper">
+    <div class="before">
       <slot name="before"></slot>
     </div>
 
     <div class="sif-app">
-      <div class="sif-app__header">
+      <div class="header">
         <slot name="header"></slot>
       </div>
 
-      <div class="sif-app__body">
+      <div class="body">
         <slot></slot>
       </div>
 
-      <div class="sif-app__footer">
+      <div class="footer">
         <slot name="footer"></slot>
       </div>
     </div> <!-- main app card -->
 
-    <div class="sif-app__after">
+    <div class="after">
       <slot name="after"></slot>
     </div>
   </div> <!-- wrapper -->
@@ -30,19 +30,19 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .sif-app {
   width: 410px;
   border-radius: $br_lg;
   overflow: hidden;
 
-  &__header {
+  .header {
     padding: 20px 20px 10px 20px;
     background: $c_gray_900;
     color: $c_gray_400;
   }
 
-  &__body {
+  .body {
     padding: 15px;
     background: $g_gray;
     color: $c_gray_700;

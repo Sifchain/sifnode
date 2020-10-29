@@ -1,7 +1,7 @@
 <template>
   <div class="sif-switch" @click="toggle">
-    <div class="sif-switch__element" :class="{ 'sif-switch__element--checked': modelValue }"></div>
-    <label for="" class="sif-switch__label">{{ label }}</label>
+    <div class="element" :class="{ 'checked': modelValue }"></div>
+    <label for="" class="label">{{ label }}</label>
   </div>
 </template>
 
@@ -19,14 +19,14 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .sif-switch {
   display: flex;
   align-items: center;
   font-weight: normal;
   cursor: pointer;
 
-  &__element {
+  .element {
     position: relative;
     width: 50px;
     height: 22px;
@@ -49,7 +49,7 @@ export default {
       transition: left $trans_fast;
     }
 
-    &--checked {
+    &.checked {
       border-color: $c_gold;
       background: $c_gold;
 

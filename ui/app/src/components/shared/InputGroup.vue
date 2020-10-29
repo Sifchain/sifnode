@@ -10,7 +10,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .input-group {
   margin-bottom: 20px;
   padding: 4px 15px 15px 15px;

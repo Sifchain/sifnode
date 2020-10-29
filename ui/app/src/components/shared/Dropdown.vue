@@ -1,8 +1,8 @@
 <template>
-  <div class="dropdown__wrapper">
+  <div class="wrapper">
 	  <SifButton secondary @click="toggleDropdown"><slot></slot></SifButton>
     <div class="dropdown" v-show="toggle">
-      <div class="dropdown__inner">
+      <div class="inner">
         <slot name="dropdown"></slot>
       </div>
     </div>
@@ -45,13 +45,12 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+.wrapper {
+  display: inline-block;
+  position: relative;
+}
 .dropdown {
-	&__wrapper {
-		display: inline-block;
-		position: relative;
-	}
-
 	position: absolute;
 	top: 85px;
 	right: 0;
@@ -61,7 +60,7 @@ export default {
 	border-top-right-radius: 0;
 	box-shadow: $bs_dropdown;
 	
-	&__inner {
+	.inner {
 		border-radius: $br_md;
 		border-top-right-radius: 0;
 		border: $divider;

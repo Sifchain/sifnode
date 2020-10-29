@@ -37,11 +37,11 @@ export default {
   data() {
     return {
       classes: {
-        'btn--disabled': this.disabled, 
-        'btn--block': this.block,
-        'btn--medium': this.medium,
-        'btn--primary': this.primary,
-        'btn--secondary': this.secondary,
+        'disabled': this.disabled, 
+        'block': this.block,
+        'medium': this.medium,
+        'primary': this.primary,
+        'secondary': this.secondary,
         className: this.className,
       }
     }
@@ -49,7 +49,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .btn {
   @include resetButton;
   position: relative;
@@ -70,7 +70,7 @@ export default {
     margin-right: 0.5em;
   }
 
-  &--disabled {
+  &.disabled {
     cursor: default;
     pointer-events: none;
     background: $c_gray_400;
@@ -81,7 +81,7 @@ export default {
     }
   }
 
-  &--primary {
+  &.primary {
     color: white;
     background: $c_gold;
 
@@ -104,7 +104,7 @@ export default {
     }
   }
 
-  &--secondary {
+  &.secondary {
     background: $c_gray_100;
     color: $c_text;
     transition: background $trans_fast;
@@ -116,13 +116,13 @@ export default {
 
   // sizes: 
   // block spans the full width of parent
-  &--block {
+  &.block {
     display: block;
     width: 100%;
     margin: 0;
   }
 
-  &--medium {
+  &.medium {
     padding: 0 30px;
   }
 }
