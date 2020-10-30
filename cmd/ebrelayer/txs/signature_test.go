@@ -42,9 +42,16 @@ func TestSignClaim(t *testing.T) {
 	os.Setenv(EthereumPrivateKey, TestPrivHex)
 	rawKey := os.Getenv(EthereumPrivateKey)
 
+	// Call load functions
+	key, err := LoadPrivateKey()
+	//require.Equal(t, rawKey, key)
+	require.NoError(t, err)
+	address, err := LoadSender()
+
 	// Load signer's private key and address
-	key, _ := crypto.HexToECDSA(rawKey)
+	key, _ = crypto.HexToECDSA(rawKey)
 	signerAddr := common.HexToAddress(TestAddrHex)
+	require.Equal(t, address, signerAddr)
 
 	// Create new test ProphecyClaimEvent
 	prophecyClaimEvent := CreateTestProphecyClaimEvent(t)

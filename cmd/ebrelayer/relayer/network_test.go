@@ -10,7 +10,7 @@ const (
 	ValidTestnetWebSocket = "wss://ropsten.infura.io/ws"
 	ValidLocalWebSocket   = "ws://127.0.0.1:7545/"
 	InvalidWebSocket      = "http://localhost:7545"
-	InvalidSocketUrl	  = "bogus://bogus"
+	InvalidSocketURL	  = "bogus://bogus"
 )
 
 // TestIsWebsocketURL test identification of Ethereum websocket URLs
@@ -24,7 +24,7 @@ func TestIsWebsocketURL(t *testing.T) {
 	invalidRes := IsWebsocketURL(InvalidWebSocket)
 	require.False(t, invalidRes)
 
-	invalidRes = IsWebsocketURL(InvalidSocketUrl)
+	invalidRes = IsWebsocketURL(InvalidSocketURL)
 	require.False(t, invalidRes)
 }
 
