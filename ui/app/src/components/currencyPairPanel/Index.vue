@@ -8,7 +8,7 @@
       @focus="handleFromFocused"
       @blur="handleFromBlur"
       :amount="fromAmount"
-      @select-symbol="$emit('from-symbol-clicked')"
+      @selectsymbol="$emit('fromsymbolclicked')"
       @update:amount="handleFromUpdateAmount"
       :symbol="fromSymbol"
       @update:symbol="handleFromUpdateSymbol"
@@ -20,7 +20,7 @@
       @focus="handleToFocused"
       @blur="handleToBlur"
       :amount="toAmount"
-      @select-symbol="$emit('to-symbol-clicked')"
+      @selectsymbol="$emit('tosymbolclicked')"
       @update:amount="handleToUpdateAmount"
       :symbol="toSymbol"
       @update:symbol="handleToUpdateSymbol"
@@ -46,14 +46,14 @@ export default defineComponent({
     connectedText: String,
   },
   emits: [
-    "from-focus",
-    "from-blur",
-    "to-focus",
-    "to-blur",
-    "to-symbol-clicked",
-    "from-symbol-clicked",
-    "swap-clicked",
-    "connect-clicked",
+    "fromfocus",
+    "fromblur",
+    "tofocus",
+    "toblur",
+    "tosymbolclicked",
+    "fromsymbolclicked",
+    "swapclicked",
+    "connectclicked",
     "update:toAmount",
     "update:toSymbol",
     "update:fromAmount",
@@ -75,16 +75,16 @@ export default defineComponent({
       context.emit("update:toSymbol", symbol);
     }
     function handleFromFocused() {
-      context.emit("from-focus");
+      context.emit("fromfocus");
     }
     function handleFromBlur() {
-      context.emit("from-blur");
+      context.emit("fromblur");
     }
     function handleToFocused() {
-      context.emit("to-focus");
+      context.emit("tofocus");
     }
     function handleToBlur() {
-      context.emit("to-blur");
+      context.emit("toblur");
     }
     return {
       handleFromUpdateAmount,
