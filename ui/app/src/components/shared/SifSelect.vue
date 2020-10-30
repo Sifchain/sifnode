@@ -13,11 +13,12 @@
           <h4 class="list-title">Token Name</h4>
         </div>
         <div class="body">
-          <div 
-            class="option" 
-            v-for="(token, index) in tokens" 
+          <div
+            class="option"
+            v-for="(token, index) in tokens"
             :key="index"
-            @click="selectOption($event, token)">
+            @click="selectOption($event, token)"
+          >
             <span>{{ token.name }}</span>
           </div>
         </div>
@@ -27,8 +28,8 @@
 </template>
 
 <script>
-import SifInput from './SifInput.vue';
-import SifButton from './SifButton.vue';
+import SifInput from "./SifInput.vue";
+import SifButton from "./SifButton.vue";
 
 export default {
   components: {
@@ -39,12 +40,12 @@ export default {
   props: {
     tokens: Array,
   },
-  
+
   data() {
     return {
       isOpen: false,
       selected: null,
-    }
+    };
   },
 
   methods: {
@@ -56,12 +57,11 @@ export default {
     },
     selectOption(event, token) {
       this.selected = token;
-      this.$emit('change', event, token);
+      this.$emit("change", event, token);
       this.closeMenu();
     },
-  }
-  
-}
+  },
+};
 </script>
 
 <style lang="scss" scoped>

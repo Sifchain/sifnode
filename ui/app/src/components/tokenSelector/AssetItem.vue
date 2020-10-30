@@ -33,8 +33,9 @@ export default defineComponent({
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .row {
+  font-family: $f_default;
   display: flex;
   align-items: center;
   cursor: pointer;

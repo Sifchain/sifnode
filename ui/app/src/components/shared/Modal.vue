@@ -3,7 +3,7 @@
     <div class="activator">
       <slot name="activator" :requestOpen="requestOpen"></slot>
     </div>
-    <teleport to="body">
+    <teleport to="#portal-target">
       <div class="backdrop" v-if="isOpen" @click="requestClose">
         <Panel :class="{ open: isOpen }" @click.stop>
           <div class="close" @click="requestClose">&times;</div>
@@ -38,17 +38,18 @@ export default defineComponent({
   emits: ["close"],
 });
 </script>
-<style scoped>
+<style lang="scss" scoped>
 .activator {
   cursor: pointer;
 }
 .close {
-  cursor: pointer;
-  background: none;
-  border: none;
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 16px;
+  right: 20px;
+  font-size: 32px;
+  font-weight: normal;
+  color: $c_text;
+  cursor: pointer;
 }
 .backdrop {
   background: rgba(0, 0, 0, 0.1);
