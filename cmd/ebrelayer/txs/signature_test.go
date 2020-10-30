@@ -43,13 +43,14 @@ func TestSignClaim(t *testing.T) {
 	rawKey := os.Getenv(EthereumPrivateKey)
 
 	// Call load functions
-	key, err := LoadPrivateKey()
+	_, err := LoadPrivateKey()
 	//require.Equal(t, rawKey, key)
 	require.NoError(t, err)
 	address, err := LoadSender()
+	require.NoError(t, err)
 
 	// Load signer's private key and address
-	key, _ = crypto.HexToECDSA(rawKey)
+	key, _ := crypto.HexToECDSA(rawKey)
 	signerAddr := common.HexToAddress(TestAddrHex)
 	require.Equal(t, address, signerAddr)
 
