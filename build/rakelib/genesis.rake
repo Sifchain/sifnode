@@ -15,6 +15,8 @@ namespace :genesis do
 
     desc "Boot the new scaffolded network in docker-compose"
     task :boot, [:chainnet] do |t, args|
+      trap('SIGINT') { puts "Exiting..."; exit }
+
       if args[:chainnet] == nil
         puts "Please provide chainnet argument. ie testnet, mainnet"
         exit(1)

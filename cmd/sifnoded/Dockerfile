@@ -22,8 +22,9 @@ RUN make install
 #
 # Main
 #
-ENV PACKAGES curl jq bind-tools
 FROM alpine
+
+ENV PACKAGES curl jq bind-tools
 
 EXPOSE 1317
 EXPOSE 26656
@@ -35,5 +36,7 @@ RUN apk add --update --no-cache $PACKAGES
 COPY --from=build /go/bin/sifnoded /usr/bin/sifnoded
 COPY --from=build /go/bin/sifnodecli /usr/bin/sifnodecli
 COPY --from=build /go/bin/sifgen /usr/bin/sifgen
+COPY --from=build /go/bin/sifcrg /usr/bin/sifcrg
+COPY --from=build /go/bin/ebrelayer /usr/bin/ebrelayer
 
 CMD ["sifnoded", "start", "--rpc.laddr", "tcp://0.0.0.0:26657"]

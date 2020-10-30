@@ -7,8 +7,14 @@ services:
       - 1317:1317
       - 26656:26656
       - 26657:26657
+    environment:
+      CHAINET: ${CHAINNET}
+      MONIKER: ${MONIKER1}
+      PEGGY_CONTRACT_ADDRESS: ${PEGGY_CONTRACT_ADDRESS}
     volumes:
       - ./networks/validators/${CHAINNET}/${MONIKER1}:/root:Z
+      - ./scripts:/scripts
+    entrypoint: /scripts/entrypoint.sh
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS1}
@@ -19,8 +25,14 @@ services:
       - 1502:1317
       - 28002:26656
       - 28003:26657
+    environment:
+      CHAINET: ${CHAINNET}
+      MONIKER: ${MONIKER2}
+      PEGGY_CONTRACT_ADDRESS: ${PEGGY_CONTRACT_ADDRESS}
     volumes:
       - ./networks/validators/${CHAINNET}/${MONIKER2}:/root:Z
+      - ./scripts:/scripts
+    entrypoint: /scripts/entrypoint.sh
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS2}
@@ -31,8 +43,14 @@ services:
       - 1503:1317
       - 28004:26656
       - 28005:26657
+    environment:
+      CHAINET: ${CHAINNET}
+      MONIKER: ${MONIKER3}
+      PEGGY_CONTRACT_ADDRESS: ${PEGGY_CONTRACT_ADDRESS}
     volumes:
       - ./networks/validators/${CHAINNET}/${MONIKER3}:/root:Z
+      - ./scripts:/scripts
+    entrypoint: /scripts/entrypoint.sh
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS3}
@@ -43,8 +61,14 @@ services:
       - 1504:1317
       - 28006:26656
       - 28007:26657
+    environment:
+      CHAINET: ${CHAINNET}
+      MONIKER: ${MONIKER4}
+      PEGGY_CONTRACT_ADDRESS: ${PEGGY_CONTRACT_ADDRESS}
     volumes:
       - ./networks/validators/${CHAINNET}/${MONIKER4}:/root:Z
+      - ./scripts:/scripts
+    entrypoint: /scripts/entrypoint.sh
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS4}
