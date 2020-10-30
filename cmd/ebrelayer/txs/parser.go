@@ -19,7 +19,7 @@ import (
 
 const (
 	nullAddress   = "0x0000000000000000000000000000000000000000"
-	defaultPrefix = "peggy"
+	defaultPrefix = "c"
 )
 
 // EthereumEventToEthBridgeClaim parses and packages an Ethereum event struct with a validator address in an EthBridgeClaim msg
