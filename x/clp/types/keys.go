@@ -30,8 +30,8 @@ var (
 	LiquidityProviderPrefix = []byte{0x01} // key for storing Liquidity Providers
 )
 
-func GetPoolKey(ticker string, native string) ([]byte, error) {
-	addr, err := GetPoolAddress(ticker, native)
+func GetPoolKey(externalTicker string, nativeTicker string) ([]byte, error) {
+	addr, err := GetPoolAddress(externalTicker, nativeTicker)
 	if err != nil {
 		return nil, err
 	}
@@ -39,16 +39,18 @@ func GetPoolKey(ticker string, native string) ([]byte, error) {
 	return append(PoolPrefix, key...), nil
 }
 
-func GetPoolAddress(ticker string, native string) (string, error) {
-	addr, err := GetAddress(ticker, native)
+//Generate a new pool address from a string
+//The external asset ticker and the native asset ticket ,in combination is used to generate an unique address
+func GetPoolAddress(externalTicker string, nativeTicker string) (string, error) {
+	addr, err := GetAddress(externalTicker, nativeTicker)
 	if err != nil {
 		return "", err
 	}
 	return addr.String(), nil
 }
 
-func GetAddress(ticker, native string) (sdk.AccAddress, error) {
-	addressBytes := []byte(fmt.Sprintf("%s_%s", ticker, native))
+func GetAddress(externalTicker, nativeTicker string) (sdk.AccAddress, error) {
+	addressBytes := []byte(fmt.Sprintf("%s_%s", externalTicker, nativeTicker))
 	paddedbytes, err := pkcs7Pad(addressBytes, 20)
 	if err != nil {
 		return nil, err
@@ -57,11 +59,15 @@ func GetAddress(ticker, native string) (sdk.AccAddress, error) {
 	return sdk.AccAddressFromHex(hx)
 }
 
-func GetLiquidityProviderKey(ticker string, lp string) []byte {
-	key := []byte(fmt.Sprintf("%s_%s", ticker, lp))
+// Generate key to store a Liquidity Provider
+// The key is of the format ticker_lpaddress
+// Example : eth_sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v
+func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
+	key := []byte(fmt.Sprintf("%s_%s", externalTicker, lp))
 	return append(LiquidityProviderPrefix, key...)
 }
 
+// Padding extra bytes to meet the size requirments of the cosmos address variable
 func pkcs7Pad(b []byte, blocksize int) ([]byte, error) {
 	if blocksize <= 0 {
 		return nil, ErrInvalidBlockSize
