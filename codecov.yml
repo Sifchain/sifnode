@@ -47,6 +47,8 @@ ignore:
   - "*.md"
   - "*.rst"
   - "**/test_common.go"
+  - "**/module.go"
+  - "**/genesis.go"
   - "scripts/"
   - "contrib"
   - "cmd/ebrelayer/relayer/cosmos.go"
