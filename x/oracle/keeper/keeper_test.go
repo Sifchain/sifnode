@@ -1,9 +1,9 @@
 package keeper
 
 import (
+	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
-	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
@@ -29,10 +29,10 @@ func TestCreateGetProphecy(t *testing.T) {
 	status, err = keeper.ProcessClaim(ctx, oracleClaim)
 	require.Error(t, err)
 
-    //Test bad Creation with invalid validator
-    oracleClaim = types.NewClaim(TestID, BadValidatorAddress, TestString)
-    status, err = keeper.ProcessClaim(ctx, oracleClaim)
-    require.Error(t, err)
+	//Test bad Creation with invalid validator
+	oracleClaim = types.NewClaim(TestID, BadValidatorAddress, TestString)
+	status, err = keeper.ProcessClaim(ctx, oracleClaim)
+	require.Error(t, err)
 
 	//Test retrieval
 	prophecy, found := keeper.GetProphecy(ctx, TestID)
@@ -57,7 +57,7 @@ func TestBadMsgs(t *testing.T) {
 	ctx, keeper, _, _, _, validatorAddresses := CreateTestKeepers(t, 0.6, []int64{3, 3}, "")
 
 	validator1Pow3 := validatorAddresses[0]
-    validator2Pow3 := validatorAddresses[1]
+	validator2Pow3 := validatorAddresses[1]
 
 	//Test empty claim
 	oracleClaim := types.NewClaim(TestID, validator1Pow3, "")
@@ -84,23 +84,23 @@ func TestBadMsgs(t *testing.T) {
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
 
-    // Duplicating message for different validator sends state to success
-    oracleClaim = types.NewClaim(TestID, validator2Pow3, TestString)
-    status, err = keeper.ProcessClaim(ctx, oracleClaim)
-    require.NoError(t, err)
-    require.Equal(t, status.Text, types.SuccessStatusText)
+	// Duplicating message for different validator sends state to success
+	oracleClaim = types.NewClaim(TestID, validator2Pow3, TestString)
+	status, err = keeper.ProcessClaim(ctx, oracleClaim)
+	require.NoError(t, err)
+	require.Equal(t, status.Text, types.SuccessStatusText)
 
-    // Duplicating the duplicate message for different validator errors
-    oracleClaim = types.NewClaim(TestID, validator2Pow3, TestString)
-    status, err = keeper.ProcessClaim(ctx, oracleClaim)
-    require.Error(t, err)
-    require.True(t, strings.Contains(err.Error(), "prophecy already finalized"))
+	// Duplicating the duplicate message for different validator errors
+	oracleClaim = types.NewClaim(TestID, validator2Pow3, TestString)
+	status, err = keeper.ProcessClaim(ctx, oracleClaim)
+	require.Error(t, err)
+	require.True(t, strings.Contains(err.Error(), "prophecy already finalized"))
 
-    //Test second but non duplicate message
-    oracleClaim = types.NewClaim(TestID, validator2Pow3, AlternateTestString)
-    status, err = keeper.ProcessClaim(ctx, oracleClaim)
-    require.Error(t, err)
-    require.True(t, strings.Contains(err.Error(), "prophecy already finalized"))
+	//Test second but non duplicate message
+	oracleClaim = types.NewClaim(TestID, validator2Pow3, AlternateTestString)
+	status, err = keeper.ProcessClaim(ctx, oracleClaim)
+	require.Error(t, err)
+	require.True(t, strings.Contains(err.Error(), "prophecy already finalized"))
 }
 
 func TestSuccessfulProphecy(t *testing.T) {
