@@ -62,3 +62,8 @@ variable "policy_name" {
   type        = string
   default     = "Amazon_EBS_CSI_Driver"
 }
+
+variable "ebs_csi_driver" {
+  description = "GitHub path to the CSI plugin for data persistence"
+  default     = "github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/?ref=master"
+}

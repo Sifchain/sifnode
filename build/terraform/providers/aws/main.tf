@@ -1,3 +1,13 @@
+terraform {
+  required_providers {
+    kustomization = {
+      source  = "kbst/kustomization"
+      version = "~> 0.2.2"
+    }
+  }
+  required_version = ">= 0.12"
+}
+
 provider "aws" {
   region = var.region
 }
@@ -110,4 +120,17 @@ resource "aws_iam_policy_attachment" "attach" {
     data.aws_iam_role.cluster.id
   ]
   policy_arn = aws_iam_policy.policy.arn
+}
+
+provider "kustomization" {
+  kubeconfig_raw = module.eks.kubeconfig
+}
+
+data "kustomization" "manifests" {
+  path = var.ebs_csi_driver
+}
+
+resource "kustomization_resource" "resources" {
+  for_each = data.kustomization.manifests.ids
+  manifest = data.kustomization.manifests.manifests[each.value]
 }
