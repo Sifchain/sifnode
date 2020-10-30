@@ -11,6 +11,7 @@ import (
 
 	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
+	"github.com/Sifchain/sifnode/tools/sifgen/genesis"
 	"github.com/Sifchain/sifnode/tools/sifgen/node/types"
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 
@@ -22,15 +23,15 @@ import (
 
 type Node struct {
 	ChainID     string    `yaml:"chain_id"`
-	PeerAddress string    `yaml:"-"`
-	GenesisURL  string    `yaml:"-"`
+	PeerAddress *string   `yaml:"-"`
+	GenesisURL  *string   `yaml:"-"`
 	Moniker     string    `yaml:"moniker"`
 	Address     string    `yaml:"address"`
 	Password    string    `yaml:"password"`
 	CLI         utils.CLI `yaml:"-"`
 }
 
-func NewNode(chainID, peerAddress, genesisURL string) *Node {
+func NewNode(chainID string, peerAddress, genesisURL *string) *Node {
 	password, _ := password.Generate(32, 5, 0, false, false)
 
 	return &Node{
@@ -95,6 +96,14 @@ func (n *Node) setup() error {
 }
 
 func (n *Node) genesis() error {
+	if n.GenesisURL != nil {
+		return n.networkGenesis()
+	}
+
+	return n.seedGenesis()
+}
+
+func (n *Node) networkGenesis() error {
 	genesis, err := n.downloadGenesis()
 	if err != nil {
 		return err
@@ -104,8 +113,53 @@ func (n *Node) genesis() error {
 		return err
 	}
 
-	err = n.replacePeerConfig([]string{n.PeerAddress})
+	err = n.replacePeerConfig([]string{*n.PeerAddress})
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n *Node) seedGenesis() error {
+	_, err := n.CLI.AddGenesisAccount(n.Address, app.DefaultNodeHome, []string{common.ToBond})
+	if err != nil {
+		return err
+	}
+
+	gentxDir, err := ioutil.TempDir("", "gentx")
+	if err != nil {
+		return err
+	}
+
+	outputFile := fmt.Sprintf("%s/%s", gentxDir, "gentx.json")
+	nodeID, _ := n.CLI.NodeID(app.DefaultNodeHome)
+
+	pubKey, err := n.CLI.ValidatorAddress(app.DefaultNodeHome)
+	if err != nil {
+		return err
+	}
+
+	_, err = n.CLI.GenerateGenesisTxn(
+		n.Moniker,
+		n.Password,
+		common.ToBond,
+		app.DefaultNodeHome,
+		app.DefaultCLIHome,
+		outputFile,
+		strings.TrimSuffix(*nodeID, "\n"),
+		strings.TrimSuffix(*pubKey, "\n"),
+		"127.0.0.1")
+	if err != nil {
+		return err
+	}
+
+	_, err = n.CLI.CollectGenesisTxns(gentxDir, app.DefaultNodeHome)
+	if err != nil {
+		return err
+	}
+
+	if err = genesis.ReplaceStakingBondDenom(app.DefaultNodeHome); err != nil {
 		return err
 	}
 
@@ -138,7 +192,7 @@ func (n *Node) generateNodeKeyAddress() error {
 func (n *Node) downloadGenesis() (types.Genesis, error) {
 	var genesis types.Genesis
 
-	response, err := http.Get(fmt.Sprintf("%s", n.GenesisURL))
+	response, err := http.Get(fmt.Sprintf("%v", *n.GenesisURL))
 	if err != nil {
 		return genesis, err
 	}

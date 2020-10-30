@@ -1,9 +1,14 @@
 // Manage state file with terraform cloud
 // terraform {
-//        backend "remote" {
+//    backend "remote" {
 //        hostname = "app.terraform.io"
+//        organization = ""
+//
+//        workspaces {
+//            name = ""
+//        }
 //    }
-//}
+// }
 
 // Manage state files with s3
 // terraform {
@@ -16,8 +21,8 @@
 
 // Sifchain terraform module
 module sifchain {
-    source                  = "../../build/terraform/providers/aws"
-    region                  = "us-west-1"
+    source                  = "github.com/sifchain/sifnode/build/terraform/providers/aws"
+    region                  = "us-west-2"
     cluster_name            = "sifchain-aws-{{.chainnet}}"
     tags = {
         Terraform           = true

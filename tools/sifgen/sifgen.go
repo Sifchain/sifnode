@@ -33,7 +33,7 @@ func (s Sifgen) NetworkCreate(count int, outputDir, startingIPAddress string, ou
 	}
 }
 
-func (s Sifgen) NodeCreate(peerAddress, genesisURL string) {
+func (s Sifgen) NodeCreate(peerAddress, genesisURL *string) {
 	witness := node.NewNode(s.chainID, peerAddress, genesisURL)
 	summary, err := witness.Build()
 	if err != nil {
