@@ -8,17 +8,16 @@
   </div>
 </template>
 <script>
-import PanelNavItem from './PanelNavItem.vue';
+import PanelNavItem from "./PanelNavItem.vue";
 export default {
   components: {
-    PanelNavItem
-  }
-}
+    PanelNavItem,
+  },
+};
 </script>
 <style lang="scss" scoped>
 .panel-nav {
   display: flex;
   justify-content: space-between;
-  background: $c_gray_900;
 }
 </style>

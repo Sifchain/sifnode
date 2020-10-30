@@ -14,7 +14,7 @@
         </WithWallet>
       </template>
     </Header>
-    
+
     <router-view />
   </div>
 </template>
@@ -23,9 +23,9 @@
 import { defineComponent, onMounted } from "vue";
 import { useCore } from "./hooks/useCore";
 import WithWallet from "@/components/wallet/WithWallet.vue";
-import Header from './components/shared/Header.vue';
-import Main from './components/shared/Main.vue';
-import SifButton from './components/shared/SifButton.vue';
+import Header from "./components/shared/Header.vue";
+import Main from "./components/shared/Main.vue";
+import SifButton from "./components/shared/SifButton.vue";
 
 export default defineComponent({
   name: "App",
@@ -33,7 +33,7 @@ export default defineComponent({
     Header,
     Main,
     WithWallet,
-    SifButton
+    SifButton,
   },
 
   setup() {
@@ -46,7 +46,8 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-#app {
+#app,
+#portal-target {
   font: italic normal bold 14px/22px $f_default;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -60,6 +61,4 @@ a {
 .main {
   min-height: 100vh;
 }
-
-
 </style>

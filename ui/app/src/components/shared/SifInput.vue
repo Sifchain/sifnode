@@ -1,7 +1,12 @@
 <template>
   <div class="sif-input-wrapper">
     <label class="label">{{ label }}</label>
-    <input class="sif-input" type="text" :class="classes" :placeholder="placeholder">
+    <input
+      class="sif-input-control"
+      type="text"
+      :class="classes"
+      :placeholder="placeholder"
+    />
   </div>
 </template>
 
@@ -9,7 +14,7 @@
 export default {
   props: {
     label: {
-      type: String
+      type: String,
     },
     gold: {
       type: Boolean,
@@ -17,18 +22,18 @@ export default {
     },
     placeholder: {
       type: String,
-      default: '',
-    }
+      default: "",
+    },
   },
 
   data() {
     return {
       classes: {
-        'gold': this.gold,
-      }
-    }
-  }
-}
+        gold: this.gold,
+      },
+    };
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -40,10 +45,11 @@ export default {
   width: 100%;
 }
 
-.sif-input {
+.sif-input-control {
   height: 30px;
   width: 100%;
   padding: 0 8px;
+  box-sizing: border-box;
   border-radius: $br_sm;
   border: 1px solid $c_white;
 

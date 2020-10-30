@@ -1,6 +1,6 @@
 <template>
   <div class="layout">
-    <Panel class="swap-panel">
+    <Panel dark class="swap-panel">
       <template v-slot:header>
         <PanelNav />
       </template>
@@ -38,7 +38,7 @@ export default defineComponent({
   border-radius: 1rem;
 }
 .layout {
-  background: url('../../assets/World_Background_opt.jpg');
+  background: url("../../assets/World_Background_opt.jpg");
   background-size: cover;
   background-position: bottom center;
   box-sizing: border-box;
