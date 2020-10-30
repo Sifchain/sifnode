@@ -22,7 +22,7 @@ export default defineComponent({
     available: String,
   },
   inheritAttrs: false,
-  emits: ["select-symbol", "update:amount", "update:symbol"],
+  emits: ["selectsymbol", "update:amount", "update:symbol"],
   components: { BalanceField, AssetItem, Modal },
   setup(props, context) {
     const localAmount = computed({
@@ -56,16 +56,12 @@ export default defineComponent({
       @click="$event.target.select()"
     />
 
-    <Modal>
-      <template v-slot:activator>
-        <button @click="$emit('select-symbol')" class="button right-col">
-          <span class="select-button" v-if="localSymbol !== null">
-            <AssetItem :symbol="localSymbol" /><span>▾</span></span
-          >
-          <span v-else>Select</span>
-        </button>
-      </template>
-    </Modal>
+    <button @click="$emit('selectsymbol')" class="button right-col">
+      <span class="select-button" v-if="localSymbol !== null">
+        <AssetItem :symbol="localSymbol" /><span>▾</span></span
+      >
+      <span v-else>Select</span>
+    </button>
   </div>
 </template>
 

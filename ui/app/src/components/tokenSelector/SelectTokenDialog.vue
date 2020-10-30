@@ -8,7 +8,7 @@ import { useTokenListing } from "./useSelectToken";
 export default defineComponent({
   name: "SelectTokenDialog",
   components: { AssetItem },
-  emits: ["token-selected"],
+  emits: ["tokenselected"],
   props: { selectedTokens: Array as PropType<string[]> },
   setup(props, context) {
     const { store } = useCore();
@@ -24,7 +24,7 @@ export default defineComponent({
     });
 
     function selectToken(symbol: string) {
-      context.emit("token-selected", symbol);
+      context.emit("tokenselected", symbol);
     }
 
     return { filteredTokens, searchText, selectToken };

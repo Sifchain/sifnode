@@ -135,19 +135,19 @@ export default defineComponent({
         <CurrencyPairPanel
           v-model:fromAmount="fromAmount"
           v-model:fromSymbol="fromSymbol"
-          @from-focus="handleFromFocused"
-          @from-blur="handleBlur"
-          @from-symbol-clicked="handleFromSymbolClicked(requestOpen)"
+          @fromfocus="handleFromFocused"
+          @fromblur="handleBlur"
+          @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
           v-model:toAmount="toAmount"
           v-model:toSymbol="toSymbol"
-          @to-focus="handleToFocused"
-          @to-blur="handleBlur"
-          @to-symbol-clicked="handleToSymbolClicked(requestOpen)"
+          @tofocus="handleToFocused"
+          @toblur="handleBlur"
+          @tosymbolclicked="handleToSymbolClicked(requestOpen)"
       /></template>
       <template v-slot:default="{ requestClose }">
         <SelectTokenDialog
           :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
-          @token-selected="requestClose"
+          @tokenselected="requestClose"
         />
       </template>
     </Modal>
