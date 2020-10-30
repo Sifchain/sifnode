@@ -37,8 +37,8 @@ require (
 	github.com/sethvargo/go-password v0.2.0
 	github.com/spf13/afero v1.4.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
-	github.com/spf13/cobra v1.1.0
 	github.com/spf13/pflag v1.0.5
+	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	github.com/status-im/keycard-go v0.0.0-20200402102358-957c09536969 // indirect
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570 // indirect
