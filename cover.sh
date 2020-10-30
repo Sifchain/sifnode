@@ -5,3 +5,5 @@ for filename in ${excludelist}; do
   echo "Excluding ${filename} from coverage report..."
   sed -i.bak "/$(echo $filename | sed 's/\//\\\//g')/d" coverage.txt
 done
+rm coverage.txt.bak
+

@@ -54,3 +54,4 @@ ignore:
   - "cmd/ebrelayer/txs/relayToCosmos.go"
   - "cmd/ebrelayer/txs/relayToEthereum.go"
   - "cmd/ebrelayer/txs/registry.go"
+  - "cmd/ebrelayer/contract/**/*"
