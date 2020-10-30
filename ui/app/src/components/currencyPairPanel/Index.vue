@@ -103,7 +103,7 @@ export default defineComponent({
 <style scoped>
 .arrow {
   text-align: center;
-  padding: 1rem;
+  padding: 2px;
 }
 .field-wrappers {
   margin-bottom: 1rem;

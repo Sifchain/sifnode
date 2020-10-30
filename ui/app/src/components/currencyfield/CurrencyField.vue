@@ -7,6 +7,8 @@ import { computed } from "@vue/reactivity";
 import Modal from "@/components/shared/Modal.vue";
 import BalanceField from "./BalanceField.vue";
 import AssetItem from "@/components/tokenSelector/AssetItem.vue";
+import InputGroup from "@/components/shared/InputGroup.vue";
+import SifButton from "@/components/shared/SifButton.vue";
 
 export type BalanceShape = {
   symbol: string;
@@ -23,7 +25,7 @@ export default defineComponent({
   },
   inheritAttrs: false,
   emits: ["selectsymbol", "update:amount", "update:symbol"],
-  components: { BalanceField, AssetItem, Modal },
+  components: { BalanceField, AssetItem, Modal, InputGroup, SifButton },
   setup(props, context) {
     const localAmount = computed({
       get: () => props.amount,
@@ -42,56 +44,92 @@ export default defineComponent({
 
 <template>
   <div class="currency-field">
-    <label class="label">{{ label }}</label>
-    <label class="balance right-col"
-      ><BalanceField :symbol="localSymbol"
-    /></label>
-    <input
-      v-bind="$attrs"
-      class="input"
-      type="number"
-      v-model="localAmount"
-      @focus="$emit('focus', $event.target)"
-      @blur="$emit('blur', $event.target)"
-      @click="$event.target.select()"
-    />
+    <div class="left">
+      <label class="label">{{ label }}</label>
+      <input
+        v-bind="$attrs"
+        class="input"
+        type="number"
+        v-model="localAmount"
+        @focus="$emit('focus', $event.target)"
+        @blur="$emit('blur', $event.target)"
+        @click="$event.target.select()"
+      />
+    </div>
 
-    <button @click="$emit('selectsymbol')" class="button right-col">
-      <span class="select-button" v-if="localSymbol !== null">
-        <AssetItem :symbol="localSymbol" /><span>▾</span></span
+    <div class="right">
+      <label class="label">
+        <BalanceField :symbol="localSymbol" />
+      </label>
+      <SifButton 
+        v-if="localSymbol !== null"
+        secondary
+        block
+        @click="$emit('selectsymbol')" 
       >
-      <span v-else>Select</span>
-    </button>
+        <span><AssetItem :symbol="localSymbol" /> ▾ </span>
+      </SifButton>
+      <SifButton 
+        v-else
+        primary
+        block
+        @click="$emit('selectsymbol')" 
+      >
+        <span>Select</span>
+      </SifButton>
+    </div>
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .currency-field {
-  border: 1px solid grey;
-  padding: 1rem;
-  display: grid;
-  grid-gap: 1rem;
-  grid-template-areas: "label balance" "input button";
+  padding: 4px 15px 15px 15px;
+  border-radius: $br_sm;
+  background: $g_gray_reverse;
+  color: $c_gray_700;
+  display: flex;
 }
+
+.left,
+.right {
+  display: flex;
+  flex-direction: column;
+}
+
+.left {
+  align-items: flex-start;
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.right {
+  align-items: flex-end;
+  width: 128px;
+}
+
 .label {
-  grid-area: "label";
-}
-.right-col {
-  width: 6rem;
-}
-.balance {
-  grid-area: "balance";
+  font-size: $fs_sm;
 }
 
 .input {
-  grid-area: "input";
-}
-.button {
-  grid-area: "button";
-}
-.select-button {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+  height: 30px;
+  width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border-radius: $br_sm;
+  border: 1px solid $c_white;
+
+  &::placeholder {
+    font-family: $f_default;
+    color: $c_gray_400;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &.gold {
+    border-color: $c_gold;
+  }
 }
 </style>

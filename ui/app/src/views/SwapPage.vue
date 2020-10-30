@@ -11,6 +11,9 @@ import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/shared/Modal.vue";
 import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
 import WithWallet from "@/components/wallet/WithWallet.vue";
+import SifButton from "@/components/shared/SifButton.vue";
+import PriceCalculation from '@/components/shared/PriceCalculation.vue';
+
 export default defineComponent({
   components: {
     CurrencyPairPanel,
@@ -18,6 +21,8 @@ export default defineComponent({
     Layout,
     Modal,
     WithWallet,
+    SifButton,
+    PriceCalculation
   },
 
   setup() {
@@ -141,25 +146,27 @@ export default defineComponent({
         />
       </template>
     </Modal>
-    <div>{{ priceMessage }}</div>
+    <PriceCalculation>
+      {{ priceMessage }}
+    </PriceCalculation>
     <div class="actions">
       <WithWallet>
         <template v-slot:disconnected="{ requestDialog }">
           <div class="wallet-status">No wallet connected 🅧</div>
-          <button class="big-button" @click="requestDialog">
+          <SifButton primary block @click="requestDialog">
             Connect Wallet
-          </button>
+          </SifButton>
         </template>
         <template v-slot:connected="{ connectedText }"
           ><div>
             <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
-            <button
-              class="big-button"
+            <SifButton
+              block primary
               :disabled="!nextStepAllowed"
               @click="handleNextStepClicked"
             >
               {{ nextStepMessage }}
-            </button>
+            </SifButton>
           </div></template
         >
       </WithWallet>
@@ -167,7 +174,7 @@ export default defineComponent({
   </Layout>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .actions {
   padding-top: 1rem;
 }
@@ -175,6 +182,6 @@ export default defineComponent({
   width: 100%;
 }
 .wallet-status {
-  margin-bottom: 1rem;
+  font-size: $fs_sm;
 }
 </style>

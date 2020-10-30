@@ -27,4 +27,5 @@ export default defineComponent({
 
 <template>
   <span v-if="available !== '0'">Available: {{ available }}</span>
+  <span v-else>&nbsp;</span>
 </template>

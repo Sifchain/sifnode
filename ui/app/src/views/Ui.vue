@@ -20,7 +20,7 @@
             <CurrencyForm label="To" />
           </InputGroup>
 
-          <SwapPanel />
+          <PriceCalculation />
 
           <p class="text--small">No wallet connected</p>
 
@@ -37,7 +37,7 @@ import IconButton from '../components/shared/IconButton.vue';
 import InputGroup from '../components/shared/InputGroup.vue';
 import SifApp from '../components/shared/SifApp.vue';
 import CurrencyForm from '../components/shared/CurrencyForm.vue';
-import SwapPanel from '../components/shared/SwapPanel.vue';
+import PriceCalculation from '../components/shared/PriceCalculation.vue';
 
 export default {
   components: {
@@ -46,7 +46,7 @@ export default {
     SifApp,
     InputGroup,
     CurrencyForm,
-    SwapPanel
+    PriceCalculation
   }
 }
 </script>

@@ -1,6 +1,6 @@
 <template>
-  <div class="swap-panel">
-
+  <div class="price-calculation">
+    <slot></slot>
   </div>
 </template>
 
@@ -11,7 +11,7 @@ export default {
 </script>
 
 <style lang="scss">
-.swap-panel {
+.price-calculation {
   min-height: 120px;
   margin-bottom: 10px;
   border-radius: $br_sm;

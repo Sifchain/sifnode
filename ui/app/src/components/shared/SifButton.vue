@@ -2,6 +2,7 @@
   <button 
     class="btn"
     :class="classes"
+    :disabled="disabled"
   >
     <slot></slot>
   </button>
@@ -37,7 +38,6 @@ export default {
   data() {
     return {
       classes: {
-        'disabled': this.disabled, 
         'block': this.block,
         'medium': this.medium,
         'primary': this.primary,
@@ -70,11 +70,11 @@ export default {
     margin-right: 0.5em;
   }
 
-  &.disabled {
+  &:disabled {
     cursor: default;
     pointer-events: none;
-    background: $c_gray_400;
-    color: $c_gray_800;
+    background: $c_gray_400 !important;
+    color: $c_gray_800 !important;
 
     &::before {
       background: transparent;
