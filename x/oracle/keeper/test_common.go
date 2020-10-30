@@ -38,6 +38,10 @@ const (
 	AnotherAlternateTestString = "{value: 9}"
 )
 
+var (
+  BadValidatorAddress = sdk.ValAddress(CreateTestPubKeys(1)[0].Address().Bytes())
+)
+
 // CreateTestKeepers greates an Mock App, OracleKeeper, BankKeeper and ValidatorAddresses to be used for test input
 func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (
 	sdk.Context, Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, []sdk.ValAddress) {
