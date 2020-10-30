@@ -87,8 +87,7 @@ type NewApp struct {
 	OracleKeeper    oracle.Keeper
 
 	clpKeeper clp.Keeper
-	// this line is used by starport scaffolding # 3
-	mm *module.Manager
+	mm        *module.Manager
 
 	sm *module.SimulationManager
 }
@@ -114,7 +113,6 @@ func NewInitApp(
 		oracle.StoreKey,
 		ethbridge.StoreKey,
 		clp.StoreKey,
-		// this line is used by starport scaffolding # 5
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -178,13 +176,12 @@ func NewInitApp(
 		app.SupplyKeeper,
 		app.OracleKeeper,
 	)
+
 	app.clpKeeper = clp.NewKeeper(
 		app.cdc,
 		keys[clp.StoreKey],
 		app.bankKeeper,
 		app.subspaces[clp.ModuleName])
-
-	// this line is used by starport scaffolding # 4
 
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx),
@@ -192,15 +189,9 @@ func NewInitApp(
 		bank.NewAppModule(app.bankKeeper, app.AccountKeeper),
 		supply.NewAppModule(app.SupplyKeeper, app.AccountKeeper),
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
-		clp.NewAppModule(app.clpKeeper, app.bankKeeper),
-		// this line is used by starport scaffolding # 6
-		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx),
-		auth.NewAppModule(app.AccountKeeper),
-		bank.NewAppModule(app.bankKeeper, app.AccountKeeper),
-		supply.NewAppModule(app.SupplyKeeper, app.AccountKeeper),
-		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
+		clp.NewAppModule(app.clpKeeper, app.bankKeeper),
 	)
 
 	app.mm.SetOrderEndBlockers(staking.ModuleName)
@@ -211,10 +202,9 @@ func NewInitApp(
 		bank.ModuleName,
 		supply.ModuleName,
 		genutil.ModuleName,
-		clp.ModuleName,
-		// this line is used by starport scaffolding # 7
 		oracle.ModuleName,
 		ethbridge.ModuleName,
+		clp.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
