@@ -23,4 +23,4 @@ sifnoded start
 ```
 For additional help, check out our demo video https://www.youtube.com/watch?v=1kjdjCEcYak&feature=youtu.be&ab_channel=utx0_
 
-You can also ask questions at our Discord channel - https://discord.gg/SE2dg8
+You can also ask questions at our Discord channel - https://discord.com/invite/zZTYnNG
