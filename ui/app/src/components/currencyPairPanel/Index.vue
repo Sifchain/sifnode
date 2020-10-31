@@ -102,6 +102,8 @@ export default defineComponent({
 
 <style scoped>
 .arrow {
+  font-family: Arial, Helvetica, sans-serif;
+  font-style: normal;
   text-align: center;
   padding: 2px;
 }

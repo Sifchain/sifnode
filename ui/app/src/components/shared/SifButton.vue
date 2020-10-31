@@ -1,28 +1,25 @@
 <template>
-  <button 
-    class="btn"
-    :class="classes"
-    :disabled="disabled"
-  >
+  <button class="btn" :class="classes" :disabled="disabled">
     <slot></slot>
   </button>
 </template>
 
 <script>
+import { defineComponent } from "vue";
 
-export default {
+export default defineComponent({
   props: {
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
     block: {
       type: Boolean,
-      default: false
+      default: false,
     },
     medium: {
       type: Boolean,
-      default: false
+      default: false,
     },
     className: {
       type: String,
@@ -32,21 +29,21 @@ export default {
     },
     secondary: {
       type: Boolean,
-    }
+    },
   },
 
   data() {
     return {
       classes: {
-        'block': this.block,
-        'medium': this.medium,
-        'primary': this.primary,
-        'secondary': this.secondary,
+        block: this.block,
+        medium: this.medium,
+        primary: this.primary,
+        secondary: this.secondary,
         className: this.className,
-      }
-    }
+      },
+    };
   },
-}
+});
 </script>
 
 <style lang="scss" scoped>
@@ -71,7 +68,7 @@ export default {
   }
 
   &:disabled {
-    cursor: default;
+    cursor: none;
     pointer-events: none;
     background: $c_gray_400 !important;
     color: $c_gray_800 !important;
@@ -86,7 +83,7 @@ export default {
     background: $c_gold;
 
     &::before {
-      content: '';
+      content: "";
       display: block;
       width: 100%;
       height: 100%;
@@ -114,7 +111,7 @@ export default {
     }
   }
 
-  // sizes: 
+  // sizes:
   // block spans the full width of parent
   &.block {
     display: block;

@@ -1,10 +1,6 @@
 <template>
   <EtheriumWalletPanel />
-  <hr />
   <SifWalletPanel />
-
-  <hr />
-  <button @click="handleClose">Close</button>
 </template>
 
 <script lang="ts">

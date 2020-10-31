@@ -2,8 +2,9 @@
   <div class="sif-input-wrapper">
     <label class="label">{{ label }}</label>
     <input
+      v-bind="$attrs"
+      v-model="localValue"
       class="sif-input-control"
-      type="text"
       :class="classes"
       :placeholder="placeholder"
     />
@@ -11,11 +12,15 @@
 </template>
 
 <script>
-export default {
+import { computed, defineComponent } from "vue";
+
+export default defineComponent({
+  inheritAttrs: false,
   props: {
     label: {
       type: String,
     },
+    modelValue: { type: String },
     gold: {
       type: Boolean,
       default: false,
@@ -24,16 +29,26 @@ export default {
       type: String,
       default: "",
     },
+    bold: {
+      type: Boolean,
+      default: false,
+    },
   },
-
-  data() {
+  emits: ["update:modelValue"],
+  setup(props, context) {
+    const localValue = computed({
+      get: () => props.modelValue,
+      set: (value) => context.emit("update:modelValue", value),
+    });
     return {
+      localValue,
       classes: {
-        gold: this.gold,
+        gold: props.gold,
+        bold: props.bold,
       },
     };
   },
-};
+});
 </script>
 
 <style lang="scss" scoped>
@@ -64,6 +79,10 @@ export default {
 
   &.gold {
     border-color: $c_gold;
+  }
+
+  &.bold {
+    font-weight: bold;
   }
 }
 </style>

@@ -14,13 +14,10 @@
         :requestDialog="requestOpen"
       ></slot>
     </template>
-    <template v-slot:default="{ requestClose }">
+    <template v-slot:default>
       <div>
         <EtheriumWalletPanel />
-        <hr />
         <SifWalletPanel />
-        <hr />
-        <button @click="requestClose">Close</button>
       </div>
     </template>
   </Modal>

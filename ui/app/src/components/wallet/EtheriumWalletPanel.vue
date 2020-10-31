@@ -2,6 +2,7 @@
 import { computed, defineComponent } from "vue";
 import { useCore } from "@/hooks/useCore";
 import BalanceTable from "./BalanceTable.vue";
+import SifButton from "@/components/shared/SifButton.vue";
 
 function useEtheriumWallet() {
   const { store, actions } = useCore();
@@ -29,7 +30,7 @@ function useEtheriumWallet() {
 
 export default defineComponent({
   name: "EtheriumWalletController",
-  components: { BalanceTable },
+  components: { BalanceTable, SifButton },
   setup() {
     const {
       address,
@@ -54,8 +55,12 @@ export default defineComponent({
     <div v-if="connected">
       <p>{{ address }}</p>
       <BalanceTable :balances="balances" />
-      <button @click="handleDisconnectClicked">DisconnectWallet</button>
+      <SifButton secondary @click="handleDisconnectClicked"
+        >DisconnectWallet</SifButton
+      >
     </div>
-    <button v-else @click="handleConnectClicked">Connect to Metamask</button>
+    <SifButton secondary v-else @click="handleConnectClicked"
+      >Connect to Metamask</SifButton
+    >
   </div>
 </template>

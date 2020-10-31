@@ -4,11 +4,10 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { computed } from "@vue/reactivity";
-import Modal from "@/components/shared/Modal.vue";
 import BalanceField from "./BalanceField.vue";
 import AssetItem from "@/components/tokenSelector/AssetItem.vue";
-import InputGroup from "@/components/shared/InputGroup.vue";
 import SifButton from "@/components/shared/SifButton.vue";
+import SifInput from "@/components/shared/SifInput.vue";
 
 export type BalanceShape = {
   symbol: string;
@@ -24,8 +23,8 @@ export default defineComponent({
     available: String,
   },
   inheritAttrs: false,
-  emits: ["selectsymbol", "update:amount", "update:symbol"],
-  components: { BalanceField, AssetItem, Modal, InputGroup, SifButton },
+  emits: ["focus", "blur", "selectsymbol", "update:amount", "update:symbol"],
+  components: { BalanceField, AssetItem, SifButton, SifInput },
   setup(props, context) {
     const localAmount = computed({
       get: () => props.amount,
@@ -46,9 +45,9 @@ export default defineComponent({
   <div class="currency-field">
     <div class="left">
       <label class="label">{{ label }}</label>
-      <input
+      <SifInput
+        bold
         v-bind="$attrs"
-        class="input"
         type="number"
         v-model="localAmount"
         @focus="$emit('focus', $event.target)"
@@ -61,20 +60,15 @@ export default defineComponent({
       <label class="label">
         <BalanceField :symbol="localSymbol" />
       </label>
-      <SifButton 
+      <SifButton
         v-if="localSymbol !== null"
         secondary
         block
-        @click="$emit('selectsymbol')" 
+        @click="$emit('selectsymbol')"
       >
         <span><AssetItem :symbol="localSymbol" /> ▾ </span>
       </SifButton>
-      <SifButton 
-        v-else
-        primary
-        block
-        @click="$emit('selectsymbol')" 
-      >
+      <SifButton v-else primary block @click="$emit('selectsymbol')">
         <span>Select</span>
       </SifButton>
     </div>
@@ -109,27 +103,5 @@ export default defineComponent({
 
 .label {
   font-size: $fs_sm;
-}
-
-.input {
-  height: 30px;
-  width: 100%;
-  padding: 0 8px;
-  box-sizing: border-box;
-  border-radius: $br_sm;
-  border: 1px solid $c_white;
-
-  &::placeholder {
-    font-family: $f_default;
-    color: $c_gray_400;
-  }
-
-  &:focus {
-    outline: none;
-  }
-
-  &.gold {
-    border-color: $c_gold;
-  }
 }
 </style>

@@ -1,8 +1,9 @@
 <script lang="ts">
 import { computed, defineComponent } from "vue";
-import { ref, Ref } from "@vue/reactivity";
+import { ref, Ref } from "@vue/reactivity"; /* eslint-disable-line */
 import { useCore } from "@/hooks/useCore";
 import BalanceTable from "./BalanceTable.vue";
+import SifButton from "@/components/shared/SifButton.vue";
 
 function useCosmosWallet({
   error,
@@ -44,7 +45,7 @@ function useCosmosWallet({
 
 export default defineComponent({
   name: "SifWalletController",
-  components: { BalanceTable },
+  components: { BalanceTable, SifButton },
   setup() {
     const error = ref("");
     // TODO: remove hard coded mnemonic
@@ -92,18 +93,22 @@ export default defineComponent({
     <div v-if="connected">
       <p>{{ address }}</p>
       <BalanceTable :balances="balances" />
-      <button @click="handleDisconnectClicked">
+      <SifButton secondary @click="handleDisconnectClicked">
         Disconnect SifChain Wallet
-      </button>
+      </SifButton>
     </div>
     <div v-else>
       <div v-if="!connectionStarted">
-        <button @click="handleStartConnectClicked">Connect to SifChain</button>
+        <SifButton secondary @click="handleStartConnectClicked"
+          >Connect to SifChain</SifButton
+        >
       </div>
       <div v-else>
         <textarea v-model="mnemonic" placeholder="Mnemonic..."></textarea><br />
-        <button @click="connectionStarted = false">Clear</button>
-        <button @click="handleConnectClicked">Login</button>
+        <SifButton secondary @click="connectionStarted = false"
+          >Clear</SifButton
+        >
+        <SifButton secondary @click="handleConnectClicked">Login</SifButton>
         <div v-if="error">{{ error }}</div>
       </div>
     </div>

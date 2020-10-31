@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType } from "vue"; /* eslint-disable-line */
 import { ref } from "@vue/reactivity";
 import { useCore } from "../../hooks/useCore";
 import AssetItem from "./AssetItem.vue";
@@ -41,7 +41,6 @@ export default defineComponent({
       placeholder="Search name or paste address"
       class="sif-input"
       type="text"
-      :class="classes"
     />
     <h4 class="list-title">Token Name</h4>
   </div>
@@ -91,7 +90,6 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   border-top: $divider;
-  border-right: $divider;
 }
 
 .option {
@@ -105,5 +103,9 @@ export default defineComponent({
   text-align: left;
   background: transparent;
   border: none;
+  &[disabled] {
+    color: #bbb;
+    pointer-events: none;
+  }
 }
 </style>

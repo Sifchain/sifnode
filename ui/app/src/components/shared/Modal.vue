@@ -1,8 +1,7 @@
 <template>
   <div class="modal">
-    <div class="activator">
-      <slot name="activator" :requestOpen="requestOpen"></slot>
-    </div>
+    <slot name="activator" :requestOpen="requestOpen"></slot>
+
     <teleport to="#portal-target">
       <div class="backdrop" v-if="isOpen" @click="requestClose">
         <Panel :class="{ open: isOpen }" @click.stop>
