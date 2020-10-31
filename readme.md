@@ -18,6 +18,7 @@ rake 'genesis:sifnode:scaffold[monkey-bars, 190cb35265860f182e35a3bceeb297082858
 # Run
 sifnoded start
 ```
-For additional help, check out our demo video https://www.youtube.com/watch?v=1kjdjCEcYak&feature=youtu.be&ab_channel=utx0_
+Additional instructions on standing up Sifnode https://www.youtube.com/watch?v=1kjdjCEcYak&feature=youtu.be&ab_channel=utx0_
+Instructions on using Ethereum <> Sifchain cross-chain functionality https://youtu.be/r81NQLxMers
 
 You can also ask questions at our Discord channel - https://discord.gg/SE2dg8
