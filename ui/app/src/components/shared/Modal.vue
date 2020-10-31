@@ -1,14 +1,15 @@
 <template>
   <div class="modal">
     <slot name="activator" :requestOpen="requestOpen"></slot>
-
     <teleport to="#portal-target">
-      <div class="backdrop" v-if="isOpen" @click="requestClose">
-        <Panel :class="{ open: isOpen }" @click.stop>
-          <div class="close" @click="requestClose">&times;</div>
-          <slot :requestClose="requestClose"></slot>
-        </Panel>
-      </div>
+      <transition name="foo">
+        <div class="backdrop" v-if="isOpen" @click="requestClose">
+          <Panel class="panel" @click.stop>
+            <div class="close" @click="requestClose">&times;</div>
+            <slot :requestClose="requestClose"></slot>
+          </Panel>
+        </div>
+      </transition>
     </teleport>
   </div>
 </template>
@@ -50,8 +51,31 @@ export default defineComponent({
   color: $c_text;
   cursor: pointer;
 }
+
+.foo-leave-active {
+  transition: opacity 0.2s ease-in-out;
+}
+
+.foo-enter-active {
+  transition: opacity 0.1s ease-in-out;
+  & .panel {
+    transition: transform 0.05s ease-in-out;
+  }
+}
+
+.foo-enter-from {
+  opacity: 0;
+  & .panel {
+    transform: translateY(20px);
+  }
+}
+
+.foo-leave-to {
+  opacity: 0;
+}
+
 .backdrop {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.4);
   position: fixed;
   top: 0;
   left: 0;

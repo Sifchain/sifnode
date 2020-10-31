@@ -94,7 +94,7 @@ export default defineComponent({
       <p>{{ address }}</p>
       <BalanceTable :balances="balances" />
       <SifButton secondary @click="handleDisconnectClicked">
-        Disconnect SifChain Wallet
+        Disconnect SifWallet
       </SifButton>
     </div>
     <div v-else>

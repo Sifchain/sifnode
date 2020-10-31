@@ -15,7 +15,7 @@
       ></slot>
     </template>
     <template v-slot:default>
-      <div>
+      <div class="vstack">
         <EtheriumWalletPanel />
         <SifWalletPanel />
       </div>
@@ -41,3 +41,12 @@ export default defineComponent({
   },
 });
 </script>
+<style lang="scss" scoped>
+.vstack {
+  display: flex;
+  flex-direction: column;
+  & > * {
+    margin-bottom: 1rem;
+  }
+}
+</style>
