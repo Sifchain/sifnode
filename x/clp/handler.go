@@ -54,17 +54,12 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 		externalAssetBalance = externalAssetBalance - withdrawExternalAsset
 		withdrawNativeCoins := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAsset)))
 		withdrawExternalCoins := sdk.NewCoin(msg.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAsset)))
-		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, lp.LiquidityProviderAddress, sdk.Coins{withdrawNativeCoins})
-		if err != nil {
-			return nil, errors.Wrap(types.ErrUnableToAddBalance, err.Error())
-		}
-		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, lp.LiquidityProviderAddress, sdk.Coins{withdrawExternalCoins})
+		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, lp.LiquidityProviderAddress, sdk.Coins{withdrawExternalCoins, withdrawNativeCoins})
 		if err != nil {
 			return nil, errors.Wrap(types.ErrUnableToAddBalance, err.Error())
 		}
 		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	}
-	// TODO : Do we check if nativeBalance and external balance is still left in the pool before we delete it ?
 	// Pool should be empty at this point
 	// Destroy the pool
 	err = keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
@@ -154,7 +149,6 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	newPoolUnits, lpUnits := calculatePoolUnits(pool.PoolUnits, pool.NativeAssetBalance, pool.ExternalAssetBalance, msg.NativeAssetAmount, msg.ExternalAssetAmount)
 	// Get lp , if lp doesnt exist create lp
 	lp, err := keeper.GetLiquidityProvider(ctx, msg.ExternalAsset.Ticker, msg.Signer.String())
-	// Doesn't look like this can occur, as creating a pool creates this as well.  Not sure if this is a valid scenario
 	if err != nil {
 		createNewLP = true
 	}
@@ -418,7 +412,8 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 }
 
 //------------------------------------------------------------------------------------------------------------------
-
+// More details on the formula
+// docs/1.Liquidity Pools Architecture.md
 func swapOne(from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint, Pool, error) {
 
 	var X uint
@@ -449,6 +444,8 @@ func swapOne(from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint
 	return swapResult, liquidityFee, tradeSlip, pool, nil
 }
 
+// More details on the formula
+// docs/1.Liquidity Pools Architecture.md
 func calculateWithdrawal(poolUnits uint, nativeAssetBalance uint,
 	externalAssetBalance uint, lpUnits uint, wBasisPoints int, asymmetry int) (uint, uint, uint, uint) {
 	poolUnitsF := float64(poolUnits)
@@ -492,6 +489,8 @@ func calculateWithdrawal(poolUnits uint, nativeAssetBalance uint,
 	return uint(withdrawNativeAssetAmount), uint(withdrawExternalAssetAmount), uint(lpUnitsLeft), uint(swapAmount)
 }
 
+// More details on the formula
+// docs/1.Liquidity Pools Architecture.md
 func calculatePoolUnits(oldPoolUnits uint, nativeAssetBalance uint, externalAssetBalance uint,
 	nativeAssetAmount uint, externalAssetAmount uint) (uint, uint) {
 	R := nativeAssetBalance + nativeAssetAmount

@@ -41,37 +41,38 @@ func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
 type (
 	AddLiquidityReq struct {
 		BaseReq             rest.BaseReq `json:"base_req"`
-		Signer              string       `json:"signer"`
-		ExternalAsset       types.Asset  `json:"external_asset"`
-		NativeAssetAmount   uint         `json:"native_asset_amount"`
-		ExternalAssetAmount uint         `json:"external_asset_amount"`
+		Signer              string       `json:"signer"`                // User who is trying to add liquidity to the pool
+		ExternalAsset       types.Asset  `json:"external_asset"`        // ExternalAsset in the pool pair (ex rwn:ceth)
+		NativeAssetAmount   uint         `json:"native_asset_amount"`   // NativeAssetAmount is the amount of native asset being added
+		ExternalAssetAmount uint         `json:"external_asset_amount"` // ExternalAssetAmount is the amount of external asset being added
 	}
 
 	RemoveLiquidityReq struct {
 		BaseReq       rest.BaseReq `json:"base_req"`
-		Signer        string       `json:"signer"`
-		ExternalAsset types.Asset  `json:"external_asset"`
-		WBasisPoints  int          `json:"w_basis_points"`
-		Asymmetry     int          `json:"asymmetry"`
+		Signer        string       `json:"signer"`         // User who is trying to remove liquidity to the pool
+		ExternalAsset types.Asset  `json:"external_asset"` // ExternalAsset in the pool pair (ex rwn:ceth)
+		WBasisPoints  int          `json:"w_basis_points"` // WBasisPoints determines the amount of asset being withdrawn
+		Asymmetry     int          `json:"asymmetry"`      // Asymmetry decides the type of asset being withdrawn asymmetry means equal amounts of native and external
+
 	}
 	CreatePoolReq struct {
 		BaseReq             rest.BaseReq `json:"base_req"`
-		Signer              string       `json:"signer"`
-		ExternalAsset       types.Asset  `json:"external_asset"`
-		NativeAssetAmount   uint         `json:"native_asset_amount"`
-		ExternalAssetAmount uint         `json:"external_asset_amount"`
+		Signer              string       `json:"signer"`                // User who is trying to create the pool
+		ExternalAsset       types.Asset  `json:"external_asset"`        // ExternalAsset in the pool pair (ex rwn:ceth)
+		NativeAssetAmount   uint         `json:"native_asset_amount"`   // NativeAssetAmount is the amount of native asset being added
+		ExternalAssetAmount uint         `json:"external_asset_amount"` // ExternalAssetAmount is the amount of external asset being added
 	}
 	DecommissionPoolReq struct {
 		BaseReq rest.BaseReq `json:"base_req"`
-		Signer  string       `json:"signer"`
-		Ticker  string       `json:"ticker"`
+		Signer  string       `json:"signer"` // User who is trying to Decommission the pool
+		Ticker  string       `json:"ticker"` // ExternalAsset Ticker in the pool pair (ex rwn:ceth ,would be ceth)
 	}
 	SwapReq struct {
 		BaseReq       rest.BaseReq `json:"base_req"`
-		Signer        string       `json:"signer"`
-		SentAsset     types.Asset  `json:"sent_asset"`
-		ReceivedAsset types.Asset  `json:"received_asset"`
-		SentAmount    uint         `json:"sent_amount"`
+		Signer        string       `json:"signer"`         // User who is trying to swap
+		SentAsset     types.Asset  `json:"sent_asset"`     // Asset which the user is sending ,can be an external asset or RWN
+		ReceivedAsset types.Asset  `json:"received_asset"` // Asset which the user wants to receive ,can be an external asset or RWN
+		SentAmount    uint         `json:"sent_amount"`    // Amount of SentAsset being sent
 	}
 )
 

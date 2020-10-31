@@ -23,6 +23,8 @@ const (
 	NativeTicker = "rwn"
 	NativeChain  = "SIFCHAIN"
 	NativeSymbol = "RWN"
+
+	AddressLength = 20
 )
 
 var (
@@ -51,7 +53,7 @@ func GetPoolAddress(externalTicker string, nativeTicker string) (string, error) 
 
 func GetAddress(externalTicker, nativeTicker string) (sdk.AccAddress, error) {
 	addressBytes := []byte(fmt.Sprintf("%s_%s", externalTicker, nativeTicker))
-	paddedbytes, err := pkcs7Pad(addressBytes, 20)
+	paddedbytes, err := pkcs7Pad(addressBytes, AddressLength)
 	if err != nil {
 		return nil, err
 	}
