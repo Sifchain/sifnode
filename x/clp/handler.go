@@ -413,7 +413,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 
 //------------------------------------------------------------------------------------------------------------------
 // More details on the formula
-// docs/1.Liquidity Pools Architecture.md
+// https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 func swapOne(from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint, Pool, error) {
 
 	var X uint
@@ -445,7 +445,7 @@ func swapOne(from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint
 }
 
 // More details on the formula
-// docs/1.Liquidity Pools Architecture.md
+// https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 func calculateWithdrawal(poolUnits uint, nativeAssetBalance uint,
 	externalAssetBalance uint, lpUnits uint, wBasisPoints int, asymmetry int) (uint, uint, uint, uint) {
 	poolUnitsF := float64(poolUnits)
@@ -490,7 +490,7 @@ func calculateWithdrawal(poolUnits uint, nativeAssetBalance uint,
 }
 
 // More details on the formula
-// docs/1.Liquidity Pools Architecture.md
+// https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 func calculatePoolUnits(oldPoolUnits uint, nativeAssetBalance uint, externalAssetBalance uint,
 	nativeAssetAmount uint, externalAssetAmount uint) (uint, uint) {
 	R := nativeAssetBalance + nativeAssetAmount
