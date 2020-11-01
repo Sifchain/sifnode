@@ -26,17 +26,13 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .back-link {
+  text-align: left;
   display: block;
-  width: 1rem;
-  height: 1rem;
   text-decoration: none;
   color: #333;
   margin-bottom: 1rem;
 }
-.back-link:hover {
-  background: #aaa;
-  border-radius: 1rem;
-}
+
 .layout {
   background: url("../../assets/World_Background_opt.jpg");
   background-size: cover;
