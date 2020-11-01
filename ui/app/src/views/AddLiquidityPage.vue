@@ -10,6 +10,7 @@ import { PoolState, usePoolCalculator } from "../../../core/src";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
+import SifButton from "@/components/shared/SifButton.vue";
 
 export default defineComponent({
   components: {
@@ -18,6 +19,7 @@ export default defineComponent({
     CurrencyPairPanel,
     SelectTokenDialog,
     WithWallet,
+    SifButton,
   },
   setup() {
     const { store, api } = useCore();
@@ -157,21 +159,22 @@ export default defineComponent({
     <div class="actions">
       <WithWallet>
         <template v-slot:disconnected="{ requestDialog }">
-          <div class="wallet-status">No wallet connected &times;</div>
-          <button class="big-button" @click="requestDialog">
+          <div class="wallet-status">No wallet connected 🅧</div>
+          <SifButton primary block @click="requestDialog">
             Connect Wallet
-          </button>
+          </SifButton>
         </template>
         <template v-slot:connected="{ connectedText }"
           ><div>
             <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
-            <button
-              class="big-button"
+            <SifButton
+              block
+              primary
               :disabled="!nextStepAllowed"
               @click="handleNextStepClicked"
             >
               {{ nextStepMessage }}
-            </button>
+            </SifButton>
           </div></template
         >
       </WithWallet>
