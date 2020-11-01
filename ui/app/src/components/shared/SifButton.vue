@@ -1,6 +1,8 @@
 <template>
   <button class="btn" :class="classes" :disabled="disabled">
-    <slot></slot>
+    <span class="text">
+      <slot></slot>
+    </span>
   </button>
 </template>
 
@@ -30,6 +32,12 @@ export default defineComponent({
     secondary: {
       type: Boolean,
     },
+    ghost: {
+      type: Boolean,
+    },
+    small: {
+      type: Boolean,
+    },
   },
 
   data() {
@@ -40,6 +48,8 @@ export default defineComponent({
         primary: this.primary,
         secondary: this.secondary,
         className: this.className,
+        ghost: this.ghost,
+        small: this.small,
       },
     };
   },
@@ -111,8 +121,29 @@ export default defineComponent({
     }
   }
 
+  &.ghost {
+    background: transparent;
+    color: $c_gold;
+    border: 2px solid $c_gold;
+  }
+
   // sizes:
   // block spans the full width of parent
+
+  &.small {
+    font-family: sans-serif;
+    letter-spacing: 0.5px;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 12px;
+    padding: 2px 5px;
+    height: auto;
+    line-height: initial;
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+
   &.block {
     display: block;
     width: 100%;

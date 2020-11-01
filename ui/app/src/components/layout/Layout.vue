@@ -5,7 +5,7 @@
         <PanelNav />
       </template>
       <div v-if="backLink">
-        <router-link class="back-link" :to="backLink">◀</router-link>
+        <router-link class="back-link" :to="backLink">&lt; Back</router-link>
       </div>
       <slot></slot>
     </Panel>

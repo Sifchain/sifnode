@@ -1,13 +1,16 @@
 <template>
   <div class="sif-input-wrapper">
     <label class="label">{{ label }}</label>
-    <input
-      v-bind="$attrs"
-      v-model="localValue"
-      class="sif-input-control"
-      :class="classes"
-      :placeholder="placeholder"
-    />
+    <div class="sif-input-background" :class="classes">
+      <slot name="start"></slot>
+      <input
+        v-bind="$attrs"
+        v-model="localValue"
+        class="sif-input-control"
+        :placeholder="placeholder"
+      />
+      <slot name="end"></slot>
+    </div>
   </div>
 </template>
 
@@ -16,6 +19,7 @@ import { computed, defineComponent } from "vue";
 
 export default defineComponent({
   inheritAttrs: false,
+
   props: {
     label: {
       type: String,
@@ -60,22 +64,18 @@ export default defineComponent({
   width: 100%;
 }
 
-.sif-input-control {
+.sif-input-background {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: stretch;
   height: 30px;
   width: 100%;
-  padding: 0 8px;
+  background: $c_white;
   box-sizing: border-box;
   border-radius: $br_sm;
   border: 1px solid $c_white;
-
-  &::placeholder {
-    font-family: $f_default;
-    color: $c_gray_400;
-  }
-
-  &:focus {
-    outline: none;
-  }
+  padding: 0 3px;
 
   &.gold {
     border-color: $c_gold;
@@ -83,6 +83,21 @@ export default defineComponent({
 
   &.bold {
     font-weight: bold;
+  }
+}
+
+.sif-input-control {
+  padding: 0 8px;
+  border: none;
+  box-sizing: border-box;
+  flex: 1;
+  &::placeholder {
+    font-family: $f_default;
+    color: $c_gray_400;
+  }
+
+  &:focus {
+    outline: none;
   }
 }
 </style>

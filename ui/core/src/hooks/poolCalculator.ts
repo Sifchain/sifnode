@@ -145,3 +145,49 @@ export function usePoolCalculator(input: {
     fromAmount: input.fromAmount,
   };
 }
+
+export function removeLiquidity(input: {
+  fromAmount: Ref<string>;
+  fromSymbol: Ref<string | null>;
+  toAmount: Ref<string>;
+  toSymbol: Ref<string | null>;
+  balances: Ref<IAssetAmount[]>;
+  // Get a pair that represents the balance the current user has contibuted
+  userPoolFinder: (a: Asset | string, b: Asset | string) => Pair | null;
+}) {
+  const fromField = useField(input.fromAmount, input.fromSymbol);
+  const toField = useField(input.toAmount, input.toSymbol);
+
+  const userPool = computed(() => {
+    if (!fromField.asset.value) return null;
+    if (!toField.asset.value) return null;
+
+    return input.userPoolFinder(fromField.asset.value, toField.asset.value);
+  });
+
+  const fromBalanceOverdrawn = computed(() => {
+    if (!fromField.fieldAmount.value) return null;
+    return userPool.value?.priceAsset(fromField.fieldAmount.value.asset);
+  });
+
+  const toBalanceOverdrawn = computed(() => {
+    if (!toField.fieldAmount.value) return null;
+    return userPool.value?.priceAsset(toField.fieldAmount.value.asset);
+  });
+
+  // Bit hard to work out how much of this works without getting clarity
+  const state = computed(() => {
+    if (!input.fromSymbol.value || !input.toSymbol.value)
+      return PoolState.SELECT_TOKENS;
+    if (
+      fromField.fieldAmount.value?.equalTo("0") &&
+      toField.fieldAmount.value?.equalTo("0")
+    )
+      return PoolState.ZERO_AMOUNTS;
+    if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value) {
+      return PoolState.INSUFFICIENT_FUNDS;
+    }
+
+    return PoolState.VALID_INPUT;
+  });
+}

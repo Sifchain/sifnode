@@ -21,6 +21,7 @@ export default defineComponent({
     amount: String,
     symbol: String,
     available: String,
+    max: { type: Boolean, default: false },
   },
   inheritAttrs: false,
   emits: ["focus", "blur", "selectsymbol", "update:amount", "update:symbol"],
@@ -53,7 +54,17 @@ export default defineComponent({
         @focus="$emit('focus', $event.target)"
         @blur="$emit('blur', $event.target)"
         @click="$event.target.select()"
-      />
+        ><template v-slot:end
+          ><SifButton
+            v-if="max"
+            class="max-button"
+            @click="$emit('max-clicked')"
+            small
+            ghost
+            >Max</SifButton
+          ></template
+        ></SifInput
+      >
     </div>
 
     <div class="right">

@@ -1,53 +1,58 @@
-
-
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import Layout from "@/components/layout/Layout.vue";
-import { computed, ref } from "@vue/reactivity";
-import { useCore } from "@/hooks/useCore";
-import { SwapState, useSwapCalculator } from "../../../core";
-import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
-import Modal from "@/components/shared/Modal.vue";
-import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
 import WithWallet from "@/components/wallet/WithWallet.vue";
+import { useWalletButton } from "@/components/wallet/useWalletButton";
+import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
+import Modal from "@/components/shared/Modal.vue";
+import { PoolState, usePoolCalculator } from "../../../core/src";
+import { useCore } from "@/hooks/useCore";
+import { useWallet } from "@/hooks/useWallet";
+import { computed } from "@vue/reactivity";
 import SifButton from "@/components/shared/SifButton.vue";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 
 export default defineComponent({
   components: {
-    CurrencyPairPanel,
-    SelectTokenDialog,
     Layout,
     Modal,
+    CurrencyPairPanel,
+    SelectTokenDialog,
     WithWallet,
     SifButton,
     PriceCalculation,
   },
-
   setup() {
-    const { api, store } = useCore();
+    const { store, api } = useCore();
     const marketPairFinder = api.MarketService.find;
-    const fromSymbol = ref<string | null>(null);
-    const fromAmount = ref<string>("0");
-    const toSymbol = ref<string | null>(null);
-    const toAmount = ref<string>("0");
-
     const selectedField = ref<"from" | "to" | null>(null);
-    const { connected, connectedText } = useWalletButton({
+
+    const fromAmount = ref("0");
+    const fromSymbol = ref<string | null>(null);
+    const toAmount = ref("0");
+    const toSymbol = ref<string | null>(null);
+
+    const priceMessage = ref("");
+
+    const {
+      connected,
+
+      connectedText,
+    } = useWalletButton({
       addrLen: 8,
     });
 
-    const balances = computed(() => {
-      return [...store.wallet.eth.balances, ...store.wallet.sif.balances];
-    });
+    const { balances } = useWallet(store);
 
     const {
-      state,
+      aPerBRatioMessage,
+      bPerARatioMessage,
+      shareOfPool,
       fromFieldAmount,
       toFieldAmount,
-      priceMessage,
-    } = useSwapCalculator({
+      state,
+    } = usePoolCalculator({
       balances,
       fromAmount,
       toAmount,
@@ -58,19 +63,31 @@ export default defineComponent({
     });
 
     return {
+      fromAmount,
+      fromSymbol,
+
+      toAmount,
+      toSymbol,
+
+      priceMessage,
       connected,
-      connectedText,
+      aPerBRatioMessage,
+      bPerARatioMessage,
+
       nextStepMessage: computed(() => {
         switch (state.value) {
-          case SwapState.SELECT_TOKENS:
+          case PoolState.SELECT_TOKENS:
             return "Select Tokens";
-          case SwapState.ZERO_AMOUNTS:
+          case PoolState.ZERO_AMOUNTS:
             return "Please enter an amount";
-          case SwapState.INSUFFICIENT_FUNDS:
-            return "Insufficient Funds";
-          case SwapState.VALID_INPUT:
-            return "Swap";
+          case PoolState.INSUFFICIENT_FUNDS:
+            return "Amount to remove is too high";
+          case PoolState.VALID_INPUT:
+            return "Remove Liquidity";
         }
+      }),
+      nextStepAllowed: computed(() => {
+        return state.value === PoolState.VALID_INPUT;
       }),
       handleFromSymbolClicked(next: () => void) {
         selectedField.value = "from";
@@ -94,42 +111,34 @@ export default defineComponent({
         }
         selectedField.value = null;
       },
+      handleNextStepClicked() {
+        alert(
+          `Create Pool ${fromFieldAmount.value?.toFormatted()} alongside ${toFieldAmount.value?.toFormatted()}!`
+        );
+      },
+      handleBlur() {
+        selectedField.value = null;
+      },
       handleFromFocused() {
         selectedField.value = "from";
       },
       handleToFocused() {
         selectedField.value = "to";
       },
-      handleNextStepClicked() {
-        alert(
-          `Swapping ${fromFieldAmount.value?.toFormatted()} for ${toFieldAmount.value?.toFormatted()}!`
-        );
-      },
-      handleBlur() {
-        selectedField.value = null;
-      },
-
-      fromAmount,
-      toAmount,
-      fromSymbol,
-      toSymbol,
-      priceMessage,
-      nextStepAllowed: computed(() => {
-        return state.value === SwapState.VALID_INPUT;
-      }),
+      shareOfPool,
+      connectedText,
     };
   },
 });
 </script>
 
 <template>
-  <Layout class="swap">
+  <Layout class="pool" backLink="/pool">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel
           v-model:fromAmount="fromAmount"
           v-model:fromSymbol="fromSymbol"
-          fromMax
           @fromfocus="handleFromFocused"
           @fromblur="handleBlur"
           @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
@@ -138,8 +147,7 @@ export default defineComponent({
           @tofocus="handleToFocused"
           @toblur="handleBlur"
           @tosymbolclicked="handleToSymbolClicked(requestOpen)"
-        />
-      </template>
+      /></template>
       <template v-slot:default="{ requestClose }">
         <SelectTokenDialog
           :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
@@ -147,8 +155,11 @@ export default defineComponent({
         />
       </template>
     </Modal>
+
     <PriceCalculation>
-      {{ priceMessage }}
+      <div>{{ aPerBRatioMessage }}</div>
+      <div>{{ bPerARatioMessage }}</div>
+      <div>{{ shareOfPool }}</div>
     </PriceCalculation>
     <div class="actions">
       <WithWallet>
@@ -176,14 +187,4 @@ export default defineComponent({
   </Layout>
 </template>
 
-<style lang="scss" scoped>
-.actions {
-  padding-top: 1rem;
-}
-.big-button {
-  width: 100%;
-}
-.wallet-status {
-  font-size: $fs_sm;
-}
-</style>
+

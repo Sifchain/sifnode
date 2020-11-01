@@ -9,10 +9,14 @@ export default defineComponent({
 
 <template>
   <Layout class="pool">
-    <router-link class="button" to="/pool/create-pair">Create Pair</router-link>
+    <router-link class="button" to="/pool/create-pair">Create Pool</router-link>
     <router-link class="button" to="/pool/add-liquidity"
       >Add Liquidity</router-link
     >
+    <router-link class="button" to="/pool/remove-liquidity"
+      >Remove Liquidity</router-link
+    >
+    <router-link class="button" to="/pool/delete-pool">Delete Pool</router-link>
   </Layout>
 </template>
 

@@ -5,6 +5,7 @@
     <CurrencyField
       label="From"
       tabindex="1"
+      :max="fromMax"
       @focus="handleFromFocused"
       @blur="handleFromBlur"
       :amount="fromAmount"
@@ -38,6 +39,7 @@ export default defineComponent({
     priceMessage: String,
     fromAmount: String,
     fromSymbol: String,
+    fromMax: { type: Boolean, default: false },
     toAmount: String,
     toSymbol: String,
     connected: Boolean,
