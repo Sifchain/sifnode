@@ -1,0 +1,534 @@
+openapi: 3.0.1
+info:
+  title: CLP_GET_REQUESTS
+  description: CLP_GET_REQUESTS
+  version: '0.1'
+servers:
+  - url: 'http://0.0.0.0:1317'
+paths:
+  /clp/decommissionPool:
+    post:
+      description: Auto generated using Swagger Inspector
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticker:
+                  type: string
+                source_chain:
+                  type: string
+                base_req:
+                  type: object
+                  properties:
+                    chain_id:
+                      type: string
+                    from:
+                      type: string
+                signer:
+                  type: string
+            examples:
+              '0':
+                value: |+
+                  {
+                    "base_req": {
+                      "from": "sif1a2nxtdc4tx292y0kqu94a7gqqnusy43j2t80l5",
+                      "chain_id": "sifnode"
+                    },
+                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+                     "source_chain" : "ROWAN",
+                     "ticker" :"EOS"
+                  }
+
+      responses:
+        '200':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  value:
+                    type: object
+                    properties:
+                      msg:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            value:
+                              type: object
+                              properties:
+                                ticker:
+                                  type: string
+                                source_chain:
+                                  type: string
+                                signer:
+                                  type: string
+                      fee:
+                        type: object
+                        properties:
+                          amount:
+                            type: array
+                            items:
+                              type: string
+                          gas:
+                            type: string
+                      memo:
+                        type: string
+                      signatures: {}
+              examples:
+                '0':
+                  value: >-
+                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/DecommissionPool","value":{"signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ticker":"EOS","source_chain":"ROWAN"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
+      servers:
+        - url: 'http://0.0.0.0:1317'
+    servers:
+      - url: 'http://0.0.0.0:1317'
+  /clp/removeLiquidity:
+    post:
+      description: Auto generated using Swagger Inspector
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                external_asset:
+                  type: object
+                  properties:
+                    symbol:
+                      type: string
+                    ticker:
+                      type: string
+                    source_chain:
+                      type: string
+                w_basis_points:
+                  type: string
+                base_req:
+                  type: object
+                  properties:
+                    chain_id:
+                      type: string
+                    from:
+                      type: string
+                asymmetry:
+                  type: string
+                signer:
+                  type: string
+            examples:
+              '0':
+                value: |-
+                  {
+                    "base_req": {
+                      "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+                      "chain_id": "sifnode"
+                    },
+                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+                    "external_asset": {
+                      "source_chain" : "ROWAN",
+                      "symbol" : "ETHROWAN",
+                      "ticker" :"ETH"
+                    },
+                    "w_basis_points": "1000",
+                    "asymmetry": "10"
+                  }
+      responses:
+        '200':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  value:
+                    type: object
+                    properties:
+                      msg:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            value:
+                              type: object
+                              properties:
+                                Signer:
+                                  type: string
+                                Asymmetry:
+                                  type: string
+                                ExternalAsset:
+                                  type: object
+                                  properties:
+                                    symbol:
+                                      type: string
+                                    ticker:
+                                      type: string
+                                    source_chain:
+                                      type: string
+                                WBasisPoints:
+                                  type: string
+                      fee:
+                        type: object
+                        properties:
+                          amount:
+                            type: array
+                            items:
+                              type: string
+                          gas:
+                            type: string
+                      memo:
+                        type: string
+                      signatures: {}
+              examples:
+                '0':
+                  value: >-
+                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/RemoveLiquidity","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"WBasisPoints":"1000","Asymmetry":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
+      servers:
+        - url: 'http://0.0.0.0:1317'
+    servers:
+      - url: 'http://0.0.0.0:1317'
+  /clp/addLiquidity:
+    post:
+      description: Auto generated using Swagger Inspector
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                external_asset:
+                  type: object
+                  properties:
+                    symbol:
+                      type: string
+                    ticker:
+                      type: string
+                    source_chain:
+                      type: string
+                external_asset_amount:
+                  type: string
+                native_asset_amount:
+                  type: string
+                base_req:
+                  type: object
+                  properties:
+                    chain_id:
+                      type: string
+                    from:
+                      type: string
+                signer:
+                  type: string
+            examples:
+              '0':
+                value: |-
+                  {
+                    "base_req": {
+                      "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+                      "chain_id": "sifnode"
+                    },
+                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+                    "external_asset": {
+                      "source_chain" : "ROWAN",
+                      "symbol" : "ETHROWAN",
+                      "ticker" :"ETH"
+                    },
+                    "native_asset_amount": "1000",
+                    "external_asset_amount": "10"
+                  }
+      responses:
+        '200':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  value:
+                    type: object
+                    properties:
+                      msg:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            value:
+                              type: object
+                              properties:
+                                Signer:
+                                  type: string
+                                ExternalAsset:
+                                  type: object
+                                  properties:
+                                    symbol:
+                                      type: string
+                                    ticker:
+                                      type: string
+                                    source_chain:
+                                      type: string
+                                NativeAssetAmount:
+                                  type: string
+                                ExternalAssetAmount:
+                                  type: string
+                      fee:
+                        type: object
+                        properties:
+                          amount:
+                            type: array
+                            items:
+                              type: string
+                          gas:
+                            type: string
+                      memo:
+                        type: string
+                      signatures: {}
+              examples:
+                '0':
+                  value: >-
+                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/AddLiquidity","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"NativeAssetAmount":"1000","ExternalAssetAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
+      servers:
+        - url: 'http://0.0.0.0:1317'
+    servers:
+      - url: 'http://0.0.0.0:1317'
+  /clp/swap:
+    post:
+      description: Auto generated using Swagger Inspector
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sent_asset:
+                  type: object
+                  properties:
+                    symbol:
+                      type: string
+                    ticker:
+                      type: string
+                    source_chain:
+                      type: string
+                base_req:
+                  type: object
+                  properties:
+                    chain_id:
+                      type: string
+                    from:
+                      type: string
+                received_asset:
+                  type: object
+                  properties:
+                    symbol:
+                      type: string
+                    ticker:
+                      type: string
+                    source_chain:
+                      type: string
+                signer:
+                  type: string
+                sent_amount:
+                  type: string
+            examples:
+              '0':
+                value: |-
+                  {
+                    "base_req": {
+                      "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+                      "chain_id": "sifnode"
+                    },
+                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+                    "sent_asset": {
+                      "source_chain" : "ROWAN",
+                      "symbol" : "ETHROWAN",
+                      "ticker" :"ETH"
+                    },
+                    "received_asset": {
+                      "source_chain" : "ROWAN",
+                      "symbol" : "ETHROWAN",
+                      "ticker" :"ETH"
+                    },
+                    "sent_amount": "10"
+                  }
+      responses:
+        '200':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  value:
+                    type: object
+                    properties:
+                      msg:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            value:
+                              type: object
+                              properties:
+                                Signer:
+                                  type: string
+                                SentAmount:
+                                  type: string
+                                ReceivedAsset:
+                                  type: object
+                                  properties:
+                                    symbol:
+                                      type: string
+                                    ticker:
+                                      type: string
+                                    source_chain:
+                                      type: string
+                                SentAsset:
+                                  type: object
+                                  properties:
+                                    symbol:
+                                      type: string
+                                    ticker:
+                                      type: string
+                                    source_chain:
+                                      type: string
+                      fee:
+                        type: object
+                        properties:
+                          amount:
+                            type: array
+                            items:
+                              type: string
+                          gas:
+                            type: string
+                      memo:
+                        type: string
+                      signatures: {}
+              examples:
+                '0':
+                  value: >-
+                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/Swap","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","SentAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"ReceivedAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"SentAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
+      servers:
+        - url: 'http://0.0.0.0:1317'
+    servers:
+      - url: 'http://0.0.0.0:1317'
+  /clp/createPool:
+    post:
+      description: Auto generated using Swagger Inspector
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                external_asset:
+                  type: object
+                  properties:
+                    symbol:
+                      type: string
+                    ticker:
+                      type: string
+                    source_chain:
+                      type: string
+                external_asset_amount:
+                  type: string
+                native_asset_amount:
+                  type: string
+                base_req:
+                  type: object
+                  properties:
+                    chain_id:
+                      type: string
+                    from:
+                      type: string
+                signer:
+                  type: string
+            examples:
+              '0':
+                value: |-
+                  {
+                    "base_req": {
+                      "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+                      "chain_id": "sifnode"
+                    },
+                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+                    "external_asset": {
+                      "source_chain" : "ROWAN",
+                      "symbol" : "ETHROWAN",
+                      "ticker" :"ETH"
+                    },
+                    "native_asset_amount": "1000",
+                    "external_asset_amount": "10"
+                  }
+      responses:
+        '200':
+          description: Auto generated using Swagger Inspector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  value:
+                    type: object
+                    properties:
+                      msg:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            value:
+                              type: object
+                              properties:
+                                Signer:
+                                  type: string
+                                ExternalAsset:
+                                  type: object
+                                  properties:
+                                    symbol:
+                                      type: string
+                                    ticker:
+                                      type: string
+                                    source_chain:
+                                      type: string
+                                NativeAssetAmount:
+                                  type: string
+                                ExternalAssetAmount:
+                                  type: string
+                      fee:
+                        type: object
+                        properties:
+                          amount:
+                            type: array
+                            items:
+                              type: string
+                          gas:
+                            type: string
+                      memo:
+                        type: string
+                      signatures: {}
+              examples:
+                '0':
+                  value: >-
+                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/CreatePool","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"NativeAssetAmount":"1000","ExternalAssetAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
+      servers:
+        - url: 'http://0.0.0.0:1317'
+    servers:
+      - url: 'http://0.0.0.0:1317'

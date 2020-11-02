@@ -102,7 +102,7 @@ func TestLockEventToCosmosMsg(t *testing.T) {
 
 func TestMsgBurnToProphecyClaim(t *testing.T) {
 	// Parse expected symbol
-	res := strings.SplitAfter(TestSymbol, "PEGGY")
+	res := strings.SplitAfter(TestSymbol, strings.ToUpper(defaultPrefix))
 	symbol := strings.Join(res[1:], "")
 
 	// Set up expected ProphecyClaim
