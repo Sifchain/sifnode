@@ -10,6 +10,8 @@ import Modal from "@/components/shared/Modal.vue";
 import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
+import ModalView from "@/components/shared/ModalView.vue";
+import ConfirmationDialog from "@/components/confirmationDialog/ConfirmationDialog.vue";
 
 export default defineComponent({
   components: {
@@ -19,6 +21,8 @@ export default defineComponent({
     Modal,
     PriceCalculation,
     SelectTokenDialog,
+    ModalView,
+    ConfirmationDialog,
   },
 
   setup() {
@@ -29,10 +33,18 @@ export default defineComponent({
     const toSymbol = ref<string | null>(null);
     const toAmount = ref<string>("0");
 
+    // const showTransactionModal = ref<boolean>(true);
+
+    const mockTransactionState = ref<
+      "selecting" | "confirming" | "confirmed" | "failed"
+    >("selecting");
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
     });
+    function requestTransactionModalClose() {
+      mockTransactionState.value = "selecting";
+    }
 
     const balances = computed(() => {
       return [...store.wallet.eth.balances, ...store.wallet.sif.balances];
@@ -40,8 +52,8 @@ export default defineComponent({
 
     const {
       state,
-      fromFieldAmount,
-      toFieldAmount,
+      // fromFieldAmount,
+      // toFieldAmount,
       priceMessage,
     } = useSwapCalculator({
       balances,
@@ -52,7 +64,16 @@ export default defineComponent({
       toSymbol,
       marketPairFinder,
     });
-
+    function handleNextStepClicked() {
+      mockTransactionState.value = "confirming";
+      setTimeout(() => {
+        mockTransactionState.value = "confirmed";
+      }, 1000);
+      // alert(
+      //   `Swapping ${fromFieldAmount.value?.toFormatted()} for ${toFieldAmount.value?.toFormatted()}!`
+      // );
+    }
+    // handleNextStepClicked();
     return {
       connected,
       connectedText,
@@ -96,11 +117,7 @@ export default defineComponent({
       handleToFocused() {
         selectedField.value = "to";
       },
-      handleNextStepClicked() {
-        alert(
-          `Swapping ${fromFieldAmount.value?.toFormatted()} for ${toFieldAmount.value?.toFormatted()}!`
-        );
-      },
+      handleNextStepClicked,
       handleBlur() {
         selectedField.value = null;
       },
@@ -113,6 +130,14 @@ export default defineComponent({
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;
       }),
+      mockTransactionState,
+      transactionModalOpen: computed(() => {
+        return ["confirming", "confirmed"].includes(mockTransactionState.value);
+      }),
+      transactionModalIsConfirmed: computed(() => {
+        return mockTransactionState.value === "confirmed";
+      }),
+      requestTransactionModalClose,
     };
   },
 });
@@ -120,36 +145,46 @@ export default defineComponent({
 
 <template>
   <Layout class="swap">
-    <Modal @close="handleSelectClosed">
-      <template v-slot:activator="{ requestOpen }">
-        <CurrencyPairPanel
-          v-model:fromAmount="fromAmount"
-          v-model:fromSymbol="fromSymbol"
-          fromMax
-          @fromfocus="handleFromFocused"
-          @fromblur="handleBlur"
-          @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
-          v-model:toAmount="toAmount"
-          v-model:toSymbol="toSymbol"
-          @tofocus="handleToFocused"
-          @toblur="handleBlur"
-          @tosymbolclicked="handleToSymbolClicked(requestOpen)"
-        />
-      </template>
-      <template v-slot:default="{ requestClose }">
-        <SelectTokenDialog
-          :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
-          @tokenselected="requestClose"
-        />
-      </template>
-    </Modal>
-    <PriceCalculation>
-      {{ priceMessage }}
-    </PriceCalculation>
-    <ActionsPanel
-      @nextstepclick="handleNextStepClicked"
-      :nextStepAllowed="nextStepAllowed"
-      :nextStepMessage="nextStepMessage"
-    />
+    <div>
+      <Modal @close="handleSelectClosed">
+        <template v-slot:activator="{ requestOpen }">
+          <CurrencyPairPanel
+            v-model:fromAmount="fromAmount"
+            v-model:fromSymbol="fromSymbol"
+            fromMax
+            @fromfocus="handleFromFocused"
+            @fromblur="handleBlur"
+            @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
+            v-model:toAmount="toAmount"
+            v-model:toSymbol="toSymbol"
+            @tofocus="handleToFocused"
+            @toblur="handleBlur"
+            @tosymbolclicked="handleToSymbolClicked(requestOpen)"
+          />
+        </template>
+        <template v-slot:default="{ requestClose }">
+          <SelectTokenDialog
+            :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
+            @tokenselected="requestClose"
+          />
+        </template>
+      </Modal>
+
+      <PriceCalculation>
+        {{ priceMessage }}
+      </PriceCalculation>
+      <ActionsPanel
+        @nextstepclick="handleNextStepClicked"
+        :nextStepAllowed="nextStepAllowed"
+        :nextStepMessage="nextStepMessage"
+      />
+      <ModalView
+        :requestClose="requestTransactionModalClose"
+        :isOpen="transactionModalOpen"
+        ><ConfirmationDialog
+          :confirmed="transactionModalIsConfirmed"
+          :requestClose="requestTransactionModalClose"
+      /></ModalView>
+    </div>
   </Layout>
 </template>

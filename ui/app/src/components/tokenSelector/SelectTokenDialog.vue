@@ -81,6 +81,7 @@ export default defineComponent({
 
 .header {
   position: relative;
+  padding: 15px 15px 0;
 }
 .body {
   padding-top: 14px;

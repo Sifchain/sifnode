@@ -1,30 +1,52 @@
 <template>
-  <router-link class="link" :to="to" :class="{'disabled': disabled}">
-    <div class="icon"></div>
+  <router-link class="link" :to="to" :class="{ disabled: disabled }">
+    <div class="icon-button">
+      <div class="icon"></div>
+      <Icon class="icon-svg" :icon="icon" />
+    </div>
     <div class="label" v-if="label">
       {{ label }}
     </div>
   </router-link>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+import Icon from "@/components/shared/Icon.vue";
+export default defineComponent({
+  components: { Icon },
   props: {
     to: {
-      type: String
+      type: String,
     },
     label: {
-      type: String
+      type: String,
     },
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
+    },
+    icon: {
+      type: String,
     },
   },
-}
+});
 </script>
 
 <style lang="scss" scoped>
+.icon-svg {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 66px;
+  stroke: white;
+}
+.icon-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .icon {
   position: relative;
   width: 55px;
@@ -42,7 +64,7 @@ export default {
     width: 75px;
     height: 75px;
     position: absolute;
-    background: linear-gradient(to bottom, #3D3D3D 0%, #7A7A7A 100%);
+    background: linear-gradient(to bottom, #3d3d3d 0%, #7a7a7a 100%);
     transform: rotate(45deg);
     top: 10px;
     left: 17px;
@@ -75,25 +97,29 @@ export default {
       color: rgba($c_gray_700, 0.38);
     }
   }
-
+  .icon-svg {
+    opacity: 0.5;
+  }
   &.router-link-active {
     pointer-events: none;
 
     .label {
       color: $c_white;
     }
-
+    .icon-svg {
+      opacity: 1;
+    }
     .icon {
       border-color: $c_blue;
       &::after {
-        background: linear-gradient(to bottom, #61A5F6 0%, #A0CAF9 100%);
+        background: linear-gradient(to bottom, #61a5f6 0%, #a0caf9 100%);
       }
       &::before {
-        background: linear-gradient(to bottom, #8BBEF8 0%, #90C2F9 100%);
+        background: linear-gradient(to bottom, #8bbef8 0%, #90c2f9 100%);
       }
     }
   }
-  
+
   &:hover {
     .icon {
       border-color: $c_gray_200;
@@ -104,5 +130,4 @@ export default {
     }
   }
 }
-
 </style>

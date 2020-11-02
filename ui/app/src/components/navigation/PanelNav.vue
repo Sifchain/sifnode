@@ -1,7 +1,7 @@
 <template>
   <div class="panel-nav">
-    <PanelNavItem to="/swap" label="Swap"></PanelNavItem>
-    <PanelNavItem to="/pool" label="Pool"></PanelNavItem>
+    <PanelNavItem to="/swap" icon="arrows" label="Swap"></PanelNavItem>
+    <PanelNavItem to="/pool" icon="circle-half" label="Pool"></PanelNavItem>
     <PanelNavItem to="/" label="Soon" disabled></PanelNavItem>
     <PanelNavItem to="/" label="Soon" disabled></PanelNavItem>
     <PanelNavItem to="/" label="Soon" disabled></PanelNavItem>

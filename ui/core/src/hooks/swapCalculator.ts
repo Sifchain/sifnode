@@ -123,6 +123,7 @@ export function useSwapCalculator(input: {
       return SwapState.ZERO_AMOUNTS;
     if (!balance.value?.greaterThan(fromField.fieldAmount.value || "0"))
       return SwapState.INSUFFICIENT_FUNDS;
+
     return SwapState.VALID_INPUT;
   });
 

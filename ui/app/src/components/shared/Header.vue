@@ -10,26 +10,23 @@
   </header>
 </template>
 
-<script>
-import Menu from './Menu.vue';
-import SifButton from './SifButton.vue';
-import SifSwitch from './SifSwitch.vue';
-import Dropdown from './Dropdown.vue';
+<script lang="ts">
+import { defineComponent } from "vue";
+import Menu from "./Menu.vue";
+import SifSwitch from "./SifSwitch.vue";
 
-export default {
+export default defineComponent({
   components: {
     Menu,
-    SifButton,
     SifSwitch,
-    Dropdown,
   },
 
   data() {
     return {
       typefaceCursive: true,
-    }
+    };
   },
-}
+});
 </script>
 
 <style lang="scss" scoped>
