@@ -33,11 +33,11 @@ start_rest_server() {
 }
 
 #
-# Wait for the p2p port to be active.
+# Wait for the RPC port to be active.
 #
 wait_for_p2p() {
   while ! nc -z localhost 26657; do
-    sleep 2
+    sleep 5
   done
 }
 
