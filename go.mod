@@ -29,7 +29,7 @@ require (
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/miguelmota/go-solidity-sha3 v0.1.0
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
-	github.com/onsi/ginkgo v1.14.0
+	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.1
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1
