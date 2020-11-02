@@ -103,6 +103,9 @@ export default defineComponent({
   text-align: left;
   background: transparent;
   border: none;
+
+  @include listAnimation;
+
   &[disabled] {
     color: #bbb;
     pointer-events: none;

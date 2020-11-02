@@ -2,7 +2,6 @@
 import { defineComponent, ref } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
-import WithWallet from "@/components/wallet/WithWallet.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
 import Modal from "@/components/shared/Modal.vue";
@@ -10,17 +9,16 @@ import { PoolState, usePoolCalculator } from "../../../core/src";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
-import SifButton from "@/components/shared/SifButton.vue";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
+import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 
 export default defineComponent({
   components: {
+    ActionsPanel,
     Layout,
     Modal,
     CurrencyPairPanel,
     SelectTokenDialog,
-    WithWallet,
-    SifButton,
     PriceCalculation,
   },
   setup() {
@@ -161,29 +159,11 @@ export default defineComponent({
       <div>{{ bPerARatioMessage }}</div>
       <div>{{ shareOfPool }}</div>
     </PriceCalculation>
-    <div class="actions">
-      <WithWallet>
-        <template v-slot:disconnected="{ requestDialog }">
-          <div class="wallet-status">No wallet connected 🅧</div>
-          <SifButton primary block @click="requestDialog">
-            Connect Wallet
-          </SifButton>
-        </template>
-        <template v-slot:connected="{ connectedText }"
-          ><div>
-            <div class="wallet-status">Connected to {{ connectedText }} ✅</div>
-            <SifButton
-              block
-              primary
-              :disabled="!nextStepAllowed"
-              @click="handleNextStepClicked"
-            >
-              {{ nextStepMessage }}
-            </SifButton>
-          </div></template
-        >
-      </WithWallet>
-    </div>
+    <ActionsPanel
+      @nextstepclick="handleNextStepClicked"
+      :nextStepAllowed="nextStepAllowed"
+      :nextStepMessage="nextStepMessage"
+    />
   </Layout>
 </template>
 
