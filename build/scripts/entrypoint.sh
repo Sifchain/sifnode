@@ -1,5 +1,46 @@
 #!/bin/sh
+#
+# Sifnode entrypoint.
+#
 
-sifnodecli rest-server --laddr tcp://0.0.0.0:1317 &
-sifnoded start --rpc.laddr tcp://0.0.0.0:26657
-# ebrelayer init tcp://0.0.0.0:26656  ws://localhost:7545/ $($PEGGY_CONTRACT_ADDRESS) $($MONIKER) --chain-id=$(CHAINNET)
+#
+# Daemon.
+#
+start_daemon() {
+  sifnoded start --rpc.laddr tcp://0.0.0.0:26657 &
+}
+
+#
+# Start relayer.
+#
+start_relayer() {
+  wait_for_p2p
+  expect <<EOD
+    spawn ebrelayer init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" "$ETHEREUM_CONTRACT_ADDRESS" "$MONIKER" --chain-id "$CHAINNET" --keyring-backend file
+    expect "Enter keyring passphrase:"
+    send "$PASSWORD\n"
+    expect "Enter keyring passphrase:"
+    send "$PASSWORD\n"
+    expect eof
+EOD
+}
+
+#
+# Rest server.
+#
+start_rest_server() {
+  sifnodecli rest-server --laddr tcp://0.0.0.0:1317
+}
+
+#
+# Wait for the p2p port to be active.
+#
+wait_for_p2p() {
+  while ! nc -z localhost 26657; do
+    sleep 2
+  done
+}
+
+start_daemon
+start_relayer
+start_rest_server
