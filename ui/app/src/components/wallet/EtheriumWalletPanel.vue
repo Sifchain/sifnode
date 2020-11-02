@@ -51,7 +51,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div>
+  <div class="wrapper">
     <div v-if="connected">
       <p>{{ address }}</p>
       <BalanceTable :balances="balances" />
@@ -64,3 +64,8 @@ export default defineComponent({
     >
   </div>
 </template>
+<style scoped>
+.wrapper {
+  padding: 2rem;
+}
+</style>

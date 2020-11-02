@@ -89,7 +89,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div>
+  <div class="wrapper">
     <div v-if="connected">
       <p>{{ address }}</p>
       <BalanceTable :balances="balances" />
@@ -104,7 +104,12 @@ export default defineComponent({
         >
       </div>
       <div v-else>
-        <textarea v-model="mnemonic" placeholder="Mnemonic..."></textarea><br />
+        <textarea
+          class="textarea"
+          v-model="mnemonic"
+          placeholder="Mnemonic..."
+        ></textarea
+        ><br />
         <SifButton secondary @click="connectionStarted = false"
           >Clear</SifButton
         >
@@ -116,8 +121,11 @@ export default defineComponent({
 </template>
 
 <style scoped>
-textarea {
+.textarea {
   width: 100%;
   min-height: 50px;
+}
+.wrapper {
+  padding: 2rem;
 }
 </style>
