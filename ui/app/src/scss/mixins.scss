@@ -29,7 +29,7 @@
   animation: animateIn 150ms ease-out forwards;
   @for $i from 1 through 100 {
     &:nth-child(#{$i}) {
-      animation-delay: 30ms * $i;
+      animation-delay: 30ms * $i + 400ms;
     }
   }
 }
