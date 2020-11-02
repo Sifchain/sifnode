@@ -22,11 +22,21 @@ module.exports = {
     ropsten: {
       provider: function () {
         return new HDWalletProvider(
-          process.env.MNEMONIC,
+          process.env.ETHEREUM_PRIVATE_KEY,
           "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
         );
       },
       network_id: 3,
+      gas: 6000000
+    },
+    mainnet: {
+      provider: function () {
+        return new HDWalletProvider(
+          process.env.ETHEREUM_PRIVATE_KEY,
+          "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+        );
+      },
+      network_id: 1,
       gas: 6000000
     },
     xdai: {
