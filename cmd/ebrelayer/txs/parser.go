@@ -19,7 +19,7 @@ import (
 
 const (
 	nullAddress   = "0x0000000000000000000000000000000000000000"
-	defaultPrefix = "peggy"
+	defaultPrefix = "c"
 )
 
 // EthereumEventToEthBridgeClaim parses and packages an Ethereum event struct with a validator address in an EthBridgeClaim msg
@@ -146,7 +146,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) typ
 		case types.Symbol.String():
 			if claimType == types.MsgBurn {
 				if !strings.Contains(val, defaultPrefix) {
-					log.Fatal("Can only relay burns of 'peggy' prefixed coins")
+					log.Fatalf("Can only relay burns of '%v' prefixed coins", defaultPrefix)
 				}
 				res := strings.SplitAfter(val, defaultPrefix)
 				symbol = strings.ToUpper(strings.Join(res[1:], ""))

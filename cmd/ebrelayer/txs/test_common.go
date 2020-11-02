@@ -24,7 +24,7 @@ const (
 	TestProphecyID            = 20
 	TestNonce                 = 19
 	TestEthTokenAddress       = "0x0000000000000000000000000000000000000000"
-	TestSymbol                = "PEGGYETH"
+	TestSymbol                = "CETH"
 	TestAmount                = 5
 	TestEthereumAddress1      = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207359"
 	TestEthereumAddress2      = "0xc230f38FF05860753840e0d7cbC66128ad308B67"
@@ -83,7 +83,7 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 
 	var symbol string
 	if claimType == types.MsgBurn {
-		res := strings.SplitAfter(TestSymbol, "PEGGY")
+		res := strings.SplitAfter(TestSymbol, strings.ToUpper(defaultPrefix))
 		symbol = strings.Join(res[1:], "")
 	} else {
 		symbol = TestSymbol
