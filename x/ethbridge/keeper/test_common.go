@@ -3,11 +3,11 @@ package keeper
 import (
 	"bytes"
 	"encoding/hex"
-	"strconv"
-	"testing"
-
+	_ "fmt"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
+	"strconv"
+	"testing"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -27,7 +27,7 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	_ "github.com/Sifchain/sifnode/x/ethbridge/types"
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracle "github.com/Sifchain/sifnode/x/oracle"
 	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
@@ -75,6 +75,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ctx = ctx.WithLogger(log.NewNopLogger())
 	cdc := MakeTestCodec()
 
+	bridgeAccount := supply.NewEmptyModuleAccount(types.ModuleName, supply.Burner, supply.Minter)
 	feeCollectorAcc := supply.NewEmptyModuleAccount(auth.FeeCollectorName)
 	notBondedPool := supply.NewEmptyModuleAccount(stakingtypes.NotBondedPoolName, supply.Burner, supply.Staking)
 	bondPool := supply.NewEmptyModuleAccount(stakingtypes.BondedPoolName, supply.Burner, supply.Staking)
@@ -119,12 +120,14 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	stakingKeeper := staking.NewKeeper(cdc, keyStaking, supplyKeeper, paramsKeeper.Subspace(staking.DefaultParamspace))
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
 	oracleKeeper := oracle.NewKeeper(cdc, keyOracle, stakingKeeper, consensusNeeded)
+
 	ethbridgeKeeper := NewKeeper(cdc, supplyKeeper, oracleKeeper)
 
 	// set module accounts
 	err = notBondedPool.SetCoins(totalSupply)
 	require.NoError(t, err)
 
+	supplyKeeper.SetModuleAccount(ctx, bridgeAccount)
 	supplyKeeper.SetModuleAccount(ctx, feeCollectorAcc)
 	supplyKeeper.SetModuleAccount(ctx, bondPool)
 	supplyKeeper.SetModuleAccount(ctx, notBondedPool)
