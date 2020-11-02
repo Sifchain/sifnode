@@ -121,8 +121,6 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
 	oracleKeeper := oracle.NewKeeper(cdc, keyOracle, stakingKeeper, consensusNeeded)
 
-	ethbridgeKeeper := NewKeeper(cdc, supplyKeeper, oracleKeeper)
-
 	// set module accounts
 	err = notBondedPool.SetCoins(totalSupply)
 	require.NoError(t, err)
@@ -132,6 +130,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	supplyKeeper.SetModuleAccount(ctx, bondPool)
 	supplyKeeper.SetModuleAccount(ctx, notBondedPool)
 
+	ethbridgeKeeper := NewKeeper(cdc, supplyKeeper, oracleKeeper)
 	// Setup validators
 	valAddrs := make([]sdk.ValAddress, len(validatorAmounts))
 	for i, amount := range validatorAmounts {
