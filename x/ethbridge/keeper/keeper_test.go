@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/oracle"
-	_ "github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	"strconv"
 	"strings"
@@ -65,6 +65,22 @@ func TestProcessSuccessfulClaim(t *testing.T) {
 	claimBytes, err := json.Marshal(claimContent)
 	claimString := string(claimBytes)
 	fmt.Println(claimString)
+	// TODO: find out why bankkeeper cant see ethbridge for mint fn
 	require.Panics(t, func() { keeper.ProcessSuccessfulClaim(ctx, claimString) }, "the code did not panic")
 
+}
+
+func TestProcessBurn(t *testing.T) {
+	ctx, keeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	coins := sdk.NewCoins(sdk.NewInt64Coin("stake", amount))
+	require.Panics(t, func() { keeper.ProcessBurn(ctx, cosmosReceivers[0], coins) }, "the code did not panic")
+}
+
+func ProcessLock(t *testing.T) {
+
+	ctx, keeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	coins := sdk.NewCoins(sdk.NewInt64Coin("stake", amount))
+	require.Panics(t, func() { keeper.ProcessLock(ctx, cosmosReceivers[0], coins) }, "the code did not panic")
 }
