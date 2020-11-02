@@ -2,9 +2,9 @@
   <div class="modal">
     <slot name="activator" :requestOpen="requestOpen"></slot>
     <teleport to="#portal-target">
-      <transition name="foo">
+      <transition name="fadein">
         <div class="backdrop" v-if="isOpen" @click="requestClose">
-          <Panel class="panel" @click.stop>
+          <Panel class="modal-panel" v-if="isOpen" @click.stop>
             <div class="close" @click="requestClose">&times;</div>
             <slot :requestClose="requestClose"></slot>
           </Panel>
@@ -51,27 +51,31 @@ export default defineComponent({
   color: $c_text;
   cursor: pointer;
 }
-
-.foo-leave-active {
-  transition: opacity 0.2s ease-in-out;
+.modal-panel {
+  position: relative;
+  opacity: 1;
 }
 
-.foo-enter-active {
-  transition: opacity 0.1s ease-in-out;
-  & .panel {
-    transition: transform 0.05s ease-in-out;
+.fadein-leave-active {
+  transition: opacity 0.3s ease-in-out 0.1s;
+  & .modal-panel {
+    transition: opacity 0.1s ease-in-out;
   }
 }
 
-.foo-enter-from {
-  opacity: 0;
-  & .panel {
-    transform: translateY(20px);
+.fadein-enter-active {
+  transition: opacity 0.1s ease-in-out, transform 1s;
+  & .modal-panel {
+    transition: opacity 0.3s ease-in-out 0.1s;
   }
 }
 
-.foo-leave-to {
+.fadein-enter-from,
+.fadein-leave-to {
   opacity: 0;
+  & .modal-panel {
+    opacity: 0;
+  }
 }
 
 .backdrop {
