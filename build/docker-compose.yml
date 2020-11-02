@@ -1,4 +1,9 @@
-version: '3'
+version: '3.8'
+
+x-common-variables: &common-variables
+  CHAINNET: ${CHAINNET}
+  ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
+  ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
 
 services:
   sifnode1:
@@ -8,12 +13,10 @@ services:
       - 26656:26656
       - 26657:26657
     environment:
+      <<: *common-variables
       MONIKER: ${MONIKER1}
-      CHAINNET: ${CHAINNET}
       PASSWORD: ${PASSWORD1}
-      ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY1}
-      ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
     volumes:
       - ./networks/validators/${CHAINNET}/${MONIKER1}:/root:Z
       - ./scripts:/scripts
@@ -29,12 +32,10 @@ services:
       - 28002:26656
       - 28003:26657
     environment:
+      <<: *common-variables
       MONIKER: ${MONIKER2}
-      CHAINNET: ${CHAINNET}
       PASSWORD: ${PASSWORD2}
-      ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY2}
-      ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
     volumes:
       - ./networks/validators/${CHAINNET}/${MONIKER2}:/root:Z
       - ./scripts:/scripts
@@ -50,12 +51,10 @@ services:
       - 28004:26656
       - 28005:26657
     environment:
+      <<: *common-variables
       MONIKER: ${MONIKER3}
-      CHAINNET: ${CHAINNET}
       PASSWORD: ${PASSWORD3}
-      ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY3}
-      ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
     volumes:
       - ./networks/validators/${CHAINNET}/${MONIKER3}:/root:Z
       - ./scripts:/scripts
@@ -71,12 +70,10 @@ services:
       - 28006:26656
       - 28007:26657
     environment:
+      <<: *common-variables
       MONIKER: ${MONIKER4}
-      CHAINNET: ${CHAINNET}
       PASSWORD: ${PASSWORD4}
-      ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY4}
-      ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
     volumes:
       - ./networks/validators/${CHAINNET}/${MONIKER4}:/root:Z
       - ./scripts:/scripts
