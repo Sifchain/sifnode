@@ -14,7 +14,7 @@ namespace :genesis do
     end
 
     desc "Boot the new scaffolded network in docker-compose"
-    task :boot, [:chainnet, :eth_addresses, :eth_keys, :eth_websocket] do |t, args|
+    task :boot, [:chainnet, :eth_address, :eth_keys, :eth_websocket] do |t, args|
       trap('SIGINT') { puts "Exiting..."; exit }
 
       if args[:chainnet].nil?
@@ -23,14 +23,10 @@ namespace :genesis do
       end
 
       with_eth = ""
-      if [args[:eth_addresses], args[:eth_keys]].all?
-        if args[:eth_addresses].split(" ").size != args[:eth_keys].split(" ").size
-          puts "skipping the provided eth config, addresses/keys mismatch"
-        else
-           with_eth = eth_config(eth_addresses: args[:eth_addresses].split(" "),
-                                 eth_keys: args[:eth_keys].split(" "),
-                                 eth_websocket: args[:eth_websocket])
-        end
+      if [args[:eth_address], args[:eth_keys], args[:eth_websocket]].all?
+        with_eth = eth_config(eth_address: args[:eth_address],
+                              eth_keys: args[:eth_keys].split(" "),
+                              eth_websocket: args[:eth_websocket])
       else
         puts "skipping eth config as not provided"
       end
@@ -93,10 +89,11 @@ def network_config(chainnet)
 end
 
 # ethereum config
-def eth_config(eth_addresses:, eth_keys:, eth_websocket:)
-  config = ""
-  eth_addresses.each_with_index do |address, idx|
-    config += "ETHEREUM_CONTRACT_ADDRESS#{idx+1}=#{address} ETHEREUM_PRIVATE_KEY#{idx+1}=#{eth_keys[idx]} "
+def eth_config(eth_address:, eth_keys:, eth_websocket:)
+  config = "ETHEREUM_CONTRACT_ADDRESS=#{eth_address} "
+
+  eth_keys.each_with_index do |address, idx|
+    config += " ETHEREUM_PRIVATE_KEY#{idx+1}=#{eth_keys[idx]} "
   end
 
   config += "ETHEREUM_WEBSOCKET_ADDRESS=#{eth_websocket}"

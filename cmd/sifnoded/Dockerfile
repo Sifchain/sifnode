@@ -32,6 +32,9 @@ EXPOSE 26657
 
 RUN apk add --update --no-cache $PACKAGES
 
+# Copy the smart contract ABIs over.
+ADD cmd/ebrelayer/contract/generated  /sif/cmd/ebrelayer/contract/generated
+
 # Copy the compiled binaires over.
 COPY --from=build /go/bin/sifnoded /usr/bin/sifnoded
 COPY --from=build /go/bin/sifnodecli /usr/bin/sifnodecli
