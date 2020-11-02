@@ -8,6 +8,7 @@ import BalanceField from "./BalanceField.vue";
 import AssetItem from "@/components/tokenSelector/AssetItem.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import SifInput from "@/components/shared/SifInput.vue";
+import Carret from "@/components/shared/Carret.vue";
 
 export type BalanceShape = {
   symbol: string;
@@ -25,7 +26,7 @@ export default defineComponent({
   },
   inheritAttrs: false,
   emits: ["focus", "blur", "selectsymbol", "update:amount", "update:symbol"],
-  components: { BalanceField, AssetItem, SifButton, SifInput },
+  components: { BalanceField, AssetItem, SifButton, Carret, SifInput },
   setup(props, context) {
     const localAmount = computed({
       get: () => props.amount,
@@ -77,7 +78,8 @@ export default defineComponent({
         block
         @click="$emit('selectsymbol')"
       >
-        <span><AssetItem :symbol="localSymbol" /> ▾ </span>
+        <span><AssetItem :symbol="localSymbol" /></span>
+        <span><Carret /></span>
       </SifButton>
       <SifButton v-else primary block @click="$emit('selectsymbol')">
         <span>Select</span>

@@ -1,6 +1,6 @@
 <template>
   <button class="btn" :class="classes" :disabled="disabled">
-    <span class="text">
+    <span class="content">
       <slot></slot>
     </span>
   </button>
@@ -152,6 +152,10 @@ export default defineComponent({
 
   &.medium {
     padding: 0 30px;
+  }
+  & .content {
+    display: flex;
+    justify-content: center;
   }
 }
 </style>
