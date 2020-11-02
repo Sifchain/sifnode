@@ -49,6 +49,6 @@ truffle deploy --network mainnet
 You can replace mainnet with ropsten or local, whichever network you would like to deploy to.
 
 
-5. Make sure to record the smart contract addresses and share them with the team so that you can interact with them in the future.
+5. Make sure to record the smart contract addresses and share them with the team so that you can interact with them in the future. Then git add the build folder, commit it and push it to your own branch, then merge it with develop so that we have the records documented of the smart contract address in the version control history.
 
 6. Congrats, you've successfully deployed your contracts to a live ethereum network.
