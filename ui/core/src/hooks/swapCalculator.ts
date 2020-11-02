@@ -9,6 +9,22 @@ export enum SwapState {
   INSUFFICIENT_FUNDS,
   VALID_INPUT,
 }
+function trimZeros(amount: string) {
+  return amount.replace(/0+$/, "").replace(/\.$/, ".0");
+}
+
+function formatValue(
+  selectedField: string | null,
+  asset: Asset | null,
+  amount: string
+) {
+  if (selectedField === null) {
+    if (asset) {
+      return trimZeros(AssetAmount(asset, amount).toFixed());
+    }
+  }
+  return amount;
+}
 
 export function useSwapCalculator(input: {
   fromAmount: Ref<string>;
@@ -48,24 +64,17 @@ export function useSwapCalculator(input: {
   });
 
   effect(() => {
-    // Deselect a field formats all values
-    if (input.selectedField.value === null) {
-      const fromAsset = fromField.asset.value;
-      if (fromAsset) {
-        input.fromAmount.value = AssetAmount(
-          fromAsset,
-          input.fromAmount.value
-        ).toFixed();
-      }
+    input.fromAmount.value = formatValue(
+      input.selectedField.value,
+      fromField.asset.value,
+      input.fromAmount.value
+    );
 
-      const toAsset = fromField.asset.value;
-      if (toAsset) {
-        input.toAmount.value = AssetAmount(
-          toAsset,
-          input.toAmount.value
-        ).toFixed();
-      }
-    }
+    input.toAmount.value = formatValue(
+      input.selectedField.value,
+      toField.asset.value,
+      input.toAmount.value
+    );
 
     // Changing the "from" field recalculates the "to" amount
     if (
@@ -78,9 +87,11 @@ export function useSwapCalculator(input: {
       const assetPrice = marketPair.value.priceAsset(asset);
 
       input.toAmount.value = assetPrice
-        ? assetPrice
-            .multiply(fromField.fieldAmount.value)
-            .toFixed(asset.decimals)
+        ? trimZeros(
+            assetPrice
+              .multiply(fromField.fieldAmount.value)
+              .toFixed(asset.decimals)
+          )
         : "0";
     }
 
@@ -94,7 +105,11 @@ export function useSwapCalculator(input: {
       const asset = toField.asset.value;
       const assetPrice = marketPair.value.priceAsset(asset);
       input.fromAmount.value = assetPrice
-        ? assetPrice.multiply(toField.fieldAmount.value).toFixed(asset.decimals)
+        ? trimZeros(
+            assetPrice
+              .multiply(toField.fieldAmount.value)
+              .toFixed(asset.decimals)
+          )
         : "0";
     }
   });
