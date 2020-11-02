@@ -29,8 +29,8 @@ require (
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/miguelmota/go-solidity-sha3 v0.1.0
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
+	github.com/onsi/gomega v1.10.3
 	github.com/onsi/ginkgo v1.14.2
-	github.com/onsi/gomega v1.10.1
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rjeczalik/notify v0.9.2 // indirect
@@ -53,8 +53,6 @@ require (
 	github.com/wsddn/go-ecdh v0.0.0-20161211032359-48726bab9208 // indirect
 	github.com/yelinaung/go-haikunator v0.0.0-20150320004105-1249cae259af
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
-	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
-	golang.org/x/sys v0.0.0-20200922070232-aee5d888a860 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
 	gopkg.in/ini.v1 v1.61.0 // indirect
