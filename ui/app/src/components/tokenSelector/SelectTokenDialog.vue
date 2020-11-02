@@ -41,6 +41,7 @@ export default defineComponent({
       placeholder="Search name or paste address"
       class="sif-input"
       type="text"
+      v-model="searchText"
     />
     <h4 class="list-title">Token Name</h4>
   </div>
