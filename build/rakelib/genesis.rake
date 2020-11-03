@@ -4,7 +4,7 @@ namespace :genesis do
   namespace :network do
     desc "Scaffold a new genesis network for use in docker-compose"
     task :scaffold, [:chainnet] do |t, args|
-      if args[:chainnet] == nil
+      if args[:chainnet].nil?
         puts "Please provide chainnet argument. ie testnet, mainnet"
         exit 1
       end
@@ -14,11 +14,17 @@ namespace :genesis do
     end
 
     desc "Boot the new scaffolded network in docker-compose"
-    task :boot, [:chainnet] do |t, args|
-      if args[:chainnet] == nil
+    task :boot, [:chainnet, :eth_address, :eth_keys, :eth_websocket] do |t, args|
+      trap('SIGINT') { puts "Exiting..."; exit }
+
+      if args[:chainnet].nil?
         puts "Please provide chainnet argument. ie testnet, mainnet"
         exit(1)
       end
+
+      with_eth = eth_config(eth_address: args[:eth_address],
+                            eth_keys: args[:eth_keys].split(" "),
+                            eth_websocket: args[:eth_websocket])
 
       if !File.file?(network_config(args[:chainnet]))
         puts "the file #{network_config(args[:chainnet])} does not exist!"
@@ -26,7 +32,7 @@ namespace :genesis do
       end
 
       build_docker_image(args[:chainnet])
-      boot_docker_network({chainnet: args[:chainnet], seed_network_address: "192.168.2.0/24"})
+      boot_docker_network(chainnet: args[:chainnet], seed_network_address: "192.168.2.0/24", eth_config: with_eth)
     end
 
     desc "Expose local seed node to the outside world"
@@ -55,19 +61,31 @@ def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:, ne
 end
 
 # Boot the new network.
-def boot_docker_network(chainnet:, seed_network_address:)
+def boot_docker_network(chainnet:, seed_network_address:, eth_config:)
   network = YAML.load_file(network_config(chainnet))
 
   cmd = "CHAINNET=#{chainnet} "
   network.each_with_index do |node, idx|
-    cmd += "MONIKER#{idx+1}=#{node['moniker']} IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
+    cmd += "MONIKER#{idx+1}=#{node['moniker']} PASSWORD#{idx+1}=#{node['password']} IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
   end
 
-  cmd += "IPV4_SUBNET=#{seed_network_address} docker-compose -f ./docker-compose.yml up"
+  cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f ./genesis/docker-compose.yml up"
   system(cmd)
 end
 
 # Build docker image for the new network
 def build_docker_image(chainnet)
-  system("cd .. && docker build -f ./cmd/sifnoded/Dockerfile -t sifchain/sifnoded:#{chainnet} .")
+  system("cd .. && docker build -f ./build/genesis/Dockerfile -t sifchain/sifnoded:#{chainnet} .")
+end
+
+# ethereum config
+def eth_config(eth_address:, eth_keys:, eth_websocket:)
+  config = "ETHEREUM_CONTRACT_ADDRESS=#{eth_address} "
+
+  eth_keys.each_with_index do |address, idx|
+    config += " ETHEREUM_PRIVATE_KEY#{idx+1}=#{eth_keys[idx]} "
+  end
+
+  config += "ETHEREUM_WEBSOCKET_ADDRESS=#{eth_websocket}"
+  return config
 end
