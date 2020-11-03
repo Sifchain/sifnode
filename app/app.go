@@ -2,6 +2,8 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"io"
 	"os"
 
@@ -39,6 +41,7 @@ var (
 		staking.AppModuleBasic{},
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
+		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
 	)
@@ -55,6 +58,7 @@ func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
 
 	ModuleBasics.RegisterCodec(cdc)
+	vesting.RegisterCodec(cdc) // Need to verify if we need this
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 
@@ -82,7 +86,8 @@ type NewApp struct {
 	EthBridgeKeeper ethbridge.Keeper
 	OracleKeeper    oracle.Keeper
 
-	mm *module.Manager
+	clpKeeper clp.Keeper
+	mm        *module.Manager
 
 	sm *module.SimulationManager
 }
@@ -107,6 +112,7 @@ func NewInitApp(
 		params.StoreKey,
 		oracle.StoreKey,
 		ethbridge.StoreKey,
+		clp.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -124,6 +130,7 @@ func NewInitApp(
 	app.subspaces[auth.ModuleName] = app.paramsKeeper.Subspace(auth.DefaultParamspace)
 	app.subspaces[bank.ModuleName] = app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
+	app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
 
 	app.AccountKeeper = auth.NewAccountKeeper(
 		app.cdc,
@@ -170,6 +177,12 @@ func NewInitApp(
 		app.OracleKeeper,
 	)
 
+	app.clpKeeper = clp.NewKeeper(
+		app.cdc,
+		keys[clp.StoreKey],
+		app.bankKeeper,
+		app.subspaces[clp.ModuleName])
+
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.AccountKeeper),
@@ -178,6 +191,7 @@ func NewInitApp(
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
+		clp.NewAppModule(app.clpKeeper, app.bankKeeper),
 	)
 
 	app.mm.SetOrderEndBlockers(staking.ModuleName)
@@ -190,6 +204,7 @@ func NewInitApp(
 		genutil.ModuleName,
 		oracle.ModuleName,
 		ethbridge.ModuleName,
+		clp.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
@@ -241,6 +256,19 @@ func (app *NewApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.Re
 	return app.mm.EndBlock(ctx, req)
 }
 
+func (app *NewApp) Codec() *codec.Codec {
+	return app.cdc
+}
+
+func (app *NewApp) GetKey(storeKey string) *sdk.KVStoreKey {
+	return app.keys[storeKey]
+}
+
+// GetTKey returns the TransientStoreKey for the provided store key
+func (app *NewApp) GetTKey(storeKey string) *sdk.TransientStoreKey {
+	return app.tKeys[storeKey]
+}
+
 func (app *NewApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
@@ -252,10 +280,6 @@ func (app *NewApp) ModuleAccountAddrs() map[string]bool {
 	}
 
 	return modAccAddrs
-}
-
-func (app *NewApp) Codec() *codec.Codec {
-	return app.cdc
 }
 
 func (app *NewApp) SimulationManager() *module.SimulationManager {

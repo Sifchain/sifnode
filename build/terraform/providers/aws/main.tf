@@ -1,3 +1,13 @@
+terraform {
+  required_providers {
+    kustomization = {
+      source  = "kbst/kustomization"
+      version = "~> 0.2.2"
+    }
+  }
+  required_version = ">= 0.12"
+}
+
 provider "aws" {
   region = var.region
 }
@@ -16,6 +26,10 @@ data "aws_eks_cluster" "cluster" {
 
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_id
+}
+
+data "aws_iam_role" "cluster" {
+  name = module.eks.worker_iam_role_name
 }
 
 module "vpc" {
@@ -69,4 +83,54 @@ module "eks" {
 
   cluster_version  = var.cluster_version
   write_kubeconfig = true
+}
+
+resource "aws_iam_policy" "policy" {
+  name   = var.policy_name
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AttachVolume",
+        "ec2:CreateSnapshot",
+        "ec2:CreateTags",
+        "ec2:CreateVolume",
+        "ec2:DeleteSnapshot",
+        "ec2:DeleteTags",
+        "ec2:DeleteVolume",
+        "ec2:DescribeInstances",
+        "ec2:DescribeSnapshots",
+        "ec2:DescribeTags",
+        "ec2:DescribeVolumes",
+        "ec2:DetachVolume"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_policy_attachment" "attach" {
+  name       = var.policy_name
+  roles      = [
+    data.aws_iam_role.cluster.id
+  ]
+  policy_arn = aws_iam_policy.policy.arn
+}
+
+provider "kustomization" {
+  kubeconfig_raw = module.eks.kubeconfig
+}
+
+data "kustomization" "manifests" {
+  path = var.ebs_csi_driver
+}
+
+resource "kustomization_resource" "resources" {
+  for_each = data.kustomization.manifests.ids
+  manifest = data.kustomization.manifests.manifests[each.value]
 }

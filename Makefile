@@ -43,7 +43,7 @@ feature-tests:
 	@go test -v ./test/bdd --godog.format=pretty --godog.random -race -coverprofile=.coverage.txt
 
 run:
-	go run ./cmd/sifd start
+	go run ./cmd/sifnoded start
 
 build-image:
 	docker build -t sifchain/$(BINARY):$(CHAINNET) -f ./cmd/$(BINARY)/Dockerfile .
