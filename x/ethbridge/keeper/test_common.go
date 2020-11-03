@@ -3,7 +3,6 @@ package keeper
 import (
 	"bytes"
 	"encoding/hex"
-	_ "fmt"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	"strconv"
