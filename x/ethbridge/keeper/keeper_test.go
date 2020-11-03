@@ -55,7 +55,7 @@ func TestProcessClaimLock(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, status.Text, oracle.PendingStatusText)
-
+	// duplicate execution
 	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
@@ -244,7 +244,6 @@ func TestProcessLock(t *testing.T) {
 	require.Equal(t, receiverCoins.String(), "10stake")
 
 	err = keeper.ProcessLock(ctx, cosmosReceivers[0], coins)
-	//require.Panics(t, func() { keeper.ProcessLock(ctx, cosmosReceivers[0], coins) }, "the code did not panic")
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), string(""))
