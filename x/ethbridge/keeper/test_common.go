@@ -76,6 +76,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	cdc := MakeTestCodec()
 
 	bridgeAccount := supply.NewEmptyModuleAccount(types.ModuleName, supply.Burner, supply.Minter)
+
 	feeCollectorAcc := supply.NewEmptyModuleAccount(auth.FeeCollectorName)
 	notBondedPool := supply.NewEmptyModuleAccount(stakingtypes.NotBondedPoolName, supply.Burner, supply.Staking)
 	bondPool := supply.NewEmptyModuleAccount(stakingtypes.BondedPoolName, supply.Burner, supply.Staking)
@@ -86,12 +87,12 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	blacklistedAddrs[bondPool.GetAddress().String()] = true
 
 	paramsKeeper := params.NewKeeper(cdc, keyParams, tkeyParams)
-
+	//accountKeeper gets maccParams in 0.40, module accounts moved from supplykeeper to authkeeper
 	accountKeeper := auth.NewAccountKeeper(
 		cdc,    // amino codec
 		keyAcc, // target store
 		paramsKeeper.Subspace(auth.DefaultParamspace),
-		auth.ProtoBaseAccount, // prototype
+		auth.ProtoBaseAccount, // prototype,
 	)
 
 	bankKeeper := bank.NewBaseKeeper(
@@ -104,12 +105,12 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		auth.FeeCollectorName:          nil,
 		stakingtypes.NotBondedPoolName: {supply.Burner, supply.Staking},
 		stakingtypes.BondedPoolName:    {supply.Burner, supply.Staking},
+		types.ModuleName:               {supply.Burner, supply.Minter},
 	}
 
 	if extraMaccPerm != "" {
 		maccPerms[extraMaccPerm] = []string{supply.Burner, supply.Minter}
 	}
-
 	supplyKeeper := supply.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
 
 	initTokens := sdk.TokensFromConsensusPower(10000)
