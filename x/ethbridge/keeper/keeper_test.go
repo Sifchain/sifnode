@@ -23,9 +23,9 @@ var (
 
 func TestProcessClaim(t *testing.T) {
 	ctx, keeper, _, _, _, validatorAddresses := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
+
 	nonce, err := strconv.Atoi("1")
 	require.NoError(t, err)
 	claimType, err := types.StringToClaimType("lock")
@@ -72,7 +72,10 @@ func TestProcessClaim(t *testing.T) {
 }
 
 func TestProcessSuccessfulClaim(t *testing.T) {
-	ctx, keeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins, sdk.Coins(sdk.Coins{}))
 
 	claimType, err := types.StringToClaimType("lock")
 	require.NoError(t, err)
@@ -83,54 +86,18 @@ func TestProcessSuccessfulClaim(t *testing.T) {
 	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
 	require.NoError(t, err)
 
-	//	require.Panics(t, func() { keeper.ProcessSuccessfulClaim(ctx, claimString) }, "the code did not panic")
-	/*
-		validator1Pow3 := validatorAddresses[0]
-		validator2Pow3 := validatorAddresses[1]
-		nonce, err := strconv.Atoi("1")
-		require.NoError(t, err)
-		ethBridgeClaim := types.NewEthBridgeClaim(
-			5777,
-			ethBridgeAddress, // bridge registry
-			nonce,
-			symbol,
-			tokenContractAddress, // loopring
-			ethereumSender,
-			cosmosReceivers[0],
-			validator1Pow3,
-			amount,
-			claimType,
-		)
+	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 
-		status, err := keeper.ProcessClaim(ctx, ethBridgeClaim)
+	require.Equal(t, receiverCoins.String(), "10cstake")
 
-		require.NoError(t, err)
-		require.Equal(t, status.Text, oracle.PendingStatusText)
+	// duplicate processSuccessClaim
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
+	require.NoError(t, err)
 
-		require.Panics(t, func() { keeper.ProcessSuccessfulClaim(ctx, claimString) }, "the code did not panic")
+	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 
-		ethBridgeClaim = types.NewEthBridgeClaim(
-			5777,
-			ethBridgeAddress, // bridge registry
-			nonce,
-			symbol,
-			tokenContractAddress, // loopring
-			ethereumSender,
-			cosmosReceivers[0],
-			validator2Pow3,
-			amount,
-			claimType,
-		)
-
-		status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
-
-		require.NoError(t, err)
-		require.Equal(t, status.Text, oracle.SuccessStatusText)
-
-		// I dont think this one should panic, cannot find ethbridge module account for mint
-		err = keeper.ProcessSuccessfulClaim(ctx, claimString)
-		fmt.Println(err)
-	*/
+	//require.Equal(t, "10cstake", receiverCoins.String())
+	//actually is 20, could this be infinite mint?
 }
 
 func TestProcessBurn(t *testing.T) {
