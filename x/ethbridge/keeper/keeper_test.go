@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"encoding/json"
-	_ "fmt"
+	"fmt"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -184,7 +184,7 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 
-	//require.Equal(t, "10cstake", receiverCoins.String())
+	//require.Equal(t, "10stake", receiverCoins.String())
 	//actually is 20, could this be infinite mint?
 }
 func TestProcessBurn(t *testing.T) {
@@ -194,6 +194,21 @@ func TestProcessBurn(t *testing.T) {
 	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], coins)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
+
+	//process successful claim to get stake
+
+	claimType, err := types.StringToClaimType("burn")
+	require.NoError(t, err)
+	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
+
+	claimBytes, err := json.Marshal(claimContent)
+	claimString := string(claimBytes)
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
+	require.NoError(t, err)
+
+	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], coins)
+	fmt.Println(err)
+
 }
 
 func ProcessLock(t *testing.T) {
