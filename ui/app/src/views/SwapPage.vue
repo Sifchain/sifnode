@@ -12,6 +12,7 @@ import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
 import ConfirmationDialog from "@/components/confirmationDialog/ConfirmationDialog.vue";
+import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 
 export default defineComponent({
   components: {
@@ -28,13 +29,12 @@ export default defineComponent({
   setup() {
     const { api, store } = useCore();
     const marketPairFinder = api.MarketService.find;
-    const fromSymbol = ref<string | null>(null);
-    const fromAmount = ref<string>("0");
-    const toSymbol = ref<string | null>(null);
-    const toAmount = ref<string>("0");
-
-    // const showTransactionModal = ref<boolean>(true);
-
+    const {
+      fromSymbol,
+      fromAmount,
+      toSymbol,
+      toAmount,
+    } = useCurrencyFieldState();
     const mockTransactionState = ref<
       "selecting" | "confirming" | "confirmed" | "failed"
     >("selecting");
@@ -73,7 +73,7 @@ export default defineComponent({
       //   `Swapping ${fromFieldAmount.value?.toFormatted()} for ${toFieldAmount.value?.toFormatted()}!`
       // );
     }
-    // handleNextStepClicked();
+
     return {
       connected,
       connectedText,

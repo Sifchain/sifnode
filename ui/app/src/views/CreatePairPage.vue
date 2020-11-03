@@ -11,6 +11,7 @@ import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
+import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 
 export default defineComponent({
   components: {
@@ -26,10 +27,12 @@ export default defineComponent({
     const marketPairFinder = api.MarketService.find;
     const selectedField = ref<"from" | "to" | null>(null);
 
-    const fromAmount = ref("0");
-    const fromSymbol = ref<string | null>(null);
-    const toAmount = ref("0");
-    const toSymbol = ref<string | null>(null);
+    const {
+      fromSymbol,
+      fromAmount,
+      toSymbol,
+      toAmount,
+    } = useCurrencyFieldState();
 
     const priceMessage = ref("");
 

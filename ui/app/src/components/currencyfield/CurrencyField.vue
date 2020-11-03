@@ -25,7 +25,14 @@ export default defineComponent({
     max: { type: Boolean, default: false },
   },
   inheritAttrs: false,
-  emits: ["focus", "blur", "selectsymbol", "update:amount", "update:symbol"],
+  emits: [
+    "focus",
+    "blur",
+    "selectsymbol",
+    "update:amount",
+    "update:symbol",
+    "max-clicked",
+  ],
   components: { BalanceField, AssetItem, SifButton, Caret, SifInput },
   setup(props, context) {
     const localAmount = computed({
