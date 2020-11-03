@@ -9,3 +9,5 @@ frontend/.cache
 .environments
 build/networks
 .env
+.backups
+.ssh
