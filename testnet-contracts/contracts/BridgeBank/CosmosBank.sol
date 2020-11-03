@@ -122,6 +122,28 @@ contract CosmosBank {
     }
 
     /*
+     * @dev: Deploys a new BridgeToken contract
+     *
+     * @param _symbol: The BridgeToken's symbol
+     *
+     * @note the eRowan symbol needs to be "PEGGYeRowan" so that it integrates correctly with the cosmos bridge 
+     */
+    function useExistingBridgeToken(address _contractAddress)
+        internal
+        returns (address)
+    {
+        bridgeTokenCount = bridgeTokenCount.add(1);
+
+        string memory _symbol = BridgeToken(_contractAddress).symbol();
+        // Set address in tokens mapping
+        address newBridgeTokenAddress = _contractAddress;
+        controlledBridgeTokens[_symbol] = newBridgeTokenAddress;
+
+        emit LogNewBridgeToken(newBridgeTokenAddress, _symbol);
+        return newBridgeTokenAddress;
+    }
+
+    /*
      * @dev: Mints new cosmos tokens
      *
      * @param _cosmosSender: The sender's Cosmos address in bytes.

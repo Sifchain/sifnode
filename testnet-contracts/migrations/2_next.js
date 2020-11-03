@@ -98,7 +98,7 @@ module.exports = function(deployer, network, accounts) {
     // 2. Deploy Valset contract:
     //    Gas used:          909,879 Gwei
     //    Total cost:    0.01819758 Ether
-    await deployer.deploy(Valset, operator, initialValidators, initialPowers, {
+    const valset = await deployer.deploy(Valset, operator, initialValidators, initialPowers, {
       gas: 6721975,
       from: operator
     });
@@ -134,6 +134,7 @@ module.exports = function(deployer, network, accounts) {
       operator,
       Oracle.address,
       CosmosBridge.address,
+      operator,
       {
         gas: 6721975,
         from: operator
@@ -143,6 +144,13 @@ module.exports = function(deployer, network, accounts) {
     // 6. Deploy BridgeRegistry contract:
     //    Gas used:          363,370 Gwei
     //    Total cost:     0.0072674 Ether
+    try {
+      const getOperator = await valset.operator({from: operator})
+      console.log("Got operator from smart valset contract: ", getOperator)
+    } catch (error) {
+      console.log("Error getting operator from valset: ", error.message)
+    }
+    
     return deployer.deploy(
       BridgeRegistry,
       CosmosBridge.address,
@@ -154,5 +162,6 @@ module.exports = function(deployer, network, accounts) {
         from: operator
       }
     );
+    
   });
 };
