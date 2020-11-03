@@ -67,3 +67,8 @@ variable "ebs_csi_driver" {
   description = "GitHub path to the CSI plugin for data persistence"
   default     = "github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/?ref=master"
 }
+
+variable "profile" {
+  description = "AWS profile settings"
+  default = "default"
+}
