@@ -84,7 +84,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
 	// Verify min threshold
 	MinThreshold := keeper.GetParams(ctx).MinCreatePoolThreshold
-	if msg.NativeAssetAmount < MinThreshold { // Need to verify
+	if msg.NativeAssetAmount < MinThreshold {
 		return nil, types.ErrTotalAmountTooLow
 	}
 	// Check if pool already exists
