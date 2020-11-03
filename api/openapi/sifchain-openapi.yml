@@ -1,14 +1,150 @@
 openapi: 3.0.1
 info:
-  title: CLP_GET_REQUESTS
-  description: CLP_GET_REQUESTS
-  version: '0.1'
+  title: Sifnode - OpenAPI spec
+  description: OpenAPI spec for sifnode
+  version: '0.0.1'
 servers:
   - url: 'http://0.0.0.0:1317'
 paths:
+  /clp/getPools:
+    get:
+      description: Get CLP Details
+      responses:
+        '200':
+          description: CLP Pools Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        external_asset:
+                          type: object
+                          properties:
+                            symbol:
+                              type: string
+                            ticker:
+                              type: string
+                            source_chain:
+                              type: string
+                        external_asset_balance:
+                          type: string
+                        native_asset_balance:
+                          type: string
+                        pool_units:
+                          type: string
+                        pool_address:
+                          type: string
+                  height:
+                    type: string
+  /clp/getLiquidityProvider:
+    get:
+      description: Get Liqudity provider details
+      parameters:
+        - name: ticker
+          in: query
+          schema:
+            type: string
+          example: EOS
+        - name: lpAddress
+          in: query
+          schema:
+            type: string
+          example: sif18agvfsynv8phnxxvs75t2te0286eu8t6msgc0r
+      responses:
+        '200':
+          description: Liquidy details Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      liquidity_provider_units:
+                        type: string
+                      liquidity_provider_address:
+                        type: string
+                      asset:
+                        type: object
+                        properties:
+                          symbol:
+                            type: string
+                          ticker:
+                            type: string
+                          source_chain:
+                            type: string
+                  height:
+                    type: string
+  /clp/getPool:
+    get:
+      description: Get Pool details
+      parameters:
+        - name: ticker
+          in: query
+          schema:
+            type: string
+          example: EOS
+        - name: sourceChain
+          in: query
+          schema:
+            type: string
+          example: ROWAN
+      responses:
+        '200':
+          description: Pool Detail Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    properties:
+                      external_asset:
+                        type: object
+                        properties:
+                          symbol:
+                            type: string
+                          ticker:
+                            type: string
+                          source_chain:
+                            type: string
+                      external_asset_balance:
+                        type: string
+                      native_asset_balance:
+                        type: string
+                      pool_units:
+                        type: string
+                      pool_address:
+                        type: string
+                  height:
+                    type: string
+#              examples:
+#                '0':
+#                  value: |-
+#                    {
+#                      "height": "422",
+#                      "result": {
+#                        "external_asset": {
+#                          "source_chain": "ROWAN",
+#                          "symbol": "EOSROWAN",
+#                          "ticker": "EOS"
+#                        },
+#                        "native_asset_balance": "1",
+#                        "external_asset_balance": "1000",
+#                        "pool_units": "500",
+#                        "pool_address": "EOS_ROWAN"
+#                      }
+#                    }
   /clp/decommissionPool:
     post:
-      description: Auto generated using Swagger Inspector
+      description: Decommision Pool
       requestBody:
         content:
           application/json:
@@ -28,22 +164,22 @@ paths:
                       type: string
                 signer:
                   type: string
-            examples:
-              '0':
-                value: |+
-                  {
-                    "base_req": {
-                      "from": "sif1a2nxtdc4tx292y0kqu94a7gqqnusy43j2t80l5",
-                      "chain_id": "sifnode"
-                    },
-                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
-                     "source_chain" : "ROWAN",
-                     "ticker" :"EOS"
-                  }
+#            examples:
+#              '0':
+#                value: |+
+#                  {
+#                    "base_req": {
+#                      "from": "sif1a2nxtdc4tx292y0kqu94a7gqqnusy43j2t80l5",
+#                      "chain_id": "sifnode"
+#                    },
+#                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+#                     "source_chain" : "ROWAN",
+#                     "ticker" :"EOS"
+#                  }
 
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: Decommision Response
           content:
             application/json:
               schema:
@@ -82,17 +218,13 @@ paths:
                       memo:
                         type: string
                       signatures: {}
-              examples:
-                '0':
-                  value: >-
-                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/DecommissionPool","value":{"signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ticker":"EOS","source_chain":"ROWAN"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
-      servers:
-        - url: 'http://0.0.0.0:1317'
-    servers:
-      - url: 'http://0.0.0.0:1317'
+#              examples:
+#                '0':
+#                  value: >-
+#                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/DecommissionPool","value":{"signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ticker":"EOS","source_chain":"ROWAN"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
   /clp/removeLiquidity:
     post:
-      description: Auto generated using Swagger Inspector
+      description: Remove Liquidity from pool
       requestBody:
         content:
           application/json:
@@ -121,26 +253,26 @@ paths:
                   type: string
                 signer:
                   type: string
-            examples:
-              '0':
-                value: |-
-                  {
-                    "base_req": {
-                      "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
-                      "chain_id": "sifnode"
-                    },
-                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
-                    "external_asset": {
-                      "source_chain" : "ROWAN",
-                      "symbol" : "ETHROWAN",
-                      "ticker" :"ETH"
-                    },
-                    "w_basis_points": "1000",
-                    "asymmetry": "10"
-                  }
+#            examples:
+#              '0':
+#                value: |-
+#                  {
+#                    "base_req": {
+#                      "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+#                      "chain_id": "sifnode"
+#                    },
+#                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+#                    "external_asset": {
+#                      "source_chain" : "ROWAN",
+#                      "symbol" : "ETHROWAN",
+#                      "ticker" :"ETH"
+#                    },
+#                    "w_basis_points": "1000",
+#                    "asymmetry": "10"
+#                  }
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: Remove Liquidity Response
           content:
             application/json:
               schema:
@@ -188,17 +320,13 @@ paths:
                       memo:
                         type: string
                       signatures: {}
-              examples:
-                '0':
-                  value: >-
-                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/RemoveLiquidity","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"WBasisPoints":"1000","Asymmetry":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
-      servers:
-        - url: 'http://0.0.0.0:1317'
-    servers:
-      - url: 'http://0.0.0.0:1317'
+#              examples:
+#                '0':
+#                  value: >-
+#                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/RemoveLiquidity","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"WBasisPoints":"1000","Asymmetry":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
   /clp/addLiquidity:
     post:
-      description: Auto generated using Swagger Inspector
+      description: Add Liquidity to Pool
       requestBody:
         content:
           application/json:
@@ -246,7 +374,7 @@ paths:
                   }
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: Add Liquidity Response
           content:
             application/json:
               schema:
@@ -304,7 +432,7 @@ paths:
       - url: 'http://0.0.0.0:1317'
   /clp/swap:
     post:
-      description: Auto generated using Swagger Inspector
+      description: Swap tokens
       requestBody:
         content:
           application/json:
@@ -340,30 +468,30 @@ paths:
                   type: string
                 sent_amount:
                   type: string
-            examples:
-              '0':
-                value: |-
-                  {
-                    "base_req": {
-                      "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
-                      "chain_id": "sifnode"
-                    },
-                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
-                    "sent_asset": {
-                      "source_chain" : "ROWAN",
-                      "symbol" : "ETHROWAN",
-                      "ticker" :"ETH"
-                    },
-                    "received_asset": {
-                      "source_chain" : "ROWAN",
-                      "symbol" : "ETHROWAN",
-                      "ticker" :"ETH"
-                    },
-                    "sent_amount": "10"
-                  }
+#            examples:
+#              '0':
+#                value: |-
+#                  {
+#                    "base_req": {
+#                      "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+#                      "chain_id": "sifnode"
+#                    },
+#                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+#                    "sent_asset": {
+#                      "source_chain" : "ROWAN",
+#                      "symbol" : "ETHROWAN",
+#                      "ticker" :"ETH"
+#                    },
+#                    "received_asset": {
+#                      "source_chain" : "ROWAN",
+#                      "symbol" : "ETHROWAN",
+#                      "ticker" :"ETH"
+#                    },
+#                    "sent_amount": "10"
+#                  }
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: Swap Tokens response
           content:
             application/json:
               schema:
@@ -418,17 +546,13 @@ paths:
                       memo:
                         type: string
                       signatures: {}
-              examples:
-                '0':
-                  value: >-
-                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/Swap","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","SentAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"ReceivedAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"SentAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
-      servers:
-        - url: 'http://0.0.0.0:1317'
-    servers:
-      - url: 'http://0.0.0.0:1317'
+#              examples:
+#                '0':
+#                  value: >-
+#                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/Swap","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","SentAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"ReceivedAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"SentAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
   /clp/createPool:
     post:
-      description: Auto generated using Swagger Inspector
+      description: Create new pool
       requestBody:
         content:
           application/json:
@@ -457,26 +581,26 @@ paths:
                       type: string
                 signer:
                   type: string
-            examples:
-              '0':
-                value: |-
-                  {
-                    "base_req": {
-                      "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
-                      "chain_id": "sifnode"
-                    },
-                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
-                    "external_asset": {
-                      "source_chain" : "ROWAN",
-                      "symbol" : "ETHROWAN",
-                      "ticker" :"ETH"
-                    },
-                    "native_asset_amount": "1000",
-                    "external_asset_amount": "10"
-                  }
+#            examples:
+#              '0':
+#                value: |-
+#                  {
+#                    "base_req": {
+#                      "from": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+#                      "chain_id": "sifnode"
+#                    },
+#                    "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
+#                    "external_asset": {
+#                      "source_chain" : "ROWAN",
+#                      "symbol" : "ETHROWAN",
+#                      "ticker" :"ETH"
+#                    },
+#                    "native_asset_amount": "1000",
+#                    "external_asset_amount": "10"
+#                  }
       responses:
         '200':
-          description: Auto generated using Swagger Inspector
+          description: Create Pool Response
           content:
             application/json:
               schema:
@@ -524,11 +648,7 @@ paths:
                       memo:
                         type: string
                       signatures: {}
-              examples:
-                '0':
-                  value: >-
-                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/CreatePool","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"NativeAssetAmount":"1000","ExternalAssetAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
-      servers:
-        - url: 'http://0.0.0.0:1317'
-    servers:
-      - url: 'http://0.0.0.0:1317'
+#              examples:
+#                '0':
+#                  value: >-
+#                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/CreatePool","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"NativeAssetAmount":"1000","ExternalAssetAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
