@@ -78,10 +78,6 @@ def build_docker_image(chainnet)
   system("cd .. && docker build -f ./build/genesis/Dockerfile -t sifchain/sifnoded:#{chainnet} .")
 end
 
-def network_config(chainnet)
-  "networks/#{Digest::SHA256.hexdigest chainnet}.yml"
-end
-
 # ethereum config
 def eth_config(eth_address:, eth_keys:, eth_websocket:)
   config = "ETHEREUM_CONTRACT_ADDRESS=#{eth_address} "
