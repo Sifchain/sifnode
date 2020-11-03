@@ -71,7 +71,3 @@ end
 def build_docker_image(chainnet)
   system("cd .. && docker build -f ./cmd/sifnoded/Dockerfile -t sifchain/sifnoded:#{chainnet} .")
 end
-
-def network_config(chainnet)
-  "networks/#{Digest::SHA256.hexdigest chainnet}.yml"
-end
