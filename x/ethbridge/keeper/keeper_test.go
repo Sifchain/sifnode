@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"encoding/json"
-	"fmt"
+	_ "fmt"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -188,9 +188,12 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 	//actually is 20, could this be infinite mint?
 }
 func TestProcessBurn(t *testing.T) {
-	ctx, keeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	coins := sdk.NewCoins(sdk.NewInt64Coin("stake", amount))
+
+	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins, sdk.Coins(sdk.Coins{}))
 	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], coins)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
@@ -207,14 +210,43 @@ func TestProcessBurn(t *testing.T) {
 	require.NoError(t, err)
 
 	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], coins)
-	fmt.Println(err)
+	require.NoError(t, err)
+	// lock stake
+
+	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins.String(), string(""))
 
 }
 
-func ProcessLock(t *testing.T) {
+func TestProcessLock(t *testing.T) {
 
-	ctx, keeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	ctx, keeper, bankKeeper, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins, sdk.Coins(sdk.Coins{}))
 
 	coins := sdk.NewCoins(sdk.NewInt64Coin("stake", amount))
-	require.Panics(t, func() { keeper.ProcessLock(ctx, cosmosReceivers[0], coins) }, "the code did not panic")
+	err := keeper.ProcessLock(ctx, cosmosReceivers[0], coins)
+	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
+
+	//process successful claim to get stake
+
+	claimType, err := types.StringToClaimType("burn")
+	require.NoError(t, err)
+	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
+
+	claimBytes, err := json.Marshal(claimContent)
+	claimString := string(claimBytes)
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
+	require.NoError(t, err)
+
+	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins.String(), "10stake")
+
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], coins)
+	//require.Panics(t, func() { keeper.ProcessLock(ctx, cosmosReceivers[0], coins) }, "the code did not panic")
+
+	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins.String(), string(""))
+
 }
