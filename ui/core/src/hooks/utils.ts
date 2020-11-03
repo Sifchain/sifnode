@@ -7,7 +7,15 @@ export function assetPriceMessage(asset: Asset | null, pair: Pair | null) {
 
   if (!assetPrice || (assetPrice && assetPrice.equalTo("0"))) return "";
 
-  return `${assetPrice.toFormatted()} per ${asset?.symbol.toUpperCase()}`;
+  const formattedAmount = trimZeros(assetPrice.toFixed());
+  const formattedSymbol = assetPrice.asset.symbol.toUpperCase();
+  const formattedPerSymbol = asset.symbol.toUpperCase();
+
+  return `${formattedAmount} ${formattedSymbol} per ${formattedPerSymbol}`;
+}
+
+export function trimZeros(amount: string) {
+  return amount.replace(/0+$/, "").replace(/\.$/, ".0");
 }
 
 export function useBalances(balances: Ref<AssetAmount[]>) {

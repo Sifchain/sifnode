@@ -69,21 +69,21 @@ describe("swapCalculator", () => {
       AssetAmount(TOKENS.atk, "1000"),
     ];
     fromAmount.value = "100";
-    expect(toAmount.value).toBe("200.000000");
+    expect(toAmount.value).toBe("200.0");
     expect(state.value).toBe(SwapState.VALID_INPUT);
 
     selectedField.value = "to";
     toAmount.value = "100";
-    expect(fromAmount.value).toBe("50.000000000000000000");
+    expect(fromAmount.value).toBe("50.0");
     expect(toAmount.value).toBe("100");
     selectedField.value = "from";
-    expect(toAmount.value).toBe("100.000000");
+    expect(toAmount.value).toBe("100.0");
 
     selectedField.value = "from";
     fromAmount.value = "10000";
 
     expect(state.value).toBe(SwapState.INSUFFICIENT_FUNDS);
 
-    expect(priceMessage.value).toBe("2.000000000000000000 BTK per ATK");
+    expect(priceMessage.value).toBe("2.0 BTK per ATK");
   });
 });

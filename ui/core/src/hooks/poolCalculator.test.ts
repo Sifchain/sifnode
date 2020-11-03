@@ -79,8 +79,8 @@ describe("usePoolCalculator", () => {
     fromSymbol.value = "atk";
     toSymbol.value = "btk";
 
-    expect(aPerBRatioMessage.value).toBe("0.500000 BTK per ATK");
-    expect(bPerARatioMessage.value).toBe("2.000000 ATK per BTK");
+    expect(aPerBRatioMessage.value).toBe("0.5 BTK per ATK");
+    expect(bPerARatioMessage.value).toBe("2.0 ATK per BTK");
     expect(shareOfPool.value).toBe("100.00%");
   });
 
@@ -105,8 +105,8 @@ describe("usePoolCalculator", () => {
     fromSymbol.value = "atk";
     toSymbol.value = "btk";
 
-    expect(aPerBRatioMessage.value).toBe("1.000000 BTK per ATK");
-    expect(bPerARatioMessage.value).toBe("1.000000 ATK per BTK");
+    expect(aPerBRatioMessage.value).toBe("1.0 BTK per ATK");
+    expect(bPerARatioMessage.value).toBe("1.0 ATK per BTK");
     expect(shareOfPool.value).toBe("33.33%");
   });
 

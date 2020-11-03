@@ -1,16 +1,13 @@
 import { Ref, computed, effect } from "@vue/reactivity";
 import { Asset, AssetAmount, IAssetAmount, Pair } from "../entities";
 import { useField } from "./useField";
-import { assetPriceMessage, useBalances } from "./utils";
+import { assetPriceMessage, trimZeros, useBalances } from "./utils";
 
 export enum SwapState {
   SELECT_TOKENS,
   ZERO_AMOUNTS,
   INSUFFICIENT_FUNDS,
   VALID_INPUT,
-}
-function trimZeros(amount: string) {
-  return amount.replace(/0+$/, "").replace(/\.$/, ".0");
 }
 
 function formatValue(
