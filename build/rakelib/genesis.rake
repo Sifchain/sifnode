@@ -22,14 +22,9 @@ namespace :genesis do
         exit(1)
       end
 
-      with_eth = ""
-      if [args[:eth_address], args[:eth_keys], args[:eth_websocket]].all?
-        with_eth = eth_config(eth_address: args[:eth_address],
-                              eth_keys: args[:eth_keys].split(" "),
-                              eth_websocket: args[:eth_websocket])
-      else
-        puts "skipping eth config as not provided"
-      end
+      with_eth = eth_config(eth_address: args[:eth_address],
+                            eth_keys: args[:eth_keys].split(" "),
+                            eth_websocket: args[:eth_websocket])
 
       if !File.file?(network_config(args[:chainnet]))
         puts "the file #{network_config(args[:chainnet])} does not exist!"

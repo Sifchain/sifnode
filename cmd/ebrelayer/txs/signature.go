@@ -8,6 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	_ "github.com/joho/godotenv/autoload"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
