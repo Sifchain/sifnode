@@ -18,8 +18,8 @@ services:
       PASSWORD: ${PASSWORD1}
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY1}
     volumes:
-      - ./networks/validators/${CHAINNET}/${MONIKER1}:/root:Z
-      - ./scripts:/scripts
+      - ../networks/validators/${CHAINNET}/${MONIKER1}:/root:Z
+      - ../scripts:/scripts
     entrypoint: /scripts/entrypoint.sh
     networks:
       sifchain:
@@ -37,8 +37,8 @@ services:
       PASSWORD: ${PASSWORD2}
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY2}
     volumes:
-      - ./networks/validators/${CHAINNET}/${MONIKER2}:/root:Z
-      - ./scripts:/scripts
+      - ../networks/validators/${CHAINNET}/${MONIKER2}:/root:Z
+      - ../scripts:/scripts
     entrypoint: /scripts/entrypoint.sh
     networks:
       sifchain:
@@ -56,8 +56,8 @@ services:
       PASSWORD: ${PASSWORD3}
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY3}
     volumes:
-      - ./networks/validators/${CHAINNET}/${MONIKER3}:/root:Z
-      - ./scripts:/scripts
+      - ../networks/validators/${CHAINNET}/${MONIKER3}:/root:Z
+      - ../scripts:/scripts
     entrypoint: /scripts/entrypoint.sh
     networks:
       sifchain:
@@ -75,8 +75,8 @@ services:
       PASSWORD: ${PASSWORD4}
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY4}
     volumes:
-      - ./networks/validators/${CHAINNET}/${MONIKER4}:/root:Z
-      - ./scripts:/scripts
+      - ../networks/validators/${CHAINNET}/${MONIKER4}:/root:Z
+      - ../scripts:/scripts
     entrypoint: /scripts/entrypoint.sh
     networks:
       sifchain:

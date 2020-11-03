@@ -74,14 +74,13 @@ def boot_docker_network(chainnet:, seed_network_address:, eth_config:)
     cmd += "MONIKER#{idx+1}=#{node['moniker']} PASSWORD#{idx+1}=#{node['password']} IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
   end
 
-  cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f ./docker-compose.yml up"
-  puts cmd
+  cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f ./genesis/docker-compose.yml up"
   system(cmd)
 end
 
 # Build docker image for the new network
 def build_docker_image(chainnet)
-  system("cd .. && docker build -f ./cmd/sifnoded/Dockerfile -t sifchain/sifnoded:#{chainnet} .")
+  system("cd .. && docker build -f ./build/genesis/Dockerfile -t sifchain/sifnoded:#{chainnet} .")
 end
 
 def network_config(chainnet)

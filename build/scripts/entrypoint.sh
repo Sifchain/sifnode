@@ -11,25 +11,30 @@ start_daemon() {
 }
 
 #
+# Rest server.
+#
+start_rest_server() {
+  sifnodecli rest-server --laddr tcp://0.0.0.0:1317 &
+}
+
+#
 # Start relayer.
 #
 start_relayer() {
   wait_for_rpc
   expect <<EOD
-    spawn ebrelayer init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" "$ETHEREUM_CONTRACT_ADDRESS" "$MONIKER" --chain-id "$CHAINNET" --keyring-backend file
-    expect "Enter keyring passphrase:"
-    send "$PASSWORD\n"
-    expect "Enter keyring passphrase:"
-    send "$PASSWORD\n"
-    expect eof
-EOD
-}
+    spawn ebrelayer init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" \
+                                             "$ETHEREUM_CONTRACT_ADDRESS" \
+                                             "$MONIKER" \
+                                             --chain-id "$CHAINNET" \
+                                             --keyring-backend file
 
-#
-# Rest server.
-#
-start_rest_server() {
-  sifnodecli rest-server --laddr tcp://0.0.0.0:1317
+    expect "Enter keyring passphrase:"
+    send "$PASSWORD\n"
+    expect "Enter keyring passphrase:"
+    send "$PASSWORD\n"
+    expect -timeout -1 eof
+EOD
 }
 
 #
@@ -42,5 +47,5 @@ wait_for_rpc() {
 }
 
 start_daemon
-start_relayer
 start_rest_server
+start_relayer
