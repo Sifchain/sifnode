@@ -42,7 +42,7 @@ EOD
 #
 wait_for_rpc() {
   while ! nc -z localhost 26657; do
-    sleep 5
+    sleep 15
   done
 }
 
