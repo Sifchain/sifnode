@@ -6,7 +6,6 @@
 
 - [Ruby 2.6.x](https://www.ruby-lang.org/en/documentation/installation)
 - [Golang](https://golang.org/doc/install)
-- [Docker](https://docs.docker.com/get-docker)
 
 ## Getting started
 
