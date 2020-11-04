@@ -8,7 +8,7 @@
 
 2. Setup your node.
 
-If you're a new node operator, please perform the following:
+Please perform the following:
 
 ```
 # Clone:
@@ -19,31 +19,26 @@ git checkout tags/monkey-bars-testnet-3
 
 # Build:
 make install
+```
 
-# New node: Change into the build directory:
+And then, if you're a new node operator:
+
+```
+# Change into the build directory:
 cd ./build
 
-# scaffold a new node on the network (Only run once. Creates your private keys, etc):
+# Scaffold a new node on the network (Only run once. Creates your private keys, etc):
 rake 'genesis:sifnode:scaffold[monkey-bars, bd17ce50e4e07b5a7ffc661ed8156ac8096f57ce@35.166.247.98:26656, http://35.166.247.98:26657/genesis]'
 
 # run:
 sifnoded start
 ```
 
-You may also use the following peer addresses (in addition to the one above):
+Or if you're an existing node operator:
 
 ```
-f8f5d01fdc73e1b536084bbe42d0a81479f882b3@35.166.247.98:28002
-f27548f03a4179b7a4dc3c8a62fcfc5f84be15ff@35.166.247.98:28004
-dd35505768be507af3c76f5a4ecdb272537e398f@35.166.247.98:28006
-```
-
-If you're an existing node operator, please follow the instructions below:
-
-```
-
 # Reset state for existing nodes:
-sifnoded  unsafe-reset-all
+sifnoded unsafe-reset-all
 
 # Update the genesis file:
 wget -O ~/.sifnoded/config/genesis.json https://raw.githubusercontent.com/Sifchain/networks/feature/genesis/testnet/monkey-bars-testnet-3/genesis.json
@@ -59,6 +54,13 @@ To:
 sifnoded start
 ```
 
+New node operators may also use the following peer addresses:
+
+```
+f8f5d01fdc73e1b536084bbe42d0a81479f882b3@35.166.247.98:28002
+f27548f03a4179b7a4dc3c8a62fcfc5f84be15ff@35.166.247.98:28004
+dd35505768be507af3c76f5a4ecdb272537e398f@35.166.247.98:28006
+```
 
 # Verfiy
 sifnodecli q tendermint-validator-set
