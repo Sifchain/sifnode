@@ -104,6 +104,9 @@ def test_case_2():
     balance_before_tx = int(get_balance(USER, PEGGYETH))
     print("Before burn transaction {}'s balance of {} is {}".format(
         USER, PEGGYETH, balance_before_tx))
+    if balance_before_tx < AMOUNT:
+        print_error_message("No enough peggyeth to burn")
+        return
     print("Send lock claim to Sifchain...")
     burn_peggy_coin(USER, VALIDATOR, AMOUNT)
     time.sleep(SLEEPTIME)
@@ -121,6 +124,8 @@ def test_case_3():
     balance_before_tx = int(get_balance(USER, ROWAN))
     print("Before lock transaction {}'s balance of {} is {}".format(
         USER, PEGGYETH, balance_before_tx))
+    if balance_before_tx < AMOUNT:
+        print_error_message("No enough rowan to lock")
     print("Send lock claim to Sifchain...")
     lock_rowan(USER, AMOUNT)
     time.sleep(SLEEPTIME)

@@ -107,7 +107,6 @@ def burn_peggy_coin(user, eth_user, amount):
     {} {} peggyeth \
     --ethereum-chain-id=3 --from={} \
     --yes""".format(get_user_account(user), eth_user, amount, user)
-    # print(command_line)
     return get_shell_output(command_line)
 
 
@@ -116,7 +115,6 @@ def lock_rowan(user, eth_user, amount):
         {} {} rwn \
         --ethereum-chain-id=3 --from={} --yes    
     """.format(get_user_account(user), eth_user, amount, user)
-    print(command_line)
     return get_shell_output(command_line)
 
 
@@ -134,6 +132,8 @@ def test_case_1():
     print("Before lock transaction {}'s balance of {} is {}".format(
         USER, PEGGYETH, balance_before_tx))
     print("Send lock claim to Sifchain...")
+    if operator_balance_before_tx < AMOUNT:
+        print_error_message("No enough ETH for the account to lock")
     send_eth_lock(USER, ETH, AMOUNT)
     time.sleep(SLEEPTIME)
 
@@ -165,6 +165,9 @@ def test_case_2():
     print("Before burn transaction {}'s balance of {} is {}".format(
         USER, PEGGYETH, balance_before_tx))
     print("Send lock claim to Sifchain...")
+    if balance_before_tx < AMOUNT:
+        print_error_message("No enough peggyeth to burn")
+        return
     burn_peggy_coin(USER, ETH_ACCOUNT, AMOUNT)
     time.sleep(SLEEPTIME)
     operator_balance_after_tx = int(get_eth_balance(ETH_ACCOUNT, ETH))
