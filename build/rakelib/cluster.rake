@@ -58,7 +58,7 @@ namespace :cluster do
       task :swaggerui, [:chainnet, :provider, :namespace] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade #{ns(args)} ../build/helm/swagger-ui \
+        cmd = %Q{helm upgrade swagger-ui ../build/helm/swagger-ui \
           --install -n #{ns(args)} --create-namespace \
         }
 
@@ -69,8 +69,8 @@ namespace :cluster do
       task :prism, [:chainnet, :provider, :namespace] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade #{ns(args)} ../build/helm/prism \
-          --install -n #{ns(args)} --create-namespace \
+        cmd = %Q{helm upgrade prism ../build/helm/prism \
+          --install -n #{ns(args)} \
         }
 
         system({"KUBECONFIG" => kubeconfig(args) }, cmd)
@@ -85,7 +85,7 @@ namespace :cluster do
       task :standalone, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
+        cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --install -n #{ns(args)} --create-namespace \
           --set image.tag=#{image_tag(args)} \
@@ -99,7 +99,7 @@ namespace :cluster do
       task :peer, [:chainnet, :provider, :namespace, :image, :image_tag, :peer_address, :genesis_url] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
+        cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
           --install -n #{ns(args)} --create-namespace \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.genesisURL=#{args[:genesis_url]} \
@@ -114,7 +114,7 @@ namespace :cluster do
 
     task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
       check_args(args)
-      cmd = "helm delete #{ns(args)} -n #{ns(args)}"
+      cmd = "helm delete sifnode -n #{ns(args)}"
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
   end
