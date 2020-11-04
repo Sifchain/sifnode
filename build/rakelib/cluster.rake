@@ -52,6 +52,32 @@ namespace :cluster do
     puts "Cluster #{path(args)} destroyed successfully"
   end
 
+  namespace :openapi do
+    namespace :deploy do
+      desc "Deploy OpenAPI - Swagger documentation ui"
+      task :swaggerui, [:chainnet, :provider, :namespace] do |t, args|
+        check_args(args)
+
+        cmd = %Q{helm upgrade swagger-ui ../build/helm/swagger-ui \
+          --install -n #{ns(args)} --create-namespace \
+        }
+
+        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      end
+
+      desc "Deploy OpenAPI - Prism Mock server "
+      task :prism, [:chainnet, :provider, :namespace] do |t, args|
+        check_args(args)
+
+        cmd = %Q{helm upgrade prism ../build/helm/prism \
+          --install -n #{ns(args)} \
+        }
+
+        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      end
+    end
+  end
+
   desc "Manage sifnode deploy, upgrade, etc processes"
   namespace :sifnode do
     namespace :deploy do
@@ -59,7 +85,7 @@ namespace :cluster do
       task :standalone, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
+        cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --install -n #{ns(args)} --create-namespace \
           --set image.tag=#{image_tag(args)} \
@@ -73,7 +99,7 @@ namespace :cluster do
       task :peer, [:chainnet, :provider, :namespace, :image, :image_tag, :peer_address, :genesis_url] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
+        cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
           --install -n #{ns(args)} --create-namespace \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.genesisURL=#{args[:genesis_url]} \
@@ -88,7 +114,7 @@ namespace :cluster do
 
     task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
       check_args(args)
-      cmd = "helm delete #{ns(args)} -n #{ns(args)}"
+      cmd = "helm delete sifnode -n #{ns(args)}"
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
   end
