@@ -917,10 +917,10 @@ contract("BridgeBank", function (accounts) {
         this.cosmosBridge.address,
         operator
       );
+
+      // Set oracle and bridge bank for the cosmos bridge
       await this.cosmosBridge.setOracle(this.oracle.address, {from: operator})
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {from: operator})
-
-
     });
 
     it("should create eRowan mock and connect it to the cosmos bridge with admin API", async function () {
@@ -931,10 +931,6 @@ contract("BridgeBank", function (accounts) {
       // Attempt to lock tokens
       await this.bridgeBank.addExistingBridgeToken(this.token.address, {from: operator}).should.be.fulfilled;
 
-      // first create prophecy claim
-      // second complete prophecy claim
-      const address = await this.bridgeBank.getBridgeToken(symbol)
-      console.log("address for eRowan: ", address)
       const tokenAddress = await this.bridgeBank.getBridgeToken(symbol);
       tokenAddress.should.be.equal(this.token.address);
     });
@@ -976,9 +972,6 @@ contract("BridgeBank", function (accounts) {
       const cosmosSender = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
       const symbol = 'eRowan'
       const amount = 100000;
-
-      // console.log("operator eRowan balance: ", await this.token.balanceOf(operator))
-      // console.log("userOne eRowan balance: ", await this.token.balanceOf(userOne))
 
       // operator should not have any eRowan
       (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(0)).toString())

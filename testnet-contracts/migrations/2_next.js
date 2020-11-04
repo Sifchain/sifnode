@@ -144,13 +144,6 @@ module.exports = function(deployer, network, accounts) {
     // 6. Deploy BridgeRegistry contract:
     //    Gas used:          363,370 Gwei
     //    Total cost:     0.0072674 Ether
-    try {
-      const getOperator = await valset.operator({from: operator})
-      console.log("Got operator from smart valset contract: ", getOperator)
-    } catch (error) {
-      console.log("Error getting operator from valset: ", error.message)
-    }
-    
     return deployer.deploy(
       BridgeRegistry,
       CosmosBridge.address,
