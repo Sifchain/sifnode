@@ -112,6 +112,14 @@ type Genutil struct {
 	Gentxs []Gentx `json:"gentxs"`
 }
 
+type CLPParams struct {
+	MinCreatePoolThreshold string `json:"min_create_pool_threshold"`
+}
+
+type CLP struct {
+	Params CLPParams `json:"params"`
+}
+
 type Supply struct {
 	Supply []interface{} `json:"supply"`
 }
@@ -140,12 +148,15 @@ type Bank struct {
 }
 
 type AppState struct {
-	Bank    Bank        `json:"bank"`
-	Staking Staking     `json:"staking"`
-	Params  interface{} `json:"params"`
-	Supply  Supply      `json:"supply"`
-	Genutil Genutil     `json:"genutil"`
-	Auth    Auth        `json:"auth"`
+	Bank      Bank        `json:"bank"`
+	Staking   Staking     `json:"staking"`
+	Params    interface{} `json:"params"`
+	Supply    Supply      `json:"supply"`
+	Ethbridge interface{} `json:"ethbridge"`
+	CLP       CLP         `json:"clp"`
+	Oracle    interface{} `json:"oracle"`
+	Genutil   Genutil     `json:"genutil"`
+	Auth      Auth        `json:"auth"`
 }
 
 type Evidence struct {

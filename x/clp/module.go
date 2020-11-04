@@ -2,6 +2,7 @@ package clp
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Sifchain/sifnode/x/clp/client/cli"
 	"github.com/Sifchain/sifnode/x/clp/client/rest"
 	"github.com/Sifchain/sifnode/x/clp/types"
@@ -44,12 +45,12 @@ func (AppModuleBasic) DefaultGenesis() json.RawMessage {
 
 // ValidateGenesis performs genesis state validation for the clp module.
 func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
-	//var data GenesisState
-	//err := ModuleCdc.UnmarshalJSON(bz, &data)
-	//if err != nil {
-	//	return fmt.Errorf("failed to unmarshal %s genesis state: %w", ModuleName, err)
-	//}
-	return ValidateGenesis(GenesisState{})
+	var data GenesisState
+	err := ModuleCdc.UnmarshalJSON(bz, &data)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %w", ModuleName, err)
+	}
+	return ValidateGenesis(data)
 }
 
 // RegisterRESTRoutes registers the REST routes for the clp module.
