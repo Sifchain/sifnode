@@ -20,8 +20,8 @@ jobs:
           make CHAINNET=testnet BINARY=sifnoded build-image
           make CHAINNET=testnet BINARY=sifnodecli build-image
           make CHAINNET=testnet BINARY=sifcrg build-image
-          cd ./api/openapi & make CHAINNET=testnet build-image-swagger-iu
-          cd ./api/openapi & make CHAINNET=testnet build-image-prim
+          cd ./api/openapi && make CHAINNET=testnet build-image-swagger-iu
+          cd ./api/openapi && make CHAINNET=testnet build-image-prim
 
       - name: Push images
         run: |
