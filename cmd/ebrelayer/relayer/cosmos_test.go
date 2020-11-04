@@ -7,8 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
-
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
 	"github.com/tendermint/tendermint/libs/log"
 )
 
@@ -24,7 +22,7 @@ func TestNewCosmosSub(t *testing.T) {
 	privateKey, _ := crypto.HexToECDSA(privateKeyStr)
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 	registryContractAddress := common.HexToAddress(contractAddress)
-	sub := relayer.NewCosmosSub(tmProvider, ethProvider, registryContractAddress,
+	sub := NewCosmosSub(tmProvider, ethProvider, registryContractAddress,
 		privateKey, logger)
 	require.NotEqual(t, sub, nil)
 }
