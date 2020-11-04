@@ -52,7 +52,7 @@ type Pools []Pool
 
 type LiquidityProvider struct {
 	Asset                    Asset          `json:"asset"`
-	LiquidityProviderUnits   uint           `json:"liquidity_provider_units"`
+	LiquidityProviderUnits   sdk.Uint       `json:"liquidity_provider_units"`
 	LiquidityProviderAddress sdk.AccAddress `json:"liquidity_provider_address"`
 }
 
@@ -71,7 +71,7 @@ func (l LiquidityProvider) Validate() bool {
 }
 
 // NewLiquidityProvider returns a new LiquidityProvider
-func NewLiquidityProvider(asset Asset, liquidityProviderUnits uint, liquidityProviderAddress sdk.AccAddress) LiquidityProvider {
+func NewLiquidityProvider(asset Asset, liquidityProviderUnits sdk.Uint, liquidityProviderAddress sdk.AccAddress) LiquidityProvider {
 	return LiquidityProvider{Asset: asset, LiquidityProviderUnits: liquidityProviderUnits, LiquidityProviderAddress: liquidityProviderAddress}
 }
 

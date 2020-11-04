@@ -3,7 +3,6 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"strconv"
 	"strings"
 )
 
@@ -97,7 +96,7 @@ type MsgRemoveLiquidity struct {
 	Asymmetry     sdk.Int
 }
 
-func NewMsgRemoveLiquidity(signer sdk.AccAddress, externalAsset Asset, wBasisPoints int, asymmetry int) MsgRemoveLiquidity {
+func NewMsgRemoveLiquidity(signer sdk.AccAddress, externalAsset Asset, wBasisPoints sdk.Int, asymmetry sdk.Int) MsgRemoveLiquidity {
 	return MsgRemoveLiquidity{Signer: signer, ExternalAsset: externalAsset, WBasisPoints: wBasisPoints, Asymmetry: asymmetry}
 }
 
@@ -116,11 +115,13 @@ func (m MsgRemoveLiquidity) ValidateBasic() error {
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
 	}
-	if !(m.WBasisPoints > 0) || m.WBasisPoints > 10000 {
-		return sdkerrors.Wrap(ErrInvalidWBasis, strconv.Itoa(m.WBasisPoints))
+	tenKInt := sdk.NewInt(10000)
+
+	if !(m.WBasisPoints.IsPositive()) || m.WBasisPoints.GT(tenKInt) {
+		return sdkerrors.Wrap(ErrInvalidWBasis, m.WBasisPoints.String())
 	}
-	if m.Asymmetry >= 10000 || m.Asymmetry <= -10000 {
-		return sdkerrors.Wrap(ErrInvalidAsymmetry, strconv.Itoa(m.Asymmetry))
+	if m.Asymmetry.GTE(tenKInt) || m.Asymmetry.LTE(sdk.NewInt(-10000)) {
+		return sdkerrors.Wrap(ErrInvalidAsymmetry, m.Asymmetry.String())
 	}
 	return nil
 }
