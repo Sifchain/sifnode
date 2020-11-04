@@ -14,11 +14,11 @@ git clone git@github.com:Sifchain/sifnode.git && cd sifnode
 # checkout the latest release
 git checkout tags/monkey-bars-testnet-3
 
-# Reset state for existing nodes
-sifnoded  unsafe-reset-all
-
 # build
 make install
+
+# Reset state for existing nodes
+sifnoded  unsafe-reset-all
 
 # change into the build directory
 cd ./build
