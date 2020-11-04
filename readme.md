@@ -84,15 +84,15 @@ sifnodecli q tendermint-validator-set
 
 The instructions above will get you connected to the network, but you won't be able to participate in consensus until you become a validator.
 
-Before you become a validator, please reach out to us on [Discord](https://discord.com/invite/zZTYnNG) to request some tokens.
+1. Reach out to us on [Discord](https://discord.com/invite/zZTYnNG) to request some tokens.
 
-You will also require the moniker of your node, when becoming a validator. You can find this by running:
+2. Obtain your node moniker (if you don't already know it):
 
 ```
-cat ~/.sifnoded/config/config.toml| grep moniker
+cat ~/.sifnoded/config/config.toml | grep moniker
 ```
 
-Once you have received your tokens, you can become a validator simply by running:
+3. Run the following command to become a validator (*replace `<moniker>` with your node's actual moniker*): 
 
 ```
 sifnodecli tx staking create-validator \
@@ -108,8 +108,6 @@ sifnodecli tx staking create-validator \
     --from <moniker> \
     --keyring-backend file
 ```
-
-*Please replace `<moniker>` with the moniker of your node.*
 
 ## Peers
 
