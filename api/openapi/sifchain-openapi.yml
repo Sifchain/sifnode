@@ -6,6 +6,19 @@ info:
 servers:
   - url: 'http://0.0.0.0:1317'
 paths:
+  /:
+    get:
+      description: Root Path
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+              example:
+                Hello World
+
   /clp/getPools:
     get:
       description: Get CLP Details
