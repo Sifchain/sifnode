@@ -995,7 +995,6 @@ contract("BridgeBank", function (accounts) {
       const prophecyID = eventLogNewProphecyClaim.args._prophecyID;
 
       // Create hash using Solidity's Sha3 hashing function
-      console.log("prophecy id: ", prophecyID);
       this.recipient = userOne;
       this.amount = 100;
       const message = web3.utils.soliditySha3({
