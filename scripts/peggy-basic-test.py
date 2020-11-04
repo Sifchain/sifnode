@@ -7,6 +7,7 @@ VALIDATOR = "user1"
 USER = "user2"
 ROWAN = "rwn"
 PEGGYETH = "peggyeth"
+PEGGYROWAN = "peggyrwn"
 ETH = "eth"
 SLEEPTIME = 5
 AMOUNT = 10
@@ -107,7 +108,7 @@ def test_case_2():
     if balance_before_tx < AMOUNT:
         print_error_message("No enough peggyeth to burn")
         return
-    print("Send lock claim to Sifchain...")
+    print("Send burn claim to Sifchain...")
     burn_peggy_coin(USER, VALIDATOR, AMOUNT)
     time.sleep(SLEEPTIME)
     balance_after_tx = int(get_balance(USER, PEGGYETH))
@@ -123,7 +124,7 @@ def test_case_3():
     )
     balance_before_tx = int(get_balance(USER, ROWAN))
     print("Before lock transaction {}'s balance of {} is {}".format(
-        USER, PEGGYETH, balance_before_tx))
+        USER, ROWAN, balance_before_tx))
     if balance_before_tx < AMOUNT:
         print_error_message("No enough rowan to lock")
     print("Send lock claim to Sifchain...")
@@ -131,7 +132,7 @@ def test_case_3():
     time.sleep(SLEEPTIME)
     balance_after_tx = int(get_balance(USER, ROWAN))
     print("After lock transaction {}'s balance of {} is {}".format(
-        USER, PEGGYETH, balance_after_tx))
+        USER, ROWAN, balance_after_tx))
     if balance_after_tx != balance_before_tx - AMOUNT:
         print_error_message("balance is wrong after send eth lock claim")
     print("########## Test Case Three Over ##########")
@@ -142,7 +143,7 @@ def test_case_4():
     )
     balance_before_tx = int(get_balance(USER, ROWAN))
     print("Before lock transaction {}'s balance of {} is {}".format(
-        USER, PEGGYETH, balance_before_tx))
+        USER, ROWAN, balance_before_tx))
     print("Send burn claim to Sifchain...")
     create_claim(USER, VALIDATOR, AMOUNT, ROWAN, CLAIMBURN)
     time.sleep(SLEEPTIME)
