@@ -6,19 +6,20 @@ import (
 )
 
 const (
-	TokenSuffix     = "rwn"
-	BondAmount      = "500000000"
+	BondAmount      = "5000000000"
+	StakeTokenDenom = "trwn"
 	StakeFundAmount = "10000000000000000000000"
 	SwapFundAmount  = "10000000000000000000000000000000000"
 )
 
 var (
-	StakeTokenDenom = fmt.Sprintf("t%s", TokenSuffix)
-	SwapTokenDenom  = fmt.Sprintf("c%s", TokenSuffix)
-	ToBond          = fmt.Sprintf("%s%s", BondAmount, StakeTokenDenom)
-	ToFund          = []string{
+	ToBond = fmt.Sprintf("%s%s", BondAmount, StakeTokenDenom)
+	ToFund = []string{
 		fmt.Sprintf("%s%s", StakeFundAmount, StakeTokenDenom),
-		fmt.Sprintf("%s%s", SwapFundAmount, SwapTokenDenom),
+		fmt.Sprintf("%s%s", SwapFundAmount, "clink"),
+		fmt.Sprintf("%s%s", SwapFundAmount, "chot"),
+		fmt.Sprintf("%s%s", SwapFundAmount, "cusdt"),
+		fmt.Sprintf("%s%s", SwapFundAmount, "cusdc"),
 	}
 )
 
