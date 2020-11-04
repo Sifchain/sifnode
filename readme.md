@@ -23,7 +23,7 @@ sifnoded  unsafe-reset-all
 # change into the build directory
 cd ./build
 
-# scaffold
+# scaffold a new node on the network (Only run once. Creates your private keys, etc)
 rake 'genesis:sifnode:scaffold[monkey-bars, bd17ce50e4e07b5a7ffc661ed8156ac8096f57ce@35.166.247.98:26656, http://35.166.247.98:26657/genesis]'
 
 # run
