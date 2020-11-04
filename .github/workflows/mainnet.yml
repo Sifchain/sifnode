@@ -21,9 +21,12 @@ jobs:
           make CHAINNET=mainnet BINARY=sifnoded build-image
           make CHAINNET=mainnet BINARY=sifnodecli build-image
           make CHAINNET=mainnet BINARY=sifcrg build-image
+          cd ./api/openapi & make CHAINNET=mainnet build-image-swagger-iu
 
       - name: Push images
         run: |
           docker push sifchain/sifnoded:mainnet
           docker push sifchain/sifnodecli:mainnet
           docker push sifchain/sifcrg:mainnet
+          docker push sifchain/swagger-ui:mainnet
+
