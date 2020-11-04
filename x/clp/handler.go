@@ -37,7 +37,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-	if pool.ExternalAssetBalance+pool.NativeAssetBalance > keeper.GetParams(ctx).MinCreatePoolThreshold {
+	if pool.NativeAssetBalance > keeper.GetParams(ctx).MinCreatePoolThreshold {
 		return nil, types.ErrBalanceTooHigh
 	}
 	// Get all LP's for the pool
@@ -84,7 +84,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
 	// Verify min threshold
 	MinThreshold := keeper.GetParams(ctx).MinCreatePoolThreshold
-	if (msg.ExternalAssetAmount + msg.NativeAssetAmount) < MinThreshold { // Need to verify
+	if msg.NativeAssetAmount < MinThreshold {
 		return nil, types.ErrTotalAmountTooLow
 	}
 	// Check if pool already exists
