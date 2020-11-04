@@ -1,15 +1,10 @@
-import {
-  Secp256k1HdWallet,
-  SigningCosmosClient,
-  makeCosmoshubPath,
-  CosmosClient,
-  coins,
-} from "@cosmjs/launchpad";
-
-import { Mnemonic } from "../../entities/Wallet";
-import { Address, AssetAmount, Network, Coin, TxParams } from "../../entities";
+import { coins, makeCosmoshubPath, Secp256k1HdWallet } from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
+import { Address, AssetAmount, Coin, Network, TxParams } from "../../entities";
+import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
+import { SifClient } from "./SifClient";
+import { ensureSifAddress } from "./utils";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
@@ -35,7 +30,7 @@ export default function createSifService({
     log: "unset",
   });
 
-  let client: SigningCosmosClient | null = null;
+  let client: SifClient | null = null;
 
   return {
     // Return reactive state
@@ -67,7 +62,7 @@ export default function createSifService({
 
         [state.address] = state.accounts;
 
-        client = new SigningCosmosClient(sifApiUrl, state.address, wallet);
+        client = new SifClient(sifApiUrl, state.address, wallet);
 
         state.log = "signed in";
         state.connected = true;
@@ -87,12 +82,10 @@ export default function createSifService({
     },
 
     async getBalance(address?: Address): Promise<AssetAmount[]> {
+      if (!client) throw "No client. Please sign in.";
       if (!address) throw "Address undefined. Fail";
 
-      if (address.length !== 42) throw "Address not valid (length). Fail"; // this is simple check, limited to default address type (check bech32)
-      // TODO: add invariant address starts with "sif" (double check this is correct)
-
-      const client = new CosmosClient(sifApiUrl);
+      ensureSifAddress(address);
 
       try {
         const account = await client.getAccount(address);
@@ -116,14 +109,10 @@ export default function createSifService({
     },
 
     async transfer(params: TxParams): Promise<any> {
-      if (!client) throw "No signed in client. Sign in with mnemonic.";
-      if (!params)
-        throw "No user input data. Define who, what, and for how much.";
-      // this seems like anti-pattern, with SifWallet.vue, "undefined" as culprit
-      // but is alternative to define in vue with empty string?
+      if (!client) throw "No client. Please sign in.";
       if (!params.asset) throw "No asset.";
-      // https://github.com/tendermint/vue/blob/develop/src/store/cosmos.js#L91
 
+      // https://github.com/tendermint/vue/blob/develop/src/store/cosmos.js#L91
       const msg = {
         type: "cosmos-sdk/MsgSend",
         value: {

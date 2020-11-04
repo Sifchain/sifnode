@@ -43,6 +43,7 @@ describe("sifService", () => {
 
   it("should get cosmos balance", async () => {
     const sifService = createSifService(testConfig);
+    await sifService.setPhrase(mnemonic);
     try {
       await sifService.getBalance("");
     } catch (error) {
