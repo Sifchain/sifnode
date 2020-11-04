@@ -6,14 +6,13 @@ import (
 	"github.com/Sifchain/sifnode/x/oracle"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	"strconv"
 	"strings"
 	"testing"
 )
 
 var (
 	cosmosReceivers, _                         = CreateTestAddrs(1)
-	amount, _                                  = strconv.ParseInt("10", 10, 64)
+	amount               int64                 = 10
 	symbol                                     = "stake"
 	tokenContractAddress                       = types.NewEthereumAddress("0xbbbbca6a901c926f240b89eacb641d8aec7aeafd")
 	ethBridgeAddress     types.EthereumAddress = types.NewEthereumAddress(strings.ToLower("0x30753E4A8aad7F8597332E813735Def5dD395028"))
@@ -26,9 +25,7 @@ func TestProcessClaimLock(t *testing.T) {
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
-	nonce, err := strconv.Atoi("1")
-	require.NoError(t, err)
-
+	nonce := 1
 	//invalid claim defaults to lock
 	claimType, err := types.StringToClaimType("lkfjdsk")
 	require.Equal(t, claimType.String(), "lock")
@@ -84,8 +81,7 @@ func TestProcessClaimBurn(t *testing.T) {
 	validator1Pow3 := validatorAddresses[0]
 	validator2Pow3 := validatorAddresses[1]
 
-	nonce, err := strconv.Atoi("1")
-	require.NoError(t, err)
+	nonce := 1
 
 	claimType, err := types.StringToClaimType("burn")
 	require.NoError(t, err)
