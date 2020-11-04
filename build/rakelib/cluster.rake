@@ -86,10 +86,13 @@ namespace :cluster do
       end
     end
 
-    task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
-      check_args(args)
-      cmd = "helm delete #{ns(args)} -n #{ns(args)}"
-      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+    desc "delete a namespace"
+    namespace :destroy do
+      task :namespace, [:chainnet, :provider, :namespace] do |t, args|
+        check_args(args)
+        cmd = "helm delete #{ns(args)} -n #{ns(args)}"
+        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      end
     end
   end
 

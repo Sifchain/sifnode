@@ -13,9 +13,6 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
 
-      - name: Check out the repo
-        uses: actions/checkout@v2
-
       - name: Git vars
         id: vars
         shell: bash
