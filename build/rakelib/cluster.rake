@@ -70,7 +70,7 @@ namespace :cluster do
         check_args(args)
 
         cmd = %Q{helm upgrade prism ../build/helm/prism \
-          --install -n #{ns(args)} \
+          --install -n #{ns(args)} --create-namespace \
         }
 
         system({"KUBECONFIG" => kubeconfig(args) }, cmd)
