@@ -5,11 +5,11 @@ all: run
 install:
 	pip3 install openapi-spec-validator
 
-run-swagger-ui: build-swagger-iu
-	docker run -p 8080:8080 swagger:latest
+run-swagger-ui: build-image-swagger-iu
+	docker run -p 8080:8080 sifchain/swagger-ui:$(CHAINNET)
 
-run-prim: build-prim
-	docker run -p 1317:1317 prism:latest
+run-prim: build-image-prim
+	docker run -p 1317:1317 sifchain/prism:$(CHAINNET)
 
 build-image-swagger-iu:
 	docker build -f swagger-ui.Dockerfile -t sifchain/swagger-ui:$(CHAINNET) .
