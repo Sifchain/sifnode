@@ -11,6 +11,8 @@
 
 ### Setup
 
+#### Connect to Sifchain
+
 1. Ensure you've installed the dependencies listed above.
 
 2. Clone the repository:
@@ -53,7 +55,7 @@ make install
     sifnoded unsafe-reset-all
     ```
 
-    6.2 Get the latest genesis file:
+    6.2 Download the latest genesis file:
 
     ```
     wget -O ~/.sifnoded/config/genesis.json https://raw.githubusercontent.com/Sifchain/networks/feature/genesis/testnet/monkey-bars-testnet-3/genesis.json
@@ -79,9 +81,9 @@ You can verify that you're connected by running:
 sifnodecli q tendermint-validator-set
 ```
 
-## Becoming a validator
+#### Become a Validator
 
-The instructions above will get you connected to the network, but you won't be able to participate in consensus until you become a validator.
+You won't be able to participate in consensus until you become a validator.
 
 1. Reach out to us on [Discord](https://discord.com/invite/zZTYnNG) to request some tokens.
 
