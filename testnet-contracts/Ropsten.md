@@ -21,8 +21,4 @@
    
    Deploying 'BridgeRegistry'
    --------------------------
-<<<<<<< HEAD
    > contract address:    0x70BAA359A7e6adCd22C6960361061d1242389443
-=======
-   > contract address:    0x70BAA359A7e6adCd22C6960361061d1242389443
->>>>>>> 7d6c783... Add: peggy ropsten addresses
