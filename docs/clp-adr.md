@@ -58,13 +58,13 @@ liquidityOroviderAddress: sif15tyrwghfcjszj7sckxvqh0qpzprup9mhksmuzm
     - Every pool has been decided to have a different pool address .The pool address the created from the string (External_Asset_Ticker)_(Native_Asset_Ticker) .
     - Pool units are calculated based on the external and native asset amount . the formula used is . The pool creator gets his share of units.
     ````
-   {
-     R = nativeAssetBalance + nativeAssetAmount, A = externalAssetBalance + externalAssetAmount,
-     r = nativeAssetAmount, a = externalAssetAmount
-     poolerUnits = ((R + A) * (r * A + R * a))/(4 * R * A)
-     poolUnits = oldPoolUnits + lpUnits
-     return poolUnits, lpUnits
-   }
+      r = Native amount added
+      a = External amount added
+      R = Native Balance (before)
+      A = External Balance (before)
+      P = existing Pool Units
+      slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
+      units = ((P (a R + A r))/(2 A R))*slipAdjustment
    ````
     ***Consequences***
     - Positive - Every pool has a unique address
