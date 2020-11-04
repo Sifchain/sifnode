@@ -11,20 +11,17 @@
 # clone
 git clone git@github.com:Sifchain/sifnode.git && cd sifnode
 
-# ensure you're on the develop branch
-git branch
+# checkout the latest release
+git checkout tags/monkey-bars-testnet-3 -b develop
 
 # build
 make && make install
-
-# reset
-sifnoded unsafe-reset-all
 
 # change into the build directory
 cd ./build
 
 # scaffold
-rake 'genesis:sifnode:scaffold[monkey-bars, bc849774f1daf9047ae68e7aa08f72829b7cdff4@35.166.247.98:26656, http://35.166.247.98:26657/genesis]'
+rake 'genesis:sifnode:scaffold[monkey-bars, bd17ce50e4e07b5a7ffc661ed8156ac8096f57ce@35.166.247.98:26656, http://35.166.247.98:26657/genesis]'
 
 # run
 sifnoded start
@@ -33,9 +30,9 @@ sifnoded start
 You may also use the following peer addresses (in addition to the one above):
 
 ```
-f5776c5a16459bce782ccdc438a4f520feab92b5@35.166.247.98:28002
-7e308d56cf878d0d88780cc0d75c51b9a3aee203@35.166.247.98:28004
-f8a20e44377aefd9557efc595c4a5f4d9308939b@35.166.247.98:28006
+f8f5d01fdc73e1b536084bbe42d0a81479f882b3@35.166.247.98:28002
+f27548f03a4179b7a4dc3c8a62fcfc5f84be15ff@35.166.247.98:28004
+dd35505768be507af3c76f5a4ecdb272537e398f@35.166.247.98:28006
 ```
 
 Additional instructions on standing up Sifnode https://www.youtube.com/watch?v=1kjdjCEcYak&feature=youtu.be&ab_channel=utx0_
