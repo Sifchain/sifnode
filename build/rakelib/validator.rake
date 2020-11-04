@@ -7,7 +7,7 @@ namespace :faucet do
       config = YAML.load_file(network_config(args[:chainnet]))
 
       cmd = %Q{printf "#{config[0]['password']}\n#{config[0]['password']}\n" | \
-               sifnodecli tx send #{config[0]['address']} #{args[:address]} 10000000trwn \
+               sifnodecli tx send #{config[0]['address']} #{args[:address]} 10000000trwn,100000000000crwn \
                --home networks/validators/#{args[:chainnet]}/#{config[0]['moniker']}/.sifnodecli -y
              }
 

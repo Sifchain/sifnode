@@ -6,14 +6,20 @@ import (
 )
 
 const (
-	TokenDenom = "trwn"
-	BondAmount = "100000000"
-	FundAmount = "10000000000000000000000"
+	TokenSuffix     = "rwn"
+	BondAmount      = "500000000"
+	StakeFundAmount = "10000000000000000000000"
+	SwapFundAmount  = "10000000000000000000000000000000000"
 )
 
 var (
-	ToBond = fmt.Sprintf("%s%s", BondAmount, TokenDenom)
-	ToFund = []string{fmt.Sprintf("%s%s", FundAmount, TokenDenom)}
+	StakeTokenDenom = fmt.Sprintf("t%s", TokenSuffix)
+	SwapTokenDenom  = fmt.Sprintf("c%s", TokenSuffix)
+	ToBond          = fmt.Sprintf("%s%s", BondAmount, StakeTokenDenom)
+	ToFund          = []string{
+		fmt.Sprintf("%s%s", StakeFundAmount, StakeTokenDenom),
+		fmt.Sprintf("%s%s", SwapFundAmount, SwapTokenDenom),
+	}
 )
 
 type AuthAccountValueCoin struct {

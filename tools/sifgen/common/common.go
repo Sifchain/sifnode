@@ -12,8 +12,8 @@ type (
 	Genesis    types.Genesis
 )
 
-const (
-	TokenDenom = types.TokenDenom
+var (
+	StakeTokenDenom = types.StakeTokenDenom
 )
 
 var (
