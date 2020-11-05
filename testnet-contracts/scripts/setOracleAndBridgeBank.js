@@ -1,4 +1,4 @@
-module.exports = async () => {
+module.exports = async (cb) => {
   /*******************************************
    *** Set up
    ******************************************/
@@ -23,6 +23,8 @@ module.exports = async () => {
   // Config values
   const NETWORK_ROPSTEN =
     process.argv[4] === "--network" && process.argv[5] === "ropsten";
+  const NETWORK_MAINNET =
+    process.argv[4] === "--network" && process.argv[5] === "mainnet";
 
   /*******************************************
    *** Web3 provider
@@ -31,8 +33,13 @@ module.exports = async () => {
   let provider;
   if (NETWORK_ROPSTEN) {
     provider = new HDWalletProvider(
-      process.env.MNEMONIC,
+      process.env.ETHEREUM_PRIVATE_KEY,
       "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+    );
+  } else if (NETWORK_MAINNET) {
+    provider = new HDWalletProvider(
+      process.env.ETHEREUM_PRIVATE_KEY,
+      "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
     );
   } else {
     provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
@@ -68,6 +75,8 @@ module.exports = async () => {
         gas: 300000 // 300,000 Gwei
       });
     });
+
+    
   // Get event logs
   const setOracleEvent = setOracleLogs.find(e => e.event === "LogOracleSet");
   console.log("CosmosBridge's Oracle set:", setOracleEvent.args._oracle);
@@ -99,8 +108,9 @@ module.exports = async () => {
     setBridgeBankEvent.args._bridgeBank
   );
 
-  return;
+  cb();
 } catch (error) {
   console.error({error})
+  cb();
 }
 };

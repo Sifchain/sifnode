@@ -87,74 +87,83 @@ module.exports = function(deployer, network, accounts) {
    *** Final cost:                         0.25369878 Ether
    *******************************************************/
   deployer.then(async () => {
+
+    function setTxSpecifications(gasAmount, from) {
+      const txObj = {
+        gas: gasAmount,
+        from: from
+      }
+
+      if (process.env.MAINNET_GAS_PRICE) {
+        txObj.gasPrice = process.env.MAINNET_GAS_PRICE
+      }
+
+      return txObj;
+    }
     // 1. Deploy BridgeToken contract
     //    Gas used:        1,884,394 Gwei
     //    Total cost:    0.03768788 Ether
-    await deployer.deploy(BridgeToken, "TEST", {
-      gas: 4612388,
-      from: operator
-    });
+    await deployer.deploy(BridgeToken, "TEST", setTxSpecifications(4612388, operator));
 
     // 2. Deploy Valset contract:
     //    Gas used:          909,879 Gwei
     //    Total cost:    0.01819758 Ether
-    const valset = await deployer.deploy(Valset, operator, initialValidators, initialPowers, {
-      gas: 6721975,
-      from: operator
-    });
+    const valset = await deployer.deploy(Valset, operator, initialValidators, initialPowers, 
+      setTxSpecifications(6721975, operator)
+    );
 
     // 3. Deploy CosmosBridge contract:
     //    Gas used:       2,649,300 Gwei
     //    Total cost:     0.052986 Ether
-    await deployer.deploy(CosmosBridge, operator, Valset.address, {
-      gas: 6721975,
-      from: operator
-    });
+    const cosmosBridge = await deployer.deploy(CosmosBridge, operator, Valset.address,
+      setTxSpecifications(6721975, operator)
+    );
 
     // 4. Deploy Oracle contract:
     //    Gas used:        1,769,740 Gwei
     //    Total cost:     0.0353948 Ether
-    await deployer.deploy(
+    const oracle = await deployer.deploy(
       Oracle,
       operator,
       Valset.address,
       CosmosBridge.address,
       consensusThreshold,
-      {
-        gas: 6721975,
-        from: operator
-      }
+      setTxSpecifications(6721975, operator)
     );
 
     // 5. Deploy BridgeBank contract:
     //    Gas used:        4,823,348 Gwei
     //    Total cost:    0.09646696 Ether
-    await deployer.deploy(
+    const bridgeBank = await deployer.deploy(
       BridgeBank,
       operator,
       Oracle.address,
       CosmosBridge.address,
       operator,
-      {
-        gas: 6721975,
-        from: operator
-      }
+      setTxSpecifications(6721975, operator)
     );
 
     // 6. Deploy BridgeRegistry contract:
     //    Gas used:          363,370 Gwei
     //    Total cost:     0.0072674 Ether
-    return deployer.deploy(
+    deployer.deploy(
       BridgeRegistry,
       CosmosBridge.address,
       BridgeBank.address,
       Oracle.address,
       Valset.address,
-      {
-        gas: 6721975,
-        from: operator
-      }
+      setTxSpecifications(6721975, operator)
     );
-    
+      
+    // Set both the oracle and bridge bank address on the cosmos bridge
+    await cosmosBridge.setOracle(oracle.address,
+      setTxSpecifications(600000, operator)
+    );
+
+    await cosmosBridge.setBridgeBank(bridgeBank.address, 
+      setTxSpecifications(600000, operator)
+    );
+
+    return;
   });
 };
