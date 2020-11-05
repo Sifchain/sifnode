@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
-  title: CLP_GET_REQUESTS
-  description: CLP_GET_REQUESTS
+  title: CLP_POST_REQUESTS
+  description: Trasactions for CLP Module
   version: '0.1'
 servers:
   - url: 'http://0.0.0.0:1317'
@@ -16,8 +16,6 @@ paths:
               type: object
               properties:
                 ticker:
-                  type: string
-                source_chain:
                   type: string
                 base_req:
                   type: object
@@ -37,8 +35,7 @@ paths:
                       "chain_id": "sifnode"
                     },
                     "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
-                     "source_chain" : "ROWAN",
-                     "ticker" :"EOS"
+                    "ticker" :"ceth"
                   }
 
       responses:
@@ -66,8 +63,6 @@ paths:
                               properties:
                                 ticker:
                                   type: string
-                                source_chain:
-                                  type: string
                                 signer:
                                   type: string
                       fee:
@@ -85,7 +80,7 @@ paths:
               examples:
                 '0':
                   value: >-
-                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/DecommissionPool","value":{"signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ticker":"EOS","source_chain":"ROWAN"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
+                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/DecommissionPool","value":{"signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ticker":"cdash"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
       servers:
         - url: 'http://0.0.0.0:1317'
     servers:
@@ -131,9 +126,9 @@ paths:
                     },
                     "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
                     "external_asset": {
-                      "source_chain" : "ROWAN",
-                      "symbol" : "ETHROWAN",
-                      "ticker" :"ETH"
+                      "source_chain" : "Ethereum",
+                      "symbol" : "ETH",
+                      "ticker" :"ceth"
                     },
                     "w_basis_points": "1000",
                     "asymmetry": "10"
@@ -191,7 +186,7 @@ paths:
               examples:
                 '0':
                   value: >-
-                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/RemoveLiquidity","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"WBasisPoints":"1000","Asymmetry":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
+                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/RemoveLiquidity","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"Ethereum","symbol":"ETH","ticker":"ceth"},"WBasisPoints":"1000","Asymmetry":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
       servers:
         - url: 'http://0.0.0.0:1317'
     servers:
@@ -237,9 +232,9 @@ paths:
                     },
                     "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
                     "external_asset": {
-                      "source_chain" : "ROWAN",
-                      "symbol" : "ETHROWAN",
-                      "ticker" :"ETH"
+                      "source_chain" : "Ethereum",
+                      "symbol" : "ETH",
+                      "ticker" :"ceth"
                     },
                     "native_asset_amount": "1000",
                     "external_asset_amount": "10"
@@ -297,7 +292,7 @@ paths:
               examples:
                 '0':
                   value: >-
-                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/AddLiquidity","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"NativeAssetAmount":"1000","ExternalAssetAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
+                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/AddLiquidity","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"Ethereum","symbol":"ETH","ticker":"ceth"},"NativeAssetAmount":"1000","ExternalAssetAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
       servers:
         - url: 'http://0.0.0.0:1317'
     servers:
@@ -350,14 +345,14 @@ paths:
                     },
                     "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
                     "sent_asset": {
-                      "source_chain" : "ROWAN",
-                      "symbol" : "ETHROWAN",
-                      "ticker" :"ETH"
+                      "source_chain" : "Ethereum",
+                      "symbol" : "ETH",
+                      "ticker" :"ceth"
                     },
                     "received_asset": {
-                      "source_chain" : "ROWAN",
-                      "symbol" : "ETHROWAN",
-                      "ticker" :"ETH"
+                      "source_chain" : "Dash",
+                      "symbol" : "DASH",
+                      "ticker" :"cdash"
                     },
                     "sent_amount": "10"
                   }
@@ -421,7 +416,7 @@ paths:
               examples:
                 '0':
                   value: >-
-                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/Swap","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","SentAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"ReceivedAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"SentAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
+                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/Swap","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","SentAsset":{"source_chain":"Ethereum","symbol":"ETH","ticker":"eth"},"ReceivedAsset":{"source_chain":"Dash","symbol":"Dash","ticker":"cdash"},"SentAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
       servers:
         - url: 'http://0.0.0.0:1317'
     servers:
@@ -467,9 +462,9 @@ paths:
                     },
                     "signer": "sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss",
                     "external_asset": {
-                      "source_chain" : "ROWAN",
-                      "symbol" : "ETHROWAN",
-                      "ticker" :"ETH"
+                      "source_chain" : "Ethereum",
+                      "symbol" : "ETH",
+                      "ticker" :"ceth"
                     },
                     "native_asset_amount": "1000",
                     "external_asset_amount": "10"
@@ -527,7 +522,7 @@ paths:
               examples:
                 '0':
                   value: >-
-                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/CreatePool","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"ROWAN","symbol":"ETHROWAN","ticker":"ETH"},"NativeAssetAmount":"1000","ExternalAssetAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
+                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/CreatePool","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"Ethereum","symbol":"ETH","ticker":"ceth"},"NativeAssetAmount":"1000","ExternalAssetAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
       servers:
         - url: 'http://0.0.0.0:1317'
     servers:

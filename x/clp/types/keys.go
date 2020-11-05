@@ -25,8 +25,8 @@ const (
 	NativeSymbol = "RWN"
 
 	AddressLength        = 20
-	MaxTickerLength      = 5
-	MaxSymbolLength      = 5
+	MaxTickerLength      = 6
+	MaxSymbolLength      = 6
 	MaxSourceChainLength = 20
 )
 

@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
-  title: defaultTitle
-  description: defaultDescription
+  title: CLP_GET_REQUESTS
+  description: Queries for CLP Module
   version: '0.1'
 servers:
   - url: 'http://0.0.0.0:1317'
@@ -83,7 +83,7 @@ paths:
           in: query
           schema:
             type: string
-          example: EOS
+          example: ceth
         - name: lpAddress
           in: query
           schema:
@@ -122,9 +122,9 @@ paths:
                       "height": "451",
                       "result": {
                         "asset": {
-                          "source_chain": "ROWAN",
-                          "symbol": "EOSROWAN",
-                          "ticker": "EOS"
+                          "source_chain": "Ethereum",
+                          "symbol": "ETH",
+                          "ticker": "ceth"
                         },
                         "liquidity_provider_units": "500",
                         "liquidity_provider_address": "sif18agvfsynv8phnxxvs75t2te0286eu8t6msgc0r"
@@ -142,12 +142,7 @@ paths:
           in: query
           schema:
             type: string
-          example: EOS
-        - name: sourceChain
-          in: query
-          schema:
-            type: string
-          example: ROWAN
+          example: ceth
       responses:
         '200':
           description: Auto generated using Swagger Inspector
@@ -185,14 +180,14 @@ paths:
                       "height": "422",
                       "result": {
                         "external_asset": {
-                          "source_chain": "ROWAN",
-                          "symbol": "EOSROWAN",
-                          "ticker": "EOS"
+                          "source_chain": "Ethereum",
+                          "symbol": "ETH",
+                          "ticker": "ceth"
                         },
-                        "native_asset_balance": "1",
+                        "native_asset_balance": "1000",
                         "external_asset_balance": "1000",
                         "pool_units": "500",
-                        "pool_address": "EOS_ROWAN"
+                        "pool_address": "sif1vdjxzumgtae8wmstpv9skzctpv9skzct72zwra"
                       }
                     }
       servers:
