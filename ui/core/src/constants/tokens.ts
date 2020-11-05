@@ -15,9 +15,9 @@ export const ROWAN = Coin({
 });
 
 export const NCN = Coin({
-  symbol: "nametoken",
+  symbol: "catk",
   decimals: 0,
-  name: "nametoken",
+  name: "catk",
   network: Network.SIFCHAIN,
 });
 

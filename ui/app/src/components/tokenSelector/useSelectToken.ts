@@ -1,5 +1,5 @@
-import { Ref, computed } from "@vue/reactivity";
-import { Store } from "../../../../core";
+import { Ref, computed, ComputedRef } from "@vue/reactivity";
+import { Asset, Store } from "../../../../core";
 import { useWallet } from "../../hooks/useWallet";
 
 export function useTokenListing({
@@ -14,7 +14,7 @@ export function useTokenListing({
   walletLimit: number;
   tokenLimit: number;
   selectedTokens: string[];
-}) {
+}): { filteredTokens: ComputedRef<Asset[]> } {
   const { balances } = useWallet(store);
 
   const walletTokens = computed(() => balances.value.map((tok) => tok.asset));

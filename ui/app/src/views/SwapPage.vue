@@ -47,7 +47,7 @@ export default defineComponent({
     }
 
     const balances = computed(() => {
-      return [...store.wallet.eth.balances, ...store.wallet.sif.balances];
+      return store.wallet.sif.balances;
     });
 
     const {
@@ -69,9 +69,6 @@ export default defineComponent({
       setTimeout(() => {
         mockTransactionState.value = "confirmed";
       }, 1000);
-      // alert(
-      //   `Swapping ${fromFieldAmount.value?.toFormatted()} for ${toFieldAmount.value?.toFormatted()}!`
-      // );
     }
 
     return {

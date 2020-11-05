@@ -1,5 +1,4 @@
-import { Asset, Token } from "../../entities";
-import { isToken } from "../../entities/utils/isToken";
+import { Asset } from "../../entities";
 
 export type TokenServiceContext = {
   loadAssets: () => Promise<Asset[]>;

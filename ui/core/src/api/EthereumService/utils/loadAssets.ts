@@ -1,3 +1,7 @@
+// This is ainly for testing to load a bunch of Ethereum tokens
+// This may not be hooked up right now but will likely be used as peg tokens
+// To load whitelisted coins from Ethereum
+
 import { Network, Token } from "../../../entities";
 type TokenData = {
   id: string;

@@ -105,7 +105,7 @@ export default defineComponent({
 
       await actions.sifWallet.sendCosmosTransaction({
         asset: Coin({
-          symbol: "nametoken",
+          symbol: "catk",
           decimals: 18,
           name: "Nametoken",
           network: Network.SIFCHAIN,

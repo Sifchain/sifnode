@@ -12,10 +12,10 @@ Our SifService will wrap the `@cosmjs/launchpad` lib
 
 ```ts
 enum SourceChain {
-  ETHEREUM
-  DASH
-  SIF
-  BITCOIN
+  ETHEREUM="ETHEREUM"
+  DASH="DASH"
+  SIF="SIF"
+  BITCOIN="BITCOIN"
 }
 ```
 
@@ -109,3 +109,5 @@ type ClpCmdSwap = ({
   amount: AssetAmount,
 }) => any;
 ```
+
+Need to add this idea of pool units to our domain.
