@@ -1,8 +1,8 @@
 openapi: 3.0.1
 info:
-  title: CLP_POST_REQUESTS
-  description: Trasactions for CLP Module
-  version: '0.1'
+  title:  Sifnode - OpenAPI spec
+  description: OpenAPI spec for sifnode
+  version: '0.0.1'
 servers:
   - url: 'http://0.0.0.0:1317'
 paths:
@@ -53,36 +53,36 @@ paths:
                           type: string
                   height:
                     type: string
-              examples:
-                '0':
-                  value: |-
-                    {
-                      "height": "415",
-                      "result": [
-                        {
-                          "external_asset": {
-                            "source_chain": "ROWAN",
-                            "symbol": "EOSROWAN",
-                            "ticker": "EOS"
-                          },
-                          "native_asset_balance": "1",
-                          "external_asset_balance": "1000",
-                          "pool_units": "500",
-                          "pool_address": "EOS_ROWAN"
-                        },
-                        {
-                          "external_asset": {
-                            "source_chain": "ROWAN",
-                            "symbol": "BTCROWAN",
-                            "ticker": "ETH"
-                          },
-                          "native_asset_balance": "1",
-                          "external_asset_balance": "1000",
-                          "pool_units": "500",
-                          "pool_address": "ETH_ROWAN"
-                        }
-                      ]
-                    }
+#              examples:
+#                '0':
+#                  value: |-
+#                    {
+#                      "height": "415",
+#                      "result": [
+#                        {
+#                          "external_asset": {
+#                            "source_chain": "ROWAN",
+#                            "symbol": "EOSROWAN",
+#                            "ticker": "EOS"
+#                          },
+#                          "native_asset_balance": "1",
+#                          "external_asset_balance": "1000",
+#                          "pool_units": "500",
+#                          "pool_address": "EOS_ROWAN"
+#                        },
+#                        {
+#                          "external_asset": {
+#                            "source_chain": "ROWAN",
+#                            "symbol": "BTCROWAN",
+#                            "ticker": "ETH"
+#                          },
+#                          "native_asset_balance": "1",
+#                          "external_asset_balance": "1000",
+#                          "pool_units": "500",
+#                          "pool_address": "ETH_ROWAN"
+#                        }
+#                      ]
+#                    }
       servers:
         - url: 'http://0.0.0.0:1317'
     servers:
@@ -127,21 +127,21 @@ paths:
                             type: string
                   height:
                     type: string
-              examples:
-                '0':
-                  value: |-
-                    {
-                      "height": "451",
-                      "result": {
-                        "asset": {
-                          "source_chain": "Ethereum",
-                          "symbol": "ETH",
-                          "ticker": "ceth"
-                        },
-                        "liquidity_provider_units": "500",
-                        "liquidity_provider_address": "sif18agvfsynv8phnxxvs75t2te0286eu8t6msgc0r"
-                      }
-                    }
+#              examples:
+#                '0':
+#                  value: |-
+#                    {
+#                      "height": "451",
+#                      "result": {
+#                        "asset": {
+#                          "source_chain": "Ethereum",
+#                          "symbol": "ETH",
+#                          "ticker": "ceth"
+#                        },
+#                        "liquidity_provider_units": "500",
+#                        "liquidity_provider_address": "sif18agvfsynv8phnxxvs75t2te0286eu8t6msgc0r"
+#                      }
+#                    }
       servers:
         - url: 'http://0.0.0.0:1317'
     servers:
