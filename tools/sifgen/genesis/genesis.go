@@ -23,7 +23,7 @@ func ReplaceStakingBondDenom(nodeHomeDir string) error {
 		return err
 	}
 
-	genesis.AppState.Staking.Params.BondDenom = common.TokenDenom
+	genesis.AppState.Staking.Params.BondDenom = common.StakeTokenDenom
 	content, err := json.Marshal(genesis)
 	if err != nil {
 		return err
