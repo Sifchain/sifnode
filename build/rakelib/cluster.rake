@@ -87,18 +87,16 @@ namespace :cluster do
     end
 
     desc "delete a namespace"
-    namespace :destroy do
-      task :namespace, [:chainnet, :provider, :namespace] do |t, args|
-        check_args(args)
-        cmd = "helm delete #{ns(args)} -n #{ns(args)}"
-        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
-      end
+    task :destroy, [:chainnet, :provider, :namespace] do |t, args|
+      check_args(args)
+      cmd = "helm delete #{ns(args)} -n #{ns(args)}"
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
   end
 
   desc "Manage eth full node deploy, upgrade, etc processes"
   namespace :ethnode do
-    desc "Deploy a full eth node on to your cluster"
+    desc "Deploy a full eth node onto your cluster"
     task :deploy do
       puts "Coming soon! "
     end

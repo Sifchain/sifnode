@@ -1,4 +1,4 @@
-name: Build and deploy feature
+name: Feature build and deploy
 
 on:
   push:
