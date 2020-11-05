@@ -115,12 +115,10 @@ func (m MsgRemoveLiquidity) ValidateBasic() error {
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
 	}
-	tenKInt := sdk.NewInt(10000)
-
-	if !(m.WBasisPoints.IsPositive()) || m.WBasisPoints.GT(tenKInt) {
+	if !(m.WBasisPoints.IsPositive()) || m.WBasisPoints.GT(sdk.NewInt(10000)) {
 		return sdkerrors.Wrap(ErrInvalidWBasis, m.WBasisPoints.String())
 	}
-	if m.Asymmetry.GTE(tenKInt) || m.Asymmetry.LTE(sdk.NewInt(-10000)) {
+	if m.Asymmetry.GTE(sdk.NewInt(10000)) || m.Asymmetry.LTE(sdk.NewInt(-10000)) {
 		return sdkerrors.Wrap(ErrInvalidAsymmetry, m.Asymmetry.String())
 	}
 	return nil
