@@ -15,4 +15,9 @@ namespace :chain do
       fh.close
     end
   end
+
+  desc "Migrate a chain"
+  task :migrate, [:version, :genesis_file, :node_directory] do |t, args|
+    system("sifnoded migrate #{args[:version]} #{args[:genesis_file]} --home #{args[:node_directory]}")
+  end
 end
