@@ -81,7 +81,7 @@ You can verify that you're connected by running:
 sifnodecli q tendermint-validator-set
 ```
 
-and you should see something similar to the following:
+and you should see the following main validator nodes for Sifchain:
 
 ```
 validators:
