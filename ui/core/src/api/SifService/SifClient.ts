@@ -10,6 +10,8 @@ import {
   SigningCosmosClient,
 } from "@cosmjs/launchpad";
 
+import { setupClpExtension } from "./x/clp";
+
 export class SifClient extends SigningCosmosClient {
   protected readonly lcdClient: LcdClient & AuthExtension;
 
@@ -24,7 +26,8 @@ export class SifClient extends SigningCosmosClient {
     super(apiUrl, senderAddress, signer, gasPrice, gasLimits, broadcastMode);
     this.lcdClient = LcdClient.withExtensions(
       { apiUrl: apiUrl, broadcastMode: broadcastMode },
-      setupAuthExtension
+      setupAuthExtension,
+      setupClpExtension
     );
   }
 }
