@@ -366,3 +366,54 @@ func TestBurnEthSuccess(t *testing.T) {
 	senderCoins = bankKeeper.GetCoins(ctx, senderAddress)
 	require.True(t, senderCoins.IsEqual(remainingCoins))
 }
+
+func TestMsgLock(t *testing.T) {
+	ctx, _, bankKeeper, _, accountKeeper, _, handler := CreateTestHandler(t, 0.5, []int64{5})
+
+	// attempt with address not in accountkeeper
+	badAddrs, _ := CreateTestAddrs(1)
+	msgLock := types.NewMsgLock(
+		5777,
+		badAddrs[0],
+		types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57"),
+		int64(10),
+		"stake",
+	)
+	_, err := handler(ctx, msgLock)
+	require.Error(t, err)
+	require.True(t, strings.Contains(err.Error(), "invalid address"))
+
+	// valid account, token with no balance
+	accounts := accountKeeper.GetAllAccounts(ctx)
+	cosmosSender := accounts[0]
+
+	msgLock = types.NewMsgLock(
+		5777,
+		cosmosSender.GetAddress(),
+		types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57"),
+		int64(10),
+		"cstake",
+	)
+
+	_, err = handler(ctx, msgLock)
+	require.Error(t, err)
+	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
+
+	// valid
+	receiverCoins := bankKeeper.GetCoins(ctx, cosmosSender.GetAddress())
+
+	msgLock = types.NewMsgLock(
+		5777,
+		cosmosSender.GetAddress(),
+		types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57"),
+		int64(10),
+		"stake",
+	)
+
+	_, err = handler(ctx, msgLock)
+
+	require.NoError(t, err)
+	receiverCoinsTwo := bankKeeper.GetCoins(ctx, cosmosSender.GetAddress())
+	require.Equal(t, receiverCoins.Sub(receiverCoinsTwo).String(), "10stake")
+
+}
