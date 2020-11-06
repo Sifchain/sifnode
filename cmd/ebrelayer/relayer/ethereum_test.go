@@ -1,16 +1,16 @@
 package relayer
 
-const (
-	tmProvider      = "Node"
-	ethProvider     = "ws://127.0.0.1:7545/"
-	contractAddress = "0x00"
-	privateKeyStr   = "ae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f"
-	// rpc              = "http://localhost:7545"
-	rpc              = ""
-	validatorMoniker = "user1"
-	chainID          = "sifchain"
-	web3Provider     = "ws://localhost:7545/"
-)
+// const (
+// 	tmProvider      = "Node"
+// 	ethProvider     = "ws://127.0.0.1:7545/"
+// 	contractAddress = "0x00"
+// 	privateKeyStr   = "ae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f"
+// 	// rpc              = "http://localhost:7545"
+// 	rpc              = ""
+// 	validatorMoniker = "user1"
+// 	chainID          = "sifchain"
+// 	web3Provider     = "ws://localhost:7545/"
+// )
 
 // comment out it because of error related to configuration.
 // func TestNewEthereumSub(t *testing.T) {
