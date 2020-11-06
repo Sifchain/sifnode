@@ -14,7 +14,8 @@ import (
 
 func TestQueryErrorPool(t *testing.T) {
 	cdc := codec.New()
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	//Set Data
 	pool, _, _ := SetData(keeper, ctx)
 	querier := clp.NewQuerier(keeper)
@@ -42,7 +43,8 @@ func TestQueryErrorPool(t *testing.T) {
 
 func TestQueryGetPool(t *testing.T) {
 	cdc := codec.New()
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
@@ -67,7 +69,8 @@ func TestQueryGetPool(t *testing.T) {
 }
 
 func TestQueryErrorPools(t *testing.T) {
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
@@ -81,7 +84,8 @@ func TestQueryErrorPools(t *testing.T) {
 }
 
 func TestQueryGetPools(t *testing.T) {
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
@@ -103,7 +107,8 @@ func TestQueryGetPools(t *testing.T) {
 
 func TestQueryErrorLiquidityProvider(t *testing.T) {
 	cdc := codec.New()
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
@@ -129,7 +134,8 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 
 func TestQueryGetLiquidityProvider(t *testing.T) {
 	cdc := codec.New()
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},

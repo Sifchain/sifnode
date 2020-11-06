@@ -8,7 +8,8 @@ import (
 
 func TestKeeper_Errors(t *testing.T) {
 	pool := test.GenerateRandomPool(1)[0]
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	_ = keeper.Logger(ctx)
 	pool.ExternalAsset.Ticker = ""
 	keeper.SetPool(ctx, pool)

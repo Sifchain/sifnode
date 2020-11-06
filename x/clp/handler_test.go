@@ -10,7 +10,8 @@ import (
 )
 
 func TestHandler(t *testing.T) {
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	handler := clp.NewHandler(keeper)
 	res, err := handler(ctx, nil)
 	require.Error(t, err)
@@ -18,7 +19,8 @@ func TestHandler(t *testing.T) {
 }
 
 func TestCreatePool(t *testing.T) {
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	signer := test.GenerateAddress()
 	//Parameters for create pool
 	initialBalance := 10000 // Initial account balance for all assets created
@@ -63,7 +65,8 @@ func TestCreatePool(t *testing.T) {
 }
 
 func TestAddLiqudity(t *testing.T) {
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	signer := test.GenerateAddress()
 	//Parameters for add liquidity
 	initialBalance := 10000 // Initial account balance for all assets created
@@ -95,7 +98,8 @@ func TestAddLiqudity(t *testing.T) {
 }
 
 func TestRemoveLiquidity(t *testing.T) {
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	signer := test.GenerateAddress()
 	externalDenom := "ceth"
 	nativeDenom := clp.GetSettlementAsset().Ticker
@@ -205,7 +209,8 @@ func TestRemoveLiquidity(t *testing.T) {
 
 }
 func TestSwap(t *testing.T) {
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	signer := test.GenerateAddress()
 	handler := clp.NewHandler(keeper)
 	assetEth := clp.NewAsset("ETHEREUM", "ETH", "ceth")
@@ -252,7 +257,8 @@ func TestSwap(t *testing.T) {
 }
 
 func TestDecommisionPool(t *testing.T) {
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	signer := test.GenerateAddress()
 	handler := clp.NewHandler(keeper)
 
