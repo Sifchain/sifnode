@@ -151,9 +151,8 @@ func TestProcessSuccessfulClaimLock(t *testing.T) {
 	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
 	require.NoError(t, err)
 
-	//receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
-	//require.Equal(t, "10cstake", receiverCoins.String())
-	//actually is 20, could this be infinite mint?
+	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, "20cstake", receiverCoins.String())
 }
 
 func TestProcessSuccessfulClaimBurn(t *testing.T) {
@@ -180,9 +179,8 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
 	require.NoError(t, err)
 
-	//receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
-	//require.Equal(t, "10stake", receiverCoins.String())
-	//actually is 20, could this be infinite mint?
+	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, "20stake", receiverCoins.String())
 }
 func TestProcessBurn(t *testing.T) {
 	ctx, keeper, bankKeeper, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
