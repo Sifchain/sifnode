@@ -1,8 +1,7 @@
 package keeper_test
-/*
+
 import (
 	"github.com/Sifchain/sifnode/x/clp"
-	//"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -168,4 +167,3 @@ func SetData(keeper clp.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, type
 	return pool, pools, lp
 
 }
-*/

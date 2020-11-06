@@ -2,24 +2,9 @@ package keeper_test
 
 import (
 	"github.com/Sifchain/sifnode/x/clp/test"
-	//"github.com/Sifchain/sifnode/simapp"
-	//sdk "github.com/cosmos/cosmos-sdk/types"
-	//authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/assert"
-	//abci "github.com/tendermint/tendermint/abci/types"
 	"testing"
 )
-
-
-
-// returns context and app with params set on account keeper
-/* func createTestApp(isCheckTx bool, initPower int64) (*simapp.SimApp, sdk.Context) {
-	app := simapp.Setup(isCheckTx)
-	ctx := app.BaseApp.NewContext(isCheckTx, abci.Header{})
-	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
-
-	return app, ctx
-} */
 
 func TestKeeper_Errors(t *testing.T) {
 	pool := test.GenerateRandomPool(1)[0]
@@ -80,7 +65,8 @@ func TestKeeper_DestroyPool(t *testing.T) {
 
 func TestKeeper_SetLiquidityProvider(t *testing.T) {
 	lp := test.GenerateRandomLP(1)[0]
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	keeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	assert.NoError(t, err, "Error in get liquidityProvider")
@@ -91,7 +77,8 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 
 func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
 	lp := test.GenerateRandomLP(1)[0]
-	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	keeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	assert.NoError(t, err, "Error in get liquidityProvider")
