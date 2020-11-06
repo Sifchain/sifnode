@@ -56,6 +56,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event *types.Ethereum
 	case ethbridge.BurnText:
 		if !strings.Contains(symbol, defaultPrefix) {
 			log.Fatal("Can only relay burns of 'PEGGY' prefixed tokens")
+			return witnessClaim, errors.New("symbol of burn token must start with prefix")
 		}
 		res := strings.SplitAfter(symbol, defaultPrefix)
 		symbol = strings.Join(res[1:], "")
