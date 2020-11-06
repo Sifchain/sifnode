@@ -512,7 +512,7 @@ func calculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 		return sdk.ZeroUint(), sdk.ZeroUint(), errors.New("total External in the pool is zero")
 	}
 	if nativeAssetBalance.IsZero() || externalAssetBalance.IsZero() {
-		return nativeAssetAmount, externalAssetAmount, nil
+		return nativeAssetAmount, nativeAssetAmount, nil
 	}
 	P := sdk.NewDecFromBigInt(oldPoolUnits.BigInt())
 	R := sdk.NewDecFromBigInt(nativeAssetBalance.BigInt())
