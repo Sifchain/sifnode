@@ -1,0 +1,6 @@
+require 'rake'
+require 'yaml'
+require 'digest'
+Dir["./lib/*.rb"].each {|file| require file }
+
+# See ./rakelib/**

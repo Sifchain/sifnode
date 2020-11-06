@@ -1,3 +1,10 @@
+.idea
+.coverage.txt
 frontend/node_modules
 frontend/dist
 frontend/.cache
+.live
+.DS_Store
+.testCoverage.txt
+.environments
+build/networks
