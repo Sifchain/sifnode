@@ -64,7 +64,7 @@ truffle deploy --network mainnet
 ```
 You can replace mainnet with ropsten or local, whichever network you would like to deploy to.
 
-5. Grab the eRowan token address on whatever network you are on. Then run the setup_eRowan.js file to properly hook eRowan into the contracts. Make sure that the EROWAN_ADDRESS variable in the .env file is set to the eRowan token address. Then run the command from the testnet-contracts folder:
+5. Grab the eRowan token address on whatever network you are on. Then run the setup_eRowan.js file to properly hook eRowan into the contracts. Make sure that the EROWAN_ADDRESS variable in the .env file is set to the eRowan token address. Make sure that the OWNER address is set properly in the env file so that you have an owner for the bridgebank contract that can use the admin api. Then run the command from the testnet-contracts folder:
 ```
 truffle exec scripts/setup_eRowan.js --network mainnet
 ```

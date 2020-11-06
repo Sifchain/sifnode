@@ -12,6 +12,7 @@ module.exports = function(deployer, network, accounts) {
    *** Input validation of contract params
    ******************************************/
   let operator;
+  let owner;
   let initialValidators = [];
   let initialPowers = [];
   let consensusThreshold;
@@ -42,6 +43,7 @@ module.exports = function(deployer, network, accounts) {
 
     // Assign validated local input params
     operator = accounts[0];
+    owner = accounts[0];
     initialValidators = accounts.slice(1, localValidatorCount + 1);
     initialPowers = process.env.LOCAL_INITIAL_VALIDATOR_POWERS.split(",");
 
@@ -51,6 +53,12 @@ module.exports = function(deployer, network, accounts) {
     if (process.env.OPERATOR.length === 0) {
       return console.error(
         "Must provide operator address as environment variable."
+      );
+    }
+    // Owner
+    if (process.env.OWNER.length === 0) {
+      return console.error(
+        "Must provide owner address as environment variable."
       );
     }
     // Initial validators
@@ -68,6 +76,7 @@ module.exports = function(deployer, network, accounts) {
 
     // Assign validated testnet/mainnet input params
     operator = process.env.OPERATOR;
+    owner = process.env.OWNER;
     initialValidators = process.env.INITIAL_VALIDATOR_ADDRESSES.split(",");
     initialPowers = process.env.INITIAL_VALIDATOR_POWERS.split(",");
   }
@@ -139,7 +148,7 @@ module.exports = function(deployer, network, accounts) {
       operator,
       Oracle.address,
       CosmosBridge.address,
-      operator,
+      owner,
       setTxSpecifications(6721975, operator)
     );
 
