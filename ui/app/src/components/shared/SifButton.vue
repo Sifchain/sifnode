@@ -113,6 +113,7 @@ export default defineComponent({
 
   &.secondary {
     background: $c_gray_100;
+    border: 1px solid $c_gray_200;
     color: $c_text;
     transition: background $trans_fast;
 

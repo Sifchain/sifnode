@@ -74,7 +74,7 @@ export default defineComponent({
   background: $c_white;
   box-sizing: border-box;
   border-radius: $br_sm;
-  border: 1px solid $c_white;
+  border: 1px solid $c_gray_200;
   padding: 0 3px;
 
   &.gold {
@@ -91,6 +91,9 @@ export default defineComponent({
   border: none;
   box-sizing: border-box;
   flex: 1;
+  display: block;
+  width: 100%;
+
   &::placeholder {
     font-family: $f_default;
     color: $c_gray_400;
