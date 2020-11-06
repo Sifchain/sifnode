@@ -1,6 +1,6 @@
 FROM swaggerapi/swagger-ui:latest
 
-COPY *.yml /usr/share/nginx/html/
+COPY sifchain-openapi.yml /usr/share/nginx/html/
 
 # Don't attempt spec validation at swagger.io
 #ENV VALIDATOR_URL ""
