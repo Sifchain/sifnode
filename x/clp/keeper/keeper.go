@@ -12,7 +12,7 @@ import (
 // Keeper of the clp store
 type Keeper struct {
 	storeKey   sdk.StoreKey
-	cdc        *codec.Codec
+	Cdc        *codec.Codec
 	BankKeeper types.BankKeeper
 	paramstore params.Subspace
 }
@@ -21,7 +21,7 @@ type Keeper struct {
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankkeeper types.BankKeeper, paramstore params.Subspace) Keeper {
 	keeper := Keeper{
 		storeKey:   key,
-		cdc:        cdc,
+		Cdc:        cdc,
 		BankKeeper: bankkeeper,
 		paramstore: paramstore.WithKeyTable(types.ParamKeyTable()),
 	}
@@ -42,7 +42,7 @@ func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) error {
 	if err != nil {
 		return err
 	}
-	store.Set(key, k.cdc.MustMarshalBinaryBare(pool))
+	store.Set(key, k.Cdc.MustMarshalBinaryBare(pool))
 	return nil
 }
 func (k Keeper) GetPool(ctx sdk.Context, ticker string) (types.Pool, error) {
@@ -56,7 +56,7 @@ func (k Keeper) GetPool(ctx sdk.Context, ticker string) (types.Pool, error) {
 		return pool, types.ErrPoolDoesNotExist
 	}
 	bz := store.Get(key)
-	k.cdc.MustUnmarshalBinaryBare(bz, &pool)
+	k.Cdc.MustUnmarshalBinaryBare(bz, &pool)
 	return pool, nil
 }
 
@@ -75,7 +75,7 @@ func (k Keeper) GetPools(ctx sdk.Context) types.Pools {
 	for ; iterator.Valid(); iterator.Next() {
 		var pool types.Pool
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &pool)
+		k.Cdc.MustUnmarshalBinaryBare(bytesValue, &pool)
 		poolList = append(poolList, pool)
 	}
 	return poolList
@@ -105,7 +105,7 @@ func (k Keeper) SetLiquidityProvider(ctx sdk.Context, lp types.LiquidityProvider
 	}
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetLiquidityProviderKey(lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
-	store.Set(key, k.cdc.MustMarshalBinaryBare(lp))
+	store.Set(key, k.Cdc.MustMarshalBinaryBare(lp))
 }
 
 func (k Keeper) GetLiquidityProvider(ctx sdk.Context, ticker string, lpAddress string) (types.LiquidityProvider, error) {
@@ -116,7 +116,7 @@ func (k Keeper) GetLiquidityProvider(ctx sdk.Context, ticker string, lpAddress s
 		return lp, types.ErrLiquidityProviderDoesNotExist
 	}
 	bz := store.Get(key)
-	k.cdc.MustUnmarshalBinaryBare(bz, &lp)
+	k.Cdc.MustUnmarshalBinaryBare(bz, &lp)
 	return lp, nil
 }
 
@@ -136,7 +136,7 @@ func (k Keeper) GetLiqudityProvidersForAsset(ctx sdk.Context, asset types.Asset)
 	for ; iterator.Valid(); iterator.Next() {
 		var lp types.LiquidityProvider
 		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
+		k.Cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
 		if lp.Asset == asset {
 			lpList = append(lpList, lp)
 		}

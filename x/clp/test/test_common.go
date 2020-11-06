@@ -1,9 +1,12 @@
-package keeper
+package test
 
 import (
 	"bytes"
 	"fmt"
+	"github.com/Sifchain/sifnode/simapp"
+	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
 	"math/rand"
 	"strconv"
@@ -66,14 +69,33 @@ func MakeTestCodec() *codec.Codec {
 	return cdc
 }
 
+// returns context and app with params set on account keeper
+func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
+	app := simapp.Setup(isCheckTx)
+	ctx := app.BaseApp.NewContext(isCheckTx, abci.Header{})
+	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
+	// UNDONE: is this needed?
+	initTokens := sdk.TokensFromConsensusPower(1000)
+	app.SupplyKeeper.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
+	// UNDONE: is this needed?
+	_ = simapp.AddTestAddrs(app, ctx, 6, initTokens)
+
+	return app, ctx
+}
+
+func CreateTestAppClp(isCheckTx bool) (sdk.Context, keeper.Keeper) {
+	app, ctx := CreateTestApp(false)
+	return ctx, app.ClpKeeper
+}
+
 // test input with default values
 func CreateTestInputDefault(t *testing.T, isCheckTx bool, initPower int64) (
-	sdk.Context, Keeper) {
+	sdk.Context, keeper.Keeper) {
 	ctx, keeper := CreateTestInputAdvanced(t, isCheckTx, initPower)
 	return ctx, keeper
 }
 
-func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk.Context, Keeper) {
+func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk.Context, keeper.Keeper) {
 
 	initTokens := sdk.TokensFromConsensusPower(initPower)
 
@@ -125,7 +147,7 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk
 	supplyKeeper := supply.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
 	sk := staking.NewKeeper(cdc, keyStaking, supplyKeeper, pk.Subspace(staking.DefaultParamspace))
 	sk.SetParams(ctx, staking.DefaultParams())
-	keeper := NewKeeper(cdc, keyClp, bankKeeper, pk.Subspace(types.DefaultParamspace))
+	keeper := keeper.NewKeeper(cdc, keyClp, bankKeeper, pk.Subspace(types.DefaultParamspace))
 	keeper.SetParams(ctx, types.DefaultParams())
 	require.Equal(t, types.DefaultParams(), keeper.GetParams(ctx))
 	initCoins := sdk.NewCoins(sdk.NewCoin(sk.BondDenom(ctx), initTokens))

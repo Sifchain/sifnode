@@ -1,6 +1,7 @@
-package keeper
+package keeper_test
 
 import (
+	"github.com/Sifchain/sifnode/x/clp/test"
 	//"github.com/Sifchain/sifnode/simapp"
 	//sdk "github.com/cosmos/cosmos-sdk/types"
 	//authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -21,27 +22,28 @@ import (
 } */
 
 func TestKeeper_Errors(t *testing.T) {
-	pool := GenerateRandomPool(1)[0]
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	pool := test.GenerateRandomPool(1)[0]
+	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	_ = keeper.Logger(ctx)
 	pool.ExternalAsset.Ticker = ""
 	keeper.SetPool(ctx, pool)
 	getpools := keeper.GetPools(ctx)
 	assert.Equal(t, len(getpools), 0, "No pool added")
 
-	lp := GenerateRandomLP(1)[0]
+	lp := test.GenerateRandomLP(1)[0]
 	lp.Asset.SourceChain = ""
 	keeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	assert.Error(t, err)
 	assert.NotEqual(t, getlp, lp)
-	assert.NotNil(t, GenerateAddress())
+	assert.NotNil(t, test.GenerateAddress())
 }
 
 func TestKeeper_SetPool(t *testing.T) {
 
-	pool := GenerateRandomPool(1)[0]
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	pool := test.GenerateRandomPool(1)[0]
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	keeper.SetPool(ctx, pool)
 	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker)
 	assert.NoError(t, err, "Error in get pool")
@@ -50,8 +52,9 @@ func TestKeeper_SetPool(t *testing.T) {
 }
 
 func TestKeeper_GetPools(t *testing.T) {
-	pools := GenerateRandomPool(10)
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	pools := test.GenerateRandomPool(10)
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	for _, pool := range pools {
 		keeper.SetPool(ctx, pool)
 	}
@@ -61,8 +64,9 @@ func TestKeeper_GetPools(t *testing.T) {
 }
 
 func TestKeeper_DestroyPool(t *testing.T) {
-	pool := GenerateRandomPool(1)[0]
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	pool := test.GenerateRandomPool(1)[0]
+	ctx, keeper := test.CreateTestAppClp(false)
+	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	keeper.SetPool(ctx, pool)
 	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker)
 	assert.NoError(t, err, "Error in get pool")
@@ -75,8 +79,8 @@ func TestKeeper_DestroyPool(t *testing.T) {
 }
 
 func TestKeeper_SetLiquidityProvider(t *testing.T) {
-	lp := GenerateRandomLP(1)[0]
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	lp := test.GenerateRandomLP(1)[0]
+	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	keeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	assert.NoError(t, err, "Error in get liquidityProvider")
@@ -86,8 +90,8 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 }
 
 func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
-	lp := GenerateRandomLP(1)[0]
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	lp := test.GenerateRandomLP(1)[0]
+	ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	keeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	assert.NoError(t, err, "Error in get liquidityProvider")
