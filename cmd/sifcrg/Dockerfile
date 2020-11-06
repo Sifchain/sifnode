@@ -22,8 +22,9 @@ RUN make install
 #
 # Main
 #
-ENV PACKAGES curl jq bind-tools
 FROM alpine
+
+ENV PACKAGES curl jq bind-tools
 
 RUN apk add --update --no-cache $PACKAGES
 

@@ -12,12 +12,12 @@
     "declaration": true,
     "outDir": "./lib",
     "types": ["node", "jest"],
-    "baseUrl": ".",
+    "baseUrl": "."
   },
   "include": [
     "./src/**/*.ts",
     "./src/**/*.tsx",
-    "./src/**/*.vue",
+    "./src/**/*.vue"
   ],
   "exclude": ["node_modules"]
 }

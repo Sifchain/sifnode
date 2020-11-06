@@ -32,7 +32,7 @@ securityContext: {}
 
 image:
   repository: sifchain/sifnoded
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   tag: "testnet"
 
 sifnode:
