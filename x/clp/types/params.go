@@ -3,8 +3,6 @@ package types
 import (
 	"bytes"
 	"fmt"
-	_ "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/cosmos/cosmos-sdk/x/params"
 )
 
