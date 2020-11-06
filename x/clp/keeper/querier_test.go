@@ -4,7 +4,6 @@ import (
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -13,9 +12,9 @@ import (
 )
 
 func TestQueryErrorPool(t *testing.T) {
-	cdc := codec.New()
-	ctx, keeper := test.CreateTestAppClp(false)
-	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	app, ctx := test.CreateTestApp(false)
+	cdc := app.Codec()
+	keeper := app.ClpKeeper
 	//Set Data
 	pool, _, _ := SetData(keeper, ctx)
 	querier := clp.NewQuerier(keeper)
@@ -42,9 +41,10 @@ func TestQueryErrorPool(t *testing.T) {
 }
 
 func TestQueryGetPool(t *testing.T) {
-	cdc := codec.New()
-	ctx, keeper := test.CreateTestAppClp(false)
-	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	//cdc := codec.New()
+	app, ctx := test.CreateTestApp(false)
+	cdc := app.Codec()
+	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
@@ -70,7 +70,6 @@ func TestQueryGetPool(t *testing.T) {
 
 func TestQueryErrorPools(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
-	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
@@ -85,7 +84,6 @@ func TestQueryErrorPools(t *testing.T) {
 
 func TestQueryGetPools(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
-	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
@@ -106,9 +104,9 @@ func TestQueryGetPools(t *testing.T) {
 }
 
 func TestQueryErrorLiquidityProvider(t *testing.T) {
-	cdc := codec.New()
-	ctx, keeper := test.CreateTestAppClp(false)
-	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	app, ctx := test.CreateTestApp(false)
+	cdc := app.Codec()
+	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
@@ -133,9 +131,9 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 }
 
 func TestQueryGetLiquidityProvider(t *testing.T) {
-	cdc := codec.New()
-	ctx, keeper := test.CreateTestAppClp(false)
-	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
+	app, ctx := test.CreateTestApp(false)
+	cdc := app.Codec()
+	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
@@ -171,5 +169,4 @@ func SetData(keeper clp.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, type
 	lp := test.GenerateRandomLP(1)[0]
 	keeper.SetLiquidityProvider(ctx, lp)
 	return pool, pools, lp
-
 }

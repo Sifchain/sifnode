@@ -9,7 +9,6 @@ import (
 func TestKeeper_Errors(t *testing.T) {
 	pool := test.GenerateRandomPool(1)[0]
 	ctx, keeper := test.CreateTestAppClp(false)
-	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	_ = keeper.Logger(ctx)
 	pool.ExternalAsset.Ticker = ""
 	keeper.SetPool(ctx, pool)
@@ -29,7 +28,6 @@ func TestKeeper_SetPool(t *testing.T) {
 
 	pool := test.GenerateRandomPool(1)[0]
 	ctx, keeper := test.CreateTestAppClp(false)
-	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	keeper.SetPool(ctx, pool)
 	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker)
 	assert.NoError(t, err, "Error in get pool")
@@ -40,7 +38,6 @@ func TestKeeper_SetPool(t *testing.T) {
 func TestKeeper_GetPools(t *testing.T) {
 	pools := test.GenerateRandomPool(10)
 	ctx, keeper := test.CreateTestAppClp(false)
-	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	for _, pool := range pools {
 		keeper.SetPool(ctx, pool)
 	}
@@ -52,7 +49,6 @@ func TestKeeper_GetPools(t *testing.T) {
 func TestKeeper_DestroyPool(t *testing.T) {
 	pool := test.GenerateRandomPool(1)[0]
 	ctx, keeper := test.CreateTestAppClp(false)
-	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	keeper.SetPool(ctx, pool)
 	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker)
 	assert.NoError(t, err, "Error in get pool")
@@ -67,7 +63,6 @@ func TestKeeper_DestroyPool(t *testing.T) {
 func TestKeeper_SetLiquidityProvider(t *testing.T) {
 	lp := test.GenerateRandomLP(1)[0]
 	ctx, keeper := test.CreateTestAppClp(false)
-	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	keeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	assert.NoError(t, err, "Error in get liquidityProvider")
@@ -79,7 +74,6 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
 	lp := test.GenerateRandomLP(1)[0]
 	ctx, keeper := test.CreateTestAppClp(false)
-	//ctx, keeper := test.CreateTestInputDefault(t, false, 1000)
 	keeper.SetLiquidityProvider(ctx, lp)
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	assert.NoError(t, err, "Error in get liquidityProvider")
