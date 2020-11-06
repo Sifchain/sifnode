@@ -1,6 +1,13 @@
 import { coins, makeCosmoshubPath, Secp256k1HdWallet } from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
-import { Address, AssetAmount, Coin, Network, TxParams } from "../../entities";
+import {
+  Address,
+  Asset,
+  AssetAmount,
+  Coin,
+  Network,
+  TxParams,
+} from "../../entities";
 import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
 import { SifClient } from "./SifClient";
@@ -11,10 +18,18 @@ export type SifServiceContext = {
   sifApiUrl: string;
 };
 
+type IClpService = {
+  swap: (params: { receivedAsset: Asset; sentAmount: AssetAmount }) => any;
+};
+/**
+ * Constructor for SifService
+ *
+ * SifService handles communication between our ui core Domain and the SifNode blockchain
+ */
 export default function createSifService({
   sifAddrPrefix,
   sifApiUrl,
-}: SifServiceContext): IWalletService {
+}: SifServiceContext): IWalletService & IClpService {
   const {} = sifAddrPrefix;
   const state: {
     connected: boolean;
@@ -137,6 +152,26 @@ export default function createSifService({
       this.getBalance(state.address);
 
       return txHash;
+    },
+
+    async swap(params: { receivedAsset: Asset; sentAmount: AssetAmount }) {
+      if (!client) throw "No client. Please sign in.";
+      // Validate params
+      await client.swap({
+        base_req: { chain_id: "sifchain", from: state.address },
+        received_asset: {
+          source_chain: params.receivedAsset.network as string,
+          symbol: params.receivedAsset.symbol,
+          ticker: params.receivedAsset.symbol,
+        },
+        sent_amount: params.sentAmount.numerator.toString(),
+        sent_asset: {
+          source_chain: params.sentAmount.asset.network as string,
+          symbol: params.sentAmount.asset.symbol,
+          ticker: params.sentAmount.asset.symbol,
+        },
+        signer: state.address,
+      });
     },
   };
 }

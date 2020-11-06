@@ -10,10 +10,10 @@ import {
   SigningCosmosClient,
 } from "@cosmjs/launchpad";
 
-import { setupClpExtension } from "./x/clp";
+import { ClpExtension, setupClpExtension, SwapParams } from "./x/clp";
 
 export class SifClient extends SigningCosmosClient {
-  protected readonly lcdClient: LcdClient & AuthExtension;
+  protected readonly lcdClient: LcdClient & AuthExtension & ClpExtension;
 
   constructor(
     apiUrl: string,
@@ -29,5 +29,9 @@ export class SifClient extends SigningCosmosClient {
       setupAuthExtension,
       setupClpExtension
     );
+  }
+
+  async swap(params: SwapParams) {
+    this.lcdClient.clp.swap(params);
   }
 }
