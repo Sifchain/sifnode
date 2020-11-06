@@ -35,8 +35,8 @@ func (m MsgDecommissionPool) ValidateBasic() error {
 	if m.Signer.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
 	}
-	if len(strings.TrimSpace(m.Ticker)) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, m.Signer.String())
+	if !VerifyRange(len(strings.TrimSpace(m.Ticker)), 0, MaxTickerLength) {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, m.Ticker)
 	}
 	return nil
 }
@@ -77,6 +77,9 @@ func (m MsgSwap) ValidateBasic() error {
 	}
 	if !m.ReceivedAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.SentAsset.Symbol)
+	}
+	if m.SentAmount.IsZero() {
+		return sdkerrors.Wrap(ErrInValidAmount, m.SentAmount.String())
 	}
 	return nil
 }
@@ -158,10 +161,10 @@ func (m MsgAddLiquidity) ValidateBasic() error {
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
 	}
-	if !(m.NativeAssetAmount.GT(sdk.ZeroUint())) {
+	if !(m.NativeAssetAmount.GTE(sdk.ZeroUint())) {
 		return sdkerrors.Wrap(ErrInValidAmount, m.NativeAssetAmount.String())
 	}
-	if !(m.ExternalAssetAmount.GT(sdk.ZeroUint())) {
+	if !(m.ExternalAssetAmount.GTE(sdk.ZeroUint())) {
 		return sdkerrors.Wrap(ErrInValidAmount, m.NativeAssetAmount.String())
 	}
 	return nil
