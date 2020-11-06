@@ -22,7 +22,7 @@ const (
 	AltTestEthereumAddress    = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207344"
 	TestCoinsAmount           = 10
 	TestCoinsSymbol           = "eth"
-	TestCoinsLockedSymbol     = "peggyeth"
+	TestCoinsLockedSymbol     = "ceth"
 	AltTestCoinsAmount        = 12
 	AltTestCoinsSymbol        = "eth"
 )

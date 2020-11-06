@@ -22,5 +22,8 @@ RUN go install ./cmd/ebrelayer
 #
 FROM alpine
 
+# Copy the smart contract ABIs over.
+ADD cmd/ebrelayer/contract/generated  /sif/cmd/ebrelayer/contract/generated
+
 # Copy the compiled binaires over.
 COPY --from=build /go/bin/ebrelayer /usr/bin/ebrelayer

@@ -30,7 +30,7 @@ namespace :cluster do
   task :deploy, [:chainnet, :provider] do |t, args|
     check_args(args)
     puts "Deploy cluster config: #{path(args)}"
-    system("cd #{path(args)} && terraform apply") or exit 1
+    system("cd #{path(args)} && terraform apply -auto-approve") or exit 1
     puts "Cluster #{path(args)} created successfully"
     puts "Now run `rake sifnode:install[#{args[:chainnet]},#{args[:provider]}]` to deploy sifnode to your cluster"
   end
@@ -52,24 +52,69 @@ namespace :cluster do
     puts "Cluster #{path(args)} destroyed successfully"
   end
 
+  namespace :openapi do
+    namespace :deploy do
+      desc "Deploy OpenAPI - Swagger documentation ui"
+      task :swaggerui, [:chainnet, :provider, :namespace] do |t, args|
+        check_args(args)
+
+        cmd = %Q{helm upgrade swagger-ui ../build/helm/swagger-ui \
+          --install -n #{ns(args)} --create-namespace \
+        }
+
+        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      end
+
+      desc "Deploy OpenAPI - Prism Mock server "
+      task :prism, [:chainnet, :provider, :namespace] do |t, args|
+        check_args(args)
+
+        cmd = %Q{helm upgrade prism ../build/helm/prism \
+          --install -n #{ns(args)} --create-namespace \
+        }
+
+        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      end
+    end
+  end
+
   desc "Manage sifnode deploy, upgrade, etc processes"
   namespace :sifnode do
-    desc "Deploy a single sifnode on to your cluster"
-    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
-      check_args(args)
+    namespace :deploy do
+      desc "Deploy a single standalone sifnode on to your cluster"
+      task :standalone, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
+        check_args(args)
 
-      cmd = %Q{helm upgrade #{ns(args)} ../build/helm/sifnode \
-        --set sifnode.env.chainnet=#{args[:chainnet]} --install -n #{ns(args)} --create-namespace \
-        --set image.tag=#{image_tag(args)} \
-        --set image.repository=#{image_repository(args)}
-      }
+        cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
+          --set sifnode.env.chainnet=#{args[:chainnet]} \
+          --install -n #{ns(args)} --create-namespace \
+          --set image.tag=#{image_tag(args)} \
+          --set image.repository=#{image_repository(args)}
+        }
 
-      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      end
+
+      desc "Deploy a single network-aware sifnode on to your cluster"
+      task :peer, [:chainnet, :provider, :namespace, :image, :image_tag, :peer_address, :genesis_url] do |t, args|
+        check_args(args)
+
+        cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
+          --install -n #{ns(args)} --create-namespace \
+          --set sifnode.env.chainnet=#{args[:chainnet]} \
+          --set sifnode.env.genesisURL=#{args[:genesis_url]} \
+          --set sifnode.env.peerAddress=#{args[:peer_address]} \
+          --set image.tag=#{image_tag(args)} \
+          --set image.repository=#{image_repository(args)}
+        }
+
+        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      end
     end
 
     task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
       check_args(args)
-      cmd = "helm delete #{ns(args)} -n #{ns(args)}"
+      cmd = "helm delete sifnode -n #{ns(args)}"
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
   end
@@ -127,7 +172,7 @@ def image_tag(args)
   args[:image_tag] ? "#{args[:image_tag]}" : "testnet"
 end
 
-# image_repository returns the arg with a image_repository if set or the default setting
+# image_repository returns the arg with a image if set or the default setting
 def image_repository(args)
-  args[:image_repository] ? "#{args[:image_repository]}" : "sifchain/sifnoded"
+  args[:image] ? "#{args[:image]}" : "sifchain/sifnoded"
 end

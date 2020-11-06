@@ -4,12 +4,6 @@
 
 replicaCount: 1
 
-image:
-  repository: sifchain/sifnoded
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "develop"
-
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -36,17 +30,19 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+image:
+  repository: sifchain/sifnoded
+  pullPolicy: Always
+  tag: "testnet"
+
 sifnode:
   env:
-    chainnet: ""
-    sifCli: sifnodecli
-    sifDaemon: sifnoded
+    chainnet:
     sifId: sifchain
+    genesisURL:
+    peerAddress:
 
 sifnodecli:
-  image:
-    repository: sifchain/sifnodecli
-    tag: "develop"
 
 service:
   type: LoadBalancer
