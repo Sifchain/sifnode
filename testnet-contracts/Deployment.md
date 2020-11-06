@@ -56,6 +56,8 @@ Set the ETHEREUM_PRIVATE_KEY to your private key you want to be the operator for
 
 Ensure that OPERATOR is the address that corresponds to the ETHEREUM_PRIVATE_KEY.
 
+Ensure that OWNER is the address that will be the admin for the bridge bank and can wire eRowan in.
+
 Ensure that INITIAL_VALIDATOR_ADDRESSES and INITIAL_VALIDATOR_POWERS are set correctly.
 
 then run the following command:
