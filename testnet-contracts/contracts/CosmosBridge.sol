@@ -8,7 +8,7 @@ import "./BridgeBank/BridgeBank.sol";
 contract CosmosBridge {
     using SafeMath for uint256;
 
-    string COSMOS_NATIVE_ASSET_PREFIX = "PEGGY";
+    string COSMOS_NATIVE_ASSET_PREFIX = "c";
 
     /*
      * @dev: Public variable declarations

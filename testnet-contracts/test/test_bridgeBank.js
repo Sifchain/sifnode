@@ -226,6 +226,30 @@ contract("BridgeBank", function (accounts) {
       );
       afterUserBalance.should.be.bignumber.equal(this.amount);
     });
+
+    it("should not be able to add a token to the whitelist that has the same symbol as an already registered token", async function () {
+      const symbol = "TEST"
+      const newToken = await BridgeToken.new(symbol);
+      (await this.bridgeBank.getTokenInWhiteList(newToken.address)).should.be.equal(false)
+      // Remove the token from the white list
+      await expectRevert(
+        this.bridgeBank.updateWhiteList(newToken.address, true, {from: operator}),
+        "Token already whitelisted"
+      );
+
+      (await this.bridgeBank.getTokenInWhiteList(newToken.address)).should.be.equal(false)
+    });
+
+    it("should be able to remove a token from the whitelist", async function () {
+
+      (await this.bridgeBank.getTokenInWhiteList(this.token.address)).should.be.equal(true)
+      // Remove the token from the white list
+      await this.bridgeBank.updateWhiteList(this.token.address, false, {
+        from: operator
+      }).should.be.fulfilled;
+
+      (await this.bridgeBank.getTokenInWhiteList(this.token.address)).should.be.equal(false)
+    });
   });
 
   describe("Can't lock the asset if the address not in white list even the same symbol", function () {

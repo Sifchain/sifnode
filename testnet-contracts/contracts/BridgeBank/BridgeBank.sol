@@ -98,6 +98,19 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         onlyOperator
         returns (bool)
     {
+        string memory symbol = BridgeToken(_token).symbol();
+        address listAddress = lockedTokenList[symbol];
+        
+        // Do not allow a token with the same symbol to be whitelisted
+        if (_inList) {
+            // if we want to add it to the whitelist, make sure that the address
+            // is 0, meaning we have not seen that symbol in the whitelist before
+            require(listAddress == address(0), "Token already whitelisted");
+        } else {
+            // if we want to de-whitelist it, make sure that the symbol is 
+            // in fact stored in our locked token list before we set to false
+            require(uint256(listAddress) > 0, "Token not whitelisted");
+        }
         return setTokenInWhiteList(_token, _inList);
     }
 
