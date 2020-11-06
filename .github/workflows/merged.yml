@@ -3,11 +3,14 @@ name: Feature merged
 on:
   pull_request:
     types: [closed]
+    branches:
+      - develop
 
 jobs:
   build:
     name: build
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged
     env:
       WORKING_DIRECTORY: ./build
       WORKSPACE_PREFIX: sifchain-aws
