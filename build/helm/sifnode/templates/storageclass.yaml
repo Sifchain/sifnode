@@ -2,5 +2,4 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: {{ .Values.pvc.storageclass }}
-provisioner: ebs.csi.aws.com
-volumeBindingMode: WaitForFirstConsumer
+provisioner: efs.csi.aws.com

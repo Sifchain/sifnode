@@ -44,14 +44,26 @@ sifnode:
 
 sifnodecli:
 
+ebrelayer:
+  image:
+    repository: sifchain/ebrelayer
+    pullPolicy: IfNotPresent
+    tag: "testnet"
+  env:
+    ethereumContractAddress: ''
+    ethereumWebsocketAddress: ''
+    ethPrivateKey: ''
+    moniker: ''
+
 service:
   type: LoadBalancer
   port: 26656
 
 pvc:
-  name: ebs-claim
-  storageclass: ebs-sc
-  size: 10Gi
+  sifnodeName: efs-claim-sifnode
+  sifnodecliName: efs-claim-sifnodecli
+  storageclass: efs-sc
+  size: 5Gi
 
 ingress:
   enabled: false
