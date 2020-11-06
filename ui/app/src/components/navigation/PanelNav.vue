@@ -1,8 +1,8 @@
 <template>
   <div class="panel-nav">
-    <PanelNavItem to="/swap" icon="arrows" label="Swap"></PanelNavItem>
-    <PanelNavItem to="/pool" icon="circle-half" label="Pool"></PanelNavItem>
-    <PanelNavItem to="/" label="Soon" disabled></PanelNavItem>
+    <PanelNavItem to="/peg" icon="circle-half" label="Peg"></PanelNavItem>
+    <PanelNavItem to="/swap" icon="arrows" label="Swap" color="blue"></PanelNavItem>
+    <PanelNavItem to="/pool" icon="pool" label="Pool" color="green"></PanelNavItem>
     <PanelNavItem to="/" label="Soon" disabled></PanelNavItem>
     <PanelNavItem to="/" label="Soon" disabled></PanelNavItem>
   </div>

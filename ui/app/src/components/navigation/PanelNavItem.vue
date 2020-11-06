@@ -1,10 +1,10 @@
 <template>
-  <router-link class="link" :to="to" :class="{ disabled: disabled }">
+  <router-link class="link" :to="to" :class="{'disabled': disabled}">
     <div class="icon-button">
-      <div class="icon"></div>
+      <div class="icon" :class="colorClass"></div>
       <Icon class="icon-svg" :icon="icon" />
     </div>
-    <div class="label" v-if="label">
+    <div class="label" v-if="label" :class="colorClass">
       {{ label }}
     </div>
   </router-link>
@@ -29,7 +29,19 @@ export default defineComponent({
     icon: {
       type: String,
     },
+    color: {
+      type: String,
+      default: 'blue'
+    }
   },
+  data() {
+    return {
+      colorClass: {
+        'green': this.color === 'green',
+        'blue': this.color === 'blue'
+      }
+    }
+  }
 });
 </script>
 
@@ -104,18 +116,32 @@ export default defineComponent({
     pointer-events: none;
 
     .label {
-      color: $c_white;
+      &.blue {
+        color: $c_blue;
+      }
+      &.green {
+        color: $c_green;
+      }
     }
     .icon-svg {
       opacity: 1;
     }
-    .icon {
+    .icon.blue {
       border-color: $c_blue;
       &::after {
         background: linear-gradient(to bottom, #61a5f6 0%, #a0caf9 100%);
       }
       &::before {
         background: linear-gradient(to bottom, #8bbef8 0%, #90c2f9 100%);
+      }
+    }
+    .icon.green {
+      border-color: $c_green;
+      &::after {
+        background: linear-gradient(to bottom, #A0DD2B 0%,#A5DE30 100%);
+      }
+      &::before {
+        background: linear-gradient(to bottom, #8FD817 0%, #B1E245 100%);
       }
     }
   }
