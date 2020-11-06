@@ -35,7 +35,7 @@ func queryPool(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, e
 	if err != nil {
 		return nil, err
 	}
-	res, err := codec.MarshalJSONIndent(keeper.Cdc, pool)
+	res, err := codec.MarshalJSONIndent(keeper.cdc, pool)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -46,7 +46,7 @@ func queryPools(ctx sdk.Context, keeper Keeper) ([]byte, error) {
 	if len(poolList) == 0 {
 		return nil, types.ErrPoolListIsEmpty
 	}
-	res, err := codec.MarshalJSONIndent(keeper.Cdc, poolList)
+	res, err := codec.MarshalJSONIndent(keeper.cdc, poolList)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -63,7 +63,7 @@ func queryLiquidityProvider(ctx sdk.Context, req abci.RequestQuery, keeper Keepe
 	if err != nil {
 		return nil, err
 	}
-	res, err := codec.MarshalJSONIndent(keeper.Cdc, lp)
+	res, err := codec.MarshalJSONIndent(keeper.cdc, lp)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

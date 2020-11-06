@@ -63,7 +63,7 @@ func TestQueryGetPool(t *testing.T) {
 	qpool, err := querier(ctx, []string{types.QueryPool}, query)
 	assert.NoError(t, err)
 	var p types.Pool
-	err = keeper.Cdc.UnmarshalJSON(qpool, &p)
+	err = keeper.Codec().UnmarshalJSON(qpool, &p)
 	assert.NoError(t, err)
 	assert.Equal(t, pool.ExternalAsset, p.ExternalAsset)
 }
@@ -97,7 +97,7 @@ func TestQueryGetPools(t *testing.T) {
 	qpools, err := querier(ctx, []string{types.QueryPools}, query)
 	assert.NoError(t, err)
 	var poolist []types.Pool
-	err = keeper.Cdc.UnmarshalJSON(qpools, &poolist)
+	err = keeper.Codec().UnmarshalJSON(qpools, &poolist)
 	assert.NoError(t, err)
 	assert.Greater(t, len(poolist), 0, "More than one pool added")
 	assert.LessOrEqual(t, len(poolist), len(pools), "Set pool will ignore duplicates")
@@ -153,7 +153,7 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	qliquidityprovider, err := querier(ctx, []string{types.QueryLiquidityProvider}, query)
 	assert.NoError(t, err)
 	var l types.LiquidityProvider
-	err = keeper.Cdc.UnmarshalJSON(qliquidityprovider, &l)
+	err = keeper.Codec().UnmarshalJSON(qliquidityprovider, &l)
 	assert.NoError(t, err)
 	assert.Equal(t, lp.Asset, l.Asset)
 
