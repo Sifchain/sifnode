@@ -7,8 +7,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/distribution"
 	"math/rand"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	"github.com/stretchr/testify/require"
 
@@ -146,7 +148,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 	for i := 0; i < numberOfPools; i++ {
 		// initialize global pseudo random generator
 		externalToken := tokens[rand.Intn(len(tokens))]
-		externalAsset := types.NewAsset("ROWAN", "c"+"ROWAN"+externalToken, externalToken)
+		externalAsset := types.NewAsset(trimFirstRune(externalToken), trimFirstRune(externalToken), externalToken)
 		pool, err := types.NewPool(externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
 		if err != nil {
 			fmt.Println("Error Generating new pool :", err)
@@ -162,12 +164,17 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < numberOfLp; i++ {
 		externalToken := tokens[rand.Intn(len(tokens))]
-		asset := types.NewAsset("ROWAN", "c"+"ROWAN"+externalToken, externalToken)
+		asset := types.NewAsset(trimFirstRune(externalToken), trimFirstRune(externalToken), externalToken)
 		lpAddess, _ := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
 		lp := types.NewLiquidityProvider(asset, sdk.NewUint(1), lpAddess)
 		lpList = append(lpList, lp)
 	}
 	return lpList
+}
+
+func trimFirstRune(s string) string {
+	_, i := utf8.DecodeRuneInString(s)
+	return strings.ToUpper(s[i:])
 }
 
 func GenerateAddress() sdk.AccAddress {
