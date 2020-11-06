@@ -82,7 +82,7 @@ contract("CosmosBridge", function (accounts) {
       this.ethTokenAddress = "0x0000000000000000000000000000000000000000";
       this.symbol = "ETH";
       this.nativeCosmosAssetDenom = "ATOM";
-      this.prefixedNativeCosmosAssetDenom = "PEGGYATOM";
+      this.prefixedNativeCosmosAssetDenom = "cATOM";
       this.amountWei = 100;
       this.amountNativeCosmos = 815;
 
