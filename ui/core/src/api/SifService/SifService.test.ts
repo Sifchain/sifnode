@@ -3,6 +3,7 @@ import { ATK, BTK, RWN } from "../../constants";
 import { AssetAmount } from "../../entities";
 import createSifService, { SifServiceContext } from ".";
 
+// This is required because we need to wait for the blockchain to process transactions
 jest.setTimeout(20000);
 
 // const badMnemonic =
