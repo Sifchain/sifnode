@@ -457,11 +457,27 @@ func swapOne(from Asset, sentAmount sdk.Uint, to Asset, pool Pool) (sdk.Uint, sd
 func calculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance sdk.Uint,
 	externalAssetBalance sdk.Uint, lpUnits sdk.Uint, wBasisPoints sdk.Int, asymmetry sdk.Int) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
 	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
-	nativeAssetBalanceF := sdk.NewDecFromBigInt(nativeAssetBalance.BigInt())
-	externalAssetBalanceF := sdk.NewDecFromBigInt(externalAssetBalance.BigInt())
-	lpUnitsF := sdk.NewDecFromBigInt(lpUnits.BigInt())
-	wBasisPointsF := sdk.NewDecFromInt(wBasisPoints)
-	asymmetryF := sdk.NewDecFromInt(asymmetry)
+
+	nativeAssetBalanceF, err := sdk.NewDecFromStr(nativeAssetBalance.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance.String(), err))
+	}
+	externalAssetBalanceF, err := sdk.NewDecFromStr(externalAssetBalance.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance.String(), err))
+	}
+	lpUnitsF, err := sdk.NewDecFromStr(lpUnits.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", lpUnits.String(), err))
+	}
+	wBasisPointsF, err := sdk.NewDecFromStr(wBasisPoints.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", wBasisPoints.String(), err))
+	}
+	asymmetryF, err := sdk.NewDecFromStr(asymmetry.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", asymmetry.String(), err))
+	}
 	denominator := sdk.NewDec(10000).Quo(wBasisPointsF)
 	unitsToClaim := lpUnitsF.Quo(denominator)
 	withdrawExternalAssetAmount := externalAssetBalanceF.Quo(poolUnitsF.Quo(unitsToClaim))
@@ -481,10 +497,10 @@ func calculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance sdk.Uint,
 	//if asymmetry is 0 we don't need to swap
 
 	lpUnitsLeft := lpUnitsF.Sub(unitsToClaim)
-	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.TruncateInt().BigInt()),
-		sdk.NewUintFromBigInt(withdrawExternalAssetAmount.TruncateInt().BigInt()),
-		sdk.NewUintFromBigInt(lpUnitsLeft.TruncateInt().BigInt()),
-		sdk.NewUintFromBigInt(swapAmount.TruncateInt().BigInt())
+	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.RoundInt().BigInt()),
+		sdk.NewUintFromBigInt(withdrawExternalAssetAmount.RoundInt().BigInt()),
+		sdk.NewUintFromBigInt(lpUnitsLeft.RoundInt().BigInt()),
+		sdk.NewUintFromBigInt(swapAmount.RoundInt().BigInt())
 }
 
 // More details on the formula
@@ -514,11 +530,26 @@ func calculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	if nativeAssetBalance.IsZero() || externalAssetBalance.IsZero() {
 		return nativeAssetAmount, nativeAssetAmount, nil
 	}
-	P := sdk.NewDecFromBigInt(oldPoolUnits.BigInt())
-	R := sdk.NewDecFromBigInt(nativeAssetBalance.BigInt())
-	A := sdk.NewDecFromBigInt(externalAssetBalance.BigInt())
-	r := sdk.NewDecFromBigInt(nativeAssetAmount.BigInt())
-	a := sdk.NewDecFromBigInt(externalAssetAmount.BigInt())
+	P, err := sdk.NewDecFromStr(oldPoolUnits.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", oldPoolUnits.String(), err))
+	}
+	R, err := sdk.NewDecFromStr(nativeAssetBalance.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance.String(), err))
+	}
+	A, err := sdk.NewDecFromStr(externalAssetBalance.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance.String(), err))
+	}
+	r, err := sdk.NewDecFromStr(nativeAssetAmount.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetAmount.String(), err))
+	}
+	a, err := sdk.NewDecFromStr(externalAssetAmount.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
+	}
 
 	// (2 r + R) (a + A)
 	// (2 r + R) (a + A)
@@ -540,7 +571,7 @@ func calculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
 	newPoolUnit := P.Add(stakeUnits)
 
-	return sdk.NewUintFromBigInt(newPoolUnit.TruncateInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.TruncateInt().BigInt()), nil
+	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
 
 }
 
