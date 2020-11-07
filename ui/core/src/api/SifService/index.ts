@@ -157,7 +157,7 @@ export default function createSifService({
     async swap(params: { receivedAsset: Asset; sentAmount: AssetAmount }) {
       if (!client) throw "No client. Please sign in.";
       // Validate params
-      await client.swap({
+      const response = await client.swap({
         base_req: { chain_id: "sifchain", from: state.address },
         received_asset: {
           source_chain: params.receivedAsset.network as string,
@@ -172,6 +172,13 @@ export default function createSifService({
         },
         signer: state.address,
       });
+      const fee = {
+        amount: coins(0, params.sentAmount.asset.symbol),
+        gas: "200000", // need gas fee for tx to work - see genesis file
+      };
+
+      const txHash = await client.signAndBroadcast(response.value.msg, fee);
+      return txHash;
     },
   };
 }

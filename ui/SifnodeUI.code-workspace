@@ -1,23 +1,23 @@
 {
 	"folders": [
 		{
-			"name": "Vue App",
+			"name": "app",
 			"path": "./app"
 		},
 		{
-			"name": "Core",
+			"name": "core",
 			"path": "./core"
 		},
 		{
-			"name": "Blockchain Fixtures",
+			"name": "chains",
 			"path": "./chains"
 		},
 		{
-			"name": "Go Project",
+			"name": "root",
 			"path": "../"
 		},
 		{
-			"name": "UI Root",
+			"name": "ui",
 			"path": "."
 		}
 	],

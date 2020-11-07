@@ -5,6 +5,7 @@ import {
   GasLimits,
   GasPrice,
   LcdClient,
+  Msg,
   OfflineSigner,
   setupAuthExtension,
   SigningCosmosClient,
@@ -32,6 +33,6 @@ export class SifClient extends SigningCosmosClient {
   }
 
   async swap(params: SwapParams) {
-    this.lcdClient.clp.swap(params);
+    return await this.lcdClient.clp.swap(params);
   }
 }

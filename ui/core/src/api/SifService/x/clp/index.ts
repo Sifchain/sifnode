@@ -1,4 +1,4 @@
-import { LcdClient } from "@cosmjs/launchpad";
+import { LcdClient, Msg } from "@cosmjs/launchpad";
 
 export type SwapParams = {
   sent_asset: {
@@ -19,7 +19,35 @@ export type SwapParams = {
   sent_amount: string;
 };
 
-type ClpCmdSwap = (params: SwapParams) => any;
+type SwapResponse = {
+  type: string;
+  value: {
+    msg: [
+      {
+        type: string;
+        value: {
+          Signer: string;
+          SentAsset: {
+            source_chain: string;
+            symbol: string;
+            ticker: string;
+          };
+          ReceivedAsset: {
+            source_chain: string;
+            symbol: string;
+            ticker: string;
+          };
+          SentAmount: string;
+        };
+      }
+    ];
+    fee: { amount: []; gas: string };
+    signatures: null;
+    memo: string;
+  };
+};
+
+type ClpCmdSwap = (params: SwapParams) => Promise<Msg>;
 
 export interface ClpExtension {
   readonly clp: {
