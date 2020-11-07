@@ -7,7 +7,7 @@ import (
 
 const (
 	BondAmount      = "5000000000"
-	StakeTokenDenom = "trwn"
+	StakeTokenDenom = "trowan"
 	StakeFundAmount = "10000000000000000000000"
 	SwapFundAmount  = "10000000000000000000000000000000000"
 )
