@@ -9,21 +9,21 @@ export const ETH = Coin({
 
 export const RWN = Coin({
   symbol: "rwn",
-  decimals: 2,
+  decimals: 18,
   name: "Rowan",
   network: Network.SIFCHAIN,
 });
 
 export const ATK = Coin({
   symbol: "catk",
-  decimals: 0,
+  decimals: 18,
   name: "catk",
   network: Network.SIFCHAIN,
 });
 
 export const BTK = Coin({
   symbol: "cbtk",
-  decimals: 0,
+  decimals: 18,
   name: "cbtk",
   network: Network.SIFCHAIN,
 });

@@ -1,20 +1,28 @@
 import { computed, Ref } from "@vue/reactivity";
-import { Asset, AssetAmount, Pair } from "../entities";
+import { AssetAmount, Pair } from "../entities";
 
-export function assetPriceMessage(asset: Asset | null, pair: Pair | null) {
-  if (!asset || !pair) return "";
-  const assetPrice = pair.priceAsset(asset);
+export function assetPriceMessage(
+  amount: AssetAmount | null,
+  pair: Pair | null,
+  decimals: number = -1
+) {
+  if (!pair || !amount || amount.equalTo("0")) return "";
+  const swapResult = pair.calcSwapResult(amount);
 
-  if (!assetPrice || (assetPrice && assetPrice.equalTo("0"))) return "";
+  const assetPriceStr = [
+    swapResult
+      .divide(amount)
+      .toFixed(decimals > -1 ? decimals : amount.asset.decimals),
+    swapResult.asset.symbol.toUpperCase(),
+  ].join(" ");
 
-  const formattedAmount = trimZeros(assetPrice.toFixed());
-  const formattedSymbol = assetPrice.asset.symbol.toUpperCase();
-  const formattedPerSymbol = asset.symbol.toUpperCase();
+  const formattedPerSymbol = amount.asset.symbol.toUpperCase();
 
-  return `${formattedAmount} ${formattedSymbol} per ${formattedPerSymbol}`;
+  return `${assetPriceStr} per ${formattedPerSymbol}`;
 }
 
 export function trimZeros(amount: string) {
+  if (amount.indexOf(".") === -1) return `${amount}.0`;
   return amount.replace(/0+$/, "").replace(/\.$/, ".0");
 }
 

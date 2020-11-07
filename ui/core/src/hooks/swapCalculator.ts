@@ -1,5 +1,20 @@
-import { Ref, computed, effect } from "@vue/reactivity";
-import { Asset, AssetAmount, IAssetAmount, Pair } from "../entities";
+import {
+  Ref,
+  unref,
+  computed,
+  effect,
+  // pauseTracking,
+  // resetTracking,
+  enableTracking,
+} from "@vue/reactivity";
+import { watch } from "vue";
+import {
+  Asset,
+  AssetAmount,
+  CompositePair,
+  IAssetAmount,
+  Pair,
+} from "../entities";
 import { useField } from "./useField";
 import { assetPriceMessage, trimZeros, useBalances } from "./utils";
 
@@ -23,6 +38,14 @@ function formatValue(
   return amount;
 }
 
+function calculateSwapResult(pair: Pair, amount: AssetAmount) {
+  return trimZeros(pair.calcSwapResult(amount).toFixed());
+}
+
+function calculateReverseSwapResult(pair: Pair, amount: AssetAmount) {
+  return trimZeros(pair.calcReverseSwapResult(amount).toFixed());
+}
+
 export function useSwapCalculator(input: {
   fromAmount: Ref<string>;
   fromSymbol: Ref<string | null>;
@@ -32,13 +55,20 @@ export function useSwapCalculator(input: {
   selectedField: Ref<"from" | "to" | null>;
   marketPairFinder: (a: Asset | string, b: Asset | string) => Pair | null;
 }) {
-  // We use a market pair to work out the rate
-  const marketPair = computed(() => {
+  // extracting selectedField so we can use it without tracking its change
+  let selectedField: "from" | "to" | null = null;
+  effect(() => (selectedField = input.selectedField.value));
+
+  // We use a composite market pair to work out rates
+  const pool = computed(() => {
     if (!input.fromSymbol.value || !input.toSymbol.value) return null;
-    return (
-      input.marketPairFinder(input.fromSymbol.value, input.toSymbol.value) ??
-      null
-    );
+
+    const fromPair = input.marketPairFinder(input.fromSymbol.value, "rwn");
+    const toPair = input.marketPairFinder(input.toSymbol.value, "rwn");
+
+    if (!fromPair || !toPair) return null;
+
+    return CompositePair(fromPair, toPair);
   });
 
   // get the balance of the from account
@@ -55,64 +85,53 @@ export function useSwapCalculator(input: {
 
   // Create a price message
   const priceMessage = computed(() => {
-    const asset = fromField.asset.value;
-    const pair = marketPair.value;
-    return assetPriceMessage(asset, pair);
+    const amount = fromField.fieldAmount.value;
+    const pair = pool.value;
+
+    return assetPriceMessage(amount, pair, 6);
   });
 
   effect(() => {
-    input.fromAmount.value = formatValue(
-      input.selectedField.value,
-      fromField.asset.value,
-      input.fromAmount.value
-    );
-
-    input.toAmount.value = formatValue(
-      input.selectedField.value,
-      toField.asset.value,
-      input.toAmount.value
-    );
-
     // Changing the "from" field recalculates the "to" amount
     if (
-      input.selectedField.value === "from" &&
-      marketPair.value &&
+      pool.value &&
       fromField.asset.value &&
-      fromField.fieldAmount.value
+      fromField.fieldAmount.value &&
+      selectedField === "from"
     ) {
-      const asset = fromField.asset.value;
-      const assetPrice = marketPair.value.priceAsset(asset);
-
-      input.toAmount.value = assetPrice
-        ? trimZeros(
-            assetPrice
-              .multiply(fromField.fieldAmount.value)
-              .toFixed(asset.decimals)
-          )
-        : "0";
-    }
-
-    // Changing the "to" field recalculates the "to" amount
-    if (
-      input.selectedField.value === "to" &&
-      marketPair.value &&
-      toField.asset.value &&
-      toField.fieldAmount.value
-    ) {
-      const asset = toField.asset.value;
-      const assetPrice = marketPair.value.priceAsset(asset);
-      input.fromAmount.value = assetPrice
-        ? trimZeros(
-            assetPrice
-              .multiply(toField.fieldAmount.value)
-              .toFixed(asset.decimals)
-          )
-        : "0";
+      input.toAmount.value = calculateSwapResult(
+        pool.value,
+        fromField.fieldAmount.value
+      );
     }
   });
 
+  effect(() => {
+    // Changing the "to" field recalculates the "from" amount
+    if (
+      pool.value &&
+      toField.asset.value &&
+      toField.fieldAmount.value &&
+      selectedField === "to"
+    ) {
+      input.fromAmount.value = calculateReverseSwapResult(
+        pool.value,
+        toField.fieldAmount.value
+      );
+    }
+  });
+  effect(() => {
+    if (input.selectedField.value === null && input.toAmount.value) {
+      input.toAmount.value = trimZeros(input.toAmount.value);
+    }
+  });
+  effect(() => {
+    if (input.selectedField.value === null && input.fromAmount.value) {
+      input.fromAmount.value = trimZeros(input.fromAmount.value);
+    }
+  });
   const state = computed(() => {
-    if (!marketPair.value) return SwapState.SELECT_TOKENS;
+    if (!pool.value) return SwapState.SELECT_TOKENS;
     if (
       fromField.fieldAmount.value?.equalTo("0") &&
       toField.fieldAmount.value?.equalTo("0")

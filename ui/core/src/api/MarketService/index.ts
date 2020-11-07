@@ -1,8 +1,9 @@
-import { Asset, AssetAmount, Pair } from "../../entities";
+import { Asset, AssetAmount, CompositePair, Pair } from "../../entities";
 
 export type MarketServiceContext = {
   loadAssets: () => Promise<Asset[]>;
-  fetchMarketData: () => Promise<{ name: string; value: number }[][]>;
+  getPools: () => Promise<Pair[]>;
+  nativeAsset: Asset;
 };
 
 function toAssetSymbol(assetOrString: Asset | string) {
@@ -27,24 +28,19 @@ function makeQuerablePromise<T>(promise: Promise<T>) {
 
 export default function createMarketService({
   loadAssets,
-  fetchMarketData,
+  getPools,
 }: MarketServiceContext) {
   const pairs = new Map<string, Pair>();
 
   async function generatePairs() {
     await loadAssets();
-    const data = await fetchMarketData();
+    const pools = await getPools();
 
-    data.map(([amount1, amount2]) => {
-      const asset1 = Asset.get(amount1.name);
-      const asset2 = Asset.get(amount2.name);
-      const pair = Pair(
-        AssetAmount(asset1, amount1.value),
-        AssetAmount(asset2, amount2.value)
-      );
+    pools.map((pair) => {
       pairs.set(pair.symbol(), pair);
     });
   }
+
   const pairsGenerated = makeQuerablePromise(generatePairs());
 
   return {

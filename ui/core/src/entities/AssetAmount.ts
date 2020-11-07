@@ -16,6 +16,7 @@ import JSBI from "jsbi";
 import B from "./utils/B";
 
 const Big = toFormat(_Big);
+
 export interface IAssetAmount extends IFraction {
   toFixed(decimalPlaces?: number, format?: object, rounding?: Rounding): string;
   asset: Asset;
@@ -23,7 +24,7 @@ export interface IAssetAmount extends IFraction {
   toFormatted: () => string;
 }
 export class _AssetAmount implements IAssetAmount {
-  private fraction: IFraction;
+  protected fraction: IFraction;
   constructor(public asset: Asset, public amount: JSBI) {
     this.fraction = new Fraction(
       parseBigintIsh(amount),
@@ -122,7 +123,9 @@ export function AssetAmount(
   asset: Asset,
   amount: string | number | JSBI | IFraction
 ): IAssetAmount {
-  const unfractionedAmount = isFraction(amount) ? amount.quotient : amount;
+  const unfractionedAmount = isFraction(amount)
+    ? amount.toFixed(asset.decimals)
+    : amount;
 
   const jsbiAmount =
     unfractionedAmount instanceof JSBI

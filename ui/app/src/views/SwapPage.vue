@@ -27,7 +27,7 @@ export default defineComponent({
   },
 
   setup() {
-    const { api, store } = useCore();
+    const { api, actions, store } = useCore();
     const marketPairFinder = api.MarketService.find;
     const {
       fromSymbol,
@@ -52,8 +52,8 @@ export default defineComponent({
 
     const {
       state,
-      // fromFieldAmount,
-      // toFieldAmount,
+      fromFieldAmount,
+      toFieldAmount,
       priceMessage,
     } = useSwapCalculator({
       balances,
@@ -64,11 +64,18 @@ export default defineComponent({
       toSymbol,
       marketPairFinder,
     });
-    function handleNextStepClicked() {
+    async function handleNextStepClicked() {
+      if (!fromFieldAmount.value)
+        throw new Error("from field amount is not defined");
+      if (!toFieldAmount.value)
+        throw new Error("to field amount is not defined");
+
       mockTransactionState.value = "confirming";
-      setTimeout(() => {
-        mockTransactionState.value = "confirmed";
-      }, 1000);
+      await actions.sifWallet.swap(
+        fromFieldAmount.value,
+        toFieldAmount.value.asset
+      );
+      mockTransactionState.value = "confirmed";
     }
 
     return {

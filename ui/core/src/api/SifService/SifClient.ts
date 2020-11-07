@@ -1,20 +1,35 @@
 import {
   AuthExtension,
   BroadcastMode,
+  CosmosClient,
   CosmosFeeTable,
   GasLimits,
   GasPrice,
   LcdClient,
-  Msg,
   OfflineSigner,
   setupAuthExtension,
   SigningCosmosClient,
 } from "@cosmjs/launchpad";
 
-import { ClpExtension, setupClpExtension, SwapParams } from "./x/clp";
+import { ClpExtension, setupClpExtension } from "./x/clp";
 
-export class SifClient extends SigningCosmosClient {
-  protected readonly lcdClient: LcdClient & AuthExtension & ClpExtension;
+type CustomLcdClient = LcdClient & AuthExtension & ClpExtension;
+
+function createLcdClient(
+  apiUrl: string,
+  broadcastMode: BroadcastMode | undefined
+): CustomLcdClient {
+  return LcdClient.withExtensions(
+    { apiUrl: apiUrl, broadcastMode: broadcastMode },
+    setupAuthExtension,
+    setupClpExtension
+  );
+}
+
+type IClpApi = ClpExtension["clp"];
+
+export class SifClient extends SigningCosmosClient implements IClpApi {
+  protected readonly lcdClient: CustomLcdClient;
 
   constructor(
     apiUrl: string,
@@ -25,14 +40,24 @@ export class SifClient extends SigningCosmosClient {
     broadcastMode?: BroadcastMode
   ) {
     super(apiUrl, senderAddress, signer, gasPrice, gasLimits, broadcastMode);
-    this.lcdClient = LcdClient.withExtensions(
-      { apiUrl: apiUrl, broadcastMode: broadcastMode },
-      setupAuthExtension,
-      setupClpExtension
-    );
+    this.lcdClient = createLcdClient(apiUrl, broadcastMode);
+    this.swap = this.lcdClient.clp.swap;
+    this.getPools = this.lcdClient.clp.getPools;
   }
 
-  async swap(params: SwapParams) {
-    return await this.lcdClient.clp.swap(params);
+  swap: IClpApi["swap"];
+  getPools: IClpApi["getPools"];
+}
+export class SifUnSignedClient extends CosmosClient implements IClpApi {
+  protected readonly lcdClient: CustomLcdClient;
+
+  constructor(apiUrl: string, broadcastMode?: BroadcastMode) {
+    super(apiUrl, broadcastMode);
+    this.lcdClient = createLcdClient(apiUrl, broadcastMode);
+    this.swap = this.lcdClient.clp.swap;
+    this.getPools = this.lcdClient.clp.getPools;
   }
+
+  swap: IClpApi["swap"];
+  getPools: IClpApi["getPools"];
 }

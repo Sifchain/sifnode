@@ -1,7 +1,30 @@
 import JSBI from "jsbi";
-import { ATK, BTK, RWN } from "../../constants";
-import { AssetAmount } from "../../entities";
+
+import { AssetAmount, Coin, Network } from "../../entities";
 import createSifService, { SifServiceContext } from ".";
+
+const TOKENS = {
+  rwn: Coin({
+    symbol: "rwn",
+    decimals: 0,
+    name: "Rowan",
+    network: Network.SIFCHAIN,
+  }),
+
+  atk: Coin({
+    symbol: "catk",
+    decimals: 0,
+    name: "catk",
+    network: Network.SIFCHAIN,
+  }),
+
+  btk: Coin({
+    symbol: "cbtk",
+    decimals: 0,
+    name: "cbtk",
+    network: Network.SIFCHAIN,
+  }),
+};
 
 // This is required because we need to wait for the blockchain to process transactions
 jest.setTimeout(20000);
@@ -15,7 +38,7 @@ const mnemonic =
 // To be kept up to date with test state
 const account = {
   address: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-  balance: [AssetAmount(RWN, "1000")],
+  balance: [AssetAmount(TOKENS.rwn, "1000")],
   pubkey: {
     type: "tendermint/PubKeySecp256k1",
     value: "AvUEsFHbsr40nTSmWh7CWYRZHGwf4cpRLtJlaRO4VAoq",
@@ -66,7 +89,7 @@ describe("sifService", () => {
     }
     const balances = await sifService.getBalance(account.address);
     const balance = getBalance(balances, "rwn");
-    expect(balance?.toFixed()).toEqual("1000");
+    expect(balance?.toFixed()).toEqual("1000000000");
   });
 
   it("should transfer transaction", async () => {
@@ -75,13 +98,13 @@ describe("sifService", () => {
     const address = await sifService.setPhrase(mnemonic);
     await sifService.transfer({
       amount: JSBI.BigInt("50"),
-      asset: RWN,
+      asset: TOKENS.rwn,
       recipient: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
       memo: "",
     });
     const balances = await sifService.getBalance(address);
     const balance = getBalance(balances, "rwn");
-    expect(balance?.toFixed()).toEqual("950");
+    expect(balance?.toFixed()).toEqual("999999950");
   });
 
   it("should swap", async () => {
@@ -90,15 +113,15 @@ describe("sifService", () => {
     const address = await sifService.setPhrase(mnemonic);
 
     await sifService.swap({
-      receivedAsset: BTK,
-      sentAmount: AssetAmount(ATK, "20"),
+      receivedAsset: TOKENS.btk,
+      sentAmount: AssetAmount(TOKENS.atk, "20"),
     });
 
     const balances = await sifService.getBalance(address);
 
     const atkbal = getBalance(balances, "catk");
     const btkbal = getBalance(balances, "cbtk");
-    expect(atkbal.toFixed()).toBe("980");
-    expect(btkbal.toFixed()).toBe("1018");
+    expect(atkbal.toFixed()).toBe("999999980");
+    expect(btkbal.toFixed()).toBe("1000000019");
   });
 });

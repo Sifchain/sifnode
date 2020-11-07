@@ -135,6 +135,18 @@ export class EthereumService implements IWalletService {
   }
 
   async disconnect() {
+    if (isMetaMaskProvider(this.provider)) {
+      if (this.provider.request) {
+        await this.provider.request({
+          method: "wallet_requestPermissions",
+          params: [
+            {
+              eth_accounts: {},
+            },
+          ],
+        });
+      }
+    }
     this.removeWeb3Subscription();
     this.web3 = null;
     await this.updateData();

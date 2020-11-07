@@ -5,8 +5,8 @@ sifnodecli tx clp create-pool \
  --sourceChain ETH \
  --symbol ETH \
  --ticker catk \
- --nativeAmount 500 \
- --externalAmount 500 \
+ --nativeAmount 1000000 \
+ --externalAmount 1000000 \
  --yes
 
 # if we don't sleep there are issues
@@ -18,8 +18,8 @@ sifnodecli tx clp create-pool \
  --sourceChain ETH \
  --symbol ETH \
  --ticker cbtk \
- --nativeAmount 500 \
- --externalAmount 500 \
+ --nativeAmount 1000000 \
+ --externalAmount 1000000 \
  --yes
 
 # should now be able to swap from catk:cbtk
