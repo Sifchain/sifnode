@@ -18,7 +18,7 @@ sifnodecli query ethbridge prophecy 0x30753E4A8aad7F8597332E813735Def5dD395028 3
 ## Case 2
 ## 1. burn peggyetch for user2
 sifnodecli tx ethbridge burn $(sifnodecli keys show user2 -a) 0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 \
-1 peggyeth --ethereum-chain-id=3 --from=user2 --yes
+1 ceth --ethereum-chain-id=3 --from=user2 --yes
 
 ## 2. query the tx
 #sifnodecli q tx

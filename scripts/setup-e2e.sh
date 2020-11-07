@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-brew install ethereum
 cd testnet-contracts
-yarn
-# ebrelayer generate
+yarn install
 cp .env.example .env
