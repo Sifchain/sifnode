@@ -488,7 +488,7 @@ contract("BridgeBank", function (accounts) {
         "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
       );
       this.recipient = accounts[4];
-      this.ethereumSymbol = "PEGGYETH";
+      this.ethereumSymbol = "ETH";
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
       this.weiAmount = web3.utils.toWei("0.25", "ether");
       this.halfWeiAmount = web3.utils.toWei("0.125", "ether");
@@ -924,7 +924,7 @@ contract("BridgeBank", function (accounts) {
     });
 
     it("should create eRowan mock and connect it to the cosmos bridge with admin API", async function () {
-      const symbol = "PEGGYeRowan"
+      const symbol = "eRowan"
       this.token = await BridgeToken.new(symbol, {from: operator});
 
       await this.token.addMinter(this.bridgeBank.address, {from: operator})
@@ -944,7 +944,7 @@ contract("BridgeBank", function (accounts) {
         return hex;
       }
 
-      const symbol = 'PEGGYeRowan'
+      const symbol = 'eRowan'
       const amount = 100000;
       const sifAddress = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
 
@@ -970,7 +970,7 @@ contract("BridgeBank", function (accounts) {
       }
 
       const cosmosSender = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
-      const symbol = 'eRowan'
+      const symbol = 'Rowan'
       const amount = 100000;
 
       // operator should not have any eRowan

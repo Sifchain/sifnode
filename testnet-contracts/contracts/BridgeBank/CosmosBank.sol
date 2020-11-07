@@ -57,7 +57,7 @@ contract CosmosBank {
     /*
      * @dev: Get a token symbol's corresponding bridge token address.
      *
-     * @param _symbol: The token's symbol/denom without 'PEGGY' prefix.
+     * @param _symbol: The token's symbol/denom without 'e' prefix.
      * @return: Address associated with the given symbol. Returns address(0) if none is found.
      */
     function getBridgeToken(string memory _symbol)
@@ -126,7 +126,7 @@ contract CosmosBank {
      *
      * @param _symbol: The BridgeToken's symbol
      *
-     * @note the eRowan symbol needs to be "PEGGYeRowan" so that it integrates correctly with the cosmos bridge 
+     * @note the Rowan token symbol needs to be "Rowan" so that it integrates correctly with the cosmos bridge 
      */
     function useExistingBridgeToken(address _contractAddress)
         internal

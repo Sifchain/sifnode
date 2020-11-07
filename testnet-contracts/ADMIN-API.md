@@ -6,7 +6,7 @@
 
 Make sure that the OWNER address is set properly in the .env file so that you have an owner for the bridgebank contract that can use the admin api. Owner and operator addresses are different roles and have different capabilities.
 
-1. You will need to have created eRowan as an ERC20 token on the mainnet. The token's symbol should be "PEGGYeRowan"
+1. You will need to have created eRowan as an ERC20 token on the mainnet. The token's symbol should be "eRowan"
 
 This symbol is hard coded in the eRowan token repo so as long as you use that implementation, you should be good.
 

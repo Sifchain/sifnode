@@ -30,7 +30,7 @@ contract("CosmosBridge", function (accounts) {
   const consensusThreshold = 70;
 
   // Default Peggy token prefix
-  const defaultTokenPrefix = "PEGGY"
+  const defaultTokenPrefix = "e"
 
   describe("CosmosBridge smart contract deployment", function () {
     beforeEach(async function () {
