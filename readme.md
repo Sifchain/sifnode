@@ -124,7 +124,7 @@ sifnodecli tx staking create-validator \
     --commission-max-change-rate 0.1 \
     --commission-max-rate 0.1 \
     --commission-rate 0.1 \
-    --amount 1000000000trwn \
+    --amount 1000000000rowan \
     --pubkey $(sifnoded tendermint show-validator) \
     --moniker <moniker> \
     --chain-id monkey-bars \
