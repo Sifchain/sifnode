@@ -31,7 +31,6 @@ contract("CosmosBridge", function (accounts) {
 
   // Default Peggy token prefix
   const defaultTokenPrefix = "e"
-
   describe("CosmosBridge smart contract deployment", function () {
     beforeEach(async function () {
       // Deploy Valset contract

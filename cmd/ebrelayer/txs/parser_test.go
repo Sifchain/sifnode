@@ -84,8 +84,9 @@ func TestBurnEventToCosmosMsg(t *testing.T) {
 
 	// Create MsgBurn attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgAttributes(t, types.MsgBurn)
-	msgBurn := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes)
+	msgBurn, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes)
 
+	require.Nil(t, err)
 	require.Equal(t, expectedMsgBurn, msgBurn)
 }
 
@@ -95,8 +96,9 @@ func TestLockEventToCosmosMsg(t *testing.T) {
 
 	// Create MsgLock attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgAttributes(t, types.MsgLock)
-	msgLock := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes)
+	msgLock, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes)
 
+	require.Nil(t, err)
 	require.Equal(t, expectedMsgLock, msgLock)
 }
 

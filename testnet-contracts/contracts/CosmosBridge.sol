@@ -7,7 +7,6 @@ import "./BridgeBank/BridgeBank.sol";
 
 contract CosmosBridge {
     using SafeMath for uint256;
-
     string COSMOS_NATIVE_ASSET_PREFIX = "e";
 
     /*
