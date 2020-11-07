@@ -42,13 +42,37 @@ Copy paste the above setup into a .env file inside the testnet-contracts folder 
 
 3. Make sure that the gas price in the truffle-config file for the network you are trying to deploy to is priced at the current market price or higher so that your contracts actually get deployed.
 
-4. Now it's time to actually deploy, first run an npm install, then run the following command:
+4. Now it's time to actually deploy, first run an npm install.
+
+Then copy the file .env.example to the .env file.
+
+Now go to eth gas station or etherscan and find the current gas price on mainnet.
+https://ethgasstation.info/
+https://etherscan.io/gastracker
+
+Go to your .env file and assign the current gas price in wei to the variable MAINNET_GAS_PRICE
+
+Set the ETHEREUM_PRIVATE_KEY to your private key you want to be the operator for the smart contract.
+
+Ensure that OPERATOR is the address that corresponds to the ETHEREUM_PRIVATE_KEY.
+
+Ensure that OWNER is the address that will be the admin for the bridge bank and can wire eRowan in.
+
+Ensure that INITIAL_VALIDATOR_ADDRESSES and INITIAL_VALIDATOR_POWERS are set correctly.
+
+then run the following command:
 ```
 truffle deploy --network mainnet
 ```
 You can replace mainnet with ropsten or local, whichever network you would like to deploy to.
 
+5. Grab the eRowan token address on whatever network you are on. Then run the setup_eRowan.js file to properly hook eRowan into the contracts. Make sure that the EROWAN_ADDRESS variable in the .env file is set to the eRowan token address. Make sure that the OWNER address is set properly in the env file so that you have an owner for the bridgebank contract that can use the admin api. Then run the command from the testnet-contracts folder:
+```
+truffle exec scripts/setup_eRowan.js --network mainnet
+```
 
-5. Make sure to record the smart contract addresses and share them with the team so that you can interact with them in the future. Then git add the build folder, commit it and push it to your own branch, then merge it with develop so that we have the records documented of the smart contract address in the version control history.
+You can replace the network with whatever network you would like, ropsten, develop or mainnet.
 
-6. Congrats, you've successfully deployed your contracts to a live ethereum network.
+When running this command, make sure that the private key in the .env file corresponds to the operator of the bridgebank contract as well as the admin and deployer of the eRowan token contract.
+
+6. Make sure to record the smart contract addresses and share them with the team so that you can interact with them in the future. Then git add the build folder, commit it and push it to your own branch, then merge it with develop so that we have the records documented of the smart contract address in the version control history.

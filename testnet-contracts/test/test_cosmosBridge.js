@@ -30,8 +30,7 @@ contract("CosmosBridge", function (accounts) {
   const consensusThreshold = 70;
 
   // Default Peggy token prefix
-  const defaultTokenPrefix = "c"
-
+  const defaultTokenPrefix = "e"
   describe("CosmosBridge smart contract deployment", function () {
     beforeEach(async function () {
       // Deploy Valset contract
@@ -58,7 +57,8 @@ contract("CosmosBridge", function (accounts) {
       this.bridgeBank = await BridgeBank.new(
         operator,
         this.oracle.address,
-        this.cosmosBridge.address
+        this.cosmosBridge.address,
+        operator
       );
     });
 
@@ -151,7 +151,8 @@ contract("CosmosBridge", function (accounts) {
       this.bridgeBank = await BridgeBank.new(
         operator,
         this.oracle.address,
-        this.cosmosBridge.address
+        this.cosmosBridge.address,
+        operator
       );
 
       // Operator sets Oracle
@@ -309,7 +310,8 @@ contract("CosmosBridge", function (accounts) {
       this.bridgeBank = await BridgeBank.new(
         operator,
         this.oracle.address,
-        this.cosmosBridge.address
+        this.cosmosBridge.address,
+        operator
       );
 
       // Operator sets Oracle

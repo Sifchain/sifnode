@@ -62,7 +62,8 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await BridgeBank.new(
         operator,
         this.oracle.address,
-        this.cosmosBridge.address
+        this.cosmosBridge.address,
+        operator
       );
     });
 
@@ -121,7 +122,8 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await BridgeBank.new(
         operator,
         this.oracle.address,
-        this.cosmosBridge.address
+        this.cosmosBridge.address,
+        operator
       );
 
       // Operator sets Oracle
@@ -278,7 +280,8 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await BridgeBank.new(
         operator,
         this.oracle.address,
-        this.cosmosBridge.address
+        this.cosmosBridge.address,
+        operator
       );
 
       this.recipient = web3.utils.utf8ToHex(
@@ -366,7 +369,8 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await BridgeBank.new(
         operator,
         this.oracle.address,
-        this.cosmosBridge.address
+        this.cosmosBridge.address,
+        operator
       );
 
       this.recipient = web3.utils.utf8ToHex(
@@ -489,7 +493,8 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await BridgeBank.new(
         operator,
         this.oracle.address,
-        this.cosmosBridge.address
+        this.cosmosBridge.address,
+        operator
       );
 
       // Operator sets Oracle
@@ -507,7 +512,7 @@ contract("BridgeBank", function (accounts) {
         "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
       );
       this.recipient = accounts[4];
-      this.ethereumSymbol = "PEGGYETH";
+      this.ethereumSymbol = "ETH";
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
       this.weiAmount = web3.utils.toWei("0.25", "ether");
       this.halfWeiAmount = web3.utils.toWei("0.125", "ether");
@@ -894,6 +899,148 @@ contract("BridgeBank", function (accounts) {
           from: userOne
         }
       ).should.be.rejectedWith(EVMRevert);
+    });
+  });
+
+  // This entire scenario is mimicking the mainnet scenario where there will be
+  // cosmos assets on sifchain, and then we hook into an existing ERC20 contract on mainnet
+  // that is eRowan. Then we will try to transfer rowan to eRowan to ensure that
+  // everything is set up correctly.
+  // We will do this by making a new prophecy claim, validating it with the validators
+  // Then ensure that the prohpecy claim paid out the person that it was supposed to
+  describe("Bridge token creation", function () {
+    before(async function () {
+      // this test needs to create a new token contract that will
+      // effectively be able to be treated as if it was a cosmos native asset
+      // even though it was created on top of ethereum
+
+      // Deploy Valset contract
+      this.initialValidators = [userOne, userTwo, userThree];
+      this.initialPowers = [33, 33, 33];
+      this.valset = await Valset.new(
+        operator,
+        this.initialValidators,
+        this.initialPowers
+      );
+
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await CosmosBridge.new(operator, this.valset.address);
+
+      // Deploy Oracle contract
+      this.oracle = await Oracle.new(
+        operator,
+        this.valset.address,
+        this.cosmosBridge.address,
+        33
+      );
+
+      // Deploy BridgeBank contract
+      this.bridgeBank = await BridgeBank.new(
+        operator,
+        operator,
+        this.cosmosBridge.address,
+        operator
+      );
+
+      // Set oracle and bridge bank for the cosmos bridge
+      await this.cosmosBridge.setOracle(this.oracle.address, {from: operator})
+      await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {from: operator})
+    });
+
+    it("should create eRowan mock and connect it to the cosmos bridge with admin API", async function () {
+      const symbol = "eRowan"
+      this.token = await BridgeToken.new(symbol, {from: operator});
+
+      await this.token.addMinter(this.bridgeBank.address, {from: operator})
+      // Attempt to lock tokens
+      await this.bridgeBank.addExistingBridgeToken(this.token.address, {from: operator}).should.be.fulfilled;
+
+      const tokenAddress = await this.bridgeBank.getBridgeToken(symbol);
+      tokenAddress.should.be.equal(this.token.address);
+    });
+
+    it("should burn eRowan to create rowan on sifchain", async function () {
+      function convertToHex(str) {
+        let hex = '';
+        for (let i = 0; i < str.length; i++) {
+            hex += '' + str.charCodeAt(i).toString(16);
+        }
+        return hex;
+      }
+
+      const symbol = 'eRowan'
+      const amount = 100000;
+      const sifAddress = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
+
+      await this.token.mint(operator, amount, { from: operator })
+      await this.token.approve(this.bridgeBank.address, amount, {from: operator})
+      // Attempt to lock tokens
+      const tx = await this.bridgeBank.burn(
+        sifAddress,
+        this.token.address,
+        amount, { from: operator }
+      ).should.be.fulfilled;
+
+      tx.receipt.logs[0].args['3'].should.be.equal(symbol)
+    });
+
+    it("should mint eRowan to transfer Rowan from sifchain to ethereum", async function () {
+      function convertToHex(str) {
+        let hex = '';
+        for (let i = 0; i < str.length; i++) {
+            hex += '' + str.charCodeAt(i).toString(16);
+        }
+        return hex;
+      }
+
+      const cosmosSender = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
+      const symbol = 'Rowan'
+      const amount = 100000;
+
+      // operator should not have any eRowan
+      (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(0)).toString())
+
+      // Enum in cosmosbridge: enum ClaimType {Unsupported, Burn, Lock}
+      let {
+        logs
+      } = await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_LOCK,
+        cosmosSender,
+        operator,
+        symbol,
+        amount,
+        {from: userOne}
+      )
+
+      // Get the new ProphecyClaim's id
+      let eventLogNewProphecyClaim = logs.find(
+        e => e.event === "LogNewProphecyClaim"
+      );
+      const prophecyID = eventLogNewProphecyClaim.args._prophecyID;
+
+      // Create hash using Solidity's Sha3 hashing function
+      this.recipient = userOne;
+      this.amount = 100;
+      const message = web3.utils.soliditySha3({
+        t: "uint256",
+        v: prophecyID
+      }, {
+        t: "address payable",
+        v: this.recipient
+      }, {
+        t: "uint256",
+        v: this.amount
+      });
+
+      // Generate signatures from active validator
+      const userOneSignature = await web3.eth.sign(message, userOne);
+
+      // Validator userOne makes a valid OracleClaim, which gives the operator eRowan
+      await this.oracle.newOracleClaim(prophecyID, message, userOneSignature, {
+        from: userOne
+      }).should.be.fulfilled;
+
+      (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(amount)).toString())
     });
   });
 });

@@ -7,8 +7,7 @@ import "./BridgeBank/BridgeBank.sol";
 
 contract CosmosBridge {
     using SafeMath for uint256;
-
-    string COSMOS_NATIVE_ASSET_PREFIX = "c";
+    string COSMOS_NATIVE_ASSET_PREFIX = "e";
 
     /*
      * @dev: Public variable declarations
@@ -158,7 +157,7 @@ contract CosmosBridge {
             symbol = _symbol;
             tokenAddress = bridgeBank.getLockedTokenAddress(_symbol);
         } else if (_claimType == ClaimType.Lock) {
-            symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol); // Add 'PEGGY' symbol prefix
+            symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol); // Add 'e' symbol prefix
             address bridgeTokenAddress = bridgeBank.getBridgeToken(symbol);
             if (bridgeTokenAddress == address(0)) {
                 // First lock of this asset, deploy new contract and get new symbol/token address

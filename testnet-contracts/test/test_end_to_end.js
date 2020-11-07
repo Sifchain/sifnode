@@ -57,7 +57,8 @@ contract("CosmosBridge", function (accounts) {
       this.bridgeBank = await BridgeBank.new(
         operator,
         this.oracle.address,
-        this.cosmosBridge.address
+        this.cosmosBridge.address,
+        operator
       );
     });
 
@@ -82,7 +83,7 @@ contract("CosmosBridge", function (accounts) {
       this.ethTokenAddress = "0x0000000000000000000000000000000000000000";
       this.symbol = "ETH";
       this.nativeCosmosAssetDenom = "ATOM";
-      this.prefixedNativeCosmosAssetDenom = "cATOM";
+      this.prefixedNativeCosmosAssetDenom = "eATOM";
       this.amountWei = 100;
       this.amountNativeCosmos = 815;
 
@@ -110,7 +111,8 @@ contract("CosmosBridge", function (accounts) {
       this.bridgeBank = await BridgeBank.new(
         operator,
         this.oracle.address,
-        this.cosmosBridge.address
+        this.cosmosBridge.address,
+        operator
       );
 
       // Operator sets Oracle
