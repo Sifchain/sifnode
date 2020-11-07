@@ -40,6 +40,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		claim.CosmosSender, claim.EthereumReceiver, claim.Symbol, claim.Amount)
 	if err != nil {
 		log.Fatal(err)
+		return err
 	}
 	fmt.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
 
@@ -47,6 +48,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 	if err != nil {
 		log.Fatal(err)
+		return err
 	}
 
 	switch receipt.Status {
