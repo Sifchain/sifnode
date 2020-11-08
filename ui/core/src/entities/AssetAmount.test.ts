@@ -2,6 +2,7 @@ import { AssetAmount } from "./AssetAmount";
 import { Network } from "./Network";
 import { Coin } from "./Coin";
 import JSBI from "jsbi";
+import { Fraction } from "./fraction/Fraction";
 
 const USD = Coin({
   symbol: "USD",
@@ -24,9 +25,15 @@ test("it should be able to handle whole integars", () => {
 
 test("Shorthand", () => {
   expect(AssetAmount(USD, "100.12").toFixed()).toBe("100.12");
+  expect(AssetAmount(USD, "100").toFixed()).toBe("100.00");
   expect(AssetAmount(ETH, "10.1234567").toFixed()).toBe(
     "10.123456700000000000"
   );
+});
+
+test("it takes a fraction", () => {
+  const ten = new Fraction("1000", "100");
+  expect(AssetAmount(USD, ten).toString()).toBe("10.00 USD");
 });
 
 test("Formatted", () => {

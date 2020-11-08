@@ -4,7 +4,7 @@ import { SwapState, useSwapCalculator } from "./swapCalculator";
 
 const TOKENS = {
   atk: Token({
-    decimals: 6,
+    decimals: 18,
     symbol: "atk",
     name: "AppleToken",
     address: "123",
@@ -14,6 +14,13 @@ const TOKENS = {
     decimals: 18,
     symbol: "btk",
     name: "BananaToken",
+    address: "1234",
+    network: Network.ETHEREUM,
+  }),
+  rwn: Token({
+    decimals: 18,
+    symbol: "rwn",
+    name: "Rowan",
     address: "1234",
     network: Network.ETHEREUM,
   }),
@@ -52,38 +59,79 @@ describe("swapCalculator", () => {
     }));
   });
 
-  test("calculates wallet not attached", () => {
+  test("calculate swap usecase", () => {
     selectedField.value = "from";
     expect(state.value).toBe(SwapState.SELECT_TOKENS);
 
-    marketPairFinder.mockImplementationOnce(() =>
-      Pair(AssetAmount(TOKENS.atk, "1000"), AssetAmount(TOKENS.btk, "2000"))
-    );
-    fromSymbol.value = "atk";
-    toSymbol.value = "btk";
-    expect(state.value).toBe(SwapState.ZERO_AMOUNTS);
+    marketPairFinder
+      .mockImplementationOnce(() => {
+        return Pair(
+          AssetAmount(TOKENS.atk, "2000000000000"),
+          AssetAmount(TOKENS.rwn, "1000000000000")
+        );
+      })
+      .mockImplementationOnce(() => {
+        return Pair(
+          AssetAmount(TOKENS.btk, "1000000000000"),
+          AssetAmount(TOKENS.rwn, "1000000000000")
+        );
+      });
 
     balances.value = [
-      AssetAmount(TOKENS.eth, "1234"),
-      AssetAmount(TOKENS.btk, "1000"),
       AssetAmount(TOKENS.atk, "1000"),
+      AssetAmount(TOKENS.btk, "1000"),
+      AssetAmount(TOKENS.eth, "1234"),
     ];
+    fromSymbol.value = "atk";
+    toSymbol.value = "btk";
+
+    expect(state.value).toBe(SwapState.ZERO_AMOUNTS);
+
     fromAmount.value = "100";
-    expect(toAmount.value).toBe("200.0");
+
+    expect(toAmount.value).toBe("49.999999990000000001"); // 1 ATK ~= 0.5 BTK
     expect(state.value).toBe(SwapState.VALID_INPUT);
 
-    selectedField.value = "to";
-    toAmount.value = "100";
-    expect(fromAmount.value).toBe("50.0");
-    expect(toAmount.value).toBe("100");
-    selectedField.value = "from";
-    expect(toAmount.value).toBe("100.0");
+    selectedField.value = null; // deselect
 
-    selectedField.value = "from";
+    expect(fromAmount.value).toBe("100.0");
+
+    selectedField.value = "to"; // select to field
+
+    toAmount.value = "50"; // set to amount to 100
+    expect(fromAmount.value).toBe("100.000000039999999992");
+    expect(toAmount.value).toBe("50");
+
+    selectedField.value = null; // deselect
+    selectedField.value = "from"; // select from field
+    expect(toAmount.value).toBe("50.0");
+
     fromAmount.value = "10000";
 
     expect(state.value).toBe(SwapState.INSUFFICIENT_FUNDS);
 
-    expect(priceMessage.value).toBe("2.0 BTK per ATK");
+    expect(priceMessage.value).toBe("0.500000 BTK per ATK");
+  });
+
+  test("Avoid division by zero", () => {
+    selectedField.value = "from";
+    fromAmount.value = "0";
+    toAmount.value = "0";
+    marketPairFinder
+      .mockImplementationOnce(() =>
+        Pair(
+          AssetAmount(TOKENS.atk, "1000000"),
+          AssetAmount(TOKENS.rwn, "1000000")
+        )
+      )
+      .mockImplementationOnce(() =>
+        Pair(
+          AssetAmount(TOKENS.btk, "2000000"),
+          AssetAmount(TOKENS.rwn, "1000000")
+        )
+      );
+    fromSymbol.value = "atk";
+    toSymbol.value = "btk";
+    expect(priceMessage.value).toBe("");
   });
 });

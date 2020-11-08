@@ -1,4 +1,4 @@
-import { Address, TxParams } from "../entities";
+import { Address, Asset, AssetAmount, TxParams } from "../entities";
 import { validateMnemonic } from "bip39";
 import { Mnemonic } from "../entities/Wallet";
 import { ActionContext } from ".";
@@ -21,6 +21,10 @@ export default ({ api, store }: ActionContext<"SifService", "wallet">) => {
 
     async sendCosmosTransaction(params: TxParams) {
       return await api.SifService.transfer(params);
+    },
+
+    async swap(sentAmount: AssetAmount, receivedAsset: Asset) {
+      return await api.SifService.swap({ sentAmount, receivedAsset });
     },
 
     async disconnect() {

@@ -47,6 +47,9 @@ export default defineComponent({
   </div>
 
   <div class="body">
+    <div class="no-tokens-message" v-if="filteredTokens.length === 0">
+      <p>No tokens available.</p>
+    </div>
     <button
       class="option"
       v-for="token in filteredTokens"
@@ -112,5 +115,11 @@ export default defineComponent({
     color: #bbb;
     pointer-events: none;
   }
+}
+.no-tokens-message {
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

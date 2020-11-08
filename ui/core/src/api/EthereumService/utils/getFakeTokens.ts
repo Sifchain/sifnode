@@ -1,5 +1,4 @@
 import { Asset, Network, Coin, Token } from "../../../entities";
-import { loadAssets } from "./loadAssets";
 
 // Parse Truffle json for the most recent address
 function parseTruffleJson(
@@ -27,17 +26,12 @@ function parseTruffleJson(
 let _memoized: Asset[] | null = null;
 export async function getFakeTokens(): Promise<Asset[]> {
   if (_memoized) return _memoized;
+
   const ETH = Coin({
     symbol: "eth",
     decimals: 18,
     name: "Ethereum",
     network: Network.ETHEREUM,
-  });
-  const RWN = Coin({
-    symbol: "nametoken",
-    decimals: 6,
-    name: "nametoken",
-    network: Network.SIFCHAIN,
   });
 
   // gonna load the json and parse the code for all our fake tokens
@@ -45,10 +39,8 @@ export async function getFakeTokens(): Promise<Asset[]> {
   const btkJson = require("../../../../../chains/ethereum/build/contracts/BobToken.json");
   const ATK = parseTruffleJson("AliceToken", "atk", atkJson);
   const BTK = parseTruffleJson("BobToken", "btk", btkJson);
-  // add real tokens for testing
-  const realTokens = await loadAssets();
-  console.log({ Asset });
+
   // Return the tokens parsed as assets
-  _memoized = [ATK, BTK, ETH, RWN, ...realTokens];
+  _memoized = [ATK, BTK, ETH];
   return _memoized;
 }

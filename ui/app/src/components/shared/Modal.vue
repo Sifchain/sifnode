@@ -13,10 +13,8 @@ export default defineComponent({
 
       requestOpen() {
         isOpen.value = true;
-        console.log("OPEN!");
       },
       requestClose(returnedData?: unknown) {
-        console.log("requestClose");
         isOpen.value = false;
         context.emit("close", returnedData);
       },

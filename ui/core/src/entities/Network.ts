@@ -1,4 +1,4 @@
 export enum Network {
-  SIFCHAIN,
-  ETHEREUM,
+  SIFCHAIN = "sifchain",
+  ETHEREUM = "ethereum",
 }

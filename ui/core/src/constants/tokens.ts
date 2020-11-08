@@ -7,17 +7,24 @@ export const ETH = Coin({
   network: Network.ETHEREUM,
 });
 
-export const ROWAN = Coin({
-  symbol: "ROWAN",
-  decimals: 2,
+export const RWN = Coin({
+  symbol: "rwn",
+  decimals: 18,
   name: "Rowan",
   network: Network.SIFCHAIN,
 });
 
-export const NCN = Coin({
-  symbol: "nametoken",
-  decimals: 0,
-  name: "nametoken",
+export const ATK = Coin({
+  symbol: "catk",
+  decimals: 18,
+  name: "catk",
+  network: Network.SIFCHAIN,
+});
+
+export const BTK = Coin({
+  symbol: "cbtk",
+  decimals: 18,
+  name: "cbtk",
   network: Network.SIFCHAIN,
 });
 

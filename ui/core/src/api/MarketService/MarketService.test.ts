@@ -1,3 +1,9 @@
+import createMarketService from ".";
+import { RWN } from "../../constants";
+import { AssetAmount, Pair } from "../../entities";
+
 describe("MarketService", () => {
-  test("", () => expect(1).toBe(1));
+  test("MarketService", () => {
+    expect(1).toBe(1);
+  });
 });
