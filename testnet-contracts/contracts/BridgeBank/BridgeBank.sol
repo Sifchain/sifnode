@@ -22,6 +22,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
     address public operator;
     Oracle public oracle;
     CosmosBridge public cosmosBridge;
+    address public owner;
 
     /*
      * @dev: Constructor, sets operator
@@ -29,11 +30,13 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
     constructor(
         address _operatorAddress,
         address _oracleAddress,
-        address _cosmosBridgeAddress
+        address _cosmosBridgeAddress,
+        address _owner
     ) public {
         operator = _operatorAddress;
         oracle = Oracle(_oracleAddress);
         cosmosBridge = CosmosBridge(_cosmosBridgeAddress);
+        owner = _owner;
     }
 
     /*
@@ -54,6 +57,16 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         );
         _;
     }
+
+    /*
+     * @dev: Modifier to restrict access to operator
+     */
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Must be Owner.");
+        _;
+    }
+
+
 
     /*
      * @dev: Modifier to restrict access to the cosmos bridge
@@ -87,6 +100,18 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
     }
 
     /*
+     * @dev: Creates a new BridgeToken
+     *
+     * @param _symbol: The new BridgeToken's symbol
+     * @return: The new BridgeToken contract's address
+     */
+    function addExistingBridgeToken(
+        address _contractAddress
+    ) public onlyOwner returns (address) {
+        return useExistingBridgeToken(_contractAddress);
+    }
+
+    /*
      * @dev: Set the token address in whitelist
      *
      * @param _token: ERC 20's address
@@ -98,6 +123,19 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         onlyOperator
         returns (bool)
     {
+        string memory symbol = BridgeToken(_token).symbol();
+        address listAddress = lockedTokenList[symbol];
+        
+        // Do not allow a token with the same symbol to be whitelisted
+        if (_inList) {
+            // if we want to add it to the whitelist, make sure that the address
+            // is 0, meaning we have not seen that symbol in the whitelist before
+            require(listAddress == address(0), "Token already whitelisted");
+        } else {
+            // if we want to de-whitelist it, make sure that the symbol is 
+            // in fact stored in our locked token list before we set to false
+            require(uint256(listAddress) > 0, "Token not whitelisted");
+        }
         return setTokenInWhiteList(_token, _inList);
     }
 

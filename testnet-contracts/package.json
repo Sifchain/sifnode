@@ -19,6 +19,7 @@
     "keccak": "^3.0.1",
     "lodash": "^4.17.19",
     "truffle-contract": "^4.0.31",
+    "truffle-contract-size": "^2.0.0",
     "utf8": "^3.0.0",
     "@truffle/hdwallet-provider": "^1.1.0",
     "chai": "^4.2.0",

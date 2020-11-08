@@ -110,7 +110,8 @@ contract("Oracle", function (accounts) {
       this.bridgeBank = await BridgeBank.new(
         operator,
         this.oracle.address,
-        this.cosmosBridge.address
+        this.cosmosBridge.address,
+        operator
       );
 
       // Operator sets Oracle
@@ -315,7 +316,8 @@ contract("Oracle", function (accounts) {
       this.bridgeBank = await BridgeBank.new(
         operator,
         this.oracle.address,
-        this.cosmosBridge.address
+        this.cosmosBridge.address,
+        operator
       );
 
       // Operator sets Oracle
