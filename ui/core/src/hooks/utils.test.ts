@@ -1,4 +1,3 @@
-import { ATK, BTK } from "../constants";
 import { AssetAmount, Pair, Coin, Network } from "../entities";
 import { assetPriceMessage } from "./utils";
 
