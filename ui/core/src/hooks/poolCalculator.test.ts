@@ -1,128 +1,109 @@
-// import { Ref, ref } from "@vue/reactivity";
-// import {
-//   Asset,
-//   AssetAmount,
-//   IAssetAmount,
-//   Network,
-//   Pair,
-//   Token,
-// } from "../entities";
-// import { PoolState, usePoolCalculator } from "./poolCalculator";
+import { ref, Ref } from "@vue/reactivity";
+import JSBI from "jsbi";
+import { AssetAmount, Coin, IAssetAmount, Network, Pool } from "../entities";
+import { Fraction } from "../entities/fraction/Fraction";
+import { PoolState, usePoolCalculator } from "./poolCalculator";
 
-// const TOKENS = {
-//   atk: Token({
-//     decimals: 6,
-//     symbol: "atk",
-//     name: "AppleToken",
-//     address: "123",
-//     network: Network.ETHEREUM,
-//   }),
-//   btk: Token({
-//     decimals: 6,
-//     symbol: "btk",
-//     name: "BananaToken",
-//     address: "1234",
-//     network: Network.ETHEREUM,
-//   }),
-//   eth: Token({
-//     decimals: 18,
-//     symbol: "eth",
-//     name: "Ethereum",
-//     address: "1234",
-//     network: Network.ETHEREUM,
-//   }),
-// };
+const ASSETS = {
+  atk: Coin({
+    decimals: 18,
+    name: "AppleToken",
+    network: Network.SIFCHAIN,
+    symbol: "atk",
+  }),
+  btk: Coin({
+    decimals: 18,
+    name: "BananaToken",
+    network: Network.SIFCHAIN,
+    symbol: "btk",
+  }),
 
-// // TODO: All the maths here are pretty naive need to double check with blockscience
-// describe("usePoolCalculator", () => {
-//   // input
-//   const fromAmount: Ref<string> = ref("0");
-//   const fromSymbol: Ref<string | null> = ref(null);
-//   const toAmount: Ref<string> = ref("0");
-//   const toSymbol: Ref<string | null> = ref(null);
-//   const balances = ref([]) as Ref<IAssetAmount[]>;
-//   const selectedField: Ref<"from" | "to" | null> = ref("from");
-//   const marketPairFinder = jest.fn<Pair | null, any>(() => null);
+  rwn: Coin({
+    decimals: 18,
+    name: "Rowan",
+    network: Network.SIFCHAIN,
+    symbol: "rwn",
+  }),
+};
 
-//   // output
+describe("usePoolCalculator", () => {
+  // input
+  const fromAmount: Ref<string> = ref("0");
+  const fromSymbol: Ref<string | null> = ref(null);
+  const toAmount: Ref<string> = ref("0");
+  const toSymbol: Ref<string | null> = ref(null);
+  const balances = ref([]) as Ref<IAssetAmount[]>;
+  const selectedField: Ref<"from" | "to" | null> = ref("from");
+  const marketPairFinder = jest.fn<Pool | null, any>(() => null);
 
-//   let aPerBRatioMessage: Ref<string>;
-//   let bPerARatioMessage: Ref<string>;
-//   let shareOfPool: Ref<string>;
-//   let state: Ref<PoolState>;
-//   beforeEach(() => {
-//     ({
-//       state,
-//       aPerBRatioMessage,
-//       bPerARatioMessage,
-//       shareOfPool,
-//     } = usePoolCalculator({
-//       balances,
-//       fromAmount,
-//       toAmount,
-//       fromSymbol,
-//       selectedField,
-//       toSymbol,
-//       marketPairFinder,
-//     }));
+  // output
 
-//     balances.value = [];
-//     fromAmount.value = "0";
-//     toAmount.value = "0";
-//     fromSymbol.value = null;
-//     toSymbol.value = null;
-//   });
+  let aPerBRatioMessage: Ref<string>;
+  let bPerARatioMessage: Ref<string>;
+  let shareOfPool: Ref<Fraction>;
+  let shareOfPoolPercent: Ref<string>;
+  let state: Ref<PoolState>;
 
-//   test("poolCalculator ratio messages", () => {
-//     fromAmount.value = "1000";
-//     toAmount.value = "500";
-//     fromSymbol.value = "atk";
-//     toSymbol.value = "btk";
+  beforeEach(() => {
+    ({
+      state,
+      aPerBRatioMessage,
+      bPerARatioMessage,
+      shareOfPool,
+      shareOfPoolPercent,
+    } = usePoolCalculator({
+      balances,
+      fromAmount,
+      toAmount,
+      fromSymbol,
+      selectedField,
+      toSymbol,
+      marketPairFinder,
+    }));
 
-//     expect(aPerBRatioMessage.value).toBe("0.5 BTK per ATK");
-//     expect(bPerARatioMessage.value).toBe("2.0 ATK per BTK");
-//     expect(shareOfPool.value).toBe("100.00%");
-//   });
+    balances.value = [];
+    fromAmount.value = "0";
+    toAmount.value = "0";
+    fromSymbol.value = null;
+    toSymbol.value = null;
+  });
 
-//   test("Can handle division by zero", () => {
-//     fromAmount.value = "0";
-//     toAmount.value = "0";
-//     fromSymbol.value = "atk";
-//     toSymbol.value = "btk";
-//     expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
-//     expect(aPerBRatioMessage.value).toBe("");
-//     expect(bPerARatioMessage.value).toBe("");
-//     expect(shareOfPool.value).toBe("");
-//   });
+  test("poolCalculator ratio messages", () => {
+    fromAmount.value = "1000";
+    toAmount.value = "500";
+    fromSymbol.value = "atk";
+    toSymbol.value = "rwn";
 
-//   test("Calculate against a given pool", () => {
-//     marketPairFinder.mockImplementationOnce(() =>
-//       Pair(AssetAmount(TOKENS.atk, "2000"), AssetAmount(TOKENS.btk, "2000"))
-//     );
+    expect(aPerBRatioMessage.value).toBe("2.00000000 ATK per RWN");
+    expect(bPerARatioMessage.value).toBe("0.50000000 RWN per ATK");
+    expect(shareOfPoolPercent.value).toBe("100.00%");
+  });
 
-//     fromAmount.value = "1000";
-//     toAmount.value = "1000";
-//     fromSymbol.value = "atk";
-//     toSymbol.value = "btk";
+  test("poolCalculator with preexisting pool", () => {
+    marketPairFinder.mockImplementation(() =>
+      Pool(
+        AssetAmount(ASSETS.atk, "1000000"),
+        AssetAmount(ASSETS.rwn, "1000000")
+      )
+    );
+    fromAmount.value = "1000";
+    toAmount.value = "500";
+    fromSymbol.value = "atk";
+    toSymbol.value = "rwn";
 
-//     expect(aPerBRatioMessage.value).toBe("1.0 BTK per ATK");
-//     expect(bPerARatioMessage.value).toBe("1.0 ATK per BTK");
-//     expect(shareOfPool.value).toBe("33.33%");
-//   });
+    expect(aPerBRatioMessage.value).toBe("2.00000000 ATK per RWN");
+    expect(bPerARatioMessage.value).toBe("0.50000000 RWN per ATK");
+    expect(shareOfPoolPercent.value).toBe("0.07%");
+  });
 
-//   test("Insufficient balances", () => {
-//     balances.value = [
-//       AssetAmount(Asset.get("atk"), "10000"),
-//       AssetAmount(Asset.get("btk"), "10000"),
-//     ];
-//     fromAmount.value = "1000000";
-//     toAmount.value = "1000";
-//     fromSymbol.value = "atk";
-//     toSymbol.value = "btk";
-
-//     expect(state.value).toBe(PoolState.INSUFFICIENT_FUNDS);
-//   });
-// });
-test("", () => {
-  expect(1).toBe(1);
+  test("Can handle division by zero", () => {
+    fromAmount.value = "0";
+    toAmount.value = "0";
+    fromSymbol.value = "atk";
+    toSymbol.value = "rwn";
+    expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
+    expect(aPerBRatioMessage.value).toBe("");
+    expect(bPerARatioMessage.value).toBe("");
+    expect(shareOfPoolPercent.value).toBe("0.00%");
+  });
 });

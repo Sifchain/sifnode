@@ -27,6 +27,16 @@ export default ({ api, store }: ActionContext<"SifService", "wallet">) => {
       return await api.SifService.swap({ sentAmount, receivedAsset });
     },
 
+    async addLiquidity(
+      nativeAssetAmount: AssetAmount,
+      externalAssetAmount: AssetAmount
+    ) {
+      return await api.SifService.addLiquidity({
+        nativeAssetAmount,
+        externalAssetAmount,
+      });
+    },
+
     async disconnect() {
       api.SifService.purgeClient();
     },

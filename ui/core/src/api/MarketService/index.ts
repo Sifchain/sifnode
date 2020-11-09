@@ -1,5 +1,7 @@
+import JSBI from "jsbi";
 import { RWN } from "../../constants";
-import { Asset, AssetAmount, Pair } from "../../entities";
+import { Asset, AssetAmount, Pool } from "../../entities";
+import { Fraction } from "../../entities/fraction/Fraction";
 import { SifUnSignedClient } from "../SifService/SifClient";
 
 export type MarketServiceContext = {
@@ -33,7 +35,7 @@ export default function createMarketService({
   sifApiUrl,
 }: MarketServiceContext) {
   const sifClient = new SifUnSignedClient(sifApiUrl);
-  const pairs = new Map<string, Pair>();
+  const poolMap = new Map<string, Pool>();
 
   async function generatePairs() {
     await loadAssets();
@@ -41,15 +43,16 @@ export default function createMarketService({
     return pools.map((poolData) => {
       const externalAssetTicker = poolData.external_asset.ticker;
 
-      const pair = Pair(
+      const pair = Pool(
         AssetAmount(RWN, poolData.native_asset_balance),
         AssetAmount(
           Asset.get(externalAssetTicker),
           poolData.external_asset_balance
-        )
+        ),
+        new Fraction(poolData.pool_units)
       );
 
-      pairs.set(pair.symbol(), pair);
+      poolMap.set(pair.symbol(), pair);
     });
   }
 
@@ -59,7 +62,7 @@ export default function createMarketService({
     find(asset1: Asset | string, asset2: Asset | string) {
       if (!pairsGenerated.isResolved()) return null;
       const key = [asset1, asset2].map(toAssetSymbol).join("_");
-      return pairs.get(key) ?? null;
+      return poolMap.get(key) ?? null;
     },
   };
 }

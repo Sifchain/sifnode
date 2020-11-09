@@ -9,19 +9,21 @@ import { PoolState, usePoolCalculator } from "../../../core/src";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
+import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 
 export default defineComponent({
   components: {
+    ActionsPanel,
     Layout,
     Modal,
     CurrencyPairPanel,
     SelectTokenDialog,
-    ActionsPanel,
+    PriceCalculation,
   },
   setup() {
-    const { store, api } = useCore();
+    const { actions, store, api } = useCore();
     const marketPairFinder = api.MarketService.find;
     const selectedField = ref<"from" | "to" | null>(null);
 
@@ -31,6 +33,8 @@ export default defineComponent({
       toSymbol,
       toAmount,
     } = useCurrencyFieldState();
+
+    toSymbol.value = "rwn";
 
     const priceMessage = ref("");
 
@@ -47,9 +51,10 @@ export default defineComponent({
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
-      shareOfPool,
+      shareOfPoolPercent,
       fromFieldAmount,
       toFieldAmount,
+      preExistingPool,
       state,
     } = usePoolCalculator({
       balances,
@@ -82,7 +87,7 @@ export default defineComponent({
           case PoolState.INSUFFICIENT_FUNDS:
             return "Insufficient Funds";
           case PoolState.VALID_INPUT:
-            return "Add Liquidity";
+            return preExistingPool.value ? "Add liquidity" : "Create Pool";
         }
       }),
       nextStepAllowed: computed(() => {
@@ -110,10 +115,18 @@ export default defineComponent({
         }
         selectedField.value = null;
       },
-      handleNextStepClicked() {
-        alert(
-          `Add Liquidity ${fromFieldAmount.value?.toFormatted()} alongside ${toFieldAmount.value?.toFormatted()}!`
+      async handleNextStepClicked() {
+        if (!fromFieldAmount.value)
+          throw new Error("Token A field amount is not defined");
+        if (!toFieldAmount.value)
+          throw new Error("Token B field amount is not defined");
+
+        await actions.sifWallet.addLiquidity(
+          toFieldAmount.value,
+          fromFieldAmount.value
         );
+        // TODO Tidy up transaction
+        alert("Liquidity added");
       },
       handleBlur() {
         selectedField.value = null;
@@ -124,7 +137,7 @@ export default defineComponent({
       handleToFocused() {
         selectedField.value = "to";
       },
-      shareOfPool,
+      shareOfPoolPercent,
       connectedText,
     };
   },
@@ -154,9 +167,12 @@ export default defineComponent({
         />
       </template>
     </Modal>
-    <div>{{ aPerBRatioMessage }}</div>
-    <div>{{ bPerARatioMessage }}</div>
-    <div>{{ shareOfPool }}</div>
+
+    <PriceCalculation>
+      <div>{{ aPerBRatioMessage }}</div>
+      <div>{{ bPerARatioMessage }}</div>
+      <div>{{ shareOfPoolPercent }}</div>
+    </PriceCalculation>
     <ActionsPanel
       @nextstepclick="handleNextStepClicked"
       :nextStepAllowed="nextStepAllowed"
@@ -165,9 +181,4 @@ export default defineComponent({
   </Layout>
 </template>
 
-<style scoped>
-.big-button {
-  width: 100%;
-}
-</style>
 
