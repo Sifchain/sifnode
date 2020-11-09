@@ -37,7 +37,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-	if pool.ExternalAssetBalance+pool.NativeAssetBalance > keeper.GetParams(ctx).MinCreatePoolThreshold {
+	if pool.NativeAssetBalance > keeper.GetParams(ctx).MinCreatePoolThreshold {
 		return nil, types.ErrBalanceTooHigh
 	}
 	// Get all LP's for the pool
@@ -84,7 +84,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
 	// Verify min threshold
 	MinThreshold := keeper.GetParams(ctx).MinCreatePoolThreshold
-	if (msg.ExternalAssetAmount + msg.NativeAssetAmount) < MinThreshold { // Need to verify
+	if msg.NativeAssetAmount < MinThreshold {
 		return nil, types.ErrTotalAmountTooLow
 	}
 	// Check if pool already exists
@@ -102,7 +102,10 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
-	poolUnits, lpunits := calculatePoolUnits(0, 0, 0, nativeBalance, externalBalance)
+	poolUnits, lpunits, err := calculatePoolUnits(0, 0, 0, nativeBalance, externalBalance)
+	if err != nil {
+		return nil, err
+	}
 	pool, err := NewPool(asset, nativeBalance, externalBalance, poolUnits)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToCreatePool, err.Error())
@@ -146,7 +149,10 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-	newPoolUnits, lpUnits := calculatePoolUnits(pool.PoolUnits, pool.NativeAssetBalance, pool.ExternalAssetBalance, msg.NativeAssetAmount, msg.ExternalAssetAmount)
+	newPoolUnits, lpUnits, err := calculatePoolUnits(pool.PoolUnits, pool.NativeAssetBalance, pool.ExternalAssetBalance, msg.NativeAssetAmount, msg.ExternalAssetAmount)
+	if err != nil {
+		return nil, err
+	}
 	// Get lp , if lp doesnt exist create lp
 	lp, err := keeper.GetLiquidityProvider(ctx, msg.ExternalAsset.Ticker, msg.Signer.String())
 	if err != nil {
@@ -491,15 +497,57 @@ func calculateWithdrawal(poolUnits uint, nativeAssetBalance uint,
 
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
+
+//native asset balance  : currently in pool before adding
+//external asset balance : currently in pool before adding
+//native asset to added  : the amount the user sends
+//external asset amount to be added : the amount the user sends
+
+// r = native asset added;
+// a = external asset added
+// R = native Balance (before)
+// A = external Balance (before)
+// P = existing Pool Units
+// slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
+// units = ((P (a R + A r))/(2 A R))*slidAdjustment
+
 func calculatePoolUnits(oldPoolUnits uint, nativeAssetBalance uint, externalAssetBalance uint,
-	nativeAssetAmount uint, externalAssetAmount uint) (uint, uint) {
-	R := nativeAssetBalance + nativeAssetAmount
-	A := externalAssetBalance + externalAssetAmount
-	r := nativeAssetAmount
-	a := externalAssetAmount
-	lpUnits := ((R + A) * (r*A + R*a)) / (4 * R * A)
-	poolUnits := oldPoolUnits + lpUnits
-	return poolUnits, lpUnits
+	nativeAssetAmount uint, externalAssetAmount uint) (uint, uint, error) {
+	if nativeAssetBalance+nativeAssetAmount == 0 {
+		return 0, 0, errors.New("total Native in the pool is zero")
+	}
+	if externalAssetBalance+externalAssetAmount == 0 {
+		return 0, 0, errors.New("total External in the pool is zero")
+	}
+	if nativeAssetBalance == 0 || externalAssetBalance == 0 {
+		return nativeAssetAmount, externalAssetAmount, nil
+	}
+	P := float64(oldPoolUnits)
+	R := float64(nativeAssetBalance)
+	A := float64(externalAssetBalance)
+	r := float64(nativeAssetAmount)
+	a := float64(externalAssetAmount)
+
+	// (2 r + R) (a + A)
+	slipAdjDenominator := (2*r + R) * (a + A)
+	// (R a - r A)/((2 r + R) (a + A))
+	slipAd := (R*a - r*A) / slipAdjDenominator
+	var slipAdjustment float64
+	//ABS((R a - r A)/((2 r + R) (a + A)))
+	if slipAd < 0 {
+		slipAdjustment = -1.0 * slipAd
+	}
+	// (1 - ABS((R a - r A)/((2 r + R) (a + A))))
+	slipAdjustment = 1 - slipAdjustment
+
+	// ((P (a R + A r))
+	numerator := P * (a*R + A*r)
+	// 2AR
+	denominator := 2 * A * R
+	quotient := uint(numerator / denominator)
+	lpUnits := quotient * uint(slipAdjustment)
+	newPoolUnit := uint(P) + lpUnits
+	return newPoolUnit, lpUnits, nil
 }
 
 func calcLiquidityFee(X, x, Y uint) uint {
