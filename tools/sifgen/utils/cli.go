@@ -95,7 +95,7 @@ func (c CLI) InitChain(chainID, moniker, nodeDir string) (*string, error) {
 }
 
 func (c CLI) SetKeyRingStorage() (*string, error) {
-	return c.shellExec("sifnodecli", "config", "keyring-backend", "file")
+	return c.shellExec("sifnodecli", "config", "keyring-backend", "test")
 }
 
 func (c CLI) SetConfigChainID(chainID string) (*string, error) {
@@ -115,7 +115,7 @@ func (c CLI) AddKey(name, keyPassword, cliDir string) (*string, error) {
 		[][]byte{
 			[]byte(keyPassword + "\n"),
 			[]byte(keyPassword + "\n"),
-		}, "keys", "add", name, "--home", cliDir, "--keyring-backend", "file")
+		}, "keys", "add", name, "--home", cliDir, "--keyring-backend", "test")
 }
 
 func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {
@@ -129,7 +129,7 @@ func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, cliDir, 
 		"--name", name,
 		"--details", name,
 		"--amount", bondAmount,
-		"--keyring-backend", "file",
+		"--keyring-backend", "test",
 		"--home", nodeDir,
 		"--home-client", cliDir,
 		"--output-document", outputFile,
@@ -184,7 +184,7 @@ func (c CLI) CreateValidator(moniker, validatorPublicKey, keyPassword, bondAmoun
 		"--min-self-delegation", "1",
 		"--gas", "auto",
 		"--from", moniker,
-		"--keyring-backend", "file",
+		"--keyring-backend", "test",
 		"-y")
 }
 

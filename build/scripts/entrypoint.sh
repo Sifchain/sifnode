@@ -27,7 +27,7 @@ start_relayer() {
                                              "$ETHEREUM_CONTRACT_ADDRESS" \
                                              "$MONIKER" \
                                              --chain-id "$CHAINNET" \
-                                             --keyring-backend file
+                                             --keyring-backend test
 
     expect "Enter keyring passphrase:"
     send "$PASSWORD\n"
