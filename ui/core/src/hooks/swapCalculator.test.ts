@@ -1,5 +1,5 @@
 import { Ref, ref } from "@vue/reactivity";
-import { AssetAmount, IAssetAmount, Network, Pair, Token } from "../entities";
+import { AssetAmount, IAssetAmount, Network, Pool, Token } from "../entities";
 import { SwapState, useSwapCalculator } from "./swapCalculator";
 
 const TOKENS = {
@@ -65,13 +65,13 @@ describe("swapCalculator", () => {
 
     marketPairFinder
       .mockImplementationOnce(() => {
-        return Pair(
+        return Pool(
           AssetAmount(TOKENS.atk, "2000000000000"),
           AssetAmount(TOKENS.rwn, "1000000000000")
         );
       })
       .mockImplementationOnce(() => {
-        return Pair(
+        return Pool(
           AssetAmount(TOKENS.btk, "1000000000000"),
           AssetAmount(TOKENS.rwn, "1000000000000")
         );
@@ -119,13 +119,13 @@ describe("swapCalculator", () => {
     toAmount.value = "0";
     marketPairFinder
       .mockImplementationOnce(() =>
-        Pair(
+        Pool(
           AssetAmount(TOKENS.atk, "1000000"),
           AssetAmount(TOKENS.rwn, "1000000")
         )
       )
       .mockImplementationOnce(() =>
-        Pair(
+        Pool(
           AssetAmount(TOKENS.btk, "2000000"),
           AssetAmount(TOKENS.rwn, "1000000")
         )

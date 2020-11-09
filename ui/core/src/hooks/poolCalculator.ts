@@ -1,9 +1,8 @@
-import { computed, effect, ref } from "@vue/reactivity";
+import { computed, ref } from "@vue/reactivity";
 import { Ref } from "vue";
-import { Asset, AssetAmount, IAssetAmount, Pair } from "../entities";
-import { Fraction } from "../entities/fraction/Fraction";
+import { Asset, IAssetAmount, Pool } from "../entities";
+
 import { useField } from "./useField";
-import { assetPriceMessage, useBalances } from "./utils";
 
 export enum PoolState {
   SELECT_TOKENS,
@@ -19,14 +18,14 @@ export function usePoolCalculator(input: {
   toSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
-  marketPairFinder: (a: Asset | string, b: Asset | string) => Pair | null;
+  marketPairFinder: (a: Asset | string, b: Asset | string) => Pool | null;
 }) {
   const fromField = useField(input.fromAmount, input.fromSymbol);
   const toField = useField(input.toAmount, input.toSymbol);
 
-  // const liquidityPair = computed(() => {
+  // const liquidityPool = computed(() => {
   //   if (!fromField.fieldAmount.value || !toField.fieldAmount.value) return null;
-  //   return Pair(fromField.fieldAmount.value, toField.fieldAmount.value);
+  //   return Pool(fromField.fieldAmount.value, toField.fieldAmount.value);
   // });
 
   // const balanceMap = useBalances(input.balances);
@@ -45,25 +44,25 @@ export function usePoolCalculator(input: {
 
   // const aPerBRatioMessage = computed(() => {
   //   const asset = fromField.asset.value;
-  //   const pair = liquidityPair.value;
+  //   const pair = liquidityPool.value;
   //   return assetPriceMessage(asset, pair);
   // });
 
   // const bPerARatioMessage = computed(() => {
   //   const asset = toField.asset.value;
-  //   const pair = liquidityPair.value;
+  //   const pair = liquidityPool.value;
   //   return assetPriceMessage(asset, pair);
   // });
 
   // const shareOfPool = computed(() => {
-  //   if (!liquidityPair.value) return "";
-  //   const [ama, amb] = liquidityPair.value.amounts;
-  //   const marketPair = input.marketPairFinder(ama.asset, amb.asset);
+  //   if (!liquidityPool.value) return "";
+  //   const [ama, amb] = liquidityPool.value.amounts;
+  //   const marketPool = input.marketPoolFinder(ama.asset, amb.asset);
 
   //   // TODO: Naive calculation need to check this is correct
   //   // get the sum of the market pair
-  //   const marketPairSum = marketPair
-  //     ? marketPair.amounts.reduce(
+  //   const marketPoolSum = marketPool
+  //     ? marketPool.amounts.reduce(
   //         (acc, amount) => amount.add(acc),
   //         new Fraction("0")
   //       )
@@ -71,7 +70,7 @@ export function usePoolCalculator(input: {
 
   //   // TODO: Naive calculation need to check this is correct
   //   // get the sum of the liquidity pair being created
-  //   const liquidityPairSum = liquidityPair.value.amounts.reduce(
+  //   const liquidityPoolSum = liquidityPool.value.amounts.reduce(
   //     (acc, amount) => amount.add(acc),
   //     new Fraction("0")
   //   );
@@ -79,9 +78,9 @@ export function usePoolCalculator(input: {
   //   // TODO: Naive calculation need to check this is correct
   //   // Work out the total share of the pool by adding
   //   // all the amounts up and dividing by the liquidity pair
-  //   if (!liquidityPairSum || liquidityPairSum.equalTo("0")) return "";
-  //   return `${liquidityPairSum
-  //     .divide(marketPairSum.add(liquidityPairSum))
+  //   if (!liquidityPoolSum || liquidityPoolSum.equalTo("0")) return "";
+  //   return `${liquidityPoolSum
+  //     .divide(marketPoolSum.add(liquidityPoolSum))
   //     .multiply(new Fraction("100"))
   //     .toFixed(2)}%`;
   // });
@@ -153,7 +152,7 @@ export function removeLiquidity(input: {
   toSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   // Get a pair that represents the balance the current user has contibuted
-  userPoolFinder: (a: Asset | string, b: Asset | string) => Pair | null;
+  userPoolFinder: (a: Asset | string, b: Asset | string) => Pool | null;
 }) {
   const fromField = useField(input.fromAmount, input.fromSymbol);
   const toField = useField(input.toAmount, input.toSymbol);

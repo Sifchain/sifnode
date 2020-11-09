@@ -2,9 +2,9 @@ import { Ref, computed, effect } from "@vue/reactivity";
 import {
   Asset,
   AssetAmount,
-  CompositePair,
+  CompositePool,
   IAssetAmount,
-  Pair,
+  Pool,
 } from "../entities";
 import { useField } from "./useField";
 import { assetPriceMessage, trimZeros, useBalances } from "./utils";
@@ -16,11 +16,11 @@ export enum SwapState {
   VALID_INPUT,
 }
 
-function calculateFormattedSwapResult(pair: Pair, amount: AssetAmount) {
+function calculateFormattedSwapResult(pair: Pool, amount: AssetAmount) {
   return trimZeros(pair.calcSwapResult(amount).toFixed());
 }
 
-function calculateFormattedReverseSwapResult(pair: Pair, amount: AssetAmount) {
+function calculateFormattedReverseSwapResult(pair: Pool, amount: AssetAmount) {
   return trimZeros(pair.calcReverseSwapResult(amount).toFixed());
 }
 
@@ -31,13 +31,13 @@ export function useSwapCalculator(input: {
   toSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
-  marketPairFinder: (a: Asset | string, b: Asset | string) => Pair | null;
+  marketPairFinder: (a: Asset | string, b: Asset | string) => Pool | null;
 }) {
   // extracting selectedField so we can use it without tracking its change
   let selectedField: "from" | "to" | null = null;
   effect(() => (selectedField = input.selectedField.value));
 
-  // We use a composite market pair to work out rates
+  // We use a composite pool pair to work out rates
   const pool = computed(() => {
     if (!input.fromSymbol.value || !input.toSymbol.value) return null;
 
@@ -46,10 +46,10 @@ export function useSwapCalculator(input: {
 
     if (!fromPair || !toPair) return null;
 
-    return CompositePair(fromPair, toPair);
+    return CompositePool(fromPair, toPair);
   });
 
-  // get the balance of the from account
+  // Get the balance of the from the users account
   const balance = computed(() => {
     const balanceMap = useBalances(input.balances);
     return input.fromSymbol.value
@@ -61,7 +61,7 @@ export function useSwapCalculator(input: {
   const fromField = useField(input.fromAmount, input.fromSymbol);
   const toField = useField(input.toAmount, input.toSymbol);
 
-  // Create a price message
+  // Create a price message eg. 10.123 ATK per BTK
   const priceMessage = computed(() => {
     const amount = fromField.fieldAmount.value;
     const pair = pool.value;
@@ -69,8 +69,8 @@ export function useSwapCalculator(input: {
     return assetPriceMessage(amount, pair, 6);
   });
 
+  // Changing the "from" field recalculates the "to" amount
   effect(() => {
-    // Changing the "from" field recalculates the "to" amount
     if (
       pool.value &&
       fromField.asset.value &&
@@ -84,8 +84,8 @@ export function useSwapCalculator(input: {
     }
   });
 
+  // Changing the "to" field recalculates the "from" amount
   effect(() => {
-    // Changing the "to" field recalculates the "from" amount
     if (
       pool.value &&
       toField.asset.value &&
@@ -98,16 +98,22 @@ export function useSwapCalculator(input: {
       );
     }
   });
+
+  // Format input amount on blur
   effect(() => {
     if (input.selectedField.value === null && input.toAmount.value) {
       input.toAmount.value = trimZeros(input.toAmount.value);
     }
   });
+
+  // Format input amount on blur
   effect(() => {
     if (input.selectedField.value === null && input.fromAmount.value) {
       input.fromAmount.value = trimZeros(input.fromAmount.value);
     }
   });
+
+  // Derive state
   const state = computed(() => {
     if (!pool.value) return SwapState.SELECT_TOKENS;
     if (

@@ -1,9 +1,9 @@
 import { computed, Ref } from "@vue/reactivity";
-import { AssetAmount, Pair } from "../entities";
+import { AssetAmount, Pool } from "../entities";
 
 export function assetPriceMessage(
   amount: AssetAmount | null,
-  pair: Pair | null,
+  pair: Pool | null,
   decimals: number = -1
 ) {
   if (!pair || !amount || amount.equalTo("0")) return "";

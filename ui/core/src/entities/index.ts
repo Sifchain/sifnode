@@ -4,6 +4,7 @@ export * from "./AssetAmount";
 export * from "./Network";
 export * from "./Coin";
 export * from "./Pair";
+export * from "./Pool";
 export * from "./Token";
 export * from "./Transaction";
 export * from "./Wallet";
