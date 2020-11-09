@@ -64,6 +64,12 @@ export default defineComponent({
       toSymbol,
       marketPairFinder,
     });
+
+    function clearAmounts() {
+      fromAmount.value = "0.0";
+      toAmount.value = "0.0";
+    }
+
     async function handleNextStepClicked() {
       if (!fromFieldAmount.value)
         throw new Error("from field amount is not defined");
@@ -76,6 +82,7 @@ export default defineComponent({
         toFieldAmount.value.asset
       );
       mockTransactionState.value = "confirmed";
+      clearAmounts();
     }
 
     return {

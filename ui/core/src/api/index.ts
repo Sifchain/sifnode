@@ -23,11 +23,7 @@ export function createApi(context: ApiContext) {
   const EthereumService = ethereumService(context);
   const TokenService = tokenService(context);
   const SifService = sifService(context);
-
-  const MarketService = marketService({
-    ...context,
-    getPools: SifService.getPools,
-  });
+  const MarketService = marketService(context);
 
   return {
     MarketService,

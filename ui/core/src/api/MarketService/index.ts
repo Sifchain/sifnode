@@ -1,8 +1,10 @@
-import { Asset, AssetAmount, CompositePair, Pair } from "../../entities";
+import { RWN } from "../../constants";
+import { Asset, AssetAmount, Pair } from "../../entities";
+import { SifUnSignedClient } from "../SifService/SifClient";
 
 export type MarketServiceContext = {
   loadAssets: () => Promise<Asset[]>;
-  getPools: () => Promise<Pair[]>;
+  sifApiUrl: string;
   nativeAsset: Asset;
 };
 
@@ -28,15 +30,25 @@ function makeQuerablePromise<T>(promise: Promise<T>) {
 
 export default function createMarketService({
   loadAssets,
-  getPools,
+  sifApiUrl,
 }: MarketServiceContext) {
+  const sifClient = new SifUnSignedClient(sifApiUrl);
   const pairs = new Map<string, Pair>();
 
   async function generatePairs() {
     await loadAssets();
-    const pools = await getPools();
+    const pools = await sifClient.getPools();
+    return pools.map((poolData) => {
+      const externalAssetTicker = poolData.external_asset.ticker;
 
-    pools.map((pair) => {
+      const pair = Pair(
+        AssetAmount(RWN, poolData.native_asset_balance),
+        AssetAmount(
+          Asset.get(externalAssetTicker),
+          poolData.external_asset_balance
+        )
+      );
+
       pairs.set(pair.symbol(), pair);
     });
   }

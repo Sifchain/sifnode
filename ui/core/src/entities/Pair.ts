@@ -69,7 +69,7 @@ export function Pair(a: AssetAmount, b: AssetAmount) {
       }
 
       // Need to use Big.js for sqrt calculation
-
+      // Ok to accept a little precision loss as reverse swap amount can be rough
       const S = Big(Sa.toFixed());
       const X = Big(Xa.toFixed());
       const Y = Big(Ya.toFixed());

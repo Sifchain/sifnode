@@ -1,13 +1,4 @@
-import {
-  Ref,
-  unref,
-  computed,
-  effect,
-  // pauseTracking,
-  // resetTracking,
-  enableTracking,
-} from "@vue/reactivity";
-import { watch } from "vue";
+import { Ref, computed, effect } from "@vue/reactivity";
 import {
   Asset,
   AssetAmount,
@@ -25,24 +16,11 @@ export enum SwapState {
   VALID_INPUT,
 }
 
-function formatValue(
-  selectedField: string | null,
-  asset: Asset | null,
-  amount: string
-) {
-  if (selectedField === null) {
-    if (asset) {
-      return trimZeros(AssetAmount(asset, amount).toFixed());
-    }
-  }
-  return amount;
-}
-
-function calculateSwapResult(pair: Pair, amount: AssetAmount) {
+function calculateFormattedSwapResult(pair: Pair, amount: AssetAmount) {
   return trimZeros(pair.calcSwapResult(amount).toFixed());
 }
 
-function calculateReverseSwapResult(pair: Pair, amount: AssetAmount) {
+function calculateFormattedReverseSwapResult(pair: Pair, amount: AssetAmount) {
   return trimZeros(pair.calcReverseSwapResult(amount).toFixed());
 }
 
@@ -99,7 +77,7 @@ export function useSwapCalculator(input: {
       fromField.fieldAmount.value &&
       selectedField === "from"
     ) {
-      input.toAmount.value = calculateSwapResult(
+      input.toAmount.value = calculateFormattedSwapResult(
         pool.value,
         fromField.fieldAmount.value
       );
@@ -114,7 +92,7 @@ export function useSwapCalculator(input: {
       toField.fieldAmount.value &&
       selectedField === "to"
     ) {
-      input.fromAmount.value = calculateReverseSwapResult(
+      input.fromAmount.value = calculateFormattedReverseSwapResult(
         pool.value,
         toField.fieldAmount.value
       );

@@ -6,14 +6,12 @@ import {
   AssetAmount,
   Coin,
   Network,
-  Pair,
   TxParams,
 } from "../../entities";
 import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
-import { SifClient, SifUnSignedClient } from "./SifClient";
+import { SifClient } from "./SifClient";
 import { ensureSifAddress } from "./utils";
-import { RWN } from "../../constants/tokens";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
@@ -22,7 +20,6 @@ export type SifServiceContext = {
 
 type IClpService = {
   swap: (params: { receivedAsset: Asset; sentAmount: AssetAmount }) => any;
-  getPools: () => Promise<Pair[]>;
 };
 
 /**
@@ -52,7 +49,6 @@ export default function createSifService({
   });
 
   let client: SifClient | null = null;
-  const unsignedClient = new SifUnSignedClient(sifApiUrl);
 
   return {
     /**
@@ -193,22 +189,6 @@ export default function createSifService({
       this.getBalance(state.address);
 
       return txHash;
-    },
-
-    async getPools() {
-      const pools = await unsignedClient.getPools();
-
-      return pools.map((poolData) => {
-        const externalAssetTicker = poolData.external_asset.ticker;
-
-        return Pair(
-          AssetAmount(RWN, poolData.native_asset_balance),
-          AssetAmount(
-            Asset.get(externalAssetTicker),
-            poolData.external_asset_balance
-          )
-        );
-      });
     },
   };
 }
