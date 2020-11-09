@@ -97,9 +97,7 @@ namespace :cluster do
           input = STDIN.gets.strip.downcase
         end until %w(y n).include?(input)
 
-        if input != 'y'
-          exit(0)
-        end
+        exit(0) if input != 'y'
       end
 
       cmd = "kubectl delete namespace #{args[:namespace]}"
