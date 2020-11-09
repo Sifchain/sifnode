@@ -2,6 +2,7 @@ import { Ref, computed, effect } from "@vue/reactivity";
 import {
   Asset,
   AssetAmount,
+  IPool,
   CompositePool,
   IAssetAmount,
   Pool,
@@ -16,11 +17,11 @@ export enum SwapState {
   VALID_INPUT,
 }
 
-function calculateFormattedSwapResult(pair: Pool, amount: AssetAmount) {
+function calculateFormattedSwapResult(pair: IPool, amount: AssetAmount) {
   return trimZeros(pair.calcSwapResult(amount).toFixed());
 }
 
-function calculateFormattedReverseSwapResult(pair: Pool, amount: AssetAmount) {
+function calculateFormattedReverseSwapResult(pair: IPool, amount: AssetAmount) {
   return trimZeros(pair.calcReverseSwapResult(amount).toFixed());
 }
 

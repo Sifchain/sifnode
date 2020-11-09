@@ -2,9 +2,16 @@ import { Asset } from "./Asset";
 import { AssetAmount } from "./AssetAmount";
 import { Pair } from "./Pair";
 import Big from "big.js";
-export type Pool = ReturnType<typeof Pool>;
+import JSBI from "jsbi";
 
-export function Pool(a: AssetAmount, b: AssetAmount) {
+export type Pool = ReturnType<typeof Pool>;
+export type IPool = Omit<Pool, "poolUnits" | "calculatePoolUnits">;
+
+export function Pool(
+  a: AssetAmount,
+  b: AssetAmount,
+  poolUnits: JSBI = JSBI.BigInt("0")
+) {
   const pair = Pair(a, b);
   const amounts = pair.amounts;
   return {
@@ -14,7 +21,7 @@ export function Pool(a: AssetAmount, b: AssetAmount) {
     symbol: pair.symbol,
     contains: pair.contains,
     toString: pair.toString,
-
+    poolUnits,
     priceAsset(asset: Asset) {
       return this.calcSwapResult(AssetAmount(asset, "1"));
     },
@@ -71,10 +78,41 @@ export function Pool(a: AssetAmount, b: AssetAmount) {
 
       return AssetAmount(otherAsset, x.toFixed());
     },
+
+    // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
+    // poolerUnits = ((R + A) * (r * A + R * a))/(4 * R * A)
+    calculatePoolUnits(
+      nativeAssetAmount: AssetAmount,
+      externalAssetAmount: AssetAmount
+    ) {
+      // Not necessarily native but we will treat it like so as the formulae are symmetrical
+      const nativeAssetBalance = amounts.find(
+        (a) => a.asset.symbol === nativeAssetAmount.asset.symbol
+      );
+      const externalAssetBalance = amounts.find(
+        (a) => a.asset.symbol === externalAssetAmount.asset.symbol
+      );
+
+      if (!nativeAssetBalance || !externalAssetBalance) {
+        throw new Error("Pool does not contain given assets");
+      }
+
+      const R = nativeAssetBalance.add(nativeAssetAmount);
+      const A = externalAssetBalance.add(externalAssetAmount);
+      const r = nativeAssetAmount;
+      const a = externalAssetAmount;
+      const term1 = R.add(A); // R + A
+      const term2 = r.multiply(A).add(R.multiply(a)); // r * A + R * a
+      const numerator = term1.multiply(term2);
+      const denominator = R.multiply(A).multiply("4");
+      const lpUnits = numerator.divide(denominator);
+      const poolUnits = JSBI.add(this.poolUnits, lpUnits.quotient);
+      return [poolUnits, lpUnits];
+    },
   };
 }
 
-export function CompositePool(pair1: Pool, pair2: Pool): Pool {
+export function CompositePool(pair1: Pool, pair2: Pool): IPool {
   // The combined asset is the
   const pair1Assets = pair1.amounts.map((a) => a.asset.symbol);
   const pair2Assets = pair2.amounts.map((a) => a.asset.symbol);
@@ -100,6 +138,7 @@ export function CompositePool(pair1: Pool, pair2: Pool): Pool {
 
   return {
     amounts,
+
     priceAsset(asset: Asset) {
       return this.calcSwapResult(AssetAmount(asset, "1"));
     },

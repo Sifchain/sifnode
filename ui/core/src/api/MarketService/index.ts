@@ -1,3 +1,4 @@
+import JSBI from "jsbi";
 import { RWN } from "../../constants";
 import { Asset, AssetAmount, Pool } from "../../entities";
 import { SifUnSignedClient } from "../SifService/SifClient";
@@ -46,7 +47,8 @@ export default function createMarketService({
         AssetAmount(
           Asset.get(externalAssetTicker),
           poolData.external_asset_balance
-        )
+        ),
+        JSBI.BigInt(poolData.pool_units)
       );
 
       poolMap.set(pair.symbol(), pair);
