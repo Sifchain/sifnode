@@ -23,7 +23,7 @@ export default defineComponent({
     PriceCalculation,
   },
   setup() {
-    const { store, api } = useCore();
+    const { actions, store, api } = useCore();
     const marketPairFinder = api.MarketService.find;
     const selectedField = ref<"from" | "to" | null>(null);
 
@@ -54,6 +54,7 @@ export default defineComponent({
       shareOfPoolPercent,
       fromFieldAmount,
       toFieldAmount,
+      preExistingPool,
       state,
     } = usePoolCalculator({
       balances,
@@ -86,7 +87,7 @@ export default defineComponent({
           case PoolState.INSUFFICIENT_FUNDS:
             return "Insufficient Funds";
           case PoolState.VALID_INPUT:
-            return "Create Pool";
+            return preExistingPool.value ? "Add liquidity" : "Create Pool";
         }
       }),
       nextStepAllowed: computed(() => {
@@ -114,10 +115,18 @@ export default defineComponent({
         }
         selectedField.value = null;
       },
-      handleNextStepClicked() {
-        alert(
-          `Create Pool ${fromFieldAmount.value?.toFormatted()} alongside ${toFieldAmount.value?.toFormatted()}!`
+      async handleNextStepClicked() {
+        if (!fromFieldAmount.value)
+          throw new Error("Token A field amount is not defined");
+        if (!toFieldAmount.value)
+          throw new Error("Token B field amount is not defined");
+
+        await actions.sifWallet.addLiquidity(
+          toFieldAmount.value,
+          fromFieldAmount.value
         );
+        // TODO Tidy up transaction
+        alert("Liquidity added");
       },
       handleBlur() {
         selectedField.value = null;
@@ -172,9 +181,4 @@ export default defineComponent({
   </Layout>
 </template>
 
-<style scoped>
-.big-button {
-  width: 100%;
-}
-</style>
 

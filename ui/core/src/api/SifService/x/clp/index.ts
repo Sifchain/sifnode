@@ -1,4 +1,6 @@
 import { LcdClient, Msg } from "@cosmjs/launchpad";
+import { AssetAmount } from "../../../../entities";
+import { StdTx } from "../../../../entities/noncore/Bank";
 
 export type SwapParams = {
   sent_asset: {
@@ -34,10 +36,26 @@ type ClpQueryPools = () => Promise<
   }[]
 >;
 
+type ClpAddLiquidity = (params: {
+  base_req: {
+    from: string;
+    chain_id: string;
+  };
+  external_asset: {
+    source_chain: string;
+    symbol: string;
+    ticker: string;
+  };
+  native_asset_amount: string;
+  external_asset_amount: string;
+  signer: string;
+}) => Promise<StdTx>;
+
 export interface ClpExtension {
   readonly clp: {
     swap: ClpCmdSwap;
     getPools: ClpQueryPools;
+    addLiquidity: ClpAddLiquidity;
   };
 }
 
@@ -50,6 +68,9 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
       getPools: async () => {
         const response = await base.get(`/clp/getPools`);
         return response.result;
+      },
+      addLiquidity: async (params) => {
+        return await base.post(`/clp/addLiquidity`, params);
       },
     },
   };

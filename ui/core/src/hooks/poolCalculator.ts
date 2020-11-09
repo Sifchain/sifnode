@@ -45,7 +45,7 @@ export function usePoolCalculator(input: {
     () => !toBalance.value?.greaterThan(toField.fieldAmount.value || "0")
   );
 
-  const liquidityPool = computed(() => {
+  const preExistingPool = computed(() => {
     if (
       !fromField.fieldAmount.value ||
       !toField.fieldAmount.value ||
@@ -55,13 +55,23 @@ export function usePoolCalculator(input: {
       return null;
 
     // Find pool from marketPairFinder
-    const pool = input.marketPairFinder(
+    return input.marketPairFinder(
       fromField.asset.value.symbol,
       toField.asset.value.symbol
     );
+  });
+
+  const liquidityPool = computed(() => {
+    if (
+      !fromField.fieldAmount.value ||
+      !toField.fieldAmount.value ||
+      !fromField.asset.value ||
+      !toField.asset.value
+    )
+      return null;
 
     return (
-      pool ||
+      preExistingPool.value ||
       Pool(
         AssetAmount(fromField.asset.value, "0"),
         AssetAmount(toField.asset.value, "0")
@@ -136,6 +146,7 @@ export function usePoolCalculator(input: {
     bPerARatioMessage,
     shareOfPool,
     shareOfPoolPercent,
+    preExistingPool,
     fromFieldAmount: fromField.fieldAmount,
     toFieldAmount: toField.fieldAmount,
   };

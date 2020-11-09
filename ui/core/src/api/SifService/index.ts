@@ -20,6 +20,10 @@ export type SifServiceContext = {
 
 type IClpService = {
   swap: (params: { receivedAsset: Asset; sentAmount: AssetAmount }) => any;
+  addLiquidity: (params: {
+    nativeAssetAmount: AssetAmount;
+    externalAssetAmount: AssetAmount;
+  }) => any;
 };
 
 /**
@@ -153,6 +157,34 @@ export default function createSifService({
       };
 
       const txHash = await client.signAndBroadcast([msg], fee, params.memo);
+
+      this.getBalance(state.address);
+
+      return txHash;
+    },
+
+    async addLiquidity(params: {
+      nativeAssetAmount: AssetAmount;
+      externalAssetAmount: AssetAmount;
+    }) {
+      if (!client) throw "No client. Please sign in.";
+      const response = await client.addLiquidity({
+        base_req: { chain_id: "sifnode", from: state.address },
+        external_asset: {
+          source_chain: params.externalAssetAmount.asset.network as string,
+          symbol: params.externalAssetAmount.asset.symbol,
+          ticker: params.externalAssetAmount.asset.symbol,
+        },
+        external_asset_amount: params.externalAssetAmount.toFixed(0),
+        native_asset_amount: params.nativeAssetAmount.toFixed(0),
+        signer: state.address,
+      });
+      const fee = {
+        amount: coins(0, params.externalAssetAmount.asset.symbol),
+        gas: "200000", // need gas fee for tx to work - see genesis file
+      };
+      // alert(JSON.stringify(response));
+      const txHash = await client.signAndBroadcast(response.value.msg, fee);
 
       this.getBalance(state.address);
 
