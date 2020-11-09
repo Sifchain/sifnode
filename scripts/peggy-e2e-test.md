@@ -8,10 +8,9 @@ yarn develop
 2. open other console 
 cd testnet-contracts
 yarn migrate
-yarn peggy:setup
 sifnoded start
 
-3. open new console
+1. open new console
 cd testnet-contracts
 ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 user1 --chain-id=sifchain
 
