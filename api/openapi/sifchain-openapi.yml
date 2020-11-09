@@ -3,8 +3,6 @@ info:
   title:  Sifnode - OpenAPI spec
   description: OpenAPI spec for sifnode
   version: '0.0.1'
-servers:
-  - url: 'http://0.0.0.0:1317'
 paths:
   /:
     get:
@@ -83,10 +81,6 @@ paths:
 #                        }
 #                      ]
 #                    }
-      servers:
-        - url: 'http://0.0.0.0:1317'
-    servers:
-      - url: 'http://0.0.0.0:1317'
   /clp/getLiquidityProvider:
     get:
       description: Get Liqudity provider details
@@ -142,10 +136,6 @@ paths:
 #                        "liquidity_provider_address": "sif18agvfsynv8phnxxvs75t2te0286eu8t6msgc0r"
 #                      }
 #                    }
-      servers:
-        - url: 'http://0.0.0.0:1317'
-    servers:
-      - url: 'http://0.0.0.0:1317'
 
 
   /clp/getPool:
@@ -204,10 +194,6 @@ paths:
 #                        "pool_address": "sif1vdjxzumgtae8wmstpv9skzctpv9skzct72zwra"
 #                      }
 #                    }
-      servers:
-        - url: 'http://0.0.0.0:1317'
-    servers:
-      - url: 'http://0.0.0.0:1317'
 
   /clp/decommissionPool:
     post:
@@ -284,10 +270,7 @@ paths:
 #                '0':
 #                  value: >-
 #                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/DecommissionPool","value":{"signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ticker":"cdash"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
-      servers:
-        - url: 'http://0.0.0.0:1317'
-    servers:
-      - url: 'http://0.0.0.0:1317'
+
   /clp/removeLiquidity:
     post:
       description: Remove Liquidity from pool
@@ -390,10 +373,6 @@ paths:
 #                '0':
 #                  value: >-
 #                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/RemoveLiquidity","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"Ethereum","symbol":"ETH","ticker":"ceth"},"WBasisPoints":"1000","Asymmetry":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
-      servers:
-        - url: 'http://0.0.0.0:1317'
-    servers:
-      - url: 'http://0.0.0.0:1317'
   /clp/addLiquidity:
     post:
       description: Add Liquidity to Pool
@@ -496,10 +475,6 @@ paths:
 #                '0':
 #                  value: >-
 #                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/AddLiquidity","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"Ethereum","symbol":"ETH","ticker":"ceth"},"NativeAssetAmount":"1000","ExternalAssetAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
-      servers:
-        - url: 'http://0.0.0.0:1317'
-    servers:
-      - url: 'http://0.0.0.0:1317'
   /clp/swap:
     post:
       description: Swap tokens
@@ -620,10 +595,7 @@ paths:
 #                '0':
 #                  value: >-
 #                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/Swap","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","SentAsset":{"source_chain":"Ethereum","symbol":"ETH","ticker":"eth"},"ReceivedAsset":{"source_chain":"Dash","symbol":"Dash","ticker":"cdash"},"SentAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
-      servers:
-        - url: 'http://0.0.0.0:1317'
-    servers:
-      - url: 'http://0.0.0.0:1317'
+
   /clp/createPool:
     post:
       description: Create new pool
@@ -726,7 +698,3 @@ paths:
 #                '0':
 #                  value: >-
 #                    {"type":"cosmos-sdk/StdTx","value":{"msg":[{"type":"clp/CreatePool","value":{"Signer":"sif1rd4mfxn48xlks7p7kjgftwtt6hdwj30pedz8ss","ExternalAsset":{"source_chain":"Ethereum","symbol":"ETH","ticker":"ceth"},"NativeAssetAmount":"1000","ExternalAssetAmount":"10"}}],"fee":{"amount":[],"gas":"200000"},"signatures":null,"memo":""}}
-      servers:
-        - url: 'http://0.0.0.0:1317'
-    servers:
-      - url: 'http://0.0.0.0:1317'
