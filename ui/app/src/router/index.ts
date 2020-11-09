@@ -25,7 +25,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/pool/add-liquidity",
     name: "AddLiquidity",
-    component: AddLiquidity,
+    component: CreatePair,
   },
   {
     path: "/pool/create-pair",
