@@ -1,21 +1,23 @@
 #
 # Build
 #
-FROM golang:1.15.2 AS build
+FROM golang:1.15 AS build
 
 ENV GOBIN=/go/bin
 ENV GOPATH=/go
-ENV CGO_ENABLED=1
+ENV CGO_ENABLED=0
 ENV GOOS=linux
 
 # Empty dir for the db data
-WORKDIR /ebrelayer
+RUN mkdir /data
+
+WORKDIR /sif
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
 
-RUN go install ./cmd/ebrelayer
+RUN make install
 
 #
 # Main
