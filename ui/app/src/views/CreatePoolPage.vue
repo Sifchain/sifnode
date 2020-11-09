@@ -34,6 +34,8 @@ export default defineComponent({
       toAmount,
     } = useCurrencyFieldState();
 
+    toSymbol.value = "rwn";
+
     const priceMessage = ref("");
 
     const {
@@ -49,7 +51,7 @@ export default defineComponent({
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
-      shareOfPool,
+      shareOfPoolPercent,
       fromFieldAmount,
       toFieldAmount,
       state,
@@ -126,7 +128,7 @@ export default defineComponent({
       handleToFocused() {
         selectedField.value = "to";
       },
-      shareOfPool,
+      shareOfPoolPercent,
       connectedText,
     };
   },
@@ -160,7 +162,7 @@ export default defineComponent({
     <PriceCalculation>
       <div>{{ aPerBRatioMessage }}</div>
       <div>{{ bPerARatioMessage }}</div>
-      <div>{{ shareOfPool }}</div>
+      <div>{{ shareOfPoolPercent }}</div>
     </PriceCalculation>
     <ActionsPanel
       @nextstepclick="handleNextStepClicked"

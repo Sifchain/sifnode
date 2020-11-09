@@ -4,7 +4,7 @@ import { AssetAmount } from "./AssetAmount";
 export type Pair = ReturnType<typeof Pair>;
 
 export function Pair(a: AssetAmount, b: AssetAmount) {
-  const amounts = [a, b];
+  const amounts: [AssetAmount, AssetAmount] = [a, b];
 
   return {
     amounts,
