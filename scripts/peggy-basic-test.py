@@ -6,8 +6,8 @@ import time
 VALIDATOR = "user1"
 USER = "user2"
 ROWAN = "rwn"
-PEGGYETH = "peggyeth"
-PEGGYROWAN = "peggyrwn"
+PEGGYETH = "ceth"
+PEGGYROWAN = "erwn"
 ETH = "eth"
 SLEEPTIME = 5
 AMOUNT = 10
@@ -66,10 +66,10 @@ def create_claim(user, validator, amount, denom, claim_type):
 
 def burn_peggy_coin(user, validator, amount):
     command_line = """sifnodecli tx ethbridge burn {} \
-    0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} peggyeth \
+    0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} {} \
     --ethereum-chain-id=3 --from={} \
     --yes""".format(get_user_account(user),
-                    amount, user)
+                    amount, PEGGYETH, user)
     # print(command_line)
     return get_shell_output(command_line)
 
@@ -83,7 +83,7 @@ def lock_rowan(user, amount):
 
 def test_case_1():
     print(
-        "########## Test Case One Start: lock eth in ethereum then mint peggyeth in sifchain"
+        "########## Test Case One Start: lock eth in ethereum then mint ceth in sifchain"
     )
     balance_before_tx = int(get_balance(USER, PEGGYETH))
     print("Before lock transaction {}'s balance of {} is {}".format(
@@ -100,13 +100,13 @@ def test_case_1():
 
 def test_case_2():
     print(
-        "########## Test Case Two Start: burn peggyeth in sifchain then eth back to ethereum"
+        "########## Test Case Two Start: burn ceth in sifchain then eth back to ethereum"
     )
     balance_before_tx = int(get_balance(USER, PEGGYETH))
     print("Before burn transaction {}'s balance of {} is {}".format(
         USER, PEGGYETH, balance_before_tx))
     if balance_before_tx < AMOUNT:
-        print_error_message("No enough peggyeth to burn")
+        print_error_message("No enough ceth to burn")
         return
     print("Send burn claim to Sifchain...")
     burn_peggy_coin(USER, VALIDATOR, AMOUNT)
@@ -139,7 +139,7 @@ def test_case_3():
 
 def test_case_4():
     print(
-        "########## Test Case Four Start: burn peggyrwn in ethereum then transfer rwn back to sifchain"
+        "########## Test Case Four Start: burn erwn in ethereum then transfer rwn back to sifchain"
     )
     balance_before_tx = int(get_balance(USER, ROWAN))
     print("Before lock transaction {}'s balance of {} is {}".format(

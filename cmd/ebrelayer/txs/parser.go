@@ -18,8 +18,9 @@ import (
 )
 
 const (
-	nullAddress   = "0x0000000000000000000000000000000000000000"
-	defaultPrefix = "c"
+	nullAddress           = "0x0000000000000000000000000000000000000000"
+	defaultSifchainPrefix = "c"
+	defaultEthereumPrefix = "e"
 )
 
 // EthereumEventToEthBridgeClaim parses and packages an Ethereum event struct with a validator address in an EthBridgeClaim msg
@@ -54,11 +55,11 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event *types.Ethereum
 			return witnessClaim, errors.New("symbol \"eth\" must have null address set as token address")
 		}
 	case ethbridge.BurnText:
-		if !strings.Contains(symbol, defaultPrefix) {
-			log.Printf("Can only relay burns of '%v' prefixed tokens", defaultPrefix)
+		if !strings.Contains(symbol, defaultEthereumPrefix) {
+			log.Printf("Can only relay burns of '%v' prefixed tokens", defaultEthereumPrefix)
 			return witnessClaim, errors.New("symbol of burn token must start with prefix")
 		}
-		res := strings.SplitAfter(symbol, defaultPrefix)
+		res := strings.SplitAfter(symbol, defaultEthereumPrefix)
 		symbol = strings.Join(res[1:], "")
 	}
 
@@ -147,11 +148,11 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 			ethereumReceiver = common.HexToAddress(val)
 		case types.Symbol.String():
 			if claimType == types.MsgBurn {
-				if !strings.Contains(val, defaultPrefix) {
-					log.Printf("Can only relay burns of '%v' prefixed coins", defaultPrefix)
-					return types.CosmosMsg{}, errors.New("can only relay burns of '%v' prefixed coins" + defaultPrefix)
+				if !strings.Contains(val, defaultSifchainPrefix) {
+					log.Printf("Can only relay burns of '%v' prefixed coins", defaultSifchainPrefix)
+					return types.CosmosMsg{}, errors.New("can only relay burns of '%v' prefixed coins" + defaultSifchainPrefix)
 				}
-				res := strings.SplitAfter(val, defaultPrefix)
+				res := strings.SplitAfter(val, defaultSifchainPrefix)
 				symbol = strings.ToUpper(strings.Join(res[1:], ""))
 			} else {
 				symbol = strings.ToUpper(val)
