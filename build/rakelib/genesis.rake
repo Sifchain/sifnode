@@ -14,7 +14,7 @@ namespace :genesis do
     end
 
     desc "Boot the new scaffolded network in docker-compose"
-    task :boot, [:chainnet, :eth_address, :eth_keys, :eth_websocket] do |t, args|
+    task :boot, [:chainnet, :eth_bridge_registry_address, :eth_keys, :eth_websocket] do |t, args|
       trap('SIGINT') { puts "Exiting..."; exit }
 
       if args[:chainnet].nil?
@@ -22,7 +22,7 @@ namespace :genesis do
         exit(1)
       end
 
-      with_eth = eth_config(eth_address: args[:eth_address],
+      with_eth = eth_config(eth_address: args[:eth_bridge_registry_address],
                             eth_keys: args[:eth_keys].split(" "),
                             eth_websocket: args[:eth_websocket])
 
