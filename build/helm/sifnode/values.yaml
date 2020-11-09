@@ -45,9 +45,10 @@ sifnode:
 sifnodecli:
 
 ebrelayer:
+  enabled: false
   image:
     repository: sifchain/ebrelayer
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     tag: "testnet"
   env:
     ethereumContractAddress: ''
