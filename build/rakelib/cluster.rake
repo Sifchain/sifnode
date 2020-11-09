@@ -110,31 +110,47 @@ namespace :cluster do
 
         system({"KUBECONFIG" => kubeconfig(args) }, cmd)
       end
-
-      desc "Deploy sifnode and ebrelayer"
-      task :ebrelayer, [:chainnet, :provider, :namespace, :image, :image_tag, :ethereum_websocket_address, :ethereum_contract_address, :ethereum_private_key] do |t, args|
-        check_args(args)
-
-        cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
-          --set sifnode.env.chainnet=#{args[:chainnet]} \
-          --install -n #{ns(args)} --create-namespace \
-          --set image.tag=#{image_tag(args)} \
-          --set image.repository=#{image_repository(args)} \
-          --set ebrelayer.enabled=true \
-          --set ebrelayer.image.tag=#{image_tag(args)} \
-          --set ebrelayer.env.ethereumWebsocketAddress=#{args[:ethereum_websocket_address]} \
-          --set ebrelayer.env.ethereumContractAddress=#{args[:ethereum_contract_address]} \
-          --set ebrelayer.env.moniker=#{args[:chainnet]} \
-          --set ebrelayer.env.ethPrivateKey=#{args[:ethereum_private_key]}
-        }
-
-        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
-      end
     end
 
     task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
       check_args(args)
       cmd = "helm delete sifnode -n #{ns(args)}"
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+    end
+  end
+
+  desc "Deploy ebrelayer"
+  namespace :ebrelayer do
+    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :ethereum_websocket_address, :ethereum_contract_address, :ethereum_private_key] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
+        --set sifnode.env.chainnet=#{args[:chainnet]} \
+        --install -n #{ns(args)} \
+        --set image.tag=#{image_tag(args)} \
+        --set image.repository=#{image_repository(args)} \
+        --set ebrelayer.enabled=true \
+        --set ebrelayer.image.tag=#{image_tag(args)} \
+        --set ebrelayer.env.ethereumWebsocketAddress=#{args[:ethereum_websocket_address]} \
+        --set ebrelayer.env.ethereumContractAddress=#{args[:ethereum_contract_address]} \
+        --set ebrelayer.env.moniker=#{args[:chainnet]} \
+        --set ebrelayer.env.ethPrivateKey=#{args[:ethereum_private_key]}
+      }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+    end
+
+    task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
+        --set sifnode.env.chainnet=#{args[:chainnet]} \
+        --install -n #{ns(args)} \
+        --set image.tag=#{image_tag(args)} \
+        --set image.repository=#{image_repository(args)} \
+        --set ebrelayer.enabled=false
+      }
+
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
   end
