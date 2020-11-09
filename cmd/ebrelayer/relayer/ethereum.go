@@ -153,12 +153,14 @@ func (sub EthereumSub) Start() {
 		// vLog is raw event data
 		case vLog := <-logs:
 			sub.Logger.Info(fmt.Sprintf("Witnessed tx %s on block %d\n", vLog.TxHash.Hex(), vLog.BlockNumber))
+			log.Println("Found event from the etherem bridgebank contract: ", types.LogLock.String())
 			var err error
 			switch vLog.Topics[0].Hex() {
 			case eventLogBurnSignature:
 				err = sub.handleEthereumEvent(clientChainID, bridgeBankAddress, bridgeBankContractABI,
 					types.LogBurn.String(), vLog)
 			case eventLogLockSignature:
+				log.Println("Found loglock event from the etherem bridgebank contract: ", types.LogLock.String())
 				err = sub.handleEthereumEvent(clientChainID, bridgeBankAddress, bridgeBankContractABI,
 					types.LogLock.String(), vLog)
 			case eventLogNewProphecyClaimSignature:
