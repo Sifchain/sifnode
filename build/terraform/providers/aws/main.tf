@@ -206,7 +206,7 @@ resource "kubectl_manifest" "efs_pv_sifnode" {
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "${var.efs_pv_sifnode_name}"
+  name: "${var.efs_pv_sifnoded_name}"
 spec:
   capacity:
     storage: "${var.efs_pv_capacity}"

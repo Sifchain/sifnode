@@ -31,16 +31,16 @@ spec:
           image: "{{ .Values.ebrelayer.image.repository }}:{{ .Values.ebrelayer.image.tag }}"
           imagePullPolicy: {{ .Values.ebrelayer.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "ebrelayer init $NODE_HOST $ETHEREUM_WEBSOCKET_ADDRESS $ETHEREUM_CONTRACT_ADDRESS $MONIKER --chain-id $CHAINNET --keyring-backend file"]
+          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER --chain-id $CHAINNET --keyring-backend test"]
           env:
             - name: NODE_HOST
               value: "tcp://{{ .Chart.Name }}.{{ .Release.Namespace }}.svc.cluster.local:26657"
             - name: CHAINNET
               value: {{ .Values.sifnode.env.chainnet }}
-            - name: ETHEREUM_WEBSOCKET_ADDRESS
-              value: {{ .Values.ebrelayer.env.ethereumWebsocketAddress }}
-            - name: ETHEREUM_CONTRACT_ADDRESS
-              value: {{ .Values.ebrelayer.env.ethereumContractAddress }}
+            - name: ETH_WEBSOCKET_ADDRESS
+              value: {{ .Values.ebrelayer.env.ethWebsocketAddress }}
+            - name: ETH_BRIDGE_REGISTRY_ADDRESS
+              value: {{ .Values.ebrelayer.env.ethBridgeRegistryAddress }}
             - name: MONIKER
               value: {{ .Values.ebrelayer.env.moniker }}
             - name: ETHEREUM_PRIVATE_KEY

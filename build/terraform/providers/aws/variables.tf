@@ -73,14 +73,14 @@ variable "efs_csi_driver" {
   default     = "github.com/kubernetes-sigs/aws-efs-csi-driver/deploy/kubernetes/overlays/stable/?ref=master"
 }
 
-variable "efs_pv_sifnode_name" {
+variable "efs_pv_sifnoded_name" {
   description = "The name of the PV object"
-  default     = "efs-sifnode"
+  default     = "efs-sifnoded"
 }
 
 variable "efs_pv_sifnodecli_name" {
   description = "The name of the PV object"
-  default     = "efs-sifnode-cli"
+  default     = "efs-sifnodecli"
 }
 
 variable "efs_pv_storageclass" {

@@ -51,8 +51,8 @@ ebrelayer:
     pullPolicy: Always
     tag: "testnet"
   env:
-    ethereumContractAddress: ''
-    ethereumWebsocketAddress: ''
+    ethWebsocketAddress: ''
+    ethBridgeRegistryAddress: ''
     ethPrivateKey: ''
     moniker: ''
 
@@ -61,7 +61,7 @@ service:
   port: 26656
 
 pvc:
-  sifnodeName: efs-claim-sifnode
+  sifnodeName: efs-claim-sifnoded
   sifnodecliName: efs-claim-sifnodecli
   storageclass: efs-sc
   size: 5Gi
