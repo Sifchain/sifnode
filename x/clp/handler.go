@@ -15,15 +15,15 @@ func NewHandler(k Keeper) sdk.Handler {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
 		case MsgCreatePool:
-			return handleMsgCreatePool(ctx, k, msg)
+			return HandleMsgCreatePool(ctx, k, msg)
 		case MsgDecommissionPool:
-			return handleMsgDecommissionPool(ctx, k, msg)
+			return HandleMsgDecommissionPool(ctx, k, msg)
 		case MsgAddLiquidity:
-			return handleMsgAddLiquidity(ctx, k, msg)
+			return HandleMsgAddLiquidity(ctx, k, msg)
 		case MsgRemoveLiquidity:
-			return handleMsgRemoveLiquidity(ctx, k, msg)
+			return HandleMsgRemoveLiquidity(ctx, k, msg)
 		case MsgSwap:
-			return handleMsgSwap(ctx, k, msg)
+			return HandleMsgSwap(ctx, k, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", ModuleName, msg)
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
@@ -31,7 +31,7 @@ func NewHandler(k Keeper) sdk.Handler {
 	}
 }
 
-func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissionPool) (*sdk.Result, error) {
+func HandleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissionPool) (*sdk.Result, error) {
 	// Verify pool
 	pool, err := keeper.GetPool(ctx, msg.Ticker)
 	if err != nil {
@@ -48,7 +48,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	// iterate over Lp list and refund them there tokens
 	// Return both RWN and EXTERNAL ASSET
 	for _, lp := range lpList {
-		withdrawNativeAsset, withdrawExternalAsset, _, _ := calculateWithdrawal(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, 10000, 0)
+		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateWithdrawal(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, 10000, 0)
 		poolUnits = poolUnits - lp.LiquidityProviderUnits
 		nativeAssetBalance = nativeAssetBalance - withdrawNativeAsset
 		externalAssetBalance = externalAssetBalance - withdrawExternalAsset
@@ -81,7 +81,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
+func HandleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
 	// Verify min threshold
 	MinThreshold := keeper.GetParams(ctx).MinCreatePoolThreshold
 	if msg.NativeAssetAmount < MinThreshold {
@@ -142,7 +142,7 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) (*sdk.Result, error) {
+func HandleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) (*sdk.Result, error) {
 	createNewLP := false
 	// Get pool
 	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker)
@@ -210,7 +210,7 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiquidity) (*sdk.Result, error) {
+func HandleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiquidity) (*sdk.Result, error) {
 	// Get pool
 	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker)
 	if err != nil {
@@ -225,7 +225,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	poolOriginalEB := pool.ExternalAssetBalance
 	poolOriginalNB := pool.NativeAssetBalance
 	//Calculate amount to withdraw
-	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := calculateWithdrawal(pool.PoolUnits,
+	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
 		msg.WBasisPoints, msg.Asymmetry)
 
@@ -243,7 +243,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 
 	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry > 0 {
-		swapResult, _, _, swappedPool, err := swapOne(GetSettlementAsset(), swapAmount, msg.ExternalAsset, pool)
+		swapResult, _, _, swappedPool, err := SwapOne(GetSettlementAsset(), swapAmount, msg.ExternalAsset, pool)
 		if err != nil {
 			return nil, types.ErrSwapping
 		}
@@ -256,7 +256,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		pool = swappedPool
 	}
 	if msg.Asymmetry < 0 {
-		swapResult, _, _, swappedPool, err := swapOne(msg.ExternalAsset, swapAmount, GetSettlementAsset(), pool)
+		swapResult, _, _, swappedPool, err := SwapOne(msg.ExternalAsset, swapAmount, GetSettlementAsset(), pool)
 		if err != nil {
 			return nil, types.ErrSwapping
 		}
@@ -320,7 +320,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, error) {
+func HandleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, error) {
 	var (
 		liquidityFee uint
 		tradeSlip    uint
@@ -362,7 +362,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// If its one way we can skip this if condition and add balance to users account from outpool
 	if msg.SentAsset != nativeAsset && msg.ReceivedAsset != nativeAsset {
 
-		emitAmount, lp, ts, finalPool, err := swapOne(sentAsset, sentAmount, nativeAsset, inPool)
+		emitAmount, lp, ts, finalPool, err := SwapOne(sentAsset, sentAmount, nativeAsset, inPool)
 		if err != nil {
 			return nil, err
 		}
@@ -382,7 +382,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		}
 	}
 	// Calculating amount user receives
-	emitAmount, lp, ts, finalPool, err := swapOne(sentAsset, sentAmount, receivedAsset, outPool)
+	emitAmount, lp, ts, finalPool, err := SwapOne(sentAsset, sentAmount, receivedAsset, outPool)
 	if err != nil {
 		return nil, err
 	}
@@ -420,7 +420,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 //------------------------------------------------------------------------------------------------------------------
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-func swapOne(from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint, Pool, error) {
+func SwapOne(from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint, Pool, error) {
 
 	var X uint
 	var Y uint
@@ -452,7 +452,7 @@ func swapOne(from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint
 
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-func calculateWithdrawal(poolUnits uint, nativeAssetBalance uint,
+func CalculateWithdrawal(poolUnits uint, nativeAssetBalance uint,
 	externalAssetBalance uint, lpUnits uint, wBasisPoints int, asymmetry int) (uint, uint, uint, uint) {
 	poolUnitsF := float64(poolUnits)
 	nativeAssetBalanceF := float64(nativeAssetBalance)
