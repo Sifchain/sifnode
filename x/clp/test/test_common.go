@@ -39,17 +39,15 @@ func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
 	app := simapp.Setup(isCheckTx)
 	ctx := app.BaseApp.NewContext(isCheckTx, abci.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
-	// UNDONE: is this needed?
 	initTokens := sdk.TokensFromConsensusPower(1000)
 	app.SupplyKeeper.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
-	// UNDONE: is this needed?
 	_ = simapp.AddTestAddrs(app, ctx, 6, initTokens)
 
 	return app, ctx
 }
 
 func CreateTestAppClp(isCheckTx bool) (sdk.Context, keeper.Keeper) {
-	app, ctx := CreateTestApp(false)
+	app, ctx := CreateTestApp(isCheckTx)
 	return ctx, app.ClpKeeper
 }
 
