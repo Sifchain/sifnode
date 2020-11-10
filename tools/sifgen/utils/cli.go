@@ -22,7 +22,7 @@ var (
 )
 
 type CLIUtils interface {
-	Reset() error
+	Reset([]string) error
 	ResetState(string) (*string, error)
 	CreateDir(string) error
 	CurrentChainID() (*string, error)
