@@ -3,7 +3,7 @@ BINARY?=sifnoded
 GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
-VERSION:=$(shell cat version)
+VERSION:=$(shell git describe --tags | sed 's/^monkey-bars-testnet-/0.0./')
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
