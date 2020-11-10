@@ -24,7 +24,7 @@ git clone ssh://git@github.com/Sifchain/sifnode && cd sifnode
 3. Checkout the latest testnet release:
 
 ```
-git checkout tags/monkey-bars-testnet-3
+git checkout tags/monkey-bars-testnet-4
 ```
 
 4. Build:
@@ -44,7 +44,7 @@ make install
     5.2 Scaffold your new node:
     
     ```
-    rake 'genesis:sifnode:scaffold[monkey-bars, bd17ce50e4e07b5a7ffc661ed8156ac8096f57ce@35.166.247.98:26656, http://35.166.247.98:26657/genesis]'
+    rake 'genesis:sifnode:scaffold[monkey-bars, ec03640d0dcb1160f8cf73c33c63b64a55c93906@35.166.247.98:26656, http://35.166.247.98:26657/genesis]'
     ```
 
 6. If you're an existing node operator:
@@ -58,13 +58,13 @@ make install
     6.2 Download the latest genesis file:
 
     ```
-    wget -O ~/.sifnoded/config/genesis.json https://raw.githubusercontent.com/Sifchain/networks/feature/genesis/testnet/monkey-bars-testnet-3/genesis.json
+    wget -O ~/.sifnoded/config/genesis.json https://raw.githubusercontent.com/Sifchain/networks/feature/genesis/testnet/monkey-bars-testnet-4/genesis.json
     ```
    
     6.3 Update your persistent peers in the file `~/.sifnoded/config/config.toml` so that it reads: 
 
     ```
-    persistent_peers = "bd17ce50e4e07b5a7ffc661ed8156ac8096f57ce@35.166.247.98:26656,f8f5d01fdc73e1b536084bbe42d0a81479f882b3@35.166.247.98:28002,f27548f03a4179b7a4dc3c8a62fcfc5f84be15ff@35.166.247.98:28004,dd35505768be507af3c76f5a4ecdb272537e398f@35.166.247.98:28006"
+    persistent_peers = "ec03640d0dcb1160f8cf73c33c63b64a55c93906@35.166.247.98:26656,04fad3abcf8d5c6d94d7815f9485830c280a8d73@35.166.247.98:28002,330c1b876d916f7518562b33d2749e3d1fcf7817@35.166.247.98:28004,16d9c23623e42723dfcf3dcbb11d98d989689a7a@35.166.247.98:28006"
     ```
 
 7. Start your node:
@@ -85,21 +85,21 @@ and you should see the following main validator nodes for Sifchain:
 
 ```
 validators:
-- address: sifvalcons1zdzdqejfsn49ntnzynl5aukctaj66mpkt5e6vj
-  pubkey: sifvalconspub1zcjduepqa0ams0c3d0n0f4jadfnreh0dxlmknk46x39ngumv7hgkzahgregs99qjpz
-  proposerpriority: -15000
+- address: sifvalcons1z6jhzs0f7v02ny6k5x5rekf7gyx9400zyxmzve
+  pubkey: sifvalconspub1zcjduepq4zyan4mlm8fpku5jd7zu7f59k863x4g2wrzkku0285z6xylppk6q6nkzrk
+  proposerpriority: -5000
   votingpower: 5000
-- address: sifvalcons1g7gw770x0qnpd8y86sr6ggwp9t84dvgrff9jaw
-  pubkey: sifvalconspub1zcjduepqw4f7kgju5uh4c8vu6zmgwp9f5nmqtgrjaqcm28ymjv7e9p0vqxxq0t6ujv
-  proposerpriority: 5000
+- address: sifvalcons192ljdnz3u6d7l7vg9zgstlnqyczqhwz4wj5ltz
+  pubkey: sifvalconspub1zcjduepq8zdt2xty2kk87zrzn95crwjkpmhmzxu6w05wtn08dxhq0qnj090sxg634l
+  proposerpriority: -5000
   votingpower: 5000
-- address: sifvalcons1daxr5v7kv2fy6wfzr3nrgajhaa995zz37ag6f4
-  pubkey: sifvalconspub1zcjduepqg6ueqp8ev30wskud7jcgaet632c4n8qzq7s8yyp5xmgr43x9x69s397kpy
-  proposerpriority: 5000
+- address: sifvalcons1v38zwh0f9hwq5x6hfna35pr9x5r5wpydqfgyat
+  pubkey: sifvalconspub1zcjduepqefzlm5pymv84kfxdrzm627pw9ty6v2zd49dzuc3aan9z2pftk4rqckj2gz
+  proposerpriority: -5000
   votingpower: 5000
-- address: sifvalcons1kgc7jvs2azzx8jjm97sn0vwnyk7kl6treeg5t4
-  pubkey: sifvalconspub1zcjduepq9skuxclrd5z2q8f8le0xlpe0pd9uz2uvh8e9c4l7as3ul6a7y86qtlhvzr
-  proposerpriority: 5000
+- address: sifvalcons1kulx53jp3vnhmagsha5ncnsuewqf3s00nwzffv
+  pubkey: sifvalconspub1zcjduepqrs8w58a59cu3wtt03rtm0c03gyt84f8pxwvtp7cptly39vhcdyxsyqmf62
+  proposerpriority: 15000
   votingpower: 5000
 ```
 
@@ -139,9 +139,9 @@ sifnodecli tx staking create-validator \
 New node operators may also use the following peer addresses:
 
 ```
-f8f5d01fdc73e1b536084bbe42d0a81479f882b3@35.166.247.98:28002
-f27548f03a4179b7a4dc3c8a62fcfc5f84be15ff@35.166.247.98:28004
-dd35505768be507af3c76f5a4ecdb272537e398f@35.166.247.98:28006
+04fad3abcf8d5c6d94d7815f9485830c280a8d73@35.166.247.98:28002
+330c1b876d916f7518562b33d2749e3d1fcf7817@35.166.247.98:28004
+16d9c23623e42723dfcf3dcbb11d98d989689a7a@35.166.247.98:28006
 ```
 
 ## Additional Resources
