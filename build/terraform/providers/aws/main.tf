@@ -195,13 +195,15 @@ data "kustomization" "efs_manifests" {
   path = var.efs_csi_driver
 }
 
-resource "kustomization_resource" "efs_resources" {
-  for_each   = data.kustomization.efs_manifests.ids
-  manifest   = data.kustomization.efs_manifests.manifests[each.value]
-  depends_on = [module.eks]
+resource "kustomization_resource" "efs_csi_driver" {
+  for_each = data.kustomization.efs_manifests.ids
+  manifest = data.kustomization.efs_manifests.manifests[each.value]
+  lifecycle {
+      ignore_changes = all
+  }
 }
 
-resource "kubectl_manifest" "efs_pv_sifnode" {
+resource "kubectl_manifest" "efs_pv_sifnoded" {
   yaml_body = <<YAML
 apiVersion: v1
 kind: PersistentVolume
