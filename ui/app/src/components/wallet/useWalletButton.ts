@@ -3,7 +3,7 @@ import { computed } from "@vue/reactivity";
 
 const shorten = (num: number) => (str: string) => str.slice(0, num) + "...";
 
-export function useWalletButton({ addrLen = 5 }: { addrLen: number }) {
+export function useWalletButton(props?: { addrLen?: number }) {
   const { store } = useCore();
 
   const connected = computed(
@@ -13,7 +13,7 @@ export function useWalletButton({ addrLen = 5 }: { addrLen: number }) {
   const connectedText = computed(() =>
     [store.wallet.eth.address, store.wallet.sif.address]
       .filter(Boolean)
-      .map(shorten(addrLen))
+      .map(shorten(props?.addrLen || 5))
       .join(", ")
   );
 

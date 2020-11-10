@@ -22,7 +22,9 @@ export default defineComponent({
     amount: String,
     symbol: String,
     available: String,
+    selectable: { type: Boolean, default: true },
     max: { type: Boolean, default: false },
+    symbolFixed: { type: Boolean, default: false },
   },
   inheritAttrs: false,
   emits: [
@@ -31,7 +33,7 @@ export default defineComponent({
     "selectsymbol",
     "update:amount",
     "update:symbol",
-    "max-clicked",
+    "maxclicked",
   ],
   components: { BalanceField, AssetItem, SifButton, Caret, SifInput },
   setup(props, context) {
@@ -66,7 +68,7 @@ export default defineComponent({
           ><SifButton
             v-if="max"
             class="max-button"
-            @click="$emit('max-clicked')"
+            @click="$emit('maxclicked')"
             small
             ghost
             >Max</SifButton
@@ -79,8 +81,9 @@ export default defineComponent({
       <label class="label">
         <BalanceField :symbol="localSymbol" />
       </label>
+
       <SifButton
-        v-if="localSymbol !== null"
+        v-if="localSymbol !== null && !symbolFixed"
         secondary
         block
         @click="$emit('selectsymbol')"
@@ -88,7 +91,17 @@ export default defineComponent({
         <span><AssetItem :symbol="localSymbol" /></span>
         <span><Caret /></span>
       </SifButton>
-      <SifButton v-else primary block @click="$emit('selectsymbol')">
+      <div v-if="localSymbol !== null && symbolFixed">
+        <AssetItem :symbol="localSymbol" />
+      </div>
+
+      <SifButton
+        :disabled="!selectable"
+        v-if="localSymbol === null"
+        primary
+        block
+        @click="$emit('selectsymbol')"
+      >
         <span>Select</span>
       </SifButton>
     </div>
@@ -96,6 +109,13 @@ export default defineComponent({
 </template>
 
 <style lang="scss" scoped>
+.fixed-symbol {
+  width: 100%;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
 .currency-field {
   padding: 4px 15px 15px 15px;
   border-radius: $br_sm;

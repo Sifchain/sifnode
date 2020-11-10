@@ -125,7 +125,6 @@ export function usePoolCalculator(input: {
       )} ${bAmount.asset.symbol.toUpperCase()} per ${aAmount.asset.symbol.toUpperCase()}`;
   });
 
-  // Bit hard to work out how much of this works without getting clarity
   const state = computed(() => {
     if (!input.fromSymbol.value || !input.toSymbol.value)
       return PoolState.SELECT_TOKENS;

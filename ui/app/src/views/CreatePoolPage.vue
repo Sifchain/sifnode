@@ -154,11 +154,12 @@ export default defineComponent({
           @fromfocus="handleFromFocused"
           @fromblur="handleBlur"
           @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
+          :fromSymbolSelectable="connected"
           v-model:toAmount="toAmount"
           v-model:toSymbol="toSymbol"
           @tofocus="handleToFocused"
           @toblur="handleBlur"
-          @tosymbolclicked="handleToSymbolClicked(requestOpen)"
+          toSymbolFixed
       /></template>
       <template v-slot:default="{ requestClose }">
         <SelectTokenDialog

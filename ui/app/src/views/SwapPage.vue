@@ -35,7 +35,7 @@ export default defineComponent({
       toSymbol,
       toAmount,
     } = useCurrencyFieldState();
-    const mockTransactionState = ref<
+    const transactionState = ref<
       "selecting" | "confirming" | "confirmed" | "failed"
     >("selecting");
     const selectedField = ref<"from" | "to" | null>(null);
@@ -43,7 +43,7 @@ export default defineComponent({
       addrLen: 8,
     });
     function requestTransactionModalClose() {
-      mockTransactionState.value = "selecting";
+      transactionState.value = "selecting";
     }
 
     const balances = computed(() => {
@@ -76,12 +76,12 @@ export default defineComponent({
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
 
-      mockTransactionState.value = "confirming";
+      transactionState.value = "confirming";
       await actions.sifWallet.swap(
         fromFieldAmount.value,
         toFieldAmount.value.asset
       );
-      mockTransactionState.value = "confirmed";
+      transactionState.value = "confirmed";
       clearAmounts();
     }
 
@@ -138,15 +138,23 @@ export default defineComponent({
       fromSymbol,
       toSymbol,
       priceMessage,
+      handleFromMaxClicked() {
+        selectedField.value = "from";
+        const accountBalance = balances.value.find(
+          (balance) => balance.asset.symbol === fromSymbol.value
+        );
+        if (!accountBalance) return;
+        fromAmount.value = accountBalance.subtract("1").toFixed(1);
+      },
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;
       }),
-      mockTransactionState,
+      transactionState,
       transactionModalOpen: computed(() => {
-        return ["confirming", "confirmed"].includes(mockTransactionState.value);
+        return ["confirming", "confirmed"].includes(transactionState.value);
       }),
       transactionModalIsConfirmed: computed(() => {
-        return mockTransactionState.value === "confirmed";
+        return transactionState.value === "confirmed";
       }),
       requestTransactionModalClose,
     };
@@ -162,15 +170,18 @@ export default defineComponent({
           <CurrencyPairPanel
             v-model:fromAmount="fromAmount"
             v-model:fromSymbol="fromSymbol"
-            fromMax
+            :fromMax="!!fromSymbol"
+            @frommaxclicked="handleFromMaxClicked"
             @fromfocus="handleFromFocused"
             @fromblur="handleBlur"
             @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
+            :fromSymbolSelectable="connected"
             v-model:toAmount="toAmount"
             v-model:toSymbol="toSymbol"
             @tofocus="handleToFocused"
             @toblur="handleBlur"
             @tosymbolclicked="handleToSymbolClicked(requestOpen)"
+            :toSymbolSelectable="connected"
           />
         </template>
         <template v-slot:default="{ requestClose }">

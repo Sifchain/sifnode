@@ -14,17 +14,24 @@ export const RWN = Coin({
   network: Network.SIFCHAIN,
 });
 
-export const ATK = Coin({
+export const CATK = Coin({
   symbol: "catk",
   decimals: 18,
   name: "catk",
   network: Network.SIFCHAIN,
 });
 
-export const BTK = Coin({
+export const CBTK = Coin({
   symbol: "cbtk",
   decimals: 18,
   name: "cbtk",
+  network: Network.SIFCHAIN,
+});
+
+export const CETH = Coin({
+  symbol: "ceth",
+  decimals: 18,
+  name: "ceth",
   network: Network.SIFCHAIN,
 });
 
