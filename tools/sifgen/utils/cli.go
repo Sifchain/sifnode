@@ -22,7 +22,8 @@ var (
 )
 
 type CLIUtils interface {
-	Reset() error
+	Reset([]string) error
+	ResetState(string) (*string, error)
 	CreateDir(string) error
 	CurrentChainID() (*string, error)
 	NodeID(nodeDir string) (*string, error)
@@ -68,6 +69,10 @@ func (c CLI) Reset(paths []string) error {
 	}
 
 	return nil
+}
+
+func (c CLI) ResetState(nodeDir string) (*string, error) {
+	return c.shellExec("sifnoded", "unsafe-reset-all", "--home", nodeDir)
 }
 
 func (c CLI) CreateDir(path string) error {

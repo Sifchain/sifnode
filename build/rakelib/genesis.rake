@@ -39,6 +39,11 @@ namespace :genesis do
     task :expose, [:chainnet] do |t, args|
       puts "Build me!" # TODO use something like ngrok to expose local ports of seed node to the world
     end
+
+    desc "Reset the state of a network"
+    task :reset, [:chainnet] do |t, args|
+      system("sifgen network reset #{args[:chainnet]} ./networks")
+    end
   end
 
   desc "node operations"
@@ -51,6 +56,11 @@ namespace :genesis do
     desc "boot scaffolded node and connect to existing network"
     task :boot do
       system("sifnoded start --p2p.laddr tcp://0.0.0.0:26658 ")
+    end
+
+    desc "Reset the state of a node"
+    task :reset, [:chainnet, :node_directory] do |t, args|
+      system("sifgen node reset #{args[:chainnet]} #{args[:node_directory]}")
     end
   end
 end
