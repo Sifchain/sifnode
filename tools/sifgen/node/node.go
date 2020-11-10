@@ -31,6 +31,22 @@ type Node struct {
 	CLI         utils.CLI `yaml:"-"`
 }
 
+func Reset(chainID string, nodeDir *string) error {
+	var directory string
+	if nodeDir == nil {
+		directory = app.DefaultNodeHome
+	} else {
+		directory = *nodeDir
+	}
+
+	_, err := utils.NewCLI(chainID).ResetState(directory)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func NewNode(chainID string, peerAddress, genesisURL *string) *Node {
 	password, _ := password.Generate(32, 5, 0, false, false)
 

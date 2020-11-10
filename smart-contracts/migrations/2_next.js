@@ -178,7 +178,6 @@ module.exports = function(deployer, network, accounts) {
       ],
       setTxSpecifications(6721975, operator, deployer)
     );
-    console.log("bridgeRegistryaddress: ", BridgeRegistry.address)
 
     // Set both the oracle and bridge bank address on the cosmos bridge
     await cosmosBridge.setOracle(oracle.address,

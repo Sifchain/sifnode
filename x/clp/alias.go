@@ -32,11 +32,11 @@ var (
 	DefaultGenesisState    = types.DefaultGenesisState
 	NewParams              = types.NewParams
 	ModuleCdc              = types.ModuleCdc
-	CreateTestInputDefault = keeper.CreateTestInputDefault
-	GenerateRandomPool     = keeper.GenerateRandomPool
-	GenerateRandomLP       = keeper.GenerateRandomLP
-	GenerateAddress        = keeper.GenerateAddress
-	GenerateAddress2       = keeper.GenerateAddress2
+	//CreateTestInputDefault = keeper.CreateTestInputDefault
+	//GenerateRandomPool     = keeper.GenerateRandomPool
+	//GenerateRandomLP       = keeper.GenerateRandomLP
+	//GenerateAddress        = keeper.GenerateAddress
+	//GenerateAddress2       = keeper.GenerateAddress2
 	GetSettlementAsset     = types.GetSettlementAsset
 )
 

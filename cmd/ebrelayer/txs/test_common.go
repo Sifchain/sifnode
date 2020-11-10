@@ -83,7 +83,7 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 
 	var symbol string
 	if claimType == types.MsgBurn {
-		res := strings.SplitAfter(TestSymbol, strings.ToUpper(defaultPrefix))
+		res := strings.SplitAfter(TestSymbol, strings.ToUpper(defaultSifchainPrefix))
 		symbol = strings.Join(res[1:], "")
 	} else {
 		symbol = TestSymbol
