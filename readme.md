@@ -18,7 +18,7 @@
 2. Clone the repository:
 
 ```
-git clone ssh://git@github.com/Sifchain/sifnode && cd sifnode
+git clone https://github.com/Sifchain/sifnode.git && cd sifnode
 ```
 
 3. Checkout the latest testnet release:
