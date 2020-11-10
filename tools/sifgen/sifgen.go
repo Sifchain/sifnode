@@ -50,7 +50,7 @@ func (s Sifgen) NodeCreate(peerAddress, genesisURL *string) {
 	fmt.Println(*summary)
 }
 
-func (s Sifgen) NodeReset(nodeHomeDir string) {
+func (s Sifgen) NodeReset(nodeHomeDir *string) {
 	if err := node.Reset(s.chainID, nodeHomeDir); err != nil {
 		log.Fatal(err)
 	}

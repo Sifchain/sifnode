@@ -31,8 +31,15 @@ type Node struct {
 	CLI         utils.CLI `yaml:"-"`
 }
 
-func Reset(chainID, nodeDir string) error {
-	_, err := utils.NewCLI(chainID).ResetState(nodeDir)
+func Reset(chainID string, nodeDir *string) error {
+	var directory string
+	if nodeDir == nil {
+		directory = app.DefaultNodeHome
+	} else {
+		directory = *nodeDir
+	}
+
+	_, err := utils.NewCLI(chainID).ResetState(directory)
 	if err != nil {
 		return err
 	}

@@ -60,13 +60,7 @@ namespace :genesis do
 
     desc "Reset the state of a node"
     task :reset, [:chainnet, :node_directory] do |t, args|
-      node_directory = if args[:node_directory].nil?
-        "~/.sifnoded"
-      else
-        args[:node_directory]
-      end
-
-      system("sifgen node reset #{args[:chainnet]} #{node_directory}")
+      system("sifgen node reset #{args[:chainnet]} #{args[:node_directory]}")
     end
   end
 end

@@ -77,9 +77,13 @@ func nodeResetStateCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "reset [chain-id] [node-directory]",
 		Short: "Reset the state of a node.",
-		Args:  cobra.MinimumNArgs(2),
+		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			sifgen.NewSifgen(args[0]).NodeReset(args[1])
+			if len(args) == 1 {
+				sifgen.NewSifgen(args[0]).NodeReset(nil)
+			} else {
+				sifgen.NewSifgen(args[0]).NodeReset(&args[1])
+			}
 		},
 	}
 }
