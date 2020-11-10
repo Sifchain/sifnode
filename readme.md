@@ -6,6 +6,7 @@
 
 - [Ruby 2.6.x](https://www.ruby-lang.org/en/documentation/installation)
 - [Golang](https://golang.org/doc/install)
+- [Node.js >=12.19.0](https://nodejs.org/en/)
 
 ## Getting started
 
