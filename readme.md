@@ -126,11 +126,11 @@ sifnodecli tx staking create-validator \
     --commission-rate 0.1 \
     --amount 1000000000rowan \
     --pubkey $(sifnoded tendermint show-validator) \
-    --moniker <moniker> \
+    --moniker "moniker" \
     --chain-id monkey-bars \
     --min-self-delegation 1 \
     --gas auto \
-    --from <moniker> \
+    --from "moniker" \
     --keyring-backend file
 ```
 
