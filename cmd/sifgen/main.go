@@ -10,10 +10,10 @@ func main() {
 	rootCmd := &cobra.Command{Use: "sifgen"}
 
 	_networkCmd := networkCmd()
-	_networkCmd.AddCommand(networkCreateCmd())
+	_networkCmd.AddCommand(networkCreateCmd(), networkResetCmd())
 
 	_nodeCmd := nodeCmd()
-	_nodeCmd.AddCommand(nodeCreateCmd())
+	_nodeCmd.AddCommand(nodeCreateCmd(), nodeResetStateCmd())
 
 	rootCmd.AddCommand(_networkCmd, _nodeCmd)
 	_ = rootCmd.Execute()
@@ -39,6 +39,17 @@ func networkCreateCmd() *cobra.Command {
 	}
 }
 
+func networkResetCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "reset [chain-id] [network-directory]",
+		Short: "Reset the state of a network.",
+		Args:  cobra.MinimumNArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			sifgen.NewSifgen(args[0]).NetworkReset(args[1])
+		},
+	}
+}
+
 func nodeCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "node",
@@ -57,6 +68,21 @@ func nodeCreateCmd() *cobra.Command {
 				sifgen.NewSifgen(args[0]).NodeCreate(nil, nil)
 			} else {
 				sifgen.NewSifgen(args[0]).NodeCreate(&args[1], &args[2])
+			}
+		},
+	}
+}
+
+func nodeResetStateCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "reset [chain-id] [node-directory]",
+		Short: "Reset the state of a node.",
+		Args:  cobra.MinimumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 1 {
+				sifgen.NewSifgen(args[0]).NodeReset(nil)
+			} else {
+				sifgen.NewSifgen(args[0]).NodeReset(&args[1])
 			}
 		},
 	}

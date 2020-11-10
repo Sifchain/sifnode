@@ -1,8 +1,9 @@
-package keeper
+package keeper_test
 
 import (
+	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/clp/types"
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -11,11 +12,12 @@ import (
 )
 
 func TestQueryErrorPool(t *testing.T) {
-	cdc := codec.New()
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	app, ctx := test.CreateTestApp(false)
+	cdc := app.Codec()
+	keeper := app.ClpKeeper
 	//Set Data
 	pool, _, _ := SetData(keeper, ctx)
-	querier := NewQuerier(keeper)
+	querier := clp.NewQuerier(keeper)
 	//Test Pool
 	queryPool := types.QueryReqGetPool{
 		Ticker: pool.ExternalAsset.Ticker,
@@ -39,15 +41,17 @@ func TestQueryErrorPool(t *testing.T) {
 }
 
 func TestQueryGetPool(t *testing.T) {
-	cdc := codec.New()
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	//cdc := codec.New()
+	app, ctx := test.CreateTestApp(false)
+	cdc := app.Codec()
+	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
 	//Set Data
 	pool, _, _ := SetData(keeper, ctx)
-	querier := NewQuerier(keeper)
+	querier := clp.NewQuerier(keeper)
 	//Test Pool
 	queryPool := types.QueryReqGetPool{
 		Ticker: pool.ExternalAsset.Ticker,
@@ -59,18 +63,18 @@ func TestQueryGetPool(t *testing.T) {
 	qpool, err := querier(ctx, []string{types.QueryPool}, query)
 	assert.NoError(t, err)
 	var p types.Pool
-	err = keeper.cdc.UnmarshalJSON(qpool, &p)
+	err = keeper.Codec().UnmarshalJSON(qpool, &p)
 	assert.NoError(t, err)
 	assert.Equal(t, pool.ExternalAsset, p.ExternalAsset)
 }
 
 func TestQueryErrorPools(t *testing.T) {
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
-	querier := NewQuerier(keeper)
+	querier := clp.NewQuerier(keeper)
 	query.Path = ""
 	query.Data = nil
 	//Test Pools
@@ -79,34 +83,35 @@ func TestQueryErrorPools(t *testing.T) {
 }
 
 func TestQueryGetPools(t *testing.T) {
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
 	//Set Data
 	_, pools, _ := SetData(keeper, ctx)
-	querier := NewQuerier(keeper)
+	querier := clp.NewQuerier(keeper)
 	query.Path = ""
 	query.Data = nil
 	//Test Pools
 	qpools, err := querier(ctx, []string{types.QueryPools}, query)
 	assert.NoError(t, err)
 	var poolist []types.Pool
-	err = keeper.cdc.UnmarshalJSON(qpools, &poolist)
+	err = keeper.Codec().UnmarshalJSON(qpools, &poolist)
 	assert.NoError(t, err)
 	assert.Greater(t, len(poolist), 0, "More than one pool added")
 	assert.LessOrEqual(t, len(poolist), len(pools), "Set pool will ignore duplicates")
 }
 
 func TestQueryErrorLiquidityProvider(t *testing.T) {
-	cdc := codec.New()
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	app, ctx := test.CreateTestApp(false)
+	cdc := app.Codec()
+	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
-	querier := NewQuerier(keeper)
+	querier := clp.NewQuerier(keeper)
 	_, err := querier(ctx, []string{types.QueryLiquidityProvider}, query)
 	assert.Error(t, err)
 	//Set Data
@@ -126,15 +131,16 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 }
 
 func TestQueryGetLiquidityProvider(t *testing.T) {
-	cdc := codec.New()
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	app, ctx := test.CreateTestApp(false)
+	cdc := app.Codec()
+	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
 	//Set Data
 	_, _, lp := SetData(keeper, ctx)
-	querier := NewQuerier(keeper)
+	querier := clp.NewQuerier(keeper)
 	//Test Get Liquidity Provider
 	queryLp := types.QueryReqLiquidityProvider{
 		Ticker:    lp.Asset.Ticker,
@@ -147,21 +153,20 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	qliquidityprovider, err := querier(ctx, []string{types.QueryLiquidityProvider}, query)
 	assert.NoError(t, err)
 	var l types.LiquidityProvider
-	err = keeper.cdc.UnmarshalJSON(qliquidityprovider, &l)
+	err = keeper.Codec().UnmarshalJSON(qliquidityprovider, &l)
 	assert.NoError(t, err)
 	assert.Equal(t, lp.Asset, l.Asset)
 
 }
 
-func SetData(keeper Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {
-	pool := GenerateRandomPool(1)[0]
+func SetData(keeper clp.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {
+	pool := test.GenerateRandomPool(1)[0]
 	keeper.SetPool(ctx, pool)
-	pools := GenerateRandomPool(10)
+	pools := test.GenerateRandomPool(10)
 	for _, p := range pools {
 		keeper.SetPool(ctx, p)
 	}
-	lp := GenerateRandomLP(1)[0]
+	lp := test.GenerateRandomLP(1)[0]
 	keeper.SetLiquidityProvider(ctx, lp)
 	return pool, pools, lp
-
 }
