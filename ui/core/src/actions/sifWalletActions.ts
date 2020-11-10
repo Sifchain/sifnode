@@ -4,7 +4,10 @@ import { Mnemonic } from "../entities/Wallet";
 import { ActionContext } from ".";
 import { effect } from "@vue/reactivity";
 
-export default ({ api, store }: ActionContext<"SifService", "wallet">) => {
+export default ({
+  api,
+  store,
+}: ActionContext<"SifService" | "MarketService", "wallet">) => {
   const state = api.SifService.getState();
 
   const actions = {
@@ -31,10 +34,22 @@ export default ({ api, store }: ActionContext<"SifService", "wallet">) => {
       nativeAssetAmount: AssetAmount,
       externalAssetAmount: AssetAmount
     ) {
-      return await api.SifService.addLiquidity({
-        nativeAssetAmount,
-        externalAssetAmount,
-      });
+      const hasPool = !!api.MarketService.find(
+        nativeAssetAmount.asset.symbol,
+        externalAssetAmount.asset.symbol
+      );
+
+      if (hasPool) {
+        return await api.SifService.addLiquidity({
+          nativeAssetAmount,
+          externalAssetAmount,
+        });
+      } else {
+        return await api.SifService.createPool({
+          nativeAssetAmount,
+          externalAssetAmount,
+        });
+      }
     },
 
     async disconnect() {

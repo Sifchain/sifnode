@@ -1,8 +1,8 @@
-import JSBI from "jsbi";
 import { RWN } from "../../constants";
 import { Asset, AssetAmount, Pool } from "../../entities";
 import { Fraction } from "../../entities/fraction/Fraction";
 import { SifUnSignedClient } from "../SifService/SifClient";
+import { RawPool } from "../SifService/x/clp";
 
 export type MarketServiceContext = {
   loadAssets: () => Promise<Asset[]>;
@@ -30,6 +30,19 @@ function makeQuerablePromise<T>(promise: Promise<T>) {
   };
 }
 
+function processPool(poolData: RawPool) {
+  const externalAssetTicker = poolData.external_asset.ticker;
+
+  return Pool(
+    AssetAmount(RWN, poolData.native_asset_balance),
+    AssetAmount(
+      Asset.get(externalAssetTicker),
+      poolData.external_asset_balance
+    ),
+    new Fraction(poolData.pool_units)
+  );
+}
+
 export default function createMarketService({
   loadAssets,
   sifApiUrl,
@@ -37,32 +50,33 @@ export default function createMarketService({
   const sifClient = new SifUnSignedClient(sifApiUrl);
   const poolMap = new Map<string, Pool>();
 
-  async function generatePairs() {
+  async function initialize() {
     await loadAssets();
-    const pools = await sifClient.getPools();
-    return pools.map((poolData) => {
-      const externalAssetTicker = poolData.external_asset.ticker;
-
-      const pair = Pool(
-        AssetAmount(RWN, poolData.native_asset_balance),
-        AssetAmount(
-          Asset.get(externalAssetTicker),
-          poolData.external_asset_balance
-        ),
-        new Fraction(poolData.pool_units)
-      );
-
-      poolMap.set(pair.symbol(), pair);
-    });
+    instance.getPools();
   }
 
-  const pairsGenerated = makeQuerablePromise(generatePairs());
+  const pairsGenerated = makeQuerablePromise(initialize());
 
-  return {
+  const instance = {
+    async getPools() {
+      const rawPools = await sifClient.getPools();
+      const pools = rawPools.map(processPool);
+
+      pools.forEach((pool) => {
+        poolMap.set(pool.symbol(), pool);
+      }, poolMap);
+
+      return pools;
+    },
     find(asset1: Asset | string, asset2: Asset | string) {
       if (!pairsGenerated.isResolved()) return null;
-      const key = [asset1, asset2].map(toAssetSymbol).join("_");
+      const key = [asset1, asset2]
+        .map(toAssetSymbol)
+        .sort()
+        .join("_");
       return poolMap.get(key) ?? null;
     },
   };
+
+  return instance;
 }

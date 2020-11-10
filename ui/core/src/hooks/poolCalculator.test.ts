@@ -1,5 +1,4 @@
 import { ref, Ref } from "@vue/reactivity";
-import JSBI from "jsbi";
 import { AssetAmount, Coin, IAssetAmount, Network, Pool } from "../entities";
 import { Fraction } from "../entities/fraction/Fraction";
 import { PoolState, usePoolCalculator } from "./poolCalculator";

@@ -40,7 +40,35 @@ export async function getFakeTokens(): Promise<Asset[]> {
   const ATK = parseTruffleJson("AliceToken", "atk", atkJson);
   const BTK = parseTruffleJson("BobToken", "btk", btkJson);
 
+  const CBTK = Coin({
+    symbol: "cbtk",
+    decimals: 18,
+    name: "Banana",
+    network: Network.SIFCHAIN,
+  });
+
+  const CATK = Coin({
+    symbol: "catk",
+    decimals: 18,
+    name: "Apple",
+    network: Network.SIFCHAIN,
+  });
+
+  const CETH = Coin({
+    symbol: "ceth",
+    decimals: 18,
+    name: "Ethereum",
+    network: Network.SIFCHAIN,
+  });
+
+  const RWN = Coin({
+    symbol: "crwn",
+    decimals: 18,
+    name: "Rowan",
+    network: Network.SIFCHAIN,
+  });
+
   // Return the tokens parsed as assets
-  _memoized = [ATK, BTK, ETH];
+  _memoized = [ATK, BTK, ETH, CBTK, CATK, CETH, RWN];
   return _memoized;
 }

@@ -10,8 +10,11 @@
       @blur="handleFromBlur"
       :amount="fromAmount"
       @selectsymbol="$emit('fromsymbolclicked')"
+      @maxclicked="handleFromMaxClicked"
       @update:amount="handleFromUpdateAmount"
       :symbol="fromSymbol"
+      :symbolFixed="fromSymbolFixed"
+      :selectable="fromSymbolSelectable"
       @update:symbol="handleFromUpdateSymbol"
     />
     <div class="arrow">↓</div>
@@ -24,6 +27,8 @@
       @selectsymbol="$emit('tosymbolclicked')"
       @update:amount="handleToUpdateAmount"
       :symbol="toSymbol"
+      :symbolFixed="toSymbolFixed"
+      :selectable="toSymbolSelectable"
       @update:symbol="handleToUpdateSymbol"
     />
   </div>
@@ -46,6 +51,10 @@ export default defineComponent({
     nextStepMessage: String,
     canSwap: Boolean,
     connectedText: String,
+    fromSymbolFixed: { type: Boolean, default: false },
+    fromSymbolSelectable: { type: Boolean, default: true },
+    toSymbolFixed: { type: Boolean, default: false },
+    toSymbolSelectable: { type: Boolean, default: true },
   },
   emits: [
     "fromfocus",
@@ -54,6 +63,7 @@ export default defineComponent({
     "toblur",
     "tosymbolclicked",
     "fromsymbolclicked",
+    "frommaxclicked",
     "swapclicked",
     "connectclicked",
     "update:toAmount",
@@ -88,6 +98,10 @@ export default defineComponent({
     function handleToBlur() {
       context.emit("toblur");
     }
+
+    function handleFromMaxClicked() {
+      context.emit("frommaxclicked");
+    }
     return {
       handleFromUpdateAmount,
       handleFromUpdateSymbol,
@@ -95,6 +109,7 @@ export default defineComponent({
       handleToUpdateSymbol,
       handleFromFocused,
       handleFromBlur,
+      handleFromMaxClicked,
       handleToFocused,
       handleToBlur,
     };

@@ -44,11 +44,13 @@ export class SifClient extends SigningCosmosClient implements IClpApi {
     this.swap = this.lcdClient.clp.swap;
     this.getPools = this.lcdClient.clp.getPools;
     this.addLiquidity = this.lcdClient.clp.addLiquidity;
+    this.createPool = this.lcdClient.clp.createPool;
   }
 
   swap: IClpApi["swap"];
   getPools: IClpApi["getPools"];
   addLiquidity: IClpApi["addLiquidity"];
+  createPool: IClpApi["createPool"];
 }
 export class SifUnSignedClient extends CosmosClient implements IClpApi {
   protected readonly lcdClient: CustomLcdClient;
@@ -59,9 +61,11 @@ export class SifUnSignedClient extends CosmosClient implements IClpApi {
     this.swap = this.lcdClient.clp.swap;
     this.getPools = this.lcdClient.clp.getPools;
     this.addLiquidity = this.lcdClient.clp.addLiquidity;
+    this.createPool = this.lcdClient.clp.createPool;
   }
 
   swap: IClpApi["swap"];
   getPools: IClpApi["getPools"];
   addLiquidity: IClpApi["addLiquidity"];
+  createPool: IClpApi["createPool"];
 }

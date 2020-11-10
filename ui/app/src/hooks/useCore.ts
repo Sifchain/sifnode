@@ -4,8 +4,9 @@ import {
   createActions,
   getWeb3Provider,
   getFakeTokens,
+  Coin,
+  Network,
 } from "../../../core";
-import { RWN } from "../../../core/src/constants";
 
 // import tokens from "../../../core/data/topErc20Tokens.json";
 
@@ -14,7 +15,12 @@ const api = createApi({
   sifAddrPrefix: "sif",
   sifApiUrl: "http://127.0.0.1:1317",
   getWeb3Provider,
-  nativeAsset: RWN,
+  nativeAsset: Coin({
+    name: "Rowan",
+    symbol: "rwn",
+    decimals: 18,
+    network: Network.SIFCHAIN,
+  }),
   loadAssets: getFakeTokens,
 });
 
