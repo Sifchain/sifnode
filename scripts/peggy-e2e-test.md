@@ -2,16 +2,16 @@
 # end to end test
 ## start truffle, sifnoded and relayer
 1. open a console
-cd testnet-contracts
+cd smart-contracts
 yarn develop
 
 2. open other console 
-cd testnet-contracts
+cd smart-contracts
 yarn migrate
 sifnoded start
 
 1. open new console
-cd testnet-contracts
+cd smart-contracts
 ebrelayer init tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 user1 --chain-id=sifchain
 
 ### case 1: lock eth and send to cosmos user2 from eth operator account
