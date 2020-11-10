@@ -51,7 +51,6 @@ func GetCmdCreatePool(cdc *codec.Codec) *cobra.Command {
 			nativeAmount := viper.GetString(FlagNativeAssetAmount)
 			signer := cliCtx.GetFromAddress()
 			msg := types.NewMsgCreatePool(signer, asset, sdk.NewUintFromString(nativeAmount), sdk.NewUintFromString(externalAmount))
-
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
