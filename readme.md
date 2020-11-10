@@ -109,7 +109,7 @@ you are now connected to the network.
 
 You won't be able to participate in consensus until you become a validator.
 
-1. Reach out to us on [Discord](https://discord.com/invite/zZTYnNG) to request some tokens.
+1. Reach out to us on [Discord](https://discord.gg/3gQsRvjsRx) to request some tokens.
 
 2. Obtain your node moniker (if you don't already know it):
 
