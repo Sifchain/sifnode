@@ -7,7 +7,7 @@
 # Daemon.
 #
 start_daemon() {
-  sifnoded start --rpc.laddr tcp://0.0.0.0:26657 &
+  sifnoded start --rpc.laddr tcp://0.0.0.0:26657
 }
 
 #
@@ -27,7 +27,7 @@ start_relayer() {
                                              "$ETHEREUM_CONTRACT_ADDRESS" \
                                              "$MONIKER" \
                                              --chain-id "$CHAINNET" \
-                                             --keyring-backend file
+                                             --keyring-backend test
 
     expect "Enter keyring passphrase:"
     send "$PASSWORD\n"
@@ -46,6 +46,6 @@ wait_for_rpc() {
   done
 }
 
-start_daemon
+start_relayer &
 start_rest_server
-start_relayer
+start_daemon
