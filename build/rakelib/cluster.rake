@@ -112,16 +112,19 @@ namespace :cluster do
       end
     end
 
-    task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
+    desc "delete a namespace"
+    task :destroy, [:chainnet, :provider, :namespace, :skip_prompt] do |t, args|
       check_args(args)
-      cmd = "helm delete sifnode -n #{ns(args)}"
-      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      are_you_sure(args)
+      cmd = "kubectl delete namespace #{args[:namespace]}"
+      system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end
 
+
   desc "Manage eth full node deploy, upgrade, etc processes"
   namespace :ethnode do
-    desc "Deploy a full eth node on to your cluster"
+    desc "Deploy a full eth node onto your cluster"
     task :deploy do
       puts "Coming soon! "
     end
