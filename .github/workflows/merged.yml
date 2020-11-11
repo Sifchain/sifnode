@@ -19,6 +19,16 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
 
+      - name: Install AWS CLI
+        uses: chrislennon/action-aws-cli@v1.1
+
+      - name: Set AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
       - name: Create k8s config
         working-directory: ${{env.WORKING_DIRECTORY}}
         run: |
