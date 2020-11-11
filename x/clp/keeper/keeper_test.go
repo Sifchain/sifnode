@@ -12,7 +12,7 @@ func TestKeeper_Errors(t *testing.T) {
 	_ = keeper.Logger(ctx)
 	pool.ExternalAsset.Ticker = ""
 	err := keeper.SetPool(ctx, pool)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 	getpools := keeper.GetPools(ctx)
 	assert.Equal(t, len(getpools), 0, "No pool added")
 
