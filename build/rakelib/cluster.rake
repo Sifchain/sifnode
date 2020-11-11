@@ -121,8 +121,9 @@ namespace :cluster do
     end
   end
 
-  desc "Deploy ebrelayer"
+  desc "ebrelayer operations"
   namespace :ebrelayer do
+    desc "Install ebrelayer"
     task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker] do |t, args|
       check_args(args)
 
@@ -141,6 +142,7 @@ namespace :cluster do
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
 
+    desc "Uninstall ebrelayer"
     task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
       check_args(args)
 
