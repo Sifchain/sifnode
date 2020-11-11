@@ -1,4 +1,4 @@
-name: Build and deploy feature
+name: Feature build and deploy
 
 on:
   push:
@@ -10,9 +10,6 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-
       - name: Check out the repo
         uses: actions/checkout@v2
 
