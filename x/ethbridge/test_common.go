@@ -8,8 +8,6 @@ import (
 	keeperLib "github.com/Sifchain/sifnode/x/oracle/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/supply"
-
 	"github.com/Sifchain/sifnode/x/oracle"
 )
 
@@ -18,7 +16,7 @@ func CreateTestHandler(
 ) (sdk.Context, oracle.Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, []sdk.ValAddress, sdk.Handler) {
 	ctx, oracleKeeper, bankKeeper, supplyKeeper,
 		accountKeeper, validatorAddresses := oracle.CreateTestKeepers(t, consensusNeeded, validatorAmounts, ModuleName)
-	bridgeAccount := supply.NewEmptyModuleAccount(ModuleName, supply.Burner, supply.Minter)
+	bridgeAccount := bank.NewEmptyModuleAccount(ModuleName, bank.Burner, bank.Minter)
 	supplyKeeper.SetModuleAccount(ctx, bridgeAccount)
 
 	cdc := keeperLib.MakeTestCodec()

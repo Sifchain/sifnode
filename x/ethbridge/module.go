@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/client"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -131,7 +131,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 // InitGenesis performs genesis initialization for the ethbridge module. It returns
 // no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, _ json.RawMessage) []abci.ValidatorUpdate {
-	bridgeAccount := supply.NewEmptyModuleAccount(ModuleName, supply.Burner, supply.Minter)
+	bridgeAccount := bank.NewEmptyModuleAccount(ModuleName, bank.Burner, bank.Minter)
 	am.SupplyKeeper.SetModuleAccount(ctx, bridgeAccount)
 	return nil
 }

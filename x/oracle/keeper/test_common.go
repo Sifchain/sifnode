@@ -23,7 +23,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/tendermint/tendermint/crypto"
 	tmtypes "github.com/tendermint/tendermint/types"
 
@@ -47,7 +46,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
-	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
+	keySupply := sdk.NewKVStoreKey(bank.StoreKey)
 	keyOracle := sdk.NewKVStoreKey(types.StoreKey)
 
 	db := dbm.NewMemDB()
@@ -73,9 +72,9 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ctx = ctx.WithLogger(log.NewNopLogger())
 	cdc := MakeTestCodec()
 
-	feeCollectorAcc := supply.NewEmptyModuleAccount(auth.FeeCollectorName)
-	notBondedPool := supply.NewEmptyModuleAccount(stakingtypes.NotBondedPoolName, supply.Burner, supply.Staking)
-	bondPool := supply.NewEmptyModuleAccount(stakingtypes.BondedPoolName, supply.Burner, supply.Staking)
+	feeCollectorAcc := bank.NewEmptyModuleAccount(auth.FeeCollectorName)
+	notBondedPool := bank.NewEmptyModuleAccount(stakingtypes.NotBondedPoolName, bank.Burner, bank.Staking)
+	bondPool := bank.NewEmptyModuleAccount(stakingtypes.BondedPoolName, bank.Burner, bank.Staking)
 
 	blacklistedAddrs := make(map[string]bool)
 	blacklistedAddrs[feeCollectorAcc.GetAddress().String()] = true
@@ -99,20 +98,20 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	maccPerms := map[string][]string{
 		auth.FeeCollectorName:          nil,
-		stakingtypes.NotBondedPoolName: {supply.Burner, supply.Staking},
-		stakingtypes.BondedPoolName:    {supply.Burner, supply.Staking},
+		stakingtypes.NotBondedPoolName: {bank.Burner, bank.Staking},
+		stakingtypes.BondedPoolName:    {bank.Burner, bank.Staking},
 	}
 
 	if extraMaccPerm != "" {
-		maccPerms[extraMaccPerm] = []string{supply.Burner, supply.Minter}
+		maccPerms[extraMaccPerm] = []string{bank.Burner, bank.Minter}
 	}
 
-	supplyKeeper := supply.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
+	supplyKeeper := bank.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
 
 	initTokens := sdk.TokensFromConsensusPower(10000)
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens.MulRaw(int64(100))))
 
-	supplyKeeper.SetSupply(ctx, supply.NewSupply(totalSupply))
+	supplyKeeper.SetSupply(ctx, bank.NewSupply(totalSupply))
 
 	stakingKeeper := staking.NewKeeper(cdc, keyStaking, supplyKeeper, paramsKeeper.Subspace(staking.DefaultParamspace))
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
@@ -206,7 +205,6 @@ func MakeTestCodec() *codec.Codec {
 	// Register AppAccount
 	cdc.RegisterInterface((*authexported.Account)(nil), nil)
 	cdc.RegisterConcrete(&auth.BaseAccount{}, "test/staking/BaseAccount", nil)
-	supply.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 	staking.RegisterCodec(cdc)
 	bank.RegisterCodec(cdc)

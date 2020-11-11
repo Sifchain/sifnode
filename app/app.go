@@ -19,11 +19,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/oracle"
@@ -40,7 +40,6 @@ var (
 		bank.AppModuleBasic{},
 		staking.AppModuleBasic{},
 		params.AppModuleBasic{},
-		supply.AppModuleBasic{},
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
@@ -48,9 +47,9 @@ var (
 
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
-		staking.BondedPoolName:    {supply.Burner, supply.Staking},
-		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
-		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
+		staking.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
+		staking.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
+		ethbridge.ModuleName:      {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -77,9 +76,9 @@ type NewApp struct {
 	subspaces map[string]params.Subspace
 
 	AccountKeeper auth.AccountKeeper
+	// TODO: to make sure that bankKeeper has supply keeper functionality
 	bankKeeper    bank.Keeper
 	StakingKeeper staking.Keeper
-	SupplyKeeper  supply.Keeper
 	paramsKeeper  params.Keeper
 
 	// Peggy keepers

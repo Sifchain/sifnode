@@ -24,7 +24,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/supply"
 	//"github.com/cosmos/cosmos-sdk/x/distribution/types"
 )
 
@@ -49,7 +48,7 @@ var (
 		valAccAddr1, valAccAddr2, valAccAddr3,
 	}
 
-	distrAcc = supply.NewEmptyModuleAccount(types.ModuleName)
+	distrAcc = bank.NewEmptyModuleAccount(types.ModuleName)
 )
 
 // create a codec used only for testing
@@ -58,7 +57,6 @@ func MakeTestCodec() *codec.Codec {
 	bank.RegisterCodec(cdc)
 	staking.RegisterCodec(cdc)
 	auth.RegisterCodec(cdc)
-	supply.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 
@@ -81,7 +79,7 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk
 	keyDistr := sdk.NewKVStoreKey(distribution.StoreKey)
 	keyStaking := sdk.NewKVStoreKey(staking.StoreKey)
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
+	keySupply := sdk.NewKVStoreKey(bank.StoreKey)
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
 
@@ -99,9 +97,9 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 
-	feeCollectorAcc := supply.NewEmptyModuleAccount(auth.FeeCollectorName)
-	notBondedPool := supply.NewEmptyModuleAccount(staking.NotBondedPoolName, supply.Burner, supply.Staking)
-	bondPool := supply.NewEmptyModuleAccount(staking.BondedPoolName, supply.Burner, supply.Staking)
+	feeCollectorAcc := bank.NewEmptyModuleAccount(auth.FeeCollectorName)
+	notBondedPool := bank.NewEmptyModuleAccount(staking.NotBondedPoolName, bank.Burner, bank.Staking)
+	bondPool := bank.NewEmptyModuleAccount(staking.BondedPoolName, bank.Burner, bank.Staking)
 
 	blacklistedAddrs := make(map[string]bool)
 	blacklistedAddrs[feeCollectorAcc.GetAddress().String()] = true
@@ -119,10 +117,10 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk
 	maccPerms := map[string][]string{
 		auth.FeeCollectorName:     nil,
 		types.ModuleName:          nil,
-		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
-		staking.BondedPoolName:    {supply.Burner, supply.Staking},
+		staking.NotBondedPoolName: {bank.Burner, bank.Staking},
+		staking.BondedPoolName:    {bank.Burner, bank.Staking},
 	}
-	supplyKeeper := supply.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
+	supplyKeeper := bank.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
 	sk := staking.NewKeeper(cdc, keyStaking, supplyKeeper, pk.Subspace(staking.DefaultParamspace))
 	sk.SetParams(ctx, staking.DefaultParams())
 	keeper := NewKeeper(cdc, keyClp, bankKeeper, pk.Subspace(types.DefaultParamspace))
@@ -130,7 +128,7 @@ func CreateTestInputAdvanced(t *testing.T, isCheckTx bool, initPower int64) (sdk
 	require.Equal(t, types.DefaultParams(), keeper.GetParams(ctx))
 	initCoins := sdk.NewCoins(sdk.NewCoin(sk.BondDenom(ctx), initTokens))
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sk.BondDenom(ctx), initTokens.MulRaw(int64(len(TestAddrs)))))
-	supplyKeeper.SetSupply(ctx, supply.NewSupply(totalSupply))
+	supplyKeeper.SetSupply(ctx, bank.NewSupply(totalSupply))
 	for _, addr := range TestAddrs {
 		_, err := bankKeeper.AddCoins(ctx, addr, initCoins)
 		require.Nil(t, err)
