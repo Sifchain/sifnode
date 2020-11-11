@@ -8,7 +8,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
-	"github.com/cosmos/cosmos-sdk/client/lcd"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -58,7 +57,8 @@ func main() {
 		queryCmd(cdc),
 		txCmd(cdc),
 		flags.LineBreak,
-		lcd.ServeCommand(cdc, registerRoutes),
+		// TODO: To register routers correctly
+		//lcd.ServeCommand(cdc, registerRoutes),
 		flags.LineBreak,
 		keys.Commands(),
 		flags.LineBreak,
@@ -74,6 +74,15 @@ func main() {
 		fmt.Printf("Failed executing CLI command: %s, exiting...\n", err)
 		os.Exit(1)
 	}
+}
+
+// TODO: To register routers correctly
+func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
+	clientCtx := apiSvr.ClientCtx
+	rpc.RegisterRoutes(clientCtx, apiSvr.Router)
+	authrest.RegisterTxRoutes(clientCtx, apiSvr.Router)
+	ModuleBasics.RegisterRESTRoutes(clientCtx, apiSvr.Router)
+	ModuleBasics.RegisterGRPCRoutes(apiSvr.ClientCtx, apiSvr.GRPCRouter)
 }
 
 func queryCmd(cdc *amino.Codec) *cobra.Command {
