@@ -47,11 +47,10 @@ func GetCmdCreatePool(cdc *codec.Codec) *cobra.Command {
 			asset := types.NewAsset(viper.GetString(FlagAssetSourceChain),
 				viper.GetString(FlagAssetSymbol),
 				viper.GetString(FlagAssetTicker))
-			externalAmount := viper.GetUint(FlagExternalAssetAmount)
-			nativeAmount := viper.GetUint(FlagNativeAssetAmount)
+			externalAmount := viper.GetString(FlagExternalAssetAmount)
+			nativeAmount := viper.GetString(FlagNativeAssetAmount)
 			signer := cliCtx.GetFromAddress()
-			msg := types.NewMsgCreatePool(signer, asset, nativeAmount, externalAmount)
-
+			msg := types.NewMsgCreatePool(signer, asset, sdk.NewUintFromString(nativeAmount), sdk.NewUintFromString(externalAmount))
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
@@ -100,10 +99,10 @@ func GetCmdAddLiquidity(cdc *codec.Codec) *cobra.Command {
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSourceChain),
 				viper.GetString(FlagAssetSymbol),
 				viper.GetString(FlagAssetTicker))
-			externalAmount := viper.GetUint(FlagExternalAssetAmount)
-			nativeAmount := viper.GetUint(FlagNativeAssetAmount)
+			externalAmount := viper.GetString(FlagExternalAssetAmount)
+			nativeAmount := viper.GetString(FlagNativeAssetAmount)
 			signer := cliCtx.GetFromAddress()
-			msg := types.NewMsgAddLiquidity(signer, externalAsset, nativeAmount, externalAmount)
+			msg := types.NewMsgAddLiquidity(signer, externalAsset, sdk.NewUintFromString(nativeAmount), sdk.NewUintFromString(externalAmount))
 
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
@@ -133,9 +132,17 @@ func GetCmdRemoveLiquidity(cdc *codec.Codec) *cobra.Command {
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSourceChain),
 				viper.GetString(FlagAssetSymbol),
 				viper.GetString(FlagAssetTicker))
-			wBasis := viper.GetInt(FlagWBasisPoints)
-			asymmetry := viper.GetInt(FlagAsymmetry)
+			wb := viper.GetString(FlagWBasisPoints)
+			as := viper.GetString(FlagAsymmetry)
 			signer := cliCtx.GetFromAddress()
+			wBasis, ok := sdk.NewIntFromString(wb)
+			if !ok {
+				return types.ErrOverFlow
+			}
+			asymmetry, ok := sdk.NewIntFromString(as)
+			if !ok {
+				return types.ErrOverFlow
+			}
 			msg := types.NewMsgRemoveLiquidity(signer, externalAsset, wBasis, asymmetry)
 
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
@@ -169,10 +176,9 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 			receivedAsset := types.NewAsset(viper.GetString(FlagReceivedAssetSourceChain),
 				viper.GetString(FlagReceivedAssetSymbol),
 				viper.GetString(FlagReceivedAssetTicker))
-			sentAmount := viper.GetUint(FlagAmount)
-
+			sentAmount := viper.GetString(FlagAmount)
 			signer := cliCtx.GetFromAddress()
-			msg := types.NewMsgSwap(signer, sentAsset, receivedAsset, sentAmount)
+			msg := types.NewMsgSwap(signer, sentAsset, receivedAsset, sdk.NewUintFromString(sentAmount))
 
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},

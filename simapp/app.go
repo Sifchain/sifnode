@@ -58,7 +58,6 @@ var (
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
 	}
-
 )
 
 // MakeCodec - custom tx codec
@@ -91,15 +90,15 @@ type SimApp struct {
 	subspaces map[string]params.Subspace
 
 	// keepers
-	AccountKeeper  auth.AccountKeeper
-	BankKeeper     bank.Keeper
-	SupplyKeeper   supply.Keeper
-	StakingKeeper  staking.Keeper
-	ParamsKeeper   params.Keeper
+	AccountKeeper auth.AccountKeeper
+	BankKeeper    bank.Keeper
+	SupplyKeeper  supply.Keeper
+	StakingKeeper staking.Keeper
+	ParamsKeeper  params.Keeper
 	// Peggy keepers
 	EthBridgeKeeper ethbridge.Keeper
 	OracleKeeper    oracle.Keeper
-	ClpKeeper 		clp.Keeper
+	ClpKeeper       clp.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -187,7 +186,6 @@ func NewSimApp(
 		app.BankKeeper,
 		app.subspaces[clp.ModuleName])
 
-
 	// register the staking hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
 		staking.NewMultiStakingHooks(),
@@ -206,7 +204,7 @@ func NewSimApp(
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
 	)
 
-	app.mm.SetOrderEndBlockers(/* crisis.ModuleName, gov.ModuleName, */ staking.ModuleName)
+	app.mm.SetOrderEndBlockers( /* crisis.ModuleName, gov.ModuleName, */ staking.ModuleName)
 
 	// NOTE: The genutils moodule must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.

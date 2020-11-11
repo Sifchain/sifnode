@@ -15,15 +15,15 @@ func NewHandler(k Keeper) sdk.Handler {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
 		case MsgCreatePool:
-			return HandleMsgCreatePool(ctx, k, msg)
+			return handleMsgCreatePool(ctx, k, msg)
 		case MsgDecommissionPool:
-			return HandleMsgDecommissionPool(ctx, k, msg)
+			return handleMsgDecommissionPool(ctx, k, msg)
 		case MsgAddLiquidity:
-			return HandleMsgAddLiquidity(ctx, k, msg)
+			return handleMsgAddLiquidity(ctx, k, msg)
 		case MsgRemoveLiquidity:
-			return HandleMsgRemoveLiquidity(ctx, k, msg)
+			return handleMsgRemoveLiquidity(ctx, k, msg)
 		case MsgSwap:
-			return HandleMsgSwap(ctx, k, msg)
+			return handleMsgSwap(ctx, k, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", ModuleName, msg)
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
@@ -31,13 +31,13 @@ func NewHandler(k Keeper) sdk.Handler {
 	}
 }
 
-func HandleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissionPool) (*sdk.Result, error) {
+func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissionPool) (*sdk.Result, error) {
 	// Verify pool
 	pool, err := keeper.GetPool(ctx, msg.Ticker)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-	if pool.NativeAssetBalance > keeper.GetParams(ctx).MinCreatePoolThreshold {
+	if pool.NativeAssetBalance.GTE(sdk.NewUint(uint64(keeper.GetParams(ctx).MinCreatePoolThreshold))) {
 		return nil, types.ErrBalanceTooHigh
 	}
 	// Get all LP's for the pool
@@ -48,12 +48,13 @@ func HandleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	// iterate over Lp list and refund them there tokens
 	// Return both RWN and EXTERNAL ASSET
 	for _, lp := range lpList {
-		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateWithdrawal(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, 10000, 0)
-		poolUnits = poolUnits - lp.LiquidityProviderUnits
-		nativeAssetBalance = nativeAssetBalance - withdrawNativeAsset
-		externalAssetBalance = externalAssetBalance - withdrawExternalAsset
-		withdrawNativeCoins := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAsset)))
-		withdrawExternalCoins := sdk.NewCoin(msg.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAsset)))
+		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateWithdrawal(poolUnits, nativeAssetBalance.String(), externalAssetBalance.String(),
+			lp.LiquidityProviderUnits.String(), sdk.NewInt(10000).String(), sdk.ZeroInt())
+		poolUnits = poolUnits.Sub(lp.LiquidityProviderUnits)
+		nativeAssetBalance = nativeAssetBalance.Sub(withdrawNativeAsset)
+		externalAssetBalance = externalAssetBalance.Sub(withdrawExternalAsset)
+		withdrawNativeCoins := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(withdrawNativeAsset.Uint64()))
+		withdrawExternalCoins := sdk.NewCoin(msg.Ticker, sdk.NewIntFromUint64(withdrawExternalAsset.Uint64()))
 		err = keeper.BankKeeper.SendCoins(ctx, pool.PoolAddress, lp.LiquidityProviderAddress, sdk.Coins{withdrawExternalCoins, withdrawNativeCoins})
 		if err != nil {
 			return nil, errors.Wrap(types.ErrUnableToAddBalance, err.Error())
@@ -81,10 +82,10 @@ func HandleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func HandleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
+func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
 	// Verify min threshold
-	MinThreshold := keeper.GetParams(ctx).MinCreatePoolThreshold
-	if msg.NativeAssetAmount < MinThreshold {
+	MinThreshold := sdk.NewUint(uint64(keeper.GetParams(ctx).MinCreatePoolThreshold))
+	if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
 		return nil, types.ErrTotalAmountTooLow
 	}
 	// Check if pool already exists
@@ -94,15 +95,15 @@ func HandleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 
 	asset := msg.ExternalAsset
 	// Verify user has balance to create a new pool
-	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(msg.ExternalAssetAmount)))
-	nativeAssetCoin := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(uint64(msg.NativeAssetAmount)))
+	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(msg.ExternalAssetAmount.Uint64()))
+	nativeAssetCoin := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(msg.NativeAssetAmount.Uint64()))
 	if !keeper.BankKeeper.HasCoins(ctx, msg.Signer, sdk.Coins{externalAssetCoin, nativeAssetCoin}) {
 		return nil, types.ErrBalanceNotAvailable
 	}
 
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
-	poolUnits, lpunits, err := calculatePoolUnits(0, 0, 0, nativeBalance, externalBalance)
+	poolUnits, lpunits, err := calculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), nativeBalance, externalBalance)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +143,7 @@ func HandleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func HandleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) (*sdk.Result, error) {
+func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) (*sdk.Result, error) {
 	createNewLP := false
 	// Get pool
 	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker)
@@ -159,8 +160,8 @@ func HandleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 		createNewLP = true
 	}
 	// Verify user has coins to add liquidity
-	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(msg.ExternalAssetAmount)))
-	nativeAssetCoin := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(uint64(msg.NativeAssetAmount)))
+	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(msg.ExternalAssetAmount.Uint64()))
+	nativeAssetCoin := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(msg.NativeAssetAmount.Uint64()))
 	if !keeper.BankKeeper.HasCoins(ctx, msg.Signer, sdk.Coins{externalAssetCoin, nativeAssetCoin}) {
 		return nil, types.ErrBalanceNotAvailable
 	}
@@ -171,8 +172,8 @@ func HandleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	}
 
 	pool.PoolUnits = newPoolUnits
-	pool.NativeAssetBalance = pool.NativeAssetBalance + msg.NativeAssetAmount
-	pool.ExternalAssetBalance = pool.ExternalAssetBalance + msg.ExternalAssetAmount
+	pool.NativeAssetBalance = pool.NativeAssetBalance.Add(msg.NativeAssetAmount)
+	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Add(msg.ExternalAssetAmount)
 	// Create lp if needed
 	// Doesn't look like this can occur, as creating a pool creates this as well.  Not sure if this is a valid scenario
 	if createNewLP {
@@ -185,7 +186,7 @@ func HandleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 			),
 		})
 	} else {
-		lp.LiquidityProviderUnits = lp.LiquidityProviderUnits + lpUnits
+		lp.LiquidityProviderUnits = lp.LiquidityProviderUnits.Add(lpUnits)
 	}
 	// Save new pool balances
 	err = keeper.SetPool(ctx, pool)
@@ -210,7 +211,7 @@ func HandleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func HandleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiquidity) (*sdk.Result, error) {
+func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiquidity) (*sdk.Result, error) {
 	// Get pool
 	pool, err := keeper.GetPool(ctx, msg.ExternalAsset.Ticker)
 	if err != nil {
@@ -226,43 +227,43 @@ func HandleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	poolOriginalNB := pool.NativeAssetBalance
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
-		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
-		msg.WBasisPoints, msg.Asymmetry)
+		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
+		msg.WBasisPoints.String(), msg.Asymmetry)
 
-	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(withdrawExternalAssetAmount)))
-	nativeAssetCoin := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(uint64(withdrawNativeAssetAmount)))
+	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(withdrawExternalAssetAmount.Uint64()))
+	nativeAssetCoin := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(withdrawNativeAssetAmount.Uint64()))
 
 	// Subtract Value from pool
-	pool.PoolUnits = pool.PoolUnits - lp.LiquidityProviderUnits + lpUnitsLeft
-	pool.NativeAssetBalance = pool.NativeAssetBalance - withdrawNativeAssetAmount
-	pool.ExternalAssetBalance = pool.ExternalAssetBalance - withdrawExternalAssetAmount
+	pool.PoolUnits = pool.PoolUnits.Sub(lp.LiquidityProviderUnits).Add(lpUnitsLeft)
+	pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
+	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
 	// Check if withdrawal makes pool too shallow , checking only for asymetric withdraw.
-	if (msg.Asymmetry != 0) && (pool.ExternalAssetBalance == 0 || pool.NativeAssetBalance == 0) {
+	if !msg.Asymmetry.IsZero() && (pool.ExternalAssetBalance.IsZero() || pool.NativeAssetBalance.IsZero()) {
 		return nil, errors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil before adjusting asymmetry")
 	}
 
 	// Swapping between Native and External based on Asymmetry
-	if msg.Asymmetry > 0 {
+	if msg.Asymmetry.IsPositive() {
 		swapResult, _, _, swappedPool, err := SwapOne(GetSettlementAsset(), swapAmount, msg.ExternalAsset, pool)
 		if err != nil {
 			return nil, types.ErrSwapping
 		}
-		if swapResult != 0 {
-			swapCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(swapResult)))
-			swapAmountInCoin := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(uint64(swapAmount)))
+		if !swapResult.IsZero() {
+			swapCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(swapResult.Uint64()))
+			swapAmountInCoin := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(swapAmount.Uint64()))
 			externalAssetCoin = externalAssetCoin.Add(swapCoin)
 			nativeAssetCoin = nativeAssetCoin.Sub(swapAmountInCoin)
 		}
 		pool = swappedPool
 	}
-	if msg.Asymmetry < 0 {
+	if msg.Asymmetry.IsNegative() {
 		swapResult, _, _, swappedPool, err := SwapOne(msg.ExternalAsset, swapAmount, GetSettlementAsset(), pool)
 		if err != nil {
 			return nil, types.ErrSwapping
 		}
-		if swapResult != 0 {
-			swapCoin := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(uint64(swapResult)))
-			swapAmountInCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(uint64(swapAmount)))
+		if !swapResult.IsZero() {
+			swapCoin := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(swapResult.Uint64()))
+			swapAmountInCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(swapAmount.Uint64()))
 
 			nativeAssetCoin = nativeAssetCoin.Add(swapCoin)
 			externalAssetCoin = externalAssetCoin.Sub(swapAmountInCoin)
@@ -279,7 +280,7 @@ func HandleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		sendCoins = sendCoins.Add(nativeAssetCoin)
 	}
 	// Verify if Swap makes the pool too shallow in one of the assets
-	if externalAssetCoin.Amount.Int64() >= int64(poolOriginalEB) || nativeAssetCoin.Amount.Int64() >= int64(poolOriginalNB) {
+	if externalAssetCoin.Amount.GTE(sdk.Int(poolOriginalEB)) || nativeAssetCoin.Amount.GTE(sdk.Int(poolOriginalNB)) {
 		return nil, errors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil after adjusting asymmetry")
 	}
 	// Setting pool after all calculations of withdraw and then swap
@@ -298,7 +299,7 @@ func HandleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		}
 	}
 
-	if lpUnitsLeft == 0 {
+	if lpUnitsLeft.IsZero() {
 		keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	} else {
 		lp.LiquidityProviderUnits = lpUnitsLeft
@@ -320,11 +321,13 @@ func HandleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
-func HandleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, error) {
+func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, error) {
 	var (
-		liquidityFee uint
-		tradeSlip    uint
+		liquidityFee sdk.Uint
+		tradeSlip    sdk.Uint
 	)
+	liquidityFee = sdk.ZeroUint()
+	tradeSlip = sdk.ZeroUint()
 	sentAmount := msg.SentAmount
 	sentAsset := msg.SentAsset
 	receivedAsset := msg.ReceivedAsset
@@ -350,7 +353,7 @@ func HandleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// Deducting Balance from the user , Sent Asset is the asset the user is sending to the Pool
 	// Case 1 . Deducting his RWN and adding to RWN:ETH pool
 	// Case 2 , Deduction his ETH and adding to RWN:ETH pool
-	sentCoin := sdk.NewCoin(msg.SentAsset.Ticker, sdk.NewIntFromUint64(uint64(sentAmount)))
+	sentCoin := sdk.NewCoin(msg.SentAsset.Ticker, sdk.NewIntFromUint64(sentAmount.Uint64()))
 	if !keeper.BankKeeper.HasCoins(ctx, msg.Signer, sdk.Coins{sentCoin}) {
 		return nil, types.ErrBalanceNotAvailable
 	}
@@ -372,9 +375,9 @@ func HandleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		}
 		sentAmount = emitAmount
 		sentAsset = nativeAsset
-		liquidityFee = liquidityFee + lp
-		tradeSlip = tradeSlip + ts
-		interpoolCoin := sdk.NewCoin(nativeAsset.Ticker, sdk.NewIntFromUint64(uint64(emitAmount)))
+		liquidityFee = liquidityFee.Add(lp)
+		tradeSlip = tradeSlip.Add(ts)
+		interpoolCoin := sdk.NewCoin(nativeAsset.Ticker, sdk.NewIntFromUint64(emitAmount.Uint64()))
 		// Case 2 - Transfer from RWN:ETH -> RWN:DASH
 		err = keeper.BankKeeper.SendCoins(ctx, outPool.PoolAddress, inPool.PoolAddress, sdk.Coins{interpoolCoin})
 		if err != nil {
@@ -393,19 +396,19 @@ func HandleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// Adding balance to users account ,Received Asset is the asset the user wants to receive
 	// Case 1 . Adding his ETH and deducting from  RWN:ETH pool
 	// Case 2 , Adding his XCT and deducting from  RWN:XCT pool
-	sentCoin = sdk.NewCoin(msg.ReceivedAsset.Ticker, sdk.NewIntFromUint64(uint64(sentAmount)))
+	sentCoin = sdk.NewCoin(msg.ReceivedAsset.Ticker, sdk.NewIntFromUint64(sentAmount.Uint64()))
 	err = keeper.BankKeeper.SendCoins(ctx, outPool.PoolAddress, msg.Signer, sdk.Coins{sentCoin})
 	if err != nil {
 		return nil, err
 	}
-	liquidityFee = liquidityFee + lp
-	tradeSlip = tradeSlip + ts
+	liquidityFee = liquidityFee.Add(lp)
+	tradeSlip = tradeSlip.Add(ts)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeSwap,
-			sdk.NewAttribute(types.AttributeKeySwapAmount, strconv.FormatInt(int64(emitAmount), 10)),
-			sdk.NewAttribute(types.AttributeKeyLiquidityFee, strconv.FormatInt(int64(liquidityFee), 10)),
-			sdk.NewAttribute(types.AttributeKeyTradeSlip, strconv.FormatInt(int64(tradeSlip), 10)),
+			sdk.NewAttribute(types.AttributeKeySwapAmount, emitAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyLiquidityFee, liquidityFee.String()),
+			sdk.NewAttribute(types.AttributeKeyTradeSlip, tradeSlip.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 		),
 		sdk.NewEvent(
@@ -420,10 +423,10 @@ func HandleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 //------------------------------------------------------------------------------------------------------------------
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-func SwapOne(from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint, Pool, error) {
+func SwapOne(from Asset, sentAmount sdk.Uint, to Asset, pool Pool) (sdk.Uint, sdk.Uint, sdk.Uint, Pool, error) {
 
-	var X uint
-	var Y uint
+	var X sdk.Uint
+	var Y sdk.Uint
 
 	if to == GetSettlementAsset() {
 		Y = pool.NativeAssetBalance
@@ -436,15 +439,15 @@ func SwapOne(from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint
 	liquidityFee := calcLiquidityFee(X, x, Y)
 	tradeSlip := calcTradeSlip(X, x)
 	swapResult := calcSwapResult(X, x, Y)
-	if swapResult >= Y {
-		return 0, 0, 0, Pool{}, types.ErrNotEnoughAssetTokens
+	if swapResult.GTE(Y) {
+		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), Pool{}, types.ErrNotEnoughAssetTokens
 	}
 	if from == GetSettlementAsset() {
-		pool.NativeAssetBalance = X + x
-		pool.ExternalAssetBalance = Y - swapResult
+		pool.NativeAssetBalance = X.Add(x)
+		pool.ExternalAssetBalance = Y.Sub(swapResult)
 	} else {
-		pool.ExternalAssetBalance = X + x
-		pool.NativeAssetBalance = Y - swapResult
+		pool.ExternalAssetBalance = X.Add(x)
+		pool.NativeAssetBalance = Y.Sub(swapResult)
 	}
 
 	return swapResult, liquidityFee, tradeSlip, pool, nil
@@ -452,47 +455,53 @@ func SwapOne(from Asset, sentAmount uint, to Asset, pool Pool) (uint, uint, uint
 
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-func CalculateWithdrawal(poolUnits uint, nativeAssetBalance uint,
-	externalAssetBalance uint, lpUnits uint, wBasisPoints int, asymmetry int) (uint, uint, uint, uint) {
-	poolUnitsF := float64(poolUnits)
-	nativeAssetBalanceF := float64(nativeAssetBalance)
-	externalAssetBalanceF := float64(externalAssetBalance)
-	lpUnitsF := float64(lpUnits)
-	wBasisPointsF := float64(wBasisPoints)
-	asymmetryF := float64(asymmetry)
+func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
+	externalAssetBalance string, lpUnits string, wBasisPoints string, asymmetry sdk.Int) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
+	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
 
-	unitsToClaim := lpUnitsF / (10000 / (wBasisPointsF))
-	withdrawExternalAssetAmount := externalAssetBalanceF / (poolUnitsF / unitsToClaim)
-	withdrawNativeAssetAmount := nativeAssetBalanceF / (poolUnitsF / unitsToClaim)
+	nativeAssetBalanceF, err := sdk.NewDecFromStr(nativeAssetBalance)
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance, err))
+	}
+	externalAssetBalanceF, err := sdk.NewDecFromStr(externalAssetBalance)
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance, err))
+	}
+	lpUnitsF, err := sdk.NewDecFromStr(lpUnits)
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", lpUnits, err))
+	}
+	wBasisPointsF, err := sdk.NewDecFromStr(wBasisPoints)
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", wBasisPoints, err))
+	}
+	asymmetryF, err := sdk.NewDecFromStr(asymmetry.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", asymmetry.String(), err))
+	}
+	denominator := sdk.NewDec(10000).Quo(wBasisPointsF)
+	unitsToClaim := lpUnitsF.Quo(denominator)
+	withdrawExternalAssetAmount := externalAssetBalanceF.Quo(poolUnitsF.Quo(unitsToClaim))
+	withdrawNativeAssetAmount := nativeAssetBalanceF.Quo(poolUnitsF.Quo(unitsToClaim))
 
-	swapAmount := 0.0
+	swapAmount := sdk.NewDec(0)
 	//if asymmetry is positive we need to swap from native to external
-	if asymmetry > 0 {
-		unitsToSwap := (unitsToClaim) / (10000 / (asymmetryF))
-		swapAmount = (nativeAssetBalanceF) / (poolUnitsF / unitsToSwap)
+	if asymmetry.IsPositive() {
+		unitsToSwap := unitsToClaim.Quo(sdk.NewDec(10000).Quo(asymmetryF.Abs()))
+		swapAmount = nativeAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
 	}
 	//if asymmetry is negative we need to swap from external to native
-	if asymmetry < 0 {
-		unitsToSwap := (unitsToClaim) / (10000 / (-1 * asymmetryF))
-		swapAmount = (externalAssetBalanceF) / (poolUnitsF / unitsToSwap)
+	if asymmetry.IsNegative() {
+		unitsToSwap := unitsToClaim.Quo(sdk.NewDec(10000).Quo(asymmetryF.Abs()))
+		swapAmount = externalAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
 	}
 	//if asymmetry is 0 we don't need to swap
 
-	lpUnitsLeft := lpUnitsF - unitsToClaim
-	if withdrawNativeAssetAmount < 0 {
-		withdrawNativeAssetAmount = 0
-	}
-	if withdrawExternalAssetAmount < 0 {
-		withdrawExternalAssetAmount = 0
-	}
-	if lpUnitsLeft < 0 {
-		lpUnitsLeft = 0
-	}
-	if swapAmount < 0 {
-		swapAmount = 0
-	}
-
-	return uint(withdrawNativeAssetAmount), uint(withdrawExternalAssetAmount), uint(lpUnitsLeft), uint(swapAmount)
+	lpUnitsLeft := lpUnitsF.Sub(unitsToClaim)
+	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.RoundInt().BigInt()),
+		sdk.NewUintFromBigInt(withdrawExternalAssetAmount.RoundInt().BigInt()),
+		sdk.NewUintFromBigInt(lpUnitsLeft.RoundInt().BigInt()),
+		sdk.NewUintFromBigInt(swapAmount.RoundInt().BigInt())
 }
 
 // More details on the formula
@@ -511,53 +520,76 @@ func CalculateWithdrawal(poolUnits uint, nativeAssetBalance uint,
 // slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
-func calculatePoolUnits(oldPoolUnits uint, nativeAssetBalance uint, externalAssetBalance uint,
-	nativeAssetAmount uint, externalAssetAmount uint) (uint, uint, error) {
-	if nativeAssetBalance+nativeAssetAmount == 0 {
-		return 0, 0, errors.New("total Native in the pool is zero")
+func calculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
+	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
+	if nativeAssetBalance.Add(nativeAssetAmount).IsZero() {
+		return sdk.ZeroUint(), sdk.ZeroUint(), errors.New("total Native in the pool is zero")
 	}
-	if externalAssetBalance+externalAssetAmount == 0 {
-		return 0, 0, errors.New("total External in the pool is zero")
+	if externalAssetBalance.Add(externalAssetAmount).IsZero() {
+		return sdk.ZeroUint(), sdk.ZeroUint(), errors.New("total External in the pool is zero")
 	}
-	if nativeAssetBalance == 0 || externalAssetBalance == 0 {
-		return nativeAssetAmount, externalAssetAmount, nil
+	if nativeAssetBalance.IsZero() || externalAssetBalance.IsZero() {
+		return nativeAssetAmount, nativeAssetAmount, nil
 	}
-	P := float64(oldPoolUnits)
-	R := float64(nativeAssetBalance)
-	A := float64(externalAssetBalance)
-	r := float64(nativeAssetAmount)
-	a := float64(externalAssetAmount)
+	P, err := sdk.NewDecFromStr(oldPoolUnits.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", oldPoolUnits.String(), err))
+	}
+	R, err := sdk.NewDecFromStr(nativeAssetBalance.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance.String(), err))
+	}
+	A, err := sdk.NewDecFromStr(externalAssetBalance.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance.String(), err))
+	}
+	r, err := sdk.NewDecFromStr(nativeAssetAmount.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetAmount.String(), err))
+	}
+	a, err := sdk.NewDecFromStr(externalAssetAmount.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
+	}
 
 	// (2 r + R) (a + A)
-	slipAdjDenominator := (2*r + R) * (a + A)
-	// (R a - r A)/((2 r + R) (a + A))
-	slipAd := (R*a - r*A) / slipAdjDenominator
-	var slipAdjustment float64
-	//ABS((R a - r A)/((2 r + R) (a + A)))
-	if slipAd < 0 {
-		slipAdjustment = -1.0 * slipAd
+	// (2 r + R) (a + A)
+	slipAdjDenominator := (r.MulInt64(2).Add(R)).Mul(a.Add(A))
+	// ABS((R a - r A)/((2 r + R) (a + A)))
+	var slipAdjustment sdk.Dec
+	if R.Mul(a).GT(r.Mul(A)) {
+		slipAdjustment = R.Mul(a).Sub(r.Mul(A)).Quo(slipAdjDenominator)
+	} else {
+		slipAdjustment = r.Mul(A).Sub(R.Mul(a)).Quo(slipAdjDenominator)
 	}
 	// (1 - ABS((R a - r A)/((2 r + R) (a + A))))
-	slipAdjustment = 1 - slipAdjustment
+	slipAdjustment = sdk.NewDec(1).Sub(slipAdjustment)
 
 	// ((P (a R + A r))
-	numerator := P * (a*R + A*r)
+	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
 	// 2AR
-	denominator := 2 * A * R
-	quotient := uint(numerator / denominator)
-	lpUnits := quotient * uint(slipAdjustment)
-	newPoolUnit := uint(P) + lpUnits
-	return newPoolUnit, lpUnits, nil
+	denominator := sdk.NewDec(2).Mul(A).Mul(R)
+	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
+	newPoolUnit := P.Add(stakeUnits)
+
+	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
+
 }
 
-func calcLiquidityFee(X, x, Y uint) uint {
-	return (x * x * Y) / ((x + X) * (x + X))
+func calcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
+	d := x.Add(X)
+	denom := d.Mul(d)
+	return (x.Mul(x).Mul(Y)).Quo(denom)
 }
 
-func calcTradeSlip(X, x uint) uint {
-	return x * (2*X + x) / (X * X)
+func calcTradeSlip(X, x sdk.Uint) sdk.Uint {
+	numerator := x.Mul(sdk.NewUint(2).Mul(X).Add(x))
+	denom := X.Mul(X)
+	return numerator.Quo(denom)
 }
 
-func calcSwapResult(X, x, Y uint) uint {
-	return (x * X * Y) / ((x + X) * (x + X))
+func calcSwapResult(X, x, Y sdk.Uint) sdk.Uint {
+	d := x.Add(X)
+	denom := d.Mul(d)
+	return (x.Mul(X).Mul(Y)).Quo(denom)
 }

@@ -29,17 +29,27 @@ Ticker: %s`, a.SourceChain, a.Symbol, a.Ticker))
 }
 
 func (a Asset) Validate() bool {
-	if len(strings.TrimSpace(a.SourceChain)) == 0 {
+	if !VerifyRange(len(strings.TrimSpace(a.SourceChain)), 0, MaxSourceChainLength) {
 		return false
 	}
-	if len(strings.TrimSpace(a.Symbol)) == 0 {
+	if !VerifyRange(len(strings.TrimSpace(a.Symbol)), 0, MaxSymbolLength) {
 		return false
 	}
-	if len(strings.TrimSpace(a.Ticker)) == 0 {
+	if !VerifyRange(len(strings.TrimSpace(a.Ticker)), 0, MaxTickerLength) {
 		return false
 	}
 	coin := sdk.NewCoin(a.Ticker, sdk.OneInt())
 	return coin.IsValid()
+}
+
+func VerifyRange(num, low, high int) bool {
+	if num >= high {
+		return false
+	}
+	if num <= low {
+		return false
+	}
+	return true
 }
 
 func (a Asset) Equals(a2 Asset) bool {
