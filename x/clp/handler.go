@@ -48,7 +48,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	// iterate over Lp list and refund them there tokens
 	// Return both RWN and EXTERNAL ASSET
 	for _, lp := range lpList {
-		withdrawNativeAsset, withdrawExternalAsset, _, _ := calculateWithdrawal(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, sdk.NewInt(10000), sdk.ZeroInt())
+		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateWithdrawal(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, sdk.NewInt(10000), sdk.ZeroInt())
 		poolUnits = poolUnits.Sub(lp.LiquidityProviderUnits)
 		nativeAssetBalance = nativeAssetBalance.Sub(withdrawNativeAsset)
 		externalAssetBalance = externalAssetBalance.Sub(withdrawExternalAsset)
@@ -225,7 +225,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	poolOriginalEB := pool.ExternalAssetBalance
 	poolOriginalNB := pool.NativeAssetBalance
 	//Calculate amount to withdraw
-	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := calculateWithdrawal(pool.PoolUnits,
+	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
 		msg.WBasisPoints, msg.Asymmetry)
 
@@ -243,7 +243,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 
 	// Swapping between Native and External based on Asymmetry
 	if msg.Asymmetry.IsPositive() {
-		swapResult, _, _, swappedPool, err := swapOne(GetSettlementAsset(), swapAmount, msg.ExternalAsset, pool)
+		swapResult, _, _, swappedPool, err := SwapOne(GetSettlementAsset(), swapAmount, msg.ExternalAsset, pool)
 		if err != nil {
 			return nil, types.ErrSwapping
 		}
@@ -256,7 +256,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		pool = swappedPool
 	}
 	if msg.Asymmetry.IsNegative() {
-		swapResult, _, _, swappedPool, err := swapOne(msg.ExternalAsset, swapAmount, GetSettlementAsset(), pool)
+		swapResult, _, _, swappedPool, err := SwapOne(msg.ExternalAsset, swapAmount, GetSettlementAsset(), pool)
 		if err != nil {
 			return nil, types.ErrSwapping
 		}
@@ -364,7 +364,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// If its one way we can skip this if condition and add balance to users account from outpool
 	if msg.SentAsset != nativeAsset && msg.ReceivedAsset != nativeAsset {
 
-		emitAmount, lp, ts, finalPool, err := swapOne(sentAsset, sentAmount, nativeAsset, inPool)
+		emitAmount, lp, ts, finalPool, err := SwapOne(sentAsset, sentAmount, nativeAsset, inPool)
 		if err != nil {
 			return nil, err
 		}
@@ -384,7 +384,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		}
 	}
 	// Calculating amount user receives
-	emitAmount, lp, ts, finalPool, err := swapOne(sentAsset, sentAmount, receivedAsset, outPool)
+	emitAmount, lp, ts, finalPool, err := SwapOne(sentAsset, sentAmount, receivedAsset, outPool)
 	if err != nil {
 		return nil, err
 	}
@@ -422,7 +422,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 //------------------------------------------------------------------------------------------------------------------
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-func swapOne(from Asset, sentAmount sdk.Uint, to Asset, pool Pool) (sdk.Uint, sdk.Uint, sdk.Uint, Pool, error) {
+func SwapOne(from Asset, sentAmount sdk.Uint, to Asset, pool Pool) (sdk.Uint, sdk.Uint, sdk.Uint, Pool, error) {
 
 	var X sdk.Uint
 	var Y sdk.Uint
@@ -454,7 +454,7 @@ func swapOne(from Asset, sentAmount sdk.Uint, to Asset, pool Pool) (sdk.Uint, sd
 
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-func calculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance sdk.Uint,
+func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance sdk.Uint,
 	externalAssetBalance sdk.Uint, lpUnits sdk.Uint, wBasisPoints sdk.Int, asymmetry sdk.Int) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
 	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
 
