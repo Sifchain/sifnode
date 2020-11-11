@@ -37,7 +37,7 @@ var (
 	//GenerateRandomLP       = keeper.GenerateRandomLP
 	//GenerateAddress        = keeper.GenerateAddress
 	//GenerateAddress2       = keeper.GenerateAddress2
-	GetSettlementAsset     = types.GetSettlementAsset
+	GetSettlementAsset = types.GetSettlementAsset
 )
 
 type (
