@@ -1,7 +1,9 @@
 package keeper_test
 
 import (
+	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/clp/test"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -91,4 +93,19 @@ func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
 	// This should do nothing
 	keeper.DestroyLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	assert.False(t, keeper.GetLiquidityProviderIterator(ctx).Valid())
+}
+
+func TestKeeper_BankKeeper(t *testing.T) {
+	user1 := test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
+	user2 := test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA7")
+	ctx, keeper := test.CreateTestAppClp(false)
+	initialBalance := sdk.NewUint(10000)
+	sendingBalance := sdk.NewUint(1000)
+	nativeCoin := sdk.NewCoin(clp.NativeTicker, sdk.Int(initialBalance))
+	sendingCoin := sdk.NewCoin(clp.NativeTicker, sdk.Int(sendingBalance))
+	_, err := keeper.GetBankKeeper().AddCoins(ctx, user1, sdk.Coins{nativeCoin})
+	assert.NoError(t, err)
+	assert.True(t, keeper.HasCoins(ctx, user1, sdk.Coins{nativeCoin}))
+	assert.NoError(t, keeper.SendCoins(ctx, user1, user2, sdk.Coins{sendingCoin}))
+	assert.True(t, keeper.HasCoins(ctx, user2, sdk.Coins{sendingCoin}))
 }
