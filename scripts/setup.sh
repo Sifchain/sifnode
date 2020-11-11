@@ -1,7 +1,8 @@
 #!/bin/bash
 BASEDIR=$(pwd)
-make clean install
 set -e
+make clean install
+sudo rm -rf ./build/networks
 cd $BASEDIR/smart-contracts && yarn install
 yarn develop > chain.log &
 truffle deploy  ;
