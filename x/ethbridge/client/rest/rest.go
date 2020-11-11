@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
+	context "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
@@ -51,7 +51,7 @@ type burnOrLockEthReq struct {
 }
 
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application
-func RegisterRESTRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) {
+func RegisterRESTRoutes(cliCtx context.Context, r *mux.Router, storeName string) {
 	r.HandleFunc(fmt.Sprintf("/%s/prophecies", storeName), createClaimHandler(cliCtx)).Methods("POST")
 	r.HandleFunc(
 		fmt.Sprintf("/%s/prophecies/{%s}/{%s}/{%s}/{%s}/{%s}/{%s}",
@@ -61,7 +61,7 @@ func RegisterRESTRoutes(cliCtx context.CLIContext, r *mux.Router, storeName stri
 	r.HandleFunc(fmt.Sprintf("/%s/lock", storeName), burnOrLockHandler(cliCtx, "lock")).Methods("POST")
 }
 
-func createClaimHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func createClaimHandler(cliCtx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req createEthClaimReq
 
@@ -113,7 +113,7 @@ func createClaimHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func getProphecyHandler(cliCtx context.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
@@ -162,7 +162,7 @@ func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.Handle
 	}
 }
 
-func burnOrLockHandler(cliCtx context.CLIContext, lockOrBurn string) http.HandlerFunc {
+func burnOrLockHandler(cliCtx context.Context, lockOrBurn string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req burnOrLockEthReq
 

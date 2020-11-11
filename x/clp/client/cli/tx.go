@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
+	context "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -43,7 +43,7 @@ func GetCmdCreatePool(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			cliCtx := context.NewContextWithInput(inBuf).WithCodec(cdc)
 			asset := types.NewAsset(viper.GetString(FlagAssetSourceChain),
 				viper.GetString(FlagAssetSymbol),
 				viper.GetString(FlagAssetTicker))
@@ -76,7 +76,7 @@ func GetCmdDecommissionPool(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			cliCtx := context.NewContextWithInput(inBuf).WithCodec(cdc)
 			ticker := viper.GetString(FlagAssetTicker)
 			signer := cliCtx.GetFromAddress()
 			msg := types.NewMsgDecommissionPool(signer, ticker)
@@ -96,7 +96,7 @@ func GetCmdAddLiquidity(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			cliCtx := context.NewContextWithInput(inBuf).WithCodec(cdc)
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSourceChain),
 				viper.GetString(FlagAssetSymbol),
 				viper.GetString(FlagAssetTicker))
@@ -129,7 +129,7 @@ func GetCmdRemoveLiquidity(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			cliCtx := context.NewContextWithInput(inBuf).WithCodec(cdc)
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSourceChain),
 				viper.GetString(FlagAssetSymbol),
 				viper.GetString(FlagAssetTicker))
@@ -162,7 +162,7 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			cliCtx := context.NewContextWithInput(inBuf).WithCodec(cdc)
 			sentAsset := types.NewAsset(viper.GetString(FlagSentAssetSourceChain),
 				viper.GetString(FlagSentAssetSymbol),
 				viper.GetString(FlagSentAssetTicker))

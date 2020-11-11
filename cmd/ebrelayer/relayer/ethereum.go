@@ -9,7 +9,7 @@ import (
 	"math/big"
 	"os"
 
-	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
+	sdkContext "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -38,7 +38,7 @@ type EthereumSub struct {
 	RegistryContractAddress common.Address
 	ValidatorName           string
 	ValidatorAddress        sdk.ValAddress
-	CliCtx                  sdkContext.CLIContext
+	CliCtx                  sdkContext.Context
 	TxBldr                  authtypes.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
 	Logger                  tmLog.Logger
@@ -93,9 +93,9 @@ func LoadValidatorCredentials(validatorFrom string, inBuf io.Reader) (sdk.ValAdd
 
 // LoadTendermintCLIContext : loads CLI context for tendermint txs
 func LoadTendermintCLIContext(appCodec *amino.Codec, validatorAddress sdk.ValAddress, validatorName string,
-	rpcURL string, chainID string) sdkContext.CLIContext {
+	rpcURL string, chainID string) sdkContext.Context {
 	// Create the new CLI context
-	cliCtx := sdkContext.NewCLIContext().
+	cliCtx := sdkContext.NewContext().
 		WithCodec(appCodec).
 		WithFromAddress(sdk.AccAddress(validatorAddress)).
 		WithFromName(validatorName)

@@ -8,11 +8,11 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
+	context "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 )
 
-func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
+func registerQueryRoutes(cliCtx context.Context, r *mux.Router) {
 	r.HandleFunc(
 		"/clp/getPool",
 		getPoolHandler(cliCtx),
@@ -27,7 +27,7 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	).Methods("GET")
 }
 
-func getPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getPoolHandler(cliCtx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
@@ -55,7 +55,7 @@ func getPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func getLiquidityProviderHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getLiquidityProviderHandler(cliCtx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
@@ -87,7 +87,7 @@ func getLiquidityProviderHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func getPoolsHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getPoolsHandler(cliCtx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {

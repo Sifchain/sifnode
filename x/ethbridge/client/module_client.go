@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/cosmos/cosmos-sdk/client/context"
+	context "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -51,6 +51,6 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 }
 
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application
-func RegisterRESTRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) {
+func RegisterRESTRoutes(cliCtx context.Context, r *mux.Router, storeName string) {
 	rest.RegisterRESTRoutes(cliCtx, r, storeName)
 }

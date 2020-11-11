@@ -12,10 +12,10 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
+	context "github.com/cosmos/cosmos-sdk/client"
 )
 
-func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
+func registerTxRoutes(cliCtx context.Context, r *mux.Router) {
 	r.HandleFunc(
 		"/clp/createPool",
 		createPooHandler(cliCtx),
@@ -76,7 +76,7 @@ type (
 	}
 )
 
-func createPooHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func createPooHandler(cliCtx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req CreatePoolReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
@@ -102,7 +102,7 @@ func createPooHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func decommissionPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func decommissionPoolHandler(cliCtx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req DecommissionPoolReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
@@ -128,7 +128,7 @@ func decommissionPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func addLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func addLiquidityHandler(cliCtx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req AddLiquidityReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
@@ -154,7 +154,7 @@ func addLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func removeLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func removeLiquidityHandler(cliCtx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req RemoveLiquidityReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
@@ -180,7 +180,7 @@ func removeLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func swapHandler(cliCtx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req SwapReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
