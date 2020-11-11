@@ -1,0 +1,36 @@
+name: Feature merged
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - develop
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged
+    env:
+      WORKING_DIRECTORY: ./build
+      WORKSPACE_PREFIX: sifchain-aws
+      WORKSPACE_NAME: feature-testnets
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Create k8s config
+        working-directory: ${{env.WORKING_DIRECTORY}}
+        run: |
+          mkdir -p ../.live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
+          aws eks --region us-west-2 update-kubeconfig \
+                  --name ${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }} \
+                  --kubeconfig ../.live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}/kubeconfig_${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
+
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v2.x
+
+      - name: Destroy namespace
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: |
+          rake 'cluster:sifnode:destroy[${{ env.WORKSPACE_NAME }},aws,${{ env.GITHUB_REF_SLUG }},true]'
