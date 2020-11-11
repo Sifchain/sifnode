@@ -25,7 +25,10 @@ const (
 func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
 	claim ProphecyClaim, key *ecdsa.PrivateKey) error {
 	// Initialize client service, validator's tx auth, and target contract address
-	client, auth, target := initRelayConfig(provider, contractAddress, event, key)
+	client, auth, target, err := initRelayConfig(provider, contractAddress, event, key)
+	if err != nil {
+		return err
+	}
 
 	// Initialize CosmosBridge instance
 	fmt.Println("\nFetching CosmosBridge contract...")
@@ -65,7 +68,10 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 func RelayOracleClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
 	claim OracleClaim, key *ecdsa.PrivateKey) error {
 	// Initialize client service, validator's tx auth, and target contract address
-	client, auth, target := initRelayConfig(provider, contractAddress, event, key)
+	client, auth, target, err := initRelayConfig(provider, contractAddress, event, key)
+	if err != nil {
+		return err
+	}
 
 	// Initialize Oracle instance
 	fmt.Println("\nFetching Oracle contract...")
@@ -103,27 +109,34 @@ func RelayOracleClaimToEthereum(provider string, contractAddress common.Address,
 
 // initRelayConfig set up Ethereum client, validator's transaction auth, and the target contract's address
 func initRelayConfig(provider string, registry common.Address, event types.Event, key *ecdsa.PrivateKey,
-) (*ethclient.Client, *bind.TransactOpts, common.Address) {
+) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
 	// Start Ethereum client
 	client, err := ethclient.Dial(provider)
 	if err != nil {
 		log.Println(err)
+		return &ethclient.Client{}, &bind.TransactOpts{}, common.Address{}, err
 	}
 
 	// Load the validator's address
 	sender, err := LoadSender()
 	if err != nil {
 		log.Println(err)
+		return &ethclient.Client{}, &bind.TransactOpts{}, common.Address{}, err
+
 	}
 
 	nonce, err := client.PendingNonceAt(context.Background(), sender)
 	if err != nil {
 		log.Println(err)
+		return &ethclient.Client{}, &bind.TransactOpts{}, common.Address{}, err
+
 	}
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		log.Println(err)
+		return &ethclient.Client{}, &bind.TransactOpts{}, common.Address{}, err
+
 	}
 
 	// Set up TransactOpts auth's tx signature authorization
@@ -149,6 +162,8 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	target, err := GetAddressFromBridgeRegistry(client, registry, targetContract)
 	if err != nil {
 		log.Println(err)
+		return &ethclient.Client{}, &bind.TransactOpts{}, common.Address{}, err
+
 	}
-	return client, transactOptsAuth, target
+	return client, transactOptsAuth, target, nil
 }
