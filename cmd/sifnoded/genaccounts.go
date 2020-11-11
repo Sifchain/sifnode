@@ -12,7 +12,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -49,18 +49,19 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			addr, err := sdk.AccAddressFromBech32(args[0])
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			if err != nil {
+				inBuf := bufio.NewReader(cmd.InOrStdin())
+				keyringBackend, err := cmd.Flags().GetString(flags.FlagKeyringBackend)
+                if err != nil {
+                    return err
+                }
+
 				// attempt to lookup address from Keybase if no address was provided
-				kb, err := keys.NewKeyring(
-					sdk.KeyringServiceName(),
-					viper.GetString(flags.FlagKeyringBackend),
-					viper.GetString(flagClientHome),
-					inBuf,
-				)
+				kb, err := keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf)
 				if err != nil {
 					return err
 				}
 
-				info, err := kb.Get(args[0])
+				info, err := kb.Key(args[0])
 				if err != nil {
 					return fmt.Errorf("failed to get address from Keybase: %w", err)
 				}
