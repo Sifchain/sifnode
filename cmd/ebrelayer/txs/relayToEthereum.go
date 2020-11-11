@@ -162,7 +162,7 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	target, err := GetAddressFromBridgeRegistry(client, registry, targetContract)
 	if err != nil {
 		log.Println(err)
-		return nil, nil,, common.Address{}, err
+		return nil, nil, common.Address{}, err
 
 	}
 	return client, transactOptsAuth, target, nil
