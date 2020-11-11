@@ -49,7 +49,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	// Return both RWN and EXTERNAL ASSET
 	for _, lp := range lpList {
 		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateWithdrawal(poolUnits, nativeAssetBalance.String(), externalAssetBalance.String(),
-			lp.LiquidityProviderUnits.String(), sdk.NewInt(10000).String(), sdk.ZeroInt())
+			lp.LiquidityProviderUnits.String(), sdk.NewInt(MaxWbasis).String(), sdk.ZeroInt())
 		poolUnits = poolUnits.Sub(lp.LiquidityProviderUnits)
 		nativeAssetBalance = nativeAssetBalance.Sub(withdrawNativeAsset)
 		externalAssetBalance = externalAssetBalance.Sub(withdrawExternalAsset)
