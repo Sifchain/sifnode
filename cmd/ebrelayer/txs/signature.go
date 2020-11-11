@@ -23,7 +23,7 @@ func LoadPrivateKey() (key *ecdsa.PrivateKey, err error) {
 	rawPrivateKey := os.Getenv("ETHEREUM_PRIVATE_KEY")
 	if strings.TrimSpace(rawPrivateKey) == "" {
 		log.Println("Error loading ETHEREUM_PRIVATE_KEY from .env file")
-		return &ecdsa.PrivateKey{}, errors.New("Can't load ETHEREUM_PRIVATE_KEY from .env file")
+		return &ecdsa.PrivateKey{}, errors.New("can't load ethereum private key from .env file")
 	}
 
 	// Parse private key
