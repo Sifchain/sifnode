@@ -1,6 +1,7 @@
-package cli
+package cli_test
 
 import (
+	"github.com/Sifchain/sifnode/x/clp/client/cli"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/viper"
@@ -18,13 +19,13 @@ func SetupViper() {
 
 func TestGetCmdCreatePool(t *testing.T) {
 	cdc := test.MakeTestCodec()
-	clpcmd := GetCmdCreatePool(cdc)
+	clpcmd := cli.GetCmdCreatePool(cdc)
 	SetupViper()
-	viper.Set(FlagExternalAssetAmount, "100")
-	viper.Set(FlagNativeAssetAmount, "100")
-	viper.Set(FlagAssetSourceChain, "ethereum")
-	viper.Set(FlagAssetSymbol, "ETH")
-	viper.Set(FlagAssetTicker, "ceth")
+	viper.Set(cli.FlagExternalAssetAmount, "100")
+	viper.Set(cli.FlagNativeAssetAmount, "100")
+	viper.Set(cli.FlagAssetSourceChain, "ethereum")
+	viper.Set(cli.FlagAssetSymbol, "ETH")
+	viper.Set(cli.FlagAssetTicker, "ceth")
 	clpcmd.SetArgs([]string{
 		"--externalAmount", "100",
 		"--nativeAmount", "100",
@@ -37,13 +38,13 @@ func TestGetCmdCreatePool(t *testing.T) {
 
 func TestGetCmdAddLiquidity(t *testing.T) {
 	cdc := test.MakeTestCodec()
-	clpcmd := GetCmdAddLiquidity(cdc)
+	clpcmd := cli.GetCmdAddLiquidity(cdc)
 	SetupViper()
-	viper.Set(FlagExternalAssetAmount, "100")
-	viper.Set(FlagNativeAssetAmount, "100")
-	viper.Set(FlagAssetSourceChain, "ethereum")
-	viper.Set(FlagAssetSymbol, "ETH")
-	viper.Set(FlagAssetTicker, "ceth")
+	viper.Set(cli.FlagExternalAssetAmount, "100")
+	viper.Set(cli.FlagNativeAssetAmount, "100")
+	viper.Set(cli.FlagAssetSourceChain, "ethereum")
+	viper.Set(cli.FlagAssetSymbol, "ETH")
+	viper.Set(cli.FlagAssetTicker, "ceth")
 	clpcmd.SetArgs([]string{
 		"--externalAmount", "100",
 		"--nativeAmount", "100",
@@ -56,13 +57,13 @@ func TestGetCmdAddLiquidity(t *testing.T) {
 
 func TestGetCmdRemoveLiquidity(t *testing.T) {
 	cdc := test.MakeTestCodec()
-	clpcmd := GetCmdRemoveLiquidity(cdc)
+	clpcmd := cli.GetCmdRemoveLiquidity(cdc)
 	SetupViper()
-	viper.Set(FlagWBasisPoints, "100")
-	viper.Set(FlagAsymmetry, "1000")
-	viper.Set(FlagAssetSourceChain, "ethereum")
-	viper.Set(FlagAssetSymbol, "ETH")
-	viper.Set(FlagAssetTicker, "ceth")
+	viper.Set(cli.FlagWBasisPoints, "100")
+	viper.Set(cli.FlagAsymmetry, "1000")
+	viper.Set(cli.FlagAssetSourceChain, "ethereum")
+	viper.Set(cli.FlagAssetSymbol, "ETH")
+	viper.Set(cli.FlagAssetTicker, "ceth")
 	clpcmd.SetArgs([]string{
 		"--wBasis", "100",
 		"--asymmetry", "1000",
@@ -73,11 +74,11 @@ func TestGetCmdRemoveLiquidity(t *testing.T) {
 	err := clpcmd.Execute()
 	assert.NoError(t, err)
 
-	viper.Set(FlagWBasisPoints, "%%")
-	viper.Set(FlagAsymmetry, "1000")
-	viper.Set(FlagAssetSourceChain, "ethereum")
-	viper.Set(FlagAssetSymbol, "ETH")
-	viper.Set(FlagAssetTicker, "ceth")
+	viper.Set(cli.FlagWBasisPoints, "%%")
+	viper.Set(cli.FlagAsymmetry, "1000")
+	viper.Set(cli.FlagAssetSourceChain, "ethereum")
+	viper.Set(cli.FlagAssetSymbol, "ETH")
+	viper.Set(cli.FlagAssetTicker, "ceth")
 	clpcmd.SetArgs([]string{
 		"--wBasis", "100",
 		"--asymmetry", "1000",
@@ -88,11 +89,11 @@ func TestGetCmdRemoveLiquidity(t *testing.T) {
 	err = clpcmd.Execute()
 	assert.Error(t, err)
 
-	viper.Set(FlagWBasisPoints, "100")
-	viper.Set(FlagAsymmetry, "asdef")
-	viper.Set(FlagAssetSourceChain, "ethereum")
-	viper.Set(FlagAssetSymbol, "ETH")
-	viper.Set(FlagAssetTicker, "ceth")
+	viper.Set(cli.FlagWBasisPoints, "100")
+	viper.Set(cli.FlagAsymmetry, "asdef")
+	viper.Set(cli.FlagAssetSourceChain, "ethereum")
+	viper.Set(cli.FlagAssetSymbol, "ETH")
+	viper.Set(cli.FlagAssetTicker, "ceth")
 	clpcmd.SetArgs([]string{
 		"--wBasis", "100",
 		"--asymmetry", "1000",
@@ -106,16 +107,16 @@ func TestGetCmdRemoveLiquidity(t *testing.T) {
 
 func TestGetCmdSwap(t *testing.T) {
 	cdc := test.MakeTestCodec()
-	clpcmd := GetCmdSwap(cdc)
+	clpcmd := cli.GetCmdSwap(cdc)
 	SetupViper()
 
-	viper.Set(FlagSentAssetSourceChain, "ethereum")
-	viper.Set(FlagSentAssetSymbol, "ETH")
-	viper.Set(FlagSentAssetTicker, "ceth")
-	viper.Set(FlagReceivedAssetSourceChain, "dash")
-	viper.Set(FlagReceivedAssetSymbol, "DASH")
-	viper.Set(FlagReceivedAssetTicker, "cdash")
-	viper.Set(FlagAmount, "100")
+	viper.Set(cli.FlagSentAssetSourceChain, "ethereum")
+	viper.Set(cli.FlagSentAssetSymbol, "ETH")
+	viper.Set(cli.FlagSentAssetTicker, "ceth")
+	viper.Set(cli.FlagReceivedAssetSourceChain, "dash")
+	viper.Set(cli.FlagReceivedAssetSymbol, "DASH")
+	viper.Set(cli.FlagReceivedAssetTicker, "cdash")
+	viper.Set(cli.FlagAmount, "100")
 	clpcmd.SetArgs([]string{
 		"--sentAmount", "100",
 		"--receivedSourceChain", "dash",
@@ -130,9 +131,9 @@ func TestGetCmdSwap(t *testing.T) {
 
 func TestGetCmdDecommissionPool(t *testing.T) {
 	cdc := test.MakeTestCodec()
-	clpcmd := GetCmdDecommissionPool(cdc)
+	clpcmd := cli.GetCmdDecommissionPool(cdc)
 	SetupViper()
-	viper.Set(FlagAssetTicker, "ceth")
+	viper.Set(cli.FlagAssetTicker, "ceth")
 	clpcmd.SetArgs([]string{
 		"--ticker", "ceth"})
 	err := clpcmd.Execute()
