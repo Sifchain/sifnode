@@ -11,7 +11,8 @@ func TestKeeper_Errors(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
 	_ = keeper.Logger(ctx)
 	pool.ExternalAsset.Ticker = ""
-	keeper.SetPool(ctx, pool)
+	err := keeper.SetPool(ctx, pool)
+	assert.NoError(t, err)
 	getpools := keeper.GetPools(ctx)
 	assert.Equal(t, len(getpools), 0, "No pool added")
 
@@ -21,14 +22,15 @@ func TestKeeper_Errors(t *testing.T) {
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	assert.Error(t, err)
 	assert.NotEqual(t, getlp, lp)
-	assert.NotNil(t, test.GenerateAddress())
+	assert.NotNil(t, test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA7"))
 }
 
 func TestKeeper_SetPool(t *testing.T) {
 
 	pool := test.GenerateRandomPool(1)[0]
 	ctx, keeper := test.CreateTestAppClp(false)
-	keeper.SetPool(ctx, pool)
+	err := keeper.SetPool(ctx, pool)
+	assert.NoError(t, err)
 	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker)
 	assert.NoError(t, err, "Error in get pool")
 	assert.Equal(t, getpool, pool)
@@ -39,7 +41,8 @@ func TestKeeper_GetPools(t *testing.T) {
 	pools := test.GenerateRandomPool(10)
 	ctx, keeper := test.CreateTestAppClp(false)
 	for _, pool := range pools {
-		keeper.SetPool(ctx, pool)
+		err := keeper.SetPool(ctx, pool)
+		assert.NoError(t, err)
 	}
 	getpools := keeper.GetPools(ctx)
 	assert.Greater(t, len(getpools), 0, "More than one pool added")
@@ -49,15 +52,18 @@ func TestKeeper_GetPools(t *testing.T) {
 func TestKeeper_DestroyPool(t *testing.T) {
 	pool := test.GenerateRandomPool(1)[0]
 	ctx, keeper := test.CreateTestAppClp(false)
-	keeper.SetPool(ctx, pool)
+	err := keeper.SetPool(ctx, pool)
+	assert.NoError(t, err)
 	getpool, err := keeper.GetPool(ctx, pool.ExternalAsset.Ticker)
 	assert.NoError(t, err, "Error in get pool")
 	assert.Equal(t, getpool, pool)
-	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
+	err = keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
+	assert.NoError(t, err)
 	_, err = keeper.GetPool(ctx, pool.ExternalAsset.Ticker)
 	assert.Error(t, err, "Pool should be deleted")
 	// This should do nothing.
-	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
+	err = keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
+	assert.Error(t, err)
 }
 
 func TestKeeper_SetLiquidityProvider(t *testing.T) {
