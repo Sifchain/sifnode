@@ -29,7 +29,7 @@ Symbol: ETH
 Ticker: ceth
 
 SourceChain: SIFCHAIN
-Symbol: RWN
+Symbol: rowan
 Ticker: rwn
 ```
 -Pool  : Every Liquidity pool for CLP is created by pairing an External asset with the Native asset .
