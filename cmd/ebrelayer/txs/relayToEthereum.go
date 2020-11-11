@@ -114,28 +114,28 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	client, err := ethclient.Dial(provider)
 	if err != nil {
 		log.Println(err)
-		return &ethclient.Client{}, &bind.TransactOpts{}, common.Address{}, err
+		return nil, nil, common.Address{}, err
 	}
 
 	// Load the validator's address
 	sender, err := LoadSender()
 	if err != nil {
 		log.Println(err)
-		return &ethclient.Client{}, &bind.TransactOpts{}, common.Address{}, err
+		return nil, nil, common.Address{}, err
 
 	}
 
 	nonce, err := client.PendingNonceAt(context.Background(), sender)
 	if err != nil {
 		log.Println(err)
-		return &ethclient.Client{}, &bind.TransactOpts{}, common.Address{}, err
+		return nil, nil, common.Address{}, err
 
 	}
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		log.Println(err)
-		return &ethclient.Client{}, &bind.TransactOpts{}, common.Address{}, err
+		return nil, nil, common.Address{}, err
 
 	}
 
@@ -162,7 +162,7 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	target, err := GetAddressFromBridgeRegistry(client, registry, targetContract)
 	if err != nil {
 		log.Println(err)
-		return &ethclient.Client{}, &bind.TransactOpts{}, common.Address{}, err
+		return nil, nil,, common.Address{}, err
 
 	}
 	return client, transactOptsAuth, target, nil

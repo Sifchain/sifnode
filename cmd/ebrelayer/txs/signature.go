@@ -22,15 +22,15 @@ func LoadPrivateKey() (key *ecdsa.PrivateKey, err error) {
 	// Private key for validator's Ethereum address must be set as an environment variable
 	rawPrivateKey := os.Getenv("ETHEREUM_PRIVATE_KEY")
 	if strings.TrimSpace(rawPrivateKey) == "" {
-		log.Println("Error loading ETHEREUM_PRIVATE_KEY from .env file")
-		return &ecdsa.PrivateKey{}, errors.New("can't load ethereum private key from .env file")
+		log.Println("Error loading ETHEREUM_PRIVATE_KEY")
+		return nil, errors.New("can't load ethereum private key")
 	}
 
 	// Parse private key
 	privateKey, err := crypto.HexToECDSA(rawPrivateKey)
 	if err != nil {
 		log.Println(err)
-		return privateKey, err
+		return nil, err
 	}
 
 	return privateKey, nil
