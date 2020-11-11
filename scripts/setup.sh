@@ -1,7 +1,6 @@
-!/bin/bash
+#!/bin/bash
 BASEDIR=$(pwd)
 make clean install
-rm -rf build/networks/
 set -e
 cd $BASEDIR/smart-contracts && yarn install
 yarn develop > chain.log &
