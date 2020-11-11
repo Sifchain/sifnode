@@ -25,13 +25,17 @@ const (
 func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
 	claim ProphecyClaim, key *ecdsa.PrivateKey) error {
 	// Initialize client service, validator's tx auth, and target contract address
-	client, auth, target := initRelayConfig(provider, contractAddress, event, key)
+	client, auth, target, err := initRelayConfig(provider, contractAddress, event, key)
+	if err != nil {
+		return err
+	}
 
 	// Initialize CosmosBridge instance
 	fmt.Println("\nFetching CosmosBridge contract...")
 	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return err
 	}
 
 	// Send transaction
@@ -39,7 +43,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
 		claim.CosmosSender, claim.EthereumReceiver, claim.Symbol, claim.Amount)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return err
 	}
 	fmt.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
@@ -47,7 +51,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	// Get the transaction receipt
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return err
 	}
 
@@ -64,13 +68,16 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 func RelayOracleClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
 	claim OracleClaim, key *ecdsa.PrivateKey) error {
 	// Initialize client service, validator's tx auth, and target contract address
-	client, auth, target := initRelayConfig(provider, contractAddress, event, key)
+	client, auth, target, err := initRelayConfig(provider, contractAddress, event, key)
+	if err != nil {
+		return err
+	}
 
 	// Initialize Oracle instance
 	fmt.Println("\nFetching Oracle contract...")
 	oracleInstance, err := oracle.NewOracle(target, client)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return err
 	}
 
@@ -78,7 +85,7 @@ func RelayOracleClaimToEthereum(provider string, contractAddress common.Address,
 	fmt.Println("Sending new OracleClaim to Oracle...")
 	tx, err := oracleInstance.NewOracleClaim(auth, claim.ProphecyID, claim.Message, claim.Signature)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return err
 	}
 	fmt.Println("NewOracleClaim tx hash:", tx.Hash().Hex())
@@ -86,7 +93,7 @@ func RelayOracleClaimToEthereum(provider string, contractAddress common.Address,
 	// Get the transaction receipt
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return err
 	}
 
@@ -102,27 +109,34 @@ func RelayOracleClaimToEthereum(provider string, contractAddress common.Address,
 
 // initRelayConfig set up Ethereum client, validator's transaction auth, and the target contract's address
 func initRelayConfig(provider string, registry common.Address, event types.Event, key *ecdsa.PrivateKey,
-) (*ethclient.Client, *bind.TransactOpts, common.Address) {
+) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
 	// Start Ethereum client
 	client, err := ethclient.Dial(provider)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, nil, common.Address{}, err
 	}
 
 	// Load the validator's address
 	sender, err := LoadSender()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, nil, common.Address{}, err
+
 	}
 
 	nonce, err := client.PendingNonceAt(context.Background(), sender)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, nil, common.Address{}, err
+
 	}
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, nil, common.Address{}, err
+
 	}
 
 	// Set up TransactOpts auth's tx signature authorization
@@ -147,7 +161,9 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	// Get the specific contract's address
 	target, err := GetAddressFromBridgeRegistry(client, registry, targetContract)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, nil, common.Address{}, err
+
 	}
-	return client, transactOptsAuth, target
+	return client, transactOptsAuth, target, nil
 }
