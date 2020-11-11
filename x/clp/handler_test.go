@@ -1,6 +1,7 @@
 package clp
 
 import (
+	"github.com/Sifchain/sifnode/x/clp/test"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -8,7 +9,7 @@ import (
 )
 
 func TestHandler(t *testing.T) {
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
+	ctx, keeper := test.CreateTestAppClp(false)
 	handler := NewHandler(keeper)
 	res, err := handler(ctx, nil)
 	require.Error(t, err)
@@ -16,8 +17,8 @@ func TestHandler(t *testing.T) {
 }
 
 func TestCreatePool(t *testing.T) {
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
-	signer := GenerateAddress()
+	ctx, keeper := test.CreateTestAppClp(false)
+	signer := test.GenerateAddress()
 	//Parameters for create pool
 	initialBalance := sdk.NewUint(10000) // Initial account balance for all assets created
 	poolBalance := sdk.NewUint(1000)     // Amount funded to pool , This same amount is used both for native and external asset
@@ -61,8 +62,8 @@ func TestCreatePool(t *testing.T) {
 }
 
 func TestAddLiqudity(t *testing.T) {
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
-	signer := GenerateAddress()
+	ctx, keeper := test.CreateTestAppClp(false)
+	signer := test.GenerateAddress()
 	//Parameters for add liquidity
 	initialBalance := sdk.NewUint(10000) // Initial account balance for all assets created
 	poolBalance := sdk.NewUint(1000)     // Amount funded to pool , This same amount is used both for native and external asset
@@ -93,8 +94,8 @@ func TestAddLiqudity(t *testing.T) {
 }
 
 func TestRemoveLiquidity(t *testing.T) {
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
-	signer := GenerateAddress()
+	ctx, keeper := test.CreateTestAppClp(false)
+	signer := test.GenerateAddress()
 	externalDenom := "ceth"
 	nativeDenom := GetSettlementAsset().Ticker
 	//Parameters for Remove Liquidity
@@ -187,7 +188,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, res, "Cannot withdraw pool is too shallow")
 
-	newLP := GenerateAddress2()
+	newLP := test.GenerateAddress2()
 	_, _ = keeper.BankKeeper.AddCoins(ctx, newLP, sdk.Coins{externalCoin, nativeCoin})
 	msgAdd := NewMsgAddLiquidity(newLP, asset, sdk.NewUint(1000), sdk.NewUint(1000))
 	res, err = handleMsgAddLiquidity(ctx, keeper, msgAdd)
@@ -203,8 +204,8 @@ func TestRemoveLiquidity(t *testing.T) {
 
 }
 func TestSwap(t *testing.T) {
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
-	signer := GenerateAddress()
+	ctx, keeper := test.CreateTestAppClp(false)
+	signer := test.GenerateAddress()
 	handler := NewHandler(keeper)
 	assetEth := NewAsset("ETHEREUM", "ETH", "ceth")
 	assetDash := NewAsset("DASH", "DASH", "cdash")
@@ -250,8 +251,8 @@ func TestSwap(t *testing.T) {
 }
 
 func TestDecommisionPool(t *testing.T) {
-	ctx, keeper := CreateTestInputDefault(t, false, 1000)
-	signer := GenerateAddress()
+	ctx, keeper := test.CreateTestAppClp(false)
+	signer := test.GenerateAddress()
 	handler := NewHandler(keeper)
 
 	//Parameters for Decommission
