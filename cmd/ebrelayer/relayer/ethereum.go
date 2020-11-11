@@ -1,5 +1,7 @@
 package relayer
 
+// DONTCOVER
+
 import (
 	"context"
 	"crypto/ecdsa"
