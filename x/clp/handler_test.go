@@ -140,7 +140,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	asymmetry = sdk.NewInt(10000)
 	nativeAmountOLD = keeper.BankKeeper.GetCoins(ctx, signer).AmountOf(nativeDenom)
 	externalAmountOLD = keeper.BankKeeper.GetCoins(ctx, signer).AmountOf(externalDenom)
-	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), (wBasis), asymmetry)
+	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), wBasis, asymmetry)
 	msg = clp.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, msg)
 	require.NoError(t, err)
@@ -154,7 +154,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	asymmetry = sdk.ZeroInt()
 	nativeAmountOLD = keeper.BankKeeper.GetCoins(ctx, signer).AmountOf(nativeDenom)
 	externalAmountOLD = keeper.BankKeeper.GetCoins(ctx, signer).AmountOf(externalDenom)
-	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), (wBasis), asymmetry)
+	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), wBasis, asymmetry)
 	msg = clp.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, msg)
 	require.NoError(t, err)
@@ -313,8 +313,8 @@ func CalculateWithdraw(t *testing.T, keeper clp.Keeper, ctx sdk.Context, asset c
 	lp, err := keeper.GetLiquidityProvider(ctx, asset.Ticker, signer)
 	assert.NoError(t, err)
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, swapAmount := clp.CalculateWithdrawal(pool.PoolUnits,
-		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits,
-		wBasisPoints, asymmetry)
+		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
+		wBasisPoints.String(), asymmetry)
 	externalAssetCoin := sdk.Coin{}
 	nativeAssetCoin := sdk.Coin{}
 	if asymmetry.IsPositive() {
