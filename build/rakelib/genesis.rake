@@ -76,6 +76,7 @@ def boot_docker_network(chainnet:, seed_network_address:, eth_config:)
 
   cmd = "CHAINNET=#{chainnet} "
   network.each_with_index do |node, idx|
+    puts node
     cmd += "MONIKER#{idx+1}=#{node['moniker']} PASSWORD#{idx+1}=#{node['password']} IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
   end
 
@@ -97,5 +98,6 @@ def eth_config(eth_address:, eth_keys:, eth_websocket:)
   end
 
   config += "ETHEREUM_WEBSOCKET_ADDRESS=#{eth_websocket}"
+  puts config
   return config
 end
