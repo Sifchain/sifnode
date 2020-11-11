@@ -24,7 +24,10 @@ const (
 	NativeChain  = "SIFCHAIN"
 	NativeSymbol = "RWN"
 
-	AddressLength = 20
+	AddressLength        = 20
+	MaxTickerLength      = 6
+	MaxSymbolLength      = 6
+	MaxSourceChainLength = 20
 )
 
 var (

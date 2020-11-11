@@ -33,6 +33,12 @@ func (s Sifgen) NetworkCreate(count int, outputDir, startingIPAddress string, ou
 	}
 }
 
+func (s Sifgen) NetworkReset(networkDir string) {
+	if err := network.Reset(s.chainID, networkDir); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func (s Sifgen) NodeCreate(peerAddress, genesisURL *string) {
 	witness := node.NewNode(s.chainID, peerAddress, genesisURL)
 	summary, err := witness.Build()
@@ -42,4 +48,10 @@ func (s Sifgen) NodeCreate(peerAddress, genesisURL *string) {
 	}
 
 	fmt.Println(*summary)
+}
+
+func (s Sifgen) NodeReset(nodeHomeDir *string) {
+	if err := node.Reset(s.chainID, nodeHomeDir); err != nil {
+		log.Fatal(err)
+	}
 }

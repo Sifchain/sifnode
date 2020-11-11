@@ -133,30 +133,6 @@ def path(args)
   "../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 
-# check_args checks to make sure the required args are passed in
-def check_args(args)
-  if args[:chainnet] == nil
-    puts "Please provider a chainnet argument E.g testnet, mainnet, etc"
-    exit
-  end
-
-  case args[:provider]
-  when "aws"
-  when "az"
-    puts "Build me!"
-    exit
-  when "gcp"
-    puts "Build me!"
-    exit
-  when "do"
-    puts "Build me!"
-    exit
-  else
-    puts "Please provide a cloud host provider. E.g aws"
-    exit
-  end
-end
-
 # kubeconfig returns the path to the kubeconfig file based on the args
 def kubeconfig(args)
   "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:chainnet]}"

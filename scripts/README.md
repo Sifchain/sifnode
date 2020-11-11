@@ -23,7 +23,7 @@ Ralayer connected to the Ethereum network (for exmaple ropsten) endpoint.
 ```
 python3 peggy-basic-test.py
 ```
-2. run e2e test, need both sifnode and relayer running. also the all js scripts in testnet-contracts works well.
+2. run e2e test, need both sifnode and relayer running. also the all js scripts in smart-contracts works well.
 ```
 python3 peggy-e2e-test.py
 ```

@@ -32,20 +32,8 @@ func TestSimAppExport(t *testing.T) {
 
 	// Making a new app object with the db, so that initchain hasn't been called
 	app2 := NewSimApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, 0)
-	//_, _, err = app2.ExportAppStateAndValidators(false, []string{})
-	//require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 	require.NotNil(t, app2)
 }
-
-// ensure that black listed addresses are properly set in bank keeper
-/* func TestBlackListedAddrs(t *testing.T) {
-	db := dbm.NewMemDB()
-	app := NewSimApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, 0)
-
-	for acc := range maccPerms {
-		require.Equal(t, !allowedReceivingModAcc[acc], app.bankKeeper.BlacklistedAddr(app.SupplyKeeper.GetModuleAddress(acc)))
-	}
-} */
 
 func TestGetMaccPerms(t *testing.T) {
 	dup := GetMaccPerms()
