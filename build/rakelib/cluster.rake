@@ -115,21 +115,12 @@ namespace :cluster do
     desc "delete a namespace"
     task :destroy, [:chainnet, :provider, :namespace, :skip_prompt] do |t, args|
       check_args(args)
-
-      if args[:skip_prompt].nil?
-        STDOUT.puts "Are you sure? (y/n)"
-
-        begin
-          input = STDIN.gets.strip.downcase
-        end until %w(y n).include?(input)
-
-        exit(0) if input != 'y'
-      end
-
+      are_you_sure(args)
       cmd = "kubectl delete namespace #{args[:namespace]}"
       system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end
+
 
   desc "Manage eth full node deploy, upgrade, etc processes"
   namespace :ethnode do
