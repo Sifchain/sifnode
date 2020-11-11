@@ -313,7 +313,7 @@ func CalculateWithdraw(t *testing.T, keeper clp.Keeper, ctx sdk.Context, asset c
 	lp, err := keeper.GetLiquidityProvider(ctx, asset.Ticker, signer)
 	assert.NoError(t, err)
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, swapAmount := clp.CalculateWithdrawal(pool.PoolUnits,
-		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
+		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits,
 		wBasisPoints, asymmetry)
 	externalAssetCoin := sdk.Coin{}
 	nativeAssetCoin := sdk.Coin{}

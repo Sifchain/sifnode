@@ -48,7 +48,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	// iterate over Lp list and refund them there tokens
 	// Return both RWN and EXTERNAL ASSET
 	for _, lp := range lpList {
-		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateWithdrawal(poolUnits, nativeAssetBalance, externalAssetBalance, lp.LiquidityProviderUnits, sdk.NewInt(10000), sdk.ZeroInt())
+		withdrawNativeAsset, withdrawExternalAsset, _, _ := CalculateWithdrawal(poolUnits, nativeAssetBalance.String(), externalAssetBalance.String(), lp.LiquidityProviderUnits, sdk.NewInt(10000), sdk.ZeroInt())
 		poolUnits = poolUnits.Sub(lp.LiquidityProviderUnits)
 		nativeAssetBalance = nativeAssetBalance.Sub(withdrawNativeAsset)
 		externalAssetBalance = externalAssetBalance.Sub(withdrawExternalAsset)
@@ -226,7 +226,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	poolOriginalNB := pool.NativeAssetBalance
 	//Calculate amount to withdraw
 	withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount := CalculateWithdrawal(pool.PoolUnits,
-		pool.NativeAssetBalance, pool.ExternalAssetBalance, lp.LiquidityProviderUnits,
+		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits,
 		msg.WBasisPoints, msg.Asymmetry)
 
 	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Ticker, sdk.NewIntFromUint64(withdrawExternalAssetAmount.Uint64()))
@@ -454,17 +454,17 @@ func SwapOne(from Asset, sentAmount sdk.Uint, to Asset, pool Pool) (sdk.Uint, sd
 
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance sdk.Uint,
-	externalAssetBalance sdk.Uint, lpUnits sdk.Uint, wBasisPoints sdk.Int, asymmetry sdk.Int) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
+func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
+	externalAssetBalance string, lpUnits sdk.Uint, wBasisPoints sdk.Int, asymmetry sdk.Int) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
 	poolUnitsF := sdk.NewDecFromBigInt(poolUnits.BigInt())
 
-	nativeAssetBalanceF, err := sdk.NewDecFromStr(nativeAssetBalance.String())
+	nativeAssetBalanceF, err := sdk.NewDecFromStr(nativeAssetBalance)
 	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance.String(), err))
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance, err))
 	}
-	externalAssetBalanceF, err := sdk.NewDecFromStr(externalAssetBalance.String())
+	externalAssetBalanceF, err := sdk.NewDecFromStr(externalAssetBalance)
 	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance.String(), err))
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance, err))
 	}
 	lpUnitsF, err := sdk.NewDecFromStr(lpUnits.String())
 	if err != nil {
