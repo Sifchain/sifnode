@@ -68,6 +68,31 @@ variable "ebs_csi_driver" {
   default     = "github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/?ref=master"
 }
 
+variable "efs_csi_driver" {
+  description = "GitHub path to the CSI plugin for data persistence"
+  default     = "github.com/kubernetes-sigs/aws-efs-csi-driver/deploy/kubernetes/overlays/stable/?ref=master"
+}
+
+variable "efs_pv_sifnoded_name" {
+  description = "The name of the PV object"
+  default     = "efs-sifnoded"
+}
+
+variable "efs_pv_sifnodecli_name" {
+  description = "The name of the PV object"
+  default     = "efs-sifnodecli"
+}
+
+variable "efs_pv_storageclass" {
+  description = "The name of the storageclass for the EFS driver"
+  default     = "efs-sc"
+}
+
+variable "efs_pv_capacity" {
+  description = "EFS storage capacity"
+  default     = "5Gi"
+}
+
 variable "profile" {
   description = "AWS profile settings"
   default = "default"

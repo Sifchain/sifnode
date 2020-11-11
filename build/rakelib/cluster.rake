@@ -121,6 +121,40 @@ namespace :cluster do
     end
   end
 
+  desc "ebrelayer operations"
+  namespace :ebrelayer do
+    desc "Install ebrelayer"
+    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
+        --set sifnode.env.chainnet=#{args[:chainnet]} \
+        --install -n #{ns(args)} \
+        --set ebrelayer.image.repository=#{image_repository(args)} \
+        --set ebrelayer.image.tag=#{image_tag(args)} \
+        --set ebrelayer.enabled=true \
+        --set ebrelayer.env.ethWebsocketAddress=#{args[:eth_websocket_address]} \
+        --set ebrelayer.env.ethBridgeRegistryAddress=#{args[:eth_bridge_registry_address]} \
+        --set ebrelayer.env.ethPrivateKey=#{args[:eth_private_key]} \
+        --set ebrelayer.env.moniker=#{args[:moniker]}
+      }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+    end
+
+    desc "Uninstall ebrelayer"
+    task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
+        --set sifnode.env.chainnet=#{args[:chainnet]} \
+        --install -n #{ns(args)} \
+        --set ebrelayer.enabled=false
+      }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+    end
+  end
 
   desc "Manage eth full node deploy, upgrade, etc processes"
   namespace :ethnode do
