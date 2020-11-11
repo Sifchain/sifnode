@@ -61,7 +61,7 @@ service:
   port: 26656
 
 pvc:
-  sifnodeName: efs-claim-sifnoded
+  sifnodedName: efs-claim-sifnoded
   sifnodecliName: efs-claim-sifnodecli
   storageclass: efs-sc
   size: 5Gi

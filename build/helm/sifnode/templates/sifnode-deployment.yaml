@@ -72,7 +72,7 @@ spec:
       volumes:
       - name: root
         persistentVolumeClaim:
-          claimName: {{ .Values.pvc.sifnodeName }}
+          claimName: {{ .Values.pvc.sifnodedName }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -47,7 +47,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ include "sifnode.fullname" . }}-ebrelayer
-                  key: ethereumPrivateKey
+                  key: ethPrivateKey
           livenessProbe:
             tcpSocket:
               port: 26657
