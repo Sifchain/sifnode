@@ -43,4 +43,4 @@ jobs:
       - name: Destroy namespace
         working-directory: ${{ env.WORKING_DIRECTORY }}
         run: |
-          rake 'cluster:sifnode:destroy[${{ env.WORKSPACE_NAME }},aws,${{ env.GITHUB_REF_SLUG }},true]'
+          rake 'cluster:sifnode:destroy[${{ env.WORKSPACE_NAME }},aws,${{ env.GITHUB_HEAD_REF_SLUG }},true]'
