@@ -39,12 +39,14 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 ) (common.Address, error) {
 	sender, err := LoadSender()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return common.Address{}, err
 	}
 
 	header, err := client.HeaderByNumber(context.Background(), nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return common.Address{}, err
 	}
 
 	// Set up CallOpts auth
@@ -58,7 +60,8 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 	// Initialize BridgeRegistry instance
 	registryInstance, err := bridgeregistry.NewBridgeRegistry(registry, client)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return common.Address{}, err
 	}
 
 	var address common.Address
@@ -76,7 +79,8 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 	}
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return common.Address{}, err
 	}
 
 	return address, nil

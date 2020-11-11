@@ -33,6 +33,10 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+func (k Keeper) Codec() *codec.Codec {
+	return k.cdc
+}
+
 func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) error {
 	if !pool.Validate() {
 		return types.ErrUnableToSetPool

@@ -179,6 +179,7 @@ func RunGenerateBindingsCmd(cmd *cobra.Command, args []string) error {
 	// Compile contracts, generating contract bins and abis
 	err := contract.CompileContracts(contracts)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
