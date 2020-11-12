@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "big-dipper.name" -}}
+{{- define "block-explorer.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "big-dipper.fullname" -}}
+{{- define "block-explorer.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "big-dipper.chart" -}}
+{{- define "block-explorer.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "big-dipper.labels" -}}
-helm.sh/chart: {{ include "big-dipper.chart" . }}
-{{ include "big-dipper.selectorLabels" . }}
+{{- define "block-explorer.labels" -}}
+helm.sh/chart: {{ include "block-explorer.chart" . }}
+{{ include "block-explorer.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "big-dipper.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "big-dipper.name" . }}
+{{- define "block-explorer.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "block-explorer.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "big-dipper.serviceAccountName" -}}
+{{- define "block-explorer.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "big-dipper.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "block-explorer.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "big-dipper.fullname" . }}
+  name: {{ include "block-explorer.fullname" . }}
   labels:
-    {{- include "big-dipper.labels" . | nindent 4 }}
+    {{- include "block-explorer.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "big-dipper.selectorLabels" . | nindent 6 }}
+      {{- include "block-explorer.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "big-dipper.selectorLabels" . | nindent 8 }}
+        {{- include "block-explorer.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "big-dipper.serviceAccountName" . }}
+      serviceAccountName: {{ include "block-explorer.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -41,11 +41,14 @@ spec:
             - name: ROOT_URL
               value: "http://localhost"
             - name: MONGO_URL
-              value: "mongodb://mongo:27017/meteor"
+              value: "mongodb://{{ include "block-explorer.fullname" . }}-mongodb:27017/meteor"
             - name: PORT
               value: "3000"
             - name: METEOR_SETTINGS
-              value: ""
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "block-explorer.fullname" . }}-meteor
+                  key: meteor_settings
           livenessProbe:
             httpGet:
               path: /
