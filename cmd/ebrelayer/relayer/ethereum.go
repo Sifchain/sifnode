@@ -26,6 +26,7 @@ import (
 	tmLog "github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/keyring"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -43,6 +44,7 @@ type EthereumSub struct {
 	CliCtx                  sdkContext.CLIContext
 	TxBldr                  authtypes.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
+	RelayerChainSinger      *keyring.RelayerChain
 	Logger                  tmLog.Logger
 }
 
@@ -65,6 +67,9 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 		WithTxEncoder(utils.GetTxEncoder(cdc)).
 		WithChainID(chainID)
 
+	// hardcoded now, will get mnemonic from cli
+	signer := keyring.NewRelayerChain("a b c")
+
 	return EthereumSub{
 		Cdc:                     cdc,
 		EthProvider:             ethProvider,
@@ -74,6 +79,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 		CliCtx:                  cliCtx,
 		TxBldr:                  txBldr,
 		PrivateKey:              privateKey,
+		RelayerChainSinger:      signer,
 		Logger:                  logger,
 	}, nil
 }
@@ -229,7 +235,7 @@ func (sub EthereumSub) handleEthereumEvent(clientChainID *big.Int, contractAddre
 	if err != nil {
 		return err
 	}
-	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, &prophecyClaim, sub.CliCtx, sub.TxBldr)
+	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, &prophecyClaim, sub.CliCtx, sub.TxBldr, sub.RelayerChainSinger)
 }
 
 // Unpacks a handleLogNewProphecyClaim event, builds a new OracleClaim, and relays it to Ethereum
