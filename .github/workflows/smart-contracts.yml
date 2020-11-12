@@ -1,0 +1,43 @@
+name: Smart-contracts
+
+on:
+  pull_request:
+    paths: ['smart-contracts']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: smart-contracts
+
+    steps:
+      - name: Check out code
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: '14.x'
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Cache Node.js modules
+        id: yarn-cache
+        uses: actions/cache@v2.1.3
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --silent
+        env:
+          CI: true
+
+      - name: Install truffle
+        run: yarn global add truffle
+
+      - name: Run truffle tests
+        run: truffle test
