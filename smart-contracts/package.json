@@ -31,6 +31,7 @@
     "web3": "^1.2.6"
   },
   "devDependencies": {
+    "concurrently": "^5.3.0",
     "@truffle/hdwallet-provider": "^1.1.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
@@ -60,6 +61,8 @@
     "peggy:getTokenBalance": "npx truffle exec scripts/getTokenBalance.js",
     "token:address": "npx truffle exec scripts/getTokenContractAddress.js",
     "token:mint": "npx truffle exec scripts/mintTestTokens.js",
-    "token:approve": "npx truffle exec scripts/sendApproveTx.js"
+    "token:approve": "npx truffle exec scripts/sendApproveTx.js",
+    "test:setup": "concurrently -r \"yarn develop\"",
+    "test": "truffle test --network develop"
   }
 }
