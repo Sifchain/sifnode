@@ -10,6 +10,7 @@ contract CosmosBridge is CosmosBridgeStorage {
     using SafeMath for uint256;
     
     bool private _initialized;
+    uint256[100] private ___gap;
 
     /*
      * @dev: Event declarations
