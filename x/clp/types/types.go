@@ -49,6 +49,7 @@ func NewPool(externalAsset Asset, nativeAssetBalance, externalAssetBalance, pool
 }
 
 type Pools []Pool
+type LiquidityProviders []LiquidityProvider
 
 type LiquidityProvider struct {
 	Asset                    Asset          `json:"asset"`

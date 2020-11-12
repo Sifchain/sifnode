@@ -137,8 +137,8 @@ func (k Keeper) DestroyLiquidityProvider(ctx sdk.Context, ticker string, lpAddre
 	store.Delete(key)
 }
 
-func (k Keeper) GetLiqudityProvidersForAsset(ctx sdk.Context, asset types.Asset) []types.LiquidityProvider {
-	var lpList []types.LiquidityProvider
+func (k Keeper) GetLiqudityProvidersForAsset(ctx sdk.Context, asset types.Asset) types.LiquidityProviders {
+	var lpList types.LiquidityProviders
 	iterator := k.GetLiquidityProviderIterator(ctx)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
@@ -148,6 +148,19 @@ func (k Keeper) GetLiqudityProvidersForAsset(ctx sdk.Context, asset types.Asset)
 		if lp.Asset == asset {
 			lpList = append(lpList, lp)
 		}
+	}
+	return lpList
+}
+
+func (k Keeper) GetLiquidityProviders(ctx sdk.Context) types.LiquidityProviders {
+	var lpList types.LiquidityProviders
+	iterator := k.GetLiquidityProviderIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var lp types.LiquidityProvider
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
+		lpList = append(lpList, lp)
 	}
 	return lpList
 }

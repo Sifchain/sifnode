@@ -7,3 +7,4 @@ accounts:
 validator:
   name: user1
   staked: "100000000stake"
+
