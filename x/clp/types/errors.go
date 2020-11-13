@@ -30,4 +30,5 @@ var (
 	ErrNotEnoughLiquidity            = sdkerrors.Register(ModuleName, 21, "pool does not have sufficient balance")
 	ErrSwapping                      = sdkerrors.Register(ModuleName, 22, "error doing a swap")
 	ErrPoolTooShallow                = sdkerrors.Register(ModuleName, 23, "Cannot withdraw pool is too shallow")
+	ErrOverFlow                      = sdkerrors.Register(ModuleName, 24, "IntegerOverflow")
 )

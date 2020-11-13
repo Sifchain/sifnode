@@ -302,7 +302,9 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Equal(t, eventCoins, sdk.Coins{sdk.NewInt64Coin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
 
 	// Third message succeeds, burns more eth and fires correct event
-	res, err = handler(ctx, burnMsg)
+	lockMsg := types.CreateTestLockMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,
+		coinsToBurnSymbolPrefixed)
+	res, err = handler(ctx, lockMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	remainingCoins = remainingCoins.Sub(burnedCoins)

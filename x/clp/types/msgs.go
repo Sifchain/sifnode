@@ -3,7 +3,6 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"strconv"
 	"strings"
 )
 
@@ -36,8 +35,8 @@ func (m MsgDecommissionPool) ValidateBasic() error {
 	if m.Signer.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
 	}
-	if len(strings.TrimSpace(m.Ticker)) == 0 {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, m.Signer.String())
+	if !VerifyRange(len(strings.TrimSpace(m.Ticker)), 0, MaxTickerLength) {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, m.Ticker)
 	}
 	return nil
 }
@@ -54,10 +53,10 @@ type MsgSwap struct {
 	Signer        sdk.AccAddress
 	SentAsset     Asset
 	ReceivedAsset Asset
-	SentAmount    uint
+	SentAmount    sdk.Uint
 }
 
-func NewMsgSwap(signer sdk.AccAddress, sentAsset Asset, receivedAsset Asset, sentAmount uint) MsgSwap {
+func NewMsgSwap(signer sdk.AccAddress, sentAsset Asset, receivedAsset Asset, sentAmount sdk.Uint) MsgSwap {
 	return MsgSwap{Signer: signer, SentAsset: sentAsset, ReceivedAsset: receivedAsset, SentAmount: sentAmount}
 }
 
@@ -79,6 +78,9 @@ func (m MsgSwap) ValidateBasic() error {
 	if !m.ReceivedAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.SentAsset.Symbol)
 	}
+	if m.SentAmount.IsZero() {
+		return sdkerrors.Wrap(ErrInValidAmount, m.SentAmount.String())
+	}
 	return nil
 }
 
@@ -93,11 +95,11 @@ func (m MsgSwap) GetSigners() []sdk.AccAddress {
 type MsgRemoveLiquidity struct {
 	Signer        sdk.AccAddress
 	ExternalAsset Asset
-	WBasisPoints  int
-	Asymmetry     int
+	WBasisPoints  sdk.Int
+	Asymmetry     sdk.Int
 }
 
-func NewMsgRemoveLiquidity(signer sdk.AccAddress, externalAsset Asset, wBasisPoints int, asymmetry int) MsgRemoveLiquidity {
+func NewMsgRemoveLiquidity(signer sdk.AccAddress, externalAsset Asset, wBasisPoints sdk.Int, asymmetry sdk.Int) MsgRemoveLiquidity {
 	return MsgRemoveLiquidity{Signer: signer, ExternalAsset: externalAsset, WBasisPoints: wBasisPoints, Asymmetry: asymmetry}
 }
 
@@ -116,11 +118,11 @@ func (m MsgRemoveLiquidity) ValidateBasic() error {
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
 	}
-	if !(m.WBasisPoints > 0) || m.WBasisPoints > 10000 {
-		return sdkerrors.Wrap(ErrInvalidWBasis, strconv.Itoa(m.WBasisPoints))
+	if !(m.WBasisPoints.IsPositive()) || m.WBasisPoints.GT(sdk.NewInt(10000)) {
+		return sdkerrors.Wrap(ErrInvalidWBasis, m.WBasisPoints.String())
 	}
-	if m.Asymmetry >= 10000 || m.Asymmetry <= -10000 {
-		return sdkerrors.Wrap(ErrInvalidAsymmetry, strconv.Itoa(m.Asymmetry))
+	if m.Asymmetry.GTE(sdk.NewInt(10000)) || m.Asymmetry.LTE(sdk.NewInt(-10000)) {
+		return sdkerrors.Wrap(ErrInvalidAsymmetry, m.Asymmetry.String())
 	}
 	return nil
 }
@@ -136,11 +138,11 @@ func (m MsgRemoveLiquidity) GetSigners() []sdk.AccAddress {
 type MsgAddLiquidity struct {
 	Signer              sdk.AccAddress
 	ExternalAsset       Asset
-	NativeAssetAmount   uint
-	ExternalAssetAmount uint
+	NativeAssetAmount   sdk.Uint
+	ExternalAssetAmount sdk.Uint
 }
 
-func NewMsgAddLiquidity(signer sdk.AccAddress, externalAsset Asset, nativeAssetAmount uint, externalAssetAmount uint) MsgAddLiquidity {
+func NewMsgAddLiquidity(signer sdk.AccAddress, externalAsset Asset, nativeAssetAmount sdk.Uint, externalAssetAmount sdk.Uint) MsgAddLiquidity {
 	return MsgAddLiquidity{Signer: signer, ExternalAsset: externalAsset, NativeAssetAmount: nativeAssetAmount, ExternalAssetAmount: externalAssetAmount}
 }
 
@@ -159,11 +161,11 @@ func (m MsgAddLiquidity) ValidateBasic() error {
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
 	}
-	if !(m.NativeAssetAmount > 0) {
-		return sdkerrors.Wrap(ErrInValidAmount, strconv.Itoa(int(m.NativeAssetAmount)))
+	if !(m.NativeAssetAmount.GTE(sdk.ZeroUint())) {
+		return sdkerrors.Wrap(ErrInValidAmount, m.NativeAssetAmount.String())
 	}
-	if !(m.ExternalAssetAmount > 0) {
-		return sdkerrors.Wrap(ErrInValidAmount, strconv.Itoa(int(m.NativeAssetAmount)))
+	if !(m.ExternalAssetAmount.GTE(sdk.ZeroUint())) {
+		return sdkerrors.Wrap(ErrInValidAmount, m.NativeAssetAmount.String())
 	}
 	return nil
 }
@@ -179,11 +181,11 @@ func (m MsgAddLiquidity) GetSigners() []sdk.AccAddress {
 type MsgCreatePool struct {
 	Signer              sdk.AccAddress
 	ExternalAsset       Asset
-	NativeAssetAmount   uint
-	ExternalAssetAmount uint
+	NativeAssetAmount   sdk.Uint
+	ExternalAssetAmount sdk.Uint
 }
 
-func NewMsgCreatePool(signer sdk.AccAddress, externalAsset Asset, nativeAssetAmount uint, externalAssetAmount uint) MsgCreatePool {
+func NewMsgCreatePool(signer sdk.AccAddress, externalAsset Asset, nativeAssetAmount sdk.Uint, externalAssetAmount sdk.Uint) MsgCreatePool {
 	return MsgCreatePool{Signer: signer, ExternalAsset: externalAsset, NativeAssetAmount: nativeAssetAmount, ExternalAssetAmount: externalAssetAmount}
 }
 
@@ -202,11 +204,11 @@ func (m MsgCreatePool) ValidateBasic() error {
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
 	}
-	if !(m.NativeAssetAmount > 0) {
-		return sdkerrors.Wrap(ErrInValidAmount, strconv.Itoa(int(m.NativeAssetAmount)))
+	if !(m.NativeAssetAmount.GT(sdk.ZeroUint())) {
+		return sdkerrors.Wrap(ErrInValidAmount, m.NativeAssetAmount.String())
 	}
-	if !(m.ExternalAssetAmount > 0) {
-		return sdkerrors.Wrap(ErrInValidAmount, strconv.Itoa(int(m.NativeAssetAmount)))
+	if !(m.ExternalAssetAmount.GT(sdk.ZeroUint())) {
+		return sdkerrors.Wrap(ErrInValidAmount, m.NativeAssetAmount.String())
 	}
 	return nil
 }

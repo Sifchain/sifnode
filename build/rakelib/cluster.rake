@@ -112,16 +112,53 @@ namespace :cluster do
       end
     end
 
+    desc "delete a namespace"
+    task :destroy, [:chainnet, :provider, :namespace, :skip_prompt] do |t, args|
+      check_args(args)
+      are_you_sure(args)
+      cmd = "kubectl delete namespace #{args[:namespace]}"
+      system({"KUBECONFIG" => kubeconfig(args)}, cmd)
+    end
+  end
+
+  desc "ebrelayer operations"
+  namespace :ebrelayer do
+    desc "Install ebrelayer"
+    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
+        --set sifnode.env.chainnet=#{args[:chainnet]} \
+        --install -n #{ns(args)} \
+        --set ebrelayer.image.repository=#{image_repository(args)} \
+        --set ebrelayer.image.tag=#{image_tag(args)} \
+        --set ebrelayer.enabled=true \
+        --set ebrelayer.env.ethWebsocketAddress=#{args[:eth_websocket_address]} \
+        --set ebrelayer.env.ethBridgeRegistryAddress=#{args[:eth_bridge_registry_address]} \
+        --set ebrelayer.env.ethPrivateKey=#{args[:eth_private_key]} \
+        --set ebrelayer.env.moniker=#{args[:moniker]}
+      }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+    end
+
+    desc "Uninstall ebrelayer"
     task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
       check_args(args)
-      cmd = "helm delete sifnode -n #{ns(args)}"
+
+      cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
+        --set sifnode.env.chainnet=#{args[:chainnet]} \
+        --install -n #{ns(args)} \
+        --set ebrelayer.enabled=false
+      }
+
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
   end
 
   desc "Manage eth full node deploy, upgrade, etc processes"
   namespace :ethnode do
-    desc "Deploy a full eth node on to your cluster"
+    desc "Deploy a full eth node onto your cluster"
     task :deploy do
       puts "Coming soon! "
     end
@@ -131,30 +168,6 @@ end
 # path returns the path of the terraform config that is generated as part of the scaffold task
 def path(args)
   "../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"
-end
-
-# check_args checks to make sure the required args are passed in
-def check_args(args)
-  if args[:chainnet] == nil
-    puts "Please provider a chainnet argument E.g testnet, mainnet, etc"
-    exit
-  end
-
-  case args[:provider]
-  when "aws"
-  when "az"
-    puts "Build me!"
-    exit
-  when "gcp"
-    puts "Build me!"
-    exit
-  when "do"
-    puts "Build me!"
-    exit
-  else
-    puts "Please provide a cloud host provider. E.g aws"
-    exit
-  end
 end
 
 # kubeconfig returns the path to the kubeconfig file based on the args

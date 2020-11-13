@@ -7,8 +7,8 @@ import re
 VALIDATOR = "user1"
 USER = "user2"
 ROWAN = "rwn"
-PEGGYETH = "peggyeth"
-PEGGYROWAN = "peggyrwn"
+PEGGYETH = "ceth"
+PEGGYROWAN = "erwn"
 ETH = "eth"
 ETH_CONTRACT = "0x0000000000000000000000000000000000000000"
 SLEEPTIME = 5
@@ -22,7 +22,7 @@ ETH_ACCOUNT = "0xf17f52151EbEF6C7334FAD080c5704D77216b732"
 BRIDGE_CONTRACT = "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4"
 ROWAN_CONTRACT = "0x409Ba3dd291bb5D48D5B4404F5EFa207441F6CbA"
 
-GOTO_TESTNET_FOLDER = "cd ../testnet-contracts/;\n"
+GOTO_TESTNET_FOLDER = "cd ../smart-contracts/;\n"
 
 
 def print_error_message(error_message):
@@ -55,7 +55,7 @@ def get_peggyrwn_balance(account, symbol):
     result = get_shell_output(command_line).decode("utf-8")
     lines = result.split('\n')
     for line in lines:
-        balance = re.match("Balance of PEGGYRWN for.*\((.*) PEGGYRWN.*\).*",
+        balance = re.match("Balance of eRWN for.*\((.*) eRWN.*\).*",
                            line)
         if balance:
             return balance.group(1)
@@ -104,9 +104,9 @@ def get_balance(user, denom):
 
 def burn_peggy_coin(user, eth_user, amount):
     command_line = """sifnodecli tx ethbridge burn {} \
-    {} {} peggyeth \
+    {} {} {} \
     --ethereum-chain-id=3 --from={} \
-    --yes""".format(get_user_account(user), eth_user, amount, user)
+    --yes""".format(get_user_account(user), eth_user, amount, PEGGYETH, user)
     return get_shell_output(command_line)
 
 
@@ -120,7 +120,7 @@ def lock_rowan(user, eth_user, amount):
 
 def test_case_1():
     print(
-        "########## Test Case One Start: lock eth in ethereum then mint peggyeth in sifchain"
+        "########## Test Case One Start: lock eth in ethereum then mint ceth in sifchain"
     )
     operator_balance_before_tx = int(get_eth_balance(ETH_OPERATOR, ETH))
     contract_balance_before_tx = int(get_eth_balance(BRIDGE_CONTRACT, ETH))
@@ -155,7 +155,7 @@ def test_case_1():
 
 def test_case_2():
     print(
-        "########## Test Case Two Start: burn peggyeth in sifchain then eth back to ethereum"
+        "########## Test Case Two Start: burn ceth in sifchain then eth back to ethereum"
     )
     operator_balance_before_tx = int(get_eth_balance(ETH_ACCOUNT, ETH))
     contract_balance_before_tx = int(get_eth_balance(BRIDGE_CONTRACT, ETH))
@@ -219,7 +219,7 @@ def test_case_3():
 
 def test_case_4():
     print(
-        "########## Test Case Four Start: burn peggyrwn in ethereum then transfer rwn back to sifchain"
+        "########## Test Case Four Start: burn erwn in ethereum then transfer rwn back to sifchain"
     )
     operator_balance_before_tx = int(
         get_peggyrwn_balance(ETH_ACCOUNT, ROWAN_CONTRACT))

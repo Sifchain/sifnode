@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-cd testnet-contracts
+cd smart-contracts
 yarn install
 cp .env.example .env

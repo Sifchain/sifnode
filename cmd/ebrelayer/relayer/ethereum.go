@@ -1,5 +1,7 @@
 package relayer
 
+// DONTCOVER
+
 import (
 	"context"
 	"crypto/ecdsa"
@@ -55,8 +57,11 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 	}
 
 	// Load CLI context and Tx builder
-	cliCtx := LoadTendermintCLIContext(cdc, validatorAddress, validatorName, rpcURL, chainID)
-	txBldr := authtypes.NewTxBuilderFromCLI(nil).
+	cliCtx, err := LoadTendermintCLIContext(cdc, validatorAddress, validatorName, rpcURL, chainID)
+	if err != nil {
+		return EthereumSub{}, err
+	}
+	txBldr := authtypes.NewTxBuilderFromCLI(inBuf).
 		WithTxEncoder(utils.GetTxEncoder(cdc)).
 		WithChainID(chainID)
 
@@ -93,7 +98,7 @@ func LoadValidatorCredentials(validatorFrom string, inBuf io.Reader) (sdk.ValAdd
 
 // LoadTendermintCLIContext : loads CLI context for tendermint txs
 func LoadTendermintCLIContext(appCodec *amino.Codec, validatorAddress sdk.ValAddress, validatorName string,
-	rpcURL string, chainID string) sdkContext.CLIContext {
+	rpcURL string, chainID string) (sdkContext.CLIContext, error) {
 	// Create the new CLI context
 	cliCtx := sdkContext.NewCLIContext().
 		WithCodec(appCodec).
@@ -109,9 +114,10 @@ func LoadTendermintCLIContext(appCodec *amino.Codec, validatorAddress sdk.ValAdd
 	accountRetriever := authtypes.NewAccountRetriever(cliCtx)
 	err := accountRetriever.EnsureExists((sdk.AccAddress(validatorAddress)))
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return sdkContext.CLIContext{}, err
 	}
-	return cliCtx
+	return cliCtx, nil
 }
 
 // Start an Ethereum chain subscription
@@ -153,12 +159,14 @@ func (sub EthereumSub) Start() {
 		// vLog is raw event data
 		case vLog := <-logs:
 			sub.Logger.Info(fmt.Sprintf("Witnessed tx %s on block %d\n", vLog.TxHash.Hex(), vLog.BlockNumber))
+			log.Println("Found event from the etherem bridgebank contract: ", types.LogLock.String())
 			var err error
 			switch vLog.Topics[0].Hex() {
 			case eventLogBurnSignature:
 				err = sub.handleEthereumEvent(clientChainID, bridgeBankAddress, bridgeBankContractABI,
 					types.LogBurn.String(), vLog)
 			case eventLogLockSignature:
+				log.Println("Found loglock event from the etherem bridgebank contract: ", types.LogLock.String())
 				err = sub.handleEthereumEvent(clientChainID, bridgeBankAddress, bridgeBankContractABI,
 					types.LogLock.String(), vLog)
 			case eventLogNewProphecyClaimSignature:

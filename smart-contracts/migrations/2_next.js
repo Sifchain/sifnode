@@ -155,7 +155,7 @@ module.exports = function(deployer, network, accounts) {
     // 6. Deploy BridgeRegistry contract:
     //    Gas used:          363,370 Gwei
     //    Total cost:     0.0072674 Ether
-    deployer.deploy(
+    await deployer.deploy(
       BridgeRegistry,
       CosmosBridge.address,
       BridgeBank.address,

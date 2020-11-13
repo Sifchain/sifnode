@@ -8,9 +8,9 @@ import (
 
 type Pool struct {
 	ExternalAsset        Asset          `json:"external_asset"`
-	NativeAssetBalance   uint           `json:"native_asset_balance"`
-	ExternalAssetBalance uint           `json:"external_asset_balance"`
-	PoolUnits            uint           `json:"pool_units"`
+	NativeAssetBalance   sdk.Uint       `json:"native_asset_balance"`
+	ExternalAssetBalance sdk.Uint       `json:"external_asset_balance"`
+	PoolUnits            sdk.Uint       `json:"pool_units"`
 	PoolAddress          sdk.AccAddress `json:"pool_address"`
 }
 
@@ -33,7 +33,7 @@ func (p Pool) Validate() bool {
 }
 
 // NewPool returns a new Pool
-func NewPool(externalAsset Asset, nativeAssetBalance uint, externalAssetBalance uint, poolUnits uint) (Pool, error) {
+func NewPool(externalAsset Asset, nativeAssetBalance, externalAssetBalance, poolUnits sdk.Uint) (Pool, error) {
 	pool := Pool{ExternalAsset: externalAsset,
 		NativeAssetBalance:   nativeAssetBalance,
 		ExternalAssetBalance: externalAssetBalance,
@@ -52,7 +52,7 @@ type Pools []Pool
 
 type LiquidityProvider struct {
 	Asset                    Asset          `json:"asset"`
-	LiquidityProviderUnits   uint           `json:"liquidity_provider_units"`
+	LiquidityProviderUnits   sdk.Uint       `json:"liquidity_provider_units"`
 	LiquidityProviderAddress sdk.AccAddress `json:"liquidity_provider_address"`
 }
 
@@ -71,7 +71,7 @@ func (l LiquidityProvider) Validate() bool {
 }
 
 // NewLiquidityProvider returns a new LiquidityProvider
-func NewLiquidityProvider(asset Asset, liquidityProviderUnits uint, liquidityProviderAddress sdk.AccAddress) LiquidityProvider {
+func NewLiquidityProvider(asset Asset, liquidityProviderUnits sdk.Uint, liquidityProviderAddress sdk.AccAddress) LiquidityProvider {
 	return LiquidityProvider{Asset: asset, LiquidityProviderUnits: liquidityProviderUnits, LiquidityProviderAddress: liquidityProviderAddress}
 }
 
