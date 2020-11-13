@@ -1,14 +1,17 @@
 networks:
-  default:
-    external:
-      name: genesis_sifchain
-  
+  sifchain:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.2.0/24
+
 services:
   ganachecli:
     image: trufflesuite/ganache-cli:latest
     
     networks:
-      default:
+      sifchain:
         ipv4_address: '192.168.2.6'
 
     ports:
