@@ -25,6 +25,8 @@ func TestSign(t *testing.T) {
 	keyRing := NewKeyRing(mnemonic, moniker, password)
 	require.NotEqual(t, keyRing, nil, "keyring is nil")
 
+	keyRing.GenerateKeyStore()
+
 	msg := []byte("Hello")
 
 	_, _, err := keyRing.Sign(msg)

@@ -69,6 +69,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 
 	// hardcoded now, will get mnemonic from cli
 	signer := keyring.NewKeyRing("reject climb decline mule tell taste swing split pool stumble mask job offer exhaust bulk approve crawl alpha burst lion ribbon screen return have", validatorMoniker, keys.DefaultKeyPass)
+	signer.GenerateKeyStore()
 
 	if signer == nil {
 		fmt.Println("We get a nil for signer")
