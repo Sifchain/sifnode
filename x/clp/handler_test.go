@@ -63,7 +63,7 @@ func TestCreatePool(t *testing.T) {
 	assert.True(t, ok, "")
 }
 
-func TestAddLiqudity(t *testing.T) {
+func TestAddLiquidity(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
 	handler := clp.NewHandler(keeper)
