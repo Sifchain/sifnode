@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: sifchain/block-explorer
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "testnet"
 
@@ -37,7 +37,7 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  type: ClusterIP
+  type: LoadBalancer
   port: 3080
 
 ingress:
