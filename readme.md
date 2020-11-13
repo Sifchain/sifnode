@@ -144,11 +144,6 @@ New node operators may also use the following peer addresses:
 16d9c23623e42723dfcf3dcbb11d98d989689a7a@35.166.247.98:28006
 ```
 
-## Localnet with docker
-If one has docker and docker-compose installed on their machines,
-```./scripts/setup.sh```
-aught to spin up a localnet with ganache-cli, 4 validator nodes with peggy
-
 ## Additional Resources
 
 - [Additional instructions on standing up Sifnode](https://www.youtube.com/watch?v=1kjdjCEcYak&feature=youtu.be&ab_channel=utx0_).

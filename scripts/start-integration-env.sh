@@ -1,8 +1,8 @@
 #!/bin/bash
 BASEDIR=$(pwd)
 set -e
-make clean install
 sudo rm -rf ./build/networks
+make clean install
 cd $BASEDIR/smart-contracts && yarn install
 docker-compose -f $BASEDIR/build/genesis/docker-compose-ganache.yml up -d
 truffle deploy  ;
