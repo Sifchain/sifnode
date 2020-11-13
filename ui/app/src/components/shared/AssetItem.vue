@@ -38,7 +38,7 @@ export default defineComponent({
   font-family: $f_default;
   display: flex;
   align-items: center;
-  cursor: pointer;
+  /* cursor: pointer; */
 }
 
 .row > * {

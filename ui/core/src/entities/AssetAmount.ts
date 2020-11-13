@@ -21,8 +21,9 @@ export interface IAssetAmount extends IFraction {
   toFixed(decimalPlaces?: number, format?: object, rounding?: Rounding): string;
   asset: Asset;
   amount: JSBI;
-  toFormatted: () => string;
+  toFormatted: (decimals?: number) => string;
 }
+
 export class _AssetAmount implements IAssetAmount {
   protected fraction: IFraction;
   constructor(public asset: Asset, public amount: JSBI) {
@@ -102,8 +103,18 @@ export class _AssetAmount implements IAssetAmount {
   }
 
   // NOTE: This might eventually take a format string
-  public toFormatted() {
-    return [this.toFixed(), this.asset.symbol.toUpperCase()].join(" ");
+  public toFormatted(decimals?: number) {
+    // If decimals is too high fraction will bark
+    const safeDecimals =
+      typeof decimals !== "undefined"
+        ? this.asset.decimals < decimals
+          ? this.asset.decimals
+          : decimals
+        : undefined;
+
+    return [this.toFixed(safeDecimals), this.asset.symbol.toUpperCase()].join(
+      " "
+    );
   }
 
   public toString() {

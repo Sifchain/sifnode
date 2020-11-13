@@ -46,20 +46,35 @@ export type RawPool = {
   pool_units: string;
   pool_address: string;
 };
-
+type LiquidityDetailsResponse = {
+  result: {
+    liquidity_provider_units: string;
+    liquidity_provider_address: string;
+    asset: {
+      symbol: string;
+      ticker: string;
+      source_chain: string;
+    };
+  };
+  height: string;
+};
 type ClpCmdSwap = (params: SwapParams) => Promise<Msg>;
 
 type ClpQueryPools = () => Promise<RawPool[]>;
 
 type ClpAddLiquidity = (params: LiquidityParams) => Promise<StdTx>;
 type ClpCreatePool = (params: LiquidityParams) => Promise<StdTx>;
-
+type ClpGetLiquidityProvider = (params: {
+  ticker: string;
+  lpAddress: string;
+}) => Promise<LiquidityDetailsResponse>;
 export interface ClpExtension {
   readonly clp: {
     swap: ClpCmdSwap;
     getPools: ClpQueryPools;
     addLiquidity: ClpAddLiquidity;
     createPool: ClpCreatePool;
+    getLiquidityProvider: ClpGetLiquidityProvider;
   };
 }
 
@@ -80,6 +95,12 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
 
       createPool: async (params) => {
         return await base.post(`/clp/createPool`, params);
+      },
+
+      getLiquidityProvider: async ({ ticker, lpAddress }) => {
+        return await base.get(
+          `/clp/getLiquidityProvider?ticker=${ticker}&lpAddress=${lpAddress}`
+        );
       },
     },
   };

@@ -2,7 +2,7 @@
 import { defineComponent, PropType } from "vue"; /* eslint-disable-line */
 import { ref } from "@vue/reactivity";
 import { useCore } from "../../hooks/useCore";
-import AssetItem from "./AssetItem.vue";
+import AssetItem from "@/components/shared/AssetItem.vue";
 import { useTokenListing } from "./useSelectToken";
 import SifInput from "@/components/shared/SifInput.vue";
 

@@ -1,5 +1,6 @@
 import { computed, Ref } from "@vue/reactivity";
 import { Asset, AssetAmount, Network, Token } from "../entities";
+import { buildAsset, buildAssetAmount } from "./utils";
 
 const TOKENS = {
   atk: Token({
@@ -24,13 +25,6 @@ const TOKENS = {
     network: Network.ETHEREUM,
   }),
 };
-function buildAsset(val: string | null) {
-  return val === null ? val : Asset.get(val);
-}
-
-function buildAssetAmount(asset: Asset | null, amount: string) {
-  return asset ? AssetAmount(asset, amount) : asset;
-}
 
 export function useField(amount: Ref<string>, symbol: Ref<string | null>) {
   const asset = computed(() => {

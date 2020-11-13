@@ -37,7 +37,10 @@ export default defineComponent({
     toSymbol.value = "rwn";
 
     const priceMessage = ref("");
-
+    function clearAmounts() {
+      fromAmount.value = "0.0";
+      toAmount.value = "0.0";
+    }
     const {
       connected,
 
@@ -127,6 +130,8 @@ export default defineComponent({
         );
         // TODO Tidy up transaction
         alert("Liquidity added");
+
+        clearAmounts();
       },
       handleBlur() {
         selectedField.value = null;

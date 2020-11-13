@@ -4,36 +4,10 @@ import { Pair } from "./Pair";
 import Big from "big.js";
 import JSBI from "jsbi";
 import { Fraction } from "./fraction/Fraction";
+import { calcLpUnits, calculateReverseSwapResult } from "./formulae";
 
 export type Pool = ReturnType<typeof Pool>;
 export type IPool = Omit<Pool, "poolUnits" | "calculatePoolUnits">;
-function calcLpUnits(
-  amounts: [IAssetAmount, IAssetAmount],
-  nativeAssetAmount: AssetAmount,
-  externalAssetAmount: AssetAmount
-) {
-  // Not necessarily native but we will treat it like so as the formulae are symmetrical
-  const nativeAssetBalance = amounts.find(
-    (a) => a.asset.symbol === nativeAssetAmount.asset.symbol
-  );
-  const externalAssetBalance = amounts.find(
-    (a) => a.asset.symbol === externalAssetAmount.asset.symbol
-  );
-
-  if (!nativeAssetBalance || !externalAssetBalance) {
-    throw new Error("Pool does not contain given assets");
-  }
-
-  const R = nativeAssetBalance.add(nativeAssetAmount);
-  const A = externalAssetBalance.add(externalAssetAmount);
-  const r = nativeAssetAmount;
-  const a = externalAssetAmount;
-  const term1 = R.add(A); // R + A
-  const term2 = r.multiply(A).add(R.multiply(a)); // r * A + R * a
-  const numerator = term1.multiply(term2);
-  const denominator = R.multiply(A).multiply("4");
-  return numerator.divide(denominator);
-}
 
 export function Pool(
   a: AssetAmount,
@@ -95,20 +69,7 @@ export function Pool(
       const S = Big(Sa.toFixed());
       const X = Big(Xa.toFixed());
       const Y = Big(Ya.toFixed());
-
-      const term1 = Big(-2)
-        .times(X)
-        .times(S);
-
-      const term2 = X.times(Y);
-      const underRoot = Y.times(Y.minus(S.times(4)));
-
-      const term3 = X.times(underRoot.sqrt());
-
-      const numerator = term1.plus(term2).minus(term3);
-      const denominator = S.times(2);
-
-      const x = numerator.div(denominator);
+      const x = calculateReverseSwapResult(S, X, Y);
 
       return AssetAmount(otherAsset, x.toFixed());
     },
@@ -128,6 +89,61 @@ export function Pool(
 
       return [poolUnits, lpUnits];
     },
+
+    // calculateWithdrawal(
+    //   nativeAssetAmount: AssetAmount,
+    //   externalAssetAmount: AssetAmount,
+    //   lpUnits: Fraction,
+    //   wBasisPoints: Fraction,
+    //   asymmetry: Fraction
+    // ) {
+    //   const nativeAssetBalance = amounts.find(
+    //     (a) => a.asset.symbol === nativeAssetAmount.asset.symbol
+    //   );
+    //   const externalAssetBalance = amounts.find(
+    //     (a) => a.asset.symbol === externalAssetAmount.asset.symbol
+    //   );
+    //   if (!nativeAssetBalance || !externalAssetBalance) return null;
+
+    //   const {
+    //     lpUnitsLeft,
+    //     swapAmount,
+    //     withdrawExternalAssetAmount,
+    //     withdrawNativeAssetAmount,
+    //   } = calculateWithdrawal(
+    //     this.poolUnits,
+    //     nativeAssetBalance,
+    //     externalAssetBalance,
+    //     lpUnits,
+    //     wBasisPoints,
+    //     asymmetry
+    //   );
+    // },
+    // calculateWithdrawal(lpUnits: Fraction, wBasisPoints: Fraction) {
+    //   // calculateWithdrawal(this.poolUnits, this.)
+    // },
+    // {
+    //   unitsToClaim = lpUnits / (10000 / wBasisPoints)
+    //   withdrawExternalAssetAmount = externalAssetBalance / (poolUnits / unitsToClaim)
+    //   withdrawNativeAssetAmount = nativeAssetBalance / (poolUnits / unitsToClaim)
+
+    //   swapAmount = 0
+    //   //if asymmetry is positive we need to swap from native to external
+    //   if asymmetry > 0
+    //     unitsToSwap = (unitsToClaim / (10000 / asymmetry))
+    //     swapAmount = nativeAssetBalance / (poolUnits / unitsToSwap)
+
+    //   //if asymmetry is negative we need to swap from external to native
+    //   if asymmetry < 0
+    //     unitsToSwap = (unitsToClaim / (10000 / asymmetry))
+    //     swapAmount = externalAssetBalance / (poolUnits / unitsToSwap)
+
+    //   //if asymmetry is 0 we don't need to swap
+
+    //   lpUnitsLeft = lpUnits - unitsToClaim
+
+    //   return withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount
+    // }
   };
 
   return instance;
@@ -194,6 +210,7 @@ export function CompositePool(pair1: Pool, pair2: Pool): IPool {
     },
 
     calcSwapResult(x: AssetAmount) {
+      // TODO: possibly use a combined formula
       const [first, second] = pair1.contains(x.asset)
         ? [pair1, pair2]
         : [pair2, pair1];
@@ -204,6 +221,7 @@ export function CompositePool(pair1: Pool, pair2: Pool): IPool {
     },
 
     calcReverseSwapResult(S: AssetAmount) {
+      // TODO: possibly use a combined formula
       const [first, second] = pair1.contains(S.asset)
         ? [pair1, pair2]
         : [pair2, pair1];

@@ -129,7 +129,7 @@ export function usePoolCalculator(input: {
     if (!input.fromSymbol.value || !input.toSymbol.value)
       return PoolState.SELECT_TOKENS;
     if (
-      fromField.fieldAmount.value?.equalTo("0") &&
+      fromField.fieldAmount.value?.equalTo("0") ||
       toField.fieldAmount.value?.equalTo("0")
     )
       return PoolState.ZERO_AMOUNTS;

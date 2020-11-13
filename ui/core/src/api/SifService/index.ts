@@ -5,9 +5,11 @@ import {
   Asset,
   AssetAmount,
   Coin,
+  LiquidityProvider,
   Network,
   TxParams,
 } from "../../entities";
+import { Fraction } from "../../entities/fraction/Fraction";
 import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
 import { SifClient } from "./SifClient";
@@ -28,6 +30,10 @@ type IClpService = {
     nativeAssetAmount: AssetAmount;
     externalAssetAmount: AssetAmount;
   }) => any;
+  getLiquidityProvider: (params: {
+    ticker: string;
+    lpAddress: string;
+  }) => Promise<LiquidityProvider | null>;
 };
 
 /**
@@ -253,6 +259,21 @@ export default function createSifService({
       this.getBalance(state.address);
 
       return txHash;
+    },
+    async getLiquidityProvider(params) {
+      if (!client) throw new Error("No client. Please sign in.");
+      const response = await client.getLiquidityProvider(params);
+
+      return LiquidityProvider(
+        Coin({
+          name: response.result.asset.ticker,
+          symbol: response.result.asset.ticker,
+          network: Network.SIFCHAIN,
+          decimals: 18,
+        }),
+        new Fraction(response.result.liquidity_provider_units),
+        response.result.liquidity_provider_address
+      );
     },
   };
 }

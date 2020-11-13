@@ -7,6 +7,7 @@ const assetMap = new Map<string, Asset>();
 export const Asset = {
   set(key: string, value: Asset) {
     if (!key) return;
+
     assetMap.set(key.toLowerCase(), value);
   },
   get(key: string): Asset {

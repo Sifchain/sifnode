@@ -1,76 +1,65 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import Layout from "@/components/layout/Layout.vue";
-import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
 import Modal from "@/components/shared/Modal.vue";
-import { PoolState, usePoolCalculator } from "../../../core/src";
+import {
+  Asset,
+  LiquidityProvider,
+  PoolState,
+  useRemoveLiquidityCalculator,
+} from "../../../core";
 import { useCore } from "@/hooks/useCore";
-import { useWallet } from "@/hooks/useWallet";
-import { computed } from "@vue/reactivity";
+
+import { computed, toRef } from "@vue/reactivity";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
-import PriceCalculation from "@/components/shared/PriceCalculation.vue";
+import SifButton from "@/components/shared/SifButton.vue";
+import AssetItem from "@/components/shared/AssetItem.vue";
+import Caret from "@/components/shared/Caret.vue";
+import { Fraction } from "../../../core/src/entities/fraction/Fraction";
 
 export default defineComponent({
   components: {
+    AssetItem,
     Layout,
     Modal,
-    CurrencyPairPanel,
     SelectTokenDialog,
     ActionsPanel,
-    PriceCalculation,
+    SifButton,
+    Caret,
   },
   setup() {
     const { store, api } = useCore();
     const marketPairFinder = api.MarketService.find;
-    const selectedField = ref<"from" | "to" | null>(null);
+    const liquidityProviderFinder = (asset: Asset, address: string) =>
+      LiquidityProvider(asset, new Fraction("10000"), address);
 
-    const fromAmount = ref("0");
-    const fromSymbol = ref<string | null>(null);
-    const toAmount = ref("0");
-    const toSymbol = ref<string | null>(null);
-
-    const priceMessage = ref("");
-
-    const {
-      connected,
-
-      connectedText,
-    } = useWalletButton({
+    const asymmetry = ref("0");
+    const wBasisPoints = ref("5000");
+    const nativeAssetSymbol = ref("rwn");
+    const externalAssetSymbol = ref<string | null>(null);
+    const { connected, connectedText } = useWalletButton({
       addrLen: 8,
     });
 
-    const { balances } = useWallet(store);
-
     const {
-      aPerBRatioMessage,
-      bPerARatioMessage,
-      shareOfPool,
-      fromFieldAmount,
-      toFieldAmount,
+      withdrawExternalAssetAmount,
+      withdrawNativeAssetAmount,
       state,
-    } = usePoolCalculator({
-      balances,
-      fromAmount,
-      toAmount,
-      fromSymbol,
-      selectedField,
-      toSymbol,
+    } = useRemoveLiquidityCalculator({
+      externalAssetSymbol,
+      nativeAssetSymbol,
+      wBasisPoints,
+      asymmetry,
+      liquidityProviderFinder,
+      sifAddress: toRef(store.wallet.sif, "address"),
       marketPairFinder,
     });
+    // input not updating for some reason?
 
     return {
-      fromAmount,
-      fromSymbol,
-
-      toAmount,
-      toSymbol,
-
-      priceMessage,
       connected,
-      aPerBRatioMessage,
-      bPerARatioMessage,
 
       nextStepMessage: computed(() => {
         switch (state.value) {
@@ -87,44 +76,24 @@ export default defineComponent({
       nextStepAllowed: computed(() => {
         return state.value === PoolState.VALID_INPUT;
       }),
-      handleFromSymbolClicked(next: () => void) {
-        selectedField.value = "from";
-        next();
-      },
-      handleToSymbolClicked(next: () => void) {
-        selectedField.value = "to";
-        next();
-      },
-      handleSelectClosed(data: string) {
+
+      handleSelectClosed(data: string | MouseEvent) {
         if (typeof data !== "string") {
           return;
         }
 
-        if (selectedField.value === "from") {
-          fromSymbol.value = data;
-        }
-
-        if (selectedField.value === "to") {
-          toSymbol.value = data;
-        }
-        selectedField.value = null;
+        externalAssetSymbol.value = data;
       },
       handleNextStepClicked() {
-        alert(
-          `Create Pool ${fromFieldAmount.value?.toFormatted()} alongside ${toFieldAmount.value?.toFormatted()}!`
-        );
+        alert(`Remove Liquidity!`);
       },
-      handleBlur() {
-        selectedField.value = null;
-      },
-      handleFromFocused() {
-        selectedField.value = "from";
-      },
-      handleToFocused() {
-        selectedField.value = "to";
-      },
-      shareOfPool,
+      wBasisPoints,
+      asymmetry,
+      nativeAssetSymbol,
+      withdrawExternalAssetAmount,
+      withdrawNativeAssetAmount,
       connectedText,
+      externalAssetSymbol,
     };
   },
 });
@@ -132,33 +101,75 @@ export default defineComponent({
 
 <template>
   <Layout class="pool" backLink="/pool">
-    <Modal @close="handleSelectClosed">
-      <template v-slot:activator="{ requestOpen }">
-        <CurrencyPairPanel
-          v-model:fromAmount="fromAmount"
-          v-model:fromSymbol="fromSymbol"
-          @fromfocus="handleFromFocused"
-          @fromblur="handleBlur"
-          @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
-          v-model:toAmount="toAmount"
-          v-model:toSymbol="toSymbol"
-          @tofocus="handleToFocused"
-          @toblur="handleBlur"
-          @tosymbolclicked="handleToSymbolClicked(requestOpen)"
-      /></template>
-      <template v-slot:default="{ requestClose }">
-        <SelectTokenDialog
-          :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
-          @tokenselected="requestClose"
-        />
-      </template>
-    </Modal>
+    <div class="slider">
+      <p>Choose from 0 to 100% of how much to withdraw</p>
+      <input
+        v-model="wBasisPoints"
+        class="input"
+        type="range"
+        max="10000"
+        min="0"
+        step="1"
+      />
+      <div class="row">
+        <div @click="wBasisPoints = '0'">0%</div>
+        <div @click="wBasisPoints = '5000'">50%</div>
+        <div @click="wBasisPoints = '10000'">100%</div>
+      </div>
+    </div>
+    <div class="slider">
+      <p>Choose how much to withdraw from each asset</p>
+      <input
+        v-model="asymmetry"
+        class="input"
+        min="-10000"
+        max="10000"
+        type="range"
+        step="1"
+      />
+      <div class="row">
+        <div @click="asymmetry = '-10000'">All Rowan</div>
+        <div @click="asymmetry = '0'">Equal</div>
+        <div @click="asymmetry = '10000'">All Asset</div>
+      </div>
+    </div>
+    <div class="asset-row">
+      <AssetItem :symbol="nativeAssetSymbol" />
+      <div class="select-asset">
+        <Modal @close="handleSelectClosed">
+          <template v-slot:activator="{ requestOpen }">
+            <SifButton
+              v-if="externalAssetSymbol !== null"
+              block
+              @click="requestOpen"
+            >
+              <span><AssetItem :symbol="externalAssetSymbol" /></span>
+              <span><Caret /></span>
+            </SifButton>
+            <SifButton
+              v-if="externalAssetSymbol === null"
+              primary
+              block
+              :disabled="!connected"
+              @click="requestOpen"
+            >
+              <span>Select</span>
+            </SifButton>
+          </template>
+          <template v-slot:default="{ requestClose }">
+            <SelectTokenDialog
+              :selectedTokens="[externalAssetSymbol].filter(Boolean)"
+              @tokenselected="requestClose"
+            />
+          </template>
+        </Modal>
+      </div>
+    </div>
+    <div class="asset-row">
+      <div>{{ withdrawNativeAssetAmount }}</div>
+      <div>{{ withdrawExternalAssetAmount }}</div>
+    </div>
 
-    <PriceCalculation>
-      <div>{{ aPerBRatioMessage }}</div>
-      <div>{{ bPerARatioMessage }}</div>
-      <div>{{ shareOfPool }}</div>
-    </PriceCalculation>
     <ActionsPanel
       @nextstepclick="handleNextStepClicked"
       :nextStepAllowed="nextStepAllowed"
@@ -167,4 +178,30 @@ export default defineComponent({
   </Layout>
 </template>
 
-
+<style lang="scss" scoped>
+.asset-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.slider {
+  margin-bottom: 1rem;
+  width: 100%;
+  .input {
+    width: 100%;
+  }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    & > * {
+      width: 20%;
+    }
+    & > *:first-child {
+      text-align: left;
+    }
+    & > *:last-child {
+      text-align: right;
+    }
+  }
+}
+</style>

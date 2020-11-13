@@ -1,5 +1,5 @@
 import { computed, Ref } from "@vue/reactivity";
-import { AssetAmount, IPool, Pool } from "../entities";
+import { Asset, AssetAmount, IPool, Pool } from "../entities";
 
 export function assetPriceMessage(
   amount: AssetAmount | null,
@@ -35,4 +35,12 @@ export function useBalances(balances: Ref<AssetAmount[]>) {
     }
     return map;
   });
+}
+
+export function buildAsset(val: string | null) {
+  return val === null ? val : Asset.get(val);
+}
+
+export function buildAssetAmount(asset: Asset | null, amount: string) {
+  return asset ? AssetAmount(asset, amount) : asset;
 }

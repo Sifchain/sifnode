@@ -1,7 +1,7 @@
 import { ref, Ref } from "@vue/reactivity";
 import { AssetAmount, Coin, IAssetAmount, Network, Pool } from "../entities";
 import { Fraction } from "../entities/fraction/Fraction";
-import { PoolState, usePoolCalculator } from "./poolCalculator";
+import { PoolState, usePoolCalculator } from "./addLiquidityCalculator";
 
 const ASSETS = {
   atk: Coin({

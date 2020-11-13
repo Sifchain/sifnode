@@ -5,7 +5,7 @@
 import { defineComponent } from "vue";
 import { computed } from "@vue/reactivity";
 import BalanceField from "./BalanceField.vue";
-import AssetItem from "@/components/tokenSelector/AssetItem.vue";
+import AssetItem from "@/components/shared/AssetItem.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import SifInput from "@/components/shared/SifInput.vue";
 import Caret from "@/components/shared/Caret.vue";
