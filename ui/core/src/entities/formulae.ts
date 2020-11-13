@@ -46,12 +46,12 @@ export function calculateWithdrawal({
   wBasisPoints,
   asymmetry,
 }: {
-  poolUnits: Fraction;
+  poolUnits: IFraction;
   nativeAssetBalance: IFraction;
   externalAssetBalance: IFraction;
-  lpUnits: Fraction;
-  wBasisPoints: Fraction;
-  asymmetry: Fraction;
+  lpUnits: IFraction;
+  wBasisPoints: IFraction;
+  asymmetry: IFraction;
 }) {
   // unitsToClaim=lpUnits/(10000/wBasisPoints)
   const unitsToClaim = lpUnits.divide(TEN_THOUSAND.divide(wBasisPoints));

@@ -13,9 +13,10 @@ describe("useRemoveLiquidityCalculator", () => {
   const sifAddress: Ref<string> = ref("12345678asFDSghkjg");
   const wBasisPoints: Ref<string> = ref("5000");
   const marketPairFinder = jest.fn<Pool | null, any>(() => null);
-  const liquidityProviderFinder = jest.fn<LiquidityProvider | null, any>(
-    () => null
-  );
+  const liquidityProviderFinder = jest.fn<
+    Promise<LiquidityProvider | null>,
+    any
+  >(async () => null);
 
   // output
   let withdrawExternalAssetAmount: Ref<string | null>;
@@ -39,7 +40,7 @@ describe("useRemoveLiquidityCalculator", () => {
   });
 
   test("displays the correct withdrawal amounts", () => {
-    liquidityProviderFinder.mockImplementation(() =>
+    liquidityProviderFinder.mockImplementation(async () =>
       LiquidityProvider(CATK, new Fraction("100000"), "sif123456876512341234")
     );
     marketPairFinder.mockImplementation(() =>

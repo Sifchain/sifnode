@@ -32,8 +32,12 @@ export default defineComponent({
   setup() {
     const { store, actions, api } = useCore();
     const marketPairFinder = api.MarketService.find;
-    const liquidityProviderFinder = (asset: Asset, address: string) =>
-      LiquidityProvider(asset, new Fraction("10000"), address);
+    const liquidityProviderFinder = async (asset: Asset, address: string) => {
+      return await api.SifService.getLiquidityProvider({
+        ticker: asset.symbol,
+        lpAddress: address,
+      });
+    };
 
     const asymmetry = ref("0");
     const wBasisPoints = ref("5000");
@@ -67,8 +71,10 @@ export default defineComponent({
             return "Select Tokens";
           case PoolState.ZERO_AMOUNTS:
             return "Please enter an amount";
+          case PoolState.NO_LIQUIDITY:
+            return "No liquidity available.";
           case PoolState.INSUFFICIENT_FUNDS:
-            return "Amount to remove is too high";
+            return "Insufficient funds in this pool";
           case PoolState.VALID_INPUT:
             return "Remove Liquidity";
         }

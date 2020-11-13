@@ -1,5 +1,4 @@
 import { computed, Ref } from "@vue/reactivity";
-import JSBI from "jsbi";
 import { Asset, AssetAmount, IAssetAmount, Pool } from "../entities";
 import { Fraction } from "../entities/fraction/Fraction";
 import { useField } from "./useField";
@@ -10,6 +9,7 @@ export enum PoolState {
   ZERO_AMOUNTS,
   INSUFFICIENT_FUNDS,
   VALID_INPUT,
+  NO_LIQUIDITY,
 }
 
 export function usePoolCalculator(input: {

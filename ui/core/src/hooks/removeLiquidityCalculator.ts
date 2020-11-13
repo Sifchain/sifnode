@@ -1,8 +1,8 @@
-import { computed, ref, Ref } from "@vue/reactivity";
+import { computed, ComputedRef, effect, ref, Ref } from "@vue/reactivity";
 
 import { Asset, AssetAmount, LiquidityProvider, Pool } from "../entities";
 import { calculateWithdrawal } from "../entities/formulae";
-import { Fraction } from "../entities/fraction/Fraction";
+import { Fraction, IFraction } from "../entities/fraction/Fraction";
 import { PoolState } from "./addLiquidityCalculator";
 import { buildAsset } from "./utils";
 
@@ -15,9 +15,11 @@ export function useRemoveLiquidityCalculator(input: {
   liquidityProviderFinder: (
     asset: Asset,
     address: string
-  ) => LiquidityProvider | null;
+  ) => Promise<LiquidityProvider | null>;
   sifAddress: Ref<string>;
 }) {
+  const liquidityProvider = ref<LiquidityProvider | null>(null);
+
   const externalAsset = computed(() => {
     if (!input.externalAssetSymbol.value) return null;
     return buildAsset(input.externalAssetSymbol.value);
@@ -59,13 +61,12 @@ export function useRemoveLiquidityCalculator(input: {
     );
   });
 
-  const liquidityProvider = computed(() => {
+  effect(() => {
     if (!externalAsset.value) return null;
 
-    return input.liquidityProviderFinder(
-      externalAsset.value,
-      input.sifAddress.value
-    );
+    input
+      .liquidityProviderFinder(externalAsset.value, input.sifAddress.value)
+      .then((lpv) => (liquidityProvider.value = lpv));
   });
 
   const externalAssetBalance = computed(() => {
@@ -79,9 +80,13 @@ export function useRemoveLiquidityCalculator(input: {
 
   const lpUnits = computed(() => {
     if (!liquidityProvider.value) return null;
-    return liquidityProvider.value.units;
-  });
 
+    return liquidityProvider.value.units as IFraction;
+  });
+  const hasLiquidity = computed(() => {
+    if (!lpUnits.value) return false;
+    return lpUnits.value?.greaterThan("0");
+  });
   const withdrawalAmounts = computed(() => {
     if (
       !poolUnits.value ||
@@ -107,6 +112,7 @@ export function useRemoveLiquidityCalculator(input: {
       asymmetry: asymmetry.value,
     });
     return {
+      hasLiquidity,
       withdrawExternalAssetAmount: AssetAmount(
         externalAsset.value,
         withdrawExternalAssetAmount
@@ -119,6 +125,8 @@ export function useRemoveLiquidityCalculator(input: {
   });
 
   const state = computed(() => {
+    if (!hasLiquidity.value) return PoolState.NO_LIQUIDITY;
+
     if (!input.externalAssetSymbol.value || !input.nativeAssetSymbol.value)
       return PoolState.SELECT_TOKENS;
 
