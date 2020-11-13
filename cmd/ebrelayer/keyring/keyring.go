@@ -19,31 +19,35 @@ var (
 	hdpath = *hd.NewFundraiserParams(0, sdk.CoinType, 0)
 )
 
-// RelayerChain
-type RelayerChain struct {
+// KeyRing
+type KeyRing struct {
 	mnemonic string
+	moniker  string
+	password string
 	kb       keys.Keybase
 }
 
-// NewRelayerChain
-func NewRelayerChain(mnemonic string) *RelayerChain {
-	return &RelayerChain{
+// KeyRing
+func NewKeyRing(mnemonic string, moniker string, password string) *KeyRing {
+	return &KeyRing{
 		mnemonic: mnemonic,
+		moniker:  moniker,
+		password: password,
 	}
 }
 
-func (r *RelayerChain) SetConfig() {
+func (r *KeyRing) SetConfig() {
 	config := sdk.GetConfig()
 	config.SetBech32PrefixForAccount(app.AccountAddressPrefix, app.AccountPubKeyPrefix)
 	config.Seal()
 }
 
-func (r *RelayerChain) GenerateKeyStore() {
+func (r *KeyRing) GenerateKeyStore() {
 	r.kb = keys.NewInMemory(keys.WithSupportedAlgosLedger([]keys.SigningAlgo{keys.Secp256k1, keys.Ed25519}))
 }
 
-func (r *RelayerChain) GetAccountFromMnemonic() keys.Info {
-	account, err := r.kb.CreateAccount("validator", r.mnemonic, "", "password", hdpath.String(), keys.Secp256k1)
+func (r *KeyRing) GetAccountFromMnemonic() keys.Info {
+	account, err := r.kb.CreateAccount(r.moniker, r.mnemonic, "", r.password, hdpath.String(), keys.Secp256k1)
 	if err != nil {
 		panic(err)
 	}
@@ -51,15 +55,16 @@ func (r *RelayerChain) GetAccountFromMnemonic() keys.Info {
 	return account
 }
 
-func (r *RelayerChain) Address() {
+func (r *KeyRing) Address() {
 	account := r.GetAccountFromMnemonic()
 	fmt.Println(account.GetAddress().String())
 }
 
-func (r *RelayerChain) Sign(moniker string, password string, msg []byte) ([]byte, crypto.PubKey, error) {
-	pl, pk, err := r.kb.Sign(moniker, password, msg)
+func (r *KeyRing) Sign(msg []byte) ([]byte, crypto.PubKey, error) {
+	pl, pk, err := r.kb.Sign(r.moniker, r.password, msg)
 	if err != nil {
 		// panic(err)
+		fmt.Println(err)
 		return nil, nil, err
 	}
 	return pl, pk, err

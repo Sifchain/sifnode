@@ -44,7 +44,7 @@ type EthereumSub struct {
 	CliCtx                  sdkContext.CLIContext
 	TxBldr                  authtypes.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
-	RelayerChainSinger      *keyring.RelayerChain
+	RelayerChainSinger      *keyring.KeyRing
 	Logger                  tmLog.Logger
 }
 
@@ -68,7 +68,13 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 		WithChainID(chainID)
 
 	// hardcoded now, will get mnemonic from cli
-	signer := keyring.NewRelayerChain("a b c")
+	signer := keyring.NewKeyRing("reject climb decline mule tell taste swing split pool stumble mask job offer exhaust bulk approve crawl alpha burst lion ribbon screen return have", validatorMoniker, keys.DefaultKeyPass)
+
+	if signer == nil {
+		fmt.Println("We get a nil for signer")
+		fmt.Println(validatorMoniker)
+		fmt.Println(keys.DefaultKeyPass)
+	}
 
 	return EthereumSub{
 		Cdc:                     cdc,

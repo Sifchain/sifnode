@@ -3,11 +3,12 @@ package txs
 // DONTCOVER
 
 import (
+	"fmt"
+
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/keyring"
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
@@ -18,7 +19,7 @@ import (
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
 func RelayToCosmos(cdc *codec.Codec, moniker string, claim *types.EthBridgeClaim, cliCtx context.CLIContext,
-	txBldr authtypes.TxBuilder, singer *keyring.RelayerChain) error {
+	txBldr authtypes.TxBuilder, singer *keyring.KeyRing) error {
 	// Packages the claim as a Tendermint message
 	msg := ethbridge.NewMsgCreateEthBridgeClaim(*claim)
 
@@ -41,8 +42,15 @@ func RelayToCosmos(cdc *codec.Codec, moniker string, claim *types.EthBridgeClaim
 	// How to encode msg to bytes not complete yet.
 	sdkMsg := []sdk.Msg{msg}
 	stdSignMsg, err := txBldr.BuildSignMsg(sdkMsg)
-	txBytes, _, err := singer.Sign("validator", keys.DefaultKeyPass, stdSignMsg.Bytes())
 	if err != nil {
+		fmt.Println("Message is wrong from building.")
+		fmt.Println(err)
+		return err
+	}
+
+	txBytes, _, err := singer.Sign(stdSignMsg.Bytes())
+	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
