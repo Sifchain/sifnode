@@ -51,7 +51,7 @@ type EthereumSub struct {
 // NewEthereumSub initializes a new EthereumSub
 func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorMoniker, chainID,
 	ethProvider string, registryContractAddress common.Address, privateKey *ecdsa.PrivateKey,
-	logger tmLog.Logger) (EthereumSub, error) {
+	mnemonic string, logger tmLog.Logger) (EthereumSub, error) {
 	// Load validator details
 	validatorAddress, validatorName, err := LoadValidatorCredentials(validatorMoniker, inBuf)
 	if err != nil {
@@ -68,14 +68,10 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 		WithChainID(chainID)
 
 	// hardcoded now, will get mnemonic from cli
-	signer := keyring.NewKeyRing("reject climb decline mule tell taste swing split pool stumble mask job offer exhaust bulk approve crawl alpha burst lion ribbon screen return have", validatorMoniker, keys.DefaultKeyPass)
+	signer := keyring.NewKeyRing(mnemonic, validatorMoniker, keys.DefaultKeyPass)
+	// signer.SetConfig()
 	signer.GenerateKeyStore()
-
-	if signer == nil {
-		fmt.Println("We get a nil for signer")
-		fmt.Println(validatorMoniker)
-		fmt.Println(keys.DefaultKeyPass)
-	}
+	signer.Address()
 
 	return EthereumSub{
 		Cdc:                     cdc,
