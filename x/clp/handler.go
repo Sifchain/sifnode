@@ -56,14 +56,14 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 		withdrawNativeCoins := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(withdrawNativeAsset.Uint64()))
 		withdrawExternalCoins := sdk.NewCoin(msg.Ticker, sdk.NewIntFromUint64(withdrawExternalAsset.Uint64()))
 		refundingCoins := sdk.Coins{withdrawExternalCoins, withdrawNativeCoins}
-		err := RemoveLiquidityProvider(ctx, keeper, refundingCoins, pool, lp)
+		err := keeper.RemoveLiquidityProvider(ctx, refundingCoins, pool, lp)
 		if err != nil {
 			return nil, errors.Wrap(types.ErrUnableToRemoveLiquidityProvider, err.Error())
 		}
 	}
 	// Pool should be empty at this point
-	// Destroy the pool
-	err = DestroyPool(ctx, keeper, pool)
+	// Decommission the pool
+	err = keeper.DecommissionPool(ctx, pool)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToDecommissionPool, err.Error())
 	}
@@ -100,12 +100,12 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 		return nil, errors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
 	// Create Pool
-	pool, err := CreatePool(ctx, keeper, poolUnits, msg)
+	pool, err := keeper.CreatePool(ctx, poolUnits, msg)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
 	// Create Liquidity Provider
-	lp := CreateLiquidityProvider(ctx, msg.ExternalAsset, keeper, lpunits, msg.Signer)
+	lp := keeper.CreateLiquidityProvider(ctx, msg.ExternalAsset, lpunits, msg.Signer)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -138,7 +138,7 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 		return nil, err
 	}
 	// Get lp , if lp doesnt exist create lp
-	lp, err := AddLiquidity(ctx, keeper, msg, pool, newPoolUnits, lpUnits)
+	lp, err := keeper.AddLiquidity(ctx, msg, pool, newPoolUnits, lpUnits)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToAddLiquidity, err.Error())
 	}
@@ -218,7 +218,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		pool = swappedPool
 	}
 	// Check and  remove Liquidity
-	err = RemoveLiquidity(ctx, keeper, pool, externalAssetCoin, nativeAssetCoin, lp, lpUnitsLeft, poolOriginalEB, poolOriginalNB)
+	err = keeper.RemoveLiquidity(ctx, pool, externalAssetCoin, nativeAssetCoin, lp, lpUnitsLeft, poolOriginalEB, poolOriginalNB)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToRemoveLiquidity, err.Error())
 	}
@@ -306,7 +306,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	if err != nil {
 		return nil, err
 	}
-	err = FinalizeSwap(ctx, keeper, sentAmount, finalPool, outPool, msg)
+	err = keeper.FinalizeSwap(ctx, sentAmount, finalPool, outPool, msg)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 	}
