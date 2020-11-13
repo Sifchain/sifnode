@@ -13,10 +13,9 @@ describe("useRemoveLiquidityCalculator", () => {
   const sifAddress: Ref<string> = ref("12345678asFDSghkjg");
   const wBasisPoints: Ref<string> = ref("5000");
   const marketPairFinder = jest.fn<Pool | null, any>(() => null);
-  const liquidityProviderFinder = jest.fn<
-    Promise<LiquidityProvider | null>,
-    any
-  >(async () => null);
+  const liquidityProviderFinder = jest.fn<Ref<LiquidityProvider | null>, any>(
+    () => ref(null)
+  );
 
   // output
   let withdrawExternalAssetAmount: Ref<string | null>;
@@ -39,9 +38,16 @@ describe("useRemoveLiquidityCalculator", () => {
     }));
   });
 
-  test("displays the correct withdrawal amounts", () => {
-    liquidityProviderFinder.mockImplementation(async () =>
-      LiquidityProvider(CATK, new Fraction("100000"), "sif123456876512341234")
+  test("displays the correct withdrawal amounts", async () => {
+    liquidityProviderFinder.mockImplementation(
+      () =>
+        ref(
+          LiquidityProvider(
+            CATK,
+            new Fraction("100000") as IFraction,
+            "sif123456876512341234"
+          )
+        ) as any
     );
     marketPairFinder.mockImplementation(() =>
       Pool(
@@ -50,6 +56,7 @@ describe("useRemoveLiquidityCalculator", () => {
         new Fraction("1000000")
       )
     );
+
     expect(state.value).toBe(PoolState.SELECT_TOKENS);
     asymmetry.value = "0";
     externalAssetSymbol.value = "catk";

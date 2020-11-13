@@ -5,11 +5,7 @@ export function LiquidityProvider(
   asset: Asset,
   units: IFraction,
   address: string
-): LiquidityProvider {
+) {
   return { asset, units, address };
 }
-export type LiquidityProvider = {
-  asset: Asset;
-  units: IFraction;
-  address: string;
-};
+export type LiquidityProvider = ReturnType<typeof LiquidityProvider>;

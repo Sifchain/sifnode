@@ -11,7 +11,7 @@ import {
   SigningCosmosClient,
 } from "@cosmjs/launchpad";
 
-import { ClpExtension, setupClpExtension } from "./x/clp";
+import { ClpExtension, setupClpExtension } from "../SifService/x/clp";
 
 type CustomLcdClient = LcdClient & AuthExtension & ClpExtension;
 

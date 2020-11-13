@@ -1,7 +1,7 @@
 import { RWN } from "../../constants";
 import { Asset, AssetAmount, Pool } from "../../entities";
 import { Fraction } from "../../entities/fraction/Fraction";
-import { SifUnSignedClient } from "../SifService/SifClient";
+import { SifUnSignedClient } from "../utils/SifClient";
 import { RawPool } from "../SifService/x/clp";
 
 export type MarketServiceContext = {

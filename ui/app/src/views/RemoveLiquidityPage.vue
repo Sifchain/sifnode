@@ -12,7 +12,7 @@ import {
 } from "../../../core";
 import { useCore } from "@/hooks/useCore";
 
-import { computed, toRef } from "@vue/reactivity";
+import { computed, Ref, toRef } from "@vue/reactivity";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
@@ -32,11 +32,22 @@ export default defineComponent({
   setup() {
     const { store, actions, api } = useCore();
     const marketPairFinder = api.MarketService.find;
-    const liquidityProviderFinder = async (asset: Asset, address: string) => {
-      return await api.SifService.getLiquidityProvider({
+
+    // Get Liquidity provider ref from API.
+    const liquidityProviderFinder = (
+      asset: Asset,
+      address: string
+    ): Ref<LiquidityProvider | null> => {
+      const lpRef = ref(null) as Ref<LiquidityProvider | null>;
+
+      api.SifService.getLiquidityProvider({
         ticker: asset.symbol,
         lpAddress: address,
+      }).then((liquidityProviderResult) => {
+        lpRef.value = liquidityProviderResult;
       });
+
+      return lpRef;
     };
 
     const asymmetry = ref("0");

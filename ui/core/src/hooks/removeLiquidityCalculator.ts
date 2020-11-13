@@ -15,11 +15,9 @@ export function useRemoveLiquidityCalculator(input: {
   liquidityProviderFinder: (
     asset: Asset,
     address: string
-  ) => Promise<LiquidityProvider | null>;
+  ) => Ref<LiquidityProvider | null>;
   sifAddress: Ref<string>;
 }) {
-  const liquidityProvider = ref<LiquidityProvider | null>(null);
-
   const externalAsset = computed(() => {
     if (!input.externalAssetSymbol.value) return null;
     return buildAsset(input.externalAssetSymbol.value);
@@ -61,12 +59,13 @@ export function useRemoveLiquidityCalculator(input: {
     );
   });
 
-  effect(() => {
+  const liquidityProvider = computed(() => {
     if (!externalAsset.value) return null;
 
-    input
-      .liquidityProviderFinder(externalAsset.value, input.sifAddress.value)
-      .then((lpv) => (liquidityProvider.value = lpv));
+    return input.liquidityProviderFinder(
+      externalAsset.value,
+      input.sifAddress.value
+    ).value;
   });
 
   const externalAssetBalance = computed(() => {
@@ -125,13 +124,12 @@ export function useRemoveLiquidityCalculator(input: {
   });
 
   const state = computed(() => {
-    if (!hasLiquidity.value) return PoolState.NO_LIQUIDITY;
-
     if (!input.externalAssetSymbol.value || !input.nativeAssetSymbol.value)
       return PoolState.SELECT_TOKENS;
 
     if (!wBasisPoints.value?.greaterThan("0")) return PoolState.ZERO_AMOUNTS;
 
+    if (!hasLiquidity.value) return PoolState.NO_LIQUIDITY;
     if (!lpUnits.value) {
       return PoolState.INSUFFICIENT_FUNDS;
     }

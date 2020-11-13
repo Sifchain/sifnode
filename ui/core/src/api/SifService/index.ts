@@ -12,7 +12,7 @@ import {
 import { Fraction, IFraction } from "../../entities/fraction/Fraction";
 import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
-import { SifClient } from "./SifClient";
+import { SifClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 
 export type SifServiceContext = {
