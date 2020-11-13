@@ -30,7 +30,7 @@ export default defineComponent({
     Caret,
   },
   setup() {
-    const { store, api } = useCore();
+    const { store, actions, api } = useCore();
     const marketPairFinder = api.MarketService.find;
     const liquidityProviderFinder = (asset: Asset, address: string) =>
       LiquidityProvider(asset, new Fraction("10000"), address);
@@ -85,7 +85,18 @@ export default defineComponent({
         externalAssetSymbol.value = data;
       },
       handleNextStepClicked() {
-        alert(`Remove Liquidity!`);
+        if (
+          !externalAssetSymbol.value ||
+          !wBasisPoints.value ||
+          !asymmetry.value
+        )
+          return;
+
+        actions.sifWallet.removeLiquidity(
+          Asset.get(externalAssetSymbol.value),
+          wBasisPoints.value,
+          asymmetry.value
+        );
       },
       wBasisPoints,
       asymmetry,

@@ -9,7 +9,7 @@ import {
   Network,
   TxParams,
 } from "../../entities";
-import { Fraction } from "../../entities/fraction/Fraction";
+import { Fraction, IFraction } from "../../entities/fraction/Fraction";
 import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
 import { SifClient } from "./SifClient";
@@ -34,6 +34,11 @@ type IClpService = {
     ticker: string;
     lpAddress: string;
   }) => Promise<LiquidityProvider | null>;
+  removeLiquidity: (params: {
+    wBasisPoints: string;
+    asymmetry: string;
+    asset: Asset;
+  }) => any;
 };
 
 /**
@@ -274,6 +279,32 @@ export default function createSifService({
         new Fraction(response.result.liquidity_provider_units),
         response.result.liquidity_provider_address
       );
+    },
+
+    async removeLiquidity(params) {
+      if (!client) throw new Error("No client. Please sign in.");
+      const response = await client.removeLiquidity({
+        asymmetry: params.asymmetry,
+        base_req: { chain_id: "sifchain", from: state.address },
+        external_asset: {
+          source_chain: params.asset.network as string,
+          symbol: params.asset.symbol,
+          ticker: params.asset.symbol,
+        },
+        signer: state.address,
+        w_basis_points: params.wBasisPoints,
+      });
+
+      const fee = {
+        amount: coins(0, "rwn"),
+        gas: "200000", // need gas fee for tx to work - see genesis file
+      };
+
+      const txHash = await client.signAndBroadcast(response.value.msg, fee);
+
+      this.getBalance(state.address);
+
+      return txHash;
     },
   };
 }

@@ -3,6 +3,7 @@ import { validateMnemonic } from "bip39";
 import { Mnemonic } from "../entities/Wallet";
 import { ActionContext } from ".";
 import { effect } from "@vue/reactivity";
+import { IFraction } from "../entities/fraction/Fraction";
 
 export default ({
   api,
@@ -50,6 +51,18 @@ export default ({
           externalAssetAmount,
         });
       }
+    },
+
+    async removeLiquidity(
+      asset: Asset,
+      wBasisPoints: string,
+      asymmetry: string
+    ) {
+      return await api.SifService.removeLiquidity({
+        asset,
+        asymmetry,
+        wBasisPoints,
+      });
     },
 
     async disconnect() {

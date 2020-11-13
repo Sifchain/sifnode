@@ -1,4 +1,5 @@
 import { LcdClient, Msg } from "@cosmjs/launchpad";
+import { IFraction } from "../../../../entities/fraction/Fraction";
 import { StdTx } from "../../../../entities/noncore/Bank";
 
 export type SwapParams = {
@@ -32,6 +33,20 @@ export type LiquidityParams = {
   };
   native_asset_amount: string;
   external_asset_amount: string;
+  signer: string;
+};
+export type RemoveLiquidityParams = {
+  base_req: {
+    from: string;
+    chain_id: string;
+  };
+  external_asset: {
+    source_chain: string;
+    symbol: string;
+    ticker: string;
+  };
+  w_basis_points: string;
+  asymmetry: string;
   signer: string;
 };
 
@@ -68,6 +83,9 @@ type ClpGetLiquidityProvider = (params: {
   ticker: string;
   lpAddress: string;
 }) => Promise<LiquidityDetailsResponse>;
+
+type ClpRemoveLiquidity = (param: RemoveLiquidityParams) => Promise<StdTx>;
+
 export interface ClpExtension {
   readonly clp: {
     swap: ClpCmdSwap;
@@ -75,6 +93,7 @@ export interface ClpExtension {
     addLiquidity: ClpAddLiquidity;
     createPool: ClpCreatePool;
     getLiquidityProvider: ClpGetLiquidityProvider;
+    removeLiquidity: ClpRemoveLiquidity;
   };
 }
 
@@ -101,6 +120,10 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
         return await base.get(
           `/clp/getLiquidityProvider?ticker=${ticker}&lpAddress=${lpAddress}`
         );
+      },
+
+      removeLiquidity: async (params) => {
+        return await base.post(`/clp/removeLiquidity`, params);
       },
     },
   };
