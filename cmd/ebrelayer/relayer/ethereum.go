@@ -61,7 +61,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 	if err != nil {
 		return EthereumSub{}, err
 	}
-	txBldr := authtypes.NewTxBuilderFromCLI(nil).
+	txBldr := authtypes.NewTxBuilderFromCLI(inBuf).
 		WithTxEncoder(utils.GetTxEncoder(cdc)).
 		WithChainID(chainID)
 
