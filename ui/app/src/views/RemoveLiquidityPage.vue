@@ -4,20 +4,17 @@ import Layout from "@/components/layout/Layout.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
 import Modal from "@/components/shared/Modal.vue";
-import {
-  Asset,
-  LiquidityProvider,
-  PoolState,
-  useRemoveLiquidityCalculator,
-} from "../../../core";
+import { Asset, PoolState, useRemoveLiquidityCalculator } from "../../../core";
+import { LiquidityProvider } from "../../../core";
 import { useCore } from "@/hooks/useCore";
 
-import { computed, Ref, toRef } from "@vue/reactivity";
+import { computed, effect, Ref, toRef } from "@vue/reactivity";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
 import Caret from "@/components/shared/Caret.vue";
 import { Fraction } from "../../../core/src/entities/fraction/Fraction";
+import Slider from "@/components/shared/Slider.vue";
 
 export default defineComponent({
   components: {
@@ -28,27 +25,11 @@ export default defineComponent({
     ActionsPanel,
     SifButton,
     Caret,
+    Slider,
   },
   setup() {
     const { store, actions, api } = useCore();
     const marketPairFinder = api.MarketService.find;
-
-    // Get Liquidity provider ref from API.
-    const liquidityProviderFinder = (
-      asset: Asset,
-      address: string
-    ): Ref<LiquidityProvider | null> => {
-      const lpRef = ref(null) as Ref<LiquidityProvider | null>;
-
-      api.SifService.getLiquidityProvider({
-        ticker: asset.symbol,
-        lpAddress: address,
-      }).then((liquidityProviderResult) => {
-        lpRef.value = liquidityProviderResult;
-      });
-
-      return lpRef;
-    };
 
     const asymmetry = ref("0");
     const wBasisPoints = ref("5000");
@@ -56,6 +37,19 @@ export default defineComponent({
     const externalAssetSymbol = ref<string | null>(null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
+    });
+
+    const liquidityProvider = ref(null) as Ref<LiquidityProvider | null>;
+
+    effect(() => {
+      if (!externalAssetSymbol.value) return null;
+
+      api.ClpService.getLiquidityProvider({
+        ticker: externalAssetSymbol.value,
+        lpAddress: store.wallet.sif.address,
+      }).then((liquidityProviderResult) => {
+        liquidityProvider.value = liquidityProviderResult;
+      });
     });
 
     const {
@@ -67,15 +61,20 @@ export default defineComponent({
       nativeAssetSymbol,
       wBasisPoints,
       asymmetry,
-      liquidityProviderFinder,
+      liquidityProvider,
       sifAddress: toRef(store.wallet.sif, "address"),
       marketPairFinder,
     });
     // input not updating for some reason?
-
+    function clearFields() {
+      asymmetry.value = "0";
+      wBasisPoints.value = "0";
+      nativeAssetSymbol.value = "rwn";
+      externalAssetSymbol.value = null;
+    }
     return {
       connected,
-
+      state,
       nextStepMessage: computed(() => {
         switch (state.value) {
           case PoolState.SELECT_TOKENS:
@@ -93,7 +92,6 @@ export default defineComponent({
       nextStepAllowed: computed(() => {
         return state.value === PoolState.VALID_INPUT;
       }),
-
       handleSelectClosed(data: string | MouseEvent) {
         if (typeof data !== "string") {
           return;
@@ -101,7 +99,7 @@ export default defineComponent({
 
         externalAssetSymbol.value = data;
       },
-      handleNextStepClicked() {
+      async handleNextStepClicked() {
         if (
           !externalAssetSymbol.value ||
           !wBasisPoints.value ||
@@ -109,12 +107,19 @@ export default defineComponent({
         )
           return;
 
-        actions.sifWallet.removeLiquidity(
-          Asset.get(externalAssetSymbol.value),
-          wBasisPoints.value,
-          asymmetry.value
-        );
+        try {
+          await actions.clp.removeLiquidity(
+            Asset.get(externalAssetSymbol.value),
+            wBasisPoints.value,
+            asymmetry.value
+          );
+          alert("Liquidity Removed");
+        } catch (err) {
+          alert(err);
+        }
+        clearFields();
       },
+      PoolState,
       wBasisPoints,
       asymmetry,
       nativeAssetSymbol,
@@ -129,38 +134,37 @@ export default defineComponent({
 
 <template>
   <Layout class="pool" backLink="/pool">
-    <div class="slider">
-      <p>Choose from 0 to 100% of how much to withdraw</p>
-      <input
-        v-model="wBasisPoints"
-        class="input"
-        type="range"
-        max="10000"
-        min="0"
-        step="1"
-      />
-      <div class="row">
-        <div @click="wBasisPoints = '0'">0%</div>
-        <div @click="wBasisPoints = '5000'">50%</div>
-        <div @click="wBasisPoints = '10000'">100%</div>
-      </div>
-    </div>
-    <div class="slider">
-      <p>Choose how much to withdraw from each asset</p>
-      <input
-        v-model="asymmetry"
-        class="input"
-        min="-10000"
-        max="10000"
-        type="range"
-        step="1"
-      />
-      <div class="row">
-        <div @click="asymmetry = '-10000'">All Rowan</div>
-        <div @click="asymmetry = '0'">Equal</div>
-        <div @click="asymmetry = '10000'">All Asset</div>
-      </div>
-    </div>
+    <Slider
+      message="Choose from 0 to 100% of how much to withdraw"
+      :disabled="!connected || state === PoolState.NO_LIQUIDITY"
+      v-model="wBasisPoints"
+      min="0"
+      max="10000"
+      type="range"
+      step="1"
+      @leftclicked="wBasisPoints = '0'"
+      @middleclicked="wBasisPoints = '5000'"
+      @rightclicked="wBasisPoints = '10000'"
+      leftLabel="0%"
+      middleLabel="50%"
+      rightLabel="100%"
+    />
+
+    <Slider
+      message="Choose how much to withdraw from each asset"
+      :disabled="!connected || state === PoolState.NO_LIQUIDITY"
+      v-model="asymmetry"
+      min="-10000"
+      max="10000"
+      type="range"
+      step="1"
+      @leftclicked="asymmetry = '-10000'"
+      @middleclicked="asymmetry = '0'"
+      @rightclicked="asymmetry = '10000'"
+      leftLabel="All Rowan"
+      middleLabel="Equal"
+      rightLabel="All Asset"
+    />
     <div class="asset-row">
       <AssetItem :symbol="nativeAssetSymbol" />
       <div class="select-asset">
@@ -211,25 +215,5 @@ export default defineComponent({
   display: flex;
   justify-content: space-between;
   margin-bottom: 1rem;
-}
-.slider {
-  margin-bottom: 1rem;
-  width: 100%;
-  .input {
-    width: 100%;
-  }
-  .row {
-    display: flex;
-    justify-content: space-between;
-    & > * {
-      width: 20%;
-    }
-    & > *:first-child {
-      text-align: left;
-    }
-    & > *:last-child {
-      text-align: right;
-    }
-  }
 }
 </style>

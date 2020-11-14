@@ -77,10 +77,7 @@ export default defineComponent({
         throw new Error("to field amount is not defined");
 
       transactionState.value = "confirming";
-      await actions.sifWallet.swap(
-        fromFieldAmount.value,
-        toFieldAmount.value.asset
-      );
+      await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset);
       transactionState.value = "confirmed";
       clearAmounts();
     }

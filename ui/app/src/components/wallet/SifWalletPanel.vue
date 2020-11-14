@@ -16,7 +16,7 @@ function useCosmosWallet({
 
   async function handleDisconnectClicked() {
     try {
-      await actions.sifWallet.disconnect();
+      await actions.wallet.disconnect();
     } catch (err) {
       error.value = err;
     }
@@ -24,7 +24,7 @@ function useCosmosWallet({
 
   async function handleConnectClicked() {
     try {
-      await actions.sifWallet.connect(mnemonic.value);
+      await actions.wallet.connect(mnemonic.value);
     } catch (err) {
       error.value = err;
     }

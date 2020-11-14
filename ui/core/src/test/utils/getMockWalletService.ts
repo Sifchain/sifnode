@@ -27,5 +27,9 @@ export function getMockWalletService(
     }),
     isConnected: () => true,
     ...service,
+    signAndBroadcast: async (
+      msg: { type: string; value: any },
+      memo?: string
+    ) => {},
   };
 }

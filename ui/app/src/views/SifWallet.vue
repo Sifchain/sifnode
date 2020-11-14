@@ -103,7 +103,7 @@ export default defineComponent({
         return (errorMessage.value = "Not connected");
       }
 
-      await actions.sifWallet.sendCosmosTransaction({
+      await actions.wallet.sendCosmosTransaction({
         asset: Coin({
           symbol: "catk",
           decimals: 18,
@@ -121,7 +121,7 @@ export default defineComponent({
         return (errorMessage.value = "Mnemonic required to send");
       }
       try {
-        await actions.sifWallet.connect(localMnemonic.value.trim());
+        await actions.wallet.connect(localMnemonic.value.trim());
       } catch (error) {
         errorMessage.value = error;
       }
@@ -130,7 +130,7 @@ export default defineComponent({
     async function reset() {
       localMnemonic.value = "";
       errorMessage.value = "";
-      actions.sifWallet.disconnect();
+      actions.wallet.disconnect();
     }
 
     return {

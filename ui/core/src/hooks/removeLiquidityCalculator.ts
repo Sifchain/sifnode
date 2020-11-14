@@ -12,10 +12,7 @@ export function useRemoveLiquidityCalculator(input: {
   wBasisPoints: Ref<string | null>;
   asymmetry: Ref<string | null>;
   marketPairFinder: (a: Asset | string, b: Asset | string) => Pool | null;
-  liquidityProviderFinder: (
-    asset: Asset,
-    address: string
-  ) => Ref<LiquidityProvider | null>;
+  liquidityProvider: Ref<LiquidityProvider | null>;
   sifAddress: Ref<string>;
 }) {
   const externalAsset = computed(() => {
@@ -59,15 +56,6 @@ export function useRemoveLiquidityCalculator(input: {
     );
   });
 
-  const liquidityProvider = computed(() => {
-    if (!externalAsset.value) return null;
-
-    return input.liquidityProviderFinder(
-      externalAsset.value,
-      input.sifAddress.value
-    ).value;
-  });
-
   const externalAssetBalance = computed(() => {
     if (!liquidityPool.value) return null;
     return (
@@ -78,14 +66,16 @@ export function useRemoveLiquidityCalculator(input: {
   });
 
   const lpUnits = computed(() => {
-    if (!liquidityProvider.value) return null;
+    if (!input.liquidityProvider.value) return null;
 
-    return liquidityProvider.value.units as IFraction;
+    return input.liquidityProvider.value.units as IFraction;
   });
+
   const hasLiquidity = computed(() => {
     if (!lpUnits.value) return false;
-    return lpUnits.value?.greaterThan("0");
+    return lpUnits.value.greaterThan("0");
   });
+
   const withdrawalAmounts = computed(() => {
     if (
       !poolUnits.value ||

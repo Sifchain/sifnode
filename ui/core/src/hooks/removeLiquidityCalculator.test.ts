@@ -1,4 +1,5 @@
 import { ref, Ref } from "@vue/reactivity";
+import { LiquidityParams } from "../api/utils/x/clp";
 import { CATK, RWN } from "../constants";
 import { AssetAmount, LiquidityProvider, Pool } from "../entities";
 import { Fraction, IFraction } from "../entities/fraction/Fraction";
@@ -12,10 +13,8 @@ describe("useRemoveLiquidityCalculator", () => {
   const nativeAssetSymbol: Ref<string | null> = ref(null);
   const sifAddress: Ref<string> = ref("12345678asFDSghkjg");
   const wBasisPoints: Ref<string> = ref("5000");
+  const liquidityProvider: Ref<LiquidityProvider | null> = ref(null);
   const marketPairFinder = jest.fn<Pool | null, any>(() => null);
-  const liquidityProviderFinder = jest.fn<Ref<LiquidityProvider | null>, any>(
-    () => ref(null)
-  );
 
   // output
   let withdrawExternalAssetAmount: Ref<string | null>;
@@ -30,7 +29,7 @@ describe("useRemoveLiquidityCalculator", () => {
     } = useRemoveLiquidityCalculator({
       asymmetry,
       externalAssetSymbol,
-      liquidityProviderFinder,
+      liquidityProvider,
       marketPairFinder,
       nativeAssetSymbol,
       sifAddress,
@@ -39,16 +38,12 @@ describe("useRemoveLiquidityCalculator", () => {
   });
 
   test("displays the correct withdrawal amounts", async () => {
-    liquidityProviderFinder.mockImplementation(
-      () =>
-        ref(
-          LiquidityProvider(
-            CATK,
-            new Fraction("100000") as IFraction,
-            "sif123456876512341234"
-          )
-        ) as any
+    liquidityProvider.value = LiquidityProvider(
+      CATK,
+      new Fraction("100000") as IFraction,
+      "sif123456876512341234"
     );
+
     marketPairFinder.mockImplementation(() =>
       Pool(
         AssetAmount(CATK, "1000000"),

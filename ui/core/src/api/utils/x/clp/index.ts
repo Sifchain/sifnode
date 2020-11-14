@@ -1,5 +1,4 @@
 import { LcdClient, Msg } from "@cosmjs/launchpad";
-import { IFraction } from "../../../../entities/fraction/Fraction";
 import { StdTx } from "../../../../entities/noncore/Bank";
 
 export type SwapParams = {

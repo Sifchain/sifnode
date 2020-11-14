@@ -209,6 +209,8 @@ export class EthereumService implements IWalletService {
     return await transferAsset(this.web3, from, recipient, amount, asset);
   }
 
+  async signAndBroadcast() {}
+
   async setPhrase() {
     // We currently delegate auth to metamask so this is irrelavent
     return "";

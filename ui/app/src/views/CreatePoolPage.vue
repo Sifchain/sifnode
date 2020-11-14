@@ -37,10 +37,12 @@ export default defineComponent({
     toSymbol.value = "rwn";
 
     const priceMessage = ref("");
+
     function clearAmounts() {
       fromAmount.value = "0.0";
       toAmount.value = "0.0";
     }
+
     const {
       connected,
 
@@ -124,10 +126,11 @@ export default defineComponent({
         if (!toFieldAmount.value)
           throw new Error("Token B field amount is not defined");
 
-        await actions.sifWallet.addLiquidity(
+        await actions.clp.addLiquidity(
           toFieldAmount.value,
           fromFieldAmount.value
         );
+
         // TODO Tidy up transaction
         alert("Liquidity added");
 

@@ -1,4 +1,10 @@
-import { coins, makeCosmoshubPath, Secp256k1HdWallet } from "@cosmjs/launchpad";
+import {
+  coins,
+  isBroadcastTxFailure,
+  makeCosmoshubPath,
+  Msg,
+  Secp256k1HdWallet,
+} from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
 import {
   Address,
@@ -9,7 +15,6 @@ import {
   Network,
   TxParams,
 } from "../../entities";
-import { Fraction, IFraction } from "../../entities/fraction/Fraction";
 import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
 import { SifClient } from "../utils/SifClient";
@@ -49,7 +54,7 @@ type IClpService = {
 export default function createSifService({
   sifAddrPrefix,
   sifApiUrl,
-}: SifServiceContext): IWalletService & IClpService {
+}: SifServiceContext): IWalletService {
   const {} = sifAddrPrefix;
 
   // Reactive state for communicating state changes
@@ -178,130 +183,21 @@ export default function createSifService({
       return txHash;
     },
 
-    async addLiquidity(params: {
-      nativeAssetAmount: AssetAmount;
-      externalAssetAmount: AssetAmount;
-    }) {
+    async signAndBroadcast(msg: Msg | Msg[], memo?: string) {
       if (!client) throw "No client. Please sign in.";
-      const response = await client.addLiquidity({
-        base_req: { chain_id: "sifnode", from: state.address },
-        external_asset: {
-          source_chain: params.externalAssetAmount.asset.network as string,
-          symbol: params.externalAssetAmount.asset.symbol,
-          ticker: params.externalAssetAmount.asset.symbol,
-        },
-        external_asset_amount: params.externalAssetAmount.toFixed(0),
-        native_asset_amount: params.nativeAssetAmount.toFixed(0),
-        signer: state.address,
-      });
-      const fee = {
-        amount: coins(0, params.externalAssetAmount.asset.symbol),
-        gas: "200000", // need gas fee for tx to work - see genesis file
-      };
-      // alert(JSON.stringify(response));
-      const txHash = await client.signAndBroadcast(response.value.msg, fee);
-
-      this.getBalance(state.address);
-
-      return txHash;
-    },
-
-    async createPool(params: {
-      nativeAssetAmount: AssetAmount;
-      externalAssetAmount: AssetAmount;
-    }) {
-      if (!client) throw "No client. Please sign in.";
-      const response = await client.createPool({
-        base_req: { chain_id: "sifnode", from: state.address },
-        external_asset: {
-          source_chain: params.externalAssetAmount.asset.network as string,
-          symbol: params.externalAssetAmount.asset.symbol,
-          ticker: params.externalAssetAmount.asset.symbol,
-        },
-        external_asset_amount: params.externalAssetAmount.toFixed(0),
-        native_asset_amount: params.nativeAssetAmount.toFixed(0),
-        signer: state.address,
-      });
-      const fee = {
-        amount: coins(0, params.externalAssetAmount.asset.symbol),
-        gas: "200000", // need gas fee for tx to work - see genesis file
-      };
-      // alert(JSON.stringify(response));
-      const txHash = await client.signAndBroadcast(response.value.msg, fee);
-
-      this.getBalance(state.address);
-
-      return txHash;
-    },
-
-    async swap(params: { sentAmount: AssetAmount; receivedAsset: Asset }) {
-      if (!client) throw "No client. Please sign in.";
-
-      // Validate params
-
-      const response = await client.swap({
-        base_req: { chain_id: "sifchain", from: state.address },
-        received_asset: {
-          source_chain: params.receivedAsset.network as string,
-          symbol: params.receivedAsset.symbol,
-          ticker: params.receivedAsset.symbol,
-        },
-        sent_amount: params.sentAmount.numerator.toString(),
-        sent_asset: {
-          source_chain: params.sentAmount.asset.network as string,
-          symbol: params.sentAmount.asset.symbol,
-          ticker: params.sentAmount.asset.symbol,
-        },
-        signer: state.address,
-      });
-      const fee = {
-        amount: coins(0, params.sentAmount.asset.symbol),
-        gas: "200000", // need gas fee for tx to work - see genesis file
-      };
-
-      const txHash = await client.signAndBroadcast(response.value.msg, fee);
-
-      this.getBalance(state.address);
-
-      return txHash;
-    },
-    async getLiquidityProvider(params) {
-      if (!client) throw new Error("No client. Please sign in.");
-      const response = await client.getLiquidityProvider(params);
-
-      return LiquidityProvider(
-        Coin({
-          name: response.result.asset.ticker,
-          symbol: response.result.asset.ticker,
-          network: Network.SIFCHAIN,
-          decimals: 18,
-        }),
-        new Fraction(response.result.liquidity_provider_units),
-        response.result.liquidity_provider_address
-      );
-    },
-
-    async removeLiquidity(params) {
-      if (!client) throw new Error("No client. Please sign in.");
-      const response = await client.removeLiquidity({
-        asymmetry: params.asymmetry,
-        base_req: { chain_id: "sifchain", from: state.address },
-        external_asset: {
-          source_chain: params.asset.network as string,
-          symbol: params.asset.symbol,
-          ticker: params.asset.symbol,
-        },
-        signer: state.address,
-        w_basis_points: params.wBasisPoints,
-      });
 
       const fee = {
         amount: coins(0, "rwn"),
         gas: "200000", // need gas fee for tx to work - see genesis file
       };
 
-      const txHash = await client.signAndBroadcast(response.value.msg, fee);
+      const msgArr = Array.isArray(msg) ? msg : [msg];
 
+      const txHash = await client.signAndBroadcast(msgArr, fee, memo);
+
+      if (isBroadcastTxFailure(txHash)) {
+        throw new Error(txHash.rawLog);
+      }
       this.getBalance(state.address);
 
       return txHash;
