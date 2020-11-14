@@ -3,39 +3,14 @@ pragma solidity ^0.5.0;
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Valset.sol";
 import "./BridgeBank/BridgeBank.sol";
+import "./CosmosBridgeStorage.sol";
 
 
-contract CosmosBridge {
+contract CosmosBridge is CosmosBridgeStorage {
     using SafeMath for uint256;
-    string COSMOS_NATIVE_ASSET_PREFIX = "e";
-
-    /*
-     * @dev: Public variable declarations
-     */
-    address public operator;
-    Valset public valset;
-    address public oracle;
-    bool public hasOracle;
-    BridgeBank public bridgeBank;
-    bool public hasBridgeBank;
-
-    uint256 public prophecyClaimCount;
-    mapping(uint256 => ProphecyClaim) public prophecyClaims;
-
-    enum Status {Null, Pending, Success, Failed}
-
-    enum ClaimType {Unsupported, Burn, Lock}
-
-    struct ProphecyClaim {
-        ClaimType claimType;
-        bytes cosmosSender;
-        address payable ethereumReceiver;
-        address originalValidator;
-        address tokenAddress;
-        string symbol;
-        uint256 amount;
-        Status status;
-    }
+    
+    bool private _initialized;
+    uint256[100] private ___gap;
 
     /*
      * @dev: Event declarations
@@ -91,18 +66,22 @@ contract CosmosBridge {
     /*
      * @dev: Constructor
      */
-    constructor(address _operator, address _valset) public {
+    function initialize(address _operator, address payable _valset) public {
+        require(!_initialized, "Initialized");
+
+        COSMOS_NATIVE_ASSET_PREFIX = "e";
         prophecyClaimCount = 0;
         operator = _operator;
-        valset = Valset(_valset);
+        valset = _valset;
         hasOracle = false;
         hasBridgeBank = false;
+        _initialized = true;
     }
 
     /*
      * @dev: setOracle
      */
-    function setOracle(address _oracle) public onlyOperator {
+    function setOracle(address payable _oracle) public onlyOperator {
         require(
             !hasOracle,
             "The Oracle cannot be updated once it has been set"
@@ -124,9 +103,9 @@ contract CosmosBridge {
         );
 
         hasBridgeBank = true;
-        bridgeBank = BridgeBank(_bridgeBank);
+        bridgeBank = _bridgeBank;
 
-        emit LogBridgeBankSet(address(bridgeBank));
+        emit LogBridgeBankSet(bridgeBank);
     }
 
     /*
@@ -143,7 +122,7 @@ contract CosmosBridge {
         uint256 _amount
     ) public isActive {
         require(
-            valset.isActiveValidator(msg.sender),
+            Valset(valset).isActiveValidator(msg.sender),
             "Must be an active validator"
         );
 
@@ -151,17 +130,17 @@ contract CosmosBridge {
         string memory symbol;
         if (_claimType == ClaimType.Burn) {
             require(
-                bridgeBank.getLockedFunds(_symbol) >= _amount,
+                BridgeBank(bridgeBank).getLockedFunds(_symbol) >= _amount,
                 "Not enough locked assets to complete the proposed prophecy"
             );
             symbol = _symbol;
-            tokenAddress = bridgeBank.getLockedTokenAddress(_symbol);
+            tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(_symbol);
         } else if (_claimType == ClaimType.Lock) {
             symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol); // Add 'e' symbol prefix
-            address bridgeTokenAddress = bridgeBank.getBridgeToken(symbol);
+            address bridgeTokenAddress = BridgeBank(bridgeBank).getBridgeToken(symbol);
             if (bridgeTokenAddress == address(0)) {
                 // First lock of this asset, deploy new contract and get new symbol/token address
-                tokenAddress = bridgeBank.createNewBridgeToken(symbol);
+                tokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(symbol);
             } else {
                 // Not the first lock of this asset, get existing symbol/token address
                 tokenAddress = bridgeTokenAddress;
@@ -232,7 +211,7 @@ contract CosmosBridge {
     function issueBridgeTokens(uint256 _prophecyID) internal {
         ProphecyClaim memory prophecyClaim = prophecyClaims[_prophecyID];
 
-        bridgeBank.mintBridgeTokens(
+        BridgeBank(bridgeBank).mintBridgeTokens(
             prophecyClaim.cosmosSender,
             prophecyClaim.ethereumReceiver,
             prophecyClaim.tokenAddress,
@@ -248,7 +227,7 @@ contract CosmosBridge {
     function unlockTokens(uint256 _prophecyID) internal {
         ProphecyClaim memory prophecyClaim = prophecyClaims[_prophecyID];
 
-        bridgeBank.unlock(
+        BridgeBank(bridgeBank).unlock(
             prophecyClaim.ethereumReceiver,
             prophecyClaim.symbol,
             prophecyClaim.amount
@@ -278,7 +257,7 @@ contract CosmosBridge {
         returns (bool)
     {
         return
-            valset.isActiveValidator(
+            Valset(valset).isActiveValidator(
                 prophecyClaims[_prophecyID].originalValidator
             );
     }

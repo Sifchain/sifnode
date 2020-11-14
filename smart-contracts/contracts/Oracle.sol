@@ -3,22 +3,13 @@ pragma solidity ^0.5.0;
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Valset.sol";
 import "./CosmosBridge.sol";
+import "./OracleStorage.sol";
 
 
-contract Oracle {
+contract Oracle is OracleStorage {
     using SafeMath for uint256;
 
-    /*
-     * @dev: Public variable declarations
-     */
-    CosmosBridge public cosmosBridge;
-    Valset public valset;
-    address public operator;
-    uint256 public consensusThreshold; // e.g. 75 = 75%
-
-    // Tracks the number of OracleClaims made on an individual BridgeClaim
-    mapping(uint256 => address[]) public oracleClaimValidators;
-    mapping(uint256 => mapping(address => bool)) public hasMadeClaim;
+    bool private _initialized;
 
     /*
      * @dev: Event declarations
@@ -50,7 +41,7 @@ contract Oracle {
      */
     modifier onlyValidator() {
         require(
-            valset.isActiveValidator(msg.sender),
+            Valset(valset).isActiveValidator(msg.sender),
             "Must be an active validator"
         );
         _;
@@ -61,29 +52,31 @@ contract Oracle {
      */
     modifier isPending(uint256 _prophecyID) {
         require(
-            cosmosBridge.isProphecyClaimActive(_prophecyID) == true,
+            CosmosBridge(cosmosBridge).isProphecyClaimActive(_prophecyID) == true,
             "The prophecy must be pending for this operation"
         );
         _;
     }
 
     /*
-     * @dev: Constructor
+     * @dev: Initialize Function
      */
-    constructor(
+    function initialize(
         address _operator,
         address _valset,
         address _cosmosBridge,
         uint256 _consensusThreshold
     ) public {
+        require(!_initialized, "Initialized");
         require(
             _consensusThreshold > 0,
             "Consensus threshold must be positive."
         );
         operator = _operator;
-        cosmosBridge = CosmosBridge(_cosmosBridge);
-        valset = Valset(_valset);
+        cosmosBridge = _cosmosBridge;
+        valset = _valset;
         consensusThreshold = _consensusThreshold;
+        _initialized = true;
     }
 
     /*
@@ -99,7 +92,7 @@ contract Oracle {
 
         // Validate the msg.sender's signature
         require(
-            validatorAddress == valset.recover(_message, _signature),
+            validatorAddress == Valset(valset).recover(_message, _signature),
             "Invalid message signature."
         );
 
@@ -182,7 +175,7 @@ contract Oracle {
         returns (bool, uint256, uint256)
     {
         require(
-            cosmosBridge.isProphecyClaimActive(_prophecyID) == true,
+            CosmosBridge(cosmosBridge).isProphecyClaimActive(_prophecyID) == true,
             "Can only check active prophecies"
         );
         return getProphecyThreshold(_prophecyID);
@@ -200,7 +193,7 @@ contract Oracle {
         returns (bool, uint256, uint256)
     {
         uint256 signedPower = 0;
-        uint256 totalPower = valset.totalPower();
+        uint256 totalPower = Valset(valset).totalPower();
 
         // Iterate over the signatory addresses
         for (
@@ -211,8 +204,8 @@ contract Oracle {
             address signer = oracleClaimValidators[_prophecyID][i];
 
             // Only add the power of active validators
-            if (valset.isActiveValidator(signer)) {
-                signedPower = signedPower.add(valset.getValidatorPower(signer));
+            if (Valset(valset).isActiveValidator(signer)) {
+                signedPower = signedPower.add(Valset(valset).getValidatorPower(signer));
             }
         }
 
@@ -236,6 +229,6 @@ contract Oracle {
      *       on the CosmosBridge.
      */
     function completeProphecy(uint256 _prophecyID) internal {
-        cosmosBridge.completeProphecyClaim(_prophecyID);
+        CosmosBridge(cosmosBridge).completeProphecyClaim(_prophecyID);
     }
 }
