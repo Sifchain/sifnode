@@ -73,37 +73,12 @@ make install
 sifnoded start
 ```
 
-and within a few seconds, your node should start synchronizing with the network.
-
-You can verify that you're connected by running:
+Run sync progress script and wait for message `Node synced`  
 
 ```
-sifnodecli q tendermint-validator-set
+curl -s https://raw.githubusercontent.com/c29r3/sifchain-utils/main/sync_progress.sh | bash -s - http://35.166.247.98:26657
 ```
 
-and you should see the following main validator nodes for Sifchain:
-
-```
-validators:
-- address: sifvalcons1z6jhzs0f7v02ny6k5x5rekf7gyx9400zyxmzve
-  pubkey: sifvalconspub1zcjduepq4zyan4mlm8fpku5jd7zu7f59k863x4g2wrzkku0285z6xylppk6q6nkzrk
-  proposerpriority: -5000
-  votingpower: 5000
-- address: sifvalcons192ljdnz3u6d7l7vg9zgstlnqyczqhwz4wj5ltz
-  pubkey: sifvalconspub1zcjduepq8zdt2xty2kk87zrzn95crwjkpmhmzxu6w05wtn08dxhq0qnj090sxg634l
-  proposerpriority: -5000
-  votingpower: 5000
-- address: sifvalcons1v38zwh0f9hwq5x6hfna35pr9x5r5wpydqfgyat
-  pubkey: sifvalconspub1zcjduepqefzlm5pymv84kfxdrzm627pw9ty6v2zd49dzuc3aan9z2pftk4rqckj2gz
-  proposerpriority: -5000
-  votingpower: 5000
-- address: sifvalcons1kulx53jp3vnhmagsha5ncnsuewqf3s00nwzffv
-  pubkey: sifvalconspub1zcjduepqrs8w58a59cu3wtt03rtm0c03gyt84f8pxwvtp7cptly39vhcdyxsyqmf62
-  proposerpriority: 15000
-  votingpower: 5000
-```
-
-you are now connected to the network.
 
 #### Become a Validator
 
@@ -111,27 +86,23 @@ You won't be able to participate in consensus until you become a validator.
 
 1. Reach out to us on [Discord](https://discord.gg/3gQsRvjsRx) to request some tokens.
 
-2. Obtain your node moniker (if you don't already know it):
+2. Run the following command to become a validator: 
 
 ```
-cat ~/.sifnoded/config/config.toml | grep moniker
-```
-
-3. Run the following command to become a validator (*replace `<moniker>` with your node's actual moniker*): 
-
-```
+MONIKER=$(awk -F'[ ="]+' '$1 == "moniker" { print $2 }' $HOME/.sifnoded/config/config.toml); \
 sifnodecli tx staking create-validator \
-    --commission-max-change-rate 0.1 \
-    --commission-max-rate 0.1 \
-    --commission-rate 0.1 \
-    --amount 1000000000rowan \
-    --pubkey $(sifnoded tendermint show-validator) \
-    --moniker <moniker> \
-    --chain-id monkey-bars \
-    --min-self-delegation 1 \
-    --gas auto \
-    --from <moniker> \
-    --keyring-backend file
+    --amount=1000000rowan \
+    --pubkey=$(sifnoded tendermint show-validator) \
+    --moniker=$MONIKER \
+    --commission-rate="0.10" \
+    --commission-max-rate="0.20" \
+    --commission-max-change-rate="0.01" \
+    --min-self-delegation="1" \
+    --gas="auto" \
+    --gas-adjustment="1.2" \
+    --gas-prices="0.025rowan" \
+    --from=$MONIKER \
+    --yes
 ```
 
 ## Peers
