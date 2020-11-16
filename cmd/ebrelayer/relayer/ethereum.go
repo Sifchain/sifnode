@@ -70,10 +70,6 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 		return EthereumSub{}, err
 	}
 
-	if err != nil {
-		return EthereumSub{}, err
-	}
-
 	validatorAddress := sdk.ValAddress(info.GetAddress())
 
 	// Load CLI context and Tx builder
