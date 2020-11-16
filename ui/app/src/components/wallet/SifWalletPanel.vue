@@ -104,6 +104,22 @@ export default defineComponent({
         >
       </div>
       <div v-else>
+        <button
+          @click="
+            mnemonic =
+              'race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow'
+          "
+        >
+          Shadowfiend
+        </button>
+        <button
+          @click="
+            mnemonic =
+              'hand inmate canvas head lunar naive increase recycle dog ecology inhale december wide bubble hockey dice worth gravity ketchup feed balance parent secret orchard'
+          "
+        >
+          Akasha
+        </button>
         <textarea
           class="textarea"
           v-model="mnemonic"

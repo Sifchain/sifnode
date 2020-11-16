@@ -89,16 +89,39 @@ export function useRemoveLiquidityCalculator(input: {
     )
       return null;
 
-    const {
-      withdrawExternalAssetAmount,
-      withdrawNativeAssetAmount,
-    } = calculateWithdrawal({
+    const inputs = {
       poolUnits: poolUnits.value,
       nativeAssetBalance: nativeAssetBalance.value,
       externalAssetBalance: externalAssetBalance.value,
       lpUnits: lpUnits.value,
       wBasisPoints: wBasisPoints.value,
       asymmetry: asymmetry.value,
+    };
+    const {
+      withdrawExternalAssetAmount,
+      withdrawNativeAssetAmount,
+    } = calculateWithdrawal(inputs);
+
+    console.log({
+      inputs: {
+        poolUnits: poolUnits.value.toFixed(0),
+        nativeAssetBalance: nativeAssetBalance.value.toFixed(0),
+        externalAssetBalance: externalAssetBalance.value.toFixed(0),
+        lpUnits: lpUnits.value.toFixed(0),
+        wBasisPoints: wBasisPoints.value.toFixed(0),
+        asymmetry: asymmetry.value.toFixed(0),
+      },
+      outputs: {
+        hasLiquidity,
+        withdrawExternalAssetAmount: AssetAmount(
+          externalAsset.value,
+          withdrawExternalAssetAmount
+        ).toString(),
+        withdrawNativeAssetAmount: AssetAmount(
+          nativeAsset.value,
+          withdrawNativeAssetAmount
+        ).toString(),
+      },
     });
     return {
       hasLiquidity,

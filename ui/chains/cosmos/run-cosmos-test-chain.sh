@@ -46,7 +46,8 @@ sifnoded validate-genesis
 
 echo "Starting test chain"
 
-parallelizr "sifnoded start" "sifnodecli rest-server  --unsafe-cors --trace"
+parallelizr "sifnoded start" "sifnodecli rest-server  --unsafe-cors --trace" "./migrate.sh"
+
 
 #sifnoded start --log_level="main:info,state:error,statesync:info,*:error"
 

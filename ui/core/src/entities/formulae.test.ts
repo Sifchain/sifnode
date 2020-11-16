@@ -94,6 +94,66 @@ const tests = [
       withdrawNativeAssetAmount: "100000",
     },
   },
+  {
+    name: "Calculates withdrawal correctly",
+    input: {
+      poolUnits: "1000099",
+      wBasisPoints: "10000",
+      asymmetry: "10000",
+      lpUnits: "100000",
+      externalAssetBalance: "1010000",
+      nativeAssetBalance: "990198",
+    },
+    expected: {
+      withdrawExternalAssetAmount: "179927",
+      withdrawNativeAssetAmount: "0",
+    },
+  },
+  {
+    name: "Calculates withdrawal correctly",
+    input: {
+      poolUnits: "1000099",
+      wBasisPoints: "10000",
+      asymmetry: "6000",
+      lpUnits: "100000",
+      externalAssetBalance: "1010000",
+      nativeAssetBalance: "990198",
+    },
+    expected: {
+      withdrawExternalAssetAmount: "152305",
+      withdrawNativeAssetAmount: "39604",
+    },
+  },
+  {
+    name: "Calculates withdrawal correctly",
+    input: {
+      asymmetry: "708",
+      externalAssetBalance: "1010000",
+      lpUnits: "1000000",
+      nativeAssetBalance: "990198",
+      poolUnits: "1000099",
+      wBasisPoints: "10000",
+    },
+    expected: {
+      withdrawExternalAssetAmount: "1009900",
+      withdrawNativeAssetAmount: "920001",
+    },
+  },
+  {
+    name: "Calculates withdrawal correctly",
+    input: {
+      asymmetry: "10000",
+      externalAssetBalance: "1010000",
+      lpUnits: "1000000",
+      nativeAssetBalance: "990198",
+      poolUnits: "1000099",
+      wBasisPoints: "10000",
+    },
+    expected: {
+      withdrawExternalAssetAmount: "1009900",
+      withdrawNativeAssetAmount: "0",
+    },
+  },
 ];
 
 tests.forEach(({ name, only, skip, input, expected }) => {

@@ -79,7 +79,7 @@ export function calculateWithdrawal({
 
   const swapAmount = asymmetry.equalTo("0")
     ? new Fraction("0")
-    : asymmetry.greaterThan("0")
+    : asymmetry.lessThan("0")
     ? externalAssetBalance.divide(
         poolUnits.divide(unitsToClaim.divide(TEN_THOUSAND.divide(asymmetry)))
       )
