@@ -2,7 +2,7 @@
 
 1. You will first have to set up the accounts that you want to use as validators on the bridge. Each of these accounts should run a relayer that listens to sifchain for incoming transactions that need to go to ethereum.
 
-2. Currently there are 2 user roles in peggy, more are planned to come. There is an operator role, this person can add and remove validators from the ethereum smart contract so that they can no longer unlock or mint assets on the ethereum peggy smart contracts. When you set up your env file, remove the mnemonic and all local variables. Your readme should now look like this.
+2. Currently there are 2 user roles in peggy, more are planned to come. There is an operator role, this person can add and remove validators from the ethereum smart contract so that they can no longer unlock or mint assets on the ethereum peggy smart contracts. When you set up your env file, remove the mnemonic and all local variables. Your `.env` should now look like this.
 
 ```
 # ------------
@@ -11,7 +11,7 @@
 
 # This number is how much total voting power is needed before a prophecy is completed on the ethereum side of peggy and a user gets their funds released or minted to them.
 # Ideally the number shouldn't be over 100, but it can be as long as the sum of INITIAL_VALIDATOR_POWERS is greater than or equal to it
-CONSENSUS_THRESHOLD = 100
+CONSENSUS_THRESHOLD = 70
 
 # This is the address of the operator. This will essentially be the admin and owner of the peggy smart contracts and will perform administrative function for the system.
 ETHEREUM_PRIVATE_KEY=["Your raw hex private key without 0x prepended"]
