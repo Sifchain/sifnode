@@ -94,6 +94,17 @@ func TestAddLiquidity(t *testing.T) {
 	nativeCoin = sdk.NewCoin(clp.NativeTicker, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(addLiquidityAmount)))
 	ok := keeper.HasCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 	assert.True(t, ok, "")
+
+	signer2 := test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA7")
+	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer2, sdk.Coins{externalCoin, nativeCoin})
+	msg = clp.NewMsgAddLiquidity(signer2, asset, addLiquidityAmount, addLiquidityAmount)
+	res, err = handler(ctx, msg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+
+	lpList := keeper.GetLiqudityProvidersForAsset(ctx, asset)
+	assert.Equal(t, 2, len(lpList))
+
 }
 
 func TestRemoveLiquidity(t *testing.T) {
