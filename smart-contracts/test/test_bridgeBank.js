@@ -972,8 +972,6 @@ contract("BridgeBank", function (accounts) {
       const amount = 100000;
       const sifAddress = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
 
-      console.log("Sifaddres lenght: ", sifAddress.length)
-      console.log("Sifaddres: ", sifAddress)
       await this.token.mint(operator, amount, { from: operator })
       await this.token.approve(this.bridgeBank.address, amount, {from: operator})
       // Attempt to lock tokens
