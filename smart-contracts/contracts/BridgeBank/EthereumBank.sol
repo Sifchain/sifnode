@@ -2,19 +2,15 @@ pragma solidity ^0.5.0;
 
 import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./BridgeToken.sol";
-
+import "./EthereumBankStorage.sol";
 
 /*
  *  @title: EthereumBank
  *  @dev: Ethereum bank which locks Ethereum/ERC20 token deposits, and unlocks
  *        Ethereum/ERC20 tokens once the prophecy has been successfully processed.
  */
-contract EthereumBank {
+contract EthereumBank is EthereumBankStorage {
     using SafeMath for uint256;
-
-    uint256 public lockBurnNonce;
-    mapping(address => uint256) public lockedFunds;
-    mapping(string => address) public lockedTokenList;
 
     /*
      * @dev: Event declarations
@@ -43,22 +39,6 @@ contract EthereumBank {
         string _symbol,
         uint256 _value
     );
-
-    /*
-     * @dev: Modifier declarations
-     */
-
-    modifier availableNonce() {
-        require(lockBurnNonce + 1 > lockBurnNonce, "No available nonces.");
-        _;
-    }
-
-    /*
-     * @dev: Constructor which sets the lock nonce
-     */
-    constructor() public {
-        lockBurnNonce = 0;
-    }
 
     /*
      * @dev: Gets the contract address of locked tokens by symbol.

@@ -25,8 +25,8 @@ start_relayer() {
   ebrelayer init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" \
                                              "$ETHEREUM_CONTRACT_ADDRESS" \
                                              "$MONIKER" \
+                                             "$MNEMONIC" \
                                              --chain-id "$CHAINNET" \
-                                             --keyring-backend test \
                                              --gas "auto" \
                                              --gas-adjustment 1.5
 }
