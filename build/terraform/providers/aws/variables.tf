@@ -88,6 +88,11 @@ variable "efs_pv_storageclass" {
   default     = "efs-sc"
 }
 
+variable "ebs_pv_storageclass" {
+  description = "The name of the storageclass for the EBS driver"
+  default     = "ebs-sc"
+}
+
 variable "efs_pv_capacity" {
   description = "EFS storage capacity"
   default     = "5Gi"

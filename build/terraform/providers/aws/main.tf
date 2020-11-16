@@ -195,9 +195,50 @@ data "kustomization" "efs_manifests" {
   path = var.efs_csi_driver
 }
 
+data "kustomization" "ebs_manifests" {
+  path = var.ebs_csi_driver
+}
+
 resource "kustomization_resource" "efs_csi_driver" {
   for_each = data.kustomization.efs_manifests.ids
   manifest = data.kustomization.efs_manifests.manifests[each.value]
+  lifecycle {
+      ignore_changes = all
+  }
+}
+
+resource "kustomization_resource" "ebs_csi_driver" {
+  for_each = data.kustomization.ebs_manifests.ids
+  manifest = data.kustomization.ebs_manifests.manifests[each.value]
+  lifecycle {
+      ignore_changes = all
+  }
+}
+
+resource "kubectl_manifest" "efs_storageclass" {
+  yaml_body = <<YAML
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: efs-sc
+provisioner: efs.csi.aws.com
+YAML
+  depends_on = [module.eks]
+  lifecycle {
+      ignore_changes = all
+  }
+}
+
+resource "kubectl_manifest" "ebs_storageclass" {
+  yaml_body = <<YAML
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: ebs-sc
+provisioner: ebs.csi.aws.com
+volumeBindingMode: WaitForFirstConsumer
+YAML
+  depends_on = [module.eks]
   lifecycle {
       ignore_changes = all
   }
