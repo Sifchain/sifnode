@@ -53,39 +53,31 @@ export function calculateWithdrawal({
   wBasisPoints: IFraction;
   asymmetry: IFraction;
 }) {
-  // unitsToClaim=lpUnits/(10000/wBasisPoints)
   const unitsToClaim = lpUnits.divide(TEN_THOUSAND.divide(wBasisPoints));
 
-  // poolUnits/unitsToClaim
   const poolUnitsOverUnitsToClaim = poolUnits.divide(unitsToClaim);
 
-  // withdrawExternalAssetAmountPreSwap=externalAssetBalance/(poolUnits/unitsToClaim)
   const withdrawExternalAssetAmountPreSwap = externalAssetBalance.divide(
     poolUnitsOverUnitsToClaim
   );
 
-  // withdrawNativeAssetAmountPreSwap=nativeAssetBalance/(poolUnits/unitsToClaim)
   const withdrawNativeAssetAmountPreSwap = nativeAssetBalance.divide(
     poolUnitsOverUnitsToClaim
   );
 
-  // lpUnitsLeft=lpUnits-unitsToClaim
   const lpUnitsLeft = lpUnits.subtract(unitsToClaim);
 
-  //swapAmount=If(asymIsZero, 0,
-  //   IF(NOT(asymIsExternal),
-  //      externalAssetBalance / (poolUnits/(unitsToClaim/(10000/asymmetry))),
-  //      nativeAssetBalance / (poolUnits/(unitsToClaim/(10000/asymmetry)))))
-
-  const swapAmount = asymmetry.equalTo("0")
-    ? new Fraction("0")
-    : asymmetry.lessThan("0")
-    ? externalAssetBalance.divide(
-        poolUnits.divide(unitsToClaim.divide(TEN_THOUSAND.divide(asymmetry)))
-      )
-    : nativeAssetBalance.divide(
-        poolUnits.divide(unitsToClaim.divide(TEN_THOUSAND.divide(asymmetry)))
-      );
+  const swapAmount = abs(
+    asymmetry.equalTo("0")
+      ? new Fraction("0")
+      : asymmetry.lessThan("0")
+      ? externalAssetBalance.divide(
+          poolUnits.divide(unitsToClaim.divide(TEN_THOUSAND.divide(asymmetry)))
+        )
+      : nativeAssetBalance.divide(
+          poolUnits.divide(unitsToClaim.divide(TEN_THOUSAND.divide(asymmetry)))
+        )
+  );
 
   const newExternalAssetBalance = externalAssetBalance.subtract(
     withdrawExternalAssetAmountPreSwap
@@ -95,37 +87,26 @@ export function calculateWithdrawal({
     withdrawNativeAssetAmountPreSwap
   );
 
-  // =IF(swapAmount < 0,
-  //   withdrawNativeAssetAmountPreSwap+calcSwapResult(newNativeAssetBalance,ABS(swapAmount),newExternalAssetBalance),
-  //   withdrawNativeAssetAmountPreSwap-swapAmount)
-  // =IF(swapAmount < 0,
-  //   withdrawNativeAssetAmountPreSwap+calcSwapResult(newNativeAssetBalance,ABS(swapAmount),newExternalAssetBalance),
-  //  withdrawNativeAssetAmountPreSwap-swapAmount)
-
-  const withdrawNativeAssetAmount = swapAmount.lessThan("0")
-    ? withdrawNativeAssetAmountPreSwap.add(
-        calculateSwapResult(
-          newNativeAssetBalance,
-          abs(swapAmount),
-          newExternalAssetBalance
-        )
-      )
-    : withdrawNativeAssetAmountPreSwap.subtract(abs(swapAmount));
-
-  // =IF(swapAmount >= 0,
-  //   withdrawExternalAssetAmountPreSwap+calcSwapResult(newExternalAssetBalance,ABS(swapAmount), newNativeAssetBalance),
-  //   withdrawExternalAssetAmountPreSwap+swapAmount)
-  const withdrawExternalAssetAmount = swapAmount.greaterThan("0")
-    ? withdrawExternalAssetAmountPreSwap.add(
+  const withdrawNativeAssetAmount = !asymmetry.lessThan("0")
+    ? withdrawNativeAssetAmountPreSwap.subtract(swapAmount)
+    : withdrawNativeAssetAmountPreSwap.add(
         calculateSwapResult(
           newExternalAssetBalance,
           abs(swapAmount),
           newNativeAssetBalance
         )
-      )
-    : withdrawExternalAssetAmountPreSwap.subtract(abs(swapAmount));
+      );
 
-  //=IF(swapAmount >= 0, withdrawExternalAssetAmountPreSwap+calcSwapResult(newExternalAssetBalance,ABS(swapAmount), newNativeAssetBalance),withdrawExternalAssetAmountPreSwap+swapAmount)
+  const withdrawExternalAssetAmount = asymmetry.lessThan("0")
+    ? withdrawExternalAssetAmountPreSwap.subtract(swapAmount)
+    : withdrawExternalAssetAmountPreSwap.add(
+        calculateSwapResult(
+          newNativeAssetBalance,
+          abs(swapAmount),
+          newExternalAssetBalance
+        )
+      );
+
   return {
     withdrawNativeAssetAmount,
     withdrawExternalAssetAmount,
