@@ -12,20 +12,20 @@ import (
 	"os"
 
 	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/codec"
-	ckeys "github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	ethereum "github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/pkg/errors"
-	amino "github.com/tendermint/go-amino"
+	"github.com/sethvargo/go-password/password"
+	"github.com/tendermint/go-amino"
 	tmLog "github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
@@ -46,15 +46,27 @@ type EthereumSub struct {
 	CliCtx                  sdkContext.CLIContext
 	TxBldr                  authtypes.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
+	TempPassword			string
 	Logger                  tmLog.Logger
 }
 
+func NewKeybase(validatorMoniker, mnemonic, password string) keys.Keybase {
+	keybase := keys.NewInMemory()
+	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
+	_, _ = keybase.CreateAccount(validatorMoniker, mnemonic, "", password, hdpath.String(), keys.Ed25519)
+
+	return keybase
+}
+
 // NewEthereumSub initializes a new EthereumSub
-func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorMoniker, chainID,
-	ethProvider string, registryContractAddress common.Address, privateKey *ecdsa.PrivateKey,
-	mnemonic string, logger tmLog.Logger) (EthereumSub, error) {
+func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorMoniker, chainID, ethProvider string,
+	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, logger tmLog.Logger) (EthereumSub, error) {
+
+	tempPassword, _ := password.Generate(32, 5, 0, false, false)
+	keybase := NewKeybase(validatorMoniker, mnemonic, tempPassword)
+
 	// Load validator details
-	validatorAddress, validatorName, err := LoadValidatorCredentials(validatorMoniker, mnemonic, inBuf)
+	validatorAddress, validatorName, err := LoadValidatorCredentials(validatorMoniker, tempPassword, keybase, inBuf)
 	if err != nil {
 		return EthereumSub{}, err
 	}
@@ -68,7 +80,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 	txBldr := authtypes.NewTxBuilderFromCLI(nil).
 		WithTxEncoder(utils.GetTxEncoder(cdc)).
 		WithChainID(chainID).
-		WithKeybase(Keybase(validatorMoniker, mnemonic))
+		WithKeybase(keybase)
 
 	return EthereumSub{
 		Cdc:                     cdc,
@@ -79,26 +91,60 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 		CliCtx:                  cliCtx,
 		TxBldr:                  txBldr,
 		PrivateKey:              privateKey,
+		TempPassword:	         tempPassword,
 		Logger:                  logger,
 	}, nil
 }
 
 // LoadValidatorCredentials : loads validator's credentials (address, moniker, and passphrase)
-func LoadValidatorCredentials(validatorFrom, mnemonic string, inBuf io.Reader) (sdk.ValAddress, string, error) {
+func LoadValidatorCredentials(validatorFrom, tempPassword string, keybase keys.Keybase, inBuf io.Reader) (sdk.ValAddress, string, error) {
 	// Get the validator's name and account address using their moniker
-	validatorAccAddress, validatorName, err := GetFromFields(inBuf, validatorFrom, mnemonic, false)
+	validatorAccAddress, validatorName, err := GetFromFields(inBuf, validatorFrom, keybase, false)
 	if err != nil {
 		return sdk.ValAddress{}, "", err
 	}
 	validatorAddress := sdk.ValAddress(validatorAccAddress)
 
 	// Confirm that the key is valid
-	_, err = authtypes.MakeSignature(nil, validatorName, keys.DefaultKeyPass, authtypes.StdSignMsg{})
+	_, err = authtypes.MakeSignature(keybase, validatorName, tempPassword, authtypes.StdSignMsg{})
 	if err != nil {
 		return sdk.ValAddress{}, "", err
 	}
 
 	return validatorAddress, validatorName, nil
+}
+
+// GetFromFields returns a from account address and Keybase name given either
+// an address or key name. If genOnly is true, only a valid Bech32 cosmos
+// address is returned.
+func GetFromFields(input io.Reader, from string, keybase keys.Keybase, genOnly bool) (sdk.AccAddress, string, error) {
+	if from == "" {
+		return nil, "", nil
+	}
+
+	if genOnly {
+		addr, err := sdk.AccAddressFromBech32(from)
+		if err != nil {
+			return nil, "", errors.Wrap(err, "must provide a valid Bech32 address for generate-only")
+		}
+
+		return addr, "", nil
+	}
+
+	var info keys.Info
+	if addr, err := sdk.AccAddressFromBech32(from); err == nil {
+		info, err = keybase.GetByAddress(addr)
+		if err != nil {
+			return nil, "", err
+		}
+	} else {
+		info, err = keybase.Get(from)
+		if err != nil {
+			return nil, "", err
+		}
+	}
+
+	return info.GetAddress(), info.GetName(), nil
 }
 
 // LoadTendermintCLIContext : loads CLI context for tendermint txs
@@ -164,14 +210,14 @@ func (sub EthereumSub) Start() {
 		// vLog is raw event data
 		case vLog := <-logs:
 			sub.Logger.Info(fmt.Sprintf("Witnessed tx %s on block %d\n", vLog.TxHash.Hex(), vLog.BlockNumber))
-			log.Println("Found event from the etherem bridgebank contract: ", types.LogLock.String())
+			log.Println("Found event from the ethereum bridgebank contract: ", types.LogLock.String())
 			var err error
 			switch vLog.Topics[0].Hex() {
 			case eventLogBurnSignature:
 				err = sub.handleEthereumEvent(clientChainID, bridgeBankAddress, bridgeBankContractABI,
 					types.LogBurn.String(), vLog)
 			case eventLogLockSignature:
-				log.Println("Found loglock event from the etherem bridgebank contract: ", types.LogLock.String())
+				log.Println("Found loglock event from the ethereum bridgebank contract: ", types.LogLock.String())
 				err = sub.handleEthereumEvent(clientChainID, bridgeBankAddress, bridgeBankContractABI,
 					types.LogLock.String(), vLog)
 			case eventLogNewProphecyClaimSignature:
@@ -234,7 +280,7 @@ func (sub EthereumSub) handleEthereumEvent(clientChainID *big.Int, contractAddre
 	if err != nil {
 		return err
 	}
-	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, &prophecyClaim, sub.CliCtx, sub.TxBldr)
+	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, &prophecyClaim, sub.CliCtx, sub.TxBldr)
 }
 
 // Unpacks a handleLogNewProphecyClaim event, builds a new OracleClaim, and relays it to Ethereum
@@ -254,46 +300,4 @@ func (sub EthereumSub) handleLogNewProphecyClaim(contractAddress common.Address,
 	}
 	return txs.RelayOracleClaimToEthereum(sub.EthProvider, contractAddress, types.LogNewProphecyClaim,
 		oracleClaim, sub.PrivateKey)
-}
-
-func Keybase(moniker, mnemonic string) ckeys.Keybase {
-	keybase := ckeys.NewInMemory()
-	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
-	_, _ = keybase.CreateAccount(moniker, mnemonic, "", keys.DefaultKeyPass, hdpath.String(), ckeys.Secp256k1)
-
-	return keybase
-}
-
-// GetFromFields returns a from account address and Keybase name given either
-// an address or key name. If genOnly is true, only a valid Bech32 cosmos
-// address is returned.
-func GetFromFields(input io.Reader, from, mnemonic string, genOnly bool) (sdk.AccAddress, string, error) {
-	if from == "" {
-		return nil, "", nil
-	}
-
-	if genOnly {
-		addr, err := sdk.AccAddressFromBech32(from)
-		if err != nil {
-			return nil, "", errors.Wrap(err, "must provide a valid Bech32 address for generate-only")
-		}
-
-		return addr, "", nil
-	}
-
-	keybase := Keybase(from, mnemonic)
-	var info ckeys.Info
-	if addr, err := sdk.AccAddressFromBech32(from); err == nil {
-		info, err = keybase.GetByAddress(addr)
-		if err != nil {
-			return nil, "", err
-		}
-	} else {
-		info, err = keybase.Get(from)
-		if err != nil {
-			return nil, "", err
-		}
-	}
-
-	return info.GetAddress(), info.GetName(), nil
 }
