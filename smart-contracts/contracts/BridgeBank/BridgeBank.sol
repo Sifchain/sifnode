@@ -2,9 +2,10 @@ pragma solidity ^0.5.0;
 
 import "./CosmosBank.sol";
 import "./EthereumBank.sol";
+import "./WhiteList.sol";
 import "../Oracle.sol";
 import "../CosmosBridge.sol";
-import "./WhiteList.sol";
+import "./BankStorage.sol";
 
 /**
  * @title BridgeBank
@@ -16,27 +17,30 @@ import "./WhiteList.sol";
  *      list that can be locked.
  **/
 
-contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
+contract BridgeBank is BankStorage, CosmosBank, EthereumBank, WhiteList {
+
+    bool private _initialized;
+
     using SafeMath for uint256;
 
-    address public operator;
-    Oracle public oracle;
-    CosmosBridge public cosmosBridge;
-    address public owner;
-
     /*
-     * @dev: Constructor, sets operator
+     * @dev: Initializer, sets operator
      */
-    constructor(
+    function initialize(
         address _operatorAddress,
         address _oracleAddress,
         address _cosmosBridgeAddress,
         address _owner
     ) public {
+        require(!_initialized, "Initialized");
+
+        WhiteList.initialize();
+
         operator = _operatorAddress;
-        oracle = Oracle(_oracleAddress);
-        cosmosBridge = CosmosBridge(_cosmosBridgeAddress);
+        oracle = _oracleAddress;
+        cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
+        _initialized = true;
     }
 
     /*
@@ -52,7 +56,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
      */
     modifier onlyOracle() {
         require(
-            msg.sender == address(oracle),
+            msg.sender == oracle,
             "Access restricted to the oracle"
         );
         _;
@@ -73,7 +77,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
      */
     modifier onlyCosmosBridge() {
         require(
-            msg.sender == address(cosmosBridge),
+            msg.sender == cosmosBridge,
             "Access restricted to the cosmos bridge"
         );
         _;
@@ -154,7 +158,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         address _bridgeTokenAddress,
         string memory _symbol,
         uint256 _amount
-    ) public onlyCosmosBridge availableCosmosDepositNonce() {
+    ) public onlyCosmosBridge {
         return
             mintNewBridgeTokens(
                 _cosmosSender,
@@ -176,7 +180,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public availableNonce() {
+    ) public {
         BridgeToken(_token).burnFrom(msg.sender, _amount);
         string memory symbol = BridgeToken(_token).symbol();
         burnFunds(msg.sender, _recipient, _token, symbol, _amount);
@@ -193,7 +197,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public payable availableNonce() onlyWhiteList(_token) {
+    ) public payable onlyWhiteList(_token) {
         string memory symbol;
 
         // Ethereum deposit
