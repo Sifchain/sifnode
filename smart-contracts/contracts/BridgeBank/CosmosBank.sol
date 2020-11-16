@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./BridgeToken.sol";
-
+import "./CosmosBankStorage.sol";
 
 /**
  * @title CosmosBank
@@ -10,21 +10,8 @@ import "./BridgeToken.sol";
  *      which represent assets based on the Cosmos blockchain.
  **/
 
-contract CosmosBank {
+contract CosmosBank is CosmosBankStorage {
     using SafeMath for uint256;
-
-    uint256 public bridgeTokenCount;
-    uint256 public cosmosDepositNonce;
-    mapping(string => address) controlledBridgeTokens;
-    mapping(bytes32 => CosmosDeposit) cosmosDeposits;
-
-    struct CosmosDeposit {
-        bytes cosmosSender;
-        address payable ethereumRecipient;
-        address bridgeTokenAddress;
-        uint256 amount;
-        bool locked;
-    }
 
     /*
      * @dev: Event declarations
@@ -37,22 +24,6 @@ contract CosmosBank {
         uint256 _amount,
         address _beneficiary
     );
-
-    /*
-     * @dev: Constructor, sets bridgeTokenCount
-     */
-    constructor() public {
-        bridgeTokenCount = 0;
-        cosmosDepositNonce = 0;
-    }
-
-    /*
-     * @dev: Modifier declarations
-     */
-    modifier availableCosmosDepositNonce() {
-        require(cosmosDepositNonce + 1 > cosmosDepositNonce, "No available cosmos deposit nonces.");
-        _;
-    }
 
     /*
      * @dev: Get a token symbol's corresponding bridge token address.

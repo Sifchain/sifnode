@@ -1,16 +1,17 @@
+{{- if .Values.ebrelayer.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "sifnode.fullname" . }}
+  name: {{ include "sifnode.fullname" . }}-ebrelayer
   labels:
-    {{- include "sifnode.labels" . | nindent 4 }}
+    {{- include "sifnode.labels" . | nindent 4 }}-ebrelayer
 spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
   selector:
     matchLabels:
-      {{- include "sifnode.selectorLabels" . | nindent 6 }}
+      {{- include "sifnode.selectorLabels" . | nindent 6 }}-ebrelayer
   template:
     metadata:
     {{- with .Values.podAnnotations }}
@@ -18,7 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
-        {{- include "sifnode.selectorLabels" . | nindent 8 }}
+        {{- include "sifnode.selectorLabels" . | nindent 8 }}-ebrelayer
     spec:
       serviceAccountName: {{ include "sifnode.serviceAccountName" . }}
       securityContext:
@@ -27,33 +28,26 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.ebrelayer.image.repository }}:{{ .Values.ebrelayer.image.tag }}"
+          imagePullPolicy: {{ .Values.ebrelayer.image.pullPolicy }}
           command: ["/bin/sh"]
-          {{- if .Values.sifnode.env.peerAddress }}
-          args: ["-c", "sifgen node create $CHAINNET $PEER_ADDRESS $GENESIS_URL; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
-          {{- else }}
-          args: ["-c", "sifgen node create $CHAINNET; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
-          {{- end }}
-          ports:
-            - name: port-26656
-              containerPort: 26656
-              protocol: TCP
-            - name: port-26657
-              containerPort: 26657
-              protocol: TCP
-            - name: port-6060
-              containerPort: 6060
-              protocol: TCP
+          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER --chain-id $CHAINNET --keyring-backend test"]
           env:
+            - name: NODE_HOST
+              value: "tcp://{{ .Chart.Name }}.{{ .Release.Namespace }}.svc.cluster.local:26657"
             - name: CHAINNET
               value: {{ .Values.sifnode.env.chainnet }}
-            - name: SIF_ID
-              value: {{ .Values.sifnode.env.sifId }}
-            - name: PEER_ADDRESS
-              value: {{ .Values.sifnode.env.peerAddress }}
-            - name: GENESIS_URL
-              value: {{ .Values.sifnode.env.genesisURL }}
+            - name: ETH_WEBSOCKET_ADDRESS
+              value: {{ .Values.ebrelayer.env.ethWebsocketAddress }}
+            - name: ETH_BRIDGE_REGISTRY_ADDRESS
+              value: {{ .Values.ebrelayer.env.ethBridgeRegistryAddress }}
+            - name: MONIKER
+              value: {{ .Values.ebrelayer.env.moniker }}
+            - name: ETHEREUM_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sifnode.fullname" . }}-ebrelayer
+                  key: ethPrivateKey
           livenessProbe:
             tcpSocket:
               port: 26657
@@ -72,7 +66,7 @@ spec:
       volumes:
       - name: root
         persistentVolumeClaim:
-          claimName: {{ .Values.pvc.sifnodeName }}
+          claimName: {{ .Values.pvc.sifnodecliName }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -85,3 +79,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}
