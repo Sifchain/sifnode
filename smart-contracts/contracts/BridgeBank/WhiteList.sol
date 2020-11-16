@@ -1,20 +1,24 @@
 pragma solidity ^0.5.0;
 
+import "./WhiteListStorage.sol";
+
 /**
  * @title WhiteList
  * @dev WhiteList contract records the ERC 20 list that can be locked in BridgeBank.
  **/
 
-contract WhiteList {
-    mapping(address => bool) whiteList;
+contract WhiteList is WhiteListStorage {
+    bool private _initialized;
 
     /*
      * @dev: Event declarations
      */
     event LogWhiteListUpdate(address _token, bool _value);
 
-    constructor() public {
+    function initialize() public {
+        require(!_initialized, "Initialized");
         whiteList[address(0)] = true;
+        _initialized = true;
     }
 
     /*
