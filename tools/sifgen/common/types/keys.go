@@ -6,4 +6,5 @@ type Key struct {
 	KeyType string `json:"type" yaml:"type"`
 	Address string `json:"address" yaml:"address"`
 	PubKey  string `json:"pubkey" yaml:"pubkey"`
+	Mnemonic string `json:"mnemonic" yaml:"-"`
 }
