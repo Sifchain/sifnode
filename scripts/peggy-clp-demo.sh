@@ -94,15 +94,3 @@ sleep 8
 yes Y | sifnodecli tx clp decommission-pool --from user2 --ticker ceth
 
 echo "sifnodecli query clp pools -> should list only 1 pool cdash"
-
-
-
-sifnodecli tx clp swap \
-  --from shadowfiend \
-  --sentSourceChain ETH \
-  --sentSymbol ETH \
-  --sentTicker ceth \
-  --receivedSourceChain BTK \
-  --receivedSymbol BTK \
-  --receivedTicker cbtk \
-  --sentAmount 20
