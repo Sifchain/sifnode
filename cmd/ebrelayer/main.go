@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -52,6 +53,11 @@ func init() {
 		"Select keyring's backend (os|file|test)")
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
 	rootCmd.PersistentFlags().String(FlagRPCURL, "", "RPC URL of tendermint node")
+	rootCmd.PersistentFlags().Var(&flags.GasFlagVar, "gas", fmt.Sprintf(
+		"gas limit to set per-transaction; set to %q to calculate required gas automatically (default %d)",
+		flags.GasFlagAuto, flags.DefaultGasLimit,
+	))
+	rootCmd.PersistentFlags().Float64(flags.FlagGasAdjustment, flags.DefaultGasAdjustment, "gas adjustment")
 	rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
 		return initConfig(rootCmd)
 	}

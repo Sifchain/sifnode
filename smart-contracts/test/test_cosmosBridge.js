@@ -1,3 +1,4 @@
+const { deployProxy } = require('@openzeppelin/truffle-upgrades');
 const Valset = artifacts.require("Valset");
 const CosmosBridge = artifacts.require("CosmosBridge");
 const Oracle = artifacts.require("Oracle");
@@ -36,29 +37,42 @@ contract("CosmosBridge", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
-      this.valset = await Valset.new(
-        operator,
-        this.initialValidators,
-        this.initialPowers
+      this.valset = await deployProxy(Valset,
+        [
+          operator,
+          this.initialValidators,
+          this.initialPowers
+        ],
+        {unsafeAllowCustomTypes: true}
       );
 
       // Deploy CosmosBridge contract
-      this.cosmosBridge = await CosmosBridge.new(operator, this.valset.address);
+      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address], {unsafeAllowCustomTypes: true});
 
       // Deploy Oracle contract
-      this.oracle = await Oracle.new(
-        operator,
-        this.valset.address,
-        this.cosmosBridge.address,
-        consensusThreshold
+      this.oracle = await deployProxy(Oracle,
+        [
+          operator,
+          this.valset.address,
+          this.cosmosBridge.address,
+          consensusThreshold
+        ],
+        {
+          unsafeAllowCustomTypes: true
+        }
       );
 
       // Deploy BridgeBank contract
-      this.bridgeBank = await BridgeBank.new(
-        operator,
-        this.oracle.address,
-        this.cosmosBridge.address,
-        operator
+      this.bridgeBank = await deployProxy(BridgeBank,
+        [
+          operator,
+          this.oracle.address,
+          this.cosmosBridge.address,
+          operator
+        ],
+        {
+          unsafeAllowCustomTypes: true
+        }
       );
     });
 
@@ -130,29 +144,39 @@ contract("CosmosBridge", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
-      this.valset = await Valset.new(
-        operator,
-        this.initialValidators,
-        this.initialPowers
+      this.valset = await deployProxy(Valset,
+        [
+          operator,
+          this.initialValidators,
+          this.initialPowers
+        ],
+        {unsafeAllowCustomTypes: true}
       );
 
       // Deploy CosmosBridge contract
-      this.cosmosBridge = await CosmosBridge.new(operator, this.valset.address);
+      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
+        {unsafeAllowCustomTypes: true});
 
       // Deploy Oracle contract
-      this.oracle = await Oracle.new(
-        operator,
-        this.valset.address,
-        this.cosmosBridge.address,
-        consensusThreshold
+      this.oracle = await deployProxy(Oracle,
+        [
+          operator,
+          this.valset.address,
+          this.cosmosBridge.address,
+          consensusThreshold
+        ],
+        {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
-      this.bridgeBank = await BridgeBank.new(
-        operator,
-        this.oracle.address,
-        this.cosmosBridge.address,
-        operator
+      this.bridgeBank = await deployProxy(BridgeBank,
+        [
+          operator,
+          this.oracle.address,
+          this.cosmosBridge.address,
+          operator
+        ],
+        {unsafeAllowCustomTypes: true}
       );
 
       // Operator sets Oracle
@@ -289,29 +313,38 @@ contract("CosmosBridge", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
-      this.valset = await Valset.new(
-        operator,
-        this.initialValidators,
-        this.initialPowers
+      this.valset = await deployProxy(Valset,
+        [
+          operator,
+          this.initialValidators,
+          this.initialPowers
+        ],
+        {unsafeAllowCustomTypes: true}
       );
 
       // Deploy CosmosBridge contract
-      this.cosmosBridge = await CosmosBridge.new(operator, this.valset.address);
+      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
+        {unsafeAllowCustomTypes: true});
 
       // Deploy Oracle contract
-      this.oracle = await Oracle.new(
-        operator,
-        this.valset.address,
-        this.cosmosBridge.address,
-        consensusThreshold
+      this.oracle = await deployProxy(Oracle,
+        [
+          operator,
+          this.valset.address,
+          this.cosmosBridge.address,
+          consensusThreshold
+        ],
+        {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
-      this.bridgeBank = await BridgeBank.new(
+      this.bridgeBank = await deployProxy(BridgeBank,[
         operator,
         this.oracle.address,
         this.cosmosBridge.address,
         operator
+      ],
+      {unsafeAllowCustomTypes: true}
       );
 
       // Operator sets Oracle

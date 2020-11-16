@@ -23,7 +23,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/pkg/errors"
 	"github.com/sethvargo/go-password/password"
 	"github.com/tendermint/go-amino"
 	tmLog "github.com/tendermint/tendermint/libs/log"
@@ -50,12 +49,15 @@ type EthereumSub struct {
 	Logger                  tmLog.Logger
 }
 
-func NewKeybase(validatorMoniker, mnemonic, password string) keys.Keybase {
+func NewKeybase(validatorMoniker, mnemonic, password string) (keys.Keybase, keys.Info, error) {
 	keybase := keys.NewInMemory()
 	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
-	_, _ = keybase.CreateAccount(validatorMoniker, mnemonic, "", password, hdpath.String(), keys.Ed25519)
+	info, err := keybase.CreateAccount(validatorMoniker, mnemonic, "", password, hdpath.String(), keys.Secp256k1)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	return keybase
+	return keybase, info, nil
 }
 
 // NewEthereumSub initializes a new EthereumSub
@@ -63,21 +65,24 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, logger tmLog.Logger) (EthereumSub, error) {
 
 	tempPassword, _ := password.Generate(32, 5, 0, false, false)
-	keybase := NewKeybase(validatorMoniker, mnemonic, tempPassword)
-
-	// Load validator details
-	validatorAddress, validatorName, err := LoadValidatorCredentials(validatorMoniker, tempPassword, keybase, inBuf)
+	keybase, info, err := NewKeybase(validatorMoniker, mnemonic, tempPassword)
 	if err != nil {
 		return EthereumSub{}, err
 	}
+
+	if err != nil {
+		return EthereumSub{}, err
+	}
+
+	validatorAddress := sdk.ValAddress(info.GetAddress())
 
 	// Load CLI context and Tx builder
-	cliCtx, err := LoadTendermintCLIContext(cdc, validatorAddress, validatorName, rpcURL, chainID)
+	cliCtx, err := LoadTendermintCLIContext(cdc, validatorAddress, validatorMoniker, rpcURL, chainID)
 	if err != nil {
 		return EthereumSub{}, err
 	}
 
-	txBldr := authtypes.NewTxBuilderFromCLI(nil).
+	txBldr := authtypes.NewTxBuilderFromCLI(inBuf).
 		WithTxEncoder(utils.GetTxEncoder(cdc)).
 		WithChainID(chainID).
 		WithKeybase(keybase)
@@ -86,7 +91,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 		Cdc:                     cdc,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
-		ValidatorName:           validatorName,
+		ValidatorName:           validatorMoniker,
 		ValidatorAddress:        validatorAddress,
 		CliCtx:                  cliCtx,
 		TxBldr:                  txBldr,
@@ -94,57 +99,6 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 		TempPassword:	         tempPassword,
 		Logger:                  logger,
 	}, nil
-}
-
-// LoadValidatorCredentials : loads validator's credentials (address, moniker, and passphrase)
-func LoadValidatorCredentials(validatorFrom, tempPassword string, keybase keys.Keybase, inBuf io.Reader) (sdk.ValAddress, string, error) {
-	// Get the validator's name and account address using their moniker
-	validatorAccAddress, validatorName, err := GetFromFields(inBuf, validatorFrom, keybase, false)
-	if err != nil {
-		return sdk.ValAddress{}, "", err
-	}
-	validatorAddress := sdk.ValAddress(validatorAccAddress)
-
-	// Confirm that the key is valid
-	_, err = authtypes.MakeSignature(keybase, validatorName, tempPassword, authtypes.StdSignMsg{})
-	if err != nil {
-		return sdk.ValAddress{}, "", err
-	}
-
-	return validatorAddress, validatorName, nil
-}
-
-// GetFromFields returns a from account address and Keybase name given either
-// an address or key name. If genOnly is true, only a valid Bech32 cosmos
-// address is returned.
-func GetFromFields(input io.Reader, from string, keybase keys.Keybase, genOnly bool) (sdk.AccAddress, string, error) {
-	if from == "" {
-		return nil, "", nil
-	}
-
-	if genOnly {
-		addr, err := sdk.AccAddressFromBech32(from)
-		if err != nil {
-			return nil, "", errors.Wrap(err, "must provide a valid Bech32 address for generate-only")
-		}
-
-		return addr, "", nil
-	}
-
-	var info keys.Info
-	if addr, err := sdk.AccAddressFromBech32(from); err == nil {
-		info, err = keybase.GetByAddress(addr)
-		if err != nil {
-			return nil, "", err
-		}
-	} else {
-		info, err = keybase.Get(from)
-		if err != nil {
-			return nil, "", err
-		}
-	}
-
-	return info.GetAddress(), info.GetName(), nil
 }
 
 // LoadTendermintCLIContext : loads CLI context for tendermint txs
