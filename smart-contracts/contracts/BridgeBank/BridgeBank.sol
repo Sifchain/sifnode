@@ -84,6 +84,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
      */
     modifier validSifAddress(bytes memory _sifAddress) {
         require(_sifAddress.length == 42, "Invalid sif address length");
+        require(verifySifPrefix(_sifAddress) == true, "Invalid sif address prefix");
         _;
     }
 
@@ -92,6 +93,18 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
      *       This feature is used for testing and is available at the operator's own risk.
      */
     function() external payable onlyOperator {}
+
+    function verifySifPrefix(bytes memory _sifAddress) public pure returns (bool) {
+        bytes3 sifInHex = 0x736966;
+
+        for (uint256 i = 0; i < sifInHex.length; i++) {
+            if (sifInHex[i] != _sifAddress[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     /*
      * @dev: Creates a new BridgeToken
@@ -205,7 +218,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public payable onlyWhiteList(_token) {
+    ) public payable onlyWhiteList(_token) validSifAddress(_recipient) {
         string memory symbol;
 
         // Ethereum deposit
