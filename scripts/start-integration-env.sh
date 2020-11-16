@@ -6,7 +6,7 @@ sudo rm -rf ./build/networks
 make clean install
 cd $BASEDIR/smart-contracts && yarn install
 docker-compose -f $BASEDIR/build/genesis/docker-compose-ganache.yml up -d
-truffle deploy  ;
+cp .env.example .env ; truffle deploy  ;
 echo 'ETHEREUM_CONTRACT_ADDRESS='$(cat build/contracts/BridgeRegistry.json | grep '"address": "0x' | awk -F ": " '/``"address": "0x`/ -F ":" {print $2}' | sed 's/.$//') 
 ETHEREUM_CONTRACT_ADDRESS=$(cat build/contracts/BridgeRegistry.json | grep '"address": "0x' | awk -F ": " '/``"address": "0x`/ -F ":" {print $2}' | sed 's/.$//' | sed 's/"//g' )
 cd $BASEDIR/build/
