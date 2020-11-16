@@ -29,10 +29,5 @@ jobs:
       - name: Install truffle
         run: yarn global add truffle
 
-      - name: Setup test
-        run: yarn test:setup
-        env:
-          CI: true
-
       - name: Run truffle tests
-        run: truffle test
+        run: yarn test

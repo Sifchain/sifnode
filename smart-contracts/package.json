@@ -65,6 +65,6 @@
     "token:mint": "npx truffle exec scripts/mintTestTokens.js",
     "token:approve": "npx truffle exec scripts/sendApproveTx.js",
     "test:setup": "concurrently -r \"yarn develop\"",
-    "test": "truffle test --network develop"
+    "test": "yarn test:setup && sleep 15 & truffle test --network develop"
   }
 }
