@@ -26,7 +26,9 @@ start_relayer() {
                                              "$ETHEREUM_CONTRACT_ADDRESS" \
                                              "$MONIKER" \
                                              --chain-id "$CHAINNET" \
-                                             --keyring-backend test
+                                             --keyring-backend test \
+                                             --gas "auto" \
+                                             --gas-adjustment 1.5
 }
 
 #
