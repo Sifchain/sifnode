@@ -76,7 +76,7 @@ def boot_docker_network(chainnet:, seed_network_address:, eth_config:)
 
   cmd = "CHAINNET=#{chainnet} "
   network.each_with_index do |node, idx|
-    cmd += "MONIKER#{idx+1}=#{node['moniker']} PASSWORD#{idx+1}=#{node['password']} IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
+    cmd += "MONIKER#{idx+1}=#{node['moniker']} MNEMONIC#{idx+1}=\"#{node['mnemonic']}\" IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
   end
 
   cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f ./genesis/docker-compose.yml up"
