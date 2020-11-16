@@ -29,7 +29,7 @@ type Node struct {
 	Moniker     string    `yaml:"moniker"`
 	Address     string    `yaml:"address"`
 	Password    string    `yaml:"password"`
-	Mnemonic	string `yaml:"mnemonic"`
+	Mnemonic    string    `yaml:"mnemonic"`
 	CLI         utils.CLI `yaml:"-"`
 }
 

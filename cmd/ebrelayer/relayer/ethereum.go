@@ -45,7 +45,7 @@ type EthereumSub struct {
 	CliCtx                  sdkContext.CLIContext
 	TxBldr                  authtypes.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
-	TempPassword			string
+	TempPassword            string
 	Logger                  tmLog.Logger
 }
 
@@ -92,7 +92,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 		CliCtx:                  cliCtx,
 		TxBldr:                  txBldr,
 		PrivateKey:              privateKey,
-		TempPassword:	         tempPassword,
+		TempPassword:            tempPassword,
 		Logger:                  logger,
 	}, nil
 }

@@ -31,7 +31,7 @@ type Validator struct {
 	Password                  string `yaml:"password"`
 	Address                   string `yaml:"address"`
 	PubKey                    string `yaml:"pub_key"`
-	Mnemonic string `yaml:"mnemonic"`
+	Mnemonic                  string `yaml:"mnemonic"`
 	ValidatorAddress          string `yaml:"validator_address"`
 	ValidatorConsensusAddress string `yaml:"validator_consensus_address"`
 	Seed                      bool   `yaml:"is_seed"`
@@ -50,7 +50,7 @@ func NewValidator(rootDir, chainID string, seed bool, lastIPv4Addr string) *Vali
 		CLIConfigDir: fmt.Sprintf("%s/%s/%s", homeDir, CLIHomeDir, ConfigDir),
 		Moniker:      moniker,
 		Password:     generatePassword(),
-		Mnemonic: generateMnemonic(),
+		Mnemonic:     generateMnemonic(),
 		Seed:         seed,
 	}
 }
