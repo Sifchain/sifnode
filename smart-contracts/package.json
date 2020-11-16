@@ -46,7 +46,7 @@
     "web3-utils": "^1.3.0"
   },
   "scripts": {
-    "develop": "ganache-cli -i 5777 -p 7545 -m 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat'",
+    "develop": "ganache-cli -q -i 5777 -p 7545 -m 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat'",
     "migrate": "npx truffle migrate --reset",
     "peggy:abi": "node scripts/formatAbi.js",
     "peggy:address": "npx truffle exec scripts/getBridgeRegistryAddress.js",
