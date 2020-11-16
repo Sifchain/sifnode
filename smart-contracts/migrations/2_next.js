@@ -16,55 +16,48 @@ module.exports = function(deployer, network, accounts) {
   let operator;
   let owner;
   let initialValidators = [];
-  let initialPowers = [];
-  let consensusThreshold;
-
-  // Input validation for general env variables
-  if (process.env.CONSENSUS_THRESHOLD.length === 0) {
-    return console.error(
-      "Must provide consensus threshold as environment variable."
-    );
-  }
-  consensusThreshold = process.env.CONSENSUS_THRESHOLD;
+  let consensusThreshold = (process.env.CONSENSUS_THRESHOLD === 0 ? process.env.CONSENSUS_THRESHOLD:70)
+  let localValidatorCount = Number(process.env.VALIDATOR_COUNT === 0 ? process.env.VALIDATOR_COUNT:1)
+  let initialPowers = (process.env.INITIAL_VALIDATOR_POWERS === 0 ? process.env.INITIAL_VALIDATOR_POWERS.split(","):[100])
 
   // Input validation for local usage (develop, ganache)
   if (network === "develop" || network === "ganache") {
     // Initial validators
-    const localValidatorCount = Number(process.env.LOCAL_VALIDATOR_COUNT);
     if (localValidatorCount <= 0 || localValidatorCount > 9) {
       return console.error(
         "Must provide an initial validator count between 1-8 for local deployment."
       );
     }
-    // Initial validator power
-    if (process.env.LOCAL_INITIAL_VALIDATOR_POWERS.length === 0) {
-      return console.error(
-        "Must provide initial local validator powers as environment variable."
-      );
-    }
 
     // Assign validated local input params
     operator = accounts[0];
+
     owner = accounts[0];
     initialValidators = accounts.slice(1, localValidatorCount + 1);
-    initialPowers = process.env.LOCAL_INITIAL_VALIDATOR_POWERS.split(",");
 
     // Input validation for testnet/mainnet (ropsten, rinkeby, etc.)
   } else {
-    // Operator
-    if (process.env.OPERATOR.length === 0) {
+    //
+    if (process.env.ETHEREUM_PRIVATE_KEY === 0) {
       return console.error(
-        "Must provide operator address as environment variable."
+          "Must provide an operator address private key environment variable: ETHEREUM_PRIVATE_KEY"
+      )
+    }
+
+    // Operator
+    if (!process.env.OPERATOR) {
+      return console.error(
+        "Must provide operator address as environment variable: OPERATOR"
       );
     }
     // Owner
-    if (process.env.OWNER.length === 0) {
+    if (process.env.OWNER === 0) {
       return console.error(
         "Must provide owner address as environment variable."
       );
     }
     // Initial validators
-    if (process.env.INITIAL_VALIDATOR_ADDRESSES.length === 0) {
+    if (process.env.INITIAL_VALIDATOR_ADDRESSES === 0) {
       return console.error(
         "Must provide initial validator addresses as environment variable."
       );
@@ -80,7 +73,7 @@ module.exports = function(deployer, network, accounts) {
     operator = process.env.OPERATOR;
     owner = process.env.OWNER;
     initialValidators = process.env.INITIAL_VALIDATOR_ADDRESSES.split(",");
-    initialPowers = process.env.INITIAL_VALIDATOR_POWERS.split(",");
+    // initialPowers = process.env.INITIAL_VALIDATOR_POWERS.split(",");
   }
 
   // Check that each initial validator has a power
@@ -187,7 +180,5 @@ module.exports = function(deployer, network, accounts) {
     await cosmosBridge.setBridgeBank(bridgeBank.address, 
       setTxSpecifications(600000, operator)
     );
-
-    return;
   });
 };
