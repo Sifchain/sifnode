@@ -5,6 +5,7 @@ package relayer
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -115,6 +116,7 @@ func getOracleClaimType(eventType string) types.Event {
 func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.Event) error {
 	cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, attributes)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	sub.Logger.Info(cosmosMsg.String())
@@ -124,6 +126,7 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 	err = txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
 		claimType, prophecyClaim, sub.PrivateKey)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	return nil
