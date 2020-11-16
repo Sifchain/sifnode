@@ -80,6 +80,14 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
     }
 
     /*
+     * @dev: Modifier to only allow valid sif addresses
+     */
+    modifier validSifAddress(bytes memory _sifAddress) {
+        require(_sifAddress.length == 42, "Invalid sif address length");
+        _;
+    }
+
+    /*
      * @dev: Fallback function allows operator to send funds to the bank directly
      *       This feature is used for testing and is available at the operator's own risk.
      */
@@ -96,7 +104,10 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         onlyCosmosBridge
         returns (address)
     {
-        return deployNewBridgeToken(_symbol);
+        address newTokenAddress = deployNewBridgeToken(_symbol);
+        setTokenInWhiteList(newTokenAddress, true);
+
+        return newTokenAddress;
     }
 
     /*
@@ -108,6 +119,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
     function addExistingBridgeToken(
         address _contractAddress
     ) public onlyOwner returns (address) {
+        setTokenInWhiteList(_contractAddress, true);
         return useExistingBridgeToken(_contractAddress);
     }
 
@@ -176,7 +188,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public availableNonce() {
+    ) public validSifAddress(_recipient) onlyWhiteList(_token) {
         BridgeToken(_token).burnFrom(msg.sender, _amount);
         string memory symbol = BridgeToken(_token).symbol();
         burnFunds(msg.sender, _recipient, _token, symbol, _amount);
@@ -193,7 +205,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public payable availableNonce() onlyWhiteList(_token) {
+    ) public payable onlyWhiteList(_token) {
         string memory symbol;
 
         // Ethereum deposit

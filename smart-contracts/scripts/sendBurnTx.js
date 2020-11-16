@@ -1,4 +1,4 @@
-module.exports = async () => {
+module.exports = async (cb) => {
     /*******************************************
      *** Set up
      ******************************************/
@@ -176,6 +176,6 @@ module.exports = async () => {
     } catch (error) {
       console.error({ error });
     }
-    return;
+    return cb();
   };
   
