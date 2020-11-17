@@ -195,7 +195,7 @@ contract("CosmosBridge", function (accounts) {
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
     });

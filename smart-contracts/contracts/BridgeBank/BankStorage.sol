@@ -2,12 +2,12 @@ pragma solidity ^0.5.0;
 
 import "./CosmosBankStorage.sol";
 import "./EthereumBankStorage.sol";
-import "./WhiteListStorage.sol";
+import "./CosmosWhiteListStorage.sol";
 
 contract BankStorage is 
     CosmosBankStorage,
     EthereumBankStorage,
-    WhiteListStorage {
+    CosmosWhiteListStorage {
 
     /**
     * @notice operator address that can update the smart contract

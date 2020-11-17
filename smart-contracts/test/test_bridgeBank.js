@@ -163,7 +163,7 @@ contract("BridgeBank", function (accounts) {
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
 
@@ -249,25 +249,25 @@ contract("BridgeBank", function (accounts) {
     it("should not be able to add a token to the whitelist that has the same symbol as an already registered token", async function () {
       const symbol = "TEST"
       const newToken = await BridgeToken.new(symbol);
-      (await this.bridgeBank.getTokenInWhiteList(newToken.address)).should.be.equal(false)
+      (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
       // Remove the token from the white list
       await expectRevert(
-        this.bridgeBank.updateWhiteList(newToken.address, true, {from: operator}),
+        this.bridgeBank.updateEthWhiteList(newToken.address, true, {from: operator}),
         "Token already whitelisted"
       );
 
-      (await this.bridgeBank.getTokenInWhiteList(newToken.address)).should.be.equal(false)
+      (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
     });
 
     it("should be able to remove a token from the whitelist", async function () {
 
-      (await this.bridgeBank.getTokenInWhiteList(this.token.address)).should.be.equal(true)
+      (await this.bridgeBank.getTokenInEthWhiteList(this.token.address)).should.be.equal(true)
       // Remove the token from the white list
-      await this.bridgeBank.updateWhiteList(this.token.address, false, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, false, {
         from: operator
       }).should.be.fulfilled;
 
-      (await this.bridgeBank.getTokenInWhiteList(this.token.address)).should.be.equal(false)
+      (await this.bridgeBank.getTokenInEthWhiteList(this.token.address)).should.be.equal(false)
     });
   });
 
@@ -320,7 +320,7 @@ contract("BridgeBank", function (accounts) {
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
 
@@ -416,7 +416,7 @@ contract("BridgeBank", function (accounts) {
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
 
@@ -576,7 +576,7 @@ contract("BridgeBank", function (accounts) {
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
 
