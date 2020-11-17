@@ -36,10 +36,6 @@ module.exports = async (cb) => {
     (NETWORK_ROPSTEN && process.argv[6] === "--default");
   const NUM_ARGS = process.argv.length - 4;
 
-  console.log("Network: ", process.argv[5])
-  console.log("args: ", process.argv)
-  console.log("NETWORK_ROPSTEN: ", NETWORK_ROPSTEN)
-  console.log("Args len: ", NUM_ARGS)
   /*******************************************
    *** Command line argument error checking
    ***
