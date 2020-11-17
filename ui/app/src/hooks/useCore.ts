@@ -8,12 +8,10 @@ import {
   Network,
 } from "../../../core";
 
-// import tokens from "../../../core/data/topErc20Tokens.json";
-
 const api = createApi({
   // TODO: switch on env
   sifAddrPrefix: "sif",
-  sifApiUrl: "http://127.0.0.1:1317",
+  sifApiUrl: process.env.VUE_APP_SIFNODE_API || "http://127.0.0.1:1317",
   getWeb3Provider,
   nativeAsset: Coin({
     name: "Rowan",
