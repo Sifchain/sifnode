@@ -91,5 +91,4 @@ networks:
     ipam:
       driver: default
       config:
-        -
-          subnet: ${IPV4_SUBNET}
+        - subnet: ${IPV4_SUBNET}
