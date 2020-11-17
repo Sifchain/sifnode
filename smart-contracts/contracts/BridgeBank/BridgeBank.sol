@@ -2,7 +2,8 @@ pragma solidity ^0.5.0;
 
 import "./CosmosBank.sol";
 import "./EthereumBank.sol";
-import "./WhiteList.sol";
+import "./EthereumWhitelist.sol";
+import "./CosmosWhiteList.sol";
 import "../Oracle.sol";
 import "../CosmosBridge.sol";
 import "./BankStorage.sol";
@@ -17,7 +18,11 @@ import "./BankStorage.sol";
  *      list that can be locked.
  **/
 
-contract BridgeBank is BankStorage, CosmosBank, EthereumBank, WhiteList {
+contract BridgeBank is BankStorage,
+    CosmosBank,
+    EthereumBank,
+    EthereumWhiteList,
+    CosmosWhiteList {
 
     bool private _initialized;
 
@@ -34,7 +39,8 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumBank, WhiteList {
     ) public {
         require(!_initialized, "Initialized");
 
-        WhiteList.initialize();
+        EthereumWhiteList.initialize();
+        CosmosWhiteList.initialize();
 
         operator = _operatorAddress;
         oracle = _oracleAddress;
@@ -84,10 +90,34 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumBank, WhiteList {
     }
 
     /*
+     * @dev: Modifier to only allow valid sif addresses
+     */
+    modifier validSifAddress(bytes memory _sifAddress) {
+        require(_sifAddress.length == 42, "Invalid sif address length");
+        require(verifySifPrefix(_sifAddress) == true, "Invalid sif address prefix");
+        _;
+    }
+
+    /*
      * @dev: Fallback function allows operator to send funds to the bank directly
      *       This feature is used for testing and is available at the operator's own risk.
      */
     function() external payable onlyOperator {}
+
+    /*
+     * @dev: function to validate if a sif address has a correct prefix
+     */
+    function verifySifPrefix(bytes memory _sifAddress) public pure returns (bool) {
+        bytes3 sifInHex = 0x736966;
+
+        for (uint256 i = 0; i < sifInHex.length; i++) {
+            if (sifInHex[i] != _sifAddress[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     /*
      * @dev: Creates a new BridgeToken
@@ -100,7 +130,10 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumBank, WhiteList {
         onlyCosmosBridge
         returns (address)
     {
-        return deployNewBridgeToken(_symbol);
+        address newTokenAddress = deployNewBridgeToken(_symbol);
+        setTokenInCosmosWhiteList(newTokenAddress, true);
+
+        return newTokenAddress;
     }
 
     /*
@@ -112,6 +145,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumBank, WhiteList {
     function addExistingBridgeToken(
         address _contractAddress
     ) public onlyOwner returns (address) {
+        setTokenInCosmosWhiteList(_contractAddress, true);
         return useExistingBridgeToken(_contractAddress);
     }
 
@@ -122,7 +156,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumBank, WhiteList {
      * @param _inList: set the _token in list or not
      * @return: new value of if _token in whitelist
      */
-    function updateWhiteList(address _token, bool _inList)
+    function updateEthWhiteList(address _token, bool _inList)
         public
         onlyOperator
         returns (bool)
@@ -140,7 +174,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumBank, WhiteList {
             // in fact stored in our locked token list before we set to false
             require(uint256(listAddress) > 0, "Token not whitelisted");
         }
-        return setTokenInWhiteList(_token, _inList);
+        return setTokenInEthWhiteList(_token, _inList);
     }
 
     /*
@@ -180,7 +214,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumBank, WhiteList {
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public {
+    ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) {
         BridgeToken(_token).burnFrom(msg.sender, _amount);
         string memory symbol = BridgeToken(_token).symbol();
         burnFunds(msg.sender, _recipient, _token, symbol, _amount);
@@ -197,7 +231,7 @@ contract BridgeBank is BankStorage, CosmosBank, EthereumBank, WhiteList {
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public payable onlyWhiteList(_token) {
+    ) public payable onlyEthTokenWhiteList(_token) validSifAddress(_recipient) {
         string memory symbol;
 
         // Ethereum deposit

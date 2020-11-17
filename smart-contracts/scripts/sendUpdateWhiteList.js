@@ -88,7 +88,7 @@ module.exports = async () => {
       logs
     } = await contract.deployed().then(function (instance) {
       console.log("Connected to contract, sending lock...");
-      return instance.updateWhiteList(coinDenom, inList, {
+      return instance.updateEthWhiteList(coinDenom, inList, {
         from: accounts[0],
         gas: 300000 // 300,000 Gwei
       });
