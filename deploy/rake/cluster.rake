@@ -54,7 +54,7 @@ namespace :cluster do
       task :swaggerui, [:chainnet, :provider, :namespace] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade swagger-ui #{cwd}/../../build/helm/swagger-ui \
+        cmd = %Q{helm upgrade swagger-ui #{cwd}/../../deploy/helm/swagger-ui \
           --install -n #{ns(args)} --create-namespace \
         }
 
@@ -65,7 +65,7 @@ namespace :cluster do
       task :prism, [:chainnet, :provider, :namespace] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade prism #{cwd}/../../build/helm/prism \
+        cmd = %Q{helm upgrade prism #{cwd}/../../deploy/helm/prism \
           --install -n #{ns(args)} --create-namespace \
         }
 
@@ -81,7 +81,7 @@ namespace :cluster do
       task :standalone, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade sifnode #{cwd}/../../build/helm/sifnode \
+        cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --install -n #{ns(args)} --create-namespace \
           --set image.tag=#{image_tag(args)} \
@@ -95,7 +95,7 @@ namespace :cluster do
       task :peer, [:chainnet, :provider, :namespace, :image, :image_tag, :peer_address, :genesis_url] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade sifnode #{cwd}/../../build/helm/sifnode \
+        cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
           --install -n #{ns(args)} --create-namespace \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.genesisURL=#{args[:genesis_url]} \
@@ -123,7 +123,7 @@ namespace :cluster do
     task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker] do |t, args|
       check_args(args)
 
-      cmd = %Q{helm upgrade sifnode #{cwd}/../../build/helm/sifnode \
+      cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
         --set sifnode.env.chainnet=#{args[:chainnet]} \
         --install -n #{ns(args)} \
         --set ebrelayer.image.repository=#{image_repository(args)} \
@@ -142,7 +142,7 @@ namespace :cluster do
     task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
       check_args(args)
 
-      cmd = %Q{helm upgrade sifnode #{cwd}/../../build/helm/sifnode \
+      cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
         --set sifnode.env.chainnet=#{args[:chainnet]} \
         --install -n #{ns(args)} \
         --set ebrelayer.enabled=false
@@ -158,7 +158,7 @@ namespace :cluster do
     task :deploy, [:chainnet, :provider] do |t, args|
       check_args(args)
 
-      cmd = %Q{helm upgrade block-explorer ../build/helm/block-explorer \
+      cmd = %Q{helm upgrade block-explorer ../deploy/helm/block-explorer \
         --install -n block-explorer \
         --create-namespace
       }

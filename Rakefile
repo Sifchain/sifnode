@@ -1,6 +1,7 @@
 require "rake"
 require "yaml"
 require "digest"
+require "rbconfig"
 
 Dir["**/lib/*.rb"].each { |file| require_relative file }
 Dir["**/*.rake"].each do |path|
