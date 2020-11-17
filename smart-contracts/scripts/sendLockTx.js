@@ -14,6 +14,7 @@ module.exports = async (cb) => {
 
   const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
+  console.log("Expected usage: \ntruffle exec scripts/sendLockTx.js --network ropsten sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace eth 100");
   /*******************************************
    *** Constants
    ******************************************/
@@ -35,6 +36,10 @@ module.exports = async (cb) => {
     (NETWORK_ROPSTEN && process.argv[6] === "--default");
   const NUM_ARGS = process.argv.length - 4;
 
+  console.log("Network: ", process.argv[5])
+  console.log("args: ", process.argv)
+  console.log("NETWORK_ROPSTEN: ", NETWORK_ROPSTEN)
+  console.log("Args len: ", NUM_ARGS)
   /*******************************************
    *** Command line argument error checking
    ***
@@ -85,12 +90,12 @@ module.exports = async (cb) => {
       amount = new BigNumber(process.argv[6]);
     }
   }
-
+  
   // Convert default 'eth' coin denom into null address
   if (coinDenom == "eth") {
     coinDenom = NULL_ADDRESS;
   }
-
+  
   /*******************************************
    *** Web3 provider
    *** Set contract provider based on --network flag
@@ -100,9 +105,9 @@ module.exports = async (cb) => {
     provider = new HDWalletProvider(
       process.env.ETHEREUM_PRIVATE_KEY,
       "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
-    );
-    console.log("~~~~~~~ Provider set to ropsten and connected ~~~~~~~")
-  } else if (NETWORK_MAINNET) {
+      );
+      console.log("~~~~~~~ Provider set to ropsten and connected ~~~~~~~")
+    } else if (NETWORK_MAINNET) {
     provider = new HDWalletProvider(
       process.env.ETHEREUM_PRIVATE_KEY,
       "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
