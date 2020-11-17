@@ -547,7 +547,7 @@ contract("Valset", function (accounts) {
       // Create hash using Solidity's Sha3 hashing function
       this.cosmosBridgeNonce = 3;
       this.cosmosSender = web3.utils.utf8ToHex(
-        "985cfkop78sru7gfud4wce83kuc9rmw89rqtzmy"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       this.nonce = 17;
       this.message = web3.utils.soliditySha3(

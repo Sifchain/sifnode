@@ -87,7 +87,7 @@ contract("CosmosBridge", function (accounts) {
     beforeEach(async function () {
       // Set up ProphecyClaim values
       this.cosmosSender = web3.utils.utf8ToHex(
-        "985cfkop78sru7gfud4wce83kuc9rmw89rqtzmy"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       this.ethereumReceiver = userSeven;
       this.ethTokenAddress = "0x0000000000000000000000000000000000000000";
@@ -150,7 +150,7 @@ contract("CosmosBridge", function (accounts) {
       //  Lock ethereum on contract in advance of burn
       // --------------------------------------------------------
       await this.bridgeBank.lock(
-        this.ethereumReceiver,
+        this.cosmosSender,
         this.ethTokenAddress,
         this.amountWei,
         {

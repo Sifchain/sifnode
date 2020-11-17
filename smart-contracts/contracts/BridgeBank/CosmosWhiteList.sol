@@ -1,13 +1,13 @@
 pragma solidity ^0.5.0;
 
-import "./WhiteListStorage.sol";
+import "./CosmosWhiteListStorage.sol";
 
 /**
  * @title WhiteList
  * @dev WhiteList contract records the ERC 20 list that can be locked in BridgeBank.
  **/
 
-contract WhiteList is WhiteListStorage {
+contract CosmosWhiteList is CosmosWhiteListStorage {
     bool private _initialized;
 
     /*
@@ -17,16 +17,16 @@ contract WhiteList is WhiteListStorage {
 
     function initialize() public {
         require(!_initialized, "Initialized");
-        whiteList[address(0)] = true;
+        _cosmosTokenWhiteList[address(0)] = true;
         _initialized = true;
     }
 
     /*
      * @dev: Modifier to restrict erc20 can be locked
      */
-    modifier onlyWhiteList(address _token) {
+    modifier onlyCosmosTokenWhiteList(address _token) {
         require(
-            getTokenInWhiteList(_token),
+            getCosmosTokenInWhiteList(_token),
             "Only token in whitelist can be transferred to cosmos"
         );
         _;
@@ -39,11 +39,11 @@ contract WhiteList is WhiteListStorage {
      * @param _inList: set the _token in list or not
      * @return: new value of if _token in whitelist
      */
-    function setTokenInWhiteList(address _token, bool _inList)
+    function setTokenInCosmosWhiteList(address _token, bool _inList)
         internal
         returns (bool)
     {
-        whiteList[_token] = _inList;
+        _cosmosTokenWhiteList[_token] = _inList;
         emit LogWhiteListUpdate(_token, _inList);
         return _inList;
     }
@@ -54,7 +54,7 @@ contract WhiteList is WhiteListStorage {
      * @param _token: ERC 20's address
      * @return: if _token in whitelist
      */
-    function getTokenInWhiteList(address _token) public view returns (bool) {
-        return whiteList[_token];
+    function getCosmosTokenInWhiteList(address _token) public view returns (bool) {
+        return _cosmosTokenWhiteList[_token];
     }
 }
