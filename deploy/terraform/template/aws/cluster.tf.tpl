@@ -14,7 +14,7 @@
 // }
 
 //
-// Uncomment to manage state files with AWS S3
+// Uncomment to manage state with AWS S3
 //
 
 // terraform {
