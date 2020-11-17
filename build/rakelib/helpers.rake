@@ -1,4 +1,15 @@
-# check_args checks to make sure the required args are passed in
+#
+# Current working directory.
+#
+def cwd
+  File.dirname(__FILE__)
+end
+
+#
+# Check the supplied arguments
+#
+# @param args Arguments passed to rake
+#
 def check_args(args)
   if args[:chainnet] == nil
     puts "Please provider a chainnet argument E.g testnet, mainnet, etc"
@@ -22,10 +33,20 @@ def check_args(args)
   end
 end
 
+#
+# Network config
+#
+# @params chainnet Name or ID of the chain
+#
 def network_config(chainnet)
-  "networks/#{Digest::SHA256.hexdigest chainnet}.yml"
+  "#{cwd}/../networks/#{Digest::SHA256.hexdigest chainnet}.yml"
 end
 
+#
+# Generic prompt
+#
+# @param args Arguments passed to rake
+#
 def are_you_sure(args)
   if args[:skip_prompt].nil?
     STDOUT.puts "Are you sure? (y/n)"

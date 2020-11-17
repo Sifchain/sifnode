@@ -9,8 +9,8 @@ namespace :genesis do
         exit 1
       end
 
-      network_create({chainnet: args[:chainnet], validator_count: 4,
-                      build_dir: "networks", seed_ip_address: "192.168.2.1",network_config: network_config(args[:chainnet])})
+      network_create(chainnet: args[:chainnet], validator_count: 4, build_dir: "#{cwd}/../networks",
+                     seed_ip_address: "192.168.2.1",network_config: network_config(args[:chainnet]))
     end
 
     desc "Boot the new scaffolded network in docker-compose"
@@ -22,7 +22,7 @@ namespace :genesis do
         exit(1)
       end
 
-      with_eth = eth_config(eth_address: args[:eth_bridge_registry_address],
+      with_eth = eth_config(eth_bridge_registry_address: args[:eth_bridge_registry_address],
                             eth_keys: args[:eth_keys].split(" "),
                             eth_websocket: args[:eth_websocket])
 
@@ -42,7 +42,7 @@ namespace :genesis do
 
     desc "Reset the state of a network"
     task :reset, [:chainnet] do |t, args|
-      system("sifgen network reset #{args[:chainnet]} ./networks")
+      system("sifgen network reset #{args[:chainnet]} #{cwd}/../networks")
     end
   end
 
@@ -65,12 +65,26 @@ namespace :genesis do
   end
 end
 
-# Creates the config for a new network.
+#
+# Creates the config for a new network
+#
+# @param chainnet           Name or ID of the chain
+# @param validator_count    Number of validators to configure
+# @param build_dir          Path to the build directory
+# @param seed_ip_address    IPv4 address of the first node
+# @param network_config     Name of the file to use to output the config to
+#
 def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:, network_config:)
   system("sifgen network create #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{network_config}")
 end
 
-# Boot the new network.
+#
+# Boot the new network
+#
+# @param chainnet               Name or ID of the chain
+# @param seed_network_address   Network address w/netmask (e.g.: 192.168.1.0/24)
+# @param eth_config             Ethereum configuration (bridge address and private keys)
+#
 def boot_docker_network(chainnet:, seed_network_address:, eth_config:)
   network = YAML.load_file(network_config(chainnet))
 
@@ -79,18 +93,28 @@ def boot_docker_network(chainnet:, seed_network_address:, eth_config:)
     cmd += "MONIKER#{idx+1}=#{node['moniker']} MNEMONIC#{idx+1}=\"#{node['mnemonic']}\" IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
   end
 
-  cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f ./genesis/docker-compose.yml up"
+  cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../genesis/docker-compose.yml up"
   system(cmd)
 end
 
+#
 # Build docker image for the new network
+#
+# @param chainnet Name or ID of the chain
+#
 def build_docker_image(chainnet)
-  system("cd .. && docker build -f ./build/genesis/Dockerfile -t sifchain/sifnoded:#{chainnet} .")
+  system("docker build -f #{cwd}/../genesis/Dockerfile -t sifchain/sifnoded:#{chainnet} #{cwd}/../../")
 end
 
-# ethereum config
-def eth_config(eth_address:, eth_keys:, eth_websocket:)
-  config = "ETHEREUM_CONTRACT_ADDRESS=#{eth_address} "
+#
+# Ethereum config
+#
+# @param eth_bridge_registry_address    Ethereum bridge registry address
+# @param eth_keys                       Ethereum private keys
+# @param eth_websocket                  Ethereum websocket address to listen to
+#
+def eth_config(eth_bridge_registry_address:, eth_keys:, eth_websocket:)
+  config = "ETHEREUM_CONTRACT_ADDRESS=#{eth_bridge_registry_address} "
 
   eth_keys.each_with_index do |address, idx|
     config += " ETHEREUM_PRIVATE_KEY#{idx+1}=#{eth_keys[idx]} "
