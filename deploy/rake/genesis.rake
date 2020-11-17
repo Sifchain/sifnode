@@ -38,8 +38,9 @@ namespace :genesis do
         puts "the file #{network_config(args[:chainnet])} does not exist!"
         exit(1)
       end
-
-      build_docker_image(args[:chainnet])
+      if args[:chainnet] != 'localnet'
+        build_docker_image(args[:chainnet])
+      end
       boot_docker_network(chainnet: args[:chainnet], seed_network_address: "192.168.2.0/24", eth_config: with_eth)
     end
 
