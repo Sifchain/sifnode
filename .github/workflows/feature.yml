@@ -33,7 +33,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      WORKING_DIRECTORY: ./build
+      WORKING_DIRECTORY: ./
       WORKSPACE_PREFIX: sifchain-aws
       WORKSPACE_NAME: feature-testnets
     needs: build

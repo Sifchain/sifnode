@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged
     env:
-      WORKING_DIRECTORY: ./build
+      WORKING_DIRECTORY: ./
       WORKSPACE_PREFIX: sifchain-aws
       WORKSPACE_NAME: feature-testnets
     steps:

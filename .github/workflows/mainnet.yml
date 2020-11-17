@@ -29,4 +29,3 @@ jobs:
           docker push sifchain/sifnodecli:mainnet
           docker push sifchain/sifcrg:mainnet
           docker push sifchain/swagger-ui:mainnet
-

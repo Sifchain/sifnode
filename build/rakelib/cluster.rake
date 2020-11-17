@@ -161,27 +161,47 @@ namespace :cluster do
   end
 end
 
-# path returns the path of the terraform config that is generated as part of the scaffold task
+#
+# Get the path to our terraform config based off the supplied rake args
+#
+# @param args Arguments passed to rake
+#
 def path(args)
   "#{cwd}/../../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 
-# kubeconfig returns the path to the kubeconfig file based on the args
+#
+# Get the path to our kubeconfig based off the supplied rake args
+#
+# @param args Arguments passed to rake
+#
 def kubeconfig(args)
   "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 
-# ns = namespace for kubes returns the arg with the namespace if set or the default setting
+#
+# k8s namespace
+#
+# @param args Arguments passed to rake
+#
 def ns(args)
   args[:namespace] ? "#{args[:namespace]}" : "sifnode"
 end
 
-# image_tag returns the arg for image_tag if set or the default tag setting
+#
+# Image tag
+#
+# @param args Arguments passed to rake
+#
 def image_tag(args)
   args[:image_tag] ? "#{args[:image_tag]}" : "testnet"
 end
 
-# image_repository returns the arg with a image if set or the default setting
+#
+# Image repository
+#
+# @param args Arguments passed to rake
+#
 def image_repository(args)
   args[:image] ? "#{args[:image]}" : "sifchain/sifnoded"
 end
