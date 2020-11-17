@@ -152,6 +152,32 @@ namespace :cluster do
     end
   end
 
+  desc "Block Explorer"
+  namespace :blockexplorer do
+    desc "Install blockexplorer"
+    task :deploy, [:chainnet, :provider] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm upgrade block-explorer ../build/helm/block-explorer \
+        --install -n block-explorer \
+        --create-namespace
+      }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+    end
+
+    desc "Uninstall blockexplorer"
+    task :uninstall, [:chainnet, :provider] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm delete block-explorer --namespace block-explorer && \
+        kubectl delete ns block-explorer
+      }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+    end
+  end
+
   desc "Manage eth full node deploy, upgrade, etc processes"
   namespace :ethnode do
     desc "Deploy a full eth node onto your cluster"
