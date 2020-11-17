@@ -104,6 +104,9 @@ contract BridgeBank is BankStorage,
      */
     function() external payable onlyOperator {}
 
+    /*
+     * @dev: function to validate if a sif address has a correct prefix
+     */
     function verifySifPrefix(bytes memory _sifAddress) public pure returns (bool) {
         bytes3 sifInHex = 0x736966;
 

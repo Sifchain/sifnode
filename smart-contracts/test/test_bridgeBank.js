@@ -189,6 +189,17 @@ contract("BridgeBank", function (accounts) {
 
     });
 
+    it("should return true if a sifchain address prefix is correct", async function () {
+      (await this.bridgeBank.verifySifPrefix(this.sender)).should.be.equal(true);
+    })
+
+    it("should return false if a sifchain address has an incorrect `sif` prefix", async function () {
+      const incorrectSifAddress = web3.utils.utf8ToHex(
+        "eif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
+      );
+      (await this.bridgeBank.verifySifPrefix(incorrectSifAddress)).should.be.equal(false);
+    })
+
     it("should mint bridge tokens upon the successful processing of a burn prophecy claim", async function () {
       // Submit a new prophecy claim to the CosmosBridge to make oracle claims upon
       const {
@@ -451,6 +462,40 @@ contract("BridgeBank", function (accounts) {
       //Confirm that the tokens have been locked
       bridgeBankTokenBalance.should.be.bignumber.equal(100);
       userBalance.should.be.bignumber.equal(900);
+    });
+    
+    it("should not allow users to lock ERC20 tokens if the sifaddress length is incorrect", async function () {
+      const invalidSifAddress = web3.utils.utf8ToHex(
+        "eif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpacee92929"
+      );
+      // Attempt to lock tokens
+      await expectRevert(this.bridgeBank.lock(
+        invalidSifAddress,
+        this.token.address,
+        this.amount, {
+          from: userOne,
+          value: 0
+        }
+      ),
+        "Invalid sif address length"
+      );
+    });
+
+    it("should not allow users to lock ERC20 tokens if the sifaddress prefix is incorrect", async function () {
+      const invalidSifAddress = web3.utils.utf8ToHex(
+        "zif1gdnl9jj2xgy5n04r7heqxlqvvzcy24zc96ns2f"
+      );
+      // Attempt to lock tokens
+      await expectRevert(this.bridgeBank.lock(
+        invalidSifAddress,
+        this.token.address,
+        this.amount, {
+          from: userOne,
+          value: 0
+        }
+      ),
+        "Invalid sif address prefix"
+      );
     });
 
     it("should allow users to lock Ethereum", async function () {
