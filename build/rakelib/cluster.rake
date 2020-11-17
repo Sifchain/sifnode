@@ -5,19 +5,15 @@ namespace :cluster do
     check_args(args)
 
     # create path location
-    system('mkdir -p ../.live')
+    system("mkdir -p #{cwd}/../../.live")
     system("mkdir #{path(args)}") or exit
 
     # create config from template
-    system("go run github.com/belitre/gotpl ./terraform/template/aws/cluster.tf.tpl \
-      --set chainnet=#{args[:chainnet]} \
-      > #{path(args)}/main.tf
-    ")
+    system("go run github.com/belitre/gotpl #{cwd}/../terraform/template/aws/cluster.tf.tpl \
+      --set chainnet=#{args[:chainnet]} > #{path(args)}/main.tf")
 
-    system("go run github.com/belitre/gotpl ./terraform/template/aws/.envrc.tpl \
-      --set chainnet=#{args[:chainnet]} \
-      > #{path(args)}/.envrc
-    ")
+    system("go run github.com/belitre/gotpl #{cwd}/../terraform/template/aws/.envrc.tpl \
+      --set chainnet=#{args[:chainnet]} > #{path(args)}/.envrc")
 
     # init terraform
     system("cd #{path(args)} && terraform init")
@@ -58,7 +54,7 @@ namespace :cluster do
       task :swaggerui, [:chainnet, :provider, :namespace] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade swagger-ui ../build/helm/swagger-ui \
+        cmd = %Q{helm upgrade swagger-ui #{cwd}/../../build/helm/swagger-ui \
           --install -n #{ns(args)} --create-namespace \
         }
 
@@ -69,7 +65,7 @@ namespace :cluster do
       task :prism, [:chainnet, :provider, :namespace] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade prism ../build/helm/prism \
+        cmd = %Q{helm upgrade prism #{cwd}/../../build/helm/prism \
           --install -n #{ns(args)} --create-namespace \
         }
 
@@ -85,7 +81,7 @@ namespace :cluster do
       task :standalone, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
+        cmd = %Q{helm upgrade sifnode #{cwd}/../../build/helm/sifnode \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --install -n #{ns(args)} --create-namespace \
           --set image.tag=#{image_tag(args)} \
@@ -99,7 +95,7 @@ namespace :cluster do
       task :peer, [:chainnet, :provider, :namespace, :image, :image_tag, :peer_address, :genesis_url] do |t, args|
         check_args(args)
 
-        cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
+        cmd = %Q{helm upgrade sifnode #{cwd}/../../build/helm/sifnode \
           --install -n #{ns(args)} --create-namespace \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.genesisURL=#{args[:genesis_url]} \
@@ -127,7 +123,7 @@ namespace :cluster do
     task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker] do |t, args|
       check_args(args)
 
-      cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
+      cmd = %Q{helm upgrade sifnode #{cwd}/../../build/helm/sifnode \
         --set sifnode.env.chainnet=#{args[:chainnet]} \
         --install -n #{ns(args)} \
         --set ebrelayer.image.repository=#{image_repository(args)} \
@@ -146,7 +142,7 @@ namespace :cluster do
     task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
       check_args(args)
 
-      cmd = %Q{helm upgrade sifnode ../build/helm/sifnode \
+      cmd = %Q{helm upgrade sifnode #{cwd}/../../build/helm/sifnode \
         --set sifnode.env.chainnet=#{args[:chainnet]} \
         --install -n #{ns(args)} \
         --set ebrelayer.enabled=false
@@ -165,27 +161,47 @@ namespace :cluster do
   end
 end
 
-# path returns the path of the terraform config that is generated as part of the scaffold task
+#
+# Get the path to our terraform config based off the supplied rake args
+#
+# @param args Arguments passed to rake
+#
 def path(args)
-  "../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"
+  "#{cwd}/../../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 
-# kubeconfig returns the path to the kubeconfig file based on the args
+#
+# Get the path to our kubeconfig based off the supplied rake args
+#
+# @param args Arguments passed to rake
+#
 def kubeconfig(args)
   "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 
-# ns = namespace for kubes returns the arg with the namespace if set or the default setting
+#
+# k8s namespace
+#
+# @param args Arguments passed to rake
+#
 def ns(args)
   args[:namespace] ? "#{args[:namespace]}" : "sifnode"
 end
 
-# image_tag returns the arg for image_tag if set or the default tag setting
+#
+# Image tag
+#
+# @param args Arguments passed to rake
+#
 def image_tag(args)
   args[:image_tag] ? "#{args[:image_tag]}" : "testnet"
 end
 
-# image_repository returns the arg with a image if set or the default setting
+#
+# Image repository
+#
+# @param args Arguments passed to rake
+#
 def image_repository(args)
   args[:image] ? "#{args[:image]}" : "sifchain/sifnoded"
 end
