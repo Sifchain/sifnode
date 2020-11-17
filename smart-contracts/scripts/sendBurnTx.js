@@ -17,8 +17,7 @@ module.exports = async (cb) => {
   
     const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
   
-    console.log("Expected usage: \ntruffle exec scripts/sendBurnTx.js --network ropsten sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace eth 100\n");
-
+    console.log("Expected usage: \n\ntruffle exec scripts/sendBurnTx.js --network ropsten sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace <token smart contract address> 100\n");
     /*******************************************
      *** Constants
      ******************************************/

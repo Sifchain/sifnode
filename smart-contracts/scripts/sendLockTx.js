@@ -14,7 +14,7 @@ module.exports = async (cb) => {
 
   const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-  console.log("Expected usage: \ntruffle exec scripts/sendLockTx.js --network ropsten sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace eth 100");
+  console.log("Expected usage: \ntruffle exec scripts/sendLockTx.js --network ropsten sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace eth 100\n");
   /*******************************************
    *** Constants
    ******************************************/
