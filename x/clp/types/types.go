@@ -7,11 +7,10 @@ import (
 )
 
 type Pool struct {
-	ExternalAsset        Asset          `json:"external_asset"`
-	NativeAssetBalance   sdk.Uint       `json:"native_asset_balance"`
-	ExternalAssetBalance sdk.Uint       `json:"external_asset_balance"`
-	PoolUnits            sdk.Uint       `json:"pool_units"`
-	PoolAddress          sdk.AccAddress `json:"pool_address"`
+	ExternalAsset        Asset    `json:"external_asset"`
+	NativeAssetBalance   sdk.Uint `json:"native_asset_balance"`
+	ExternalAssetBalance sdk.Uint `json:"external_asset_balance"`
+	PoolUnits            sdk.Uint `json:"pool_units"`
 }
 
 func (p Pool) String() string {
@@ -19,13 +18,10 @@ func (p Pool) String() string {
 	ExternalAssetBalance: %d
 	NativeAssetBalance: %d
 	PoolUnits : %d
-	PoolAddress :%s`, p.ExternalAsset, p.ExternalAssetBalance, p.NativeAssetBalance, p.PoolUnits, p.PoolAddress))
+	PoolAddress :%s`, p.ExternalAsset, p.ExternalAssetBalance, p.NativeAssetBalance, p.PoolUnits))
 }
 
 func (p Pool) Validate() bool {
-	if p.PoolAddress.Empty() {
-		return false
-	}
 	if !p.ExternalAsset.Validate() {
 		return false
 	}
@@ -38,13 +34,7 @@ func NewPool(externalAsset Asset, nativeAssetBalance, externalAssetBalance, pool
 		NativeAssetBalance:   nativeAssetBalance,
 		ExternalAssetBalance: externalAssetBalance,
 		PoolUnits:            poolUnits}
-	nativeAsset := GetSettlementAsset()
-	pooladdr, err := GetAddress(pool.ExternalAsset.Ticker, nativeAsset.Ticker)
 
-	if err != nil {
-		return Pool{}, err
-	}
-	pool.PoolAddress = pooladdr
 	return pool, nil
 }
 

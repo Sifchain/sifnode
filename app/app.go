@@ -181,6 +181,7 @@ func NewInitApp(
 		app.cdc,
 		keys[clp.StoreKey],
 		app.bankKeeper,
+		app.SupplyKeeper,
 		app.subspaces[clp.ModuleName])
 
 	app.mm = module.NewManager(
@@ -191,7 +192,7 @@ func NewInitApp(
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
-		clp.NewAppModule(app.clpKeeper, app.bankKeeper),
+		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
 	)
 
 	app.mm.SetOrderEndBlockers(staking.ModuleName)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/Sifchain/sifnode/simapp"
+	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
@@ -51,6 +52,9 @@ func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
 
 func CreateTestAppClp(isCheckTx bool) (sdk.Context, keeper.Keeper) {
 	app, ctx := CreateTestApp(isCheckTx)
+	poolAccount := supply.NewEmptyModuleAccount(clp.ModuleName, supply.Burner, supply.Minter)
+	app.ClpKeeper.GetSupplyKeeper().SetModuleAccount(ctx, poolAccount)
+
 	return ctx, app.ClpKeeper
 }
 

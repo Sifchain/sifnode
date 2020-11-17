@@ -6,6 +6,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/client/cli"
 	"github.com/Sifchain/sifnode/x/clp/client/rest"
 	"github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
@@ -74,16 +75,18 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper     keeper.Keeper
-	bankKeeper types.BankKeeper
+	keeper       keeper.Keeper
+	bankKeeper   types.BankKeeper
+	supplyKeeper types.SupplyKeeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper) AppModule {
+func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper, supplyKeeper types.SupplyKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         k,
 		bankKeeper:     bankKeeper,
+		supplyKeeper:   supplyKeeper,
 	}
 }
 
@@ -120,6 +123,8 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	poolAccount := supply.NewEmptyModuleAccount(ModuleName)
+	am.supplyKeeper.SetModuleAccount(ctx, poolAccount)
 	return InitGenesis(ctx, am.keeper, am.bankKeeper, genesisState)
 }
 

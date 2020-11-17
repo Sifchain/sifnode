@@ -184,6 +184,7 @@ func NewSimApp(
 		app.cdc,
 		keys[clp.StoreKey],
 		app.BankKeeper,
+		app.SupplyKeeper,
 		app.subspaces[clp.ModuleName])
 
 	// register the staking hooks
@@ -201,7 +202,7 @@ func NewSimApp(
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
-		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
+		clp.NewAppModule(app.ClpKeeper, app.BankKeeper, app.SupplyKeeper),
 	)
 
 	app.mm.SetOrderEndBlockers( /* crisis.ModuleName, gov.ModuleName, */ staking.ModuleName)

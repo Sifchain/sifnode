@@ -11,19 +11,21 @@ import (
 
 // Keeper of the clp store
 type Keeper struct {
-	storeKey   sdk.StoreKey
-	cdc        *codec.Codec
-	bankKeeper types.BankKeeper
-	paramstore params.Subspace
+	storeKey     sdk.StoreKey
+	cdc          *codec.Codec
+	bankKeeper   types.BankKeeper
+	supplyKeeper types.SupplyKeeper
+	paramstore   params.Subspace
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankkeeper types.BankKeeper, paramstore params.Subspace) Keeper {
+func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankkeeper types.BankKeeper, supplyKeeper types.SupplyKeeper, paramstore params.Subspace) Keeper {
 	keeper := Keeper{
-		storeKey:   key,
-		cdc:        cdc,
-		bankKeeper: bankkeeper,
-		paramstore: paramstore.WithKeyTable(types.ParamKeyTable()),
+		storeKey:     key,
+		cdc:          cdc,
+		bankKeeper:   bankkeeper,
+		supplyKeeper: supplyKeeper,
+		paramstore:   paramstore.WithKeyTable(types.ParamKeyTable()),
 	}
 	return keeper
 }
@@ -39,6 +41,10 @@ func (k Keeper) Codec() *codec.Codec {
 
 func (k Keeper) GetBankKeeper() types.BankKeeper {
 	return k.bankKeeper
+}
+
+func (k Keeper) GetSupplyKeeper() types.SupplyKeeper {
+	return k.supplyKeeper
 }
 
 func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) error {
