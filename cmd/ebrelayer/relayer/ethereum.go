@@ -124,6 +124,7 @@ func LoadTendermintCLIContext(appCodec *amino.Codec, validatorAddress sdk.ValAdd
 
 // Start an Ethereum chain subscription
 func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
+	defer completionEvent.Done()
 	time.Sleep(time.Second)
 	client, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
@@ -132,6 +133,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 		go sub.Start(completionEvent)
 		return
 	}
+	defer client.Close()
 	sub.Logger.Info("Started Ethereum websocket with provider:", sub.EthProvider)
 
 	clientChainID, err := client.NetworkID(context.Background())
@@ -144,15 +146,18 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 
 	// We will check logs for new events
 	logs := make(chan ctypes.Log)
+	defer close(logs)
 
 	// Start BridgeBank subscription, prepare contract ABI and LockLog event signature
 	bridgeBankAddress, subBridgeBank := sub.startContractEventSub(logs, client, txs.BridgeBank)
+	defer subBridgeBank.Unsubscribe()
 	bridgeBankContractABI := contract.LoadABI(txs.BridgeBank)
 	eventLogLockSignature := bridgeBankContractABI.Events[types.LogLock.String()].ID().Hex()
 	eventLogBurnSignature := bridgeBankContractABI.Events[types.LogBurn.String()].ID().Hex()
 
 	// Start CosmosBridge subscription, prepare contract ABI and LogNewProphecyClaim event signature
 	cosmosBridgeAddress, subCosmosBridge := sub.startContractEventSub(logs, client, txs.CosmosBridge)
+	defer subCosmosBridge.Unsubscribe()
 	cosmosBridgeContractABI := contract.LoadABI(txs.CosmosBridge)
 	eventLogNewProphecyClaimSignature := cosmosBridgeContractABI.Events[types.LogNewProphecyClaim.String()].ID().Hex()
 
