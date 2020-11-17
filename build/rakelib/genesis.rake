@@ -9,8 +9,8 @@ namespace :genesis do
         exit 1
       end
 
-      network_create({chainnet: args[:chainnet], validator_count: 4,
-                      build_dir: "networks", seed_ip_address: "192.168.2.1",network_config: network_config(args[:chainnet])})
+      network_create(chainnet: args[:chainnet], validator_count: 4, build_dir: "#{cwd}/../networks",
+                     seed_ip_address: "192.168.2.1",network_config: network_config(args[:chainnet]))
     end
 
     desc "Boot the new scaffolded network in docker-compose"
@@ -85,7 +85,7 @@ end
 
 # Build docker image for the new network
 def build_docker_image(chainnet)
-  system("cd .. && docker build -f ./build/genesis/Dockerfile -t sifchain/sifnoded:#{chainnet} .")
+  system("cd .. && docker build -f #{cwd}/../genesis/Dockerfile -t sifchain/sifnoded:#{chainnet} .")
 end
 
 # ethereum config

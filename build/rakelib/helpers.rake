@@ -1,4 +1,8 @@
 # check_args checks to make sure the required args are passed in
+def cwd
+  File.dirname(__FILE__)
+end
+
 def check_args(args)
   if args[:chainnet] == nil
     puts "Please provider a chainnet argument E.g testnet, mainnet, etc"
@@ -23,7 +27,7 @@ def check_args(args)
 end
 
 def network_config(chainnet)
-  "networks/#{Digest::SHA256.hexdigest chainnet}.yml"
+  "#{cwd}/../networks/#{Digest::SHA256.hexdigest chainnet}.yml"
 end
 
 def are_you_sure(args)
