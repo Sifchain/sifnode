@@ -8,7 +8,7 @@ frontend/.cache
 .DS_Store
 .testCoverage.txt
 .environments
-build/networks
+deploy/networks
 .env
 .backups
 .ssh
