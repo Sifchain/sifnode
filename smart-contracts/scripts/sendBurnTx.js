@@ -30,6 +30,9 @@ module.exports = async (cb) => {
     // Config values
     const NETWORK_ROPSTEN =
       process.argv[4] === "--network" && process.argv[5] === "ropsten";
+    const NETWORK_MAINNET =
+      process.argv[4] === "--network" && process.argv[5] === "mainnet";
+  
     const DEFAULT_PARAMS =
       process.argv[4] === "--default" ||
       (NETWORK_ROPSTEN && process.argv[6] === "--default");
@@ -75,7 +78,7 @@ module.exports = async (cb) => {
     let amount = DEFAULT_AMOUNT;
   
     if (!DEFAULT_PARAMS) {
-      if (NETWORK_ROPSTEN) {
+      if (NETWORK_ROPSTEN || NETWORK_MAINNET) {
         cosmosRecipient = Web3.utils.utf8ToHex(process.argv[6]);
         coinDenom = process.argv[7];
         amount = new BigNumber(process.argv[8]);
@@ -98,8 +101,13 @@ module.exports = async (cb) => {
     let provider;
     if (NETWORK_ROPSTEN) {
       provider = new HDWalletProvider(
-        process.env.MNEMONIC,
+        process.env.ETHEREUM_PRIVATE_KEY,
         "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+      );
+    } else if (NETWORK_MAINNET) {
+      provider = new HDWalletProvider(
+        process.env.ETHEREUM_PRIVATE_KEY,
+        "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
       );
     } else {
       provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
@@ -117,7 +125,7 @@ module.exports = async (cb) => {
       console.log("account is ", accounts[9], cosmosRecipient, coinDenom, amount)
 
         // Send approve transaction
-      if(coinDenom != "eth") {
+      if (coinDenom != "eth") {
         const bridgeContractAddress = await contract
         .deployed()
         .then(function(instance) {
