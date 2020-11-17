@@ -6,9 +6,8 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"os/signal"
 	"strings"
-	"syscall"
+	"sync"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
@@ -168,13 +167,11 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)
 
-	go ethSub.Start()
+	waitForAll := sync.WaitGroup{}
+	waitForAll.Add(1)
+	go ethSub.Start(&waitForAll)
 	go cosmosSub.Start()
-
-	// Exit signal enables graceful shutdown
-	exitSignal := make(chan os.Signal, 1)
-	signal.Notify(exitSignal, syscall.SIGINT, syscall.SIGTERM)
-	<-exitSignal
+	waitForAll.Wait()
 
 	return nil
 }

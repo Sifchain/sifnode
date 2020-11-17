@@ -9,7 +9,8 @@ import (
 	"io"
 	"log"
 	"math/big"
-	"os"
+	"sync"
+	"time"
 
 	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -122,18 +123,23 @@ func LoadTendermintCLIContext(appCodec *amino.Codec, validatorAddress sdk.ValAdd
 }
 
 // Start an Ethereum chain subscription
-func (sub EthereumSub) Start() {
+func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
+	time.Sleep(time.Second)
 	client, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
 		sub.Logger.Error(err.Error())
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
 	sub.Logger.Info("Started Ethereum websocket with provider:", sub.EthProvider)
 
 	clientChainID, err := client.NetworkID(context.Background())
 	if err != nil {
 		sub.Logger.Error(err.Error())
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
 
 	// We will check logs for new events
@@ -155,8 +161,14 @@ func (sub EthereumSub) Start() {
 		// Handle any errors
 		case err := <-subBridgeBank.Err():
 			sub.Logger.Error(err.Error())
+			completionEvent.Add(1)
+			go sub.Start(completionEvent)
+			return
 		case err := <-subCosmosBridge.Err():
 			sub.Logger.Error(err.Error())
+			completionEvent.Add(1)
+			go sub.Start(completionEvent)
+			return
 		// vLog is raw event data
 		case vLog := <-logs:
 			sub.Logger.Info(fmt.Sprintf("Witnessed tx %s on block %d\n", vLog.TxHash.Hex(), vLog.BlockNumber))
@@ -177,6 +189,9 @@ func (sub EthereumSub) Start() {
 			// TODO: Check local events store for status, if retryable, attempt relay again
 			if err != nil {
 				sub.Logger.Error(err.Error())
+				completionEvent.Add(1)
+				go sub.Start(completionEvent)
+				return
 			}
 		}
 	}
