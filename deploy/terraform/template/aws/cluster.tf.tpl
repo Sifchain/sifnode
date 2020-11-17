@@ -1,4 +1,7 @@
-// Manage state file with terraform cloud
+//
+// Uncomment to manage state with Terraform Cloud
+//
+
 // terraform {
 //    backend "remote" {
 //        hostname = "app.terraform.io"
@@ -10,18 +13,21 @@
 //    }
 // }
 
-// Manage state files with s3
+//
+// Uncomment to manage state with AWS S3
+//
+
 // terraform {
 //        backend "s3" {
 //        bucket = ""
 //        key    = ""
 //        region = "us-west-1"
 //    }
-//}
+// }
 
 // Sifchain terraform module
 module sifchain {
-    source                  = "github.com/sifchain/sifnode/build/terraform/providers/aws"
+    source                  = "github.com/sifchain/sifnode/deploy/terraform/providers/aws"
     region                  = "us-west-2"
     cluster_name            = "sifchain-aws-{{.chainnet}}"
     tags = {
