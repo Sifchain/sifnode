@@ -65,7 +65,7 @@ jobs:
       - name: Create k8s config
         working-directory: ${{env.WORKING_DIRECTORY}}
         run: |
-          mkdir -p ../.live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
+          mkdir -p .live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
           aws eks --region us-west-2 update-kubeconfig \
                   --name ${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }} \
                   --kubeconfig ../.live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}/kubeconfig_${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
