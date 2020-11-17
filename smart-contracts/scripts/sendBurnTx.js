@@ -22,7 +22,7 @@ module.exports = async (cb) => {
      ******************************************/
     // Burn transaction default params
     const DEFAULT_COSMOS_RECIPIENT = Web3.utils.utf8ToHex(
-      "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
+      "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
     );
     const DEFAULT_ETH_DENOM = "eth";
     const DEFAULT_AMOUNT = 10;

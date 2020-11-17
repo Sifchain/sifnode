@@ -154,9 +154,9 @@ contract("BridgeBank", function (accounts) {
       });
 
       // This is for ERC20 deposits
-      this.sender = web3.utils.bytesToHex([
-        "985cfkop78sru7gfud4wce83kuc9rmw89rqtzmy"
-      ]);
+      this.sender = web3.utils.utf8ToHex(
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
+      );
       this.recipient = userThree;
       this.symbol = "TEST";
       this.token = await BridgeToken.new(this.symbol);
@@ -179,7 +179,7 @@ contract("BridgeBank", function (accounts) {
 
       // Lock tokens on contract
       await this.bridgeBank.lock(
-        this.recipient,
+        this.sender,
         this.token.address,
         this.amount, {
           from: userOne,
@@ -309,7 +309,7 @@ contract("BridgeBank", function (accounts) {
       );
 
       this.recipient = web3.utils.utf8ToHex(
-        "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       // This is for Ethereum deposits
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
@@ -405,7 +405,7 @@ contract("BridgeBank", function (accounts) {
       );
 
       this.recipient = web3.utils.utf8ToHex(
-        "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       // This is for Ethereum deposits
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
@@ -547,7 +547,7 @@ contract("BridgeBank", function (accounts) {
 
       // Lock an Ethereum deposit
       this.sender = web3.utils.utf8ToHex(
-        "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       this.recipient = accounts[4];
       this.ethereumSymbol = "ETH";
@@ -562,7 +562,7 @@ contract("BridgeBank", function (accounts) {
 
       // Lock Ethereum (this is to increase contract's balances and locked funds mapping)
       await this.bridgeBank.lock(
-        this.recipient,
+        this.sender,
         this.ethereumToken,
         this.weiAmount, {
           from: userOne,
@@ -592,7 +592,7 @@ contract("BridgeBank", function (accounts) {
 
       // Lock ERC20 tokens (this is to increase contract's balances and locked funds mapping)
       await this.bridgeBank.lock(
-        this.recipient,
+        this.sender,
         this.token.address,
         this.amount, {
           from: userOne,
