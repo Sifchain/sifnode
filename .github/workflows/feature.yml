@@ -46,6 +46,8 @@ jobs:
 
       - name: Install AWS CLI
         uses: chrislennon/action-aws-cli@v1.1
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
       - name: Git vars
         id: vars
