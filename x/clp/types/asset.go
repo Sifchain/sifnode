@@ -70,9 +70,6 @@ func GetSettlementAsset() Asset {
 
 }
 
-func GetCLPModuleAccount() *supply.ModuleAccount {
-	return supply.NewEmptyModuleAccount(ModuleName)
-}
 func GetCLPModuleAddress() sdk.AccAddress {
 	return supply.NewModuleAddress(ModuleName)
 }

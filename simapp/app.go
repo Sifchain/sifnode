@@ -57,6 +57,7 @@ var (
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
+		clp.ModuleName:            {supply.Burner, supply.Minter},
 	}
 )
 

@@ -15,10 +15,9 @@ type Pool struct {
 
 func (p Pool) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`ExternalAsset: %s
-	ExternalAssetBalance: %d
-	NativeAssetBalance: %d
-	PoolUnits : %d
-	PoolAddress :%s`, p.ExternalAsset, p.ExternalAssetBalance, p.NativeAssetBalance, p.PoolUnits))
+	ExternalAssetBalance: %s
+	NativeAssetBalance: %s
+	PoolUnits : %s`, p.ExternalAsset, p.ExternalAssetBalance, p.NativeAssetBalance, p.PoolUnits))
 }
 
 func (p Pool) Validate() bool {

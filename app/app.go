@@ -46,11 +46,13 @@ var (
 		ethbridge.AppModuleBasic{},
 	)
 
+	// Module accounts which will be passed to the supply keeper when it is initialized
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
+		clp.ModuleName:            {supply.Burner, supply.Minter},
 	}
 )
 
