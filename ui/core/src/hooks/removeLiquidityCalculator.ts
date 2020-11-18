@@ -152,13 +152,17 @@ export function useRemoveLiquidityCalculator(input: {
 
   const withdrawExternalAssetAmountMessage = computed(() => {
     return (
-      withdrawalAmounts.value?.withdrawExternalAssetAmount.toFormatted(1) || ""
+      withdrawalAmounts.value?.withdrawExternalAssetAmount.toFormatted({
+        decimals: 1,
+      }) || ""
     );
   });
 
   const withdrawNativeAssetAmountMessage = computed(() => {
     return (
-      withdrawalAmounts.value?.withdrawNativeAssetAmount.toFormatted(1) || ""
+      withdrawalAmounts.value?.withdrawNativeAssetAmount.toFormatted({
+        decimals: 1,
+      }) || ""
     );
   });
 

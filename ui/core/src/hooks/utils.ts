@@ -23,7 +23,8 @@ export function assetPriceMessage(
 
 export function trimZeros(amount: string) {
   if (amount.indexOf(".") === -1) return `${amount}.0`;
-  return amount.replace(/0+$/, "").replace(/\.$/, ".0");
+  const tenDecimalsMax = parseFloat(amount).toFixed(10);
+  return tenDecimalsMax.replace(/0+$/, "").replace(/\.$/, ".0");
 }
 
 export function useBalances(balances: Ref<AssetAmount[]>) {
