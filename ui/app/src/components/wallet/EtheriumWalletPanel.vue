@@ -64,8 +64,3 @@ export default defineComponent({
     >
   </div>
 </template>
-<style scoped>
-.wrapper {
-  padding: 2rem;
-}
-</style>

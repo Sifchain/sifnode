@@ -45,8 +45,12 @@ export default defineComponent({
 .vstack {
   display: flex;
   flex-direction: column;
+  padding-top: 1rem;
   & > * {
-    margin-bottom: 1rem;
+    margin: 2rem 2rem 1rem;
+  }
+  & > *:last-child {
+    margin-bottom: 2rem;
   }
 }
 </style>

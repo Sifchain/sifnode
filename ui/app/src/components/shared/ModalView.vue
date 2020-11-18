@@ -15,8 +15,8 @@ export default defineComponent({
       <transition name="fadein">
         <div class="backdrop" v-if="isOpen" @click="requestClose">
           <Panel class="modal-panel" v-if="isOpen" @click.stop>
-            <div class="close" @click="requestClose">&times;</div>
             <slot :requestClose="requestClose"></slot>
+            <div class="close" @click="requestClose">&times;</div>
           </Panel>
         </div>
       </transition>

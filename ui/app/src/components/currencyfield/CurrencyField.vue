@@ -71,7 +71,7 @@ export default defineComponent({
             @click="$emit('maxclicked')"
             small
             ghost
-            >Max</SifButton
+            >MAX</SifButton
           ></template
         ></SifInput
       >
@@ -83,6 +83,7 @@ export default defineComponent({
       </label>
 
       <SifButton
+        nocase
         v-if="localSymbol !== null && !symbolFixed"
         secondary
         block

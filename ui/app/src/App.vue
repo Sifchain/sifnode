@@ -24,14 +24,12 @@ import { defineComponent, onMounted } from "vue";
 import { useCore } from "./hooks/useCore";
 import WithWallet from "@/components/wallet/WithWallet.vue";
 import Header from "./components/shared/Header.vue";
-import Main from "./components/shared/Main.vue";
 import SifButton from "./components/shared/SifButton.vue";
 
 export default defineComponent({
   name: "App",
   components: {
     Header,
-    Main,
     WithWallet,
     SifButton,
   },

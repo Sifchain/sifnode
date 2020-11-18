@@ -13,6 +13,7 @@ import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
 import ConfirmationDialog from "@/components/confirmationDialog/ConfirmationDialog.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
+import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 
 export default defineComponent({
   components: {
@@ -20,7 +21,7 @@ export default defineComponent({
     CurrencyPairPanel,
     Layout,
     Modal,
-    PriceCalculation,
+    DetailsPanel,
     SelectTokenDialog,
     ModalView,
     ConfirmationDialog,
@@ -64,7 +65,7 @@ export default defineComponent({
       toSymbol,
       marketPairFinder,
     });
-
+    const minimumReceived = computed(() => toAmount.value);
     function clearAmounts() {
       fromAmount.value = "0.0";
       toAmount.value = "0.0";
@@ -133,6 +134,7 @@ export default defineComponent({
       fromAmount,
       toAmount,
       fromSymbol,
+      minimumReceived,
       toSymbol,
       priceMessage,
       handleFromMaxClicked() {
@@ -188,10 +190,13 @@ export default defineComponent({
           />
         </template>
       </Modal>
-
-      <PriceCalculation>
-        {{ priceMessage }}
-      </PriceCalculation>
+      <DetailsPanel
+        :toToken="toSymbol || ''"
+        :priceMessage="priceMessage || ''"
+        :minimumReceived="minimumReceived || ''"
+        :providerFee="providerFee || ''"
+        :priceImpact="priceImpact || ''"
+      />
       <ActionsPanel
         @nextstepclick="handleNextStepClicked"
         :nextStepAllowed="nextStepAllowed"
