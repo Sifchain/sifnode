@@ -35,7 +35,7 @@ export default defineComponent({
   components: { Modal, EtheriumWalletPanel, SifWalletPanel },
   setup() {
     const { connected, connectedText } = useWalletButton({
-      addrLen: 5,
+      addrLen: 10,
     });
     return { connected, connectedText };
   },

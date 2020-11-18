@@ -44,9 +44,14 @@
     display: flex;
     justify-content: space-between;
 
+    span:last-child {
+      text-align: right;
+    }
+
     span:first-child {
       color: $c_gray_700;
       font-weight: 400;
+      text-align: left;
     }
   }
 }

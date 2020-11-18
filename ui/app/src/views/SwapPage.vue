@@ -65,7 +65,9 @@ export default defineComponent({
       toSymbol,
       marketPairFinder,
     });
-    const minimumReceived = computed(() => toAmount.value);
+    const minimumReceived = computed(() =>
+      parseFloat(toAmount.value).toPrecision(10)
+    );
     function clearAmounts() {
       fromAmount.value = "0.0";
       toAmount.value = "0.0";
@@ -194,8 +196,8 @@ export default defineComponent({
         :toToken="toSymbol || ''"
         :priceMessage="priceMessage || ''"
         :minimumReceived="minimumReceived || ''"
-        :providerFee="providerFee || ''"
-        :priceImpact="priceImpact || ''"
+        :providerFee="''"
+        :priceImpact="''"
       />
       <ActionsPanel
         @nextstepclick="handleNextStepClicked"
