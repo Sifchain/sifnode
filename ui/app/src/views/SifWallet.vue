@@ -80,7 +80,7 @@
 import { defineComponent } from "vue";
 import { ref } from "@vue/reactivity";
 import { useCore } from "../hooks/useCore";
-import { Coin, Network } from "../../../core";
+import { Coin, Network } from "ui-core";
 import JSBI from "jsbi";
 
 export default defineComponent({

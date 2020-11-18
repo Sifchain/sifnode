@@ -4,8 +4,8 @@ import Layout from "@/components/layout/Layout.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
 import Modal from "@/components/shared/Modal.vue";
-import { Asset, PoolState, useRemoveLiquidityCalculator } from "../../../core";
-import { LiquidityProvider } from "../../../core";
+import { Asset, PoolState, useRemoveLiquidityCalculator } from "ui-core";
+import { LiquidityProvider } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 
 import { computed, effect, Ref, toRef } from "@vue/reactivity";
@@ -13,7 +13,7 @@ import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
 import Caret from "@/components/shared/Caret.vue";
-import { Fraction } from "../../../core/src/entities/fraction/Fraction";
+import { Fraction } from "ui-core";
 import Slider from "@/components/shared/Slider.vue";
 
 export default defineComponent({
