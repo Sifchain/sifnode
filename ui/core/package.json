@@ -4,11 +4,12 @@
   "version": "1.0.0",
   "main": "lib/index.js",
   "module": "lib/index.js",
-  "types": "src/index.ts",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "prepare" : "npm run build"
   },
   "files": [
     "lib/**/*"
@@ -40,6 +41,8 @@
     "babel-jest": "^26.5.2",
     "concurrently": "^5.3.0",
     "jest": "^24.9.0",
+    "tinyify": "^3.0.0",
+    "tsify": "^5.0.2",
     "typescript": "~3.9.3"
   },
   "jest": {
