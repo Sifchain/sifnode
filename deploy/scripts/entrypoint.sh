@@ -40,6 +40,11 @@ wait_for_rpc() {
   done
 }
 
-start_relayer &
+# Only start the relayer if enabled.
+if [ "$RELAYER_ENABLED" = "true" ]
+then
+  start_relayer &
+fi
+
 start_rest_server
 start_daemon
