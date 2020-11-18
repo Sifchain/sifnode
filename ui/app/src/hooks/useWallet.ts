@@ -1,5 +1,5 @@
 import { computed, ComputedRef } from "@vue/reactivity";
-import { IAssetAmount, Store } from "../../../core/src";
+import { IAssetAmount, Store } from "ui-core";
 
 export function useWallet(
   store: Store

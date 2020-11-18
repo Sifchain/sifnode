@@ -6,7 +6,7 @@ import {
   getFakeTokens,
   Coin,
   Network,
-} from "../../../core";
+} from "ui-core";
 
 const api = createApi({
   // TODO: switch on env
