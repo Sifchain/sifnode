@@ -15,7 +15,8 @@
     "core-js": "^3.6.5",
     "normalize-scss": "^7.0.1",
     "vue": "^3.0.0",
-    "vue-router": "^4.0.0-0"
+    "vue-router": "^4.0.0-0",
+    "ui-core": "file:../core"
   },
   "devDependencies": {
     "@types/jest": "^24.0.19",
