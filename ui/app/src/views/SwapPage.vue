@@ -11,7 +11,9 @@ import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue"
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
-import ConfirmationDialog from "@/components/confirmationDialog/ConfirmationDialog.vue";
+import ConfirmationDialog, {
+  ConfirmState,
+} from "@/components/confirmationDialog/ConfirmationDialog.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 
@@ -36,9 +38,7 @@ export default defineComponent({
       toSymbol,
       toAmount,
     } = useCurrencyFieldState();
-    const transactionState = ref<
-      "selecting" | "confirming" | "confirmed" | "failed"
-    >("selecting");
+    const transactionState = ref<ConfirmState>("selecting");
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
@@ -73,13 +73,22 @@ export default defineComponent({
       toAmount.value = "0.0";
     }
 
-    async function handleNextStepClicked() {
+    function handleNextStepClicked() {
       if (!fromFieldAmount.value)
         throw new Error("from field amount is not defined");
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
 
       transactionState.value = "confirming";
+    }
+
+    async function handleAskConfirmClicked() {
+      if (!fromFieldAmount.value)
+        throw new Error("from field amount is not defined");
+      if (!toFieldAmount.value)
+        throw new Error("to field amount is not defined");
+
+      transactionState.value = "signing";
       await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset);
       transactionState.value = "confirmed";
       clearAmounts();
@@ -161,15 +170,18 @@ export default defineComponent({
       }),
       transactionState,
       transactionModalOpen: computed(() => {
-        return ["confirming", "confirmed"].includes(transactionState.value);
-      }),
-      transactionModalIsConfirmed: computed(() => {
-        return transactionState.value === "confirmed";
+        return ["confirming", "signing", "confirmed"].includes(
+          transactionState.value
+        );
       }),
       requestTransactionModalClose,
       handleArrowClicked() {
         swapInputs();
       },
+      handleConfirmClicked() {
+        transactionState.value = "signing";
+      },
+      handleAskConfirmClicked,
     };
   },
 });
@@ -222,8 +234,14 @@ export default defineComponent({
         :requestClose="requestTransactionModalClose"
         :isOpen="transactionModalOpen"
         ><ConfirmationDialog
-          :confirmed="transactionModalIsConfirmed"
+          @confirmswap="handleAskConfirmClicked"
+          :state="transactionState"
           :requestClose="requestTransactionModalClose"
+          :priceMessage="priceMessage"
+          :fromToken="fromSymbol"
+          :fromAmount="fromAmount"
+          :toAmount="toAmount"
+          :toToken="toSymbol"
       /></ModalView>
     </div>
   </Layout>

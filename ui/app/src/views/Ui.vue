@@ -11,7 +11,7 @@ import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue"
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
-import ConfirmSwap from "@/components/confirmationDialog/ConfirmSwap.vue";
+import AskConfirmation from "@/components/confirmationDialog/AskConfirmation.vue";
 import SwapProgress from "@/components/swapProgress/SwapProgress.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 
@@ -24,7 +24,7 @@ export default defineComponent({
     PriceCalculation,
     SelectTokenDialog,
     ModalView,
-    ConfirmSwap,
+    AskConfirmation,
     SwapProgress,
   },
 
@@ -206,7 +206,7 @@ export default defineComponent({
         :requestClose="requestTransactionModalClose"
         :isOpen="transactionModalOpen"
       >
-        <ConfirmSwap
+        <AskConfirmation
           :fromAmount="125"
           :fromToken="'usdt'"
           :toAmount="1250"

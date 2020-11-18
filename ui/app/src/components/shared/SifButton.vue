@@ -73,7 +73,7 @@ export default defineComponent({
   text-transform: uppercase;
   font-size: $fs_md;
   line-height: $lh_btn;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   border-radius: $br_sm;
   transform: perspective(1px) translateZ(0);
   cursor: pointer;

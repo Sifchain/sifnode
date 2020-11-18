@@ -1,5 +1,5 @@
 <template>
-  <Icon class="arrow" :class="{ enabled }" icon="down" />
+  <Icon class="arrow" :class="{ enabled, left }" icon="down" />
 </template>
 
 <script lang="ts">
@@ -10,14 +10,19 @@ export default defineComponent({
   components: { Icon },
   props: {
     enabled: Boolean,
+    left: Boolean,
   },
 });
 </script>
 <style lang="scss" scoped>
 .arrow {
   stroke: #c1c1c1;
+  display: block;
   &.enabled {
     stroke: $c_gold;
+  }
+  &.left {
+    text-align: left;
   }
 }
 </style>

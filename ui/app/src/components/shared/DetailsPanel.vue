@@ -7,7 +7,9 @@
       </div>
     </div>
     <div
-      v-if="minimumReceived || toToken || priceImpact || providerFee"
+      v-if="
+        (minimumReceived && toToken) || priceImpact || (providerFee && toToken)
+      "
       class="details-body"
     >
       <div v-if="minimumReceived && toToken" class="details-row">

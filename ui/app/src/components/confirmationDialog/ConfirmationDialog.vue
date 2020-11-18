@@ -1,109 +1,56 @@
-<script>
-import { defineComponent } from "vue";
-import Loader from "@/components/shared/Loader.vue";
-import SifButton from "@/components/shared/SifButton.vue";
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
+
+import { computed } from "@vue/reactivity";
+import AskConfirmation from "./AskConfirmation.vue";
+import AnimatedConfirmation from "./AnimatedConfirmation.vue";
+
+export type ConfirmState =
+  | "selecting"
+  | "confirming"
+  | "signing"
+  | "confirmed"
+  | "failed";
 
 export default defineComponent({
-  components: { Loader, SifButton },
+  components: { AskConfirmation, AnimatedConfirmation },
   props: {
-    confirmed: { type: Boolean, default: true },
+    state: { type: String as PropType<ConfirmState>, default: "confirming" },
     requestClose: Function,
+    priceMessage: { type: String, default: "" },
+  },
+  setup(props) {
+    const confirmed = computed(() => {
+      return props.state === "confirmed";
+    });
+
+    return {
+      confirmed,
+    };
   },
 });
 </script>
 <template>
-  <div>
-    <div class="confirmation">
-      <div class="message">
-        <Loader black :success="confirmed" /><br />
-        <div class="text-wrapper">
-          <transition name="swipe">
-            <div class="text" v-if="!confirmed">
-              <p>Waiting for confirmation</p>
-              <p class="thin">
-                Swapping <span class="thick">10.000 USDT</span> for
-                <span class="thick">100.00 RWN</span>
-              </p>
-              <br />
-              <p class="sub">Confirm this transaction in your wallet</p>
-            </div>
-          </transition>
-          <transition name="swipe">
-            <div class="text" v-if="confirmed">
-              <p>Transaction Submitted</p>
-              <p class="thin">
-                Swapping <span class="thick">10.000 USDT</span> for
-                <span class="thick">100.00 RWN</span>
-              </p>
-              <br />
-              <p class="sub">
-                <a class="anchor" href="#">View transaction on Block Explorer</a>
-              </p>
-            </div>
-          </transition>
-        </div>
-      </div>
-    </div>
-    <div class="footer" :class="{ confirmed }">
-      <SifButton block @click="requestClose" primary>Close</SifButton>
-    </div>
-  </div>
+  <AskConfirmation
+    v-if="state === 'confirming'"
+    :fromAmount="fromAmount"
+    :fromToken="fromToken"
+    :toAmount="toAmount"
+    :toToken="toToken"
+    :leastAmount="leastAmount"
+    :swapRate="swapRate"
+    :minimumReceived="minimumReceived"
+    :providerFee="providerFee"
+    :priceImpact="priceImpact"
+    :priceMessage="priceMessage"
+    @confirmswap="$emit('confirmswap')"
+  />
+  <AnimatedConfirmation
+    v-else
+    :confirmed="confirmed"
+    :state="state"
+    @closerequested="requestClose"
+  />
 </template>
-<style lang="scss" scoped>
-.confirmation {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 50vh;
-  padding: 15px 20px;
-}
-.message {
-  width: 100%;
-  font-size: 16px;
-}
-.text-wrapper {
-  position: relative;
-  display: flex;
-  width: 100%;
-  height: 88px;
-}
-.text {
-  position: absolute;
-  width: 100%;
-}
-.anchor {
-  color: $c_black;
-}
-.thin {
-  font-weight: normal;
-}
-.thick {
-  font-weight: bold;
-}
-.sub {
-  font-weight: normal;
-  font-size: $fs_sm;
-}
-.footer {
-  padding: 16px;
-  visibility: hidden;
-  transition: opacity 0.5s ease-out;
-  opacity: 0;
-  &.confirmed {
-    opacity: 1;
-    visibility: inherit;
-  }
-}
-.swipe-enter-active,
-.swipe-leave-active {
-  transition: transform 0.5s ease-out;
-}
 
-.swipe-enter-from {
-  transform: translateX(100%);
-}
-.swipe-leave-to {
-  transform: translateX(-100%);
-}
-</style>
 
