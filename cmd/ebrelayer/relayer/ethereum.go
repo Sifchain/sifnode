@@ -12,17 +12,19 @@ import (
 	"os"
 
 	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	ethereum "github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	amino "github.com/tendermint/go-amino"
+	"github.com/sethvargo/go-password/password"
+	"github.com/tendermint/go-amino"
 	tmLog "github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
@@ -43,57 +45,56 @@ type EthereumSub struct {
 	CliCtx                  sdkContext.CLIContext
 	TxBldr                  authtypes.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
+	TempPassword            string
 	Logger                  tmLog.Logger
 }
 
+func NewKeybase(validatorMoniker, mnemonic, password string) (keys.Keybase, keys.Info, error) {
+	keybase := keys.NewInMemory()
+	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
+	info, err := keybase.CreateAccount(validatorMoniker, mnemonic, "", password, hdpath.String(), keys.Secp256k1)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return keybase, info, nil
+}
+
 // NewEthereumSub initializes a new EthereumSub
-func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorMoniker, chainID,
-	ethProvider string, registryContractAddress common.Address, privateKey *ecdsa.PrivateKey,
-	logger tmLog.Logger) (EthereumSub, error) {
-	// Load validator details
-	validatorAddress, validatorName, err := LoadValidatorCredentials(validatorMoniker, inBuf)
+func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorMoniker, chainID, ethProvider string,
+	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, logger tmLog.Logger) (EthereumSub, error) {
+
+	tempPassword, _ := password.Generate(32, 5, 0, false, false)
+	keybase, info, err := NewKeybase(validatorMoniker, mnemonic, tempPassword)
 	if err != nil {
 		return EthereumSub{}, err
 	}
 
+	validatorAddress := sdk.ValAddress(info.GetAddress())
+
 	// Load CLI context and Tx builder
-	cliCtx, err := LoadTendermintCLIContext(cdc, validatorAddress, validatorName, rpcURL, chainID)
+	cliCtx, err := LoadTendermintCLIContext(cdc, validatorAddress, validatorMoniker, rpcURL, chainID)
 	if err != nil {
 		return EthereumSub{}, err
 	}
+
 	txBldr := authtypes.NewTxBuilderFromCLI(inBuf).
 		WithTxEncoder(utils.GetTxEncoder(cdc)).
-		WithChainID(chainID)
+		WithChainID(chainID).
+		WithKeybase(keybase)
 
 	return EthereumSub{
 		Cdc:                     cdc,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
-		ValidatorName:           validatorName,
+		ValidatorName:           validatorMoniker,
 		ValidatorAddress:        validatorAddress,
 		CliCtx:                  cliCtx,
 		TxBldr:                  txBldr,
 		PrivateKey:              privateKey,
+		TempPassword:            tempPassword,
 		Logger:                  logger,
 	}, nil
-}
-
-// LoadValidatorCredentials : loads validator's credentials (address, moniker, and passphrase)
-func LoadValidatorCredentials(validatorFrom string, inBuf io.Reader) (sdk.ValAddress, string, error) {
-	// Get the validator's name and account address using their moniker
-	validatorAccAddress, validatorName, err := sdkContext.GetFromFields(inBuf, validatorFrom, false)
-	if err != nil {
-		return sdk.ValAddress{}, "", err
-	}
-	validatorAddress := sdk.ValAddress(validatorAccAddress)
-
-	// Confirm that the key is valid
-	_, err = authtypes.MakeSignature(nil, validatorName, keys.DefaultKeyPass, authtypes.StdSignMsg{})
-	if err != nil {
-		return sdk.ValAddress{}, "", err
-	}
-
-	return validatorAddress, validatorName, nil
 }
 
 // LoadTendermintCLIContext : loads CLI context for tendermint txs
@@ -112,7 +113,7 @@ func LoadTendermintCLIContext(appCodec *amino.Codec, validatorAddress sdk.ValAdd
 
 	// Confirm that the validator's address exists
 	accountRetriever := authtypes.NewAccountRetriever(cliCtx)
-	err := accountRetriever.EnsureExists((sdk.AccAddress(validatorAddress)))
+	err := accountRetriever.EnsureExists(sdk.AccAddress(validatorAddress))
 	if err != nil {
 		log.Println(err)
 		return sdkContext.CLIContext{}, err
@@ -159,14 +160,14 @@ func (sub EthereumSub) Start() {
 		// vLog is raw event data
 		case vLog := <-logs:
 			sub.Logger.Info(fmt.Sprintf("Witnessed tx %s on block %d\n", vLog.TxHash.Hex(), vLog.BlockNumber))
-			log.Println("Found event from the etherem bridgebank contract: ", types.LogLock.String())
+			log.Println("Found event from the ethereum bridgebank contract: ", types.LogLock.String())
 			var err error
 			switch vLog.Topics[0].Hex() {
 			case eventLogBurnSignature:
 				err = sub.handleEthereumEvent(clientChainID, bridgeBankAddress, bridgeBankContractABI,
 					types.LogBurn.String(), vLog)
 			case eventLogLockSignature:
-				log.Println("Found loglock event from the etherem bridgebank contract: ", types.LogLock.String())
+				log.Println("Found loglock event from the ethereum bridgebank contract: ", types.LogLock.String())
 				err = sub.handleEthereumEvent(clientChainID, bridgeBankAddress, bridgeBankContractABI,
 					types.LogLock.String(), vLog)
 			case eventLogNewProphecyClaimSignature:
@@ -229,7 +230,7 @@ func (sub EthereumSub) handleEthereumEvent(clientChainID *big.Int, contractAddre
 	if err != nil {
 		return err
 	}
-	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, &prophecyClaim, sub.CliCtx, sub.TxBldr)
+	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, &prophecyClaim, sub.CliCtx, sub.TxBldr)
 }
 
 // Unpacks a handleLogNewProphecyClaim event, builds a new OracleClaim, and relays it to Ethereum

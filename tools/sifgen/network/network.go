@@ -200,7 +200,7 @@ func (n *Network) setDefaultConfig(configPath string) error {
 }
 
 func (n *Network) generateKey(validator *Validator) error {
-	output, err := n.CLI.AddKey(validator.Moniker, validator.Password, fmt.Sprintf("%s/%s", validator.HomeDir, CLIHomeDir))
+	output, err := n.CLI.AddKey(validator.Moniker, validator.Mnemonic, validator.Password, fmt.Sprintf("%s/%s", validator.HomeDir, CLIHomeDir))
 	if err != nil {
 		return err
 	}

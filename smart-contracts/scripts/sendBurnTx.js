@@ -1,4 +1,4 @@
-module.exports = async () => {
+module.exports = async (cb) => {
     /*******************************************
      *** Set up
      ******************************************/
@@ -17,12 +17,13 @@ module.exports = async () => {
   
     const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
   
+    console.log("Expected usage: \n\ntruffle exec scripts/sendBurnTx.js --network ropsten sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace <token smart contract address> 100\n");
     /*******************************************
      *** Constants
      ******************************************/
     // Burn transaction default params
     const DEFAULT_COSMOS_RECIPIENT = Web3.utils.utf8ToHex(
-      "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
+      "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
     );
     const DEFAULT_ETH_DENOM = "eth";
     const DEFAULT_AMOUNT = 10;
@@ -30,6 +31,9 @@ module.exports = async () => {
     // Config values
     const NETWORK_ROPSTEN =
       process.argv[4] === "--network" && process.argv[5] === "ropsten";
+    const NETWORK_MAINNET =
+      process.argv[4] === "--network" && process.argv[5] === "mainnet";
+  
     const DEFAULT_PARAMS =
       process.argv[4] === "--default" ||
       (NETWORK_ROPSTEN && process.argv[6] === "--default");
@@ -75,7 +79,7 @@ module.exports = async () => {
     let amount = DEFAULT_AMOUNT;
   
     if (!DEFAULT_PARAMS) {
-      if (NETWORK_ROPSTEN) {
+      if (NETWORK_ROPSTEN || NETWORK_MAINNET) {
         cosmosRecipient = Web3.utils.utf8ToHex(process.argv[6]);
         coinDenom = process.argv[7];
         amount = new BigNumber(process.argv[8]);
@@ -98,8 +102,13 @@ module.exports = async () => {
     let provider;
     if (NETWORK_ROPSTEN) {
       provider = new HDWalletProvider(
-        process.env.MNEMONIC,
+        process.env.ETHEREUM_PRIVATE_KEY,
         "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+      );
+    } else if (NETWORK_MAINNET) {
+      provider = new HDWalletProvider(
+        process.env.ETHEREUM_PRIVATE_KEY,
+        "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
       );
     } else {
       provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
@@ -117,7 +126,7 @@ module.exports = async () => {
       console.log("account is ", accounts[9], cosmosRecipient, coinDenom, amount)
 
         // Send approve transaction
-      if(coinDenom != "eth") {
+      if (coinDenom != "eth") {
         const bridgeContractAddress = await contract
         .deployed()
         .then(function(instance) {
@@ -176,6 +185,6 @@ module.exports = async () => {
     } catch (error) {
       console.error({ error });
     }
-    return;
+    return cb();
   };
   

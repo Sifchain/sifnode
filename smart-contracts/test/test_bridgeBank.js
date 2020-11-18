@@ -154,16 +154,16 @@ contract("BridgeBank", function (accounts) {
       });
 
       // This is for ERC20 deposits
-      this.sender = web3.utils.bytesToHex([
-        "985cfkop78sru7gfud4wce83kuc9rmw89rqtzmy"
-      ]);
+      this.sender = web3.utils.utf8ToHex(
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
+      );
       this.recipient = userThree;
       this.symbol = "TEST";
       this.token = await BridgeToken.new(this.symbol);
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
 
@@ -179,7 +179,7 @@ contract("BridgeBank", function (accounts) {
 
       // Lock tokens on contract
       await this.bridgeBank.lock(
-        this.recipient,
+        this.sender,
         this.token.address,
         this.amount, {
           from: userOne,
@@ -188,6 +188,17 @@ contract("BridgeBank", function (accounts) {
       ).should.be.fulfilled;
 
     });
+
+    it("should return true if a sifchain address prefix is correct", async function () {
+      (await this.bridgeBank.verifySifPrefix(this.sender)).should.be.equal(true);
+    })
+
+    it("should return false if a sifchain address has an incorrect `sif` prefix", async function () {
+      const incorrectSifAddress = web3.utils.utf8ToHex(
+        "eif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
+      );
+      (await this.bridgeBank.verifySifPrefix(incorrectSifAddress)).should.be.equal(false);
+    })
 
     it("should mint bridge tokens upon the successful processing of a burn prophecy claim", async function () {
       // Submit a new prophecy claim to the CosmosBridge to make oracle claims upon
@@ -249,25 +260,25 @@ contract("BridgeBank", function (accounts) {
     it("should not be able to add a token to the whitelist that has the same symbol as an already registered token", async function () {
       const symbol = "TEST"
       const newToken = await BridgeToken.new(symbol);
-      (await this.bridgeBank.getTokenInWhiteList(newToken.address)).should.be.equal(false)
+      (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
       // Remove the token from the white list
       await expectRevert(
-        this.bridgeBank.updateWhiteList(newToken.address, true, {from: operator}),
+        this.bridgeBank.updateEthWhiteList(newToken.address, true, {from: operator}),
         "Token already whitelisted"
       );
 
-      (await this.bridgeBank.getTokenInWhiteList(newToken.address)).should.be.equal(false)
+      (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
     });
 
     it("should be able to remove a token from the whitelist", async function () {
 
-      (await this.bridgeBank.getTokenInWhiteList(this.token.address)).should.be.equal(true)
+      (await this.bridgeBank.getTokenInEthWhiteList(this.token.address)).should.be.equal(true)
       // Remove the token from the white list
-      await this.bridgeBank.updateWhiteList(this.token.address, false, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, false, {
         from: operator
       }).should.be.fulfilled;
 
-      (await this.bridgeBank.getTokenInWhiteList(this.token.address)).should.be.equal(false)
+      (await this.bridgeBank.getTokenInEthWhiteList(this.token.address)).should.be.equal(false)
     });
   });
 
@@ -309,7 +320,7 @@ contract("BridgeBank", function (accounts) {
       );
 
       this.recipient = web3.utils.utf8ToHex(
-        "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       // This is for Ethereum deposits
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
@@ -320,7 +331,7 @@ contract("BridgeBank", function (accounts) {
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
 
@@ -405,7 +416,7 @@ contract("BridgeBank", function (accounts) {
       );
 
       this.recipient = web3.utils.utf8ToHex(
-        "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       // This is for Ethereum deposits
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
@@ -416,7 +427,7 @@ contract("BridgeBank", function (accounts) {
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
 
@@ -451,6 +462,40 @@ contract("BridgeBank", function (accounts) {
       //Confirm that the tokens have been locked
       bridgeBankTokenBalance.should.be.bignumber.equal(100);
       userBalance.should.be.bignumber.equal(900);
+    });
+    
+    it("should not allow users to lock ERC20 tokens if the sifaddress length is incorrect", async function () {
+      const invalidSifAddress = web3.utils.utf8ToHex(
+        "eif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpacee92929"
+      );
+      // Attempt to lock tokens
+      await expectRevert(this.bridgeBank.lock(
+        invalidSifAddress,
+        this.token.address,
+        this.amount, {
+          from: userOne,
+          value: 0
+        }
+      ),
+        "Invalid sif address length"
+      );
+    });
+
+    it("should not allow users to lock ERC20 tokens if the sifaddress prefix is incorrect", async function () {
+      const invalidSifAddress = web3.utils.utf8ToHex(
+        "zif1gdnl9jj2xgy5n04r7heqxlqvvzcy24zc96ns2f"
+      );
+      // Attempt to lock tokens
+      await expectRevert(this.bridgeBank.lock(
+        invalidSifAddress,
+        this.token.address,
+        this.amount, {
+          from: userOne,
+          value: 0
+        }
+      ),
+        "Invalid sif address prefix"
+      );
     });
 
     it("should allow users to lock Ethereum", async function () {
@@ -547,7 +592,7 @@ contract("BridgeBank", function (accounts) {
 
       // Lock an Ethereum deposit
       this.sender = web3.utils.utf8ToHex(
-        "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       this.recipient = accounts[4];
       this.ethereumSymbol = "ETH";
@@ -562,7 +607,7 @@ contract("BridgeBank", function (accounts) {
 
       // Lock Ethereum (this is to increase contract's balances and locked funds mapping)
       await this.bridgeBank.lock(
-        this.recipient,
+        this.sender,
         this.ethereumToken,
         this.weiAmount, {
           from: userOne,
@@ -576,7 +621,7 @@ contract("BridgeBank", function (accounts) {
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
 
@@ -592,7 +637,7 @@ contract("BridgeBank", function (accounts) {
 
       // Lock ERC20 tokens (this is to increase contract's balances and locked funds mapping)
       await this.bridgeBank.lock(
-        this.recipient,
+        this.sender,
         this.token.address,
         this.amount, {
           from: userOne,

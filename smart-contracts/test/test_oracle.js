@@ -76,7 +76,7 @@ contract("Oracle", function (accounts) {
     beforeEach(async function () {
       this.prophecyID = 1;
       this.cosmosSender = web3.utils.utf8ToHex(
-        "985cfkop78sru7gfud4wce83kuc9rmw89rqtzmy"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       this.ethereumReceiver = userOne;
       this.symbol = "TEST";
@@ -284,7 +284,7 @@ contract("Oracle", function (accounts) {
     beforeEach(async function () {
       this.prophecyID = 1;
       this.cosmosSender = web3.utils.utf8ToHex(
-        "985cfkop78sru7gfud4wce83kuc9rmw89rqtzmy"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       this.ethereumReceiver = userOne;
       this.symbol = "TEST";
