@@ -146,5 +146,6 @@ export default defineComponent({
 
 .label {
   font-size: $fs_sm;
+  white-space: nowrap;
 }
 </style>

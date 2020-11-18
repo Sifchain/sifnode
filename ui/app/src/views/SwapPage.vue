@@ -85,6 +85,15 @@ export default defineComponent({
       clearAmounts();
     }
 
+    function swapInputs() {
+      const fromAmountValue = fromAmount.value;
+      const fromSymbolValue = fromSymbol.value;
+      fromAmount.value = toAmount.value;
+      fromSymbol.value = toSymbol.value;
+      toAmount.value = fromAmountValue;
+      toSymbol.value = fromSymbolValue;
+    }
+
     return {
       connected,
       connectedText,
@@ -158,6 +167,9 @@ export default defineComponent({
         return transactionState.value === "confirmed";
       }),
       requestTransactionModalClose,
+      handleArrowClicked() {
+        swapInputs();
+      },
     };
   },
 });
@@ -177,6 +189,8 @@ export default defineComponent({
             @fromblur="handleBlur"
             @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
             :fromSymbolSelectable="connected"
+            :canSwap="nextStepAllowed"
+            @arrowclicked="handleArrowClicked"
             v-model:toAmount="toAmount"
             v-model:toSymbol="toSymbol"
             @tofocus="handleToFocused"

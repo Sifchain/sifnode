@@ -17,7 +17,7 @@
       :selectable="fromSymbolSelectable"
       @update:symbol="handleFromUpdateSymbol"
     />
-    <div class="arrow">↓</div>
+    <ArrowIconButton @click="$emit('arrowclicked')" :enabled="canSwap" />
     <CurrencyField
       label="To"
       tabindex="2"
@@ -37,9 +37,9 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
-
+import ArrowIconButton from "@/components/shared/ArrowIconButton.vue";
 export default defineComponent({
-  components: { CurrencyField },
+  components: { CurrencyField, ArrowIconButton },
   props: {
     priceMessage: String,
     fromAmount: String,
@@ -49,7 +49,7 @@ export default defineComponent({
     toSymbol: String,
     connected: Boolean,
     nextStepMessage: String,
-    canSwap: Boolean,
+    canSwap: { type: Boolean, default: false },
     connectedText: String,
     fromSymbolFixed: { type: Boolean, default: false },
     fromSymbolSelectable: { type: Boolean, default: true },
@@ -61,6 +61,7 @@ export default defineComponent({
     "fromblur",
     "tofocus",
     "toblur",
+    "arrowclicked",
     "tosymbolclicked",
     "fromsymbolclicked",
     "frommaxclicked",

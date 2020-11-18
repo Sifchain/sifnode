@@ -8,7 +8,7 @@
     ></PanelNavItem>
     <PanelNavItem
       to="/swap"
-      icon="arrows"
+      icon="circle-arrows"
       label="Swap"
       color="blue"
     ></PanelNavItem>

@@ -141,14 +141,16 @@ export default defineComponent({
   // block spans the full width of parent
 
   &.small {
-    font-family: sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     letter-spacing: 0.5px;
     font-style: normal;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 10px;
     padding: 2px 5px;
     height: auto;
     line-height: initial;
+    position: relative;
+    top: 1px;
     &:active {
       transform: translateY(1px);
     }

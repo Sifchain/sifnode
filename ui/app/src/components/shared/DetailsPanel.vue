@@ -46,6 +46,7 @@
 
     span:last-child {
       text-align: right;
+      color: $c_gray_900;
     }
 
     span:first-child {
