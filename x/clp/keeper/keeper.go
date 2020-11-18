@@ -13,7 +13,7 @@ import (
 type Keeper struct {
 	storeKey   sdk.StoreKey
 	cdc        *codec.Codec
-	BankKeeper types.BankKeeper
+	bankKeeper types.BankKeeper
 	paramstore params.Subspace
 }
 
@@ -22,7 +22,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankkeeper types.BankKeeper, 
 	keeper := Keeper{
 		storeKey:   key,
 		cdc:        cdc,
-		BankKeeper: bankkeeper,
+		bankKeeper: bankkeeper,
 		paramstore: paramstore.WithKeyTable(types.ParamKeyTable()),
 	}
 	return keeper
@@ -35,6 +35,10 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 func (k Keeper) Codec() *codec.Codec {
 	return k.cdc
+}
+
+func (k Keeper) GetBankKeeper() types.BankKeeper {
+	return k.bankKeeper
 }
 
 func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) error {
@@ -156,4 +160,12 @@ func (k Keeper) GetLiquidityProviderIterator(ctx sdk.Context) sdk.Iterator {
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)
 	return store.Has(key)
+}
+
+func (k Keeper) SendCoins(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddress, coins sdk.Coins) error {
+	return k.bankKeeper.SendCoins(ctx, from, to, coins)
+}
+
+func (k Keeper) HasCoins(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) bool {
+	return k.bankKeeper.HasCoins(ctx, user, coins)
 }
