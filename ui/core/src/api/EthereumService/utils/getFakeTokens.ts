@@ -35,8 +35,8 @@ export async function getFakeTokens(): Promise<Asset[]> {
   });
 
   // gonna load the json and parse the code for all our fake tokens
-  const atkJson = require("../../../../../chains/ethereum/build/contracts/AliceToken.json");
-  const btkJson = require("../../../../../chains/ethereum/build/contracts/BobToken.json");
+  const atkJson = require("./AliceToken");
+  const btkJson = require("./BobToken");
   const ATK = parseTruffleJson("AliceToken", "atk", atkJson);
   const BTK = parseTruffleJson("BobToken", "btk", btkJson);
 
