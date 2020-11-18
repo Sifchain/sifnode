@@ -9,6 +9,9 @@
       </div>
       <slot></slot>
     </Panel>
+    <Panel v-if="!!$slots.after" class="swap-panel-after">
+      <slot name="after"></slot>
+    </Panel>
   </div>
 </template>
 
@@ -45,5 +48,11 @@ export default defineComponent({
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.swap-panel-after {
+  margin-top: 15px;
+  padding: 25px;
+  background: linear-gradient(180deg, $c_gray_50 0%, $c_gray_200 100%);
 }
 </style>
