@@ -8,8 +8,10 @@
             <div class="text" v-if="state === 'signing'">
               <p>Waiting for confirmation</p>
               <p class="thin">
-                Swapping <span class="thick">10.000 USDT</span> for
-                <span class="thick">100.00 RWN</span>
+                Swapping
+                <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
+                for
+                <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
               </p>
               <br />
               <p class="sub">Confirm this transaction in your wallet</p>
@@ -19,8 +21,10 @@
             <div class="text" v-if="confirmed">
               <p>Transaction Submitted</p>
               <p class="thin">
-                Swapping <span class="thick">10.000 USDT</span> for
-                <span class="thick">100.00 RWN</span>
+                Swapping
+                <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
+                for
+                <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
               </p>
               <br />
               <p class="sub">
@@ -50,6 +54,18 @@ export default defineComponent({
   props: {
     confirmed: Boolean,
     state: String,
+    fromAmount: String,
+    fromToken: String,
+    toAmount: String,
+    toToken: String,
+  },
+  setup(props) {
+    return {
+      _fromAmount: props.fromAmount,
+      _fromToken: props.fromToken,
+      _toAmount: props.toAmount,
+      _toToken: props.toToken,
+    };
   },
 });
 </script>

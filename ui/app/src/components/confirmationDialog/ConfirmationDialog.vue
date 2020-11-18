@@ -49,6 +49,10 @@ export default defineComponent({
     v-else
     :confirmed="confirmed"
     :state="state"
+    :fromAmount="fromAmount"
+    :fromToken="fromToken"
+    :toAmount="toAmount"
+    :toToken="toToken"
     @closerequested="requestClose"
   />
 </template>
