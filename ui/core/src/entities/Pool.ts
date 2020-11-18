@@ -38,7 +38,12 @@ export function Pool(
     // Formula: swapAmount = (x * X * Y) / (x + X) ^ 2
     calcSwapResult(x: AssetAmount) {
       const X = amounts.find((a) => a.asset.symbol === x.asset.symbol);
-      if (!X) throw new Error("Sent amount does not exist in this pair");
+      if (!X)
+        throw new Error(
+          `Sent amount with symbol ${
+            x.asset.symbol
+          } does not exist in this pair: ${this.toString()}`
+        );
       const Y = amounts.find((a) => a.asset.symbol !== x.asset.symbol);
       if (!Y) throw new Error("Pool does not have an opposite asset."); // For Typescript's sake will probably never happen
 
@@ -56,7 +61,12 @@ export function Pool(
     // Reverse Formula: x = ( -2*X*S + X*Y - X*sqrt( Y*(Y - 4*S) ) ) / 2*S
     calcReverseSwapResult(Sa: AssetAmount) {
       const Ya = amounts.find((a) => a.asset.symbol === Sa.asset.symbol);
-      if (!Ya) throw new Error("Sent amount does not exist in this pair");
+      if (!Ya)
+        throw new Error(
+          `Sent amount with symbol ${
+            Sa.asset.symbol
+          } does not exist in this pair: ${this.toString()}`
+        );
       const Xa = amounts.find((a) => a.asset.symbol !== Sa.asset.symbol);
       if (!Xa) throw new Error("Pool does not have an opposite asset."); // For Typescript's sake will probably never happen
       const otherAsset = this.otherAsset(Sa.asset);
