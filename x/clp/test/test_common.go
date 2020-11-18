@@ -6,7 +6,6 @@ import (
 	"github.com/Sifchain/sifnode/simapp"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"math/rand"
@@ -21,6 +20,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 // create a codec used only for testing
@@ -90,37 +90,9 @@ func trimFirstRune(s string) string {
 	return strings.ToUpper(s[i:])
 }
 
-func GenerateAddress() sdk.AccAddress {
+func GenerateAddress(key string) sdk.AccAddress {
 	var buffer bytes.Buffer
-	buffer.WriteString("A58856F0FD53BF058B4909A21AEC019107BA6")
-	buffer.WriteString(strconv.Itoa(100))
-	res, _ := sdk.AccAddressFromHex(buffer.String())
-	bech := res.String()
-	addr := buffer.String()
-	res, err := sdk.AccAddressFromHex(addr)
-
-	if err != nil {
-		panic(err)
-	}
-
-	bechexpected := res.String()
-	if bech != bechexpected {
-		panic("Bech encoding doesn't match reference")
-	}
-
-	bechres, err := sdk.AccAddressFromBech32(bech)
-	if err != nil {
-		panic(err)
-	}
-	if !bytes.Equal(bechres, res) {
-		panic("Bech decode and hex decode don't match")
-	}
-	return res
-}
-
-func GenerateAddress2() sdk.AccAddress {
-	var buffer bytes.Buffer
-	buffer.WriteString("A58856F0FD53BF058B4909A21AEC019107BA7")
+	buffer.WriteString(key)
 	buffer.WriteString(strconv.Itoa(100))
 	res, _ := sdk.AccAddressFromHex(buffer.String())
 	bech := res.String()
