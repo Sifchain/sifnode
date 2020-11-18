@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	tmKv "github.com/tendermint/tendermint/libs/kv"
@@ -44,7 +46,9 @@ func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common
 }
 
 // Start a Cosmos chain subscription
-func (sub CosmosSub) Start() {
+func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
+	defer completionEvent.Done()
+	time.Sleep(time.Second)
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.Logger.Error("failed to initialize a client", "err", err)

@@ -168,9 +168,9 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)
 
 	waitForAll := sync.WaitGroup{}
-	waitForAll.Add(1)
+	waitForAll.Add(2)
 	go ethSub.Start(&waitForAll)
-	go cosmosSub.Start()
+	go cosmosSub.Start(&waitForAll)
 	waitForAll.Wait()
 
 	return nil

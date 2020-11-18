@@ -152,6 +152,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	defer close(logs)
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	defer close(quit)
 
 	// Start BridgeBank subscription, prepare contract ABI and LockLog event signature
 	bridgeBankAddress, subBridgeBank := sub.startContractEventSub(logs, client, txs.BridgeBank)
