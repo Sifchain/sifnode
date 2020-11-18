@@ -44,9 +44,6 @@ func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000)
 	app.SupplyKeeper.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
-	//poolAccount := supply.NewEmptyModuleAccount(clp.ModuleName, supply.Burner, supply.Minter)
-	//app.ClpKeeper.GetSupplyKeeper().SetModuleAccount(ctx, poolAccount)
-	//app.SupplyKeeper.SetModuleAccount(ctx, poolAccount)
 	_ = simapp.AddTestAddrs(app, ctx, 6, initTokens)
 
 	return app, ctx
