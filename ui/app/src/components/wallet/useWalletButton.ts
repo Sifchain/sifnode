@@ -15,7 +15,7 @@ export function useWalletButton(props?: { addrLen?: number }) {
       store.wallet.eth.address,
       store.wallet.sif.address,
     ].filter(Boolean);
-    console.log({ addresses });
+
     const addrLen = props?.addrLen || 10;
     return addresses
       .map(shorten(Math.round(addrLen / addresses.length)))

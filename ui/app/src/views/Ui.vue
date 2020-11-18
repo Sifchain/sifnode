@@ -157,7 +157,7 @@ export default defineComponent({
       }),
       requestTransactionModalClose,
       confirmHandler() {
-        console.log("oh My");
+        // console.log("oh My");
       },
     };
   },

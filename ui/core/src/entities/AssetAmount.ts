@@ -112,6 +112,7 @@ export class _AssetAmount implements IAssetAmount {
     separator?: boolean;
     symbol?: boolean;
   }) {
+    const { symbol = true } = params || {};
     // If decimals is too high fraction will bark
     const safeDecimals =
       typeof params?.decimals !== "undefined"
@@ -124,7 +125,7 @@ export class _AssetAmount implements IAssetAmount {
       this.toFixed(safeDecimals, {
         groupSeparator: params?.separator ? "," : "",
       }),
-      params?.symbol ? this.asset.symbol.toUpperCase() : "",
+      symbol ? this.asset.symbol.toUpperCase() : "",
     ].join(" ");
   }
 

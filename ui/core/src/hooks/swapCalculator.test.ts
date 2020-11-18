@@ -89,7 +89,7 @@ describe("swapCalculator", () => {
 
     fromAmount.value = "100";
 
-    expect(toAmount.value).toBe("49.999999990000000001"); // 1 ATK ~= 0.5 BTK
+    expect(toAmount.value).toBe("49.99999999"); // 1 ATK ~= 0.5 BTK
     expect(state.value).toBe(SwapState.VALID_INPUT);
 
     selectedField.value = null; // deselect
@@ -99,7 +99,7 @@ describe("swapCalculator", () => {
     selectedField.value = "to"; // select to field
 
     toAmount.value = "50"; // set to amount to 100
-    expect(fromAmount.value).toBe("100.000000039999999992");
+    expect(fromAmount.value).toBe("100.00000004");
     expect(toAmount.value).toBe("50");
 
     selectedField.value = null; // deselect
