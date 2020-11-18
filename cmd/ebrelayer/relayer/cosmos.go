@@ -52,13 +52,17 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.Logger.Error("failed to initialize a client", "err", err)
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
 	client.SetLogger(sub.Logger)
 
 	if err := client.Start(); err != nil {
 		sub.Logger.Error("failed to start a client", "err", err)
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
 
 	defer client.Stop() //nolint:errcheck
@@ -68,11 +72,16 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	out, err := client.Subscribe(context.Background(), "test", query, 1000)
 	if err != nil {
 		sub.Logger.Error("failed to subscribe to query", "err", err, "query", query)
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
+
+	defer client.Unsubscribe(context.Background(), "test", query)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	defer close(quit)
 
 	for {
 		select {
