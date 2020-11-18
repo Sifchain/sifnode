@@ -1,6 +1,6 @@
 <script lang="ts">
 import { computed, defineComponent } from "vue";
-import { Asset } from "../../../../core";
+import { Asset } from "ui-core";
 import ColorHash from "color-hash";
 
 export default defineComponent({

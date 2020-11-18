@@ -25,8 +25,8 @@ import { defineComponent } from "vue";
 import { computed, ref } from "@vue/reactivity";
 import { useCore } from "../hooks/useCore";
 
-import B from "../../../core/src/entities/utils/B";
-import { getFakeTokens } from "../../../core";
+import B from "ui-core";
+import { getFakeTokens } from "ui-core";
 
 export default defineComponent({
   name: "ListPage",

@@ -1,5 +1,5 @@
 import { Ref, computed, ComputedRef } from "@vue/reactivity";
-import { Asset, Store } from "../../../../core";
+import { Asset, Store } from "ui-core";
 import { useWallet } from "../../hooks/useWallet";
 
 export function useTokenListing({
