@@ -1,9 +1,10 @@
 <script>
 import { defineComponent } from "vue";
 import SifButton from "@/components/shared/SifButton.vue";
+import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 
 export default defineComponent({
-  components: { SifButton },
+  components: { DetailsPanel, SifButton },
   props: {
     requestClose: Function,
     fromAmount: String,
@@ -24,54 +25,62 @@ export default defineComponent({
     <h3 class="title mb-10">Confirm Swap</h3>
     <div class="info">
       <div class="info-row">
-        <img v-if="fromToken.imageUrl" width="24" :src="fromToken.imageUrl" class="info-img" />
+        <img
+          v-if="fromToken.imageUrl"
+          width="24"
+          :src="fromToken.imageUrl"
+          class="info-img"
+        />
         <div class="placeholder" :style="backgroundStyle" v-else></div>
         <div class="info-amount">{{ fromAmount }}</div>
-        <div class="info-token">{{ fromToken.symbol.toUpperCase() }}</div>
+        <div class="info-token">{{ fromToken.toUpperCase() }}</div>
       </div>
       <div class="arrow">↓</div>
       <div class="info-row">
-        <img v-if="toToken.imageUrl" width="24" :src="toToken.imageUrl" class="info-img" />
+        <img
+          v-if="toToken.imageUrl"
+          width="24"
+          :src="toToken.imageUrl"
+          class="info-img"
+        />
         <div class="placeholder" :style="backgroundStyle" v-else></div>
         <div class="info-amount">{{ toAmount }}</div>
-        <div class="info-token">{{ toToken.symbol.toUpperCase() }}</div>
+        <div class="info-token">{{ toToken.toUpperCase() }}</div>
       </div>
     </div>
-    <div class="estimate">Output is estimated. You will receive at least <strong>{{ leastAmount }} {{ toToken.symbol.toUpperCase() }}</strong> or the transaction will revert.</div>
-    <div class="details">
-      <div class="details-header">
-        <div class="details-row">
-          <span>Price</span>
-          <span>{{ swapRate }} {{ toToken.symbol.toUpperCase() }} per {{ fromToken.symbol.toUpperCase() }}</span>
-        </div>
-      </div>
-      <div class="details-body">
-        <div class="details-row">
-          <span>Minimum Received</span>
-          <span>{{ minimumReceived }} {{ toToken.symbol.toUpperCase() }}</span>
-        </div>
-        <div class="details-row">
-          <span>Price Impact</span>
-          <span>{{ priceImpact }}%</span>
-        </div>
-        <div class="details-row">
-          <span>Liquidity Provider Fee</span>
-          <span>{{ providerFee }} {{ toToken.symbol.toUpperCase() }}</span>
-        </div>
-      </div>
+    <div class="estimate">
+      Output is estimated. You will receive at least
+      <strong>{{ leastAmount }} {{ toToken.toUpperCase() }}</strong> or the
+      transaction will revert.
     </div>
-    <SifButton block primary class="confirm-btn" @click="$emit('confirmswap')">Confirm Swap</SifButton>
+    <DetailsPanel
+      class="details"
+      :priceMessage="'10 RWN per USDT'"
+      :fromToken="fromToken"
+      :toToken="toToken"
+      :swapRate="swapRate"
+      :minimumReceived="minimumReceived"
+      :providerFee="providerFee"
+      :priceImpact="priceImpact"
+    />
+    <SifButton block primary class="confirm-btn" @click="$emit('confirmswap')"
+      >Confirm Swap</SifButton
+    >
   </div>
 </template>
-
 
 <style lang="scss" scoped>
 .confirm-swap {
   display: flex;
   flex-direction: column;
-  padding: 15px 20px;
+  padding: 30px 20px 20px 20px;
   min-height: 50vh;
 }
+
+.details {
+  margin-bottom: 20px;
+}
+
 .title {
   font-size: $fs_lg;
   color: $c_text;
@@ -125,30 +134,6 @@ export default defineComponent({
 
   strong {
     font-weight: 700;
-  }
-}
-
-.details {
-  border: 1px solid $c_gray_200;
-  border-radius: $br_sm;
-  margin-bottom: 25px;
-
-  &-header {
-    padding: 10px 15px;
-    border-bottom: 1px solid $c_gray_200;
-  }
-  &-body {
-    padding: 10px 15px;
-  }
-
-  &-row {
-    display: flex;
-    justify-content: space-between;
-
-    span:first-child {
-      color: $c_gray_700;
-      font-weight: 400;
-    }
   }
 }
 </style>

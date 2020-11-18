@@ -49,9 +49,7 @@ export default defineComponent({
   setup() {
     const error = ref("");
     // TODO: remove hard coded mnemonic
-    const mnemonic = ref(
-      "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow"
-    );
+    const mnemonic = ref("");
 
     const {
       balances,
@@ -83,6 +81,7 @@ export default defineComponent({
       },
       handleStartConnectClicked,
       handleConnectClicked,
+      isLocalChain: !process.env.VUE_APP_SIFNODE_API,
     };
   },
 });
@@ -104,22 +103,24 @@ export default defineComponent({
         >
       </div>
       <div v-else>
-        <button
-          @click="
-            mnemonic =
-              'race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow'
-          "
-        >
-          Shadowfiend
-        </button>
-        <button
-          @click="
-            mnemonic =
-              'hand inmate canvas head lunar naive increase recycle dog ecology inhale december wide bubble hockey dice worth gravity ketchup feed balance parent secret orchard'
-          "
-        >
-          Akasha
-        </button>
+        <div v-if="isLocalChain">
+          <button
+            @click="
+              mnemonic =
+                'race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow'
+            "
+          >
+            Shadowfiend
+          </button>
+          <button
+            @click="
+              mnemonic =
+                'hand inmate canvas head lunar naive increase recycle dog ecology inhale december wide bubble hockey dice worth gravity ketchup feed balance parent secret orchard'
+            "
+          >
+            Akasha
+          </button>
+        </div>
         <textarea
           class="textarea"
           v-model="mnemonic"
@@ -140,8 +141,5 @@ export default defineComponent({
 .textarea {
   width: 100%;
   min-height: 50px;
-}
-.wrapper {
-  padding: 2rem;
 }
 </style>

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { computed, defineComponent } from "vue";
-import { Asset } from "ui-core";
+import { Asset, Network } from "ui-core";
 import ColorHash from "color-hash";
 
 export default defineComponent({
@@ -11,7 +11,14 @@ export default defineComponent({
     const token = computed(() =>
       props.symbol ? Asset.get(props.symbol) : undefined
     );
-
+    const tokenLabel = computed(() => {
+      if (!token.value) return "";
+      const t = token.value;
+      if (t.network === Network.SIFCHAIN && t.symbol.indexOf("c") === 0) {
+        return ["c", t.symbol.slice(1).toUpperCase()].join("");
+      }
+      return t.symbol.toUpperCase();
+    });
     const backgroundStyle = computed(() => {
       const colorHash = new ColorHash();
 
@@ -20,7 +27,7 @@ export default defineComponent({
       return `background: ${color};`;
     });
 
-    return { token, backgroundStyle };
+    return { token, tokenLabel, backgroundStyle };
   },
 });
 </script>
@@ -29,7 +36,7 @@ export default defineComponent({
   <div class="row">
     <img v-if="token.imageUrl" width="16" :src="token.imageUrl" />
     <div class="placeholder" :style="backgroundStyle" v-else></div>
-    <span>{{ token.symbol.toUpperCase() }}</span>
+    <span>{{ tokenLabel }}</span>
   </div>
 </template>
 

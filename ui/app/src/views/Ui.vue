@@ -11,7 +11,6 @@ import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue"
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
-import ConfirmationDialog from "@/components/confirmationDialog/ConfirmationDialog.vue";
 import ConfirmSwap from "@/components/confirmationDialog/ConfirmSwap.vue";
 import SwapProgress from "@/components/swapProgress/SwapProgress.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
@@ -25,7 +24,6 @@ export default defineComponent({
     PriceCalculation,
     SelectTokenDialog,
     ModalView,
-    ConfirmationDialog,
     ConfirmSwap,
     SwapProgress,
   },
@@ -152,15 +150,15 @@ export default defineComponent({
       }),
       transactionState,
       transactionModalOpen: computed(() => {
-        return false //["confirming", "confirmed"].includes(transactionState.value);
+        return ["confirming", "confirmed"].includes(transactionState.value);
       }),
       transactionModalIsConfirmed: computed(() => {
         return transactionState.value === "confirmed";
       }),
       requestTransactionModalClose,
       confirmHandler() {
-        console.log('oh My')
-      }
+        console.log("oh My");
+      },
     };
   },
 });
@@ -207,12 +205,12 @@ export default defineComponent({
       <ModalView
         :requestClose="requestTransactionModalClose"
         :isOpen="transactionModalOpen"
-        >
-        <ConfirmSwap 
+      >
+        <ConfirmSwap
           :fromAmount="125"
-          :fromToken="{symbol: 'usdt'}"
+          :fromToken="'usdt'"
           :toAmount="1250"
-          :toToken="{symbol: 'rwn'}"
+          :toToken="'rwn'"
           :leastAmount="1248.976"
           :swapRate="10"
           :minimumReceived="100"
@@ -229,7 +227,7 @@ export default defineComponent({
 
     <template v-slot:after v-if="true">
       <div>
-        <SwapProgress 
+        <SwapProgress
           :approving="false"
           :approved="true"
           :confirming="true"
@@ -237,6 +235,5 @@ export default defineComponent({
         />
       </div>
     </template>
-
   </Layout>
 </template>

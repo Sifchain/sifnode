@@ -38,6 +38,10 @@ export default defineComponent({
     small: {
       type: Boolean,
     },
+    nocase: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   data() {
@@ -50,6 +54,7 @@ export default defineComponent({
         className: this.className,
         ghost: this.ghost,
         small: this.small,
+        nocase: this.nocase,
       },
     };
   },
@@ -65,13 +70,17 @@ export default defineComponent({
   padding: 0 18px;
   overflow: hidden;
   font: inherit;
+  text-transform: uppercase;
   font-size: $fs_md;
   line-height: $lh_btn;
-  text-transform: uppercase;
   letter-spacing: 2px;
   border-radius: $br_sm;
   transform: perspective(1px) translateZ(0);
   cursor: pointer;
+
+  &.nocase {
+    text-transform: none;
+  }
 
   &:not(:last-of-type) {
     margin-right: 0.5em;
