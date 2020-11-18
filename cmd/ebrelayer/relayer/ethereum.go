@@ -9,7 +9,10 @@ import (
 	"io"
 	"log"
 	"math/big"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
@@ -147,6 +150,8 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	// We will check logs for new events
 	logs := make(chan ctypes.Log)
 	defer close(logs)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	// Start BridgeBank subscription, prepare contract ABI and LockLog event signature
 	bridgeBankAddress, subBridgeBank := sub.startContractEventSub(logs, client, txs.BridgeBank)
@@ -164,6 +169,8 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	for {
 		select {
 		// Handle any errors
+		case <-quit:
+			return
 		case err := <-subBridgeBank.Err():
 			sub.Logger.Error(err.Error())
 			completionEvent.Add(1)
