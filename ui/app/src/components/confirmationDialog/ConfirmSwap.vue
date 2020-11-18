@@ -1,34 +1,24 @@
 <script>
 import { defineComponent } from "vue";
-import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 
 export default defineComponent({
-  components: { Loader, SifButton },
+  components: { SifButton },
   props: {
     requestClose: Function,
-
+    fromAmount: String,
+    toAmount: String,
+    leastAmount: String,
+    fromToken: String,
+    toToken: String,
+    swapRate: String,
+    minimumReceived: String,
+    providerFee: String,
+    priceImpact: String,
   },
-
-  data() {
-    return {
-      fromAmount: 125,
-      toAmount: 1250,
-      leastAmount: 1248.9998,
-      fromToken: {
-        symbol: 'usdt'
-      },
-      toToken: {
-        symbol: 'rwn'
-      },
-      swapRate: 10,
-      minimumReceived: 100,
-      providerFee: 0.0002356,
-      priceImpact: 0.134,
-    }
-  }
 });
 </script>
+
 <template>
   <div class="confirm-swap">
     <h3 class="title mb-10">Confirm Swap</h3>
@@ -70,7 +60,7 @@ export default defineComponent({
         </div>
       </div>
     </div>
-    <SifButton block primary class="confirm-btn">Confirm Swap</SifButton>
+    <SifButton block primary class="confirm-btn" @click="$emit('confirmswap')">Confirm Swap</SifButton>
   </div>
 </template>
 
