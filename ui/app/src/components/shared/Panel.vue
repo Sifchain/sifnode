@@ -1,6 +1,6 @@
 <template>
   <div :class="{ panel: true, dark }">
-    <div class="header">
+    <div class="header" v-if="!!$slots.header">
       <slot name="header"></slot>
     </div>
 
@@ -8,7 +8,7 @@
       <slot></slot>
     </div>
 
-    <div class="footer">
+    <div class="footer" v-if="!!$slots.header">
       <slot name="footer"></slot>
     </div>
   </div>
