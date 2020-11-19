@@ -93,7 +93,7 @@ def boot_docker_network(chainnet:, seed_network_address:, eth_config:)
     cmd += "MONIKER#{idx+1}=#{node['moniker']} MNEMONIC#{idx+1}=\"#{node['mnemonic']}\" IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
   end
 
-  cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../genesis/docker-compose.yml up"
+  cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../genesis/docker-compose.yml up | tee #{cwd}/../../log/#{chainnet}.log"
   system(cmd)
 end
 
