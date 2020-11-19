@@ -58,7 +58,7 @@ make install
     6.2 Download the latest genesis file:
 
     ```
-    wget -O ~/.sifnoded/config/genesis.json https://raw.githubusercontent.com/Sifchain/networks/feature/genesis/testnet/monkey-bars-testnet-4/genesis.json
+    wget -O ~/.sifnoded/config/genesis.json https://raw.githubusercontent.com/Sifchain/networks/feature/genesis/testnet/monkey-bars-testnet-5/genesis.json
     ```
    
     6.3 Update your persistent peers in the file `~/.sifnoded/config/config.toml` so that it reads: 
