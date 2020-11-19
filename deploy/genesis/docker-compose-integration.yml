@@ -4,7 +4,7 @@ services:
   sifnode1:
     build:
       context: ../../
-      dockerfile: ./build/genesis/Dockerfile.testrunner
+      dockerfile: ./deploy/genesis/Dockerfile.testrunner
     ports:
       - 1317:1317
       - 26656:26656
@@ -15,11 +15,13 @@ services:
       ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
       MONIKER: ${MONIKER1}
       PASSWORD: ${PASSWORD1}
+      MNEMONIC: ${MNEMONIC1}
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY1}
     volumes:
       - ../networks/validators/${CHAINNET}/${MONIKER1}:/root:Z
       - ../scripts:/scripts
       - ../../scripts:/test-scripts
+      - ../networks/network-definition.yml:/network-definition.yml
     entrypoint: /scripts/entrypoint.sh
     networks:
       sifchain:
@@ -28,7 +30,7 @@ services:
   sifnode2:
     build:
       context: ../../
-      dockerfile: ./build/genesis/Dockerfile.testrunner
+      dockerfile: ./deploy/genesis/Dockerfile.testrunner
     ports:
       - 1502:1317
       - 28002:26656
@@ -38,12 +40,14 @@ services:
       ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
       ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
       MONIKER: ${MONIKER2}
+      MNEMONIC: ${MNEMONIC2}
       PASSWORD: ${PASSWORD2}
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY2}
     volumes:
       - ../networks/validators/${CHAINNET}/${MONIKER2}:/root:Z
       - ../scripts:/scripts
       - ../../scripts:/test-scripts
+      - ../networks/network-definition.yml:/network-definition.yml
     entrypoint: /scripts/entrypoint.sh
     networks:
       sifchain:
@@ -52,7 +56,7 @@ services:
   sifnode3:
     build:
       context: ../../
-      dockerfile: ./build/genesis/Dockerfile.testrunner
+      dockerfile: ./deploy/genesis/Dockerfile.testrunner
     ports:
       - 1503:1317
       - 28004:26656
@@ -63,11 +67,13 @@ services:
       ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
       MONIKER: ${MONIKER3}
       PASSWORD: ${PASSWORD3}
+      MNEMONIC: ${MNEMONIC3}
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY3}
     volumes:
       - ../networks/validators/${CHAINNET}/${MONIKER3}:/root:Z
       - ../scripts:/scripts
       - ../../scripts:/test-scripts
+      - ../networks/network-definition.yml:/network-definition.yml
     entrypoint: /scripts/entrypoint.sh
     networks:
       sifchain:
@@ -76,7 +82,7 @@ services:
   sifnode4:
     build:
       context: ../../
-      dockerfile: ./build/genesis/Dockerfile.testrunner
+      dockerfile: ./deploy/genesis/Dockerfile.testrunner
     ports:
       - 1504:1317
       - 28006:26656
@@ -86,12 +92,14 @@ services:
       ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
       ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
       MONIKER: ${MONIKER4}
+      MNEMONIC: ${MNEMONIC4}
       PASSWORD: ${PASSWORD4}
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY4}
     volumes:
       - ../networks/validators/${CHAINNET}/${MONIKER4}:/root:Z
       - ../scripts:/scripts
       - ../../scripts:/test-scripts
+      - ../networks/network-definition.yml:/network-definition.yml
     entrypoint: /scripts/entrypoint.sh
     networks:
       sifchain:

@@ -39,7 +39,11 @@ end
 # @params chainnet Name or ID of the chain
 #
 def network_config(chainnet)
-  "#{cwd}/../networks/#{Digest::SHA256.hexdigest chainnet}.yml"
+  if chainnet == 'localnet'
+    "#{cwd}/../networks/network-definition.yml"
+  else
+    "#{cwd}/../networks/#{Digest::SHA256.hexdigest chainnet}.yml"
+  end
 end
 
 #

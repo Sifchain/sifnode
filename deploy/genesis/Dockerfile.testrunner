@@ -41,12 +41,14 @@ COPY --from=build /go/bin/sifnodecli /usr/bin/sifnodecli
 COPY --from=build /go/bin/ebrelayer /usr/bin/ebrelayer
 
 # extras for test suite
-RUN apk add python3
+RUN apk add python3 vim bash
 RUN \
   # update packages
   apk update && apk upgrade && \
-
   # install ruby
   apk --no-cache add ruby ruby-dev ruby-bundler ruby-json ruby-irb ruby-rake ruby-bigdecimal && \
   rm -rf /var/cache/apk/*
 RUN gem install rake
+RUN wget https://github.com/mikefarah/yq/releases/download/3.4.0/yq_linux_amd64 -O /usr/bin/yq &&\
+    chmod +x /usr/bin/yq
+
