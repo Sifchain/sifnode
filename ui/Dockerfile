@@ -3,6 +3,9 @@ FROM node:14.11.0 as builder
 RUN mkdir -p /ui/app
 RUN mkdir -p /ui/core
 
+ARG SIFNODE_API
+ENV VUE_APP_SIFNODE_API=$SIFNODE_API
+
 COPY ./package.json /ui/package.json
 COPY ./yarn.lock /ui/yarn.lock
 COPY ./app/package.json /ui/app/package.json
