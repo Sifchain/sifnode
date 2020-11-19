@@ -23,71 +23,71 @@ services:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS1}
 
-  sifnode2:
-    image: sifchain/sifnoded:${CHAINNET}
-    ports:
-      - 1502:1317
-      - 28002:26656
-      - 28003:26657
-    environment:
-      CHAINNET: ${CHAINNET}
-      ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
-      ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
-      MONIKER: ${MONIKER2}
-      MNEMONIC: ${MNEMONIC2}
-      ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY2}
-      RELAYER_ENABLED: "false"
-    volumes:
-      - ../networks/validators/${CHAINNET}/${MONIKER2}:/root:Z
-      - ../scripts:/scripts
-    entrypoint: /scripts/entrypoint.sh
-    networks:
-      sifchain:
-        ipv4_address: ${IPV4_ADDRESS2}
-
-  sifnode3:
-    image: sifchain/sifnoded:${CHAINNET}
-    ports:
-      - 1503:1317
-      - 28004:26656
-      - 28005:26657
-    environment:
-      CHAINNET: ${CHAINNET}
-      ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
-      ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
-      MONIKER: ${MONIKER3}
-      MNEMONIC: ${MNEMONIC3}
-      ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY3}
-      RELAYER_ENABLED: "false"
-    volumes:
-      - ../networks/validators/${CHAINNET}/${MONIKER3}:/root:Z
-      - ../scripts:/scripts
-    entrypoint: /scripts/entrypoint.sh
-    networks:
-      sifchain:
-        ipv4_address: ${IPV4_ADDRESS3}
-
-  sifnode4:
-    image: sifchain/sifnoded:${CHAINNET}
-    ports:
-      - 1504:1317
-      - 28006:26656
-      - 28007:26657
-    environment:
-      CHAINNET: ${CHAINNET}
-      ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
-      ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
-      MONIKER: ${MONIKER4}
-      MNEMONIC: ${MNEMONIC4}
-      ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY4}
-      RELAYER_ENABLED: "false"
-    volumes:
-      - ../networks/validators/${CHAINNET}/${MONIKER4}:/root:Z
-      - ../scripts:/scripts
-    entrypoint: /scripts/entrypoint.sh
-    networks:
-      sifchain:
-        ipv4_address: ${IPV4_ADDRESS4}
+#  sifnode2:
+#    image: sifchain/sifnoded:${CHAINNET}
+#    ports:
+#      - 1502:1317
+#      - 28002:26656
+#      - 28003:26657
+#    environment:
+#      CHAINNET: ${CHAINNET}
+#      ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
+#      ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
+#      MONIKER: ${MONIKER2}
+#      MNEMONIC: ${MNEMONIC2}
+#      ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY2}
+#      RELAYER_ENABLED: "false"
+#    volumes:
+#      - ../networks/validators/${CHAINNET}/${MONIKER2}:/root:Z
+#      - ../scripts:/scripts
+#    entrypoint: /scripts/entrypoint.sh
+#    networks:
+#      sifchain:
+#        ipv4_address: ${IPV4_ADDRESS2}
+#
+#  sifnode3:
+#    image: sifchain/sifnoded:${CHAINNET}
+#    ports:
+#      - 1503:1317
+#      - 28004:26656
+#      - 28005:26657
+#    environment:
+#      CHAINNET: ${CHAINNET}
+#      ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
+#      ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
+#      MONIKER: ${MONIKER3}
+#      MNEMONIC: ${MNEMONIC3}
+#      ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY3}
+#      RELAYER_ENABLED: "false"
+#    volumes:
+#      - ../networks/validators/${CHAINNET}/${MONIKER3}:/root:Z
+#      - ../scripts:/scripts
+#    entrypoint: /scripts/entrypoint.sh
+#    networks:
+#      sifchain:
+#        ipv4_address: ${IPV4_ADDRESS3}
+#
+#  sifnode4:
+#    image: sifchain/sifnoded:${CHAINNET}
+#    ports:
+#      - 1504:1317
+#      - 28006:26656
+#      - 28007:26657
+#    environment:
+#      CHAINNET: ${CHAINNET}
+#      ETHEREUM_CONTRACT_ADDRESS: ${ETHEREUM_CONTRACT_ADDRESS}
+#      ETHEREUM_WEBSOCKET_ADDRESS: ${ETHEREUM_WEBSOCKET_ADDRESS}
+#      MONIKER: ${MONIKER4}
+#      MNEMONIC: ${MNEMONIC4}
+#      ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY4}
+#      RELAYER_ENABLED: "false"
+#    volumes:
+#      - ../networks/validators/${CHAINNET}/${MONIKER4}:/root:Z
+#      - ../scripts:/scripts
+#    entrypoint: /scripts/entrypoint.sh
+#    networks:
+#      sifchain:
+#        ipv4_address: ${IPV4_ADDRESS4}
 
 networks:
   sifchain:
