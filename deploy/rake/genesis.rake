@@ -9,7 +9,7 @@ namespace :genesis do
         exit 1
       end
 
-      network_create(chainnet: args[:chainnet], validator_count: 4, build_dir: "#{cwd}/../networks",
+      network_create(chainnet: args[:chainnet], validator_count: 1, build_dir: "#{cwd}/../networks",
                      seed_ip_address: "192.168.2.1",network_config: network_config(args[:chainnet]))
     end
 
