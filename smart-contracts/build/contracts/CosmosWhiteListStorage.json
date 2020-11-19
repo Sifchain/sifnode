@@ -1,0 +1,302 @@
+{
+  "contractName": "CosmosWhiteListStorage",
+  "abi": [],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol\":\"CosmosWhiteListStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol\":{\"keccak256\":\"0x1680292edf8d735fccfcfa9327b8dbbd0c673b509c701f9aaa1032a74de8ad8b\",\"urls\":[\"bzz-raw://b9695fceafb1ff4066e80a7be9003155565c4abebdba38b2aa027b5d7d0e95e9\",\"dweb:/ipfs/QmS8aZFBtfPJgZpaAx2LZ5i6xBBK6A4RLL2xuz3RRWLpDw\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820aa3a2c4fda0326a3d2902a4e79fe3e20d0f0bcbbe3344be410702ece9b8c2c5064736f6c63430005100032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820aa3a2c4fda0326a3d2902a4e79fe3e20d0f0bcbbe3344be410702ece9b8c2c5064736f6c63430005100032",
+  "sourceMap": "25:269:6:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:269:6;;;;;;;",
+  "deployedSourceMap": "25:269:6:-;;;;;",
+  "source": "pragma solidity ^0.5.0;\n\ncontract CosmosWhiteListStorage {\n\n    /**\n    * @notice mapping to keep track of whitelisted tokens\n    */\n    mapping(address => bool) internal _cosmosTokenWhiteList;\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256[100] private ____gap;\n}",
+  "sourcePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
+  "ast": {
+    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
+    "exportedSymbols": {
+      "CosmosWhiteListStorage": [
+        957
+      ]
+    },
+    "id": 958,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 948,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:6"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 957,
+        "linearizedBaseContracts": [
+          957
+        ],
+        "name": "CosmosWhiteListStorage",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 952,
+            "name": "_cosmosTokenWhiteList",
+            "nodeType": "VariableDeclaration",
+            "scope": 957,
+            "src": "137:55:6",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+              "typeString": "mapping(address => bool)"
+            },
+            "typeName": {
+              "id": 951,
+              "keyType": {
+                "id": 949,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "145:7:6",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "137:24:6",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                "typeString": "mapping(address => bool)"
+              },
+              "valueType": {
+                "id": 950,
+                "name": "bool",
+                "nodeType": "ElementaryTypeName",
+                "src": "156:4:6",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          },
+          {
+            "constant": false,
+            "id": 956,
+            "name": "____gap",
+            "nodeType": "VariableDeclaration",
+            "scope": 957,
+            "src": "263:28:6",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_array$_t_uint256_$100_storage",
+              "typeString": "uint256[100]"
+            },
+            "typeName": {
+              "baseType": {
+                "id": 953,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "263:7:6",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 955,
+              "length": {
+                "argumentTypes": null,
+                "hexValue": "313030",
+                "id": 954,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "271:3:6",
+                "subdenomination": null,
+                "typeDescriptions": {
+                  "typeIdentifier": "t_rational_100_by_1",
+                  "typeString": "int_const 100"
+                },
+                "value": "100"
+              },
+              "nodeType": "ArrayTypeName",
+              "src": "263:12:6",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
+                "typeString": "uint256[100]"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          }
+        ],
+        "scope": 958,
+        "src": "25:269:6"
+      }
+    ],
+    "src": "0:294:6"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
+    "exportedSymbols": {
+      "CosmosWhiteListStorage": [
+        957
+      ]
+    },
+    "id": 958,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 948,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:6"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 957,
+        "linearizedBaseContracts": [
+          957
+        ],
+        "name": "CosmosWhiteListStorage",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 952,
+            "name": "_cosmosTokenWhiteList",
+            "nodeType": "VariableDeclaration",
+            "scope": 957,
+            "src": "137:55:6",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+              "typeString": "mapping(address => bool)"
+            },
+            "typeName": {
+              "id": 951,
+              "keyType": {
+                "id": 949,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "145:7:6",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "137:24:6",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                "typeString": "mapping(address => bool)"
+              },
+              "valueType": {
+                "id": 950,
+                "name": "bool",
+                "nodeType": "ElementaryTypeName",
+                "src": "156:4:6",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          },
+          {
+            "constant": false,
+            "id": 956,
+            "name": "____gap",
+            "nodeType": "VariableDeclaration",
+            "scope": 957,
+            "src": "263:28:6",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_array$_t_uint256_$100_storage",
+              "typeString": "uint256[100]"
+            },
+            "typeName": {
+              "baseType": {
+                "id": 953,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "263:7:6",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 955,
+              "length": {
+                "argumentTypes": null,
+                "hexValue": "313030",
+                "id": 954,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "271:3:6",
+                "subdenomination": null,
+                "typeDescriptions": {
+                  "typeIdentifier": "t_rational_100_by_1",
+                  "typeString": "int_const 100"
+                },
+                "value": "100"
+              },
+              "nodeType": "ArrayTypeName",
+              "src": "263:12:6",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
+                "typeString": "uint256[100]"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          }
+        ],
+        "scope": 958,
+        "src": "25:269:6"
+      }
+    ],
+    "src": "0:294:6"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.3.2",
+  "updatedAt": "2020-11-19T01:51:10.853Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
