@@ -93,3 +93,13 @@ type LiquidityProviderResponse struct {
 func NewLiquidityProviderResponse(liquidityProvider LiquidityProvider, height int64) LiquidityProviderResponse {
 	return LiquidityProviderResponse{LiquidityProvider: liquidityProvider, Height: height}
 }
+
+type AssetListResponse struct {
+	Assets
+	Height int64 `json:"height"`
+}
+
+func NewAssetListResponse(assets Assets, height int64) AssetListResponse {
+	return AssetListResponse{Assets: assets, Height: height}
+
+}

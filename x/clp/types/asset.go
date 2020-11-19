@@ -13,6 +13,8 @@ type Asset struct {
 	Ticker      string `json:"ticker"`
 }
 
+type Assets []Asset
+
 // NewAsset returns a new Asset
 func NewAsset(sourceChain string, symbol string, ticker string) Asset {
 	return Asset{
