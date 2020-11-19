@@ -1,30 +1,15 @@
 <script lang="ts">
-import { computed, defineComponent } from "vue";
-import { Asset, Network } from "ui-core";
-import ColorHash from "color-hash";
-import { getAssetLabel } from "./utils";
+import { computed } from "@vue/reactivity";
+import { defineComponent } from "vue";
+import { useAssetItem } from "./utils";
 
 export default defineComponent({
   props: {
     symbol: String,
   },
   setup(props) {
-    const token = computed(() =>
-      props.symbol ? Asset.get(props.symbol) : undefined
-    );
-
-    const tokenLabel = computed(() => {
-      if (!token.value) return "";
-      return getAssetLabel(token.value);
-    });
-
-    const backgroundStyle = computed(() => {
-      const colorHash = new ColorHash();
-
-      const color = props.symbol ? colorHash.hex(props.symbol) : [];
-
-      return `background: ${color};`;
-    });
+    const symbol = computed(() => props.symbol);
+    const { token, tokenLabel, backgroundStyle } = useAssetItem(symbol);
 
     return { token, tokenLabel, backgroundStyle };
   },

@@ -1,9 +1,6 @@
 <script lang="ts">
 import { computed, defineComponent } from "vue";
-import { Asset, Network } from "ui-core";
-import ColorHash from "color-hash";
-
-import { getAssetLabel } from "./utils";
+import { useAssetItem } from "./utils";
 
 export default defineComponent({
   props: {
@@ -11,27 +8,13 @@ export default defineComponent({
     amount: String,
   },
   setup(props) {
-    const token = computed(() =>
-      props.symbol ? Asset.get(props.symbol) : undefined
-    );
-
-    const tokenLabel = computed(() => {
-      if (!token.value) return "";
-      return getAssetLabel(token.value);
-    });
+    const symbol = computed(() => props.symbol);
+    const { token, tokenLabel, backgroundStyle } = useAssetItem(symbol);
 
     const tokenImage = computed(() => {
       if (!token.value) return "";
       const t = token.value;
       return t.imageUrl;
-    });
-
-    const backgroundStyle = computed(() => {
-      const colorHash = new ColorHash();
-
-      const color = props.symbol ? colorHash.hex(props.symbol) : [];
-
-      return `background: ${color};`;
     });
 
     return { token, tokenLabel, tokenImage, backgroundStyle };
