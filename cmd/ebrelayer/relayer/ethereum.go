@@ -10,6 +10,10 @@ import (
 	"log"
 	"math/big"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
 
 	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -122,41 +126,62 @@ func LoadTendermintCLIContext(appCodec *amino.Codec, validatorAddress sdk.ValAdd
 }
 
 // Start an Ethereum chain subscription
-func (sub EthereumSub) Start() {
+func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
+	defer completionEvent.Done()
+	time.Sleep(time.Second)
 	client, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
 		sub.Logger.Error(err.Error())
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
+	defer client.Close()
 	sub.Logger.Info("Started Ethereum websocket with provider:", sub.EthProvider)
 
 	clientChainID, err := client.NetworkID(context.Background())
 	if err != nil {
 		sub.Logger.Error(err.Error())
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
 
 	// We will check logs for new events
 	logs := make(chan ctypes.Log)
+	defer close(logs)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	defer close(quit)
 
 	// Start BridgeBank subscription, prepare contract ABI and LockLog event signature
 	bridgeBankAddress, subBridgeBank := sub.startContractEventSub(logs, client, txs.BridgeBank)
+	defer subBridgeBank.Unsubscribe()
 	bridgeBankContractABI := contract.LoadABI(txs.BridgeBank)
 	eventLogLockSignature := bridgeBankContractABI.Events[types.LogLock.String()].ID().Hex()
 	eventLogBurnSignature := bridgeBankContractABI.Events[types.LogBurn.String()].ID().Hex()
 
 	// Start CosmosBridge subscription, prepare contract ABI and LogNewProphecyClaim event signature
 	cosmosBridgeAddress, subCosmosBridge := sub.startContractEventSub(logs, client, txs.CosmosBridge)
+	defer subCosmosBridge.Unsubscribe()
 	cosmosBridgeContractABI := contract.LoadABI(txs.CosmosBridge)
 	eventLogNewProphecyClaimSignature := cosmosBridgeContractABI.Events[types.LogNewProphecyClaim.String()].ID().Hex()
 
 	for {
 		select {
 		// Handle any errors
+		case <-quit:
+			return
 		case err := <-subBridgeBank.Err():
 			sub.Logger.Error(err.Error())
+			completionEvent.Add(1)
+			go sub.Start(completionEvent)
+			return
 		case err := <-subCosmosBridge.Err():
 			sub.Logger.Error(err.Error())
+			completionEvent.Add(1)
+			go sub.Start(completionEvent)
+			return
 		// vLog is raw event data
 		case vLog := <-logs:
 			sub.Logger.Info(fmt.Sprintf("Witnessed tx %s on block %d\n", vLog.TxHash.Hex(), vLog.BlockNumber))
@@ -177,6 +202,9 @@ func (sub EthereumSub) Start() {
 			// TODO: Check local events store for status, if retryable, attempt relay again
 			if err != nil {
 				sub.Logger.Error(err.Error())
+				completionEvent.Add(1)
+				go sub.Start(completionEvent)
+				return
 			}
 		}
 	}
