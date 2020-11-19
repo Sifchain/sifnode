@@ -60,6 +60,7 @@ export default defineComponent({
     toToken: String,
   },
   setup(props) {
+    // Need to cache amounts and disconnect reactivity
     return {
       _fromAmount: props.fromAmount,
       _fromToken: props.fromToken,
