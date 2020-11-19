@@ -9,6 +9,7 @@ frontend/.cache
 .testCoverage.txt
 .environments
 deploy/networks
+log/*.log
 .env
 .backups
 .ssh
