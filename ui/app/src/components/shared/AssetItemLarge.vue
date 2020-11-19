@@ -3,12 +3,7 @@ import { computed, defineComponent } from "vue";
 import { Asset, Network } from "ui-core";
 import ColorHash from "color-hash";
 
-export function getAssetLabel(t: Asset) {
-  if (t.network === Network.SIFCHAIN && t.symbol.indexOf("c") === 0) {
-    return ["c", t.symbol.slice(1).toUpperCase()].join("");
-  }
-  return t.symbol.toUpperCase();
-}
+import { getAssetLabel } from "./utils";
 
 export default defineComponent({
   props: {
@@ -19,16 +14,18 @@ export default defineComponent({
     const token = computed(() =>
       props.symbol ? Asset.get(props.symbol) : undefined
     );
+
     const tokenLabel = computed(() => {
       if (!token.value) return "";
-
       return getAssetLabel(token.value);
     });
+
     const tokenImage = computed(() => {
       if (!token.value) return "";
       const t = token.value;
       return t.imageUrl;
     });
+
     const backgroundStyle = computed(() => {
       const colorHash = new ColorHash();
 
