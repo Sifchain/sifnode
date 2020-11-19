@@ -35,13 +35,7 @@ make install
 
 5. If you're a new operator (and only if - as otherwise this will reset your node!): 
 
-    5.1 Change to the `build` directory:
-
-    ```
-    cd ./build
-    ```
-
-    5.2 Scaffold your new node:
+    5.1 Scaffold your new node (from the project root directory):
     
     ```
     rake 'genesis:sifnode:scaffold[monkey-bars, 55f250c42b6e7bdcce6fe1a8af65f13e7c33aafb@35.166.247.98:26656, http://35.166.247.98:26657/genesis]'
