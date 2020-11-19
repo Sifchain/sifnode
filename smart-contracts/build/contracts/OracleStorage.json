@@ -1,0 +1,779 @@
+{
+  "contractName": "OracleStorage",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "consensusThreshold",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "cosmosBridge",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "hasMadeClaim",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "operator",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "oracleClaimValidators",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "valset",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"consensusThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"cosmosBridge\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"hasMadeClaim\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"oracleClaimValidators\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"valset\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol\":\"OracleStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol\":{\"keccak256\":\"0x921654252a2aa189bb5c0f87d30032fe445425e1a6bba69076d577a1fd4eaa4f\",\"urls\":[\"bzz-raw://e0850963632ca18d321d11fccb5e15d8892830666dafd81f61aa72cb1b54ce11\",\"dweb:/ipfs/QmefegfxDub2GfpmNooGWLR5SBvpGY5bhD3vFrptRyeBg9\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506101d5806100206000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c806336e4134114610067578063570ca735146100a65780637f54af0c146100ae578063a219763e146100b6578063b0e9ef71146100f6578063f9b0b5b9146100fe575b600080fd5b61008a6004803603604081101561007d57600080fd5b5080359060200135610118565b604080516001600160a01b039092168252519081900360200190f35b61008a61014d565b61008a61015c565b6100e2600480360360408110156100cc57600080fd5b50803590602001356001600160a01b031661016b565b604080519115158252519081900360200190f35b61008a61018b565b61010661019a565b60408051918252519081900360200190f35b6004602052816000526040600020818154811061013157fe5b6000918252602090912001546001600160a01b03169150829050565b6002546001600160a01b031681565b6001546001600160a01b031681565b600560209081526000928352604080842090915290825290205460ff1681565b6000546001600160a01b031681565b6003548156fea265627a7a72315820a49925b647111fa96ae89d4fb6531eb3806c798f6e4eaea54c69fba4ee506fbb64736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100625760003560e01c806336e4134114610067578063570ca735146100a65780637f54af0c146100ae578063a219763e146100b6578063b0e9ef71146100f6578063f9b0b5b9146100fe575b600080fd5b61008a6004803603604081101561007d57600080fd5b5080359060200135610118565b604080516001600160a01b039092168252519081900360200190f35b61008a61014d565b61008a61015c565b6100e2600480360360408110156100cc57600080fd5b50803590602001356001600160a01b031661016b565b604080519115158252519081900360200190f35b61008a61018b565b61010661019a565b60408051918252519081900360200190f35b6004602052816000526040600020818154811061013157fe5b6000918252602090912001546001600160a01b03169150829050565b6002546001600160a01b031681565b6001546001600160a01b031681565b600560209081526000928352604080842090915290825290205460ff1681565b6000546001600160a01b031681565b6003548156fea265627a7a72315820a49925b647111fa96ae89d4fb6531eb3806c798f6e4eaea54c69fba4ee506fbb64736f6c63430005100032",
+  "sourceMap": "25:937:16:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:937:16;;;;;;;",
+  "deployedSourceMap": "25:937:16:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:937:16;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;648:58;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;648:58:16;;;;;;;:::i;:::-;;;;-1:-1:-1;;;;;648:58:16;;;;;;;;;;;;;;367:23;;;:::i;242:21::-;;;:::i;796:64::-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;796:64:16;;;;;;-1:-1:-1;;;;;796:64:16;;:::i;:::-;;;;;;;;;;;;;;;;;;111:27;;;:::i;494:33::-;;;:::i;:::-;;;;;;;;;;;;;;;;648:58;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;648:58:16;;-1:-1:-1;648:58:16;;-1:-1:-1;648:58:16:o;367:23::-;;;-1:-1:-1;;;;;367:23:16;;:::o;242:21::-;;;-1:-1:-1;;;;;242:21:16;;:::o;796:64::-;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;111:27::-;;;-1:-1:-1;;;;;111:27:16;;:::o;494:33::-;;;;:::o",
+  "source": "pragma solidity ^0.5.0;\n\ncontract OracleStorage {\n    /*\n     * @dev: Public variable declarations\n     */\n    address public cosmosBridge;\n\n    /**\n    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim\n    */\n    address public valset;\n\n    /**\n    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim\n    */\n    address public operator;\n\n    /**\n    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim\n    */\n    uint256 public consensusThreshold; // e.g. 75 = 75%\n\n    /**\n    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim\n    */\n    mapping(uint256 => address[]) public oracleClaimValidators;\n\n    /**\n    * @notice mapping of prophecyid to validator address to boolean\n    */\n    mapping(uint256 => mapping(address => bool)) public hasMadeClaim;\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256[100] private ____gap;\n}",
+  "sourcePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol",
+  "ast": {
+    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol",
+    "exportedSymbols": {
+      "OracleStorage": [
+        2501
+      ]
+    },
+    "id": 2502,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2477,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:16"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 2501,
+        "linearizedBaseContracts": [
+          2501
+        ],
+        "name": "OracleStorage",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 2479,
+            "name": "cosmosBridge",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "111:27:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 2478,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "111:7:16",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2481,
+            "name": "valset",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "242:21:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 2480,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "242:7:16",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2483,
+            "name": "operator",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "367:23:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 2482,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "367:7:16",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2485,
+            "name": "consensusThreshold",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "494:33:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 2484,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "494:7:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2490,
+            "name": "oracleClaimValidators",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "648:58:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_array$_t_address_$dyn_storage_$",
+              "typeString": "mapping(uint256 => address[])"
+            },
+            "typeName": {
+              "id": 2489,
+              "keyType": {
+                "id": 2486,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "656:7:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "648:29:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_array$_t_address_$dyn_storage_$",
+                "typeString": "mapping(uint256 => address[])"
+              },
+              "valueType": {
+                "baseType": {
+                  "id": 2487,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "667:7:16",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "id": 2488,
+                "length": null,
+                "nodeType": "ArrayTypeName",
+                "src": "667:9:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                  "typeString": "address[]"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2496,
+            "name": "hasMadeClaim",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "796:64:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_mapping$_t_address_$_t_bool_$_$",
+              "typeString": "mapping(uint256 => mapping(address => bool))"
+            },
+            "typeName": {
+              "id": 2495,
+              "keyType": {
+                "id": 2491,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "804:7:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "796:44:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_mapping$_t_address_$_t_bool_$_$",
+                "typeString": "mapping(uint256 => mapping(address => bool))"
+              },
+              "valueType": {
+                "id": 2494,
+                "keyType": {
+                  "id": 2492,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "823:7:16",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "nodeType": "Mapping",
+                "src": "815:24:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                  "typeString": "mapping(address => bool)"
+                },
+                "valueType": {
+                  "id": 2493,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "834:4:16",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2500,
+            "name": "____gap",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "931:28:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_array$_t_uint256_$100_storage",
+              "typeString": "uint256[100]"
+            },
+            "typeName": {
+              "baseType": {
+                "id": 2497,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "931:7:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 2499,
+              "length": {
+                "argumentTypes": null,
+                "hexValue": "313030",
+                "id": 2498,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "939:3:16",
+                "subdenomination": null,
+                "typeDescriptions": {
+                  "typeIdentifier": "t_rational_100_by_1",
+                  "typeString": "int_const 100"
+                },
+                "value": "100"
+              },
+              "nodeType": "ArrayTypeName",
+              "src": "931:12:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
+                "typeString": "uint256[100]"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          }
+        ],
+        "scope": 2502,
+        "src": "25:937:16"
+      }
+    ],
+    "src": "0:962:16"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol",
+    "exportedSymbols": {
+      "OracleStorage": [
+        2501
+      ]
+    },
+    "id": 2502,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2477,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:16"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 2501,
+        "linearizedBaseContracts": [
+          2501
+        ],
+        "name": "OracleStorage",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 2479,
+            "name": "cosmosBridge",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "111:27:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 2478,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "111:7:16",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2481,
+            "name": "valset",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "242:21:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 2480,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "242:7:16",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2483,
+            "name": "operator",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "367:23:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 2482,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "367:7:16",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2485,
+            "name": "consensusThreshold",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "494:33:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 2484,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "494:7:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2490,
+            "name": "oracleClaimValidators",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "648:58:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_array$_t_address_$dyn_storage_$",
+              "typeString": "mapping(uint256 => address[])"
+            },
+            "typeName": {
+              "id": 2489,
+              "keyType": {
+                "id": 2486,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "656:7:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "648:29:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_array$_t_address_$dyn_storage_$",
+                "typeString": "mapping(uint256 => address[])"
+              },
+              "valueType": {
+                "baseType": {
+                  "id": 2487,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "667:7:16",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "id": 2488,
+                "length": null,
+                "nodeType": "ArrayTypeName",
+                "src": "667:9:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                  "typeString": "address[]"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2496,
+            "name": "hasMadeClaim",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "796:64:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_mapping$_t_address_$_t_bool_$_$",
+              "typeString": "mapping(uint256 => mapping(address => bool))"
+            },
+            "typeName": {
+              "id": 2495,
+              "keyType": {
+                "id": 2491,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "804:7:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "796:44:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_mapping$_t_address_$_t_bool_$_$",
+                "typeString": "mapping(uint256 => mapping(address => bool))"
+              },
+              "valueType": {
+                "id": 2494,
+                "keyType": {
+                  "id": 2492,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "823:7:16",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "nodeType": "Mapping",
+                "src": "815:24:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                  "typeString": "mapping(address => bool)"
+                },
+                "valueType": {
+                  "id": 2493,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "834:4:16",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2500,
+            "name": "____gap",
+            "nodeType": "VariableDeclaration",
+            "scope": 2501,
+            "src": "931:28:16",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_array$_t_uint256_$100_storage",
+              "typeString": "uint256[100]"
+            },
+            "typeName": {
+              "baseType": {
+                "id": 2497,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "931:7:16",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 2499,
+              "length": {
+                "argumentTypes": null,
+                "hexValue": "313030",
+                "id": 2498,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "939:3:16",
+                "subdenomination": null,
+                "typeDescriptions": {
+                  "typeIdentifier": "t_rational_100_by_1",
+                  "typeString": "int_const 100"
+                },
+                "value": "100"
+              },
+              "nodeType": "ArrayTypeName",
+              "src": "931:12:16",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
+                "typeString": "uint256[100]"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          }
+        ],
+        "scope": 2502,
+        "src": "25:937:16"
+      }
+    ],
+    "src": "0:962:16"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.3.2",
+  "updatedAt": "2020-11-19T01:51:10.894Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
