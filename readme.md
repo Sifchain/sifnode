@@ -24,7 +24,7 @@ git clone ssh://git@github.com/Sifchain/sifnode && cd sifnode
 3. Checkout the latest testnet release:
 
 ```
-git checkout tags/monkey-bars-testnet-5
+git checkout tags/monkey-bars-testnet-6
 ```
 
 4. Build:
@@ -38,7 +38,7 @@ make install
     5.1 Scaffold your new node (from the project root directory):
     
     ```
-    rake 'genesis:sifnode:scaffold[monkey-bars, 55f250c42b6e7bdcce6fe1a8af65f13e7c33aafb@35.166.247.98:26656, http://35.166.247.98:26657/genesis]'
+    rake 'genesis:sifnode:scaffold[monkey-bars, b7246003ad99b63d9de136b02f680ac35e8d2fb4@35.166.247.98:26656, http://35.166.247.98:26657/genesis]'
     ```
 
 6. If you're an existing node operator:
@@ -52,13 +52,13 @@ make install
     6.2 Download the latest genesis file:
 
     ```
-    wget -O ~/.sifnoded/config/genesis.json https://raw.githubusercontent.com/Sifchain/networks/feature/genesis/testnet/monkey-bars-testnet-5/genesis.json
+    wget -O ~/.sifnoded/config/genesis.json https://raw.githubusercontent.com/Sifchain/networks/feature/genesis/testnet/monkey-bars-testnet-6/genesis.json
     ```
    
     6.3 Update your persistent peers in the file `~/.sifnoded/config/config.toml` so that it reads: 
 
     ```
-    persistent_peers = "55f250c42b6e7bdcce6fe1a8af65f13e7c33aafb@35.166.247.98:26656"
+    persistent_peers = "b7246003ad99b63d9de136b02f680ac35e8d2fb4@35.166.247.98:26656"
     ```
 
 7. Start your node:
@@ -79,8 +79,8 @@ and you should see the following main validator node/s for Sifchain:
 
 ```
 validators:
-- address: sifvalcons1lze43sc3dyr9fnftk3hc3q3t8e4h6g5ar8776x
-  pubkey: sifvalconspub1zcjduepqxp03gq8py26fqe9fljuppqv0s7859m2pvqrrgnr9v9p58a8j6eus8yx2rm
+- address: sifvalcons1v5lrysqxcyctelzvazpa3elanauej33ngj6q5s
+  pubkey: sifvalconspub1zcjduepq64s8s75afwrehycuuwvd3n6dryvqkutzhkt5tymgsffjaezzh7dsdvcd60
   proposerpriority: -5000
   votingpower: 5000
 ```
