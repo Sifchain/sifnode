@@ -14,11 +14,19 @@ const (
 	NativeSymbol      = types.NativeSymbol
 	NativeChain       = types.NativeChain
 	NativeTicker      = types.NativeTicker
+	MaxWbasis         = types.MaxWbasis
 )
 
 var (
-	NewKeeper              = keeper.NewKeeper
-	NewQuerier             = keeper.NewQuerier
+	NewKeeper  = keeper.NewKeeper
+	NewQuerier = keeper.NewQuerier
+	//CreatePool              = keeper.CreatePool
+	//AddLiquidity            = keeper.AddLiquidity
+	//RemoveLiquidityProvider = keeper.RemoveLiquidityProvider
+	//DestroyPool             = keeper.DestroyPool
+	//CreateLiquidityProvider = keeper.CreateLiquidityProvider
+	//RemoveLiquidity         = keeper.RemoveLiquidity
+	//FinalizeSwap            = keeper.FinalizeSwap
 	NewMsgSwap             = types.NewMsgSwap
 	NewMsgAddLiquidity     = types.NewMsgAddLiquidity
 	NewMsgRemoveLiquidity  = types.NewMsgRemoveLiquidity

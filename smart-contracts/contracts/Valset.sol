@@ -1,20 +1,12 @@
 pragma solidity ^0.5.0;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./ValsetStorage.sol";
 
-
-contract Valset {
+contract Valset is ValsetStorage {
     using SafeMath for uint256;
 
-    /*
-     * @dev: Variable declarations
-     */
-    address public operator;
-    uint256 public totalPower;
-    uint256 public currentValsetVersion;
-    uint256 public validatorCount;
-    mapping(bytes32 => bool) public validators;
-    mapping(bytes32 => uint256) public powers;
+    bool private _initialized;
 
     /*
      * @dev: Event declarations
@@ -66,13 +58,16 @@ contract Valset {
     /*
      * @dev: Constructor
      */
-    constructor(
+    function initialize(
         address _operator,
         address[] memory _initValidators,
         uint256[] memory _initPowers
     ) public {
+        require(!_initialized, "Initialized");
+
         operator = _operator;
         currentValsetVersion = 0;
+        _initialized = true;
 
         updateValset(_initValidators, _initPowers);
     }

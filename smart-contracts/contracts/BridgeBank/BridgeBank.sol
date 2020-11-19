@@ -2,9 +2,11 @@ pragma solidity ^0.5.0;
 
 import "./CosmosBank.sol";
 import "./EthereumBank.sol";
+import "./EthereumWhitelist.sol";
+import "./CosmosWhiteList.sol";
 import "../Oracle.sol";
 import "../CosmosBridge.sol";
-import "./WhiteList.sol";
+import "./BankStorage.sol";
 
 /**
  * @title BridgeBank
@@ -16,27 +18,35 @@ import "./WhiteList.sol";
  *      list that can be locked.
  **/
 
-contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
+contract BridgeBank is BankStorage,
+    CosmosBank,
+    EthereumBank,
+    EthereumWhiteList,
+    CosmosWhiteList {
+
+    bool private _initialized;
+
     using SafeMath for uint256;
 
-    address public operator;
-    Oracle public oracle;
-    CosmosBridge public cosmosBridge;
-    address public owner;
-
     /*
-     * @dev: Constructor, sets operator
+     * @dev: Initializer, sets operator
      */
-    constructor(
+    function initialize(
         address _operatorAddress,
         address _oracleAddress,
         address _cosmosBridgeAddress,
         address _owner
     ) public {
+        require(!_initialized, "Initialized");
+
+        EthereumWhiteList.initialize();
+        CosmosWhiteList.initialize();
+
         operator = _operatorAddress;
-        oracle = Oracle(_oracleAddress);
-        cosmosBridge = CosmosBridge(_cosmosBridgeAddress);
+        oracle = _oracleAddress;
+        cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
+        _initialized = true;
     }
 
     /*
@@ -52,7 +62,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
      */
     modifier onlyOracle() {
         require(
-            msg.sender == address(oracle),
+            msg.sender == oracle,
             "Access restricted to the oracle"
         );
         _;
@@ -73,9 +83,18 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
      */
     modifier onlyCosmosBridge() {
         require(
-            msg.sender == address(cosmosBridge),
+            msg.sender == cosmosBridge,
             "Access restricted to the cosmos bridge"
         );
+        _;
+    }
+
+    /*
+     * @dev: Modifier to only allow valid sif addresses
+     */
+    modifier validSifAddress(bytes memory _sifAddress) {
+        require(_sifAddress.length == 42, "Invalid sif address length");
+        require(verifySifPrefix(_sifAddress) == true, "Invalid sif address prefix");
         _;
     }
 
@@ -84,6 +103,21 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
      *       This feature is used for testing and is available at the operator's own risk.
      */
     function() external payable onlyOperator {}
+
+    /*
+     * @dev: function to validate if a sif address has a correct prefix
+     */
+    function verifySifPrefix(bytes memory _sifAddress) public pure returns (bool) {
+        bytes3 sifInHex = 0x736966;
+
+        for (uint256 i = 0; i < sifInHex.length; i++) {
+            if (sifInHex[i] != _sifAddress[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     /*
      * @dev: Creates a new BridgeToken
@@ -96,7 +130,10 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         onlyCosmosBridge
         returns (address)
     {
-        return deployNewBridgeToken(_symbol);
+        address newTokenAddress = deployNewBridgeToken(_symbol);
+        setTokenInCosmosWhiteList(newTokenAddress, true);
+
+        return newTokenAddress;
     }
 
     /*
@@ -108,6 +145,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
     function addExistingBridgeToken(
         address _contractAddress
     ) public onlyOwner returns (address) {
+        setTokenInCosmosWhiteList(_contractAddress, true);
         return useExistingBridgeToken(_contractAddress);
     }
 
@@ -118,7 +156,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
      * @param _inList: set the _token in list or not
      * @return: new value of if _token in whitelist
      */
-    function updateWhiteList(address _token, bool _inList)
+    function updateEthWhiteList(address _token, bool _inList)
         public
         onlyOperator
         returns (bool)
@@ -136,7 +174,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
             // in fact stored in our locked token list before we set to false
             require(uint256(listAddress) > 0, "Token not whitelisted");
         }
-        return setTokenInWhiteList(_token, _inList);
+        return setTokenInEthWhiteList(_token, _inList);
     }
 
     /*
@@ -154,7 +192,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         address _bridgeTokenAddress,
         string memory _symbol,
         uint256 _amount
-    ) public onlyCosmosBridge availableCosmosDepositNonce() {
+    ) public onlyCosmosBridge {
         return
             mintNewBridgeTokens(
                 _cosmosSender,
@@ -176,7 +214,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public availableNonce() {
+    ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) {
         BridgeToken(_token).burnFrom(msg.sender, _amount);
         string memory symbol = BridgeToken(_token).symbol();
         burnFunds(msg.sender, _recipient, _token, symbol, _amount);
@@ -193,7 +231,7 @@ contract BridgeBank is CosmosBank, EthereumBank, WhiteList {
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public payable availableNonce() onlyWhiteList(_token) {
+    ) public payable onlyEthTokenWhiteList(_token) validSifAddress(_recipient) {
         string memory symbol;
 
         // Ethereum deposit

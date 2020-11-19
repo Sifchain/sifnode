@@ -17,6 +17,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/sethvargo/go-password/password"
+	"github.com/tyler-smith/go-bip39"
 	"github.com/yelinaung/go-haikunator"
 	"gopkg.in/yaml.v3"
 )
@@ -28,6 +29,7 @@ type Node struct {
 	Moniker     string    `yaml:"moniker"`
 	Address     string    `yaml:"address"`
 	Password    string    `yaml:"password"`
+	Mnemonic    string    `yaml:"mnemonic"`
 	CLI         utils.CLI `yaml:"-"`
 }
 
@@ -99,6 +101,11 @@ func (n *Node) setup() error {
 	}
 
 	_, err = n.CLI.SetConfigTrustNode(true)
+	if err != nil {
+		return err
+	}
+
+	err = n.generateMnemonic()
 	if err != nil {
 		return err
 	}
@@ -183,7 +190,7 @@ func (n *Node) seedGenesis() error {
 }
 
 func (n *Node) generateNodeKeyAddress() error {
-	output, err := n.CLI.AddKey(n.Moniker, n.Password, app.DefaultCLIHome)
+	output, err := n.CLI.AddKey(n.Moniker, n.Mnemonic, n.Password, app.DefaultCLIHome)
 	if err != nil {
 		return err
 	}
@@ -201,6 +208,22 @@ func (n *Node) generateNodeKeyAddress() error {
 	}
 
 	n.Address = keys[0].Address
+
+	return nil
+}
+
+func (n *Node) generateMnemonic() error {
+	entropy, err := bip39.NewEntropy(256)
+	if err != nil {
+		return err
+	}
+
+	mnemonic, err := bip39.NewMnemonic(entropy)
+	if err != nil {
+		return err
+	}
+
+	n.Mnemonic = mnemonic
 
 	return nil
 }

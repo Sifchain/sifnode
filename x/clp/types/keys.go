@@ -28,6 +28,7 @@ const (
 	MaxTickerLength      = 6
 	MaxSymbolLength      = 6
 	MaxSourceChainLength = 20
+	MaxWbasis            = 10000
 )
 
 var (

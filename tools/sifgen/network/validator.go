@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/sethvargo/go-password/password"
+	"github.com/tyler-smith/go-bip39"
 	"github.com/yelinaung/go-haikunator"
 )
 
@@ -30,6 +31,7 @@ type Validator struct {
 	Password                  string `yaml:"password"`
 	Address                   string `yaml:"address"`
 	PubKey                    string `yaml:"pub_key"`
+	Mnemonic                  string `yaml:"mnemonic"`
 	ValidatorAddress          string `yaml:"validator_address"`
 	ValidatorConsensusAddress string `yaml:"validator_consensus_address"`
 	Seed                      bool   `yaml:"is_seed"`
@@ -48,6 +50,7 @@ func NewValidator(rootDir, chainID string, seed bool, lastIPv4Addr string) *Vali
 		CLIConfigDir: fmt.Sprintf("%s/%s/%s", homeDir, CLIHomeDir, ConfigDir),
 		Moniker:      moniker,
 		Password:     generatePassword(),
+		Mnemonic:     generateMnemonic(),
 		Seed:         seed,
 	}
 }
@@ -55,6 +58,13 @@ func NewValidator(rootDir, chainID string, seed bool, lastIPv4Addr string) *Vali
 func generatePassword() string {
 	nodePassword, _ := password.Generate(32, 5, 0, false, false)
 	return nodePassword
+}
+
+func generateMnemonic() string {
+	entropy, _ := bip39.NewEntropy(256)
+	mnemonic, _ := bip39.NewMnemonic(entropy)
+
+	return mnemonic
 }
 
 func nextIP(lastIPv4Addr string) string {
