@@ -67,13 +67,6 @@ func init() {
 		initRelayerCmd(),
 		generateBindingsCmd(),
 	)
-
-	DefaultCLIHome := os.ExpandEnv("$HOME/.sifnodecli")
-	executor := cli.PrepareMainCmd(rootCmd, EnvPrefix, os.ExpandEnv(DefaultCLIHome))
-	err := executor.Execute()
-	if err != nil {
-		log.Fatal("failed executing CLI command", err)
-	}
 }
 
 var rootCmd = &cobra.Command{
@@ -196,8 +189,11 @@ func initConfig(cmd *cobra.Command) error {
 }
 
 func main() {
-	err := rootCmd.Execute()
+	DefaultCLIHome := os.ExpandEnv("$HOME/.sifnodecli")
+	executor := cli.PrepareMainCmd(rootCmd, EnvPrefix, os.ExpandEnv(DefaultCLIHome))
+	err := executor.Execute()
 	if err != nil {
+		log.Fatal("failed executing CLI command", err)
 		os.Exit(1)
 	}
 }
