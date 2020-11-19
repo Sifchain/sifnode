@@ -158,7 +158,7 @@ func (k Keeper) GetLiqudityProvidersForAsset(ctx sdk.Context, asset types.Asset)
 	return lpList
 }
 
-func (k Keeper) GetAssetsForLiquidityProvider(ctx sdk.Context, lpAddress sdk.AccAddress) []types.Asset {
+func (k Keeper) GetAssetsForLiquidityProvider(ctx sdk.Context, lpAddress sdk.Address) []types.Asset {
 	var assetList []types.Asset
 	iterator := k.GetLiquidityProviderIterator(ctx)
 	defer iterator.Close()
