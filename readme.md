@@ -103,17 +103,17 @@ cat ~/.sifnoded/config/config.toml | grep moniker
 
 ```
 sifnodecli tx staking create-validator \
-    --commission-max-change-rate 0.1 \
-    --commission-max-rate 0.1 \
-    --commission-rate 0.1 \
-    --amount 1000000000rowan \
-    --pubkey $(sifnoded tendermint show-validator) \
-    --moniker <moniker> \
-    --chain-id monkey-bars \
-    --min-self-delegation 1 \
-    --gas auto \
-    --from <moniker> \
-    --keyring-backend file
+    --commission-max-change-rate="0.1" \
+    --commission-max-rate="0.1" \
+    --commission-rate="0.1" \
+    --amount=1000000000rowan \
+    --pubkey=$(sifnoded tendermint show-validator) \
+    --moniker=<moniker> \
+    --chain-id=monkey-bars \
+    --min-self-delegation="1" \
+    --gas="auto" \
+    --from=<moniker> \
+    --keyring-backend=file
 ```
 
 ## Additional Resources
