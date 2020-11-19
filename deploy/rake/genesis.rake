@@ -94,7 +94,6 @@ def boot_docker_network(chainnet:, seed_network_address:, eth_config:)
   end
 
   cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../genesis/docker-compose.yml up | tee #{cwd}/../../log/#{chainnet}.log"
-  puts cmd
   system(cmd)
 end
 
