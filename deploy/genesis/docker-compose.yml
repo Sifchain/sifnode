@@ -16,7 +16,6 @@ services:
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY1}
     volumes:
       - ../networks/validators/${CHAINNET}/${MONIKER1}:/root:Z
-      - ../scripts:/scripts
       - ../etc/supervisor:/etc/supervisor
     command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     networks:
@@ -38,7 +37,6 @@ services:
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY2}
     volumes:
       - ../networks/validators/${CHAINNET}/${MONIKER2}:/root:Z
-      - ../scripts:/scripts
       - ../etc/supervisor:/etc/supervisor
     command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     networks:
@@ -60,7 +58,6 @@ services:
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY3}
     volumes:
       - ../networks/validators/${CHAINNET}/${MONIKER3}:/root:Z
-      - ../scripts:/scripts
       - ../etc/supervisor:/etc/supervisor
     command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     networks:
@@ -82,7 +79,6 @@ services:
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY4}
     volumes:
       - ../networks/validators/${CHAINNET}/${MONIKER4}:/root:Z
-      - ../scripts:/scripts
       - ../etc/supervisor:/etc/supervisor
     command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     networks:
