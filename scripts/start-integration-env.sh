@@ -24,12 +24,12 @@ do
   echo "waiting for network-definition on deployment"
   NETDEF=$NETWORKDIR/network-definition.yml
 done
-
-
 PASSWORD=$(yq r $NETDEF ".password")
 ADDR=$(yq r $NETDEF ".address")
 echo $PASSWORD
 echo $ADDR
+
+docker exec -it ${CONTAINER_NAME} bash -c "/test-scripts/add-second-account.sh"
 
 SUBSCRIBED=$(docker logs ${CONTAINER_NAME} | grep "Subscribed")
 while [ ! -n "$SUBSCRIBED" ];
@@ -42,7 +42,10 @@ done
 cd $BASEDIR/smart-contracts
 yarn peggy:lock ${ADDR} 0x0000000000000000000000000000000000000000 1000000000000000000
 
-#docker exec -it ${CONTAINER_NAME} bash -c "./test-scripts/init-docker.sh"
+USER1ADDR=$(yq r $NETDEF "[1].address")
+echo $USER1ADDR
+sleep 5
+yarn peggy:lock ${USER1ADDR} 0x0000000000000000000000000000000000000000 1000000000000000000
 
 docker logs -f ${CONTAINER_NAME}
 echo "======================"

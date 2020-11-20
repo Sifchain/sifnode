@@ -3,6 +3,7 @@ import json
 import time
 
 # define users
+USER = "user1"
 ROWAN = "rwn"
 PEGGYETH = "ceth"
 PEGGYROWAN = "erwn"
@@ -38,7 +39,6 @@ def get_ethereum_contract_address():
     return get_shell_output(command_line).decode("utf-8")
 
 VALIDATOR = get_moniker()
-USER = get_moniker()
 ETHEREUM_CONTRACT_ADDRESS = get_ethereum_contract_address()
 
 def get_user_account(user):
@@ -84,7 +84,7 @@ def create_claim(user, validator, amount, denom, claim_type):
     print('----- params')
     command_line = f""" sifnodecli tx ethbridge create-claim \
             {ETHEREUM_CONTRACT_ADDRESS} {get_account_nonce(validator)} {denom} \
-            {ETHEREUM_SENDER_ADDRESS} sif1fe5tqfkcnq0edelsuxgfg8lp5vxlagcf5dvlfr {get_operator_account(validator)} \
+            {ETHEREUM_SENDER_ADDRESS} {get_user_account(user)} {get_operator_account(validator)} \
             {amount} {claim_type} --token-contract-address={ETHEREUM_NULL_ADDRESS} \
             --ethereum-chain-id={ETHEREUM_CHAIN_ID} --from={validator} --yes"""
     print(command_line)
