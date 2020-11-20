@@ -24,7 +24,7 @@ services:
       - ../../scripts:/test-scripts
       - ../networks/network-definition.yml:/network-definition.yml
       - ../../smart-contracts:/smart-contracts
-    entrypoint: /scripts/entrypoint.sh
+    entrypoint: /scripts/integration-entrypoint.sh
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS1}
