@@ -7,25 +7,20 @@ import (
 )
 
 type Pool struct {
-	ExternalAsset        Asset          `json:"external_asset"`
-	NativeAssetBalance   sdk.Uint       `json:"native_asset_balance"`
-	ExternalAssetBalance sdk.Uint       `json:"external_asset_balance"`
-	PoolUnits            sdk.Uint       `json:"pool_units"`
-	PoolAddress          sdk.AccAddress `json:"pool_address"`
+	ExternalAsset        Asset    `json:"external_asset"`
+	NativeAssetBalance   sdk.Uint `json:"native_asset_balance"`
+	ExternalAssetBalance sdk.Uint `json:"external_asset_balance"`
+	PoolUnits            sdk.Uint `json:"pool_units"`
 }
 
 func (p Pool) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`ExternalAsset: %s
-	ExternalAssetBalance: %d
-	NativeAssetBalance: %d
-	PoolUnits : %d
-	PoolAddress :%s`, p.ExternalAsset, p.ExternalAssetBalance, p.NativeAssetBalance, p.PoolUnits, p.PoolAddress))
+	ExternalAssetBalance: %s
+	NativeAssetBalance: %s
+	PoolUnits : %s`, p.ExternalAsset, p.ExternalAssetBalance, p.NativeAssetBalance, p.PoolUnits))
 }
 
 func (p Pool) Validate() bool {
-	if p.PoolAddress.Empty() {
-		return false
-	}
 	if !p.ExternalAsset.Validate() {
 		return false
 	}
@@ -38,13 +33,7 @@ func NewPool(externalAsset Asset, nativeAssetBalance, externalAssetBalance, pool
 		NativeAssetBalance:   nativeAssetBalance,
 		ExternalAssetBalance: externalAssetBalance,
 		PoolUnits:            poolUnits}
-	nativeAsset := GetSettlementAsset()
-	pooladdr, err := GetAddress(pool.ExternalAsset.Ticker, nativeAsset.Ticker)
 
-	if err != nil {
-		return Pool{}, err
-	}
-	pool.PoolAddress = pooladdr
 	return pool, nil
 }
 
@@ -104,4 +93,14 @@ type LiquidityProviderResponse struct {
 
 func NewLiquidityProviderResponse(liquidityProvider LiquidityProvider, height int64) LiquidityProviderResponse {
 	return LiquidityProviderResponse{LiquidityProvider: liquidityProvider, Height: height}
+}
+
+type AssetListResponse struct {
+	Assets
+	Height int64 `json:"height"`
+}
+
+func NewAssetListResponse(assets Assets, height int64) AssetListResponse {
+	return AssetListResponse{Assets: assets, Height: height}
+
 }

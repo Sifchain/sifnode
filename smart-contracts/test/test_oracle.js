@@ -1,3 +1,5 @@
+const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+
 const Valset = artifacts.require("Valset");
 const CosmosBridge = artifacts.require("CosmosBridge");
 const Oracle = artifacts.require("Oracle");
@@ -36,21 +38,26 @@ contract("Oracle", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
-      this.valset = await Valset.new(
+      this.valset = await deployProxy(Valset, [
         operator,
         this.initialValidators,
         this.initialPowers
+      ],
+      {unsafeAllowCustomTypes: true}
       );
 
       // Deploy CosmosBridge contract
-      this.cosmosBridge = await CosmosBridge.new(operator, this.valset.address);
+      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
+        {unsafeAllowCustomTypes: true});
 
       // Deploy Oracle contract
-      this.oracle = await Oracle.new(
+      this.oracle = await deployProxy(Oracle, [
         operator,
         this.valset.address,
         this.cosmosBridge.address,
         consensusThreshold
+      ],
+      {unsafeAllowCustomTypes: true}
       );
     });
 
@@ -69,7 +76,7 @@ contract("Oracle", function (accounts) {
     beforeEach(async function () {
       this.prophecyID = 1;
       this.cosmosSender = web3.utils.utf8ToHex(
-        "985cfkop78sru7gfud4wce83kuc9rmw89rqtzmy"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       this.ethereumReceiver = userOne;
       this.symbol = "TEST";
@@ -89,29 +96,36 @@ contract("Oracle", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
-      this.valset = await Valset.new(
+      this.valset = await deployProxy(Valset, [
         operator,
         this.initialValidators,
         this.initialPowers
+      ],
+      {unsafeAllowCustomTypes: true}
       );
 
       // Deploy CosmosBridge contract
-      this.cosmosBridge = await CosmosBridge.new(operator, this.valset.address);
+      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
+        {unsafeAllowCustomTypes: true});
 
       // Deploy Oracle contract
-      this.oracle = await Oracle.new(
+      this.oracle = await deployProxy(Oracle, [
         operator,
         this.valset.address,
         this.cosmosBridge.address,
         consensusThreshold
+      ],
+      {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
-      this.bridgeBank = await BridgeBank.new(
+      this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.oracle.address,
         this.cosmosBridge.address,
         operator
+      ],
+      {unsafeAllowCustomTypes: true}
       );
 
       // Operator sets Oracle
@@ -270,7 +284,7 @@ contract("Oracle", function (accounts) {
     beforeEach(async function () {
       this.prophecyID = 1;
       this.cosmosSender = web3.utils.utf8ToHex(
-        "985cfkop78sru7gfud4wce83kuc9rmw89rqtzmy"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       this.ethereumReceiver = userOne;
       this.symbol = "TEST";
@@ -290,10 +304,12 @@ contract("Oracle", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
-      this.valset = await Valset.new(
+      this.valset = await deployProxy(Valset, [
         operator,
         this.initialValidators,
         this.initialPowers
+      ],
+      {unsafeAllowCustomTypes: true}
       );
 
       // Set up total power
@@ -302,22 +318,27 @@ contract("Oracle", function (accounts) {
       }, 0);
 
       // Deploy CosmosBridge contract
-      this.cosmosBridge = await CosmosBridge.new(operator, this.valset.address);
+      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
+        {unsafeAllowCustomTypes: true});
 
       // Deploy Oracle contract
-      this.oracle = await Oracle.new(
+      this.oracle = await deployProxy(Oracle, [
         operator,
         this.valset.address,
         this.cosmosBridge.address,
         consensusThreshold
+      ],
+      {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
-      this.bridgeBank = await BridgeBank.new(
+      this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.oracle.address,
         this.cosmosBridge.address,
         operator
+      ],
+      {unsafeAllowCustomTypes: true}
       );
 
       // Operator sets Oracle

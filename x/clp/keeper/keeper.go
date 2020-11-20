@@ -11,19 +11,21 @@ import (
 
 // Keeper of the clp store
 type Keeper struct {
-	storeKey   sdk.StoreKey
-	cdc        *codec.Codec
-	bankKeeper types.BankKeeper
-	paramstore params.Subspace
+	storeKey     sdk.StoreKey
+	cdc          *codec.Codec
+	bankKeeper   types.BankKeeper
+	supplyKeeper types.SupplyKeeper
+	paramstore   params.Subspace
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankkeeper types.BankKeeper, paramstore params.Subspace) Keeper {
+func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankkeeper types.BankKeeper, supplyKeeper types.SupplyKeeper, paramstore params.Subspace) Keeper {
 	keeper := Keeper{
-		storeKey:   key,
-		cdc:        cdc,
-		bankKeeper: bankkeeper,
-		paramstore: paramstore.WithKeyTable(types.ParamKeyTable()),
+		storeKey:     key,
+		cdc:          cdc,
+		bankKeeper:   bankkeeper,
+		supplyKeeper: supplyKeeper,
+		paramstore:   paramstore.WithKeyTable(types.ParamKeyTable()),
 	}
 	return keeper
 }
@@ -39,6 +41,10 @@ func (k Keeper) Codec() *codec.Codec {
 
 func (k Keeper) GetBankKeeper() types.BankKeeper {
 	return k.bankKeeper
+}
+
+func (k Keeper) GetSupplyKeeper() types.SupplyKeeper {
+	return k.supplyKeeper
 }
 
 func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) error {
@@ -137,8 +143,8 @@ func (k Keeper) DestroyLiquidityProvider(ctx sdk.Context, ticker string, lpAddre
 	store.Delete(key)
 }
 
-func (k Keeper) GetLiqudityProvidersForAsset(ctx sdk.Context, asset types.Asset) types.LiquidityProviders {
-	var lpList types.LiquidityProviders
+func (k Keeper) GetLiqudityProvidersForAsset(ctx sdk.Context, asset types.Asset) []types.LiquidityProvider {
+	var lpList []types.LiquidityProvider
 	iterator := k.GetLiquidityProviderIterator(ctx)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
@@ -152,17 +158,19 @@ func (k Keeper) GetLiqudityProvidersForAsset(ctx sdk.Context, asset types.Asset)
 	return lpList
 }
 
-func (k Keeper) GetLiquidityProviders(ctx sdk.Context) types.LiquidityProviders {
-	var lpList types.LiquidityProviders
+func (k Keeper) GetAssetsForLiquidityProvider(ctx sdk.Context, lpAddress sdk.Address) []types.Asset {
+	var assetList []types.Asset
 	iterator := k.GetLiquidityProviderIterator(ctx)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var lp types.LiquidityProvider
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
-		lpList = append(lpList, lp)
+		if lp.LiquidityProviderAddress.Equals(lpAddress) {
+			assetList = append(assetList, lp.Asset)
+		}
 	}
-	return lpList
+	return assetList
 }
 
 func (k Keeper) GetLiquidityProviderIterator(ctx sdk.Context) sdk.Iterator {

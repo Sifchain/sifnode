@@ -5,6 +5,7 @@ import sdk "github.com/cosmos/cosmos-sdk/types"
 const (
 	QueryPool              = "pool"
 	QueryPools             = "allpools"
+	QueryAssetList         = "assetList"
 	QueryLiquidityProvider = "liquidityProvider"
 )
 
@@ -23,4 +24,13 @@ type QueryReqLiquidityProvider struct {
 
 func NewQueryReqLiquidityProvider(ticker string, lpAddress sdk.AccAddress) QueryReqLiquidityProvider {
 	return QueryReqLiquidityProvider{Ticker: ticker, LpAddress: lpAddress}
+}
+
+type QueryReqGetAssetList struct {
+	LpAddress sdk.AccAddress `json:"lp_address"`
+}
+
+func NewQueryReqGetAssetList(lpAddress sdk.AccAddress) QueryReqGetAssetList {
+	return QueryReqGetAssetList{LpAddress: lpAddress}
+
 }

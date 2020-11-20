@@ -1,4 +1,4 @@
-module.exports = async () => {
+module.exports = async (cb) => {
   /*******************************************
    *** Set up
    ******************************************/
@@ -14,12 +14,13 @@ module.exports = async () => {
 
   const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
+  console.log("Expected usage: \ntruffle exec scripts/sendLockTx.js --network ropsten sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace eth 100\n");
   /*******************************************
    *** Constants
    ******************************************/
   // Lock transaction default params
   const DEFAULT_COSMOS_RECIPIENT = Web3.utils.utf8ToHex(
-    "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
+    "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
   );
   const DEFAULT_ETH_DENOM = "eth";
   const DEFAULT_AMOUNT = 10;
@@ -27,6 +28,9 @@ module.exports = async () => {
   // Config values
   const NETWORK_ROPSTEN =
     process.argv[4] === "--network" && process.argv[5] === "ropsten";
+  const NETWORK_MAINNET =
+    process.argv[4] === "--network" && process.argv[5] === "mainnet";
+
   const DEFAULT_PARAMS =
     process.argv[4] === "--default" ||
     (NETWORK_ROPSTEN && process.argv[6] === "--default");
@@ -38,13 +42,13 @@ module.exports = async () => {
    *** truffle exec lacks support for dynamic command line arguments:
    *** https://github.com/trufflesuite/truffle/issues/889#issuecomment-522581580
    ******************************************/
-  if (NETWORK_ROPSTEN && DEFAULT_PARAMS) {
+  if ((NETWORK_MAINNET || NETWORK_ROPSTEN) && DEFAULT_PARAMS) {
     if (NUM_ARGS !== 3) {
       return console.error(
         "Error: custom parameters are invalid on --default."
       );
     }
-  } else if (NETWORK_ROPSTEN) {
+  } else if (NETWORK_ROPSTEN || NETWORK_MAINNET) {
     if (NUM_ARGS !== 2 && NUM_ARGS !== 5) {
       return console.error(
         "Error: invalid number of parameters, please try again."
@@ -72,7 +76,7 @@ module.exports = async () => {
   let amount = DEFAULT_AMOUNT;
 
   if (!DEFAULT_PARAMS) {
-    if (NETWORK_ROPSTEN) {
+    if (NETWORK_ROPSTEN || NETWORK_MAINNET) {
       cosmosRecipient = Web3.utils.utf8ToHex(process.argv[6]);
       coinDenom = process.argv[7];
       amount = new BigNumber(process.argv[8]);
@@ -82,12 +86,12 @@ module.exports = async () => {
       amount = new BigNumber(process.argv[6]);
     }
   }
-
+  
   // Convert default 'eth' coin denom into null address
   if (coinDenom == "eth") {
     coinDenom = NULL_ADDRESS;
   }
-
+  
   /*******************************************
    *** Web3 provider
    *** Set contract provider based on --network flag
@@ -95,9 +99,16 @@ module.exports = async () => {
   let provider;
   if (NETWORK_ROPSTEN) {
     provider = new HDWalletProvider(
-      process.env.MNEMONIC,
+      process.env.ETHEREUM_PRIVATE_KEY,
       "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
-    );
+      );
+      console.log("~~~~~~~ Provider set to ropsten and connected ~~~~~~~")
+    } else if (NETWORK_MAINNET) {
+    provider = new HDWalletProvider(
+      process.env.ETHEREUM_PRIVATE_KEY,
+      "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+      );
+    console.log("~~~~~~~ Provider set to mainnet and connected ~~~~~~~")
   } else {
     provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
   }
@@ -141,5 +152,5 @@ module.exports = async () => {
   } catch (error) {
     console.error({ error });
   }
-  return;
+  return cb();
 };

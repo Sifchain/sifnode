@@ -1,6 +1,6 @@
 const Valset = artifacts.require("Valset");
 
-const { toEthSignedMessageHash, fixSignature } = require("./helpers/helpers");
+const { deployProxy } = require('@openzeppelin/truffle-upgrades');
 
 const EVMRevert = "revert";
 const BigNumber = web3.BigNumber;
@@ -22,10 +22,12 @@ contract("Valset", function (accounts) {
       this.initialValidators = [userOne, userTwo, userThree];
       this.initialPowers = [5, 8, 12];
 
-      this.valset = await Valset.new(
+      this.valset = await deployProxy(Valset, [
         operator,
         this.initialValidators,
         this.initialPowers
+      ],
+      {unsafeAllowCustomTypes: true}
       );
     });
 
@@ -86,10 +88,12 @@ contract("Valset", function (accounts) {
         this.userTwoPower = 11;
         this.userThreePower = 44;
 
-        this.valset = await Valset.new(
+        this.valset = await deployProxy(Valset, [
           operator,
           this.initialValidators,
           this.initialPowers
+        ],
+        {unsafeAllowCustomTypes: true}
         );
       });
 
@@ -187,10 +191,12 @@ contract("Valset", function (accounts) {
         this.userTwoPower = 11;
         this.userThreePower = 44;
 
-        this.valset = await Valset.new(
+        this.valset = await deployProxy(Valset, [
           operator,
           this.initialValidators,
           this.initialPowers
+        ],
+        {unsafeAllowCustomTypes: true}
         );
       });
 
@@ -254,10 +260,12 @@ contract("Valset", function (accounts) {
         this.initialValidators = [userOne, userTwo];
         this.initialPowers = [33, 21];
 
-        this.valset = await Valset.new(
+        this.valset = await deployProxy(Valset, [
           operator,
           this.initialValidators,
           this.initialPowers
+        ],
+        {unsafeAllowCustomTypes: true}
         );
       });
 
@@ -324,10 +332,12 @@ contract("Valset", function (accounts) {
         this.secondValidators = [userThree, accounts[4], accounts[5]];
         this.secondPowers = [4, 19, 50];
 
-        this.valset = await Valset.new(
+        this.valset = await deployProxy(Valset, [
           operator,
           this.initialValidators,
           this.initialPowers
+        ],
+        {unsafeAllowCustomTypes: true}
         );
       });
 
@@ -476,10 +486,12 @@ contract("Valset", function (accounts) {
       this.secondValidators = [userThree];
       this.secondPowers = [5];
 
-      this.valset = await Valset.new(
+      this.valset = await deployProxy(Valset, [
         operator,
         this.initialValidators,
         this.initialPowers
+      ],
+      {unsafeAllowCustomTypes: true}
       );
     });
 
@@ -535,7 +547,7 @@ contract("Valset", function (accounts) {
       // Create hash using Solidity's Sha3 hashing function
       this.cosmosBridgeNonce = 3;
       this.cosmosSender = web3.utils.utf8ToHex(
-        "985cfkop78sru7gfud4wce83kuc9rmw89rqtzmy"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       this.nonce = 17;
       this.message = web3.utils.soliditySha3(
@@ -547,10 +559,12 @@ contract("Valset", function (accounts) {
       this.initialValidators = [userOne, userTwo, userThree];
       this.initialPowers = [5, 8, 12];
 
-      this.valset = await Valset.new(
+      this.valset = await deployProxy(Valset, [
         operator,
         this.initialValidators,
         this.initialPowers
+      ],
+      {unsafeAllowCustomTypes: true}
       );
     });
 

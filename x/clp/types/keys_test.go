@@ -23,10 +23,7 @@ func TestKeys_GetPoolKey(t *testing.T) {
 }
 
 func TestGetLiquidityProviderKey(t *testing.T) {
-	paddedbytes, err := pkcs7Pad([]byte("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v"), 20)
-	assert.NoError(t, err)
-	hx := hex.EncodeToString(paddedbytes)
-	lpaddress, err := sdk.AccAddressFromHex(hx)
+	lpaddress, err := sdk.AccAddressFromHex(hex.EncodeToString([]byte("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")))
 	assert.NoError(t, err)
 	lpKey := GetLiquidityProviderKey("ceth", lpaddress.String())
 	lpKey2 := GetLiquidityProviderKey("cdash", lpaddress.String())

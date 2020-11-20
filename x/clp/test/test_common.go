@@ -51,6 +51,7 @@ func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
 
 func CreateTestAppClp(isCheckTx bool) (sdk.Context, keeper.Keeper) {
 	app, ctx := CreateTestApp(isCheckTx)
+
 	return ctx, app.ClpKeeper
 }
 
