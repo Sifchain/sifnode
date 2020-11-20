@@ -11,10 +11,10 @@ namespace :genesis do
 
       validator_count = if args[:validator_count].nil?
                           1
-                        elsif args[:validator_count] > 4
+                        elsif args[:validator_count].to_i > 4
                           4
                         else
-                          args[:validator_count]
+                          args[:validator_count].to_i
                         end
 
       network_create(chainnet: args[:chainnet], validator_count: validator_count, build_dir: "#{cwd}/../networks",
@@ -102,7 +102,7 @@ def boot_docker_network(chainnet:, seed_network_address:, eth_config:)
     cmd += "MONIKER#{idx+1}=#{node['moniker']} MNEMONIC#{idx+1}=\"#{node['mnemonic']}\" IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
   end
 
-  cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../genesis/docker-compose.yml up #{instances} | tee #{cmd}/../../log/#{chainnet}.log"
+  cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../genesis/docker-compose.yml up #{instances} | tee #{cwd}/../../log/#{chainnet}.log"
   system(cmd)
 end
 
