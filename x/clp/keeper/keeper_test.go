@@ -111,6 +111,16 @@ func TestKeeper_BankKeeper(t *testing.T) {
 	assert.True(t, keeper.HasCoins(ctx, user2, sdk.Coins{sendingCoin}))
 }
 
+func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
+	ctx, keeper := test.CreateTestAppClp(false)
+	lpList := test.GenerateRandomLP(10)
+	for _, lp := range lpList {
+		keeper.SetLiquidityProvider(ctx, lp)
+	}
+	assetList := keeper.GetAssetsForLiquidityProvider(ctx, lpList[0].LiquidityProviderAddress)
+	assert.LessOrEqual(t, len(assetList), len(lpList))
+}
+
 func TestKeeper_GetModuleAccount(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
 	moduleAccount := keeper.GetSupplyKeeper().GetModuleAccount(ctx, clp.ModuleName)
