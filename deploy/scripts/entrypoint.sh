@@ -27,7 +27,7 @@ start_relayer() {
                                              "$MONIKER" \
                                              "$MNEMONIC" \
                                              --chain-id "$CHAINNET" \
-                                             --gas 200000 \
+                                             --gas 350000 \
                                              --gas-adjustment 1.5
 }
 
