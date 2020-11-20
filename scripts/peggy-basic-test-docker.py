@@ -4,7 +4,7 @@ import time
 
 # define users
 USER = "user1"
-ROWAN = "rwn"
+ROWAN = "rowan"
 PEGGYETH = "ceth"
 PEGGYROWAN = "erwn"
 ETH = "eth"
@@ -28,7 +28,8 @@ def get_shell_output(command_line):
 
 def get_password():
     command_line = "yq r network-definition.yml \"(*==$MONIKER).password\""
-    return get_shell_output(command_line).decode("utf-8")
+    output = get_shell_output(command_line).decode("utf-8")
+    return f"{output}"
 
 def get_moniker():
     command_line = "echo $MONIKER"
@@ -43,13 +44,13 @@ ETHEREUM_CONTRACT_ADDRESS = get_ethereum_contract_address()
 
 def get_user_account(user):
     password = get_password()
-    command_line = "yes \"" + password + "\" | sifnodecli keys show " + user + " -a"
+    command_line = "yes " + password + " | sifnodecli keys show " + user + " -a"
     return get_shell_output(command_line).decode("utf-8")
 
 
 def get_operator_account(user):
     password = get_password()
-    command_line = "yes \"" + password + "\" | sifnodecli keys show " + user + " -a --bech val"
+    command_line = "yes " + password + " | sifnodecli keys show " + user + " -a --bech val"
     return get_shell_output(command_line).decode("utf-8")
 
 
@@ -82,7 +83,8 @@ def create_claim(user, validator, amount, denom, claim_type):
     print(get_operator_account(validator))
     print(get_ethereum_contract_address())
     print('----- params')
-    command_line = f""" sifnodecli tx ethbridge create-claim \
+    print(get_password())
+    command_line = f""" yes {get_password()} | sifnodecli tx ethbridge create-claim \
             {ETHEREUM_CONTRACT_ADDRESS} {get_account_nonce(validator)} {denom} \
             {ETHEREUM_SENDER_ADDRESS} {get_user_account(user)} {get_operator_account(validator)} \
             {amount} {claim_type} --token-contract-address={ETHEREUM_NULL_ADDRESS} \
@@ -98,20 +100,20 @@ def create_claim(user, validator, amount, denom, claim_type):
     return get_shell_output(command_line)
 
 def burn_peggy_coin(user, validator, amount):
-    command_line = """sifnodecli tx ethbridge burn {} \
+    command_line = """yes {} | sifnodecli tx ethbridge burn {} \
     0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} {} \
-    --ethereum-chain-id=3 --from={} \
-    --yes""".format(get_user_account(user),
+    --ethereum-chain-id=5777 --from={} \
+    --yes""".format(get_password(), get_user_account(user),
                     amount, PEGGYETH, user)
     # print(command_line)
     return get_shell_output(command_line)
 
 def lock_rowan(user, amount):
     print('lock')
-    command_line = """sifnodecli tx ethbridge lock {} \
-        0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rwn \
-        --ethereum-chain-id=3 --from={} --yes    
-    """.format(get_user_account(user), amount, user)
+    command_line = """yes {} |sifnodecli tx ethbridge lock {} \
+            0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rowan \
+            --ethereum-chain-id=5777 --from={} --yes    
+    """.format(get_password(), get_user_account(user), amount, user)
     # print(command_line)
     return get_shell_output(command_line)
 
@@ -127,8 +129,6 @@ def test_case_1():
     print(create_claim(USER, VALIDATOR, AMOUNT, ETH, CLAIMLOCK))
     time.sleep(SLEEPTIME)
     balance_after_tx = int(get_balance(USER, PEGGYETH))
-    print('before', balance_before_tx)
-    print('after ', balance_after_tx)
     print("After lock transaction {}'s balance of {} is {}".format(
         USER, PEGGYETH, balance_after_tx))
     if balance_after_tx != balance_before_tx + AMOUNT:
@@ -193,6 +193,6 @@ def test_case_4():
     print("########## Test Case Four Over ##########")
 
 test_case_1()
-#test_case_2()
-#test_case_3()
-#test_case_4()
+test_case_2()
+test_case_3()
+test_case_4()

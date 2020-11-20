@@ -46,7 +46,11 @@ USER1ADDR=$(yq r $NETDEF "[1].address")
 echo $USER1ADDR
 sleep 5
 yarn peggy:lock ${USER1ADDR} 0x0000000000000000000000000000000000000000 1000000000000000000
+sleep 5
 
+docker exec -it ${CONTAINER_NAME} bash -c "/test-scripts/add-rowan-to-second-account.sh"
+sleep 5
+docker exec -it ${CONTAINER_NAME} bash -c "python3 /test-scripts/peggy-basic-test-docker.py"
 docker logs -f ${CONTAINER_NAME}
 echo "======================"
 echo 'if force killed remember to stop the services, remove non-running containers, network and untagged images'
