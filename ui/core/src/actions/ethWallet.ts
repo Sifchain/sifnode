@@ -11,9 +11,6 @@ export default ({
   const etheriumState = api.EthereumService.getState();
 
   const actions = {
-    async updateBalances(_?: string) {
-      store.wallet.eth.balances = await api.EthereumService.getBalance();
-    },
     async disconnectWallet() {
       await api.EthereumService.disconnect();
     },

@@ -141,4 +141,18 @@ describe("EthereumService", () => {
         ?.toFixed()
     ).toEqual("110.000000000000000000");
   });
+  it("should disconnect", async () => {
+    await EthereumService.disconnect();
+    expect(EthereumService.getState().accounts).toEqual([]);
+    expect(EthereumService.getState().connected).toBe(false);
+    expect(EthereumService.getState().address).toBe("");
+    expect(EthereumService.getState().balances).toEqual([]);
+  });
+  it("should not do anything with phase and purgingClient", async () => {
+    // TODO: We probably don't need this right now because we delegate to metamask
+    expect(await EthereumService.setPhrase("testing one two three")).toEqual(
+      ""
+    );
+    expect(EthereumService.purgeClient()).toBe(undefined);
+  });
 });

@@ -106,22 +106,4 @@ describe("sifService", () => {
     const balance = getBalance(balances, "rwn");
     expect(balance?.toFixed()).toEqual("999999950");
   });
-
-  // it.skip("should swap", async () => {
-  //   const sifService = createSifService(testConfig);
-
-  //   const address = await sifService.setPhrase(mnemonic);
-
-  //   await sifService.swap({
-  //     receivedAsset: TOKENS.btk,
-  //     sentAmount: AssetAmount(TOKENS.atk, "20"),
-  //   });
-
-  //   const balances = await sifService.getBalance(address);
-
-  //   const atkbal = getBalance(balances, "catk");
-  //   const btkbal = getBalance(balances, "cbtk");
-  //   expect(atkbal.toFixed()).toBe("999999980");
-  //   expect(btkbal.toFixed()).toBe("1000000019");
-  // });
 });
