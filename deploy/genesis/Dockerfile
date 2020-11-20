@@ -24,7 +24,7 @@ RUN make install
 #
 FROM alpine
 
-ENV PACKAGES curl jq bind-tools expect
+ENV PACKAGES curl jq bind-tools supervisor
 
 EXPOSE 1317
 EXPOSE 26656

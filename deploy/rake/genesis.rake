@@ -3,13 +3,21 @@ namespace :genesis do
   desc "network operations"
   namespace :network do
     desc "Scaffold a new genesis network for use in docker-compose"
-    task :scaffold, [:chainnet] do |t, args|
+    task :scaffold, [:chainnet, :validator_count] do |t, args|
       if args[:chainnet].nil?
         puts "Please provide chainnet argument. ie testnet, mainnet"
         exit 1
       end
 
-      network_create(chainnet: args[:chainnet], validator_count: 1, build_dir: "#{cwd}/../networks",
+      validator_count = if args[:validator_count].nil?
+                          1
+                        elsif args[:validator_count] > 4
+                          4
+                        else
+                          args[:validator_count]
+                        end
+
+      network_create(chainnet: args[:chainnet], validator_count: validator_count, build_dir: "#{cwd}/../networks",
                      seed_ip_address: "192.168.2.1",network_config: network_config(args[:chainnet]))
     end
 
@@ -26,7 +34,7 @@ namespace :genesis do
                             eth_keys: args[:eth_keys].split(" "),
                             eth_websocket: args[:eth_websocket])
 
-      if !File.file?(network_config(args[:chainnet]))
+      if !File.exists?(network_config(args[:chainnet]))
         puts "the file #{network_config(args[:chainnet])} does not exist!"
         exit(1)
       end
@@ -87,13 +95,14 @@ end
 #
 def boot_docker_network(chainnet:, seed_network_address:, eth_config:)
   network = YAML.load_file(network_config(chainnet))
+  instances = network.size.times.map { |idx| "sifnode#{idx+1}" }.join(' ')
 
   cmd = "CHAINNET=#{chainnet} "
   network.each_with_index do |node, idx|
     cmd += "MONIKER#{idx+1}=#{node['moniker']} MNEMONIC#{idx+1}=\"#{node['mnemonic']}\" IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
   end
 
-  cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../genesis/docker-compose.yml up | tee #{cwd}/../../log/#{chainnet}.log"
+  cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../genesis/docker-compose.yml up #{instances} | tee #{cmd}/../../log/#{chainnet}.log"
   system(cmd)
 end
 
