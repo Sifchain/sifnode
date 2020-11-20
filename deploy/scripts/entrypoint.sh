@@ -14,7 +14,7 @@ start_daemon() {
 # Rest server.
 #
 start_rest_server() {
-  sifnodecli rest-server --laddr tcp://0.0.0.0:1317 &
+  sifnodecli rest-server --laddr tcp://0.0.0.0:1317 --unsafe-cors &
 }
 
 #
