@@ -45,11 +45,13 @@ services:
 #      MNEMONIC: ${MNEMONIC2}
 #      PASSWORD: ${PASSWORD2}
 #      ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY2}
+#      RELAYER_ENABLED: "true"
 #    volumes:
 #      - ../networks/validators/${CHAINNET}/${MONIKER2}:/root:Z
 #      - ../scripts:/scripts
 #      - ../../scripts:/test-scripts
 #      - ../networks/network-definition.yml:/network-definition.yml
+#      - ../../smart-contracts:/smart-contracts
 #    entrypoint: /scripts/entrypoint.sh
 #    networks:
 #      sifchain:

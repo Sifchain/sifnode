@@ -1,6 +1,7 @@
 #!/bin/bash
 BASEDIR=$(pwd)
 NETWORKDIR=$BASEDIR/deploy/networks
+CONTAINER_NAME="genesis_sifnode1_1"
 echo "apologies for this sudo, it is to delete non-persisent cryptographic keys that usually has enhanced permissions"
 sudo rm -rf $NETWORKDIR
 make clean install
@@ -30,18 +31,20 @@ ADDR=$(yq r $NETDEF ".address")
 echo $PASSWORD
 echo $ADDR
 
-SUBSCRIBED=$(docker logs genesis_sifnode1_1 | grep "Subscribed")
+SUBSCRIBED=$(docker logs ${CONTAINER_NAME} | grep "Subscribed")
 while [ ! -n "$SUBSCRIBED" ];
 do
   sleep 2
   echo "waiting for websocket subscription"
-  SUBSCRIBED=$(docker logs genesis_sifnode1_1 | grep "Subscribed")
+  SUBSCRIBED=$(docker logs ${CONTAINER_NAME} | grep "Subscribed")
 done
 
 cd $BASEDIR/smart-contracts
 yarn peggy:lock ${ADDR} 0x0000000000000000000000000000000000000000 1000000000000000000
 
-docker logs -f genesis_sifnode1_1
+#docker exec -it ${CONTAINER_NAME} bash -c "./test-scripts/init-docker.sh"
+
+docker logs -f ${CONTAINER_NAME}
 echo "======================"
 echo 'if force killed remember to stop the services, remove non-running containers, network and untagged images'
 echo "======================"
