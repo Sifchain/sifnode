@@ -231,12 +231,14 @@ contract("CosmosBridge", function (accounts) {
       event.args._symbol.should.be.equal(this.symbol);
       Number(event.args._value).should.be.bignumber.equal(Number(this.amount));
 
+      const nonce = 0;
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.cosmosSender,
         userFour,
         this.symbol,
         this.amount,
+        nonce,
         {
           from: userOne
         }
@@ -250,6 +252,7 @@ contract("CosmosBridge", function (accounts) {
         this.ethereumReceiver,
         this.symbol,
         this.amount,
+        0,
         {
           from: userOne
         }
@@ -263,6 +266,7 @@ contract("CosmosBridge", function (accounts) {
         this.ethereumReceiver,
         this.symbol,
         this.amount,
+        0,
         {
           from: userOne
         }
@@ -270,7 +274,7 @@ contract("CosmosBridge", function (accounts) {
 
       const event = logs.find(e => e.event === "LogNewProphecyClaim");
 
-      Number(event.args._prophecyID).should.be.bignumber.equal(1);
+      Number(event.args._prophecyID).should.be.bignumber.equal(0);
       Number(event.args._claimType).should.be.bignumber.equal(CLAIM_TYPE_LOCK);
       event.args._cosmosSender.should.be.equal(this.cosmosSender);
       event.args._ethereumReceiver.should.be.equal(this.ethereumReceiver);
@@ -289,6 +293,7 @@ contract("CosmosBridge", function (accounts) {
         this.ethereumReceiver,
         this.symbol,
         this.amount,
+        0,
         {
           from: userOne
         }
@@ -381,6 +386,7 @@ contract("CosmosBridge", function (accounts) {
         this.ethereumReceiver,
         this.symbol,
         this.amount,
+        0,
         {
           from: userOne
         }
@@ -409,6 +415,7 @@ contract("CosmosBridge", function (accounts) {
         this.ethereumReceiver,
         this.symbol,
         this.amount,
+        0,
         {
           from: userOne
         }
