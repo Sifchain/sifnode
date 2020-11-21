@@ -36,6 +36,9 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
 
 // ValidateGenesis validates the clp genesis parameters
 func ValidateGenesis(data GenesisState) error {
+	if !data.Params.Validate() {
+		return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Params are invalid : %s", data.Params.String()))
+	}
 	for _, pool := range data.PoolList {
 		if !pool.Validate() {
 			return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Pool is invalid : %s", pool.String()))

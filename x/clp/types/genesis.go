@@ -6,7 +6,6 @@ type GenesisState struct {
 	Params                Params `json:"params" yaml:"params"`
 	PoolList              Pools
 	LiquidityProviderList LiquidityProviders
-	AssetList             Asset
 }
 
 // NewGenesisState creates a new GenesisState instance

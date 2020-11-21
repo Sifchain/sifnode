@@ -1,0 +1,84 @@
+package keeper
+
+import (
+	"github.com/Sifchain/sifnode/x/clp/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+func (k Keeper) SetLiquidityProvider(ctx sdk.Context, lp types.LiquidityProvider) {
+	if !lp.Validate() {
+		return
+	}
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetLiquidityProviderKey(lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
+	store.Set(key, k.cdc.MustMarshalBinaryBare(lp))
+}
+
+func (k Keeper) GetLiquidityProvider(ctx sdk.Context, ticker string, lpAddress string) (types.LiquidityProvider, error) {
+	var lp types.LiquidityProvider
+	key := types.GetLiquidityProviderKey(ticker, lpAddress)
+	store := ctx.KVStore(k.storeKey)
+	if !k.Exists(ctx, key) {
+		return lp, types.ErrLiquidityProviderDoesNotExist
+	}
+	bz := store.Get(key)
+	k.cdc.MustUnmarshalBinaryBare(bz, &lp)
+	return lp, nil
+}
+
+func (k Keeper) GetLiquidityProviders(ctx sdk.Context) types.LiquidityProviders {
+	var lpList types.LiquidityProviders
+	iterator := k.GetLiquidityProviderIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var lp types.LiquidityProvider
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
+		lpList = append(lpList, lp)
+	}
+	return lpList
+}
+
+func (k Keeper) GetLiquidityProviderIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.LiquidityProviderPrefix)
+}
+
+func (k Keeper) GetAssetsForLiquidityProvider(ctx sdk.Context, lpAddress sdk.Address) []types.Asset {
+	var assetList []types.Asset
+	iterator := k.GetLiquidityProviderIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var lp types.LiquidityProvider
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
+		if lp.LiquidityProviderAddress.Equals(lpAddress) {
+			assetList = append(assetList, lp.Asset)
+		}
+	}
+	return assetList
+}
+
+func (k Keeper) DestroyLiquidityProvider(ctx sdk.Context, ticker string, lpAddress string) {
+	key := types.GetLiquidityProviderKey(ticker, lpAddress)
+	if !k.Exists(ctx, key) {
+		return
+	}
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(key)
+}
+
+func (k Keeper) GetLiqudityProvidersForAsset(ctx sdk.Context, asset types.Asset) []types.LiquidityProvider {
+	var lpList []types.LiquidityProvider
+	iterator := k.GetLiquidityProviderIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var lp types.LiquidityProvider
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
+		if lp.Asset == asset {
+			lpList = append(lpList, lp)
+		}
+	}
+	return lpList
+}
