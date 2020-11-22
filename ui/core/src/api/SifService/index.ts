@@ -1,33 +1,68 @@
 import {
-  Secp256k1HdWallet,
-  SigningCosmosClient,
-  makeCosmoshubPath,
-  CosmosClient,
   coins,
-  Coin,
+  isBroadcastTxFailure,
+  makeCosmoshubPath,
+  Msg,
+  Secp256k1HdWallet,
 } from "@cosmjs/launchpad";
-
-import { Mnemonic } from "../../entities/Wallet";
-import { Address, Asset, Balance, ChainId, TxParams } from "../../entities";
 import { reactive } from "@vue/reactivity";
+import {
+  Address,
+  Asset,
+  AssetAmount,
+  Coin,
+  LiquidityProvider,
+  Network,
+  TxParams,
+} from "../../entities";
+import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
-import { CONNECTED } from "../EthereumService/events";
+import { SifClient } from "../utils/SifClient";
+import { ensureSifAddress } from "./utils";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
 };
 
+type IClpService = {
+  swap: (params: { receivedAsset: Asset; sentAmount: AssetAmount }) => any;
+  addLiquidity: (params: {
+    nativeAssetAmount: AssetAmount;
+    externalAssetAmount: AssetAmount;
+  }) => any;
+  createPool: (params: {
+    nativeAssetAmount: AssetAmount;
+    externalAssetAmount: AssetAmount;
+  }) => any;
+  getLiquidityProvider: (params: {
+    ticker: string;
+    lpAddress: string;
+  }) => Promise<LiquidityProvider | null>;
+  removeLiquidity: (params: {
+    wBasisPoints: string;
+    asymmetry: string;
+    asset: Asset;
+  }) => any;
+};
+
+/**
+ * Constructor for SifService
+ *
+ * SifService handles communication between our ui core Domain and the SifNode blockchain
+ */
 export default function createSifService({
-  sifAddrPrefix = "sif",
-  sifApiUrl = "http://127.0.0.1:1317",
+  sifAddrPrefix,
+  sifApiUrl,
 }: SifServiceContext): IWalletService {
   const {} = sifAddrPrefix;
+
+  // Reactive state for communicating state changes
   const state: {
     connected: boolean;
     address: Address;
     accounts: Address[];
-    balances: Balance[];
+    balances: AssetAmount[];
     log: string; // latest transaction hash
   } = reactive({
     connected: false,
@@ -37,10 +72,12 @@ export default function createSifService({
     log: "unset",
   });
 
-  let client: SigningCosmosClient | null = null;
+  let client: SifClient | null = null;
 
   return {
-    // Return reactive state
+    /**
+     * getState returns the service's reactive state to be listened to by consuming clients.
+     */
     getState() {
       return state;
     },
@@ -69,7 +106,7 @@ export default function createSifService({
 
         [state.address] = state.accounts;
 
-        client = new SigningCosmosClient(sifApiUrl, state.address, wallet);
+        client = new SifClient(sifApiUrl, state.address, wallet);
 
         state.log = "signed in";
         state.connected = true;
@@ -88,13 +125,11 @@ export default function createSifService({
       state.log = "";
     },
 
-    async getBalance(address?: Address): Promise<Balance[]> {
+    async getBalance(address?: Address): Promise<AssetAmount[]> {
+      if (!client) throw "No client. Please sign in.";
       if (!address) throw "Address undefined. Fail";
 
-      if (address.length !== 42) throw "Address not valid (length). Fail"; // this is simple check, limited to default address type (check bech32)
-      // TODO: add invariant address starts with "sif" (double check this is correct)
-
-      const client = new CosmosClient(sifApiUrl);
+      ensureSifAddress(address);
 
       try {
         const account = await client.getAccount(address);
@@ -103,8 +138,13 @@ export default function createSifService({
 
         state.balances = account.balance.map(({ amount, denom }) => {
           // HACK: Following should be a lookup of tokens loaded from genesis somehow
-          const asset = Asset.create(denom, 0, denom, ChainId.SIFCHAIN);
-          return Balance.n(asset, amount);
+          const asset = Coin({
+            symbol: denom,
+            decimals: 0,
+            name: denom,
+            network: Network.SIFCHAIN,
+          });
+          return AssetAmount(asset, amount);
         });
         return state.balances;
       } catch (error) {
@@ -113,14 +153,10 @@ export default function createSifService({
     },
 
     async transfer(params: TxParams): Promise<any> {
-      if (!client) throw "No signed in client. Sign in with mnemonic.";
-      if (!params)
-        throw "No user input data. Define who, what, and for how much.";
-      // this seems like anti-pattern, with SifWallet.vue, "undefined" as culprit
-      // but is alternative to define in vue with empty string?
+      if (!client) throw "No client. Please sign in.";
       if (!params.asset) throw "No asset.";
-      // https://github.com/tendermint/vue/blob/develop/src/store/cosmos.js#L91
 
+      // https://github.com/tendermint/vue/blob/develop/src/store/cosmos.js#L91
       const msg = {
         type: "cosmos-sdk/MsgSend",
         value: {
@@ -142,6 +178,26 @@ export default function createSifService({
 
       const txHash = await client.signAndBroadcast([msg], fee, params.memo);
 
+      this.getBalance(state.address);
+
+      return txHash;
+    },
+
+    async signAndBroadcast(msg: Msg | Msg[], memo?: string) {
+      if (!client) throw "No client. Please sign in.";
+
+      const fee = {
+        amount: coins(0, "rwn"),
+        gas: "200000", // need gas fee for tx to work - see genesis file
+      };
+
+      const msgArr = Array.isArray(msg) ? msg : [msg];
+
+      const txHash = await client.signAndBroadcast(msgArr, fee, memo);
+
+      if (isBroadcastTxFailure(txHash)) {
+        throw new Error(txHash.rawLog);
+      }
       this.getBalance(state.address);
 
       return txHash;

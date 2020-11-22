@@ -25,8 +25,8 @@ import { defineComponent } from "vue";
 import { computed, ref } from "@vue/reactivity";
 import { useCore } from "../hooks/useCore";
 
-import B from "../../../core/src/entities/utils/B";
-import { getFakeTokens } from "../../../core";
+import B from "ui-core";
+import { getFakeTokens } from "ui-core";
 
 export default defineComponent({
   name: "ListPage",
@@ -50,7 +50,7 @@ export default defineComponent({
       if (accountAddressText.value === "")
         throw new Error("Account must be supplied");
 
-      const hash = await actions.transferEthWallet(
+      const hash = await actions.ethWallet.transferEthWallet(
         amount.value,
         accountAddressText.value
       );
@@ -65,7 +65,7 @@ export default defineComponent({
 
       const ATK = await getATK();
 
-      const hash = await actions.transferEthWallet(
+      const hash = await actions.ethWallet.transferEthWallet(
         amountATK.value,
         tokenAccountAddress.value,
         ATK
