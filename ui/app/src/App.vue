@@ -1,14 +1,20 @@
 <template>
-  <div>
-    <p>Proof of technical capability</p>
-    <div id="nav">
-      <!-- <router-link to="/list">List</router-link> | -->
-      <router-link to="/">EthWallet</router-link> |
-      <router-link to="/ethtransfer">EthTransfer</router-link> |
-      <router-link to="/sifwallet">SifWallet</router-link>
-      <!-- <router-link to="/siftransfer">SifTransfer</router-link> -->
-      <!-- <router-link to="/swap">Swap</router-link> -->
-    </div>
+  <div class="main">
+    <Header>
+      <template v-slot:right>
+        <WithWallet>
+          <template v-slot:disconnected="{ requestDialog }">
+            <SifButton primary @click="requestDialog">Connect Wallet</SifButton>
+          </template>
+          <template v-slot:connected="{ connectedText, requestDialog }">
+            <SifButton primary @click="requestDialog">
+              {{ connectedText }}
+            </SifButton>
+          </template>
+        </WithWallet>
+      </template>
+    </Header>
+
     <router-view />
   </div>
 </template>
@@ -16,36 +22,41 @@
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
 import { useCore } from "./hooks/useCore";
+import WithWallet from "@/components/wallet/WithWallet.vue";
+import Header from "./components/shared/Header.vue";
+import SifButton from "./components/shared/SifButton.vue";
+
 export default defineComponent({
   name: "App",
+  components: {
+    Header,
+    WithWallet,
+    SifButton,
+  },
+
   setup() {
     const { actions } = useCore();
     onMounted(async () => {
-      await actions.refreshTokens();
+      await actions.token.refreshTokens();
     });
   },
 });
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+<style lang="scss">
+#app,
+#portal-target {
+  font: italic normal bold 14px/22px $f_default;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
 }
 
-#nav {
-  padding: 30px;
-}
-
-#nav a {
+a {
   font-weight: bold;
-  color: #2c3e50;
 }
 
-#nav a.router-link-exact-active {
-  color: #42b983;
+.main {
+  min-height: 100vh;
 }
 </style>

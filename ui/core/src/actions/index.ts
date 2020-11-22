@@ -1,17 +1,9 @@
-// import addLiquidity from "./addLiquidity";
-// import broadcastTx from "./broadcastTx";
-// import connectToWallet from "./connectToWallet";
-// import createPool from "./createPool";
-// import destroyPool from "./destroyPool";
-// import removeLiquidity from "./removeLiquidity";
-// import queryListOfAvailableTokens from "./queryListOfAvailableTokens";
-// import setQuantityOfToken from "./setQuantityOfToken";
-// import swapTokens from "./swapTokens";
 import { Api, WithApi } from "../api";
 import { Store, WithStore } from "../store";
-import ethWalletActions from "./ethWalletActions";
-import sifWalletActions from "./sifWalletActions";
-import tokenActions from "./tokenActions";
+import ethWalletActions from "./ethWallet";
+import clpActions from "./clp";
+import tokenActions from "./token";
+import walletActions from "./wallet";
 
 export type ActionContext<
   T extends keyof Api = keyof Api,
@@ -20,17 +12,10 @@ export type ActionContext<
 
 export function createActions(context: ActionContext) {
   return {
-    ...ethWalletActions(context),
-    ...sifWalletActions(context),
-    ...tokenActions(context),
-    // ...broadcastTx(context),
-    // ...connectToWallet(context),
-    // ...createPool(context),
-    // ...destroyPool(context),
-    // ...removeLiquidity(context),
-    // ...queryListOfAvailableTokens(context),
-    // ...setQuantityOfToken(context),
-    // ...swapTokens(context),
+    ethWallet: ethWalletActions(context),
+    clp: clpActions(context),
+    token: tokenActions(context),
+    wallet: walletActions(context),
   };
 }
 

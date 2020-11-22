@@ -1,5 +1,15 @@
-import { createAsset, Asset } from "./Asset";
+import { Asset } from "./Asset";
+import { Network } from "./Network";
 
-export const Coin = Asset;
+export function Coin(p: {
+  decimals: number;
+  imageUrl?: string;
+  name: string;
+  network: Network;
+  symbol: string;
+}) {
+  Asset.set(p.symbol, p);
+  return p;
+}
 
-export const createCoin = Coin.create;
+export type Coin = ReturnType<typeof Coin>;

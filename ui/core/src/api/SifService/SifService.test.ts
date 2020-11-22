@@ -1,17 +1,44 @@
 import JSBI from "jsbi";
-import { NCN } from "../../constants";
-import { Balance } from "../../entities";
+
+import { AssetAmount, Coin, Network } from "../../entities";
 import createSifService, { SifServiceContext } from ".";
 
-const badMnemonic =
-  "Ever have that feeling where you’re not sure if you’re awake or dreaming?";
+const TOKENS = {
+  rwn: Coin({
+    symbol: "rwn",
+    decimals: 0,
+    name: "Rowan",
+    network: Network.SIFCHAIN,
+  }),
+
+  atk: Coin({
+    symbol: "catk",
+    decimals: 0,
+    name: "catk",
+    network: Network.SIFCHAIN,
+  }),
+
+  btk: Coin({
+    symbol: "cbtk",
+    decimals: 0,
+    name: "cbtk",
+    network: Network.SIFCHAIN,
+  }),
+};
+
+// This is required because we need to wait for the blockchain to process transactions
+jest.setTimeout(20000);
+
+// const badMnemonic =
+//   "Ever have that feeling where you’re not sure if you’re awake or dreaming?";
 
 const mnemonic =
   "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow";
 
+// To be kept up to date with test state
 const account = {
   address: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-  balance: [Balance.n(NCN, "1000")],
+  balance: [AssetAmount(TOKENS.rwn, "1000")],
   pubkey: {
     type: "tendermint/PubKeySecp256k1",
     value: "AvUEsFHbsr40nTSmWh7CWYRZHGwf4cpRLtJlaRO4VAoq",
@@ -24,6 +51,12 @@ const testConfig: SifServiceContext = {
   sifAddrPrefix: "sif",
   sifApiUrl: "http://127.0.0.1:1317",
 };
+
+function getBalance(balances: AssetAmount[], symbol: string): AssetAmount {
+  const bal = balances.find((bal) => bal.asset.symbol === symbol);
+  if (!bal) throw new Error("Asset not found in balances");
+  return bal;
+}
 
 // This is redundant. CWalletActions and SifService should be combined imo
 describe("sifService", () => {
@@ -43,6 +76,7 @@ describe("sifService", () => {
 
   it("should get cosmos balance", async () => {
     const sifService = createSifService(testConfig);
+    await sifService.setPhrase(mnemonic);
     try {
       await sifService.getBalance("");
     } catch (error) {
@@ -53,22 +87,23 @@ describe("sifService", () => {
     } catch (error) {
       expect(error).toEqual("Address not valid (length). Fail");
     }
-    const [balance] = await sifService.getBalance(account.address);
-    expect(balance).toEqual(account.balance[0]);
+    const balances = await sifService.getBalance(account.address);
+    const balance = getBalance(balances, "rwn");
+    expect(balance?.toFixed()).toEqual("1000000000");
   });
 
-  // Skipping until we can get deterministic ordering
   it("should transfer transaction", async () => {
     const sifService = createSifService(testConfig);
 
     const address = await sifService.setPhrase(mnemonic);
     await sifService.transfer({
       amount: JSBI.BigInt("50"),
-      asset: NCN,
+      asset: TOKENS.rwn,
       recipient: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
       memo: "",
     });
-    const [balance] = await sifService.getBalance(address);
-    expect(balance).toEqual(Balance.n(NCN, "950"));
+    const balances = await sifService.getBalance(address);
+    const balance = getBalance(balances, "rwn");
+    expect(balance?.toFixed()).toEqual("999999950");
   });
 });
