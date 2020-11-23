@@ -129,13 +129,15 @@ contract CosmosBridge is CosmosBridgeStorage {
     function newProphecyClaim(
         ClaimType _claimType,
         bytes memory _cosmosSender,
+        uint256 _cosmosSenderSequence,
         address payable _ethereumReceiver,
         string memory _symbol,
-        uint256 _amount,
-        uint256 _prophecyID
+        uint256 _amount
+        // uint256 _prophecyID
     ) public isActive onlyValidator {
         bool claimComplete;
-
+        // uint256 _prophecyID = uint256(keccak256(abi.encodePacked(_claimType, _cosmosSender, _cosmosSenderSequence, _ethereumReceiver, _symbol, _amount)));
+        uint256 _prophecyID = _cosmosSenderSequence;
         if (usedNonce[_prophecyID]) {
             claimComplete = Oracle(oracle).newOracleClaim(_prophecyID, msg.sender);
         } else {

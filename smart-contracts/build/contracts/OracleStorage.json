@@ -114,25 +114,25 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"consensusThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"cosmosBridge\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"hasMadeClaim\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"oracleClaimValidators\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"valset\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol\":\"OracleStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol\":{\"keccak256\":\"0x921654252a2aa189bb5c0f87d30032fe445425e1a6bba69076d577a1fd4eaa4f\",\"urls\":[\"bzz-raw://e0850963632ca18d321d11fccb5e15d8892830666dafd81f61aa72cb1b54ce11\",\"dweb:/ipfs/QmefegfxDub2GfpmNooGWLR5SBvpGY5bhD3vFrptRyeBg9\"]}},\"version\":1}",
-  "bytecode": "0x608060405234801561001057600080fd5b506101d5806100206000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c806336e4134114610067578063570ca735146100a65780637f54af0c146100ae578063a219763e146100b6578063b0e9ef71146100f6578063f9b0b5b9146100fe575b600080fd5b61008a6004803603604081101561007d57600080fd5b5080359060200135610118565b604080516001600160a01b039092168252519081900360200190f35b61008a61014d565b61008a61015c565b6100e2600480360360408110156100cc57600080fd5b50803590602001356001600160a01b031661016b565b604080519115158252519081900360200190f35b61008a61018b565b61010661019a565b60408051918252519081900360200190f35b6004602052816000526040600020818154811061013157fe5b6000918252602090912001546001600160a01b03169150829050565b6002546001600160a01b031681565b6001546001600160a01b031681565b600560209081526000928352604080842090915290825290205460ff1681565b6000546001600160a01b031681565b6003548156fea265627a7a72315820a49925b647111fa96ae89d4fb6531eb3806c798f6e4eaea54c69fba4ee506fbb64736f6c63430005100032",
-  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100625760003560e01c806336e4134114610067578063570ca735146100a65780637f54af0c146100ae578063a219763e146100b6578063b0e9ef71146100f6578063f9b0b5b9146100fe575b600080fd5b61008a6004803603604081101561007d57600080fd5b5080359060200135610118565b604080516001600160a01b039092168252519081900360200190f35b61008a61014d565b61008a61015c565b6100e2600480360360408110156100cc57600080fd5b50803590602001356001600160a01b031661016b565b604080519115158252519081900360200190f35b61008a61018b565b61010661019a565b60408051918252519081900360200190f35b6004602052816000526040600020818154811061013157fe5b6000918252602090912001546001600160a01b03169150829050565b6002546001600160a01b031681565b6001546001600160a01b031681565b600560209081526000928352604080842090915290825290205460ff1681565b6000546001600160a01b031681565b6003548156fea265627a7a72315820a49925b647111fa96ae89d4fb6531eb3806c798f6e4eaea54c69fba4ee506fbb64736f6c63430005100032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"consensusThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"cosmosBridge\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"hasMadeClaim\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"oracleClaimValidators\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"valset\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/OracleStorage.sol\":\"OracleStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/OracleStorage.sol\":{\"keccak256\":\"0x921654252a2aa189bb5c0f87d30032fe445425e1a6bba69076d577a1fd4eaa4f\",\"urls\":[\"bzz-raw://e0850963632ca18d321d11fccb5e15d8892830666dafd81f61aa72cb1b54ce11\",\"dweb:/ipfs/QmefegfxDub2GfpmNooGWLR5SBvpGY5bhD3vFrptRyeBg9\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506101d5806100206000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c806336e4134114610067578063570ca735146100a65780637f54af0c146100ae578063a219763e146100b6578063b0e9ef71146100f6578063f9b0b5b9146100fe575b600080fd5b61008a6004803603604081101561007d57600080fd5b5080359060200135610118565b604080516001600160a01b039092168252519081900360200190f35b61008a61014d565b61008a61015c565b6100e2600480360360408110156100cc57600080fd5b50803590602001356001600160a01b031661016b565b604080519115158252519081900360200190f35b61008a61018b565b61010661019a565b60408051918252519081900360200190f35b6004602052816000526040600020818154811061013157fe5b6000918252602090912001546001600160a01b03169150829050565b6002546001600160a01b031681565b6001546001600160a01b031681565b600560209081526000928352604080842090915290825290205460ff1681565b6000546001600160a01b031681565b6003548156fea265627a7a72315820ddb01d11760f545ff8e6d44704c39a3713f068b355dba1c6b31312613f8207cc64736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100625760003560e01c806336e4134114610067578063570ca735146100a65780637f54af0c146100ae578063a219763e146100b6578063b0e9ef71146100f6578063f9b0b5b9146100fe575b600080fd5b61008a6004803603604081101561007d57600080fd5b5080359060200135610118565b604080516001600160a01b039092168252519081900360200190f35b61008a61014d565b61008a61015c565b6100e2600480360360408110156100cc57600080fd5b50803590602001356001600160a01b031661016b565b604080519115158252519081900360200190f35b61008a61018b565b61010661019a565b60408051918252519081900360200190f35b6004602052816000526040600020818154811061013157fe5b6000918252602090912001546001600160a01b03169150829050565b6002546001600160a01b031681565b6001546001600160a01b031681565b600560209081526000928352604080842090915290825290205460ff1681565b6000546001600160a01b031681565b6003548156fea265627a7a72315820ddb01d11760f545ff8e6d44704c39a3713f068b355dba1c6b31312613f8207cc64736f6c63430005100032",
   "sourceMap": "25:937:16:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:937:16;;;;;;;",
   "deployedSourceMap": "25:937:16:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:937:16;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;648:58;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;648:58:16;;;;;;;:::i;:::-;;;;-1:-1:-1;;;;;648:58:16;;;;;;;;;;;;;;367:23;;;:::i;242:21::-;;;:::i;796:64::-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;796:64:16;;;;;;-1:-1:-1;;;;;796:64:16;;:::i;:::-;;;;;;;;;;;;;;;;;;111:27;;;:::i;494:33::-;;;:::i;:::-;;;;;;;;;;;;;;;;648:58;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;648:58:16;;-1:-1:-1;648:58:16;;-1:-1:-1;648:58:16:o;367:23::-;;;-1:-1:-1;;;;;367:23:16;;:::o;242:21::-;;;-1:-1:-1;;;;;242:21:16;;:::o;796:64::-;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;111:27::-;;;-1:-1:-1;;;;;111:27:16;;:::o;494:33::-;;;;:::o",
   "source": "pragma solidity ^0.5.0;\n\ncontract OracleStorage {\n    /*\n     * @dev: Public variable declarations\n     */\n    address public cosmosBridge;\n\n    /**\n    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim\n    */\n    address public valset;\n\n    /**\n    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim\n    */\n    address public operator;\n\n    /**\n    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim\n    */\n    uint256 public consensusThreshold; // e.g. 75 = 75%\n\n    /**\n    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim\n    */\n    mapping(uint256 => address[]) public oracleClaimValidators;\n\n    /**\n    * @notice mapping of prophecyid to validator address to boolean\n    */\n    mapping(uint256 => mapping(address => bool)) public hasMadeClaim;\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256[100] private ____gap;\n}",
-  "sourcePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol",
+  "sourcePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/OracleStorage.sol",
   "ast": {
-    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol",
+    "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/OracleStorage.sol",
     "exportedSymbols": {
       "OracleStorage": [
-        2501
+        2480
       ]
     },
-    "id": 2502,
+    "id": 2481,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2477,
+        "id": 2456,
         "literals": [
           "solidity",
           "^",
@@ -148,19 +148,19 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 2501,
+        "id": 2480,
         "linearizedBaseContracts": [
-          2501
+          2480
         ],
         "name": "OracleStorage",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 2479,
+            "id": 2458,
             "name": "cosmosBridge",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "111:27:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -169,7 +169,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 2478,
+              "id": 2457,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "111:7:16",
@@ -184,10 +184,10 @@
           },
           {
             "constant": false,
-            "id": 2481,
+            "id": 2460,
             "name": "valset",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "242:21:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -196,7 +196,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 2480,
+              "id": 2459,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "242:7:16",
@@ -211,10 +211,10 @@
           },
           {
             "constant": false,
-            "id": 2483,
+            "id": 2462,
             "name": "operator",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "367:23:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -223,7 +223,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 2482,
+              "id": 2461,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "367:7:16",
@@ -238,10 +238,10 @@
           },
           {
             "constant": false,
-            "id": 2485,
+            "id": 2464,
             "name": "consensusThreshold",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "494:33:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -250,7 +250,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 2484,
+              "id": 2463,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "494:7:16",
@@ -264,10 +264,10 @@
           },
           {
             "constant": false,
-            "id": 2490,
+            "id": 2469,
             "name": "oracleClaimValidators",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "648:58:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -276,9 +276,9 @@
               "typeString": "mapping(uint256 => address[])"
             },
             "typeName": {
-              "id": 2489,
+              "id": 2468,
               "keyType": {
-                "id": 2486,
+                "id": 2465,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "656:7:16",
@@ -295,7 +295,7 @@
               },
               "valueType": {
                 "baseType": {
-                  "id": 2487,
+                  "id": 2466,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
                   "src": "667:7:16",
@@ -305,7 +305,7 @@
                     "typeString": "address"
                   }
                 },
-                "id": 2488,
+                "id": 2467,
                 "length": null,
                 "nodeType": "ArrayTypeName",
                 "src": "667:9:16",
@@ -320,10 +320,10 @@
           },
           {
             "constant": false,
-            "id": 2496,
+            "id": 2475,
             "name": "hasMadeClaim",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "796:64:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -332,9 +332,9 @@
               "typeString": "mapping(uint256 => mapping(address => bool))"
             },
             "typeName": {
-              "id": 2495,
+              "id": 2474,
               "keyType": {
-                "id": 2491,
+                "id": 2470,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "804:7:16",
@@ -350,9 +350,9 @@
                 "typeString": "mapping(uint256 => mapping(address => bool))"
               },
               "valueType": {
-                "id": 2494,
+                "id": 2473,
                 "keyType": {
-                  "id": 2492,
+                  "id": 2471,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
                   "src": "823:7:16",
@@ -368,7 +368,7 @@
                   "typeString": "mapping(address => bool)"
                 },
                 "valueType": {
-                  "id": 2493,
+                  "id": 2472,
                   "name": "bool",
                   "nodeType": "ElementaryTypeName",
                   "src": "834:4:16",
@@ -384,10 +384,10 @@
           },
           {
             "constant": false,
-            "id": 2500,
+            "id": 2479,
             "name": "____gap",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "931:28:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -397,7 +397,7 @@
             },
             "typeName": {
               "baseType": {
-                "id": 2497,
+                "id": 2476,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "931:7:16",
@@ -406,11 +406,11 @@
                   "typeString": "uint256"
                 }
               },
-              "id": 2499,
+              "id": 2478,
               "length": {
                 "argumentTypes": null,
                 "hexValue": "313030",
-                "id": 2498,
+                "id": 2477,
                 "isConstant": false,
                 "isLValue": false,
                 "isPure": true,
@@ -436,24 +436,24 @@
             "visibility": "private"
           }
         ],
-        "scope": 2502,
+        "scope": 2481,
         "src": "25:937:16"
       }
     ],
     "src": "0:962:16"
   },
   "legacyAST": {
-    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol",
+    "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/OracleStorage.sol",
     "exportedSymbols": {
       "OracleStorage": [
-        2501
+        2480
       ]
     },
-    "id": 2502,
+    "id": 2481,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2477,
+        "id": 2456,
         "literals": [
           "solidity",
           "^",
@@ -469,19 +469,19 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 2501,
+        "id": 2480,
         "linearizedBaseContracts": [
-          2501
+          2480
         ],
         "name": "OracleStorage",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 2479,
+            "id": 2458,
             "name": "cosmosBridge",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "111:27:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -490,7 +490,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 2478,
+              "id": 2457,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "111:7:16",
@@ -505,10 +505,10 @@
           },
           {
             "constant": false,
-            "id": 2481,
+            "id": 2460,
             "name": "valset",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "242:21:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -517,7 +517,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 2480,
+              "id": 2459,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "242:7:16",
@@ -532,10 +532,10 @@
           },
           {
             "constant": false,
-            "id": 2483,
+            "id": 2462,
             "name": "operator",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "367:23:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -544,7 +544,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 2482,
+              "id": 2461,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "367:7:16",
@@ -559,10 +559,10 @@
           },
           {
             "constant": false,
-            "id": 2485,
+            "id": 2464,
             "name": "consensusThreshold",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "494:33:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -571,7 +571,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 2484,
+              "id": 2463,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "494:7:16",
@@ -585,10 +585,10 @@
           },
           {
             "constant": false,
-            "id": 2490,
+            "id": 2469,
             "name": "oracleClaimValidators",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "648:58:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -597,9 +597,9 @@
               "typeString": "mapping(uint256 => address[])"
             },
             "typeName": {
-              "id": 2489,
+              "id": 2468,
               "keyType": {
-                "id": 2486,
+                "id": 2465,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "656:7:16",
@@ -616,7 +616,7 @@
               },
               "valueType": {
                 "baseType": {
-                  "id": 2487,
+                  "id": 2466,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
                   "src": "667:7:16",
@@ -626,7 +626,7 @@
                     "typeString": "address"
                   }
                 },
-                "id": 2488,
+                "id": 2467,
                 "length": null,
                 "nodeType": "ArrayTypeName",
                 "src": "667:9:16",
@@ -641,10 +641,10 @@
           },
           {
             "constant": false,
-            "id": 2496,
+            "id": 2475,
             "name": "hasMadeClaim",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "796:64:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -653,9 +653,9 @@
               "typeString": "mapping(uint256 => mapping(address => bool))"
             },
             "typeName": {
-              "id": 2495,
+              "id": 2474,
               "keyType": {
-                "id": 2491,
+                "id": 2470,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "804:7:16",
@@ -671,9 +671,9 @@
                 "typeString": "mapping(uint256 => mapping(address => bool))"
               },
               "valueType": {
-                "id": 2494,
+                "id": 2473,
                 "keyType": {
-                  "id": 2492,
+                  "id": 2471,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
                   "src": "823:7:16",
@@ -689,7 +689,7 @@
                   "typeString": "mapping(address => bool)"
                 },
                 "valueType": {
-                  "id": 2493,
+                  "id": 2472,
                   "name": "bool",
                   "nodeType": "ElementaryTypeName",
                   "src": "834:4:16",
@@ -705,10 +705,10 @@
           },
           {
             "constant": false,
-            "id": 2500,
+            "id": 2479,
             "name": "____gap",
             "nodeType": "VariableDeclaration",
-            "scope": 2501,
+            "scope": 2480,
             "src": "931:28:16",
             "stateVariable": true,
             "storageLocation": "default",
@@ -718,7 +718,7 @@
             },
             "typeName": {
               "baseType": {
-                "id": 2497,
+                "id": 2476,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "931:7:16",
@@ -727,11 +727,11 @@
                   "typeString": "uint256"
                 }
               },
-              "id": 2499,
+              "id": 2478,
               "length": {
                 "argumentTypes": null,
                 "hexValue": "313030",
-                "id": 2498,
+                "id": 2477,
                 "isConstant": false,
                 "isLValue": false,
                 "isPure": true,
@@ -757,7 +757,7 @@
             "visibility": "private"
           }
         ],
-        "scope": 2502,
+        "scope": 2481,
         "src": "25:937:16"
       }
     ],
@@ -768,8 +768,8 @@
     "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.3.2",
-  "updatedAt": "2020-11-19T01:51:10.894Z",
+  "schemaVersion": "3.2.5",
+  "updatedAt": "2020-11-22T12:10:18.394Z",
   "devdoc": {
     "methods": {}
   },

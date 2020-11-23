@@ -149,6 +149,27 @@
     },
     {
       "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "usedNonce",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
       "inputs": [],
       "name": "valset",
       "outputs": [
@@ -163,25 +184,25 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"bridgeBank\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"hasBridgeBank\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"hasOracle\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"oracle\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"prophecyClaimCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"prophecyClaims\",\"outputs\":[{\"internalType\":\"enum CosmosBridgeStorage.ClaimType\",\"name\":\"claimType\",\"type\":\"uint8\"},{\"internalType\":\"bytes\",\"name\":\"cosmosSender\",\"type\":\"bytes\"},{\"internalType\":\"address payable\",\"name\":\"ethereumReceiver\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"originalValidator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"enum CosmosBridgeStorage.Status\",\"name\":\"status\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"valset\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/CosmosBridgeStorage.sol\":\"CosmosBridgeStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol\":{\"keccak256\":\"0x5005339773232d4a1268b595d4812afdec572519f84f621b54859fc9b80e646f\",\"urls\":[\"bzz-raw://4e3d5b75f86c0cdd6c41a2a2ad26421503c82ce34f701f31219fe9b82f801431\",\"dweb:/ipfs/QmVJo5hLg8j5vdHPYN68FuojNEdaUcb5R6znEeoyd8F1pf\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol\":{\"keccak256\":\"0xad669b0998e71040c0f2b718924876fb84ddcf5ac00e25b3c26c2c9634d975e3\",\"urls\":[\"bzz-raw://f62572a257817e4b501be47cd5eb6c1b29deba468cb0041644131443c523f4f5\",\"dweb:/ipfs/QmWf1WNayafDLtNZQQtLDrvtoZY6CyeSvDVefcgGSSVnXH\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/CosmosBridgeStorage.sol\":{\"keccak256\":\"0xcb10458b5df5edbe407c0227dc01b0f17a1d9afd08ed14991f94865fac122b84\",\"urls\":[\"bzz-raw://ae33b775c4336e3941f2d03675248d9ee721a2d78720e796568d7c001247377f\",\"dweb:/ipfs/QmdBLptv8SHASK9pkxVbYvdqJrgUipLJXXkvHpSdtanRFg\"]}},\"version\":1}",
-  "bytecode": "0x608060405234801561001057600080fd5b50610460806100206000396000f3fe608060405234801561001057600080fd5b50600436106100885760003560e01c80637f54af0c1161005b5780637f54af0c146100dd5780638ea5352d146100e5578063db4237af146100ff578063fb7831f21461025057610088565b80630e41f3731461008d578063570ca735146100b157806369294a4e146100b95780637dc0d1d0146100d5575b600080fd5b610095610258565b604080516001600160a01b039092168252519081900360200190f35b610095610267565b6100c1610276565b604080519115158252519081900360200190f35b610095610286565b610095610295565b6100ed6102a4565b60408051918252519081900360200190f35b61011c6004803603602081101561011557600080fd5b50356102aa565b6040518089600281111561012c57fe5b60ff1681526001600160a01b03808916604083015287811660608301528616608082015260c08101849052602081019060a081019060e00184600381111561017057fe5b60ff16815260200183810383528a818151815260200191508051906020019080838360005b838110156101ad578181015183820152602001610195565b50505050905090810190601f1680156101da5780820380516001836020036101000a031916815260200191505b50838103825286518152865160209182019188019080838360005b8381101561020d5781810151838201526020016101f5565b50505050905090810190601f16801561023a5780820380516001836020036101000a031916815260200191505b509a505050505050505050505060405180910390f35b6100c161041b565b6004546001600160a01b031681565b6001546001600160a01b031681565b600454600160a01b900460ff1681565b6003546001600160a01b031681565b6002546001600160a01b031681565b60055481565b6006602090815260009182526040918290208054600180830180548651600261010094831615949094026000190190911692909204601f810186900486028301860190965285825260ff90921694929390929083018282801561034e5780601f106103235761010080835404028352916020019161034e565b820191906000526020600020905b81548152906001019060200180831161033157829003601f168201915b50505050600283810154600385015460048601546005870180546040805160206101006001851615026000190190931697909704601f810183900483028801830190915280875297986001600160a01b0395861698948616975094909216949290918301828280156104015780601f106103d657610100808354040283529160200191610401565b820191906000526020600020905b8154815290600101906020018083116103e457829003601f168201915b50505050600683015460079093015491929160ff16905088565b600354600160a01b900460ff168156fea265627a7a72315820d836748fa72f876649398da6e6fb96826fcc3abe6d43e0ccc552abe8a651443464736f6c63430005100032",
-  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100885760003560e01c80637f54af0c1161005b5780637f54af0c146100dd5780638ea5352d146100e5578063db4237af146100ff578063fb7831f21461025057610088565b80630e41f3731461008d578063570ca735146100b157806369294a4e146100b95780637dc0d1d0146100d5575b600080fd5b610095610258565b604080516001600160a01b039092168252519081900360200190f35b610095610267565b6100c1610276565b604080519115158252519081900360200190f35b610095610286565b610095610295565b6100ed6102a4565b60408051918252519081900360200190f35b61011c6004803603602081101561011557600080fd5b50356102aa565b6040518089600281111561012c57fe5b60ff1681526001600160a01b03808916604083015287811660608301528616608082015260c08101849052602081019060a081019060e00184600381111561017057fe5b60ff16815260200183810383528a818151815260200191508051906020019080838360005b838110156101ad578181015183820152602001610195565b50505050905090810190601f1680156101da5780820380516001836020036101000a031916815260200191505b50838103825286518152865160209182019188019080838360005b8381101561020d5781810151838201526020016101f5565b50505050905090810190601f16801561023a5780820380516001836020036101000a031916815260200191505b509a505050505050505050505060405180910390f35b6100c161041b565b6004546001600160a01b031681565b6001546001600160a01b031681565b600454600160a01b900460ff1681565b6003546001600160a01b031681565b6002546001600160a01b031681565b60055481565b6006602090815260009182526040918290208054600180830180548651600261010094831615949094026000190190911692909204601f810186900486028301860190965285825260ff90921694929390929083018282801561034e5780601f106103235761010080835404028352916020019161034e565b820191906000526020600020905b81548152906001019060200180831161033157829003601f168201915b50505050600283810154600385015460048601546005870180546040805160206101006001851615026000190190931697909704601f810183900483028801830190915280875297986001600160a01b0395861698948616975094909216949290918301828280156104015780601f106103d657610100808354040283529160200191610401565b820191906000526020600020905b8154815290600101906020018083116103e457829003601f168201915b50505050600683015460079093015491929160ff16905088565b600354600160a01b900460ff168156fea265627a7a72315820d836748fa72f876649398da6e6fb96826fcc3abe6d43e0ccc552abe8a651443464736f6c63430005100032",
-  "sourceMap": "118:1577:12:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;118:1577:12;;;;;;;",
-  "deployedSourceMap": "118:1577:12:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;118:1577:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;716:33;;;:::i;:::-;;;;-1:-1:-1;;;;;716:33:12;;;;;;;;;;;;;;314:23;;;:::i;824:25::-;;;:::i;:::-;;;;;;;;;;;;;;;;;;516:29;;;:::i;412:::-;;;:::i;920:33::-;;;:::i;:::-;;;;;;;;;;;;;;;;1028:55;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;1028:55:12;;:::i;:::-;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;1028:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;23:1:-1;8:100;33:3;30:1;27:10;8:100;;;90:11;;;84:18;71:11;;;64:39;52:2;45:10;8:100;;;12:14;1028:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;1028:55:12;;;;;;;;;;;;;;;;;;;;;;23:1:-1;8:100;33:3;30:1;27:10;8:100;;;90:11;;;84:18;71:11;;;64:39;52:2;45:10;8:100;;;12:14;1028:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;620:21;;;:::i;716:33::-;;;-1:-1:-1;;;;;716:33:12;;:::o;314:23::-;;;-1:-1:-1;;;;;314:23:12;;:::o;824:25::-;;;-1:-1:-1;;;824:25:12;;;;;:::o;516:29::-;;;-1:-1:-1;;;;;516:29:12;;:::o;412:::-;;;-1:-1:-1;;;;;412:29:12;;:::o;920:33::-;;;;:::o;1028:55::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;1028:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;1028:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;1028:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;1028:55:12;;;;;;;;-1:-1:-1;1028:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;1028:55:12;;;;;;;;;;;;;;;-1:-1:-1;1028:55:12;:::o;620:21::-;;;-1:-1:-1;;;620:21:12;;;;;:::o",
-  "source": "pragma solidity ^0.5.0;\n\nimport \"./BridgeBank/CosmosBankStorage.sol\";\nimport \"./BridgeBank/EthereumBankStorage.sol\";\n\ncontract CosmosBridgeStorage {\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    string COSMOS_NATIVE_ASSET_PREFIX;\n\n    /*\n     * @dev: Public variable declarations\n     */\n    address public operator;\n    \n    /**\n    * @notice gap of storage for future upgrades\n    */\n    address payable public valset;\n    \n    /**\n    * @notice gap of storage for future upgrades\n    */\n    address payable public oracle;\n    \n    /**\n    * @notice gap of storage for future upgrades\n    */\n    bool public hasOracle;\n    \n    /**\n    * @notice gap of storage for future upgrades\n    */\n    address payable public bridgeBank;\n    \n    /**\n    * @notice gap of storage for future upgrades\n    */\n    bool public hasBridgeBank;\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256 public prophecyClaimCount;\n    \n    /**\n    * @notice gap of storage for future upgrades\n    */\n    mapping(uint256 => ProphecyClaim) public prophecyClaims;\n\n    /**\n    * @notice prophecy status enum\n    */\n    enum Status {Null, Pending, Success, Failed}\n\n    /**\n    * @notice claim type enum\n    */\n    enum ClaimType {Unsupported, Burn, Lock}\n\n    /**\n    * @notice Prophecy claim struct\n    */\n    struct ProphecyClaim {\n        ClaimType claimType;\n        bytes cosmosSender;\n        address payable ethereumReceiver;\n        address originalValidator;\n        address tokenAddress;\n        string symbol;\n        uint256 amount;\n        Status status;\n    }\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256[100] private ____gap;\n}",
-  "sourcePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/CosmosBridgeStorage.sol",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"bridgeBank\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"hasBridgeBank\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"hasOracle\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"oracle\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"prophecyClaimCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"prophecyClaims\",\"outputs\":[{\"internalType\":\"enum CosmosBridgeStorage.ClaimType\",\"name\":\"claimType\",\"type\":\"uint8\"},{\"internalType\":\"bytes\",\"name\":\"cosmosSender\",\"type\":\"bytes\"},{\"internalType\":\"address payable\",\"name\":\"ethereumReceiver\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"originalValidator\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"enum CosmosBridgeStorage.Status\",\"name\":\"status\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"usedNonce\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"valset\",\"outputs\":[{\"internalType\":\"address payable\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/CosmosBridgeStorage.sol\":\"CosmosBridgeStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol\":{\"keccak256\":\"0x5005339773232d4a1268b595d4812afdec572519f84f621b54859fc9b80e646f\",\"urls\":[\"bzz-raw://4e3d5b75f86c0cdd6c41a2a2ad26421503c82ce34f701f31219fe9b82f801431\",\"dweb:/ipfs/QmVJo5hLg8j5vdHPYN68FuojNEdaUcb5R6znEeoyd8F1pf\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol\":{\"keccak256\":\"0xad669b0998e71040c0f2b718924876fb84ddcf5ac00e25b3c26c2c9634d975e3\",\"urls\":[\"bzz-raw://f62572a257817e4b501be47cd5eb6c1b29deba468cb0041644131443c523f4f5\",\"dweb:/ipfs/QmWf1WNayafDLtNZQQtLDrvtoZY6CyeSvDVefcgGSSVnXH\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/CosmosBridgeStorage.sol\":{\"keccak256\":\"0x3ad904747a2448e39954761e92721160bd63bdea39debfc47b699cf1bc352654\",\"urls\":[\"bzz-raw://0c24d61d8fd12730489b0cff7b5e08d70887da6f933f5124f380993d20842bea\",\"dweb:/ipfs/QmVyDycy1jwESzPcEf5Cyw2pjbKmHbGztaUZ72NtVY6J9R\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5061049d806100206000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c80637f54af0c116100665780637f54af0c146100e85780638ea5352d146100f05780639723fb6d1461010a578063db4237af14610127578063fb7831f21461027857610093565b80630e41f37314610098578063570ca735146100bc57806369294a4e146100c45780637dc0d1d0146100e0575b600080fd5b6100a0610280565b604080516001600160a01b039092168252519081900360200190f35b6100a061028f565b6100cc61029e565b604080519115158252519081900360200190f35b6100a06102ae565b6100a06102bd565b6100f86102cc565b60408051918252519081900360200190f35b6100cc6004803603602081101561012057600080fd5b50356102d2565b6101446004803603602081101561013d57600080fd5b50356102e7565b6040518089600281111561015457fe5b60ff1681526001600160a01b03808916604083015287811660608301528616608082015260c08101849052602081019060a081019060e00184600381111561019857fe5b60ff16815260200183810383528a818151815260200191508051906020019080838360005b838110156101d55781810151838201526020016101bd565b50505050905090810190601f1680156102025780820380516001836020036101000a031916815260200191505b50838103825286518152865160209182019188019080838360005b8381101561023557818101518382015260200161021d565b50505050905090810190601f1680156102625780820380516001836020036101000a031916815260200191505b509a505050505050505050505060405180910390f35b6100cc610458565b6004546001600160a01b031681565b6001546001600160a01b031681565b600454600160a01b900460ff1681565b6003546001600160a01b031681565b6002546001600160a01b031681565b60055481565b60066020526000908152604090205460ff1681565b6007602090815260009182526040918290208054600180830180548651600261010094831615949094026000190190911692909204601f810186900486028301860190965285825260ff90921694929390929083018282801561038b5780601f106103605761010080835404028352916020019161038b565b820191906000526020600020905b81548152906001019060200180831161036e57829003601f168201915b50505050600283810154600385015460048601546005870180546040805160206101006001851615026000190190931697909704601f810183900483028801830190915280875297986001600160a01b03958616989486169750949092169492909183018282801561043e5780601f106104135761010080835404028352916020019161043e565b820191906000526020600020905b81548152906001019060200180831161042157829003601f168201915b50505050600683015460079093015491929160ff16905088565b600354600160a01b900460ff168156fea265627a7a72315820d2641261cee3aaf7f001eb698486f7191f5ec11e5c8c651c452ed66a1386f46f64736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100935760003560e01c80637f54af0c116100665780637f54af0c146100e85780638ea5352d146100f05780639723fb6d1461010a578063db4237af14610127578063fb7831f21461027857610093565b80630e41f37314610098578063570ca735146100bc57806369294a4e146100c45780637dc0d1d0146100e0575b600080fd5b6100a0610280565b604080516001600160a01b039092168252519081900360200190f35b6100a061028f565b6100cc61029e565b604080519115158252519081900360200190f35b6100a06102ae565b6100a06102bd565b6100f86102cc565b60408051918252519081900360200190f35b6100cc6004803603602081101561012057600080fd5b50356102d2565b6101446004803603602081101561013d57600080fd5b50356102e7565b6040518089600281111561015457fe5b60ff1681526001600160a01b03808916604083015287811660608301528616608082015260c08101849052602081019060a081019060e00184600381111561019857fe5b60ff16815260200183810383528a818151815260200191508051906020019080838360005b838110156101d55781810151838201526020016101bd565b50505050905090810190601f1680156102025780820380516001836020036101000a031916815260200191505b50838103825286518152865160209182019188019080838360005b8381101561023557818101518382015260200161021d565b50505050905090810190601f1680156102625780820380516001836020036101000a031916815260200191505b509a505050505050505050505060405180910390f35b6100cc610458565b6004546001600160a01b031681565b6001546001600160a01b031681565b600454600160a01b900460ff1681565b6003546001600160a01b031681565b6002546001600160a01b031681565b60055481565b60066020526000908152604090205460ff1681565b6007602090815260009182526040918290208054600180830180548651600261010094831615949094026000190190911692909204601f810186900486028301860190965285825260ff90921694929390929083018282801561038b5780601f106103605761010080835404028352916020019161038b565b820191906000526020600020905b81548152906001019060200180831161036e57829003601f168201915b50505050600283810154600385015460048601546005870180546040805160206101006001851615026000190190931697909704601f810183900483028801830190915280875297986001600160a01b03958616989486169750949092169492909183018282801561043e5780601f106104135761010080835404028352916020019161043e565b820191906000526020600020905b81548152906001019060200180831161042157829003601f168201915b50505050600683015460079093015491929160ff16905088565b600354600160a01b900460ff168156fea265627a7a72315820d2641261cee3aaf7f001eb698486f7191f5ec11e5c8c651c452ed66a1386f46f64736f6c63430005100032",
+  "sourceMap": "118:1718:12:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;118:1718:12;;;;;;;",
+  "deployedSourceMap": "118:1718:12:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;118:1718:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;716:33;;;:::i;:::-;;;;-1:-1:-1;;;;;716:33:12;;;;;;;;;;;;;;314:23;;;:::i;824:25::-;;;:::i;:::-;;;;;;;;;;;;;;;;;;516:29;;;:::i;412:::-;;;:::i;920:33::-;;;:::i;:::-;;;;;;;;;;;;;;;;1057:41;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;1057:41:12;;:::i;1169:55::-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;1169:55:12;;:::i;:::-;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;1169:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;23:1:-1;8:100;33:3;30:1;27:10;8:100;;;90:11;;;84:18;71:11;;;64:39;52:2;45:10;8:100;;;12:14;1169:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;1169:55:12;;;;;;;;;;;;;;;;;;;;;;23:1:-1;8:100;33:3;30:1;27:10;8:100;;;90:11;;;84:18;71:11;;;64:39;52:2;45:10;8:100;;;12:14;1169:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;620:21;;;:::i;716:33::-;;;-1:-1:-1;;;;;716:33:12;;:::o;314:23::-;;;-1:-1:-1;;;;;314:23:12;;:::o;824:25::-;;;-1:-1:-1;;;824:25:12;;;;;:::o;516:29::-;;;-1:-1:-1;;;;;516:29:12;;:::o;412:::-;;;-1:-1:-1;;;;;412:29:12;;:::o;920:33::-;;;;:::o;1057:41::-;;;;;;;;;;;;;;;:::o;1169:55::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;1169:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;1169:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;1169:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;1169:55:12;;;;;;;;-1:-1:-1;1169:55:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;1169:55:12;;;;;;;;;;;;;;;-1:-1:-1;1169:55:12;:::o;620:21::-;;;-1:-1:-1;;;620:21:12;;;;;:::o",
+  "source": "pragma solidity ^0.5.0;\n\nimport \"./BridgeBank/CosmosBankStorage.sol\";\nimport \"./BridgeBank/EthereumBankStorage.sol\";\n\ncontract CosmosBridgeStorage {\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    string COSMOS_NATIVE_ASSET_PREFIX;\n\n    /*\n     * @dev: Public variable declarations\n     */\n    address public operator;\n    \n    /**\n    * @notice gap of storage for future upgrades\n    */\n    address payable public valset;\n    \n    /**\n    * @notice gap of storage for future upgrades\n    */\n    address payable public oracle;\n    \n    /**\n    * @notice gap of storage for future upgrades\n    */\n    bool public hasOracle;\n    \n    /**\n    * @notice gap of storage for future upgrades\n    */\n    address payable public bridgeBank;\n    \n    /**\n    * @notice gap of storage for future upgrades\n    */\n    bool public hasBridgeBank;\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256 public prophecyClaimCount;\n\n    /**\n    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim\n    */\n    mapping(uint256 => bool) public usedNonce;\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    mapping(uint256 => ProphecyClaim) public prophecyClaims;\n\n    /**\n    * @notice prophecy status enum\n    */\n    enum Status {Null, Pending, Success, Failed}\n\n    /**\n    * @notice claim type enum\n    */\n    enum ClaimType {Unsupported, Burn, Lock}\n\n    /**\n    * @notice Prophecy claim struct\n    */\n    struct ProphecyClaim {\n        ClaimType claimType;\n        bytes cosmosSender;\n        address payable ethereumReceiver;\n        address originalValidator;\n        address tokenAddress;\n        string symbol;\n        uint256 amount;\n        Status status;\n    }\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256[100] private ____gap;\n}",
+  "sourcePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/CosmosBridgeStorage.sol",
   "ast": {
-    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/CosmosBridgeStorage.sol",
+    "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/CosmosBridgeStorage.sol",
     "exportedSymbols": {
       "CosmosBridgeStorage": [
-        1889
+        1942
       ]
     },
-    "id": 1890,
+    "id": 1943,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1836,
+        "id": 1885,
         "literals": [
           "solidity",
           "^",
@@ -192,22 +213,22 @@
         "src": "0:23:12"
       },
       {
-        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol",
+        "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol",
         "file": "./BridgeBank/CosmosBankStorage.sol",
-        "id": 1837,
+        "id": 1886,
         "nodeType": "ImportDirective",
-        "scope": 1890,
+        "scope": 1943,
         "sourceUnit": 863,
         "src": "25:44:12",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol",
+        "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol",
         "file": "./BridgeBank/EthereumBankStorage.sol",
-        "id": 1838,
+        "id": 1887,
         "nodeType": "ImportDirective",
-        "scope": 1890,
+        "scope": 1943,
         "sourceUnit": 1182,
         "src": "70:46:12",
         "symbolAliases": [],
@@ -219,19 +240,19 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 1889,
+        "id": 1942,
         "linearizedBaseContracts": [
-          1889
+          1942
         ],
         "name": "CosmosBridgeStorage",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 1840,
+            "id": 1889,
             "name": "COSMOS_NATIVE_ASSET_PREFIX",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "217:33:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -240,7 +261,7 @@
               "typeString": "string"
             },
             "typeName": {
-              "id": 1839,
+              "id": 1888,
               "name": "string",
               "nodeType": "ElementaryTypeName",
               "src": "217:6:12",
@@ -254,10 +275,10 @@
           },
           {
             "constant": false,
-            "id": 1842,
+            "id": 1891,
             "name": "operator",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "314:23:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -266,7 +287,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 1841,
+              "id": 1890,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "314:7:12",
@@ -281,10 +302,10 @@
           },
           {
             "constant": false,
-            "id": 1844,
+            "id": 1893,
             "name": "valset",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "412:29:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -293,7 +314,7 @@
               "typeString": "address payable"
             },
             "typeName": {
-              "id": 1843,
+              "id": 1892,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "412:15:12",
@@ -308,10 +329,10 @@
           },
           {
             "constant": false,
-            "id": 1846,
+            "id": 1895,
             "name": "oracle",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "516:29:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -320,7 +341,7 @@
               "typeString": "address payable"
             },
             "typeName": {
-              "id": 1845,
+              "id": 1894,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "516:15:12",
@@ -335,10 +356,10 @@
           },
           {
             "constant": false,
-            "id": 1848,
+            "id": 1897,
             "name": "hasOracle",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "620:21:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -347,7 +368,7 @@
               "typeString": "bool"
             },
             "typeName": {
-              "id": 1847,
+              "id": 1896,
               "name": "bool",
               "nodeType": "ElementaryTypeName",
               "src": "620:4:12",
@@ -361,10 +382,10 @@
           },
           {
             "constant": false,
-            "id": 1850,
+            "id": 1899,
             "name": "bridgeBank",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "716:33:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -373,7 +394,7 @@
               "typeString": "address payable"
             },
             "typeName": {
-              "id": 1849,
+              "id": 1898,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "716:15:12",
@@ -388,10 +409,10 @@
           },
           {
             "constant": false,
-            "id": 1852,
+            "id": 1901,
             "name": "hasBridgeBank",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "824:25:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -400,7 +421,7 @@
               "typeString": "bool"
             },
             "typeName": {
-              "id": 1851,
+              "id": 1900,
               "name": "bool",
               "nodeType": "ElementaryTypeName",
               "src": "824:4:12",
@@ -414,10 +435,10 @@
           },
           {
             "constant": false,
-            "id": 1854,
+            "id": 1903,
             "name": "prophecyClaimCount",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "920:33:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -426,7 +447,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 1853,
+              "id": 1902,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "920:7:12",
@@ -440,44 +461,89 @@
           },
           {
             "constant": false,
-            "id": 1858,
-            "name": "prophecyClaims",
+            "id": 1907,
+            "name": "usedNonce",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
-            "src": "1028:55:12",
+            "scope": 1942,
+            "src": "1057:41:12",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_ProphecyClaim_$1884_storage_$",
-              "typeString": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+              "typeString": "mapping(uint256 => bool)"
             },
             "typeName": {
-              "id": 1857,
+              "id": 1906,
               "keyType": {
-                "id": 1855,
+                "id": 1904,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
-                "src": "1036:7:12",
+                "src": "1065:7:12",
                 "typeDescriptions": {
                   "typeIdentifier": "t_uint256",
                   "typeString": "uint256"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1028:33:12",
+              "src": "1057:24:12",
               "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_ProphecyClaim_$1884_storage_$",
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+                "typeString": "mapping(uint256 => bool)"
+              },
+              "valueType": {
+                "id": 1905,
+                "name": "bool",
+                "nodeType": "ElementaryTypeName",
+                "src": "1076:4:12",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1911,
+            "name": "prophecyClaims",
+            "nodeType": "VariableDeclaration",
+            "scope": 1942,
+            "src": "1169:55:12",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_ProphecyClaim_$1937_storage_$",
+              "typeString": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
+            },
+            "typeName": {
+              "id": 1910,
+              "keyType": {
+                "id": 1908,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "1177:7:12",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "1169:33:12",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_ProphecyClaim_$1937_storage_$",
                 "typeString": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
               },
               "valueType": {
                 "contractScope": null,
-                "id": 1856,
+                "id": 1909,
                 "name": "ProphecyClaim",
                 "nodeType": "UserDefinedTypeName",
-                "referencedDeclaration": 1884,
-                "src": "1047:13:12",
+                "referencedDeclaration": 1937,
+                "src": "1188:13:12",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_ProphecyClaim_$1884_storage_ptr",
+                  "typeIdentifier": "t_struct$_ProphecyClaim_$1937_storage_ptr",
                   "typeString": "struct CosmosBridgeStorage.ProphecyClaim"
                 }
               }
@@ -487,90 +553,90 @@
           },
           {
             "canonicalName": "CosmosBridgeStorage.Status",
-            "id": 1863,
+            "id": 1916,
             "members": [
               {
-                "id": 1859,
+                "id": 1912,
                 "name": "Null",
                 "nodeType": "EnumValue",
-                "src": "1153:4:12"
+                "src": "1294:4:12"
               },
               {
-                "id": 1860,
+                "id": 1913,
                 "name": "Pending",
                 "nodeType": "EnumValue",
-                "src": "1159:7:12"
+                "src": "1300:7:12"
               },
               {
-                "id": 1861,
+                "id": 1914,
                 "name": "Success",
                 "nodeType": "EnumValue",
-                "src": "1168:7:12"
+                "src": "1309:7:12"
               },
               {
-                "id": 1862,
+                "id": 1915,
                 "name": "Failed",
                 "nodeType": "EnumValue",
-                "src": "1177:6:12"
+                "src": "1318:6:12"
               }
             ],
             "name": "Status",
             "nodeType": "EnumDefinition",
-            "src": "1140:44:12"
+            "src": "1281:44:12"
           },
           {
             "canonicalName": "CosmosBridgeStorage.ClaimType",
-            "id": 1867,
+            "id": 1920,
             "members": [
               {
-                "id": 1864,
+                "id": 1917,
                 "name": "Unsupported",
                 "nodeType": "EnumValue",
-                "src": "1251:11:12"
+                "src": "1392:11:12"
               },
               {
-                "id": 1865,
+                "id": 1918,
                 "name": "Burn",
                 "nodeType": "EnumValue",
-                "src": "1264:4:12"
+                "src": "1405:4:12"
               },
               {
-                "id": 1866,
+                "id": 1919,
                 "name": "Lock",
                 "nodeType": "EnumValue",
-                "src": "1270:4:12"
+                "src": "1411:4:12"
               }
             ],
             "name": "ClaimType",
             "nodeType": "EnumDefinition",
-            "src": "1235:40:12"
+            "src": "1376:40:12"
           },
           {
             "canonicalName": "CosmosBridgeStorage.ProphecyClaim",
-            "id": 1884,
+            "id": 1937,
             "members": [
               {
                 "constant": false,
-                "id": 1869,
+                "id": 1922,
                 "name": "claimType",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1363:19:12",
+                "scope": 1937,
+                "src": "1504:19:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_enum$_ClaimType_$1867",
+                  "typeIdentifier": "t_enum$_ClaimType_$1920",
                   "typeString": "enum CosmosBridgeStorage.ClaimType"
                 },
                 "typeName": {
                   "contractScope": null,
-                  "id": 1868,
+                  "id": 1921,
                   "name": "ClaimType",
                   "nodeType": "UserDefinedTypeName",
-                  "referencedDeclaration": 1867,
-                  "src": "1363:9:12",
+                  "referencedDeclaration": 1920,
+                  "src": "1504:9:12",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_ClaimType_$1867",
+                    "typeIdentifier": "t_enum$_ClaimType_$1920",
                     "typeString": "enum CosmosBridgeStorage.ClaimType"
                   }
                 },
@@ -579,11 +645,11 @@
               },
               {
                 "constant": false,
-                "id": 1871,
+                "id": 1924,
                 "name": "cosmosSender",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1392:18:12",
+                "scope": 1937,
+                "src": "1533:18:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -591,10 +657,10 @@
                   "typeString": "bytes"
                 },
                 "typeName": {
-                  "id": 1870,
+                  "id": 1923,
                   "name": "bytes",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1392:5:12",
+                  "src": "1533:5:12",
                   "typeDescriptions": {
                     "typeIdentifier": "t_bytes_storage_ptr",
                     "typeString": "bytes"
@@ -605,11 +671,11 @@
               },
               {
                 "constant": false,
-                "id": 1873,
+                "id": 1926,
                 "name": "ethereumReceiver",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1420:32:12",
+                "scope": 1937,
+                "src": "1561:32:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -617,10 +683,10 @@
                   "typeString": "address payable"
                 },
                 "typeName": {
-                  "id": 1872,
+                  "id": 1925,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1420:15:12",
+                  "src": "1561:15:12",
                   "stateMutability": "payable",
                   "typeDescriptions": {
                     "typeIdentifier": "t_address_payable",
@@ -632,11 +698,11 @@
               },
               {
                 "constant": false,
-                "id": 1875,
+                "id": 1928,
                 "name": "originalValidator",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1462:25:12",
+                "scope": 1937,
+                "src": "1603:25:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -644,10 +710,10 @@
                   "typeString": "address"
                 },
                 "typeName": {
-                  "id": 1874,
+                  "id": 1927,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1462:7:12",
+                  "src": "1603:7:12",
                   "stateMutability": "nonpayable",
                   "typeDescriptions": {
                     "typeIdentifier": "t_address",
@@ -659,11 +725,11 @@
               },
               {
                 "constant": false,
-                "id": 1877,
+                "id": 1930,
                 "name": "tokenAddress",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1497:20:12",
+                "scope": 1937,
+                "src": "1638:20:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -671,10 +737,10 @@
                   "typeString": "address"
                 },
                 "typeName": {
-                  "id": 1876,
+                  "id": 1929,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1497:7:12",
+                  "src": "1638:7:12",
                   "stateMutability": "nonpayable",
                   "typeDescriptions": {
                     "typeIdentifier": "t_address",
@@ -686,11 +752,11 @@
               },
               {
                 "constant": false,
-                "id": 1879,
+                "id": 1932,
                 "name": "symbol",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1527:13:12",
+                "scope": 1937,
+                "src": "1668:13:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -698,10 +764,10 @@
                   "typeString": "string"
                 },
                 "typeName": {
-                  "id": 1878,
+                  "id": 1931,
                   "name": "string",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1527:6:12",
+                  "src": "1668:6:12",
                   "typeDescriptions": {
                     "typeIdentifier": "t_string_storage_ptr",
                     "typeString": "string"
@@ -712,11 +778,11 @@
               },
               {
                 "constant": false,
-                "id": 1881,
+                "id": 1934,
                 "name": "amount",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1550:14:12",
+                "scope": 1937,
+                "src": "1691:14:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -724,10 +790,10 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1880,
+                  "id": 1933,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1550:7:12",
+                  "src": "1691:7:12",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -738,26 +804,26 @@
               },
               {
                 "constant": false,
-                "id": 1883,
+                "id": 1936,
                 "name": "status",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1574:13:12",
+                "scope": 1937,
+                "src": "1715:13:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_enum$_Status_$1863",
+                  "typeIdentifier": "t_enum$_Status_$1916",
                   "typeString": "enum CosmosBridgeStorage.Status"
                 },
                 "typeName": {
                   "contractScope": null,
-                  "id": 1882,
+                  "id": 1935,
                   "name": "Status",
                   "nodeType": "UserDefinedTypeName",
-                  "referencedDeclaration": 1863,
-                  "src": "1574:6:12",
+                  "referencedDeclaration": 1916,
+                  "src": "1715:6:12",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_Status_$1863",
+                    "typeIdentifier": "t_enum$_Status_$1916",
                     "typeString": "enum CosmosBridgeStorage.Status"
                   }
                 },
@@ -767,17 +833,17 @@
             ],
             "name": "ProphecyClaim",
             "nodeType": "StructDefinition",
-            "scope": 1889,
-            "src": "1332:262:12",
+            "scope": 1942,
+            "src": "1473:262:12",
             "visibility": "public"
           },
           {
             "constant": false,
-            "id": 1888,
+            "id": 1941,
             "name": "____gap",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
-            "src": "1664:28:12",
+            "scope": 1942,
+            "src": "1805:28:12",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -786,27 +852,27 @@
             },
             "typeName": {
               "baseType": {
-                "id": 1885,
+                "id": 1938,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
-                "src": "1664:7:12",
+                "src": "1805:7:12",
                 "typeDescriptions": {
                   "typeIdentifier": "t_uint256",
                   "typeString": "uint256"
                 }
               },
-              "id": 1887,
+              "id": 1940,
               "length": {
                 "argumentTypes": null,
                 "hexValue": "313030",
-                "id": 1886,
+                "id": 1939,
                 "isConstant": false,
                 "isLValue": false,
                 "isPure": true,
                 "kind": "number",
                 "lValueRequested": false,
                 "nodeType": "Literal",
-                "src": "1672:3:12",
+                "src": "1813:3:12",
                 "subdenomination": null,
                 "typeDescriptions": {
                   "typeIdentifier": "t_rational_100_by_1",
@@ -815,7 +881,7 @@
                 "value": "100"
               },
               "nodeType": "ArrayTypeName",
-              "src": "1664:12:12",
+              "src": "1805:12:12",
               "typeDescriptions": {
                 "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
                 "typeString": "uint256[100]"
@@ -825,24 +891,24 @@
             "visibility": "private"
           }
         ],
-        "scope": 1890,
-        "src": "118:1577:12"
+        "scope": 1943,
+        "src": "118:1718:12"
       }
     ],
-    "src": "0:1695:12"
+    "src": "0:1836:12"
   },
   "legacyAST": {
-    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/CosmosBridgeStorage.sol",
+    "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/CosmosBridgeStorage.sol",
     "exportedSymbols": {
       "CosmosBridgeStorage": [
-        1889
+        1942
       ]
     },
-    "id": 1890,
+    "id": 1943,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1836,
+        "id": 1885,
         "literals": [
           "solidity",
           "^",
@@ -853,22 +919,22 @@
         "src": "0:23:12"
       },
       {
-        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol",
+        "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol",
         "file": "./BridgeBank/CosmosBankStorage.sol",
-        "id": 1837,
+        "id": 1886,
         "nodeType": "ImportDirective",
-        "scope": 1890,
+        "scope": 1943,
         "sourceUnit": 863,
         "src": "25:44:12",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol",
+        "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol",
         "file": "./BridgeBank/EthereumBankStorage.sol",
-        "id": 1838,
+        "id": 1887,
         "nodeType": "ImportDirective",
-        "scope": 1890,
+        "scope": 1943,
         "sourceUnit": 1182,
         "src": "70:46:12",
         "symbolAliases": [],
@@ -880,19 +946,19 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 1889,
+        "id": 1942,
         "linearizedBaseContracts": [
-          1889
+          1942
         ],
         "name": "CosmosBridgeStorage",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 1840,
+            "id": 1889,
             "name": "COSMOS_NATIVE_ASSET_PREFIX",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "217:33:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -901,7 +967,7 @@
               "typeString": "string"
             },
             "typeName": {
-              "id": 1839,
+              "id": 1888,
               "name": "string",
               "nodeType": "ElementaryTypeName",
               "src": "217:6:12",
@@ -915,10 +981,10 @@
           },
           {
             "constant": false,
-            "id": 1842,
+            "id": 1891,
             "name": "operator",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "314:23:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -927,7 +993,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 1841,
+              "id": 1890,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "314:7:12",
@@ -942,10 +1008,10 @@
           },
           {
             "constant": false,
-            "id": 1844,
+            "id": 1893,
             "name": "valset",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "412:29:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -954,7 +1020,7 @@
               "typeString": "address payable"
             },
             "typeName": {
-              "id": 1843,
+              "id": 1892,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "412:15:12",
@@ -969,10 +1035,10 @@
           },
           {
             "constant": false,
-            "id": 1846,
+            "id": 1895,
             "name": "oracle",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "516:29:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -981,7 +1047,7 @@
               "typeString": "address payable"
             },
             "typeName": {
-              "id": 1845,
+              "id": 1894,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "516:15:12",
@@ -996,10 +1062,10 @@
           },
           {
             "constant": false,
-            "id": 1848,
+            "id": 1897,
             "name": "hasOracle",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "620:21:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1008,7 +1074,7 @@
               "typeString": "bool"
             },
             "typeName": {
-              "id": 1847,
+              "id": 1896,
               "name": "bool",
               "nodeType": "ElementaryTypeName",
               "src": "620:4:12",
@@ -1022,10 +1088,10 @@
           },
           {
             "constant": false,
-            "id": 1850,
+            "id": 1899,
             "name": "bridgeBank",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "716:33:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1034,7 +1100,7 @@
               "typeString": "address payable"
             },
             "typeName": {
-              "id": 1849,
+              "id": 1898,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "716:15:12",
@@ -1049,10 +1115,10 @@
           },
           {
             "constant": false,
-            "id": 1852,
+            "id": 1901,
             "name": "hasBridgeBank",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "824:25:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1061,7 +1127,7 @@
               "typeString": "bool"
             },
             "typeName": {
-              "id": 1851,
+              "id": 1900,
               "name": "bool",
               "nodeType": "ElementaryTypeName",
               "src": "824:4:12",
@@ -1075,10 +1141,10 @@
           },
           {
             "constant": false,
-            "id": 1854,
+            "id": 1903,
             "name": "prophecyClaimCount",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
+            "scope": 1942,
             "src": "920:33:12",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1087,7 +1153,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 1853,
+              "id": 1902,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "920:7:12",
@@ -1101,44 +1167,89 @@
           },
           {
             "constant": false,
-            "id": 1858,
-            "name": "prophecyClaims",
+            "id": 1907,
+            "name": "usedNonce",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
-            "src": "1028:55:12",
+            "scope": 1942,
+            "src": "1057:41:12",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_ProphecyClaim_$1884_storage_$",
-              "typeString": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+              "typeString": "mapping(uint256 => bool)"
             },
             "typeName": {
-              "id": 1857,
+              "id": 1906,
               "keyType": {
-                "id": 1855,
+                "id": 1904,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
-                "src": "1036:7:12",
+                "src": "1065:7:12",
                 "typeDescriptions": {
                   "typeIdentifier": "t_uint256",
                   "typeString": "uint256"
                 }
               },
               "nodeType": "Mapping",
-              "src": "1028:33:12",
+              "src": "1057:24:12",
               "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_ProphecyClaim_$1884_storage_$",
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_bool_$",
+                "typeString": "mapping(uint256 => bool)"
+              },
+              "valueType": {
+                "id": 1905,
+                "name": "bool",
+                "nodeType": "ElementaryTypeName",
+                "src": "1076:4:12",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1911,
+            "name": "prophecyClaims",
+            "nodeType": "VariableDeclaration",
+            "scope": 1942,
+            "src": "1169:55:12",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_ProphecyClaim_$1937_storage_$",
+              "typeString": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
+            },
+            "typeName": {
+              "id": 1910,
+              "keyType": {
+                "id": 1908,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "1177:7:12",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "1169:33:12",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_ProphecyClaim_$1937_storage_$",
                 "typeString": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
               },
               "valueType": {
                 "contractScope": null,
-                "id": 1856,
+                "id": 1909,
                 "name": "ProphecyClaim",
                 "nodeType": "UserDefinedTypeName",
-                "referencedDeclaration": 1884,
-                "src": "1047:13:12",
+                "referencedDeclaration": 1937,
+                "src": "1188:13:12",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_ProphecyClaim_$1884_storage_ptr",
+                  "typeIdentifier": "t_struct$_ProphecyClaim_$1937_storage_ptr",
                   "typeString": "struct CosmosBridgeStorage.ProphecyClaim"
                 }
               }
@@ -1148,90 +1259,90 @@
           },
           {
             "canonicalName": "CosmosBridgeStorage.Status",
-            "id": 1863,
+            "id": 1916,
             "members": [
               {
-                "id": 1859,
+                "id": 1912,
                 "name": "Null",
                 "nodeType": "EnumValue",
-                "src": "1153:4:12"
+                "src": "1294:4:12"
               },
               {
-                "id": 1860,
+                "id": 1913,
                 "name": "Pending",
                 "nodeType": "EnumValue",
-                "src": "1159:7:12"
+                "src": "1300:7:12"
               },
               {
-                "id": 1861,
+                "id": 1914,
                 "name": "Success",
                 "nodeType": "EnumValue",
-                "src": "1168:7:12"
+                "src": "1309:7:12"
               },
               {
-                "id": 1862,
+                "id": 1915,
                 "name": "Failed",
                 "nodeType": "EnumValue",
-                "src": "1177:6:12"
+                "src": "1318:6:12"
               }
             ],
             "name": "Status",
             "nodeType": "EnumDefinition",
-            "src": "1140:44:12"
+            "src": "1281:44:12"
           },
           {
             "canonicalName": "CosmosBridgeStorage.ClaimType",
-            "id": 1867,
+            "id": 1920,
             "members": [
               {
-                "id": 1864,
+                "id": 1917,
                 "name": "Unsupported",
                 "nodeType": "EnumValue",
-                "src": "1251:11:12"
+                "src": "1392:11:12"
               },
               {
-                "id": 1865,
+                "id": 1918,
                 "name": "Burn",
                 "nodeType": "EnumValue",
-                "src": "1264:4:12"
+                "src": "1405:4:12"
               },
               {
-                "id": 1866,
+                "id": 1919,
                 "name": "Lock",
                 "nodeType": "EnumValue",
-                "src": "1270:4:12"
+                "src": "1411:4:12"
               }
             ],
             "name": "ClaimType",
             "nodeType": "EnumDefinition",
-            "src": "1235:40:12"
+            "src": "1376:40:12"
           },
           {
             "canonicalName": "CosmosBridgeStorage.ProphecyClaim",
-            "id": 1884,
+            "id": 1937,
             "members": [
               {
                 "constant": false,
-                "id": 1869,
+                "id": 1922,
                 "name": "claimType",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1363:19:12",
+                "scope": 1937,
+                "src": "1504:19:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_enum$_ClaimType_$1867",
+                  "typeIdentifier": "t_enum$_ClaimType_$1920",
                   "typeString": "enum CosmosBridgeStorage.ClaimType"
                 },
                 "typeName": {
                   "contractScope": null,
-                  "id": 1868,
+                  "id": 1921,
                   "name": "ClaimType",
                   "nodeType": "UserDefinedTypeName",
-                  "referencedDeclaration": 1867,
-                  "src": "1363:9:12",
+                  "referencedDeclaration": 1920,
+                  "src": "1504:9:12",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_ClaimType_$1867",
+                    "typeIdentifier": "t_enum$_ClaimType_$1920",
                     "typeString": "enum CosmosBridgeStorage.ClaimType"
                   }
                 },
@@ -1240,11 +1351,11 @@
               },
               {
                 "constant": false,
-                "id": 1871,
+                "id": 1924,
                 "name": "cosmosSender",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1392:18:12",
+                "scope": 1937,
+                "src": "1533:18:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -1252,10 +1363,10 @@
                   "typeString": "bytes"
                 },
                 "typeName": {
-                  "id": 1870,
+                  "id": 1923,
                   "name": "bytes",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1392:5:12",
+                  "src": "1533:5:12",
                   "typeDescriptions": {
                     "typeIdentifier": "t_bytes_storage_ptr",
                     "typeString": "bytes"
@@ -1266,11 +1377,11 @@
               },
               {
                 "constant": false,
-                "id": 1873,
+                "id": 1926,
                 "name": "ethereumReceiver",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1420:32:12",
+                "scope": 1937,
+                "src": "1561:32:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -1278,10 +1389,10 @@
                   "typeString": "address payable"
                 },
                 "typeName": {
-                  "id": 1872,
+                  "id": 1925,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1420:15:12",
+                  "src": "1561:15:12",
                   "stateMutability": "payable",
                   "typeDescriptions": {
                     "typeIdentifier": "t_address_payable",
@@ -1293,11 +1404,11 @@
               },
               {
                 "constant": false,
-                "id": 1875,
+                "id": 1928,
                 "name": "originalValidator",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1462:25:12",
+                "scope": 1937,
+                "src": "1603:25:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -1305,10 +1416,10 @@
                   "typeString": "address"
                 },
                 "typeName": {
-                  "id": 1874,
+                  "id": 1927,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1462:7:12",
+                  "src": "1603:7:12",
                   "stateMutability": "nonpayable",
                   "typeDescriptions": {
                     "typeIdentifier": "t_address",
@@ -1320,11 +1431,11 @@
               },
               {
                 "constant": false,
-                "id": 1877,
+                "id": 1930,
                 "name": "tokenAddress",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1497:20:12",
+                "scope": 1937,
+                "src": "1638:20:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -1332,10 +1443,10 @@
                   "typeString": "address"
                 },
                 "typeName": {
-                  "id": 1876,
+                  "id": 1929,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1497:7:12",
+                  "src": "1638:7:12",
                   "stateMutability": "nonpayable",
                   "typeDescriptions": {
                     "typeIdentifier": "t_address",
@@ -1347,11 +1458,11 @@
               },
               {
                 "constant": false,
-                "id": 1879,
+                "id": 1932,
                 "name": "symbol",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1527:13:12",
+                "scope": 1937,
+                "src": "1668:13:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -1359,10 +1470,10 @@
                   "typeString": "string"
                 },
                 "typeName": {
-                  "id": 1878,
+                  "id": 1931,
                   "name": "string",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1527:6:12",
+                  "src": "1668:6:12",
                   "typeDescriptions": {
                     "typeIdentifier": "t_string_storage_ptr",
                     "typeString": "string"
@@ -1373,11 +1484,11 @@
               },
               {
                 "constant": false,
-                "id": 1881,
+                "id": 1934,
                 "name": "amount",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1550:14:12",
+                "scope": 1937,
+                "src": "1691:14:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -1385,10 +1496,10 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 1880,
+                  "id": 1933,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "1550:7:12",
+                  "src": "1691:7:12",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -1399,26 +1510,26 @@
               },
               {
                 "constant": false,
-                "id": 1883,
+                "id": 1936,
                 "name": "status",
                 "nodeType": "VariableDeclaration",
-                "scope": 1884,
-                "src": "1574:13:12",
+                "scope": 1937,
+                "src": "1715:13:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_enum$_Status_$1863",
+                  "typeIdentifier": "t_enum$_Status_$1916",
                   "typeString": "enum CosmosBridgeStorage.Status"
                 },
                 "typeName": {
                   "contractScope": null,
-                  "id": 1882,
+                  "id": 1935,
                   "name": "Status",
                   "nodeType": "UserDefinedTypeName",
-                  "referencedDeclaration": 1863,
-                  "src": "1574:6:12",
+                  "referencedDeclaration": 1916,
+                  "src": "1715:6:12",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_Status_$1863",
+                    "typeIdentifier": "t_enum$_Status_$1916",
                     "typeString": "enum CosmosBridgeStorage.Status"
                   }
                 },
@@ -1428,17 +1539,17 @@
             ],
             "name": "ProphecyClaim",
             "nodeType": "StructDefinition",
-            "scope": 1889,
-            "src": "1332:262:12",
+            "scope": 1942,
+            "src": "1473:262:12",
             "visibility": "public"
           },
           {
             "constant": false,
-            "id": 1888,
+            "id": 1941,
             "name": "____gap",
             "nodeType": "VariableDeclaration",
-            "scope": 1889,
-            "src": "1664:28:12",
+            "scope": 1942,
+            "src": "1805:28:12",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -1447,27 +1558,27 @@
             },
             "typeName": {
               "baseType": {
-                "id": 1885,
+                "id": 1938,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
-                "src": "1664:7:12",
+                "src": "1805:7:12",
                 "typeDescriptions": {
                   "typeIdentifier": "t_uint256",
                   "typeString": "uint256"
                 }
               },
-              "id": 1887,
+              "id": 1940,
               "length": {
                 "argumentTypes": null,
                 "hexValue": "313030",
-                "id": 1886,
+                "id": 1939,
                 "isConstant": false,
                 "isLValue": false,
                 "isPure": true,
                 "kind": "number",
                 "lValueRequested": false,
                 "nodeType": "Literal",
-                "src": "1672:3:12",
+                "src": "1813:3:12",
                 "subdenomination": null,
                 "typeDescriptions": {
                   "typeIdentifier": "t_rational_100_by_1",
@@ -1476,7 +1587,7 @@
                 "value": "100"
               },
               "nodeType": "ArrayTypeName",
-              "src": "1664:12:12",
+              "src": "1805:12:12",
               "typeDescriptions": {
                 "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
                 "typeString": "uint256[100]"
@@ -1486,19 +1597,19 @@
             "visibility": "private"
           }
         ],
-        "scope": 1890,
-        "src": "118:1577:12"
+        "scope": 1943,
+        "src": "118:1718:12"
       }
     ],
-    "src": "0:1695:12"
+    "src": "0:1836:12"
   },
   "compiler": {
     "name": "solc",
     "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.3.2",
-  "updatedAt": "2020-11-19T01:51:10.875Z",
+  "schemaVersion": "3.2.5",
+  "updatedAt": "2020-11-22T12:10:18.381Z",
   "devdoc": {
     "methods": {}
   },

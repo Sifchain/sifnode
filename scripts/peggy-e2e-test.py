@@ -176,7 +176,7 @@ def test_case_2():
     contract_balance_after_tx = int(get_eth_balance(BRIDGE_CONTRACT, ETH))
     balance_after_tx = int(get_balance(USER, PEGGYETH))
     print("After lock transaction {}'s balance of {} is {}".format(
-        ETH_OPERATOR, ETH, operator_balance_after_tx))
+        ETH_ACCOUNT, ETH, operator_balance_after_tx))
     print("After lock transaction contract {}'s balance of {} is {}".format(
         BRIDGE_CONTRACT, ETH, contract_balance_after_tx))
     print("After lock transaction {}'s balance of {} is {}".format(
@@ -247,7 +247,7 @@ def test_case_4():
     print("########## Test Case Four Over ##########")
 
 
-test_case_1()
-test_case_2()
+# test_case_1()
+# test_case_2()
 test_case_3()
 test_case_4()

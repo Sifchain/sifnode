@@ -157,6 +157,7 @@ contract("BridgeBank", function (accounts) {
       this.sender = web3.utils.utf8ToHex(
         "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
+      this.senderSequence = 1;
       this.recipient = userThree;
       this.symbol = "TEST";
       this.token = await BridgeToken.new(this.symbol);
@@ -208,10 +209,10 @@ contract("BridgeBank", function (accounts) {
       } = await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        this.senderSequence,
         this.recipient,
         this.symbol,
-        this.amount,
-        this.nonce, {
+        this.amount, {
           from: userOne
         }
       ).should.be.fulfilled;
@@ -561,6 +562,7 @@ contract("BridgeBank", function (accounts) {
       this.sender = web3.utils.utf8ToHex(
         "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
+      this.senderSequence = 1;
       this.recipient = accounts[4];
       this.ethereumSymbol = "ETH";
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
@@ -625,10 +627,10 @@ contract("BridgeBank", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        this.senderSequence,
         this.recipient,
         this.ethereumSymbol,
-        this.weiAmount,
-        this.nonce, {
+        this.weiAmount, {
           from: userOne
         }
       ).should.be.fulfilled;
@@ -664,10 +666,10 @@ contract("BridgeBank", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        this.senderSequence,
         this.recipient,
         this.symbol,
-        this.amount,
-        this.nonce, {
+        this.amount, {
           from: userOne
         }
       ).should.be.fulfilled;
@@ -701,11 +703,10 @@ contract("BridgeBank", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        this.senderSequence,
         this.recipient,
         this.ethereumSymbol,
-        this.halfWeiAmount,
-        this.nonce,
-         {
+        this.halfWeiAmount, {
           from: userOne
         }
       ).should.be.fulfilled;
@@ -743,10 +744,10 @@ contract("BridgeBank", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        ++this.senderSequence,
         this.recipient,
         this.ethereumSymbol,
-        this.halfWeiAmount,
-        ++this.nonce, {
+        this.halfWeiAmount, {
           from: userOne
         }
       ).should.be.fulfilled;
@@ -782,10 +783,10 @@ contract("BridgeBank", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        this.senderSequence,
         this.recipient,
         this.symbol,
-        this.amount,
-        this.nonce, {
+        this.amount, {
           from: userOne
         }
       ).should.be.fulfilled;
@@ -794,10 +795,10 @@ contract("BridgeBank", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        this.senderSequence,
         this.recipient,
         this.symbol,
-        this.amount,
-        this.nonce, {
+        this.amount, {
           from: userOne
         }
       ).should.be.rejectedWith(EVMRevert);
@@ -812,10 +813,10 @@ contract("BridgeBank", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        this.senderSequence,
         this.recipient,
         this.symbol,
-        OVERLIMIT_TOKEN_AMOUNT,
-        this.nonce, {
+        OVERLIMIT_TOKEN_AMOUNT, {
           from: userOne
         }
       ).should.be.rejectedWith(EVMRevert);
@@ -921,6 +922,7 @@ contract("BridgeBank", function (accounts) {
       }
 
       const cosmosSender = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
+      const senderSequence = 1
       const symbol = 'Rowan'
       const amount = 100000;
       const nonce = 1;
@@ -932,10 +934,10 @@ contract("BridgeBank", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         cosmosSender,
+        senderSequence,
         operator,
         symbol,
         amount,
-        nonce,
         {from: userOne}
       );
       (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(amount)).toString())

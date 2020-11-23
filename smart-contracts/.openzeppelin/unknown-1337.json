@@ -2,8 +2,8 @@
   "manifestVersion": "3.1",
   "impls": {
     "083c88c2a348aabb7bd3bf7f561bd2e3471da501600cfb97ab3529524ae04dfc": {
-      "address": "0xdA287EB6607946c4D904Cc8E777c6702D9Cb39cb",
-      "txHash": "0x8400d38fd5c8e2f376c0a1840ca4a0d4b905bf226715eb6a76e353a34dfce1c4",
+      "address": "0xf25186B5081Ff5cE73482AD761DB0eB0d25abfBF",
+      "txHash": "0x9c739690640907883cd6f3efba2e4885677048f679faa9e6152179baa6fbe94e",
       "layout": {
         "storage": [
           {
@@ -416,64 +416,484 @@
         }
       }
     },
-    "207520881209649c1f5846e83b2184c8a696f06322b4f23bd633d068dc1f4747": {
-      "address": "0xEAB2658b9f5655f5e4A8D8635918d6AeCb7D0488",
-      "txHash": "0xc48fe8357283cce38e5d734eac746991d4bae7eb130b1ad21b99ed97139644e4",
+    "535052c19b1260a34ade8f0782bd86921ed690401a35e949cbe7e2028d968b9e": {
+      "address": "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4",
+      "txHash": "0xfe3485c715e264834dbb085dac36e039cd1be1d14e4282c7e106eb86d170118d",
       "layout": {
         "storage": [
           {
-            "contract": "BridgeRegistry",
-            "label": "cosmosBridge",
-            "type": "t_address",
-            "src": "BridgeRegistry.sol:5"
+            "contract": "CosmosBridgeStorage",
+            "label": "COSMOS_NATIVE_ASSET_PREFIX",
+            "type": "t_string_storage",
+            "src": "CosmosBridgeStorage.sol:10"
           },
           {
-            "contract": "BridgeRegistry",
-            "label": "bridgeBank",
+            "contract": "CosmosBridgeStorage",
+            "label": "operator",
             "type": "t_address",
-            "src": "BridgeRegistry.sol:6"
+            "src": "CosmosBridgeStorage.sol:15"
           },
           {
-            "contract": "BridgeRegistry",
-            "label": "oracle",
-            "type": "t_address",
-            "src": "BridgeRegistry.sol:7"
-          },
-          {
-            "contract": "BridgeRegistry",
+            "contract": "CosmosBridgeStorage",
             "label": "valset",
-            "type": "t_address",
-            "src": "BridgeRegistry.sol:8"
+            "type": "t_address_payable",
+            "src": "CosmosBridgeStorage.sol:20"
           },
           {
-            "contract": "BridgeRegistry",
-            "label": "_initialized",
+            "contract": "CosmosBridgeStorage",
+            "label": "oracle",
+            "type": "t_address_payable",
+            "src": "CosmosBridgeStorage.sol:25"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "hasOracle",
             "type": "t_bool",
-            "src": "BridgeRegistry.sol:10"
+            "src": "CosmosBridgeStorage.sol:30"
           },
           {
-            "contract": "BridgeRegistry",
+            "contract": "CosmosBridgeStorage",
+            "label": "bridgeBank",
+            "type": "t_address_payable",
+            "src": "CosmosBridgeStorage.sol:35"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "hasBridgeBank",
+            "type": "t_bool",
+            "src": "CosmosBridgeStorage.sol:40"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "prophecyClaimCount",
+            "type": "t_uint256",
+            "src": "CosmosBridgeStorage.sol:45"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "usedNonce",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "CosmosBridgeStorage.sol:50"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "prophecyClaims",
+            "type": "t_mapping(t_uint256,t_struct(ProphecyClaim)1937_storage)",
+            "src": "CosmosBridgeStorage.sol:55"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
             "label": "____gap",
             "type": "t_array(t_uint256)100_storage",
-            "src": "BridgeRegistry.sol:12"
+            "src": "CosmosBridgeStorage.sol:84"
+          },
+          {
+            "contract": "CosmosBridge",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "CosmosBridge.sol:13"
+          },
+          {
+            "contract": "CosmosBridge",
+            "label": "___gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "CosmosBridge.sol:14"
           }
         ],
         "types": {
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
           "t_address": {
             "label": "address"
           },
+          "t_address_payable": {
+            "label": "address payable"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_mapping(t_uint256,t_struct(ProphecyClaim)1937_storage)": {
+            "label": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
+          }
+        }
+      }
+    },
+    "30b8a66db531398ab20affc0de79ddc44d601e7fa1cfbd88bfb9b4a1a1efc2d5": {
+      "address": "0xFB88dE099e13c3ED21F80a7a1E49f8CAEcF10df6",
+      "txHash": "0x5126b18577a21870df2309b5ee9b6f30184a727bfd57490c130d05a850407488",
+      "layout": {
+        "storage": [
+          {
+            "contract": "OracleStorage",
+            "label": "cosmosBridge",
+            "type": "t_address",
+            "src": "OracleStorage.sol:7"
+          },
+          {
+            "contract": "OracleStorage",
+            "label": "valset",
+            "type": "t_address",
+            "src": "OracleStorage.sol:12"
+          },
+          {
+            "contract": "OracleStorage",
+            "label": "operator",
+            "type": "t_address",
+            "src": "OracleStorage.sol:17"
+          },
+          {
+            "contract": "OracleStorage",
+            "label": "consensusThreshold",
+            "type": "t_uint256",
+            "src": "OracleStorage.sol:22"
+          },
+          {
+            "contract": "OracleStorage",
+            "label": "oracleClaimValidators",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "OracleStorage.sol:27"
+          },
+          {
+            "contract": "OracleStorage",
+            "label": "hasMadeClaim",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "OracleStorage.sol:32"
+          },
+          {
+            "contract": "OracleStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "OracleStorage.sol:37"
+          },
+          {
+            "contract": "Oracle",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "Oracle.sol:12"
+          }
+        ],
+        "types": {
           "t_bool": {
             "label": "bool"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
           },
           "t_array(t_uint256)100_storage": {
             "label": "uint256[100]"
           }
         }
       }
+    },
+    "0b25aa8eefcbb6dd64a1ca8cf3a07d2008b76686202cc495bc0cd18835daf887": {
+      "address": "0xf204a4Ef082f5c04bB89F7D5E6568B796096735a",
+      "txHash": "0x55bf943accf87924eb7642863bb26d84bb310c57466ef21f8dd6e68ea0c424f3",
+      "layout": {
+        "storage": [
+          {
+            "contract": "CosmosBankStorage",
+            "label": "bridgeTokenCount",
+            "type": "t_uint256",
+            "src": "BridgeBank/CosmosBankStorage.sol:19"
+          },
+          {
+            "contract": "CosmosBankStorage",
+            "label": "cosmosDepositNonce",
+            "type": "t_uint256",
+            "src": "BridgeBank/CosmosBankStorage.sol:24"
+          },
+          {
+            "contract": "CosmosBankStorage",
+            "label": "controlledBridgeTokens",
+            "type": "t_mapping(t_string_memory,t_address)",
+            "src": "BridgeBank/CosmosBankStorage.sol:29"
+          },
+          {
+            "contract": "CosmosBankStorage",
+            "label": "cosmosDeposits",
+            "type": "t_mapping(t_bytes32,t_struct(CosmosDeposit)845_storage)",
+            "src": "BridgeBank/CosmosBankStorage.sol:34"
+          },
+          {
+            "contract": "CosmosBankStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "BridgeBank/CosmosBankStorage.sol:39"
+          },
+          {
+            "contract": "EthereumBankStorage",
+            "label": "lockBurnNonce",
+            "type": "t_uint256",
+            "src": "BridgeBank/EthereumBankStorage.sol:8"
+          },
+          {
+            "contract": "EthereumBankStorage",
+            "label": "lockedFunds",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "BridgeBank/EthereumBankStorage.sol:13"
+          },
+          {
+            "contract": "EthereumBankStorage",
+            "label": "lockedTokenList",
+            "type": "t_mapping(t_string_memory,t_address)",
+            "src": "BridgeBank/EthereumBankStorage.sol:18"
+          },
+          {
+            "contract": "EthereumBankStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "BridgeBank/EthereumBankStorage.sol:23"
+          },
+          {
+            "contract": "CosmosWhiteListStorage",
+            "label": "_cosmosTokenWhiteList",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "BridgeBank/CosmosWhiteListStorage.sol:8"
+          },
+          {
+            "contract": "CosmosWhiteListStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "BridgeBank/CosmosWhiteListStorage.sol:13"
+          },
+          {
+            "contract": "BankStorage",
+            "label": "operator",
+            "type": "t_address",
+            "src": "BridgeBank/BankStorage.sol:15"
+          },
+          {
+            "contract": "BankStorage",
+            "label": "oracle",
+            "type": "t_address",
+            "src": "BridgeBank/BankStorage.sol:20"
+          },
+          {
+            "contract": "BankStorage",
+            "label": "cosmosBridge",
+            "type": "t_address",
+            "src": "BridgeBank/BankStorage.sol:25"
+          },
+          {
+            "contract": "BankStorage",
+            "label": "owner",
+            "type": "t_address",
+            "src": "BridgeBank/BankStorage.sol:30"
+          },
+          {
+            "contract": "BankStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "BridgeBank/BankStorage.sol:35"
+          },
+          {
+            "contract": "EthereumWhiteList",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "BridgeBank/EthereumWhitelist.sol:9"
+          },
+          {
+            "contract": "EthereumWhiteList",
+            "label": "_ethereumTokenWhiteList",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "BridgeBank/EthereumWhitelist.sol:14"
+          },
+          {
+            "contract": "EthereumWhiteList",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "BridgeBank/EthereumWhitelist.sol:19"
+          },
+          {
+            "contract": "CosmosWhiteList",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "BridgeBank/CosmosWhiteList.sol:11"
+          },
+          {
+            "contract": "BridgeBank",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "BridgeBank/BridgeBank.sol:27"
+          }
+        ],
+        "types": {
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_string_memory,t_address)": {
+            "label": "mapping(string => address)"
+          },
+          "t_mapping(t_bytes32,t_struct(CosmosDeposit)845_storage)": {
+            "label": "mapping(bytes32 => struct CosmosBankStorage.CosmosDeposit)"
+          }
+        }
+      }
+    },
+    "f81f5e02dc3b2cae9a7d0fcd12ebb3cbf8efed7b3f2d6b84f9caa2e22d9612f2": {
+      "address": "0x82D50AD3C1091866E258Fd0f1a7cC9674609D254",
+      "txHash": "0xc34abc0a70c6da75e53a80d0097fe6cbd3fd5acb8e778164cd978b60b2a0c271",
+      "layout": {
+        "storage": [
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "COSMOS_NATIVE_ASSET_PREFIX",
+            "type": "t_string_storage",
+            "src": "CosmosBridgeStorage.sol:10"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "operator",
+            "type": "t_address",
+            "src": "CosmosBridgeStorage.sol:15"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "valset",
+            "type": "t_address_payable",
+            "src": "CosmosBridgeStorage.sol:20"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "oracle",
+            "type": "t_address_payable",
+            "src": "CosmosBridgeStorage.sol:25"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "hasOracle",
+            "type": "t_bool",
+            "src": "CosmosBridgeStorage.sol:30"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "bridgeBank",
+            "type": "t_address_payable",
+            "src": "CosmosBridgeStorage.sol:35"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "hasBridgeBank",
+            "type": "t_bool",
+            "src": "CosmosBridgeStorage.sol:40"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "prophecyClaimCount",
+            "type": "t_uint256",
+            "src": "CosmosBridgeStorage.sol:45"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "usedNonce",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "CosmosBridgeStorage.sol:50"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "prophecyClaims",
+            "type": "t_mapping(t_uint256,t_struct(ProphecyClaim)1937_storage)",
+            "src": "CosmosBridgeStorage.sol:55"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "CosmosBridgeStorage.sol:84"
+          },
+          {
+            "contract": "CosmosBridge",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "CosmosBridge.sol:13"
+          },
+          {
+            "contract": "CosmosBridge",
+            "label": "___gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "CosmosBridge.sol:14"
+          },
+          {
+            "contract": "ERC20UNSAFE",
+            "label": "_totalSupply",
+            "type": "t_uint256",
+            "src": "MockUpgrade/MockCosmsosBridgeUpgrade.sol:6"
+          },
+          {
+            "contract": "ERC20UNSAFE",
+            "label": "_balances",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "MockUpgrade/MockCosmsosBridgeUpgrade.sol:7"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_address_payable": {
+            "label": "address payable"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_mapping(t_uint256,t_struct(ProphecyClaim)1937_storage)": {
+            "label": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
+          }
+        }
+      }
     }
   },
   "admin": {
-    "address": "0x806F036b153eA97eabb32D361C9717542962D78B",
-    "txHash": "0x2ce7c7ea49457bc1c4e96eab21e4b1d5f039d7f405c18183cdbfc08a721b1133"
+    "address": "0x8f0483125FCb9aaAEFA9209D8E9d7b9C8B9Fb90F",
+    "txHash": "0x6e39c805600638d2e3507d6714c775bb9c1f4f539456e8d5e9f3bebbd672b8fd"
   }
 }

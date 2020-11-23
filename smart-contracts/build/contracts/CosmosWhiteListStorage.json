@@ -1,15 +1,15 @@
 {
   "contractName": "CosmosWhiteListStorage",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol\":\"CosmosWhiteListStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol\":{\"keccak256\":\"0x1680292edf8d735fccfcfa9327b8dbbd0c673b509c701f9aaa1032a74de8ad8b\",\"urls\":[\"bzz-raw://b9695fceafb1ff4066e80a7be9003155565c4abebdba38b2aa027b5d7d0e95e9\",\"dweb:/ipfs/QmS8aZFBtfPJgZpaAx2LZ5i6xBBK6A4RLL2xuz3RRWLpDw\"]}},\"version\":1}",
-  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820aa3a2c4fda0326a3d2902a4e79fe3e20d0f0bcbbe3344be410702ece9b8c2c5064736f6c63430005100032",
-  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820aa3a2c4fda0326a3d2902a4e79fe3e20d0f0bcbbe3344be410702ece9b8c2c5064736f6c63430005100032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol\":\"CosmosWhiteListStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol\":{\"keccak256\":\"0x1680292edf8d735fccfcfa9327b8dbbd0c673b509c701f9aaa1032a74de8ad8b\",\"urls\":[\"bzz-raw://b9695fceafb1ff4066e80a7be9003155565c4abebdba38b2aa027b5d7d0e95e9\",\"dweb:/ipfs/QmS8aZFBtfPJgZpaAx2LZ5i6xBBK6A4RLL2xuz3RRWLpDw\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a72315820affca9165a6313c40b0e41e78b4ff8cfcd8be542b4499c2c17f2c66e6474d60064736f6c63430005100032",
+  "deployedBytecode": "0x6080604052600080fdfea265627a7a72315820affca9165a6313c40b0e41e78b4ff8cfcd8be542b4499c2c17f2c66e6474d60064736f6c63430005100032",
   "sourceMap": "25:269:6:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:269:6;;;;;;;",
   "deployedSourceMap": "25:269:6:-;;;;;",
   "source": "pragma solidity ^0.5.0;\n\ncontract CosmosWhiteListStorage {\n\n    /**\n    * @notice mapping to keep track of whitelisted tokens\n    */\n    mapping(address => bool) internal _cosmosTokenWhiteList;\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256[100] private ____gap;\n}",
-  "sourcePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
+  "sourcePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
   "ast": {
-    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
+    "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
     "exportedSymbols": {
       "CosmosWhiteListStorage": [
         957
@@ -148,7 +148,7 @@
     "src": "0:294:6"
   },
   "legacyAST": {
-    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
+    "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
     "exportedSymbols": {
       "CosmosWhiteListStorage": [
         957
@@ -291,8 +291,8 @@
     "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.3.2",
-  "updatedAt": "2020-11-19T01:51:10.853Z",
+  "schemaVersion": "3.2.5",
+  "updatedAt": "2020-11-22T12:10:18.366Z",
   "devdoc": {
     "methods": {}
   },

@@ -89,6 +89,7 @@ contract("CosmosBridge", function (accounts) {
       this.cosmosSender = web3.utils.utf8ToHex(
         "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
+      this.cosmosSenderSequence = 1;
       this.ethereumReceiver = userSeven;
       this.ethTokenAddress = "0x0000000000000000000000000000000000000000";
       this.symbol = "ETH";
@@ -177,10 +178,10 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.cosmosSender,
+        this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.symbol,
         this.amountWei,
-        0,
         {
           from: userOne
         }
@@ -189,10 +190,10 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.cosmosSender,
+        this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.symbol,
         this.amountWei,
-        0,
         {
           from: userTwo
         }
@@ -201,10 +202,10 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.cosmosSender,
+        this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.symbol,
         this.amountWei,
-        0,
         {
           from: userFour
         }
@@ -235,10 +236,10 @@ contract("CosmosBridge", function (accounts) {
       const { logs } = await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
+        ++this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.nativeCosmosAssetDenom,
         this.amountNativeCosmos,
-        0,
         {
           from: userOne
         }
@@ -247,10 +248,10 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
+        this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.nativeCosmosAssetDenom,
         this.amountNativeCosmos,
-        0,
         {
           from: userTwo
         }
@@ -259,10 +260,10 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
+        this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.nativeCosmosAssetDenom,
         this.amountNativeCosmos,
-        0,
         {
           from: userThree
         }
@@ -311,10 +312,10 @@ contract("CosmosBridge", function (accounts) {
       const { logs: logs2 } = await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
+        ++this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.nativeCosmosAssetDenom,
         this.amountNativeCosmos,
-        2,
         {
           from: userTwo
         }
@@ -323,10 +324,10 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
+        this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.nativeCosmosAssetDenom,
         this.amountNativeCosmos,
-        2,
         {
           from: userThree
         }
@@ -335,10 +336,10 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
+        this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.nativeCosmosAssetDenom,
         this.amountNativeCosmos,
-        2,
         {
           from: userFour
         }

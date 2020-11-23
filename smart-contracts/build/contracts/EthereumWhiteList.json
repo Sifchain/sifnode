@@ -51,15 +51,15 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"_value\",\"type\":\"bool\"}],\"name\":\"LogWhiteListUpdate\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getTokenInEthWhiteList\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"WhiteList contract records the ERC 20 list that can be locked in BridgeBank.*\",\"methods\":{},\"title\":\"WhiteList\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumWhitelist.sol\":\"EthereumWhiteList\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumWhitelist.sol\":{\"keccak256\":\"0xf804cf9adafc9ed3820050a5dbcf9a01239ff24e8c6f2f687de84b0296df15e8\",\"urls\":[\"bzz-raw://95d93ec9c8bd96f519d5b3a9411f8866cfd4a759db0cfbef563bef18304370b9\",\"dweb:/ipfs/QmUx8PF42m7vZWTqFPSEhyt452kcf1kD7N3BRMCyeyGsS4\"]}},\"version\":1}",
-  "bytecode": "0x608060405234801561001057600080fd5b5061015a806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80637b38c6d41461003b5780638129fc1c14610075575b600080fd5b6100616004803603602081101561005157600080fd5b50356001600160a01b031661007f565b604080519115158252519081900360200190f35b61007d61009d565b005b6001600160a01b031660009081526001602052604090205460ff1690565b60005460ff16156100e3576040805162461bcd60e51b815260206004820152600b60248201526a125b9a5d1a585b1a5e995960aa1b604482015290519081900360640190fd5b6000808052600160208190527fa6eef7e35abe7026729641147f7915573c7e97b47efa546f5f6e3230263bcb49805460ff19908116831790915582541617905556fea265627a7a723158204dd61ca796feb6a52cb88681e36086b5d525bd680318a5b7c2e81b55e69a043e64736f6c63430005100032",
-  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c80637b38c6d41461003b5780638129fc1c14610075575b600080fd5b6100616004803603602081101561005157600080fd5b50356001600160a01b031661007f565b604080519115158252519081900360200190f35b61007d61009d565b005b6001600160a01b031660009081526001602052604090205460ff1690565b60005460ff16156100e3576040805162461bcd60e51b815260206004820152600b60248201526a125b9a5d1a585b1a5e995960aa1b604482015290519081900360640190fd5b6000808052600160208190527fa6eef7e35abe7026729641147f7915573c7e97b47efa546f5f6e3230263bcb49805460ff19908116831790915582541617905556fea265627a7a723158204dd61ca796feb6a52cb88681e36086b5d525bd680318a5b7c2e81b55e69a043e64736f6c63430005100032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"_value\",\"type\":\"bool\"}],\"name\":\"LogWhiteListUpdate\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getTokenInEthWhiteList\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"WhiteList contract records the ERC 20 list that can be locked in BridgeBank.*\",\"methods\":{},\"title\":\"WhiteList\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/EthereumWhitelist.sol\":\"EthereumWhiteList\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/EthereumWhitelist.sol\":{\"keccak256\":\"0xf804cf9adafc9ed3820050a5dbcf9a01239ff24e8c6f2f687de84b0296df15e8\",\"urls\":[\"bzz-raw://95d93ec9c8bd96f519d5b3a9411f8866cfd4a759db0cfbef563bef18304370b9\",\"dweb:/ipfs/QmUx8PF42m7vZWTqFPSEhyt452kcf1kD7N3BRMCyeyGsS4\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5061015a806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80637b38c6d41461003b5780638129fc1c14610075575b600080fd5b6100616004803603602081101561005157600080fd5b50356001600160a01b031661007f565b604080519115158252519081900360200190f35b61007d61009d565b005b6001600160a01b031660009081526001602052604090205460ff1690565b60005460ff16156100e3576040805162461bcd60e51b815260206004820152600b60248201526a125b9a5d1a585b1a5e995960aa1b604482015290519081900360640190fd5b6000808052600160208190527fa6eef7e35abe7026729641147f7915573c7e97b47efa546f5f6e3230263bcb49805460ff19908116831790915582541617905556fea265627a7a72315820123243bdcd93eca033e46cad3482628ab1b9bd8da22910b793cc8b0d0bb81d5064736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c80637b38c6d41461003b5780638129fc1c14610075575b600080fd5b6100616004803603602081101561005157600080fd5b50356001600160a01b031661007f565b604080519115158252519081900360200190f35b61007d61009d565b005b6001600160a01b031660009081526001602052604090205460ff1690565b60005460ff16156100e3576040805162461bcd60e51b815260206004820152600b60248201526a125b9a5d1a585b1a5e995960aa1b604482015290519081900360640190fd5b6000808052600160208190527fa6eef7e35abe7026729641147f7915573c7e97b47efa546f5f6e3230263bcb49805460ff19908116831790915582541617905556fea265627a7a72315820123243bdcd93eca033e46cad3482628ab1b9bd8da22910b793cc8b0d0bb81d5064736f6c63430005100032",
   "sourceMap": "140:1588:9:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;140:1588:9;;;;;;;",
   "deployedSourceMap": "140:1588:9:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;140:1588:9;;;;;;;;;;;;;;;;;;;;;;;;1596:130;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;1596:130:9;-1:-1:-1;;;;;1596:130:9;;:::i;:::-;;;;;;;;;;;;;;;;;;546:164;;;:::i;:::-;;1596:130;-1:-1:-1;;;;;1688:31:9;1665:4;1688:31;;;:23;:31;;;;;;;;;1596:130::o;546:164::-;594:12;;;;593:13;585:37;;;;;-1:-1:-1;;;585:37:9;;;;;;;;;;;;-1:-1:-1;;;585:37:9;;;;;;;;;;;;;;;632:35;;;;670:4;632:35;;;;;:42;;-1:-1:-1;;632:42:9;;;;;;;;684:19;;;;;;546:164::o",
   "source": "pragma solidity ^0.5.0;\n\n/**\n * @title WhiteList\n * @dev WhiteList contract records the ERC 20 list that can be locked in BridgeBank.\n **/\n\ncontract EthereumWhiteList {\n    bool private _initialized;\n\n    /**\n    * @notice mapping to keep track of whitelisted tokens\n    */\n    mapping(address => bool) private _ethereumTokenWhiteList;\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256[100] private ____gap;\n    /*\n     * @dev: Event declarations\n     */\n    event LogWhiteListUpdate(address _token, bool _value);\n\n    function initialize() public {\n        require(!_initialized, \"Initialized\");\n        _ethereumTokenWhiteList[address(0)] = true;\n        _initialized = true;\n    }\n\n    /*\n     * @dev: Modifier to restrict erc20 can be locked\n     */\n    modifier onlyEthTokenWhiteList(address _token) {\n        require(\n            getTokenInEthWhiteList(_token),\n            \"Only token in whitelist can be transferred to cosmos\"\n        );\n        _;\n    }\n\n    /*\n     * @dev: Set the token address in whitelist\n     *\n     * @param _token: ERC 20's address\n     * @param _inList: set the _token in list or not\n     * @return: new value of if _token in whitelist\n     */\n    function setTokenInEthWhiteList(address _token, bool _inList)\n        internal\n        returns (bool)\n    {\n        _ethereumTokenWhiteList[_token] = _inList;\n        emit LogWhiteListUpdate(_token, _inList);\n        return _inList;\n    }\n\n    /*\n     * @dev: Get if the token in whitelist\n     *\n     * @param _token: ERC 20's address\n     * @return: if _token in whitelist\n     */\n    function getTokenInEthWhiteList(address _token) public view returns (bool) {\n        return _ethereumTokenWhiteList[_token];\n    }\n}",
-  "sourcePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumWhitelist.sol",
+  "sourcePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/EthereumWhitelist.sol",
   "ast": {
-    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumWhitelist.sol",
+    "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/EthereumWhitelist.sol",
     "exportedSymbols": {
       "EthereumWhiteList": [
         1270
@@ -359,10 +359,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4095,
-                        4096
+                        4074,
+                        4075
                       ],
-                      "referencedDeclaration": 4096,
+                      "referencedDeclaration": 4075,
                       "src": "585:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -679,10 +679,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4095,
-                        4096
+                        4074,
+                        4075
                       ],
-                      "referencedDeclaration": 4096,
+                      "referencedDeclaration": 4075,
                       "src": "842:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -1174,7 +1174,7 @@
     "src": "0:1728:9"
   },
   "legacyAST": {
-    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumWhitelist.sol",
+    "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/EthereumWhitelist.sol",
     "exportedSymbols": {
       "EthereumWhiteList": [
         1270
@@ -1474,10 +1474,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4095,
-                        4096
+                        4074,
+                        4075
                       ],
-                      "referencedDeclaration": 4096,
+                      "referencedDeclaration": 4075,
                       "src": "585:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -1794,10 +1794,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4095,
-                        4096
+                        4074,
+                        4075
                       ],
-                      "referencedDeclaration": 4096,
+                      "referencedDeclaration": 4075,
                       "src": "842:7:9",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2293,8 +2293,8 @@
     "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.3.2",
-  "updatedAt": "2020-11-19T01:51:10.859Z",
+  "schemaVersion": "3.2.5",
+  "updatedAt": "2020-11-22T12:10:18.370Z",
   "devdoc": {
     "details": "WhiteList contract records the ERC 20 list that can be locked in BridgeBank.*",
     "methods": {},
