@@ -181,8 +181,30 @@ namespace :cluster do
   desc "Manage eth full node deploy, upgrade, etc processes"
   namespace :ethnode do
     desc "Deploy a full eth node onto your cluster"
-    task :deploy do
-      puts "Coming soon! "
+    task :deploy, [:chainnet, :provider] do |t, args|
+      check_args(args)
+      eth_key = `openssl ecparam -name secp256k1 -genkey -noout | openssl ec -text -noout 2> /dev/null`
+
+      cmd = %Q{helm upgrade ethnode stable/ethereum \
+        --install -n ethnode \
+        --set geth.account.address=#{eth_address()} \
+        --set geth.account.privateKey=#{eth_private_key(eth_key)} \
+        --set geth.account.secret=#{eth_secret()} \
+        --create-namespace
+      }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+    end
+
+    desc "Uninstall ethnode"
+    task :uninstall, [:chainnet, :provider] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm delete ethnode --namespace ethnode && \
+        kubectl delete ns ethnode
+      }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
   end
 end
@@ -230,4 +252,44 @@ end
 #
 def image_repository(args)
   args[:image] ? "#{args[:image]}" : "sifchain/sifnoded"
+end
+
+#
+# Returns openssl private key that is required for deploying eth
+#
+# @param openssl key
+#
+def eth_private_key(key)
+  puts `printf "%s\n" "#{key}" \
+    | grep priv -A 3 \
+    | tail -n +2 \
+    | tr -d '\n[:space:]:' \
+    | sed 's/^00//'`
+end
+
+#
+# Returns openssl public key that is required for deploying eth
+#
+# @param openssl key
+#
+def eth_public_key(key)
+  puts `printf "%s\n" "#{key}" \
+  | grep pub -A 5 \
+  | tail -n +2 \
+  | tr -d '\n[:space:]:' \
+  | sed 's/^04//'`
+end
+
+#
+# Eth address
+#
+def eth_address()
+  puts "Eth address"
+end
+
+#
+# Eth secret
+#
+def eth_secret()
+  puts "Eth secret"
 end
