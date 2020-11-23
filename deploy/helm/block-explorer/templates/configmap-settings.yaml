@@ -28,31 +28,31 @@ data:
                     "denom": "rowan",
                     "displayName": "ROWAN",
                     "displayNamePlural": "ROWAN",
-                    "fraction": 1000000
+                    "fraction": 1000000000000000000
                 },
                 {
                     "denom": "cusdt",
                     "displayName": "CUSDT",
                     "displayNamePlural": "CUSDTS",
-                    "fraction": 1000000
+                    "fraction": 1000000000000000000
                 },
                 {
                     "denom": "cusdc",
                     "displayName": "CUSDC",
                     "displayNamePlural": "CUSDC",
-                    "fraction": 1000000
+                    "fraction": 1000000000000000000
                 },
                 {
                     "denom": "clink",
                     "displayName": "CLINK",
                     "displayNamePlural": "CLINKS",
-                    "fraction": 1000000
+                    "fraction": 1000000000000000000
                 },
                 {
                     "denom": "chot",
                     "displayName": "CHOT",
                     "displayNamePlural": "CHOTS",
-                    "fraction": 1000000
+                    "fraction": 1000000000000000000
                 }
             ],
             "gasPrice": 0.02,
