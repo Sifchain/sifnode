@@ -141,7 +141,28 @@ describe("swapCalculator", () => {
   });
 
   test("Avoid division by zero", () => {
-    const marketPairFinder: any = jest.fn(() => ref(null));
+    const pool1 = ref(
+      Pool(
+        AssetAmount(TOKENS.atk, "1000000"),
+        AssetAmount(TOKENS.rwn, "1000000")
+      )
+    ) as Ref<Pool | null>;
+
+    const pool2 = ref(
+      Pool(
+        AssetAmount(TOKENS.btk, "2000000"),
+        AssetAmount(TOKENS.rwn, "1000000")
+      )
+    ) as Ref<Pool | null>;
+
+    const marketPairFinder: any = jest.fn((a: string, b: string) => {
+      if (a === "atk" && b === "rwn") {
+        return pool1;
+      } else {
+        return pool2;
+      }
+    });
+
     ({ state, priceMessage } = useSwapCalculator({
       balances,
       fromAmount,
@@ -152,23 +173,6 @@ describe("swapCalculator", () => {
       marketPairFinder,
     }));
 
-    marketPairFinder
-      .mockImplementationOnce(() => {
-        return ref(
-          Pool(
-            AssetAmount(TOKENS.atk, "1000000"),
-            AssetAmount(TOKENS.rwn, "1000000")
-          )
-        ) as Ref<Pool | null>;
-      })
-      .mockImplementationOnce(() => {
-        return ref(
-          Pool(
-            AssetAmount(TOKENS.btk, "2000000"),
-            AssetAmount(TOKENS.rwn, "1000000")
-          )
-        ) as Ref<Pool | null>;
-      });
     selectedField.value = "from";
     fromAmount.value = "0";
     toAmount.value = "0";
