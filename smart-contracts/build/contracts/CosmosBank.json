@@ -103,15 +103,15 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"_symbol\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_beneficiary\",\"type\":\"address\"}],\"name\":\"LogBridgeTokenMint\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"_symbol\",\"type\":\"string\"}],\"name\":\"LogNewBridgeToken\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"bridgeTokenCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"cosmosDepositNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"string\",\"name\":\"_symbol\",\"type\":\"string\"}],\"name\":\"getBridgeToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Manages the deployment and minting of ERC20 compatible BridgeTokens     which represent assets based on the Cosmos blockchain.*\",\"methods\":{},\"title\":\"CosmosBank\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosBank.sol\":\"CosmosBank\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/BridgeToken.sol\":{\"keccak256\":\"0x9103ff62316840e8adbb11dd86bccf08f5770db9ea64b60a062100b493baad0d\",\"urls\":[\"bzz-raw://475bdb2e962297866eb173d997fca04b91bcae11b9708e7d1f516f3188308eee\",\"dweb:/ipfs/QmNpAkq3Uo6Q37JGcyqdDw782RgnA7dWfsD9QvTrFakBs8\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosBank.sol\":{\"keccak256\":\"0x24791157e6e9e62308dafa96a0aabbfff276b12190b49ba2a7506031fca32cc0\",\"urls\":[\"bzz-raw://3c20406583b6a7295dc6e540de68adcaade2b0565b576cba0d87122ea9fa575b\",\"dweb:/ipfs/QmUF4TfmiFP2tNHxn5PichP3bQPwt7uSfvKAbUPk1s3U9H\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol\":{\"keccak256\":\"0x5005339773232d4a1268b595d4812afdec572519f84f621b54859fc9b80e646f\",\"urls\":[\"bzz-raw://4e3d5b75f86c0cdd6c41a2a2ad26421503c82ce34f701f31219fe9b82f801431\",\"dweb:/ipfs/QmVJo5hLg8j5vdHPYN68FuojNEdaUcb5R6znEeoyd8F1pf\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/GSN/Context.sol\":{\"keccak256\":\"0x90a3995645af7562d84b9d69363ffa5ae7217714ab61e951bf7bc450f40e4061\",\"urls\":[\"bzz-raw://216ef9d6b614db4eb46970b4e84903f2534a45572dd30a79f0041f1a5830f436\",\"dweb:/ipfs/QmNPrJ4MWKUAWzKXpUqeyKRUfosaoANZAqXgvepdrCwZAG\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/access/Roles.sol\":{\"keccak256\":\"0xb002c378d7b82a101bd659c341518953ca0919d342c0a400196982c0e7e7bcdb\",\"urls\":[\"bzz-raw://00a788c4631466c220b385bdd100c571d24b2deccd657615cfbcef6cadf669a4\",\"dweb:/ipfs/QmTEwDbjJNxmMNCDMqtuou3dyM8Wtp8Q9NFvn7SAVM7Jf3\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/access/roles/MinterRole.sol\":{\"keccak256\":\"0xbe8eef6f2cb4e427f5c5d8a76865ccd06e55a4f1d6671ba312d45bfa705aedbf\",\"urls\":[\"bzz-raw://badf338a5e22c8658c01fe2ce89b487d9dbf6d2d9d5eb49df7415383e2498765\",\"dweb:/ipfs/QmP5aMkvFwMJyuQjKE8ADh5tkWYqonb4KjgkAjgYEVVFAv\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol\":{\"keccak256\":\"0x640b6dee7a4b830bdfd52b5031a07fc2b12209f5b2e29e5d364a7d37f69d8076\",\"urls\":[\"bzz-raw://31113152e1ddb78fe7a4197f247591ca894e93f916867beb708d8e747b6cc74f\",\"dweb:/ipfs/QmbZaJyXdpsYGykVhHH9qpVGQg9DGCxE2QufbCUy3daTgq\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol\":{\"keccak256\":\"0xb15af804e2bc97db51e4e103f13de9fe13f87e6b835d7a88c897966c0e58506e\",\"urls\":[\"bzz-raw://1e8cff8437557fc915a3bed968fcd8f2df9809599e665ef69c2c9ce628548055\",\"dweb:/ipfs/QmP5spYP8vs2jvLF8zNrXUbqB79hMsoEvMHiLcBxerWKcm\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol\":{\"keccak256\":\"0x9b94356691f3cbf90a5d83ae3fdf6a5a662bb004d2bd8b034160d60221807e64\",\"urls\":[\"bzz-raw://14a9d33db455302b8bb9fdb28998efefbe5a1cb41b29e31391609f646b2ab351\",\"dweb:/ipfs/Qmd4wFr6GEMZnnxgXeq3gmp7cs8tqDuHp3TVNhCbjnux2V\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol\":{\"keccak256\":\"0x4a3a810b7ebe742e897e1fd428b3eeed2196d3acea58eaf9c566ed10d545d2ed\",\"urls\":[\"bzz-raw://28d03f328e19e4099d5013de0649afaeaabac1a614e130767ab1cb4aca9775b6\",\"dweb:/ipfs/Qmb9iW7yNuYehB2NfhRMs9TakqbLVQhBhmGMkaDZ5g1Eb4\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol\":{\"keccak256\":\"0xa2b957cf89692c504962afb7506999155f83385373f808243246cd5879de5940\",\"urls\":[\"bzz-raw://c44ae0ad1bce141c33b962f8b4e9228bdf8df36c8ac363b4f0bf9498b8bfc32a\",\"dweb:/ipfs/QmcSBRdFwVvy2wFZrBwo5cvqNP4UHh9Eyzf8jnxBgnPqfe\"]},\"/Users/junius/github/thor/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0xe5bb0f57cff3e299f360052ba50f1ea0fff046df2be070b6943e0e3c3fdad8a9\",\"urls\":[\"bzz-raw://59fd025151435da35faa8093a5c7a17de02de9d08ad27275c5cdf05050820d91\",\"dweb:/ipfs/QmQMvwEcPhoRXzbXyrdoeRtvLoifUW9Qh7Luho7bmUPRkc\"]}},\"version\":1}",
-  "bytecode": "0x608060405234801561001057600080fd5b506101dc806100206000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c8063328470ab14610046578063416d322714610060578063ebb73ca914610068575b600080fd5b61004e61012a565b60408051918252519081900360200190f35b61004e610130565b61010e6004803603602081101561007e57600080fd5b81019060208101813564010000000081111561009957600080fd5b8201836020820111156100ab57600080fd5b803590602001918460018302840111640100000000831117156100cd57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250929550610136945050505050565b604080516001600160a01b039092168252519081900360200190f35b60005481565b60015481565b60006002826040518082805190602001908083835b6020831061016a5780518252601f19909201916020918201910161014b565b51815160209384036101000a60001901801990921691161790529201948552506040519384900301909220546001600160a01b031694935050505056fea265627a7a723158200039111d23ad8850377f6ce707a5daf969a6feb14c44411ba8279789e9865a5564736f6c63430005100032",
-  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c8063328470ab14610046578063416d322714610060578063ebb73ca914610068575b600080fd5b61004e61012a565b60408051918252519081900360200190f35b61004e610130565b61010e6004803603602081101561007e57600080fd5b81019060208101813564010000000081111561009957600080fd5b8201836020820111156100ab57600080fd5b803590602001918460018302840111640100000000831117156100cd57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250929550610136945050505050565b604080516001600160a01b039092168252519081900360200190f35b60005481565b60015481565b60006002826040518082805190602001908083835b6020831061016a5780518252601f19909201916020918201910161014b565b51815160209384036101000a60001901801990921691161790529201948552506040519384900301909220546001600160a01b031694935050505056fea265627a7a723158200039111d23ad8850377f6ce707a5daf969a6feb14c44411ba8279789e9865a5564736f6c63430005100032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"_symbol\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_beneficiary\",\"type\":\"address\"}],\"name\":\"LogBridgeTokenMint\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"_symbol\",\"type\":\"string\"}],\"name\":\"LogNewBridgeToken\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[],\"name\":\"bridgeTokenCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"cosmosDepositNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"string\",\"name\":\"_symbol\",\"type\":\"string\"}],\"name\":\"getBridgeToken\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Manages the deployment and minting of ERC20 compatible BridgeTokens     which represent assets based on the Cosmos blockchain.*\",\"methods\":{},\"title\":\"CosmosBank\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBank.sol\":\"CosmosBank\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/BridgeToken.sol\":{\"keccak256\":\"0x9103ff62316840e8adbb11dd86bccf08f5770db9ea64b60a062100b493baad0d\",\"urls\":[\"bzz-raw://475bdb2e962297866eb173d997fca04b91bcae11b9708e7d1f516f3188308eee\",\"dweb:/ipfs/QmNpAkq3Uo6Q37JGcyqdDw782RgnA7dWfsD9QvTrFakBs8\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBank.sol\":{\"keccak256\":\"0x24791157e6e9e62308dafa96a0aabbfff276b12190b49ba2a7506031fca32cc0\",\"urls\":[\"bzz-raw://3c20406583b6a7295dc6e540de68adcaade2b0565b576cba0d87122ea9fa575b\",\"dweb:/ipfs/QmUF4TfmiFP2tNHxn5PichP3bQPwt7uSfvKAbUPk1s3U9H\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol\":{\"keccak256\":\"0x5005339773232d4a1268b595d4812afdec572519f84f621b54859fc9b80e646f\",\"urls\":[\"bzz-raw://4e3d5b75f86c0cdd6c41a2a2ad26421503c82ce34f701f31219fe9b82f801431\",\"dweb:/ipfs/QmVJo5hLg8j5vdHPYN68FuojNEdaUcb5R6znEeoyd8F1pf\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/GSN/Context.sol\":{\"keccak256\":\"0x90a3995645af7562d84b9d69363ffa5ae7217714ab61e951bf7bc450f40e4061\",\"urls\":[\"bzz-raw://216ef9d6b614db4eb46970b4e84903f2534a45572dd30a79f0041f1a5830f436\",\"dweb:/ipfs/QmNPrJ4MWKUAWzKXpUqeyKRUfosaoANZAqXgvepdrCwZAG\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/access/Roles.sol\":{\"keccak256\":\"0xb002c378d7b82a101bd659c341518953ca0919d342c0a400196982c0e7e7bcdb\",\"urls\":[\"bzz-raw://00a788c4631466c220b385bdd100c571d24b2deccd657615cfbcef6cadf669a4\",\"dweb:/ipfs/QmTEwDbjJNxmMNCDMqtuou3dyM8Wtp8Q9NFvn7SAVM7Jf3\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/access/roles/MinterRole.sol\":{\"keccak256\":\"0xbe8eef6f2cb4e427f5c5d8a76865ccd06e55a4f1d6671ba312d45bfa705aedbf\",\"urls\":[\"bzz-raw://badf338a5e22c8658c01fe2ce89b487d9dbf6d2d9d5eb49df7415383e2498765\",\"dweb:/ipfs/QmP5aMkvFwMJyuQjKE8ADh5tkWYqonb4KjgkAjgYEVVFAv\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol\":{\"keccak256\":\"0x640b6dee7a4b830bdfd52b5031a07fc2b12209f5b2e29e5d364a7d37f69d8076\",\"urls\":[\"bzz-raw://31113152e1ddb78fe7a4197f247591ca894e93f916867beb708d8e747b6cc74f\",\"dweb:/ipfs/QmbZaJyXdpsYGykVhHH9qpVGQg9DGCxE2QufbCUy3daTgq\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol\":{\"keccak256\":\"0xb15af804e2bc97db51e4e103f13de9fe13f87e6b835d7a88c897966c0e58506e\",\"urls\":[\"bzz-raw://1e8cff8437557fc915a3bed968fcd8f2df9809599e665ef69c2c9ce628548055\",\"dweb:/ipfs/QmP5spYP8vs2jvLF8zNrXUbqB79hMsoEvMHiLcBxerWKcm\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol\":{\"keccak256\":\"0x9b94356691f3cbf90a5d83ae3fdf6a5a662bb004d2bd8b034160d60221807e64\",\"urls\":[\"bzz-raw://14a9d33db455302b8bb9fdb28998efefbe5a1cb41b29e31391609f646b2ab351\",\"dweb:/ipfs/Qmd4wFr6GEMZnnxgXeq3gmp7cs8tqDuHp3TVNhCbjnux2V\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol\":{\"keccak256\":\"0x4a3a810b7ebe742e897e1fd428b3eeed2196d3acea58eaf9c566ed10d545d2ed\",\"urls\":[\"bzz-raw://28d03f328e19e4099d5013de0649afaeaabac1a614e130767ab1cb4aca9775b6\",\"dweb:/ipfs/Qmb9iW7yNuYehB2NfhRMs9TakqbLVQhBhmGMkaDZ5g1Eb4\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol\":{\"keccak256\":\"0xa2b957cf89692c504962afb7506999155f83385373f808243246cd5879de5940\",\"urls\":[\"bzz-raw://c44ae0ad1bce141c33b962f8b4e9228bdf8df36c8ac363b4f0bf9498b8bfc32a\",\"dweb:/ipfs/QmcSBRdFwVvy2wFZrBwo5cvqNP4UHh9Eyzf8jnxBgnPqfe\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0xe5bb0f57cff3e299f360052ba50f1ea0fff046df2be070b6943e0e3c3fdad8a9\",\"urls\":[\"bzz-raw://59fd025151435da35faa8093a5c7a17de02de9d08ad27275c5cdf05050820d91\",\"dweb:/ipfs/QmQMvwEcPhoRXzbXyrdoeRtvLoifUW9Qh7Luho7bmUPRkc\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506101dc806100206000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c8063328470ab14610046578063416d322714610060578063ebb73ca914610068575b600080fd5b61004e61012a565b60408051918252519081900360200190f35b61004e610130565b61010e6004803603602081101561007e57600080fd5b81019060208101813564010000000081111561009957600080fd5b8201836020820111156100ab57600080fd5b803590602001918460018302840111640100000000831117156100cd57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250929550610136945050505050565b604080516001600160a01b039092168252519081900360200190f35b60005481565b60015481565b60006002826040518082805190602001908083835b6020831061016a5780518252601f19909201916020918201910161014b565b51815160209384036101000a60001901801990921691161790529201948552506040519384900301909220546001600160a01b031694935050505056fea265627a7a723158201eee94aee9626be7b34da9d4a74f76964149aa9a7c30278d6f8abf4f5d64ec6264736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c8063328470ab14610046578063416d322714610060578063ebb73ca914610068575b600080fd5b61004e61012a565b60408051918252519081900360200190f35b61004e610130565b61010e6004803603602081101561007e57600080fd5b81019060208101813564010000000081111561009957600080fd5b8201836020820111156100ab57600080fd5b803590602001918460018302840111640100000000831117156100cd57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250929550610136945050505050565b604080516001600160a01b039092168252519081900360200190f35b60005481565b60015481565b60006002826040518082805190602001908083835b6020831061016a5780518252601f19909201916020918201910161014b565b51815160209384036101000a60001901801990921691161790529201948552506040519384900301909220546001600160a01b031694935050505056fea265627a7a723158201eee94aee9626be7b34da9d4a74f76964149aa9a7c30278d6f8abf4f5d64ec6264736f6c63430005100032",
   "sourceMap": "337:5435:3:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;337:5435:3;;;;;;;",
   "deployedSourceMap": "337:5435:3:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;337:5435:3;;;;;;;;;;;;;;;;;;;;;;;;;;;;;349:31:4;;;:::i;:::-;;;;;;;;;;;;;;;;437:33;;;:::i;921:162:3:-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;921:162:3;;;;;;;;21:11:-1;5:28;;2:2;;;46:1;43;36:12;2:2;921:162:3;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;921:162:3;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;921:162:3;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;30:3:-1;22:6;14;1:33;99:1;81:16;;74:27;;;;-1:-1;921:162:3;;-1:-1:-1;921:162:3;;-1:-1:-1;;;;;921:162:3:i;:::-;;;;-1:-1:-1;;;;;921:162:3;;;;;;;;;;;;;;349:31:4;;;;:::o;437:33::-;;;;:::o;921:162:3:-;1013:7;1044:22;1067:7;1044:31;;;;;;;;;;;;;36:153:-1;66:2;61:3;58:11;36:153;;176:10;;164:23;;-1:-1;;139:12;;;;98:2;89:12;;;;114;36:153;;;299:10;344;;263:2;259:12;;;254:3;250:22;-1:-1;;246:30;311:9;;295:26;;;340:21;;377:20;365:33;;1044:31:3;;;;;-1:-1:-1;1044:31:3;;;;;;;;;;;-1:-1:-1;;;;;1044:31:3;;921:162;-1:-1:-1;;;;921:162:3:o",
   "source": "pragma solidity ^0.5.0;\n\nimport \"../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol\";\nimport \"./BridgeToken.sol\";\nimport \"./CosmosBankStorage.sol\";\n\n/**\n * @title CosmosBank\n * @dev Manages the deployment and minting of ERC20 compatible BridgeTokens\n *      which represent assets based on the Cosmos blockchain.\n **/\n\ncontract CosmosBank is CosmosBankStorage {\n    using SafeMath for uint256;\n\n    /*\n     * @dev: Event declarations\n     */\n    event LogNewBridgeToken(address _token, string _symbol);\n\n    event LogBridgeTokenMint(\n        address _token,\n        string _symbol,\n        uint256 _amount,\n        address _beneficiary\n    );\n\n    /*\n     * @dev: Get a token symbol's corresponding bridge token address.\n     *\n     * @param _symbol: The token's symbol/denom without 'e' prefix.\n     * @return: Address associated with the given symbol. Returns address(0) if none is found.\n     */\n    function getBridgeToken(string memory _symbol)\n        public\n        view\n        returns (address)\n    {\n        return (controlledBridgeTokens[_symbol]);\n    }\n\n    /*\n     * @dev: Creates a new CosmosDeposit with a unique ID\n     *\n     * @param _cosmosSender: The sender's Cosmos address in bytes.\n     * @param _ethereumRecipient: The intended recipient's Ethereum address.\n     * @param _token: The currency type\n     * @param _amount: The amount in the deposit.\n     * @return: The newly created CosmosDeposit's unique id.\n     */\n    function newCosmosDeposit(\n        bytes memory _cosmosSender,\n        address payable _ethereumRecipient,\n        address _token,\n        uint256 _amount\n    ) internal returns (bytes32) {\n        cosmosDepositNonce = cosmosDepositNonce.add(1);\n        bytes32 depositID = keccak256(\n            abi.encodePacked(_cosmosSender, _ethereumRecipient, _token, _amount, cosmosDepositNonce)\n        );\n\n        cosmosDeposits[depositID] = CosmosDeposit(\n            _cosmosSender,\n            _ethereumRecipient,\n            _token,\n            _amount,\n            true\n        );\n\n        return depositID;\n    }\n\n    /*\n     * @dev: Deploys a new BridgeToken contract\n     *\n     * @param _symbol: The BridgeToken's symbol\n     */\n    function deployNewBridgeToken(string memory _symbol)\n        internal\n        returns (address)\n    {\n        bridgeTokenCount = bridgeTokenCount.add(1);\n\n        // Deploy new bridge token contract\n        BridgeToken newBridgeToken = (new BridgeToken)(_symbol);\n\n        // Set address in tokens mapping\n        address newBridgeTokenAddress = address(newBridgeToken);\n        controlledBridgeTokens[_symbol] = newBridgeTokenAddress;\n\n        emit LogNewBridgeToken(newBridgeTokenAddress, _symbol);\n        return newBridgeTokenAddress;\n    }\n\n    /*\n     * @dev: Deploys a new BridgeToken contract\n     *\n     * @param _symbol: The BridgeToken's symbol\n     *\n     * @note the Rowan token symbol needs to be \"Rowan\" so that it integrates correctly with the cosmos bridge \n     */\n    function useExistingBridgeToken(address _contractAddress)\n        internal\n        returns (address)\n    {\n        bridgeTokenCount = bridgeTokenCount.add(1);\n\n        string memory _symbol = BridgeToken(_contractAddress).symbol();\n        // Set address in tokens mapping\n        address newBridgeTokenAddress = _contractAddress;\n        controlledBridgeTokens[_symbol] = newBridgeTokenAddress;\n\n        emit LogNewBridgeToken(newBridgeTokenAddress, _symbol);\n        return newBridgeTokenAddress;\n    }\n\n    /*\n     * @dev: Mints new cosmos tokens\n     *\n     * @param _cosmosSender: The sender's Cosmos address in bytes.\n     * @param _ethereumRecipient: The intended recipient's Ethereum address.\n     * @param _cosmosTokenAddress: The currency type\n     * @param _symbol: comsos token symbol\n     * @param _amount: number of comsos tokens to be minted\n     */\n    function mintNewBridgeTokens(\n        bytes memory _cosmosSender,\n        address payable _intendedRecipient,\n        address _bridgeTokenAddress,\n        string memory _symbol,\n        uint256 _amount\n    ) internal {\n        require(\n            controlledBridgeTokens[_symbol] == _bridgeTokenAddress,\n            \"Token must be a controlled bridge token\"\n        );\n\n        // Mint bridge tokens\n        require(\n            BridgeToken(_bridgeTokenAddress).mint(_intendedRecipient, _amount),\n            \"Attempted mint of bridge tokens failed\"\n        );\n\n        newCosmosDeposit(\n            _cosmosSender,\n            _intendedRecipient,\n            _bridgeTokenAddress,\n            _amount\n        );\n\n        emit LogBridgeTokenMint(\n            _bridgeTokenAddress,\n            _symbol,\n            _amount,\n            _intendedRecipient\n        );\n    }\n\n    /*\n     * @dev: Checks if an individual CosmosDeposit exists.\n     *\n     * @param _id: The unique CosmosDeposit's id.\n     * @return: Boolean indicating if the CosmosDeposit exists in memory.\n     */\n    function isLockedCosmosDeposit(bytes32 _id) internal view returns (bool) {\n        return (cosmosDeposits[_id].locked);\n    }\n\n    /*\n     * @dev: Gets an item's information\n     *\n     * @param _Id: The item containing the desired information.\n     * @return: Sender's address.\n     * @return: Recipient's address in bytes.\n     * @return: Token address.\n     * @return: Amount of ethereum/erc20 in the item.\n     * @return: Unique nonce of the item.\n     */\n    function getCosmosDeposit(bytes32 _id)\n        internal\n        view\n        returns (bytes memory, address payable, address, uint256)\n    {\n        CosmosDeposit memory deposit = cosmosDeposits[_id];\n\n        return (\n            deposit.cosmosSender,\n            deposit.ethereumRecipient,\n            deposit.bridgeTokenAddress,\n            deposit.amount\n        );\n    }\n}\n",
-  "sourcePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosBank.sol",
+  "sourcePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBank.sol",
   "ast": {
-    "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosBank.sol",
+    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBank.sol",
     "exportedSymbols": {
       "CosmosBank": [
         832
@@ -132,18 +132,18 @@
         "src": "0:23:3"
       },
       {
-        "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol",
+        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol",
         "file": "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol",
         "id": 573,
         "nodeType": "ImportDirective",
         "scope": 833,
-        "sourceUnit": 3463,
+        "sourceUnit": 3484,
         "src": "25:78:3",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/BridgeToken.sol",
+        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/BridgeToken.sol",
         "file": "./BridgeToken.sol",
         "id": 574,
         "nodeType": "ImportDirective",
@@ -154,7 +154,7 @@
         "unitAlias": ""
       },
       {
-        "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol",
+        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol",
         "file": "./CosmosBankStorage.sol",
         "id": 575,
         "nodeType": "ImportDirective",
@@ -207,10 +207,10 @@
               "id": 578,
               "name": "SafeMath",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3462,
+              "referencedDeclaration": 3483,
               "src": "390:8:3",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_SafeMath_$3462",
+                "typeIdentifier": "t_contract$_SafeMath_$3483",
                 "typeString": "library SafeMath"
               }
             },
@@ -651,7 +651,7 @@
                         "lValueRequested": false,
                         "memberName": "add",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 3302,
+                        "referencedDeclaration": 3323,
                         "src": "1683:22:3",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -816,7 +816,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4058,
+                            "referencedDeclaration": 4079,
                             "src": "1761:3:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -863,7 +863,7 @@
                       "name": "keccak256",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4065,
+                      "referencedDeclaration": 4086,
                       "src": "1738:9:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_keccak256_pure$_t_bytes_memory_ptr_$returns$_t_bytes32_$",
@@ -1327,7 +1327,7 @@
                         "lValueRequested": false,
                         "memberName": "add",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 3302,
+                        "referencedDeclaration": 3323,
                         "src": "2326:20:3",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -1886,7 +1886,7 @@
                         "lValueRequested": false,
                         "memberName": "add",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 3302,
+                        "referencedDeclaration": 3323,
                         "src": "3118:20:3",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -2011,7 +2011,7 @@
                       "lValueRequested": false,
                       "memberName": "symbol",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3950,
+                      "referencedDeclaration": 3971,
                       "src": "3176:36:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_view$__$returns$_t_string_memory_ptr_$",
@@ -2447,10 +2447,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4074,
-                        4075
+                        4095,
+                        4096
                       ],
-                      "referencedDeclaration": 4075,
+                      "referencedDeclaration": 4096,
                       "src": "4080:7:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -2576,7 +2576,7 @@
                           "lValueRequested": false,
                           "memberName": "mint",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 3986,
+                          "referencedDeclaration": 4007,
                           "src": "4282:37:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -2631,10 +2631,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4074,
-                        4075
+                        4095,
+                        4096
                       ],
-                      "referencedDeclaration": 4075,
+                      "referencedDeclaration": 4096,
                       "src": "4261:7:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -3587,7 +3587,7 @@
     "src": "0:5773:3"
   },
   "legacyAST": {
-    "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosBank.sol",
+    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBank.sol",
     "exportedSymbols": {
       "CosmosBank": [
         832
@@ -3608,18 +3608,18 @@
         "src": "0:23:3"
       },
       {
-        "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol",
+        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol",
         "file": "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol",
         "id": 573,
         "nodeType": "ImportDirective",
         "scope": 833,
-        "sourceUnit": 3463,
+        "sourceUnit": 3484,
         "src": "25:78:3",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/BridgeToken.sol",
+        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/BridgeToken.sol",
         "file": "./BridgeToken.sol",
         "id": 574,
         "nodeType": "ImportDirective",
@@ -3630,7 +3630,7 @@
         "unitAlias": ""
       },
       {
-        "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol",
+        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol",
         "file": "./CosmosBankStorage.sol",
         "id": 575,
         "nodeType": "ImportDirective",
@@ -3683,10 +3683,10 @@
               "id": 578,
               "name": "SafeMath",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3462,
+              "referencedDeclaration": 3483,
               "src": "390:8:3",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_SafeMath_$3462",
+                "typeIdentifier": "t_contract$_SafeMath_$3483",
                 "typeString": "library SafeMath"
               }
             },
@@ -4127,7 +4127,7 @@
                         "lValueRequested": false,
                         "memberName": "add",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 3302,
+                        "referencedDeclaration": 3323,
                         "src": "1683:22:3",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -4292,7 +4292,7 @@
                             "name": "abi",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4058,
+                            "referencedDeclaration": 4079,
                             "src": "1761:3:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_abi",
@@ -4339,7 +4339,7 @@
                       "name": "keccak256",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4065,
+                      "referencedDeclaration": 4086,
                       "src": "1738:9:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_keccak256_pure$_t_bytes_memory_ptr_$returns$_t_bytes32_$",
@@ -4803,7 +4803,7 @@
                         "lValueRequested": false,
                         "memberName": "add",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 3302,
+                        "referencedDeclaration": 3323,
                         "src": "2326:20:3",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -5362,7 +5362,7 @@
                         "lValueRequested": false,
                         "memberName": "add",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 3302,
+                        "referencedDeclaration": 3323,
                         "src": "3118:20:3",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_internal_pure$_t_uint256_$_t_uint256_$returns$_t_uint256_$bound_to$_t_uint256_$",
@@ -5487,7 +5487,7 @@
                       "lValueRequested": false,
                       "memberName": "symbol",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3950,
+                      "referencedDeclaration": 3971,
                       "src": "3176:36:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_view$__$returns$_t_string_memory_ptr_$",
@@ -5923,10 +5923,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4074,
-                        4075
+                        4095,
+                        4096
                       ],
-                      "referencedDeclaration": 4075,
+                      "referencedDeclaration": 4096,
                       "src": "4080:7:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -6052,7 +6052,7 @@
                           "lValueRequested": false,
                           "memberName": "mint",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 3986,
+                          "referencedDeclaration": 4007,
                           "src": "4282:37:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -6107,10 +6107,10 @@
                       "name": "require",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [
-                        4074,
-                        4075
+                        4095,
+                        4096
                       ],
-                      "referencedDeclaration": 4075,
+                      "referencedDeclaration": 4096,
                       "src": "4261:7:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
@@ -7067,8 +7067,8 @@
     "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.2.5",
-  "updatedAt": "2020-11-22T12:10:18.362Z",
+  "schemaVersion": "3.3.2",
+  "updatedAt": "2020-11-19T01:51:10.844Z",
   "devdoc": {
     "details": "Manages the deployment and minting of ERC20 compatible BridgeTokens     which represent assets based on the Cosmos blockchain.*",
     "methods": {},

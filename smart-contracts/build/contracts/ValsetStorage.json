@@ -104,25 +104,25 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"currentValsetVersion\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"powers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"totalPower\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"validatorCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"validators\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/ValsetStorage.sol\":\"ValsetStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/junius/github/thor/sifnode/smart-contracts/contracts/ValsetStorage.sol\":{\"keccak256\":\"0xccafbc8b29a4a92054107f448727d2c0938d9da566489ee812cf38de274e846c\",\"urls\":[\"bzz-raw://29231864e69fcb2ffa7e106151536ba660df50f14edc47c7ae7e629d2f8e7c0f\",\"dweb:/ipfs/QmUXKVPRgHGYu5WT8LQdLyiWiXHmLi6SKhBCn1vo22TgxY\"]}},\"version\":1}",
-  "bytecode": "0x608060405234801561001057600080fd5b50610180806100206000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c80630f43a67714610067578063570ca735146100815780638d56c37d146100a55780639bdafcb3146100ad578063b872c523146100de578063db3ad22c146100fb575b600080fd5b61006f610103565b60408051918252519081900360200190f35b610089610109565b604080516001600160a01b039092168252519081900360200190f35b61006f610118565b6100ca600480360360208110156100c357600080fd5b503561011e565b604080519115158252519081900360200190f35b61006f600480360360208110156100f457600080fd5b5035610133565b61006f610145565b60025481565b6004546001600160a01b031681565b60015481565b60036020526000908152604090205460ff1681565b60056020526000908152604090205481565b6000548156fea265627a7a7231582080e707ba5cd594c9f6981c176b6152aa0f2800ea67fd843683393b2de257747364736f6c63430005100032",
-  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100625760003560e01c80630f43a67714610067578063570ca735146100815780638d56c37d146100a55780639bdafcb3146100ad578063b872c523146100de578063db3ad22c146100fb575b600080fd5b61006f610103565b60408051918252519081900360200190f35b610089610109565b604080516001600160a01b039092168252519081900360200190f35b61006f610118565b6100ca600480360360208110156100c357600080fd5b503561011e565b604080519115158252519081900360200190f35b61006f600480360360208110156100f457600080fd5b5035610133565b61006f610145565b60025481565b6004546001600160a01b031681565b60015481565b60036020526000908152604090205460ff1681565b60056020526000908152604090205481565b6000548156fea265627a7a7231582080e707ba5cd594c9f6981c176b6152aa0f2800ea67fd843683393b2de257747364736f6c63430005100032",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"currentValsetVersion\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"powers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"totalPower\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"validatorCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"validators\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/ValsetStorage.sol\":\"ValsetStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/ValsetStorage.sol\":{\"keccak256\":\"0xccafbc8b29a4a92054107f448727d2c0938d9da566489ee812cf38de274e846c\",\"urls\":[\"bzz-raw://29231864e69fcb2ffa7e106151536ba660df50f14edc47c7ae7e629d2f8e7c0f\",\"dweb:/ipfs/QmUXKVPRgHGYu5WT8LQdLyiWiXHmLi6SKhBCn1vo22TgxY\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610180806100206000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c80630f43a67714610067578063570ca735146100815780638d56c37d146100a55780639bdafcb3146100ad578063b872c523146100de578063db3ad22c146100fb575b600080fd5b61006f610103565b60408051918252519081900360200190f35b610089610109565b604080516001600160a01b039092168252519081900360200190f35b61006f610118565b6100ca600480360360208110156100c357600080fd5b503561011e565b604080519115158252519081900360200190f35b61006f600480360360208110156100f457600080fd5b5035610133565b61006f610145565b60025481565b6004546001600160a01b031681565b60015481565b60036020526000908152604090205460ff1681565b60056020526000908152604090205481565b6000548156fea265627a7a72315820c996966e48d196ac5461e42cc56af251eabbbf3272d2e633a109d56eaf70736e64736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100625760003560e01c80630f43a67714610067578063570ca735146100815780638d56c37d146100a55780639bdafcb3146100ad578063b872c523146100de578063db3ad22c146100fb575b600080fd5b61006f610103565b60408051918252519081900360200190f35b610089610109565b604080516001600160a01b039092168252519081900360200190f35b61006f610118565b6100ca600480360360208110156100c357600080fd5b503561011e565b604080519115158252519081900360200190f35b61006f600480360360208110156100f457600080fd5b5035610133565b61006f610145565b60025481565b6004546001600160a01b031681565b60015481565b60036020526000908152604090205460ff1681565b60056020526000908152604090205481565b6000548156fea265627a7a72315820c996966e48d196ac5461e42cc56af251eabbbf3272d2e633a109d56eaf70736e64736f6c63430005100032",
   "sourceMap": "25:718:18:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:718:18;;;;;;;",
   "deployedSourceMap": "25:718:18:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:718:18;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;285:29;;;:::i;:::-;;;;;;;;;;;;;;;;476:23;;;:::i;:::-;;;;-1:-1:-1;;;;;476:23:18;;;;;;;;;;;;;;198:35;;;:::i;381:42::-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;381:42:18;;:::i;:::-;;;;;;;;;;;;;;;;;;600:41;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;600:41:18;;:::i;114:25::-;;;:::i;285:29::-;;;;:::o;476:23::-;;;-1:-1:-1;;;;;476:23:18;;:::o;198:35::-;;;;:::o;381:42::-;;;;;;;;;;;;;;;:::o;600:41::-;;;;;;;;;;;;;:::o;114:25::-;;;;:::o",
   "source": "pragma solidity ^0.5.0;\n\ncontract ValsetStorage {\n\n    /**\n     * @dev: Total power of all validators\n     */\n    uint256 public totalPower;\n\n    /**\n     * @dev: Current valset version\n     */\n    uint256 public currentValsetVersion;\n\n    /**\n     * @dev: validator count\n     */\n    uint256 public validatorCount;\n\n    /**\n     * @dev: Keep track of active validator\n     */\n    mapping(bytes32 => bool) public validators;\n\n    /**\n     * @dev: operator address\n     */\n    address public operator;\n\n    /**\n     * @dev: validator address + uint then hashed equals key mapped to powers\n     */\n    mapping(bytes32 => uint256) public powers;\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256[100] private ____gap;\n}",
-  "sourcePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/ValsetStorage.sol",
+  "sourcePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/ValsetStorage.sol",
   "ast": {
-    "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/ValsetStorage.sol",
+    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/ValsetStorage.sol",
     "exportedSymbols": {
       "ValsetStorage": [
-        3060
+        3081
       ]
     },
-    "id": 3061,
+    "id": 3082,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3039,
+        "id": 3060,
         "literals": [
           "solidity",
           "^",
@@ -138,19 +138,19 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 3060,
+        "id": 3081,
         "linearizedBaseContracts": [
-          3060
+          3081
         ],
         "name": "ValsetStorage",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 3041,
+            "id": 3062,
             "name": "totalPower",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "114:25:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -159,7 +159,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 3040,
+              "id": 3061,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "114:7:18",
@@ -173,10 +173,10 @@
           },
           {
             "constant": false,
-            "id": 3043,
+            "id": 3064,
             "name": "currentValsetVersion",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "198:35:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -185,7 +185,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 3042,
+              "id": 3063,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "198:7:18",
@@ -199,10 +199,10 @@
           },
           {
             "constant": false,
-            "id": 3045,
+            "id": 3066,
             "name": "validatorCount",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "285:29:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -211,7 +211,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 3044,
+              "id": 3065,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "285:7:18",
@@ -225,10 +225,10 @@
           },
           {
             "constant": false,
-            "id": 3049,
+            "id": 3070,
             "name": "validators",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "381:42:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -237,9 +237,9 @@
               "typeString": "mapping(bytes32 => bool)"
             },
             "typeName": {
-              "id": 3048,
+              "id": 3069,
               "keyType": {
-                "id": 3046,
+                "id": 3067,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
                 "src": "389:7:18",
@@ -255,7 +255,7 @@
                 "typeString": "mapping(bytes32 => bool)"
               },
               "valueType": {
-                "id": 3047,
+                "id": 3068,
                 "name": "bool",
                 "nodeType": "ElementaryTypeName",
                 "src": "400:4:18",
@@ -270,10 +270,10 @@
           },
           {
             "constant": false,
-            "id": 3051,
+            "id": 3072,
             "name": "operator",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "476:23:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -282,7 +282,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 3050,
+              "id": 3071,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "476:7:18",
@@ -297,10 +297,10 @@
           },
           {
             "constant": false,
-            "id": 3055,
+            "id": 3076,
             "name": "powers",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "600:41:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -309,9 +309,9 @@
               "typeString": "mapping(bytes32 => uint256)"
             },
             "typeName": {
-              "id": 3054,
+              "id": 3075,
               "keyType": {
-                "id": 3052,
+                "id": 3073,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
                 "src": "608:7:18",
@@ -327,7 +327,7 @@
                 "typeString": "mapping(bytes32 => uint256)"
               },
               "valueType": {
-                "id": 3053,
+                "id": 3074,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "619:7:18",
@@ -342,10 +342,10 @@
           },
           {
             "constant": false,
-            "id": 3059,
+            "id": 3080,
             "name": "____gap",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "712:28:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -355,7 +355,7 @@
             },
             "typeName": {
               "baseType": {
-                "id": 3056,
+                "id": 3077,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "712:7:18",
@@ -364,11 +364,11 @@
                   "typeString": "uint256"
                 }
               },
-              "id": 3058,
+              "id": 3079,
               "length": {
                 "argumentTypes": null,
                 "hexValue": "313030",
-                "id": 3057,
+                "id": 3078,
                 "isConstant": false,
                 "isLValue": false,
                 "isPure": true,
@@ -394,24 +394,24 @@
             "visibility": "private"
           }
         ],
-        "scope": 3061,
+        "scope": 3082,
         "src": "25:718:18"
       }
     ],
     "src": "0:743:18"
   },
   "legacyAST": {
-    "absolutePath": "/Users/junius/github/thor/sifnode/smart-contracts/contracts/ValsetStorage.sol",
+    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/ValsetStorage.sol",
     "exportedSymbols": {
       "ValsetStorage": [
-        3060
+        3081
       ]
     },
-    "id": 3061,
+    "id": 3082,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3039,
+        "id": 3060,
         "literals": [
           "solidity",
           "^",
@@ -427,19 +427,19 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 3060,
+        "id": 3081,
         "linearizedBaseContracts": [
-          3060
+          3081
         ],
         "name": "ValsetStorage",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 3041,
+            "id": 3062,
             "name": "totalPower",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "114:25:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -448,7 +448,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 3040,
+              "id": 3061,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "114:7:18",
@@ -462,10 +462,10 @@
           },
           {
             "constant": false,
-            "id": 3043,
+            "id": 3064,
             "name": "currentValsetVersion",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "198:35:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -474,7 +474,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 3042,
+              "id": 3063,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "198:7:18",
@@ -488,10 +488,10 @@
           },
           {
             "constant": false,
-            "id": 3045,
+            "id": 3066,
             "name": "validatorCount",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "285:29:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -500,7 +500,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 3044,
+              "id": 3065,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
               "src": "285:7:18",
@@ -514,10 +514,10 @@
           },
           {
             "constant": false,
-            "id": 3049,
+            "id": 3070,
             "name": "validators",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "381:42:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -526,9 +526,9 @@
               "typeString": "mapping(bytes32 => bool)"
             },
             "typeName": {
-              "id": 3048,
+              "id": 3069,
               "keyType": {
-                "id": 3046,
+                "id": 3067,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
                 "src": "389:7:18",
@@ -544,7 +544,7 @@
                 "typeString": "mapping(bytes32 => bool)"
               },
               "valueType": {
-                "id": 3047,
+                "id": 3068,
                 "name": "bool",
                 "nodeType": "ElementaryTypeName",
                 "src": "400:4:18",
@@ -559,10 +559,10 @@
           },
           {
             "constant": false,
-            "id": 3051,
+            "id": 3072,
             "name": "operator",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "476:23:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -571,7 +571,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 3050,
+              "id": 3071,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "476:7:18",
@@ -586,10 +586,10 @@
           },
           {
             "constant": false,
-            "id": 3055,
+            "id": 3076,
             "name": "powers",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "600:41:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -598,9 +598,9 @@
               "typeString": "mapping(bytes32 => uint256)"
             },
             "typeName": {
-              "id": 3054,
+              "id": 3075,
               "keyType": {
-                "id": 3052,
+                "id": 3073,
                 "name": "bytes32",
                 "nodeType": "ElementaryTypeName",
                 "src": "608:7:18",
@@ -616,7 +616,7 @@
                 "typeString": "mapping(bytes32 => uint256)"
               },
               "valueType": {
-                "id": 3053,
+                "id": 3074,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "619:7:18",
@@ -631,10 +631,10 @@
           },
           {
             "constant": false,
-            "id": 3059,
+            "id": 3080,
             "name": "____gap",
             "nodeType": "VariableDeclaration",
-            "scope": 3060,
+            "scope": 3081,
             "src": "712:28:18",
             "stateVariable": true,
             "storageLocation": "default",
@@ -644,7 +644,7 @@
             },
             "typeName": {
               "baseType": {
-                "id": 3056,
+                "id": 3077,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
                 "src": "712:7:18",
@@ -653,11 +653,11 @@
                   "typeString": "uint256"
                 }
               },
-              "id": 3058,
+              "id": 3079,
               "length": {
                 "argumentTypes": null,
                 "hexValue": "313030",
-                "id": 3057,
+                "id": 3078,
                 "isConstant": false,
                 "isLValue": false,
                 "isPure": true,
@@ -683,7 +683,7 @@
             "visibility": "private"
           }
         ],
-        "scope": 3061,
+        "scope": 3082,
         "src": "25:718:18"
       }
     ],
@@ -694,8 +694,8 @@
     "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.2.5",
-  "updatedAt": "2020-11-22T12:10:18.403Z",
+  "schemaVersion": "3.3.2",
+  "updatedAt": "2020-11-19T01:51:10.907Z",
   "devdoc": {
     "methods": {}
   },
