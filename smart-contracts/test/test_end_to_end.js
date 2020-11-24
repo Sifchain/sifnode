@@ -298,17 +298,7 @@ contract("CosmosBridge", function (accounts) {
       //  Now we'll do a 2nd lock prophecy claim of the native cosmos asset
       // --------------------------------------------------------
       console.log("\t[Attempt lock -> mint] (existing)");
-      // await this.cosmosBridge.newProphecyClaim(
-      //   CLAIM_TYPE_LOCK,
-      //   this.cosmosSender,
-      //   this.ethereumReceiver,
-      //   this.nativeCosmosAssetDenom,
-      //   this.amountNativeCosmos,
-      //   2,
-      //   {
-      //     from: userOne
-      //   }
-      // ).should.be.fulfilled;
+
       const { logs: logs2 } = await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
