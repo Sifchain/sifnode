@@ -71,6 +71,8 @@ func CreateState(ctx sdk.Context, keeper clp.Keeper, t *testing.T) (int, int) {
 	for _, lp := range lpList {
 		keeper.SetLiquidityProvider(ctx, lp)
 	}
+	V1 := test.GenerateValidatorAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
+	keeper.SetValidatorWhiteList(ctx, []sdk.ValAddress{V1})
 	assetList := keeper.GetAssetsForLiquidityProvider(ctx, lpList[0].LiquidityProviderAddress)
 	assert.LessOrEqual(t, len(assetList), len(lpList))
 	lpCount := len(assetList)

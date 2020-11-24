@@ -28,8 +28,9 @@ const (
 )
 
 var (
-	PoolPrefix              = []byte{0x00} // key for storing Pools
-	LiquidityProviderPrefix = []byte{0x01} // key for storing Liquidity Providers
+	PoolPrefix               = []byte{0x00} // key for storing Pools
+	LiquidityProviderPrefix  = []byte{0x01}
+	WhiteListValidatorPrefix = []byte{0x02} // key for storing Liquidity Providers
 )
 
 // Generates a key for storing a specific pool

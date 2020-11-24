@@ -269,6 +269,7 @@ func TestSwap(t *testing.T) {
 func TestDecommisionPool(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
+
 	handler := clp.NewHandler(keeper)
 
 	//Parameters for Decommission
@@ -300,6 +301,13 @@ func TestDecommisionPool(t *testing.T) {
 	require.NotNil(t, res)
 
 	msg := clp.NewMsgDecommissionPool(signer, asset.Ticker)
+	res, err = handler(ctx, msg)
+	require.Error(t, err)
+
+	V1 := test.GenerateValidatorAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
+	keeper.SetValidatorWhiteList(ctx, []sdk.ValAddress{V1})
+
+	msg = clp.NewMsgDecommissionPool(signer, asset.Ticker)
 	res, err = handler(ctx, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)

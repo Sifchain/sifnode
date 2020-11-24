@@ -37,6 +37,9 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
+	if !keeper.ValidateAddress(ctx, msg.Signer) {
+		return nil, errors.Wrap(types.ErrInvalid, "User Does not have Permission to decommission pool")
+	}
 	if pool.NativeAssetBalance.GTE(sdk.NewUint(uint64(keeper.GetParams(ctx).MinCreatePoolThreshold))) {
 		return nil, types.ErrBalanceTooHigh
 	}
