@@ -1,10 +1,7 @@
-// import ReconnectingWebSocket from "reconnecting-websocket";
-// import { isRef, Ref, ref } from "@vue/reactivity";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { Asset, Pool } from "../../entities";
 import { SifUnSignedClient } from "../utils/SifClient";
 import { toPool } from "../utils/toPool";
-// import { RawPool } from "../utils/x/clp";
 
 export type MarketServiceContext = {
   loadAssets: () => Promise<Asset[]>;
@@ -13,26 +10,6 @@ export type MarketServiceContext = {
 };
 
 type PoolHandlerFn = (pools: Pool[]) => void;
-
-// function toAssetSymbol(assetOrString: Asset | string) {
-//   return typeof assetOrString === "string"
-//     ? assetOrString
-//     : assetOrString.symbol;
-// }
-
-// function makeQuerablePromise<T>(promise: Promise<T>) {
-//   let isResolved = false;
-
-//   promise.then(() => {
-//     isResolved = true;
-//   });
-
-//   return {
-//     isResolved() {
-//       return isResolved;
-//     },
-//   };
-// }
 
 export default function createMarketService({
   loadAssets,
@@ -78,8 +55,6 @@ export default function createMarketService({
 
   initialize();
 
-  // const pairsGenerated = makeQuerablePromise(initialize());
-
   const instance = {
     async getPools() {
       const rawPools = await sifClient.getPools();
@@ -88,18 +63,6 @@ export default function createMarketService({
     onPoolsUpdated(handler: PoolHandlerFn) {
       poolHandler = handler;
     },
-    // find(asset1: Asset | string, asset2: Asset | string): Ref<Pool> | null {
-    //   if (!pairsGenerated.isResolved()) {
-    //     return null;
-    //   }
-
-    //   const key = [asset1, asset2]
-    //     .map(toAssetSymbol)
-    //     .sort()
-    //     .join("_");
-
-    //   return poolRefMap.get(key) ?? null;
-    // },
   };
 
   return instance;
