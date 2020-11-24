@@ -301,7 +301,7 @@ func TestDecommisionPool(t *testing.T) {
 	require.NotNil(t, res)
 
 	msg := clp.NewMsgDecommissionPool(signer, asset.Ticker)
-	res, err = handler(ctx, msg)
+	_, err = handler(ctx, msg)
 	require.Error(t, err)
 
 	V1 := test.GenerateValidatorAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
