@@ -29,9 +29,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/sethvargo/go-password/password"
 	"github.com/tendermint/go-amino"
-	tmLog "github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/siflogger"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -50,7 +50,7 @@ type EthereumSub struct {
 	TxBldr                  authtypes.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
 	TempPassword            string
-	Logger                  tmLog.Logger
+	Logger                  siflogger.SifLogger
 }
 
 func NewKeybase(validatorMoniker, mnemonic, password string) (keys.Keybase, keys.Info, error) {
@@ -66,7 +66,7 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keys.Keybase, keys
 
 // NewEthereumSub initializes a new EthereumSub
 func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorMoniker, chainID, ethProvider string,
-	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, logger tmLog.Logger) (EthereumSub, error) {
+	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, logger siflogger.SifLogger) (EthereumSub, error) {
 
 	tempPassword, _ := password.Generate(32, 5, 0, false, false)
 	keybase, info, err := NewKeybase(validatorMoniker, mnemonic, tempPassword)

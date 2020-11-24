@@ -14,10 +14,10 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	tmKv "github.com/tendermint/tendermint/libs/kv"
-	tmLog "github.com/tendermint/tendermint/libs/log"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	tmTypes "github.com/tendermint/tendermint/types"
 
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/siflogger"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 )
@@ -30,12 +30,12 @@ type CosmosSub struct {
 	EthProvider             string
 	RegistryContractAddress common.Address
 	PrivateKey              *ecdsa.PrivateKey
-	Logger                  tmLog.Logger
+	Logger                  siflogger.SifLogger
 }
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common.Address,
-	privateKey *ecdsa.PrivateKey, logger tmLog.Logger) CosmosSub {
+	privateKey *ecdsa.PrivateKey, logger siflogger.SifLogger) CosmosSub {
 	return CosmosSub{
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,
@@ -56,7 +56,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		go sub.Start(completionEvent)
 		return
 	}
-	client.SetLogger(sub.Logger)
+	client.SetLogger(sub.Logger.GetTendermintLogger())
 
 	if err := client.Start(); err != nil {
 		sub.Logger.Error("failed to start a client", "err", err)

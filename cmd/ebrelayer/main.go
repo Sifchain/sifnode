@@ -17,11 +17,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
-	tmLog "github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/siflogger"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 )
 
@@ -148,7 +148,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	mnemonic := args[4]
 
 	// Universal logger
-	logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
+	logger := siflogger.New()
 
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
