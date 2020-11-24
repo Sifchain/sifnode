@@ -60,7 +60,7 @@ var (
 		auth.FeeCollectorName:     nil,
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
-		gov.ModuleName:            {auth.Burner},
+		gov.ModuleName:            {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
 		clp.ModuleName:            {supply.Burner, supply.Minter},
 	}
@@ -231,6 +231,7 @@ func NewInitApp(
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(
+
 		upgrade.ModuleName,
 		staking.ModuleName,
 	)

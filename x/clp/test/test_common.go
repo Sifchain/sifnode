@@ -23,6 +23,14 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
+// Constants for test scripts only .
+//
+const (
+	AddressKey1 = "A58856F0FD53BF058B4909A21AEC019107BA6"
+	AddressKey2 = "A58856F0FD53BF058B4909A21AEC019107BA7"
+	AddressKey3 = "A58856F0FD53BF058B4909A21AEC019107BA9"
+)
+
 // create a codec used only for testing
 func MakeTestCodec() *codec.Codec {
 	var cdc = codec.New()
@@ -97,6 +105,9 @@ func trimFirstRune(s string) string {
 }
 
 func GenerateAddress(key string) sdk.AccAddress {
+	if key == "" {
+		key = AddressKey1
+	}
 	var buffer bytes.Buffer
 	buffer.WriteString(key)
 	buffer.WriteString(strconv.Itoa(100))
@@ -125,6 +136,9 @@ func GenerateAddress(key string) sdk.AccAddress {
 }
 
 func GenerateValidatorAddress(key string) sdk.ValAddress {
+	if key == "" {
+		key = AddressKey1
+	}
 	var buffer bytes.Buffer
 	buffer.WriteString(key)
 	buffer.WriteString(strconv.Itoa(100))
