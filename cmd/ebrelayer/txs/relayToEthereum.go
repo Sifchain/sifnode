@@ -65,49 +65,6 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	return nil
 }
 
-// RelayOracleClaimToEthereum relays the provided OracleClaim to Oracle contract on the Ethereum network
-// func RelayOracleClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
-// 	claim OracleClaim, key *ecdsa.PrivateKey) error {
-// 	// Initialize client service, validator's tx auth, and target contract address
-// 	client, auth, target, err := initRelayConfig(provider, contractAddress, event, key)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	// Initialize Oracle instance
-// 	fmt.Println("\nFetching Oracle contract...")
-// 	oracleInstance, err := oracle.NewOracle(target, client)
-// 	if err != nil {
-// 		log.Println(err)
-// 		return err
-// 	}
-
-// 	// Send transaction
-// 	fmt.Println("Sending new OracleClaim to Oracle...")
-// 	tx, err := oracleInstance.NewOracleClaim(auth, claim.ProphecyID, claim.Message, claim.Signature)
-// 	if err != nil {
-// 		log.Println(err)
-// 		return err
-// 	}
-// 	fmt.Println("NewOracleClaim tx hash:", tx.Hash().Hex())
-
-// 	// Get the transaction receipt
-// 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
-// 	if err != nil {
-// 		log.Println(err)
-// 		return err
-// 	}
-
-// 	switch receipt.Status {
-// 	case 0:
-// 		fmt.Println("Tx Status: 0 - Failed")
-// 	case 1:
-// 		fmt.Println("Tx Status: 1 - Successful")
-// 	}
-
-// 	return nil
-// }
-
 // initRelayConfig set up Ethereum client, validator's transaction auth, and the target contract's address
 func initRelayConfig(provider string, registry common.Address, event types.Event, key *ecdsa.PrivateKey,
 ) (*ethclient.Client, *bind.TransactOpts, common.Address, error) {
