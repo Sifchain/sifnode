@@ -9,6 +9,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	tmKv "github.com/tendermint/tendermint/libs/kv"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -51,7 +52,7 @@ func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
 	testEthereumSender := common.HexToAddress(TestEthereumAddress1)
 	testCosmosRecipient := []byte(TestCosmosAddress1)
 	testTokenAddress := common.HexToAddress(TestEthTokenAddress)
-	testAmount := big.NewInt(int64(TestAmount))
+	testAmount := sdk.NewInt(TestAmount)
 	testNonce := big.NewInt(int64(TestNonce))
 
 	return types.EthereumEvent{EthereumChainID: testEthereumChainID,

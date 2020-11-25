@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
@@ -41,7 +42,7 @@ type EthereumEvent struct {
 	To                    []byte
 	Token                 common.Address
 	Symbol                string
-	Value                 *big.Int
+	Value                 sdk.Int
 	Nonce                 *big.Int
 	ClaimType             ethbridge.ClaimType
 }
