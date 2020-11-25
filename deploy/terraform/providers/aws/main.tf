@@ -1,9 +1,5 @@
 terraform {
   required_providers {
-    kustomization = {
-      source  = "kbst/kustomization"
-      version = "~> 0.2.2"
-    }
     kubectl = {
       source  = "gavinbunney/kubectl"
       version = ">= 1.7.0"
@@ -159,15 +155,6 @@ resource "aws_security_group" "security_group" {
   }
 }
 
-resource "aws_efs_file_system" "efs_file_system" {
-  creation_token = var.cluster_name
-  depends_on     = [module.vpc]
-  tags           = {
-    Name = var.cluster_name
-  }
-
-}
-
 data "aws_subnet_ids" "subnets" {
   vpc_id     = module.vpc.vpc_id
   depends_on = [module.vpc]
@@ -177,111 +164,4 @@ locals {
   subnet_ids_string = join(",", data.aws_subnet_ids.subnets.ids)
   subnet_ids_list   = split(",", local.subnet_ids_string)
   depends_on        = [module.vpc]
-}
-
-resource "aws_efs_mount_target" "mount" {
-  count           = length(var.az)
-  file_system_id  = aws_efs_file_system.efs_file_system.id
-  subnet_id       = element(local.subnet_ids_list, count.index)
-  security_groups = [aws_security_group.security_group.id]
-  depends_on      = [module.vpc]
-}
-
-provider "kustomization" {
-  kubeconfig_raw = module.eks.kubeconfig
-}
-
-data "kustomization" "efs_manifests" {
-  path = var.efs_csi_driver
-}
-
-data "kustomization" "ebs_manifests" {
-  path = var.ebs_csi_driver
-}
-
-resource "kustomization_resource" "efs_csi_driver" {
-  for_each = data.kustomization.efs_manifests.ids
-  manifest = data.kustomization.efs_manifests.manifests[each.value]
-  lifecycle {
-      ignore_changes = all
-  }
-}
-
-resource "kustomization_resource" "ebs_csi_driver" {
-  for_each = data.kustomization.ebs_manifests.ids
-  manifest = data.kustomization.ebs_manifests.manifests[each.value]
-  lifecycle {
-      ignore_changes = all
-  }
-}
-
-resource "kubectl_manifest" "efs_storageclass" {
-  yaml_body = <<YAML
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: efs-sc
-provisioner: efs.csi.aws.com
-YAML
-  depends_on = [module.eks]
-  lifecycle {
-      ignore_changes = all
-  }
-}
-
-resource "kubectl_manifest" "ebs_storageclass" {
-  yaml_body = <<YAML
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: ebs-sc
-provisioner: ebs.csi.aws.com
-volumeBindingMode: WaitForFirstConsumer
-YAML
-  depends_on = [module.eks]
-  lifecycle {
-      ignore_changes = all
-  }
-}
-
-resource "kubectl_manifest" "efs_pv_sifnoded" {
-  yaml_body = <<YAML
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: "${var.efs_pv_sifnoded_name}"
-spec:
-  capacity:
-    storage: "${var.efs_pv_capacity}"
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: "${var.efs_pv_storageclass}"
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: "${aws_efs_file_system.efs_file_system.id}"
-YAML
-  depends_on = [module.eks]
-}
-
-resource "kubectl_manifest" "efs_pv_sifnodecli" {
-  yaml_body = <<YAML
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: "${var.efs_pv_sifnodecli_name}"
-spec:
-  capacity:
-    storage: "${var.efs_pv_capacity}"
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: "${var.efs_pv_storageclass}"
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: "${aws_efs_file_system.efs_file_system.id}"
-YAML
-  depends_on = [module.eks]
 }

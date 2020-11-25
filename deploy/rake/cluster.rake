@@ -158,7 +158,7 @@ namespace :cluster do
     task :deploy, [:chainnet, :provider] do |t, args|
       check_args(args)
 
-      cmd = %Q{helm upgrade block-explorer ../deploy/helm/block-explorer \
+      cmd = %Q{helm upgrade block-explorer #{cwd}/../../deploy/helm/block-explorer \
         --install -n block-explorer \
         --create-namespace
       }

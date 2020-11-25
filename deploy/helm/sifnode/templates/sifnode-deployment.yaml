@@ -71,8 +71,6 @@ spec:
             mountPath: /root
       volumes:
       - name: root
-        persistentVolumeClaim:
-          claimName: {{ .Values.pvc.sifnodeName }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
