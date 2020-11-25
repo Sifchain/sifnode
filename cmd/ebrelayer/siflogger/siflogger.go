@@ -36,6 +36,20 @@ func New() SifLogger {
 	return e
 }
 
+func (e *SifLogger) SetFilterForLayer(keyvals ...interface{}) {
+	if len(keyvals) == 0 || len(keyvals)%2 != 0 {
+		panic("invalid keyvals")
+	}
+
+	options := make([]log.Option, len(keyvals)/2, len(keyvals)/2)
+	for i := 0; i < len(keyvals)-2; i++ {
+		options[i] = log.AllowDebugWith(keyvals[i*2], keyvals[i*2+1])
+	}
+
+	filter := log.NewFilter(e.logger, options...)
+	e.logger = filter
+}
+
 func (e SifLogger) Debug(msg string, keyvals ...interface{}) {
 	e.logger.Debug(msg, keyvals...)
 }
