@@ -275,7 +275,6 @@ contract("CosmosBridge", function (accounts) {
 
       const event = logs.find(e => e.event === "LogNewProphecyClaim");
 
-      Number(event.args._prophecyID).should.be.bignumber.equal(this.cosmosSenderSequence);
       Number(event.args._claimType).should.be.bignumber.equal(CLAIM_TYPE_LOCK);
       event.args._cosmosSender.should.be.equal(this.cosmosSender);
       event.args._ethereumReceiver.should.be.equal(this.ethereumReceiver);
