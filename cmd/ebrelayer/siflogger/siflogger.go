@@ -3,6 +3,7 @@ package siflogger
 import (
 	"os"
 
+	kitlog "github.com/go-kit/kit/log"
 	"github.com/tendermint/tendermint/libs/log"
 )
 
@@ -12,6 +13,7 @@ type SifLogger struct {
 
 func New() SifLogger {
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+	logger = logger.With("caller", kitlog.Caller(5))
 	e := SifLogger{logger}
 	return e
 }
