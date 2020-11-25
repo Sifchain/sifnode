@@ -827,27 +827,6 @@ func (_BridgeBank *BridgeBankTransactorSession) UpdateEthWhiteList(_token common
 	return _BridgeBank.Contract.UpdateEthWhiteList(&_BridgeBank.TransactOpts, _token, _inList)
 }
 
-// Fallback is a paid mutator transaction binding the contract fallback function.
-//
-// Solidity: fallback() payable returns()
-func (_BridgeBank *BridgeBankTransactor) Fallback(opts *bind.TransactOpts, calldata []byte) (*types.Transaction, error) {
-	return _BridgeBank.contract.RawTransact(opts, calldata)
-}
-
-// Fallback is a paid mutator transaction binding the contract fallback function.
-//
-// Solidity: fallback() payable returns()
-func (_BridgeBank *BridgeBankSession) Fallback(calldata []byte) (*types.Transaction, error) {
-	return _BridgeBank.Contract.Fallback(&_BridgeBank.TransactOpts, calldata)
-}
-
-// Fallback is a paid mutator transaction binding the contract fallback function.
-//
-// Solidity: fallback() payable returns()
-func (_BridgeBank *BridgeBankTransactorSession) Fallback(calldata []byte) (*types.Transaction, error) {
-	return _BridgeBank.Contract.Fallback(&_BridgeBank.TransactOpts, calldata)
-}
-
 // BridgeBankLogBridgeTokenMintIterator is returned from FilterLogBridgeTokenMint and is used to iterate over the raw logs and unpacked data for LogBridgeTokenMint events raised by the BridgeBank contract.
 type BridgeBankLogBridgeTokenMintIterator struct {
 	Event *BridgeBankLogBridgeTokenMint // Event containing the contract specifics and raw log
