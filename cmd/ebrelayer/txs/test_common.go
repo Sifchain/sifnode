@@ -99,12 +99,18 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 
 // CreateCosmosMsgAttributes creates expected attributes for a MsgBurn/MsgLock for testing purposes
 func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair {
-	attributes := [5]tmKv.Pair{}
+	attributes := [6]tmKv.Pair{}
 
 	// (key, value) pairing for "cosmos_sender" key
 	pairCosmosSender := tmKv.Pair{
 		Key:   []byte("cosmos_sender"),
 		Value: []byte(TestCosmosAddress1),
+	}
+
+	// (key, value) pairing for "cosmos_sender_sequence" key
+	pairCosmosSenderSequence := tmKv.Pair{
+		Key:   []byte("cosmos_sender_sequence"),
+		Value: []byte(strconv.Itoa(TestCosmosAddressSequence)),
 	}
 
 	// (key, value) pairing for "ethereum_receiver" key
@@ -139,10 +145,11 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair 
 
 	// Assign pairs to attributes array
 	attributes[0] = pairCosmosSender
-	attributes[1] = pairEthereumReceiver
-	attributes[2] = pairTokenContract
-	attributes[3] = pairSymbol
-	attributes[4] = pairAmount
+	attributes[1] = pairCosmosSenderSequence
+	attributes[2] = pairEthereumReceiver
+	attributes[3] = pairTokenContract
+	attributes[4] = pairSymbol
+	attributes[5] = pairAmount
 
 	return attributes[:]
 }
