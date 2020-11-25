@@ -65,7 +65,7 @@ func (msg MsgLock) ValidateBasic() error {
 	if len(msg.Symbol) == 0 {
 		return ErrInvalidSymbol
 	}
-
+	fmt.Println("Validate basic succeeded for burn tx")
 	return nil
 }
 

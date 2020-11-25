@@ -5,6 +5,7 @@ import (
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	"github.com/ethereum/go-ethereum/common"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // OracleClaim contains data required to make an OracleClaim
@@ -18,7 +19,7 @@ type OracleClaim struct {
 type ProphecyClaim struct {
 	CosmosSender     []byte
 	Symbol           string
-	Amount           *big.Int
+	Amount           sdk.Int
 	EthereumReceiver common.Address
 	ClaimType        types.Event
 }
