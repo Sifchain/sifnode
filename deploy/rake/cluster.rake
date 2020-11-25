@@ -183,13 +183,22 @@ namespace :cluster do
     desc "Deploy a full eth node onto your cluster"
     task :deploy, [:chainnet, :provider] do |t, args|
       check_args(args)
-      eth_key = `openssl ecparam -name secp256k1 -genkey -noout | openssl ec -text -noout 2> /dev/null`
+      eth_wallet(args)
+
+      eth_wallet_private = `cat #{path(args)}/ethereum-generate-wallet/ethereum-wallet-generator.output \
+        | grep -o -P '(?<=Private key: ).*' \
+        | tr -d '[:space:]'`
+      eth_wallet_public = `cat #{path(args)}/ethereum-generate-wallet/ethereum-wallet-generator.output \
+        | grep -o -P '(?<=Public key: ).*' \
+        | tr -d '[:space:]'`
+      eth_wallet_address = `cat #{path(args)}/ethereum-generate-wallet/ethereum-wallet-generator.output \
+        | grep -o -P '(?<=Address: ).*' \
+        | tr -d '[:space:]'`
 
       cmd = %Q{helm upgrade ethnode stable/ethereum \
         --install -n ethnode \
-        --set geth.account.address=#{eth_address()} \
-        --set geth.account.privateKey=#{eth_private_key(eth_key)} \
-        --set geth.account.secret=#{eth_secret()} \
+        --set geth.account.privateKey=#{eth_wallet_private} \
+        --set geth.account.address=#{eth_wallet_address} \
         --create-namespace
       }
 
@@ -255,41 +264,14 @@ def image_repository(args)
 end
 
 #
-# Returns openssl private key that is required for deploying eth
+# Ethereum wallet
 #
-# @param openssl key
+# @param args Arguments passed to rake
 #
-def eth_private_key(key)
-  puts `printf "%s\n" "#{key}" \
-    | grep priv -A 3 \
-    | tail -n +2 \
-    | tr -d '\n[:space:]:' \
-    | sed 's/^00//'`
-end
+def eth_wallet(args)
+  # Clone the generate-wallet repo
+  system("cd #{path(args)} && [ ! -d 'ethereum-generate-wallet' ] &&  git clone https://github.com/vkobel/ethereum-generate-wallet")
 
-#
-# Returns openssl public key that is required for deploying eth
-#
-# @param openssl key
-#
-def eth_public_key(key)
-  puts `printf "%s\n" "#{key}" \
-  | grep pub -A 5 \
-  | tail -n +2 \
-  | tr -d '\n[:space:]:' \
-  | sed 's/^04//'`
-end
-
-#
-# Eth address
-#
-def eth_address()
-  puts "Eth address"
-end
-
-#
-# Eth secret
-#
-def eth_secret()
-  puts "Eth secret"
+  # Generate the wallet and export to file
+  system("cd #{path(args)}/ethereum-generate-wallet && ./ethereum-wallet-generator.sh > ethereum-wallet-generator.output")
 end
