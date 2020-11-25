@@ -19,15 +19,15 @@ func New() SifLogger {
 }
 
 func (e SifLogger) Debug(msg string, keyvals ...interface{}) {
-	e.logger.Debug(msg, keyvals)
+	e.logger.Debug(msg, keyvals...)
 }
 
 func (e SifLogger) Info(msg string, keyvals ...interface{}) {
-	e.logger.Info(msg, keyvals)
+	e.logger.Info(msg, keyvals...)
 }
 
 func (e SifLogger) Error(msg string, keyvals ...interface{}) {
-	e.logger.Error(msg, keyvals)
+	e.logger.Error(msg, keyvals...)
 }
 
 func (e SifLogger) GetTendermintLogger(keyvals ...interface{}) log.Logger {
