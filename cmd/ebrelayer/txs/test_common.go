@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	tmKv "github.com/tendermint/tendermint/libs/kv"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -37,7 +37,8 @@ const (
 	TestOtherAddress          = "0x1000000000000000000000000000000000000000"
 )
 
-var TestAmount = sdk.NewInt(5)
+var TestAmount = big.NewInt(5)
+var TestSDKAmount = sdk.NewIntFromBigInt(TestAmount)
 
 // CreateTestLogEthereumEvent creates a sample EthereumEvent event for testing purposes
 func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
@@ -69,7 +70,7 @@ func CreateTestProphecyClaimEvent(t *testing.T) types.ProphecyClaimEvent {
 	testEthereumReceiver := common.HexToAddress(TestEthereumAddress1)
 	testValidatorAddress := common.HexToAddress(TestEthereumAddress2)
 	testTokenAddress := common.HexToAddress(TestEthTokenAddress)
-	testAmount := TestAmount
+	testAmount := TestSDKAmount
 
 	return types.NewProphecyClaimEvent([]byte(TestCosmosAddress1), TestSymbol,
 		testProphecyID, testAmount, testEthereumReceiver, testValidatorAddress,
@@ -80,7 +81,7 @@ func CreateTestProphecyClaimEvent(t *testing.T) types.ProphecyClaimEvent {
 func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 	testCosmosSender := []byte(TestCosmosAddress1)
 	testEthereumReceiver := common.HexToAddress(TestEthereumAddress1)
-	testAmount := TestAmount
+	testAmount := TestSDKAmount
 
 	var symbol string
 	if claimType == types.MsgBurn {

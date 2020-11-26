@@ -62,7 +62,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event *types.Ethereum
 		symbol = strings.Join(res[1:], "")
 	}
 
-	amount := event.Value
+	amount := sdk.NewIntFromBigInt(event.Value)
 
 	// Nonce type casting (*big.Int -> int)
 	nonce := int(event.Nonce.Int64())
