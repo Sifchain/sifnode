@@ -145,7 +145,7 @@ func (n *Node) networkGenesis() error {
 }
 
 func (n *Node) seedGenesis() error {
-	_, err := n.CLI.AddGenesisAccount(n.Address, app.DefaultNodeHome, []string{common.ToBond})
+	_, err := n.CLI.AddGenesisAccount(n.Address, app.DefaultNodeHome, common.ToFund)
 	if err != nil {
 		return err
 	}
