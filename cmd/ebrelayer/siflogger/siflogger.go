@@ -10,6 +10,15 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 )
 
+type Level byte
+
+const (
+	Debug Level = iota
+	Info
+	Error
+	None
+)
+
 type SifLogger struct {
 	logger log.Logger
 }
@@ -36,14 +45,25 @@ func New() SifLogger {
 	return e
 }
 
-func (e *SifLogger) SetFilterForLayer(keyvals ...interface{}) {
+func (e *SifLogger) SetFilterForLayer(level Level, keyvals ...interface{}) {
 	if len(keyvals) == 0 || len(keyvals)%2 != 0 {
 		panic("invalid keyvals")
 	}
 
 	options := make([]log.Option, len(keyvals)/2, len(keyvals)/2)
 	for i := 0; i < len(keyvals)/2; i++ {
-		options[i] = log.AllowDebugWith(keyvals[i*2], keyvals[i*2+1])
+		switch level {
+		case Debug:
+			options[i] = log.AllowDebugWith(keyvals[i*2], keyvals[i*2+1])
+		case Error:
+			options[i] = log.AllowErrorWith(keyvals[i*2], keyvals[i*2+1])
+		case Info:
+			options[i] = log.AllowInfoWith(keyvals[i*2], keyvals[i*2+1])
+		case None:
+			options[i] = log.AllowNoneWith(keyvals[i*2], keyvals[i*2+1])
+		default:
+			panic("incorrect level")
+		}
 	}
 
 	filter := log.NewFilter(e.logger, options...)
