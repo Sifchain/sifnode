@@ -42,7 +42,7 @@ func (e *SifLogger) SetFilterForLayer(keyvals ...interface{}) {
 	}
 
 	options := make([]log.Option, len(keyvals)/2, len(keyvals)/2)
-	for i := 0; i < len(keyvals)-2; i++ {
+	for i := 0; i < len(keyvals)/2; i++ {
 		options[i] = log.AllowDebugWith(keyvals[i*2], keyvals[i*2+1])
 	}
 
@@ -60,6 +60,10 @@ func (e SifLogger) Info(msg string, keyvals ...interface{}) {
 
 func (e SifLogger) Error(msg string, keyvals ...interface{}) {
 	e.logger.Error(msg, keyvals...)
+}
+
+func (e SifLogger) Tag(keyvals ...interface{}) SifLogger {
+	return SifLogger{e.logger.With(keyvals...)}
 }
 
 func (e SifLogger) GetTendermintLogger(keyvals ...interface{}) log.Logger {
