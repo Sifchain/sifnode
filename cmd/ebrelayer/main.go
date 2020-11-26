@@ -151,7 +151,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	logger := siflogger.New()
 	// to set global log level
 	logger.SetGlobalFilter(siflogger.Debug)
-	// to filter by first layer of Tags
+	// to filter by first layer of Tags (key1 value1 OR key2 value2)
 	logger.SetFilterForLayer(siflogger.Debug, "cosmos", "routine", "eth", "routine")
 	// to filter by first layer AND second layer of Tags
 	//logger.SetFilterForLayer(siflogger.Debug, "client", "cosmos")
