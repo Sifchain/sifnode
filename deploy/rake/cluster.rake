@@ -22,7 +22,7 @@ namespace :cluster do
     puts "Now run `rake cluster:create[#{args[:chainnet]},#{args[:provider]}]` to deploy your cluster"
   end
 
-  desc "Deploy a cluster"
+  desc "Deploy a new cluster"
   task :deploy, [:chainnet, :provider] do |t, args|
     check_args(args)
     puts "Deploy cluster config: #{path(args)}"
@@ -108,7 +108,7 @@ namespace :cluster do
       end
     end
 
-    desc "delete a namespace"
+    desc "Destroy an existing namespace"
     task :destroy, [:chainnet, :provider, :namespace, :skip_prompt] do |t, args|
       check_args(args)
       are_you_sure(args)
@@ -117,9 +117,9 @@ namespace :cluster do
     end
   end
 
-  desc "ebrelayer operations"
+  desc "ebrelayer Operations"
   namespace :ebrelayer do
-    desc "Install ebrelayer"
+    desc "Deploy a new ebrelayer to an existing cluster"
     task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker] do |t, args|
       check_args(args)
 
@@ -138,8 +138,8 @@ namespace :cluster do
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
 
-    desc "Uninstall ebrelayer"
-    task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
+    desc "Destroy a running ebrelayer on an existing cluster"
+    task :destroy, [:chainnet, :provider, :namespace] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
@@ -154,7 +154,7 @@ namespace :cluster do
 
   desc "Block Explorer"
   namespace :blockexplorer do
-    desc "Install blockexplorer"
+    desc "Deploy a Block Explorer to an existing cluster"
     task :deploy, [:chainnet, :provider] do |t, args|
       check_args(args)
 
@@ -166,8 +166,8 @@ namespace :cluster do
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
 
-    desc "Uninstall blockexplorer"
-    task :uninstall, [:chainnet, :provider] do |t, args|
+    desc "Destroy a running Block Explorer on an existing cluster"
+    task :destroy, [:chainnet, :provider] do |t, args|
       check_args(args)
 
       cmd = %Q{helm delete block-explorer --namespace block-explorer && \

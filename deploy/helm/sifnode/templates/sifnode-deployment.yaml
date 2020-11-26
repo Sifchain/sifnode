@@ -66,11 +66,6 @@ spec:
             periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-          - name: root
-            mountPath: /root
-      volumes:
-      - name: root
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
