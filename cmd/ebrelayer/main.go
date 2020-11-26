@@ -149,16 +149,22 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 
 	// Universal logger
 	logger := siflogger.New()
+	// to set global log level
+	logger.SetGlobalFilter(siflogger.Debug)
+	// to filter by first layer of Tags
+	logger.SetFilterForLayer(siflogger.Debug, "cosmos", "routine", "eth", "routine")
+	// to filter by first layer AND second layer of Tags
+	//logger.SetFilterForLayer(siflogger.Debug, "client", "cosmos")
 
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
 	ethSub, err := relayer.NewEthereumSub(inBuf, rpcURL, cdc, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, mnemonic, logger)
+		contractAddress, privateKey, mnemonic, logger.Tag("eth", "routine"))
 	if err != nil {
 		return err
 	}
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger.Tag("cosmos", "routine"))
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)

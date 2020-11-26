@@ -56,7 +56,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		go sub.Start(completionEvent)
 		return
 	}
-	client.SetLogger(sub.Logger.GetTendermintLogger())
+	client.SetLogger(sub.Logger.Tag("client", "cosmos").GetTendermintLogger())
 
 	if err := client.Start(); err != nil {
 		sub.Logger.Error("failed to start a client", "err", err)
