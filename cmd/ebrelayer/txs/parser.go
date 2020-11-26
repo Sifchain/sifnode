@@ -18,8 +18,9 @@ import (
 )
 
 const (
-	nullAddress   = "0x0000000000000000000000000000000000000000"
-	defaultPrefix = "peggy"
+	nullAddress           = "0x0000000000000000000000000000000000000000"
+	defaultSifchainPrefix = "c"
+	defaultEthereumPrefix = "e"
 )
 
 // EthereumEventToEthBridgeClaim parses and packages an Ethereum event struct with a validator address in an EthBridgeClaim msg
@@ -54,10 +55,11 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event *types.Ethereum
 			return witnessClaim, errors.New("symbol \"eth\" must have null address set as token address")
 		}
 	case ethbridge.BurnText:
-		if !strings.Contains(symbol, defaultPrefix) {
-			log.Fatal("Can only relay burns of 'PEGGY' prefixed tokens")
+		if !strings.Contains(symbol, defaultEthereumPrefix) {
+			log.Printf("Can only relay burns of '%v' prefixed tokens", defaultEthereumPrefix)
+			return witnessClaim, errors.New("symbol of burn token must start with prefix")
 		}
-		res := strings.SplitAfter(symbol, defaultPrefix)
+		res := strings.SplitAfter(symbol, defaultEthereumPrefix)
 		symbol = strings.Join(res[1:], "")
 	}
 
@@ -124,7 +126,7 @@ func CosmosMsgToProphecyClaim(event types.CosmosMsg) ProphecyClaim {
 }
 
 // BurnLockEventToCosmosMsg parses data from a Burn/Lock event witnessed on Cosmos into a CosmosMsg struct
-func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) types.CosmosMsg {
+func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (types.CosmosMsg, error) {
 	var cosmosSender []byte
 	var ethereumReceiver common.Address
 	var symbol string
@@ -140,15 +142,17 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) typ
 			cosmosSender = []byte(val)
 		case types.EthereumReceiver.String():
 			if !common.IsHexAddress(val) {
-				log.Fatal("Invalid recipient address:", val)
+				log.Printf("Invalid recipient address: %v", val)
+				return types.CosmosMsg{}, errors.New("invalid recipient address: " + val)
 			}
 			ethereumReceiver = common.HexToAddress(val)
 		case types.Symbol.String():
 			if claimType == types.MsgBurn {
-				if !strings.Contains(val, defaultPrefix) {
-					log.Fatal("Can only relay burns of 'peggy' prefixed coins")
+				if !strings.Contains(val, defaultSifchainPrefix) {
+					log.Printf("Can only relay burns of '%v' prefixed coins", defaultSifchainPrefix)
+					return types.CosmosMsg{}, errors.New("can only relay burns of '%v' prefixed coins" + defaultSifchainPrefix)
 				}
-				res := strings.SplitAfter(val, defaultPrefix)
+				res := strings.SplitAfter(val, defaultSifchainPrefix)
 				symbol = strings.ToUpper(strings.Join(res[1:], ""))
 			} else {
 				symbol = strings.ToUpper(val)
@@ -157,12 +161,13 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) typ
 			tempAmount := new(big.Int)
 			tempAmount, ok := tempAmount.SetString(val, 10)
 			if !ok {
-				log.Fatal("Invalid amount:", val)
+				log.Println("Invalid amount:", val)
+				return types.CosmosMsg{}, errors.New("invalid amount:" + val)
 			}
 			amount = tempAmount
 		}
 	}
-	return types.NewCosmosMsg(claimType, cosmosSender, ethereumReceiver, symbol, amount)
+	return types.NewCosmosMsg(claimType, cosmosSender, ethereumReceiver, symbol, amount), nil
 }
 
 // isZeroAddress checks an Ethereum address and returns a bool which indicates if it is the null address

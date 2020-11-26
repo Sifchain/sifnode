@@ -1,10 +1,15 @@
 .idea
+.vscode
 .coverage.txt
 frontend/node_modules
 frontend/dist
 frontend/.cache
-.live
+.live*
 .DS_Store
 .testCoverage.txt
 .environments
-build/networks
+deploy/networks
+log/*.log
+.env
+.backups
+.ssh

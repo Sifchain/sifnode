@@ -1,0 +1,766 @@
+{
+  "contractName": "BankStorage",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "bridgeTokenCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "cosmosBridge",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "cosmosDepositNonce",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "lockBurnNonce",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "lockedFunds",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "name": "lockedTokenList",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "operator",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "oracle",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"bridgeTokenCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"cosmosBridge\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"cosmosDepositNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"lockBurnNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"lockedFunds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"lockedTokenList\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"oracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/BankStorage.sol\":\"BankStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/BankStorage.sol\":{\"keccak256\":\"0x987ee01c37b1294760eb3c9cb00f4d6296d0aff6dcc31129659f8aa140d54777\",\"urls\":[\"bzz-raw://c633f06da88844ff666a79b770719ca869ac95e2a53cc0be3e18d322fd46af7a\",\"dweb:/ipfs/QmVhZDEzKjpTZYxdLWfChRkfcQMEsZstdaWq8dFy26XtXk\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol\":{\"keccak256\":\"0x5005339773232d4a1268b595d4812afdec572519f84f621b54859fc9b80e646f\",\"urls\":[\"bzz-raw://4e3d5b75f86c0cdd6c41a2a2ad26421503c82ce34f701f31219fe9b82f801431\",\"dweb:/ipfs/QmVJo5hLg8j5vdHPYN68FuojNEdaUcb5R6znEeoyd8F1pf\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol\":{\"keccak256\":\"0x1680292edf8d735fccfcfa9327b8dbbd0c673b509c701f9aaa1032a74de8ad8b\",\"urls\":[\"bzz-raw://b9695fceafb1ff4066e80a7be9003155565c4abebdba38b2aa027b5d7d0e95e9\",\"dweb:/ipfs/QmS8aZFBtfPJgZpaAx2LZ5i6xBBK6A4RLL2xuz3RRWLpDw\"]},\"/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol\":{\"keccak256\":\"0xad669b0998e71040c0f2b718924876fb84ddcf5ac00e25b3c26c2c9634d975e3\",\"urls\":[\"bzz-raw://f62572a257817e4b501be47cd5eb6c1b29deba468cb0041644131443c523f4f5\",\"dweb:/ipfs/QmWf1WNayafDLtNZQQtLDrvtoZY6CyeSvDVefcgGSSVnXH\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610289806100206000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c80637dc0d1d0116100665780637dc0d1d0146100e65780638da5cb5b146100ee578063b0e9ef71146100f6578063b86247d7146100fe578063f24a590a1461012457610093565b80631deed3bb14610098578063328470ab146100b2578063416d3227146100ba578063570ca735146100c2575b600080fd5b6100a06101ca565b60408051918252519081900360200190f35b6100a06101d0565b6100a06101d6565b6100ca6101dc565b604080516001600160a01b039092168252519081900360200190f35b6100ca6101ec565b6100ca6101fc565b6100ca61020c565b6100a06004803603602081101561011457600080fd5b50356001600160a01b031661021c565b6100ca6004803603602081101561013a57600080fd5b81019060208101813564010000000081111561015557600080fd5b82018360208201111561016757600080fd5b8035906020019184600183028401116401000000008311171561018957600080fd5b91908080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525092955061022e945050505050565b60685481565b60005481565b60015481565b610134546001600160a01b031681565b610135546001600160a01b031681565b610137546001600160a01b031681565b610136546001600160a01b031681565b60696020526000908152604090205481565b8051602081830181018051606a825292820191909301209152546001600160a01b03168156fea265627a7a72315820ec4b4f1d7dfb5a3a3c024362862fe8482019648d29c54bcf642798589be7e4a764736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100935760003560e01c80637dc0d1d0116100665780637dc0d1d0146100e65780638da5cb5b146100ee578063b0e9ef71146100f6578063b86247d7146100fe578063f24a590a1461012457610093565b80631deed3bb14610098578063328470ab146100b2578063416d3227146100ba578063570ca735146100c2575b600080fd5b6100a06101ca565b60408051918252519081900360200190f35b6100a06101d0565b6100a06101d6565b6100ca6101dc565b604080516001600160a01b039092168252519081900360200190f35b6100ca6101ec565b6100ca6101fc565b6100ca61020c565b6100a06004803603602081101561011457600080fd5b50356001600160a01b031661021c565b6100ca6004803603602081101561013a57600080fd5b81019060208101813564010000000081111561015557600080fd5b82018360208201111561016757600080fd5b8035906020019184600183028401116401000000008311171561018957600080fd5b91908080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525092955061022e945050505050565b60685481565b60005481565b60015481565b610134546001600160a01b031681565b610135546001600160a01b031681565b610137546001600160a01b031681565b610136546001600160a01b031681565b60696020526000908152604090205481565b8051602081830181018051606a825292820191909301209152546001600160a01b03168156fea265627a7a72315820ec4b4f1d7dfb5a3a3c024362862fe8482019648d29c54bcf642798589be7e4a764736f6c63430005100032",
+  "sourceMap": "135:611:0:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;135:611:0;;;;;;;",
+  "deployedSourceMap": "135:611:0:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;135:611:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;121:28:8;;;:::i;:::-;;;;;;;;;;;;;;;;349:31:4;;;:::i;437:33::-;;;:::i;323:23:0:-;;;:::i;:::-;;;;-1:-1:-1;;;;;323:23:0;;;;;;;;;;;;;;419:21;;;:::i;624:20::-;;;:::i;520:27::-;;;:::i;234:46:8:-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;234:46:8;-1:-1:-1;;;;;234:46:8;;:::i;358:49::-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;358:49:8;;;;;;;;21:11:-1;5:28;;2:2;;;46:1;43;36:12;2:2;358:49:8;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;358:49:8;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;358:49:8;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;30:3:-1;22:6;14;1:33;99:1;81:16;;74:27;;;;-1:-1;358:49:8;;-1:-1:-1;358:49:8;;-1:-1:-1;;;;;358:49:8:i;121:28::-;;;;:::o;349:31:4:-;;;;:::o;437:33::-;;;;:::o;323:23:0:-;;;-1:-1:-1;;;;;323:23:0;;:::o;419:21::-;;;-1:-1:-1;;;;;419:21:0;;:::o;624:20::-;;;-1:-1:-1;;;;;624:20:0;;:::o;520:27::-;;;-1:-1:-1;;;;;520:27:0;;:::o;234:46:8:-;;;;;;;;;;;;;:::o;358:49::-;22:14:-1;;169:4;143:32;;;;;198:20;;358:49:8;224:31:-1;;156:18;;;283;;;;273:49;328:32;;358:49:8;-1:-1:-1;;;;;358:49:8;;:::o",
+  "source": "pragma solidity ^0.5.0;\n\nimport \"./CosmosBankStorage.sol\";\nimport \"./EthereumBankStorage.sol\";\nimport \"./CosmosWhiteListStorage.sol\";\n\ncontract BankStorage is \n    CosmosBankStorage,\n    EthereumBankStorage,\n    CosmosWhiteListStorage {\n\n    /**\n    * @notice operator address that can update the smart contract\n    */\n    address public operator;\n\n    /**\n    * @notice address of the Oracle smart contract\n    */\n    address public oracle;\n\n    /**\n    * @notice address of the Cosmos Bridge smart contract\n    */\n    address public cosmosBridge;\n\n    /**\n    * @notice owner address that can use the admin API\n    */\n    address public owner;\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256[100] private ____gap;\n}",
+  "sourcePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/BankStorage.sol",
+  "ast": {
+    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/BankStorage.sol",
+    "exportedSymbols": {
+      "BankStorage": [
+        23
+      ]
+    },
+    "id": 24,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:0"
+      },
+      {
+        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol",
+        "file": "./CosmosBankStorage.sol",
+        "id": 2,
+        "nodeType": "ImportDirective",
+        "scope": 24,
+        "sourceUnit": 863,
+        "src": "25:33:0",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol",
+        "file": "./EthereumBankStorage.sol",
+        "id": 3,
+        "nodeType": "ImportDirective",
+        "scope": 24,
+        "sourceUnit": 1182,
+        "src": "59:35:0",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
+        "file": "./CosmosWhiteListStorage.sol",
+        "id": 4,
+        "nodeType": "ImportDirective",
+        "scope": 24,
+        "sourceUnit": 958,
+        "src": "95:38:0",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 5,
+              "name": "CosmosBankStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 862,
+              "src": "164:17:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_CosmosBankStorage_$862",
+                "typeString": "contract CosmosBankStorage"
+              }
+            },
+            "id": 6,
+            "nodeType": "InheritanceSpecifier",
+            "src": "164:17:0"
+          },
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 7,
+              "name": "EthereumBankStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1181,
+              "src": "187:19:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_EthereumBankStorage_$1181",
+                "typeString": "contract EthereumBankStorage"
+              }
+            },
+            "id": 8,
+            "nodeType": "InheritanceSpecifier",
+            "src": "187:19:0"
+          },
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 9,
+              "name": "CosmosWhiteListStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 957,
+              "src": "212:22:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_CosmosWhiteListStorage_$957",
+                "typeString": "contract CosmosWhiteListStorage"
+              }
+            },
+            "id": 10,
+            "nodeType": "InheritanceSpecifier",
+            "src": "212:22:0"
+          }
+        ],
+        "contractDependencies": [
+          862,
+          957,
+          1181
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 23,
+        "linearizedBaseContracts": [
+          23,
+          957,
+          1181,
+          862
+        ],
+        "name": "BankStorage",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 12,
+            "name": "operator",
+            "nodeType": "VariableDeclaration",
+            "scope": 23,
+            "src": "323:23:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 11,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "323:7:0",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 14,
+            "name": "oracle",
+            "nodeType": "VariableDeclaration",
+            "scope": 23,
+            "src": "419:21:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 13,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "419:7:0",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 16,
+            "name": "cosmosBridge",
+            "nodeType": "VariableDeclaration",
+            "scope": 23,
+            "src": "520:27:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 15,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "520:7:0",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 18,
+            "name": "owner",
+            "nodeType": "VariableDeclaration",
+            "scope": 23,
+            "src": "624:20:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 17,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "624:7:0",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 22,
+            "name": "____gap",
+            "nodeType": "VariableDeclaration",
+            "scope": 23,
+            "src": "715:28:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_array$_t_uint256_$100_storage",
+              "typeString": "uint256[100]"
+            },
+            "typeName": {
+              "baseType": {
+                "id": 19,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "715:7:0",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 21,
+              "length": {
+                "argumentTypes": null,
+                "hexValue": "313030",
+                "id": 20,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "723:3:0",
+                "subdenomination": null,
+                "typeDescriptions": {
+                  "typeIdentifier": "t_rational_100_by_1",
+                  "typeString": "int_const 100"
+                },
+                "value": "100"
+              },
+              "nodeType": "ArrayTypeName",
+              "src": "715:12:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
+                "typeString": "uint256[100]"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          }
+        ],
+        "scope": 24,
+        "src": "135:611:0"
+      }
+    ],
+    "src": "0:746:0"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/BankStorage.sol",
+    "exportedSymbols": {
+      "BankStorage": [
+        23
+      ]
+    },
+    "id": 24,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:0"
+      },
+      {
+        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosBankStorage.sol",
+        "file": "./CosmosBankStorage.sol",
+        "id": 2,
+        "nodeType": "ImportDirective",
+        "scope": 24,
+        "sourceUnit": 863,
+        "src": "25:33:0",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol",
+        "file": "./EthereumBankStorage.sol",
+        "id": 3,
+        "nodeType": "ImportDirective",
+        "scope": 24,
+        "sourceUnit": 1182,
+        "src": "59:35:0",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/Users/utx0/Code/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
+        "file": "./CosmosWhiteListStorage.sol",
+        "id": 4,
+        "nodeType": "ImportDirective",
+        "scope": 24,
+        "sourceUnit": 958,
+        "src": "95:38:0",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 5,
+              "name": "CosmosBankStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 862,
+              "src": "164:17:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_CosmosBankStorage_$862",
+                "typeString": "contract CosmosBankStorage"
+              }
+            },
+            "id": 6,
+            "nodeType": "InheritanceSpecifier",
+            "src": "164:17:0"
+          },
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 7,
+              "name": "EthereumBankStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1181,
+              "src": "187:19:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_EthereumBankStorage_$1181",
+                "typeString": "contract EthereumBankStorage"
+              }
+            },
+            "id": 8,
+            "nodeType": "InheritanceSpecifier",
+            "src": "187:19:0"
+          },
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 9,
+              "name": "CosmosWhiteListStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 957,
+              "src": "212:22:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_CosmosWhiteListStorage_$957",
+                "typeString": "contract CosmosWhiteListStorage"
+              }
+            },
+            "id": 10,
+            "nodeType": "InheritanceSpecifier",
+            "src": "212:22:0"
+          }
+        ],
+        "contractDependencies": [
+          862,
+          957,
+          1181
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 23,
+        "linearizedBaseContracts": [
+          23,
+          957,
+          1181,
+          862
+        ],
+        "name": "BankStorage",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 12,
+            "name": "operator",
+            "nodeType": "VariableDeclaration",
+            "scope": 23,
+            "src": "323:23:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 11,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "323:7:0",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 14,
+            "name": "oracle",
+            "nodeType": "VariableDeclaration",
+            "scope": 23,
+            "src": "419:21:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 13,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "419:7:0",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 16,
+            "name": "cosmosBridge",
+            "nodeType": "VariableDeclaration",
+            "scope": 23,
+            "src": "520:27:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 15,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "520:7:0",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 18,
+            "name": "owner",
+            "nodeType": "VariableDeclaration",
+            "scope": 23,
+            "src": "624:20:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 17,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "624:7:0",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 22,
+            "name": "____gap",
+            "nodeType": "VariableDeclaration",
+            "scope": 23,
+            "src": "715:28:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_array$_t_uint256_$100_storage",
+              "typeString": "uint256[100]"
+            },
+            "typeName": {
+              "baseType": {
+                "id": 19,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "715:7:0",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 21,
+              "length": {
+                "argumentTypes": null,
+                "hexValue": "313030",
+                "id": 20,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "723:3:0",
+                "subdenomination": null,
+                "typeDescriptions": {
+                  "typeIdentifier": "t_rational_100_by_1",
+                  "typeString": "int_const 100"
+                },
+                "value": "100"
+              },
+              "nodeType": "ArrayTypeName",
+              "src": "715:12:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
+                "typeString": "uint256[100]"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          }
+        ],
+        "scope": 24,
+        "src": "135:611:0"
+      }
+    ],
+    "src": "0:746:0"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.3.2",
+  "updatedAt": "2020-11-19T01:51:10.827Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}

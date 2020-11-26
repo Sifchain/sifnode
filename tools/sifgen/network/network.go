@@ -1,6 +1,7 @@
 package network
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/genesis"
+	"github.com/Sifchain/sifnode/tools/sifgen/network/types"
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 
 	"github.com/BurntSushi/toml"
@@ -17,6 +19,32 @@ import (
 type Network struct {
 	chainID string
 	CLI     utils.CLI
+}
+
+func Reset(chainID, networkDir string) error {
+	s := sha256.New()
+	s.Write([]byte(chainID))
+	file := fmt.Sprintf("%x", s.Sum(nil))
+
+	data, err := ioutil.ReadFile(fmt.Sprintf("%s/%s.yml", networkDir, file))
+	if err != nil {
+		return err
+	}
+
+	var nodes types.Nodes
+	if err := yaml.Unmarshal(data, &nodes); err != nil {
+		return err
+	}
+
+	for _, node := range nodes {
+		nodeDir := fmt.Sprintf("%s/validators/%s/%s/.sifnoded", networkDir, chainID, node.Moniker)
+		_, err = utils.NewCLI(chainID).ResetState(nodeDir)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func NewNetwork(chainID string) *Network {
@@ -172,7 +200,7 @@ func (n *Network) setDefaultConfig(configPath string) error {
 }
 
 func (n *Network) generateKey(validator *Validator) error {
-	output, err := n.CLI.AddKey(validator.Moniker, validator.Password, fmt.Sprintf("%s/%s", validator.HomeDir, CLIHomeDir))
+	output, err := n.CLI.AddKey(validator.Moniker, validator.Mnemonic, validator.Password, fmt.Sprintf("%s/%s", validator.HomeDir, CLIHomeDir))
 	if err != nil {
 		return err
 	}

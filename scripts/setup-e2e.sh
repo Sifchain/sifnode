@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-mac install ethereum
-cd testnet-contracts
-yarn
-ebrelayer generate
+cd smart-contracts
+yarn install
 cp .env.example .env

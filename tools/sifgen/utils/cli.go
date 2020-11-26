@@ -22,7 +22,8 @@ var (
 )
 
 type CLIUtils interface {
-	Reset() error
+	Reset([]string) error
+	ResetState(string) (*string, error)
 	CreateDir(string) error
 	CurrentChainID() (*string, error)
 	NodeID(nodeDir string) (*string, error)
@@ -70,6 +71,10 @@ func (c CLI) Reset(paths []string) error {
 	return nil
 }
 
+func (c CLI) ResetState(nodeDir string) (*string, error) {
+	return c.shellExec("sifnoded", "unsafe-reset-all", "--home", nodeDir)
+}
+
 func (c CLI) CreateDir(path string) error {
 	return os.MkdirAll(path, 0755)
 }
@@ -110,12 +115,14 @@ func (c CLI) SetConfigTrustNode(indent bool) (*string, error) {
 	return c.shellExec("sifnodecli", "config", "trust-node", fmt.Sprintf("%v", indent))
 }
 
-func (c CLI) AddKey(name, keyPassword, cliDir string) (*string, error) {
+func (c CLI) AddKey(name, mnemonic, keyPassword, cliDir string) (*string, error) {
 	return c.shellExecInput("sifnodecli",
 		[][]byte{
+			[]byte(mnemonic + "\n"),
+			[]byte("\n"),
 			[]byte(keyPassword + "\n"),
 			[]byte(keyPassword + "\n"),
-		}, "keys", "add", name, "--home", cliDir, "--keyring-backend", "file")
+		}, "keys", "add", name, "--home", cliDir, "-i", "--keyring-backend", "file")
 }
 
 func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {

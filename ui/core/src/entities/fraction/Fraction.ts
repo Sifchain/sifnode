@@ -70,7 +70,38 @@ const toFixedRounding = {
   [Rounding.ROUND_UP]: 3,
 };
 
-export class Fraction {
+export interface IFraction {
+  readonly quotient: JSBI;
+  readonly remainder: IFraction;
+  readonly numerator: JSBI;
+  readonly denominator: JSBI;
+  invert(): IFraction;
+  add(other: IFraction | BigintIsh): IFraction;
+  subtract(other: IFraction | BigintIsh): IFraction;
+  lessThan(other: IFraction | BigintIsh): boolean;
+  equalTo(other: IFraction | BigintIsh): boolean;
+  greaterThan(other: IFraction | BigintIsh): boolean;
+  multiply(other: IFraction | BigintIsh): IFraction;
+  divide(other: IFraction | BigintIsh): IFraction;
+  toSignificant(
+    significantDigits: number,
+    format?: object,
+    rounding?: Rounding
+  ): string;
+  toFixed(decimalPlaces: number, format?: object, rounding?: Rounding): string;
+}
+
+export function isFraction(value: unknown): value is IFraction {
+  return (value as IFraction).quotient instanceof JSBI;
+}
+
+const ensureFraction = (other: IFraction | BigintIsh): IFraction => {
+  return other instanceof Fraction || isFraction(other)
+    ? other
+    : new Fraction(parseBigintIsh(other));
+};
+
+export class Fraction implements IFraction {
   public readonly numerator: JSBI;
   public readonly denominator: JSBI;
 
@@ -85,20 +116,20 @@ export class Fraction {
   }
 
   // remainder after floor division
-  public get remainder(): Fraction {
+  public get remainder(): IFraction {
     return new Fraction(
       JSBI.remainder(this.numerator, this.denominator),
       this.denominator
     );
   }
 
-  public invert(): Fraction {
+  public invert(): IFraction {
     return new Fraction(this.denominator, this.numerator);
   }
 
-  public add(other: Fraction | BigintIsh): Fraction {
-    const otherParsed =
-      other instanceof Fraction ? other : new Fraction(parseBigintIsh(other));
+  public add(other: IFraction | BigintIsh): IFraction {
+    const otherParsed = ensureFraction(other);
+
     if (JSBI.equal(this.denominator, otherParsed.denominator)) {
       return new Fraction(
         JSBI.add(this.numerator, otherParsed.numerator),
@@ -114,9 +145,9 @@ export class Fraction {
     );
   }
 
-  public subtract(other: Fraction | BigintIsh): Fraction {
-    const otherParsed =
-      other instanceof Fraction ? other : new Fraction(parseBigintIsh(other));
+  public subtract(other: IFraction | BigintIsh): IFraction {
+    const otherParsed = ensureFraction(other);
+
     if (JSBI.equal(this.denominator, otherParsed.denominator)) {
       return new Fraction(
         JSBI.subtract(this.numerator, otherParsed.numerator),
@@ -132,45 +163,45 @@ export class Fraction {
     );
   }
 
-  public lessThan(other: Fraction | BigintIsh): boolean {
-    const otherParsed =
-      other instanceof Fraction ? other : new Fraction(parseBigintIsh(other));
+  public lessThan(other: IFraction | BigintIsh): boolean {
+    const otherParsed = ensureFraction(other);
+
     return JSBI.lessThan(
       JSBI.multiply(this.numerator, otherParsed.denominator),
       JSBI.multiply(otherParsed.numerator, this.denominator)
     );
   }
 
-  public equalTo(other: Fraction | BigintIsh): boolean {
-    const otherParsed =
-      other instanceof Fraction ? other : new Fraction(parseBigintIsh(other));
+  public equalTo(other: IFraction | BigintIsh): boolean {
+    const otherParsed = ensureFraction(other);
+
     return JSBI.equal(
       JSBI.multiply(this.numerator, otherParsed.denominator),
       JSBI.multiply(otherParsed.numerator, this.denominator)
     );
   }
 
-  public greaterThan(other: Fraction | BigintIsh): boolean {
-    const otherParsed =
-      other instanceof Fraction ? other : new Fraction(parseBigintIsh(other));
+  public greaterThan(other: IFraction | BigintIsh): boolean {
+    const otherParsed = ensureFraction(other);
+
     return JSBI.greaterThan(
       JSBI.multiply(this.numerator, otherParsed.denominator),
       JSBI.multiply(otherParsed.numerator, this.denominator)
     );
   }
 
-  public multiply(other: Fraction | BigintIsh): Fraction {
-    const otherParsed =
-      other instanceof Fraction ? other : new Fraction(parseBigintIsh(other));
+  public multiply(other: IFraction | BigintIsh): IFraction {
+    const otherParsed = ensureFraction(other);
+
     return new Fraction(
       JSBI.multiply(this.numerator, otherParsed.numerator),
       JSBI.multiply(this.denominator, otherParsed.denominator)
     );
   }
 
-  public divide(other: Fraction | BigintIsh): Fraction {
-    const otherParsed =
-      other instanceof Fraction ? other : new Fraction(parseBigintIsh(other));
+  public divide(other: IFraction | BigintIsh): IFraction {
+    const otherParsed = ensureFraction(other);
+
     return new Fraction(
       JSBI.multiply(this.numerator, otherParsed.denominator),
       JSBI.multiply(this.denominator, otherParsed.numerator)

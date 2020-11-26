@@ -2,13 +2,16 @@ package txs
 
 import (
 	"crypto/ecdsa"
+	"errors"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/joho/godotenv"
+
+	// allows the use of .env files for local development
+	_ "github.com/joho/godotenv/autoload"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
@@ -16,21 +19,18 @@ import (
 
 // LoadPrivateKey loads the validator's private key from environment variables
 func LoadPrivateKey() (key *ecdsa.PrivateKey, err error) {
-	// Load config file containing environment variables
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file", err)
-	}
-
 	// Private key for validator's Ethereum address must be set as an environment variable
 	rawPrivateKey := os.Getenv("ETHEREUM_PRIVATE_KEY")
 	if strings.TrimSpace(rawPrivateKey) == "" {
-		log.Fatal("Error loading ETHEREUM_PRIVATE_KEY from .env file")
+		log.Println("Error loading ETHEREUM_PRIVATE_KEY")
+		return nil, errors.New("can't load ethereum private key")
 	}
 
 	// Parse private key
 	privateKey, err := crypto.HexToECDSA(rawPrivateKey)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, err
 	}
 
 	return privateKey, nil
@@ -40,13 +40,15 @@ func LoadPrivateKey() (key *ecdsa.PrivateKey, err error) {
 func LoadSender() (address common.Address, err error) {
 	key, err := LoadPrivateKey()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return common.Address{}, err
 	}
 
 	publicKey := key.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
-		log.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+		log.Println("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+		return common.Address{}, errors.New("publicKey with wrong type")
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)

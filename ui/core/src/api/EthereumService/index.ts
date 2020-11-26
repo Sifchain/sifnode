@@ -2,21 +2,21 @@ import { reactive } from "@vue/reactivity";
 import Web3 from "web3";
 import { provider, WebsocketProvider } from "web3-core";
 import { IWalletService } from "../IWalletService";
-import { TxHash, TxParams, Asset, Balance, Token } from "../../entities";
+import { TxHash, TxParams, Asset, AssetAmount, Token } from "../../entities";
 import {
   getEtheriumBalance,
   getTokenBalance,
   isEventEmittingProvider,
-  isToken,
   transferAsset,
 } from "./utils/ethereumUtils";
+import { isToken } from "../../entities/utils/isToken";
 
 type Address = string;
-type Balances = Balance[];
+type Balances = AssetAmount[];
 
 export type EthereumServiceContext = {
   getWeb3Provider: () => Promise<provider>;
-  getSupportedTokens: () => Promise<Token[]>;
+  loadAssets: () => Promise<Asset[]>;
 };
 
 type MetaMaskProvider = WebsocketProvider & {
@@ -28,9 +28,17 @@ function isMetaMaskProvider(provider?: provider): provider is MetaMaskProvider {
   return typeof (provider as any).request === "function";
 }
 
+const initState = {
+  connected: false,
+  accounts: [],
+  balances: [],
+  address: "",
+  log: "unset",
+};
+
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
-  private supportedTokens: Token[] = [];
+  private supportedTokens: Asset[] = [];
   private blockSubscription: any;
   private provider: provider | undefined;
 
@@ -39,20 +47,17 @@ export class EthereumService implements IWalletService {
     connected: boolean;
     address: Address;
     accounts: Address[];
-    balances: Balance[];
+    balances: AssetAmount[];
     log: string;
-  } = reactive({
-    connected: false,
-    accounts: [],
-    balances: [],
-    address: "",
-    log: "unset",
-  });
+  };
 
   constructor(
     getWeb3Provider: () => Promise<provider>,
-    private getSupportedTokens: () => Promise<Token[]>
+    private loadAssets: () => Promise<Asset[]>
   ) {
+    // init state
+    this.state = reactive({ ...initState });
+
     getWeb3Provider().then((provider) => {
       if (isEventEmittingProvider(provider)) {
         provider.on("connect", () => {
@@ -70,9 +75,18 @@ export class EthereumService implements IWalletService {
     return this.state;
   }
 
-  private async updateAccounts() {
-    if (!this.web3) return;
-    this.state.accounts = (await this.web3?.eth.getAccounts()) ?? [];
+  private async updateData() {
+    if (!this.web3) {
+      this.state.connected = false;
+      this.state.accounts = [];
+      this.state.address = "";
+      this.state.balances = [];
+      return;
+    }
+    this.state.connected = !!this.web3;
+    this.state.accounts = (await this.web3.eth.getAccounts()) ?? [];
+    [this.state.address] = this.state.accounts;
+    this.state.balances = await this.getBalance();
   }
 
   getAddress(): Address {
@@ -85,16 +99,12 @@ export class EthereumService implements IWalletService {
 
   async connect() {
     try {
-      this.supportedTokens = await this.getSupportedTokens();
+      this.supportedTokens = await this.loadAssets();
 
       if (!this.provider)
         throw new Error("Cannot connect because provider is not yet loaded!");
 
       this.web3 = new Web3(this.provider);
-
-      await this.updateAccounts();
-
-      [this.state.address] = this.state.accounts;
 
       // Let's test for Metamask
       if (isMetaMaskProvider(this.provider)) {
@@ -103,9 +113,9 @@ export class EthereumService implements IWalletService {
           await this.provider.request({ method: "eth_requestAccounts" });
         }
       }
-      this.state.connected = true;
 
       this.addWeb3Subscription();
+      await this.updateData();
     } catch (err) {
       this.web3 = null;
     }
@@ -125,9 +135,21 @@ export class EthereumService implements IWalletService {
   }
 
   async disconnect() {
+    if (isMetaMaskProvider(this.provider)) {
+      if (this.provider.request) {
+        await this.provider.request({
+          method: "wallet_requestPermissions",
+          params: [
+            {
+              eth_accounts: {},
+            },
+          ],
+        });
+      }
+    }
     this.removeWeb3Subscription();
-    this.state.connected = false;
     this.web3 = null;
+    await this.updateData();
   }
 
   async getBalance(
@@ -135,32 +157,35 @@ export class EthereumService implements IWalletService {
     asset?: Asset | Token
   ): Promise<Balances> {
     const supportedTokens = this.supportedTokens;
-    const addr = address || this.getAddress();
+    const addr = address || this.state.address;
 
     if (!this.web3 || !addr) return [];
+
     const web3 = this.web3;
+
+    let balances = [];
 
     if (asset) {
       if (!isToken(asset)) {
         // Asset must be eth
         const ethBalance = await getEtheriumBalance(web3, addr);
-        return [ethBalance];
+        balances = [ethBalance];
+      } else {
+        // Asset must be ERC-20
+        const tokenBalance = await getTokenBalance(web3, addr, asset);
+        balances = [tokenBalance];
       }
-
-      // Asset must be ERC-20
-      const tokenBalance = await getTokenBalance(web3, addr, asset);
-      return [tokenBalance];
     }
 
     // No address no asset get everything
-    const balances = await Promise.all([
+    balances = await Promise.all([
       getEtheriumBalance(web3, addr),
-      ...supportedTokens.map((token: Token) => {
-        return getTokenBalance(web3, addr, token);
+      ...supportedTokens.slice(0, 10).map((token: Asset) => {
+        if (isToken(token)) return getTokenBalance(web3, addr, token);
+        return AssetAmount(token, "0");
       }),
     ]);
 
-    this.state.balances = balances;
     return balances;
   }
 
@@ -184,6 +209,8 @@ export class EthereumService implements IWalletService {
     return await transferAsset(this.web3, from, recipient, amount, asset);
   }
 
+  async signAndBroadcast() {}
+
   async setPhrase() {
     // We currently delegate auth to metamask so this is irrelavent
     return "";
@@ -195,9 +222,9 @@ export class EthereumService implements IWalletService {
 
   static create({
     getWeb3Provider,
-    getSupportedTokens,
+    loadAssets,
   }: EthereumServiceContext): IWalletService {
-    return new EthereumService(getWeb3Provider, getSupportedTokens);
+    return new EthereumService(getWeb3Provider, loadAssets);
   }
 }
 

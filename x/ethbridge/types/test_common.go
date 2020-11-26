@@ -22,7 +22,7 @@ const (
 	AltTestEthereumAddress    = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207344"
 	TestCoinsAmount           = 10
 	TestCoinsSymbol           = "eth"
-	TestCoinsLockedSymbol     = "peggyeth"
+	TestCoinsLockedSymbol     = "ceth"
 	AltTestCoinsAmount        = 12
 	AltTestCoinsSymbol        = "eth"
 )
@@ -57,6 +57,14 @@ func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	require.NoError(t, err)
 	burnEth := NewMsgBurn(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol)
 	return burnEth
+}
+
+func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver EthereumAddress,
+	coinsAmount int64, coinsSymbol string) MsgLock {
+	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
+	require.NoError(t, err)
+	lockEth := NewMsgLock(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol)
+	return lockEth
 }
 
 func CreateTestQueryEthProphecyResponse(

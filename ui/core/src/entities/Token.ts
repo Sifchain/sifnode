@@ -1,23 +1,16 @@
-import { ChainId } from "./ChainId";
 import { Asset } from "./Asset";
+import { Network } from "./Network";
 
-export type Token = Asset & {
-  chainId: ChainId;
+export function Token(p: {
   address: string;
-};
-
-export function createToken(
-  symbol: string,
-  decimals: number,
-  name: string,
-  chainId: ChainId,
-  address: string
-): Token {
-  return {
-    chainId,
-    address,
-    decimals,
-    symbol,
-    name,
-  };
+  decimals: number;
+  imageUrl?: string;
+  name: string;
+  network: Network;
+  symbol: string;
+}) {
+  Asset.set(p.symbol, p);
+  return p;
 }
+
+export type Token = ReturnType<typeof Token>;

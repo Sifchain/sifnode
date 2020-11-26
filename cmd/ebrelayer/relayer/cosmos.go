@@ -1,11 +1,16 @@
 package relayer
 
+// DONTCOVER
+
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	tmKv "github.com/tendermint/tendermint/libs/kv"
@@ -41,17 +46,23 @@ func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common
 }
 
 // Start a Cosmos chain subscription
-func (sub CosmosSub) Start() {
+func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
+	defer completionEvent.Done()
+	time.Sleep(time.Second)
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.Logger.Error("failed to initialize a client", "err", err)
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
 	client.SetLogger(sub.Logger)
 
 	if err := client.Start(); err != nil {
 		sub.Logger.Error("failed to start a client", "err", err)
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
 
 	defer client.Stop() //nolint:errcheck
@@ -61,11 +72,16 @@ func (sub CosmosSub) Start() {
 	out, err := client.Subscribe(context.Background(), "test", query, 1000)
 	if err != nil {
 		sub.Logger.Error("failed to subscribe to query", "err", err, "query", query)
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
 
+	defer client.Unsubscribe(context.Background(), "test", query)
+
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	defer close(quit)
 
 	for {
 		select {
@@ -90,7 +106,7 @@ func (sub CosmosSub) Start() {
 				}
 			}
 		case <-quit:
-			os.Exit(0)
+			return
 		}
 	}
 }
@@ -111,14 +127,19 @@ func getOracleClaimType(eventType string) types.Event {
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.Event) error {
-	cosmosMsg := txs.BurnLockEventToCosmosMsg(claimType, attributes)
+	cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, attributes)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
 	sub.Logger.Info(cosmosMsg.String())
 
 	// TODO: Ideally one validator should relay the prophecy and other validators make oracle claims upon that prophecy
 	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
-	err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
+	err = txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
 		claimType, prophecyClaim, sub.PrivateKey)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	return nil
