@@ -26,6 +26,8 @@ sifnode:
     sifId: sifchain
     genesisURL:
     peerAddress:
+  service:
+    type: NodePort
 
 sifnodecli:
 
