@@ -5,19 +5,18 @@ metadata:
   labels:
     {{- include "sifnode.labels" . | nindent 4 }}
 spec:
-  externalTrafficPolicy: Local
   type: {{ .Values.sifnode.service.type }}
   ports:
     - port: 26656
-      targetPort: 26656
+      nodePort: 30056
       protocol: TCP
       name: port-26656
     - port: 26657
-      targetPort: 26657
+      nodePort: 30057
       protocol: TCP
       name: port-26657
     - port: 6060
-      targetPort: 6060
+      nodePort: 30060
       protocol: TCP
       name: port-6060
   selector:
