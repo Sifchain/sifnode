@@ -3,6 +3,9 @@ package siflogger
 import (
 	"fmt"
 	"os"
+	"runtime"
+	"strconv"
+	"strings"
 
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -38,9 +41,19 @@ func colorFn(keyvals ...interface{}) term.FgBgColor {
 	}
 }
 
+var filterNumber = 0
+
+func LogFileLine(depth int) kitlog.Valuer {
+	return func() interface{} {
+		_, file, line, _ := runtime.Caller(depth + filterNumber)
+		idx := strings.LastIndexByte(file, '/')
+		return file[idx+1:] + ":" + strconv.Itoa(line)
+	}
+}
+
 func New() SifLogger {
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), colorFn)
-	logger = logger.With("caller", kitlog.Caller(5))
+	logger = logger.With("caller", LogFileLine(6))
 	e := SifLogger{logger}
 	return e
 }
@@ -84,6 +97,7 @@ func (e *SifLogger) SetFilterForLayer(level Level, keyvals ...interface{}) {
 		}
 	}
 
+	filterNumber++
 	filter := log.NewFilter(e.logger, options...)
 	e.logger = filter
 }
