@@ -55,6 +55,7 @@ func New() SifLogger {
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), colorFn)
 	logger = logger.With("caller", LogFileLine(6))
 	e := SifLogger{logger}
+	filterNumber = 0 // supposedly used as singleton
 	return e
 }
 
