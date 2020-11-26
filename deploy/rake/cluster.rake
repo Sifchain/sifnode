@@ -1,3 +1,5 @@
+require "securerandom"
+
 desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
   desc "Scaffold new cluster environment configuration"
@@ -27,6 +29,7 @@ namespace :cluster do
     check_args(args)
     puts "Deploy cluster config: #{path(args)}"
     system("cd #{path(args)} && terraform apply -auto-approve") or exit 1
+    system("chmod 600 #{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:chainnet]}")
     puts "Cluster #{path(args)} created successfully"
     puts "Now run `rake sifnode:install[#{args[:chainnet]},#{args[:provider]}]` to deploy sifnode to your cluster"
   end
@@ -184,6 +187,7 @@ namespace :cluster do
     task :deploy, [:chainnet, :provider] do |t, args|
       check_args(args)
       eth_wallet(args)
+      helmrepos(args)
 
       eth_wallet_private = `cat #{path(args)}/ethereum-generate-wallet/ethereum-wallet-generator.output \
         | grep -o -P '(?<=Private key: ).*' \
@@ -194,11 +198,13 @@ namespace :cluster do
       eth_wallet_address = `cat #{path(args)}/ethereum-generate-wallet/ethereum-wallet-generator.output \
         | grep -o -P '(?<=Address: ).*' \
         | tr -d '[:space:]'`
+      eth_wallet_secret = SecureRandom.base64 20
 
       cmd = %Q{helm upgrade ethnode stable/ethereum \
         --install -n ethnode \
         --set geth.account.privateKey=#{eth_wallet_private} \
         --set geth.account.address=#{eth_wallet_address} \
+        --set geth.account.secret=#{eth_wallet_secret} \
         --create-namespace
       }
 
@@ -234,6 +240,18 @@ end
 #
 def kubeconfig(args)
   "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:chainnet]}"
+end
+
+#
+# Helm dependencies
+#
+# @param args Arguments passed to rake
+#
+def helmrepos(args)
+  cmd = %Q{
+    helm repo add stable https://charts.helm.sh/stable --force-update
+  }
+  system({"KUBECONFIG" => kubeconfig(args) }, cmd)
 end
 
 #
