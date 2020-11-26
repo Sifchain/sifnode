@@ -118,6 +118,6 @@ func (e SifLogger) Tag(keyvals ...interface{}) SifLogger {
 	return SifLogger{e.logger.With(keyvals...)}
 }
 
-func (e SifLogger) GetTendermintLogger(keyvals ...interface{}) log.Logger {
-	return e.logger
+func (e SifLogger) With(keyvals ...interface{}) log.Logger {
+	return SifLogger{e.logger.With(keyvals...)}
 }
