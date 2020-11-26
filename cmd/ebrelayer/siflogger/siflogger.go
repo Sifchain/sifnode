@@ -45,6 +45,24 @@ func New() SifLogger {
 	return e
 }
 
+func (e *SifLogger) SetGlobalFilter(level Level) {
+	var option log.Option
+	switch level {
+	case Debug:
+		option = log.AllowDebug()
+	case Error:
+		option = log.AllowError()
+	case Info:
+		option = log.AllowInfo()
+	case None:
+		option = log.AllowNone()
+	default:
+		panic("incorrect level")
+	}
+	filter := log.NewFilter(e.logger, option)
+	e.logger = filter
+}
+
 func (e *SifLogger) SetFilterForLayer(level Level, keyvals ...interface{}) {
 	if len(keyvals) == 0 || len(keyvals)%2 != 0 {
 		panic("invalid keyvals")
