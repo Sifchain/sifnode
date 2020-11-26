@@ -128,6 +128,7 @@ func NewInitApp(
 		oracle.StoreKey,
 		ethbridge.StoreKey,
 		clp.StoreKey,
+		gov.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -146,6 +147,7 @@ func NewInitApp(
 	app.subspaces[bank.ModuleName] = app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
 	app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
+	app.subspaces[gov.ModuleName] = app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 
 	app.AccountKeeper = auth.NewAccountKeeper(
 		app.cdc,
@@ -200,7 +202,7 @@ func NewInitApp(
 		app.subspaces[clp.ModuleName])
 
 	// TODO review how to handle skipUpgradeHeights
-	app.UpgradeKeeper = upgrade.NewKeeper(map[int64]bool{}, keys[upgrade.StoreKey], cdc)
+	app.UpgradeKeeper = upgrade.NewKeeper(map[int64]bool{}, keys[upgrade.StoreKey], app.cdc)
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
@@ -208,7 +210,7 @@ func NewInitApp(
 		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
 
 	app.govKeeper = gov.NewKeeper(
-		cdc,
+		app.cdc,
 		keys[gov.StoreKey],
 		app.subspaces[gov.ModuleName],
 		app.SupplyKeeper,
@@ -226,19 +228,19 @@ func NewInitApp(
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
 		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
+		gov.NewAppModule(app.govKeeper, app.AccountKeeper, app.SupplyKeeper),
 	)
 
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(
-
 		upgrade.ModuleName,
 		staking.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
-		gov.ModuleName,
 		staking.ModuleName,
+		gov.ModuleName,
 	)
 
 	app.mm.SetOrderInitGenesis(
@@ -250,6 +252,7 @@ func NewInitApp(
 		oracle.ModuleName,
 		ethbridge.ModuleName,
 		clp.ModuleName,
+		gov.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
