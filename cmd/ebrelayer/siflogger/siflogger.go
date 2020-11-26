@@ -53,7 +53,7 @@ func LogFileLine(depth int) kitlog.Valuer {
 
 func New() SifLogger {
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), colorFn)
-	logger = logger.With("caller", LogFileLine(6))
+	logger = logger.With("caller", LogFileLine(5))
 	e := SifLogger{logger}
 	filterNumber = 0 // supposedly used as singleton
 	return e
@@ -73,6 +73,7 @@ func (e *SifLogger) SetGlobalFilter(level Level) {
 	default:
 		panic("incorrect level")
 	}
+	filterNumber++
 	filter := log.NewFilter(e.logger, option)
 	e.logger = filter
 }
