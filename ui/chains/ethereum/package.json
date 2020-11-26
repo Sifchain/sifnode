@@ -11,6 +11,7 @@
     "@openzeppelin/contracts": "2.5.1"
   },
   "devDependencies": {
-    "concurrently": "^5.3.0"
+    "concurrently": "^5.3.0",
+    "ganache-cli": "^6.12.0"
   }
 }
