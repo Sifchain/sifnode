@@ -1,0 +1,14 @@
+name: Run integration tests
+on: [push]
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up linux environment
+        run: # installs development tools and updates .bash_profile
+          bash test/integration/setup-linux-environment.sh
+      - name: Execute integration tests
+        run: |
+          source $HOME/.bash_profile
+          bash test/integration/start-integration-env.sh
