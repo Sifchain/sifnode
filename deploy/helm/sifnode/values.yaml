@@ -27,7 +27,7 @@ sifnode:
     genesisURL:
     peerAddress:
   service:
-    type: NodePort
+    type: LoadBalancer
 
 sifnodecli:
 
@@ -46,6 +46,11 @@ ebrelayer:
 service:
   type: LoadBalancer
   port: 26656
+
+persistence:
+  enabled: true
+  size: 500Gi
+  accessMode: ReadWriteOnce
 
 ingress:
   enabled: false
