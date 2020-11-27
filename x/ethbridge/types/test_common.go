@@ -24,9 +24,11 @@ const (
 	TestCoinsLockedSymbol     = "ceth"
 	AltTestCoinsAmount        = 12
 	AltTestCoinsSymbol        = "eth"
+	TestCoinIntAmount         = 10
 )
 
 var TestCoinsAmount = sdk.NewInt(10)
+var AltTestCoinsAmountSDKInt = sdk.NewInt(12)
 
 //Ethereum-bridge specific stuff
 func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType ClaimType) MsgCreateEthBridgeClaim {
