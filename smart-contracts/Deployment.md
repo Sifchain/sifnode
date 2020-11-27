@@ -81,4 +81,4 @@ You can replace the network with whatever network you would like, ropsten, devel
 
 When running this command, make sure that the private key in the .env file corresponds to the operator of the bridgebank contract as well as the admin and deployer of the eRowan token contract.
 
-7. Make sure to record the smart contract addresses and share them with the team so that you can interact with them in the future. Then git add the build-deploy folder, commit it and push it to your own branch, then merge it with develop so that we have the records documented of the smart contract address in the version control history.
+7. Make sure to record the smart contract addresses and share them with the team so that you can interact with them in the future. Then git add the deployment folder, commit it and push it to your own branch, then merge it with develop so that we have the records documented of the smart contract address in the version control history.
