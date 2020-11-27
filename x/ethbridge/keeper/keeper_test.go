@@ -12,7 +12,7 @@ import (
 
 var (
 	cosmosReceivers, _                         = CreateTestAddrs(1)
-	amount               int64                 = 10
+	amount                                     = sdk.NewInt(10)
 	symbol                                     = "stake"
 	tokenContractAddress                       = types.NewEthereumAddress("0xbbbbca6a901c926f240b89eacb641d8aec7aeafd")
 	ethBridgeAddress     types.EthereumAddress = types.NewEthereumAddress(strings.ToLower("0x30753E4A8aad7F8597332E813735Def5dD395028"))
@@ -185,7 +185,7 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 func TestProcessBurn(t *testing.T) {
 	ctx, keeper, bankKeeper, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
-	coins := sdk.NewCoins(sdk.NewInt64Coin("stake", amount))
+	coins := sdk.NewCoins(sdk.NewCoin("stake", amount))
 
 	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
@@ -221,7 +221,7 @@ func TestProcessLock(t *testing.T) {
 	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
 
-	coins := sdk.NewCoins(sdk.NewInt64Coin("stake", amount))
+	coins := sdk.NewCoins(sdk.NewCoin("stake", amount))
 	err := keeper.ProcessLock(ctx, cosmosReceivers[0], coins)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
