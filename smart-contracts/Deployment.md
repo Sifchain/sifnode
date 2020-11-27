@@ -68,9 +68,9 @@ You can replace mainnet with ropsten or local, whichever network you would like 
 
 5. After you have deployed the contracts to your network of choice, you will need to run this command from the smart-contracts folder:
 ```
-node scripts/saveContracts.js
+DIRECTORY_NAME="your_deployment_name_here" node scripts/saveContracts.js
 ```
-save the build-deploy folder and all of its files into git so that other users can interact with the smart contracts as well and know where the addresses are located.
+Save the deployment folder and the subdirectory you just made and all of its files into git so that other users can interact with the smart contracts as well and know where the addresses are located. The output files will be located in the deployment directory inside the subdirectory of the name you passed. The fallback directory within the deployment directory is the default directory which is where things automatically get saved if you run this script without a directory name.
 
 6. Grab the eRowan token address on whatever network you are on. Then run the setup_eRowan.js file to properly hook eRowan into the contracts. Make sure that the EROWAN_ADDRESS variable in the .env file is set to the eRowan token address. Make sure that the OWNER address is set properly in the env file so that you have an owner for the bridgebank contract that can use the admin api. Then run the command from the testnet-contracts folder:
 ```

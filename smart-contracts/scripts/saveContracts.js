@@ -1,5 +1,13 @@
+/*
+ *
+ * This script allows you to pass an env variable like so:  DIRECTORY_NAME="example_dir_name" node scripts/saveContracts.js 
+ * This script will create a new directory if one doesn't exist at the named directory, then save the artifacts there.
+ * 
+ */
+const dir = __dirname + "/../" + (process.env.DIRECTORY_NAME ? "deployments/" + process.env.DIRECTORY_NAME : "deployments/default") + "/"
+
 const Artifactor = require("@truffle/artifactor");
-const artifactor = new Artifactor(__dirname + "/../build-deploy/");
+const artifactor = new Artifactor(dir);
 const fs = require('fs');
 
 /*
@@ -35,33 +43,40 @@ function readFiles(dirname, onFileContent, onError) {
 
 // See truffle-schema for more info: https://github.com/trufflesuite/truffle/tree/develop/packages/contract-schema
 function handleFileContents(filename, content) {
-    content = JSON.parse(content)
-    if (!content.networks) {
-        console.log("No network config found for: ", filename)
-        return
-    }
-    const networkArray = Object.keys(content.networks)
-    for (let i = 0; i < networkArray.length; i++) {
-        const networkName = networkArray[i];
-        const contractData = {
-            contractName: content.contractName,// + networkArray[i],
-            abi: content.abi,
-            compiler: content.compiler,
-            bytecode: content.bytecode,
-            deployedBytecode: content.deployedBytecode,
-            address: content.networks[networkName].address,
-            transactionHash: content.networks[networkName].transactionHash,
-            networks: {
-                [networkName]: content.networks[networkName]
-            }
-        };
-        artifactor.save(contractData);
-        console.log("network: " + networkName + " filename: ", filename);
+    try {
+        content = JSON.parse(content)
+        if (!content.networks) {
+            console.error("No network config found for " + filename + " this file will not be saved.");
+            return ;
+        }
+        const networkArray = Object.keys(content.networks)
+        for (let i = 0; i < networkArray.length; i++) {
+            const networkName = networkArray[i];
+            const contractData = {
+                contractName: content.contractName,
+                abi: content.abi,
+                compiler: content.compiler,
+                bytecode: content.bytecode,
+                deployedBytecode: content.deployedBytecode,
+                address: content.networks[networkName].address,
+                transactionHash: content.networks[networkName].transactionHash,
+                networks: {
+                    [networkName]: content.networks[networkName]
+                }
+            };
+            artifactor.save(contractData);
+        }
+    } catch (error) {
+        console.log("Error while handling file contents: ", error);
     }
 }
 
 function handleError(filename, error) {
     console.log("Error reading file: " + filename + " because " + error)
+}
+
+if (!fs.existsSync(dir)){
+    fs.mkdirSync(dir);
 }
 
 readFiles("build/contracts/", handleFileContents, handleError)
