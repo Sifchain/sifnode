@@ -15,10 +15,11 @@ var (
 	AttributeKeyStatus         = "status"
 	AttributeKeyClaimType      = "claim_type"
 
-	AttributeKeyEthereumChainID  = "ethereum_chain_id"
-	AttributeKeyTokenContract    = "token_contract_address"
-	AttributeKeyCosmosSender     = "cosmos_sender"
-	AttributeKeyEthereumReceiver = "ethereum_receiver"
+	AttributeKeyEthereumChainID      = "ethereum_chain_id"
+	AttributeKeyTokenContract        = "token_contract_address"
+	AttributeKeyCosmosSender         = "cosmos_sender"
+	AttributeKeyCosmosSenderSequence = "cosmos_sender_sequence"
+	AttributeKeyEthereumReceiver     = "ethereum_receiver"
 
 	AttributeValueCategory = ModuleName
 )

@@ -22,4 +22,5 @@ type ProphecyClaim struct {
 	Amount           sdk.Int
 	EthereumReceiver common.Address
 	ClaimType        types.Event
+	CosmosSenderSequence *big.Int
 }

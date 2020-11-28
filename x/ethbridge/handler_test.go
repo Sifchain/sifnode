@@ -258,11 +258,13 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.NotNil(t, res)
 	senderAddress := receiverAddress
 	burnedCoins := sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}
+	senderSequence := "0"
 	remainingCoins := mintedCoins.Sub(burnedCoins)
 	senderCoins := bankKeeper.GetCoins(ctx, senderAddress)
 	require.True(t, senderCoins.IsEqual(remainingCoins))
 	eventEthereumChainID := ""
 	eventCosmosSender := ""
+	eventCosmosSenderSequence := ""
 	eventEthereumReceiver := ""
 	eventAmount := ""
 	eventSymbol := ""
@@ -281,6 +283,8 @@ func TestBurnEthSuccess(t *testing.T) {
 				eventEthereumChainID = value
 			case "cosmos_sender":
 				eventCosmosSender = value
+			case "cosmos_sender_sequence":
+				eventCosmosSenderSequence = value
 			case "ethereum_receiver":
 				eventEthereumReceiver = value
 			case "amount":
@@ -296,6 +300,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	}
 	require.Equal(t, eventEthereumChainID, strconv.Itoa(types.TestEthereumChainID))
 	require.Equal(t, eventCosmosSender, senderAddress.String())
+	require.Equal(t, eventCosmosSenderSequence, senderSequence)
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
 	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
@@ -312,6 +317,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.True(t, senderCoins.IsEqual(remainingCoins))
 	eventEthereumChainID = ""
 	eventCosmosSender = ""
+	eventCosmosSenderSequence = ""
 	eventEthereumReceiver = ""
 	eventAmount = ""
 	eventSymbol = ""
@@ -328,9 +334,10 @@ func TestBurnEthSuccess(t *testing.T) {
 				require.Equal(t, value, ModuleName)
 			case "ethereum_chain_id":
 				eventEthereumChainID = value
-
 			case "cosmos_sender":
 				eventCosmosSender = value
+			case "cosmos_sender_sequence":
+				eventCosmosSenderSequence = value
 			case "ethereum_receiver":
 				eventEthereumReceiver = value
 			case "amount":
@@ -346,6 +353,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	}
 	require.Equal(t, eventEthereumChainID, strconv.Itoa(types.TestEthereumChainID))
 	require.Equal(t, eventCosmosSender, senderAddress.String())
+	require.Equal(t, eventCosmosSenderSequence, senderSequence)
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
 	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)

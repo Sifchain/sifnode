@@ -93,6 +93,7 @@ func (p ProphecyClaimEvent) String() string {
 // CosmosMsg contains data from MsgBurn and MsgLock events
 type CosmosMsg struct {
 	CosmosSender     []byte
+  CosmosSenderSequence *big.Int
 	Symbol           string
 	Amount           sdk.Int
 	EthereumReceiver common.Address
@@ -103,11 +104,12 @@ type CosmosMsg struct {
 func NewCosmosMsg(claimType Event, cosmosSender []byte, ethereumReceiver common.Address, symbol string,
 	amount sdk.Int) CosmosMsg {
 	return CosmosMsg{
-		ClaimType:        claimType,
-		CosmosSender:     cosmosSender,
-		EthereumReceiver: ethereumReceiver,
-		Symbol:           symbol,
-		Amount:           amount,
+		ClaimType:            claimType,
+		CosmosSender:         cosmosSender,
+		CosmosSenderSequence: cosmosSenderSequence,
+		EthereumReceiver:     ethereumReceiver,
+		Symbol:               symbol,
+		Amount:               amount,
 	}
 }
 
@@ -131,6 +133,8 @@ const (
 	UnsupportedAttributeKey CosmosMsgAttributeKey = iota
 	// CosmosSender sender's address on Cosmos network
 	CosmosSender
+	// CosmosSenderSequence sender's sequence on Cosmos network
+	CosmosSenderSequence
 	// EthereumReceiver receiver's address on Ethereum network
 	EthereumReceiver
 	// Amount is coin's value
@@ -141,5 +145,5 @@ const (
 
 // String returns the event type as a string
 func (d CosmosMsgAttributeKey) String() string {
-	return [...]string{"unsupported", "cosmos_sender", "ethereum_receiver", "amount", "symbol"}[d]
+	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol"}[d]
 }
