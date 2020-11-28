@@ -139,6 +139,7 @@ contract("CosmosBridge", function (accounts) {
       this.cosmosSender = web3.utils.utf8ToHex(
         "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
+      this.cosmosSenderSequence = 1;
       this.ethereumReceiver = userThree;
 
       // Deploy Valset contract
@@ -231,9 +232,11 @@ contract("CosmosBridge", function (accounts) {
       event.args._symbol.should.be.equal(this.symbol);
       Number(event.args._value).should.be.bignumber.equal(Number(this.amount));
 
+      const nonce = 0;
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.cosmosSender,
+        this.cosmosSenderSequence,
         userFour,
         this.symbol,
         this.amount,
@@ -247,6 +250,7 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
+        ++this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.symbol,
         this.amount,
@@ -260,6 +264,7 @@ contract("CosmosBridge", function (accounts) {
       const { logs } = await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
+        ++this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.symbol,
         this.amount,
@@ -270,7 +275,6 @@ contract("CosmosBridge", function (accounts) {
 
       const event = logs.find(e => e.event === "LogNewProphecyClaim");
 
-      Number(event.args._prophecyID).should.be.bignumber.equal(1);
       Number(event.args._claimType).should.be.bignumber.equal(CLAIM_TYPE_LOCK);
       event.args._cosmosSender.should.be.equal(this.cosmosSender);
       event.args._ethereumReceiver.should.be.equal(this.ethereumReceiver);
@@ -286,6 +290,7 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
+        ++this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.symbol,
         this.amount,
@@ -305,6 +310,7 @@ contract("CosmosBridge", function (accounts) {
       this.cosmosSender = web3.utils.utf8ToHex(
         "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
+      this.cosmosSenderSequence = 1;
       this.ethereumReceiver = userOne;
       this.tokenAddress = "0x0000000000000000000000000000000000000000";
       this.symbol = "TEST";
@@ -378,6 +384,7 @@ contract("CosmosBridge", function (accounts) {
       const { logs } = await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
+        this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.symbol,
         this.amount,
@@ -406,6 +413,7 @@ contract("CosmosBridge", function (accounts) {
       const { logs } = await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
+        this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.symbol,
         this.amount,

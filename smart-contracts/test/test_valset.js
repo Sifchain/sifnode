@@ -567,39 +567,5 @@ contract("Valset", function (accounts) {
       {unsafeAllowCustomTypes: true}
       );
     });
-
-    it("should correctly validate signatures", async function () {
-      // Create the signature
-      const signature = await web3.eth.sign(this.message, userOne);
-
-      // Recover the signer address from the generated message and signature.
-      const signer = await this.valset.recover(this.message, signature);
-      signer.should.be.equal(userOne);
-    });
-
-    it("should not validate signatures on a different hashed message", async function () {
-      // Create the signature
-      const signature = await web3.eth.sign(this.message, userOne);
-
-      // Set up a different message (has increased nonce)
-      const differentMessage = web3.utils.soliditySha3(
-        { t: "uint256", v: this.cosmosBridgeNonce },
-        { t: "bytes", v: this.cosmosSender },
-        { t: "uint256", v: Number(this.nonce + 50) }
-      );
-
-      // Recover the signer address from a different message
-      const signer = await this.valset.recover(differentMessage, signature);
-      signer.should.not.be.equal(userOne);
-    });
-
-    it("should not validate signatures from a different address", async function () {
-      // Create the signature
-      const signature = await web3.eth.sign(this.message, userTwo);
-
-      // Recover the signer address from the generated message and signature.
-      const signer = await this.valset.recover(this.message, signature);
-      signer.should.not.be.equal(userOne);
-    });
   });
 });

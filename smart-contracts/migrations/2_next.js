@@ -9,82 +9,38 @@ const BridgeBank = artifacts.require("BridgeBank");
 const BridgeRegistry = artifacts.require("BridgeRegistry");
 const BridgeToken = artifacts.require("BridgeToken");
 
-module.exports = function(deployer, network, accounts) {
+module.exports = function(deployer) {
   /*******************************************
    *** Input validation of contract params
    ******************************************/
-  let operator;
-  let owner;
-  let initialValidators = [];
-  let initialPowers = [];
-  let consensusThreshold;
-
-  // Input validation for general env variables
   if (process.env.CONSENSUS_THRESHOLD.length === 0) {
     return console.error(
       "Must provide consensus threshold as environment variable."
     );
   }
-  consensusThreshold = process.env.CONSENSUS_THRESHOLD;
-
-  // Input validation for local usage (develop, ganache)
-  if (network === "develop" || network === "ganache") {
-    // Initial validators
-    const localValidatorCount = Number(process.env.LOCAL_VALIDATOR_COUNT);
-    if (localValidatorCount <= 0 || localValidatorCount > 9) {
-      return console.error(
-        "Must provide an initial validator count between 1-8 for local deployment."
-      );
-    }
-    // Initial validator power
-    if (process.env.LOCAL_INITIAL_VALIDATOR_POWERS.length === 0) {
-      return console.error(
-        "Must provide initial local validator powers as environment variable."
-      );
-    }
-
-    // Assign validated local input params
-    operator = accounts[0];
-    owner = accounts[0];
-    initialValidators = accounts.slice(1, localValidatorCount + 1);
-    initialPowers = process.env.LOCAL_INITIAL_VALIDATOR_POWERS.split(",");
-
-    // Input validation for testnet/mainnet (ropsten, rinkeby, etc.)
-  } else {
-    // Operator
-    if (process.env.OPERATOR.length === 0) {
-      return console.error(
-        "Must provide operator address as environment variable."
-      );
-    }
-    // Owner
-    if (process.env.OWNER.length === 0) {
-      return console.error(
-        "Must provide owner address as environment variable."
-      );
-    }
-    // Initial validators
-    if (process.env.INITIAL_VALIDATOR_ADDRESSES.length === 0) {
-      return console.error(
-        "Must provide initial validator addresses as environment variable."
-      );
-    }
-    // Initial validator powers
-    if (process.env.INITIAL_VALIDATOR_POWERS.length === 0) {
-      return console.error(
-        "Must provide initial validator powers as environment variable."
-      );
-    }
-
-    // Assign validated testnet/mainnet input params
-    operator = process.env.OPERATOR;
-    owner = process.env.OWNER;
-    initialValidators = process.env.INITIAL_VALIDATOR_ADDRESSES.split(",");
-    initialPowers = process.env.INITIAL_VALIDATOR_POWERS.split(",");
+  if (process.env.OPERATOR.length === 0) {
+    return console.error(
+      "Must provide operator address as environment variable."
+    );
+  }
+  if (process.env.OWNER.length === 0) {
+    return console.error(
+      "Must provide owner address as environment variable."
+    );
   }
 
-  // Check that each initial validator has a power
-  if (initialValidators.length !== initialPowers.length) {
+  let consensusThreshold = process.env.CONSENSUS_THRESHOLD;
+  let operator = process.env.OPERATOR;
+  let owner = process.env.OWNER;
+  let initialValidators = process.env.INITIAL_VALIDATOR_ADDRESSES.split(",");
+  let initialPowers = process.env.INITIAL_VALIDATOR_POWERS.split(",");
+
+  if (!initialPowers.length || !initialValidators.length) {
+    return console.error(
+      "Must provide validator and power."
+    );
+  }
+  if (initialPowers.length !== initialValidators.length) {
     return console.error(
       "Each initial validator must have a corresponding power specified."
     );

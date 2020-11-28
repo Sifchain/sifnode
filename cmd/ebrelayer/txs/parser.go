@@ -111,16 +111,18 @@ func ProphecyClaimToSignedOracleClaim(event types.ProphecyClaimEvent, key *ecdsa
 func CosmosMsgToProphecyClaim(event types.CosmosMsg) ProphecyClaim {
 	claimType := event.ClaimType
 	cosmosSender := event.CosmosSender
+	cosmosSenderSequence := event.CosmosSenderSequence
 	ethereumReceiver := event.EthereumReceiver
 	symbol := strings.ToUpper(event.Symbol)
 	amount := event.Amount
 
 	prophecyClaim := ProphecyClaim{
-		ClaimType:        claimType,
-		CosmosSender:     cosmosSender,
-		EthereumReceiver: ethereumReceiver,
-		Symbol:           symbol,
-		Amount:           amount,
+		ClaimType:            claimType,
+		CosmosSender:         cosmosSender,
+		CosmosSenderSequence: cosmosSenderSequence,
+		EthereumReceiver:     ethereumReceiver,
+		Symbol:               symbol,
+		Amount:               amount,
 	}
 	return prophecyClaim
 }
@@ -128,6 +130,7 @@ func CosmosMsgToProphecyClaim(event types.CosmosMsg) ProphecyClaim {
 // BurnLockEventToCosmosMsg parses data from a Burn/Lock event witnessed on Cosmos into a CosmosMsg struct
 func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (types.CosmosMsg, error) {
 	var cosmosSender []byte
+	var cosmosSenderSequence *big.Int
 	var ethereumReceiver common.Address
 	var symbol string
 	var amount *big.Int
@@ -140,6 +143,14 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 		switch key {
 		case types.CosmosSender.String():
 			cosmosSender = []byte(val)
+		case types.CosmosSenderSequence.String():
+			tempSequence := new(big.Int)
+			tempSequence, ok := tempSequence.SetString(val, 10)
+			if !ok {
+				log.Println("Invalid account sequence:", val)
+				return types.CosmosMsg{}, errors.New("invalid account sequence: " + val)
+			}
+			cosmosSenderSequence = tempSequence
 		case types.EthereumReceiver.String():
 			if !common.IsHexAddress(val) {
 				log.Printf("Invalid recipient address: %v", val)
@@ -167,7 +178,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 			amount = tempAmount
 		}
 	}
-	return types.NewCosmosMsg(claimType, cosmosSender, ethereumReceiver, symbol, amount), nil
+	return types.NewCosmosMsg(claimType, cosmosSender, cosmosSenderSequence, ethereumReceiver, symbol, amount), nil
 }
 
 // isZeroAddress checks an Ethereum address and returns a bool which indicates if it is the null address
