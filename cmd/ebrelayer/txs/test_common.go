@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"strings"
 	"testing"
+	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -93,7 +94,7 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 	}
 
 	// Create new Cosmos Msg
-	cosmosMsg := types.NewCosmosMsg(claimType, testCosmosSender, big.NewInt(int64(TestCosmosAddressSequence)),
+	cosmosMsg := types.NewCosmosMsg(claimType, testCosmosSender, big.NewInt(TestCosmosAddressSequence),
 		testEthereumReceiver, symbol, testAmount)
 
 	return cosmosMsg
