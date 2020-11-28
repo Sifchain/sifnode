@@ -29,7 +29,7 @@ const (
 	TestEthereumAddress2      = "0xc230f38FF05860753840e0d7cbC66128ad308B67"
 	TestCosmosAddress1        = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
 	TestCosmosAddress2        = "cosmos1l5h2x255pvdy9l4z0hf9tr8zw7k657s97wyz7y"
-	TestExpectedMessage       = "d39d3a837b322ea6355a4de856bb88e0a1a33a1a9655767df2fa947f42ebcda6"
+	TestExpectedMessage       = "8d46d2f689aa50a0dde8563f4ab1c90f4f74a80817ad18052ef1aa8bd5a0fd96"
 	TestExpectedSignature     = "f3b43b87b8b3729d6b380a640954d14e425acd603bc98f5da8437cba9e492e7805c437f977900cf9cfbeb9e0e2e6fc5b189723b0979efff1fc2796a2daf4fd3a01" //nolint:lll
 	TestAddrHex               = "970e8128ab834e8eac17ab8e3812f010678cf791"
 	TestPrivHex               = "289c2857d4598e37fb9647507e47a309d6133539bf21a8b9cb6df88fd5232032"
