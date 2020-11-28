@@ -46,11 +46,13 @@ var (
 		ethbridge.AppModuleBasic{},
 	)
 
+	// Module accounts which will be passed to the supply keeper when it is initialized
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
+		clp.ModuleName:            {supply.Burner, supply.Minter},
 	}
 )
 
@@ -181,6 +183,7 @@ func NewInitApp(
 		app.cdc,
 		keys[clp.StoreKey],
 		app.bankKeeper,
+		app.SupplyKeeper,
 		app.subspaces[clp.ModuleName])
 
 	app.mm = module.NewManager(
@@ -191,7 +194,7 @@ func NewInitApp(
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
-		clp.NewAppModule(app.clpKeeper, app.bankKeeper),
+		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
 	)
 
 	app.mm.SetOrderEndBlockers(staking.ModuleName)
