@@ -6,11 +6,9 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aristanetworks/goarista v0.0.0-20201012165903-2cb20defcd66 // indirect
-	github.com/belitre/gotpl v0.0.0-20200305160433-cfded0e75742 // indirect
 	github.com/btcsuite/btcd v0.21.0-beta // indirect
 	github.com/cespare/cp v1.1.1 // indirect
 	github.com/cosmos/cosmos-sdk v0.39.1
-	github.com/cucumber/godog v0.10.0
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/elastic/gosigar v0.11.0 // indirect
 	github.com/ethereum/go-ethereum v1.9.6
@@ -26,10 +24,12 @@ require (
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/joho/godotenv v1.3.0
 	github.com/karalabe/usb v0.0.0-20191104083709-911d15fe12a9 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/magiconair/properties v1.8.3 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/miguelmota/go-solidity-sha3 v0.1.0
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
+	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.3
 	github.com/pelletier/go-toml v1.8.1 // indirect
