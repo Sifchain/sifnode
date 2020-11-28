@@ -16,9 +16,7 @@ contract Oracle is OracleStorage {
      */
     event LogNewOracleClaim(
         uint256 _prophecyID,
-        bytes32 _message,
-        address _validatorAddress,
-        bytes _signature
+        address _validatorAddress
     );
 
     event LogProphecyProcessed(
@@ -39,10 +37,21 @@ contract Oracle is OracleStorage {
     /*
      * @dev: Modifier to restrict access to current ValSet validators
      */
-    modifier onlyValidator() {
+    modifier onlyValidator(address _user) {
         require(
-            Valset(valset).isActiveValidator(msg.sender),
+            Valset(valset).isActiveValidator(_user),
             "Must be an active validator"
+        );
+        _;
+    }
+
+    /*
+     * @dev: Modifier to restrict access to current ValSet validators
+     */
+    modifier onlyCosmosBridge() {
+        require(
+            msg.sender == cosmosBridge,
+            "Must be Cosmos Bridge"
         );
         _;
     }
@@ -85,17 +94,13 @@ contract Oracle is OracleStorage {
      */
     function newOracleClaim(
         uint256 _prophecyID,
-        bytes32 _message,
-        bytes memory _signature
-    ) public onlyValidator isPending(_prophecyID) {
-        address validatorAddress = msg.sender;
-
-        // Validate the msg.sender's signature
-        require(
-            validatorAddress == Valset(valset).recover(_message, _signature),
-            "Invalid message signature."
-        );
-
+        address validatorAddress
+    ) public
+        onlyCosmosBridge
+        onlyValidator(validatorAddress)
+        isPending(_prophecyID)
+        returns (bool)
+    {
         // Confirm that this address has not already made an oracle claim on this prophecy
         require(
             !hasMadeClaim[_prophecyID][validatorAddress],
@@ -107,59 +112,13 @@ contract Oracle is OracleStorage {
 
         emit LogNewOracleClaim(
             _prophecyID,
-            _message,
-            validatorAddress,
-            _signature
+            validatorAddress
         );
 
         // Process the prophecy
-        (
-            bool valid,
-            uint256 prophecyPowerCurrent,
-            uint256 prophecyPowerThreshold
-        ) = getProphecyThreshold(_prophecyID);
+        (bool valid, , ) = getProphecyThreshold(_prophecyID);
 
-        if (valid) {
-            completeProphecy(_prophecyID);
-
-            emit LogProphecyProcessed(
-                _prophecyID,
-                prophecyPowerCurrent,
-                prophecyPowerThreshold,
-                msg.sender
-            );
-        }
-    }
-
-    /*
-     * @dev: processBridgeProphecy
-     *       Pubically available method which attempts to process a bridge prophecy
-     */
-    function processBridgeProphecy(uint256 _prophecyID)
-        public
-        isPending(_prophecyID)
-    {
-        // Process the prophecy
-        (
-            bool valid,
-            uint256 prophecyPowerCurrent,
-            uint256 prophecyPowerThreshold
-        ) = getProphecyThreshold(_prophecyID);
-
-        require(
-            valid,
-            "The cumulative power of signatory validators does not meet the threshold"
-        );
-
-        // Update the BridgeClaim's status
-        completeProphecy(_prophecyID);
-
-        emit LogProphecyProcessed(
-            _prophecyID,
-            prophecyPowerCurrent,
-            prophecyPowerThreshold,
-            msg.sender
-        );
+        return valid;
     }
 
     /*
@@ -221,14 +180,5 @@ contract Oracle is OracleStorage {
             prophecyPowerCurrent,
             prophecyPowerThreshold
         );
-    }
-
-    /*
-     * @dev: completeProphecy
-     *       Completes a prophecy by completing the corresponding BridgeClaim
-     *       on the CosmosBridge.
-     */
-    function completeProphecy(uint256 _prophecyID) internal {
-        CosmosBridge(cosmosBridge).completeProphecyClaim(_prophecyID);
     }
 }
