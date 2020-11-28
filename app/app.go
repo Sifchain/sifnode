@@ -2,15 +2,14 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	tmos "github.com/tendermint/tendermint/libs/os"
 	"io"
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
-	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
@@ -31,8 +30,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
-	// upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
-	// upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
 const appName = "sifnode"
@@ -50,7 +47,7 @@ var (
 		),
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
-		clp.AppModuleBasic{},
+		//	clp.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
@@ -62,7 +59,7 @@ var (
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		gov.ModuleName:            {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
-		clp.ModuleName:            {supply.Burner, supply.Minter},
+		//	clp.ModuleName:            {supply.Burner, supply.Minter},
 	}
 )
 
@@ -99,9 +96,8 @@ type NewApp struct {
 	// Peggy keepers
 	EthBridgeKeeper ethbridge.Keeper
 	OracleKeeper    oracle.Keeper
-
-	clpKeeper clp.Keeper
-	mm        *module.Manager
+	//	clpKeeper clp.Keeper
+	mm *module.Manager
 
 	sm *module.SimulationManager
 }
@@ -112,6 +108,12 @@ func NewInitApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
 ) *NewApp {
+
+	f, _ := os.Create("testlog.log")
+	defer f.Close()
+	loger := log.NewTMLogger(f)
+	loger.Info("Starting to setup app ")
+
 	cdc := MakeCodec()
 
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
@@ -127,7 +129,7 @@ func NewInitApp(
 		upgrade.StoreKey,
 		oracle.StoreKey,
 		ethbridge.StoreKey,
-		clp.StoreKey,
+		//		clp.StoreKey,
 		gov.StoreKey,
 	)
 
@@ -146,7 +148,7 @@ func NewInitApp(
 	app.subspaces[auth.ModuleName] = app.paramsKeeper.Subspace(auth.DefaultParamspace)
 	app.subspaces[bank.ModuleName] = app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
-	app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
+	//	app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
 	app.subspaces[gov.ModuleName] = app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 
 	app.AccountKeeper = auth.NewAccountKeeper(
@@ -194,15 +196,38 @@ func NewInitApp(
 		app.OracleKeeper,
 	)
 
-	app.clpKeeper = clp.NewKeeper(
-		app.cdc,
-		keys[clp.StoreKey],
-		app.bankKeeper,
-		app.SupplyKeeper,
-		app.subspaces[clp.ModuleName])
+	//app.clpKeeper = clp.NewKeeper(
+	//	app.cdc,
+	//	keys[clp.StoreKey],
+	//	app.bankKeeper,
+	//	app.SupplyKeeper,
+	//	app.subspaces[clp.ModuleName])
 
-	// TODO review how to handle skipUpgradeHeights
-	app.UpgradeKeeper = upgrade.NewKeeper(map[int64]bool{}, keys[upgrade.StoreKey], app.cdc)
+	skipUpgradeHeights := make(map[int64]bool)
+	skipUpgradeHeights[0] = true
+	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
+	loger.Info("Trying to upgrade ")
+	//app.UpgradeKeeper.SetUpgradeHandler("testupgrade", func(ctx sdk.Context, plan upgrade.Plan) {
+	//
+	//	f, err := os.Create("testlog.log")
+	//	defer f.Close()
+	//	loger := log.NewTMLogger(f)
+	//	loger.Info("Starting to execute upgrade plan")
+	//	ethAsset := clp.NewAsset("Ethereum","ETH","ceth")
+	//	loger.Info("Asset Created")
+	//	pool,err := clp.NewPool(ethAsset,sdk.NewUint(100),sdk.NewUint(100),sdk.NewUint(10))
+	//	if err!= nil{
+	//		loger.Info("Pool Not Created" ,err.Error())
+	//		return
+	//	}
+	//	loger.Info("Pool Created")
+	//	err = app.clpKeeper.SetPool(ctx,pool)
+	//	if err!= nil{
+	//		loger.Info("Pool Not Set" ,err.Error())
+	//		return
+	//	}
+	//	loger.Info("Pool Set")
+	//})
 
 	// register the proposal types
 	govRouter := gov.NewRouter()
@@ -227,7 +252,7 @@ func NewInitApp(
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
-		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
+		//		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
 		gov.NewAppModule(app.govKeeper, app.AccountKeeper, app.SupplyKeeper),
 	)
 
@@ -251,7 +276,7 @@ func NewInitApp(
 		genutil.ModuleName,
 		oracle.ModuleName,
 		ethbridge.ModuleName,
-		clp.ModuleName,
+		//		clp.ModuleName,
 		gov.ModuleName,
 	)
 
