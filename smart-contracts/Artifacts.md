@@ -19,4 +19,4 @@ After you have run the script and specified a new directory name, commit that ne
 We are using an upgradeable smart contract pattern with a delegate proxy pattern. This means that we are essentially deploying two contracts for every single contract in our repository. One contract is the storage and proxy contract, the other contract is the logic contract where the proxy contract delegate calls to in order to have its storage changed.
 
 ## Upgradeability
-Because we are using the openzeppelin framework, it may be that we can't use their tooling around upgrading things because we don't commit the .openzeppelin or build files. Regardless, we should still be able to upgrade contracts by manually changing where the proxy contract points for the logic contract.
+Because we are using the openzeppelin framework, after you have deployed to your network of choice, the .openzeppelin folder will have all the data you need. When you run the above script, saveContracts.js, the .openzepplin folder will be copied into the sub directory of deployments. This way, if you ever want to upgrade those contract instances, you will have the addresses to do so.
