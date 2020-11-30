@@ -20,7 +20,7 @@ slither-pretty-summary:
 
 # Check for ERC 20|223|777|721|165|1820 conformance
 # `make conformance CONTRACT=./contracts/ContractFile.sol CONTRACT_NAME=ContractName`
-conformance:
+erc-conformance:
 	source ./venv/bin/activate
 	pip install -r requirements.txt
 	yarn
