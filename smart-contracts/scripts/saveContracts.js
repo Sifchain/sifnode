@@ -4,11 +4,12 @@
  * This script will create a new directory if one doesn't exist at the named directory, then save the artifacts there.
  * 
  */
-const dir = __dirname + "/../" + (process.env.DIRECTORY_NAME ? "deployments/" + process.env.DIRECTORY_NAME : "deployments/default") + "/"
+const dir = __dirname + "/../" + (process.env.DIRECTORY_NAME ? "deployments/" + process.env.DIRECTORY_NAME : "deployments/default") + "/";
 
 const Artifactor = require("@truffle/artifactor");
 const artifactor = new Artifactor(dir);
 const fs = require('fs');
+const shelljs = require("shelljs");
 
 /*
  *
@@ -26,7 +27,7 @@ const fs = require('fs');
 function readFiles(dirname, onFileContent, onError) {
   fs.readdir(dirname, function(err, filenames) {
     if (err) {
-      onError(err);
+      onError("The build/contracts directory does not exist.\n\nMake sure the build directory exists before running this script.\n\nTo create build directory run `truffle deploy --network develop`\n\n");
       return;
     }
     filenames.forEach(function(filename) {
@@ -72,11 +73,15 @@ function handleFileContents(filename, content) {
 }
 
 function handleError(filename, error) {
-    console.log("Error reading file: " + filename + " because " + error)
+    console.log("Error reading file: " + filename + " because " + error);
 }
 
-if (!fs.existsSync(dir)){
-    fs.mkdirSync(dir);
+function makeDir(directory) {
+  if (!fs.existsSync(directory)){
+      fs.mkdirSync(directory);
+  }
 }
 
-readFiles("build/contracts/", handleFileContents, handleError)
+makeDir(dir);
+readFiles("build/contracts/", handleFileContents, handleError);
+shelljs.cp("-R", ".openzeppelin", dir);
