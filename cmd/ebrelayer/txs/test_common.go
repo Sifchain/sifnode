@@ -39,8 +39,8 @@ const (
 	TestOtherAddress          = "0x1000000000000000000000000000000000000000"
 )
 
-var TestAmount = big.NewInt(5)
-var TestSDKAmount = sdk.NewIntFromBigInt(TestAmount)
+var testAmount = big.NewInt(5)
+var testSDKAmount = sdk.NewIntFromBigInt(testAmount)
 
 // CreateTestLogEthereumEvent creates a sample EthereumEvent event for testing purposes
 func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
@@ -55,7 +55,7 @@ func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
 	testEthereumSender := common.HexToAddress(TestEthereumAddress1)
 	testCosmosRecipient := []byte(TestCosmosAddress1)
 	testTokenAddress := common.HexToAddress(TestEthTokenAddress)
-	testAmount := TestAmount
+	testAmount := testAmount
 	testNonce := big.NewInt(int64(TestNonce))
 
 	return types.EthereumEvent{EthereumChainID: testEthereumChainID,
@@ -72,7 +72,7 @@ func CreateTestProphecyClaimEvent(t *testing.T) types.ProphecyClaimEvent {
 	testEthereumReceiver := common.HexToAddress(TestEthereumAddress1)
 	testValidatorAddress := common.HexToAddress(TestEthereumAddress2)
 	testTokenAddress := common.HexToAddress(TestEthTokenAddress)
-	testAmount := TestSDKAmount
+	testAmount := testSDKAmount
 
 	return types.NewProphecyClaimEvent([]byte(TestCosmosAddress1), TestSymbol,
 		testProphecyID, testAmount, testEthereumReceiver, testValidatorAddress,
@@ -83,7 +83,7 @@ func CreateTestProphecyClaimEvent(t *testing.T) types.ProphecyClaimEvent {
 func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 	testCosmosSender := []byte(TestCosmosAddress1)
 	testEthereumReceiver := common.HexToAddress(TestEthereumAddress1)
-	testAmount := TestSDKAmount
+	testAmount := testSDKAmount
 
 	var symbol string
 	if claimType == types.MsgBurn {
@@ -137,7 +137,7 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair 
 	// (key, value) pairing for "amount" key
 	pairAmount := tmKv.Pair{
 		Key:   []byte("amount"),
-		Value: []byte(TestAmount.String()),
+		Value: []byte(testAmount.String()),
 	}
 
 	// (key, value) pairing for "token_contract_address" key
