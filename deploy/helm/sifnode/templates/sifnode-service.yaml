@@ -18,8 +18,5 @@ spec:
     - port: 26657
       protocol: TCP
       name: port-26657
-    - port: 6060
-      protocol: TCP
-      name: port-6060
   selector:
     {{- include "sifnode.selectorLabels" . | nindent 4 }}

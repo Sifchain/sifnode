@@ -45,9 +45,6 @@ spec:
             - name: port-26657
               containerPort: 26657
               protocol: TCP
-            - name: port-6060
-              containerPort: 6060
-              protocol: TCP
           env:
             - name: CHAINNET
               value: {{ .Values.sifnode.env.chainnet }}
