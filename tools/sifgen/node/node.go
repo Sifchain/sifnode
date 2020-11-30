@@ -9,15 +9,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/genesis"
+	"github.com/Sifchain/sifnode/tools/sifgen/key"
 	"github.com/Sifchain/sifnode/tools/sifgen/node/types"
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 
 	"github.com/BurntSushi/toml"
 	"github.com/sethvargo/go-password/password"
-	"github.com/tyler-smith/go-bip39"
 	"github.com/yelinaung/go-haikunator"
 	"gopkg.in/yaml.v3"
 )
@@ -29,14 +28,15 @@ type Node struct {
 	Moniker     string    `yaml:"moniker"`
 	Address     string    `yaml:"address"`
 	Password    string    `yaml:"password"`
-	Mnemonic    string    `yaml:"mnemonic"`
+	Mnemonic    *string   `yaml:"mnemonic"`
+	Key         *key.Key  `yaml:"-"`
 	CLI         utils.CLI `yaml:"-"`
 }
 
 func Reset(chainID string, nodeDir *string) error {
 	var directory string
 	if nodeDir == nil {
-		directory = app.DefaultNodeHome
+		directory = common.DefaultNodeHome
 	} else {
 		directory = *nodeDir
 	}
@@ -49,16 +49,19 @@ func Reset(chainID string, nodeDir *string) error {
 	return nil
 }
 
-func NewNode(chainID string, peerAddress, genesisURL *string) *Node {
+func NewNode(chainID string, mnemonic, peerAddress, genesisURL *string) *Node {
 	password, _ := password.Generate(32, 5, 0, false, false)
+	name := haikunator.New(time.Now().UTC().UnixNano()).Haikunate()
 
 	return &Node{
 		ChainID:     chainID,
 		PeerAddress: peerAddress,
 		GenesisURL:  genesisURL,
-		Moniker:     haikunator.New(time.Now().UTC().UnixNano()).Haikunate(),
+		Moniker:     name,
 		Password:    password,
+		Mnemonic:    mnemonic,
 		CLI:         utils.NewCLI(chainID),
+		Key:         key.NewKey(&name, &password),
 	}
 }
 
@@ -76,11 +79,11 @@ func (n *Node) Build() (*string, error) {
 }
 
 func (n *Node) setup() error {
-	if err := n.CLI.Reset([]string{app.DefaultNodeHome, app.DefaultCLIHome}); err != nil {
+	if err := n.CLI.Reset([]string{common.DefaultNodeHome, common.DefaultCLIHome}); err != nil {
 		return err
 	}
 
-	_, err := n.CLI.InitChain(n.ChainID, n.Moniker, app.DefaultNodeHome)
+	_, err := n.CLI.InitChain(n.ChainID, n.Moniker, common.DefaultNodeHome)
 	if err != nil {
 		return err
 	}
@@ -105,9 +108,11 @@ func (n *Node) setup() error {
 		return err
 	}
 
-	err = n.generateMnemonic()
-	if err != nil {
-		return err
+	if n.Mnemonic == nil || *n.Mnemonic == "" {
+		err = n.generateMnemonic()
+		if err != nil {
+			return err
+		}
 	}
 
 	err = n.generateNodeKeyAddress()
@@ -145,7 +150,7 @@ func (n *Node) networkGenesis() error {
 }
 
 func (n *Node) seedGenesis() error {
-	_, err := n.CLI.AddGenesisAccount(n.Address, app.DefaultNodeHome, common.ToFund)
+	_, err := n.CLI.AddGenesisAccount(n.Address, common.DefaultNodeHome, common.ToFund)
 	if err != nil {
 		return err
 	}
@@ -156,9 +161,9 @@ func (n *Node) seedGenesis() error {
 	}
 
 	outputFile := fmt.Sprintf("%s/%s", gentxDir, "gentx.json")
-	nodeID, _ := n.CLI.NodeID(app.DefaultNodeHome)
+	nodeID, _ := n.CLI.NodeID(common.DefaultNodeHome)
 
-	pubKey, err := n.CLI.ValidatorAddress(app.DefaultNodeHome)
+	pubKey, err := n.CLI.ValidatorAddress(common.DefaultNodeHome)
 	if err != nil {
 		return err
 	}
@@ -167,8 +172,8 @@ func (n *Node) seedGenesis() error {
 		n.Moniker,
 		n.Password,
 		common.ToBond,
-		app.DefaultNodeHome,
-		app.DefaultCLIHome,
+		common.DefaultNodeHome,
+		common.DefaultCLIHome,
 		outputFile,
 		strings.TrimSuffix(*nodeID, "\n"),
 		strings.TrimSuffix(*pubKey, "\n"),
@@ -177,12 +182,12 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	_, err = n.CLI.CollectGenesisTxns(gentxDir, app.DefaultNodeHome)
+	_, err = n.CLI.CollectGenesisTxns(gentxDir, common.DefaultNodeHome)
 	if err != nil {
 		return err
 	}
 
-	if err = genesis.ReplaceStakingBondDenom(app.DefaultNodeHome); err != nil {
+	if err = genesis.ReplaceStakingBondDenom(common.DefaultNodeHome); err != nil {
 		return err
 	}
 
@@ -190,7 +195,7 @@ func (n *Node) seedGenesis() error {
 }
 
 func (n *Node) generateNodeKeyAddress() error {
-	output, err := n.CLI.AddKey(n.Moniker, n.Mnemonic, n.Password, app.DefaultCLIHome)
+	output, err := n.CLI.AddKey(n.Moniker, *n.Mnemonic, n.Password, common.DefaultCLIHome)
 	if err != nil {
 		return err
 	}
@@ -213,17 +218,8 @@ func (n *Node) generateNodeKeyAddress() error {
 }
 
 func (n *Node) generateMnemonic() error {
-	entropy, err := bip39.NewEntropy(256)
-	if err != nil {
-		return err
-	}
-
-	mnemonic, err := bip39.NewMnemonic(entropy)
-	if err != nil {
-		return err
-	}
-
-	n.Mnemonic = mnemonic
+	n.Key.GenerateMnemonic()
+	n.Mnemonic = &n.Key.Mnemonic
 
 	return nil
 }

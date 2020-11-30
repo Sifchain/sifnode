@@ -26,6 +26,7 @@ sifnode:
     sifId: sifchain
     genesisURL:
     peerAddress:
+    mnemonic: ""
   service:
     type: LoadBalancer
 
@@ -38,10 +39,11 @@ ebrelayer:
     pullPolicy: Always
     tag: "testnet"
   env:
-    ethWebsocketAddress: ''
-    ethBridgeRegistryAddress: ''
-    ethPrivateKey: ''
-    moniker: ''
+    ethWebsocketAddress: ""
+    ethBridgeRegistryAddress: ""
+    ethPrivateKey: ""
+    moniker: ""
+    mnemonic: ""
 
 service:
   type: LoadBalancer

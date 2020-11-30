@@ -78,11 +78,12 @@ namespace :cluster do
   namespace :sifnode do
     namespace :deploy do
       desc "Deploy a single standalone sifnode on to your cluster"
-      task :standalone, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
+      task :standalone, [:chainnet, :provider, :namespace, :image, :image_tag, :mnemonic] do |t, args|
         check_args(args)
 
         cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
+          --set sifnode.env.mnemonic=#{args[:mnemonic]} \
           --install -n #{ns(args)} --create-namespace \
           --set image.tag=#{image_tag(args)} \
           --set image.repository=#{image_repository(args)}
@@ -92,12 +93,13 @@ namespace :cluster do
       end
 
       desc "Deploy a single network-aware sifnode on to your cluster"
-      task :peer, [:chainnet, :provider, :namespace, :image, :image_tag, :peer_address, :genesis_url] do |t, args|
+      task :peer, [:chainnet, :provider, :namespace, :image, :image_tag, :mnemonic, :peer_address, :genesis_url] do |t, args|
         check_args(args)
 
         cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
           --install -n #{ns(args)} --create-namespace \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
+          --set sifnode.env.mnemonic=#{args[:mnemonic]} \
           --set sifnode.env.genesisURL=#{args[:genesis_url]} \
           --set sifnode.env.peerAddress=#{args[:peer_address]} \
           --set image.tag=#{image_tag(args)} \
@@ -120,7 +122,7 @@ namespace :cluster do
   desc "ebrelayer Operations"
   namespace :ebrelayer do
     desc "Deploy a new ebrelayer to an existing cluster"
-    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker] do |t, args|
+    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :mnemonic, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \

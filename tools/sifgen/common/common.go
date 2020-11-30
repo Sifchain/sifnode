@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/tools/sifgen/common/types"
 )
 
@@ -13,6 +14,8 @@ type (
 )
 
 var (
+	DefaultNodeHome = app.DefaultNodeHome
+	DefaultCLIHome  = app.DefaultCLIHome
 	StakeTokenDenom = types.StakeTokenDenom
 )
 
