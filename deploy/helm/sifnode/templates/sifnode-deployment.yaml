@@ -34,9 +34,9 @@ spec:
             - name: data
               mountPath: /root/
           {{- if .Values.sifnode.env.peerAddress }}
-          args: ["-c", "sifgen node create $CHAINNET $PEER_ADDRESS $GENESIS_URL; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
+          args: ["-c", "sifgen node create $CHAINNET \"$MNEMONIC\" $PEER_ADDRESS $GENESIS_URL; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
           {{- else }}
-          args: ["-c", "sifgen node create $CHAINNET; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
+          args: ["-c", "sifgen node create $CHAINNET \"$MNEMONIC\"; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
           {{- end }}
           ports:
             - name: port-26656
@@ -57,6 +57,11 @@ spec:
               value: {{ .Values.sifnode.env.peerAddress }}
             - name: GENESIS_URL
               value: {{ .Values.sifnode.env.genesisURL }}
+            - name: MNEMONIC
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sifnode.fullname" . }}
+                  key: mnemonic
           livenessProbe:
             tcpSocket:
               port: 26657

@@ -131,6 +131,7 @@ namespace :cluster do
         --set ebrelayer.image.repository=#{image_repository(args)} \
         --set ebrelayer.image.tag=#{image_tag(args)} \
         --set ebrelayer.enabled=true \
+        --set ebrelayer.env.mnemonic=#{args[:mnemonic]} \
         --set ebrelayer.env.ethWebsocketAddress=#{args[:eth_websocket_address]} \
         --set ebrelayer.env.ethBridgeRegistryAddress=#{args[:eth_bridge_registry_address]} \
         --set ebrelayer.env.ethPrivateKey=#{args[:eth_private_key]} \

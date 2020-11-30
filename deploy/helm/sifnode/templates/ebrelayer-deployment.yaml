@@ -31,7 +31,7 @@ spec:
           image: "{{ .Values.ebrelayer.image.repository }}:{{ .Values.ebrelayer.image.tag }}"
           imagePullPolicy: {{ .Values.ebrelayer.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER '$MNEMONIC' --chain-id $CHAINNET --keyring-backend test"]
+          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER \"$MNEMONIC\" --chain-id $CHAINNET --keyring-backend test"]
           env:
             - name: NODE_HOST
               value: "tcp://{{ .Chart.Name }}.{{ .Release.Namespace }}.svc.cluster.local:26657"
