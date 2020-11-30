@@ -60,6 +60,15 @@ def are_you_sure(args)
 end
 
 #
+# Node address
+#
+# @param args Arguments passed to rake
+#
+def node_address(args)
+  args[:node].nil? ? "tcp://127.0.0.1:26657" : args[:node]
+end
+
+#
 # Detect the O/S
 #
 def detect_os

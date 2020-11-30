@@ -19,7 +19,7 @@ namespace :cluster do
     system("cd #{path(args)} && terraform init")
 
     puts "Cluster configuration scaffolding complete: #{path(args)}"
-    puts "Now run `rake cluster:create[#{args[:chainnet]},#{args[:provider]}]` to deploy your cluster"
+    puts "Now run `rake cluster:deploy[#{args[:chainnet]},#{args[:provider]}]` to deploy your cluster"
   end
 
   desc "Deploy a new cluster"
@@ -28,7 +28,7 @@ namespace :cluster do
     puts "Deploy cluster config: #{path(args)}"
     system("cd #{path(args)} && terraform apply -auto-approve") or exit 1
     puts "Cluster #{path(args)} created successfully"
-    puts "Now run `rake sifnode:install[#{args[:chainnet]},#{args[:provider]}]` to deploy sifnode to your cluster"
+    puts "Now run `rake cluster:sifnode:deploy[#{args[:chainnet]},#{args[:provider]}]` to deploy sifnode to your cluster"
   end
 
   desc "Status of your cluster"

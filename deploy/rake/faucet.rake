@@ -1,15 +1,13 @@
-desc "faucet operations"
+desc "Faucet operations"
 namespace :faucet do
-  desc "validator operations"
+  desc "Validator operations"
   namespace :validator do
-    desc "send funds to a validator"
-    task :send, [:chainnet, :address] do |t, args|
-      config = YAML.load_file(network_config(args[:chainnet]))
-
-      cmd = %Q{printf "#{config[0]['password']}\n#{config[0]['password']}\n" | \
-               sifnodecli tx send #{config[0]['address']} #{args[:address]} 10000000rowan,100000000000clink,100000000000chot,100000000000cusdt,100000000000cusdc \
-               --home networks/validators/#{args[:chainnet]}/#{config[0]['moniker']}/.sifnodecli -y
-             }
+    desc "Send funds"
+    task :send, [:from_address, :to_address, :amount, :node_address] do |t, args|
+      cmd = %Q{sifnodecli tx send #{args[:from_address]} #{args[:to_address]} #{args[:amount]} \
+              --node #{node_address(args)} \
+              --keyring-backend file -y
+      }
 
       system(cmd)
     end
