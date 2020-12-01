@@ -36,7 +36,7 @@ type createEthClaimReq struct {
 	EthereumSender        string       `json:"ethereum_sender"`
 	CosmosReceiver        string       `json:"cosmos_receiver"`
 	Validator             string       `json:"validator"`
-	Amount                int64        `json:"amount"`
+	Amount                sdk.Int      `json:"amount"`
 	ClaimType             string       `json:"claim_type"`
 }
 
@@ -46,7 +46,7 @@ type burnOrLockEthReq struct {
 	TokenContract    string       `json:"token_contract_address"`
 	CosmosSender     string       `json:"cosmos_sender"`
 	EthereumReceiver string       `json:"ethereum_receiver"`
-	Amount           int64        `json:"amount"`
+	Amount           sdk.Int      `json:"amount"`
 	Symbol           string       `json:"symbol"`
 }
 
