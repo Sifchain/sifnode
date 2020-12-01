@@ -6,7 +6,7 @@ SHELL := /bin/bash
 # `make slither`
 slither:
 	source ./venv/bin/activate
-	pip install -r requirements.txt
+	pip3 install -r requirements.txt
 	yarn
 	slither .
 
@@ -14,7 +14,7 @@ slither:
 # `make slither-pretty-summary`
 slither-pretty-summary:
 	source ./venv/bin/activate
-	pip install -r requirements.txt
+	pip3 install -r requirements.txt
 	yarn
 	slither . --print human-summary
 
@@ -22,6 +22,6 @@ slither-pretty-summary:
 # `make conformance CONTRACT=./contracts/ContractFile.sol CONTRACT_NAME=ContractName`
 erc-conformance:
 	source ./venv/bin/activate
-	pip install -r requirements.txt
+	pip3 install -r requirements.txt
 	yarn
 	slither-check-erc ${CONTRACT} ${CONTRACT_NAME}
