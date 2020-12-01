@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 	"strings"
 )
 
@@ -11,6 +12,8 @@ type Asset struct {
 	Symbol      string `json:"symbol"`
 	Ticker      string `json:"ticker"`
 }
+
+type Assets []Asset
 
 // NewAsset returns a new Asset
 func NewAsset(sourceChain string, symbol string, ticker string) Asset {
@@ -67,4 +70,8 @@ func GetSettlementAsset() Asset {
 		Ticker:      NativeTicker,
 	}
 
+}
+
+func GetCLPModuleAddress() sdk.AccAddress {
+	return supply.NewModuleAddress(ModuleName)
 }

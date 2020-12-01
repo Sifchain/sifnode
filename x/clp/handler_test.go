@@ -15,6 +15,7 @@ func TestHandler(t *testing.T) {
 	res, err := handler(ctx, nil)
 	require.Error(t, err)
 	require.Nil(t, res)
+
 }
 
 func TestCreatePool(t *testing.T) {

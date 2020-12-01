@@ -27,6 +27,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	clpQueryCmd.AddCommand(flags.GetCommands(
 		GetCmdPool(queryRoute, cdc),
 		GetCmdPools(queryRoute, cdc),
+		GetCmdAssets(queryRoute, cdc),
 		GetCmdLiquidityProvider(queryRoute, cdc),
 	)...)
 	return clpQueryCmd
@@ -82,6 +83,36 @@ func GetCmdPools(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			var pools types.Pools
 			cdc.MustUnmarshalJSON(res, &pools)
 			out := types.NewPoolsResponse(pools, height)
+			return cliCtx.PrintOutput(out)
+		},
+	}
+}
+
+func GetCmdAssets(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "assets [lpAddress]",
+		Short: "Get all assets for a liquidity provider ",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			lpAddressString := args[0]
+			lpAddress, err := sdk.AccAddressFromBech32(lpAddressString)
+			if err != nil {
+				return err
+			}
+			params := types.NewQueryReqGetAssetList(lpAddress)
+			bz, err := cliCtx.Codec.MarshalJSON(params)
+			if err != nil {
+				return err
+			}
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryAssetList)
+			res, height, err := cliCtx.QueryWithData(route, bz)
+			if err != nil {
+				return err
+			}
+			var assetList types.Assets
+			cdc.MustUnmarshalJSON(res, &assetList)
+			out := types.NewAssetListResponse(assetList, height)
 			return cliCtx.PrintOutput(out)
 		},
 	}

@@ -161,23 +161,12 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	eventLogLockSignature := bridgeBankContractABI.Events[types.LogLock.String()].ID().Hex()
 	eventLogBurnSignature := bridgeBankContractABI.Events[types.LogBurn.String()].ID().Hex()
 
-	// Start CosmosBridge subscription, prepare contract ABI and LogNewProphecyClaim event signature
-	cosmosBridgeAddress, subCosmosBridge := sub.startContractEventSub(logs, client, txs.CosmosBridge)
-	defer subCosmosBridge.Unsubscribe()
-	cosmosBridgeContractABI := contract.LoadABI(txs.CosmosBridge)
-	eventLogNewProphecyClaimSignature := cosmosBridgeContractABI.Events[types.LogNewProphecyClaim.String()].ID().Hex()
-
 	for {
 		select {
 		// Handle any errors
 		case <-quit:
 			return
 		case err := <-subBridgeBank.Err():
-			sub.Logger.Error(err.Error())
-			completionEvent.Add(1)
-			go sub.Start(completionEvent)
-			return
-		case err := <-subCosmosBridge.Err():
 			sub.Logger.Error(err.Error())
 			completionEvent.Add(1)
 			go sub.Start(completionEvent)
@@ -195,9 +184,6 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				log.Println("Found loglock event from the ethereum bridgebank contract: ", types.LogLock.String())
 				err = sub.handleEthereumEvent(clientChainID, bridgeBankAddress, bridgeBankContractABI,
 					types.LogLock.String(), vLog)
-			case eventLogNewProphecyClaimSignature:
-				err = sub.handleLogNewProphecyClaim(cosmosBridgeAddress, cosmosBridgeContractABI,
-					types.LogNewProphecyClaim.String(), vLog)
 			}
 			// TODO: Check local events store for status, if retryable, attempt relay again
 			if err != nil {
@@ -259,23 +245,4 @@ func (sub EthereumSub) handleEthereumEvent(clientChainID *big.Int, contractAddre
 		return err
 	}
 	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, &prophecyClaim, sub.CliCtx, sub.TxBldr)
-}
-
-// Unpacks a handleLogNewProphecyClaim event, builds a new OracleClaim, and relays it to Ethereum
-func (sub EthereumSub) handleLogNewProphecyClaim(contractAddress common.Address, contractABI abi.ABI,
-	eventName string, cLog ctypes.Log) error {
-	// Parse the event's attributes via contract ABI
-	event := types.ProphecyClaimEvent{}
-	err := contractABI.Unpack(&event, eventName, cLog.Data)
-	if err != nil {
-		sub.Logger.Error("error unpacking: %v", err)
-	}
-	sub.Logger.Info(event.String())
-
-	oracleClaim, err := txs.ProphecyClaimToSignedOracleClaim(event, sub.PrivateKey)
-	if err != nil {
-		return err
-	}
-	return txs.RelayOracleClaimToEthereum(sub.EthProvider, contractAddress, types.LogNewProphecyClaim,
-		oracleClaim, sub.PrivateKey)
 }

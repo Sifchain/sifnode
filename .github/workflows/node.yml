@@ -50,7 +50,7 @@ jobs:
           CI: true
 
       - name: Build test chains
-        run: yarn build
+        run: yarn chain:build && yarn build
         env:
           CI: true
 

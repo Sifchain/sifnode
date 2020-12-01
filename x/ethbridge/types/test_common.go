@@ -20,12 +20,15 @@ const (
 	TestTokenContractAddress  = "0x0000000000000000000000000000000000000000"
 	TestEthereumAddress       = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207359"
 	AltTestEthereumAddress    = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207344"
-	TestCoinsAmount           = 10
 	TestCoinsSymbol           = "eth"
 	TestCoinsLockedSymbol     = "ceth"
 	AltTestCoinsAmount        = 12
 	AltTestCoinsSymbol        = "eth"
+	TestCoinIntAmount         = 10
 )
+
+var TestCoinsAmount = sdk.NewInt(10)
+var AltTestCoinsAmountSDKInt = sdk.NewInt(12)
 
 //Ethereum-bridge specific stuff
 func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType ClaimType) MsgCreateEthBridgeClaim {
@@ -41,7 +44,7 @@ func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType C
 
 func CreateTestEthClaim(
 	t *testing.T, testContractAddress EthereumAddress, testTokenAddress EthereumAddress,
-	validatorAddress sdk.ValAddress, testEthereumAddress EthereumAddress, amount int64, symbol string, claimType ClaimType,
+	validatorAddress sdk.ValAddress, testEthereumAddress EthereumAddress, amount sdk.Int, symbol string, claimType ClaimType,
 ) EthBridgeClaim {
 	testCosmosAddress, err1 := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err1)
@@ -52,7 +55,7 @@ func CreateTestEthClaim(
 }
 
 func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver EthereumAddress,
-	coinsAmount int64, coinsSymbol string) MsgBurn {
+	coinsAmount sdk.Int, coinsSymbol string) MsgBurn {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
 	burnEth := NewMsgBurn(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol)
@@ -60,7 +63,7 @@ func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 }
 
 func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver EthereumAddress,
-	coinsAmount int64, coinsSymbol string) MsgLock {
+	coinsAmount sdk.Int, coinsSymbol string) MsgLock {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
 	lockEth := NewMsgLock(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol)

@@ -56,7 +56,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 		withdrawNativeCoins := sdk.NewCoin(GetSettlementAsset().Ticker, sdk.NewIntFromUint64(withdrawNativeAsset.Uint64()))
 		withdrawExternalCoins := sdk.NewCoin(msg.Ticker, sdk.NewIntFromUint64(withdrawExternalAsset.Uint64()))
 		refundingCoins := sdk.Coins{withdrawExternalCoins, withdrawNativeCoins}
-		err := keeper.RemoveLiquidityProvider(ctx, refundingCoins, pool, lp)
+		err := keeper.RemoveLiquidityProvider(ctx, refundingCoins, lp)
 		if err != nil {
 			return nil, errors.Wrap(types.ErrUnableToRemoveLiquidityProvider, err.Error())
 		}
@@ -271,12 +271,9 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// Case 1 . Deducting his RWN and adding to RWN:ETH pool
 	// Case 2 , Deduction his ETH and adding to RWN:ETH pool
 	sentCoin := sdk.NewCoin(msg.SentAsset.Ticker, sdk.NewIntFromUint64(sentAmount.Uint64()))
-	if !keeper.HasCoins(ctx, msg.Signer, sdk.Coins{sentCoin}) {
-		return nil, types.ErrBalanceNotAvailable
-	}
-	err = keeper.SendCoins(ctx, msg.Signer, inPool.PoolAddress, sdk.Coins{sentCoin})
+	err = keeper.InitiateSwap(ctx, sentCoin, msg.Signer)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 	}
 	// Check if its a two way swap, swapping non native fro non native .
 	// If its one way we can skip this if condition and add balance to users account from outpool
@@ -294,19 +291,13 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		sentAsset = nativeAsset
 		liquidityFee = liquidityFee.Add(lp)
 		tradeSlip = tradeSlip.Add(ts)
-		interpoolCoin := sdk.NewCoin(nativeAsset.Ticker, sdk.NewIntFromUint64(emitAmount.Uint64()))
-		// Case 2 - Transfer from RWN:ETH -> RWN:DASH
-		err = keeper.SendCoins(ctx, outPool.PoolAddress, inPool.PoolAddress, sdk.Coins{interpoolCoin})
-		if err != nil {
-			return nil, errors.Wrap(types.ErrUnableToAddBalance, err.Error())
-		}
 	}
 	// Calculating amount user receives
 	emitAmount, lp, ts, finalPool, err := SwapOne(sentAsset, sentAmount, receivedAsset, outPool)
 	if err != nil {
 		return nil, err
 	}
-	err = keeper.FinalizeSwap(ctx, sentAmount, finalPool, outPool, msg)
+	err = keeper.FinalizeSwap(ctx, sentAmount, finalPool, msg)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 	}

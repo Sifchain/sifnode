@@ -51,7 +51,7 @@ func TestBasicMsgs(t *testing.T) {
 			case "cosmos_receiver":
 				require.Equal(t, value, types.TestAddress)
 			case "amount":
-				require.Equal(t, value, strconv.FormatInt(types.TestCoinsAmount, 10))
+				require.Equal(t, value, strconv.FormatInt(10, 10))
 			case "symbol":
 				require.Equal(t, value, types.TestCoinsSymbol)
 			case "token_contract_address":
@@ -120,7 +120,7 @@ func TestMintSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetCoins(ctx, receiverAddress)
-	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinsAmount)}
+	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
@@ -138,7 +138,7 @@ func TestMintSuccess(t *testing.T) {
 	require.Nil(t, res)
 	require.True(t, strings.Contains(err.Error(), "prophecy already finalized"))
 	receiverCoins = bankKeeper.GetCoins(ctx, receiverAddress)
-	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinsAmount)}
+	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 }
 
@@ -163,7 +163,7 @@ func TestNoMintFail(t *testing.T) {
 	ethMsg2 := NewMsgCreateEthBridgeClaim(ethClaim2)
 	ethClaim3 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
-		valAddressVal3Pow3, testEthereumAddress, types.AltTestCoinsAmount, types.AltTestCoinsSymbol, types.LockText)
+		valAddressVal3Pow3, testEthereumAddress, types.AltTestCoinsAmountSDKInt, types.AltTestCoinsSymbol, types.LockText)
 	ethMsg3 := NewMsgCreateEthBridgeClaim(ethClaim3)
 
 	//Initial message
@@ -222,7 +222,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	moduleAccountAddress := moduleAccount.GetAddress()
 
 	// Initial message to mint some eth
-	coinsToMintAmount := int64(7)
+	coinsToMintAmount := sdk.NewInt(7)
 	coinsToMintSymbol := "ether"
 	coinsToMintSymbolLocked := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, coinsToMintSymbol)
 
@@ -241,10 +241,10 @@ func TestBurnEthSuccess(t *testing.T) {
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetCoins(ctx, receiverAddress)
-	mintedCoins := sdk.Coins{sdk.NewInt64Coin(coinsToMintSymbolLocked, coinsToMintAmount)}
+	mintedCoins := sdk.Coins{sdk.NewCoin(coinsToMintSymbolLocked, coinsToMintAmount)}
 	require.True(t, receiverCoins.IsEqual(mintedCoins))
 
-	coinsToBurnAmount := int64(3)
+	coinsToBurnAmount := sdk.NewInt(3)
 	coinsToBurnSymbol := "ether"
 	coinsToBurnSymbolPrefixed := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, coinsToBurnSymbol)
 
@@ -257,12 +257,14 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	senderAddress := receiverAddress
-	burnedCoins := sdk.Coins{sdk.NewInt64Coin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}
+	burnedCoins := sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}
+	senderSequence := "0"
 	remainingCoins := mintedCoins.Sub(burnedCoins)
 	senderCoins := bankKeeper.GetCoins(ctx, senderAddress)
 	require.True(t, senderCoins.IsEqual(remainingCoins))
 	eventEthereumChainID := ""
 	eventCosmosSender := ""
+	eventCosmosSenderSequence := ""
 	eventEthereumReceiver := ""
 	eventAmount := ""
 	eventSymbol := ""
@@ -281,6 +283,8 @@ func TestBurnEthSuccess(t *testing.T) {
 				eventEthereumChainID = value
 			case "cosmos_sender":
 				eventCosmosSender = value
+			case "cosmos_sender_sequence":
+				eventCosmosSenderSequence = value
 			case "ethereum_receiver":
 				eventEthereumReceiver = value
 			case "amount":
@@ -296,10 +300,11 @@ func TestBurnEthSuccess(t *testing.T) {
 	}
 	require.Equal(t, eventEthereumChainID, strconv.Itoa(types.TestEthereumChainID))
 	require.Equal(t, eventCosmosSender, senderAddress.String())
+	require.Equal(t, eventCosmosSenderSequence, senderSequence)
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
-	require.Equal(t, eventAmount, strconv.FormatInt(coinsToBurnAmount, 10))
+	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
-	require.Equal(t, eventCoins, sdk.Coins{sdk.NewInt64Coin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
+	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
 
 	// Third message succeeds, burns more eth and fires correct event
 	lockMsg := types.CreateTestLockMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,
@@ -312,6 +317,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.True(t, senderCoins.IsEqual(remainingCoins))
 	eventEthereumChainID = ""
 	eventCosmosSender = ""
+	eventCosmosSenderSequence = ""
 	eventEthereumReceiver = ""
 	eventAmount = ""
 	eventSymbol = ""
@@ -328,9 +334,10 @@ func TestBurnEthSuccess(t *testing.T) {
 				require.Equal(t, value, ModuleName)
 			case "ethereum_chain_id":
 				eventEthereumChainID = value
-
 			case "cosmos_sender":
 				eventCosmosSender = value
+			case "cosmos_sender_sequence":
+				eventCosmosSenderSequence = value
 			case "ethereum_receiver":
 				eventEthereumReceiver = value
 			case "amount":
@@ -346,10 +353,11 @@ func TestBurnEthSuccess(t *testing.T) {
 	}
 	require.Equal(t, eventEthereumChainID, strconv.Itoa(types.TestEthereumChainID))
 	require.Equal(t, eventCosmosSender, senderAddress.String())
+	require.Equal(t, eventCosmosSenderSequence, senderSequence)
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
-	require.Equal(t, eventAmount, strconv.FormatInt(coinsToBurnAmount, 10))
+	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
-	require.Equal(t, eventCoins, sdk.Coins{sdk.NewInt64Coin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
+	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
 
 	// Fourth message fails, not enough eth
 	res, err = handler(ctx, burnMsg)
