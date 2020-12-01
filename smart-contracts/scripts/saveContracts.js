@@ -47,7 +47,6 @@ function handleFileContents(filename, content) {
     try {
         content = JSON.parse(content)
         if (!content.networks) {
-            console.error("No network config found for " + filename + " this file will not be saved.");
             return ;
         }
         const networkArray = Object.keys(content.networks)
