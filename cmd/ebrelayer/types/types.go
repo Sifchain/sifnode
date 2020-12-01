@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Event enum containing supported chain events
@@ -59,7 +60,7 @@ type ProphecyClaimEvent struct {
 	CosmosSender     []byte
 	Symbol           string
 	ProphecyID       *big.Int
-	Amount           *big.Int
+	Amount           sdk.Int
 	EthereumReceiver common.Address
 	ValidatorAddress common.Address
 	TokenAddress     common.Address
@@ -67,7 +68,7 @@ type ProphecyClaimEvent struct {
 }
 
 // NewProphecyClaimEvent creates a new ProphecyClaimEvent
-func NewProphecyClaimEvent(cosmosSender []byte, symbol string, prophecyID, amount *big.Int, ethereumReceiver,
+func NewProphecyClaimEvent(cosmosSender []byte, symbol string, prophecyID *big.Int, amount sdk.Int, ethereumReceiver,
 	validatorAddress, tokenAddress common.Address, claimType uint8) ProphecyClaimEvent {
 	return ProphecyClaimEvent{
 		CosmosSender:     cosmosSender,
@@ -91,17 +92,17 @@ func (p ProphecyClaimEvent) String() string {
 
 // CosmosMsg contains data from MsgBurn and MsgLock events
 type CosmosMsg struct {
-	CosmosSender         []byte
-	CosmosSenderSequence *big.Int
-	Symbol               string
-	Amount               *big.Int
-	EthereumReceiver     common.Address
-	ClaimType            Event
+	CosmosSender          []byte
+  	CosmosSenderSequence  *big.Int
+	Symbol                string
+	Amount                sdk.Int
+	EthereumReceiver      common.Address
+	ClaimType             Event
 }
 
 // NewCosmosMsg creates a new CosmosMsg
 func NewCosmosMsg(claimType Event, cosmosSender []byte, cosmosSenderSequence *big.Int, ethereumReceiver common.Address, symbol string,
-	amount *big.Int) CosmosMsg {
+	amount sdk.Int) CosmosMsg {
 	return CosmosMsg{
 		ClaimType:            claimType,
 		CosmosSender:         cosmosSender,

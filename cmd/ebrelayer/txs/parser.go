@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math/big"
 	"strings"
+	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -63,7 +63,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event *types.Ethereum
 		symbol = strings.Join(res[1:], "")
 	}
 
-	amount := event.Value.Int64()
+	amount := sdk.NewIntFromBigInt(event.Value)
 
 	// Nonce type casting (*big.Int -> int)
 	nonce := int(event.Nonce.Int64())
@@ -133,7 +133,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 	var cosmosSenderSequence *big.Int
 	var ethereumReceiver common.Address
 	var symbol string
-	var amount *big.Int
+	var amount sdk.Int
 
 	for _, attribute := range attributes {
 		key := string(attribute.GetKey())
@@ -169,8 +169,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 				symbol = strings.ToUpper(val)
 			}
 		case types.Amount.String():
-			tempAmount := new(big.Int)
-			tempAmount, ok := tempAmount.SetString(val, 10)
+			tempAmount, ok := sdk.NewIntFromString(val)
 			if !ok {
 				log.Println("Invalid amount:", val)
 				return types.CosmosMsg{}, errors.New("invalid amount:" + val)

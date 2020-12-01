@@ -19,7 +19,7 @@ CLAIMBURN = "burn"
 
 ETH_OPERATOR = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57"
 ETH_ACCOUNT = "0xf17f52151EbEF6C7334FAD080c5704D77216b732"
-BRIDGE_CONTRACT = "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4"
+BRIDGE_CONTRACT = "0x75c35C980C0d37ef46DF04d31A140b65503c0eEd"
 ROWAN_CONTRACT = "0x409Ba3dd291bb5D48D5B4404F5EFa207441F6CbA"
 
 GOTO_TESTNET_FOLDER = "cd ../smart-contracts/;\n"
@@ -161,7 +161,7 @@ def test_case_2():
     contract_balance_before_tx = int(get_eth_balance(BRIDGE_CONTRACT, ETH))
     balance_before_tx = int(get_balance(USER, PEGGYETH))
     print("Before lock transaction {}'s balance of {} is {}".format(
-        ETH_OPERATOR, ETH, operator_balance_before_tx))
+        ETH_ACCOUNT, ETH, operator_balance_before_tx))
     print("Before lock transaction contract {}'s balance of {} is {}".format(
         BRIDGE_CONTRACT, ETH, contract_balance_before_tx))
     print("Before burn transaction {}'s balance of {} is {}".format(
@@ -247,7 +247,7 @@ def test_case_4():
     print("########## Test Case Four Over ##########")
 
 
-# test_case_1()
-# test_case_2()
+test_case_1()
+test_case_2()
 test_case_3()
 test_case_4()
