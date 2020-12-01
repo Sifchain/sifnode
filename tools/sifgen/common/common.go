@@ -17,6 +17,10 @@ var (
 	DefaultNodeHome = app.DefaultNodeHome
 	DefaultCLIHome  = app.DefaultCLIHome
 	StakeTokenDenom = types.StakeTokenDenom
+
+	MaxNumInboundPeers  = 1000
+	MaxNumOutboundPeers = 1000
+	AllowDuplicateIP    = true
 )
 
 var (

@@ -290,7 +290,15 @@ func (n *Node) parseConfig() (common.NodeConfig, error) {
 		return config, err
 	}
 
+	n.updateConfigDefaults(&config)
+
 	return config, nil
+}
+
+func (n *Node) updateConfigDefaults(config *common.NodeConfig) {
+	config.P2P.MaxNumInboundPeers = common.MaxNumInboundPeers
+	config.P2P.MaxNumOutboundPeers = common.MaxNumOutboundPeers
+	config.P2P.AllowDuplicateIP = common.AllowDuplicateIP
 }
 
 func (n *Node) summary() string {
