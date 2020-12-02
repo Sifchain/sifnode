@@ -23,6 +23,7 @@ image:
 sifnode:
   env:
     chainnet:
+    moniker:
     sifId: sifchain
     genesisURL:
     peerAddress:

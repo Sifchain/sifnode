@@ -49,19 +49,22 @@ func Reset(chainID string, nodeDir *string) error {
 	return nil
 }
 
-func NewNode(chainID string, mnemonic, peerAddress, genesisURL *string) *Node {
+func NewNode(chainID string, moniker, mnemonic, peerAddress, genesisURL *string) *Node {
 	password, _ := password.Generate(32, 5, 0, false, false)
-	name := haikunator.New(time.Now().UTC().UnixNano()).Haikunate()
+	if moniker == nil {
+		name := haikunator.New(time.Now().UTC().UnixNano()).Haikunate()
+		moniker = &name
+	}
 
 	return &Node{
 		ChainID:     chainID,
 		PeerAddress: peerAddress,
 		GenesisURL:  genesisURL,
-		Moniker:     name,
+		Moniker:     *moniker,
 		Password:    password,
 		Mnemonic:    mnemonic,
 		CLI:         utils.NewCLI(chainID),
-		Key:         key.NewKey(&name, &password),
+		Key:         key.NewKey(moniker, &password),
 	}
 }
 

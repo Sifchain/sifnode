@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/Sifchain/sifnode/tools/sifgen/key"
@@ -42,19 +41,13 @@ func (s Sifgen) NetworkReset(networkDir string) {
 	}
 }
 
-func (s Sifgen) NodeCreate(mnemonic, peerAddress, genesisURL *string) {
-	witness := node.NewNode(*s.chainID, mnemonic, peerAddress, genesisURL)
-	summary, err := witness.Build()
+func (s Sifgen) NodeCreate(moniker, mnemonic, peerAddress, genesisURL *string) {
+	witness := node.NewNode(*s.chainID, moniker, mnemonic, peerAddress, genesisURL)
+	_, err := witness.Build()
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-
-	tmpFile, _ := ioutil.TempFile(os.TempDir(), "sif-")
-	_, _ = tmpFile.Write([]byte(*summary))
-	_ = tmpFile.Close()
-
-	fmt.Printf("output saved to %v", tmpFile.Name())
 }
 
 func (s Sifgen) NodeReset(nodeHomeDir *string) {
