@@ -1,0 +1,19 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - feature/add-slither-to-ci
+
+jobs:
+  slither:
+    name: slither
+    runs-on: ubuntu-latest
+    steps:
+      - name: run slither
+        run: |
+          cd ./smart-contracts
+          make slither
