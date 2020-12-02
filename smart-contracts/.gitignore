@@ -1,4 +1,5 @@
 build/
+.openzeppelin/
 node_modules/
 flat/
 .env

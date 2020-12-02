@@ -1,3 +1,5 @@
+. ../credentials.sh
+
 # if we don't sleep there are issues
 sleep 10
 

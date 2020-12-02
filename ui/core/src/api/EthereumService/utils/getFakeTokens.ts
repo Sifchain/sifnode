@@ -1,25 +1,5 @@
 import { Asset, Network, Coin, Token } from "../../../entities";
 
-// Parse Truffle json for the most recent address
-function parseTruffleJson(
-  name: string,
-  symbol: string,
-  jobj: {
-    networks: { [s: string]: { address: string } };
-  }
-) {
-  const entries = Object.entries(jobj.networks);
-  const [last] = entries.slice(-1);
-  const { address } = last[1];
-  return Token({
-    symbol,
-    decimals: 6,
-    name,
-    network: Network.ETHEREUM,
-    address,
-  });
-}
-
 // The reason we have to get fake tokens instead of just loading up a
 // json list is that everytime truffle compiles we have new addresses
 // and we need to keep track of that
@@ -34,11 +14,20 @@ export async function getFakeTokens(): Promise<Asset[]> {
     network: Network.ETHEREUM,
   });
 
-  // gonna load the json and parse the code for all our fake tokens
-  const atkJson = require("./AliceToken");
-  const btkJson = require("./BobToken");
-  const ATK = parseTruffleJson("AliceToken", "atk", atkJson);
-  const BTK = parseTruffleJson("BobToken", "btk", btkJson);
+  const ATK = Token({
+    symbol: "atk",
+    decimals: 6,
+    name: "AliceToken",
+    network: Network.ETHEREUM,
+    address: "0xbaAA2a3237035A2c7fA2A33c76B44a8C6Fe18e87", // NOTE: address dependent on ganache seed and migration order
+  });
+  const BTK = Token({
+    symbol: "btk",
+    decimals: 6,
+    name: "BobToken",
+    network: Network.ETHEREUM,
+    address: "0x13274Fe19C0178208bCbee397af8167A7be27f6f", // NOTE: address dependent on ganache seed and migration order
+  });
 
   const CBTK = Coin({
     symbol: "cbtk",

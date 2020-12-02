@@ -1,6 +1,7 @@
 import { RWN } from "../../constants";
 import { Asset, AssetAmount, Pool } from "../../entities";
 import { Fraction } from "../../entities/fraction/Fraction";
+import { makeQueryablePromise } from "../utils/makeQueriablePromise";
 import { SifUnSignedClient } from "../utils/SifClient";
 import { RawPool } from "../utils/x/clp";
 
@@ -14,20 +15,6 @@ function toAssetSymbol(assetOrString: Asset | string) {
   return typeof assetOrString === "string"
     ? assetOrString
     : assetOrString.symbol;
-}
-
-function makeQuerablePromise<T>(promise: Promise<T>) {
-  let isResolved = false;
-
-  promise.then(() => {
-    isResolved = true;
-  });
-
-  return {
-    isResolved() {
-      return isResolved;
-    },
-  };
 }
 
 function processPool(poolData: RawPool) {
@@ -55,7 +42,7 @@ export default function createMarketService({
     instance.getPools();
   }
 
-  const pairsGenerated = makeQuerablePromise(initialize());
+  const pairsGenerated = makeQueryablePromise(initialize());
 
   const instance = {
     async getPools() {
