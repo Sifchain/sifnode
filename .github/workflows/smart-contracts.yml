@@ -29,5 +29,8 @@ jobs:
       - name: Install truffle
         run: npm i -g truffle
 
+      - name: Test Setup
+        run: npm run test:setup
+
       - name: Run truffle tests
-        run: npm test
+        run: npm run test
