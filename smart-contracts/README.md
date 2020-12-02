@@ -65,7 +65,7 @@ Expected output of the test suite:
 
 * Python 3.4 or newer
 
-To run [slither]([)](https://github.com/crytic/slither) over all smart contracts you can run `make slither` in this directory. 
+To run [slither](https://github.com/crytic/slither) over all smart contracts you can run `make slither` in this directory. 
 
 ## Security, Privacy, Risks
 
