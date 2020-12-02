@@ -15,6 +15,10 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get install python3-setuptools
 
       - name: Run Slither
         run: |
