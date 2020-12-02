@@ -200,7 +200,7 @@ data "kustomization" "ebs_manifests" {
 }
 
 resource "kustomization_resource" "efs_csi_driver" {
-  for_each = data.kustomization.efs_manifests.ids
+  for_each = var.cluster_version >= 1.17 ? [] : data.kustomization.efs_manifests.ids
   manifest = data.kustomization.efs_manifests.manifests[each.value]
   lifecycle {
       ignore_changes = all
