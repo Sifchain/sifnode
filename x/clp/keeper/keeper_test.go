@@ -76,7 +76,7 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Ticker, lp.LiquidityProviderAddress.String())
 	assert.NoError(t, err, "Error in get liquidityProvider")
 	assert.Equal(t, getlp, lp)
-	lpList := keeper.GetLiqudityProvidersForAsset(ctx, lp.Asset)
+	lpList := keeper.GetLiquidityProvidersForAsset(ctx, lp.Asset)
 	assert.Equal(t, lp, lpList[0])
 }
 
