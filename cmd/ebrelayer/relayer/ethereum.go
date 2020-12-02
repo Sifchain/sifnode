@@ -54,6 +54,7 @@ type EthereumSub struct {
 	Logger                  tmLog.Logger
 }
 
+// NewKeybase create a new keybase instance
 func NewKeybase(validatorMoniker, mnemonic, password string) (keys.Keybase, keys.Info, error) {
 	keybase := keys.NewInMemory()
 	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
@@ -199,7 +200,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			// Iterate find out older enough events
 			for key, value := range sub.EventsBuffer.Buffer {
 				sub.Logger.Info(fmt.Sprintf("New header is %d stored header is %d", newHead.Number, key))
-				tmpKey := big.NewInt(10)
+				tmpKey := big.NewInt(30)
 				tmpKey.Add(tmpKey, key)
 				// event happened 30 blocks ago
 				if newHead.Number.Cmp(tmpKey) > 0 {
