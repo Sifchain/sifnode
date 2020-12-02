@@ -65,6 +65,14 @@ Expected output of the test suite:
 
 * Python 3.4 or newer
 
+#### Configuration
+
+`slither.config.json` contains various configurations on what severity of issue should be reported and which detectors should be included or excluded. 
+
+`slither.db.json` contains a generated config from `slither . --triage` which lets us excluded false positives. If you generate a new `db.json`, please delete all key/value pairs related to the local computer (/home/{user}/foo/bar) - the file will still. 
+
+#### Run
+
 To run [slither](https://github.com/crytic/slither) over all smart contracts you can run `make slither` in this directory. 
 
 ## Security, Privacy, Risks
