@@ -88,6 +88,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
 	// Verify min threshold
 	MinThreshold := sdk.NewUint(uint64(keeper.GetParams(ctx).MinCreatePoolThreshold))
+
 	if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
 		return nil, types.ErrTotalAmountTooLow
 	}
