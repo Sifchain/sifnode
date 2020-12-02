@@ -22,12 +22,12 @@ jobs:
           node-version: '14.x'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --silent
+        run: npm install
         env:
           CI: true
 
       - name: Install truffle
-        run: yarn global add truffle
+        run: npm i -g truffle
 
       - name: Run truffle tests
-        run: yarn test
+        run: npm test
