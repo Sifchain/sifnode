@@ -3,8 +3,6 @@ name: Smart Contracts
 on:
   pull_request:
     paths: ['smart-contracts/**']
-  push:
-    paths: ['smart-contracts/**']
 
 jobs:
   test:
