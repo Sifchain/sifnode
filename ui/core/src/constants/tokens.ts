@@ -1,698 +1,727 @@
-import { ChainId, createCoin, createToken } from "../entities";
-
-// This should all probably be relocated to a token service a JSON or built off proper data sources
-
-export const ETH = createCoin("ETH", 18, "Etherium", ChainId.ETHEREUM);
-export const ROWAN = createCoin("ROWAN", 2, "Rowan", ChainId.SIFCHAIN);
-export const NCN = createCoin("nametoken", 0, "nametoken", ChainId.SIFCHAIN);
-
-export const ZRX = createToken(
-  "ZRX",
-  6,
-  "0x",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const AAVE = createToken(
-  "AAVE",
-  6,
-  "Aave [New]",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const ELF = createToken(
-  "ELF",
-  6,
-  "elf",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const AION = createToken(
-  "AION",
-  6,
-  "Aion",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const AMPL = createToken(
-  "AMPL",
-  6,
-  "Ampleforth",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const ANKR = createToken(
-  "ANKR",
-  6,
-  "Ankr",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const ANT = createToken(
-  "ANT",
-  6,
-  "Aragon",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const BAL = createToken(
-  "BAL",
-  6,
-  "Balancer",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const BNANA = createToken(
-  "BNANA",
-  6,
-  "Chimpion",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const BNT = createToken(
-  "BNT",
-  6,
-  "Bancor Network Token",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const BAND = createToken(
-  "BAND",
-  6,
-  "Band Protocol",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const BAT = createToken(
-  "BAT",
-  6,
-  "Basic Attention Token",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const BNB = createToken(
-  "BNB",
-  6,
-  "Binance Coin",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const BUSD = createToken(
-  "BUSD",
-  6,
-  "Binance USD",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const BTMX = createToken(
-  "BTMX",
-  6,
-  "Bitmax Token",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const BTM = createToken(
-  "BTM",
-  6,
-  "Bytom",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const CEL = createToken(
-  "CEL",
-  6,
-  "Celsius Network",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const LINK = createToken(
-  "LINK",
-  6,
-  "Chainlink",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const CHZ = createToken(
-  "CHZ",
-  6,
-  "Chiliz",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const COMP = createToken(
-  "COMP",
-  6,
-  "Compound",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const CRO = createToken(
-  "CRO",
-  6,
-  "Crypto.com Coin",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const CRV = createToken(
-  "CRV",
-  6,
-  "Curve DAO Token",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const DAI = createToken(
-  "DAI",
-  6,
-  "Dai",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const MANA = createToken(
-  "MANA",
-  6,
-  "Decentraland",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const DX = createToken(
-  "DX",
-  6,
-  "DxChain Token",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const ENG = createToken(
-  "ENG",
-  6,
-  "Enigma",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const ENJ = createToken(
-  "ENJ",
-  6,
-  "Enjin Coin",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const LEND = createToken(
-  "LEND",
-  6,
-  "Aave",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const FTM = createToken(
-  "FTM",
-  6,
-  "Fantom",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const FET = createToken(
-  "FET",
-  6,
-  "FirstEnergy Token",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const GNO = createToken(
-  "GNO",
-  6,
-  "Gnosis",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const GNT = createToken(
-  "GNT",
-  6,
-  "Golem",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const ONE = createToken(
-  "ONE",
-  6,
-  "One Hundred Coin",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const SNX = createToken(
-  "SNX",
-  6,
-  "Synthetix Network Token",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const HOT = createToken(
-  "HOT",
-  6,
-  "Hydro Protocol",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const HT = createToken(
-  "HT",
-  6,
-  "Huobi Token",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const HUSD = createToken(
-  "HUSD",
-  6,
-  "HUSD",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const RLC = createToken(
-  "RLC",
-  6,
-  "iExec RLC",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const IOST = createToken(
-  "IOST",
-  6,
-  "IOST",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const IOTX = createToken(
-  "IOTX",
-  6,
-  "IoTeX",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const KEEP = createToken(
-  "KEEP",
-  6,
-  "Keep Network",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const KCS = createToken(
-  "KCS",
-  6,
-  "KuCoin Shares",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const KNC = createToken(
-  "KNC",
-  6,
-  "Kyber Network",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const LEO = createToken(
-  "LEO",
-  6,
-  "LEO Token",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const LPT = createToken(
-  "LPT",
-  6,
-  "Livepeer",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const LRC = createToken(
-  "LRC",
-  6,
-  "Loopring",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const MKR = createToken(
-  "MKR",
-  6,
-  "Maker",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const MATIC = createToken(
-  "MATIC",
-  6,
-  "Matic Network",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const MCO = createToken(
-  "MCO",
-  6,
-  "MCO",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const MXC = createToken(
-  "MXC",
-  6,
-  "MXC",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const NEXO = createToken(
-  "NEXO",
-  6,
-  "NEXO",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const NMR = createToken(
-  "NMR",
-  6,
-  "Numeraire",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const NXM = createToken(
-  "NXM",
-  6,
-  "Nexus Mutual",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const OCEAN = createToken(
-  "OCEAN",
-  6,
-  "Ocean Protocol",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const OKB = createToken(
-  "OKB",
-  6,
-  "OKB",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const OMG = createToken(
-  "OMG",
-  6,
-  "OMG Network",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const TRAC = createToken(
-  "TRAC",
-  6,
-  "OriginTrail",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const PAXG = createToken(
-  "PAXG",
-  6,
-  "PAX Gold",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const PAX = createToken(
-  "PAX",
-  6,
-  "PayperEx",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const NPXS = createToken(
-  "NPXS",
-  6,
-  "Pundi X",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const QNT = createToken(
-  "QNT",
-  6,
-  "Quant",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const REN = createToken(
-  "REN",
-  6,
-  "REN",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const RSR = createToken(
-  "RSR",
-  6,
-  "Reserve Rights Token",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const RPL = createToken(
-  "RPL",
-  6,
-  "Rocket Pool",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const SRM = createToken(
-  "SRM",
-  6,
-  "Serum",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const AGI = createToken(
-  "AGI",
-  6,
-  "SingularityNET",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const EURS = createToken(
-  "EURS",
-  6,
-  "STASIS EURO",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const SNT = createToken(
-  "SNT",
-  6,
-  "Status",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const STORJ = createToken(
-  "STORJ",
-  6,
-  "Storj",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const SUSHI = createToken(
-  "SUSHI",
-  6,
-  "Sushi",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const SXP = createToken(
-  "SXP",
-  6,
-  "Swipe",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const CHSB = createToken(
-  "CHSB",
-  6,
-  "SwissBorg",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const USDT = createToken(
-  "USDT",
-  6,
-  "Tether",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const THETA = createToken(
-  "THETA",
-  6,
-  "Theta Network",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const TUSD = createToken(
-  "TUSD",
-  6,
-  "TrueUSD",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const UMA = createToken(
-  "UMA",
-  6,
-  "UMA",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const UBT = createToken(
-  "UBT",
-  6,
-  "Unibright",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const UNI = createToken(
-  "UNI",
-  6,
-  "UNIVERSE Token",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const UQC = createToken(
-  "UQC",
-  6,
-  "Uquid Coin",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const USDC = createToken(
-  "USDC",
-  6,
-  "USD Coin",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const UTK = createToken(
-  "UTK",
-  6,
-  "UTRUST",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const WIC = createToken(
-  "WIC",
-  6,
-  "Wi Coin",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const WBTC = createToken(
-  "WBTC",
-  6,
-  "Wrapped Bitcoin",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const STAKE = createToken(
-  "STAKE",
-  6,
-  "xDAI Stake",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const YFI = createToken(
-  "YFI",
-  6,
-  "yearn.finance",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
-
-export const ZIL = createToken(
-  "ZIL",
-  6,
-  "Zilliqa",
-  ChainId.ETHEREUM,
-  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC Contract address TODO - replacewith real one
-);
+import { Network, Coin, Token } from "../entities";
+
+export const ETH = Coin({
+  symbol: "ETH",
+  decimals: 18,
+  name: "Etherium",
+  network: Network.ETHEREUM,
+});
+
+export const RWN = Coin({
+  symbol: "rwn",
+  decimals: 18,
+  name: "Rowan",
+  network: Network.SIFCHAIN,
+});
+
+export const CATK = Coin({
+  symbol: "catk",
+  decimals: 18,
+  name: "catk",
+  network: Network.SIFCHAIN,
+});
+
+export const CBTK = Coin({
+  symbol: "cbtk",
+  decimals: 18,
+  name: "cbtk",
+  network: Network.SIFCHAIN,
+});
+
+export const CETH = Coin({
+  symbol: "ceth",
+  decimals: 18,
+  name: "ceth",
+  network: Network.SIFCHAIN,
+});
+
+export const ZRX = Token({
+  symbol: "ZRX",
+  decimals: 6,
+  name: "0x",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const AAVE = Token({
+  symbol: "AAVE",
+  decimals: 6,
+  name: "Aave [New]",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const ELF = Token({
+  symbol: "ELF",
+  decimals: 6,
+  name: "elf",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const AION = Token({
+  symbol: "AION",
+  decimals: 6,
+  name: "Aion",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const AMPL = Token({
+  symbol: "AMPL",
+  decimals: 6,
+  name: "Ampleforth",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const ANKR = Token({
+  symbol: "ANKR",
+  decimals: 6,
+  name: "Ankr",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const ANT = Token({
+  symbol: "ANT",
+  decimals: 6,
+  name: "Aragon",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const BAL = Token({
+  symbol: "BAL",
+  decimals: 6,
+  name: "Balancer",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const BNANA = Token({
+  symbol: "BNANA",
+  decimals: 6,
+  name: "Chimpion",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const BNT = Token({
+  symbol: "BNT",
+  decimals: 6,
+  name: "Bancor Network Token",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const BAND = Token({
+  symbol: "BAND",
+  decimals: 6,
+  name: "Band Protocol",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const BAT = Token({
+  symbol: "BAT",
+  decimals: 6,
+  name: "Basic Attention Token",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const BNB = Token({
+  symbol: "BNB",
+  decimals: 6,
+  name: "Binance Coin",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const BUSD = Token({
+  symbol: "BUSD",
+  decimals: 6,
+  name: "Binance USD",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const BTMX = Token({
+  symbol: "BTMX",
+  decimals: 6,
+  name: "Bitmax Token",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const BTM = Token({
+  symbol: "BTM",
+  decimals: 6,
+  name: "Bytom",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const CEL = Token({
+  symbol: "CEL",
+  decimals: 6,
+  name: "Celsius Network",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const LINK = Token({
+  symbol: "LINK",
+  decimals: 6,
+  name: "Chainlink",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const CHZ = Token({
+  symbol: "CHZ",
+  decimals: 6,
+  name: "Chiliz",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const COMP = Token({
+  symbol: "COMP",
+  decimals: 6,
+  name: "Compound",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const CRO = Token({
+  symbol: "CRO",
+  decimals: 6,
+  name: "Crypto.com Coin",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const CRV = Token({
+  symbol: "CRV",
+  decimals: 6,
+  name: "Curve DAO Token",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const DAI = Token({
+  symbol: "DAI",
+  decimals: 6,
+  name: "Dai",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const MANA = Token({
+  symbol: "MANA",
+  decimals: 6,
+  name: "Decentraland",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const DX = Token({
+  symbol: "DX",
+  decimals: 6,
+  name: "DxChain Token",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const ENG = Token({
+  symbol: "ENG",
+  decimals: 6,
+  name: "Enigma",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const ENJ = Token({
+  symbol: "ENJ",
+  decimals: 6,
+  name: "Enjin Coin",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const LEND = Token({
+  symbol: "LEND",
+  decimals: 6,
+  name: "Aave",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const FTM = Token({
+  symbol: "FTM",
+  decimals: 6,
+  name: "Fantom",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const FET = Token({
+  symbol: "FET",
+  decimals: 6,
+  name: "FirstEnergy Token",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const GNO = Token({
+  symbol: "GNO",
+  decimals: 6,
+  name: "Gnosis",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const GNT = Token({
+  symbol: "GNT",
+  decimals: 6,
+  name: "Golem",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const ONE = Token({
+  symbol: "ONE",
+  decimals: 6,
+  name: "One Hundred Coin",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const SNX = Token({
+  symbol: "SNX",
+  decimals: 6,
+  name: "Synthetix Network Token",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const HOT = Token({
+  symbol: "HOT",
+  decimals: 6,
+  name: "Hydro Protocol",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const HT = Token({
+  symbol: "HT",
+  decimals: 6,
+  name: "Huobi Token",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const HUSD = Token({
+  symbol: "HUSD",
+  decimals: 6,
+  name: "HUSD",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const RLC = Token({
+  symbol: "RLC",
+  decimals: 6,
+  name: "iExec RLC",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const IOST = Token({
+  symbol: "IOST",
+  decimals: 6,
+  name: "IOST",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const IOTX = Token({
+  symbol: "IOTX",
+  decimals: 6,
+  name: "IoTeX",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const KEEP = Token({
+  symbol: "KEEP",
+  decimals: 6,
+  name: "Keep Network",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const KCS = Token({
+  symbol: "KCS",
+  decimals: 6,
+  name: "KuCoin Shares",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const KNC = Token({
+  symbol: "KNC",
+  decimals: 6,
+  name: "Kyber Network",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const LEO = Token({
+  symbol: "LEO",
+  decimals: 6,
+  name: "LEO Token",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const LPT = Token({
+  symbol: "LPT",
+  decimals: 6,
+  name: "Livepeer",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const LRC = Token({
+  symbol: "LRC",
+  decimals: 6,
+  name: "Loopring",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const MKR = Token({
+  symbol: "MKR",
+  decimals: 6,
+  name: "Maker",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const MATIC = Token({
+  symbol: "MATIC",
+  decimals: 6,
+  name: "Matic Network",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const MCO = Token({
+  symbol: "MCO",
+  decimals: 6,
+  name: "MCO",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const MXC = Token({
+  symbol: "MXC",
+  decimals: 6,
+  name: "MXC",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const NEXO = Token({
+  symbol: "NEXO",
+  decimals: 6,
+  name: "NEXO",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const NMR = Token({
+  symbol: "NMR",
+  decimals: 6,
+  name: "Numeraire",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const NXM = Token({
+  symbol: "NXM",
+  decimals: 6,
+  name: "Nexus Mutual",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const OCEAN = Token({
+  symbol: "OCEAN",
+  decimals: 6,
+  name: "Ocean Protocol",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const OKB = Token({
+  symbol: "OKB",
+  decimals: 6,
+  name: "OKB",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const OMG = Token({
+  symbol: "OMG",
+  decimals: 6,
+  name: "OMG Network",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const TRAC = Token({
+  symbol: "TRAC",
+  decimals: 6,
+  name: "OriginTrail",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const PAXG = Token({
+  symbol: "PAXG",
+  decimals: 6,
+  name: "PAX Gold",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const PAX = Token({
+  symbol: "PAX",
+  decimals: 6,
+  name: "PayperEx",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const NPXS = Token({
+  symbol: "NPXS",
+  decimals: 6,
+  name: "Pundi X",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const QNT = Token({
+  symbol: "QNT",
+  decimals: 6,
+  name: "Quant",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const REN = Token({
+  symbol: "REN",
+  decimals: 6,
+  name: "REN",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const RSR = Token({
+  symbol: "RSR",
+  decimals: 6,
+  name: "Reserve Rights Token",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const RPL = Token({
+  symbol: "RPL",
+  decimals: 6,
+  name: "Rocket Pool",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const SRM = Token({
+  symbol: "SRM",
+  decimals: 6,
+  name: "Serum",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const AGI = Token({
+  symbol: "AGI",
+  decimals: 6,
+  name: "SingularityNET",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const EURS = Token({
+  symbol: "EURS",
+  decimals: 6,
+  name: "STASIS EURO",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const SNT = Token({
+  symbol: "SNT",
+  decimals: 6,
+  name: "Status",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const STORJ = Token({
+  symbol: "STORJ",
+  decimals: 6,
+  name: "Storj",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const SUSHI = Token({
+  symbol: "SUSHI",
+  decimals: 6,
+  name: "Sushi",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const SXP = Token({
+  symbol: "SXP",
+  decimals: 6,
+  name: "Swipe",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const CHSB = Token({
+  symbol: "CHSB",
+  decimals: 6,
+  name: "SwissBorg",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const USDT = Token({
+  symbol: "USDT",
+  decimals: 6,
+  name: "Tether",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const THETA = Token({
+  symbol: "THETA",
+  decimals: 6,
+  name: "Theta Network",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const TUSD = Token({
+  symbol: "TUSD",
+  decimals: 6,
+  name: "TrueUSD",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const UMA = Token({
+  symbol: "UMA",
+  decimals: 6,
+  name: "UMA",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const UBT = Token({
+  symbol: "UBT",
+  decimals: 6,
+  name: "Unibright",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const UNI = Token({
+  symbol: "UNI",
+  decimals: 6,
+  name: "UNIVERSE Token",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const UQC = Token({
+  symbol: "UQC",
+  decimals: 6,
+  name: "Uquid Coin",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const USDC = Token({
+  symbol: "USDC",
+  decimals: 6,
+  name: "USD Coin",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const UTK = Token({
+  symbol: "UTK",
+  decimals: 6,
+  name: "UTRUST",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const WIC = Token({
+  symbol: "WIC",
+  decimals: 6,
+  name: "Wi Coin",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const WBTC = Token({
+  symbol: "WBTC",
+  decimals: 6,
+  name: "Wrapped Bitcoin",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const STAKE = Token({
+  symbol: "STAKE",
+  decimals: 6,
+  name: "xDAI Stake",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const YFI = Token({
+  symbol: "YFI",
+  decimals: 6,
+  name: "yearn.finance",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
+
+export const ZIL = Token({
+  symbol: "ZIL",
+  decimals: 6,
+  name: "Zilliqa",
+  network: Network.ETHEREUM,
+  address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", //USDC Contract address TODO - replacewith real one
+});
 
 // Here for Reference: dummy arbitrary list replace with dynamic list? https://www.finder.com.au/erc20-tokens
 // export const MARKETCAP_TOKEN_ORDER = [

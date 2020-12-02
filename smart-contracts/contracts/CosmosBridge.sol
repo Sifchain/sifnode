@@ -2,6 +2,7 @@ pragma solidity ^0.5.0;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Valset.sol";
+import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
 
@@ -64,6 +65,17 @@ contract CosmosBridge is CosmosBridgeStorage {
     }
 
     /*
+     * @dev: Modifier to restrict access to current ValSet validators
+     */
+    modifier onlyValidator() {
+        require(
+            Valset(valset).isActiveValidator(msg.sender),
+            "Must be an active validator"
+        );
+        _;
+    }
+
+    /*
      * @dev: Constructor
      */
     function initialize(address _operator, address payable _valset) public {
@@ -117,64 +129,73 @@ contract CosmosBridge is CosmosBridgeStorage {
     function newProphecyClaim(
         ClaimType _claimType,
         bytes memory _cosmosSender,
+        uint256 _cosmosSenderSequence,
         address payable _ethereumReceiver,
         string memory _symbol,
         uint256 _amount
-    ) public isActive {
-        require(
-            Valset(valset).isActiveValidator(msg.sender),
-            "Must be an active validator"
-        );
-
-        address tokenAddress;
-        string memory symbol;
-        if (_claimType == ClaimType.Burn) {
-            require(
-                BridgeBank(bridgeBank).getLockedFunds(_symbol) >= _amount,
-                "Not enough locked assets to complete the proposed prophecy"
-            );
-            symbol = _symbol;
-            tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(_symbol);
-        } else if (_claimType == ClaimType.Lock) {
-            symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol); // Add 'e' symbol prefix
-            address bridgeTokenAddress = BridgeBank(bridgeBank).getBridgeToken(symbol);
-            if (bridgeTokenAddress == address(0)) {
-                // First lock of this asset, deploy new contract and get new symbol/token address
-                tokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(symbol);
-            } else {
-                // Not the first lock of this asset, get existing symbol/token address
-                tokenAddress = bridgeTokenAddress;
-            }
+    ) public isActive onlyValidator {
+        bool claimComplete;
+        uint256 _prophecyID = uint256(keccak256(abi.encodePacked(_claimType, _cosmosSender, _cosmosSenderSequence, _ethereumReceiver, _symbol, _amount)));
+        if (usedNonce[_prophecyID]) {
+            claimComplete = Oracle(oracle).newOracleClaim(_prophecyID, msg.sender);
         } else {
-            revert("Invalid claim type, only burn and lock are supported.");
+            address tokenAddress;
+            string memory symbol;
+            if (_claimType == ClaimType.Burn) {
+                require(
+                    BridgeBank(bridgeBank).getLockedFunds(_symbol) >= _amount,
+                    "Not enough locked assets to complete the proposed prophecy"
+                );
+                symbol = _symbol;
+                tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(_symbol);
+            } else if (_claimType == ClaimType.Lock) {
+                symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol); // Add 'e' symbol prefix
+                address bridgeTokenAddress = BridgeBank(bridgeBank).getBridgeToken(symbol);
+                if (bridgeTokenAddress == address(0)) {
+                    // First lock of this asset, deploy new contract and get new symbol/token address
+                    tokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(symbol);
+                } else {
+                    // Not the first lock of this asset, get existing symbol/token address
+                    tokenAddress = bridgeTokenAddress;
+                }
+            } else {
+                revert("Invalid claim type, only burn and lock are supported.");
+            }
+
+            // Create the new ProphecyClaim
+            ProphecyClaim memory prophecyClaim = ProphecyClaim(
+                _claimType,
+                _cosmosSender,
+                _ethereumReceiver,
+                msg.sender,
+                tokenAddress,
+                symbol,
+                _amount,
+                Status.Pending
+            );
+
+            // Increment count and add the new ProphecyClaim to the mapping
+            prophecyClaimCount = prophecyClaimCount.add(1);
+            prophecyClaims[_prophecyID] = prophecyClaim;
+
+            emit LogNewProphecyClaim(
+                _prophecyID,
+                _claimType,
+                _cosmosSender,
+                _ethereumReceiver,
+                msg.sender,
+                tokenAddress,
+                symbol,
+                _amount
+            );
+
+            usedNonce[_prophecyID] = true;
+            claimComplete = Oracle(oracle).newOracleClaim(_prophecyID, msg.sender);
         }
 
-        // Create the new ProphecyClaim
-        ProphecyClaim memory prophecyClaim = ProphecyClaim(
-            _claimType,
-            _cosmosSender,
-            _ethereumReceiver,
-            msg.sender,
-            tokenAddress,
-            symbol,
-            _amount,
-            Status.Pending
-        );
-
-        // Increment count and add the new ProphecyClaim to the mapping
-        prophecyClaimCount = prophecyClaimCount.add(1);
-        prophecyClaims[prophecyClaimCount] = prophecyClaim;
-
-        emit LogNewProphecyClaim(
-            prophecyClaimCount,
-            _claimType,
-            _cosmosSender,
-            _ethereumReceiver,
-            msg.sender,
-            tokenAddress,
-            symbol,
-            _amount
-        );
+        if (claimComplete) {
+            completeProphecyClaim(_prophecyID);
+        }
     }
 
     /*
@@ -184,14 +205,9 @@ contract CosmosBridge is CosmosBridgeStorage {
      *       Lock claims mint BridgeTokens on BridgeBank's token whitelist.
      */
     function completeProphecyClaim(uint256 _prophecyID)
-        public
+        internal
         isPending(_prophecyID)
     {
-        require(
-            msg.sender == oracle,
-            "Only the Oracle may complete prophecies"
-        );
-
         prophecyClaims[_prophecyID].status = Status.Success;
 
         ClaimType claimType = prophecyClaims[_prophecyID].claimType;

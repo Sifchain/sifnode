@@ -1,20 +1,28 @@
-import { ChainId } from "./ChainId";
+import { Coin } from "./Coin";
+import { Token } from "./Token";
 
-export class Asset {
-  constructor(
-    public decimals: number,
-    public symbol: string,
-    public name: string,
-    public chainId: ChainId
-  ) {}
-  static create(
-    symbol: string,
-    decimals: number,
-    name: string,
-    chainId: ChainId
-  ): Asset {
-    return new Asset(decimals, symbol, name, chainId);
-  }
-}
+export type Asset = Token | Coin;
+const assetMap = new Map<string, Asset>();
 
-export const createAsset = Asset.create;
+export const Asset = {
+  set(key: string, value: Asset) {
+    if (!key) return;
+
+    assetMap.set(key.toLowerCase(), value);
+  },
+  get(key: string): Asset {
+    const found = key ? assetMap.get(key.toLowerCase()) : false;
+    if (!found) {
+      console.log(
+        "Available keys: " +
+          Array.from(assetMap.keys())
+            .sort()
+            .join(",")
+      );
+      throw new Error(
+        `Attempt to retrieve the asset with key ${key} before it had been created.`
+      );
+    }
+    return found;
+  },
+};

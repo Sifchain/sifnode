@@ -1,20 +1,15 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import Home from "../views/Home.vue";
-import List from "../views/List.vue";
-import TransferEth from "../views/TransferEth.vue";
-import SifWallet from "@/views/SifWallet.vue";
-import Swap from "@/views/Swap.vue";
+
+import Swap from "@/views/SwapPage.vue";
+import Pool from "@/views/PoolPage.vue";
+import CreatePool from "@/views/CreatePoolPage.vue";
+import Ui from "@/views/Ui.vue";
+import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    name: "Home",
-    component: Home,
-  },
-  {
-    path: "/sifwallet",
-    name: "SifWallet",
-    component: SifWallet,
+    redirect: { name: "Swap" },
   },
   {
     path: "/swap",
@@ -22,14 +17,31 @@ const routes: Array<RouteRecordRaw> = [
     component: Swap,
   },
   {
-    path: "/list",
-    name: "List",
-    component: List,
+    path: "/pool",
+    name: "Pool",
+    component: Pool,
   },
   {
-    path: "/ethtransfer",
-    name: "TransferEth",
-    component: TransferEth,
+    path: "/pool/add-liquidity",
+    name: "AddLiquidity",
+    component: CreatePool,
+  },
+  {
+    path: "/pool/create-pool",
+    name: "CreatePool",
+    component: CreatePool,
+  },
+  {
+    path: "/pool/remove-liquidity",
+    name: "RemoveLiquidity",
+    component: RemoveLiquidity,
+  },
+
+  // route for UI elements showcase - To Be Deleted
+  {
+    path: "/ui",
+    name: "Ui",
+    component: Ui,
   },
 ];
 

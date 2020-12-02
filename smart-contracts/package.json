@@ -41,6 +41,7 @@
     "chai-bignumber": "^3.0.0",
     "ganache-cli": "^6.12.0",
     "openzeppelin-solidity": "^2.1.3",
+    "shelljs": "^0.8.4",
     "truffle": "^5.1.48",
     "web3": "^1.2.6",
     "web3-utils": "^1.3.0"
