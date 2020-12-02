@@ -6,7 +6,7 @@ on:
       - main
   push:
     branches:
-      - feature/add-slither-to-ci
+      - feature/slither-added-to-ci
 
 jobs:
   slither:
