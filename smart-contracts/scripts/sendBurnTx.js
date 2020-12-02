@@ -118,6 +118,13 @@ module.exports = async (cb) => {
     contract.setProvider(web3.currentProvider);
     tokenContract.setProvider(web3.currentProvider);
     try {
+      let isAddress = coinDenom.startsWith("0x")
+      if(!isAddress) {
+        let symbol = coinDenom
+        const instance = await contract.deployed()
+        coinDenom = await instance.getBridgeToken.call(symbol);
+        console.log(symbol + ' address: ' + coinDenom.toString())
+      }
       /*******************************************
        *** Contract interaction
        ******************************************/
