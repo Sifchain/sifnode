@@ -13,6 +13,10 @@ module.exports = async () => {
     const contract = truffleContract(
       require("../build/contracts/BridgeToken.json")
     );
+
+    const contractBridgeBank = truffleContract(
+      require("../build/contracts/BridgeBank.json")
+    );
   
     /*******************************************
      *** Constants
@@ -48,6 +52,7 @@ module.exports = async () => {
   
     const web3 = new Web3(provider);
     contract.setProvider(web3.currentProvider);
+    contractBridgeBank.setProvider(web3.currentProvider);
     /*******************************************
      *** Contract interaction
      ******************************************/
@@ -59,6 +64,13 @@ module.exports = async () => {
         return
     }
 
+    let isAddress = token.startsWith("0x")
+    if(!isAddress) {
+      let symbol = token
+      const instance = await contractBridgeBank.deployed()
+      token = await instance.getBridgeToken.call(symbol);
+      console.log(symbol + ' address: ' + token)
+    }
 
     const tokenInstance = await contract.at(token)
     const name = await tokenInstance.name()
