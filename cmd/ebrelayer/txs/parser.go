@@ -113,7 +113,7 @@ func CosmosMsgToProphecyClaim(event types.CosmosMsg) ProphecyClaim {
 	cosmosSender := event.CosmosSender
 	cosmosSenderSequence := event.CosmosSenderSequence
 	ethereumReceiver := event.EthereumReceiver
-	symbol := strings.ToUpper(event.Symbol)
+	symbol := event.Symbol
 	amount := event.Amount
 
 	prophecyClaim := ProphecyClaim{
@@ -164,9 +164,9 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 					return types.CosmosMsg{}, errors.New("can only relay burns of '%v' prefixed coins" + defaultSifchainPrefix)
 				}
 				res := strings.SplitAfter(val, defaultSifchainPrefix)
-				symbol = strings.ToUpper(strings.Join(res[1:], ""))
+				symbol = strings.Join(res[1:], "")
 			} else {
-				symbol = strings.ToUpper(val)
+				symbol = val
 			}
 		case types.Amount.String():
 			tempAmount, ok := sdk.NewIntFromString(val)
