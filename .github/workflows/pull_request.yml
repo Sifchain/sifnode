@@ -13,7 +13,10 @@ jobs:
     name: slither
     runs-on: ubuntu-latest
     steps:
-      - name: run slither
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Run Slither
         run: |
           cd ./smart-contracts
           make slither
