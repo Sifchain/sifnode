@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"fmt"
 	"bufio"
+	"fmt"
 	"regexp"
 	"strconv"
 
@@ -77,14 +77,14 @@ func GetCmdCreateEthBridgeClaim(cdc *codec.Codec) *cobra.Command {
 			}
 
 			bigIntAmount, ok := sdk.NewIntFromString(args[6])
-            if !ok {
-                fmt.Println("SetString: error")
-                return types.ErrInvalidAmount
-            }
+			if !ok {
+				fmt.Println("SetString: error")
+				return types.ErrInvalidAmount
+			}
 
-            if bigIntAmount.LTE(sdk.NewInt(0)) {
-                return types.ErrInvalidAmount
-            }
+			if bigIntAmount.LTE(sdk.NewInt(0)) {
+				return types.ErrInvalidAmount
+			}
 
 			claimType, err := types.StringToClaimType(args[7])
 			if err != nil {
