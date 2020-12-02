@@ -200,12 +200,14 @@ namespace :cluster do
         | tr -d '[:space:]'`
       eth_wallet_secret = SecureRandom.base64 20
 
-      cmd = %Q{helm upgrade ethnode stable/ethereum \
+      cmd = %Q{helm upgrade ethnode #{cwd}/../../deploy/helm/eth-full-node \
         --install -n ethnode \
         --set geth.account.privateKey=#{eth_wallet_private} \
         --set geth.account.address=#{eth_wallet_address} \
         --set geth.account.secret=#{eth_wallet_secret} \
-        --create-namespace
+        --set geth.genesis.networkId=1 \
+        --create-namespace \
+        --debug
       }
 
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
