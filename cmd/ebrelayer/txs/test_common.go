@@ -3,9 +3,9 @@ package txs
 import (
 	"encoding/binary"
 	"math/big"
+	"strconv"
 	"strings"
 	"testing"
-	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"

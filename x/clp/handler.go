@@ -37,6 +37,9 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
+	if !keeper.ValidateAddress(ctx, msg.Signer) {
+		return nil, errors.Wrap(types.ErrInvalid, "user does not have permission to decommission pool")
+	}
 	if pool.NativeAssetBalance.GTE(sdk.NewUint(uint64(keeper.GetParams(ctx).MinCreatePoolThreshold))) {
 		return nil, types.ErrBalanceTooHigh
 	}
@@ -186,7 +189,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
 	// Check if withdrawal makes pool too shallow , checking only for asymetric withdraw.
 	if !msg.Asymmetry.IsZero() && (pool.ExternalAssetBalance.IsZero() || pool.NativeAssetBalance.IsZero()) {
-		return nil, errors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil before adjusting asymmetry")
+		return nil, errors.Wrap(types.ErrPoolTooShallow, "pool balance nil before adjusting asymmetry")
 	}
 
 	// Swapping between Native and External based on Asymmetry
