@@ -61,9 +61,9 @@ module.exports = async (cb) => {
       );
     }
   } else {
-    if (NUM_ARGS !== 3) {
+    if (NUM_ARGS !== 4) {
       return console.error(
-        "Error: must specify recipient address, token address, and amount."
+        "Error: must specify recipient address, token address, amount and ethereum sender."
       );
     }
   }
@@ -121,13 +121,19 @@ module.exports = async (cb) => {
      ******************************************/
     // Get current accounts
     const accounts = await web3.eth.getAccounts();
+    let account = accounts[0];
+    if (!DEFAULT_PARAMS) {
+      if (!NETWORK_ROPSTEN && !NETWORK_MAINNET) {
+        account = process.argv[7].toString();
+      }
+    }
 
     // Send lock transaction
     console.log("Connecting to contract....");
     const { logs } = await contract.deployed().then(function (instance) {
       console.log("Connected to contract, sending lock...");
       return instance.lock(cosmosRecipient, coinDenom, amount, {
-        from: accounts[0],
+        from: account,
         value: coinDenom === NULL_ADDRESS ? amount : 0,
         gas: 300000 // 300,000 Gwei
       });
