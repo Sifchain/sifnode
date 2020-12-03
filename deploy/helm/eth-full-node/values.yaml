@@ -2,11 +2,6 @@ imagePullPolicy: IfNotPresent
 
 nodeSelector: {}
 
-bootnode:
-  image:
-    repository: ethereum/client-go
-    tag: alltools-v1.7.3
-
 ethstats:
   image:
     repository: ethereumex/eth-stats-dashboard
@@ -18,8 +13,8 @@ ethstats:
 geth:
   image:
     repository: ethereum/client-go
-    tag: v1.7.3
-  replicaCount: 2
+    tag: latest
+  replicaCount: 1
   service:
     type: ClusterIP
   args:
@@ -32,3 +27,7 @@ geth:
     address:
     privateKey:
     secret:
+  pvc:
+    name: geth-pvc
+    storageclass: ebs-sc
+    size: 600Gi

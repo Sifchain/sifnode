@@ -32,7 +32,7 @@
           You can watch the status of by running 'kubectl get svc -w {{ template "ethereum.fullname" . }}-geth'
   {{- else if contains "ClusterIP" .Values.geth.service.type }}
     export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "ethereum.name" . }},release={{ .Release.Name }},component=geth" -o jsonpath="{.items[0].metadata.name}")
-    kubectl port-forward $POD_NAME 8545:8545 8546:8546
+    kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8545:8545 8546:8546
   {{- end }}
 
 {{- else -}}
