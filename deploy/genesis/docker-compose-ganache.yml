@@ -23,7 +23,7 @@ services:
       - /app/ganache-core.docker.cli
       - --deterministic
       - --mnemonic
-      - 'candy maple cake suggar pudding cream honey rich smooth crumble sweet treat'
+      - 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat'
       - --networkId
       - '5777'
       - --hostname

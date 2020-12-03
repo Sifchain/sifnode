@@ -7,7 +7,7 @@ const CosmosBridge = artifacts.require("CosmosBridge");
 const Oracle = artifacts.require("Oracle");
 const BridgeBank = artifacts.require("BridgeBank");
 const BridgeRegistry = artifacts.require("BridgeRegistry");
-const eRowan = artifacts.require("eRowan");
+const eRowan = artifacts.require("BridgeToken");
 
 module.exports = function(deployer, network, accounts) {
   /*******************************************
@@ -140,7 +140,7 @@ module.exports = function(deployer, network, accounts) {
       setTxSpecifications(600000, operator)
     );
 
-    const erowan = await deployer.deploy(eRowan, setTxSpecifications(4612388, operator));
+    const erowan = await deployer.deploy(eRowan, "erowan", setTxSpecifications(4612388, operator));
 
     await erowan.addMinter(BridgeBank.address, setTxSpecifications(4612388, operator));
 
