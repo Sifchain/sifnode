@@ -304,8 +304,8 @@ func TestDecommisionPool(t *testing.T) {
 	_, err = handler(ctx, msg)
 	require.Error(t, err)
 
-	V1 := test.GenerateValidatorAddress("")
-	keeper.SetValidatorWhiteList(ctx, []sdk.ValAddress{V1})
+	v := test.GenerateValidatorAddress("")
+	keeper.SetValidatorWhiteList(ctx, []sdk.ValAddress{v})
 
 	msg = clp.NewMsgDecommissionPool(signer, asset.Symbol)
 	res, err = handler(ctx, msg)

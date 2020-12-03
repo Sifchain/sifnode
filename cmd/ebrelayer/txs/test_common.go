@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	tmKv "github.com/tendermint/tendermint/libs/kv"
 
@@ -25,18 +26,21 @@ const (
 	TestNonce                 = 19
 	TestEthTokenAddress       = "0x0000000000000000000000000000000000000000"
 	TestSymbol                = "CETH"
-	TestAmount                = 5
 	TestEthereumAddress1      = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207359"
 	TestEthereumAddress2      = "0xc230f38FF05860753840e0d7cbC66128ad308B67"
 	TestCosmosAddress1        = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
 	TestCosmosAddress2        = "cosmos1l5h2x255pvdy9l4z0hf9tr8zw7k657s97wyz7y"
-	TestExpectedMessage       = "d39d3a837b322ea6355a4de856bb88e0a1a33a1a9655767df2fa947f42ebcda6"
+	TestExpectedMessage       = "8d46d2f689aa50a0dde8563f4ab1c90f4f74a80817ad18052ef1aa8bd5a0fd96"
+	TestCosmosAddressSequence = 1
 	TestExpectedSignature     = "f3b43b87b8b3729d6b380a640954d14e425acd603bc98f5da8437cba9e492e7805c437f977900cf9cfbeb9e0e2e6fc5b189723b0979efff1fc2796a2daf4fd3a01" //nolint:lll
 	TestAddrHex               = "970e8128ab834e8eac17ab8e3812f010678cf791"
 	TestPrivHex               = "289c2857d4598e37fb9647507e47a309d6133539bf21a8b9cb6df88fd5232032"
 	TestNullAddress           = "0x0000000000000000000000000000000000000000"
 	TestOtherAddress          = "0x1000000000000000000000000000000000000000"
 )
+
+var testAmount = big.NewInt(5)
+var testSDKAmount = sdk.NewIntFromBigInt(testAmount)
 
 // CreateTestLogEthereumEvent creates a sample EthereumEvent event for testing purposes
 func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
@@ -51,7 +55,7 @@ func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
 	testEthereumSender := common.HexToAddress(TestEthereumAddress1)
 	testCosmosRecipient := []byte(TestCosmosAddress1)
 	testTokenAddress := common.HexToAddress(TestEthTokenAddress)
-	testAmount := big.NewInt(int64(TestAmount))
+	testAmount := testAmount
 	testNonce := big.NewInt(int64(TestNonce))
 
 	return types.EthereumEvent{EthereumChainID: testEthereumChainID,
@@ -68,7 +72,7 @@ func CreateTestProphecyClaimEvent(t *testing.T) types.ProphecyClaimEvent {
 	testEthereumReceiver := common.HexToAddress(TestEthereumAddress1)
 	testValidatorAddress := common.HexToAddress(TestEthereumAddress2)
 	testTokenAddress := common.HexToAddress(TestEthTokenAddress)
-	testAmount := big.NewInt(int64(TestAmount))
+	testAmount := testSDKAmount
 
 	return types.NewProphecyClaimEvent([]byte(TestCosmosAddress1), TestSymbol,
 		testProphecyID, testAmount, testEthereumReceiver, testValidatorAddress,
@@ -79,7 +83,7 @@ func CreateTestProphecyClaimEvent(t *testing.T) types.ProphecyClaimEvent {
 func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 	testCosmosSender := []byte(TestCosmosAddress1)
 	testEthereumReceiver := common.HexToAddress(TestEthereumAddress1)
-	testAmount := big.NewInt(int64(TestAmount))
+	testAmount := testSDKAmount
 
 	var symbol string
 	if claimType == types.MsgBurn {
@@ -90,7 +94,7 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 	}
 
 	// Create new Cosmos Msg
-	cosmosMsg := types.NewCosmosMsg(claimType, testCosmosSender,
+	cosmosMsg := types.NewCosmosMsg(claimType, testCosmosSender, big.NewInt(TestCosmosAddressSequence),
 		testEthereumReceiver, symbol, testAmount)
 
 	return cosmosMsg
@@ -98,12 +102,18 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 
 // CreateCosmosMsgAttributes creates expected attributes for a MsgBurn/MsgLock for testing purposes
 func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair {
-	attributes := [5]tmKv.Pair{}
+	attributes := [6]tmKv.Pair{}
 
 	// (key, value) pairing for "cosmos_sender" key
 	pairCosmosSender := tmKv.Pair{
 		Key:   []byte("cosmos_sender"),
 		Value: []byte(TestCosmosAddress1),
+	}
+
+	// (key, value) pairing for "cosmos_sender_sequence" key
+	pairCosmosSenderSequence := tmKv.Pair{
+		Key:   []byte("cosmos_sender_sequence"),
+		Value: []byte(strconv.Itoa(TestCosmosAddressSequence)),
 	}
 
 	// (key, value) pairing for "ethereum_receiver" key
@@ -127,7 +137,7 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair 
 	// (key, value) pairing for "amount" key
 	pairAmount := tmKv.Pair{
 		Key:   []byte("amount"),
-		Value: []byte(strconv.Itoa(TestAmount)),
+		Value: []byte(testAmount.String()),
 	}
 
 	// (key, value) pairing for "token_contract_address" key
@@ -138,10 +148,11 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair 
 
 	// Assign pairs to attributes array
 	attributes[0] = pairCosmosSender
-	attributes[1] = pairEthereumReceiver
-	attributes[2] = pairTokenContract
-	attributes[3] = pairSymbol
-	attributes[4] = pairAmount
+	attributes[1] = pairCosmosSenderSequence
+	attributes[2] = pairEthereumReceiver
+	attributes[3] = pairTokenContract
+	attributes[4] = pairSymbol
+	attributes[5] = pairAmount
 
 	return attributes[:]
 }

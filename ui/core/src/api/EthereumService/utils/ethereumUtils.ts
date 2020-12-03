@@ -6,55 +6,13 @@ import {
   TransactionReceipt,
   WebsocketProvider,
 } from "web3-core";
-import { AbiItem } from "web3-utils";
+
 import { ETH } from "../../../constants";
-import { Address, Asset, Balance, Token } from "../../../entities";
+import { Address, Asset, AssetAmount, Token } from "../../../entities";
+import B from "../../../entities/utils/B";
+import { isToken } from "../../../entities/utils/isToken";
 
-// TODO: Hmm maybe we need to load each token from compiled json? Or is every ERC-20 token the same?
-const erc20TokenAbi: AbiItem[] = [
-  // balanceOf
-  {
-    constant: true,
-    inputs: [{ name: "_owner", type: "address" }],
-    name: "balanceOf",
-    outputs: [{ name: "balance", type: "uint256" }],
-    type: "function",
-  },
-  // decimals
-  {
-    constant: true,
-    inputs: [],
-    name: "decimals",
-    outputs: [{ name: "", type: "uint8" }],
-    type: "function",
-  },
-  // transfer
-  {
-    constant: false,
-    inputs: [
-      {
-        name: "_to",
-        type: "address",
-      },
-      {
-        name: "_value",
-        type: "uint256",
-      },
-    ],
-    name: "transfer",
-    outputs: [
-      {
-        name: "",
-        type: "bool",
-      },
-    ],
-    type: "function",
-  },
-];
-
-export function isToken(value?: Asset | Token): value is Token {
-  return value ? Object.keys(value).includes("address") : false;
-}
+import erc20TokenAbi from "./erc20TokenAbi";
 
 export function getTokenContract(web3: Web3, asset: Token) {
   return new web3.eth.Contract(erc20TokenAbi, asset.address);
@@ -66,8 +24,13 @@ export async function getTokenBalance(
   asset: Token
 ) {
   const contract = getTokenContract(web3, asset);
-  const tokenBalance = await contract.methods.balanceOf(address).call();
-  return Balance.create(asset, tokenBalance);
+  let tokenBalance = "0";
+  try {
+    tokenBalance = await contract.methods.balanceOf(address).call();
+  } catch (err) {
+    console.log(`Error fetching balance for ${asset.symbol}`);
+  }
+  return AssetAmount(asset, B(tokenBalance, 0));
 }
 
 export function isEventEmittingProvider(
@@ -163,5 +126,5 @@ export async function transferEther(
 
 export async function getEtheriumBalance(web3: Web3, address: Address) {
   const ethBalance = await web3.eth.getBalance(address);
-  return Balance.create(ETH, ethBalance);
+  return AssetAmount(ETH, web3.utils.fromWei(ethBalance));
 }

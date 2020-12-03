@@ -15,7 +15,7 @@ import (
 // MsgLock defines a message for locking coins and triggering a related event
 type MsgLock struct {
 	CosmosSender     sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`
-	Amount           int64           `json:"amount" yaml:"amount"`
+	Amount           sdk.Int         `json:"amount" yaml:"amount"`
 	Symbol           string          `json:"symbol" yaml:"symbol"`
 	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
 	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
@@ -24,7 +24,7 @@ type MsgLock struct {
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
 	ethereumChainID int, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount int64, symbol string) MsgLock {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string) MsgLock {
 	return MsgLock{
 		EthereumChainID:  ethereumChainID,
 		CosmosSender:     cosmosSender,
@@ -58,14 +58,14 @@ func (msg MsgLock) ValidateBasic() error {
 		return ErrInvalidEthAddress
 	}
 
-	if msg.Amount <= 0 {
+	if msg.Amount.LTE(sdk.NewInt(0)) {
 		return ErrInvalidAmount
 	}
 
 	if len(msg.Symbol) == 0 {
 		return ErrInvalidSymbol
 	}
-
+	fmt.Println("Validate basic succeeded for burn tx")
 	return nil
 }
 
@@ -87,7 +87,7 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 // MsgBurn defines a message for burning coins and triggering a related event
 type MsgBurn struct {
 	CosmosSender     sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`
-	Amount           int64           `json:"amount" yaml:"amount"`
+	Amount           sdk.Int         `json:"amount" yaml:"amount"`
 	Symbol           string          `json:"symbol" yaml:"symbol"`
 	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
 	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
@@ -96,7 +96,7 @@ type MsgBurn struct {
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
 	ethereumChainID int, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount int64, symbol string) MsgBurn {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string) MsgBurn {
 	return MsgBurn{
 		EthereumChainID:  ethereumChainID,
 		CosmosSender:     cosmosSender,
@@ -126,7 +126,7 @@ func (msg MsgBurn) ValidateBasic() error {
 	if !gethCommon.IsHexAddress(msg.EthereumReceiver.String()) {
 		return ErrInvalidEthAddress
 	}
-	if msg.Amount <= 0 {
+	if msg.Amount.LTE(sdk.NewInt(0)) {
 		return ErrInvalidAmount
 	}
 	prefixLength := len(PeggedCoinPrefix)
