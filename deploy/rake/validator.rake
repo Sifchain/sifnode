@@ -29,9 +29,14 @@ namespace :validator do
   desc "Expose validator key"
   namespace :expose do
     desc "Expose the consensus public key"
-    task :pub_key, [:chainnet, :provider, :pod, :namespace] do |t, args|
-      cmd = %Q{kubectl exec --stdin --tty #{args[:pod]} -n #{args[:namespace]} -- sifnoded tendermint show-validator}
+    task :pub_key, [:chainnet, :provider, :moniker] do |t, args|
+      pod_name = pod_name(args)
+      if pod_name.nil?
+        puts "Please check the supplied moniker; unable to find any pods!"
+        exit(1)
+      end
 
+      cmd = %Q{kubectl exec --stdin --tty #{pod_name} -n #{args[:moniker]} -- sifnoded tendermint show-validator}
       system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end

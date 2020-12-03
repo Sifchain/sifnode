@@ -69,6 +69,18 @@ def node_address(args)
 end
 
 #
+# Sifnode Pod name
+#
+# @param args Arguments passed to rake
+#
+def pod_name(args)
+  cmd = %Q{kubectl get pods --selector=app.kubernetes.io/instance=sifnode \
+          -n #{args[:moniker]} -o json | jq '.items[0].metadata.name'}
+  system("export KUBECONFIG=#{kubeconfig(args)}")
+  `#{cmd}`.strip
+end
+
+#
 # Detect the O/S
 #
 def detect_os
