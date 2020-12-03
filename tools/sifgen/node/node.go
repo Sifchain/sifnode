@@ -144,7 +144,7 @@ func (n *Node) networkGenesis() error {
 		return err
 	}
 
-	err = n.replacePeerConfig([]string{*n.PeerAddress})
+	err = n.replaceConfig()
 	if err != nil {
 		return err
 	}
@@ -191,6 +191,11 @@ func (n *Node) seedGenesis() error {
 	}
 
 	if err = genesis.ReplaceStakingBondDenom(common.DefaultNodeHome); err != nil {
+		return err
+	}
+
+	err = n.replaceConfig()
+	if err != nil {
 		return err
 	}
 
@@ -258,7 +263,7 @@ func (n *Node) saveGenesis(genesis types.Genesis) error {
 	return nil
 }
 
-func (n *Node) replacePeerConfig(peerAddresses []string) error {
+func (n *Node) replaceConfig() error {
 	config, err := n.parseConfig()
 	if err != nil {
 		return err
@@ -269,7 +274,15 @@ func (n *Node) replacePeerConfig(peerAddresses []string) error {
 		return err
 	}
 
-	config.P2P.PersistentPeers = strings.Join(peerAddresses[:], ",")
+	if (*n).PeerAddress != nil {
+		addressList := []string{*n.PeerAddress}
+		config.P2P.PersistentPeers = strings.Join(addressList[:], ",")
+	}
+
+	config.P2P.MaxNumInboundPeers = common.MaxNumInboundPeers
+	config.P2P.MaxNumOutboundPeers = common.MaxNumOutboundPeers
+	config.P2P.AllowDuplicateIP = common.AllowDuplicateIP
+
 	if err := toml.NewEncoder(file).Encode(config); err != nil {
 		return err
 	}
@@ -293,15 +306,7 @@ func (n *Node) parseConfig() (common.NodeConfig, error) {
 		return config, err
 	}
 
-	n.updateConfigDefaults(&config)
-
 	return config, nil
-}
-
-func (n *Node) updateConfigDefaults(config *common.NodeConfig) {
-	config.P2P.MaxNumInboundPeers = common.MaxNumInboundPeers
-	config.P2P.MaxNumOutboundPeers = common.MaxNumOutboundPeers
-	config.P2P.AllowDuplicateIP = common.AllowDuplicateIP
 }
 
 func (n *Node) summary() string {

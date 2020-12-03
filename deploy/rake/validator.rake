@@ -26,7 +26,7 @@ namespace :validator do
     system(cmd)
   end
 
-  desc "Expose validator details"
+  desc "Expose validator key"
   namespace :expose do
     desc "Expose the consensus public key"
     task :pub_key, [:chainnet, :provider, :pod, :namespace] do |t, args|
