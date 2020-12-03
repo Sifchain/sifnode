@@ -64,9 +64,9 @@ module.exports = async (cb) => {
         );
       }
     } else {
-      if (NUM_ARGS !== 3) {
+      if (NUM_ARGS !== 4) {
         return console.error(
-          "Error: must specify recipient address, token address, and amount."
+          "Error: must specify recipient address, token address, amount and ethereum sender."
         );
       }
     }
@@ -130,7 +130,13 @@ module.exports = async (cb) => {
        ******************************************/
       // Get current accounts
       const accounts = await web3.eth.getAccounts();
-      console.log("account is ", accounts[9], cosmosRecipient, coinDenom, amount)
+      let account = accounts[0];
+      if (!DEFAULT_PARAMS) {
+        if (!NETWORK_ROPSTEN && !NETWORK_MAINNET) {
+          account = process.argv[7].toString();
+        }
+      }
+      console.log("account is ", account, cosmosRecipient, coinDenom, amount)
 
         // Send approve transaction
       if (coinDenom != "eth") {
@@ -142,7 +148,7 @@ module.exports = async (cb) => {
 
         instance = await tokenContract.at(coinDenom)
         const { logs } = await instance.approve(bridgeContractAddress, amount, {
-          from: accounts[1],
+          from: account,
           value: 0,
           gas: 300000 // 300,000 Gwei
         });
@@ -167,7 +173,7 @@ module.exports = async (cb) => {
       const { logs: logs2 } = await contract.deployed().then(function (instance) {
         console.log("Connected to contract, sending burn...");
         return instance.burn(cosmosRecipient, coinDenom, amount, {
-          from: accounts[1],
+          from: account,
           value: coinDenom === NULL_ADDRESS ? amount : 0,
           gas: 300000 // 300,000 Gwei
         });
