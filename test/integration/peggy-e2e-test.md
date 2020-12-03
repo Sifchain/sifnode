@@ -68,7 +68,7 @@ yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732 eRWN
 sifnodecli query account $(sifnodecli keys show akasha -a)
 
 ### case 4: burn rowan in ethereum and rowan will be back to cosmos
-yarn peggy:burn $(sifnodecli keys show user2 -a) 0x409Ba3dd291bb5D48D5B4404F5EFa207441F6CbA 1
-1. check balance after burn 
-yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732  0x409Ba3dd291bb5D48D5B4404F5EFa207441F6CbA
-sifnodecli query account $(sifnodecli keys show user2 -a)
+1. yarn peggy:burn $(sifnodecli keys show akasha -a) eRWN 1 0xf17f52151EbEF6C7334FAD080c5704D77216b732
+2. check balance after burn
+yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732 eRWN
+sifnodecli query account $(sifnodecli keys show akasha -a)
