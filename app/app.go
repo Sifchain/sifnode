@@ -22,6 +22,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
@@ -44,6 +45,7 @@ var (
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
+		slashing.AppModuleBasic{},
 	)
 
 	// Module accounts which will be passed to the supply keeper when it is initialized
@@ -80,7 +82,8 @@ type NewApp struct {
 
 	AccountKeeper auth.AccountKeeper
 	bankKeeper    bank.Keeper
-	StakingKeeper staking.Keeper
+	stakingKeeper staking.Keeper
+	slashingKeeper slashing.Keeper
 	SupplyKeeper  supply.Keeper
 	paramsKeeper  params.Keeper
 
@@ -115,6 +118,7 @@ func NewInitApp(
 		oracle.StoreKey,
 		ethbridge.StoreKey,
 		clp.StoreKey,
+		slashing.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -133,6 +137,7 @@ func NewInitApp(
 	app.subspaces[bank.ModuleName] = app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
 	app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
+	app.subspaces[slashing.ModuleName] = app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 
 	app.AccountKeeper = auth.NewAccountKeeper(
 		app.cdc,
@@ -158,18 +163,24 @@ func NewInitApp(
 	stakingKeeper := staking.NewKeeper(
 		app.cdc,
 		keys[staking.StoreKey],
+		tKeys[staking.TStoreKey],
 		app.SupplyKeeper,
 		app.subspaces[staking.ModuleName],
+		staking.DefaultCodespace,
 	)
 
-	app.StakingKeeper = *stakingKeeper.SetHooks(
-		staking.NewMultiStakingHooks(),
+	app.stakingKeeper = *stakingKeeper.SetHooks(
+		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()),
+	)
+
+	app.slashingKeeper = slashing.NewKeeper(
+		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace, slashing.DefaultCodespace,
 	)
 
 	app.OracleKeeper = oracle.NewKeeper(
 		app.cdc,
 		keys[oracle.StoreKey],
-		app.StakingKeeper,
+		app.stakingKeeper,
 		oracle.DefaultConsensusNeeded,
 	)
 
@@ -187,22 +198,31 @@ func NewInitApp(
 		app.subspaces[clp.ModuleName])
 
 	app.mm = module.NewManager(
-		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx),
+		genutil.NewAppModule(app.AccountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.AccountKeeper),
 		bank.NewAppModule(app.bankKeeper, app.AccountKeeper),
 		supply.NewAppModule(app.SupplyKeeper, app.AccountKeeper),
-		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
+		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
+		staking.NewAppModule(app.stakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
 		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
 	)
 
+	// During begin block slashing happens after distr.BeginBlocker so that
+	// there is nothing left over in the validator fee pool, so as to keep the
+	// CanWithdrawInvariant invariant.
+	app.mm.SetOrderBeginBlockers(mint.ModuleName, distr.ModuleName, slashing.ModuleName)
+
 	app.mm.SetOrderEndBlockers(staking.ModuleName)
 
+	// NOTE: The genutils module must occur after staking so that pools are
+	// properly initialized with tokens from genesis accounts.
 	app.mm.SetOrderInitGenesis(
 		staking.ModuleName,
 		auth.ModuleName,
 		bank.ModuleName,
+		slashing.ModuleName,
 		supply.ModuleName,
 		genutil.ModuleName,
 		oracle.ModuleName,
