@@ -57,7 +57,7 @@ func handleMsgCreateEthBridgeClaim(
 			types.EventTypeCreateClaim,
 			sdk.NewAttribute(types.AttributeKeyEthereumSender, msg.EthereumSender.String()),
 			sdk.NewAttribute(types.AttributeKeyCosmosReceiver, msg.CosmosReceiver.String()),
-			sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(msg.Amount, 10)),
+			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
 			sdk.NewAttribute(types.AttributeKeyTokenContract, msg.TokenContractAddress.String()),
 			sdk.NewAttribute(types.AttributeKeyClaimType, msg.ClaimType.String()),
@@ -81,7 +81,7 @@ func handleMsgBurn(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	coins := sdk.NewCoins(sdk.NewInt64Coin(msg.Symbol, msg.Amount))
+	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
 	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, coins); err != nil {
 		return nil, err
 	}
@@ -96,8 +96,9 @@ func handleMsgBurn(
 			types.EventTypeBurn,
 			sdk.NewAttribute(types.AttributeKeyEthereumChainID, strconv.Itoa(msg.EthereumChainID)),
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender.String()),
+			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver.String()),
-			sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(msg.Amount, 10)),
+			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
 			sdk.NewAttribute(types.AttributeKeyCoins, coins.String()),
 		),
@@ -117,7 +118,7 @@ func handleMsgLock(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	coins := sdk.NewCoins(sdk.NewInt64Coin(msg.Symbol, msg.Amount))
+	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
 	if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, coins); err != nil {
 		return nil, err
 	}
@@ -132,8 +133,9 @@ func handleMsgLock(
 			types.EventTypeLock,
 			sdk.NewAttribute(types.AttributeKeyEthereumChainID, strconv.Itoa(msg.EthereumChainID)),
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender.String()),
+			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver.String()),
-			sdk.NewAttribute(types.AttributeKeyAmount, strconv.FormatInt(msg.Amount, 10)),
+			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
 			sdk.NewAttribute(types.AttributeKeyCoins, coins.String()),
 		),

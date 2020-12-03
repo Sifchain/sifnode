@@ -16,8 +16,8 @@ services:
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY1}
     volumes:
       - ../networks/validators/${CHAINNET}/${MONIKER1}:/root:Z
-      - ../scripts:/scripts
-    entrypoint: /scripts/entrypoint.sh
+      - ../etc/supervisor:/etc/supervisor
+    command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS1}
@@ -37,8 +37,8 @@ services:
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY2}
     volumes:
       - ../networks/validators/${CHAINNET}/${MONIKER2}:/root:Z
-      - ../scripts:/scripts
-    entrypoint: /scripts/entrypoint.sh
+      - ../etc/supervisor:/etc/supervisor
+    command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS2}
@@ -58,8 +58,8 @@ services:
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY3}
     volumes:
       - ../networks/validators/${CHAINNET}/${MONIKER3}:/root:Z
-      - ../scripts:/scripts
-    entrypoint: /scripts/entrypoint.sh
+      - ../etc/supervisor:/etc/supervisor
+    command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS3}
@@ -79,8 +79,8 @@ services:
       ETHEREUM_PRIVATE_KEY: ${ETHEREUM_PRIVATE_KEY4}
     volumes:
       - ../networks/validators/${CHAINNET}/${MONIKER4}:/root:Z
-      - ../scripts:/scripts
-    entrypoint: /scripts/entrypoint.sh
+      - ../etc/supervisor:/etc/supervisor
+    command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     networks:
       sifchain:
         ipv4_address: ${IPV4_ADDRESS4}

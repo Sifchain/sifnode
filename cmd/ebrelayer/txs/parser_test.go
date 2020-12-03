@@ -31,7 +31,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	// Set up expected EthBridgeClaim
 	expectedEthBridgeClaim := ethbridge.NewEthBridgeClaim(
 		TestEthereumChainID, testBridgeContractAddress, TestNonce, strings.ToLower(TestSymbol), testTokenContractAddress,
-		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, TestAmount, TestLockClaimType)
+		testEthereumAddress, testCosmosAddress, testCosmosValidatorBech32Address, testSDKAmount, TestLockClaimType)
 
 	// Create test ethereum event
 	ethereumEvent := CreateTestLogEthereumEvent(t)
@@ -109,11 +109,12 @@ func TestMsgBurnToProphecyClaim(t *testing.T) {
 
 	// Set up expected ProphecyClaim
 	expectedProphecyClaim := ProphecyClaim{
-		ClaimType:        types.MsgBurn,
-		CosmosSender:     []byte(TestCosmosAddress1),
-		EthereumReceiver: common.HexToAddress(TestEthereumAddress1),
-		Symbol:           symbol,
-		Amount:           big.NewInt(int64(TestAmount)),
+		ClaimType:            types.MsgBurn,
+		CosmosSender:         []byte(TestCosmosAddress1),
+		CosmosSenderSequence: big.NewInt(1),
+		EthereumReceiver:     common.HexToAddress(TestEthereumAddress1),
+		Symbol:               symbol,
+		Amount:               testSDKAmount,
 	}
 
 	// Create a MsgBurn as input parameter
@@ -126,11 +127,12 @@ func TestMsgBurnToProphecyClaim(t *testing.T) {
 func TestMsgLockToProphecyClaim(t *testing.T) {
 	// Set up expected ProphecyClaim
 	expectedProphecyClaim := ProphecyClaim{
-		ClaimType:        types.MsgLock,
-		CosmosSender:     []byte(TestCosmosAddress1),
-		EthereumReceiver: common.HexToAddress(TestEthereumAddress1),
-		Symbol:           TestSymbol,
-		Amount:           big.NewInt(int64(TestAmount)),
+		ClaimType:            types.MsgLock,
+		CosmosSender:         []byte(TestCosmosAddress1),
+		CosmosSenderSequence: big.NewInt(1),
+		EthereumReceiver:     common.HexToAddress(TestEthereumAddress1),
+		Symbol:               TestSymbol,
+		Amount:               testSDKAmount,
 	}
 
 	// Create a MsgLock as input parameter
