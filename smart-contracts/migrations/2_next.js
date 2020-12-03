@@ -140,6 +140,10 @@ module.exports = function(deployer, network, accounts) {
       setTxSpecifications(600000, operator)
     );
 
+    if (network === 'mainnet') {
+      return console.log("Network is mainnet, not going to deploy token");
+    }
+
     const erowan = await deployer.deploy(eRowan, "erowan", setTxSpecifications(4612388, operator));
 
     await erowan.addMinter(BridgeBank.address, setTxSpecifications(4612388, operator));
@@ -149,13 +153,8 @@ module.exports = function(deployer, network, accounts) {
 
     const bnAmount = web3.utils.toWei("100", "ether");
 
-    if (network !== 'mainnet') {
-        await erowan.mint(operator, bnAmount, setTxSpecifications(4612388, operator));
-        await erowan.mint(accounts[1], bnAmount, setTxSpecifications(4612388, operator));
-    } else {
-      // mint 120,000,000 tokens
-      await erowan.mint(operator, tokenAmount, setTxSpecifications(4612388, operator))
-    }
+    await erowan.mint(operator, bnAmount, setTxSpecifications(4612388, operator));
+    await erowan.mint(accounts[1], bnAmount, setTxSpecifications(4612388, operator));
 
     return;
   });
