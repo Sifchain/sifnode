@@ -109,12 +109,12 @@ func TestMsgBurnToProphecyClaim(t *testing.T) {
 
 	// Set up expected ProphecyClaim
 	expectedProphecyClaim := ProphecyClaim{
-		ClaimType:             types.MsgBurn,
-		CosmosSender:          []byte(TestCosmosAddress1),
-		CosmosSenderSequence:  big.NewInt(1),
-		EthereumReceiver:      common.HexToAddress(TestEthereumAddress1),
-		Symbol:                symbol,
-		Amount:                testSDKAmount,
+		ClaimType:            types.MsgBurn,
+		CosmosSender:         []byte(TestCosmosAddress1),
+		CosmosSenderSequence: big.NewInt(1),
+		EthereumReceiver:     common.HexToAddress(TestEthereumAddress1),
+		Symbol:               symbol,
+		Amount:               testSDKAmount,
 	}
 
 	// Create a MsgBurn as input parameter
@@ -127,12 +127,12 @@ func TestMsgBurnToProphecyClaim(t *testing.T) {
 func TestMsgLockToProphecyClaim(t *testing.T) {
 	// Set up expected ProphecyClaim
 	expectedProphecyClaim := ProphecyClaim{
-		ClaimType:             types.MsgLock,
-		CosmosSender:          []byte(TestCosmosAddress1),
-		CosmosSenderSequence:  big.NewInt(1),
-		EthereumReceiver:      common.HexToAddress(TestEthereumAddress1),
-		Symbol:                TestSymbol,
-		Amount:                testSDKAmount,
+		ClaimType:            types.MsgLock,
+		CosmosSender:         []byte(TestCosmosAddress1),
+		CosmosSenderSequence: big.NewInt(1),
+		EthereumReceiver:     common.HexToAddress(TestEthereumAddress1),
+		Symbol:               TestSymbol,
+		Amount:               testSDKAmount,
 	}
 
 	// Create a MsgLock as input parameter

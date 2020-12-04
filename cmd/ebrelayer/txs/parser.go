@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strings"
 	"math/big"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"

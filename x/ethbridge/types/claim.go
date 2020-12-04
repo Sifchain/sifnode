@@ -48,7 +48,7 @@ func NewEthBridgeClaim(ethereumChainID int, bridgeContract EthereumAddress,
 // OracleClaimContent is the details of how the content of the claim for each validator will be stored in the oracle
 type OracleClaimContent struct {
 	CosmosReceiver       sdk.AccAddress  `json:"cosmos_receiver" yaml:"cosmos_receiver"`
-	Amount               sdk.Int        `json:"amount" yaml:"amount"`
+	Amount               sdk.Int         `json:"amount" yaml:"amount"`
 	Symbol               string          `json:"symbol" yaml:"symbol"`
 	TokenContractAddress EthereumAddress `json:"token_contract_address" yaml:"token_contract_address"`
 	ClaimType            ClaimType       `json:"claim_type" yaml:"claim_type"`
