@@ -70,14 +70,14 @@ func GetCmdDecommissionPool(cdc *codec.Codec) *cobra.Command {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			ticker := viper.GetString(FlagAssetTicker)
+			symbol := viper.GetString(FlagAssetSymbol)
 			signer := cliCtx.GetFromAddress()
-			msg := types.NewMsgDecommissionPool(signer, ticker)
+			msg := types.NewMsgDecommissionPool(signer, symbol)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
-	cmd.Flags().AddFlagSet(FsAssetTicker)
-	cmd.MarkFlagRequired(FlagAssetTicker)
+	cmd.Flags().AddFlagSet(FsAssetSymbol)
+	cmd.MarkFlagRequired(FlagAssetSymbol)
 
 	return cmd
 }

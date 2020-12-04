@@ -204,7 +204,7 @@ func NewInitApp(
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
 	app.UpgradeKeeper.SetUpgradeHandler("testupgrade", func(ctx sdk.Context, plan upgrade.Plan) {
-		ethAsset := clp.NewAsset("Ethereum", "ETH", "ceth")
+		ethAsset := clp.NewAsset("eth")
 		pool, err := clp.NewPool(ethAsset, sdk.NewUint(100), sdk.NewUint(100), sdk.NewUint(10))
 		if err != nil {
 			return

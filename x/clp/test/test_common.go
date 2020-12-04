@@ -101,7 +101,7 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 
 func trimFirstRune(s string) string {
 	_, i := utf8.DecodeRuneInString(s)
-	return strings.ToUpper(s[i:])
+	return strings.ToLower(s[i:])
 }
 
 func GenerateAddress(key string) sdk.AccAddress {

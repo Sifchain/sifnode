@@ -28,7 +28,7 @@ func TestCreatePool(t *testing.T) {
 
 	asset := clp.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
-	nativeCoin := sdk.NewCoin(clp.NativeTicker, sdk.Int(initialBalance))
+	nativeCoin := sdk.NewCoin(clp.NativeSymbol, sdk.Int(initialBalance))
 	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 
 	ok := keeper.HasCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
@@ -59,7 +59,7 @@ func TestCreatePool(t *testing.T) {
 	require.Nil(t, res)
 
 	externalCoin = sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance.Sub(poolBalance)))
-	nativeCoin = sdk.NewCoin(clp.NativeTicker, sdk.Int(initialBalance.Sub(poolBalance)))
+	nativeCoin = sdk.NewCoin(clp.NativeSymbol, sdk.Int(initialBalance.Sub(poolBalance)))
 	ok = keeper.HasCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 	assert.True(t, ok, "")
 }
@@ -75,7 +75,7 @@ func TestAddLiquidity(t *testing.T) {
 
 	asset := clp.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
-	nativeCoin := sdk.NewCoin(clp.NativeTicker, sdk.Int(initialBalance))
+	nativeCoin := sdk.NewCoin(clp.NativeSymbol, sdk.Int(initialBalance))
 	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 
 	msg := clp.NewMsgAddLiquidity(signer, asset, addLiquidityAmount, addLiquidityAmount)
@@ -92,7 +92,7 @@ func TestAddLiquidity(t *testing.T) {
 	require.NotNil(t, res)
 	// Subtracted twice , during create and add
 	externalCoin = sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(addLiquidityAmount)))
-	nativeCoin = sdk.NewCoin(clp.NativeTicker, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(addLiquidityAmount)))
+	nativeCoin = sdk.NewCoin(clp.NativeSymbol, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(addLiquidityAmount)))
 	ok := keeper.HasCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 	assert.True(t, ok, "")
 
@@ -122,7 +122,7 @@ func TestRemoveLiquidity(t *testing.T) {
 
 	asset := clp.NewAsset(externalDenom)
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
-	nativeCoin := sdk.NewCoin(clp.NativeTicker, sdk.Int(initialBalance))
+	nativeCoin := sdk.NewCoin(clp.NativeSymbol, sdk.Int(initialBalance))
 	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 
 	msg := clp.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
@@ -233,7 +233,7 @@ func TestSwap(t *testing.T) {
 
 	externalCoin1 := sdk.NewCoin(assetEth.Symbol, initialBalance)
 	externalCoin2 := sdk.NewCoin(assetDash.Symbol, initialBalance)
-	nativeCoin := sdk.NewCoin(clp.NativeTicker, initialBalance)
+	nativeCoin := sdk.NewCoin(clp.NativeSymbol, initialBalance)
 	// Signer is given ETH and RWN ( Signer will creat pool and become LP)
 	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin1, nativeCoin})
 	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin2})
@@ -259,7 +259,7 @@ func TestSwap(t *testing.T) {
 	require.NotNil(t, res)
 
 	CoinsExt1 := sdk.NewCoin(assetEth.Symbol, initialBalance.Sub(sdk.Int(poolBalance)).Sub(sdk.Int(swapSentAssetETH))) // Created ETH pool and Send amount for swap
-	CoinsNative := sdk.NewCoin(clp.NativeTicker, initialBalance.Sub(sdk.Int(poolBalance)).Sub(sdk.Int(poolBalance)))   // Creating two pools
+	CoinsNative := sdk.NewCoin(clp.NativeSymbol, initialBalance.Sub(sdk.Int(poolBalance)).Sub(sdk.Int(poolBalance)))   // Creating two pools
 	CoinsExt2 := sdk.NewCoin(assetDash.Symbol, initialBalance.Sub(sdk.Int(poolBalance)).Add(sdk.Int(receivedAmount)))  // Created one pool and Received swap amount
 	ok := keeper.HasCoins(ctx, signer, sdk.Coins{CoinsExt1, CoinsNative, CoinsExt2})
 	assert.True(t, ok, "")
@@ -278,7 +278,7 @@ func TestDecommisionPool(t *testing.T) {
 
 	asset := clp.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, initialBalance)
-	nativeCoin := sdk.NewCoin(clp.NativeTicker, initialBalance)
+	nativeCoin := sdk.NewCoin(clp.NativeSymbol, initialBalance)
 	// Signer is given ETH and RWN ( Signer will creat pool and become LP)
 	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 
@@ -290,7 +290,7 @@ func TestDecommisionPool(t *testing.T) {
 	// SIGNER became new LP
 	lpNewBalance := initialBalance.Sub(sdk.Int(poolBalance))
 	lpCoinsExt := sdk.NewCoin(asset.Symbol, lpNewBalance)
-	lpCoinsNative := sdk.NewCoin(clp.NativeTicker, lpNewBalance)
+	lpCoinsNative := sdk.NewCoin(clp.NativeSymbol, lpNewBalance)
 	ok := keeper.HasCoins(ctx, signer, sdk.Coins{lpCoinsExt, lpCoinsNative})
 	assert.True(t, ok, "")
 
@@ -321,7 +321,7 @@ func TestDecommisionPool(t *testing.T) {
 	lpNewBalance = initialBalance
 
 	lpCoinsExt = sdk.NewCoin(asset.Symbol, lpNewBalance)
-	lpCoinsNative = sdk.NewCoin(clp.NativeTicker, lpNewBalance)
+	lpCoinsNative = sdk.NewCoin(clp.NativeSymbol, lpNewBalance)
 	ok = keeper.HasCoins(ctx, signer, sdk.Coins{lpCoinsExt, lpCoinsNative})
 	assert.True(t, ok, "")
 

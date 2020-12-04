@@ -33,7 +33,7 @@ func NewHandler(k Keeper) sdk.Handler {
 
 func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissionPool) (*sdk.Result, error) {
 	// Verify pool
-	pool, err := keeper.GetPool(ctx, msg.Ticker)
+	pool, err := keeper.GetPool(ctx, msg.Symbol)
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
@@ -57,7 +57,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 		nativeAssetBalance = nativeAssetBalance.Sub(withdrawNativeAsset)
 		externalAssetBalance = externalAssetBalance.Sub(withdrawExternalAsset)
 		withdrawNativeCoins := sdk.NewCoin(GetSettlementAsset().Symbol, sdk.NewIntFromUint64(withdrawNativeAsset.Uint64()))
-		withdrawExternalCoins := sdk.NewCoin(msg.Ticker, sdk.NewIntFromUint64(withdrawExternalAsset.Uint64()))
+		withdrawExternalCoins := sdk.NewCoin(msg.Symbol, sdk.NewIntFromUint64(withdrawExternalAsset.Uint64()))
 		refundingCoins := sdk.Coins{withdrawExternalCoins, withdrawNativeCoins}
 		err := keeper.RemoveLiquidityProvider(ctx, refundingCoins, lp)
 		if err != nil {
