@@ -45,16 +45,16 @@ spec:
             - name: data
               mountPath: /root/
           {{- if .Values.sifnode.env.peerAddress }}
-          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"$MNEMONIC\" $EXTERNAL_IP $P2P_PORT $RPC_PORT $PEER_ADDRESS $GENESIS_URL; sifnoded start --p2p.laddr tcp://0.0.0.0:$P2P_PORT --rpc.laddr tcp://0.0.0.0:$RPC_PORT"]
+          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"$MNEMONIC\" $EXTERNAL_IP $PEER_ADDRESS $GENESIS_URL; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
           {{- else }}
-          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"$MNEMONIC\" $EXTERNAL_IP $P2P_PORT $RPC_PORT; sifnoded start --p2p.laddr tcp://0.0.0.0:$P2P_PORT --rpc.laddr tcp://0.0.0.0:$RPC_PORT"]
+          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"$MNEMONIC\" $EXTERNAL_IP; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
           {{- end }}
           ports:
             - name: p2p
-              containerPort: {{ .Values.sifnode.env.ports.p2p }}
+              containerPort: 26656
               protocol: TCP
             - name: rpc
-              containerPort: {{ .Values.sifnode.env.ports.rpc }}
+              containerPort: 26657
               protocol: TCP
           env:
             - name: CHAINNET
@@ -71,10 +71,6 @@ spec:
                 configMapKeyRef:
                   name: {{ include "sifnode.fullname" . }}-external-ip
                   key: externalIP
-            - name: P2P_PORT
-              value: {{ .Values.sifnode.env.ports.p2p }}
-            - name: RPC_PORT
-              value: {{ .Values.sifnode.env.ports.rpc }}
             - name: PEER_ADDRESS
               value: {{ .Values.sifnode.env.peerAddress }}
             - name: GENESIS_URL

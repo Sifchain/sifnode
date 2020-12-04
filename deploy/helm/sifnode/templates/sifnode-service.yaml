@@ -7,12 +7,10 @@ metadata:
 spec:
   type: {{ .Values.sifnode.service.type }}
   ports:
-    - port: {{ .Values.sifnode.env.ports.p2p }}
-      nodePort: {{ .Values.sifnode.env.ports.p2p }}
+    - port: 26656
       protocol: TCP
       name: p2p
-    - port: {{ .Values.sifnode.env.ports.rpc }}
-      nodePort: {{ .Values.sifnode.env.ports.rpc }}
+    - port: 26657
       protocol: TCP
       name: rpc
   selector:

@@ -18,6 +18,7 @@ var (
 	DefaultCLIHome  = app.DefaultCLIHome
 	StakeTokenDenom = types.StakeTokenDenom
 
+	P2PPort = 26656
 	MaxNumInboundPeers  = 1000
 	MaxNumOutboundPeers = 1000
 	AllowDuplicateIP    = true

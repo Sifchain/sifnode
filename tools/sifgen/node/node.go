@@ -24,7 +24,6 @@ type Node struct {
 	Moniker     string    `yaml:"moniker"`
 	Mnemonic    string    `yaml:"mnemonic"`
 	IPAddr      string    `yml:"ip_address"`
-	Port        string    `yml:"port"`
 	Address     string    `yaml:"address"`
 	Password    string    `yaml:"password"`
 	PeerAddress *string   `yaml:"-"`
@@ -49,14 +48,13 @@ func Reset(chainID string, nodeDir *string) error {
 	return nil
 }
 
-func NewNode(chainID, moniker, mnemonic, ipAddr, port string, peerAddress, genesisURL *string) *Node {
+func NewNode(chainID, moniker, mnemonic, ipAddr string, peerAddress, genesisURL *string) *Node {
 	password, _ := password.Generate(32, 5, 0, false, false)
 	return &Node{
 		ChainID:     chainID,
 		Moniker:     moniker,
 		Mnemonic:    mnemonic,
 		IPAddr:      ipAddr,
-		Port:        port,
 		PeerAddress: peerAddress,
 		GenesisURL:  genesisURL,
 		Password:    password,
@@ -262,7 +260,7 @@ func (n *Node) replaceConfig() error {
 		config.P2P.PersistentPeers = strings.Join(addressList[:], ",")
 	}
 
-	config.P2P.ExternalAddress = fmt.Sprintf("%v:%v", n.IPAddr, n.Port)
+	config.P2P.ExternalAddress = fmt.Sprintf("%v:%v", n.IPAddr, common.P2PPort)
 	config.P2P.MaxNumInboundPeers = common.MaxNumInboundPeers
 	config.P2P.MaxNumOutboundPeers = common.MaxNumOutboundPeers
 	config.P2P.AllowDuplicateIP = common.AllowDuplicateIP
