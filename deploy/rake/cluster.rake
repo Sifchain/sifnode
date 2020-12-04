@@ -100,8 +100,8 @@ namespace :cluster do
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.moniker=#{args[:moniker]} \
           --set sifnode.env.mnemonic=#{args[:mnemonic]} \
-          --set sifnode.env.genesisURL=#{args[:genesis_url]} \
           --set sifnode.env.peerAddress=#{args[:peer_address]} \
+          --set sifnode.env.genesisURL=#{args[:genesis_url]} \
           --set image.tag=#{image_tag(args)} \
           --set image.repository=#{image_repository(args)}
         }

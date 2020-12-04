@@ -26,11 +26,10 @@ spec:
       initContainers:
         - name: external-ip
           image: alpine/k8s:1.18.2
-          command: ["/scripts/external-ip.sh"]
+          command: ["/scripts/external-ip.sh", "sifnode", "$MONIKER", '{{ include "sifnode.fullname" . }}-external-ip']
           volumeMounts:
-            - name: config
+            - name: scripts
               mountPath: /scripts
-          args: ["$MONIKER", "sifnode", '{{ include "sifnode.fullname" . }}-external-ip']
           env:
             - name: MONIKER
               value: {{ .Values.sifnode.env.moniker }}
