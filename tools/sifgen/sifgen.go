@@ -41,8 +41,8 @@ func (s Sifgen) NetworkReset(networkDir string) {
 	}
 }
 
-func (s Sifgen) NodeCreate(moniker, mnemonic, peerAddress, genesisURL *string) {
-	witness := node.NewNode(*s.chainID, moniker, mnemonic, peerAddress, genesisURL)
+func (s Sifgen) NodeCreate(moniker, mnemonic, ipAddr, port string, peerAddress, genesisURL *string) {
+	witness := node.NewNode(*s.chainID, moniker, mnemonic, ipAddr, port, peerAddress, genesisURL)
 	_, err := witness.Build()
 	if err != nil {
 		log.Fatal(err)

@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/genesis"
@@ -17,18 +16,19 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/sethvargo/go-password/password"
-	"github.com/yelinaung/go-haikunator"
 	"gopkg.in/yaml.v3"
 )
 
 type Node struct {
 	ChainID     string    `yaml:"chain_id"`
-	PeerAddress *string   `yaml:"-"`
-	GenesisURL  *string   `yaml:"-"`
 	Moniker     string    `yaml:"moniker"`
+	Mnemonic    string    `yaml:"mnemonic"`
+	IPAddr      string    `yml:"ip_address"`
+	Port        string    `yml:"port"`
 	Address     string    `yaml:"address"`
 	Password    string    `yaml:"password"`
-	Mnemonic    *string   `yaml:"mnemonic"`
+	PeerAddress *string   `yaml:"-"`
+	GenesisURL  *string   `yaml:"-"`
 	Key         *key.Key  `yaml:"-"`
 	CLI         utils.CLI `yaml:"-"`
 }
@@ -49,22 +49,19 @@ func Reset(chainID string, nodeDir *string) error {
 	return nil
 }
 
-func NewNode(chainID string, moniker, mnemonic, peerAddress, genesisURL *string) *Node {
+func NewNode(chainID, moniker, mnemonic, ipAddr, port string, peerAddress, genesisURL *string) *Node {
 	password, _ := password.Generate(32, 5, 0, false, false)
-	if moniker == nil {
-		name := haikunator.New(time.Now().UTC().UnixNano()).Haikunate()
-		moniker = &name
-	}
-
 	return &Node{
 		ChainID:     chainID,
+		Moniker:     moniker,
+		Mnemonic:    mnemonic,
+		IPAddr:      ipAddr,
+		Port:        port,
 		PeerAddress: peerAddress,
 		GenesisURL:  genesisURL,
-		Moniker:     *moniker,
 		Password:    password,
-		Mnemonic:    mnemonic,
 		CLI:         utils.NewCLI(chainID),
-		Key:         key.NewKey(moniker, &password),
+		Key:         key.NewKey(&moniker, &password),
 	}
 }
 
@@ -109,13 +106,6 @@ func (n *Node) setup() error {
 	_, err = n.CLI.SetConfigTrustNode(true)
 	if err != nil {
 		return err
-	}
-
-	if n.Mnemonic == nil || *n.Mnemonic == "" {
-		err = n.generateMnemonic()
-		if err != nil {
-			return err
-		}
 	}
 
 	err = n.generateNodeKeyAddress()
@@ -203,7 +193,7 @@ func (n *Node) seedGenesis() error {
 }
 
 func (n *Node) generateNodeKeyAddress() error {
-	output, err := n.CLI.AddKey(n.Moniker, *n.Mnemonic, n.Password, common.DefaultCLIHome)
+	output, err := n.CLI.AddKey(n.Moniker, n.Mnemonic, n.Password, common.DefaultCLIHome)
 	if err != nil {
 		return err
 	}
@@ -221,13 +211,6 @@ func (n *Node) generateNodeKeyAddress() error {
 	}
 
 	n.Address = keys[0].Address
-
-	return nil
-}
-
-func (n *Node) generateMnemonic() error {
-	n.Key.GenerateMnemonic()
-	n.Mnemonic = &n.Key.Mnemonic
 
 	return nil
 }
@@ -279,6 +262,7 @@ func (n *Node) replaceConfig() error {
 		config.P2P.PersistentPeers = strings.Join(addressList[:], ",")
 	}
 
+	config.P2P.ExternalAddress = fmt.Sprintf("%v:%v", n.IPAddr, n.Port)
 	config.P2P.MaxNumInboundPeers = common.MaxNumInboundPeers
 	config.P2P.MaxNumOutboundPeers = common.MaxNumOutboundPeers
 	config.P2P.AllowDuplicateIP = common.AllowDuplicateIP

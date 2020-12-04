@@ -24,10 +24,12 @@ sifnode:
   env:
     chainnet:
     moniker:
-    sifId: sifchain
     genesisURL:
     peerAddress:
     mnemonic: ""
+    ports:
+      p2p_port: 26656
+      rpc_port: 26657
   service:
     type: LoadBalancer
 

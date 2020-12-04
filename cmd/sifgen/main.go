@@ -64,18 +64,14 @@ func nodeCmd() *cobra.Command {
 
 func nodeCreateCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "create [chain-id] [moniker] [mnemonic] [peer-address] [genesis-url]",
+		Use:   "create [chain-id] [moniker] [mnemonic] [ip_addr] [port] [peer-address] [genesis-url]",
 		Short: "Create a new node.",
-		Args:  cobra.MinimumNArgs(1),
+		Args:  cobra.MinimumNArgs(5),
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 1 {
-				sifgen.NewSifgen(&args[0]).NodeCreate(nil, nil, nil, nil)
-			} else if len(args) == 2 {
-				sifgen.NewSifgen(&args[0]).NodeCreate(&args[1], nil, nil, nil)
-			} else if len(args) == 3 {
-				sifgen.NewSifgen(&args[0]).NodeCreate(&args[1], &args[2], nil, nil)
+			if len(args) == 5 {
+				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], args[3], args[4], nil, nil)
 			} else {
-				sifgen.NewSifgen(&args[0]).NodeCreate(&args[1], &args[2], &args[3], &args[4])
+				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], args[3], args[4], &args[5], &args[6])
 			}
 		},
 	}
