@@ -117,31 +117,6 @@ resource "aws_iam_policy_attachment" "attach" {
   policy_arn = aws_iam_policy.policy.arn
 }
 
-resource "aws_security_group" "security_group" {
-  name        = "Custom Security Group for EKS"
-  description = "EKS Service Ports"
-  vpc_id      = module.vpc.vpc_id
-
-  ingress {
-    description = "EKS Service Ports"
-    from_port   = 30000
-    to_port     = 32767
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = var.cluster_name
-  }
-}
-
 data "aws_subnet_ids" "subnets" {
   vpc_id     = module.vpc.vpc_id
   depends_on = [module.vpc]
