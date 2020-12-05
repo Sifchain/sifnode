@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bufio"
+	"fmt"
 	"regexp"
 	"strconv"
 
@@ -74,11 +75,14 @@ func GetCmdCreateEthBridgeClaim(cdc *codec.Codec) *cobra.Command {
 			if !digitCheck.MatchString(args[6]) {
 				return types.ErrInvalidAmount
 			}
-			amount, err := strconv.ParseInt(args[6], 10, 64)
-			if err != nil {
-				return err
+
+			bigIntAmount, ok := sdk.NewIntFromString(args[6])
+			if !ok {
+				fmt.Println("SetString: error")
+				return types.ErrInvalidAmount
 			}
-			if amount <= 0 {
+
+			if bigIntAmount.LTE(sdk.NewInt(0)) {
 				return types.ErrInvalidAmount
 			}
 
@@ -88,7 +92,7 @@ func GetCmdCreateEthBridgeClaim(cdc *codec.Codec) *cobra.Command {
 			}
 
 			ethBridgeClaim := types.NewEthBridgeClaim(ethereumChainID, bridgeContract, nonce, symbol, tokenContract,
-				ethereumSender, cosmosReceiver, validator, amount, claimType)
+				ethereumSender, cosmosReceiver, validator, bigIntAmount, claimType)
 
 			msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
 			if err := msg.ValidateBasic(); err != nil {
@@ -135,11 +139,12 @@ func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 			if !digitCheck.MatchString(args[2]) {
 				return types.ErrInvalidAmount
 			}
-			amount, err := strconv.ParseInt(args[2], 10, 64)
-			if err != nil {
+			amount, ok := sdk.NewIntFromString(args[2])
+			if !ok {
 				return err
 			}
-			if amount <= 0 {
+
+			if amount.LTE(sdk.NewInt(0)) {
 				return types.ErrInvalidAmount
 			}
 
@@ -188,11 +193,13 @@ func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 			if !digitCheck.MatchString(args[2]) {
 				return types.ErrInvalidAmount
 			}
-			amount, err := strconv.ParseInt(args[2], 10, 64)
-			if err != nil {
+
+			amount, ok := sdk.NewIntFromString(args[2])
+
+			if !ok {
 				return err
 			}
-			if amount <= 0 {
+			if amount.LTE(sdk.NewInt(0)) {
 				return types.ErrInvalidAmount
 			}
 
