@@ -40,7 +40,7 @@ eth
 6. check the cosmos user balance after lock
 sifnodecli query account $(sifnodecli keys show akasha -a)
 
-### case 2: burn user's ceth in cosmos then asset to back to ethereum's receiver account
+### case 2: burn user's ceth in cosmos then unlock eth back to ethereum's receiver account
 1. check the receiver's balance before burn
 yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732 \ # any ethereum receiver account
 eth
