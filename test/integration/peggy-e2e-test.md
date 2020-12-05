@@ -14,7 +14,7 @@ sifnoded start
 cd smart-contracts
 
 ebrelayer init tcp://localhost:26657 ws://localhost:7545/ \
-0xdDA6327139485221633A1FcD65f4aC932E60A2e1 \ # BridgeRegistry contract address
+0xEcFcaB0A285d3380E488A39B4BB21e777f8A4EaC \ # BridgeRegistry contract address
 akasha <akasha's mnemonic> --chain-id=sifchain
 
 ### case 1: lock eth and send to cosmos user2 from eth operator account
