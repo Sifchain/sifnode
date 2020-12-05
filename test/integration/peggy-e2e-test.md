@@ -58,17 +58,17 @@ sifnodecli query account $(sifnodecli keys show akasha -a)
 
 ### case 3: lock rowan in cosmos then issue the token in ethereum
 1. sifnodecli tx ethbridge lock $(sifnodecli keys show akasha -a) 0xf17f52151EbEF6C7334FAD080c5704D77216b732 \ # receiver account in ethereum network
-1 rwn --ethereum-chain-id=5777 --from=akasha --yes
+1 rowan --ethereum-chain-id=5777 --from=akasha --yes
 
-2. get newly created "eRWN" token address
-yarn peggy:getTokenAddress eRWN
+2. get newly created "erowan" token address
+yarn peggy:getTokenAddress erowan
 
-3. check both balances rwn and eRWN
-yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732 eRWN
+3. check both balances rowan and erowan
+yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732 erowan
 sifnodecli query account $(sifnodecli keys show akasha -a)
 
-### case 4: burn rowan in ethereum and rowan will be back to cosmos
-1. yarn peggy:burn $(sifnodecli keys show akasha -a) eRWN 1 0xf17f52151EbEF6C7334FAD080c5704D77216b732
+### case 4: burn erowan in ethereum and rowan will be back to cosmos
+1. yarn peggy:burn $(sifnodecli keys show akasha -a) erowan 1 0xf17f52151EbEF6C7334FAD080c5704D77216b732
 2. check balance after burn
-yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732 eRWN
+yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732 erowan
 sifnodecli query account $(sifnodecli keys show akasha -a)
