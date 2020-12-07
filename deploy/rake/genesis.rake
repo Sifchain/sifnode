@@ -38,8 +38,9 @@ namespace :genesis do
         puts "the file #{network_config(args[:chainnet])} does not exist!"
         exit(1)
       end
-
-      build_docker_image(args[:chainnet])
+      if args[:chainnet] != 'localnet'
+        build_docker_image(args[:chainnet])
+      end
       boot_docker_network(chainnet: args[:chainnet], seed_network_address: "192.168.2.0/24", eth_config: with_eth)
     end
 
@@ -50,7 +51,7 @@ namespace :genesis do
 
     desc "Reset the state of a network"
     task :reset, [:chainnet] do |t, args|
-      system("sifgen network reset #{args[:chainnet]} #{cwd}/../networks")
+      safe_system("sifgen network reset #{args[:chainnet]} #{cwd}/../networks")
     end
   end
 
@@ -58,17 +59,17 @@ namespace :genesis do
   namespace :sifnode do
     desc "Scaffold a new local node and configure it to connect to an existing network"
     task :scaffold, [:chainnet, :peer_address, :genesis_url] do |t, args|
-      system("sifgen node create #{args[:chainnet]} #{args[:peer_address]} #{args[:genesis_url]}")
+      safe_system("sifgen node create #{args[:chainnet]} #{args[:peer_address]} #{args[:genesis_url]}")
     end
 
     desc "boot scaffolded node and connect to existing network"
     task :boot do
-      system("sifnoded start --p2p.laddr tcp://0.0.0.0:26658 ")
+      safe_system("sifnoded start --p2p.laddr tcp://0.0.0.0:26658 ")
     end
 
     desc "Reset the state of a node"
     task :reset, [:chainnet, :node_directory] do |t, args|
-      system("sifgen node reset #{args[:chainnet]} #{args[:node_directory]}")
+      safe_system("sifgen node reset #{args[:chainnet]} #{args[:node_directory]}")
     end
   end
 end
@@ -83,7 +84,7 @@ end
 # @param network_config     Name of the file to use to output the config to
 #
 def network_create(chainnet:, validator_count:, build_dir:, seed_ip_address:, network_config:)
-  system("sifgen network create #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{network_config}")
+  safe_system("sifgen network create #{chainnet} #{validator_count} #{build_dir} #{seed_ip_address} #{network_config}")
 end
 
 #
@@ -101,9 +102,12 @@ def boot_docker_network(chainnet:, seed_network_address:, eth_config:)
   network.each_with_index do |node, idx|
     cmd += "MONIKER#{idx+1}=#{node['moniker']} MNEMONIC#{idx+1}=\"#{node['mnemonic']}\" IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
   end
-
-  cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../genesis/docker-compose.yml up #{instances} | tee #{cwd}/../../log/#{chainnet}.log"
-  system(cmd)
+  if chainnet == 'localnet'
+    cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../../test/integration/docker-compose-integration.yml up -d | tee #{cwd}/../../log/#{chainnet}.log"
+  else
+    cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../genesis/docker-compose.yml up #{instances} | tee #{cwd}/../../log/#{chainnet}.log"
+  end
+  safe_system(cmd)
 end
 
 #
@@ -112,7 +116,7 @@ end
 # @param chainnet Name or ID of the chain
 #
 def build_docker_image(chainnet)
-  system("docker build -f #{cwd}/../genesis/Dockerfile -t sifchain/sifnoded:#{chainnet} #{cwd}/../../")
+  safe_system("docker build -f #{cwd}/../genesis/Dockerfile -t sifchain/sifnoded:#{chainnet} #{cwd}/../../")
 end
 
 #

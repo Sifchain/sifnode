@@ -23,6 +23,14 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
+// Constants for test scripts only .
+//
+const (
+	AddressKey1 = "A58856F0FD53BF058B4909A21AEC019107BA6"
+	AddressKey2 = "A58856F0FD53BF058B4909A21AEC019107BA7"
+	AddressKey3 = "A58856F0FD53BF058B4909A21AEC019107BA9"
+)
+
 // create a codec used only for testing
 func MakeTestCodec() *codec.Codec {
 	var cdc = codec.New()
@@ -97,6 +105,9 @@ func trimFirstRune(s string) string {
 }
 
 func GenerateAddress(key string) sdk.AccAddress {
+	if key == "" {
+		key = AddressKey1
+	}
 	var buffer bytes.Buffer
 	buffer.WriteString(key)
 	buffer.WriteString(strconv.Itoa(100))
@@ -115,6 +126,37 @@ func GenerateAddress(key string) sdk.AccAddress {
 	}
 
 	bechres, err := sdk.AccAddressFromBech32(bech)
+	if err != nil {
+		panic(err)
+	}
+	if !bytes.Equal(bechres, res) {
+		panic("Bech decode and hex decode don't match")
+	}
+	return res
+}
+
+func GenerateValidatorAddress(key string) sdk.ValAddress {
+	if key == "" {
+		key = AddressKey1
+	}
+	var buffer bytes.Buffer
+	buffer.WriteString(key)
+	buffer.WriteString(strconv.Itoa(100))
+	res, _ := sdk.ValAddressFromHex(buffer.String())
+	bech := res.String()
+	addr := buffer.String()
+	res, err := sdk.ValAddressFromHex(addr)
+
+	if err != nil {
+		panic(err)
+	}
+
+	bechexpected := res.String()
+	if bech != bechexpected {
+		panic("Bech encoding doesn't match reference")
+	}
+
+	bechres, err := sdk.ValAddressFromBech32(bech)
 	if err != nil {
 		panic(err)
 	}

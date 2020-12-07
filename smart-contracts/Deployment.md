@@ -66,7 +66,13 @@ truffle deploy --network mainnet
 ```
 You can replace mainnet with ropsten or local, whichever network you would like to deploy to.
 
-5. Grab the eRowan token address on whatever network you are on. Then run the setup_eRowan.js file to properly hook eRowan into the contracts. Make sure that the EROWAN_ADDRESS variable in the .env file is set to the eRowan token address. Make sure that the OWNER address is set properly in the env file so that you have an owner for the bridgebank contract that can use the admin api. Then run the command from the testnet-contracts folder:
+5. After you have deployed the contracts to your network of choice, you will need to run this command from the smart-contracts folder:
+```
+DIRECTORY_NAME="your_deployment_name_here" node scripts/saveContracts.js
+```
+Save the deployment folder and the subdirectory you just made and all of its files into git so that other users can interact with the smart contracts as well and know where the addresses are located. The output files will be located in the deployment directory inside the subdirectory of the name you passed. The fallback directory within the deployment directory is the default directory which is where things automatically get saved if you run this script without a directory name.
+
+6. Grab the eRowan token address on whatever network you are on. Then run the setup_eRowan.js file to properly hook eRowan into the contracts. Make sure that the EROWAN_ADDRESS variable in the .env file is set to the eRowan token address. Make sure that the OWNER address is set properly in the env file so that you have an owner for the bridgebank contract that can use the admin api. Then run the command from the testnet-contracts folder:
 ```
 truffle exec scripts/setup_eRowan.js --network mainnet
 ```
@@ -75,4 +81,4 @@ You can replace the network with whatever network you would like, ropsten, devel
 
 When running this command, make sure that the private key in the .env file corresponds to the operator of the bridgebank contract as well as the admin and deployer of the eRowan token contract.
 
-6. Make sure to record the smart contract addresses and share them with the team so that you can interact with them in the future. Then git add the build folder, commit it and push it to your own branch, then merge it with develop so that we have the records documented of the smart contract address in the version control history.
+7. Make sure to record the smart contract addresses and share them with the team so that you can interact with them in the future. Then git add the deployment folder, commit it and push it to your own branch, then merge it with develop so that we have the records documented of the smart contract address in the version control history.

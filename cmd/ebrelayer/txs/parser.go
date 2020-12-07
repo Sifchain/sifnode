@@ -63,7 +63,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event *types.Ethereum
 		symbol = strings.Join(res[1:], "")
 	}
 
-	amount := event.Value.Int64()
+	amount := sdk.NewIntFromBigInt(event.Value)
 
 	// Nonce type casting (*big.Int -> int)
 	nonce := int(event.Nonce.Int64())
@@ -113,7 +113,7 @@ func CosmosMsgToProphecyClaim(event types.CosmosMsg) ProphecyClaim {
 	cosmosSender := event.CosmosSender
 	cosmosSenderSequence := event.CosmosSenderSequence
 	ethereumReceiver := event.EthereumReceiver
-	symbol := strings.ToUpper(event.Symbol)
+	symbol := event.Symbol
 	amount := event.Amount
 
 	prophecyClaim := ProphecyClaim{
@@ -133,7 +133,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 	var cosmosSenderSequence *big.Int
 	var ethereumReceiver common.Address
 	var symbol string
-	var amount *big.Int
+	var amount sdk.Int
 
 	for _, attribute := range attributes {
 		key := string(attribute.GetKey())
@@ -164,13 +164,12 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 					return types.CosmosMsg{}, errors.New("can only relay burns of '%v' prefixed coins" + defaultSifchainPrefix)
 				}
 				res := strings.SplitAfter(val, defaultSifchainPrefix)
-				symbol = strings.ToUpper(strings.Join(res[1:], ""))
+				symbol = strings.Join(res[1:], "")
 			} else {
-				symbol = strings.ToUpper(val)
+				symbol = val
 			}
 		case types.Amount.String():
-			tempAmount := new(big.Int)
-			tempAmount, ok := tempAmount.SetString(val, 10)
+			tempAmount, ok := sdk.NewIntFromString(val)
 			if !ok {
 				log.Println("Invalid amount:", val)
 				return types.CosmosMsg{}, errors.New("invalid amount:" + val)
