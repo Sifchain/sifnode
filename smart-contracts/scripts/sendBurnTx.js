@@ -86,7 +86,7 @@ module.exports = async (cb) => {
       } else {
         cosmosRecipient = Web3.utils.utf8ToHex(process.argv[4]);
         coinDenom = process.argv[5];
-        amount = new BigNumber(process.argv[6]);
+        amount = process.argv[6]
       }
     }
   
