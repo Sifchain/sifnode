@@ -41,6 +41,8 @@ To move assets from sifchain to ethereum, the relayer subscribes to the cosmos c
 
 # Smart contracts
 
+Please note that only the validators can submit or sign off on prophecy claims on ethereum.
+
 On the ethereum side of the world, we maintain smart contracts that will lock and burn funds to move them across the bridge. There are many smart contracts, this is the high level flow from eth to sifchain:
 1. User locks up funds in BridgeBank smart contract
 2. Relayer hears the event generated from the BridgeBank contract
@@ -51,3 +53,6 @@ When a user transfers value from sifchain to ethereum this is what the flow look
 2. Relayer hears this transaction and submits a new prophecy claim to the CosmosBridge smart contract
 3. Other relayers sign off on this transaction.
 4. Once enough relayers sign off on this prophecy claim and the consensus threshold is reached, one of two things happen. If this was a sifchain native asset being moved across the bridge, then we will mint assets for that user through the BridgeBank. If this asset being moved across the bridge was an ethereum native asset, then the BridgeBank will unlock those funds and send them to the user specified in the prohpecy claim.
+
+# Smart contract Architecture
+Currently, the smart contracts are upgradeable which allows us to fix them should any bugs arise. In time, the control of these smart contracts will be handed over to SifDAO for control or the admin abilities completely removed for full decentralization.
