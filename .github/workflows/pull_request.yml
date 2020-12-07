@@ -3,10 +3,7 @@ name: Pull Request Checks
 on:
   pull_request:
     branches:
-      - main
-  push:
-    branches:
-      - feature/slither-added-to-ci
+      - develop
 
 jobs:
   slither:
