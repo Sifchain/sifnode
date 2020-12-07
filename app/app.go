@@ -20,6 +20,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
+	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
@@ -40,6 +41,7 @@ var (
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		staking.AppModuleBasic{},
+		distr.AppModuleBasic{},
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		clp.AppModuleBasic{},
@@ -51,6 +53,7 @@ var (
 	// Module accounts which will be passed to the supply keeper when it is initialized
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
+		distr.ModuleName:          nil,
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
@@ -65,6 +68,7 @@ func MakeCodec() *codec.Codec {
 	vesting.RegisterCodec(cdc) // Need to verify if we need this
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
+	codec.RegisterEvidences(cdc)
 
 	return cdc.Seal()
 }
@@ -80,12 +84,13 @@ type NewApp struct {
 
 	subspaces map[string]params.Subspace
 
-	AccountKeeper auth.AccountKeeper
-	bankKeeper    bank.Keeper
-	stakingKeeper staking.Keeper
-	slashingKeeper slashing.Keeper
-	SupplyKeeper  supply.Keeper
-	paramsKeeper  params.Keeper
+	AccountKeeper   auth.AccountKeeper
+	bankKeeper      bank.Keeper
+	stakingKeeper   staking.Keeper
+	slashingKeeper  slashing.Keeper
+	distrKeeper     distr.Keeper
+	SupplyKeeper    supply.Keeper
+	paramsKeeper    params.Keeper
 
 	// Peggy keepers
 	EthBridgeKeeper ethbridge.Keeper
@@ -118,6 +123,7 @@ func NewInitApp(
 		oracle.StoreKey,
 		ethbridge.StoreKey,
 		clp.StoreKey,
+		distr.StoreKey,
 		slashing.StoreKey,
 	)
 
@@ -137,6 +143,7 @@ func NewInitApp(
 	app.subspaces[bank.ModuleName] = app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
 	app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
+	app.subspaces[distr.ModuleName] = app.paramsKeeper.Subspace(distr.DefaultParamspace)
 	app.subspaces[slashing.ModuleName] = app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 
 	app.AccountKeeper = auth.NewAccountKeeper(
@@ -173,6 +180,9 @@ func NewInitApp(
 		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()),
 	)
 
+	app.distrKeeper = distr.NewKeeper(app.cdc, keys[distr.StoreKey], app.subspaces[distr.ModuleName], &stakingKeeper,
+		app.supplyKeeper, distr.DefaultCodespace, auth.FeeCollectorName, app.ModuleAccountAddrs())
+
 	app.slashingKeeper = slashing.NewKeeper(
 		app.cdc, keys[slashing.StoreKey], &stakingKeeper, slashingSubspace, slashing.DefaultCodespace,
 	)
@@ -202,6 +212,7 @@ func NewInitApp(
 		auth.NewAppModule(app.AccountKeeper),
 		bank.NewAppModule(app.bankKeeper, app.AccountKeeper),
 		supply.NewAppModule(app.SupplyKeeper, app.AccountKeeper),
+		distr.NewAppModule(app.distrKeeper, app.supplyKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
@@ -219,6 +230,7 @@ func NewInitApp(
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
 	app.mm.SetOrderInitGenesis(
+		distr.ModuleName,
 		staking.ModuleName,
 		auth.ModuleName,
 		bank.ModuleName,

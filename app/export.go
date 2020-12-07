@@ -57,14 +57,48 @@ func (app *NewApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []str
 		whiteListMap[addr] = true
 	}
 
+	/* Handle fee distribution state. */
+
+	// withdraw all validator commission
+	app.stakingKeeper.IterateValidators(ctx, func(_ int64, val staking.ValidatorI) (stop bool) {
+		_, _ = app.distrKeeper.WithdrawValidatorCommission(ctx, val.GetOperator())
+		return false
+	})
+
+	// withdraw all delegator rewards
+	dels := app.stakingKeeper.GetAllDelegations(ctx)
+	for _, delegation := range dels {
+		_, _ = app.distrKeeper.WithdrawDelegationRewards(ctx, delegation.DelegatorAddress, delegation.ValidatorAddress)
+	}
+
+	// clear validator slash events
+	app.distrKeeper.DeleteAllValidatorSlashEvents(ctx)
+
+	// clear validator historical rewards
+	app.distrKeeper.DeleteAllValidatorHistoricalRewards(ctx)
+
 	// set context height to zero
 	height := ctx.BlockHeight()
 	ctx = ctx.WithBlockHeight(0)
 
 	// reinitialize all validators
 	app.stakingKeeper.IterateValidators(ctx, func(_ int64, val staking.ValidatorI) (stop bool) {
+
+		// donate any unwithdrawn outstanding reward fraction tokens to the community pool
+		scraps := app.distrKeeper.GetValidatorOutstandingRewards(ctx, val.GetOperator())
+		feePool := app.distrKeeper.GetFeePool(ctx)
+		feePool.CommunityPool = feePool.CommunityPool.Add(scraps)
+		app.distrKeeper.SetFeePool(ctx, feePool)
+
+		app.distrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
 		return false
 	})
+
+	// reinitialize all delegations
+	for _, del := range dels {
+		app.distrKeeper.Hooks().BeforeDelegationCreated(ctx, del.DelegatorAddress, del.ValidatorAddress)
+		app.distrKeeper.Hooks().AfterDelegationModified(ctx, del.DelegatorAddress, del.ValidatorAddress)
+	}
 
 	// reset context height
 	ctx = ctx.WithBlockHeight(height)
