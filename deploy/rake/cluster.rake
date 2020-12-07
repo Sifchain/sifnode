@@ -188,6 +188,32 @@ namespace :cluster do
       puts "Coming soon! "
     end
   end
+
+  desc "UI"
+  namespace :ui do
+    desc "Deploy the Sifnode UI to an existing cluster"
+    task :deploy, [:chainnet, :provider] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm upgrade ui #{cwd}/../../deploy/helm/ui \
+        --install -n ui \
+        --create-namespace
+      }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+    end
+
+    desc "Destroy the Sifnode UI on an existing cluster"
+    task :destroy, [:chainnet, :provider] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm delete ui --namespace ui && \
+        kubectl delete ns ui
+      }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+    end
+  end
 end
 
 #

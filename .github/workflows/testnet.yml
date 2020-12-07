@@ -24,6 +24,8 @@ jobs:
           cd ./api/openapi
           make CHAINNET=testnet build-image-swagger-iu
           make CHAINNET=testnet build-image-prim
+          cd ../../ui
+          make CHAINNET=testnet build-ui
       - name: Push images
         run: |
           docker push sifchain/sifnoded:testnet
@@ -32,3 +34,4 @@ jobs:
           docker push sifchain/swagger-ui:testnet
           docker push sifchain/prism:testnet
           docker push sifchain/ebrelayer:testnet
+          docker push sifchain/ui:testnet
