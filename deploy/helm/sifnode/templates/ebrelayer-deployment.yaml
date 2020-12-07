@@ -31,7 +31,7 @@ spec:
           image: "{{ .Values.ebrelayer.image.repository }}:{{ .Values.ebrelayer.image.tag }}"
           imagePullPolicy: {{ .Values.ebrelayer.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER --chain-id $CHAINNET --keyring-backend test"]
+          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER \"$MNEMONIC\" --chain-id $CHAINNET"]
           env:
             - name: NODE_HOST
               value: "tcp://{{ .Chart.Name }}.{{ .Release.Namespace }}.svc.cluster.local:26657"
@@ -48,6 +48,11 @@ spec:
                 secretKeyRef:
                   name: {{ include "sifnode.fullname" . }}-ebrelayer
                   key: ethPrivateKey
+            - name: MNEMONIC
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sifnode.fullname" . }}-ebrelayer
+                  key: mnemonic
           livenessProbe:
             tcpSocket:
               port: 26657
@@ -60,13 +65,6 @@ spec:
             periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-          - name: root
-            mountPath: /root
-      volumes:
-      - name: root
-        persistentVolumeClaim:
-          claimName: {{ .Values.pvc.sifnodecliName }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
