@@ -27,7 +27,7 @@ const api = createApi({
 const store = createStore();
 const actions = createActions({ store, api });
 
-const marketPairFinder = (a: Asset | string, b: Asset | string) => {
+const poolFinder = (a: Asset | string, b: Asset | string) => {
   const pools = toRefs(store.pools);
   const key = [a, b]
     .map((x) => (typeof x === "string" ? x : x.symbol))
@@ -40,6 +40,6 @@ export function useCore() {
     store,
     api,
     actions,
-    marketPairFinder,
+    poolFinder,
   };
 }

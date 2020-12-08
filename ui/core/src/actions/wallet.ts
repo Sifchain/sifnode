@@ -7,7 +7,7 @@ import { effect } from "@vue/reactivity";
 export default ({
   api,
   store,
-}: ActionContext<"SifService" | "MarketService" | "ClpService", "wallet">) => {
+}: ActionContext<"SifService" | "ClpService", "wallet">) => {
   const state = api.SifService.getState();
 
   const actions = {

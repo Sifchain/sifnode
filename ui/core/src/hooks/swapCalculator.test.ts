@@ -61,7 +61,7 @@ describe("swapCalculator", () => {
       )
     ) as Ref<Pool | null>;
 
-    const marketPairFinder: any = jest.fn((a: string, b: string) => {
+    const poolFinder: any = jest.fn((a: string, b: string) => {
       if (a === "atk" && b === "rwn") {
         return pool1;
       } else {
@@ -76,7 +76,7 @@ describe("swapCalculator", () => {
       fromSymbol,
       selectedField,
       toSymbol,
-      marketPairFinder,
+      poolFinder,
     }));
     selectedField.value = "from";
     expect(state.value).toBe(SwapState.SELECT_TOKENS);
@@ -155,7 +155,7 @@ describe("swapCalculator", () => {
       )
     ) as Ref<Pool | null>;
 
-    const marketPairFinder: any = jest.fn((a: string, b: string) => {
+    const poolFinder: any = jest.fn((a: string, b: string) => {
       if (a === "atk" && b === "rwn") {
         return pool1;
       } else {
@@ -170,7 +170,7 @@ describe("swapCalculator", () => {
       fromSymbol,
       selectedField,
       toSymbol,
-      marketPairFinder,
+      poolFinder,
     }));
 
     selectedField.value = "from";
