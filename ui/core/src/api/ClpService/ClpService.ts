@@ -18,26 +18,6 @@ export type ClpServiceContext = {
   nativeAsset: Asset;
 };
 
-function toAssetSymbol(assetOrString: Asset | string) {
-  return typeof assetOrString === "string"
-    ? assetOrString
-    : assetOrString.symbol;
-}
-
-function makeQuerablePromise<T>(promise: Promise<T>) {
-  let isResolved = false;
-
-  promise.then(() => {
-    isResolved = true;
-  });
-
-  return {
-    isResolved() {
-      return isResolved;
-    },
-  };
-}
-
 type IClpService = {
   getPools: () => Promise<Pool[]>;
   onPoolsUpdated: (handler: PoolHandlerFn) => void;
