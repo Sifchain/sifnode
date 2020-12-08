@@ -3,10 +3,12 @@
 The following document will explain the architecture of peggy from a 10,000 foot view. Other documentation will drill down more into the details of how this works.
 
 
-## Terms
+## Glossary
 Relayer: A piece of middleware that listens to transactions on one chain and submits them to another chain. This relayer will listen to events on both the ethereum and sifchain blockchain.
 
 BridgeBank: A smart contract on ethereum where users will unlock, lock, mint and burn funds to transfer them across the chains.
+
+BridgeToken: An ERC20 token that is created by the BridgeBank to represent a sifchain native asset on ethereum. BridgeTokens are minted by the BridgeBank whenever a user transfers a sifchain native asset to ethereum.
 
 LogLock: An event that is triggered when an ethereum native asset is locked in the BridgebBank contract.
 
@@ -20,13 +22,13 @@ ProphecyClaim: A transaction that tells us that a certain amount of coins should
 
 Validators: Whitelisted ethereum addresses who submit new prophecy claims.
 
-Validator Power: The weight a single validator has on voting for a prophecy claim.
-
 Valset: A smart contract that stores the whitelist of validators and their powers.
 
 Oracle: A smart contract that stores the current amount of sign off on a given prohpecy claim.
 
 CosmosBridge: A smart contract on ethereum where validators will submit new prophecy claims to unlock or mint assets on ethereum.
+
+Validator Power: The weight a single validator has on voting for a prophecy claim.
 
 Consensus threshold: The percent of validators power that must sign off on a prophecy claim for it to mint or unlock assets on the ethereum side.
 
@@ -41,7 +43,7 @@ To move assets from sifchain to ethereum, the relayer subscribes to the cosmos c
 
 # Smart contracts
 
-Please note that only the validators can submit or sign off on prophecy claims on ethereum.
+Please note that only the whitelisted validators in the valset smart contract can submit or sign off on prophecy claims on ethereum.
 
 On the ethereum side of the world, we maintain smart contracts that will lock and burn funds to move them across the bridge. There are many smart contracts, this is the high level flow from eth to sifchain:
 1. User locks up funds in BridgeBank smart contract
