@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/BurntSushi/toml v0.3.1
+	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aristanetworks/goarista v0.0.0-20201012165903-2cb20defcd66 // indirect
 	github.com/btcsuite/btcd v0.21.0-beta // indirect
@@ -18,6 +19,7 @@ require (
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/google/gofuzz v1.1.1-0.20200604201612-c04b05f3adfa // indirect
+	github.com/google/uuid v1.1.1 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/huin/goupnp v1.0.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
