@@ -100,9 +100,6 @@ export default defineComponent({
       );
       transactionState.value = "confirmed";
 
-      // TODO Tidy up transaction
-      alert("Liquidity added");
-
       clearAmounts();
     }
 

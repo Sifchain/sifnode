@@ -8,9 +8,9 @@
             <div class="text" v-if="state === 'signing'">
               <p>Waiting for confirmation</p>
               <p class="thin">
-                Swapping
+                Supplying
                 <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
-                for
+                and
                 <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
               </p>
               <br />
@@ -21,9 +21,9 @@
             <div class="text" v-if="confirmed">
               <p>Transaction Submitted</p>
               <p class="thin">
-                Swapping
+                Supplying
                 <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
-                for
+                and
                 <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
               </p>
               <br />
