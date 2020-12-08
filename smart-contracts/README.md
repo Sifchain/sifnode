@@ -72,3 +72,4 @@ We decided to temporarily remove the validator set from this version of the Smar
 The Ethereum Oracle module and Oracle modules are completed, with the Relayer service currently being actively integrated in order to interface between the smart contracts and Oracles. Once Ethereum -> Cosmos transfers have been successfully prototyped, functionality for bidirectional transfers (such as validator sets, signature validation, and secured token unlocking procedures) will be integrated into the contracts. Previous work in these areas is a valuable resource that will be leveraged once the complete system is ready for bidirectional transfers.
 
 Thanks to @adrianbrink, @mossid, and @sunnya97 for contributions to the original Peggy repository.
+
