@@ -1,4 +1,4 @@
-import { computed, ComputedRef, effect, ref, Ref } from "@vue/reactivity";
+import { computed, Ref } from "@vue/reactivity";
 
 import { Asset, AssetAmount, LiquidityProvider, Pool } from "../entities";
 import { calculateWithdrawal } from "../entities/formulae";
@@ -11,7 +11,7 @@ export function useRemoveLiquidityCalculator(input: {
   nativeAssetSymbol: Ref<string | null>;
   wBasisPoints: Ref<string | null>;
   asymmetry: Ref<string | null>;
-  marketPairFinder: (a: Asset | string, b: Asset | string) => Pool | null;
+  marketPairFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
   liquidityProvider: Ref<LiquidityProvider | null>;
   sifAddress: Ref<string>;
 }) {
@@ -29,7 +29,8 @@ export function useRemoveLiquidityCalculator(input: {
     if (!nativeAsset.value || !externalAsset.value) return null;
 
     // Find pool from marketPairFinder
-    return input.marketPairFinder(nativeAsset.value, externalAsset.value);
+    const pair = input.marketPairFinder(nativeAsset.value, externalAsset.value);
+    return pair?.value ?? null;
   });
 
   const poolUnits = computed(() => {

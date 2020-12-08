@@ -33,7 +33,7 @@ describe("usePoolCalculator", () => {
   const toSymbol: Ref<string | null> = ref(null);
   const balances = ref([]) as Ref<IAssetAmount[]>;
   const selectedField: Ref<"from" | "to" | null> = ref("from");
-  const marketPairFinder = jest.fn<Pool | null, any>(() => null);
+  const marketPairFinder = jest.fn<Ref<Pool> | null, any>(() => null);
 
   // output
 
@@ -79,11 +79,14 @@ describe("usePoolCalculator", () => {
   });
 
   test("poolCalculator with preexisting pool", () => {
-    marketPairFinder.mockImplementation(() =>
-      Pool(
-        AssetAmount(ASSETS.atk, "1000000"),
-        AssetAmount(ASSETS.rwn, "1000000")
-      )
+    marketPairFinder.mockImplementation(
+      () =>
+        ref(
+          Pool(
+            AssetAmount(ASSETS.atk, "1000000"),
+            AssetAmount(ASSETS.rwn, "1000000")
+          )
+        ) as Ref<Pool>
     );
     fromAmount.value = "1000";
     toAmount.value = "500";
