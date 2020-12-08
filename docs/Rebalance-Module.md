@@ -1,4 +1,4 @@
-# **Sifchain Minting Module**
+# **Sifchain Rebalance Module**
 
 ## Changelog
 -First Draft: Austin Haines 12/07/2020
@@ -192,7 +192,7 @@ func (k Keeper) GetValidatorControlParameter(ctx sdk.Context) (sdk.Dec, error) {
 		panic("stored rebalancer should not have been nil")
 	}
 
-	k.cdc.MustUnmarshalBinaryBare(b, &minter)
+	k.cdc.MustUnmarshalBinaryBare(b, &rebalancer)
 	return rebalancer.lambda_v, nil
 }
 
@@ -203,7 +203,7 @@ func (k Keeper) GetLiquidityControlParameter(ctx sdk.Context) (sdk.Dec, error) {
 		panic("stored rebalancer should not have been nil")
 	}
 
-	k.cdc.MustUnmarshalBinaryBare(b, &minter)
+	k.cdc.MustUnmarshalBinaryBare(b, &rebalancer)
    return rebalancer.lambda_l, nil
 }
 ```
