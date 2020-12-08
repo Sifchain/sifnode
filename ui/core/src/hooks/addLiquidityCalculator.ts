@@ -105,11 +105,11 @@ export function usePoolCalculator(input: {
     const bAmount = toField.fieldAmount.value;
     if (!aAmount || !bAmount) return "";
     if (bAmount.equalTo("0")) return "";
-    return `${aAmount
+    return `<span class="number">${aAmount
       .divide(bAmount)
       .toFixed(
         8
-      )} ${aAmount.asset.symbol.toUpperCase()} per ${bAmount.asset.symbol.toUpperCase()}`;
+      )}</span><br> ${aAmount.asset.symbol.toUpperCase()} per ${bAmount.asset.symbol.toUpperCase()}`;
   });
 
   const bPerARatioMessage = computed(() => {
@@ -118,11 +118,11 @@ export function usePoolCalculator(input: {
     if (!aAmount || !bAmount) return "";
     if (aAmount.equalTo("0")) return "";
 
-    return `${bAmount
+    return `<span class="number">${bAmount
       .divide(aAmount)
       .toFixed(
         8
-      )} ${bAmount.asset.symbol.toUpperCase()} per ${aAmount.asset.symbol.toUpperCase()}`;
+      )}</span><br> ${bAmount.asset.symbol.toUpperCase()} per ${aAmount.asset.symbol.toUpperCase()}`;
   });
 
   const state = computed(() => {
