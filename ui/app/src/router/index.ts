@@ -3,8 +3,11 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Swap from "@/views/SwapPage.vue";
 import Pool from "@/views/PoolPage.vue";
 import CreatePool from "@/views/CreatePoolPage.vue";
-import Ui from "@/views/Ui.vue";
 import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
+
+// Demo UI views
+import Ui from "@/views/uiDemo/Ui.vue";
+import UiPoolListPage from "@/views/uiDemo/uiPoolListPage.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -37,11 +40,17 @@ const routes: Array<RouteRecordRaw> = [
     component: RemoveLiquidity,
   },
 
-  // route for UI elements showcase - To Be Deleted
+
+  // routes for UI elements showcase - To Be Deleted
   {
     path: "/ui",
     name: "Ui",
     component: Ui,
+  },
+  {
+    path: "/ui-pool-list",
+    name: "UiPoolList",
+    component: UiPoolListPage,
   },
 ];
 
