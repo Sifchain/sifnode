@@ -1,5 +1,5 @@
 <template>
-  <router-link class="link" :to="to" :class="{'disabled': disabled}">
+  <router-link class="link" :to="to" :class="{'disabled': disabled, 'router-link-active': subPageIsActive(to)}">
     <div class="icon-button">
       <div class="icon" :class="colorClass"></div>
       <Icon class="icon-svg" :icon="icon" />
@@ -40,6 +40,14 @@ export default defineComponent({
         'green': this.color === 'green',
         'blue': this.color === 'blue'
       }
+    }
+  },
+  methods: {
+    subPageIsActive(input:string) {
+      const paths = [input]
+      return paths.some(path => {
+        return this.$route.path.indexOf(path) === 0 // current path starts with this path string
+      })
     }
   }
 });
