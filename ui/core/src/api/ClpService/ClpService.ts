@@ -54,6 +54,7 @@ type PoolHandlerFn = (pools: Pool[]) => void;
 export default function createClpService({
   loadAssets,
   sifApiUrl,
+
   client = new SifUnSignedClient(sifApiUrl),
 }: ClpServiceContext): IClpService {
   let ws: ReconnectingWebSocket;
