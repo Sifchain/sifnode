@@ -13,6 +13,8 @@ const api = createApi({
   // TODO: switch on env
   sifAddrPrefix: "sif",
   sifApiUrl: process.env.VUE_APP_SIFNODE_API || "http://127.0.0.1:1317",
+  sifWsUrl:
+    process.env.VUE_APP_SIFNODE_WS_API || "ws://localhost:26657/websocket",
   getWeb3Provider,
   loadAssets: getFakeTokens,
 });

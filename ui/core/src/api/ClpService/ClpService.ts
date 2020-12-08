@@ -15,6 +15,7 @@ import ReconnectingWebSocket from "reconnecting-websocket";
 export type ClpServiceContext = {
   loadAssets: () => Promise<Asset[]>;
   sifApiUrl: string;
+  sifWsUrl: string;
   client?: SifUnSignedClient;
 };
 
@@ -54,7 +55,7 @@ type PoolHandlerFn = (pools: Pool[]) => void;
 export default function createClpService({
   loadAssets,
   sifApiUrl,
-
+  sifWsUrl,
   client = new SifUnSignedClient(sifApiUrl),
 }: ClpServiceContext): IClpService {
   let ws: ReconnectingWebSocket;
@@ -63,7 +64,7 @@ export default function createClpService({
 
   async function setupPoolWatcher() {
     await new Promise((res, rej) => {
-      ws = new ReconnectingWebSocket("ws://localhost:26657/websocket");
+      ws = new ReconnectingWebSocket(sifWsUrl);
       ws.onopen = () => {
         ws.send(
           JSON.stringify({
