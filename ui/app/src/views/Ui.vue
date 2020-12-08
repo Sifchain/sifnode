@@ -29,8 +29,8 @@ export default defineComponent({
   },
 
   setup() {
-    const { api, actions, store } = useCore();
-    const marketPairFinder = api.MarketService.find;
+    const { actions, marketPairFinder, store } = useCore();
+
     const {
       fromSymbol,
       fromAmount,

@@ -28,8 +28,7 @@ export default defineComponent({
     Slider,
   },
   setup() {
-    const { store, actions, api } = useCore();
-    const marketPairFinder = api.MarketService.find;
+    const { store, actions, marketPairFinder, api } = useCore();
 
     const asymmetry = ref("0");
     const wBasisPoints = ref("5000");
