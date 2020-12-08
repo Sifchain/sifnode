@@ -6,7 +6,7 @@
       </template>
       <div class="header" v-if="backLink || title">
         <div v-if="backLink">
-          <router-link class="back-link" :to="backLink"><Icon :class="{ enabled, left }" icon="back" /></router-link>
+          <router-link class="back-link" :to="backLink"><Icon icon="back" /></router-link>
         </div>
         <div class="title">
           {{ title }}

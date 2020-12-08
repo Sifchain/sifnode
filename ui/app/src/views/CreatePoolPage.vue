@@ -5,6 +5,10 @@ import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
 import Modal from "@/components/shared/Modal.vue";
+import ModalView from "@/components/shared/ModalView.vue";
+import ConfirmationDialog, {
+  ConfirmState,
+} from "@/components/confirmationDialog/PoolConfirmationDialog.vue";
 import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
@@ -21,11 +25,14 @@ export default defineComponent({
     CurrencyPairPanel,
     SelectTokenDialog,
     PriceCalculation,
+    ConfirmationDialog, 
+    ModalView,
   },
   setup() {
     const { actions, store, api } = useCore();
     const marketPairFinder = api.MarketService.find;
     const selectedField = ref<"from" | "to" | null>(null);
+    const transactionState = ref<ConfirmState>("selecting");
 
     const {
       fromSymbol,
@@ -70,6 +77,38 @@ export default defineComponent({
       toSymbol,
       marketPairFinder,
     });
+
+    function handleNextStepClicked() {
+      if (!fromFieldAmount.value)
+        throw new Error("from field amount is not defined");
+      if (!toFieldAmount.value)
+        throw new Error("to field amount is not defined");
+
+      transactionState.value = "confirming";
+    }
+
+    async function handleAskConfirmClicked() {
+      if (!fromFieldAmount.value)
+        throw new Error("Token A field amount is not defined");
+      if (!toFieldAmount.value)
+        throw new Error("Token B field amount is not defined");
+
+      transactionState.value = "signing";
+      await actions.clp.addLiquidity(
+        toFieldAmount.value,
+        fromFieldAmount.value
+      );
+      transactionState.value = "confirmed";
+
+      // TODO Tidy up transaction
+      alert("Liquidity added");
+
+      clearAmounts();
+    }
+
+    function requestTransactionModalClose() {
+      transactionState.value = "selecting";
+    }
 
     return {
       fromAmount,
@@ -120,22 +159,23 @@ export default defineComponent({
         }
         selectedField.value = null;
       },
-      async handleNextStepClicked() {
-        if (!fromFieldAmount.value)
-          throw new Error("Token A field amount is not defined");
-        if (!toFieldAmount.value)
-          throw new Error("Token B field amount is not defined");
 
-        await actions.clp.addLiquidity(
-          toFieldAmount.value,
-          fromFieldAmount.value
+      
+
+      handleNextStepClicked,
+
+      handleAskConfirmClicked,
+
+      requestTransactionModalClose,
+
+      transactionState,
+
+      transactionModalOpen: computed(() => {
+        return ["confirming", "signing", "confirmed"].includes(
+          transactionState.value
         );
+      }),
 
-        // TODO Tidy up transaction
-        alert("Liquidity added");
-
-        clearAmounts();
-      },
       handleBlur() {
         selectedField.value = null;
       },
@@ -203,6 +243,19 @@ export default defineComponent({
       :nextStepAllowed="nextStepAllowed"
       :nextStepMessage="nextStepMessage"
     />
+    <ModalView
+      :requestClose="requestTransactionModalClose"
+      :isOpen="transactionModalOpen"
+      ><ConfirmationDialog
+        @confirmswap="handleAskConfirmClicked"
+        :state="transactionState"
+        :requestClose="requestTransactionModalClose"
+        :priceMessage="priceMessage"
+        :fromToken="fromSymbol"
+        :fromAmount="fromAmount"
+        :toAmount="toAmount"
+        :toToken="toSymbol"
+    /></ModalView>
   </Layout>
 </template>
 
