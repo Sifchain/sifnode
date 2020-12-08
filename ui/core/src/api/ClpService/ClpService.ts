@@ -21,6 +21,7 @@ export type ClpServiceContext = {
 type IClpService = {
   getPools: () => Promise<Pool[]>;
   onPoolsUpdated: (handler: PoolHandlerFn) => void;
+  getPoolsByLiquidityProvider: (address: string) => Promise<Pool[]>;
   swap: (params: {
     fromAddress: string;
     receivedAsset: Asset;
@@ -97,6 +98,11 @@ export default function createClpService({
   const instance: IClpService = {
     async getPools() {
       const rawPools = await client.getPools();
+
+      return rawPools.map(toPool);
+    },
+    async getPoolsByLiquidityProvider(address: string) {
+      const rawPools = await client.getAssets(address);
       return rawPools.map(toPool);
     },
     onPoolsUpdated(handler: PoolHandlerFn) {
