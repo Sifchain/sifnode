@@ -72,3 +72,10 @@ sifnodecli query account $(sifnodecli keys show akasha -a)
 2. check balance after burn
 yarn peggy:getTokenBalance 0xf17f52151EbEF6C7334FAD080c5704D77216b732 erowan
 sifnodecli query account $(sifnodecli keys show akasha -a)
+
+### case 5: lock eth-native token and issue new cToken
+yarn peggy:whiteList 0x9FBDa871d559710256a2502A2517b794B482Db40 \ # token address (TEST symbol)
+1
+yarn token:mint
+yarn token:approve 10
+yarn peggy:lock $(sifnodecli keys show akasha -a) 0x9FBDa871d559710256a2502A2517b794B482Db40 10 0x627306090abaB3A6e1400e9345bC60c78a8BEf57
