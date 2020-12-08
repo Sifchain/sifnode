@@ -11,7 +11,7 @@ export function useRemoveLiquidityCalculator(input: {
   nativeAssetSymbol: Ref<string | null>;
   wBasisPoints: Ref<string | null>;
   asymmetry: Ref<string | null>;
-  marketPairFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
+  poolFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
   liquidityProvider: Ref<LiquidityProvider | null>;
   sifAddress: Ref<string>;
 }) {
@@ -28,9 +28,9 @@ export function useRemoveLiquidityCalculator(input: {
   const liquidityPool = computed(() => {
     if (!nativeAsset.value || !externalAsset.value) return null;
 
-    // Find pool from marketPairFinder
-    const pair = input.marketPairFinder(nativeAsset.value, externalAsset.value);
-    return pair?.value ?? null;
+    // Find pool from poolFinder
+    const pool = input.poolFinder(nativeAsset.value, externalAsset.value);
+    return pool?.value ?? null;
   });
 
   const poolUnits = computed(() => {

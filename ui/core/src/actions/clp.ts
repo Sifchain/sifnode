@@ -5,14 +5,11 @@ import { PoolStore } from "../store/pools";
 export default ({
   api,
   store,
-}: ActionContext<
-  "SifService" | "MarketService" | "ClpService",
-  "pools" | "wallet"
->) => {
+}: ActionContext<"SifService" | "ClpService", "pools" | "wallet">) => {
   const state = api.SifService.getState();
 
   // Sync MarketService with pool store
-  api.MarketService.onPoolsUpdated((pools) => {
+  api.ClpService.onPoolsUpdated((pools) => {
     for (let pool of pools) {
       store.pools[pool.symbol()] = pool;
     }
