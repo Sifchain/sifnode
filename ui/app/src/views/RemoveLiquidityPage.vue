@@ -28,7 +28,7 @@ export default defineComponent({
     Slider,
   },
   setup() {
-    const { store, actions, marketPairFinder, api } = useCore();
+    const { store, actions, poolFinder, api } = useCore();
 
     const asymmetry = ref("0");
     const wBasisPoints = ref("5000");
@@ -62,7 +62,7 @@ export default defineComponent({
       asymmetry,
       liquidityProvider,
       sifAddress: toRef(store.wallet.sif, "address"),
-      marketPairFinder,
+      poolFinder,
     });
     // input not updating for some reason?
     function clearFields() {

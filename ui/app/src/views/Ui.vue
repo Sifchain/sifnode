@@ -29,7 +29,7 @@ export default defineComponent({
   },
 
   setup() {
-    const { actions, marketPairFinder, store } = useCore();
+    const { actions, poolFinder, store } = useCore();
 
     const {
       fromSymbol,
@@ -64,7 +64,7 @@ export default defineComponent({
       fromSymbol,
       selectedField,
       toSymbol,
-      marketPairFinder,
+      poolFinder,
     });
 
     function clearAmounts() {
