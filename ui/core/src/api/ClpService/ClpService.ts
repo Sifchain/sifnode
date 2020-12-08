@@ -78,8 +78,7 @@ export default function createClpService({
         // Subscribing to all pool addresses could mean having a tone of
         // open connections to our node because there is no "OR" query
         // syntax so have chosen to go with debouncing getPools for now.
-        ws.onmessage = async (...argoids) => {
-          console.log({ argoids });
+        ws.onmessage = async () => {
           poolHandler(await instance.getPools());
         };
         res(ws);
