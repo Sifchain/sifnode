@@ -18,25 +18,21 @@ jobs:
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Get the tag
-        id: get_tag
-        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
-
       - name: Build images
         run: |
-          make CHAINNET=${{ steps.get_tag.outputs.TAG }} BINARY=sifnoded build-image
-          make CHAINNET=${{ steps.get_tag.outputs.TAG }} BINARY=sifnodecli build-image
-          make CHAINNET=${{ steps.get_tag.outputs.TAG }} BINARY=sifcrg build-image
-          make CHAINNET=${{ steps.get_tag.outputs.TAG }} BINARY=ebrelayer build-image
+          make CHAINNET=${{ github.event.ref }} BINARY=sifnoded build-image
+          make CHAINNET=${{ github.event.ref }} BINARY=sifnodecli build-image
+          make CHAINNET=${{ github.event.ref }} BINARY=sifcrg build-image
+          make CHAINNET=${{ github.event.ref }} BINARY=ebrelayer build-image
           cd ./api/openapi
-          make CHAINNET=${{ steps.get_tag.outputs.TAG }} build-image-swagger-iu
-          make CHAINNET=${{ steps.get_tag.outputs.TAG }} build-image-prism
+          make CHAINNET=${{ github.event.ref }} build-image-swagger-iu
+          make CHAINNET=${{ github.event.ref }} build-image-prism
 
       - name: Push images
         run: |
-          docker push sifchain/sifnoded:${{ steps.get_tag.outputs.TAG }}
-          docker push sifchain/sifnodecli:${{ steps.get_tag.outputs.TAG }}
-          docker push sifchain/sifcrg:${{ steps.get_tag.outputs.TAG }}
-          docker push sifchain/swagger-ui:${{ steps.get_tag.outputs.TAG }}
-          docker push sifchain/prism:${{ steps.get_tag.outputs.TAG }}
-          docker push sifchain/ebrelayer:${{ steps.get_tag.outputs.TAG }}
+          docker push sifchain/sifnoded:${{ github.event.ref }}
+          docker push sifchain/sifnodecli:${{ github.event.ref }}
+          docker push sifchain/sifcrg:${{ github.event.ref }}
+          docker push sifchain/swagger-ui:${{ github.event.ref }}
+          docker push sifchain/prism:${{ github.event.ref }}
+          docker push sifchain/ebrelayer:${{ github.event.ref }}
