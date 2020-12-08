@@ -15,6 +15,7 @@ type (
 
 var (
 	DefaultNodeHome = app.DefaultNodeHome
+	DefaultValidatorFile = app.DefaultValidatorFile
 	DefaultCLIHome  = app.DefaultCLIHome
 	StakeTokenDenom = types.StakeTokenDenom
 

@@ -18,6 +18,7 @@ import (
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
 	"github.com/tendermint/go-amino"
@@ -47,6 +48,7 @@ func main() {
 
 	// Add --chain-id to persistent flags and mark it required
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
+
 	rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
 		return initConfig(rootCmd)
 	}
@@ -144,6 +146,19 @@ func registerRoutes(rs *lcd.RestServer) {
 	// this line is used by starport scaffolding # 2
 }
 
+type Validators struct {
+	Addresses string
+}
+
+func (v *Validators) String() string { return v.Addresses }
+
+func (v *Validators) Set(s string) error {
+	v.Addresses = s
+	return nil
+}
+
+func (v *Validators) Type() string { return "Validators" }
+
 func initConfig(cmd *cobra.Command) error {
 	home, err := cmd.PersistentFlags().GetString(cli.HomeFlag)
 	if err != nil {
@@ -158,9 +173,29 @@ func initConfig(cmd *cobra.Command) error {
 			return err
 		}
 	}
+
+	if err := viper.BindPFlag("validators", &pflag.Flag{
+		Name:      "validators",
+		Shorthand: "v",
+		Usage:     "white list validators",
+		Value:     &Validators{Addresses: "hello"},
+		DefValue:  "",
+	}); err != nil {
+		return err
+	}
+
 	if err := viper.BindPFlag(flags.FlagChainID, cmd.PersistentFlags().Lookup(flags.FlagChainID)); err != nil {
 		return err
 	}
+
+	// if err := viper.BindPFlag("validators", cmd.PersistentFlags().Lookup("validators")); err != nil {
+	// 	return err
+	// }
+
+	// func (f *FlagSet) VarPF(value Value, name, shorthand, usage string) *Flag {
+
+	// (value Value, name, shorthand, usage string)
+
 	if err := viper.BindPFlag(cli.EncodingFlag, cmd.PersistentFlags().Lookup(cli.EncodingFlag)); err != nil {
 		return err
 	}

@@ -17,7 +17,8 @@ type Keeper struct {
 	cdc      *codec.Codec // The wire codec for binary encoding/decoding.
 	storeKey sdk.StoreKey // Unexposed key to access store from sdk.Context
 
-	stakeKeeper types.StakingKeeper
+	stakeKeeper      types.StakingKeeper
+	validatorAddress []sdk.ValAddress
 
 	// TODO: use this as param instead
 	consensusNeeded float64 // The minimum % of stake needed to sign claims in order for consensus to occur
@@ -25,16 +26,17 @@ type Keeper struct {
 
 // NewKeeper creates new instances of the oracle Keeper
 func NewKeeper(
-	cdc *codec.Codec, storeKey sdk.StoreKey, stakeKeeper types.StakingKeeper, consensusNeeded float64,
+	cdc *codec.Codec, storeKey sdk.StoreKey, stakeKeeper types.StakingKeeper, validatorAddress []sdk.ValAddress, consensusNeeded float64,
 ) Keeper {
 	if consensusNeeded <= 0 || consensusNeeded > 1 {
 		panic(types.ErrMinimumConsensusNeededInvalid.Error())
 	}
 	return Keeper{
-		cdc:             cdc,
-		storeKey:        storeKey,
-		stakeKeeper:     stakeKeeper,
-		consensusNeeded: consensusNeeded,
+		cdc:              cdc,
+		storeKey:         storeKey,
+		stakeKeeper:      stakeKeeper,
+		validatorAddress: validatorAddress,
+		consensusNeeded:  consensusNeeded,
 	}
 }
 

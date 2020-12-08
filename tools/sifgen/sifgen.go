@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	"github.com/MakeNowJust/heredoc"
+	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/key"
 	"github.com/Sifchain/sifnode/tools/sifgen/network"
 	"github.com/Sifchain/sifnode/tools/sifgen/node"
@@ -73,4 +75,14 @@ func (s Sifgen) KeyRecoverFromMnemonic(mnemonic string) {
 		Validator Address: ` + key.ValidatorAddress + `
 		Consensus Address: ` + key.ConsensusAddress + `
 	`))
+}
+
+func (s Sifgen) ValidatorSet(validatorAddress string) error {
+	file, err := os.Create(common.DefaultValidatorFile)
+	if err != nil {
+		return err
+	}
+
+	file.WriteString(validatorAddress)
+	return nil
 }

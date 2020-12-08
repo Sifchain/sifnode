@@ -2,10 +2,11 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"io"
 	"os"
+
+	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -32,9 +33,10 @@ import (
 const appName = "sifnode"
 
 var (
-	DefaultCLIHome  = os.ExpandEnv("$HOME/.sifnodecli")
-	DefaultNodeHome = os.ExpandEnv("$HOME/.sifnoded")
-	ModuleBasics    = module.NewBasicManager(
+	DefaultCLIHome       = os.ExpandEnv("$HOME/.sifnodecli")
+	DefaultNodeHome      = os.ExpandEnv("$HOME/.sifnoded")
+	DefaultValidatorFile = os.ExpandEnv("$HOME/.sifnoded/config/validators.txt")
+	ModuleBasics         = module.NewBasicManager(
 		genutil.AppModuleBasic{},
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
@@ -166,10 +168,12 @@ func NewInitApp(
 		staking.NewMultiStakingHooks(),
 	)
 
+
 	app.OracleKeeper = oracle.NewKeeper(
 		app.cdc,
 		keys[oracle.StoreKey],
 		app.StakingKeeper,
+		nil,
 		oracle.DefaultConsensusNeeded,
 	)
 
@@ -295,4 +299,24 @@ func GetMaccPerms() map[string][]string {
 		modAccPerms[k] = v
 	}
 	return modAccPerms
+}
+
+func GetValidatorAddresses() []sdk.ValAddress, error {
+	content, err := ioutil.ReadFile(DefaultValidatorFile)
+
+    if err != nil {
+        return err
+	}
+
+	addresses := strings.Split(content, ",")
+
+	if len(addresses) == 0 {
+		return error.Error("validator not set")
+	}
+
+	for address := range addresses {
+		
+	}
+	
+	return nil, nil
 }

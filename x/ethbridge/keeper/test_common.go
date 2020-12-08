@@ -3,10 +3,11 @@ package keeper
 import (
 	"bytes"
 	"encoding/hex"
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/libs/log"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -119,7 +120,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	stakingKeeper := staking.NewKeeper(cdc, keyStaking, supplyKeeper, paramsKeeper.Subspace(staking.DefaultParamspace))
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
-	oracleKeeper := oracle.NewKeeper(cdc, keyOracle, stakingKeeper, consensusNeeded)
+	oracleKeeper := oracle.NewKeeper(cdc, keyOracle, stakingKeeper, nil, consensusNeeded)
 
 	// set module accounts
 	err = notBondedPool.SetCoins(totalSupply)

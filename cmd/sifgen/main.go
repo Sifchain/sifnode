@@ -19,7 +19,10 @@ func main() {
 	_keyCmd := keyCmd()
 	_keyCmd.AddCommand(keyGenerateMnemonicCmd(), keyRecoverFromMnemonicCmd())
 
-	rootCmd.AddCommand(_networkCmd, _nodeCmd, _keyCmd)
+	_validatorCmd := validatorCmd()
+	_validatorCmd.AddCommand(validatorSetCmd())
+
+	rootCmd.AddCommand(_networkCmd, _nodeCmd, _keyCmd, _validatorCmd)
 	_ = rootCmd.Execute()
 }
 
@@ -69,7 +72,7 @@ func nodeCreateCmd() *cobra.Command {
 		Args:  cobra.MinimumNArgs(4),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 4 {
-				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], args[3],nil, nil)
+				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], args[3], nil, nil)
 			} else {
 				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], args[3], &args[4], &args[5])
 			}
@@ -118,6 +121,25 @@ func keyRecoverFromMnemonicCmd() *cobra.Command {
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			sifgen.NewSifgen(nil).KeyRecoverFromMnemonic(args[0])
+		},
+	}
+}
+
+func validatorCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "validator",
+		Short: "Validator commands.",
+		Args:  cobra.MaximumNArgs(0),
+	}
+}
+
+func validatorSetCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "set",
+		Short: "Set the validators.",
+		Args:  cobra.MaximumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			sifgen.NewSifgen(nil).ValidatorSet(args[0])
 		},
 	}
 }
