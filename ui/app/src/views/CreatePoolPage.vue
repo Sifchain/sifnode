@@ -145,6 +145,14 @@ export default defineComponent({
       handleToFocused() {
         selectedField.value = "to";
       },
+      handleFromMaxClicked() {
+        selectedField.value = "from";
+        const accountBalance = balances.value.find(
+          (balance) => balance.asset.symbol === fromSymbol.value
+        );
+        if (!accountBalance) return;
+        fromAmount.value = accountBalance.subtract("1").toFixed(1);
+      },
       shareOfPoolPercent,
       connectedText,
     };
@@ -153,7 +161,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" backLink="/pool">
+  <Layout class="pool" backLink="/pool" title="Add Liquidity">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel
@@ -163,11 +171,14 @@ export default defineComponent({
           @fromblur="handleBlur"
           @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
           :fromSymbolSelectable="connected"
+          :fromMax="true"
+          @frommaxclicked="handleFromMaxClicked"
           v-model:toAmount="toAmount"
           v-model:toSymbol="toSymbol"
           @tofocus="handleToFocused"
           @toblur="handleBlur"
           toSymbolFixed
+          canSwapIcon="plus"
       /></template>
       <template v-slot:default="{ requestClose }">
         <SelectTokenDialog
@@ -178,9 +189,14 @@ export default defineComponent({
     </Modal>
 
     <PriceCalculation>
-      <div>{{ aPerBRatioMessage }}</div>
-      <div>{{ bPerARatioMessage }}</div>
-      <div>{{ shareOfPoolPercent }}</div>
+      <div class="pool-share">
+        <h4 class="pool-share-title text--left">Prices and pool share</h4>
+        <div class="pool-share-details">
+          <div v-html="aPerBRatioMessage"></div>
+          <div v-html="bPerARatioMessage"></div>
+          <div><span class="number">{{ shareOfPoolPercent }}</span><br>Share of Pool </div>
+        </div>
+      </div>
     </PriceCalculation>
     <ActionsPanel
       @nextstepclick="handleNextStepClicked"
@@ -190,4 +206,34 @@ export default defineComponent({
   </Layout>
 </template>
 
+<style lang="scss">
+  .pool-share {
+    font-size: 12px;
+    font-weight: 400;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 
+    &-title {
+      text-align: left;
+      padding: 4px 16px;
+      border-bottom: $divider;
+    }
+
+    &-details {
+      display: flex;
+      padding: 4px 16px;
+      flex-grow: 1;
+      justify-content: space-between;
+      align-items: center;
+
+      div {
+        flex: 33%;
+      }
+    }
+    .number {
+      font-size: 16px;
+      font-weight: bold;
+    }
+  }
+</style>

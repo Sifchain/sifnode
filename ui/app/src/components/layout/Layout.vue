@@ -4,8 +4,13 @@
       <template v-slot:header>
         <PanelNav />
       </template>
-      <div v-if="backLink">
-        <router-link class="back-link" :to="backLink">&lt; Back</router-link>
+      <div class="header" v-if="backLink || title">
+        <div v-if="backLink">
+          <router-link class="back-link" :to="backLink"><Icon :class="{ enabled, left }" icon="back" /></router-link>
+        </div>
+        <div class="title">
+          {{ title }}
+        </div>
       </div>
       <slot></slot>
     </Panel>
@@ -19,23 +24,17 @@
 import { defineComponent } from "vue";
 import Panel from "@/components/shared/Panel.vue";
 import PanelNav from "@/components/navigation/PanelNav.vue";
+import Icon from "@/components/shared/Icon.vue";
 export default defineComponent({
-  components: { Panel, PanelNav },
+  components: { Panel, PanelNav, Icon },
   props: {
     backLink: String,
+    title: String,
   },
 });
 </script>
 
 <style lang="scss" scoped>
-.back-link {
-  text-align: left;
-  display: block;
-  text-decoration: none;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
 .layout {
   background: url("../../assets/World_Background_opt.jpg");
   background-size: cover;
@@ -54,5 +53,23 @@ export default defineComponent({
   margin-top: 15px;
   padding: 25px;
   background: linear-gradient(180deg, $c_gray_50 0%, $c_gray_200 100%);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.back-link {
+  text-align: left;
+  display: block;
+  text-decoration: none;
+  position: relative;
+  top: 2px;
+}
+.title {
+  @include title16;
+  flex-grow: 1;
+  text-align: center;
 }
 </style>
