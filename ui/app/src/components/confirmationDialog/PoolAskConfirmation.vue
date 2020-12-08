@@ -1,16 +1,17 @@
 <script>
 import { defineComponent } from "vue";
 import SifButton from "@/components/shared/SifButton.vue";
-import DetailsPanel from "@/components/shared/DetailsPanel.vue";
+import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
 import AssetItemLarge, {
   getAssetLabel,
 } from "@/components/shared/AssetItemLarge.vue";
 import AssetItemPool from "@/components/shared/AssetItemPool.vue";
 import ArrowIconButton from "@/components/shared/ArrowIconButton.vue";
 import { computed } from "@vue/reactivity";
+import { useAssetItem } from "@/components/shared/utils";
 
 export default defineComponent({
-  components: { DetailsPanel, AssetItemLarge, SifButton, ArrowIconButton, AssetItemPool },
+  components: { DetailsPanelPool, AssetItemLarge, SifButton, ArrowIconButton, AssetItemPool },
   props: {
     requestClose: Function,
     fromAmount: String,
@@ -30,12 +31,22 @@ export default defineComponent({
 <template>
   <div class="confirm-swap">
     <h3 class="title mb-10">You will receive</h3>
-    <div class="info">
-      
+    <div class="pool-token">
+      <div class="pool-token-value">
+        0.0000273
+      </div>
+      <div class="pool-token-image">
+        <img src="https://via.placeholder.com/22/0000FF" width="26" height="26">
+        <img src="https://via.placeholder.com/22/00ff00" width="26" height="26">
+      </div>
     </div>
+    <div class="pool-token-label">
+      BTC/RWN Pool Tokens
+    </div>
+
     <div class="estimate">Output is estimated. If the price changes more than 0.5% your transaction will revert.</div>
     <div class="estimate">{{priceMessage}}</div>
-    <DetailsPanel
+    <DetailsPanelPool
       class="details"
       :priceMessage="priceMessage"
       :fromToken="fromToken"
@@ -66,8 +77,9 @@ export default defineComponent({
 .title {
   font-size: $fs_lg;
   color: $c_text;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
   text-align: left;
+  font-weight: 400;
 }
 .confirm-btn {
   margin-top: auto !important;
@@ -85,6 +97,32 @@ export default defineComponent({
 
   strong {
     font-weight: 700;
+  }
+}
+
+.pool-token {
+  display: flex;
+  margin-bottom: 8px;
+
+  &-value {
+    font-size: 30px;
+    margin-right: 32px;
+  }
+  &-image {
+    height: 26px;
+
+    img {
+      border-radius: 16px;
+
+      &:nth-child(2) {
+        position: relative; 
+        left: -8px;
+      }
+    }
+  }
+  &-label {
+    text-align: left;
+    font-weight: 400;
   }
 }
 </style>
