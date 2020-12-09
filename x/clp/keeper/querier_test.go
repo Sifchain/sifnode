@@ -20,7 +20,7 @@ func TestQueryErrorPool(t *testing.T) {
 	querier := clp.NewQuerier(keeper)
 	//Test Pool
 	queryPool := types.QueryReqGetPool{
-		Ticker: pool.ExternalAsset.Ticker,
+		Symbol: pool.ExternalAsset.Symbol,
 	}
 	qp, errRes := cdc.MarshalJSON(queryPool)
 	require.NoError(t, errRes)
@@ -32,7 +32,7 @@ func TestQueryErrorPool(t *testing.T) {
 	assert.Error(t, err)
 	_, err = querier(ctx, []string{types.QueryPool}, query)
 	assert.Error(t, err)
-	keeper.DestroyPool(ctx, pool.ExternalAsset.Ticker)
+	keeper.DestroyPool(ctx, pool.ExternalAsset.Symbol)
 	query.Path = ""
 	query.Data = qp
 	_, err = querier(ctx, []string{types.QueryPool}, query)
@@ -54,7 +54,7 @@ func TestQueryGetPool(t *testing.T) {
 	querier := clp.NewQuerier(keeper)
 	//Test Pool
 	queryPool := types.QueryReqGetPool{
-		Ticker: pool.ExternalAsset.Ticker,
+		Symbol: pool.ExternalAsset.Symbol,
 	}
 	qp, errRes := cdc.MarshalJSON(queryPool)
 	require.NoError(t, errRes)
@@ -119,7 +119,7 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 	//Test Get Liquidity Provider
 
 	queryLp := types.QueryReqLiquidityProvider{
-		Ticker:    "", //lp.Asset.Ticker,
+		Symbol:    "", //lp.Asset.Ticker,
 		LpAddress: lp.LiquidityProviderAddress,
 	}
 	qlp, errRes := cdc.MarshalJSON(queryLp)
@@ -143,7 +143,7 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	querier := clp.NewQuerier(keeper)
 	//Test Get Liquidity Provider
 	queryLp := types.QueryReqLiquidityProvider{
-		Ticker:    lp.Asset.Ticker,
+		Symbol:    lp.Asset.Symbol,
 		LpAddress: lp.LiquidityProviderAddress,
 	}
 	qlp, errRes := cdc.MarshalJSON(queryLp)
