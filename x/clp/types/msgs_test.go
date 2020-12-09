@@ -33,14 +33,22 @@ func NewSigner(signer string) sdk.AccAddress {
 	return res
 }
 
+func GetETHAsset() Asset {
+	return NewAsset("eth")
+}
+
+func GetWrongAsset() Asset {
+	return NewAsset("deadbeeefdeadbeeef")
+}
+
 func TestNewMsgCreatePool(t *testing.T) {
 	signer := NewSigner("A58856F0FD53BF058B4909A21AEC019107BA6")
-	asset := NewAsset("Ethereum", "ETH", "ceth")
+	asset := GetETHAsset()
 	newpool := NewMsgCreatePool(signer, asset, sdk.NewUint(1000), sdk.NewUint(100))
 	err := newpool.ValidateBasic()
 	assert.NoError(t, err)
 	assert.Equal(t, newpool.GetSigners()[0], signer)
-	wrongAsset := NewAsset("Ethereum", "ETH", "deadbeef")
+	wrongAsset := GetWrongAsset()
 	newpool = NewMsgCreatePool(signer, wrongAsset, sdk.NewUint(1000), sdk.NewUint(100))
 	err = newpool.ValidateBasic()
 	assert.Error(t, err)
@@ -48,25 +56,25 @@ func TestNewMsgCreatePool(t *testing.T) {
 
 func TestNewMsgDecommissionPool(t *testing.T) {
 	signer := NewSigner("A58856F0FD53BF058B4909A21AEC019107BA6")
-	asset := NewAsset("Ethereum", "ETH", "ceth")
-	tx := NewMsgDecommissionPool(signer, asset.Ticker)
+	asset := GetETHAsset()
+	tx := NewMsgDecommissionPool(signer, asset.Symbol)
 	err := tx.ValidateBasic()
 	assert.NoError(t, err)
 	assert.Equal(t, tx.GetSigners()[0], signer)
-	wrongAsset := NewAsset("Ethereum", "ETH", "deadbeef")
-	tx = NewMsgDecommissionPool(signer, wrongAsset.Ticker)
+	wrongAsset := GetWrongAsset()
+	tx = NewMsgDecommissionPool(signer, wrongAsset.Symbol)
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
 }
 
 func TestNewMsgSwap(t *testing.T) {
 	signer := NewSigner("A58856F0FD53BF058B4909A21AEC019107BA6")
-	asset := NewAsset("Ethereum", "ETH", "ceth")
+	asset := GetETHAsset()
 	tx := NewMsgSwap(signer, asset, GetSettlementAsset(), sdk.NewUint(100))
 	err := tx.ValidateBasic()
 	assert.NoError(t, err)
 	assert.Equal(t, tx.GetSigners()[0], signer)
-	wrongAsset := NewAsset("Ethereum", "ETH", "deadbeef")
+	wrongAsset := GetWrongAsset()
 	tx = NewMsgSwap(signer, wrongAsset, GetSettlementAsset(), sdk.NewUint(100))
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
@@ -77,12 +85,12 @@ func TestNewMsgSwap(t *testing.T) {
 
 func TestNewMsgAddLiquidity(t *testing.T) {
 	signer := NewSigner("A58856F0FD53BF058B4909A21AEC019107BA6")
-	asset := NewAsset("Ethereum", "ETH", "ceth")
+	asset := GetETHAsset()
 	tx := NewMsgAddLiquidity(signer, asset, sdk.NewUint(100), sdk.NewUint(100))
 	err := tx.ValidateBasic()
 	assert.NoError(t, err)
 	assert.Equal(t, tx.GetSigners()[0], signer)
-	wrongAsset := NewAsset("Ethereum", "ETH", "deadbeef")
+	wrongAsset := GetWrongAsset()
 	tx = NewMsgAddLiquidity(signer, wrongAsset, sdk.NewUint(100), sdk.NewUint(100))
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
@@ -90,12 +98,12 @@ func TestNewMsgAddLiquidity(t *testing.T) {
 
 func TestNewMsgRemoveLiquidity(t *testing.T) {
 	signer := NewSigner("A58856F0FD53BF058B4909A21AEC019107BA6")
-	asset := NewAsset("Ethereum", "ETH", "ceth")
+	asset := GetETHAsset()
 	tx := NewMsgRemoveLiquidity(signer, asset, sdk.NewInt(100), sdk.NewInt(100))
 	err := tx.ValidateBasic()
 	assert.NoError(t, err)
 	assert.Equal(t, tx.GetSigners()[0], signer)
-	wrongAsset := NewAsset("Ethereum", "ETH", "deadbeef")
+	wrongAsset := GetWrongAsset()
 	tx = NewMsgRemoveLiquidity(signer, wrongAsset, sdk.NewInt(100), sdk.NewInt(100))
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
