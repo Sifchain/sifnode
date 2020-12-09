@@ -41,13 +41,34 @@ describe("swapCalculator", () => {
   const toSymbol: Ref<string | null> = ref(null);
   const balances = ref([]) as Ref<IAssetAmount[]>;
   const selectedField: Ref<"from" | "to" | null> = ref("from");
-  const marketPairFinder = jest.fn();
 
   // output
   let state: Ref<SwapState>;
   let priceMessage: Ref<string | null>;
 
-  beforeEach(() => {
+  test("calculate swap usecase", () => {
+    const pool1 = ref(
+      Pool(
+        AssetAmount(TOKENS.atk, "2000000000000"),
+        AssetAmount(TOKENS.rwn, "1000000000000")
+      )
+    ) as Ref<Pool | null>;
+
+    const pool2 = ref(
+      Pool(
+        AssetAmount(TOKENS.btk, "1000000000000"),
+        AssetAmount(TOKENS.rwn, "1000000000000")
+      )
+    ) as Ref<Pool | null>;
+
+    const poolFinder: any = jest.fn((a: string, b: string) => {
+      if (a === "atk" && b === "rwn") {
+        return pool1;
+      } else {
+        return pool2;
+      }
+    });
+
     ({ state, priceMessage } = useSwapCalculator({
       balances,
       fromAmount,
@@ -55,33 +76,17 @@ describe("swapCalculator", () => {
       fromSymbol,
       selectedField,
       toSymbol,
-      marketPairFinder,
+      poolFinder,
     }));
-  });
-
-  test("calculate swap usecase", () => {
     selectedField.value = "from";
     expect(state.value).toBe(SwapState.SELECT_TOKENS);
-
-    marketPairFinder
-      .mockImplementationOnce(() => {
-        return Pool(
-          AssetAmount(TOKENS.atk, "2000000000000"),
-          AssetAmount(TOKENS.rwn, "1000000000000")
-        );
-      })
-      .mockImplementationOnce(() => {
-        return Pool(
-          AssetAmount(TOKENS.btk, "1000000000000"),
-          AssetAmount(TOKENS.rwn, "1000000000000")
-        );
-      });
 
     balances.value = [
       AssetAmount(TOKENS.atk, "1000"),
       AssetAmount(TOKENS.btk, "1000"),
       AssetAmount(TOKENS.eth, "1234"),
     ];
+
     fromSymbol.value = "atk";
     toSymbol.value = "btk";
 
@@ -95,6 +100,28 @@ describe("swapCalculator", () => {
     selectedField.value = null; // deselect
 
     expect(fromAmount.value).toBe("100.0");
+
+    // Check background update
+    pool1.value = Pool(
+      AssetAmount(TOKENS.atk, "1000000000000"),
+      AssetAmount(TOKENS.rwn, "1000000000000")
+    );
+
+    selectedField.value = "from";
+    fromAmount.value = "1000";
+    selectedField.value = null;
+
+    expect(toAmount.value).toBe("999.999996");
+
+    pool1.value = Pool(
+      AssetAmount(TOKENS.atk, "2000000000000"),
+      AssetAmount(TOKENS.rwn, "1000000000000")
+    );
+
+    selectedField.value = "from";
+    fromAmount.value = "100";
+
+    selectedField.value = null;
 
     selectedField.value = "to"; // select to field
 
@@ -114,22 +141,41 @@ describe("swapCalculator", () => {
   });
 
   test("Avoid division by zero", () => {
+    const pool1 = ref(
+      Pool(
+        AssetAmount(TOKENS.atk, "1000000"),
+        AssetAmount(TOKENS.rwn, "1000000")
+      )
+    ) as Ref<Pool | null>;
+
+    const pool2 = ref(
+      Pool(
+        AssetAmount(TOKENS.btk, "2000000"),
+        AssetAmount(TOKENS.rwn, "1000000")
+      )
+    ) as Ref<Pool | null>;
+
+    const poolFinder: any = jest.fn((a: string, b: string) => {
+      if (a === "atk" && b === "rwn") {
+        return pool1;
+      } else {
+        return pool2;
+      }
+    });
+
+    ({ state, priceMessage } = useSwapCalculator({
+      balances,
+      fromAmount,
+      toAmount,
+      fromSymbol,
+      selectedField,
+      toSymbol,
+      poolFinder,
+    }));
+
     selectedField.value = "from";
     fromAmount.value = "0";
     toAmount.value = "0";
-    marketPairFinder
-      .mockImplementationOnce(() =>
-        Pool(
-          AssetAmount(TOKENS.atk, "1000000"),
-          AssetAmount(TOKENS.rwn, "1000000")
-        )
-      )
-      .mockImplementationOnce(() =>
-        Pool(
-          AssetAmount(TOKENS.btk, "2000000"),
-          AssetAmount(TOKENS.rwn, "1000000")
-        )
-      );
     fromSymbol.value = "atk";
     toSymbol.value = "btk";
     expect(priceMessage.value).toBe("");
