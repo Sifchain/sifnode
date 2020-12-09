@@ -149,6 +149,11 @@ module.exports = function(deployer, network, accounts) {
     await erowan.addMinter(BridgeBank.address, setTxSpecifications(4612388, operator));
 
     await bridgeBank.addExistingBridgeToken(erowan.address, setTxSpecifications(4612388, operator));
+
+    const tokenAddress = "0x0000000000000000000000000000000000000000";
+
+    // allow 10 eth to be sent at once
+    await bridgeBank.updateTokenLockBurnLimit(tokenAddress, '10000000000000000000', setTxSpecifications(4612388, operator));
     console.log("erowan token address: ", erowan.address);
 
     const bnAmount = web3.utils.toWei("100", "ether");
