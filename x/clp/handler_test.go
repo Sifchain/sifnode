@@ -15,12 +15,13 @@ func TestHandler(t *testing.T) {
 	res, err := handler(ctx, nil)
 	require.Error(t, err)
 	require.Nil(t, res)
+
 }
 
 func TestCreatePool(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
 	handler := clp.NewHandler(keeper)
-	signer := test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
+	signer := test.GenerateAddress("")
 	//Parameters for create pool
 	initialBalance := sdk.NewUint(10000) // Initial account balance for all assets created
 	poolBalance := sdk.NewUint(1000)     // Amount funded to pool , This same amount is used both for native and external asset
@@ -65,7 +66,7 @@ func TestCreatePool(t *testing.T) {
 
 func TestAddLiquidity(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
-	signer := test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
+	signer := test.GenerateAddress("")
 	handler := clp.NewHandler(keeper)
 	//Parameters for add liquidity
 	initialBalance := sdk.NewUint(10000) // Initial account balance for all assets created
@@ -95,7 +96,7 @@ func TestAddLiquidity(t *testing.T) {
 	ok := keeper.HasCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 	assert.True(t, ok, "")
 
-	signer2 := test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA7")
+	signer2 := test.GenerateAddress(test.AddressKey2)
 	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer2, sdk.Coins{externalCoin, nativeCoin})
 	msg = clp.NewMsgAddLiquidity(signer2, asset, addLiquidityAmount, addLiquidityAmount)
 	res, err = handler(ctx, msg)
@@ -109,7 +110,7 @@ func TestAddLiquidity(t *testing.T) {
 
 func TestRemoveLiquidity(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
-	signer := test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
+	signer := test.GenerateAddress("")
 	handler := clp.NewHandler(keeper)
 	externalDenom := "ceth"
 	nativeDenom := clp.GetSettlementAsset().Ticker
@@ -203,7 +204,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, res, "Cannot withdraw pool is too shallow")
 
-	newLP := test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA7")
+	newLP := test.GenerateAddress(test.AddressKey2)
 	_, _ = keeper.GetBankKeeper().AddCoins(ctx, newLP, sdk.Coins{externalCoin, nativeCoin})
 	msgAdd := clp.NewMsgAddLiquidity(newLP, asset, sdk.NewUint(1000), sdk.NewUint(1000))
 	res, err = handler(ctx, msgAdd)
@@ -220,7 +221,7 @@ func TestRemoveLiquidity(t *testing.T) {
 }
 func TestSwap(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
-	signer := test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
+	signer := test.GenerateAddress("")
 	handler := clp.NewHandler(keeper)
 	assetEth := clp.NewAsset("ETHEREUM", "ETH", "ceth")
 	assetDash := clp.NewAsset("DASH", "DASH", "cdash")
@@ -267,7 +268,8 @@ func TestSwap(t *testing.T) {
 
 func TestDecommisionPool(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
-	signer := test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA6")
+	signer := test.GenerateAddress("")
+
 	handler := clp.NewHandler(keeper)
 
 	//Parameters for Decommission
@@ -299,6 +301,13 @@ func TestDecommisionPool(t *testing.T) {
 	require.NotNil(t, res)
 
 	msg := clp.NewMsgDecommissionPool(signer, asset.Ticker)
+	_, err = handler(ctx, msg)
+	require.Error(t, err)
+
+	v := test.GenerateValidatorAddress("")
+	keeper.SetValidatorWhiteList(ctx, []sdk.ValAddress{v})
+
+	msg = clp.NewMsgDecommissionPool(signer, asset.Ticker)
 	res, err = handler(ctx, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)

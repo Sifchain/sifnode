@@ -23,6 +23,16 @@ spec:
       serviceAccountName: {{ include "sifnode.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: external-ip
+          image: alpine/k8s:1.18.2
+          command: ["/scripts/external-ip.sh", "sifnode", "$MONIKER", '{{ include "sifnode.fullname" . }}-external-ip']
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+          env:
+            - name: MONIKER
+              value: {{ .Values.sifnode.env.moniker }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -30,26 +40,36 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
+          volumeMounts:
+            - name: data
+              mountPath: /root/
           {{- if .Values.sifnode.env.peerAddress }}
-          args: ["-c", "sifgen node create $CHAINNET $PEER_ADDRESS $GENESIS_URL; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
+          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"$MNEMONIC\" $EXTERNAL_IP $PEER_ADDRESS $GENESIS_URL; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
           {{- else }}
-          args: ["-c", "sifgen node create $CHAINNET; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
+          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"$MNEMONIC\" $EXTERNAL_IP; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
           {{- end }}
           ports:
-            - name: port-26656
+            - name: p2p
               containerPort: 26656
               protocol: TCP
-            - name: port-26657
+            - name: rpc
               containerPort: 26657
-              protocol: TCP
-            - name: port-6060
-              containerPort: 6060
               protocol: TCP
           env:
             - name: CHAINNET
               value: {{ .Values.sifnode.env.chainnet }}
-            - name: SIF_ID
-              value: {{ .Values.sifnode.env.sifId }}
+            - name: MONIKER
+              value: {{ .Values.sifnode.env.moniker }}
+            - name: MNEMONIC
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sifnode.fullname" . }}
+                  key: mnemonic
+            - name: EXTERNAL_IP
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sifnode.fullname" . }}-external-ip
+                  key: externalIP
             - name: PEER_ADDRESS
               value: {{ .Values.sifnode.env.peerAddress }}
             - name: GENESIS_URL
@@ -66,13 +86,22 @@ spec:
             periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-          - name: root
-            mountPath: /root
       volumes:
-      - name: root
+      - name: data
+      {{- if and .Values.persistence.enabled (not .Values.persistence.hostPath) }}
         persistentVolumeClaim:
-          claimName: {{ .Values.pvc.sifnodeName }}
+          claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "sifnode.fullname" . }}{{- end }}
+      {{- else if and .Values.persistence.enabled .Values.persistence.hostPath }}
+        hostPath:
+          path: {{ .Values.persistence.hostPath }}
+          type: DirectoryOrCreate
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: scripts
+        configMap:
+          name: {{ include "sifnode.fullname" . }}-scripts
+          defaultMode: 0777
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

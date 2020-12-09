@@ -4,6 +4,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -108,4 +109,21 @@ func TestKeeper_BankKeeper(t *testing.T) {
 	assert.True(t, keeper.HasCoins(ctx, user1, sdk.Coins{nativeCoin}))
 	assert.NoError(t, keeper.SendCoins(ctx, user1, user2, sdk.Coins{sendingCoin}))
 	assert.True(t, keeper.HasCoins(ctx, user2, sdk.Coins{sendingCoin}))
+}
+
+func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
+	ctx, keeper := test.CreateTestAppClp(false)
+	lpList := test.GenerateRandomLP(10)
+	for _, lp := range lpList {
+		keeper.SetLiquidityProvider(ctx, lp)
+	}
+	assetList := keeper.GetAssetsForLiquidityProvider(ctx, lpList[0].LiquidityProviderAddress)
+	assert.LessOrEqual(t, len(assetList), len(lpList))
+}
+
+func TestKeeper_GetModuleAccount(t *testing.T) {
+	ctx, keeper := test.CreateTestAppClp(false)
+	moduleAccount := keeper.GetSupplyKeeper().GetModuleAccount(ctx, clp.ModuleName)
+	assert.Equal(t, moduleAccount.GetName(), clp.ModuleName)
+	assert.Equal(t, moduleAccount.GetPermissions(), []string{supply.Burner, supply.Minter})
 }

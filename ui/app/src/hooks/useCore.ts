@@ -6,7 +6,9 @@ import {
   getFakeTokens,
   Coin,
   Network,
+  Asset,
 } from "ui-core";
+import { toRefs } from "vue";
 
 const api = createApi({
   // TODO: switch on env
@@ -25,10 +27,19 @@ const api = createApi({
 const store = createStore();
 const actions = createActions({ store, api });
 
+const poolFinder = (a: Asset | string, b: Asset | string) => {
+  const pools = toRefs(store.pools);
+  const key = [a, b]
+    .map((x) => (typeof x === "string" ? x : x.symbol))
+    .join("_") as keyof typeof pools;
+  return pools[key] || null;
+};
+
 export function useCore() {
   return {
     store,
     api,
     actions,
+    poolFinder,
   };
 }
