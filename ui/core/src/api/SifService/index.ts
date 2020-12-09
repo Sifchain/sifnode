@@ -155,52 +155,59 @@ export default function createSifService({
     async transfer(params: TxParams): Promise<any> {
       if (!client) throw "No client. Please sign in.";
       if (!params.asset) throw "No asset.";
+      try {
+        // https://github.com/tendermint/vue/blob/develop/src/store/cosmos.js#L91
+        const msg = {
+          type: "cosmos-sdk/MsgSend",
+          value: {
+            amount: [
+              {
+                amount: params.amount.toString(),
+                denom: params.asset.symbol,
+              },
+            ],
+            from_address: client.senderAddress,
+            to_address: params.recipient,
+          },
+        };
 
-      // https://github.com/tendermint/vue/blob/develop/src/store/cosmos.js#L91
-      const msg = {
-        type: "cosmos-sdk/MsgSend",
-        value: {
-          amount: [
-            {
-              amount: params.amount.toString(),
-              denom: params.asset.symbol,
-            },
-          ],
-          from_address: client.senderAddress,
-          to_address: params.recipient,
-        },
-      };
+        const fee = {
+          amount: coins(0, params.asset.symbol),
+          gas: "200000", // need gas fee for tx to work - see genesis file
+        };
 
-      const fee = {
-        amount: coins(0, params.asset.symbol),
-        gas: "200000", // need gas fee for tx to work - see genesis file
-      };
+        const txHash = await client.signAndBroadcast([msg], fee, params.memo);
 
-      const txHash = await client.signAndBroadcast([msg], fee, params.memo);
+        this.getBalance(state.address);
 
-      this.getBalance(state.address);
-
-      return txHash;
+        return txHash;
+      } catch (err) {
+        console.error(err);
+      }
     },
 
     async signAndBroadcast(msg: Msg | Msg[], memo?: string) {
       if (!client) throw "No client. Please sign in.";
+      try {
+        const fee = {
+          amount: coins(0, "rwn"),
+          gas: "200000", // need gas fee for tx to work - see genesis file
+        };
 
-      const fee = {
-        amount: coins(0, "rwn"),
-        gas: "200000", // need gas fee for tx to work - see genesis file
-      };
+        const msgArr = Array.isArray(msg) ? msg : [msg];
 
-      const msgArr = Array.isArray(msg) ? msg : [msg];
+        const txHash = await client.signAndBroadcast(msgArr, fee, memo);
 
-      const txHash = await client.signAndBroadcast(msgArr, fee, memo);
+        if (isBroadcastTxFailure(txHash)) {
+          console.log(txHash.rawLog);
+          throw new Error(txHash.rawLog);
+        }
+        this.getBalance(state.address);
 
-      if (isBroadcastTxFailure(txHash)) {
-        throw new Error(txHash.rawLog);
+        return txHash;
+      } catch (err) {
+        console.error(err);
       }
-      this.getBalance(state.address);
-
-      return txHash;
     },
   };
 }
