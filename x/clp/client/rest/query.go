@@ -41,7 +41,7 @@ func getPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryPool)
 		//Generate Params
 		var params types.QueryReqGetPool
-		params.Ticker = r.URL.Query().Get("ticker")
+		params.Symbol = r.URL.Query().Get("symbol")
 
 		bz, err := cliCtx.Codec.MarshalJSON(params)
 		if err != nil {
@@ -68,7 +68,7 @@ func getLiquidityProviderHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryLiquidityProvider)
 		var params types.QueryReqLiquidityProvider
-		params.Ticker = r.URL.Query().Get("ticker")
+		params.Symbol = r.URL.Query().Get("symbol")
 		addressString := r.URL.Query().Get("lpAddress")
 		lpAddess, err := sdk.AccAddressFromBech32(addressString)
 		if err != nil {
