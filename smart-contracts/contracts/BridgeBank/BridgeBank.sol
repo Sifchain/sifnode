@@ -177,6 +177,15 @@ contract BridgeBank is BankStorage,
         return setTokenInEthWhiteList(_token, _inList);
     }
 
+    function updateTokenLockBurnLimit(address _token, uint256 _amount)
+        public
+        onlyOperator
+        returns (bool)
+    {
+        string memory symbol = uint256(_token) == 0 ? "ETH" : BridgeToken(_token).symbol();
+        maxTokenAmount[symbol] = _amount;
+    }
+
     /*
      * @dev: Mints new BankTokens
      *
@@ -215,8 +224,13 @@ contract BridgeBank is BankStorage,
         address _token,
         uint256 _amount
     ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) {
-        BridgeToken(_token).burnFrom(msg.sender, _amount);
         string memory symbol = BridgeToken(_token).symbol();
+
+        if (_amount > maxTokenAmount[symbol]) {
+            revert("Amount being transferred is over the limit for this token");
+        }
+
+        BridgeToken(_token).burnFrom(msg.sender, _amount);
         burnFunds(msg.sender, _recipient, _token, symbol, _amount);
     }
 
@@ -247,18 +261,19 @@ contract BridgeBank is BankStorage,
             symbol = "ETH";
             // ERC20 deposit
         } else {
-            require(
-                BridgeToken(_token).transferFrom(
-                    msg.sender,
-                    address(this),
-                    _amount
-                ),
-                "Contract token allowances insufficient to complete this lock request"
-            );
             // Set symbol to the ERC20 token's symbol
             symbol = BridgeToken(_token).symbol();
+
+            BridgeToken(_token).transferFrom(
+                msg.sender,
+                address(this),
+                _amount
+            );
         }
 
+        if (_amount > maxTokenAmount[symbol]) {
+            revert("Amount being transferred is over the limit");
+        }
         lockFunds(msg.sender, _recipient, _token, symbol, _amount);
     }
 
