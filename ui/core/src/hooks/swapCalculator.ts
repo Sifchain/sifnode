@@ -32,7 +32,7 @@ export function useSwapCalculator(input: {
   toSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
-  marketPairFinder: (a: Asset | string, b: Asset | string) => Pool | null;
+  poolFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
 }) {
   // extracting selectedField so we can use it without tracking its change
   let selectedField: "from" | "to" | null = null;
@@ -42,12 +42,12 @@ export function useSwapCalculator(input: {
   const pool = computed(() => {
     if (!input.fromSymbol.value || !input.toSymbol.value) return null;
 
-    const fromPair = input.marketPairFinder(input.fromSymbol.value, "rwn");
-    const toPair = input.marketPairFinder(input.toSymbol.value, "rwn");
+    const fromPair = input.poolFinder(input.fromSymbol.value, "rwn");
+    const toPair = input.poolFinder(input.toSymbol.value, "rwn");
 
     if (!fromPair || !toPair) return null;
 
-    return CompositePool(fromPair, toPair);
+    return CompositePool(fromPair.value, toPair.value);
   });
 
   // Get the balance of the from the users account

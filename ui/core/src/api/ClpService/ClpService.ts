@@ -4,16 +4,23 @@ import {
   Coin,
   LiquidityProvider,
   Network,
+  Pool,
 } from "../../entities";
 import { Fraction } from "../../entities/fraction/Fraction";
 
 import { SifUnSignedClient } from "../utils/SifClient";
+import { toPool } from "../utils/toPool";
+import ReconnectingWebSocket from "reconnecting-websocket";
 
 export type ClpServiceContext = {
+  loadAssets: () => Promise<Asset[]>;
   sifApiUrl: string;
+  nativeAsset: Asset;
 };
 
 type IClpService = {
+  getPools: () => Promise<Pool[]>;
+  onPoolsUpdated: (handler: PoolHandlerFn) => void;
   swap: (params: {
     fromAddress: string;
     receivedAsset: Asset;
@@ -41,12 +48,60 @@ type IClpService = {
   }) => any;
 };
 
+type PoolHandlerFn = (pools: Pool[]) => void;
+
 export default function createClpService({
+  loadAssets,
   sifApiUrl,
+  nativeAsset,
 }: ClpServiceContext): IClpService {
   const client = new SifUnSignedClient(sifApiUrl);
+  let ws: ReconnectingWebSocket;
 
-  return {
+  let poolHandler: PoolHandlerFn = () => {};
+
+  async function setupPoolWatcher() {
+    await new Promise((res, rej) => {
+      ws = new ReconnectingWebSocket("ws://localhost:26657/websocket");
+      ws.onopen = () => {
+        ws.send(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            method: "subscribe",
+            id: "1",
+            params: {
+              query: `tm.event='Tx'`,
+            },
+          })
+        );
+        // This assumes every transaction means an update to pool values
+        // Subscribing to all pool addresses could mean having a tone of
+        // open connections to our node because there is no "OR" query
+        // syntax so have chosen to go with debouncing getPools for now.
+        ws.onmessage = async () => {
+          poolHandler(await instance.getPools());
+        };
+        res(ws);
+      };
+      ws.onerror = (err) => rej(err);
+    });
+  }
+
+  async function initialize() {
+    await loadAssets();
+    await setupPoolWatcher();
+  }
+
+  initialize();
+
+  const instance: IClpService = {
+    async getPools() {
+      const rawPools = await client.getPools();
+      return rawPools.map(toPool);
+    },
+    onPoolsUpdated(handler: PoolHandlerFn) {
+      poolHandler = handler;
+    },
     async addLiquidity(params: {
       fromAddress: string;
       nativeAssetAmount: AssetAmount;
@@ -125,4 +180,6 @@ export default function createClpService({
       });
     },
   };
+
+  return instance;
 }

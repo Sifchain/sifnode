@@ -45,10 +45,3 @@ spec:
             periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
-          - name: root
-            mountPath: /root
-      volumes:
-      - name: root
-        persistentVolumeClaim:
-          claimName: {{ .Values.pvc.sifnodecliName }}
