@@ -116,10 +116,6 @@ func (e SifLogger) Error(msg string, keyvals ...interface{}) {
 	e.logger.Error(msg, keyvals...)
 }
 
-func (e SifLogger) Tag(keyvals ...interface{}) SifLogger {
-	return SifLogger{e.logger.With(keyvals...)}
-}
-
 func (e SifLogger) With(keyvals ...interface{}) log.Logger {
 	return SifLogger{e.logger.With(keyvals...)}
 }
