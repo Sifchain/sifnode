@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"log"
 	"math/big"
 
@@ -86,7 +87,8 @@ func NewEthEventBuffer() EthEventBuffer {
 }
 
 // AddEvent insert a new event to queue
-func (buff *EthEventBuffer) AddEvent(blockNumber *big.Int, blockHash common.Hash, event EthereumEvent) {
+// func (buff *EthEventBuffer) AddEvent(blockNumber *big.Int, blockHash common.Hash, event EthereumEvent) {
+func (buff *EthEventBuffer) AddEvent(blockNumber fmt.Stringer, blockHash common.Hash, event EthereumEvent) {
 	// Check if block number already in the map
 	events, ok := buff.Buffer[blockNumber.String()]
 	if ok {
