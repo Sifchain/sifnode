@@ -159,12 +159,12 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
 	ethSub, err := relayer.NewEthereumSub(inBuf, rpcURL, cdc, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, mnemonic, logger.Tag("eth", "routine"))
+		contractAddress, privateKey, mnemonic, logger.With("eth", "routine"))
 	if err != nil {
 		return err
 	}
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger.Tag("cosmos", "routine"))
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger.With("cosmos", "routine"))
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
