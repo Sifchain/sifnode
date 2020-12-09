@@ -5,8 +5,6 @@ For reference when playing with cosmos cain
 ```
 sifnodecli tx clp create-pool \
  --from akasha \
- --sourceChain ETH \
- --symbol ETH \
  --ticker catk \
  --nativeAmount 500 \
  --externalAmount 500
@@ -17,8 +15,6 @@ sifnodecli tx clp create-pool \
 ```
 sifnodecli tx clp create-pool \
  --from akasha \
- --sourceChain ETH \
- --symbol ETH \
  --ticker cbtk \
  --nativeAmount 500 \
  --externalAmount 500
