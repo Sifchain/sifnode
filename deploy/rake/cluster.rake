@@ -187,7 +187,7 @@ namespace :cluster do
   desc "Manage eth full node deploy, upgrade, etc processes"
   namespace :ethnode do
     desc "Deploy a full eth node onto your cluster"
-    task :deploy, [:chainnet, :provider:, :image, :image_tag, :network] do |t, args|
+    task :deploy, [:chainnet, :provider, :image, :image_tag, :network] do |t, args|
       check_args(args)
       eth_wallet(args)
       helmrepos(args)
