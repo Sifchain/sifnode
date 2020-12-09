@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-yes Y | sifnodecli tx clp create-pool --from user1 --sourceChain ETHEREUM --symbol ETH --ticker ceth --nativeAmount 200 --externalAmount 200
+yes Y | sifnodecli tx clp create-pool --from user1 --symbol ceth --nativeAmount 200 --externalAmount 200
 sleep 8
-yes Y | sifnodecli tx clp create-pool --from user1 --sourceChain DASH --symbol DASH --ticker cdash --nativeAmount 100 --externalAmount 100
+yes Y | sifnodecli tx clp create-pool --from user1 --symbol cdash --nativeAmount 100 --externalAmount 100
 
 echo "Query all pools"
 sleep 8
