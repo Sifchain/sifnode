@@ -1,0 +1,63 @@
+/*
+ *  COLORS and GRADIENTS:
+ */
+
+$c_gold: #caa93a;
+$c_gold_dark: #9c7919;
+$c_blue: #5f88d9;
+$c_green: #8cc63f;
+$c_white: #ffffff;
+$c_gray_50: #fafafa; // use for btn on white, use for non-white panels
+$c_gray_100: #f4f4f4;
+$c_gray_200: #e6e6e6;
+$c_gray_300: #dedede;
+$c_gray_400: #ccc;
+$c_gray_700: #818181; // switch bg, disabled font on dark, gradients
+$c_gray_800: #333;
+$c_gray_900: #272727;
+$c_black: #000;
+
+$c_success: #22C328;
+
+// main copy color
+$c_text: $c_gray_900;
+
+$g_gold: linear-gradient(to right, $c_gold, $c_gold_dark);
+$g_gray: linear-gradient(180deg, $c_gray_50 0%, $c_gray_300 100%);
+$g_gray_reverse: linear-gradient(180deg, $c_gray_200 0%, $c_gray_50 100%);
+
+/*
+ *  BOX SHADOW:
+ */
+
+$bs_default: 0px 0px 35px rgba($c_black, 0.41);
+$bs_dropdown: 0px 3px 10px #00000033;
+
+/*
+ *  BORDERS:
+ */
+
+// border radius
+$br_sm: 6px;
+$br_md: 10px;
+$br_lg: 15px;
+
+$divider: 1px solid $c_gray_300;
+
+/*
+ *  TRANSITIONS:
+ */
+
+$trans_fast: 0.2s ease;
+
+/*
+ *  LAYERING:
+ */
+
+$zi_modal: 5000;
+
+/*
+ *  LAYOUT:
+ */
+
+$header_height: 80px;

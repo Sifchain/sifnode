@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	tmos "github.com/tendermint/tendermint/libs/os"
 	"io"
 	"os"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
-	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
@@ -51,6 +51,7 @@ var (
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
+		clp.ModuleName:            {supply.Burner, supply.Minter},
 	}
 )
 
@@ -85,9 +86,8 @@ type NewApp struct {
 	// Peggy keepers
 	EthBridgeKeeper ethbridge.Keeper
 	OracleKeeper    oracle.Keeper
-
-	clpKeeper clp.Keeper
-	mm        *module.Manager
+	clpKeeper       clp.Keeper
+	mm              *module.Manager
 
 	sm *module.SimulationManager
 }
@@ -98,6 +98,7 @@ func NewInitApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
 ) *NewApp {
+
 	cdc := MakeCodec()
 
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
@@ -153,14 +154,14 @@ func NewInitApp(
 		maccPerms,
 	)
 
-	stakingKeeper := staking.NewKeeper(
+	app.StakingKeeper = staking.NewKeeper(
 		app.cdc,
 		keys[staking.StoreKey],
 		app.SupplyKeeper,
 		app.subspaces[staking.ModuleName],
 	)
 
-	app.StakingKeeper = *stakingKeeper.SetHooks(
+	app.StakingKeeper = *app.StakingKeeper.SetHooks(
 		staking.NewMultiStakingHooks(),
 	)
 
@@ -181,6 +182,7 @@ func NewInitApp(
 		app.cdc,
 		keys[clp.StoreKey],
 		app.bankKeeper,
+		app.SupplyKeeper,
 		app.subspaces[clp.ModuleName])
 
 	app.mm = module.NewManager(
@@ -191,10 +193,18 @@ func NewInitApp(
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
-		clp.NewAppModule(app.clpKeeper, app.bankKeeper),
+		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
 	)
 
-	app.mm.SetOrderEndBlockers(staking.ModuleName)
+	// there is nothing left over in the validator fee pool, so as to keep the
+	// CanWithdrawInvariant invariant.
+	app.mm.SetOrderBeginBlockers(
+		staking.ModuleName,
+	)
+
+	app.mm.SetOrderEndBlockers(
+		staking.ModuleName,
+	)
 
 	app.mm.SetOrderInitGenesis(
 		staking.ModuleName,

@@ -22,14 +22,14 @@ type EthBridgeClaim struct {
 	EthereumSender        EthereumAddress `json:"ethereum_sender" yaml:"ethereum_sender"`
 	CosmosReceiver        sdk.AccAddress  `json:"cosmos_receiver" yaml:"cosmos_receiver"`
 	ValidatorAddress      sdk.ValAddress  `json:"validator_address" yaml:"validator_address"`
-	Amount                int64           `json:"amount" yaml:"amount"`
+	Amount                sdk.Int         `json:"amount" yaml:"amount"`
 	ClaimType             ClaimType       `json:"claim_type" yaml:"claim_type"`
 }
 
 // NewEthBridgeClaim is a constructor function for NewEthBridgeClaim
 func NewEthBridgeClaim(ethereumChainID int, bridgeContract EthereumAddress,
 	nonce int, symbol string, tokenContact EthereumAddress, ethereumSender EthereumAddress,
-	cosmosReceiver sdk.AccAddress, validator sdk.ValAddress, amount int64, claimType ClaimType,
+	cosmosReceiver sdk.AccAddress, validator sdk.ValAddress, amount sdk.Int, claimType ClaimType,
 ) EthBridgeClaim {
 	return EthBridgeClaim{
 		EthereumChainID:       ethereumChainID,
@@ -48,7 +48,7 @@ func NewEthBridgeClaim(ethereumChainID int, bridgeContract EthereumAddress,
 // OracleClaimContent is the details of how the content of the claim for each validator will be stored in the oracle
 type OracleClaimContent struct {
 	CosmosReceiver       sdk.AccAddress  `json:"cosmos_receiver" yaml:"cosmos_receiver"`
-	Amount               int64           `json:"amount" yaml:"amount"`
+	Amount               sdk.Int         `json:"amount" yaml:"amount"`
 	Symbol               string          `json:"symbol" yaml:"symbol"`
 	TokenContractAddress EthereumAddress `json:"token_contract_address" yaml:"token_contract_address"`
 	ClaimType            ClaimType       `json:"claim_type" yaml:"claim_type"`
@@ -56,7 +56,7 @@ type OracleClaimContent struct {
 
 // NewOracleClaimContent is a constructor function for OracleClaim
 func NewOracleClaimContent(
-	cosmosReceiver sdk.AccAddress, amount int64, symbol string, tokenContractAddress EthereumAddress, claimType ClaimType,
+	cosmosReceiver sdk.AccAddress, amount sdk.Int, symbol string, tokenContractAddress EthereumAddress, claimType ClaimType,
 ) OracleClaimContent {
 	return OracleClaimContent{
 		CosmosReceiver:       cosmosReceiver,

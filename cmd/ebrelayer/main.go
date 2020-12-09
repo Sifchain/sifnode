@@ -6,9 +6,8 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"os/signal"
 	"strings"
-	"syscall"
+	"sync"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
@@ -68,13 +67,6 @@ func init() {
 		initRelayerCmd(),
 		generateBindingsCmd(),
 	)
-
-	DefaultCLIHome := os.ExpandEnv("$HOME/.sifnodecli")
-	executor := cli.PrepareMainCmd(rootCmd, EnvPrefix, os.ExpandEnv(DefaultCLIHome))
-	err := executor.Execute()
-	if err != nil {
-		log.Fatal("failed executing CLI command", err)
-	}
 }
 
 var rootCmd = &cobra.Command{
@@ -168,13 +160,11 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)
 
-	go ethSub.Start()
-	go cosmosSub.Start()
-
-	// Exit signal enables graceful shutdown
-	exitSignal := make(chan os.Signal, 1)
-	signal.Notify(exitSignal, syscall.SIGINT, syscall.SIGTERM)
-	<-exitSignal
+	waitForAll := sync.WaitGroup{}
+	waitForAll.Add(2)
+	go ethSub.Start(&waitForAll)
+	go cosmosSub.Start(&waitForAll)
+	waitForAll.Wait()
 
 	return nil
 }
@@ -199,8 +189,11 @@ func initConfig(cmd *cobra.Command) error {
 }
 
 func main() {
-	err := rootCmd.Execute()
+	DefaultCLIHome := os.ExpandEnv("$HOME/.sifnodecli")
+	executor := cli.PrepareMainCmd(rootCmd, EnvPrefix, os.ExpandEnv(DefaultCLIHome))
+	err := executor.Execute()
 	if err != nil {
+		log.Fatal("failed executing CLI command", err)
 		os.Exit(1)
 	}
 }

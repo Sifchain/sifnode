@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"strings"
@@ -16,11 +17,11 @@ var (
 
 type MsgDecommissionPool struct {
 	Signer sdk.AccAddress `json:"signer"`
-	Ticker string         `json:"ticker"`
+	Symbol string         `json:"symbol"`
 }
 
-func NewMsgDecommissionPool(signer sdk.AccAddress, ticker string) MsgDecommissionPool {
-	return MsgDecommissionPool{Signer: signer, Ticker: ticker}
+func NewMsgDecommissionPool(signer sdk.AccAddress, symbol string) MsgDecommissionPool {
+	return MsgDecommissionPool{Signer: signer, Symbol: symbol}
 }
 
 func (m MsgDecommissionPool) Route() string {
@@ -35,8 +36,8 @@ func (m MsgDecommissionPool) ValidateBasic() error {
 	if m.Signer.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
 	}
-	if !VerifyRange(len(strings.TrimSpace(m.Ticker)), 0, MaxTickerLength) {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, m.Ticker)
+	if !VerifyRange(len(strings.TrimSpace(m.Symbol)), 0, MaxSymbolLength) {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, m.Symbol)
 	}
 	return nil
 }
@@ -76,7 +77,11 @@ func (m MsgSwap) ValidateBasic() error {
 		return sdkerrors.Wrap(ErrInValidAsset, m.SentAsset.Symbol)
 	}
 	if !m.ReceivedAsset.Validate() {
-		return sdkerrors.Wrap(ErrInValidAsset, m.SentAsset.Symbol)
+		return sdkerrors.Wrap(ErrInValidAsset, m.ReceivedAsset.Symbol)
+	}
+
+	if m.SentAsset == m.ReceivedAsset {
+		return sdkerrors.Wrap(ErrInValidAsset, "Sent And Received asset cannot be the same")
 	}
 	if m.SentAmount.IsZero() {
 		return sdkerrors.Wrap(ErrInValidAmount, m.SentAmount.String())
@@ -118,7 +123,7 @@ func (m MsgRemoveLiquidity) ValidateBasic() error {
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
 	}
-	if !(m.WBasisPoints.IsPositive()) || m.WBasisPoints.GT(sdk.NewInt(10000)) {
+	if !(m.WBasisPoints.IsPositive()) || m.WBasisPoints.GT(sdk.NewInt(MaxWbasis)) {
 		return sdkerrors.Wrap(ErrInvalidWBasis, m.WBasisPoints.String())
 	}
 	if m.Asymmetry.GTE(sdk.NewInt(10000)) || m.Asymmetry.LTE(sdk.NewInt(-10000)) {
@@ -161,12 +166,13 @@ func (m MsgAddLiquidity) ValidateBasic() error {
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
 	}
-	if !(m.NativeAssetAmount.GTE(sdk.ZeroUint())) {
-		return sdkerrors.Wrap(ErrInValidAmount, m.NativeAssetAmount.String())
+	if m.ExternalAsset == GetSettlementAsset() {
+		return sdkerrors.Wrap(ErrInValidAsset, "External asset cannot be rowan")
 	}
-	if !(m.ExternalAssetAmount.GTE(sdk.ZeroUint())) {
-		return sdkerrors.Wrap(ErrInValidAmount, m.NativeAssetAmount.String())
+	if !(m.NativeAssetAmount.GTE(sdk.ZeroUint())) && (m.ExternalAssetAmount.GTE(sdk.ZeroUint())) {
+		return sdkerrors.Wrap(ErrInValidAmount, fmt.Sprintf("Both asset ammounts cannot be 0 %s / %s", m.NativeAssetAmount.String(), m.ExternalAssetAmount.String()))
 	}
+
 	return nil
 }
 
@@ -203,6 +209,9 @@ func (m MsgCreatePool) ValidateBasic() error {
 	}
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
+	}
+	if m.ExternalAsset == GetSettlementAsset() {
+		return sdkerrors.Wrap(ErrInValidAsset, "External Asset cannot be rowan")
 	}
 	if !(m.NativeAssetAmount.GT(sdk.ZeroUint())) {
 		return sdkerrors.Wrap(ErrInValidAmount, m.NativeAssetAmount.String())

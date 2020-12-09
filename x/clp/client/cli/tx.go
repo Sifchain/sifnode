@@ -44,9 +44,7 @@ func GetCmdCreatePool(cdc *codec.Codec) *cobra.Command {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			asset := types.NewAsset(viper.GetString(FlagAssetSourceChain),
-				viper.GetString(FlagAssetSymbol),
-				viper.GetString(FlagAssetTicker))
+			asset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			externalAmount := viper.GetString(FlagExternalAssetAmount)
 			nativeAmount := viper.GetString(FlagNativeAssetAmount)
 			signer := cliCtx.GetFromAddress()
@@ -54,14 +52,10 @@ func GetCmdCreatePool(cdc *codec.Codec) *cobra.Command {
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
-	cmd.Flags().AddFlagSet(FsAssetSourceChain)
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
-	cmd.Flags().AddFlagSet(FsAssetTicker)
 	cmd.Flags().AddFlagSet(FsExternalAssetAmount)
 	cmd.Flags().AddFlagSet(FsNativeAssetAmount)
-	cmd.MarkFlagRequired(FlagAssetSourceChain)
 	cmd.MarkFlagRequired(FlagAssetSymbol)
-	cmd.MarkFlagRequired(FlagAssetTicker)
 	cmd.MarkFlagRequired(FlagExternalAssetAmount)
 	cmd.MarkFlagRequired(FlagNativeAssetAmount)
 
@@ -76,14 +70,14 @@ func GetCmdDecommissionPool(cdc *codec.Codec) *cobra.Command {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			ticker := viper.GetString(FlagAssetTicker)
+			symbol := viper.GetString(FlagAssetSymbol)
 			signer := cliCtx.GetFromAddress()
-			msg := types.NewMsgDecommissionPool(signer, ticker)
+			msg := types.NewMsgDecommissionPool(signer, symbol)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
-	cmd.Flags().AddFlagSet(FsAssetTicker)
-	cmd.MarkFlagRequired(FlagAssetTicker)
+	cmd.Flags().AddFlagSet(FsAssetSymbol)
+	cmd.MarkFlagRequired(FlagAssetSymbol)
 
 	return cmd
 }
@@ -96,9 +90,7 @@ func GetCmdAddLiquidity(cdc *codec.Codec) *cobra.Command {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			externalAsset := types.NewAsset(viper.GetString(FlagAssetSourceChain),
-				viper.GetString(FlagAssetSymbol),
-				viper.GetString(FlagAssetTicker))
+			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			externalAmount := viper.GetString(FlagExternalAssetAmount)
 			nativeAmount := viper.GetString(FlagNativeAssetAmount)
 			signer := cliCtx.GetFromAddress()
@@ -107,14 +99,10 @@ func GetCmdAddLiquidity(cdc *codec.Codec) *cobra.Command {
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
-	cmd.Flags().AddFlagSet(FsAssetSourceChain)
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
-	cmd.Flags().AddFlagSet(FsAssetTicker)
 	cmd.Flags().AddFlagSet(FsExternalAssetAmount)
 	cmd.Flags().AddFlagSet(FsNativeAssetAmount)
-	cmd.MarkFlagRequired(FlagAssetSourceChain)
 	cmd.MarkFlagRequired(FlagAssetSymbol)
-	cmd.MarkFlagRequired(FlagAssetTicker)
 	cmd.MarkFlagRequired(FlagExternalAssetAmount)
 	cmd.MarkFlagRequired(FlagNativeAssetAmount)
 
@@ -129,9 +117,7 @@ func GetCmdRemoveLiquidity(cdc *codec.Codec) *cobra.Command {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			externalAsset := types.NewAsset(viper.GetString(FlagAssetSourceChain),
-				viper.GetString(FlagAssetSymbol),
-				viper.GetString(FlagAssetTicker))
+			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			wb := viper.GetString(FlagWBasisPoints)
 			as := viper.GetString(FlagAsymmetry)
 			signer := cliCtx.GetFromAddress()
@@ -148,14 +134,10 @@ func GetCmdRemoveLiquidity(cdc *codec.Codec) *cobra.Command {
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
-	cmd.Flags().AddFlagSet(FsAssetSourceChain)
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
-	cmd.Flags().AddFlagSet(FsAssetTicker)
 	cmd.Flags().AddFlagSet(FsWBasisPoints)
 	cmd.Flags().AddFlagSet(FsAsymmetry)
-	cmd.MarkFlagRequired(FlagAssetSourceChain)
 	cmd.MarkFlagRequired(FlagAssetSymbol)
-	cmd.MarkFlagRequired(FlagAssetTicker)
 	cmd.MarkFlagRequired(FlagWBasisPoints)
 	cmd.MarkFlagRequired(FlagAsymmetry)
 
@@ -170,12 +152,8 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			sentAsset := types.NewAsset(viper.GetString(FlagSentAssetSourceChain),
-				viper.GetString(FlagSentAssetSymbol),
-				viper.GetString(FlagSentAssetTicker))
-			receivedAsset := types.NewAsset(viper.GetString(FlagReceivedAssetSourceChain),
-				viper.GetString(FlagReceivedAssetSymbol),
-				viper.GetString(FlagReceivedAssetTicker))
+			sentAsset := types.NewAsset(viper.GetString(FlagSentAssetSymbol))
+			receivedAsset := types.NewAsset(viper.GetString(FlagReceivedAssetSymbol))
 			sentAmount := viper.GetString(FlagAmount)
 			signer := cliCtx.GetFromAddress()
 			msg := types.NewMsgSwap(signer, sentAsset, receivedAsset, sdk.NewUintFromString(sentAmount))
@@ -183,20 +161,13 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
-	cmd.Flags().AddFlagSet(FsSentAssetSourceChain)
+
 	cmd.Flags().AddFlagSet(FsSentAssetSymbol)
-	cmd.Flags().AddFlagSet(FsSentAssetTicker)
-	cmd.Flags().AddFlagSet(FsReceivedAssetSourceChain)
 	cmd.Flags().AddFlagSet(FsReceivedAssetSymbol)
-	cmd.Flags().AddFlagSet(FsReceivedAssetTicker)
 	cmd.Flags().AddFlagSet(FsAmount)
 
-	cmd.MarkFlagRequired(FlagSentAssetSourceChain)
 	cmd.MarkFlagRequired(FlagSentAssetSymbol)
-	cmd.MarkFlagRequired(FlagSentAssetTicker)
-	cmd.MarkFlagRequired(FlagReceivedAssetSourceChain)
 	cmd.MarkFlagRequired(FlagReceivedAssetSymbol)
-	cmd.MarkFlagRequired(FlagReceivedAssetTicker)
 	cmd.MarkFlagRequired(FlagAmount)
 
 	return cmd

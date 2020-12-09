@@ -12,8 +12,7 @@ const (
 	QuerierRoute      = types.QuerierRoute
 	DefaultParamspace = types.DefaultParamspace
 	NativeSymbol      = types.NativeSymbol
-	NativeChain       = types.NativeChain
-	NativeTicker      = types.NativeTicker
+	MaxWbasis         = types.MaxWbasis
 )
 
 var (
@@ -24,20 +23,12 @@ var (
 	NewMsgRemoveLiquidity  = types.NewMsgRemoveLiquidity
 	NewMsgCreatePool       = types.NewMsgCreatePool
 	NewMsgDecommissionPool = types.NewMsgDecommissionPool
-	NewLiquidityProvider   = types.NewLiquidityProvider
 	NewAsset               = types.NewAsset
 	NewPool                = types.NewPool
 	RegisterCodec          = types.RegisterCodec
-	NewGenesisState        = types.NewGenesisState
 	DefaultGenesisState    = types.DefaultGenesisState
-	NewParams              = types.NewParams
 	ModuleCdc              = types.ModuleCdc
-	//CreateTestInputDefault = keeper.CreateTestInputDefault
-	//GenerateRandomPool     = keeper.GenerateRandomPool
-	//GenerateRandomLP       = keeper.GenerateRandomLP
-	//GenerateAddress        = keeper.GenerateAddress
-	//GenerateAddress2       = keeper.GenerateAddress2
-	GetSettlementAsset = types.GetSettlementAsset
+	GetSettlementAsset     = types.GetSettlementAsset
 )
 
 type (

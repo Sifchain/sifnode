@@ -2,7 +2,6 @@ pragma solidity ^0.5.0;
 
 import "./BridgeBank/CosmosBankStorage.sol";
 import "./BridgeBank/EthereumBankStorage.sol";
-import "./BridgeBank/WhiteListStorage.sol";
 
 contract CosmosBridgeStorage {
     /**
@@ -44,7 +43,12 @@ contract CosmosBridgeStorage {
     * @notice gap of storage for future upgrades
     */
     uint256 public prophecyClaimCount;
-    
+
+    /**
+    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
+    */
+    mapping(uint256 => bool) public usedNonce;
+
     /**
     * @notice gap of storage for future upgrades
     */

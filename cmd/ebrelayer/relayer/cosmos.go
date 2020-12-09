@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	tmKv "github.com/tendermint/tendermint/libs/kv"
@@ -44,17 +46,23 @@ func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common
 }
 
 // Start a Cosmos chain subscription
-func (sub CosmosSub) Start() {
+func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
+	defer completionEvent.Done()
+	time.Sleep(time.Second)
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.Logger.Error("failed to initialize a client", "err", err)
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
 	client.SetLogger(sub.Logger)
 
 	if err := client.Start(); err != nil {
 		sub.Logger.Error("failed to start a client", "err", err)
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
 
 	defer client.Stop() //nolint:errcheck
@@ -64,11 +72,16 @@ func (sub CosmosSub) Start() {
 	out, err := client.Subscribe(context.Background(), "test", query, 1000)
 	if err != nil {
 		sub.Logger.Error("failed to subscribe to query", "err", err, "query", query)
-		os.Exit(1)
+		completionEvent.Add(1)
+		go sub.Start(completionEvent)
+		return
 	}
 
+	defer client.Unsubscribe(context.Background(), "test", query)
+
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	defer close(quit)
 
 	for {
 		select {
@@ -93,7 +106,7 @@ func (sub CosmosSub) Start() {
 				}
 			}
 		case <-quit:
-			os.Exit(0)
+			return
 		}
 	}
 }

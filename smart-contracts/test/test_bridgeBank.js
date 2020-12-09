@@ -154,16 +154,17 @@ contract("BridgeBank", function (accounts) {
       });
 
       // This is for ERC20 deposits
-      this.sender = web3.utils.bytesToHex([
-        "985cfkop78sru7gfud4wce83kuc9rmw89rqtzmy"
-      ]);
+      this.sender = web3.utils.utf8ToHex(
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
+      );
+      this.senderSequence = 1;
       this.recipient = userThree;
       this.symbol = "TEST";
       this.token = await BridgeToken.new(this.symbol);
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
 
@@ -179,7 +180,7 @@ contract("BridgeBank", function (accounts) {
 
       // Lock tokens on contract
       await this.bridgeBank.lock(
-        this.recipient,
+        this.sender,
         this.token.address,
         this.amount, {
           from: userOne,
@@ -189,13 +190,26 @@ contract("BridgeBank", function (accounts) {
 
     });
 
+    it("should return true if a sifchain address prefix is correct", async function () {
+      (await this.bridgeBank.verifySifPrefix(this.sender)).should.be.equal(true);
+    })
+
+    it("should return false if a sifchain address has an incorrect `sif` prefix", async function () {
+      const incorrectSifAddress = web3.utils.utf8ToHex(
+        "eif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
+      );
+      (await this.bridgeBank.verifySifPrefix(incorrectSifAddress)).should.be.equal(false);
+    })
+
     it("should mint bridge tokens upon the successful processing of a burn prophecy claim", async function () {
       // Submit a new prophecy claim to the CosmosBridge to make oracle claims upon
+      this.nonce = 1;
       const {
         logs
       } = await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        this.senderSequence,
         this.recipient,
         this.symbol,
         this.amount, {
@@ -203,41 +217,6 @@ contract("BridgeBank", function (accounts) {
         }
       ).should.be.fulfilled;
 
-      // Get the new ProphecyClaim's id
-      const event = logs.find(
-        e => e.event === "LogNewProphecyClaim"
-      );
-      const prophecyID = event.args._prophecyID;
-      const cosmosSender = event.args._cosmosSender;
-      const ethereumReceiver = event.args._ethereumReceiver;
-      const amount = event.args._amount;
-
-      // Create hash using Solidity's Sha3 hashing function
-      this.message = web3.utils.soliditySha3({
-        t: "uint256",
-        v: prophecyID
-      }, {
-        t: "bytes",
-        v: cosmosSender
-      }, {
-        t: "address payable",
-        v: ethereumReceiver
-      }, {
-        t: "uint256",
-        v: amount
-      });
-
-      // Generate signatures from active validator userOne
-      this.userOneSignature = await web3.eth.sign(this.message, userOne);
-
-      // Validator userOne makes a valid OracleClaim
-      await this.oracle.newOracleClaim(
-        prophecyID,
-        this.message,
-        this.userOneSignature, {
-          from: userOne
-        }
-      );
 
       // Confirm that the user has been minted the correct token
       const afterUserBalance = Number(
@@ -249,25 +228,25 @@ contract("BridgeBank", function (accounts) {
     it("should not be able to add a token to the whitelist that has the same symbol as an already registered token", async function () {
       const symbol = "TEST"
       const newToken = await BridgeToken.new(symbol);
-      (await this.bridgeBank.getTokenInWhiteList(newToken.address)).should.be.equal(false)
+      (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
       // Remove the token from the white list
       await expectRevert(
-        this.bridgeBank.updateWhiteList(newToken.address, true, {from: operator}),
+        this.bridgeBank.updateEthWhiteList(newToken.address, true, {from: operator}),
         "Token already whitelisted"
       );
 
-      (await this.bridgeBank.getTokenInWhiteList(newToken.address)).should.be.equal(false)
+      (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
     });
 
     it("should be able to remove a token from the whitelist", async function () {
 
-      (await this.bridgeBank.getTokenInWhiteList(this.token.address)).should.be.equal(true)
+      (await this.bridgeBank.getTokenInEthWhiteList(this.token.address)).should.be.equal(true)
       // Remove the token from the white list
-      await this.bridgeBank.updateWhiteList(this.token.address, false, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, false, {
         from: operator
       }).should.be.fulfilled;
 
-      (await this.bridgeBank.getTokenInWhiteList(this.token.address)).should.be.equal(false)
+      (await this.bridgeBank.getTokenInEthWhiteList(this.token.address)).should.be.equal(false)
     });
   });
 
@@ -309,7 +288,7 @@ contract("BridgeBank", function (accounts) {
       );
 
       this.recipient = web3.utils.utf8ToHex(
-        "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       // This is for Ethereum deposits
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
@@ -320,7 +299,7 @@ contract("BridgeBank", function (accounts) {
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
 
@@ -405,7 +384,7 @@ contract("BridgeBank", function (accounts) {
       );
 
       this.recipient = web3.utils.utf8ToHex(
-        "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
       // This is for Ethereum deposits
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
@@ -416,7 +395,7 @@ contract("BridgeBank", function (accounts) {
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
 
@@ -451,6 +430,40 @@ contract("BridgeBank", function (accounts) {
       //Confirm that the tokens have been locked
       bridgeBankTokenBalance.should.be.bignumber.equal(100);
       userBalance.should.be.bignumber.equal(900);
+    });
+    
+    it("should not allow users to lock ERC20 tokens if the sifaddress length is incorrect", async function () {
+      const invalidSifAddress = web3.utils.utf8ToHex(
+        "eif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpacee92929"
+      );
+      // Attempt to lock tokens
+      await expectRevert(this.bridgeBank.lock(
+        invalidSifAddress,
+        this.token.address,
+        this.amount, {
+          from: userOne,
+          value: 0
+        }
+      ),
+        "Invalid sif address length"
+      );
+    });
+
+    it("should not allow users to lock ERC20 tokens if the sifaddress prefix is incorrect", async function () {
+      const invalidSifAddress = web3.utils.utf8ToHex(
+        "zif1gdnl9jj2xgy5n04r7heqxlqvvzcy24zc96ns2f"
+      );
+      // Attempt to lock tokens
+      await expectRevert(this.bridgeBank.lock(
+        invalidSifAddress,
+        this.token.address,
+        this.amount, {
+          from: userOne,
+          value: 0
+        }
+      ),
+        "Invalid sif address prefix"
+      );
     });
 
     it("should allow users to lock Ethereum", async function () {
@@ -547,8 +560,9 @@ contract("BridgeBank", function (accounts) {
 
       // Lock an Ethereum deposit
       this.sender = web3.utils.utf8ToHex(
-        "cosmos1pjtgu0vau2m52nrykdpztrt887aykue0hq7dfh"
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
       );
+      this.senderSequence = 1;
       this.recipient = accounts[4];
       this.ethereumSymbol = "ETH";
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
@@ -562,7 +576,7 @@ contract("BridgeBank", function (accounts) {
 
       // Lock Ethereum (this is to increase contract's balances and locked funds mapping)
       await this.bridgeBank.lock(
-        this.recipient,
+        this.sender,
         this.ethereumToken,
         this.weiAmount, {
           from: userOne,
@@ -576,7 +590,7 @@ contract("BridgeBank", function (accounts) {
       this.amount = 100;
 
       // Add the token into white list
-      await this.bridgeBank.updateWhiteList(this.token.address, true, {
+      await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
       }).should.be.fulfilled;
 
@@ -592,7 +606,7 @@ contract("BridgeBank", function (accounts) {
 
       // Lock ERC20 tokens (this is to increase contract's balances and locked funds mapping)
       await this.bridgeBank.lock(
-        this.recipient,
+        this.sender,
         this.token.address,
         this.amount, {
           from: userOne,
@@ -602,50 +616,24 @@ contract("BridgeBank", function (accounts) {
     });
 
     it("should unlock Ethereum upon the processing of a burn prophecy", async function () {
+      // Get prior balances of user and BridgeBank contract
+      const beforeUserBalance = Number(await web3.eth.getBalance(accounts[4]));
+      const beforeContractBalance = Number(
+        await web3.eth.getBalance(this.bridgeBank.address)
+        );
+        
+      this.nonce = 1;
       // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
-      const {
-        logs
-      } = await this.cosmosBridge.newProphecyClaim(
+      await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        this.senderSequence,
         this.recipient,
         this.ethereumSymbol,
         this.weiAmount, {
           from: userOne
         }
       ).should.be.fulfilled;
-
-      // Get the new ProphecyClaim's id
-      const eventLogNewProphecyClaim = logs.find(
-        e => e.event === "LogNewProphecyClaim"
-      );
-      const prophecyID = eventLogNewProphecyClaim.args._prophecyID;
-
-      // Create hash using Solidity's Sha3 hashing function
-      const message = web3.utils.soliditySha3({
-        t: "uint256",
-        v: prophecyID
-      }, {
-        t: "address payable",
-        v: this.recipient
-      }, {
-        t: "uint256",
-        v: this.weiAmount
-      });
-
-      // Generate signatures from active validator userOne
-      const userOneSignature = await web3.eth.sign(message, userOne);
-
-      // Get prior balances of user and BridgeBank contract
-      const beforeUserBalance = Number(await web3.eth.getBalance(accounts[4]));
-      const beforeContractBalance = Number(
-        await web3.eth.getBalance(this.bridgeBank.address)
-      );
-
-      // Validator userOne makes a valid OracleClaim
-      await this.oracle.newOracleClaim(prophecyID, message, userOneSignature, {
-        from: userOne
-      });
 
       // Get balances after prophecy processing
       const afterUserBalance = Number(await web3.eth.getBalance(accounts[4]));
@@ -664,41 +652,6 @@ contract("BridgeBank", function (accounts) {
 
     it("should unlock and transfer ERC20 tokens upon the processing of a burn prophecy", async function () {
       // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
-      const {
-        logs
-      } = await this.cosmosBridge.newProphecyClaim(
-        CLAIM_TYPE_BURN,
-        this.sender,
-        this.recipient,
-        this.symbol,
-        this.amount, {
-          from: userOne
-        }
-      ).should.be.fulfilled;
-
-      // Get the new ProphecyClaim's information
-      const eventLogNewProphecyClaim = logs.find(
-        e => e.event === "LogNewProphecyClaim"
-      );
-      const prophecyID = eventLogNewProphecyClaim.args._prophecyID;
-      const ethereumReceiver = eventLogNewProphecyClaim.args._ethereumReceiver;
-      const amount = Number(eventLogNewProphecyClaim.args._amount);
-
-      // Create hash using Solidity's Sha3 hashing function
-      const message = web3.utils.soliditySha3({
-        t: "uint256",
-        v: prophecyID
-      }, {
-        t: "address payable",
-        v: ethereumReceiver
-      }, {
-        t: "uint256",
-        v: amount
-      });
-
-      // Generate signatures from active validator userOne
-      const userOneSignature = await web3.eth.sign(message, userOne);
-
       // Get Bridge and user's token balance prior to unlocking
       const beforeBridgeBankBalance = Number(
         await this.token.balanceOf(this.bridgeBank.address)
@@ -709,10 +662,17 @@ contract("BridgeBank", function (accounts) {
       beforeBridgeBankBalance.should.be.bignumber.equal(this.amount);
       beforeUserBalance.should.be.bignumber.equal(0);
 
-      // Validator userOne makes a valid oracle claim, processing the prophecy claim
-      await this.oracle.newOracleClaim(prophecyID, message, userOneSignature, {
-        from: userOne
-      });
+      this.nonce = 1;
+      await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_BURN,
+        this.sender,
+        this.senderSequence,
+        this.recipient,
+        this.symbol,
+        this.amount, {
+          from: userOne
+        }
+      ).should.be.fulfilled;
 
       //Confirm that the tokens have been unlocked and transfered
       const afterBridgeBankBalance = Number(
@@ -726,43 +686,6 @@ contract("BridgeBank", function (accounts) {
     });
 
     it("should allow locked funds to be unlocked incrementally by successive burn prophecies", async function () {
-      // -------------------------------------------------------
-      // First burn prophecy
-      // -------------------------------------------------------
-      // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
-      const {
-        logs: claimLogs1
-      } = await this.cosmosBridge.newProphecyClaim(
-        CLAIM_TYPE_BURN,
-        this.sender,
-        this.recipient,
-        this.ethereumSymbol,
-        this.halfWeiAmount, {
-          from: userOne
-        }
-      ).should.be.fulfilled;
-
-      // Get the new ProphecyClaim's id
-      const eventLogNewProphecyClaim1 = claimLogs1.find(
-        e => e.event === "LogNewProphecyClaim"
-      );
-
-      const prophecyID1 = eventLogNewProphecyClaim1.args._prophecyID;
-
-      // Create hash using Solidity's Sha3 hashing function
-      const message1 = web3.utils.soliditySha3({
-        t: "uint256",
-        v: prophecyID1
-      }, {
-        t: "address payable",
-        v: this.recipient
-      }, {
-        t: "uint256",
-        v: this.halfWeiAmount
-      });
-
-      // Generate signatures from active validator userOne
-      const userOneSignature1 = await web3.eth.sign(message1, userOne);
 
       // Get pre-claim processed balances of user and BridgeBank contract
       const beforeContractBalance1 = Number(
@@ -772,11 +695,18 @@ contract("BridgeBank", function (accounts) {
         await web3.eth.getBalance(this.recipient)
       );
 
-      // Validator userOne makes a valid OracleClaim
-      await this.oracle.newOracleClaim(
-        prophecyID1,
-        message1,
-        userOneSignature1, {
+      this.nonce = 1;
+      // -------------------------------------------------------
+      // First burn prophecy
+      // -------------------------------------------------------
+      // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
+      await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_BURN,
+        this.sender,
+        this.senderSequence,
+        this.recipient,
+        this.ethereumSymbol,
+        this.halfWeiAmount, {
           from: userOne
         }
       ).should.be.fulfilled;
@@ -801,39 +731,7 @@ contract("BridgeBank", function (accounts) {
       // Second burn prophecy
       // -------------------------------------------------------
       // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
-      const {
-        logs: claimLogs2
-      } = await this.cosmosBridge.newProphecyClaim(
-        CLAIM_TYPE_BURN,
-        this.sender,
-        this.recipient,
-        this.ethereumSymbol,
-        this.halfWeiAmount, {
-          from: userOne
-        }
-      ).should.be.fulfilled;
 
-      // Get the new ProphecyClaim's id
-      const eventLogNewProphecyClaim2 = claimLogs2.find(
-        e => e.event === "LogNewProphecyClaim"
-      );
-
-      const prophecyID2 = eventLogNewProphecyClaim2.args._prophecyID;
-
-      // Create hash using Solidity's Sha3 hashing function
-      const message2 = web3.utils.soliditySha3({
-        t: "uint256",
-        v: prophecyID2
-      }, {
-        t: "address payable",
-        v: this.recipient
-      }, {
-        t: "uint256",
-        v: this.halfWeiAmount
-      });
-
-      // Generate signatures from active validator userOne
-      const userOneSignature2 = await web3.eth.sign(message2, userOne);
 
       // Get pre-claim processed balances of user and BridgeBank contract
       const beforeContractBalance2 = Number(
@@ -842,15 +740,17 @@ contract("BridgeBank", function (accounts) {
       const beforeUserBalance2 = Number(
         await web3.eth.getBalance(this.recipient)
       );
-
-      // Validator userOne makes a valid OracleClaim
-      await this.oracle.newOracleClaim(
-        prophecyID2,
-        message2,
-        userOneSignature2, {
+      
+      await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_BURN,
+        this.sender,
+        ++this.senderSequence,
+        this.recipient,
+        this.ethereumSymbol,
+        this.halfWeiAmount, {
           from: userOne
         }
-      );
+      ).should.be.fulfilled;
 
       // Get post-claim processed balances of user and BridgeBank contract
       const afterBridgeBankBalance2 = Number(
@@ -879,11 +779,11 @@ contract("BridgeBank", function (accounts) {
 
     it("should not allow burn prophecies to be processed twice", async function () {
       // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
-      const {
-        logs
-      } = await this.cosmosBridge.newProphecyClaim(
+      this.nonce = 1;
+      await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        this.senderSequence,
         this.recipient,
         this.symbol,
         this.amount, {
@@ -891,46 +791,29 @@ contract("BridgeBank", function (accounts) {
         }
       ).should.be.fulfilled;
 
-      // Get the new ProphecyClaim's id
-      const eventLogNewProphecyClaim = logs.find(
-        e => e.event === "LogNewProphecyClaim"
-      );
-      const prophecyID = eventLogNewProphecyClaim.args._prophecyID;
-
-      // Create hash using Solidity's Sha3 hashing function
-      const message = web3.utils.soliditySha3({
-        t: "uint256",
-        v: prophecyID
-      }, {
-        t: "address payable",
-        v: this.recipient
-      }, {
-        t: "uint256",
-        v: this.amount
-      });
-
-      // Generate signatures from active validator
-      const userOneSignature = await web3.eth.sign(message, userOne);
-
-      // Validator userOne makes a valid OracleClaim
-      await this.oracle.newOracleClaim(prophecyID, message, userOneSignature, {
-        from: userOne
-      }).should.be.fulfilled;
-
       // Attempt to process the same prophecy should be rejected
-      await this.oracle
-        .processBridgeProphecy(prophecyID)
-        .should.be.rejectedWith(EVMRevert);
+      await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_BURN,
+        this.sender,
+        this.senderSequence,
+        this.recipient,
+        this.symbol,
+        this.amount, {
+          from: userOne
+        }
+      ).should.be.rejectedWith(EVMRevert);
     });
 
     it("should not accept burn claims for token amounts that exceed the contract's available locked funds", async function () {
       // There are 1,000 TEST tokens approved to the contract, but only 100 have been locked
       const OVERLIMIT_TOKEN_AMOUNT = 500;
+      this.nonce = 1;
 
       // Attempt to submit a new prophecy claim with overlimit amount is rejected
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
+        this.senderSequence,
         this.recipient,
         this.symbol,
         OVERLIMIT_TOKEN_AMOUNT, {
@@ -1039,52 +922,24 @@ contract("BridgeBank", function (accounts) {
       }
 
       const cosmosSender = "0x" + convertToHex("sif12qfvgsq76eghlagyfcfyt9md2s9nunsn40zu2h");
+      const senderSequence = 1
       const symbol = 'Rowan'
       const amount = 100000;
+      const nonce = 1;
 
       // operator should not have any eRowan
       (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(0)).toString())
 
       // Enum in cosmosbridge: enum ClaimType {Unsupported, Burn, Lock}
-      let {
-        logs
-      } = await this.cosmosBridge.newProphecyClaim(
+      await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         cosmosSender,
+        senderSequence,
         operator,
         symbol,
         amount,
         {from: userOne}
-      )
-
-      // Get the new ProphecyClaim's id
-      let eventLogNewProphecyClaim = logs.find(
-        e => e.event === "LogNewProphecyClaim"
       );
-      const prophecyID = eventLogNewProphecyClaim.args._prophecyID;
-
-      // Create hash using Solidity's Sha3 hashing function
-      this.recipient = userOne;
-      this.amount = 100;
-      const message = web3.utils.soliditySha3({
-        t: "uint256",
-        v: prophecyID
-      }, {
-        t: "address payable",
-        v: this.recipient
-      }, {
-        t: "uint256",
-        v: this.amount
-      });
-
-      // Generate signatures from active validator
-      const userOneSignature = await web3.eth.sign(message, userOne);
-
-      // Validator userOne makes a valid OracleClaim, which gives the operator eRowan
-      await this.oracle.newOracleClaim(prophecyID, message, userOneSignature, {
-        from: userOne
-      }).should.be.fulfilled;
-
       (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(amount)).toString())
     });
   });

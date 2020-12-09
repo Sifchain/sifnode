@@ -24,7 +24,7 @@ git clone ssh://git@github.com/Sifchain/sifnode && cd sifnode
 3. Checkout the latest testnet release:
 
 ```
-git checkout tags/monkey-bars-testnet-4
+git checkout tags/monkey-bars-testnet-6
 ```
 
 4. Build:
@@ -35,16 +35,10 @@ make install
 
 5. If you're a new operator (and only if - as otherwise this will reset your node!): 
 
-    5.1 Change to the `build` directory:
-
-    ```
-    cd ./build
-    ```
-
-    5.2 Scaffold your new node:
+    5.1 Scaffold your new node (from the project root directory):
     
     ```
-    rake 'genesis:sifnode:scaffold[monkey-bars, ec03640d0dcb1160f8cf73c33c63b64a55c93906@35.166.247.98:26656, http://35.166.247.98:26657/genesis]'
+    rake 'genesis:sifnode:scaffold[monkey-bars, b7246003ad99b63d9de136b02f680ac35e8d2fb4@35.166.247.98:26656, http://35.166.247.98:26657/genesis]'
     ```
 
 6. If you're an existing node operator:
@@ -58,13 +52,13 @@ make install
     6.2 Download the latest genesis file:
 
     ```
-    wget -O ~/.sifnoded/config/genesis.json https://raw.githubusercontent.com/Sifchain/networks/feature/genesis/testnet/monkey-bars-testnet-4/genesis.json
+    wget -O ~/.sifnoded/config/genesis.json https://raw.githubusercontent.com/Sifchain/networks/feature/genesis/testnet/monkey-bars-testnet-6/genesis.json
     ```
    
     6.3 Update your persistent peers in the file `~/.sifnoded/config/config.toml` so that it reads: 
 
     ```
-    persistent_peers = "ec03640d0dcb1160f8cf73c33c63b64a55c93906@35.166.247.98:26656,04fad3abcf8d5c6d94d7815f9485830c280a8d73@35.166.247.98:28002,330c1b876d916f7518562b33d2749e3d1fcf7817@35.166.247.98:28004,16d9c23623e42723dfcf3dcbb11d98d989689a7a@35.166.247.98:28006"
+    persistent_peers = "b7246003ad99b63d9de136b02f680ac35e8d2fb4@35.166.247.98:26656"
     ```
 
 7. Start your node:
@@ -81,25 +75,13 @@ You can verify that you're connected by running:
 sifnodecli q tendermint-validator-set
 ```
 
-and you should see the following main validator nodes for Sifchain:
+and you should see the following main validator node/s for Sifchain:
 
 ```
 validators:
-- address: sifvalcons1z6jhzs0f7v02ny6k5x5rekf7gyx9400zyxmzve
-  pubkey: sifvalconspub1zcjduepq4zyan4mlm8fpku5jd7zu7f59k863x4g2wrzkku0285z6xylppk6q6nkzrk
+- address: sifvalcons1v5lrysqxcyctelzvazpa3elanauej33ngj6q5s
+  pubkey: sifvalconspub1zcjduepq64s8s75afwrehycuuwvd3n6dryvqkutzhkt5tymgsffjaezzh7dsdvcd60
   proposerpriority: -5000
-  votingpower: 5000
-- address: sifvalcons192ljdnz3u6d7l7vg9zgstlnqyczqhwz4wj5ltz
-  pubkey: sifvalconspub1zcjduepq8zdt2xty2kk87zrzn95crwjkpmhmzxu6w05wtn08dxhq0qnj090sxg634l
-  proposerpriority: -5000
-  votingpower: 5000
-- address: sifvalcons1v38zwh0f9hwq5x6hfna35pr9x5r5wpydqfgyat
-  pubkey: sifvalconspub1zcjduepqefzlm5pymv84kfxdrzm627pw9ty6v2zd49dzuc3aan9z2pftk4rqckj2gz
-  proposerpriority: -5000
-  votingpower: 5000
-- address: sifvalcons1kulx53jp3vnhmagsha5ncnsuewqf3s00nwzffv
-  pubkey: sifvalconspub1zcjduepqrs8w58a59cu3wtt03rtm0c03gyt84f8pxwvtp7cptly39vhcdyxsyqmf62
-  proposerpriority: 15000
   votingpower: 5000
 ```
 
@@ -121,27 +103,17 @@ cat ~/.sifnoded/config/config.toml | grep moniker
 
 ```
 sifnodecli tx staking create-validator \
-    --commission-max-change-rate 0.1 \
-    --commission-max-rate 0.1 \
-    --commission-rate 0.1 \
-    --amount 1000000000rowan \
-    --pubkey $(sifnoded tendermint show-validator) \
-    --moniker <moniker> \
-    --chain-id monkey-bars \
-    --min-self-delegation 1 \
-    --gas auto \
-    --from <moniker> \
-    --keyring-backend file
-```
-
-## Peers
-
-New node operators may also use the following peer addresses:
-
-```
-04fad3abcf8d5c6d94d7815f9485830c280a8d73@35.166.247.98:28002
-330c1b876d916f7518562b33d2749e3d1fcf7817@35.166.247.98:28004
-16d9c23623e42723dfcf3dcbb11d98d989689a7a@35.166.247.98:28006
+    --commission-max-change-rate="0.1" \
+    --commission-max-rate="0.1" \
+    --commission-rate="0.1" \
+    --amount=1000000000rowan \
+    --pubkey=$(sifnoded tendermint show-validator) \
+    --moniker=<moniker> \
+    --chain-id=monkey-bars \
+    --min-self-delegation="1" \
+    --gas="auto" \
+    --from=<moniker> \
+    --keyring-backend=file
 ```
 
 ## Additional Resources

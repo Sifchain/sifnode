@@ -1,15 +1,15 @@
 import { IWalletService } from "../../api/IWalletService";
-import { Balance } from "../../entities";
+import { AssetAmount } from "../../entities";
 
 export function getMockWalletService(
   state: {
     address: string;
     accounts: string[];
     connected: boolean;
-    balances: Balance[];
+    balances: AssetAmount[];
     log: string;
   },
-  walletBalances: Balance[],
+  walletBalances: AssetAmount[],
   service: Partial<IWalletService> = {}
 ): IWalletService {
   return {
@@ -20,11 +20,16 @@ export function getMockWalletService(
     getBalance: jest.fn(async () => walletBalances),
     connect: jest.fn(async () => {
       state.connected = true;
+      state.balances = walletBalances;
     }),
     disconnect: jest.fn(async () => {
       state.connected = false;
     }),
     isConnected: () => true,
     ...service,
+    signAndBroadcast: async (
+      msg: { type: string; value: any },
+      memo?: string
+    ) => {},
   };
 }
