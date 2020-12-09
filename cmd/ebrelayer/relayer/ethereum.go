@@ -190,22 +190,15 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 		case newHead := <-heads:
 			sub.Logger.Info(fmt.Sprintf("New header %d with hash %v", newHead.Number, newHead.Hash()))
 
-			events, ok := sub.EventsBuffer.Buffer[newHead.Number]
-			if ok && events.BlockHash != newHead.Hash() {
-				// Deal with block reorg, delete all events with old hash value
-				sub.Logger.Info(fmt.Sprintf("Block reorg found old hash is %v new hash is %v", events.BlockHash, newHead.Hash()))
-				delete(sub.EventsBuffer.Buffer, newHead.Number)
-			}
+			// Add new header info to buffer
+			sub.EventsBuffer.AddHeader(newHead.Number, newHead.Hash(), newHead.ParentHash)
 
-			// Iterate find out older enough events
-			for key, value := range sub.EventsBuffer.Buffer {
-				sub.Logger.Info(fmt.Sprintf("New header is %d stored header is %d", newHead.Number, key))
-				tmpKey := big.NewInt(30)
-				tmpKey.Add(tmpKey, key)
-				// event happened 30 blocks ago
-				if newHead.Number.Cmp(tmpKey) > 0 {
-					for _, event := range value.Events {
-						sub.Logger.Info(fmt.Sprintf("Process event %v", event))
+			for {
+				thirty := big.NewInt(2)
+				thirty.Add(thirty, sub.EventsBuffer.MinHeight)
+				if thirty.Cmp(newHead.Number) <= 0 {
+					events := sub.EventsBuffer.GetHeaderEvents()
+					for _, event := range events {
 						err := sub.handleEthereumEvent(event)
 
 						if err != nil {
@@ -213,8 +206,11 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 							completionEvent.Add(1)
 						}
 					}
-					// delete the block after processing all events
-					delete(sub.EventsBuffer.Buffer, key)
+
+					sub.EventsBuffer.RemoveHeight()
+
+				} else {
+					break
 				}
 			}
 
