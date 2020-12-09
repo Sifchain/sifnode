@@ -19,7 +19,6 @@ export function Pool(
 
   const instance = {
     amounts,
-
     otherAsset: pair.otherAsset,
     symbol: pair.symbol,
     contains: pair.contains,
