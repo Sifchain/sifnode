@@ -1,4 +1,4 @@
-# Peggy Smart Contract Architecture
+ # Peggy Smart Contract Architecture
 
 The following will contain the architecture of Peggy's smart contracts.
 
