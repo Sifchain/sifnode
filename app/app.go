@@ -199,7 +199,6 @@ func NewInitApp(
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(
-
 		staking.ModuleName,
 	)
 

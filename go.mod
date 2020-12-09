@@ -4,11 +4,12 @@ go 1.15
 
 require (
 	github.com/BurntSushi/toml v0.3.1
+	github.com/MakeNowJust/heredoc v1.0.0
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aristanetworks/goarista v0.0.0-20201012165903-2cb20defcd66 // indirect
 	github.com/btcsuite/btcd v0.21.0-beta // indirect
 	github.com/cespare/cp v1.1.1 // indirect
-	github.com/cosmos/cosmos-sdk v0.39.2
+	github.com/cosmos/cosmos-sdk v0.39.1
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/elastic/gosigar v0.11.0 // indirect
 	github.com/ethereum/go-ethereum v1.9.6
@@ -18,6 +19,7 @@ require (
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/google/gofuzz v1.1.1-0.20200604201612-c04b05f3adfa // indirect
+	github.com/google/uuid v1.1.1 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/huin/goupnp v1.0.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect

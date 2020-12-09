@@ -75,7 +75,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 	for i := 0; i < numberOfPools; i++ {
 		// initialize global pseudo random generator
 		externalToken := tokens[rand.Intn(len(tokens))]
-		externalAsset := types.NewAsset(trimFirstRune(externalToken), trimFirstRune(externalToken), externalToken)
+		externalAsset := types.NewAsset(trimFirstRune(externalToken))
 		pool, err := types.NewPool(externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
 		if err != nil {
 			fmt.Println("Error Generating new pool :", err)
@@ -91,7 +91,7 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < numberOfLp; i++ {
 		externalToken := tokens[rand.Intn(len(tokens))]
-		asset := types.NewAsset(trimFirstRune(externalToken), trimFirstRune(externalToken), externalToken)
+		asset := types.NewAsset(trimFirstRune(externalToken))
 		lpAddess, _ := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
 		lp := types.NewLiquidityProvider(asset, sdk.NewUint(1), lpAddess)
 		lpList = append(lpList, lp)
@@ -101,7 +101,7 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 
 func trimFirstRune(s string) string {
 	_, i := utf8.DecodeRuneInString(s)
-	return strings.ToUpper(s[i:])
+	return strings.ToLower(s[i:])
 }
 
 func GenerateAddress(key string) sdk.AccAddress {
