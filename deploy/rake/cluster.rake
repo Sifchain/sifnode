@@ -184,7 +184,7 @@ namespace :cluster do
   desc "Manage eth full node deploy, upgrade, etc processes"
   namespace :ethnode do
     desc "Deploy a full eth node onto your cluster"
-    task :deploy, [:chainnet, :provider] do |t, args|
+    task :deploy, [:chainnet, :provider:, :image, :image_tag, :network] do |t, args|
       check_args(args)
       eth_wallet(args)
       helmrepos(args)
@@ -202,10 +202,12 @@ namespace :cluster do
 
       cmd = %Q{helm upgrade ethnode #{cwd}/../../deploy/helm/eth-full-node \
         --install -n ethnode \
+        --set geth.image.tag=#{arg[:image]} \
+        --set geth.image.tag=#{arg[:image_tag]} \
         --set geth.account.privateKey=#{eth_wallet_private} \
         --set geth.account.address=#{eth_wallet_address} \
         --set geth.account.secret=#{eth_wallet_secret} \
-        --set geth.genesis.networkId=1 \
+        --set geth.genesis.networkId=#{args[:network]} \
         --create-namespace \
         --debug
       }

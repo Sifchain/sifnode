@@ -13,7 +13,7 @@ ethstats:
 geth:
   image:
     repository: ethereum/client-go
-    tag: latest
+    tag: v1.9.24
   replicaCount: 1
   service:
     type: ClusterIP
