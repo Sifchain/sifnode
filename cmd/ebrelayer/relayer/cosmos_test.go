@@ -1,13 +1,12 @@
 package relayer
 
 import (
-	"os"
 	"testing"
 
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/siflogger"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
 )
 
 const (
@@ -20,7 +19,7 @@ const (
 func TestNewCosmosSub(t *testing.T) {
 
 	privateKey, _ := crypto.HexToECDSA(privateKeyStr)
-	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+	logger := siflogger.New()
 	registryContractAddress := common.HexToAddress(contractAddress)
 	sub := NewCosmosSub(tmProvider, ethProvider, registryContractAddress,
 		privateKey, logger)
