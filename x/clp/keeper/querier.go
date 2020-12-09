@@ -33,7 +33,7 @@ func queryPool(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, e
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	pool, err := keeper.GetPool(ctx, params.Ticker)
+	pool, err := keeper.GetPool(ctx, params.Symbol)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func queryLiquidityProvider(ctx sdk.Context, req abci.RequestQuery, keeper Keepe
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	lp, err := keeper.GetLiquidityProvider(ctx, params.Ticker, params.LpAddress.String())
+	lp, err := keeper.GetLiquidityProvider(ctx, params.Symbol, params.LpAddress.String())
 	if err != nil {
 		return nil, err
 	}
