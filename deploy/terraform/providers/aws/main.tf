@@ -15,6 +15,23 @@ provider "kubernetes" {
   version                = "~> 1.9"
 }
 
+# For https://github.com/Sifchain/sifnode/issues/308
+resource "null_resource" "custom" {
+    # change trigger to run every time
+    triggers = {
+        build_number = "timestamp()"
+    }
+
+    provisioner "local-exec" {
+        command = <<EOF
+            set -e
+            curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/amd64/aws-iam-authenticator
+            chmod +x aws-iam-authenticator
+            mkdir -p $HOME/bin && cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$PATH:$HOME/bin
+        EOF
+    }
+}
+
 data "aws_eks_cluster" "cluster" {
   name = module.eks.cluster_id
 }
