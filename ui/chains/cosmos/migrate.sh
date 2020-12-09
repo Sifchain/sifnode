@@ -5,8 +5,6 @@ sleep 10
 echo "create liquidity pool from catk:rowan"
 sifnodecli tx clp create-pool \
  --from akasha \
- --sourceChain ETH \
- --symbol ETH \
  --ticker catk \
  --nativeAmount 1000000 \
  --externalAmount 1000000 \
@@ -19,8 +17,6 @@ echo "create liquidity pool from cbtk:rowan"
 # create liquidity pool from cbtk:rowan
 sifnodecli tx clp create-pool \
  --from akasha \
- --sourceChain ETH \
- --symbol ETH \
  --ticker cbtk \
  --nativeAmount 1000000 \
  --externalAmount 1000000 \
