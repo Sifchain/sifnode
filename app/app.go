@@ -3,13 +3,11 @@ package app
 import (
 	"encoding/json"
 	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	"io"
 	"os"
 
-	"github.com/cosmos/cosmos-sdk/x/gov"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
@@ -29,9 +27,6 @@ import (
 
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/oracle"
-
-	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 )
 
 const appName = "sifnode"
@@ -44,13 +39,9 @@ var (
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		staking.AppModuleBasic{},
-		gov.NewAppModuleBasic(
-			upgradeclient.ProposalHandler,
-		),
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		clp.AppModuleBasic{},
-		upgrade.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
 	)
@@ -59,7 +50,6 @@ var (
 		auth.FeeCollectorName:     nil,
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
-		gov.ModuleName:            {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
 		clp.ModuleName:            {supply.Burner, supply.Minter},
 	}
@@ -92,8 +82,6 @@ type NewApp struct {
 	StakingKeeper staking.Keeper
 	SupplyKeeper  supply.Keeper
 	paramsKeeper  params.Keeper
-	UpgradeKeeper upgrade.Keeper
-	govKeeper     gov.Keeper
 
 	// Peggy keepers
 	EthBridgeKeeper ethbridge.Keeper
@@ -123,11 +111,9 @@ func NewInitApp(
 		staking.StoreKey,
 		supply.StoreKey,
 		params.StoreKey,
-		upgrade.StoreKey,
 		oracle.StoreKey,
 		ethbridge.StoreKey,
 		clp.StoreKey,
-		gov.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -146,7 +132,6 @@ func NewInitApp(
 	app.subspaces[bank.ModuleName] = app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
 	app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
-	app.subspaces[gov.ModuleName] = app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 
 	app.AccountKeeper = auth.NewAccountKeeper(
 		app.cdc,
@@ -200,61 +185,26 @@ func NewInitApp(
 		app.SupplyKeeper,
 		app.subspaces[clp.ModuleName])
 
-	skipUpgradeHeights := make(map[int64]bool)
-	skipUpgradeHeights[0] = true
-	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
-	app.UpgradeKeeper.SetUpgradeHandler("testupgrade", func(ctx sdk.Context, plan upgrade.Plan) {
-		ethAsset := clp.NewAsset("Ethereum", "ETH", "ceth")
-		pool, err := clp.NewPool(ethAsset, sdk.NewUint(100), sdk.NewUint(100), sdk.NewUint(10))
-		if err != nil {
-			return
-		}
-		err = app.clpKeeper.SetPool(ctx, pool)
-		if err != nil {
-			return
-		}
-		clp.InitGenesis(ctx, app.clpKeeper, clp.DefaultGenesisState())
-	})
-	app.SetStoreLoader(bam.StoreLoaderWithUpgrade(&types.StoreUpgrades{
-		Added: []string{clp.ModuleName},
-	}))
-
-	govRouter := gov.NewRouter()
-	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
-		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
-
-	app.govKeeper = gov.NewKeeper(
-		app.cdc,
-		keys[gov.StoreKey],
-		app.subspaces[gov.ModuleName],
-		app.SupplyKeeper,
-		app.StakingKeeper,
-		govRouter,
-	)
-
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.AccountKeeper),
 		bank.NewAppModule(app.bankKeeper, app.AccountKeeper),
 		supply.NewAppModule(app.SupplyKeeper, app.AccountKeeper),
 		staking.NewAppModule(app.StakingKeeper, app.AccountKeeper, app.SupplyKeeper),
-		upgrade.NewAppModule(app.UpgradeKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
 		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
-		gov.NewAppModule(app.govKeeper, app.AccountKeeper, app.SupplyKeeper),
 	)
 
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(
-		upgrade.ModuleName,
+
 		staking.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
 		staking.ModuleName,
-		gov.ModuleName,
 	)
 
 	app.mm.SetOrderInitGenesis(
@@ -266,7 +216,6 @@ func NewInitApp(
 		oracle.ModuleName,
 		ethbridge.ModuleName,
 		clp.ModuleName,
-		gov.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())

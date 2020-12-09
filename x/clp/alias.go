@@ -27,21 +27,22 @@ var (
 	//CreateLiquidityProvider = keeper.CreateLiquidityProvider
 	//RemoveLiquidity         = keeper.RemoveLiquidity
 	//FinalizeSwap            = keeper.FinalizeSwap
-	NewMsgSwap             = types.NewMsgSwap
-	NewMsgAddLiquidity     = types.NewMsgAddLiquidity
-	NewMsgRemoveLiquidity  = types.NewMsgRemoveLiquidity
-	NewMsgCreatePool       = types.NewMsgCreatePool
-	NewMsgDecommissionPool = types.NewMsgDecommissionPool
-	NewLiquidityProvider   = types.NewLiquidityProvider
-	NewAsset               = types.NewAsset
-	NewPool                = types.NewPool
-	RegisterCodec          = types.RegisterCodec
-	NewGenesisState        = types.NewGenesisState
-	DefaultGenesisState    = types.DefaultGenesisState
-	NewParams              = types.NewParams
-	ModuleCdc              = types.ModuleCdc
-	GetSettlementAsset     = types.GetSettlementAsset
-	GetCLPModuleAddress    = types.GetCLPModuleAddress
+	NewMsgSwap                  = types.NewMsgSwap
+	NewMsgAddLiquidity          = types.NewMsgAddLiquidity
+	NewMsgRemoveLiquidity       = types.NewMsgRemoveLiquidity
+	NewMsgCreatePool            = types.NewMsgCreatePool
+	NewMsgDecommissionPool      = types.NewMsgDecommissionPool
+	NewLiquidityProvider        = types.NewLiquidityProvider
+	NewAsset                    = types.NewAsset
+	NewPool                     = types.NewPool
+	RegisterCodec               = types.RegisterCodec
+	NewGenesisState             = types.NewGenesisState
+	DefaultGenesisState         = types.DefaultGenesisState
+	NewParams                   = types.NewParams
+	ModuleCdc                   = types.ModuleCdc
+	GetSettlementAsset          = types.GetSettlementAsset
+	GetCLPModuleAddress         = types.GetCLPModuleAddress
+	GetGenesisStateFromAppState = types.GetGenesisStateFromAppState
 )
 
 type (
