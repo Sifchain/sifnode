@@ -1,9 +1,10 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/Sifchain/sifnode/tools/sifgen"
 	"github.com/spf13/cobra"
-	"strconv"
 )
 
 func main() {
@@ -15,7 +16,10 @@ func main() {
 	_nodeCmd := nodeCmd()
 	_nodeCmd.AddCommand(nodeCreateCmd(), nodeResetStateCmd())
 
-	rootCmd.AddCommand(_networkCmd, _nodeCmd)
+	_keyCmd := keyCmd()
+	_keyCmd.AddCommand(keyGenerateMnemonicCmd(), keyRecoverFromMnemonicCmd())
+
+	rootCmd.AddCommand(_networkCmd, _nodeCmd, _keyCmd)
 	_ = rootCmd.Execute()
 }
 
@@ -34,7 +38,7 @@ func networkCreateCmd() *cobra.Command {
 		Args:  cobra.MinimumNArgs(4),
 		Run: func(cmd *cobra.Command, args []string) {
 			count, _ := strconv.Atoi(args[1])
-			sifgen.NewSifgen(args[0]).NetworkCreate(count, args[2], args[3], args[4])
+			sifgen.NewSifgen(&args[0]).NetworkCreate(count, args[2], args[3], args[4])
 		},
 	}
 }
@@ -45,7 +49,7 @@ func networkResetCmd() *cobra.Command {
 		Short: "Reset the state of a network.",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			sifgen.NewSifgen(args[0]).NetworkReset(args[1])
+			sifgen.NewSifgen(&args[0]).NetworkReset(args[1])
 		},
 	}
 }
@@ -60,14 +64,14 @@ func nodeCmd() *cobra.Command {
 
 func nodeCreateCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "create [chain-id] [peer-address] [genesis-url]",
+		Use:   "create [chain-id] [moniker] [mnemonic] [ip_addr] [peer-address] [genesis-url]",
 		Short: "Create a new node.",
-		Args:  cobra.MinimumNArgs(1),
+		Args:  cobra.MinimumNArgs(4),
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 1 {
-				sifgen.NewSifgen(args[0]).NodeCreate(nil, nil)
+			if len(args) == 4 {
+				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], args[3], nil, nil)
 			} else {
-				sifgen.NewSifgen(args[0]).NodeCreate(&args[1], &args[2])
+				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], args[3], &args[4], &args[5])
 			}
 		},
 	}
@@ -80,10 +84,40 @@ func nodeResetStateCmd() *cobra.Command {
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 1 {
-				sifgen.NewSifgen(args[0]).NodeReset(nil)
+				sifgen.NewSifgen(&args[0]).NodeReset(nil)
 			} else {
-				sifgen.NewSifgen(args[0]).NodeReset(&args[1])
+				sifgen.NewSifgen(&args[0]).NodeReset(&args[1])
 			}
+		},
+	}
+}
+
+func keyCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "key",
+		Short: "Key commands.",
+		Args:  cobra.MaximumNArgs(0),
+	}
+}
+
+func keyGenerateMnemonicCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "generate",
+		Short: "Generate a mnemonic phrase.",
+		Args:  cobra.MaximumNArgs(0),
+		Run: func(cmd *cobra.Command, args []string) {
+			sifgen.NewSifgen(nil).KeyGenerateMnemonic(nil, nil)
+		},
+	}
+}
+
+func keyRecoverFromMnemonicCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "recover [mnemonic]",
+		Short: "Recover your key details from your mnemonic phrase.",
+		Args:  cobra.MinimumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			sifgen.NewSifgen(nil).KeyRecoverFromMnemonic(args[0])
 		},
 	}
 }

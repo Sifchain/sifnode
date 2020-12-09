@@ -17,14 +17,10 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
-	NativeTicker = "rwn"
-	NativeChain  = "SIFCHAIN"
-	NativeSymbol = "RWN"
+	NativeSymbol = "rowan"
 
-	MaxTickerLength      = 6
-	MaxSymbolLength      = 6
-	MaxSourceChainLength = 20
-	MaxWbasis            = 10000
+	MaxSymbolLength = 10
+	MaxWbasis       = 10000
 )
 
 var (

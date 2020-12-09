@@ -23,8 +23,7 @@ export default defineComponent({
     PriceCalculation,
   },
   setup() {
-    const { actions, store, api } = useCore();
-    const marketPairFinder = api.MarketService.find;
+    const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
 
     const {
@@ -68,7 +67,7 @@ export default defineComponent({
       fromSymbol,
       selectedField,
       toSymbol,
-      marketPairFinder,
+      poolFinder,
     });
 
     return {
