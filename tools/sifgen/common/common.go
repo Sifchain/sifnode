@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/tools/sifgen/common/types"
 )
 
@@ -13,7 +14,14 @@ type (
 )
 
 var (
+	DefaultNodeHome = app.DefaultNodeHome
+	DefaultCLIHome  = app.DefaultCLIHome
 	StakeTokenDenom = types.StakeTokenDenom
+
+	P2PPort             = 26656
+	MaxNumInboundPeers  = 1000
+	MaxNumOutboundPeers = 1000
+	AllowDuplicateIP    = true
 )
 
 var (

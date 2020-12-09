@@ -19,16 +19,14 @@ namespace :cluster do
     system("cd #{path(args)} && terraform init")
 
     puts "Cluster configuration scaffolding complete: #{path(args)}"
-    puts "Now run `rake cluster:create[#{args[:chainnet]},#{args[:provider]}]` to deploy your cluster"
   end
 
-  desc "Deploy a cluster"
+  desc "Deploy a new cluster"
   task :deploy, [:chainnet, :provider] do |t, args|
     check_args(args)
     puts "Deploy cluster config: #{path(args)}"
     system("cd #{path(args)} && terraform apply -auto-approve") or exit 1
     puts "Cluster #{path(args)} created successfully"
-    puts "Now run `rake sifnode:install[#{args[:chainnet]},#{args[:provider]}]` to deploy sifnode to your cluster"
   end
 
   desc "Status of your cluster"
@@ -78,11 +76,13 @@ namespace :cluster do
   namespace :sifnode do
     namespace :deploy do
       desc "Deploy a single standalone sifnode on to your cluster"
-      task :standalone, [:chainnet, :provider, :namespace, :image, :image_tag] do |t, args|
+      task :standalone, [:chainnet, :provider, :namespace, :image, :image_tag, :moniker, :mnemonic] do |t, args|
         check_args(args)
 
         cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
+          --set sifnode.env.moniker=#{args[:moniker]} \
+          --set sifnode.env.mnemonic=#{args[:mnemonic]} \
           --install -n #{ns(args)} --create-namespace \
           --set image.tag=#{image_tag(args)} \
           --set image.repository=#{image_repository(args)}
@@ -92,14 +92,16 @@ namespace :cluster do
       end
 
       desc "Deploy a single network-aware sifnode on to your cluster"
-      task :peer, [:chainnet, :provider, :namespace, :image, :image_tag, :peer_address, :genesis_url] do |t, args|
+      task :peer, [:chainnet, :provider, :namespace, :image, :image_tag, :moniker, :mnemonic, :peer_address, :genesis_url] do |t, args|
         check_args(args)
 
         cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
           --install -n #{ns(args)} --create-namespace \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
-          --set sifnode.env.genesisURL=#{args[:genesis_url]} \
+          --set sifnode.env.moniker=#{args[:moniker]} \
+          --set sifnode.env.mnemonic=#{args[:mnemonic]} \
           --set sifnode.env.peerAddress=#{args[:peer_address]} \
+          --set sifnode.env.genesisURL=#{args[:genesis_url]} \
           --set image.tag=#{image_tag(args)} \
           --set image.repository=#{image_repository(args)}
         }
@@ -108,7 +110,7 @@ namespace :cluster do
       end
     end
 
-    desc "delete a namespace"
+    desc "Destroy an existing namespace"
     task :destroy, [:chainnet, :provider, :namespace, :skip_prompt] do |t, args|
       check_args(args)
       are_you_sure(args)
@@ -117,10 +119,10 @@ namespace :cluster do
     end
   end
 
-  desc "ebrelayer operations"
+  desc "ebrelayer Operations"
   namespace :ebrelayer do
-    desc "Install ebrelayer"
-    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker] do |t, args|
+    desc "Deploy a new ebrelayer to an existing cluster"
+    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :mnemonic, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
@@ -129,6 +131,7 @@ namespace :cluster do
         --set ebrelayer.image.repository=#{image_repository(args)} \
         --set ebrelayer.image.tag=#{image_tag(args)} \
         --set ebrelayer.enabled=true \
+        --set ebrelayer.env.mnemonic=#{args[:mnemonic]} \
         --set ebrelayer.env.ethWebsocketAddress=#{args[:eth_websocket_address]} \
         --set ebrelayer.env.ethBridgeRegistryAddress=#{args[:eth_bridge_registry_address]} \
         --set ebrelayer.env.ethPrivateKey=#{args[:eth_private_key]} \
@@ -138,8 +141,8 @@ namespace :cluster do
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
 
-    desc "Uninstall ebrelayer"
-    task :uninstall, [:chainnet, :provider, :namespace] do |t, args|
+    desc "Destroy a running ebrelayer on an existing cluster"
+    task :destroy, [:chainnet, :provider, :namespace] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
@@ -154,11 +157,11 @@ namespace :cluster do
 
   desc "Block Explorer"
   namespace :blockexplorer do
-    desc "Install blockexplorer"
+    desc "Deploy a Block Explorer to an existing cluster"
     task :deploy, [:chainnet, :provider] do |t, args|
       check_args(args)
 
-      cmd = %Q{helm upgrade block-explorer ../deploy/helm/block-explorer \
+      cmd = %Q{helm upgrade block-explorer #{cwd}/../../deploy/helm/block-explorer \
         --install -n block-explorer \
         --create-namespace
       }
@@ -166,8 +169,8 @@ namespace :cluster do
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
 
-    desc "Uninstall blockexplorer"
-    task :uninstall, [:chainnet, :provider] do |t, args|
+    desc "Destroy a running Block Explorer on an existing cluster"
+    task :destroy, [:chainnet, :provider] do |t, args|
       check_args(args)
 
       cmd = %Q{helm delete block-explorer --namespace block-explorer && \

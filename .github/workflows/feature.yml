@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'feature/*'
+      - 'bugfix/*'
 
 jobs:
   build:
@@ -29,56 +30,3 @@ jobs:
       - name: Push image
         run: |
           docker push sifchain/sifnoded:${{ steps.vars.outputs.sha_short }}
-
-  deploy:
-    runs-on: ubuntu-latest
-    env:
-      WORKING_DIRECTORY: ./
-      WORKSPACE_PREFIX: sifchain-aws
-      WORKSPACE_NAME: feature-testnets
-    needs: build
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-
-      - name: Setup ruby
-        uses: actions/setup-ruby@v1
-
-      - name: Install AWS CLI
-        uses: chrislennon/action-aws-cli@v1.1
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-
-      - name: Git vars
-        id: vars
-        shell: bash
-        run: |
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-
-      - name: Set AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-
-      - name: Create k8s config
-        working-directory: ${{env.WORKING_DIRECTORY}}
-        run: |
-          mkdir -p .live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
-          aws eks --region us-west-2 update-kubeconfig \
-                  --name ${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }} \
-                  --kubeconfig .live/${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}/kubeconfig_${{ env.WORKSPACE_PREFIX}}-${{ env.WORKSPACE_NAME }}
-
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v2.x
-
-      - name: Deploy node to cluster
-        working-directory: ${{ env.WORKING_DIRECTORY }}
-        run: |
-          rake 'cluster:sifnode:deploy:standalone[${{ env.WORKSPACE_NAME }},aws,${{ env.GITHUB_REF_SLUG }},sifchain/sifnoded,${{ steps.vars.outputs.sha_short }}]'
-
-      - name: Cluster status
-        working-directory: ${{ env.WORKING_DIRECTORY }}
-        run: |
-          rake 'cluster:status[${{ env.WORKSPACE_NAME }},aws]'

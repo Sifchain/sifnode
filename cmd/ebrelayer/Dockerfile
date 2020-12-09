@@ -5,6 +5,7 @@ FROM golang:1.15 AS build
 
 ENV GOBIN=/go/bin
 ENV GOPATH=/go
+ENV CGO_ENABLED=0
 ENV GOOS=linux
 
 # Empty dir for the db data

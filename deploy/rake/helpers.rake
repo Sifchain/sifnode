@@ -64,6 +64,27 @@ def are_you_sure(args)
 end
 
 #
+# Node address
+#
+# @param args Arguments passed to rake
+#
+def node_address(args)
+  args[:node].nil? ? "tcp://127.0.0.1:26657" : args[:node]
+end
+
+#
+# Sifnode Pod name
+#
+# @param args Arguments passed to rake
+#
+def pod_name(args)
+  cmd = %Q{kubectl get pods --selector=app.kubernetes.io/instance=sifnode \
+          -n #{args[:moniker]} -o json | jq '.items[0].metadata.name'}
+  system("export KUBECONFIG=#{kubeconfig(args)}")
+  `#{cmd}`.strip
+end
+
+#
 # Detect the O/S
 #
 def detect_os

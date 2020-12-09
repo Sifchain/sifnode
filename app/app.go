@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	tmos "github.com/tendermint/tendermint/libs/os"
 	"io"
 	"os"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
-	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
@@ -50,7 +50,6 @@ var (
 		slashing.AppModuleBasic{},
 	)
 
-	// Module accounts which will be passed to the supply keeper when it is initialized
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
 		distr.ModuleName:          nil,
@@ -95,9 +94,8 @@ type NewApp struct {
 	// Peggy keepers
 	EthBridgeKeeper ethbridge.Keeper
 	OracleKeeper    oracle.Keeper
-
-	clpKeeper clp.Keeper
-	mm        *module.Manager
+	clpKeeper       clp.Keeper
+	mm              *module.Manager
 
 	sm *module.SimulationManager
 }
@@ -108,6 +106,7 @@ func NewInitApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
 ) *NewApp {
+
 	cdc := MakeCodec()
 
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
