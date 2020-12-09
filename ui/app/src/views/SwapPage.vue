@@ -1,9 +1,9 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
-import { computed, ref } from "@vue/reactivity";
+import { computed, ref, toRefs } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import { SwapState, useSwapCalculator } from "ui-core";
+import { Asset, SwapState, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/shared/Modal.vue";
@@ -30,8 +30,8 @@ export default defineComponent({
   },
 
   setup() {
-    const { api, actions, store } = useCore();
-    const marketPairFinder = api.MarketService.find;
+    const { actions, poolFinder, store } = useCore();
+
     const {
       fromSymbol,
       fromAmount,
@@ -43,6 +43,7 @@ export default defineComponent({
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
     });
+
     function requestTransactionModalClose() {
       transactionState.value = "selecting";
     }
@@ -63,11 +64,13 @@ export default defineComponent({
       fromSymbol,
       selectedField,
       toSymbol,
-      marketPairFinder,
+      poolFinder,
     });
+
     const minimumReceived = computed(() =>
       parseFloat(toAmount.value).toPrecision(10)
     );
+
     function clearAmounts() {
       fromAmount.value = "0.0";
       toAmount.value = "0.0";

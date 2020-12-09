@@ -1,10 +1,25 @@
 import { Asset, AssetAmount } from "../entities";
 import { ActionContext } from ".";
+import { PoolStore } from "../store/pools";
 
 export default ({
   api,
-}: ActionContext<"SifService" | "MarketService" | "ClpService", "wallet">) => {
+  store,
+}: ActionContext<"SifService" | "ClpService", "pools" | "wallet">) => {
   const state = api.SifService.getState();
+
+  // Sync MarketService with pool store
+  api.ClpService.onPoolsUpdated((pools) => {
+    for (let pool of pools) {
+      store.pools[pool.symbol()] = pool;
+    }
+  });
+
+  function findPool(pools: PoolStore, a: string, b: string) {
+    const key = [a, b].sort().join("_");
+
+    return pools[key] ?? null;
+  }
 
   const actions = {
     async swap(sentAmount: AssetAmount, receivedAsset: Asset) {
@@ -24,7 +39,8 @@ export default ({
       externalAssetAmount: AssetAmount
     ) {
       if (!state.address) throw "No from address provided for swap";
-      const hasPool = !!api.MarketService.find(
+      const hasPool = !!findPool(
+        store.pools,
         nativeAssetAmount.asset.symbol,
         externalAssetAmount.asset.symbol
       );

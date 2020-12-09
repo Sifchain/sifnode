@@ -29,8 +29,8 @@ export default defineComponent({
   },
 
   setup() {
-    const { api, actions, store } = useCore();
-    const marketPairFinder = api.MarketService.find;
+    const { actions, poolFinder, store } = useCore();
+
     const {
       fromSymbol,
       fromAmount,
@@ -64,7 +64,7 @@ export default defineComponent({
       fromSymbol,
       selectedField,
       toSymbol,
-      marketPairFinder,
+      poolFinder,
     });
 
     function clearAmounts() {
