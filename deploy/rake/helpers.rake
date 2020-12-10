@@ -39,7 +39,11 @@ end
 # @params chainnet Name or ID of the chain
 #
 def network_config(chainnet)
-  "#{cwd}/../networks/#{Digest::SHA256.hexdigest chainnet}.yml"
+  if chainnet == 'localnet'
+    "#{cwd}/../networks/network-definition.yml"
+  else
+    "#{cwd}/../networks/#{Digest::SHA256.hexdigest chainnet}.yml"
+  end
 end
 
 #
@@ -57,6 +61,27 @@ def are_you_sure(args)
 
     exit(0) if input != 'y'
   end
+end
+
+#
+# Node address
+#
+# @param args Arguments passed to rake
+#
+def node_address(args)
+  args[:node].nil? ? "tcp://127.0.0.1:26657" : args[:node]
+end
+
+#
+# Sifnode Pod name
+#
+# @param args Arguments passed to rake
+#
+def pod_name(args)
+  cmd = %Q{kubectl get pods --selector=app.kubernetes.io/instance=sifnode \
+          -n #{args[:namespace]} -o json | jq '.items[0].metadata.name'}
+  system("export KUBECONFIG=#{kubeconfig(args)}")
+  `#{cmd}`.strip
 end
 
 #
@@ -78,4 +103,10 @@ def detect_os
     raise Error::WebDriverError, "unknown os: #{host_os.inspect}"
   end
   )
+end
+
+def safe_system(cmd)
+  if (!system(cmd))
+    STDERR.puts("System cmd failed: #{cmd}")
+  end
 end

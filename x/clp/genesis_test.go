@@ -71,6 +71,8 @@ func CreateState(ctx sdk.Context, keeper clp.Keeper, t *testing.T) (int, int) {
 	for _, lp := range lpList {
 		keeper.SetLiquidityProvider(ctx, lp)
 	}
+	v1 := test.GenerateWhitelistAddress("")
+	keeper.SetClpWhiteList(ctx, []sdk.AccAddress{v1})
 	assetList := keeper.GetAssetsForLiquidityProvider(ctx, lpList[0].LiquidityProviderAddress)
 	assert.LessOrEqual(t, len(assetList), len(lpList))
 	lpCount := len(assetList)

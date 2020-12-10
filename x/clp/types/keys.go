@@ -17,19 +17,16 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
-	NativeTicker = "rwn"
-	NativeChain  = "SIFCHAIN"
-	NativeSymbol = "RWN"
+	NativeSymbol = "rowan"
 
-	MaxTickerLength      = 6
-	MaxSymbolLength      = 6
-	MaxSourceChainLength = 20
-	MaxWbasis            = 10000
+	MaxSymbolLength = 10
+	MaxWbasis       = 10000
 )
 
 var (
-	PoolPrefix              = []byte{0x00} // key for storing Pools
-	LiquidityProviderPrefix = []byte{0x01} // key for storing Liquidity Providers
+	PoolPrefix               = []byte{0x00} // key for storing Pools
+	LiquidityProviderPrefix  = []byte{0x01} // key for storing Liquidity Providers
+	WhiteListValidatorPrefix = []byte{0x02} // Key to store WhiteList , allowed to decommission pools
 )
 
 // Generates a key for storing a specific pool

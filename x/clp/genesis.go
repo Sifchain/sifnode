@@ -10,6 +10,9 @@ import (
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 	keeper.SetParams(ctx, data.Params)
+	if data.AddressWhitelist != nil {
+		keeper.SetClpWhiteList(ctx, data.AddressWhitelist)
+	}
 	for _, pool := range data.PoolList {
 		err := keeper.SetPool(ctx, pool)
 		if err != nil {
@@ -26,9 +29,10 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
 	params := keeper.GetParams(ctx)
 	poolList := keeper.GetPools(ctx)
 	liquidityProviders := keeper.GetLiquidityProviders(ctx)
-
+	whiteList := keeper.GetClpWhiteList(ctx)
 	return GenesisState{
 		Params:                params,
+		AddressWhitelist:      whiteList,
 		PoolList:              poolList,
 		LiquidityProviderList: liquidityProviders,
 	}

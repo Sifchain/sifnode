@@ -1,3 +1,4 @@
+.openzeppelin/
 build/
 node_modules/
 flat/

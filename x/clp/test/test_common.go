@@ -23,6 +23,14 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
+// Constants for test scripts only .
+//
+const (
+	AddressKey1 = "A58856F0FD53BF058B4909A21AEC019107BA6"
+	AddressKey2 = "A58856F0FD53BF058B4909A21AEC019107BA7"
+	AddressKey3 = "A58856F0FD53BF058B4909A21AEC019107BA9"
+)
+
 // create a codec used only for testing
 func MakeTestCodec() *codec.Codec {
 	var cdc = codec.New()
@@ -67,7 +75,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 	for i := 0; i < numberOfPools; i++ {
 		// initialize global pseudo random generator
 		externalToken := tokens[rand.Intn(len(tokens))]
-		externalAsset := types.NewAsset(trimFirstRune(externalToken), trimFirstRune(externalToken), externalToken)
+		externalAsset := types.NewAsset(trimFirstRune(externalToken))
 		pool, err := types.NewPool(externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
 		if err != nil {
 			fmt.Println("Error Generating new pool :", err)
@@ -83,7 +91,7 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	rand.Seed(time.Now().Unix())
 	for i := 0; i < numberOfLp; i++ {
 		externalToken := tokens[rand.Intn(len(tokens))]
-		asset := types.NewAsset(trimFirstRune(externalToken), trimFirstRune(externalToken), externalToken)
+		asset := types.NewAsset(trimFirstRune(externalToken))
 		lpAddess, _ := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
 		lp := types.NewLiquidityProvider(asset, sdk.NewUint(1), lpAddess)
 		lpList = append(lpList, lp)
@@ -93,10 +101,44 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 
 func trimFirstRune(s string) string {
 	_, i := utf8.DecodeRuneInString(s)
-	return strings.ToUpper(s[i:])
+	return strings.ToLower(s[i:])
 }
 
 func GenerateAddress(key string) sdk.AccAddress {
+	if key == "" {
+		key = AddressKey1
+	}
+	var buffer bytes.Buffer
+	buffer.WriteString(key)
+	buffer.WriteString(strconv.Itoa(100))
+	res, _ := sdk.AccAddressFromHex(buffer.String())
+	bech := res.String()
+	addr := buffer.String()
+	res, err := sdk.AccAddressFromHex(addr)
+
+	if err != nil {
+		panic(err)
+	}
+
+	bechexpected := res.String()
+	if bech != bechexpected {
+		panic("Bech encoding doesn't match reference")
+	}
+
+	bechres, err := sdk.AccAddressFromBech32(bech)
+	if err != nil {
+		panic(err)
+	}
+	if !bytes.Equal(bechres, res) {
+		panic("Bech decode and hex decode don't match")
+	}
+	return res
+}
+
+func GenerateWhitelistAddress(key string) sdk.AccAddress {
+	if key == "" {
+		key = AddressKey1
+	}
 	var buffer bytes.Buffer
 	buffer.WriteString(key)
 	buffer.WriteString(strconv.Itoa(100))
