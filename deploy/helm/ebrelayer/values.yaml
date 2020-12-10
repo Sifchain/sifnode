@@ -16,36 +16,25 @@ podSecurityContext: {}
 securityContext: {}
 
 image:
-  repository: sifchain/sifnoded
+  repository: sifchain/ebrelayer
   pullPolicy: Always
   tag: "testnet"
 
-sifnode:
+ebrelayer:
   env:
-    chainnet:
-    moniker:
-    genesisURL:
-    peerAddress:
+    chainnet: ""
+    nodeHost: ""
+    ethWebsocketAddress: ""
+    ethBridgeRegistryAddress: ""
+    ethPrivateKey: ""
+    moniker: ""
     mnemonic: ""
-  service:
-    type: LoadBalancer
-
-sifnodecli:
-
-service:
-  type: LoadBalancer
-  port: 26656
-
-persistence:
-  enabled: true
-  size: 500Gi
-  accessMode: ReadWriteOnce
 
 ingress:
   enabled: false
   annotations: {}
   hosts:
-    - host: sifnode.local
+    - host: ebrelayer.local
       paths: []
   tls: []
 
