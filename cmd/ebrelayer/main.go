@@ -148,7 +148,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	mnemonic := args[4]
 
 	// Universal logger
-	logger := siflogger.New(siflogger.TD_FMT)
+	logger := siflogger.New(siflogger.TDFmt)
 	// to set global log level
 	logger.SetGlobalFilter(siflogger.Debug)
 	// to filter by first layer of Tags (key1 value1 OR key2 value2)

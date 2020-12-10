@@ -70,9 +70,13 @@ func New(t Type) Logger {
 	default:
 		panic("incorrect logger type")
 	}
-	logger = logger.With("caller", logFileLine(5))
+	if filterNumber != 0 {
+		// TODO: the only problem (due not full OOP support) is to implement correct filterNumber per instance but not per package
+		panic("Logger is supposed to be a singleton")
+	}
+	filterNumber++
+	logger = logger.With("caller", logFileLine(4))
 	e := Logger{logger}
-	filterNumber = 0 // supposedly used as singleton
 	return e
 }
 
