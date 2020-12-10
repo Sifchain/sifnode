@@ -58,7 +58,7 @@ describe("useRemoveLiquidityCalculator", () => {
     expect(state.value).toBe(PoolState.SELECT_TOKENS);
     asymmetry.value = "0";
     externalAssetSymbol.value = "catk";
-    nativeAssetSymbol.value = "rwn";
+    nativeAssetSymbol.value = "rowan";
     sifAddress.value = "sif123456876512341234";
     wBasisPoints.value = "0";
 

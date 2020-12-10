@@ -27,7 +27,7 @@ describe("Pool", () => {
   });
   const RWN = Coin({
     decimals: 18,
-    symbol: "rwn",
+    symbol: "rowan",
     name: "Rowan",
     network: Network.SIFCHAIN,
   });
@@ -252,9 +252,9 @@ describe("Pool", () => {
           address: "1234",
           network: Network.ETHEREUM,
         }),
-        rwn: Token({
+        rowan: Token({
           decimals: 18,
-          symbol: "rwn",
+          symbol: "rowan",
           name: "Rowan",
           address: "1234",
           network: Network.ETHEREUM,
@@ -269,12 +269,12 @@ describe("Pool", () => {
       };
       const pair1 = Pool(
         AssetAmount(TOKENS.atk, "2000000000000"),
-        AssetAmount(TOKENS.rwn, "1000000000000")
+        AssetAmount(TOKENS.rowan, "1000000000000")
       );
 
       const pair2 = Pool(
         AssetAmount(TOKENS.btk, "1000000000000"),
-        AssetAmount(TOKENS.rwn, "1000000000000")
+        AssetAmount(TOKENS.rowan, "1000000000000")
       );
       const compositePool = CompositePool(pair1, pair2);
       expect(

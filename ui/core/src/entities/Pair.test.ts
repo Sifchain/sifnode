@@ -29,7 +29,7 @@ describe("Pair", () => {
   });
   const RWN = Coin({
     decimals: 18,
-    symbol: "rwn",
+    symbol: "rowan",
     name: "Rowan",
     network: Network.SIFCHAIN,
   });

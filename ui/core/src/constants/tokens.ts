@@ -8,7 +8,7 @@ export const ETH = Coin({
 });
 
 export const RWN = Coin({
-  symbol: "rwn",
+  symbol: "rowan",
   decimals: 18,
   name: "Rowan",
   network: Network.SIFCHAIN,

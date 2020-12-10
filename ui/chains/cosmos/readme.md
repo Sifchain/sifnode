@@ -1,6 +1,6 @@
 For reference when playing with cosmos cain
 
-# Create liquidity pool catk:rwn
+# Create liquidity pool catk:rowan
 
 ```
 sifnodecli tx clp create-pool \
@@ -12,7 +12,7 @@ sifnodecli tx clp create-pool \
  --externalAmount 500
 ```
 
-# Create liquidity pool cbtk:rwn
+# Create liquidity pool cbtk:rowan
 
 ```
 sifnodecli tx clp create-pool \

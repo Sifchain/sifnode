@@ -17,11 +17,11 @@ const ASSETS = {
     symbol: "btk",
   }),
 
-  rwn: Coin({
+  rowan: Coin({
     decimals: 18,
     name: "Rowan",
     network: Network.SIFCHAIN,
-    symbol: "rwn",
+    symbol: "rowan",
   }),
 };
 
@@ -70,7 +70,7 @@ describe("usePoolCalculator", () => {
     fromAmount.value = "1000";
     toAmount.value = "500";
     fromSymbol.value = "atk";
-    toSymbol.value = "rwn";
+    toSymbol.value = "rowan";
 
     expect(aPerBRatioMessage.value).toBe("2.00000000 ATK per RWN");
     expect(bPerARatioMessage.value).toBe("0.50000000 RWN per ATK");
@@ -83,14 +83,14 @@ describe("usePoolCalculator", () => {
         ref(
           Pool(
             AssetAmount(ASSETS.atk, "1000000"),
-            AssetAmount(ASSETS.rwn, "1000000")
+            AssetAmount(ASSETS.rowan, "1000000")
           )
         ) as Ref<Pool>
     );
     fromAmount.value = "1000";
     toAmount.value = "500";
     fromSymbol.value = "atk";
-    toSymbol.value = "rwn";
+    toSymbol.value = "rowan";
 
     expect(aPerBRatioMessage.value).toBe("2.00000000 ATK per RWN");
     expect(bPerARatioMessage.value).toBe("0.50000000 RWN per ATK");
@@ -101,7 +101,7 @@ describe("usePoolCalculator", () => {
     fromAmount.value = "0";
     toAmount.value = "0";
     fromSymbol.value = "atk";
-    toSymbol.value = "rwn";
+    toSymbol.value = "rowan";
     expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
     expect(aPerBRatioMessage.value).toBe("");
     expect(bPerARatioMessage.value).toBe("");
