@@ -1,11 +1,7 @@
-import subprocess
-import json
 import time
-import sys
-from test_utilities import print_error_message, get_user_account, get_password, get_balance, get_shell_output_json, \
-    network_password, amount_in_wei
-from test_utilities import get_shell_output
-from test_utilities import test_log_line
+
+from test_utilities import print_error_message, get_user_account, get_sifchain_balance, get_shell_output, get_shell_output_json, \
+    network_password, amount_in_wei, test_log_line, wait_for_sifchain_balance
 
 # define users
 USER = "user1"
@@ -92,21 +88,14 @@ def test_case_1():
     print(
         f"########## Test Case One Start: lock eth in ethereum then mint ceth in sifchain {network_password}"
     )
-    balance_before_tx = int(get_balance(USER, PEGGYETH, network_password))
+    balance_before_tx = int(get_sifchain_balance(USER, PEGGYETH, network_password))
     print(f"Before lock transaction {USER}'s balance of {PEGGYETH} is {balance_before_tx}")
 
     print("Send lock claim to Sifchain...")
     amount = amount_in_wei(5)
     print(create_claim(USER, VALIDATOR, amount, ETH, CLAIMLOCK))
 
-    time.sleep(SLEEPTIME)
-
-    balance_after_tx = int(get_balance(USER, PEGGYETH, network_password))
-
-    print(f"After lock transaction {USER}'s balance of {PEGGYETH} is {balance_after_tx}")
-
-    if balance_after_tx != balance_before_tx + amount:
-        print_error_message("balance is wrong after send eth lock claim")
+    wait_for_sifchain_balance(USER, PEGGYETH, network_password, balance_before_tx + amount, 30)
 
     print("########## Test Case One Over ##########")
     test_log_line("########## Test Case One Over ##########\n")
@@ -116,7 +105,7 @@ def test_case_2():
     print(
         "########## Test Case Two Start: burn ceth in sifchain then eth back to ethereum"
     )
-    balance_before_tx = int(get_balance(USER, PEGGYETH, network_password))
+    balance_before_tx = int(get_sifchain_balance(USER, PEGGYETH, network_password))
     print('before_tx', balance_before_tx)
     print("Before burn transaction {}'s balance of {} is {}".format(
         USER, PEGGYETH, balance_before_tx))
@@ -126,12 +115,9 @@ def test_case_2():
         return
     print("Send burn claim to Sifchain...")
     burn_peggy_coin(USER, VALIDATOR, amount)
-    time.sleep(SLEEPTIME)
-    balance_after_tx = int(get_balance(USER, PEGGYETH, network_password))
-    print("After burn transaction {}'s balance of {} is {}".format(
-        USER, PEGGYETH, balance_after_tx))
-    if balance_after_tx != balance_before_tx - amount:
-        print_error_message("balance is wrong after send eth lock claim")
+
+    wait_for_sifchain_balance(USER, PEGGYETH, network_password, balance_before_tx - amount)
+
     print("########## Test Case Two Over ##########")
 
 
@@ -139,7 +125,7 @@ def test_case_3():
     print(
         "########## Test Case Three Start: lock rowan in sifchain transfer to ethereum"
     )
-    balance_before_tx = int(get_balance(USER, ROWAN, network_password))
+    balance_before_tx = int(get_sifchain_balance(USER, ROWAN, network_password))
     print("Before lock transaction {}'s balance of {} is {}".format(
         USER, ROWAN, balance_before_tx))
     amount = 12
@@ -147,12 +133,7 @@ def test_case_3():
         print_error_message("No enough rowan to lock")
     print("Send lock claim to Sifchain...")
     lock_rowan(USER, amount)
-    time.sleep(SLEEPTIME)
-    balance_after_tx = int(get_balance(USER, ROWAN, network_password))
-    print("After lock transaction {}'s balance of {} is {}".format(
-        USER, ROWAN, balance_after_tx))
-    if balance_after_tx != balance_before_tx - amount:
-        print_error_message("balance is wrong after send eth lock claim")
+    wait_for_sifchain_balance(USER, ROWAN, network_password, balance_before_tx - amount)
     print("########## Test Case Three Over ##########")
 
 
@@ -160,18 +141,13 @@ def test_case_4():
     print(
         "########## Test Case Four Start: burn erwn in ethereum then transfer rwn back to sifchain"
     )
-    balance_before_tx = int(get_balance(USER, ROWAN, network_password))
+    balance_before_tx = int(get_sifchain_balance(USER, ROWAN, network_password))
     print("Before lock transaction {}'s balance of {} is {}".format(
         USER, ROWAN, balance_before_tx))
     print("Send burn claim to Sifchain...")
     amount = 13
     create_claim(USER, VALIDATOR, amount, ROWAN, CLAIMBURN)
-    time.sleep(SLEEPTIME)
-    balance_after_tx = int(get_balance(USER, ROWAN, network_password))
-    print("After lock transaction {}'s balance of {} is {}".format(
-        USER, ROWAN, balance_after_tx))
-    if balance_after_tx != balance_before_tx + amount:
-        print_error_message("balance is wrong after send eth lock claim")
+    wait_for_sifchain_balance(USER, ROWAN, network_password, balance_before_tx + amount)
     print("########## Test Case Four Over ##########")
 
 
