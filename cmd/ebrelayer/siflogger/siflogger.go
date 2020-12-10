@@ -22,7 +22,7 @@ const (
 	None
 )
 
-type SifLogger struct {
+type Logger struct {
 	logger log.Logger
 }
 
@@ -43,7 +43,7 @@ func colorFn(keyvals ...interface{}) term.FgBgColor {
 
 var filterNumber = 0
 
-func LogFileLine(depth int) kitlog.Valuer {
+func logFileLine(depth int) kitlog.Valuer {
 	return func() interface{} {
 		_, file, line, _ := runtime.Caller(depth + filterNumber)
 		idx := strings.LastIndexByte(file, '/')
@@ -51,15 +51,15 @@ func LogFileLine(depth int) kitlog.Valuer {
 	}
 }
 
-func New() SifLogger {
+func New() Logger {
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), colorFn)
-	logger = logger.With("caller", LogFileLine(5))
-	e := SifLogger{logger}
+	logger = logger.With("caller", logFileLine(5))
+	e := Logger{logger}
 	filterNumber = 0 // supposedly used as singleton
 	return e
 }
 
-func (e *SifLogger) SetGlobalFilter(level Level) {
+func (e *Logger) SetGlobalFilter(level Level) {
 	var option log.Option
 	switch level {
 	case Debug:
@@ -78,7 +78,7 @@ func (e *SifLogger) SetGlobalFilter(level Level) {
 	e.logger = filter
 }
 
-func (e *SifLogger) SetFilterForLayer(level Level, keyvals ...interface{}) {
+func (e *Logger) SetFilterForLayer(level Level, keyvals ...interface{}) {
 	if len(keyvals) == 0 || len(keyvals)%2 != 0 {
 		panic("invalid keyvals")
 	}
@@ -104,18 +104,18 @@ func (e *SifLogger) SetFilterForLayer(level Level, keyvals ...interface{}) {
 	e.logger = filter
 }
 
-func (e SifLogger) Debug(msg string, keyvals ...interface{}) {
+func (e Logger) Debug(msg string, keyvals ...interface{}) {
 	e.logger.Debug(msg, keyvals...)
 }
 
-func (e SifLogger) Info(msg string, keyvals ...interface{}) {
+func (e Logger) Info(msg string, keyvals ...interface{}) {
 	e.logger.Info(msg, keyvals...)
 }
 
-func (e SifLogger) Error(msg string, keyvals ...interface{}) {
+func (e Logger) Error(msg string, keyvals ...interface{}) {
 	e.logger.Error(msg, keyvals...)
 }
 
-func (e SifLogger) With(keyvals ...interface{}) log.Logger {
-	return SifLogger{e.logger.With(keyvals...)}
+func (e Logger) With(keyvals ...interface{}) log.Logger {
+	return Logger{e.logger.With(keyvals...)}
 }

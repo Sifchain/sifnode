@@ -12,12 +12,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/tendermint/tendermint/libs/log"
+
 	"github.com/ethereum/go-ethereum/common"
 	tmKv "github.com/tendermint/tendermint/libs/kv"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	tmTypes "github.com/tendermint/tendermint/types"
 
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/siflogger"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 )
@@ -30,12 +31,12 @@ type CosmosSub struct {
 	EthProvider             string
 	RegistryContractAddress common.Address
 	PrivateKey              *ecdsa.PrivateKey
-	Logger                  siflogger.SifLogger
+	Logger                  log.Logger
 }
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common.Address,
-	privateKey *ecdsa.PrivateKey, logger siflogger.SifLogger) CosmosSub {
+	privateKey *ecdsa.PrivateKey, logger log.Logger) CosmosSub {
 	return CosmosSub{
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,
