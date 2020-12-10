@@ -52,7 +52,7 @@ func logFileLine(depth int) kitlog.Valuer {
 }
 
 func New() Logger {
-	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), colorFn)
+	logger := newFmtLogger(log.NewSyncWriter(os.Stdout), colorFn)
 	logger = logger.With("caller", logFileLine(5))
 	e := Logger{logger}
 	filterNumber = 0 // supposedly used as singleton
