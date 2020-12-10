@@ -8,11 +8,6 @@ import (
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
-	tmos "github.com/tendermint/tendermint/libs/os"
-	dbm "github.com/tendermint/tm-db"
-
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -25,6 +20,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
+	tmos "github.com/tendermint/tendermint/libs/os"
+	dbm "github.com/tendermint/tm-db"
 
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/oracle"
@@ -48,7 +47,6 @@ var (
 		ethbridge.AppModuleBasic{},
 	)
 
-	// Module accounts which will be passed to the supply keeper when it is initialized
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
@@ -89,9 +87,8 @@ type NewApp struct {
 	// Peggy keepers
 	EthBridgeKeeper ethbridge.Keeper
 	OracleKeeper    oracle.Keeper
-
-	clpKeeper clp.Keeper
-	mm        *module.Manager
+	clpKeeper       clp.Keeper
+	mm              *module.Manager
 
 	sm *module.SimulationManager
 }
@@ -102,6 +99,7 @@ func NewInitApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
 ) *NewApp {
+
 	cdc := MakeCodec()
 
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
@@ -157,17 +155,16 @@ func NewInitApp(
 		maccPerms,
 	)
 
-	stakingKeeper := staking.NewKeeper(
+	app.StakingKeeper = staking.NewKeeper(
 		app.cdc,
 		keys[staking.StoreKey],
 		app.SupplyKeeper,
 		app.subspaces[staking.ModuleName],
 	)
 
-	app.StakingKeeper = *stakingKeeper.SetHooks(
+	app.StakingKeeper = *app.StakingKeeper.SetHooks(
 		staking.NewMultiStakingHooks(),
 	)
-
 
 	app.OracleKeeper = oracle.NewKeeper(
 		app.cdc,
@@ -201,7 +198,15 @@ func NewInitApp(
 		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
 	)
 
-	app.mm.SetOrderEndBlockers(staking.ModuleName)
+	// there is nothing left over in the validator fee pool, so as to keep the
+	// CanWithdrawInvariant invariant.
+	app.mm.SetOrderBeginBlockers(
+		staking.ModuleName,
+	)
+
+	app.mm.SetOrderEndBlockers(
+		staking.ModuleName,
+	)
 
 	app.mm.SetOrderInitGenesis(
 		staking.ModuleName,
@@ -301,22 +306,22 @@ func GetMaccPerms() map[string][]string {
 	return modAccPerms
 }
 
-func GetValidatorAddresses() []sdk.ValAddress, error {
-	content, err := ioutil.ReadFile(DefaultValidatorFile)
+// func GetValidatorAddresses() ([]sdk.ValAddress, error) {
+// 	content, err := ioutil.ReadFile(DefaultValidatorFile)
 
-    if err != nil {
-        return err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	addresses := strings.Split(content, ",")
+// 	addresses := strings.Split(content, ",")
 
-	if len(addresses) == 0 {
-		return error.Error("validator not set")
-	}
+// 	if len(addresses) == 0 {
+// 		return nil, error.Error("validator not set")
+// 	}
 
-	for address := range addresses {
-		
-	}
-	
-	return nil, nil
-}
+// 	for address := range addresses {
+
+// 	}
+
+// 	return nil, nil
+// }

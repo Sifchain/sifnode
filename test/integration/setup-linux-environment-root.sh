@@ -22,7 +22,7 @@ sudo apt-get install -y nodejs
 
 apt-get update
 
-apt-get install -y jq make rake docker-ce docker-ce-cli containerd.io libc6-dev gcc
+apt-get install -y jq make rake docker-ce docker-ce-cli containerd.io libc6-dev gcc python3-venv python3-dev
 apt-get install -y --no-install-recommends yarn
 
 # don't want to require root to run docker
