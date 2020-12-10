@@ -19,7 +19,7 @@ const (
 func TestNewCosmosSub(t *testing.T) {
 
 	privateKey, _ := crypto.HexToECDSA(privateKeyStr)
-	logger := siflogger.New()
+	logger := siflogger.New(siflogger.TDFmt)
 	registryContractAddress := common.HexToAddress(contractAddress)
 	sub := NewCosmosSub(tmProvider, ethProvider, registryContractAddress,
 		privateKey, logger)
