@@ -23,6 +23,10 @@ func newFmtLogger(w io.Writer, colorFn func(keyvals ...interface{}) term.FgBgCol
 	return &sifImplLogger{term.NewLogger(w, log.NewTMFmtLogger, colorFn)}
 }
 
+func newJSONLogger(w io.Writer, colorFn func(keyvals ...interface{}) term.FgBgColor) log.Logger {
+	return &sifImplLogger{term.NewLogger(w, kitlog.NewJSONLogger, colorFn)}
+}
+
 func (l *sifImplLogger) Info(msg string, keyvals ...interface{}) {
 	lWithLevel := kitlevel.Info(l.srcLogger)
 	if err := kitlog.With(lWithLevel, msgKey, msg).Log(keyvals...); err != nil {

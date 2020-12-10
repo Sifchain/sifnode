@@ -14,12 +14,19 @@ import (
 )
 
 type Level byte
+type Type byte
 
 const (
 	Debug Level = iota
 	Info
 	Error
 	None
+)
+
+const (
+	TDFmt Type = iota
+	JSON
+	Custom
 )
 
 type Logger struct {
@@ -51,8 +58,17 @@ func logFileLine(depth int) kitlog.Valuer {
 	}
 }
 
-func New() Logger {
-	logger := newFmtLogger(log.NewSyncWriter(os.Stdout), colorFn)
+func New(t Type) Logger {
+	var logger log.Logger
+	switch t {
+	case TDFmt:
+		logger = newFmtLogger(log.NewSyncWriter(os.Stdout), colorFn)
+	case JSON:
+		logger = newJSONLogger(log.NewSyncWriter(os.Stdout), colorFn)
+	case Custom:
+	default:
+		panic("incorrect logger type")
+	}
 	logger = logger.With("caller", logFileLine(5))
 	e := Logger{logger}
 	filterNumber = 0 // supposedly used as singleton
