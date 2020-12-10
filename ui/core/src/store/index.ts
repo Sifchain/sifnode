@@ -2,11 +2,14 @@ import { reactive } from "@vue/reactivity";
 import { wallet, WalletStore } from "./wallet";
 import { asset, AssetStore } from "./asset";
 import { pools, PoolStore } from "./pools";
+// this could maybe be in app
+import { messages, MessageStore } from "./messages"
 
 export type Store = {
   wallet: WalletStore;
   asset: AssetStore;
   pools: PoolStore;
+  messages: MessageStore;
 };
 
 export function createStore() {
@@ -14,6 +17,7 @@ export function createStore() {
     wallet,
     asset,
     pools,
+    messages
   }) as Store;
 
   return state;
