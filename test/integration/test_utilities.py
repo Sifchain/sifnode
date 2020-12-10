@@ -1,10 +1,12 @@
-import subprocess
 import json
-import sys
 import os
+import subprocess
+import sys
+import time
 import traceback
 
 persistantLog = open("/tmp/testrun.sh", "a")
+
 
 def print_error_message(error_message):
     print("#################################")
@@ -65,18 +67,40 @@ def get_password(network_definition_file):
 
 
 # get the balance for user in the denom currency from sifnodecli
-def get_balance(user, denom, network_password):
+def get_sifchain_balance(user, denom, network_password):
     command_line = "sifnodecli q auth account " + get_user_account(user, network_password) + ' -o json'
     json_str = get_shell_output_json(command_line)
     coins = json_str["value"]["coins"]
     for coin in coins:
         if coin["denom"] == denom:
-            return coin["amount"]
+            return int(coin["amount"])
     return 0
 
 
+# balance_fn is a lambda that takes no arguments
+# and returns a result.  Runs the function up to
+# max_attempts times, or until the result is equal to target_balance
+def wait_for_balance(balance_fn, target_balance, max_attempts=30):
+    attempts = 0
+    while True:
+        balance = balance_fn()
+        if balance == target_balance:
+            return target_balance
+        else:
+            print(f"waiting for target balance t: {target_balance} b:{balance}")
+            attempts += 1
+            if attempts >= max_attempts:
+                print_error_message(f"Failed to get target balance of {target_balance}, balance is {balance}")
+            else:
+                time.sleep(1)
+
+
+def wait_for_sifchain_balance(user, denom, network_password, target_balance, max_attempts=30):
+    wait_for_balance(lambda: int(get_sifchain_balance(user, denom, network_password)), target_balance, max_attempts)
+
+
 def amount_in_wei(amount):
-    return amount * 10**18
+    return amount * 10 ** 18
 
 
 network_definition_file = sys.argv[1]
@@ -85,4 +109,3 @@ if not network_definition_file:
 network_password = get_password(network_definition_file)
 if not network_password:
     print_error_message(f"unable to read network password from {network_definition_file}")
-

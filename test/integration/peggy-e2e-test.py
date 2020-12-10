@@ -1,13 +1,12 @@
-import subprocess
 import json
-import time
+import json
 import re
-import sys
-import os
-from test_utilities import print_error_message, get_user_account, get_balance, network_password, bridge_bank_address, \
-    smart_contracts_dir
+import time
+
 from test_utilities import get_shell_output
-from test_utilities import test_log_line
+from test_utilities import print_error_message, get_user_account, get_sifchain_balance, network_password, \
+    bridge_bank_address, \
+    smart_contracts_dir, wait_for_sifchain_balance, wait_for_balance
 
 # define users
 USER = "user1"
@@ -17,7 +16,7 @@ PEGGYROWAN = "erowan"
 ETH = "eth"
 ETH_CONTRACT = "0x0000000000000000000000000000000000000000"
 SLEEPTIME = 5
-AMOUNT = 3 * 10**18
+AMOUNT = 3 * 10 ** 18
 ROWAN_AMOUNT = 5
 CLAIMLOCK = "lock"
 CLAIMBURN = "burn"
@@ -40,8 +39,12 @@ def get_eth_balance(account, symbol):
     for line in lines:
         balance = re.match("Eth balance for.*\((.*) Wei\).*", line)
         if balance:
-            return balance.group(1)
+            return int(balance.group(1))
     return 0
+
+
+def wait_for_eth_balance(account, symbol, target_balance, max_attempts=30):
+    wait_for_balance(lambda: get_eth_balance(account, symbol), target_balance, max_attempts)
 
 
 def get_peggyrwn_balance(account, symbol):
@@ -102,33 +105,14 @@ def test_case_1():
     print(
         "########## Test Case One Start: lock eth in ethereum then mint ceth in sifchain"
     )
-    bridge_bank_balance_before_tx = int(get_eth_balance(bridge_bank_address, ETH))
-    user_balance_before_tx = int(get_balance(USER, PEGGYETH, network_password))
+    bridge_bank_balance_before_tx = get_eth_balance(bridge_bank_address, ETH)
+    user_balance_before_tx = get_sifchain_balance(USER, PEGGYETH, network_password)
 
     print(f"send_eth_lock({USER}, {ETH}, {AMOUNT})")
     send_eth_lock(USER, ETH, AMOUNT)
 
-    time.sleep(SLEEPTIME)
-
-    bridge_bank_balance_after_tx = int(get_eth_balance(bridge_bank_address, ETH))
-    user_balance_after_tx = int(get_balance(USER, PEGGYETH, network_password))
-
-    print("Before lock transaction contract {}'s balance of {} is {}".format(
-        bridge_bank_address, ETH, bridge_bank_balance_before_tx))
-    print("Before lock transaction {}'s balance of {} is {}".format(
-        USER, PEGGYETH, user_balance_before_tx))
-    print("After lock transaction contract {}'s balance of {} is {}".format(
-        bridge_bank_address, ETH, bridge_bank_balance_after_tx))
-    print("After lock transaction {}'s balance of {} is {}".format(
-        USER, PEGGYETH, user_balance_after_tx))
-
-    user_balance_diff = (user_balance_after_tx - user_balance_before_tx)
-    if user_balance_diff != AMOUNT:
-        print_error_message(f"balance is wrong after send eth lock claim, actual diff is {user_balance_diff}, expected is {AMOUNT}")
-
-    contract_balance_diff = (bridge_bank_balance_after_tx - bridge_bank_balance_before_tx)
-    if contract_balance_diff != AMOUNT:
-        print_error_message(f"BridgeBank ({bridge_bank_address}) balance is wrong; actual diff is {contract_balance_diff}, expected change is {AMOUNT} after send eth lock claim")
+    wait_for_eth_balance(bridge_bank_address, ETH, bridge_bank_balance_before_tx + AMOUNT)
+    wait_for_sifchain_balance(USER, PEGGYETH, network_password, user_balance_before_tx + AMOUNT)
 
     print("########## Test Case One Over ##########")
 
@@ -139,7 +123,7 @@ def test_case_2():
     )
     operator_balance_before_tx = int(get_eth_balance(ETH_ACCOUNT, ETH))
     contract_balance_before_tx = int(get_eth_balance(bridge_bank_address, ETH))
-    balance_before_tx = int(get_balance(USER, PEGGYETH, network_password))
+    balance_before_tx = int(get_sifchain_balance(USER, PEGGYETH, network_password))
     print("Before lock transaction {}'s balance of {} is {}".format(
         ETH_ACCOUNT, ETH, operator_balance_before_tx))
     print("Before lock transaction contract {}'s balance of {} is {}".format(
@@ -154,7 +138,7 @@ def test_case_2():
     time.sleep(SLEEPTIME)
     operator_balance_after_tx = int(get_eth_balance(ETH_ACCOUNT, ETH))
     contract_balance_after_tx = int(get_eth_balance(bridge_bank_address, ETH))
-    balance_after_tx = int(get_balance(USER, PEGGYETH, network_password))
+    balance_after_tx = int(get_sifchain_balance(USER, PEGGYETH, network_password))
     print("After lock transaction {}'s balance of {} is {}".format(
         ETH_ACCOUNT, ETH, operator_balance_after_tx))
     print("After lock transaction contract {}'s balance of {} is {}".format(
@@ -176,7 +160,7 @@ def test_case_3():
         get_peggyrwn_balance(ETH_ACCOUNT, ROWAN_CONTRACT))
     print("Before lock transaction {}'s balance of {} is {}".format(
         ETH_ACCOUNT, ROWAN_CONTRACT, operator_balance_before_tx))
-    balance_before_tx = int(get_balance(USER, ROWAN, network_password))
+    balance_before_tx = int(get_sifchain_balance(USER, ROWAN, network_password))
     print("Before lock transaction {}'s balance of {} is {}".format(
         USER, ROWAN, balance_before_tx))
     if balance_before_tx < ROWAN_AMOUNT:
@@ -185,7 +169,7 @@ def test_case_3():
     print("Send lock transaction to Sifchain...")
     lock_rowan(USER, ETH_ACCOUNT, ROWAN_AMOUNT)
     time.sleep(SLEEPTIME)
-    balance_after_tx = int(get_balance(USER, ROWAN, network_password))
+    balance_after_tx = int(get_sifchain_balance(USER, ROWAN, network_password))
     operator_balance_after_tx = int(
         get_peggyrwn_balance(ETH_ACCOUNT, ROWAN_CONTRACT))
     print("After lock transaction {}'s balance of {} is {}".format(
@@ -205,7 +189,7 @@ def test_case_4():
         get_peggyrwn_balance(ETH_ACCOUNT, ROWAN_CONTRACT))
     print("Before lock transaction {}'s balance of {} is {}".format(
         ETH_ACCOUNT, PEGGYROWAN, operator_balance_before_tx))
-    balance_before_tx = int(get_balance(USER, ROWAN, network_password))
+    balance_before_tx = int(get_sifchain_balance(USER, ROWAN, network_password))
     print("Before lock transaction {}'s balance of {} is {}".format(
         USER, ROWAN, balance_before_tx))
     if operator_balance_before_tx < ROWAN_AMOUNT:
@@ -218,7 +202,7 @@ def test_case_4():
         get_peggyrwn_balance(ETH_ACCOUNT, ROWAN_CONTRACT))
     print("After lock transaction operator {}'s balance of {} is {}".format(
         ETH_ACCOUNT, PEGGYROWAN, operator_balance_after_tx))
-    balance_after_tx = int(get_balance(USER, ROWAN, network_password))
+    balance_after_tx = int(get_sifchain_balance(USER, ROWAN, network_password))
     print("After lock transaction {}'s balance of {} is {}".format(
         USER, ROWAN, balance_after_tx))
     if balance_after_tx != balance_before_tx + ROWAN_AMOUNT:
