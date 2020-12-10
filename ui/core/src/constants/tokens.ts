@@ -7,7 +7,7 @@ export const ETH = Coin({
   network: Network.ETHEREUM,
 });
 
-export const RWN = Coin({
+export const ROWAN = Coin({
   symbol: "rowan",
   decimals: 18,
   name: "Rowan",

@@ -25,7 +25,7 @@ describe("Pool", () => {
     name: "Ethereum",
     network: Network.ETHEREUM,
   });
-  const RWN = Coin({
+  const ROWAN = Coin({
     decimals: 18,
     symbol: "rowan",
     name: "Rowan",
@@ -114,7 +114,7 @@ describe("Pool", () => {
     const pair = Pool(AssetAmount(ATK, "10"), AssetAmount(BTK, "10"));
 
     expect(() => {
-      pair.calcSwapResult(AssetAmount(RWN, "10"));
+      pair.calcSwapResult(AssetAmount(ROWAN, "10"));
     }).toThrow();
   });
 
@@ -122,7 +122,7 @@ describe("Pool", () => {
     const pair = Pool(AssetAmount(ATK, "10"), AssetAmount(BTK, "10"));
     expect(pair.contains(ATK)).toBe(true);
     expect(pair.contains(BTK)).toBe(true);
-    expect(pair.contains(RWN)).toBe(false);
+    expect(pair.contains(ROWAN)).toBe(false);
   });
 
   describe("when half", () => {
@@ -181,7 +181,7 @@ describe("Pool", () => {
       );
 
       const pair2 = Pool(
-        AssetAmount(RWN, "1000000"),
+        AssetAmount(ROWAN, "1000000"),
         AssetAmount(ETH, "1000000")
       );
       expect(() => {
@@ -192,11 +192,11 @@ describe("Pool", () => {
     test("CompositePool does two swaps", () => {
       const pair1 = Pool(
         AssetAmount(ATK, "1000000000000"),
-        AssetAmount(RWN, "1000000000000")
+        AssetAmount(ROWAN, "1000000000000")
       );
 
       const pair2 = Pool(
-        AssetAmount(RWN, "1000000000000"),
+        AssetAmount(ROWAN, "1000000000000"),
         AssetAmount(BTK, "1000000000000")
       );
 
@@ -219,11 +219,11 @@ describe("Pool", () => {
     test("CompositePool 2:1", () => {
       const pair1 = Pool(
         AssetAmount(ATK, "2000000000000"),
-        AssetAmount(RWN, "1000000000000")
+        AssetAmount(ROWAN, "1000000000000")
       );
 
       const pair2 = Pool(
-        AssetAmount(RWN, "1000000000000"),
+        AssetAmount(ROWAN, "1000000000000"),
         AssetAmount(BTK, "1000000000000")
       );
 

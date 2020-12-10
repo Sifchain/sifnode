@@ -61,7 +61,7 @@ export async function getFakeTokens(): Promise<Asset[]> {
     network: Network.SIFCHAIN,
   });
 
-  const RWN = Coin({
+  const ROWAN = Coin({
     symbol: "crowan",
     decimals: 18,
     name: "Rowan",
@@ -69,6 +69,6 @@ export async function getFakeTokens(): Promise<Asset[]> {
   });
 
   // Return the tokens parsed as assets
-  _memoized = [ATK, BTK, ETH, CBTK, CATK, CETH, RWN];
+  _memoized = [ATK, BTK, ETH, CBTK, CATK, CETH, ROWAN];
   return _memoized;
 }
