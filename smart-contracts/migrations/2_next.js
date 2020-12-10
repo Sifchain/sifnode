@@ -154,7 +154,10 @@ module.exports = function(deployer, network, accounts) {
     const bnAmount = web3.utils.toWei("100", "ether");
 
     await erowan.mint(operator, bnAmount, setTxSpecifications(4612388, operator));
-    await erowan.mint(accounts[1], bnAmount, setTxSpecifications(4612388, operator));
+
+    if (network === "develop") {
+      await erowan.mint(accounts[1], bnAmount, setTxSpecifications(4612388, operator));
+    }
 
     return;
   });
