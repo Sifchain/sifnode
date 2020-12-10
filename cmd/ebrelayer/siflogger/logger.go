@@ -66,6 +66,7 @@ func New(t Type) Logger {
 	case JSON:
 		logger = newJSONLogger(log.NewSyncWriter(os.Stdout), colorFn)
 	case Custom:
+		logger = newCustomLogger(log.NewSyncWriter(os.Stdout), colorFn)
 	default:
 		panic("incorrect logger type")
 	}
