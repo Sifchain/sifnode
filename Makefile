@@ -18,7 +18,7 @@ BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen ./cmd/sifcrg ./cmd/ebrelay
 all: lint install
 
 rosetta:
-	go run cmd/sifcrg/*.go --blockchain "Test" --network "Test"
+	go run cmd/sifcrg/*.go --blockchain "sifchain" --network "monkey-bars-local"
 
 lint-pre:
 	@test -z $(gofmt -l .)
