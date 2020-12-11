@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 	"io"
+	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -20,17 +23,63 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/cosmos/cosmos-sdk/server/config"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/staking"
+	tcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
+
 	cfg "github.com/tendermint/tendermint/config"
 )
 
 const flagInvCheckPeriod = "inv-check-period"
 
 var invCheckPeriod uint
+
+// If a new config is created, change some of the default tendermint settings
+func interceptLoadConfig() (conf *cfg.Config, err error) {
+	tmpConf := cfg.DefaultConfig()
+	err = viper.Unmarshal(tmpConf)
+	if err != nil {
+		// TODO: Handle with #870
+		panic(err)
+	}
+	rootDir := tmpConf.RootDir
+	configFilePath := filepath.Join(rootDir, "config/config.toml")
+	// Intercept only if the file doesn't already exist
+
+	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+		// the following parse config is needed to create directories
+		conf, _ = tcmd.ParseConfig() // NOTE: ParseConfig() creates dir/files as necessary.
+		conf.ProfListenAddress = "localhost:6060"
+		conf.P2P.RecvRate = 5120000
+		conf.P2P.SendRate = 5120000
+		conf.TxIndex.IndexAllKeys = true
+		conf.Consensus.TimeoutCommit = 5 * time.Second
+		cfg.WriteConfigFile(configFilePath, conf)
+		// Fall through, just so that its parsed into memory.
+	}
+
+	if conf == nil {
+		conf, err = tcmd.ParseConfig() // NOTE: ParseConfig() creates dir/files as necessary.
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	appConfigFilePath := filepath.Join(rootDir, "config/app.toml")
+	if _, err := os.Stat(appConfigFilePath); os.IsNotExist(err) {
+		appConf, _ := config.ParseConfig()
+		config.WriteConfigFile(appConfigFilePath, appConf)
+	}
+
+	viper.SetConfigName("app")
+	err = viper.MergeInConfig()
+
+	return conf, err
+}
 
 func main() {
 	cdc := app.MakeCodec()
