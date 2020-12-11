@@ -45,7 +45,7 @@ def get_eth_balance(account, symbol):
 
 def generate_30_blocks():
     command_line = cd_smart_contracts_dir + "yarn peggy:transfer"
-    for _ in range(0, 30):
+    for _ in range(0, 31):
         _ = get_shell_output(command_line)
     
     return 0
@@ -116,9 +116,14 @@ def test_case_1():
     bridge_bank_balance_before_tx = get_eth_balance(bridge_bank_address, ETH)
     user_balance_before_tx = get_sifchain_balance(USER, PEGGYETH, network_password)
 
+    print("Before lock {}'s ceth balance is {}", USER, user_balance_before_tx)
+
     print(f"send_eth_lock({USER}, {ETH}, {AMOUNT})")
     send_eth_lock(USER, ETH, AMOUNT)
     generate_30_blocks()
+
+    user_balance_after_tx = get_sifchain_balance(USER, PEGGYETH, network_password)
+    print("After lock {}'s ceth balance is {}", USER, user_balance_before_tx)
 
     wait_for_eth_balance(bridge_bank_address, ETH, bridge_bank_balance_before_tx + AMOUNT)
     wait_for_sifchain_balance(USER, PEGGYETH, network_password, user_balance_before_tx + AMOUNT)
