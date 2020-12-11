@@ -135,17 +135,17 @@ func GenerateAddress(key string) sdk.AccAddress {
 	return res
 }
 
-func GenerateValidatorAddress(key string) sdk.ValAddress {
+func GenerateWhitelistAddress(key string) sdk.AccAddress {
 	if key == "" {
 		key = AddressKey1
 	}
 	var buffer bytes.Buffer
 	buffer.WriteString(key)
 	buffer.WriteString(strconv.Itoa(100))
-	res, _ := sdk.ValAddressFromHex(buffer.String())
+	res, _ := sdk.AccAddressFromHex(buffer.String())
 	bech := res.String()
 	addr := buffer.String()
-	res, err := sdk.ValAddressFromHex(addr)
+	res, err := sdk.AccAddressFromHex(addr)
 
 	if err != nil {
 		panic(err)
@@ -156,7 +156,7 @@ func GenerateValidatorAddress(key string) sdk.ValAddress {
 		panic("Bech encoding doesn't match reference")
 	}
 
-	bechres, err := sdk.ValAddressFromBech32(bech)
+	bechres, err := sdk.AccAddressFromBech32(bech)
 	if err != nil {
 		panic(err)
 	}

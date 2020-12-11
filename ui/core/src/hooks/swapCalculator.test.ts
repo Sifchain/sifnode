@@ -17,9 +17,9 @@ const TOKENS = {
     address: "1234",
     network: Network.ETHEREUM,
   }),
-  rwn: Token({
+  rowan: Token({
     decimals: 18,
-    symbol: "rwn",
+    symbol: "rowan",
     name: "Rowan",
     address: "1234",
     network: Network.ETHEREUM,
@@ -50,19 +50,19 @@ describe("swapCalculator", () => {
     const pool1 = ref(
       Pool(
         AssetAmount(TOKENS.atk, "2000000000000"),
-        AssetAmount(TOKENS.rwn, "1000000000000")
+        AssetAmount(TOKENS.rowan, "1000000000000")
       )
     ) as Ref<Pool | null>;
 
     const pool2 = ref(
       Pool(
         AssetAmount(TOKENS.btk, "1000000000000"),
-        AssetAmount(TOKENS.rwn, "1000000000000")
+        AssetAmount(TOKENS.rowan, "1000000000000")
       )
     ) as Ref<Pool | null>;
 
     const poolFinder: any = jest.fn((a: string, b: string) => {
-      if (a === "atk" && b === "rwn") {
+      if (a === "atk" && b === "rowan") {
         return pool1;
       } else {
         return pool2;
@@ -104,7 +104,7 @@ describe("swapCalculator", () => {
     // Check background update
     pool1.value = Pool(
       AssetAmount(TOKENS.atk, "1000000000000"),
-      AssetAmount(TOKENS.rwn, "1000000000000")
+      AssetAmount(TOKENS.rowan, "1000000000000")
     );
 
     selectedField.value = "from";
@@ -115,7 +115,7 @@ describe("swapCalculator", () => {
 
     pool1.value = Pool(
       AssetAmount(TOKENS.atk, "2000000000000"),
-      AssetAmount(TOKENS.rwn, "1000000000000")
+      AssetAmount(TOKENS.rowan, "1000000000000")
     );
 
     selectedField.value = "from";
@@ -144,19 +144,19 @@ describe("swapCalculator", () => {
     const pool1 = ref(
       Pool(
         AssetAmount(TOKENS.atk, "1000000"),
-        AssetAmount(TOKENS.rwn, "1000000")
+        AssetAmount(TOKENS.rowan, "1000000")
       )
     ) as Ref<Pool | null>;
 
     const pool2 = ref(
       Pool(
         AssetAmount(TOKENS.btk, "2000000"),
-        AssetAmount(TOKENS.rwn, "1000000")
+        AssetAmount(TOKENS.rowan, "1000000")
       )
     ) as Ref<Pool | null>;
 
     const poolFinder: any = jest.fn((a: string, b: string) => {
-      if (a === "atk" && b === "rwn") {
+      if (a === "atk" && b === "rowan") {
         return pool1;
       } else {
         return pool2;
