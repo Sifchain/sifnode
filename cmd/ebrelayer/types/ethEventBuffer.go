@@ -146,10 +146,11 @@ func (buff *EthEventBuffer) GetHeaderEvents() []EthereumEvent {
 	if ok {
 		maxDepth := uint64(0)
 		result := []EthereumEvent{}
+		one := big.NewInt(1)
+		one.Add(one, buff.MinHeight)
+		for blockHash, eventsInBlock := range eventsInHeight.EventsMap {
 
-		for _, eventsInBlock := range eventsInHeight.EventsMap {
-
-			depth := buff.GetDepth(buff.MinHeight, eventsInBlock.ParentHash)
+			depth := buff.GetDepth(one, blockHash)
 
 			if depth >= maxDepth {
 				maxDepth = depth
