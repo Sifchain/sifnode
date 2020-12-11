@@ -11,12 +11,13 @@ require (
 	github.com/cespare/cp v1.1.1 // indirect
 	github.com/cosmos/cosmos-sdk v0.39.2
 	github.com/deckarep/golang-set v1.7.1 // indirect
-	github.com/ethereum/go-ethereum v1.9.23
+	github.com/ethereum/go-ethereum v1.9.18
 	github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5 // indirect
 	github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08 // indirect
 	github.com/golang/mock v1.4.3 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect
+	github.com/google/gofuzz v1.1.1-0.20200604201612-c04b05f3adfa // indirect
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
@@ -27,7 +28,7 @@ require (
 	github.com/miguelmota/go-solidity-sha3 v0.1.0
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/onsi/ginkgo v1.14.2
-	github.com/onsi/gomega v1.10.3
+	github.com/onsi/gomega v1.10.4
 	github.com/pkg/errors v0.9.1
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	github.com/sethvargo/go-password v0.2.0
@@ -36,6 +37,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/status-im/keycard-go v0.0.0-20200402102358-957c09536969 // indirect
 	github.com/stretchr/testify v1.6.1
+	github.com/syndtr/goleveldb v1.0.1-0.20200815110645-5c35d600f0ca // indirect
 	github.com/tendermint/cosmos-rosetta-gateway v0.1.1
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.33.9
@@ -43,7 +45,6 @@ require (
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/yelinaung/go-haikunator v0.0.0-20150320004105-1249cae259af
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
-	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
 	golang.org/x/sys v0.0.0-20201126233918-771906719818 // indirect
 	golang.org/x/text v0.3.4 // indirect
 	google.golang.org/genproto v0.0.0-20201119123407-9b1e624d6bc4 // indirect
