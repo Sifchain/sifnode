@@ -17,6 +17,9 @@ BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen ./cmd/sifcrg ./cmd/ebrelay
 
 all: lint install
 
+rosetta:
+	go run cmd/sifcrg/*.go --blockchain "Test" --network "Test"
+
 lint-pre:
 	@test -z $(gofmt -l .)
 	@go mod verify
@@ -56,3 +59,5 @@ run-image: build-image
 
 sh-image: build-image
 	docker run -it sifchain/$(BINARY):$(CHAINNET) sh
+
+
