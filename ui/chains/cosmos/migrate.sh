@@ -1,8 +1,8 @@
 # if we don't sleep there are issues
 sleep 10
 
-# create liquidity pool from catk:rwn
-echo "create liquidity pool from catk:rwn"
+# create liquidity pool from catk:rowan
+echo "create liquidity pool from catk:rowan"
 sifnodecli tx clp create-pool \
  --from akasha \
  --symbol catk \
@@ -13,8 +13,8 @@ sifnodecli tx clp create-pool \
 # if we don't sleep there are issues
 sleep 5
 
-echo "create liquidity pool from cbtk:rwn"
-# create liquidity pool from cbtk:rwn
+echo "create liquidity pool from cbtk:rowan"
+# create liquidity pool from cbtk:rowan
 sifnodecli tx clp create-pool \
  --from akasha \
  --symbol cbtk \
