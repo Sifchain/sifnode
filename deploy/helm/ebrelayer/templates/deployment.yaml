@@ -1,17 +1,16 @@
-{{- if .Values.ebrelayer.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "sifnode.fullname" . }}-ebrelayer
+  name: {{ include "ebrelayer.fullname" . }}
   labels:
-    {{- include "sifnode.labels" . | nindent 4 }}-ebrelayer
+    {{- include "ebrelayer.labels" . | nindent 4 }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
   selector:
     matchLabels:
-      {{- include "sifnode.selectorLabels" . | nindent 6 }}-ebrelayer
+      {{- include "ebrelayer.selectorLabels" . | nindent 6 }}
   template:
     metadata:
     {{- with .Values.podAnnotations }}
@@ -19,24 +18,24 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
-        {{- include "sifnode.selectorLabels" . | nindent 8 }}-ebrelayer
+        {{- include "ebrelayer.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: {{ include "sifnode.serviceAccountName" . }}
+      serviceAccountName: {{ include "ebrelayer.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.ebrelayer.image.repository }}:{{ .Values.ebrelayer.image.tag }}"
-          imagePullPolicy: {{ .Values.ebrelayer.image.pullPolicy }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER \"$MNEMONIC\" --chain-id $CHAINNET"]
+          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER \"$MNEMONIC\" --chain-id $CHAINNET --rpc-url $NODE_HOST"]
           env:
             - name: NODE_HOST
-              value: "tcp://{{ .Chart.Name }}.{{ .Release.Namespace }}.svc.cluster.local:26657"
+              value: {{ .Values.ebrelayer.env.nodeHost }}
             - name: CHAINNET
-              value: {{ .Values.sifnode.env.chainnet }}
+              value: {{ .Values.ebrelayer.env.chainnet }}
             - name: ETH_WEBSOCKET_ADDRESS
               value: {{ .Values.ebrelayer.env.ethWebsocketAddress }}
             - name: ETH_BRIDGE_REGISTRY_ADDRESS
@@ -46,23 +45,13 @@ spec:
             - name: ETHEREUM_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "sifnode.fullname" . }}-ebrelayer
+                  name: {{ include "ebrelayer.fullname" . }}
                   key: ethPrivateKey
             - name: MNEMONIC
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "sifnode.fullname" . }}-ebrelayer
+                  name: {{ include "ebrelayer.fullname" . }}
                   key: mnemonic
-          livenessProbe:
-            tcpSocket:
-              port: 26657
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          readinessProbe:
-            tcpSocket:
-              port: 26657
-            initialDelaySeconds: 5
-            periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
@@ -77,4 +66,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- end }}
