@@ -43,6 +43,14 @@ def get_eth_balance(account, symbol):
     return 0
 
 
+def generate_30_blocks():
+    command_line = cd_smart_contracts_dir + "yarn peggy:transfer"
+    for _ in range(0, 30):
+        _ = get_shell_output(command_line)
+    
+    return 0
+
+
 def wait_for_eth_balance(account, symbol, target_balance, max_attempts=30):
     wait_for_balance(lambda: get_eth_balance(account, symbol), target_balance, max_attempts)
 
@@ -110,6 +118,7 @@ def test_case_1():
 
     print(f"send_eth_lock({USER}, {ETH}, {AMOUNT})")
     send_eth_lock(USER, ETH, AMOUNT)
+    generate_30_blocks()
 
     wait_for_eth_balance(bridge_bank_address, ETH, bridge_bank_balance_before_tx + AMOUNT)
     wait_for_sifchain_balance(USER, PEGGYETH, network_password, user_balance_before_tx + AMOUNT)
