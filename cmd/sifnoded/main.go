@@ -26,6 +26,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/config"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/staking"
@@ -81,6 +82,21 @@ func interceptLoadConfig() (conf *cfg.Config, err error) {
 	return conf, err
 }
 
+func persistentPreRunE(context *server.Context) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		if cmd.Name() == version.Cmd.Name() {
+			return nil
+		}
+		config, err := interceptLoadConfig()
+		if err != nil {
+			return err
+		}
+		context.Config = config
+
+		return nil
+	}
+}
+
 func main() {
 	cdc := app.MakeCodec()
 
@@ -92,7 +108,7 @@ func main() {
 	rootCmd := &cobra.Command{
 		Use:               "sifnoded",
 		Short:             "app Daemon (server)",
-		PersistentPreRunE: server.PersistentPreRunEFn(ctx),
+		PersistentPreRunE: persistentPreRunE(ctx),
 	}
 
 	rootCmd.AddCommand(genutilcli.InitCmd(ctx, cdc, app.ModuleBasics, app.DefaultNodeHome))
