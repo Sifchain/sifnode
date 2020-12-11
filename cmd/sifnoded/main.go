@@ -15,6 +15,7 @@ import (
 
 	"github.com/Sifchain/sifnode/app"
 
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/siflogger"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -24,6 +25,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/staking"
+	cfg "github.com/tendermint/tendermint/config"
 )
 
 const flagInvCheckPeriod = "inv-check-period"
@@ -34,7 +36,9 @@ func main() {
 	cdc := app.MakeCodec()
 
 	app.SetConfig()
-	ctx := server.NewDefaultContext()
+
+	logger := siflogger.New(siflogger.JSON)
+	ctx := server.NewContext(cfg.DefaultConfig(), logger)
 	cobra.EnableCommandSorting = false
 	rootCmd := &cobra.Command{
 		Use:               "sifnoded",
