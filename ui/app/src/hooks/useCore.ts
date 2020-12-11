@@ -17,7 +17,7 @@ const api = createApi({
   getWeb3Provider,
   nativeAsset: Coin({
     name: "Rowan",
-    symbol: "rwn",
+    symbol: "rowan",
     decimals: 18,
     network: Network.SIFCHAIN,
   }),
