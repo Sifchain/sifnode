@@ -14,6 +14,14 @@ export const ROWAN = Coin({
   network: Network.SIFCHAIN,
 });
 
+export const ATK = Token({
+  symbol: "atk",
+  address: "0xbaAA2a3237035A2c7fA2A33c76B44a8C6Fe18e87",
+  decimals: 18,
+  name: "atk",
+  network: Network.ETHEREUM,
+});
+
 export const CATK = Coin({
   symbol: "catk",
   decimals: 18,
