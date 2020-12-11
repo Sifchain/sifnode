@@ -3,7 +3,6 @@ import { Asset, AssetAmount, Fraction, Pool } from "../../entities";
 import { RawPool } from "./x/clp";
 
 export function toPool(poolData: RawPool): Pool {
-  console.log({ poolData });
   const externalAssetTicker = poolData.external_asset.ticker;
 
   return Pool(

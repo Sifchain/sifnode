@@ -73,6 +73,10 @@ export default ({
       return await api.SifService.signAndBroadcast(tx.value.msg);
     },
 
+    async getLiquidityProviderPools() {
+      return await api.ClpService.getPoolsByLiquidityProvider(state.address);
+    },
+
     async disconnect() {
       api.SifService.purgeClient();
     },
