@@ -42,8 +42,8 @@ export function useSwapCalculator(input: {
   const pool = computed(() => {
     if (!input.fromSymbol.value || !input.toSymbol.value) return null;
 
-    const fromPair = input.poolFinder(input.fromSymbol.value, "rwn");
-    const toPair = input.poolFinder(input.toSymbol.value, "rwn");
+    const fromPair = input.poolFinder(input.fromSymbol.value, "rowan");
+    const toPair = input.poolFinder(input.toSymbol.value, "rowan");
 
     if (!fromPair || !toPair) return null;
 

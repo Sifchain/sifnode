@@ -210,7 +210,7 @@ export default defineComponent({
           :fromAmount="125"
           :fromToken="'usdt'"
           :toAmount="1250"
-          :toToken="'rwn'"
+          :toToken="'rowan'"
           :leastAmount="1248.976"
           :swapRate="10"
           :minimumReceived="100"
