@@ -16,19 +16,19 @@ const (
 )
 
 var (
-	NewKeeper              = keeper.NewKeeper
-	NewQuerier             = keeper.NewQuerier
-	NewMsgSwap             = types.NewMsgSwap
-	NewMsgAddLiquidity     = types.NewMsgAddLiquidity
-	NewMsgRemoveLiquidity  = types.NewMsgRemoveLiquidity
-	NewMsgCreatePool       = types.NewMsgCreatePool
-	NewMsgDecommissionPool = types.NewMsgDecommissionPool
-	NewAsset               = types.NewAsset
-	NewPool                = types.NewPool
-	RegisterCodec          = types.RegisterCodec
-	DefaultGenesisState    = types.DefaultGenesisState
-	ModuleCdc              = types.ModuleCdc
-	GetSettlementAsset     = types.GetSettlementAsset
+	NewKeeper                   = keeper.NewKeeper
+	NewQuerier                  = keeper.NewQuerier
+	NewMsgSwap                  = types.NewMsgSwap
+	NewMsgAddLiquidity          = types.NewMsgAddLiquidity
+	NewMsgRemoveLiquidity       = types.NewMsgRemoveLiquidity
+	NewMsgCreatePool            = types.NewMsgCreatePool
+	NewMsgDecommissionPool      = types.NewMsgDecommissionPool
+	NewAsset                    = types.NewAsset
+	RegisterCodec               = types.RegisterCodec
+	DefaultGenesisState         = types.DefaultGenesisState
+	ModuleCdc                   = types.ModuleCdc
+	GetSettlementAsset          = types.GetSettlementAsset
+	GetGenesisStateFromAppState = types.GetGenesisStateFromAppState
 )
 
 type (
