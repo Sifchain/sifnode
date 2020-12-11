@@ -109,46 +109,25 @@ namespace :cluster do
         system({"KUBECONFIG" => kubeconfig(args) }, cmd)
       end
     end
-
-    desc "Destroy an existing namespace"
-    task :destroy, [:chainnet, :provider, :namespace, :skip_prompt] do |t, args|
-      check_args(args)
-      are_you_sure(args)
-      cmd = "kubectl delete namespace #{args[:namespace]}"
-      system({"KUBECONFIG" => kubeconfig(args)}, cmd)
-    end
   end
 
   desc "ebrelayer Operations"
   namespace :ebrelayer do
     desc "Deploy a new ebrelayer to an existing cluster"
-    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :mnemonic, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker] do |t, args|
+    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :node_host, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker, :mnemonic] do |t, args|
       check_args(args)
 
-      cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
-        --set sifnode.env.chainnet=#{args[:chainnet]} \
-        --install -n #{ns(args)} \
+      cmd = %Q{helm upgrade ebrelayer #{cwd}/../../deploy/helm/ebrelayer \
+        --install -n #{ns(args)} --create-namespace \
         --set ebrelayer.image.repository=#{image_repository(args)} \
         --set ebrelayer.image.tag=#{image_tag(args)} \
-        --set ebrelayer.enabled=true \
-        --set ebrelayer.env.mnemonic=#{args[:mnemonic]} \
+        --set ebrelayer.env.chainnet=#{args[:chainnet]} \
+        --set ebrelayer.env.nodeHost=#{args[:node_host]} \
         --set ebrelayer.env.ethWebsocketAddress=#{args[:eth_websocket_address]} \
         --set ebrelayer.env.ethBridgeRegistryAddress=#{args[:eth_bridge_registry_address]} \
         --set ebrelayer.env.ethPrivateKey=#{args[:eth_private_key]} \
-        --set ebrelayer.env.moniker=#{args[:moniker]}
-      }
-
-      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
-    end
-
-    desc "Destroy a running ebrelayer on an existing cluster"
-    task :destroy, [:chainnet, :provider, :namespace] do |t, args|
-      check_args(args)
-
-      cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
-        --set sifnode.env.chainnet=#{args[:chainnet]} \
-        --install -n #{ns(args)} \
-        --set ebrelayer.enabled=false
+        --set ebrelayer.env.moniker=#{args[:moniker]} \
+        --set ebrelayer.env.mnemonic=#{args[:mnemonic]}
       }
 
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
@@ -158,23 +137,11 @@ namespace :cluster do
   desc "Block Explorer"
   namespace :blockexplorer do
     desc "Deploy a Block Explorer to an existing cluster"
-    task :deploy, [:chainnet, :provider] do |t, args|
+    task :deploy, [:chainnet, :provider, :namespace] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade block-explorer #{cwd}/../../deploy/helm/block-explorer \
-        --install -n block-explorer \
-        --create-namespace
-      }
-
-      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
-    end
-
-    desc "Destroy a running Block Explorer on an existing cluster"
-    task :destroy, [:chainnet, :provider] do |t, args|
-      check_args(args)
-
-      cmd = %Q{helm delete block-explorer --namespace block-explorer && \
-        kubectl delete ns block-explorer
+        --install -n #{ns(args)} --create-namespace
       }
 
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
@@ -186,6 +153,17 @@ namespace :cluster do
     desc "Deploy a full eth node onto your cluster"
     task :deploy do
       puts "Coming soon! "
+    end
+  end
+
+  desc "namespace operations"
+  namespace :namespace do
+    desc "Destroy an existing namespace"
+    task :destroy, [:chainnet, :provider, :namespace, :skip_prompt] do |t, args|
+      check_args(args)
+      are_you_sure(args)
+      cmd = "kubectl delete namespace #{args[:namespace]}"
+      system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end
 end
