@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@openzeppelin/contracts": "^3.2.0",
+    "@truffle/artifactor": "^4.0.89",
     "@truffle/hdwallet-provider": "^1.1.0",
     "big-integer": "^1.6.48",
     "bignumber.js": "^9.0.1",
