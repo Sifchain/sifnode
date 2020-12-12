@@ -40,18 +40,6 @@ const routes: Array<RouteRecordRaw> = [
     component: RemoveLiquidity,
   },
 
-
-  // routes for UI elements showcase - To Be Deleted
-  {
-    path: "/ui",
-    name: "Ui",
-    component: Ui,
-  },
-  {
-    path: "/ui-pool-list",
-    name: "UiPoolList",
-    component: UiPoolListPage,
-  },
 ];
 
 const router = createRouter({
