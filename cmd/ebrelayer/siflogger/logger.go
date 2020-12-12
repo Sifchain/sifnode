@@ -207,6 +207,15 @@ func (e *Logger) SetFilterForLayer(level Level, keyvals ...interface{}) {
 	e.setNextFilter(options)
 }
 
+func (e *Logger) SetFilterForLayerFromConfig(firstLayer string, lvl string, defaultLogLevelValue string) error {
+	options, err := parseLogLevel(firstLayer, lvl, defaultLogLevelValue)
+	if err != nil {
+		return err
+	}
+	e.setNextFilter(options)
+	return nil
+}
+
 func (e Logger) Debug(msg string, keyvals ...interface{}) {
 	e.logger.Debug(msg, keyvals...)
 }
