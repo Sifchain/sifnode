@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 go test -v ./... -coverprofile=coverage.txt -covermode=atomic
 excludelist="$(find ./ -type f -name '*.go' | xargs grep -l 'DONTCOVER')"
 for filename in ${excludelist}; do
