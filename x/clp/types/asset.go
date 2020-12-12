@@ -8,40 +8,29 @@ import (
 )
 
 type Asset struct {
-	SourceChain string `json:"source_chain"`
-	Symbol      string `json:"symbol"`
-	Ticker      string `json:"ticker"`
+	Symbol string `json:"symbol"`
 }
 
 type Assets []Asset
 
 // NewAsset returns a new Asset
-func NewAsset(sourceChain string, symbol string, ticker string) Asset {
+func NewAsset(symbol string) Asset {
 	return Asset{
-		SourceChain: sourceChain,
-		Symbol:      symbol,
-		Ticker:      ticker,
+		Symbol: symbol,
 	}
 }
 
 // implement fmt.Stringer
 func (a Asset) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`SourceChain: %s
-Symbol: %s
-Ticker: %s`, a.SourceChain, a.Symbol, a.Ticker))
+	return strings.TrimSpace(fmt.Sprintf(`
+Symbol: %s`, a.Symbol))
 }
 
 func (a Asset) Validate() bool {
-	if !VerifyRange(len(strings.TrimSpace(a.SourceChain)), 0, MaxSourceChainLength) {
-		return false
-	}
 	if !VerifyRange(len(strings.TrimSpace(a.Symbol)), 0, MaxSymbolLength) {
 		return false
 	}
-	if !VerifyRange(len(strings.TrimSpace(a.Ticker)), 0, MaxTickerLength) {
-		return false
-	}
-	coin := sdk.NewCoin(a.Ticker, sdk.OneInt())
+	coin := sdk.NewCoin(a.Symbol, sdk.OneInt())
 	return coin.IsValid()
 }
 
@@ -56,18 +45,16 @@ func VerifyRange(num, low, high int) bool {
 }
 
 func (a Asset) Equals(a2 Asset) bool {
-	return a.SourceChain == (a2.SourceChain) && a.Symbol == (a2.Symbol) && a.Ticker == (a2.Ticker)
+	return a.Symbol == (a2.Symbol)
 }
 
 func (a Asset) IsEmpty() bool {
-	return a.SourceChain == "" || a.Symbol == "" || a.Ticker == ""
+	return a.Symbol == ""
 }
 
 func GetSettlementAsset() Asset {
 	return Asset{
-		SourceChain: NativeChain,
-		Symbol:      NativeSymbol,
-		Ticker:      NativeTicker,
+		Symbol: NativeSymbol,
 	}
 
 }

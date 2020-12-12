@@ -60,6 +60,7 @@ export type RawPool = {
   pool_units: string;
   pool_address: string;
 };
+
 type LiquidityDetailsResponse = {
   result: {
     liquidity_provider_units: string;
@@ -72,10 +73,11 @@ type LiquidityDetailsResponse = {
   };
   height: string;
 };
+
 type ClpCmdSwap = (params: SwapParams) => Promise<Msg>;
-
 type ClpQueryPools = () => Promise<RawPool[]>;
-
+type ClpQueryPool = (params: { ticker: string }) => Promise<RawPool>;
+type ClpQueryAssets = (address: string) => Promise<RawPool[]>;
 type ClpAddLiquidity = (params: LiquidityParams) => Promise<StdTx>;
 type ClpCreatePool = (params: LiquidityParams) => Promise<StdTx>;
 type ClpGetLiquidityProvider = (params: {
@@ -89,10 +91,12 @@ export interface ClpExtension {
   readonly clp: {
     swap: ClpCmdSwap;
     getPools: ClpQueryPools;
+    getAssets: ClpQueryAssets;
     addLiquidity: ClpAddLiquidity;
     createPool: ClpCreatePool;
     getLiquidityProvider: ClpGetLiquidityProvider;
     removeLiquidity: ClpRemoveLiquidity;
+    getPool: ClpQueryPool;
   };
 }
 
@@ -101,6 +105,10 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
     clp: {
       getPools: async () => {
         return (await base.get(`/clp/getPools`)).result;
+      },
+
+      getAssets: async (address) => {
+        return (await base.get(`/clp/getAssets?lpAddress=${address}`)).result;
       },
 
       swap: async (params) => {
@@ -123,6 +131,10 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
 
       removeLiquidity: async (params) => {
         return await base.post(`/clp/removeLiquidity`, params);
+      },
+
+      getPool: async ({ ticker }) => {
+        return (await base.get(`/clp/getPool?ticker=${ticker}`)).result;
       },
     },
   };

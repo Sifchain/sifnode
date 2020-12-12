@@ -30,11 +30,10 @@ export default defineComponent({
     ModalView,
   },
   setup() {
-    const { actions, store, api } = useCore();
-    const router = useRouter();
-    const marketPairFinder = api.MarketService.find;
+    const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
     const transactionState = ref<ConfirmState>("selecting");
+    const router = useRouter();
 
     const {
       fromSymbol,
@@ -43,7 +42,7 @@ export default defineComponent({
       toAmount,
     } = useCurrencyFieldState();
 
-    toSymbol.value = "rwn";
+    toSymbol.value = "rowan";
 
     const priceMessage = ref("");
 
@@ -78,7 +77,7 @@ export default defineComponent({
       fromSymbol,
       selectedField,
       toSymbol,
-      marketPairFinder,
+      poolFinder,
     });
 
     function handleNextStepClicked() {

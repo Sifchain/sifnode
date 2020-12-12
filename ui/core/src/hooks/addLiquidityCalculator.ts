@@ -19,7 +19,7 @@ export function usePoolCalculator(input: {
   toSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
-  marketPairFinder: (a: Asset | string, b: Asset | string) => Pool | null;
+  poolFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
 }) {
   const fromField = useField(input.fromAmount, input.fromSymbol);
   const toField = useField(input.toAmount, input.toSymbol);
@@ -54,11 +54,12 @@ export function usePoolCalculator(input: {
     )
       return null;
 
-    // Find pool from marketPairFinder
-    return input.marketPairFinder(
+    // Find pool from poolFinder
+    const pool = input.poolFinder(
       fromField.asset.value.symbol,
       toField.asset.value.symbol
     );
+    return pool?.value ?? null;
   });
 
   const liquidityPool = computed(() => {
