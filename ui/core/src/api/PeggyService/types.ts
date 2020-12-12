@@ -13,23 +13,27 @@ export type TxEventSifConfCountChanged = {
 
 export type TxEventEthTxInitiated = {
   type: "EthTxInitiated";
-} & TxEventBase<any>;
+} & TxEventBase<unknown>;
 
 export type TxEventEthTxConfirmed = {
   type: "EthTxConfirmed";
-} & TxEventBase<any>;
+} & TxEventBase<unknown>;
 
 export type TxEventSifTxInitiated = {
   type: "SifTxInitiated";
-} & TxEventBase<any>;
+} & TxEventBase<unknown>;
 
 export type TxEventSifTxConfirmed = {
   type: "SifTxConfirmed";
-} & TxEventBase<any>;
+} & TxEventBase<unknown>;
 
 export type TxEventComplete = {
   type: "Complete";
-} & TxEventBase<any>;
+} & TxEventBase<unknown>;
+
+export type TxEventError = {
+  type: "Error";
+} & TxEventBase<unknown>;
 
 export type TxEvent =
   | TxEventEthConfCountChanged
@@ -38,6 +42,7 @@ export type TxEvent =
   | TxEventEthTxConfirmed
   | TxEventSifTxInitiated
   | TxEventSifTxConfirmed
+  | TxEventError
   | TxEventComplete;
 
 export type TxEventPrepopulated = Omit<TxEvent, "txHash"> & { txHash?: string };
@@ -61,4 +66,5 @@ export type TxEventEmitter = {
     handler: (e: TxEventSifTxConfirmed) => void
   ) => TxEventEmitter;
   onComplete: (handler: (e: TxEventComplete) => void) => TxEventEmitter;
+  onError: (handler: (e: TxEventError) => void) => TxEventEmitter;
 };

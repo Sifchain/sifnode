@@ -56,6 +56,13 @@ export default function createPeggyService(): IPeggyService {
       const txHash = "abcd1234";
       // Create an emitter
       const e = createTxEventEmitter(txHash);
+
+      // add chaos
+      if (assetAmount.equalTo("100")) {
+        setTimeout(() => {
+          e.emit({ txHash, type: "Error", payload: "Boom!" });
+        }, 345);
+      }
       // Direct that emitter through a mock sequence
       return mockLockSequence(e);
     },

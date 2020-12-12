@@ -39,6 +39,10 @@ export function createTxEventEmitter(txHash: string) {
       emitter.on("Complete", handler);
       return instance;
     },
+    onError(handler) {
+      emitter.on("Error", handler);
+      return instance;
+    },
   };
   return instance;
 }
