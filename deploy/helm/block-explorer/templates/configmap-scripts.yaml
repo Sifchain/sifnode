@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "block-explorer.fullname" . }}-scripts
+data:
+  root-url.sh: |
+    #!/bin/bash
+    # ./root-url.sh <config_map>
+
+    CONFIGMAP=$1
+
+    root_url="http://"$(curl -s -k -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" https://kubernetes.default.svc.cluster.local/api/v1/namespaces/block-explorer/services/block-explorer | jq ".status.loadBalancer.ingress[].hostname" --raw-output)
+
+    kubectl create configmap $CONFIGMAP --from-literal=rootURL=$root_url --dry-run=client -o yaml | kubectl apply -f -

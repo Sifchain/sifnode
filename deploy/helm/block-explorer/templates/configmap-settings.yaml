@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "block-explorer.fullname" . }}-meteor
+  name: {{ include "block-explorer.fullname" . }}-settings
   labels:
     {{- include "block-explorer.labels" . | nindent 4 }}
 data:
-  meteor_settings: |
+  settings: |
     {
         "public":{
-            "chainName": "Sifnode",
-            "chainId": "monkey-bars",
-            "gtm": "{Add your Google Tag Manager ID here}",
+            "chainName": "Sifchain",
+            "chainId": "{{ .Values.blockExplorer.env.chainnet }}",
+            "gtm": "",
             "slashingWindow": 10000,
             "uptimeWindow": 250,
             "initialPageSize": 30,
@@ -58,10 +58,10 @@ data:
             "gasPrice": 0.02,
             "coingeckoId": "sif"
         },
-        "genesisFile": "https://raw.githubusercontent.com/Sifchain/networks/feature/genesis/testnet/latest.json",
+        "genesisFile": "{{ .Values.blockExplorer.env.genesisURL }}",
         "remote":{
-            "rpc":"http://35.166.247.98:26657",
-            "lcd":"http://35.166.247.98:1317"
+            "rpc": "{{ .Values.blockExplorer.env.remote.rpcURL }}",
+            "lcd": "{{ .Values.blockExplorer.env.remote.lcdURL }}"
         },
         "debug": {
             "startTimer": true,

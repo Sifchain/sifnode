@@ -137,11 +137,15 @@ namespace :cluster do
   desc "Block Explorer"
   namespace :blockexplorer do
     desc "Deploy a Block Explorer to an existing cluster"
-    task :deploy, [:chainnet, :provider, :namespace] do |t, args|
+    task :deploy, [:chainnet, :provider, :namespace, :genesis_url, :rpc_url, :lcd_url] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade block-explorer #{cwd}/../../deploy/helm/block-explorer \
-        --install -n #{ns(args)} --create-namespace
+        --install -n #{ns(args)} --create-namespace \
+        --set blockExplorer.env.chainnet=#{args[:chainnet]} \
+        --set blockExplorer.env.genesisURL=#{args[:genesis_url]} \
+        --set blockExplorer.env.remote.rpcURL=#{args[:rpc_url]} \
+        --set blockExplorer.env.remote.lcdURL=#{args[:lcd_url]}
       }
 
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
