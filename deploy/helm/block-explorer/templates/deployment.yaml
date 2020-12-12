@@ -27,6 +27,13 @@ spec:
       serviceAccountName: {{ include "block-explorer.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: root-url
+          image: alpine/k8s:1.18.2
+          command: ["/scripts/root-url.sh", '{{ include "block-explorer.fullname" . }}-root-url']
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -34,12 +41,17 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", ". /opt/root_url.sh && ./docker/entrypoint.sh && cd /opt/bundle/bundle && node main.js"]
+          args: ["-c", "./docker/entrypoint.sh && cd /opt/bundle/bundle && node main.js"]
           ports:
             - name: http
               containerPort: 3000
               protocol: TCP
           env:
+            - name: ROOT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "block-explorer.fullname" . }}-root-url
+                  key: rootURL
             - name: MONGO_URL
               value: "mongodb://{{ include "block-explorer.fullname" . }}-mongodb:27017/meteor"
             - name: PORT
@@ -47,22 +59,25 @@ spec:
             - name: METEOR_SETTINGS
               valueFrom:
                 configMapKeyRef:
-                  name: {{ include "block-explorer.fullname" . }}-meteor
-                  key: meteor_settings
-          volumeMounts:
-            - mountPath: /opt/root_url.sh
-              name: {{ include "block-explorer.fullname" . }}-url
-              subPath: root_url.sh
+                  name: {{ include "block-explorer.fullname" . }}-settings
+                  key: settings
           livenessProbe:
             httpGet:
               path: /
               port: http
+            initialDelaySeconds: 180
           readinessProbe:
             httpGet:
               path: /
               port: http
+            initialDelaySeconds: 180
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: scripts
+          configMap:
+            name: {{ include "block-explorer.fullname" . }}-scripts
+            defaultMode: 0777
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -75,11 +90,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      volumes:
-      - name: {{ include "block-explorer.fullname" . }}-url
-        configMap:
-          name: {{ include "block-explorer.fullname" . }}-url
-          items:
-            - key: root_url
-              path: 'root_url.sh'
-          defaultMode: 0755
