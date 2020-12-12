@@ -174,8 +174,12 @@ func (e *Logger) SetGlobalFilter(level Level) {
 	default:
 		panic("incorrect level")
 	}
+	e.setNextFilter([]log.Option{option})
+}
+
+func (e *Logger) setNextFilter(options []log.Option) {
 	filterNumber++
-	filter := log.NewFilter(e.logger, option)
+	filter := log.NewFilter(e.logger, options...)
 	e.logger = filter
 }
 
@@ -200,9 +204,7 @@ func (e *Logger) SetFilterForLayer(level Level, keyvals ...interface{}) {
 		}
 	}
 
-	filterNumber++
-	filter := log.NewFilter(e.logger, options...)
-	e.logger = filter
+	e.setNextFilter(options)
 }
 
 func (e Logger) Debug(msg string, keyvals ...interface{}) {
