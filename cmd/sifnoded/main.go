@@ -81,17 +81,30 @@ func interceptLoadConfig() (conf *cfg.Config, err error) {
 
 	return conf, err
 }
-
 func persistentPreRunE(context *server.Context) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		if cmd.Name() == version.Cmd.Name() {
 			return nil
 		}
+		// set up config
 		config, err := interceptLoadConfig()
 		if err != nil {
 			return err
 		}
 		context.Config = config
+
+		// set up logger
+		logger := siflogger.New(siflogger.TDFmt)
+		if viper.GetBool(cli.TraceFlag) {
+			// TODO: to implement stack tracing using NewTracingLogger or its parts
+			panic("TraceStack is not implemented")
+		}
+
+		err = logger.SetFilterForLayerFromConfig("module", config.LogLevel, cfg.DefaultLogLevel())
+		if err != nil {
+			return err
+		}
+		context.Logger = logger.With("module", "main")
 
 		return nil
 	}
@@ -102,8 +115,7 @@ func main() {
 
 	app.SetConfig()
 
-	logger := siflogger.New(siflogger.JSON)
-	ctx := server.NewContext(cfg.DefaultConfig(), logger)
+	ctx := server.NewDefaultContext()
 	cobra.EnableCommandSorting = false
 	rootCmd := &cobra.Command{
 		Use:               "sifnoded",
