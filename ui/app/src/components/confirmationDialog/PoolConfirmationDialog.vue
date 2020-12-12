@@ -17,7 +17,6 @@ export default defineComponent({
   props: {
     state: { type: String as PropType<ConfirmState>, default: "confirming" },
     requestClose: Function,
-    priceMessage: { type: String, default: "" },
   },
   setup(props) {
     const confirmed = computed(() => {
@@ -37,12 +36,9 @@ export default defineComponent({
     :fromToken="fromToken"
     :toAmount="toAmount"
     :toToken="toToken"
-    :leastAmount="leastAmount"
-    :swapRate="swapRate"
-    :minimumReceived="minimumReceived"
-    :providerFee="providerFee"
-    :priceImpact="priceImpact"
-    :priceMessage="priceMessage"
+    :aPerB="aPerB"
+    :bPerA="bPerA"
+    :shareOfPool="shareOfPool"
     @confirmswap="$emit('confirmswap')"
   />
   <AnimatedConfirmation

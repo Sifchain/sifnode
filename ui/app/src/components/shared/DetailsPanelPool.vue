@@ -2,26 +2,26 @@
   <div class="details">
     <div class="details-header">
       <div class="details-row">
-        <span>BTH Deposited</span>
-        <span>1.2793521</span>
+        <span>{{ fromTokenLabel }} Deposited</span>
+        <span>{{ fromAmount }}</span>
       </div>
       <div class="details-row">
         <span>RWN Deposited</span>
-        <span>17887,079</span>
+        <span>{{ toAmount }}</span>
       </div>
     </div>
     <div class="details-body">
       <div class="details-row">
         <span>Rates</span>
-        <span>1 BTC = 13981.364 RWN</span>
+        <span>1 {{ fromTokenLabel }} = {{ aPerB }} {{ toTokenLabel }}</span>
       </div>
       <div class="details-row">
         <span>&nbsp;</span>
-        <span>1 RWN = 0.0000715 BTC</span>
+        <span>1 {{ toTokenLabel }} = {{ bPerA }} {{ fromTokenLabel }}</span>
       </div>
       <div class="details-row">
         <span>Share of Pool:</span>
-        <span>0.0043483%</span>
+        <span>{{ shareOfPool }}</span>
       </div>
     </div>
   </div>
@@ -63,11 +63,13 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   props: {
-    priceMessage: { type: String, default: "" },
-    toToken: { type: String, default: "" },
-    minimumReceived: { type: String, default: "" },
-    providerFee: { type: String, default: "" },
-    priceImpact: { type: String, default: "" },
+    fromTokenLabel: { type: String, default: ""},
+    fromAmount: { type: Number, default: ""},
+    toTokenLabel: { type: String, default: ""},
+    toAmount: { type: Number, default: ""},
+    aPerB: { type: Number, default: ""},
+    bPerA: { type: Number, default: ""},
+    shareOfPool: Number,
   },
 });
 </script>

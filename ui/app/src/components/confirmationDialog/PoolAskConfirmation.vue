@@ -1,17 +1,13 @@
-<script>
+<script lang="ts">
 import { defineComponent } from "vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
-import AssetItemLarge, {
-  getAssetLabel,
-} from "@/components/shared/AssetItemLarge.vue";
-import AssetItemPool from "@/components/shared/AssetItemPool.vue";
 import ArrowIconButton from "@/components/shared/ArrowIconButton.vue";
 import { computed } from "@vue/reactivity";
 import { useAssetItem } from "@/components/shared/utils";
 
 export default defineComponent({
-  components: { DetailsPanelPool, AssetItemLarge, SifButton, ArrowIconButton, AssetItemPool },
+  components: { DetailsPanelPool, SifButton, ArrowIconButton },
   props: {
     requestClose: Function,
     fromAmount: String,
@@ -19,11 +15,40 @@ export default defineComponent({
     leastAmount: String,
     fromToken: String,
     toToken: String,
-    swapRate: String,
-    minimumReceived: String,
-    providerFee: String,
-    priceImpact: String,
-    priceMessage: String,
+    aPerB: Number,
+    bPerA: Number,
+    shareOfPool: Number,
+  },
+  setup(props) {
+    const fromSymbol = computed(() => props.fromToken);
+    const fromAsset = useAssetItem(fromSymbol);
+
+    const fromToken = fromAsset.token;
+    const fromTokenLabel = fromAsset.label;
+    const fromBackgroundStyle = fromAsset.background;
+    const fromTokenImage = computed(() => {
+      if (!fromToken.value) return "";
+      const t = fromToken.value;
+      return t.imageUrl;
+    });
+
+    const toSymbol = computed(() => props.toToken);
+    const toAsset = useAssetItem(toSymbol);
+
+    const toToken = toAsset.token;
+    const toTokenLabel = toAsset.label;
+    const toBackgroundStyle = toAsset.background;
+    const toTokenImage = computed(() => {
+      if (!toToken.value) return "";
+      const t = toToken.value;
+      return t.imageUrl;
+    });
+
+    return { 
+      fromAsset, fromToken, fromTokenLabel, fromBackgroundStyle, fromTokenImage, 
+      toAsset, toToken, toTokenLabel, toBackgroundStyle, toTokenImage,
+    };
+
   },
 });
 </script>
@@ -33,28 +58,30 @@ export default defineComponent({
     <h3 class="title mb-10">You will receive</h3>
     <div class="pool-token">
       <div class="pool-token-value">
+        <!-- TODO - what's this value? Where do I read it from? -->
         0.0000273
       </div>
       <div class="pool-token-image">
-        <img src="https://via.placeholder.com/22/0000FF" width="26" height="26">
-        <img src="https://via.placeholder.com/22/00ff00" width="26" height="26">
+        <img v-if="tokenImage" width="24" :src="tokenImage" class="info-img" />
+        <div class="placeholder" :style="fromBackgroundStyle" v-else></div>
+        <img v-if="tokenImage" width="24" :src="tokenImage" class="info-img" />
+        <div class="placeholder" :style="toBackgroundStyle" v-else></div>
       </div>
     </div>
     <div class="pool-token-label">
-      BTC/RWN Pool Tokens
+      {{fromTokenLabel}}/{{toTokenLabel}} Pool Tokens<br>
     </div>
 
     <div class="estimate">Output is estimated. If the price changes more than 0.5% your transaction will revert.</div>
-    <div class="estimate">{{priceMessage}}</div>
     <DetailsPanelPool
       class="details"
-      :priceMessage="priceMessage"
-      :fromToken="fromToken"
-      :toToken="toToken"
-      :swapRate="swapRate"
-      :minimumReceived="minimumReceived"
-      :providerFee="providerFee"
-      :priceImpact="priceImpact"
+      :fromTokenLabel="fromTokenLabel"
+      :toTokenLabel="toTokenLabel"
+      :fromAmount="fromAmount"
+      :toAmount="toAmount"
+      :aPerB="aPerB"
+      :bPerA="bPerA"
+      :shareOfPool="shareOfPool"
     />
     <SifButton block primary class="confirm-btn" @click="$emit('confirmswap')"
       >Confirm Supply</SifButton
@@ -111,7 +138,7 @@ export default defineComponent({
   &-image {
     height: 26px;
 
-    img {
+    & > * {
       border-radius: 16px;
 
       &:nth-child(2) {
@@ -123,6 +150,15 @@ export default defineComponent({
   &-label {
     text-align: left;
     font-weight: 400;
+  }
+  .placeholder {
+    display: inline-block;
+    background: #aaa;
+    box-sizing: border-box;
+    border-radius: 16px;
+    height: 24px;
+    width: 24px;
+    text-align: center;
   }
 }
 </style>

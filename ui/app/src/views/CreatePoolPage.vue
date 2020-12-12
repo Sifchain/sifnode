@@ -1,5 +1,6 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
+import { useRouter } from "vue-router";
 import Layout from "@/components/layout/Layout.vue";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
@@ -30,6 +31,7 @@ export default defineComponent({
   },
   setup() {
     const { actions, store, api } = useCore();
+    const router = useRouter();
     const marketPairFinder = api.MarketService.find;
     const selectedField = ref<"from" | "to" | null>(null);
     const transactionState = ref<ConfirmState>("selecting");
@@ -63,6 +65,7 @@ export default defineComponent({
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
+      shareOfPool,
       shareOfPoolPercent,
       fromFieldAmount,
       toFieldAmount,
@@ -104,7 +107,11 @@ export default defineComponent({
     }
 
     function requestTransactionModalClose() {
-      transactionState.value = "selecting";
+      if (transactionState.value === "confirmed") {
+        router.push('/pool')
+      } else {
+        transactionState.value = "selecting";
+      }
     }
 
     return {
@@ -114,7 +121,6 @@ export default defineComponent({
       toAmount,
       toSymbol,
 
-      priceMessage,
       connected,
       aPerBRatioMessage,
       bPerARatioMessage,
@@ -228,9 +234,15 @@ export default defineComponent({
     <PriceCalculation>
       <div class="pool-share">
         <h4 class="pool-share-title text--left">Prices and pool share</h4>
-        <div class="pool-share-details">
-          <div v-html="aPerBRatioMessage"></div>
-          <div v-html="bPerARatioMessage"></div>
+        <div class="pool-share-details" v-if="fromSymbol && aPerBRatioMessage">
+          <div>
+            <span class="number">{{aPerBRatioMessage}}</span><br>
+            <span>{{ fromSymbol.toUpperCase() }} per {{ toSymbol.toUpperCase() }}</span>
+          </div>
+          <div>
+            <span class="number">{{bPerARatioMessage}}</span><br>
+            <span>{{ toSymbol.toUpperCase() }} per {{ fromSymbol.toUpperCase() }}</span>
+          </div>
           <div><span class="number">{{ shareOfPoolPercent }}</span><br>Share of Pool </div>
         </div>
       </div>
@@ -247,11 +259,13 @@ export default defineComponent({
         @confirmswap="handleAskConfirmClicked"
         :state="transactionState"
         :requestClose="requestTransactionModalClose"
-        :priceMessage="priceMessage"
         :fromToken="fromSymbol"
         :fromAmount="fromAmount"
         :toAmount="toAmount"
         :toToken="toSymbol"
+        :aPerB="aPerBRatioMessage"
+        :bPerA="bPerARatioMessage"
+        :shareOfPool="shareOfPoolPercent"
     /></ModalView>
   </Layout>
 </template>
