@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"time"
 )
 
@@ -168,10 +167,10 @@ type Distribution struct {
 }
 
 type DistributionParams struct {
-	CommunityTax        sdk.Dec `json:"community_tax" yaml:"community_tax"`
-	BaseProposerReward  sdk.Dec `json:"base_proposer_reward" yaml:"base_proposer_reward"`
-	BonusProposerReward sdk.Dec `json:"bonus_proposer_reward" yaml:"bonus_proposer_reward"`
-	WithdrawAddrEnabled bool    `json:"withdraw_addr_enabled" yaml:"withdraw_addr_enabled"`
+	CommunityTax        interface{} `json:"community_tax" yaml:"community_tax"`
+	BaseProposerReward  interface{} `json:"base_proposer_reward" yaml:"base_proposer_reward"`
+	BonusProposerReward interface{} `json:"bonus_proposer_reward" yaml:"bonus_proposer_reward"`
+	WithdrawAddrEnabled interface{} `json:"withdraw_addr_enabled" yaml:"withdraw_addr_enabled"`
 }
 
 type Slashing struct {
@@ -181,7 +180,7 @@ type Slashing struct {
 }
 
 type SlashingParams struct {
-	SignedBlocksWindow      int64       `json:"signed_blocks_window" yaml:"signed_blocks_window"`
+	SignedBlocksWindow      interface{} `json:"signed_blocks_window" yaml:"signed_blocks_window"`
 	MinSignedPerWindow      interface{} `json:"min_signed_per_window" yaml:"min_signed_per_window"`
 	DowntimeJailDuration    interface{} `json:"downtime_jail_duration" yaml:"downtime_jail_duration"`
 	SlashFractionDoubleSign interface{} `json:"slash_fraction_double_sign" yaml:"slash_fraction_double_sign"`
