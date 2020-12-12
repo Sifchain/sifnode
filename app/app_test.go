@@ -9,8 +9,6 @@ import (
 	"github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/simapp"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -18,7 +16,6 @@ func TestExport(t *testing.T) {
 	db := db.NewMemDB()
 	app := NewInitApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
 	setGenesis(app)
-
 	// Making a new app object with the db, so that initchain hasn't been called
 	newApp := NewInitApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
 	_, _, err := newApp.ExportAppStateAndValidators(false, []string{})
@@ -36,7 +33,7 @@ func TestBlackListedAddrs(t *testing.T) {
 }
 
 func setGenesis(app *NewApp) error {
-	genesisState := simapp.NewDefaultGenesisState()
+	genesisState := NewDefaultGenesisState()
 	stateBytes, err := codec.MarshalJSONIndent(app.cdc, genesisState)
 	if err != nil {
 		return err
