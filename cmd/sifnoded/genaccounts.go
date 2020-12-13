@@ -245,26 +245,6 @@ the account address or key name. If a key name is given, the address will be loo
 			fmt.Printf("argument is  %v \n", args[0])
 			addr, err := sdk.ValAddressFromBech32(args[0])
 			fmt.Printf("address and error from cli is %v, %v\n", addr, err)
-			// inBuf := bufio.NewReader(cmd.InOrStdin())
-			// if err != nil {
-			// 	// attempt to lookup address from Keybase if no address was provided
-			// 	kb, err := keys.NewKeyring(
-			// 		sdk.KeyringServiceName(),
-			// 		viper.GetString(flags.FlagKeyringBackend),
-			// 		viper.GetString(flagClientHome),
-			// 		inBuf,
-			// 	)
-			// 	if err != nil {
-			// 		return err
-			// 	}
-
-			// 	info, err := kb.Get(args[0])
-			// 	if err != nil {
-			// 		return fmt.Errorf("failed to get address from Keybase: %w", err)
-			// 	}
-
-			// 	addr = info.GetAddress()
-			// }
 
 			genFile := config.GenesisFile()
 			appState, genDoc, err := genutil.GenesisStateFromGenFile(cdc, genFile)

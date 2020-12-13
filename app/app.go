@@ -303,23 +303,3 @@ func GetMaccPerms() map[string][]string {
 	}
 	return modAccPerms
 }
-
-// func GetValidatorAddresses() ([]sdk.ValAddress, error) {
-// 	content, err := ioutil.ReadFile(DefaultValidatorFile)
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	addresses := strings.Split(content, ",")
-
-// 	if len(addresses) == 0 {
-// 		return nil, error.Error("validator not set")
-// 	}
-
-// 	for address := range addresses {
-
-// 	}
-
-// 	return nil, nil
-// }

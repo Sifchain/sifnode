@@ -173,7 +173,6 @@ func NewSimApp(
 		app.cdc,
 		keys[oracle.StoreKey],
 		app.StakingKeeper,
-		nil,
 		oracle.DefaultConsensusNeeded,
 	)
 
