@@ -78,6 +78,11 @@ test("getPools", async () => {
   expect(base.get).toHaveBeenCalledWith(`/clp/getPools`);
 });
 
+test("getAssets", async () => {
+  await clp.getAssets("abc1234");
+  expect(base.get).toHaveBeenCalledWith(`/clp/getAssets?lpAddress=abc1234`);
+});
+
 test("swap", async () => {
   await clp.swap(swapParams);
   expect(base.post).toHaveBeenCalledWith(`/clp/swap`, swapParams);

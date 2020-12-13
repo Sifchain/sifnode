@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
+	"log"
 	"strconv"
 )
 
@@ -87,8 +88,10 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 
 func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
 	// Verify min threshold
+
 	MinThreshold := sdk.NewUint(uint64(keeper.GetParams(ctx).MinCreatePoolThreshold))
 
+	log.Println(MinThreshold.String())
 	if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
 		return nil, types.ErrTotalAmountTooLow
 	}
@@ -110,7 +113,6 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 	}
 	// Create Liquidity Provider
 	lp := keeper.CreateLiquidityProvider(ctx, msg.ExternalAsset, lpunits, msg.Signer)
-
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeCreatePool,
