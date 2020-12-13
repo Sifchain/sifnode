@@ -116,7 +116,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	stakingKeeper := staking.NewKeeper(cdc, keyStaking, supplyKeeper, paramsKeeper.Subspace(staking.DefaultParamspace))
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
-	oracleKeeper := NewKeeper(cdc, keyOracle, stakingKeeper, nil, consensusNeeded)
+	oracleKeeper := NewKeeper(cdc, keyOracle, stakingKeeper, consensusNeeded)
 
 	// set module accounts
 	err = notBondedPool.SetCoins(totalSupply)

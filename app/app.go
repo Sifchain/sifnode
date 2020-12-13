@@ -32,10 +32,9 @@ import (
 const appName = "sifnode"
 
 var (
-	DefaultCLIHome       = os.ExpandEnv("$HOME/.sifnodecli")
-	DefaultNodeHome      = os.ExpandEnv("$HOME/.sifnoded")
-	DefaultValidatorFile = os.ExpandEnv("$HOME/.sifnoded/config/validators.txt")
-	ModuleBasics         = module.NewBasicManager(
+	DefaultCLIHome  = os.ExpandEnv("$HOME/.sifnodecli")
+	DefaultNodeHome = os.ExpandEnv("$HOME/.sifnoded")
+	ModuleBasics    = module.NewBasicManager(
 		genutil.AppModuleBasic{},
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
@@ -170,7 +169,6 @@ func NewInitApp(
 		app.cdc,
 		keys[oracle.StoreKey],
 		app.StakingKeeper,
-		nil,
 		oracle.DefaultConsensusNeeded,
 	)
 

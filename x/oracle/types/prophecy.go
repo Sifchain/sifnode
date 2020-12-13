@@ -1,7 +1,9 @@
 package types
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
@@ -93,10 +95,28 @@ func (prophecy Prophecy) AddClaim(validator sdk.ValAddress, claim string) {
 	prophecy.ValidatorClaims[validatorBech32] = claim
 }
 
+func inWhiteList(validator staking.Validator, whiteListValidatorAddresses []sdk.ValAddress) bool {
+	for _, whiteListValidatorAddress := range whiteListValidatorAddresses {
+		if bytes.Equal(validator.GetOperator(), whiteListValidatorAddress) {
+			return true
+		}
+	}
+	return false
+}
+
 // FindHighestClaim looks through all the existing claims on a given prophecy. It adds up the total power across
 // all claims and returns the highest claim, power for that claim, and total power claimed on the prophecy overall.
-func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKeeper) (string, int64, int64) {
+func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKeeper, whiteListValidatorAddresses []sdk.ValAddress) (string, int64, int64, int64) {
 	validators := stakeKeeper.GetBondedValidatorsByPower(ctx)
+
+	// Compute the total power of white list validators
+	totalPower := int64(0)
+	for _, validator := range validators {
+		if inWhiteList(validator, whiteListValidatorAddresses) {
+			totalPower += validator.GetConsensusPower()
+		}
+	}
+
 	//Index the validators by address for looking when scanning through claims
 	validatorsByAddress := make(map[string]staking.Validator)
 	for _, validator := range validators {
@@ -106,6 +126,7 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 	totalClaimsPower := int64(0)
 	highestClaimPower := int64(-1)
 	highestClaim := ""
+
 	for claim, validatorAddrs := range prophecy.ClaimValidators {
 		claimPower := int64(0)
 		for _, validatorAddr := range validatorAddrs {
@@ -122,7 +143,8 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 			highestClaim = claim
 		}
 	}
-	return highestClaim, highestClaimPower, totalClaimsPower
+	fmt.Printf("FindHighestClaim %s, %d, %d, %d\n ", highestClaim, highestClaimPower, totalClaimsPower, totalPower)
+	return highestClaim, highestClaimPower, totalClaimsPower, totalPower
 }
 
 // NewProphecy returns a new Prophecy, initialized in pending status with an initial claim

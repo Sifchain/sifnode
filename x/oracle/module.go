@@ -2,6 +2,7 @@ package oracle
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -110,8 +111,11 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 // InitGenesis performs genesis initialization for the oracle module. It returns
 // no validator updates.
-func (am AppModule) InitGenesis(_ sdk.Context, _ json.RawMessage) []abci.ValidatorUpdate {
-	return nil
+func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
+	log.Println("Oracle module InitGenesis")
+	var genesisState GenesisState
+	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	return InitGenesis(ctx, am.keeper, genesisState)
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the oracle
