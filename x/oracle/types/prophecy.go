@@ -3,7 +3,6 @@ package types
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
@@ -143,7 +142,6 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 			highestClaim = claim
 		}
 	}
-	fmt.Printf("FindHighestClaim %s, %d, %d, %d\n ", highestClaim, highestClaimPower, totalClaimsPower, totalPower)
 	return highestClaim, highestClaimPower, totalClaimsPower, totalPower
 }
 

@@ -74,21 +74,13 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 
 // ProcessClaim ...
 func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, error) {
-	k.Logger(ctx).Error("ProcessClaim ProcessClaim ProcessClaim")
-	fmt.Println("ProcessClaim ProcessClaim ProcessClaim")
 
 	inWhiteList := false
 	// Check if claim from whitelist validators
 	for _, address := range k.GetOracleWhiteList(ctx) {
-		k.Logger(ctx).Error("white list validator is")
-		k.Logger(ctx).Error(address.String())
 
-		k.Logger(ctx).Error(claim.ValidatorAddress.String())
-
-		fmt.Printf("ProcessClaim ProcessClaim ProcessClaim")
 		if address.Equals(claim.ValidatorAddress) {
 			inWhiteList = true
-			fmt.Printf(" inWhiteList = true \n ")
 			break
 		}
 	}
@@ -127,9 +119,6 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	}
 
 	prophecy.AddClaim(claim.ValidatorAddress, claim.Content)
-
-	fmt.Printf("ProcessClaim ProcessClaim before processCompletion \n\n")
-
 	prophecy = k.processCompletion(ctx, prophecy)
 
 	k.setProphecy(ctx, prophecy)
