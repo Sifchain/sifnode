@@ -2,7 +2,6 @@ import { Api, WithApi } from "../api";
 import { Store, WithStore } from "../store";
 import ethWalletActions from "./ethWallet";
 import clpActions from "./clp";
-import tokenActions from "./token";
 import walletActions from "./wallet";
 
 export type ActionContext<
@@ -14,7 +13,6 @@ export function createActions(context: ActionContext) {
   return {
     ethWallet: ethWalletActions(context),
     clp: clpActions(context),
-    token: tokenActions(context),
     wallet: walletActions(context),
   };
 }
