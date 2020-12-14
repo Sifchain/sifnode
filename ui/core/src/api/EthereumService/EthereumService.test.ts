@@ -1,12 +1,13 @@
 // This test must be run in an environment that supports ganace
 
-import { getFakeTokens } from "./utils/getFakeTokens";
+import localnet from "../../config.localnet.json";
 import createEthereumService from ".";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { Asset, AssetAmount, Network, Token } from "../../entities";
 
 import JSBI from "jsbi";
 import B from "../../entities/utils/B";
+import { ChainConfig, parseConfig } from "../utils/parseConfig";
 
 describe("EthereumService", () => {
   let EthereumService: ReturnType<typeof createEthereumService>;
@@ -15,7 +16,7 @@ describe("EthereumService", () => {
   let ETH: Asset;
 
   beforeEach(async () => {
-    const supportedTokens = await getFakeTokens();
+    const supportedTokens = parseConfig(localnet as ChainConfig).assets;
     const a = supportedTokens.find(
       ({ symbol }) => symbol.toUpperCase() === "ATK"
     );
@@ -35,7 +36,7 @@ describe("EthereumService", () => {
 
     EthereumService = createEthereumService({
       getWeb3Provider,
-      loadAssets: async () => supportedTokens,
+      assets: [a, b, c],
     });
   });
 
@@ -50,11 +51,6 @@ describe("EthereumService", () => {
   });
 
   test("that it returns the correct wallet amounts", async () => {
-    // const supportedTokens = await getFakeTokens();
-    // const EthereumService = createEthereumService({
-    //   getWeb3Provider,
-    //   loadAssets: async () => supportedTokens,
-    // });
     await EthereumService.connect();
 
     const balances = await EthereumService.getBalance();
