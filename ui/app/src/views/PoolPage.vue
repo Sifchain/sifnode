@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-
+import { useCore } from "@/hooks/useCore";
 import Layout from "@/components/layout/Layout.vue";
 import PoolList from "@/components/poolList/PoolList.vue";
 import PoolListItem from "@/components/poolList/PoolListItem.vue";
@@ -9,6 +9,24 @@ import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 
 export default defineComponent({
   components: { Layout, SifButton, PriceCalculation, PoolList, PoolListItem },
+  setup() {
+    const { actions, poolFinder, store } = useCore();
+    let pools = null;
+
+    async function getPools() {
+      await actions.clp.getLiquidityProviderPools().then((res) => {
+        console.log('HERE: ', res);
+        pools = res
+      })
+    }
+
+    getPools();
+
+    return {
+      getPools,
+      pools
+    }
+  }
 });
 </script>
 
