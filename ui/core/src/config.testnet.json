@@ -1,7 +1,7 @@
 {
   "sifAddrPrefix": "sif",
   "sifApiUrl": "https://api-monkeybars.sifchain.finance",
-  "sifWsUrl": "ws://localhost:26657/websocket",
+  "sifWsUrl": "ws://api-monkeybars.sifchain.finance:26657/websocket",
   "web3Provider": "metamask",
   "nativeAsset": "rowan",
   "assets": [
