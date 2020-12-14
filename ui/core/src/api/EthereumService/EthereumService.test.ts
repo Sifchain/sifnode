@@ -35,7 +35,7 @@ describe("EthereumService", () => {
 
     EthereumService = createEthereumService({
       getWeb3Provider,
-      loadAssets: async () => supportedTokens,
+      supportedAssets: supportedTokens,
     });
   });
 
@@ -53,7 +53,7 @@ describe("EthereumService", () => {
     // const supportedTokens = await getFakeTokens();
     // const EthereumService = createEthereumService({
     //   getWeb3Provider,
-    //   loadAssets: async () => supportedTokens,
+    //   supportedAssets: async () => supportedTokens,
     // });
     await EthereumService.connect();
 

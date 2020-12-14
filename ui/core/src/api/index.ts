@@ -1,7 +1,6 @@
 // Everything here represents services that are effectively remote data storage
 export * from "./EthereumService/utils/getFakeTokens";
 export * from "./EthereumService/utils/getMetamaskProvider";
-export * from "./EthereumService/utils/loadAssets";
 
 import ethereumService, { EthereumServiceContext } from "./EthereumService";
 import tokenService, { TokenServiceContext } from "./TokenService";

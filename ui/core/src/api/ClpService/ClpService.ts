@@ -13,7 +13,7 @@ import { toPool } from "../utils/toPool";
 import ReconnectingWebSocket from "reconnecting-websocket";
 
 export type ClpServiceContext = {
-  loadAssets: () => Promise<Asset[]>;
+  supportedAssets: Asset[];
   nativeAsset: Asset;
   sifApiUrl: string;
   sifWsUrl: string;
@@ -54,7 +54,7 @@ type IClpService = {
 type PoolHandlerFn = (pools: Pool[]) => void;
 
 export default function createClpService({
-  loadAssets,
+  supportedAssets,
   sifApiUrl,
   nativeAsset,
   sifWsUrl,
@@ -92,7 +92,6 @@ export default function createClpService({
   }
 
   async function initialize() {
-    await loadAssets();
     await setupPoolWatcher();
   }
 
@@ -101,7 +100,6 @@ export default function createClpService({
   const instance: IClpService = {
     async getPools() {
       const rawPools = await client.getPools();
-      console.log({ rawPools });
       return rawPools.map(toPool(nativeAsset));
     },
     async getPoolsByLiquidityProvider(address: string) {

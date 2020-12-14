@@ -4,7 +4,6 @@ import {
   createActions,
   ApiContext,
   getMetamaskProvider,
-  getFakeTokens,
   Asset,
   Pool,
   Token,
@@ -35,6 +34,18 @@ type CoinConfig = {
   network: Network;
 };
 
+type AssetConfig = CoinConfig | TokenConfig;
+function isTokenConfig(a: any): a is TokenConfig {
+  return typeof a?.address === "string";
+}
+
+function parseAsset(a: unknown) {
+  if (isTokenConfig(a)) {
+    return Token(a);
+  }
+  return Coin(a as CoinConfig);
+}
+
 function getConfig(tag = "localnet"): ApiContext {
   const configMap: ConfigMap = {
     localnet: {
@@ -42,10 +53,7 @@ function getConfig(tag = "localnet"): ApiContext {
       sifApiUrl: "http://127.0.0.1:1317",
       sifWsUrl: "ws://localhost:26657/websocket",
       getWeb3Provider: getMetamaskProvider,
-      loadAssets: async () =>
-        localnetconfig.assets.map((a) =>
-          a.address ? Token(a as TokenConfig) : Coin(a as CoinConfig)
-        ),
+      supportedAssets: (localnetconfig.assets as AssetConfig[]).map(parseAsset),
       nativeAsset: Coin({
         symbol: "rowan",
         decimals: 18,
@@ -58,10 +66,7 @@ function getConfig(tag = "localnet"): ApiContext {
       sifApiUrl: "http://127.0.0.1:1317",
       sifWsUrl: "ws://localhost:26657/websocket",
       getWeb3Provider: getMetamaskProvider,
-      loadAssets: async () =>
-        testnetconfig.assets.map((a) =>
-          a.address ? Token(a as TokenConfig) : Coin(a as CoinConfig)
-        ),
+      supportedAssets: (testnetconfig.assets as AssetConfig[]).map(parseAsset),
       nativeAsset: Coin({
         symbol: "rowan",
         decimals: 18,
@@ -74,7 +79,7 @@ function getConfig(tag = "localnet"): ApiContext {
       sifApiUrl: "http://127.0.0.1:1317",
       sifWsUrl: "ws://localhost:26657/websocket",
       getWeb3Provider: getMetamaskProvider,
-      loadAssets: getFakeTokens,
+      supportedAssets: (testnetconfig.assets as AssetConfig[]).map(parseAsset),
       nativeAsset: Coin({
         symbol: "rowan",
         decimals: 18,
@@ -87,7 +92,7 @@ function getConfig(tag = "localnet"): ApiContext {
       sifApiUrl: "http://127.0.0.1:1317",
       sifWsUrl: "ws://localhost:26657/websocket",
       getWeb3Provider: getMetamaskProvider,
-      loadAssets: getFakeTokens,
+      supportedAssets: testnetconfig.assets.map(parseAsset),
       nativeAsset: Coin({
         symbol: "rowan",
         decimals: 18,
@@ -100,7 +105,7 @@ function getConfig(tag = "localnet"): ApiContext {
       sifApiUrl: "http://127.0.0.1:1317",
       sifWsUrl: "ws://localhost:26657/websocket",
       getWeb3Provider: getMetamaskProvider,
-      loadAssets: getFakeTokens,
+      supportedAssets: (testnetconfig.assets as AssetConfig[]).map(parseAsset),
       nativeAsset: Coin({
         symbol: "rowan",
         decimals: 18,
