@@ -77,7 +77,7 @@ type LiquidityDetailsResponse = {
 type ClpCmdSwap = (params: SwapParams) => Promise<Msg>;
 type ClpQueryPools = () => Promise<RawPool[]>;
 type ClpQueryPool = (params: { ticker: string }) => Promise<RawPool>;
-type ClpQueryAssets = (address: string) => Promise<RawPool[]>;
+type ClpQueryAssets = (address: string) => Promise<{ symbol: string }[]>;
 type ClpAddLiquidity = (params: LiquidityParams) => Promise<StdTx>;
 type ClpCreatePool = (params: LiquidityParams) => Promise<StdTx>;
 type ClpGetLiquidityProvider = (params: {
