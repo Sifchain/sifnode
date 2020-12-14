@@ -19,8 +19,8 @@ export type ApiContext = EthereumServiceContext &
   ClpServiceContext &
   Omit<ClpServiceContext, "getPools">; // add contexts from other APIs
 
-import localnetconfig from "../../config.localnet.json";
-import testnetconfig from "../../config.testnet.json";
+import localnetconfig from "../config.localnet.json";
+import testnetconfig from "../config.testnet.json";
 import { Coin, Network, Token } from "../entities";
 import { getMetamaskProvider } from "./EthereumService/utils/getMetamaskProvider";
 
