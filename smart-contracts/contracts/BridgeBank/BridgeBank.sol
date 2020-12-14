@@ -244,7 +244,7 @@ contract BridgeBank is BankStorage,
                 msg.value == _amount,
                 "The transactions value must be equal the specified amount (in wei)"
             );
-            symbol = "ETH";
+            symbol = "eth";
             // ERC20 deposit
         } else {
             require(
