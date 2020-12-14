@@ -18,6 +18,8 @@
 1. `yarn` - Install dependencies
 1. `yarn build` - Build the blockchains to test against
 
+NOTE: If you are using VSCode you should use the code-workspace at `./ui/SifnodeUI.code-workspace` to ensure that Vetur works correctly.
+
 #### Launching locally
 
 `yarn app:serve:all`

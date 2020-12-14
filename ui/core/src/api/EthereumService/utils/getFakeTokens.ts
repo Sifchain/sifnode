@@ -62,7 +62,7 @@ export async function getFakeTokens(): Promise<Asset[]> {
   });
 
   const ROWAN = Coin({
-    symbol: "crowan",
+    symbol: "rowan",
     decimals: 18,
     name: "Rowan",
     network: Network.SIFCHAIN,

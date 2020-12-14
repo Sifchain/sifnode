@@ -1,6 +1,6 @@
 // Everything here represents services that are effectively remote data storage
 export * from "./EthereumService/utils/getFakeTokens";
-export * from "./EthereumService/utils/getWeb3Provider";
+export * from "./EthereumService/utils/getMetamaskProvider";
 export * from "./EthereumService/utils/loadAssets";
 
 import ethereumService, { EthereumServiceContext } from "./EthereumService";
@@ -14,7 +14,7 @@ export type WithApi<T extends keyof Api = keyof Api> = {
   api: Pick<Api, T>;
 };
 
-type ApiContext = EthereumServiceContext &
+export type ApiContext = EthereumServiceContext &
   TokenServiceContext &
   SifServiceContext &
   ClpServiceContext &
