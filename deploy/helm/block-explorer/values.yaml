@@ -1,10 +1,5 @@
 replicaCount: 1
 
-image:
-  repository: sifchain/block-explorer
-  pullPolicy: Always
-  tag: "testnet"
-
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -20,6 +15,27 @@ podSecurityContext: {}
 
 securityContext: {}
 
+image:
+  repository: sifchain/block-explorer
+  pullPolicy: Always
+  tag: "testnet"
+
+blockExplorer:
+  env:
+    chainnet: ""
+    genesisURL: ""
+    remote:
+      rpcURL: ""
+      lcdURL: ""
+
+mongodb:
+  install: true
+  mongodbExtraFlags: "--storageEngine=wiredTiger"
+  usePassword: false
+  persistence:
+    enabled: true
+    size: 10Gi
+
 service:
   type: LoadBalancer
   port: 80
@@ -31,15 +47,6 @@ ingress:
     - host: block-explorer.local
       paths: []
   tls: []
-
-mongodb:
-  install: true
-  mongodbExtraFlags: "--storageEngine=wiredTiger"
-  usePassword: false
-  persistence:
-    enabled: false
-    # storageClass: ebs-sc
-    size: 10Gi
 
 resources: {}
 

@@ -1,4 +1,8 @@
-First install dependencies:
+# Sifchain - Peggy/ethBridge Demo
+
+#### Dependencies:
+
+Download and setup the below dependencies, adjust to your local system;
 
 ```
 INFURA_PROJECT_ID="abcdebeedabcdebeed"
@@ -12,8 +16,8 @@ sudo npm install -g truffle
 npm install dotenv
 ```
 
-# Sifchain - Peggy/ethBridge Demo
 #### What is it
+
 Peggy is a cross-chain ethereum bridge for cosmos-sdk based chains such as sifchain. This enables the pegging of ethereum assets that can then be used within the sifchain and ecosystem. 
 #### Setup 
 0. Follow the `readme.md` and make sure your `sifnoded` is running and synced 
