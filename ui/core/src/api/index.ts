@@ -18,21 +18,62 @@ export type ApiContext = EthereumServiceContext &
 
 import localnetconfig from "../config.localnet.json";
 import testnetconfig from "../config.testnet.json";
-import { parseConfig, ChainConfig } from "./utils/parseConfig";
+
+import assetsEthereumLocalnet from "../assets.ethereum.localnet.json";
+import assetsEthereumMainnet from "../assets.ethereum.mainnet.json";
+
+import assetsSifchainLocalnet from "../assets.sifchain.localnet.json";
+import assetsSifchainMainnet from "../assets.sifchain.mainnet.json";
+
+import {
+  parseConfig,
+  parseAssets,
+  ChainConfig,
+  AssetConfig,
+} from "./utils/parseConfig";
+import { Asset } from "../entities";
 
 type ConfigMap = { [s: string]: ApiContext };
+type AssetMap = { [s: string]: Asset[] };
 
-function getConfig(tag = "localnet"): ApiContext {
-  const configMap: ConfigMap = {
-    localnet: parseConfig(localnetconfig as ChainConfig),
-    testnet: parseConfig(testnetconfig as ChainConfig),
+function getConfig(
+  config = "localnet",
+  sifchainAssetTag = "sifchain.localnet",
+  ethereumAssetTag = "ethereum.localnet"
+): ApiContext {
+  const assetMap: AssetMap = {
+    "sifchain.localnet": parseAssets(
+      assetsSifchainLocalnet as { assets: AssetConfig[] }
+    ),
+    "sifchain.mainnet": parseAssets(
+      assetsSifchainMainnet as { assets: AssetConfig[] }
+    ),
+    "ethereum.localnet": parseAssets(
+      assetsEthereumLocalnet as { assets: AssetConfig[] }
+    ),
+    "ethereum.mainnet": parseAssets(
+      assetsEthereumMainnet as { assets: AssetConfig[] }
+    ),
   };
 
-  return configMap[tag.toLowerCase()];
+  const sifchainAssets = assetMap[sifchainAssetTag];
+  const ethereumAssets = assetMap[ethereumAssetTag];
+  const allAssets = [...sifchainAssets, ...ethereumAssets];
+
+  const configMap: ConfigMap = {
+    localnet: parseConfig(localnetconfig as ChainConfig, allAssets),
+    testnet: parseConfig(testnetconfig as ChainConfig, allAssets),
+  };
+
+  return configMap[config.toLowerCase()];
 }
 
-export function createApi(tag?: string) {
-  const context = getConfig(tag);
+export function createApi(
+  config?: string,
+  sifchainAssetTag?: string,
+  ethereumAssetTag?: string
+) {
+  const context = getConfig(config, sifchainAssetTag, ethereumAssetTag);
   const EthereumService = ethereumService(context);
 
   const SifService = sifService(context);
