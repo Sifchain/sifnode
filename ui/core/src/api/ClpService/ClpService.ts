@@ -13,7 +13,7 @@ import { toPool } from "../utils/toPool";
 import ReconnectingWebSocket from "reconnecting-websocket";
 
 export type ClpServiceContext = {
-  supportedAssets: Asset[];
+  assets: Asset[];
   nativeAsset: Asset;
   sifApiUrl: string;
   sifWsUrl: string;
@@ -54,7 +54,7 @@ type IClpService = {
 type PoolHandlerFn = (pools: Pool[]) => void;
 
 export default function createClpService({
-  supportedAssets,
+  assets,
   sifApiUrl,
   nativeAsset,
   sifWsUrl,

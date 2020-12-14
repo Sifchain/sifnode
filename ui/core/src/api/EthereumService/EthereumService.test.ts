@@ -35,7 +35,7 @@ describe("EthereumService", () => {
 
     EthereumService = createEthereumService({
       getWeb3Provider,
-      supportedAssets: supportedTokens,
+      assets: supportedTokens,
     });
   });
 
@@ -50,11 +50,6 @@ describe("EthereumService", () => {
   });
 
   test("that it returns the correct wallet amounts", async () => {
-    // const supportedTokens = await getFakeTokens();
-    // const EthereumService = createEthereumService({
-    //   getWeb3Provider,
-    //   supportedAssets: async () => supportedTokens,
-    // });
     await EthereumService.connect();
 
     const balances = await EthereumService.getBalance();

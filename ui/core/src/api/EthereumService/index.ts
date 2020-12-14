@@ -23,7 +23,7 @@ type Balances = AssetAmount[];
 
 export type EthereumServiceContext = {
   getWeb3Provider: () => Promise<provider>;
-  supportedAssets: Asset[];
+  assets: Asset[];
 };
 
 type MetaMaskProvider = WebsocketProvider & {
@@ -60,7 +60,7 @@ export class EthereumService implements IWalletService {
 
   constructor(
     getWeb3Provider: () => Promise<provider>,
-    private supportedAssets: Asset[]
+    private assets: Asset[]
   ) {
     // init state
     this.state = reactive({ ...initState });
@@ -106,7 +106,7 @@ export class EthereumService implements IWalletService {
 
   async connect() {
     try {
-      const allTokens = this.supportedAssets;
+      const allTokens = this.assets;
 
       this.supportedTokens = allTokens.filter(
         (t) => t.network === Network.ETHEREUM
@@ -233,9 +233,9 @@ export class EthereumService implements IWalletService {
 
   static create({
     getWeb3Provider,
-    supportedAssets,
+    assets,
   }: EthereumServiceContext): IWalletService {
-    return new EthereumService(getWeb3Provider, supportedAssets);
+    return new EthereumService(getWeb3Provider, assets);
   }
 }
 

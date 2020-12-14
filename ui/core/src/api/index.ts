@@ -82,7 +82,7 @@ function parseConfig(config: ChainConfig): ApiContext {
       config.web3Provider === "metamask"
         ? getMetamaskProvider
         : async () => config.web3Provider,
-    supportedAssets: (config.assets as AssetConfig[]).map(parseAsset),
+    assets: (config.assets as AssetConfig[]).map(parseAsset),
     nativeAsset: parseAsset(nativeAsset),
   };
 }
