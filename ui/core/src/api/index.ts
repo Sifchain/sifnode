@@ -2,7 +2,6 @@
 export * from "./EthereumService/utils/getMetamaskProvider";
 
 import ethereumService, { EthereumServiceContext } from "./EthereumService";
-import tokenService, { TokenServiceContext } from "./TokenService";
 import sifService, { SifServiceContext } from "./SifService";
 import clpService, { ClpServiceContext } from "./ClpService";
 
@@ -13,7 +12,6 @@ export type WithApi<T extends keyof Api = keyof Api> = {
 };
 
 export type ApiContext = EthereumServiceContext &
-  TokenServiceContext &
   SifServiceContext &
   ClpServiceContext &
   Omit<ClpServiceContext, "getPools">; // add contexts from other APIs
@@ -36,13 +34,13 @@ function getConfig(tag = "localnet"): ApiContext {
 export function createApi(tag?: string) {
   const context = getConfig(tag);
   const EthereumService = ethereumService(context);
-  const TokenService = tokenService(context);
+
   const SifService = sifService(context);
   const ClpService = clpService(context);
   return {
     ClpService,
     EthereumService,
-    TokenService,
+
     SifService,
   };
 }

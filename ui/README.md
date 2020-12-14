@@ -94,13 +94,13 @@ type ActionContext<ServiceKeys, StoreKeys>
 export default function createAction({
   api,
   store,
-}: ActionContext<"WalletService" | "TokenService", "WalletStore">) {
+}: ActionContext<"WalletService" | "SifService", "WalletStore">) {
   return {
     async disconnectWallet() {
       await api.WalletService.disconnect();
       store.WalletStore.isConnected = false;
       store.WalletStore.balances = [];
-      await api.TokenService.purgeTokens();
+      await api.SifService.disconnect();
     },
   };
 }
