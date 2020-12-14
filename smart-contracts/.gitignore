@@ -1,4 +1,5 @@
-.openzeppelin/
+.openzeppelin
+deployments/*/.openzeppelin
 build/
 node_modules/
 flat/
