@@ -86,7 +86,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	}
 
 	if !inWhiteList {
-		return types.Status{}, types.ErrInvalidValidator
+		return types.Status{}, types.ErrValidatorNotInWhiteList
 	}
 
 	activeValidator := k.checkActiveValidator(ctx, claim.ValidatorAddress)
