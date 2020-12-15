@@ -61,7 +61,8 @@ $ %s pool ETH ROWAN`,
 			}
 			var pool types.Pool
 			cdc.MustUnmarshalJSON(res, &pool)
-			out := types.NewPoolResponse(pool, height)
+			clpPoolAddress := types.GetCLPModuleAddress()
+			out := types.NewPoolResponse(pool, height, clpPoolAddress.String())
 			return cliCtx.PrintOutput(out)
 		},
 	}
@@ -82,7 +83,8 @@ func GetCmdPools(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			}
 			var pools types.Pools
 			cdc.MustUnmarshalJSON(res, &pools)
-			out := types.NewPoolsResponse(pools, height)
+			clpPoolAddress := types.GetCLPModuleAddress()
+			out := types.NewPoolsResponse(pools, height, clpPoolAddress.String())
 			return cliCtx.PrintOutput(out)
 		},
 	}

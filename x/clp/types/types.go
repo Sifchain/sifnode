@@ -70,20 +70,22 @@ func NewLiquidityProvider(asset Asset, liquidityProviderUnits sdk.Uint, liquidit
 
 type PoolResponse struct {
 	Pool
-	Height int64 `json:"height"`
+	ClpModuleAddress string `json:"clp_module_address"`
+	Height           int64  `json:"height"`
 }
 
-func NewPoolResponse(pool Pool, height int64) PoolResponse {
-	return PoolResponse{Pool: pool, Height: height}
+func NewPoolResponse(pool Pool, height int64, address string) PoolResponse {
+	return PoolResponse{Pool: pool, Height: height, ClpModuleAddress: address}
 }
 
 type PoolsResponse struct {
 	Pools
-	Height int64 `json:"height"`
+	ClpModuleAddress string `json:"clp_module_address"`
+	Height           int64  `json:"height"`
 }
 
-func NewPoolsResponse(pools Pools, height int64) PoolsResponse {
-	return PoolsResponse{Pools: pools, Height: height}
+func NewPoolsResponse(pools Pools, height int64, address string) PoolsResponse {
+	return PoolsResponse{Pools: pools, Height: height, ClpModuleAddress: address}
 }
 
 type LiquidityProviderResponse struct {

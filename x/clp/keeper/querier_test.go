@@ -62,7 +62,7 @@ func TestQueryGetPool(t *testing.T) {
 	query.Data = qp
 	qpool, err := querier(ctx, []string{types.QueryPool}, query)
 	assert.NoError(t, err)
-	var p types.Pool
+	var p types.PoolResponse
 	err = keeper.Codec().UnmarshalJSON(qpool, &p)
 	assert.NoError(t, err)
 	assert.Equal(t, pool.ExternalAsset, p.ExternalAsset)
@@ -96,11 +96,12 @@ func TestQueryGetPools(t *testing.T) {
 	//Test Pools
 	qpools, err := querier(ctx, []string{types.QueryPools}, query)
 	assert.NoError(t, err)
-	var poolist []types.Pool
-	err = keeper.Codec().UnmarshalJSON(qpools, &poolist)
+	var poolsRes types.PoolsResponse
+
+	err = keeper.Codec().UnmarshalJSON(qpools, &poolsRes)
 	assert.NoError(t, err)
-	assert.Greater(t, len(poolist), 0, "More than one pool added")
-	assert.LessOrEqual(t, len(poolist), len(pools), "Set pool will ignore duplicates")
+	assert.Greater(t, len(poolsRes.Pools), 0, "More than one pool added")
+	assert.LessOrEqual(t, len(poolsRes.Pools), len(pools), "Set pool will ignore duplicates")
 }
 
 func TestQueryErrorLiquidityProvider(t *testing.T) {
