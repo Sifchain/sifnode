@@ -25,10 +25,10 @@ describe("EthereumService", () => {
   beforeEach(async () => {
     const supportedTokens = parseConfig(
       localnet as ChainConfig,
-      // Needs cleanup
-      parseAssets({
-        assets: [...localethereumassets.assets, ...localsifassets.assets],
-      } as { assets: AssetConfig[] })
+      parseAssets([
+        ...localethereumassets.assets,
+        ...localsifassets.assets,
+      ] as AssetConfig[])
     ).assets;
     const a = supportedTokens.find(
       ({ symbol }) => symbol.toUpperCase() === "ATK"

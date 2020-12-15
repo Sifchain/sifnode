@@ -43,16 +43,16 @@ function getConfig(
 ): ApiContext {
   const assetMap: AssetMap = {
     "sifchain.localnet": parseAssets(
-      assetsSifchainLocalnet as { assets: AssetConfig[] }
+      assetsSifchainLocalnet.assets as AssetConfig[]
     ),
     "sifchain.mainnet": parseAssets(
-      assetsSifchainMainnet as { assets: AssetConfig[] }
+      assetsSifchainMainnet.assets as AssetConfig[]
     ),
     "ethereum.localnet": parseAssets(
-      assetsEthereumLocalnet as { assets: AssetConfig[] }
+      assetsEthereumLocalnet.assets as AssetConfig[]
     ),
     "ethereum.mainnet": parseAssets(
-      assetsEthereumMainnet as { assets: AssetConfig[] }
+      assetsEthereumMainnet.assets as AssetConfig[]
     ),
   };
 

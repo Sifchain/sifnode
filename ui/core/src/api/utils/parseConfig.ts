@@ -25,7 +25,7 @@ function isTokenConfig(a: any): a is TokenConfig {
   return typeof a?.address === "string";
 }
 
-function parseAsset(a: unknown) {
+function parseAsset(a: unknown): Asset {
   if (isTokenConfig(a)) {
     return Token(a);
   }
@@ -41,8 +41,8 @@ export type ChainConfig = {
   nativeAsset: string; // symbol
 };
 
-export function parseAssets(config: { assets: AssetConfig[] }) {
-  return config.assets.map(parseAsset);
+export function parseAssets(configAssets: AssetConfig[]): Asset[] {
+  return configAssets.map(parseAsset);
 }
 
 export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
