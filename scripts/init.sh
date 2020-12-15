@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-rm -rf ~/.sifnoded
-rm -rf ~/.sifnodecli
-rm -rf sifnode.log
-rm -rf testlog.log
+
+### chain init script for development purposes only ###
 
 
+make clean install
 sifnoded init test --chain-id=sifchain
 
 sifnodecli config output json
