@@ -1,5 +1,9 @@
 # Sifchain - Clp Basics Tutorial
 
+#### demo video
+
+* https://youtu.be/f3DyjU90gO8
+
 #### Previous tutorial 
 
 * Peggy ethBridge: https://github.com/Sifchain/sifnode/blob/develop/docs/tutorials/peggy%20tutorial.md
