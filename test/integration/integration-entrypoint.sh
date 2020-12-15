@@ -3,10 +3,16 @@
 # Sifnode entrypoint.
 #
 
+set -x
+
+NETDEF=/network-definition.yml
+PASSWORD=$(cat $NETDEF | yq r - ".password")
+
 #
 # Daemon.
 #
 start_daemon() {
+  sifnoded add-genesis-validators $(yes $PASSWORD | sifnodecli keys show -a --bech val $MONIKER)
   sifnoded start --rpc.laddr tcp://0.0.0.0:26657
 }
 
