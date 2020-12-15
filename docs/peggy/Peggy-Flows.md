@@ -12,7 +12,7 @@
 - Once enough relayers have signed off on the prophecyClaim in the CosmosBridge, the CosmosBridge calls the BridgeBank to unlock the eth for the intended recipient in the BridgeToken contract.
 
 Both scenarios 1 and 2 can be summarized with this image.
-![image info](./peggy-images/peggy-flow.png)
+![image info](images/peggy-flow.png)
 
 
 
