@@ -114,7 +114,7 @@ namespace :cluster do
   desc "ebrelayer Operations"
   namespace :ebrelayer do
     desc "Deploy a new ebrelayer to an existing cluster"
-    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :node_host, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker, :mnemonic] do |t, args|
+    task :deploy, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :node_host, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker, :mnemonic] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade ebrelayer #{cwd}/../../deploy/helm/ebrelayer \
@@ -179,6 +179,8 @@ end
 # @param args Arguments passed to rake
 #
 def path(args)
+  return "#{cwd}/../../.live/sifchain-#{args[:provider]}-#{args[:cluster]}" if args.has_key? :cluster
+
   "#{cwd}/../../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 
@@ -188,6 +190,8 @@ end
 # @param args Arguments passed to rake
 #
 def kubeconfig(args)
+  return "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:cluster]}" if args.has_key? :cluster
+
   "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 
