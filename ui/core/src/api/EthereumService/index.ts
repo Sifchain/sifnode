@@ -57,18 +57,27 @@ export class EthereumService implements IWalletService {
   ) {
     // init state
     this.state = reactive({ ...initState });
-
-    getWeb3Provider().then((provider) => {
-      if (isEventEmittingProvider(provider)) {
-        provider.on("connect", () => {
-          this.state.connected = true;
-        });
-        provider.on("disconnect", () => {
-          this.state.connected = false;
-        });
-      }
-      this.provider = provider;
-    });
+    // it's hard to know what this is. i know it's passed in, but 
+    getWeb3Provider() 
+      .then((provider) => {
+        // i wish this method would reject with error instead of resolve
+        if (!provider) {
+          return this.provider = null
+          // show message
+        }
+        if (isEventEmittingProvider(provider)) {
+          provider.on("connect", () => {
+            this.state.connected = true;
+          });
+          provider.on("disconnect", () => {
+            this.state.connected = false;
+          });
+        }
+        this.provider = provider;
+    })
+    .catch((error) => {
+      console.log('er', error)
+    })
   }
 
   getState() {
