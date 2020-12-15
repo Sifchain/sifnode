@@ -35,7 +35,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 func GetCmdPool(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "pool [External Asset ticker]",
+		Use:   "pool [External Asset symbol]",
 		Short: "Get Details for a pool",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query details for a liquidity pool .
@@ -55,15 +55,13 @@ $ %s pool ETH ROWAN`,
 				return err
 			}
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryPool)
-			res, height, err := cliCtx.QueryWithData(route, bz)
+			res, _, err := cliCtx.QueryWithData(route, bz)
 			if err != nil {
 				return err
 			}
-			var pool types.Pool
+			var pool types.PoolResponse
 			cdc.MustUnmarshalJSON(res, &pool)
-			clpPoolAddress := types.GetCLPModuleAddress()
-			out := types.NewPoolResponse(pool, height, clpPoolAddress.String())
-			return cliCtx.PrintOutput(out)
+			return cliCtx.PrintOutput(pool)
 		},
 	}
 }
@@ -77,15 +75,13 @@ func GetCmdPools(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryPools)
-			res, height, err := cliCtx.QueryWithData(route, nil)
+			res, _, err := cliCtx.QueryWithData(route, nil)
 			if err != nil {
 				return err
 			}
-			var pools types.Pools
+			var pools types.PoolsResponse
 			cdc.MustUnmarshalJSON(res, &pools)
-			clpPoolAddress := types.GetCLPModuleAddress()
-			out := types.NewPoolsResponse(pools, height, clpPoolAddress.String())
-			return cliCtx.PrintOutput(out)
+			return cliCtx.PrintOutput(pools)
 		},
 	}
 }
@@ -122,7 +118,7 @@ func GetCmdAssets(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 func GetCmdLiquidityProvider(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "lp [External Asset ticker] [lpAddress]",
+		Use:   "lp [External Asset symbol] [lpAddress]",
 		Short: "Get Liquidity Provider",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query details for a liquidity provioder.
@@ -135,27 +131,26 @@ $ %s pool ETH sif1h2zjknvr3xlpk22q4dnv396ahftzqhyeth7egd`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			ticker := args[0]
+			symbol := args[0]
 			lpAddressString := args[1]
 			lpAddress, err := sdk.AccAddressFromBech32(lpAddressString)
 			if err != nil {
 				return err
 			}
-			params := types.NewQueryReqLiquidityProvider(ticker, lpAddress)
+			params := types.NewQueryReqLiquidityProvider(symbol, lpAddress)
 			bz, err := cliCtx.Codec.MarshalJSON(params)
 			if err != nil {
 				return err
 			}
 
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryLiquidityProvider)
-			res, height, err := cliCtx.QueryWithData(route, bz)
+			res, _, err := cliCtx.QueryWithData(route, bz)
 			if err != nil {
 				return err
 			}
-			var lp types.LiquidityProvider
+			var lp types.LiquidityProviderResponse
 			cdc.MustUnmarshalJSON(res, &lp)
-			out := types.NewLiquidityProviderResponse(lp, height)
-			return cliCtx.PrintOutput(out)
+			return cliCtx.PrintOutput(lp)
 		},
 	}
 }
