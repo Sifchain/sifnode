@@ -2,6 +2,7 @@
 
 import localnet from "../../config.localnet.json";
 import localethereumassets from "../../assets.ethereum.localnet.json";
+import localsifassets from "../../assets.sifchain.localnet.json";
 import createEthereumService from ".";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { Asset, AssetAmount, Network, Token } from "../../entities";
@@ -24,7 +25,10 @@ describe("EthereumService", () => {
   beforeEach(async () => {
     const supportedTokens = parseConfig(
       localnet as ChainConfig,
-      parseAssets(localethereumassets as { assets: AssetConfig[] })
+      // Needs cleanup
+      parseAssets({
+        assets: [...localethereumassets.assets, ...localsifassets.assets],
+      } as { assets: AssetConfig[] })
     ).assets;
     const a = supportedTokens.find(
       ({ symbol }) => symbol.toUpperCase() === "ATK"
