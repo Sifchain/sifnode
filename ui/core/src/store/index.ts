@@ -3,13 +3,13 @@ import { wallet, WalletStore } from "./wallet";
 import { asset, AssetStore } from "./asset";
 import { pools, PoolStore } from "./pools";
 // this could maybe be in app
-import { messages, MessageStore } from "./messages"
+import { notifications, NotificationStore } from "./notifications"
 
 export type Store = {
   wallet: WalletStore;
   asset: AssetStore;
   pools: PoolStore;
-  messages: MessageStore;
+  notifications: NotificationStore;
 };
 
 export function createStore() {
@@ -17,7 +17,7 @@ export function createStore() {
     wallet,
     asset,
     pools,
-    messages
+    notifications
   }) as Store;
 
   return state;
