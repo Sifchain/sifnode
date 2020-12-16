@@ -100,10 +100,6 @@ yarn --cwd $BASEDIR/smart-contracts peggy:lock ${ADDR} 0x00000000000000000000000
 export USER1ADDR=$(cat $NETDEF | yq r - "[1].address")
 echo "export USER1ADDR=$USER1ADDR" >> $envexportfile
 
-sleep 5
-yarn --cwd $BASEDIR/smart-contracts peggy:lock ${USER1ADDR} 0x0000000000000000000000000000000000000000 $(to_wei 10)
-sleep 5
-
 #
 # Transfer Rowan from validator account to user account
 #
