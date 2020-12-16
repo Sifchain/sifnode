@@ -44,9 +44,8 @@ def get_eth_balance(account, symbol):
 
 
 def generate_30_blocks():
-    command_line = cd_smart_contracts_dir + "yarn peggy:transfer"
-    for _ in range(0, 31):
-        _ = get_shell_output(command_line)
+    command_line = cd_smart_contracts_dir + "yarn peggy:transfer 30"
+    get_shell_output(command_line)
     
     return 0
 
