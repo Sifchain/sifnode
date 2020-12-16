@@ -1,4 +1,4 @@
-# **Sifchain Minting Module**
+# **Sifchain Rebalancing Policy: Mint Module**
 
 ## Changelog
 -First Draft: Austin Haines 
@@ -187,7 +187,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 func NewParams(
-	mintDenom string, inflationRateChange, inflationMax, inflationMin, goalBonded sdk.Dec, blocksPerYear uint64, validatorControlParam sdk.Dec
+	mintDenom string, inflationRateChange, inflationMax, inflationMin, goalBonded sdk.Dec, blocksPerYear sdk.Uint, validatorControlParam sdk.Dec
 ) Params {
 
 	return Params{
@@ -209,7 +209,7 @@ func DefaultParams() Params {
 		InflationMax:                sdk.NewDecWithPrec(20, 2),
 		InflationMin:                sdk.NewDecWithPrec(7, 2),
 		GoalBonded:                  sdk.NewDecWithPrec(67, 2),
-		BlocksPerYear:               uint64(60 * 60 * 8766 / 5), // assuming 5 second block times
+		BlocksPerYear:               sdk.Uint(60 * 60 * 8766 / 5), // assuming 5 second block times
 		ValidatorControlParam: sdk.NewDec(1) // Default control param to 1 to start at standard Cosmos rate
 	}
 }
@@ -348,7 +348,7 @@ func validateGoalBonded(i interface{}) error {
 }
 
 func validateBlocksPerYear(i interface{}) error {
-	v, ok := i.(uint64)
+	v, ok := i.(sdk.Uint)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
@@ -605,8 +605,9 @@ type AppModule struct {
 // NewAppModule creates a new AppModule object
 func NewAppModule(keeper Keeper, rebalancerKeeper types.RebalancerKeeper) AppModule {   // Here we add the Rebalancer Keeper to our AppModule
 	return AppModule{
-		AppModuleBasic: AppModuleBasic{},
-		keeper:         keeper,
+		AppModuleBasic:   AppModuleBasic{},
+		keeper:           keeper,
+		rebalancerKeeper: rebalancerKeeper, 
 	}
 }
 

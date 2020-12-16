@@ -1,4 +1,4 @@
-# **Rebalancing Policy Overview**
+# **Sifchain Rebalancing Policy: Overview**
 
 ## Changelog
 

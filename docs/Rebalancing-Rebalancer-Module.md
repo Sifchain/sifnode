@@ -1,18 +1,18 @@
-# **Sifchain Rebalance Module**
+# **Sifchain Rebalancing Policy: Rebalancer Module**
 
 ## Changelog
 -First Draft: Austin Haines 12/07/2020
 
 
 ## Context
-The Rebalance module outlined below is responsible for executing the rebalancing logic necessary for Sifchain's Dynamic Reward Rebalancing Policy outlined by Blockscience: https://hackmd.io/@shrutiappiah/r1itFRrPv. Implementation guide provided by Blockscience: https://hackmd.io/@mbarlin/H1AucYziw. The goal of the Rebalancing Policy is to control rewards between Sifchain's Validator subsystem, Liquidity Pool subsystem, and any future subsystems in order to maintain
+The Rebalancer module outlined below is responsible for executing the rebalancing logic necessary for Sifchain's Dynamic Reward Rebalancing Policy outlined by Blockscience: https://hackmd.io/@shrutiappiah/r1itFRrPv. Implementation guide provided by Blockscience: https://hackmd.io/@mbarlin/H1AucYziw. The goal of the Rebalancing Policy is to control rewards between Sifchain's Validator subsystem, Liquidity Pool subsystem, and any future subsystems in order to maintain
 balanced and equivalent revenue. This will prevent validators from jumping to the Liquidity Pool subsystem seeking higher rewards and vice versa. 
 
 The module takes as inputs the observed Rowan supplies in each subsystem, the circulating economy, and the total supply of Rowan. Each subsystem's supply is compared to the total supply to obtain ratios: `rho`. These ratios are then compared with target ratios: `gamma` to obtain `error` values. These `error` values are then used to compute control parameters: `lambda` for each subsystem. Each `lambda` is a subsystem specific coefficient designed to temper its rewards toward balance with the other subsystems. The module provides hooks for the subsystems to retrieve these `lambda` values for use in their reward calculations.
 
-![](images/RebalanceModule/BlocksciDiagramRebalance.png)
+![](images/RebalancerModule/BlocksciDiagramRebalance.png)
 
-![](images/RebalanceModule/SifchainRebalancer.png)
+![](images/RebalancerModule/SifchainRebalancer.png)
 
 ## Types
 
@@ -36,10 +36,10 @@ type Rebalancer struct {
     rho_v       sdk.Dec `json:"rho_v" yaml:"rho_v"`         // Ratio of tokens in validator subsystem, computed within module
     error_l     sdk.Dec `json:"error_l" yaml:"error_l"`     // Error in liquidity subsystem, computed in module
     error_v     sdk.Dec `json:"error_v" yaml:"error_v"`     // Error in validator subsystem, computed in module
-    S           uint64  `json:"S" yaml:"S"`                 // Total Rowan in existence
-    S_c         uint64  `json:"S_c" yaml:"S_c"`             // Circulating supply, difference from all other token states
-    S_v         uint64  `json:"S_v" yaml:"S_v"`             // Tokens locked in validator stake
-    S_l         uint64  `json:"S_l" yaml:"S_l"`             // Rowan tokens in liquidity pools
+    S           sdk.Uint  `json:"S" yaml:"S"`                 // Total Rowan in existence
+    S_c         sdk.Uint  `json:"S_c" yaml:"S_c"`             // Circulating supply, difference from all other token states
+    S_v         sdk.Uint  `json:"S_v" yaml:"S_v"`             // Tokens locked in validator stake
+    S_l         sdk.Uint  `json:"S_l" yaml:"S_l"`             // Rowan tokens in liquidity pools
     lambda_l    sdk.Dec `json:"lambda_l" yaml:"lambda_l"`   // Rebalancing coefficent for liquidity subsystem, computed in module
     lambda_v    sdk.Dec `json:"lambda_v" yaml:"lambda_v"`   // Rebalancing coefficent for validator subsystem, computed in module
 }
@@ -155,7 +155,7 @@ These parameters hold modifiers to the Rebalancing Policy's computation that can
 
 // Parameter store keys
 var (
-	KeyK           		         = []byte("K")              // uint64 Gain controlling update rate of lambda, 1 or greater
+	KeyK           		         = []byte("K")              // sdk.Uint Gain controlling update rate of lambda, 1 or greater
 	KeyLambdaBound               = []byte("LambdaBound")    // sdk.Dec Small value greater than the precision limit of VM, e.g. 0.001
     KeyDelta                     = []byte("Delta")          // sdk.Dec Smallest value of error to proceed with update computation, e.g. 0.001
     KeyGammaL                    = []byte("GammaL")         // sdk.Dec Target in liquidity subsystem, updated in governance module
