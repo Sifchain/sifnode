@@ -2,19 +2,9 @@
 import { reactive } from "@vue/reactivity";
 
 // see get set for asset, similar
-// import { Asset } from "../entities";
+import { Notification } from "../entities";
 
 // entity:
-type Notification = {
-  id: String
-  type: "error" | "success" | "info"
-  notification: String
-}
+export type INotificationsStore = Array<Notification>
 
-export type NotificationStore = {
-  NotificationMap: Map<string, Notification>;
-};
-
-export const notifications = reactive({
-  NotificationMap: new Map()
-}) as NotificationStore;
+export const notifications = reactive([]) as INotificationsStore;
