@@ -9,7 +9,7 @@ export default defineComponent({
   setup() {
 
     const { store, actions } = useCore()
-    const notifications = computed(() => 'store.notifications')
+    const notifications = computed(() => store.notifications)
 
     return {
       notifications
