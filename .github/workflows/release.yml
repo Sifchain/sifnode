@@ -15,21 +15,24 @@ jobs:
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v2.x
+
       - name: Build images
         run: |
-          make CHAINNET=${{ github.ref }} BINARY=sifnoded build-image
-          make CHAINNET=${{ github.ref }} BINARY=sifnodecli build-image
-          make CHAINNET=${{ github.ref }} BINARY=sifcrg build-image
-          make CHAINNET=${{ github.ref }} BINARY=ebrelayer build-image
+          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
+          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=sifnodecli build-image
+          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=sifcrg build-image
+          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
           cd ./api/openapi
-          make CHAINNET=${{ github.ref }} build-image-swagger-iu
-          make CHAINNET=${{ github.ref }} build-image-prim
+          make CHAINNET=${{ env.GITHUB_REF_SLUG }} build-image-swagger-iu
+          make CHAINNET=${{ env.GITHUB_REF_SLUG }} build-image-prim
 
       - name: Push images
         run: |
-          docker push sifchain/sifnoded:${{ github.ref }}
-          docker push sifchain/sifnodecli:${{ github.ref }}
-          docker push sifchain/sifcrg:${{ github.ref }}
-          docker push sifchain/swagger-ui:${{ github.ref }}
-          docker push sifchain/prism:${{ github.ref }}
-          docker push sifchain/ebrelayer:${{ github.ref }}
+          docker push sifchain/sifnoded:${{ env.GITHUB_REF_SLUG }}
+          docker push sifchain/sifnodecli:${{ env.GITHUB_REF_SLUG }}
+          docker push sifchain/sifcrg:${{ env.GITHUB_REF_SLUG }}
+          docker push sifchain/swagger-ui:${{ env.GITHUB_REF_SLUG }}
+          docker push sifchain/prism:${{ env.GITHUB_REF_SLUG }}
+          docker push sifchain/ebrelayer:${{ env.GITHUB_REF_SLUG }}
