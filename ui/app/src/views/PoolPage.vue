@@ -5,11 +5,12 @@ import { useCore } from "@/hooks/useCore";
 import Layout from "@/components/layout/Layout.vue";
 import PoolList from "@/components/poolList/PoolList.vue";
 import PoolListItem from "@/components/poolList/PoolListItem.vue";
+import SinglePool from "@/components/poolList/SinglePool.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 
 export default defineComponent({
-  components: { Layout, SifButton, PriceCalculation, PoolList, PoolListItem },
+  components: { Layout, SifButton, PriceCalculation, PoolList, PoolListItem, SinglePool },
 
   mounted() {
     this.getPools()
@@ -35,7 +36,6 @@ export default defineComponent({
       state,
       poolSelected: (index:number) => {
         state.selectedPool = state.pools[index]
-        console.log(state.selectedPool)
       }
     }
   }
@@ -43,8 +43,8 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout>
-    
+  <SinglePool v-if="state.selectedPool" @back="state.selectedPool = null" />
+  <Layout v-else>
     <div>
       <div class="heading mb-8">
         <h3>Your Liquidity</h3>

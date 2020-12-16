@@ -6,7 +6,10 @@
       </template>
       <div class="header" v-if="backLink || title">
         <div v-if="backLink">
-          <router-link class="back-link" :to="backLink"><Icon icon="back" /></router-link>
+          <router-link  class="back-link" :to="backLink"><Icon icon="back" /></router-link>
+        </div>
+        <div v-if="emitBack">
+          <span @click="$emit('back')" class="back-link"><Icon icon="back" /></span>
         </div>
         <div class="title">
           {{ title }}
@@ -29,6 +32,10 @@ export default defineComponent({
   components: { Panel, PanelNav, Icon },
   props: {
     backLink: String,
+    emitBack: {
+      type: Boolean,
+      default: false
+    },
     title: String,
   },
 });
@@ -66,6 +73,7 @@ export default defineComponent({
   text-decoration: none;
   position: relative;
   top: 2px;
+  cursor: pointer;
 }
 .title {
   @include title16;
