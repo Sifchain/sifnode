@@ -33,7 +33,7 @@ export default defineComponent({
       toAmount,
     } = useCurrencyFieldState();
 
-    toSymbol.value = "rwn";
+    toSymbol.value = "rowan";
 
     const priceMessage = ref("");
 

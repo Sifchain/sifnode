@@ -32,19 +32,6 @@ sifnode:
 
 sifnodecli:
 
-ebrelayer:
-  enabled: false
-  image:
-    repository: sifchain/ebrelayer
-    pullPolicy: Always
-    tag: "testnet"
-  env:
-    ethWebsocketAddress: ""
-    ethBridgeRegistryAddress: ""
-    ethPrivateKey: ""
-    moniker: ""
-    mnemonic: ""
-
 service:
   type: LoadBalancer
   port: 26656

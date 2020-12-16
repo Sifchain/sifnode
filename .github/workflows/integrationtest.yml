@@ -12,3 +12,8 @@ jobs:
         run: |
           source $HOME/.bash_profile
           bash test/integration/start-integration-env.sh
+      - name: Archive integration output
+        uses: actions/upload-artifact@v2
+        with:
+          name: integrationoutput.tar
+          path: test/integration/vagrant/datafiles.tar

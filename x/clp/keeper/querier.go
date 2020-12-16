@@ -37,7 +37,9 @@ func queryPool(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, e
 	if err != nil {
 		return nil, err
 	}
-	res, err := codec.MarshalJSONIndent(keeper.cdc, pool)
+	height := ctx.BlockHeight()
+	poolResponse := types.NewPoolResponse(pool, height, types.GetCLPModuleAddress().String())
+	res, err := codec.MarshalJSONIndent(keeper.cdc, poolResponse)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -48,7 +50,9 @@ func queryPools(ctx sdk.Context, keeper Keeper) ([]byte, error) {
 	if len(poolList) == 0 {
 		return nil, types.ErrPoolListIsEmpty
 	}
-	res, err := codec.MarshalJSONIndent(keeper.cdc, poolList)
+	height := ctx.BlockHeight()
+	poolsResponse := types.NewPoolsResponse(poolList, height, types.GetCLPModuleAddress().String())
+	res, err := codec.MarshalJSONIndent(keeper.cdc, poolsResponse)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -65,7 +69,13 @@ func queryLiquidityProvider(ctx sdk.Context, req abci.RequestQuery, keeper Keepe
 	if err != nil {
 		return nil, err
 	}
-	res, err := codec.MarshalJSONIndent(keeper.cdc, lp)
+	pool, err := keeper.GetPool(ctx, params.Symbol)
+	if err != nil {
+		return nil, err
+	}
+	native, external, _, _ := CalculateAllAssetsForLP(pool, lp)
+	lpResponse := types.NewLiquidityProviderResponse(lp, ctx.BlockHeight(), native.String(), external.String())
+	res, err := codec.MarshalJSONIndent(keeper.cdc, lpResponse)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

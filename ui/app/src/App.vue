@@ -36,13 +36,6 @@ export default defineComponent({
     WithWallet,
     SifButton,
   },
-
-  setup() {
-    const { actions } = useCore();
-    onMounted(async () => {
-      await actions.token.refreshTokens();
-    });
-  },
 });
 </script>
 

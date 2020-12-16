@@ -2,7 +2,14 @@ import { reactive } from "@vue/reactivity";
 import Web3 from "web3";
 import { provider, WebsocketProvider } from "web3-core";
 import { IWalletService } from "../IWalletService";
-import { TxHash, TxParams, Asset, AssetAmount, Token } from "../../entities";
+import {
+  TxHash,
+  TxParams,
+  Asset,
+  AssetAmount,
+  Token,
+  Network,
+} from "../../entities";
 import {
   getEtheriumBalance,
   getTokenBalance,
@@ -17,7 +24,7 @@ type Balances = AssetAmount[];
 
 export type EthereumServiceContext = {
   getWeb3Provider: () => Promise<provider>;
-  loadAssets: () => Promise<Asset[]>;
+  assets: Asset[];
 };
 
 type MetaMaskProvider = WebsocketProvider & {
@@ -54,7 +61,7 @@ export class EthereumService implements IWalletService {
 
   constructor(
     getWeb3Provider: () => Promise<provider>,
-    private loadAssets: () => Promise<Asset[]>
+    private assets: Asset[]
   ) {
     // init state
     this.state = reactive({ ...initState });
@@ -110,7 +117,11 @@ export class EthereumService implements IWalletService {
 
   async connect() {
     try {
-      this.supportedTokens = await this.loadAssets();
+      const allTokens = this.assets;
+
+      this.supportedTokens = allTokens.filter(
+        (t) => t.network === Network.ETHEREUM
+      );
 
       if (!this.provider)
         throw new Error("Cannot connect because provider is not yet loaded!");
@@ -233,9 +244,9 @@ export class EthereumService implements IWalletService {
 
   static create({
     getWeb3Provider,
-    loadAssets,
+    assets,
   }: EthereumServiceContext): IWalletService {
-    return new EthereumService(getWeb3Provider, loadAssets);
+    return new EthereumService(getWeb3Provider, assets);
   }
 }
 

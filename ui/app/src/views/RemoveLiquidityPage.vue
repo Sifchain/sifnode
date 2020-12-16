@@ -32,7 +32,7 @@ export default defineComponent({
 
     const asymmetry = ref("0");
     const wBasisPoints = ref("5000");
-    const nativeAssetSymbol = ref("rwn");
+    const nativeAssetSymbol = ref("rowan");
     const externalAssetSymbol = ref<string | null>(null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
@@ -68,7 +68,7 @@ export default defineComponent({
     function clearFields() {
       asymmetry.value = "0";
       wBasisPoints.value = "0";
-      nativeAssetSymbol.value = "rwn";
+      nativeAssetSymbol.value = "rowan";
       externalAssetSymbol.value = null;
     }
     return {

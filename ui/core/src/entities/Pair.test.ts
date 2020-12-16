@@ -27,9 +27,9 @@ describe("Pair", () => {
     name: "Ethereum",
     network: Network.ETHEREUM,
   });
-  const RWN = Coin({
+  const ROWAN = Coin({
     decimals: 18,
-    symbol: "rwn",
+    symbol: "rowan",
     name: "Rowan",
     network: Network.SIFCHAIN,
   });
@@ -39,7 +39,7 @@ describe("Pair", () => {
 
     expect(pair.contains(ATK)).toBe(true);
     expect(pair.contains(BTK)).toBe(true);
-    expect(pair.contains(RWN)).toBe(false);
+    expect(pair.contains(ROWAN)).toBe(false);
   });
   test("other asset", () => {
     const pair = Pair(AssetAmount(ATK, "10"), AssetAmount(BTK, "10"));
