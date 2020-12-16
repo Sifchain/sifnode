@@ -2,6 +2,7 @@ package clp_test
 
 import (
 	"github.com/Sifchain/sifnode/x/clp"
+	keeper2 "github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
@@ -332,19 +333,19 @@ func CalculateWithdraw(t *testing.T, keeper clp.Keeper, ctx sdk.Context, asset c
 	assert.NoError(t, err)
 	lp, err := keeper.GetLiquidityProvider(ctx, asset.Symbol, signer)
 	assert.NoError(t, err)
-	withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, swapAmount := clp.CalculateWithdrawal(pool.PoolUnits,
+	withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, swapAmount := keeper2.CalculateWithdrawal(pool.PoolUnits,
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
 		wBasisPoints, asymmetry)
 	externalAssetCoin := sdk.Coin{}
 	nativeAssetCoin := sdk.Coin{}
 	if asymmetry.IsPositive() {
-		swapResult, _, _, _, err := clp.SwapOne(clp.GetSettlementAsset(), swapAmount, asset, pool)
+		swapResult, _, _, _, err := keeper2.SwapOne(clp.GetSettlementAsset(), swapAmount, asset, pool)
 		assert.NoError(t, err)
 		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount.Add(swapResult)))
 		nativeAssetCoin = sdk.NewCoin(clp.GetSettlementAsset().Symbol, sdk.Int(withdrawNativeAssetAmount))
 	}
 	if asymmetry.IsNegative() {
-		swapResult, _, _, _, err := clp.SwapOne(asset, swapAmount, clp.GetSettlementAsset(), pool)
+		swapResult, _, _, _, err := keeper2.SwapOne(asset, swapAmount, clp.GetSettlementAsset(), pool)
 		assert.NoError(t, err)
 		externalAssetCoin = sdk.NewCoin(asset.Symbol, sdk.Int(withdrawExternalAssetAmount))
 		nativeAssetCoin = sdk.NewCoin(clp.GetSettlementAsset().Symbol, sdk.Int(withdrawNativeAssetAmount.Add(swapResult)))
@@ -363,9 +364,9 @@ func CalculateSwapReceived(t *testing.T, keeper clp.Keeper, ctx sdk.Context, ass
 	assert.NoError(t, err)
 	outPool, err := keeper.GetPool(ctx, assetReceived.Symbol)
 	assert.NoError(t, err)
-	emitAmount, _, _, _, err := clp.SwapOne(assetSent, swapAmount, clp.GetSettlementAsset(), inPool)
+	emitAmount, _, _, _, err := keeper2.SwapOne(assetSent, swapAmount, clp.GetSettlementAsset(), inPool)
 	assert.NoError(t, err)
-	emitAmount2, _, _, _, err := clp.SwapOne(clp.GetSettlementAsset(), emitAmount, assetReceived, outPool)
+	emitAmount2, _, _, _, err := keeper2.SwapOne(clp.GetSettlementAsset(), emitAmount, assetReceived, outPool)
 	assert.NoError(t, err)
 	return emitAmount2
 }
