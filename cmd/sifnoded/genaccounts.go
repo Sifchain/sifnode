@@ -243,6 +243,9 @@ the account address or key name. If a key name is given, the address will be loo
 			config := ctx.Config
 			config.SetRoot(viper.GetString(cli.HomeFlag))
 			addr, err := sdk.ValAddressFromBech32(args[0])
+			if err != nil {
+				return fmt.Errorf("failed to get validator address: %w", err)
+			}
 
 			genFile := config.GenesisFile()
 			appState, genDoc, err := genutil.GenesisStateFromGenFile(cdc, genFile)
