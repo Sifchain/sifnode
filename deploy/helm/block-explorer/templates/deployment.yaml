@@ -27,13 +27,6 @@ spec:
       serviceAccountName: {{ include "block-explorer.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      initContainers:
-        - name: root-url
-          image: alpine/k8s:1.18.2
-          command: ["/scripts/root-url.sh", '{{ include "block-explorer.fullname" . }}-root-url']
-          volumeMounts:
-            - name: scripts
-              mountPath: /scripts
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -48,10 +41,7 @@ spec:
               protocol: TCP
           env:
             - name: ROOT_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "block-explorer.fullname" . }}-root-url
-                  key: rootURL
+              value: {{ .Values.blockExplorer.env.rootURL }}
             - name: MONGO_URL
               value: "mongodb://{{ include "block-explorer.fullname" . }}-mongodb:27017/meteor"
             - name: PORT
@@ -73,11 +63,6 @@ spec:
             initialDelaySeconds: 180
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      volumes:
-        - name: scripts
-          configMap:
-            name: {{ include "block-explorer.fullname" . }}-scripts
-            defaultMode: 0777
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

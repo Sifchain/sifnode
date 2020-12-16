@@ -114,7 +114,7 @@ namespace :cluster do
   desc "ebrelayer Operations"
   namespace :ebrelayer do
     desc "Deploy a new ebrelayer to an existing cluster"
-    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :node_host, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker, :mnemonic] do |t, args|
+    task :deploy, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :node_host, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker, :mnemonic] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade ebrelayer #{cwd}/../../deploy/helm/ebrelayer \
@@ -137,12 +137,13 @@ namespace :cluster do
   desc "Block Explorer"
   namespace :blockexplorer do
     desc "Deploy a Block Explorer to an existing cluster"
-    task :deploy, [:chainnet, :provider, :namespace, :genesis_url, :rpc_url, :lcd_url] do |t, args|
+    task :deploy, [:chainnet, :provider, :namespace, :root_url, :genesis_url, :rpc_url, :lcd_url] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade block-explorer #{cwd}/../../deploy/helm/block-explorer \
         --install -n #{ns(args)} --create-namespace \
         --set blockExplorer.env.chainnet=#{args[:chainnet]} \
+        --set blockExplorer.env.rootURL=#{args[:root_url]} \
         --set blockExplorer.env.genesisURL=#{args[:genesis_url]} \
         --set blockExplorer.env.remote.rpcURL=#{args[:rpc_url]} \
         --set blockExplorer.env.remote.lcdURL=#{args[:lcd_url]}
@@ -178,6 +179,8 @@ end
 # @param args Arguments passed to rake
 #
 def path(args)
+  return "#{cwd}/../../.live/sifchain-#{args[:provider]}-#{args[:cluster]}" if args.has_key? :cluster
+
   "#{cwd}/../../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 
@@ -187,6 +190,8 @@ end
 # @param args Arguments passed to rake
 #
 def kubeconfig(args)
+  return "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:cluster]}" if args.has_key? :cluster
+
   "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 
