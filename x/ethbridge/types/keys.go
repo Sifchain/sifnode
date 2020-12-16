@@ -16,3 +16,7 @@ const (
 	// PeggyTokenKey is the key for peggy token list
 	PeggyTokenKey = StoreKey + "PeggyToken"
 )
+
+var (
+	PeggyTokenKeyPrefix = []byte{0x00}
+)

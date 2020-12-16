@@ -103,3 +103,9 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, amount
 func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
 	return k.supplyKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, amount)
 }
+
+// Exists chec if the key existed in db.
+func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
+	store := ctx.KVStore(k.storeKey)
+	return store.Has(key)
+}

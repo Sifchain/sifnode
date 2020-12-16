@@ -49,6 +49,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 	keyOracle := sdk.NewKVStoreKey(types.StoreKey)
+	keyEthBridge := sdk.NewKVStoreKey(extraMaccPerm)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
@@ -59,6 +60,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyOracle, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyEthBridge, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()
 	require.NoError(t, err)
 
