@@ -16,6 +16,7 @@ export type ApiContext = EthereumServiceContext &
   ClpServiceContext &
   Omit<ClpServiceContext, "getPools">; // add contexts from other APIs
 
+// TODO - Conditional load or build-time tree shake
 import localnetconfig from "../config.localnet.json";
 import testnetconfig from "../config.testnet.json";
 
