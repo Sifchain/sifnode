@@ -22,6 +22,7 @@ image:
 
 blockExplorer:
   env:
+    rootURL: "http://localhost:3000"
     chainnet: ""
     genesisURL: ""
     remote:
