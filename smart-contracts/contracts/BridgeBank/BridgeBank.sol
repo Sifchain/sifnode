@@ -247,14 +247,13 @@ contract BridgeBank is BankStorage,
             symbol = "ETH";
             // ERC20 deposit
         } else {
-            require(
-                BridgeToken(_token).transferFrom(
-                    msg.sender,
-                    address(this),
-                    _amount
-                ),
-                "Contract token allowances insufficient to complete this lock request"
+            IERC20 tokenToTransfer = IERC20(_token);
+            tokenToTransfer.safeTransferFrom(
+                msg.sender,
+                address(this),
+                _amount
             );
+  
             // Set symbol to the ERC20 token's symbol
             symbol = BridgeToken(_token).symbol();
         }
