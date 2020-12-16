@@ -68,6 +68,7 @@ function getConfig(
   return configMap[config.toLowerCase()];
 }
 
+// NOTE: This is invoked by app/useCore.ts. Environment variables are read there
 export function createApi(
   config?: string,
   sifchainAssetTag?: string,
