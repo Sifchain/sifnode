@@ -43,10 +43,16 @@ where:
 rake "cluster:deploy[<chainID>,<provider>]"
 ```
 
+e.g.:
+
+```
+rake "cluster:deploy[merry-go-round,aws]"
+```
+
 5. Once complete, you should see your cluster on your AWS account. You can also check using `kubectl`:
 
 ```
-kubectl get pods --all-namespaces
+kubectl get pods --all-namespaces --kubeconfig ./.live/sifchain-aws-monkey-bars/kubeconfig_sifchain-aws-monkey-bars
 ```
 
 ## Deploy a new cluster
@@ -68,6 +74,12 @@ where:
 |Param|Description|
 |-----|----------|
 |<moniker>|The moniker or name of your node as you want it to appear on the network.|
+
+e.g.:
+
+```
+rake "keys:import[my-node]"
+```
 
 3. Check that it's been imported accordingly:
 
@@ -93,6 +105,12 @@ where:
 |<moniker>|The moniker or name of your node as you want it to appear on the network.|
 |<peer address>|The address of the peer to connect to.|
 |<genesis URL>|The URL of genesis file for the network.|
+
+e.g.:
+
+```
+rake "cluster:sifnode:deploy:peer[merry-go-round,aws,sifnode,sifchain/sifnoded,merry-go-round,my-node,'my mnemonic',bc8bc2ff0749a247e34a99b377b587fbf950057a@100.21.251.71:26656,http://100.21.251.71:26657/genesis]"
+```
 
 5. Once deployed, check the status of the pods:
 
@@ -120,7 +138,13 @@ In order to become a validator, that is a node which can participate in consensu
 
 ```
 rake "validator:expose:pub_key[<chainID>,<provider>,<namespace>]"
-```  
+```
+
+e.g.:
+
+```
+rake "validator:expose:pub_key[merry-go-round,aws,sifnode]"
+```
 
 3. Stake:
 
@@ -142,4 +166,10 @@ where:
 
 ```
 sifnodecli q tendermint-validator-set --node <node RPC address> --trust-node
+```
+
+e.g.:
+
+```
+sifnodecli q tendermint-validator-set --node tcp://100.21.251.71:26657 --trust-node
 ```
