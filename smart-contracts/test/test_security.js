@@ -184,4 +184,32 @@ contract("BridgeBank", function (accounts) {
       );
     });
   });
+
+  describe("Consensus Threshold Limits", function () {
+    it("should not allow initialization of oracle with a consensus threshold over 100", async function () {
+      this.oracle = await Oracle.new();
+      await expectRevert(
+        this.oracle.initialize(
+          accounts[0],
+          accounts[0],
+          accounts[0],
+          101
+        ),
+        "Invalid consensus threshold."
+      );
+    });
+
+    it("should not allow initialization of oracle with a consensus threshold of 0", async function () {
+      this.oracle = await Oracle.new();
+      await expectRevert(
+        this.oracle.initialize(
+          accounts[0],
+          accounts[0],
+          accounts[0],
+          0
+        ),
+        "Consensus threshold must be positive."
+      );
+    });
+  });
 });
