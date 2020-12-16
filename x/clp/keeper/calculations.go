@@ -181,7 +181,7 @@ func calcSwapResult(X, x, Y sdk.Uint) sdk.Uint {
 	return (x.Mul(X).Mul(Y)).Quo(denom)
 }
 
-func CalcualteAllAssetsforLP(pool types.Pool, lp types.LiquidityProvider) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
+func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
 	poolUnits := pool.PoolUnits
 	nativeAssetBalance := pool.NativeAssetBalance
 	externalAssetBalance := pool.ExternalAssetBalance
