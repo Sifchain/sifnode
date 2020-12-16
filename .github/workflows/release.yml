@@ -17,19 +17,19 @@ jobs:
 
       - name: Build images
         run: |
-          make CHAINNET=${{ github.event.ref }} BINARY=sifnoded build-image
-          make CHAINNET=${{ github.event.ref }} BINARY=sifnodecli build-image
-          make CHAINNET=${{ github.event.ref }} BINARY=sifcrg build-image
-          make CHAINNET=${{ github.event.ref }} BINARY=ebrelayer build-image
+          make CHAINNET=${{ github.ref }} BINARY=sifnoded build-image
+          make CHAINNET=${{ github.ref }} BINARY=sifnodecli build-image
+          make CHAINNET=${{ github.ref }} BINARY=sifcrg build-image
+          make CHAINNET=${{ github.ref }} BINARY=ebrelayer build-image
           cd ./api/openapi
-          make CHAINNET=${{ github.event.ref }} build-image-swagger-iu
-          make CHAINNET=${{ github.event.ref }} build-image-prim
+          make CHAINNET=${{ github.ref }} build-image-swagger-iu
+          make CHAINNET=${{ github.ref }} build-image-prim
 
       - name: Push images
         run: |
-          docker push sifchain/sifnoded:${{ github.event.ref }}
-          docker push sifchain/sifnodecli:${{ github.event.ref }}
-          docker push sifchain/sifcrg:${{ github.event.ref }}
-          docker push sifchain/swagger-ui:${{ github.event.ref }}
-          docker push sifchain/prism:${{ github.event.ref }}
-          docker push sifchain/ebrelayer:${{ github.event.ref }}
+          docker push sifchain/sifnoded:${{ github.ref }}
+          docker push sifchain/sifnodecli:${{ github.ref }}
+          docker push sifchain/sifcrg:${{ github.ref }}
+          docker push sifchain/swagger-ui:${{ github.ref }}
+          docker push sifchain/prism:${{ github.ref }}
+          docker push sifchain/ebrelayer:${{ github.ref }}
