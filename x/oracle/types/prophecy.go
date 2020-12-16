@@ -104,7 +104,8 @@ func inWhiteList(validator staking.Validator, whiteListValidatorAddresses []sdk.
 }
 
 // FindHighestClaim looks through all the existing claims on a given prophecy. It adds up the total power across
-// all claims and returns the highest claim, power for that claim, and total power claimed on the prophecy overall.
+// all claims and returns the highest claim, power for that claim, total power claimed on the prophecy overall.
+// and the total power of all whitelist validators.
 func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKeeper, whiteListValidatorAddresses []sdk.ValAddress) (string, int64, int64, int64) {
 	validators := stakeKeeper.GetBondedValidatorsByPower(ctx)
 

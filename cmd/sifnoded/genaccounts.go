@@ -242,9 +242,7 @@ the account address or key name. If a key name is given, the address will be loo
 		RunE: func(cmd *cobra.Command, args []string) error {
 			config := ctx.Config
 			config.SetRoot(viper.GetString(cli.HomeFlag))
-			fmt.Printf("argument is  %v \n", args[0])
 			addr, err := sdk.ValAddressFromBech32(args[0])
-			fmt.Printf("address and error from cli is %v, %v\n", addr, err)
 
 			genFile := config.GenesisFile()
 			appState, genDoc, err := genutil.GenesisStateFromGenFile(cdc, genFile)
@@ -253,7 +251,6 @@ the account address or key name. If a key name is given, the address will be loo
 			}
 
 			oracleGenState := oracle.GetGenesisStateFromAppState(cdc, appState)
-			fmt.Printf("oracle state is %v", oracleGenState)
 
 			for _, item := range oracleGenState.AddressWhitelist {
 				if bytes.Equal(item, addr) {
