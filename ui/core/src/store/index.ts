@@ -2,13 +2,13 @@ import { reactive } from "@vue/reactivity";
 import { wallet, WalletStore } from "./wallet";
 import { asset, AssetStore } from "./asset";
 import { pools, PoolStore } from "./pools";
-import { notifications, INotificationsStore } from "./notifications"
+import { notifications, NotificationsStore } from "./notifications"
 
 export type Store = {
   wallet: WalletStore;
   asset: AssetStore;
   pools: PoolStore;
-  notifications: INotificationsStore;
+  notifications: NotificationsStore;
 };
 
 export function createStore() {

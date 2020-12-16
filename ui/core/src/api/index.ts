@@ -20,12 +20,14 @@ type ApiContext = EthereumServiceContext &
   ClpServiceContext &
   Omit<ClpServiceContext, "getPools">; // add contexts from other APIs
 
+  // should notification be a part of this context? nah
+  // essentially notifications belong to API
 export function createApi(context: ApiContext) {
   const EthereumService = ethereumService(context);
   const TokenService = tokenService(context);
   const SifService = sifService(context);
   const ClpService = clpService(context);
-  return {
+  return {  
     ClpService,
     EthereumService,
     TokenService,
