@@ -28,6 +28,12 @@ Kubernetes is an open-source container-orchestration system for automating appli
 rake "cluster:scaffold[<chainID>,<provider>]"
 ```
 
+e.g.:
+
+```
+rake "cluster:scaffold[merry-go-round,aws]"
+```
+
 where:
 
 |Param|Description|
