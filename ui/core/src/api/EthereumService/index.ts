@@ -10,6 +10,7 @@ import {
   transferAsset,
 } from "./utils/ethereumUtils";
 import { isToken } from "../../entities/utils/isToken";
+import notify from "../utils/NotificationService"
 
 type Address = string;
 type Balances = AssetAmount[];
@@ -62,6 +63,7 @@ export class EthereumService implements IWalletService {
       .then((provider) => {
         // i wish this method would reject with error instead of resolve
         if (!provider) {
+          notify({type: "error", message: "Metamask not found."})
           return this.provider = null
           // show message
         }
