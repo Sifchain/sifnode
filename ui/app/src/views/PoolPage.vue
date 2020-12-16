@@ -1,5 +1,6 @@
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
+import { computed, reactive } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
 import Layout from "@/components/layout/Layout.vue";
 import PoolList from "@/components/poolList/PoolList.vue";
@@ -9,22 +10,33 @@ import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 
 export default defineComponent({
   components: { Layout, SifButton, PriceCalculation, PoolList, PoolListItem },
+
+  mounted() {
+    this.getPools()
+  },
+  
   setup() {
     const { actions, poolFinder, store } = useCore();
-    let pools = null;
+    const state = reactive({
+      pools: ref(),
+      selectedPool: null,
+    })
 
     async function getPools() {
       await actions.clp.getLiquidityProviderPools().then((res) => {
-        console.log('HERE: ', res);
-        pools = res
+        state.pools = res
       })
     }
 
     getPools();
 
     return {
-      getPools,
-      pools
+      getPools: getPools,
+      state,
+      poolSelected: (index:number) => {
+        state.selectedPool = state.pools[index]
+        console.log(state.selectedPool)
+      }
     }
   }
 });
@@ -32,6 +44,7 @@ export default defineComponent({
 
 <template>
   <Layout>
+    
     <div>
       <div class="heading mb-8">
         <h3>Your Liquidity</h3>
@@ -53,10 +66,7 @@ export default defineComponent({
         </div>
       </PriceCalculation>
       <PoolList class="mb-2">
-        <PoolListItem />
-        <PoolListItem />
-        <PoolListItem />
-        <PoolListItem />
+        <PoolListItem v-for="(pool, index) in state.pools" :key="index" :pool="pool" @poolSelected="poolSelected(index)"/>
       </PoolList>
       <div class="footer">
         Don’t see a pool you joined? <a href="#">Import it</a>

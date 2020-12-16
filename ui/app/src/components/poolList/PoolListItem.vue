@@ -1,25 +1,68 @@
+<script> 
+import { ref } from "vue";
+import { computed } from "@vue/reactivity";
+import { useAssetItem } from "@/components/shared/utils";
+
+export default {
+  props: { 
+    pool: ref(null)
+  },
+
+  setup(props) {
+    const fromSymbol = computed(() => props.pool.amounts[1].asset.symbol);
+    const fromAsset = useAssetItem(fromSymbol);
+    const fromToken = fromAsset.token;
+    const fromBackgroundStyle = fromAsset.background;
+    const fromTokenImage = computed(() => {
+      if (!fromToken.value) return "";
+      const t = fromToken.value;
+      return t.imageUrl;
+    });
+
+    const toSymbol = computed(() => props.pool.amounts[0].asset.symbol);
+    const toAsset = useAssetItem(toSymbol);
+    const toToken = toAsset.token;
+    const toBackgroundStyle = toAsset.background;
+    const toTokenImage = computed(() => {
+      if (!toToken.value) return "";
+      const t = toToken.value;
+      return t.imageUrl;
+    });
+
+
+    return {
+      asset1: computed(() => {
+        return props.pool ? props.pool.amounts[1].asset.symbol.toUpperCase() : ''
+      }),
+      asset2: computed(() => {
+        return props.pool ? props.pool.amounts[0].asset.symbol.toUpperCase() : ''
+      }),
+
+      fromSymbol, fromBackgroundStyle, fromTokenImage, 
+      toSymbol, toBackgroundStyle, toTokenImage,
+    }
+  }
+}
+</script>
+
 <template>
-  <div class="pool-list-item">
+  <div class="pool-list-item" @click="$emit('poolSelected')">
     <div class="image">
-      <img src="https://via.placeholder.com/22/0000FF" width="22" height="22">
-      <img src="https://via.placeholder.com/22/00ff00" width="22" height="22">
+      <img v-if="fromTokenImage" width="22" height="22" :src="fromTokenImage" class="info-img" />
+        <div class="placeholder" :style="fromBackgroundStyle" v-else></div>
+        <img v-if="toTokenImage" width="22" height="22" :src="toTokenImage" class="info-img" />
+        <div class="placeholder" :style="toBackgroundStyle" v-else></div>
     </div>
     <div class="symbol">
-      <span>BTC</span>
+      <span>{{ fromSymbol.toUpperCase() }}</span>
       /
-      <span>LSK</span>
+      <span>{{ toSymbol.toUpperCase() }}</span>
     </div>
     <div class="button">
       Manage
     </div>
   </div>
 </template>
-
-<script> 
-export default {
-
-}
-</script>
 
 <style scoped lang="scss">
 .pool-list-item {
@@ -38,7 +81,7 @@ export default {
   .image {
     height: 22px;
 
-    img {
+    & > * {
       border-radius: 16px;
 
       &:nth-child(2) {
@@ -46,6 +89,16 @@ export default {
         left: -6px;
       }
     }
+  }
+
+  .placeholder {
+    display: inline-block;
+    background: #aaa;
+    box-sizing: border-box;
+    border-radius: 16px;
+    height: 22px;
+    width: 22px;
+    text-align: center;
   }
 
   .symbol {

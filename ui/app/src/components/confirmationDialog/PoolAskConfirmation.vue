@@ -62,9 +62,9 @@ export default defineComponent({
         0.0000273
       </div>
       <div class="pool-token-image">
-        <img v-if="tokenImage" width="24" :src="tokenImage" class="info-img" />
+        <img v-if="fromTokenImage" width="24" :src="fromTokenImage" class="info-img" />
         <div class="placeholder" :style="fromBackgroundStyle" v-else></div>
-        <img v-if="tokenImage" width="24" :src="tokenImage" class="info-img" />
+        <img v-if="toTokenImage" width="24" :src="toTokenImage" class="info-img" />
         <div class="placeholder" :style="toBackgroundStyle" v-else></div>
       </div>
     </div>
