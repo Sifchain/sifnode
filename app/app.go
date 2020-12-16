@@ -2,11 +2,12 @@ package app
 
 import (
 	"encoding/json"
+	"io"
+	"os"
+
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	tmos "github.com/tendermint/tendermint/libs/os"
-	"io"
-	"os"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -26,6 +27,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	"github.com/Sifchain/sifnode/x/ethbridge"
+	"github.com/Sifchain/sifnode/x/faucet"
 	"github.com/Sifchain/sifnode/x/oracle"
 )
 
@@ -44,6 +46,7 @@ var (
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
+		faucet.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -52,6 +55,7 @@ var (
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
 		clp.ModuleName:            {supply.Burner, supply.Minter},
+		// faucet.ModuleName:			{supply.Minter}
 	}
 )
 
@@ -185,6 +189,10 @@ func NewInitApp(
 		app.SupplyKeeper,
 		app.subspaces[clp.ModuleName])
 
+	app.FaucetKeeper = faucet.NewKeeper(
+		app.bankKeeper
+	)
+
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.AccountKeeper),
@@ -194,6 +202,7 @@ func NewInitApp(
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
 		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
+		faucet.NewAppModule(app.FaucetKeeper),
 	)
 
 	// there is nothing left over in the validator fee pool, so as to keep the
@@ -215,6 +224,7 @@ func NewInitApp(
 		oracle.ModuleName,
 		ethbridge.ModuleName,
 		clp.ModuleName,
+		faucet.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
