@@ -15,7 +15,7 @@
 
 #### What are they
 
-Continues liquidity pools are a way to pool assets that can then be used in a decentralised blockchain to enable the exchange/swapping from one asset to another without the need for a private off chain exchange. At the sametime providing a yield/return to the liquidity providers based on the pool units each provider has within a pool.
+Continuous liquidity pools are a way to pool assets that can then be used in a decentralised blockchain to enable the exchange/swapping from one asset to another without the need for a private off chain exchange. At the sametime providing a yield/return to the liquidity providers based on the pool units each provider has within a pool.
 
 When used with the use of peg-zone as demonstrated a past video, this will enable cross chain swaps from one peg-zone to another. 
 
