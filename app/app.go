@@ -2,11 +2,12 @@ package app
 
 import (
 	"encoding/json"
+	"io"
+	"os"
+
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	tmos "github.com/tendermint/tendermint/libs/os"
-	"io"
-	"os"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -176,6 +177,7 @@ func NewInitApp(
 		app.cdc,
 		app.SupplyKeeper,
 		app.OracleKeeper,
+		keys[oracle.StoreKey],
 	)
 
 	app.clpKeeper = clp.NewKeeper(

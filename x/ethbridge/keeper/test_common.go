@@ -3,10 +3,11 @@ package keeper
 import (
 	"bytes"
 	"encoding/hex"
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/libs/log"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -27,6 +28,7 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	ethBridgeTypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracle "github.com/Sifchain/sifnode/x/oracle"
 	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
@@ -50,6 +52,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 	keyOracle := sdk.NewKVStoreKey(oracleTypes.StoreKey)
+	keyEthBridge := sdk.NewKVStoreKey(ethBridgeTypes.StoreKey)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
@@ -60,6 +63,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyOracle, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyEthBridge, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()
 	require.NoError(t, err)
 
@@ -130,7 +134,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	supplyKeeper.SetModuleAccount(ctx, bondPool)
 	supplyKeeper.SetModuleAccount(ctx, notBondedPool)
 
-	ethbridgeKeeper := NewKeeper(cdc, supplyKeeper, oracleKeeper)
+	ethbridgeKeeper := NewKeeper(cdc, supplyKeeper, oracleKeeper, keyEthBridge)
 	// Setup validators
 	valAddrs := make([]sdk.ValAddress, len(validatorAmounts))
 	for i, amount := range validatorAmounts {

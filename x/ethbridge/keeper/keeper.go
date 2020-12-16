@@ -20,14 +20,16 @@ type Keeper struct {
 
 	supplyKeeper types.SupplyKeeper
 	oracleKeeper types.OracleKeeper
+	storeKey     sdk.StoreKey
 }
 
 // NewKeeper creates new instances of the oracle Keeper
-func NewKeeper(cdc *codec.Codec, supplyKeeper types.SupplyKeeper, oracleKeeper types.OracleKeeper) Keeper {
+func NewKeeper(cdc *codec.Codec, supplyKeeper types.SupplyKeeper, oracleKeeper types.OracleKeeper, storeKey sdk.StoreKey) Keeper {
 	return Keeper{
 		cdc:          cdc,
 		supplyKeeper: supplyKeeper,
 		oracleKeeper: oracleKeeper,
+		storeKey:     storeKey,
 	}
 }
 

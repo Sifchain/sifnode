@@ -5,6 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	keeperLib "github.com/Sifchain/sifnode/x/oracle/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -22,7 +23,8 @@ func CreateTestHandler(
 	supplyKeeper.SetModuleAccount(ctx, bridgeAccount)
 
 	cdc := keeperLib.MakeTestCodec()
-	bridgeKeeper := NewKeeper(cdc, supplyKeeper, oracleKeeper)
+	keyEthBridge := sdk.NewKVStoreKey(types.StoreKey)
+	bridgeKeeper := NewKeeper(cdc, supplyKeeper, oracleKeeper, keyEthBridge)
 	handler := NewHandler(accountKeeper, bridgeKeeper, cdc)
 
 	return ctx, oracleKeeper, bankKeeper, supplyKeeper, accountKeeper, validatorAddresses, handler
