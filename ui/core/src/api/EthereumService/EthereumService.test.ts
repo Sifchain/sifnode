@@ -1,13 +1,20 @@
 // This test must be run in an environment that supports ganace
 
 import localnet from "../../config.localnet.json";
+import localethereumassets from "../../assets.ethereum.localnet.json";
+import localsifassets from "../../assets.sifchain.localnet.json";
 import createEthereumService from ".";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { Asset, AssetAmount, Network, Token } from "../../entities";
 
 import JSBI from "jsbi";
 import B from "../../entities/utils/B";
-import { ChainConfig, parseConfig } from "../utils/parseConfig";
+import {
+  ChainConfig,
+  parseAssets,
+  parseConfig,
+  AssetConfig,
+} from "../utils/parseConfig";
 
 describe("EthereumService", () => {
   let EthereumService: ReturnType<typeof createEthereumService>;
@@ -16,7 +23,13 @@ describe("EthereumService", () => {
   let ETH: Asset;
 
   beforeEach(async () => {
-    const supportedTokens = parseConfig(localnet as ChainConfig).assets;
+    const supportedTokens = parseConfig(
+      localnet as ChainConfig,
+      parseAssets([
+        ...localethereumassets.assets,
+        ...localsifassets.assets,
+      ] as AssetConfig[])
+    ).assets;
     const a = supportedTokens.find(
       ({ symbol }) => symbol.toUpperCase() === "ATK"
     );
