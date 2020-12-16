@@ -1,4 +1,4 @@
-package clp
+package keeper
 
 import (
 	"fmt"
@@ -10,12 +10,12 @@ import (
 //------------------------------------------------------------------------------------------------------------------
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
-func SwapOne(from Asset, sentAmount sdk.Uint, to Asset, pool Pool) (sdk.Uint, sdk.Uint, sdk.Uint, Pool, error) {
+func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 
 	var X sdk.Uint
 	var Y sdk.Uint
 
-	if to == GetSettlementAsset() {
+	if to == types.GetSettlementAsset() {
 		Y = pool.NativeAssetBalance
 		X = pool.ExternalAssetBalance
 	} else {
@@ -27,9 +27,9 @@ func SwapOne(from Asset, sentAmount sdk.Uint, to Asset, pool Pool) (sdk.Uint, sd
 	tradeSlip := calcTradeSlip(X, x)
 	swapResult := calcSwapResult(X, x, Y)
 	if swapResult.GTE(Y) {
-		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), Pool{}, types.ErrNotEnoughAssetTokens
+		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrNotEnoughAssetTokens
 	}
-	if from == GetSettlementAsset() {
+	if from == types.GetSettlementAsset() {
 		pool.NativeAssetBalance = X.Add(x)
 		pool.ExternalAssetBalance = Y.Sub(swapResult)
 	} else {
@@ -107,7 +107,7 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 // slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
-func calculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
+func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
 	if nativeAssetBalance.Add(nativeAssetAmount).IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), errors.Wrap(errors.ErrInsufficientFunds, nativeAssetAmount.String())
@@ -179,4 +179,12 @@ func calcSwapResult(X, x, Y sdk.Uint) sdk.Uint {
 	d := x.Add(X)
 	denom := d.Mul(d)
 	return (x.Mul(X).Mul(Y)).Quo(denom)
+}
+
+func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
+	poolUnits := pool.PoolUnits
+	nativeAssetBalance := pool.NativeAssetBalance
+	externalAssetBalance := pool.ExternalAssetBalance
+	return CalculateWithdrawal(poolUnits, nativeAssetBalance.String(), externalAssetBalance.String(),
+		lp.LiquidityProviderUnits.String(), sdk.NewInt(types.MaxWbasis).String(), sdk.ZeroInt())
 }

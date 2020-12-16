@@ -32,7 +32,8 @@ func TestQueryErrorPool(t *testing.T) {
 	assert.Error(t, err)
 	_, err = querier(ctx, []string{types.QueryPool}, query)
 	assert.Error(t, err)
-	keeper.DestroyPool(ctx, pool.ExternalAsset.Symbol)
+	err = keeper.DestroyPool(ctx, pool.ExternalAsset.Symbol)
+	require.NoError(t, err)
 	query.Path = ""
 	query.Data = qp
 	_, err = querier(ctx, []string{types.QueryPool}, query)
@@ -153,7 +154,7 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	query.Data = qlp
 	qliquidityprovider, err := querier(ctx, []string{types.QueryLiquidityProvider}, query)
 	assert.NoError(t, err)
-	var l types.LiquidityProvider
+	var l types.LiquidityProviderResponse
 	err = keeper.Codec().UnmarshalJSON(qliquidityprovider, &l)
 	assert.NoError(t, err)
 	assert.Equal(t, lp.Asset, l.Asset)
@@ -162,10 +163,16 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 
 func SetData(keeper clp.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {
 	pool := test.GenerateRandomPool(1)[0]
-	keeper.SetPool(ctx, pool)
+	err := keeper.SetPool(ctx, pool)
+	if err != nil {
+		ctx.Logger().Error("Unable to set pool")
+	}
 	pools := test.GenerateRandomPool(10)
 	for _, p := range pools {
-		keeper.SetPool(ctx, p)
+		err = keeper.SetPool(ctx, p)
+		if err != nil {
+			ctx.Logger().Error("Unable to set pool")
+		}
 	}
 	lp := test.GenerateRandomLP(1)[0]
 	keeper.SetLiquidityProvider(ctx, lp)
