@@ -18,7 +18,7 @@ import (
 
 	"github.com/Sifchain/sifnode/app"
 
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/siflogger"
+	"github.com/Sifchain/sifnode/pkg/siflogger"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"

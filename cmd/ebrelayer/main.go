@@ -21,8 +21,8 @@ import (
 	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/siflogger"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
+	"github.com/Sifchain/sifnode/pkg/siflogger"
 )
 
 var cdc *codec.Codec

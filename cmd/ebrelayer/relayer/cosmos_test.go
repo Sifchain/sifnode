@@ -3,7 +3,7 @@ package relayer
 import (
 	"testing"
 
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/siflogger"
+	"github.com/Sifchain/sifnode/pkg/siflogger"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
