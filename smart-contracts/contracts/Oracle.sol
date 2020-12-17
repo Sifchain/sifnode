@@ -81,6 +81,10 @@ contract Oracle is OracleStorage {
             _consensusThreshold > 0,
             "Consensus threshold must be positive."
         );
+        require(
+            _consensusThreshold <= 100,
+            "Invalid consensus threshold."
+        );
         operator = _operator;
         cosmosBridge = _cosmosBridge;
         valset = _valset;

@@ -1,4 +1,4 @@
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+const { deployProxy, silenceWarnings } = require('@openzeppelin/truffle-upgrades');
 
 const Valset = artifacts.require("Valset");
 const CosmosBridge = artifacts.require("CosmosBridge");
@@ -34,6 +34,8 @@ contract("BridgeBank", function (accounts) {
 
   describe("BridgeBank Security", function () {
     beforeEach(async function () {
+      await silenceWarnings();
+
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree];
       this.initialPowers = [5, 8, 12];
@@ -179,6 +181,34 @@ contract("BridgeBank", function (accounts) {
             amount, { from: operator }
         ),
         "Only token in whitelist can be transferred to cosmos"
+      );
+    });
+  });
+
+  describe("Consensus Threshold Limits", function () {
+    it("should not allow initialization of oracle with a consensus threshold over 100", async function () {
+      this.oracle = await Oracle.new();
+      await expectRevert(
+        this.oracle.initialize(
+          accounts[0],
+          accounts[0],
+          accounts[0],
+          101
+        ),
+        "Invalid consensus threshold."
+      );
+    });
+
+    it("should not allow initialization of oracle with a consensus threshold of 0", async function () {
+      this.oracle = await Oracle.new();
+      await expectRevert(
+        this.oracle.initialize(
+          accounts[0],
+          accounts[0],
+          accounts[0],
+          0
+        ),
+        "Consensus threshold must be positive."
       );
     });
   });
