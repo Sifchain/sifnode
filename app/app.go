@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	"io"
 	"os"
@@ -12,6 +13,8 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	"github.com/Sifchain/sifnode/x/oracle"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -23,12 +26,8 @@ import (
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/params"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-
-	"github.com/Sifchain/sifnode/x/ethbridge"
-	"github.com/Sifchain/sifnode/x/oracle"
 )
 
 const appName = "sifnode"
@@ -83,13 +82,13 @@ type NewApp struct {
 
 	subspaces map[string]params.Subspace
 
-	AccountKeeper   auth.AccountKeeper
-	bankKeeper      bank.Keeper
-	stakingKeeper   staking.Keeper
-	slashingKeeper  slashing.Keeper
-	distrKeeper     distr.Keeper
-	SupplyKeeper    supply.Keeper
-	paramsKeeper    params.Keeper
+	AccountKeeper  auth.AccountKeeper
+	bankKeeper     bank.Keeper
+	stakingKeeper  staking.Keeper
+	slashingKeeper slashing.Keeper
+	distrKeeper    distr.Keeper
+	SupplyKeeper   supply.Keeper
+	paramsKeeper   params.Keeper
 
 	// Peggy keepers
 	EthBridgeKeeper ethbridge.Keeper
@@ -173,10 +172,6 @@ func NewInitApp(
 		app.subspaces[staking.ModuleName],
 	)
 
-	app.stakingKeeper = *stakingKeeper.SetHooks(
-		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()),
-	)
-
 	app.distrKeeper = distr.NewKeeper(app.cdc, keys[distr.StoreKey], app.subspaces[distr.ModuleName], &stakingKeeper,
 		app.SupplyKeeper, auth.FeeCollectorName, app.ModuleAccountAddrs())
 
@@ -203,6 +198,9 @@ func NewInitApp(
 		app.bankKeeper,
 		app.SupplyKeeper,
 		app.subspaces[clp.ModuleName])
+
+	app.stakingKeeper = *stakingKeeper.SetHooks(
+		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()))
 
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.AccountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
@@ -273,7 +271,7 @@ func NewDefaultGenesisState() GenesisState {
 }
 
 func (app *NewApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	var genesisState simapp.GenesisState
+	var genesisState GenesisState
 
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
