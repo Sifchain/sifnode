@@ -91,7 +91,11 @@ type NewApp struct {
 	EthBridgeKeeper ethbridge.Keeper
 	OracleKeeper    oracle.Keeper
 	clpKeeper       clp.Keeper
+
+	faucetKeeper    faucet.Keeper
 	mm              *module.Manager
+
+	
 
 	sm *module.SimulationManager
 }
@@ -118,6 +122,7 @@ func NewInitApp(
 		oracle.StoreKey,
 		ethbridge.StoreKey,
 		clp.StoreKey,
+		faucet.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -190,7 +195,7 @@ func NewInitApp(
 		app.subspaces[clp.ModuleName])
 
 	app.FaucetKeeper = faucet.NewKeeper(
-		app.bankKeeper
+		app.SupplyKeeper
 	)
 
 	app.mm = module.NewManager(
@@ -202,7 +207,7 @@ func NewInitApp(
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
 		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
-		faucet.NewAppModule(app.FaucetKeeper),
+		faucet.NewAppModule(app.FaucetKeeper, app.SupplyKeeper),
 	)
 
 	// there is nothing left over in the validator fee pool, so as to keep the
