@@ -260,7 +260,9 @@ func (n *Node) replaceConfig() error {
 		config.P2P.PersistentPeers = strings.Join(addressList[:], ",")
 	}
 
-	config.P2P.ExternalAddress = fmt.Sprintf("%v:%v", n.IPAddr, common.P2PPort)
+	if n.IPAddr != "" {
+		config.P2P.ExternalAddress = fmt.Sprintf("%v:%v", n.IPAddr, common.P2PPort)
+	}
 	config.P2P.MaxNumInboundPeers = common.MaxNumInboundPeers
 	config.P2P.MaxNumOutboundPeers = common.MaxNumOutboundPeers
 	config.P2P.AllowDuplicateIP = common.AllowDuplicateIP

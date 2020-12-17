@@ -2,16 +2,20 @@
 
 **sifnode** is a blockchain application built using Cosmos SDK and Tendermint and generated with [Starport](https://github.com/tendermint/starport).
 
-## Requirements
+## Prerequisites / Dependencies
 
 - [Ruby 2.6.x](https://www.ruby-lang.org/en/documentation/installation)
 - [Golang](https://golang.org/doc/install)
+- [jq](https://stedolan.github.io/jq/download/)
+- [curl](https://curl.haxx.se/download.html)
 
 ## Getting started
 
 ### Setup
 
 #### Connect to Sifchain
+
+##### New Validators
 
 1. Ensure you've installed the dependencies listed above.
 
@@ -24,50 +28,81 @@ git clone ssh://git@github.com/Sifchain/sifnode && cd sifnode
 3. Checkout the latest testnet release:
 
 ```
-git checkout tags/monkey-bars-testnet-6
+git checkout tags/merry-go-round-1
 ```
 
 4. Build:
 
 ```
-make install
+make clean install
 ```
 
-5. If you're a new operator (and only if - as otherwise this will reset your node!): 
+5. Generate a mnemonic:
 
-    5.1 Scaffold your new node (from the project root directory):
-    
-    ```
-    rake 'genesis:sifnode:scaffold[monkey-bars, b7246003ad99b63d9de136b02f680ac35e8d2fb4@35.166.247.98:26656, http://35.166.247.98:26657/genesis]'
-    ```
+```
+rake "keys:generate:mnemonic"
+```
 
-6. If you're an existing node operator:
+6. Scaffold your node:
 
-    6.1 Reset your node state:
-    
-    ```
-    sifnoded unsafe-reset-all
-    ```
+```
+rake "genesis:sifnode:scaffold[sandpit,<moniker>,'<mnemonic>','',8930d0119e345cb4de10290d83dfdc4d251096b4@52.26.159.121:26656, http://52.26.159.121:26657/genesis]"
+```
 
-    6.2 Download the latest genesis file:
+* Replace `<moniker>` with the moniker (name) of your node. 
+* Replace `<mnemonic>` with the mnemonic phrase generated in the previous step.
 
-    ```
-    wget -O ~/.sifnoded/config/genesis.json https://raw.githubusercontent.com/Sifchain/networks/feature/genesis/testnet/monkey-bars-testnet-6/genesis.json
-    ```
-   
-    6.3 Update your persistent peers in the file `~/.sifnoded/config/config.toml` so that it reads: 
+This step will also output the keyring password, so please record this and the moniker somewhere secure.
 
-    ```
-    persistent_peers = "b7246003ad99b63d9de136b02f680ac35e8d2fb4@35.166.247.98:26656"
-    ```
-
-7. Start your node:
+7. Connect:
 
 ```
 sifnoded start
 ```
 
-and within a few seconds, your node should start synchronizing with the network.
+and your node will start synchronizing with the network. Please note that this may take several hours or more.
+
+##### Existing Validators
+
+1. Checkout the latest testnet release:
+
+```
+git fetch && git checkout tags/merry-go-round-1
+```
+
+2. Build:
+
+```
+make install
+```
+
+3. Reset your local state (please take a backup of your keyring first):
+
+```
+sifnodecli unsafe-reset-all
+```
+
+4. Download the new genesis file:
+
+```
+curl http://52.26.159.121:26657/genesis | jq '.result.genesis' > ~/.sifnoded/config/genesis.json
+```
+
+5. Update your persistent peers in the file `~/.sifnoded/config/config.toml` so that it reads: 
+
+```
+persistent_peers = "8930d0119e345cb4de10290d83dfdc4d251096b4@52.26.159.121:26656,b8fbfc271516fa03018f95ac7511d55ded83c64c@3.248.60.114:26656,513528259bfcb572d9254da8f414822774081de9@13.236.54.177:26656,fc10e8d1ff247929c2d18746c9b0e982d7115eab@54.179.83.98:26656"
+```
+
+6. Start your node:
+
+```
+sifnoded start
+```
+
+and your node will start synchronizing with the network. Please note that this may take several hours or more.
+
+##### Verify
 
 You can verify that you're connected by running:
 
@@ -75,17 +110,40 @@ You can verify that you're connected by running:
 sifnodecli q tendermint-validator-set
 ```
 
-and you should see the following main validator node/s for Sifchain:
+and you should see the following primary validator node/s for Sifchain:
 
 ```
 validators:
-- address: sifvalcons1v5lrysqxcyctelzvazpa3elanauej33ngj6q5s
-  pubkey: sifvalconspub1zcjduepq64s8s75afwrehycuuwvd3n6dryvqkutzhkt5tymgsffjaezzh7dsdvcd60
-  proposerpriority: -5000
+- address: sifvalcons1rud0nxutjt6h8ne7pwhln22t2left09p3py3np
+  pubkey: sifvalconspub1zcjduepq0dglw8h63rrpzwfw05f7x3g2024hzr559m20zduy494t2xnewpqssjz3r2
+  proposerpriority: -7692
+  votingpower: 5000
+- address: sifvalcons1esq6rv5sp0d4s906lq9x783eek5zcccg59rz27
+  pubkey: sifvalconspub1zcjduepqyha0kq25kmsq4j06x8dkpkludxmrgvj24saxeqsn2ta0tnvz7qlslt9law
+  proposerpriority: -1442
+  votingpower: 5000
+- address: sifvalcons1uwe53gyap7mt8s8gax0vpeprq3z5twl2fnfz2k
+  pubkey: sifvalconspub1zcjduepq9xlhvg8pcpg6jmeqxj0v7fxwehs46y5x0ty97phuxkp9xdnf0jpszqyzyz
+  proposerpriority: -182
+  votingpower: 5000
+- address: sifvalcons1aelywdgrqf32rayf4cdhf3hq2zjv2xxzpqnvps
+  pubkey: sifvalconspub1zcjduepq36hqmp7u2tlkj8yehdcqucu4l57etgr095kqrge5krl5sj2xu0jq379243
+  proposerpriority: 6068
   votingpower: 5000
 ```
 
-you are now connected to the network.
+Congratulations. You are now connected to the network.
+
+#### Additional Peers
+
+The following can be used as additional peers on the network:
+
+```
+8930d0119e345cb4de10290d83dfdc4d251096b4@52.26.159.121:26656
+b8fbfc271516fa03018f95ac7511d55ded83c64c@3.248.60.114:26656
+513528259bfcb572d9254da8f414822774081de9@13.236.54.177:26656
+fc10e8d1ff247929c2d18746c9b0e982d7115eab@54.179.83.98:26656
+```
 
 #### Become a Validator
 
@@ -99,7 +157,7 @@ You won't be able to participate in consensus until you become a validator.
 cat ~/.sifnoded/config/config.toml | grep moniker
 ```
 
-3. Run the following command to become a validator (*replace `<moniker>` with your node's actual moniker*): 
+3. Run the following command to become a validator: 
 
 ```
 sifnodecli tx staking create-validator \
@@ -109,12 +167,14 @@ sifnodecli tx staking create-validator \
     --amount=1000000000rowan \
     --pubkey=$(sifnoded tendermint show-validator) \
     --moniker=<moniker> \
-    --chain-id=monkey-bars \
+    --chain-id=merry-go-round \
     --min-self-delegation="1" \
     --gas="auto" \
     --from=<moniker> \
     --keyring-backend=file
 ```
+
+* Replace `<moniker>` with the moniker (name) of your node. 
 
 ## Additional Resources
 
