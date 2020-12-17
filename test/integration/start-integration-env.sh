@@ -70,6 +70,11 @@ BASEDIR=${BASEDIR} rake genesis:network:scaffold['localnet']
 # :chainnet, :eth_bridge_registry_address, :eth_keys, :eth_websocket
 BASEDIR=${BASEDIR} rake genesis:network:boot["localnet,${ETHEREUM_CONTRACT_ADDRESS},c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3,ws://192.168.2.6:7545/"]
 
+#
+# Wait for the Websocket subscriptions to be initialized (like 10 seconds)
+#
+docker logs -f ${CONTAINER_NAME} | grep -m 1 "Subscribed"
+
 # We need to forward the port used by ganache, since adding new network didn't allow
 # using the cli
 docker exec ${CONTAINER_NAME} bash -c "bash /test/integration/start-ganache-port-forwarding.sh"
@@ -100,11 +105,6 @@ echo "export OWNER_ADDR=$OWNER_ADDR" >> $envexportfile
 docker exec ${CONTAINER_NAME} bash -c "/test/integration/add-second-account.sh"
 
 #
-# Wait for the Websocket subscriptions to be initialized (like 10 seconds)
-#
-docker logs -f ${CONTAINER_NAME} | grep -m 1 "Subscribed"
-
-#
 # Transfer Eth into Ceth in our validator account
 #
 yarn --cwd $BASEDIR/smart-contracts peggy:lock ${OWNER_ADDR} 0x0000000000000000000000000000000000000000 $(to_wei 10)
@@ -118,8 +118,8 @@ export USER1ADDR=$(cat $NETDEF | yq r - "[1].address")
 echo "export USER1ADDR=$USER1ADDR" >> $envexportfile
 
 sleep 5
-yarn --cwd $BASEDIR/smart-contracts peggy:lock ${USER1ADDR} 0x0000000000000000000000000000000000000000 $(to_wei 10)
-sleep 5
+yarn --cwd $BASEDIR/smart-contracts peggy:lock ${USER1ADDR} 0x0000000000000000000000000000000000000000 $(to_wei 13)
+yarn --cwd $BASEDIR/smart-contracts advance 50
 
 #
 # Transfer Rowan from valifadator account to user account
