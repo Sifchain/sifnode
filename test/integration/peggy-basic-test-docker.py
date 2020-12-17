@@ -113,7 +113,7 @@ def test_case_2():
     print('before_tx', balance_before_tx)
     print("Before burn transaction {}'s balance of {} is {}".format(
         USER, PEGGYETH, balance_before_tx))
-    amount = amount_in_wei(7)
+    amount = amount_in_wei(5)
     if balance_before_tx < amount:
         print_error_message("No enough ceth to burn")
         return
