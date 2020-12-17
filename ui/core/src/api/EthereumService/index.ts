@@ -65,14 +65,11 @@ export class EthereumService implements IWalletService {
   ) {
     // init state
     this.state = reactive({ ...initState });
-    // it's hard to know what this is. i know it's passed in, but 
     getWeb3Provider() 
       .then((provider) => {
-        // i wish this method would reject with error instead of resolve
         if (!provider) {
-          notify({type: "error", message: "Metamask not found."})
+          notify({type: "error", message: "Metamask not found.", detail: "Check if extension enabled for this URL."})
           return this.provider = null
-          // show message
         }
         if (isEventEmittingProvider(provider)) {
           provider.on("connect", () => {
@@ -137,6 +134,7 @@ export class EthereumService implements IWalletService {
       }
 
       this.addWeb3Subscription();
+      notify({type: "success", message: "Connected to Metamask"})
       await this.updateData();
     } catch (err) {
       this.web3 = null;
