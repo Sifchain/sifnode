@@ -1,9 +1,10 @@
-package faucet
+package types
 
 import (
 	"encoding/json"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type MsgRequestCoins struct {
@@ -11,17 +12,24 @@ type MsgRequestCoins struct {
 	Requester sdk.AccAddress
 }
 
-func (msg MsgRequestCoins) Name() string { return "request_coins" }
-func (msg MsgRequestCoins) Type() string { return "faucet" }
-func (msg MsgRequestCoins) ValidateBasic() sdk.Error {
+func (msg MsgRequestCoins) Name() string {
+	return "request_coins"
+}
+func (msg MsgRequestCoins) Type() string {
+	return "faucet"
+}
+
+func (msg MsgRequestCoins) ValidateBasic() error {
 	if msg.Requester.Empty() {
-		return sdk.ErrInvalidAddress(msg.Requester.String())
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Requester.String())
 	}
-	if !msg.Coins.IsPositive() {
-		return sdk.ErrInsufficientCoins("Bids must be positive")
+	if !msg.Coins.IsAllPositive() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "Bids must be positive")
+
 	}
 	return nil
 }
+
 func (msg MsgRequestCoins) GetSignBytes() []byte {
 	bz, err := json.Marshal(msg)
 	if err != nil {
