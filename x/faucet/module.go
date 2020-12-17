@@ -3,6 +3,8 @@ package faucet
 import (
 	"encoding/json"
 
+	"github.com/Sifchain/sifnode/x/clp/client/cli"
+	"github.com/Sifchain/sifnode/x/faucet/client/rest"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
@@ -45,11 +47,12 @@ func (AppModuleBasic) ValidateGenesis(_ json.RawMessage) error {
 
 // RegisterRESTRoutes registers the REST routes for the faucet module.
 func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
+	rest.RegisterRoutes(ctx, rtr)
 }
 
 // GetTxCmd returns the root tx command for the faucet module.
 func (AppModuleBasic) GetTxCmd(_ *codec.Codec) *cobra.Command {
-	return nil
+	return cli.GetTxCmd(cdc)
 }
 
 // GetQueryCmd returns no root query command for the faucet module.
