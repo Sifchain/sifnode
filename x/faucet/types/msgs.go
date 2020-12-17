@@ -1,4 +1,4 @@
-package types
+package faucet
 
 import (
 	"encoding/json"
