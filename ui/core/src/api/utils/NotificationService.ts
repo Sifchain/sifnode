@@ -29,7 +29,8 @@ type INotificationService = Boolean
 // opts could include timeout remove,or  manual remove (rmNotify())
 export default function notify({
     type,
-    message
+    message,
+    detail
   }: Notification
   ): INotificationService {
 
@@ -46,7 +47,7 @@ export default function notify({
   // });
 
   // add to first place in notification state
-  notifications.unshift({type, message})
+  notifications.unshift({type, message, detail})
 
   return true
 }
