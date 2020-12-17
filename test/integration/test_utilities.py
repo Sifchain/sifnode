@@ -10,7 +10,9 @@ ETHEREUM_ETH = "eth"
 SIF_ROWAN = "rowan"
 ETHEREUM_ROWAN = "erowan"
 
+verbose = False
 persistantLog = open("/tmp/testrun.sh", "a")
+n_wait_blocks = 50  # number of blocks to wait for the relayer to act
 
 
 def print_error_message(error_message):
@@ -18,7 +20,7 @@ def print_error_message(error_message):
     print("!!!!Error: ", error_message)
     print("#################################")
     traceback.print_stack()
-    sys.exit(error_message)
+    raise Exception(error_message)
 
 
 def get_required_env_var(name):
@@ -30,6 +32,7 @@ def get_required_env_var(name):
 
 bridge_bank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
 smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
+cd_smart_contracts_dir = f"cd {smart_contracts_dir}; "
 moniker = get_required_env_var("MONIKER")
 owner_addr = get_required_env_var("OWNER_ADDR")
 
@@ -40,6 +43,8 @@ def test_log_line(s):
 
 def test_log(s):
     persistantLog.write(s)
+    if verbose:
+        print(s)
 
 
 def get_shell_output(command_line):
@@ -62,6 +67,15 @@ def get_shell_output_json(command_line):
     if not output:
         print_error_message(f"no result returned from {command_line}")
     return json.loads(output)
+
+
+def run_yarn_command(command_line):
+    output = get_shell_output(command_line)
+    if not output:
+        print_error_message(f"no result returned from {command_line}")
+    # the actual last line from yarn is Done in XXX, so we want the one before that
+    json_line = output.split('\n')[-2]
+    return json.loads(json_line)
 
 
 # converts a key to a sif address.
@@ -127,6 +141,10 @@ def burn_peggy_coin(user, eth_user, amount):
     --home deploy/networks/validators/localnet/{moniker}/.sifnodecli/ --from={moniker} \
     --yes"""
     return get_shell_output(command_line)
+
+
+def advance_n_ethereum_blocks(n=50):
+    return run_yarn_command(f"{cd_smart_contracts_dir} yarn advance {n}")
 
 
 def amount_in_wei(amount):
