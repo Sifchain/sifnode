@@ -5,6 +5,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/Sifchain/sifnode/x/faucet/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -25,14 +26,16 @@ func NewQuerier(k Keeper) sdk.Querier {
 
 func queryBalance(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, error) {
 	var params types.QueryReqGetFaucetBalance
+	var coins sdk.Coins
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	// TODO: return the balance from the faucet address
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-
-	return nil, nil
+	balance := keeper.HasCoins(ctx, params.FaucetAddress, coins)
+	res, err := codec.MarshalJSONIndent(keeper.cdc, balance)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return res, nil
 }
-
-// TODO: Add the modules query functions
-// They will be similar to the above one: queryParams()

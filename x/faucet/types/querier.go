@@ -9,9 +9,10 @@ const (
 
 type QueryReqGetFaucetBalance struct {
 	FaucetAddress sdk.AccAddress `json:"faucet_address"`
+	Coins         sdk.Coins
 }
 
-func NewQueryReqGetFaucetBalance(faucetAddress sdk.AccAddress) QueryReqGetFaucetBalance {
+func NewQueryReqGetFaucetBalance(faucetAddress sdk.AccAddress, coins sdk.Coins) QueryReqGetFaucetBalance {
 	return QueryReqGetFaucetBalance{FaucetAddress: faucetAddress}
 
 }

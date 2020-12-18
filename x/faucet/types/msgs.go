@@ -7,6 +7,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+// TODO: How do I add the specified account to send from in the MsgRequestCoinsStruct?
 type MsgRequestCoins struct {
 	Coins     sdk.Coins
 	Requester sdk.AccAddress

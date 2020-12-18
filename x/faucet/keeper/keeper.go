@@ -8,20 +8,21 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/supply"
 )
 
 // Keeper of the faucet store
 type Keeper struct {
-	supplyKeeper supply.Keeper
 	storeKey     sdk.StoreKey
 	cdc          *codec.Codec
+	supplyKeeper types.SupplyKeeper
+	bankKeeper   types.BankKeeper
 }
 
 // NewKeeper creates a faucet keeper
-func NewKeeper(supplyKeeper supply.Keeper, cdc *codec.Codec, key sdk.StoreKey) Keeper {
+func NewKeeper(supplyKeeper types.SupplyKeeper, cdc *codec.Codec, key sdk.StoreKey, bankKeeper types.BankKeeper) Keeper {
 	keeper := Keeper{
 		supplyKeeper: supplyKeeper,
+		bankKeeper:   bankKeeper,
 		storeKey:     key,
 		cdc:          cdc,
 		// paramspace: paramspace.WithKeyTable(types.ParamKeyTable()),
@@ -55,4 +56,20 @@ func (k Keeper) set(ctx sdk.Context, key string, value interface{} /* TODO: fill
 func (k Keeper) delete(ctx sdk.Context, key string) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete([]byte(key))
+}
+
+func (k Keeper) GetBankKeeper() types.BankKeeper {
+	return k.bankKeeper
+}
+
+func (k Keeper) GetSupplyKeeper() types.SupplyKeeper {
+	return k.supplyKeeper
+}
+
+func (k Keeper) HasCoins(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) bool {
+	return k.bankKeeper.HasCoins(ctx, user, coins)
+}
+
+func (k Keeper) SendCoins(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddress, coins sdk.Coins) error {
+	return k.bankKeeper.SendCoins(ctx, from, to, coins)
 }

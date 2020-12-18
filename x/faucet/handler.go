@@ -25,5 +25,6 @@ func handleMsgRequestCoins(ctx sdk.Context, bk bank.Keeper, msg MsgRequestCoins)
 	if err != nil {
 		return sdk.ErrInternal(err.Error()).Result()
 	}
+	keeper.SendCoins(ctx, ModuleAccount, msg.Requester, msg.Coins)
 	return sdk.Result{}
 }
