@@ -2,9 +2,7 @@
 // TODO: Remove this and connect tothe live websocket
 import WS from "jest-websocket-mock";
 new WS("ws://localhost:26667/websocket");
-// /HACK
-
-// create a WS instance, listening on port 1234 on localhost
+// end HACK
 
 import createClpService from ".";
 import { AssetAmount, Coin, Network } from "../../entities";
