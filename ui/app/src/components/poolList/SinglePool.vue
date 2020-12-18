@@ -2,10 +2,14 @@
 import { defineComponent, ref } from "vue";
 import { computed } from '@vue/reactivity';
 import Layout from "@/components/layout/Layout.vue";
+import SifButton from "@/components/shared/SifButton.vue";
 import { useAssetItem } from "@/components/shared/utils";
+import { usePoolCalculator } from "ui-core";
+import { useWallet } from "@/hooks/useWallet";
+import { useCore } from "@/hooks/useCore";
 
 export default defineComponent({
-  components: { Layout },
+  components: { Layout, SifButton },
   props: { 
     pool: Object
   },
@@ -39,7 +43,7 @@ export default defineComponent({
     return {
       fromSymbol, fromBackgroundStyle, fromTokenImage, fromValue,
       toSymbol, toBackgroundStyle, toTokenImage, toValue,
-      poolUnits,
+      poolUnits
     }
   }
 });
@@ -68,24 +72,51 @@ export default defineComponent({
 
           <div class="row">
             <span>Pooled {{ fromSymbol.toUpperCase() }}:</span>
-            <span class="value">{{ fromValue }}</span>
+            <span class="value">
+              {{ fromValue }}
+              <img v-if="fromTokenImage" width="22" height="22" :src="fromTokenImage" class="info-img" />
+              <div class="placeholder" :style="fromBackgroundStyle" v-else></div>
+            </span>
           </div>
           <div class="row">
             <span>Pooled {{ toSymbol.toUpperCase() }}:</span>
-            <span class="value">{{ toValue }}</span>
+            <span class="value">
+              {{ toValue }}
+              <img v-if="toTokenImage" width="22" height="22" :src="toTokenImage" class="info-img" />
+              <div class="placeholder" :style="toBackgroundStyle" v-else></div>
+            </span>
           </div>
 
           <div class="row">
             <span>Your pool tokens:</span>
-            <span>{{ poolUnits }}</span>
+            <span class="value">{{ poolUnits }}</span>
+          </div>
+          <div class="row">
+            <span>Your pool share:</span>
+            <span class="value"></span>
           </div>
         </div>
       </div>
       <div class="section">
-
+        <div class="info">
+          <h3 class="mb-2">Liquidity provider rewards</h3>
+          <p class="text--small mb-2">Liquidity providers earn a 0.3% fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.</p>
+          <p class="text--small mb-2"><a href="#">Read more about providing liquidity</a></p>
+        </div>
       </div>
-      <div class="section">
-
+      <div class="section footer">
+        <div class="mr-1">
+          <div  class="text--small mb-6">
+            <a href="#">View pool info</a>
+          </div>
+          <SifButton primaryOutline nocase block >Remove Liquidity</SifButton>
+        </div>
+        <div class="ml-1">
+          <div  class="text--small mb-6">
+            <a href="#">Blockexplorer</a>
+          </div>
+          <SifButton primary nocase block>Add Liquidity</SifButton>
+        </div>
       </div>
     </div>
   </Layout>
@@ -129,6 +160,24 @@ export default defineComponent({
   .row {
     display: flex;
     justify-content: space-between;
+    padding: 2px 0;
+    color: $c_text;
+    font-weight: 400;
+
+    .value {
+      display: flex;
+      align-items: center;
+      font-weight: 700;
+    }
+
+    .image, .placeholder {
+      margin-left: 4px;
+    }
+  }
+
+  .info {
+    text-align: left;
+    font-weight: 400;
   }
 
   .placeholder {
@@ -139,6 +188,14 @@ export default defineComponent({
     height: 22px;
     width: 22px;
     text-align: center;
+  }
+
+  .footer {
+    display: flex;
+
+    & > div {
+      flex: 1;
+    }
   }
 }
 </style>
