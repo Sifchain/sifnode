@@ -7,7 +7,6 @@ new WS("ws://localhost:26667/websocket");
 // create a WS instance, listening on port 1234 on localhost
 
 import createClpService from ".";
-import { ATK } from "../../constants";
 import { AssetAmount, Coin, Network } from "../../entities";
 
 const ROWAN = Coin({
