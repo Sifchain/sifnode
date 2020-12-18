@@ -14,8 +14,6 @@ export default defineComponent({
     return {
       notifications,
       removeItem(index:any) {
-        // it seems overkill to put this in an action
-        // notifications are not created from ui, they're only removed from ui
         store.notifications.splice(index, 1)
       }
     };
