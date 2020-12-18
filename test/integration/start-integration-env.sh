@@ -71,6 +71,8 @@ BASEDIR=${BASEDIR} rake genesis:network:scaffold['localnet']
 # :chainnet, :eth_bridge_registry_address, :eth_keys, :eth_websocket
 BASEDIR=${BASEDIR} rake genesis:network:boot["localnet,${ETHEREUM_CONTRACT_ADDRESS},c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3,ws://192.168.2.6:7545/"]
 
+sleep 15
+
 #
 # Wait for the Websocket subscriptions to be initialized (like 10 seconds)
 #
