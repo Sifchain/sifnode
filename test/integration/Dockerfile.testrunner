@@ -32,14 +32,6 @@ EXPOSE 26657
 
 RUN apk add --update --no-cache $PACKAGES
 
-# Copy the smart contract ABIs over.
-ADD cmd/ebrelayer/contract/generated  /sif/cmd/ebrelayer/contract/generated
-
-# Copy the compiled binaires over.
-COPY --from=build /go/bin/sifnoded /usr/bin/sifnoded
-COPY --from=build /go/bin/sifnodecli /usr/bin/sifnodecli
-COPY --from=build /go/bin/ebrelayer /usr/bin/ebrelayer
-
 # extras for test suite
 RUN apk add python3 vim bash yarn npm socat busybox-extras
 RUN \
@@ -51,3 +43,14 @@ RUN \
 RUN gem install rake
 RUN wget https://github.com/mikefarah/yq/releases/download/3.4.0/yq_linux_amd64 -O /usr/bin/yq &&\
     chmod +x /usr/bin/yq
+
+# Copy the smart contract ABIs over.
+ADD cmd/ebrelayer/contract/generated  /sif/cmd/ebrelayer/contract/generated
+
+# Copy the compiled binaires over.
+COPY --from=build /go/bin/sifnoded /usr/bin/sifnoded
+COPY --from=build /go/bin/sifnodecli /usr/bin/sifnodecli
+COPY --from=build /go/bin/ebrelayer /usr/bin/ebrelayer
+
+COPY $YARN_CACHE_DIR /yarncache
+RUN yarn config set cache-folder /yarncache

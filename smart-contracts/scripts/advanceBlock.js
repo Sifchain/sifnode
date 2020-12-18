@@ -1,3 +1,4 @@
+const {web3} = require("@openzeppelin/test-helpers/src/setup");
 const { time } = require("@openzeppelin/test-helpers");
 require('@openzeppelin/test-helpers/configure')({
   provider: process.env.LOCAL_PROVIDER,
@@ -15,12 +16,17 @@ module.exports = async (cb) => {
   }
 
   try {
-    for (i = 0; i < txNumber; i++) {
+    for (let i = 0; i < txNumber; i++) {
       await time.advanceBlock();
     }
     
     console.log(`Advanced ${txNumber} blocks`);
 
+    let bn = await web3.eth.getBlockNumber();
+
+    console.log(`current block number is ${bn}`)
+
+    console.log(JSON.stringify({nBlocks: txNumber, currentBlockNumber: bn}))
   } catch (error) {
     console.error({ error });
   }
