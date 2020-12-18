@@ -48,12 +48,17 @@ fi
 # and note that truffle migrate and truffle deploy are the same command
 truffle compile
 truffle deploy --network develop --reset
-ETHEREUM_CONTRACT_ADDRESS=$(cat $BASEDIR/smart-contracts/build/contracts/BridgeRegistry.json | jq '.networks["5777"].address')
+# ETHEREUM_CONTRACT_ADDRESS is used for the BridgeRegistry address in many places, so we
+# set it and BRIDGE_REGISTRY_ADDRESS to the same value
+BRIDGE_REGISTRY_ADDRESS=$(cat $BASEDIR/smart-contracts/build/contracts/BridgeRegistry.json | jq '.networks["5777"].address')
+ETHEREUM_CONTRACT_ADDRESS=$BRIDGE_REGISTRY_ADDRESS
 if [ -z "$ETHEREUM_CONTRACT_ADDRESS" ]; then
   echo ETHEREUM_CONTRACT_ADDRESS cannot be empty
   exit 1
 fi
 echo "export ETHEREUM_CONTRACT_ADDRESS=$ETHEREUM_CONTRACT_ADDRESS" >> $envexportfile
+echo "# BRIDGE_REGISTRY_ADDRESS and ETHEREUM_CONTRACT_ADDRESS are synonyms">> $envexportfile
+echo "export BRIDGE_REGISTRY_ADDRESS=$BRIDGE_REGISTRY_ADDRESS" >> $envexportfile
 
 export BRIDGE_BANK_ADDRESS=$(cat $BASEDIR/smart-contracts/build/contracts/BridgeBank.json | jq '.networks["5777"].address')
 if [ -z "BRIDGE_BANK_ADDRESS" ]; then
@@ -92,6 +97,8 @@ done
 
 export MONIKER=$(cat ${NETWORKDIR}/network-definition.yml | to_json | jq '.[0].moniker')
 echo "export MONIKER=$MONIKER" >> $envexportfile
+export MONIKER_ADDR=$(cat ${NETWORKDIR}/network-definition.yml | to_json | jq '.[0].moniker')
+echo "export MONIKER=$MONIKER" >> $envexportfile
 
 OWNER_PASSWORD=$(cat $NETDEF | yq r - ".password")
 echo "export OWNER_PASSWORD=$OWNER_PASSWORD" >> $envexportfile
@@ -104,33 +111,14 @@ echo "export OWNER_ADDR=$OWNER_ADDR" >> $envexportfile
 #
 docker exec ${CONTAINER_NAME} bash -c "/test/integration/add-second-account.sh"
 
-#
-# Transfer Eth into Ceth in our validator account
-#
-yarn --cwd $BASEDIR/smart-contracts peggy:lock ${OWNER_ADDR} 0x0000000000000000000000000000000000000000 $(to_wei 10)
-
-# balance:
-#
-# Transfer Eth into Ceth on our User account 
-# This also makes the account visible to sifnodecli q auth account <addr>
-
 export USER1ADDR=$(cat $NETDEF | yq r - "[1].address")
 echo "export USER1ADDR=$USER1ADDR" >> $envexportfile
-
-sleep 5
-yarn --cwd $BASEDIR/smart-contracts peggy:lock ${USER1ADDR} 0x0000000000000000000000000000000000000000 $(to_wei 13)
-yarn --cwd $BASEDIR/smart-contracts advance 50
-
-#
-# Transfer Rowan from valifadator account to user account
-#
-docker exec ${CONTAINER_NAME} bash -c "/test/integration/add-rowan-to-account.sh $(to_wei 23) user1"
-sleep 5
 
 #
 # Run the python tests
 #
 echo run python tests
+docker exec ${CONTAINER_NAME} bash -c ". /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/initial_test_balances.py /network-definition.yml"
 docker exec ${CONTAINER_NAME} bash -c ". /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/peggy-basic-test-docker.py /network-definition.yml"
 docker exec ${CONTAINER_NAME} bash -c '. /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/peggy-e2e-test.py /network-definition.yml'
 
