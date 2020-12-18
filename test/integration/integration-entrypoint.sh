@@ -39,6 +39,7 @@ start_relayer() {
 # Wait for the RPC port to be active.
 #
 wait_for_rpc() {
+  sleep 2
   while ! nc -z localhost 26657; do
     sleep 15
   done

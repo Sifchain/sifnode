@@ -177,6 +177,19 @@ def mirror_of(currency):
     return currency_pairs.get(currency)
 
 
+def wait_for_sif_account(sif_addr, max_attempts=30):
+    command = f"sifnodecli q account {sif_addr}"
+    attempts = 0
+    while True:
+        try:
+            return get_shell_output(command)
+        except:
+            attempts += 1
+            if attempts > max_attempts:
+                raise Exception(f"too many attempts to get sif account {sif_addr}")
+            time.sleep(1)
+
+
 def transact_ethereum_currency_to_sifchain_addr(sif_addr, ethereum_symbol, amount):
     sifchain_symbol = mirror_of(ethereum_symbol)
     try:
@@ -188,6 +201,7 @@ def transact_ethereum_currency_to_sifchain_addr(sif_addr, ethereum_symbol, amoun
     print(f"starting balance for {sif_addr} is {starting_balance}")
     send_ethereum_currency_to_sifchain_addr(sif_addr, ethereum_symbol, amount)
     advance_n_ethereum_blocks(n_wait_blocks)
+    wait_for_sif_account(sif_addr)
     wait_for_sifchain_addr_balance(sif_addr, sifchain_symbol, starting_balance + amount, 6,
                                    f"{sif_addr} / c{sifchain_symbol} / {amount}")
 

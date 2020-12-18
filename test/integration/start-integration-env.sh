@@ -38,11 +38,7 @@ echo "export YARN_CACHE_DIR=$YARN_CACHE_DIR" >> $envexportfile
 
 docker-compose --project-name genesis -f $BASEDIR/test/integration/docker-compose-ganache.yml up -d --force-recreate
 
-# deploy peggy smart contracts
-if [ ! -f .env ]; then
-  # if you haven't created a .env file, use .env.example
-  cp $BASEDIR/test/integration/.env.ciExample .env
-fi
+cp $BASEDIR/test/integration/.env.ciExample .env
 
 # https://www.trufflesuite.com/docs/truffle/overview
 # and note that truffle migrate and truffle deploy are the same command
