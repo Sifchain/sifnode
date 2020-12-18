@@ -44,6 +44,8 @@ if [ ! -f .env ]; then
   cp $BASEDIR/test/integration/.env.ciExample .env
 fi
 
+sleep 10
+
 # https://www.trufflesuite.com/docs/truffle/overview
 # and note that truffle migrate and truffle deploy are the same command
 truffle compile
