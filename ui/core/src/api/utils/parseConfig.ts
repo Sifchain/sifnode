@@ -1,5 +1,5 @@
 import { ApiContext } from "..";
-import { Coin, Network, Token } from "../../entities";
+import { Asset, Coin, Network, Token } from "../../entities";
 import { getMetamaskProvider } from "../EthereumService/utils/getMetamaskProvider";
 
 type TokenConfig = {
@@ -19,12 +19,13 @@ type CoinConfig = {
   network: Network;
 };
 
-type AssetConfig = CoinConfig | TokenConfig;
+export type AssetConfig = CoinConfig | TokenConfig;
+
 function isTokenConfig(a: any): a is TokenConfig {
   return typeof a?.address === "string";
 }
 
-function parseAsset(a: unknown) {
+function parseAsset(a: unknown): Asset {
   if (isTokenConfig(a)) {
     return Token(a);
   }
@@ -39,10 +40,13 @@ export type ChainConfig = {
   assets: AssetConfig[];
   nativeAsset: string; // symbol
 };
-export function parseConfig(config: ChainConfig): ApiContext {
-  const nativeAsset = config.assets.find(
-    (a) => a.symbol === config.nativeAsset
-  );
+
+export function parseAssets(configAssets: AssetConfig[]): Asset[] {
+  return configAssets.map(parseAsset);
+}
+
+export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
+  const nativeAsset = assets.find((a) => a.symbol === config.nativeAsset);
 
   if (!nativeAsset)
     throw new Error(
@@ -57,7 +61,7 @@ export function parseConfig(config: ChainConfig): ApiContext {
       config.web3Provider === "metamask"
         ? getMetamaskProvider
         : async () => config.web3Provider,
-    assets: (config.assets as AssetConfig[]).map(parseAsset),
-    nativeAsset: parseAsset(nativeAsset),
+    assets,
+    nativeAsset,
   };
 }
