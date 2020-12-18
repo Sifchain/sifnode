@@ -3,9 +3,10 @@ package faucet
 import (
 	"encoding/json"
 
-	"github.com/Sifchain/sifnode/x/clp/client/cli"
-	"github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/Sifchain/sifnode/x/faucet/client/cli"
 	"github.com/Sifchain/sifnode/x/faucet/client/rest"
+	"github.com/Sifchain/sifnode/x/faucet/keeper"
+	"github.com/Sifchain/sifnode/x/faucet/types"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
@@ -33,7 +34,7 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec registers the faucet module's types for the given codec.
-func (AppModuleBasic) RegisterCodec(_ *codec.Codec) {
+func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 	types.RegisterCodec(cdc)
 }
 
@@ -44,13 +45,13 @@ func (AppModuleBasic) DefaultGenesis() json.RawMessage {
 }
 
 // ValidateGenesis performs genesis state validation for the faucet module.
-func (AppModuleBasic) ValidateGenesis(_ json.RawMessage) error {
-	var data types.GenesisState
+func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
+	var data GenesisState
 	err := types.ModuleCdc.UnmarshalJSON(bz, &data)
 	if err != nil {
 		return err
 	}
-	return types.ValidateGenesis(data)
+	return ValidateGenesis(data)
 }
 
 // RegisterRESTRoutes registers the REST routes for the faucet module.
@@ -78,13 +79,13 @@ type AppModule struct {
 	AppModuleBasic
 	AppModuleSimulation
 
-	keeper       Keeper
+	keeper       keeper.Keeper
 	supplyKeeper types.SupplyKeeper
 	bankKeeper   types.BankKeeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper Keeper) AppModule {
+func NewAppModule(keeper keeper.Keeper, bankKeeper types.BankKeeper, supplyKeeper types.SupplyKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic:      AppModuleBasic{},
 		AppModuleSimulation: AppModuleSimulation{},
