@@ -28,7 +28,6 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	ethBridgeTypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracle "github.com/Sifchain/sifnode/x/oracle"
 	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
@@ -52,7 +51,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 	keyOracle := sdk.NewKVStoreKey(oracleTypes.StoreKey)
-	keyEthBridge := sdk.NewKVStoreKey(ethBridgeTypes.StoreKey)
+	keyEthBridge := sdk.NewKVStoreKey(types.StoreKey)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
