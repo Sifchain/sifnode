@@ -44,7 +44,7 @@ export default defineComponent({
       if (!externalAssetSymbol.value) return null;
 
       api.ClpService.getLiquidityProvider({
-        ticker: externalAssetSymbol.value,
+        symbol: externalAssetSymbol.value,
         lpAddress: store.wallet.sif.address,
       }).then((liquidityProviderResult) => {
         liquidityProvider.value = liquidityProviderResult;
