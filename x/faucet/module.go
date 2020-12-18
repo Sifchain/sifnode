@@ -29,23 +29,28 @@ var _ module.AppModuleBasic = AppModuleBasic{}
 
 // Name returns the faucet module's name.
 func (AppModuleBasic) Name() string {
-	return ModuleName
+	return types.ModuleName
 }
 
 // RegisterCodec registers the faucet module's types for the given codec.
 func (AppModuleBasic) RegisterCodec(_ *codec.Codec) {
-	RegisterCodec(cdc)
+	types.RegisterCodec(cdc)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the faucet
 // module.
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
-	return nil
+	return types.ModuleCdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
 // ValidateGenesis performs genesis state validation for the faucet module.
 func (AppModuleBasic) ValidateGenesis(_ json.RawMessage) error {
-	return nil
+	var data types.GenesisState
+	err := types.ModuleCdc.UnmarshalJSON(bz, &data)
+	if err != nil {
+		return err
+	}
+	return types.ValidateGenesis(data)
 }
 
 // RegisterRESTRoutes registers the REST routes for the faucet module.
@@ -60,7 +65,7 @@ func (AppModuleBasic) GetTxCmd(_ *codec.Codec) *cobra.Command {
 
 // GetQueryCmd returns no root query command for the faucet module.
 func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command {
-	return cli.GetQueryCmd(StoreKey, cdc)
+	return cli.GetQueryCmd(types.StoreKey, cdc)
 }
 
 //____________________________________________________________________________
@@ -75,6 +80,7 @@ type AppModule struct {
 
 	keeper       Keeper
 	supplyKeeper types.SupplyKeeper
+	bankKeeper   types.BankKeeper
 }
 
 // NewAppModule creates a new AppModule object
@@ -84,12 +90,13 @@ func NewAppModule(keeper Keeper) AppModule {
 		AppModuleSimulation: AppModuleSimulation{},
 		keeper:              keeper,
 		supplyKeeper:        supplyKeeper,
+		bankKeeper:          bankKeeper,
 	}
 }
 
 // Name returns the faucet module's name.
 func (AppModule) Name() string {
-	return ModuleName
+	return types.ModuleName
 }
 
 // RegisterInvariants registers the faucet module invariants.
@@ -98,7 +105,7 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 
 // Route returns the message routing key for the faucet module.
 func (AppModule) Route() string {
-	return RouterKey
+	return types.RouterKey
 }
 
 // NewHandler returns an sdk.Handler for the faucet module.
@@ -108,7 +115,7 @@ func (am AppModule) NewHandler() sdk.Handler {
 
 // QuerierRoute returns the faucet module's querier route name.
 func (AppModule) QuerierRoute() string {
-	return QuerierRoute
+	return types.QuerierRoute
 }
 
 // NewQuerierHandler returns the faucet module sdk.Querier.
@@ -119,20 +126,26 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 // InitGenesis performs genesis initialization for the faucet module. It returns
 // no validator updates.
 func (am AppModule) InitGenesis(_ sdk.Context, _ json.RawMessage) []abci.ValidatorUpdate {
-	return nil
+	var genesisState types.GenesisState
+	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	InitGenesis(ctx, am.keeper, genesisState)
+	return []abci.ValidatorUpdate{}
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the faucet
 // module.
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
-	return nil
+	gs := ExportGenesis(ctx, am.keeper)
+	return types.ModuleCdc.MustMarshalJSON(gs)
 }
 
 // BeginBlock returns the begin blocker for the faucet module.
-func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
+	BeginBlocker(ctx, req, am.keeper)
+}
 
 // EndBlock returns the end blocker for the faucet module. It returns no validator
 // updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	return nil
+	return []abci.ValidatorUpdate{}
 }

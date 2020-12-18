@@ -9,6 +9,6 @@ import (
 // RegisterRoutes registers blog-related REST handlers to a router
 func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	// this line is used by starport scaffolding # 1
-	r.HandleFunc("/faucet/leak", createLeakHandler(cliCtx)).Methods("POST")
-
+	registerQueryRoutes(cliCtx, r)
+	registerTxRoutes(cliCtx, r)
 }
