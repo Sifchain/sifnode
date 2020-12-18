@@ -77,11 +77,11 @@ type LiquidityDetailsResponse = {
 type ClpCmdSwap = (params: SwapParams) => Promise<Msg>;
 type ClpQueryPools = () => Promise<RawPool[]>;
 type ClpQueryPool = (params: { ticker: string }) => Promise<RawPool>;
-type ClpQueryAssets = (address: string) => Promise<RawPool[]>;
+type ClpQueryAssets = (address: string) => Promise<{ symbol: string }[]>;
 type ClpAddLiquidity = (params: LiquidityParams) => Promise<StdTx>;
 type ClpCreatePool = (params: LiquidityParams) => Promise<StdTx>;
 type ClpGetLiquidityProvider = (params: {
-  ticker: string;
+  symbol: string;
   lpAddress: string;
 }) => Promise<LiquidityDetailsResponse>;
 
@@ -123,9 +123,9 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
         return await base.post(`/clp/createPool`, params);
       },
 
-      getLiquidityProvider: async ({ ticker, lpAddress }) => {
+      getLiquidityProvider: async ({ symbol, lpAddress }) => {
         return await base.get(
-          `/clp/getLiquidityProvider?ticker=${ticker}&lpAddress=${lpAddress}`
+          `/clp/getLiquidityProvider?symbol=${symbol}&lpAddress=${lpAddress}`
         );
       },
 
