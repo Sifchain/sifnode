@@ -182,7 +182,9 @@ def wait_for_sif_account(sif_addr, max_attempts=30):
     attempts = 0
     while True:
         try:
-            return get_shell_output(command)
+            result = get_shell_output(command)
+            print(f"account {sif_addr} is now created")
+            return result
         except:
             attempts += 1
             if attempts > max_attempts:
@@ -197,6 +199,7 @@ def transact_ethereum_currency_to_sifchain_addr(sif_addr, ethereum_symbol, amoun
     except:
         # Sometimes we're creating an account by sending it currency for the
         # first time, so you can't get a balance.
+        print("exception is OK, we are creating the account now")
         starting_balance = 0
     print(f"starting balance for {sif_addr} is {starting_balance}")
     send_ethereum_currency_to_sifchain_addr(sif_addr, ethereum_symbol, amount)
