@@ -3,13 +3,6 @@ import re
 import time
 import os
 
-from test_utilities import get_shell_output, SIF_ETH, burn_peggy_coin, ETHEREUM_ETH, owner_addr, moniker, \
-<<<<<<< HEAD
-    get_sifchain_addr_balance, wait_for_sifchain_addr_balance
-=======
-    get_sifchain_addr_balance, wait_for_sifchain_addr_balance, advance_n_ethereum_blocks, n_wait_blocks, \
-    cd_smart_contracts_dir
->>>>>>> develop
 from test_utilities import print_error_message, get_user_account, get_sifchain_balance, network_password, \
     bridge_bank_address, \
     smart_contracts_dir, wait_for_sifchain_balance, wait_for_balance
