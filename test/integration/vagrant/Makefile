@@ -5,7 +5,7 @@ BASEDIR=/sifnode
 
 .PHONY: all
 all: 
-	rm -rf data/
+	rm -rf data/ ../ganachedb
 	-$(MAKE) test
 	$(MAKE) pulldata
 
@@ -20,8 +20,12 @@ all:
 	vagrant ssh -c "cd ${BASEDIR} && bash test/integration/setup-linux-environment.sh"
 	touch $@
 
+.depend/dockerrmi: $(shell find ../../../ -name *.go) | .depend
+	vagrant ssh -c "docker rmi -f integration_sifnode1:latest"
+	touch $@
+
 .PHONY: test
-test: .depend/setup data
+test: .depend/setup .depend/dockerrmi data
 	vagrant ssh -c "cd ${BASEDIR} && bash -x test/integration/start-integration-env.sh" 2>&1 | tee data/testrun.sh
 
 # convenience targets
@@ -34,8 +38,6 @@ reload:
 clean:
 	vagrant destroy -f
 	rm -rf .depend
-
-vssh=vagrant ssh -c
 
 pulldata: data
 	@vagrant ssh -c "docker exec integration_sifnode1_1 cat /tmp/testrun.sh" > data/clicmds.txt
