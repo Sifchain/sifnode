@@ -3,6 +3,9 @@ import re
 import time
 import os
 
+from test_utilities import get_shell_output, SIF_ETH, burn_peggy_coin, ETHEREUM_ETH, owner_addr, moniker, \
+    get_sifchain_addr_balance, wait_for_sifchain_addr_balance, advance_n_ethereum_blocks, n_wait_blocks, \
+    cd_smart_contracts_dir, send_eth_lock
 from test_utilities import print_error_message, get_user_account, get_sifchain_balance, network_password, \
     bridge_bank_address, \
     smart_contracts_dir, wait_for_sifchain_balance, wait_for_balance
@@ -49,13 +52,6 @@ def get_peggyrwn_balance(account, symbol):
         if balance:
             return balance.group(1)
     return 0
-
-
-# Send eth from ETHEREUM_PRIVATE_KEY to BridgeBank, lock the eth on bridgebank, ceth should end up in sifchain_user
-def send_eth_lock(sifchain_user, symbol, amount):
-    command_line = cd_smart_contracts_dir + "yarn peggy:lock {} {} {}".format(
-        get_user_account(sifchain_user, network_password), symbol, amount)
-    get_shell_output(command_line)
 
 
 def burn_peggyrwn(sifchain_user, peggyrwn_contract, amount):
@@ -117,7 +113,7 @@ def test_case_2():
     wait_for_sifchain_addr_balance(owner_addr, SIF_ETH, owner_sifchain_balance_before_tx - amount)
     wait_for_eth_balance(operatorAddress, ETHEREUM_ETH, operator_balance_before_tx + amount)
     print("########## Test Case Two Over ##########")
-    
+
 
 def test_balance_does_not_change_without_manual_block_advance():
     print("########## test_balance_does_not_change_without_manual_block_advance")
