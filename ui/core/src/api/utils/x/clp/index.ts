@@ -63,12 +63,14 @@ export type RawPool = {
 
 type LiquidityDetailsResponse = {
   result: {
-    liquidity_provider_units: string;
-    liquidity_provider_address: string;
-    asset: {
-      symbol: string;
-      ticker: string;
-      source_chain: string;
+    LiquidityProvider: {
+      liquidity_provider_units: string;
+      liquidity_provider_address: string;
+      asset: {
+        symbol: string;
+        ticker: string;
+        source_chain: string;
+      };
     };
   };
   height: string;
@@ -104,7 +106,7 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
   return {
     clp: {
       getPools: async () => {
-        return (await base.get(`/clp/getPools`)).result;
+        return (await base.get(`/clp/getPools`)).result?.Pools;
       },
 
       getAssets: async (address) => {
