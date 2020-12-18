@@ -1,7 +1,8 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import { computed, reactive } from "@vue/reactivity";
+import { computed, reactive  } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
+import { Pool } from "ui-core";
 import Layout from "@/components/layout/Layout.vue";
 import PoolList from "@/components/poolList/PoolList.vue";
 import PoolListItem from "@/components/poolList/PoolListItem.vue";
@@ -11,39 +12,30 @@ import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 
 export default defineComponent({
   components: { Layout, SifButton, PriceCalculation, PoolList, PoolListItem, SinglePool },
-
-  mounted() {
-    this.getPools()
-  },
   
   setup() {
     const { actions, poolFinder, store } = useCore();
-    const state = reactive({
-      pools: ref(),
-      selectedPool: null,
-    })
+    const pools = ref<any>(null);
+    const selectedPool = ref<any>(null);
 
     async function getPools() {
-      await actions.clp.getLiquidityProviderPools().then((res) => {
-        state.pools = res
+      await actions.clp.getLiquidityProviderPools().then((res)=>{
+        pools.value = res
       })
     }
 
     getPools();
 
     return {
-      getPools: getPools,
-      state,
-      poolSelected: (index:number) => {
-        state.selectedPool = state.pools[index]
-      }
+      pools,
+      selectedPool,
     }
   }
 });
 </script>
 
 <template>
-  <SinglePool v-if="state.selectedPool" @back="state.selectedPool = null" />
+  <SinglePool v-if="selectedPool" @back="selectedPool = null" :pool="selectedPool" />
   <Layout v-else>
     <div>
       <div class="heading mb-8">
@@ -66,7 +58,7 @@ export default defineComponent({
         </div>
       </PriceCalculation>
       <PoolList class="mb-2">
-        <PoolListItem v-for="(pool, index) in state.pools" :key="index" :pool="pool" @poolSelected="poolSelected(index)"/>
+        <PoolListItem v-for="(pool, index) in pools" :key="index" :pool="pool" @click="selectedPool = pool"/>
       </PoolList>
       <div class="footer">
         Don’t see a pool you joined? <a href="#">Import it</a>

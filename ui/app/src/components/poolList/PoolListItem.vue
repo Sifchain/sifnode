@@ -1,6 +1,5 @@
 <script> 
-import { ref } from "vue";
-import { computed } from "@vue/reactivity";
+import { computed, ref } from "@vue/reactivity";
 import { useAssetItem } from "@/components/shared/utils";
 
 export default {
@@ -29,15 +28,7 @@ export default {
       return t.imageUrl;
     });
 
-
     return {
-      asset1: computed(() => {
-        return props.pool ? props.pool.amounts[1].asset.symbol.toUpperCase() : ''
-      }),
-      asset2: computed(() => {
-        return props.pool ? props.pool.amounts[0].asset.symbol.toUpperCase() : ''
-      }),
-
       fromSymbol, fromBackgroundStyle, fromTokenImage, 
       toSymbol, toBackgroundStyle, toTokenImage,
     }
@@ -46,12 +37,12 @@ export default {
 </script>
 
 <template>
-  <div class="pool-list-item" @click="$emit('poolSelected')">
+  <div class="pool-list-item">
     <div class="image">
       <img v-if="fromTokenImage" width="22" height="22" :src="fromTokenImage" class="info-img" />
-        <div class="placeholder" :style="fromBackgroundStyle" v-else></div>
-        <img v-if="toTokenImage" width="22" height="22" :src="toTokenImage" class="info-img" />
-        <div class="placeholder" :style="toBackgroundStyle" v-else></div>
+      <div class="placeholder" :style="fromBackgroundStyle" v-else></div>
+      <img v-if="toTokenImage" width="22" height="22" :src="toTokenImage" class="info-img" />
+      <div class="placeholder" :style="toBackgroundStyle" v-else></div>
     </div>
     <div class="symbol">
       <span>{{ fromSymbol.toUpperCase() }}</span>
