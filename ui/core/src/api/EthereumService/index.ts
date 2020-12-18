@@ -67,10 +67,7 @@ export class EthereumService implements IWalletService {
     this.state = reactive({ ...initState });
     getWeb3Provider() 
       .then((provider) => {
-        if (!provider) {
-          notify({type: "error", message: "Metamask not found.", detail: "Check if extension enabled for this URL."})
-          return this.provider = null
-        }
+        if (!provider) return this.provider = null 
         if (isEventEmittingProvider(provider)) {
           provider.on("connect", () => {
             this.state.connected = true;
