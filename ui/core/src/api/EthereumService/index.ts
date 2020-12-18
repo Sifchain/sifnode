@@ -17,7 +17,7 @@ import {
   transferAsset,
 } from "./utils/ethereumUtils";
 import { isToken } from "../../entities/utils/isToken";
-import notify from "../utils/NotificationService"
+import notify from "../utils/Notifications"
 
 type Address = string;
 type Balances = AssetAmount[];

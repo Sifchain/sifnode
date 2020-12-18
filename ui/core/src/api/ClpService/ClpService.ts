@@ -11,7 +11,7 @@ import { Fraction } from "../../entities/fraction/Fraction";
 import { SifUnSignedClient } from "../utils/SifClient";
 import { toPool } from "../utils/toPool";
 import ReconnectingWebSocket from "reconnecting-websocket";
-import notify from "../utils/NotificationService"
+import notify from "../utils/Notifications"
 
 export type ClpServiceContext = {
   assets: Asset[];
