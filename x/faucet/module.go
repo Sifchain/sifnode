@@ -2,6 +2,8 @@ package faucet
 
 import (
 	"encoding/json"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	"github.com/Sifchain/sifnode/x/faucet/client/cli"
 	"github.com/Sifchain/sifnode/x/faucet/client/rest"
@@ -46,12 +48,12 @@ func (AppModuleBasic) DefaultGenesis() json.RawMessage {
 
 // ValidateGenesis performs genesis state validation for the faucet module.
 func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
-	var data GenesisState
+	var data types.GenesisState
 	err := types.ModuleCdc.UnmarshalJSON(bz, &data)
 	if err != nil {
 		return err
 	}
-	return ValidateGenesis(data)
+	return types.ValidateGenesis(data)
 }
 
 // RegisterRESTRoutes registers the REST routes for the faucet module.
@@ -60,12 +62,12 @@ func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router
 }
 
 // GetTxCmd returns the root tx command for the faucet module.
-func (AppModuleBasic) GetTxCmd(_ *codec.Codec) *cobra.Command {
+func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetTxCmd(cdc)
 }
 
 // GetQueryCmd returns no root query command for the faucet module.
-func (AppModuleBasic) GetQueryCmd(_ *codec.Codec) *cobra.Command {
+func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 	return cli.GetQueryCmd(types.StoreKey, cdc)
 }
 
@@ -111,7 +113,7 @@ func (AppModule) Route() string {
 
 // NewHandler returns an sdk.Handler for the faucet module.
 func (am AppModule) NewHandler() sdk.Handler {
-	return NewHandler(am.keeper)
+	return NewHandler(am.bankKeeper,am.supplyKeeper)
 }
 
 // QuerierRoute returns the faucet module's querier route name.
@@ -141,7 +143,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 }
 
 // BeginBlock returns the begin blocker for the faucet module.
-func (AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {
+func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 	BeginBlocker(ctx, req, am.keeper)
 }
 

@@ -1,7 +1,10 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
 	"github.com/Sifchain/sifnode/x/faucet/types"
 	"github.com/spf13/cobra"
@@ -12,9 +15,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/"
-
-	"github.com/mossid/sdk-nameservice-example/x/faucet"
 )
 
 const (
@@ -31,11 +31,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	faucetTxCmd.AddCommand(flags.PostCommands(
-	// this line is used by starport scaffolding # 1
-	// TODO: Add tx based commands
-	// GetCmd<Action>(cdc)
-	)...)
+	faucetTxCmd.AddCommand(flags.PostCommands(GetCmdRequestCoins(cdc))...)
 
 	return faucetTxCmd
 }
@@ -45,28 +41,25 @@ func GetCmdRequestCoins(cdc *codec.Codec) *cobra.Command {
 		Use:   "request-coins [amount]",
 		Short: "request coins from faucet",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			txBldr := auth.NewTxBuilderFromCLI().WithCodec(cdc)
-			cliCtx := context.NewCLIContext().
-				WithCodec(cdc).
-				WithAccountDecoder(authcmd.GetAccountDecoder(cdc))
-
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
 			amount := viper.GetString(flagAmount)
 			coins, err := sdk.ParseCoins(amount)
 			if err != nil {
 				return err
 			}
 
-			account, err := cliCtx.GetFromAddress()
+			signer := cliCtx.GetFromAddress()
 			if err != nil {
 				return err
 			}
 
-			msg := faucet.MsgRequestCoins{
+			msg := types.MsgRequestCoins{
 				Coins:     coins,
-				Requester: account,
+				Requester: signer,
 			}
-
-			return completeAndBroadcastTxCli(txBldr, cliCtx, []sdk.Msg{msg})
+			return utils.GenerateOrBroadcastMsgs(cliCtx,txBldr, []sdk.Msg{msg})
 		},
 	}
 

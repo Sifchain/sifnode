@@ -49,10 +49,13 @@ func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryBalance)
-			faucetAddress := types.GetFaucetModuleAddress()
-			address := faucetAddress.String()
 			denom := args[0]
-			res, height, err := cliCtx.QueryWithData(route, bz)
+			faucetBalanceRequest := types.NewQueryReqGetFaucetBalance(denom)
+			bz, err := cliCtx.Codec.MarshalJSON(faucetBalanceRequest)
+			if err != nil {
+				return err
+			}
+			res, _, err := cliCtx.QueryWithData(route, bz)
 			if err != nil {
 				return err
 			}

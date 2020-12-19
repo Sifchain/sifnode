@@ -8,9 +8,18 @@ import (
 )
 
 // TODO: How do I add the specified account to send from in the MsgRequestCoinsStruct?
+
+var (
+	_ sdk.Msg = &MsgRequestCoins{}
+
+)
 type MsgRequestCoins struct {
 	Coins     sdk.Coins
 	Requester sdk.AccAddress
+}
+
+func (msg MsgRequestCoins) Route() string {
+	return RouterKey
 }
 
 func (msg MsgRequestCoins) Name() string {
@@ -26,7 +35,6 @@ func (msg MsgRequestCoins) ValidateBasic() error {
 	}
 	if !msg.Coins.IsAllPositive() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "Bids must be positive")
-
 	}
 	return nil
 }
