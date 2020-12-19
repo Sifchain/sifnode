@@ -51,7 +51,7 @@ const liquidityParams = {
   signer: "",
 };
 const getLiquidityProvider = {
-  ticker: "foo",
+  symbol: "foo",
   lpAddress: "bar",
 };
 let base: LcdClient;
@@ -101,6 +101,6 @@ test("createPool", async () => {
 test("getLiquidityProvider", async () => {
   await clp.getLiquidityProvider(getLiquidityProvider);
   expect(base.get).toHaveBeenCalledWith(
-    `/clp/getLiquidityProvider?ticker=foo&lpAddress=bar`
+    `/clp/getLiquidityProvider?symbol=foo&lpAddress=bar`
   );
 });

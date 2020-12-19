@@ -1,4 +1,4 @@
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+const { deployProxy, silenceWarnings } = require('@openzeppelin/truffle-upgrades');
 
 const Valset = artifacts.require("Valset");
 const CosmosBridge = artifacts.require("CosmosBridge");
@@ -40,6 +40,7 @@ contract("BridgeBank", function (accounts) {
 
   describe("BridgeBank deployment and basics", function () {
     beforeEach(async function () {
+      await silenceWarnings();
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree];
       this.initialPowers = [5, 8, 12];

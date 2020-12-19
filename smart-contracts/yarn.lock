@@ -250,19 +250,19 @@
     web3 "^1.2.5"
     web3-utils "^1.2.5"
 
-"@openzeppelin/truffle-upgrades@1.2.4":
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/truffle-upgrades/-/truffle-upgrades-1.2.4.tgz#7170839d35af7339ba1d630b726022e6a274b5f4"
-  integrity sha512-7LqbAR1pQp7yhfPT7ZU8CMs3u8WpqY5gG2GiABiYHFsN4hVnINCLihe4PKvLsMwNq2BCmlQq3N9mxoJEycKckw==
+"@openzeppelin/truffle-upgrades@1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/truffle-upgrades/-/truffle-upgrades-1.3.0.tgz#f4332d05126e7a2a9deae9b22f474cef73ef9f62"
+  integrity sha512-iylqG+6J6yEmyHNOotSmmvTMz30HW1NH9O8JBRlYvsstbntIv/Eg+DhS032euBWnWIYu6D+MBqx2ZjEVwN14hw==
   dependencies:
-    "@openzeppelin/upgrades-core" "^1.2.0"
+    "@openzeppelin/upgrades-core" "^1.4.0"
     "@truffle/contract" "^4.2.12"
     solidity-ast "^0.4.4"
 
-"@openzeppelin/upgrades-core@^1.2.0":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-1.4.1.tgz#fe397ab3915d766553ae4b4f0ca89f7a7b270c05"
-  integrity sha512-n3chUL6PCY7f/25otWqvmhf8mdMj4oqY1AZLIFVP8eMMQy3xoBB5MomgnXs/9H86AnuWqM9PIzxNgxufi7gQIg==
+"@openzeppelin/upgrades-core@^1.4.0":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-1.4.2.tgz#e96dbb36f839ff4d39b314ab79b18a08dbf94c90"
+  integrity sha512-GbhPu8HXNdfHQNSIDkDvncWzZmwuv+RrOnDcePo2B++uMxFiEbKNyKCwUVvqZZd8StlxyxCs95E1ci/TZ6Dzfg==
   dependencies:
     bn.js "^5.1.2"
     cbor "^5.0.2"
