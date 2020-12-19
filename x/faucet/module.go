@@ -2,8 +2,6 @@ package faucet
 
 import (
 	"encoding/json"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	"github.com/Sifchain/sifnode/x/faucet/client/cli"
 	"github.com/Sifchain/sifnode/x/faucet/client/rest"
@@ -113,7 +111,7 @@ func (AppModule) Route() string {
 
 // NewHandler returns an sdk.Handler for the faucet module.
 func (am AppModule) NewHandler() sdk.Handler {
-	return NewHandler(am.bankKeeper,am.supplyKeeper)
+	return NewHandler(am.bankKeeper, am.supplyKeeper)
 }
 
 // QuerierRoute returns the faucet module's querier route name.
@@ -128,7 +126,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 // InitGenesis performs genesis initialization for the faucet module. It returns
 // no validator updates.
-func (am AppModule) InitGenesis(_ sdk.Context, _ json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
 	InitGenesis(ctx, am.keeper, genesisState)

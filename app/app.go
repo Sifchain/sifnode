@@ -55,7 +55,7 @@ var (
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
 		clp.ModuleName:            {supply.Burner, supply.Minter},
-		faucet.ModuleName:		   {supply.Minter},
+		faucet.ModuleName:         {supply.Minter},
 	}
 )
 
@@ -92,10 +92,8 @@ type NewApp struct {
 	OracleKeeper    oracle.Keeper
 	clpKeeper       clp.Keeper
 
-	faucetKeeper    faucet.Keeper
-	mm              *module.Manager
-
-	
+	faucetKeeper faucet.Keeper
+	mm           *module.Manager
 
 	sm *module.SimulationManager
 }
@@ -194,9 +192,11 @@ func NewInitApp(
 		app.SupplyKeeper,
 		app.subspaces[clp.ModuleName])
 
-	app.FaucetKeeper = faucet.NewKeeper(
-		app.SupplyKeeper
-	)
+	app.faucetKeeper = faucet.NewKeeper(
+		app.SupplyKeeper,
+		app.cdc,
+		keys[faucet.StoreKey],
+		app.bankKeeper)
 
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx),
@@ -207,7 +207,7 @@ func NewInitApp(
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
 		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
-		faucet.NewAppModule(app.FaucetKeeper, app.SupplyKeeper),
+		faucet.NewAppModule(app.faucetKeeper, app.bankKeeper, app.SupplyKeeper),
 	)
 
 	// there is nothing left over in the validator fee pool, so as to keep the
