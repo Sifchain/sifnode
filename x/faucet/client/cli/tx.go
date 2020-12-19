@@ -42,7 +42,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 
 func GetCmdRequestCoins(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "request-coins",
+		Use:   "request-coins [amount]",
 		Short: "request coins from faucet",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := auth.NewTxBuilderFromCLI().WithCodec(cdc)

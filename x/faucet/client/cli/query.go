@@ -38,24 +38,25 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "faucet-balance",
+		Use:   "faucet-balance [denom]",
 		Short: "Get account details for faucet",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Query details for faucet balance.`,
 				version.ClientName,
 			),
 		),
-		Args: cobra.ExactArgs(0),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryBalance)
+			faucetAddress := types.GetFaucetModuleAddress()
+			address := faucetAddress.String()
+			denom := args[0]
 			res, height, err := cliCtx.QueryWithData(route, bz)
 			if err != nil {
 				return err
 			}
-			faucetAddress := types.GetFaucetModuleAddress()
-			address := faucetAddress.String()
-			return cliCtx.PrintOutput(address)
+			return cliCtx.PrintOutput(res)
 		},
 	}
 }
