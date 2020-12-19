@@ -4,6 +4,7 @@ import Swap from "@/views/SwapPage.vue";
 import Pool from "@/views/PoolPage.vue";
 import CreatePool from "@/views/CreatePoolPage.vue";
 import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
+import TabsPage from "@/views/TabsPage.vue";
 
 // Demo UI views
 import Ui from "@/views/uiDemo/Ui.vue";
@@ -39,7 +40,11 @@ const routes: Array<RouteRecordRaw> = [
     name: "RemoveLiquidity",
     component: RemoveLiquidity,
   },
-
+  {
+    path: "/ui/tabs",
+    name: "Tabs",
+    component: TabsPage,
+  },
 ];
 
 const router = createRouter({
