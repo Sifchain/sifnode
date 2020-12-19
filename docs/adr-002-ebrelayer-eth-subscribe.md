@@ -17,7 +17,7 @@ For ebrelayer, it just needs to subscribe to the events from the BridgeBank smar
 2. How to store the events, there are two options. First one is store them in memory, but events will be lost if ebrelayer restarted. Second solution is store in local db, message queue like Kafka, but will increase the complexity of ebrelayer's deployment.
 
 ## Current solution
-We start to process the events happened 30 blocks before. 30 blocks can guarantee the finalization of block. Then there is no impact from block reorganization. Repeated events and invalid events are abondoned in events buffer. We choose memory to store events for now, it is simple and easy to implements. The ebrelayer will miss some events if ebrelayer restarted. Considering the whole Sifchain system is a decentralized, we can tolerate some ebrelayer offline and not send transaction to Sifnode.  
+We start to process the events happened 50 blocks before. 50 blocks can guarantee the finalization of block. Then there is no impact from block reorganization. Repeated events and invalid events are abondoned in events buffer. We choose memory to store events for now, it is simple and easy to implements. The ebrelayer will miss some events if ebrelayer restarted. Considering the whole Sifchain system is a decentralized, we can tolerate some ebrelayer offline and not send transaction to Sifnode.  
 
 ### Pros and Cons
 
