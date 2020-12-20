@@ -30,6 +30,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		flags.GetCommands(
 			// this line is used by starport scaffolding # 1
 			GetCmdFaucet(queryRoute, cdc),
+			GetCmdFaucetAddress(queryRoute, cdc),
 		)...,
 	)
 
@@ -60,6 +61,23 @@ func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 			return cliCtx.PrintOutput(res)
+		},
+	}
+}
+
+func GetCmdFaucetAddress(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "faucet-address",
+		Short: "Get account address for faucet",
+		Long: strings.TrimSpace(
+			fmt.Sprintf(`Query address for faucet.`,
+				version.ClientName,
+			),
+		),
+		Args: cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			return cliCtx.PrintOutput(types.GetFaucetModuleAddress())
 		},
 	}
 }
