@@ -1,3 +1,5 @@
+require "securerandom"
+
 desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
   desc "Scaffold new cluster environment configuration"
@@ -153,11 +155,18 @@ namespace :cluster do
     end
   end
 
-  desc "Manage eth full node deploy, upgrade, etc processes"
-  namespace :ethnode do
-    desc "Deploy a full eth node onto your cluster"
-    task :deploy do
-      puts "Coming soon! "
+  desc "eth operations"
+  namespace :ethereum do
+    desc "Deploy an ETH node"
+    task :deploy, [:chainnet, :provider, :namespace] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm upgrade ethereum #{cwd}/../../deploy/helm/ethereum \
+            --install -n #{ns(args)} --create-namespace \
+            --set ethstats.env.websocketSecret=#{SecureRandom.base64 20}
+            }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
   end
 
