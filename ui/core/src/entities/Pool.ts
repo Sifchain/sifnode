@@ -27,7 +27,7 @@ export function Pool(
       [AssetAmount(a.asset, "0"), AssetAmount(b.asset, "0")],
       a,
       b
-    ).add(poolUnits),
+    ),
 
     priceAsset(asset: Asset) {
       return this.calcSwapResult(AssetAmount(asset, "1"));
