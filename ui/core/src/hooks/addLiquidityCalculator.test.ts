@@ -72,8 +72,8 @@ describe("usePoolCalculator", () => {
     fromSymbol.value = "atk";
     toSymbol.value = "rowan";
 
-    expect(aPerBRatioMessage.value).toBe("2.00000000 ATK per ROWAN");
-    expect(bPerARatioMessage.value).toBe("0.50000000 ROWAN per ATK");
+    expect(aPerBRatioMessage.value).toBe("2.00000000");
+    expect(bPerARatioMessage.value).toBe("0.50000000");
     expect(shareOfPoolPercent.value).toBe("100.00%");
   });
 
@@ -92,8 +92,8 @@ describe("usePoolCalculator", () => {
     fromSymbol.value = "atk";
     toSymbol.value = "rowan";
 
-    expect(aPerBRatioMessage.value).toBe("2.00000000 ATK per ROWAN");
-    expect(bPerARatioMessage.value).toBe("0.50000000 ROWAN per ATK");
+    expect(aPerBRatioMessage.value).toBe("2.00000000");
+    expect(bPerARatioMessage.value).toBe("0.50000000");
     expect(shareOfPoolPercent.value).toBe("0.07%");
   });
 
