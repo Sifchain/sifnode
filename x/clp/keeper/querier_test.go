@@ -32,7 +32,8 @@ func TestQueryErrorPool(t *testing.T) {
 	assert.Error(t, err)
 	_, err = querier(ctx, []string{types.QueryPool}, query)
 	assert.Error(t, err)
-	keeper.DestroyPool(ctx, pool.ExternalAsset.Symbol)
+	err = keeper.DestroyPool(ctx, pool.ExternalAsset.Symbol)
+	require.NoError(t, err)
 	query.Path = ""
 	query.Data = qp
 	_, err = querier(ctx, []string{types.QueryPool}, query)
@@ -62,7 +63,7 @@ func TestQueryGetPool(t *testing.T) {
 	query.Data = qp
 	qpool, err := querier(ctx, []string{types.QueryPool}, query)
 	assert.NoError(t, err)
-	var p types.Pool
+	var p types.PoolResponse
 	err = keeper.Codec().UnmarshalJSON(qpool, &p)
 	assert.NoError(t, err)
 	assert.Equal(t, pool.ExternalAsset, p.ExternalAsset)
@@ -96,11 +97,12 @@ func TestQueryGetPools(t *testing.T) {
 	//Test Pools
 	qpools, err := querier(ctx, []string{types.QueryPools}, query)
 	assert.NoError(t, err)
-	var poolist []types.Pool
-	err = keeper.Codec().UnmarshalJSON(qpools, &poolist)
+	var poolsRes types.PoolsResponse
+
+	err = keeper.Codec().UnmarshalJSON(qpools, &poolsRes)
 	assert.NoError(t, err)
-	assert.Greater(t, len(poolist), 0, "More than one pool added")
-	assert.LessOrEqual(t, len(poolist), len(pools), "Set pool will ignore duplicates")
+	assert.Greater(t, len(poolsRes.Pools), 0, "More than one pool added")
+	assert.LessOrEqual(t, len(poolsRes.Pools), len(pools), "Set pool will ignore duplicates")
 }
 
 func TestQueryErrorLiquidityProvider(t *testing.T) {
@@ -152,7 +154,7 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	query.Data = qlp
 	qliquidityprovider, err := querier(ctx, []string{types.QueryLiquidityProvider}, query)
 	assert.NoError(t, err)
-	var l types.LiquidityProvider
+	var l types.LiquidityProviderResponse
 	err = keeper.Codec().UnmarshalJSON(qliquidityprovider, &l)
 	assert.NoError(t, err)
 	assert.Equal(t, lp.Asset, l.Asset)
@@ -161,10 +163,16 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 
 func SetData(keeper clp.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {
 	pool := test.GenerateRandomPool(1)[0]
-	keeper.SetPool(ctx, pool)
+	err := keeper.SetPool(ctx, pool)
+	if err != nil {
+		ctx.Logger().Error("Unable to set pool")
+	}
 	pools := test.GenerateRandomPool(10)
 	for _, p := range pools {
-		keeper.SetPool(ctx, p)
+		err = keeper.SetPool(ctx, p)
+		if err != nil {
+			ctx.Logger().Error("Unable to set pool")
+		}
 	}
 	lp := test.GenerateRandomLP(1)[0]
 	keeper.SetLiquidityProvider(ctx, lp)

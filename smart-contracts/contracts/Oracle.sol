@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.16;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Valset.sol";
@@ -80,6 +80,10 @@ contract Oracle is OracleStorage {
         require(
             _consensusThreshold > 0,
             "Consensus threshold must be positive."
+        );
+        require(
+            _consensusThreshold <= 100,
+            "Invalid consensus threshold."
         );
         operator = _operator;
         cosmosBridge = _cosmosBridge;

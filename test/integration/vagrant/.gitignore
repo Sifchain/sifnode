@@ -1,3 +1,5 @@
 /vagrantenv.sh
 /.vagrant/
 /.depend/
+/data/
+/datafiles*tar

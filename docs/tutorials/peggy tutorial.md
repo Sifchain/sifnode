@@ -1,4 +1,8 @@
-# Sifchain - Peggy/ethBridge Demo
+# Sifchain - Peggy/ethBridge tutorial  
+
+#### Youtube video
+
+* https://www.youtube.com/watch?v=B16z4XwxUNY&t=9s
 
 #### Dependencies:
 

@@ -1,0 +1,31 @@
+{
+  "assets": [
+    {
+      "symbol": "erowan",
+      "decimals": 18,
+      "name": "Rowan",
+      "address": "",
+      "network": "ethereum"
+    },
+    {
+      "name": "Ethereum",
+      "symbol": "eth",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "symbol": "atk",
+      "decimals": 6,
+      "name": "Apple Coin",
+      "address": "0xe17ea03FDb6cc222eA18b7FDeB81B67eB904F67b",
+      "network": "ethereum"
+    },
+    {
+      "symbol": "btk",
+      "decimals": 6,
+      "name": "Banana Coin",
+      "address": "0x88E775C90031CedC975B7568D4fDCf4E3Dd06C9e",
+      "network": "ethereum"
+    }
+  ]
+}

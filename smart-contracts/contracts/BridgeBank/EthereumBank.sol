@@ -1,8 +1,8 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.16;
 
 import "./BridgeToken.sol";
 import "./EthereumBankStorage.sol";
-
+import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 /*
  *  @title: EthereumBank
  *  @dev: Ethereum bank which locks Ethereum/ERC20 token deposits, and unlocks
@@ -10,6 +10,7 @@ import "./EthereumBankStorage.sol";
  */
 contract EthereumBank is EthereumBankStorage {
     using SafeMath for uint256;
+    using SafeERC20 for IERC20;
 
     /*
      * @dev: Event declarations
@@ -128,12 +129,10 @@ contract EthereumBank is EthereumBankStorage {
 
         // Transfer funds to intended recipient
         if (_token == address(0)) {
-            _recipient.transfer(_amount);
+            _recipient.call.value(_amount)("");
         } else {
-            require(
-                BridgeToken(_token).transfer(_recipient, _amount),
-                "Token transfer failed"
-            );
+            IERC20 tokenToTransfer = IERC20(_token);
+            tokenToTransfer.safeTransfer(_recipient, _amount);
         }
 
         emit LogUnlock(_recipient, _token, _symbol, _amount);
