@@ -121,8 +121,8 @@ namespace :cluster do
 
       cmd = %Q{helm upgrade ebrelayer #{cwd}/../../deploy/helm/ebrelayer \
         --install -n #{ns(args)} --create-namespace \
-        --set ebrelayer.image.repository=#{image_repository(args)} \
-        --set ebrelayer.image.tag=#{image_tag(args)} \
+        --set image.repository=#{image_repository(args)} \
+        --set image.tag=#{image_tag(args)} \
         --set ebrelayer.env.chainnet=#{args[:chainnet]} \
         --set ebrelayer.env.nodeHost=#{args[:node_host]} \
         --set ebrelayer.env.ethWebsocketAddress=#{args[:eth_websocket_address]} \
