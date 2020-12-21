@@ -376,7 +376,7 @@ func TestMsgLock(t *testing.T) {
 		5777,
 		badAddrs[0],
 		types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57"),
-		int64(10),
+		sdk.NewInt(10),
 		"stake",
 	)
 	_, err := handler(ctx, msgLock)
@@ -391,7 +391,7 @@ func TestMsgLock(t *testing.T) {
 		5777,
 		cosmosSender.GetAddress(),
 		types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57"),
-		int64(10),
+		sdk.NewInt(10),
 		"cstake",
 	)
 
@@ -406,7 +406,7 @@ func TestMsgLock(t *testing.T) {
 		5777,
 		cosmosSender.GetAddress(),
 		types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57"),
-		int64(10),
+		sdk.NewInt(10),
 		"stake",
 	)
 
