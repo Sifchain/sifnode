@@ -37,6 +37,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return faucetQueryCmd
 }
 
+// Query to get faucet balance with the specified denom
 func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "faucet-balance [denom]",
@@ -50,8 +51,8 @@ func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryBalance)
-			denom := args[0]
-			faucetBalanceRequest := types.NewQueryReqGetFaucetBalance(denom)
+			denomString := args[0]
+			faucetBalanceRequest := types.NewQueryReqGetFaucetBalance(denomString)
 			bz, err := cliCtx.Codec.MarshalJSON(faucetBalanceRequest)
 			if err != nil {
 				return err
@@ -65,6 +66,7 @@ func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
+// Query to get faucet module address
 func GetCmdFaucetAddress(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "faucet-address",

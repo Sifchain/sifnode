@@ -3,12 +3,12 @@ package cli
 import (
 	"bufio"
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
 	"github.com/Sifchain/sifnode/x/faucet/types"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -31,20 +31,24 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	faucetTxCmd.AddCommand(flags.PostCommands(GetCmdRequestCoins(cdc))...)
+	faucetTxCmd.AddCommand(flags.PostCommands(
+		GetCmdRequestCoins(cdc),
+		GetCmdAddCoins(cdc))...)
 
 	return faucetTxCmd
 }
 
+// TX to request coins from faucet module account to the requesters account
 func GetCmdRequestCoins(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "request-coins [amount]",
 		Short: "request coins from faucet",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			amount := viper.GetString(flagAmount)
+			amount := args[0]
 			coins, err := sdk.ParseCoins(amount)
 			if err != nil {
 				return err
@@ -59,12 +63,39 @@ func GetCmdRequestCoins(cdc *codec.Codec) *cobra.Command {
 				Coins:     coins,
 				Requester: signer,
 			}
-			return utils.GenerateOrBroadcastMsgs(cliCtx,txBldr, []sdk.Msg{msg})
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
+	return cmd
+}
 
-	cmd.Flags().String(flagAmount, "", "Amount of coins to request")
-	cmd.MarkFlagRequired(flagAmount)
+// TX to add coins from an account to the faucet module account
+func GetCmdAddCoins(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add-coins [amount]",
+		Short: "add coins to faucet",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			amount := args[0]
+			coins, err := sdk.ParseCoins(amount)
+			if err != nil {
+				return err
+			}
 
+			signer := cliCtx.GetFromAddress()
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgAddCoins{
+				Signer: signer,
+				Coins:  coins,
+			}
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
 	return cmd
 }

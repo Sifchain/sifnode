@@ -17,7 +17,6 @@ func NewQuerier(k Keeper) sdk.Querier {
 		// this line is used by starport scaffolding # 2
 		case types.QueryBalance:
 			return queryBalance(ctx, req, k)
-			// TODO: Put the modules query routes
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown faucet query endpoint")
 		}
@@ -27,7 +26,6 @@ func NewQuerier(k Keeper) sdk.Querier {
 func queryBalance(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, error) {
 	var params types.QueryReqGetFaucetBalance
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
-	// TODO: return the balance from the faucet address
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}

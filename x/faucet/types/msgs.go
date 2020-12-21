@@ -7,15 +7,18 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// TODO: How do I add the specified account to send from in the MsgRequestCoinsStruct?
-
 var (
 	_ sdk.Msg = &MsgRequestCoins{}
-
+	_ sdk.Msg = &MsgAddCoins{}
 )
+
 type MsgRequestCoins struct {
 	Coins     sdk.Coins
 	Requester sdk.AccAddress
+}
+
+func NewMsgRequestCoins(requester sdk.AccAddress, coins sdk.Coins) MsgRequestCoins {
+	return MsgRequestCoins{Requester: requester, Coins: coins}
 }
 
 func (msg MsgRequestCoins) Route() string {
@@ -48,4 +51,42 @@ func (msg MsgRequestCoins) GetSignBytes() []byte {
 }
 func (msg MsgRequestCoins) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Requester}
+}
+
+type MsgAddCoins struct {
+	Signer sdk.AccAddress
+	Coins  sdk.Coins
+}
+
+func NewMsgAddCoins(signer sdk.AccAddress, coins sdk.Coins) MsgAddCoins {
+	return MsgAddCoins{Signer: signer, Coins: coins}
+}
+
+func (msg MsgAddCoins) Route() string {
+	return RouterKey
+}
+
+func (msg MsgAddCoins) Name() string {
+	return "request_coins"
+}
+func (msg MsgAddCoins) Type() string {
+	return "faucet"
+}
+
+func (msg MsgAddCoins) ValidateBasic() error {
+	if msg.Signer.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Signer.String())
+	}
+	return nil
+}
+
+func (msg MsgAddCoins) GetSignBytes() []byte {
+	bz, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+	return sdk.MustSortJSON(bz)
+}
+func (msg MsgAddCoins) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.Signer}
 }
