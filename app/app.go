@@ -2,12 +2,13 @@ package app
 
 import (
 	"encoding/json"
+	"io"
+	"os"
+
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	tmos "github.com/tendermint/tendermint/libs/os"
-	"io"
-	"os"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -179,6 +180,9 @@ func NewInitApp(
 		app.cdc, keys[slashing.StoreKey], &stakingKeeper, app.subspaces[slashing.ModuleName],
 	)
 
+	app.stakingKeeper = *stakingKeeper.SetHooks(
+		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()))
+
 	app.OracleKeeper = oracle.NewKeeper(
 		app.cdc,
 		keys[oracle.StoreKey],
@@ -198,9 +202,6 @@ func NewInitApp(
 		app.bankKeeper,
 		app.SupplyKeeper,
 		app.subspaces[clp.ModuleName])
-
-	app.stakingKeeper = *stakingKeeper.SetHooks(
-		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()))
 
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.AccountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
