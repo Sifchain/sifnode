@@ -41,8 +41,8 @@ where:
 
 |Param|Description|
 |-----|----------|
-|<chainID>|The Chain ID of the network (e.g.: merry-go-round).|
-|<provider>|The cloud provider to use (currently only AWS is supported).|
+|`<chainID>`|The Chain ID of the network (e.g.: merry-go-round).|
+|`<provider>`|The cloud provider to use (currently only AWS is supported).|
 
 3. Once complete, you'll notice that several Terraform files/folders have been setup inside of the `.live` directory. We recommend you leave the defaults as-is, but for those that have experience with Terraform, feel free to adjust the configuration as you see fit.
 
@@ -106,14 +106,14 @@ where:
 
 |Param|Description|
 |-----|----------|
-|<chainID>|The Chain ID of the network (e.g.: merry-go-round).|
-|<provider>|The cloud provider to use (currently only AWS is supported).|
-|<namespace>|The Kubernetes namespace to use (e.g.: sifnode).|
-|<image>|The image to pull down from Docker Hub (e.g.: sifchain/sifnoded).|
-|<image tag>|The image tag to use (e.g.: merry-go-round).|
-|<moniker>|The moniker or name of your node as you want it to appear on the network.|
-|<peer address>|The address of the peer to connect to.|
-|<genesis URL>|The URL of genesis file for the network.|
+|`<chainID>`|The Chain ID of the network (e.g.: merry-go-round).|
+|`<provider>`|The cloud provider to use (currently only AWS is supported).|
+|`<namespace>`|The Kubernetes namespace to use (e.g.: sifnode).|
+|`<image>`|The image to pull down from Docker Hub (e.g.: sifchain/sifnoded).|
+|`<image tag>`|The image tag to use (e.g.: merry-go-round).|
+|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
+|`<peer address>`|The address of the peer to connect to.|
+|`<genesis URL>`|The URL of genesis file for the network.|
 
 e.g.:
 
@@ -177,11 +177,11 @@ where:
 
 |Param|Description|
 |-----|----------|
-|<chainID>|The Chain ID of the network (e.g.: merry-go-round).|
-|<moniker>|The moniker or name of your node as you want it to appear on the network.|
-|<amount>|The amount to stake, including the denomination (e.g.: 100000000rowan).|
-|<public key>|The public key of your validator (you got this in the previous step).|
-|<node RPC address>|The address to broadcast the transaction to (e.g.: tcp://<node IP address>:26657).|
+|`<chainID>`|The Chain ID of the network (e.g.: merry-go-round).|
+|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
+|`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan).|
+|`<public key>`|The public key of your validator (you got this in the previous step).|
+|`<node RPC address>`|The address to broadcast the transaction to (e.g.: tcp://<node IP address>:26657).|
 
 e.g.:
 
