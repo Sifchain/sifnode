@@ -7,7 +7,7 @@ export function useTokenListing({
   store,
   walletLimit,
   tokenLimit,
-  selectedTokens,
+  selectedTokens = [],
 }: {
   searchText: Ref<string>;
   store: Store;

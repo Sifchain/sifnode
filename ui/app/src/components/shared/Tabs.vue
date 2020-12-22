@@ -12,8 +12,11 @@
       </div>
     </div>
   </div>
+  <div>
+    <slot></slot>
+  </div>
 </template>
-<style lang="scss">
+<style lang="scss" scoped>
 .tab-header-holder {
   display: flex;
 }
@@ -41,24 +44,43 @@
     border-top-right-radius: 4px;
   }
 }
+.tab-panel {
+  display: none;
+  &.selected {
+    display: block;
+  }
+}
 </style>
 <script lang="ts">
-import { ref } from "vue";
+import {
+  EmitsOptions,
+  provide,
+  ref,
+  RendererElement,
+  RendererNode,
+  SetupContext,
+  VNode,
+} from "vue";
+import { effect } from "@vue/reactivity";
 export default {
-  setup() {
+  setup(_: any, context: SetupContext<EmitsOptions>) {
     const selectedIndex = ref(0);
+    const slots = (context.slots.default && context.slots.default()) ?? [];
+    const tabs = slots.map((s) => ({ name: (s.props as any).title }));
+    const selectedTitle = ref<string | undefined>(tabs[0].name);
+
     function tabSelected(index: number) {
+      const selectedProps = tabs[index].name;
       selectedIndex.value = index;
+      selectedTitle.value = selectedProps;
     }
+
+    provide("Tabs_selectedTitle", selectedTitle);
+
     return {
       selectedIndex,
       tabSelected,
-      tabs: [
-        { name: "Standard" },
-        { name: "Foo" },
-        { name: "Bar" },
-        { name: "Pegged" },
-      ],
+      tabs,
     };
   },
 };

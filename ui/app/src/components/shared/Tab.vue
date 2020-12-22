@@ -4,16 +4,17 @@
   </div>
 </template>
 <script>
+import { inject } from "vue";
+import { computed } from "@vue/reactivity";
 export default {
   props: {
-    title: {
-      type: String,
-      default: "Tab",
-    },
+    title: String,
   },
-  data() {
+  setup(props) {
+    const selectedTitle = inject("Tabs_selectedTitle");
+
     return {
-      isActive: true,
+      isActive: computed(() => props.title === selectedTitle.value),
     };
   },
 };

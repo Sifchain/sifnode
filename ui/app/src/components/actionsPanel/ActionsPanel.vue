@@ -43,6 +43,7 @@ export default defineComponent({
             Connected to {{ connectedText }} <Icon icon="tick" />
           </div>
           <SifButton
+            v-if="nextStepMessage"
             block
             primary
             :disabled="!nextStepAllowed"
