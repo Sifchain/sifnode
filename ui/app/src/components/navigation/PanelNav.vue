@@ -14,7 +14,6 @@
     ></PanelNavItem>
     <PanelNavItem
       to="/pool"
-      disabled
       icon="pool"
       label="Pool"
       color="green"

@@ -9,11 +9,7 @@ export default defineComponent({
   },
   setup(props) {
     const symbol = computed(() => props.symbol);
-    const asset = useAssetItem(symbol);
-
-    const token = asset.token;
-    const tokenLabel = asset.label;
-    const backgroundStyle = asset.background;
+    const { token, tokenLabel, backgroundStyle } = useAssetItem(symbol);
 
     const tokenImage = computed(() => {
       if (!token.value) return "";
@@ -28,10 +24,9 @@ export default defineComponent({
 
 <template>
   <div class="info-row">
+    <div class="info-amount">{{ amount }}</div>
     <img v-if="tokenImage" width="24" :src="tokenImage" class="info-img" />
     <div class="placeholder" :style="backgroundStyle" v-else></div>
-    <div class="info-amount">{{ amount }}</div>
-    <div class="info-token">{{ tokenLabel }}</div>
   </div>
 </template>
 
@@ -44,7 +39,8 @@ export default defineComponent({
     font-weight: 400;
   }
   &-amount {
-    font-size: 25px;
+    font-size: 30px;
+    font-weight: bold;
   }
   &-token {
     margin-left: auto;
