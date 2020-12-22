@@ -17,6 +17,7 @@ import {
   transferAsset,
 } from "./utils/ethereumUtils";
 import { isToken } from "../../entities/utils/isToken";
+import notify from "../utils/Notifications"
 
 type Address = string;
 type Balances = AssetAmount[];
@@ -64,18 +65,22 @@ export class EthereumService implements IWalletService {
   ) {
     // init state
     this.state = reactive({ ...initState });
-
-    getWeb3Provider().then((provider) => {
-      if (isEventEmittingProvider(provider)) {
-        provider.on("connect", () => {
-          this.state.connected = true;
-        });
-        provider.on("disconnect", () => {
-          this.state.connected = false;
-        });
-      }
-      this.provider = provider;
-    });
+    getWeb3Provider() 
+      .then((provider) => {
+        if (!provider) return this.provider = null 
+        if (isEventEmittingProvider(provider)) {
+          provider.on("connect", () => {
+            this.state.connected = true;
+          });
+          provider.on("disconnect", () => {
+            this.state.connected = false;
+          });
+        }
+        this.provider = provider;
+    })
+    .catch((error) => {
+      console.log('er', error)
+    })
   }
 
   getState() {
@@ -126,6 +131,7 @@ export class EthereumService implements IWalletService {
       }
 
       this.addWeb3Subscription();
+      notify({type: "success", message: "Connected to Metamask"})
       await this.updateData();
     } catch (err) {
       this.web3 = null;
