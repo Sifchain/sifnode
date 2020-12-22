@@ -127,7 +127,7 @@ namespace :cluster do
         --set ebrelayer.env.ethBridgeRegistryAddress=#{args[:eth_bridge_registry_address]} \
         --set ebrelayer.env.ethPrivateKey=#{args[:eth_private_key]} \
         --set ebrelayer.env.moniker=#{args[:moniker]} \
-        --set ebrelayer.env.mnemonic=#{args[:mnemonic]}
+        --set ebrelayer.mnemonic=#{args[:mnemonic]}
       }
 
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
