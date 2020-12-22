@@ -164,7 +164,7 @@ func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 	//nolint:lll
 	return &cobra.Command{
-		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] --ethereum-chain-id [ethereum-chain-id]",
+		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [ceth-amount] [message-type] --ethereum-chain-id [ethereum-chain-id]",
 		Short: "This should be used to lock Cosmos-originating coins (eg: ATOM). It will lock up your coins in the supply module, removing them from your account. It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the minting of the pegged token on Etherum to you!",
 		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -205,7 +205,25 @@ func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 
 			symbol := args[3]
 
-			msg := types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol)
+			cethAmount, ok := sdk.NewIntFromString(args[4])
+
+			if !ok {
+				return err
+			}
+			if cethAmount.LT(sdk.NewInt(0)) {
+				return types.ErrInvalidAmount
+			}
+
+			messageType, err := strconv.ParseInt(args[5], 10, 32)
+
+			if err != nil {
+				return err
+			}
+			if messageType < 0 {
+				return types.ErrInvalidMessageType
+			}
+
+			msg := types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol, cethAmount, types.MessageType(messageType))
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
