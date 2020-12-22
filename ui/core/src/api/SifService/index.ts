@@ -11,7 +11,6 @@ import {
   Asset,
   AssetAmount,
   Coin,
-  LiquidityProvider,
   Network,
   TxParams,
 } from "../../entities";
@@ -23,28 +22,10 @@ import { ensureSifAddress } from "./utils";
 export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
+  assets: Asset[];
 };
 
-type IClpService = {
-  swap: (params: { receivedAsset: Asset; sentAmount: AssetAmount }) => any;
-  addLiquidity: (params: {
-    nativeAssetAmount: AssetAmount;
-    externalAssetAmount: AssetAmount;
-  }) => any;
-  createPool: (params: {
-    nativeAssetAmount: AssetAmount;
-    externalAssetAmount: AssetAmount;
-  }) => any;
-  getLiquidityProvider: (params: {
-    ticker: string;
-    lpAddress: string;
-  }) => Promise<LiquidityProvider | null>;
-  removeLiquidity: (params: {
-    wBasisPoints: string;
-    asymmetry: string;
-    asset: Asset;
-  }) => any;
-};
+type ISifService = IWalletService & { getSupportedTokens: () => Asset[] };
 
 /**
  * Constructor for SifService
@@ -54,7 +35,8 @@ type IClpService = {
 export default function createSifService({
   sifAddrPrefix,
   sifApiUrl,
-}: SifServiceContext): IWalletService {
+  assets,
+}: SifServiceContext): ISifService {
   const {} = sifAddrPrefix;
 
   // Reactive state for communicating state changes
@@ -74,6 +56,10 @@ export default function createSifService({
 
   let client: SifClient | null = null;
 
+  const supportedTokens = assets.filter(
+    (asset) => asset.network === Network.SIFCHAIN
+  );
+
   return {
     /**
      * getState returns the service's reactive state to be listened to by consuming clients.
@@ -82,8 +68,14 @@ export default function createSifService({
       return state;
     },
 
+    getSupportedTokens() {
+      return supportedTokens;
+    },
+
     async connect() {},
+
     async disconnect() {},
+
     isConnected() {
       return state.connected;
     },

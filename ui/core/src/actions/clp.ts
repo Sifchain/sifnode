@@ -1,6 +1,7 @@
 import { Asset, AssetAmount } from "../entities";
 import { ActionContext } from ".";
 import { PoolStore } from "../store/pools";
+import notify from "../api/utils/Notifications";
 
 export default ({
   api,
@@ -13,6 +14,21 @@ export default ({
     for (let pool of pools) {
       store.pools[pool.symbol()] = pool;
     }
+    if (pools.length === 0) {
+      notify({
+        type: "error",
+        message: "No Liquidity Pools Found",
+        detail: "Create liquidity pool to swap.",
+      });
+    }
+  });
+
+  api.ClpService.onWSError(({ sifWsUrl }) => {
+    notify({
+      type: "error",
+      message: "Websocket Not Connected",
+      detail: `${sifWsUrl}`,
+    });
   });
 
   function findPool(pools: PoolStore, a: string, b: string) {

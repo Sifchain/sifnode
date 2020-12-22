@@ -17,7 +17,7 @@ import {
   transferAsset,
 } from "./utils/ethereumUtils";
 import { isToken } from "../../entities/utils/isToken";
-import notify from "../utils/Notifications"
+import notify from "../utils/Notifications";
 
 type Address = string;
 type Balances = AssetAmount[];
@@ -32,6 +32,8 @@ type MetaMaskProvider = WebsocketProvider & {
   isConnected(): boolean;
 };
 
+type IEthereumService = IWalletService & { getSupportedTokens: () => Asset[] };
+
 function isMetaMaskProvider(provider?: provider): provider is MetaMaskProvider {
   return typeof (provider as any).request === "function";
 }
@@ -44,7 +46,7 @@ const initState = {
   log: "unset",
 };
 
-export class EthereumService implements IWalletService {
+export class EthereumService implements IEthereumService {
   private web3: Web3 | null = null;
   private supportedTokens: Asset[] = [];
   private blockSubscription: any;
@@ -65,9 +67,11 @@ export class EthereumService implements IWalletService {
   ) {
     // init state
     this.state = reactive({ ...initState });
-    getWeb3Provider() 
+    this.supportedTokens = assets.filter((t) => t.network === Network.ETHEREUM);
+
+    getWeb3Provider()
       .then((provider) => {
-        if (!provider) return this.provider = null 
+        if (!provider) return (this.provider = null);
         if (isEventEmittingProvider(provider)) {
           provider.on("connect", () => {
             this.state.connected = true;
@@ -77,10 +81,10 @@ export class EthereumService implements IWalletService {
           });
         }
         this.provider = provider;
-    })
-    .catch((error) => {
-      console.log('er', error)
-    })
+      })
+      .catch((error) => {
+        console.log("er", error);
+      });
   }
 
   getState() {
@@ -109,14 +113,12 @@ export class EthereumService implements IWalletService {
     return this.state.connected;
   }
 
+  getSupportedTokens() {
+    return this.supportedTokens;
+  }
+
   async connect() {
     try {
-      const allTokens = this.assets;
-
-      this.supportedTokens = allTokens.filter(
-        (t) => t.network === Network.ETHEREUM
-      );
-
       if (!this.provider)
         throw new Error("Cannot connect because provider is not yet loaded!");
 
@@ -131,7 +133,7 @@ export class EthereumService implements IWalletService {
       }
 
       this.addWeb3Subscription();
-      notify({type: "success", message: "Connected to Metamask"})
+      notify({ type: "success", message: "Connected to Metamask" });
       await this.updateData();
     } catch (err) {
       this.web3 = null;
@@ -173,7 +175,8 @@ export class EthereumService implements IWalletService {
     address?: Address,
     asset?: Asset | Token
   ): Promise<Balances> {
-    const supportedTokens = this.supportedTokens;
+    const supportedTokens = this.getSupportedTokens();
+
     const addr = address || this.state.address;
 
     if (!this.web3 || !addr) return [];
@@ -240,7 +243,7 @@ export class EthereumService implements IWalletService {
   static create({
     getWeb3Provider,
     assets,
-  }: EthereumServiceContext): IWalletService {
+  }: EthereumServiceContext): IEthereumService {
     return new EthereumService(getWeb3Provider, assets);
   }
 }

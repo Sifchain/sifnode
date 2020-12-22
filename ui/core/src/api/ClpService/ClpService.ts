@@ -11,10 +11,8 @@ import { Fraction } from "../../entities/fraction/Fraction";
 import { SifUnSignedClient } from "../utils/SifClient";
 import { toPool } from "../utils/toPool";
 import ReconnectingWebSocket from "reconnecting-websocket";
-import notify from "../utils/Notifications"
 
 export type ClpServiceContext = {
-  assets: Asset[];
   nativeAsset: Asset;
   sifApiUrl: string;
   sifWsUrl: string;
@@ -23,7 +21,8 @@ export type ClpServiceContext = {
 
 type IClpService = {
   getPools: () => Promise<Pool[]>;
-  onPoolsUpdated: (handler: PoolHandlerFn) => void;
+  onPoolsUpdated: (handler: HandlerFn<Pool[]>) => void;
+  onWSError: (handler: HandlerFn<any>) => void;
   getPoolsByLiquidityProvider: (address: string) => Promise<Pool[]>;
   swap: (params: {
     fromAddress: string;
@@ -52,10 +51,8 @@ type IClpService = {
   }) => any;
 };
 
-type PoolHandlerFn = (pools: Pool[]) => void;
-
+type HandlerFn<T> = (a: T) => void;
 export default function createClpService({
-  assets,
   sifApiUrl,
   nativeAsset,
   sifWsUrl,
@@ -63,7 +60,8 @@ export default function createClpService({
 }: ClpServiceContext): IClpService {
   let ws: ReconnectingWebSocket;
 
-  let poolHandler: PoolHandlerFn = () => {};
+  let poolHandler: HandlerFn<Pool[]> = () => {};
+  let wsErrorHandler: HandlerFn<any> = () => {};
 
   async function setupPoolWatcher() {
     await new Promise((res, rej) => {
@@ -95,10 +93,9 @@ export default function createClpService({
   async function initialize() {
     try {
       await setupPoolWatcher();
-      notify({ type:"success", message: "Websocket Connected", detail: `${sifWsUrl}` })
     } catch (error) {
       // message is the key so will not be pushed to array more than once
-      notify({ type:"error", message: "Websocket Not Connected", detail: `${sifWsUrl}` })
+      wsErrorHandler({ error, sifWsUrl });
     }
   }
 
@@ -108,11 +105,9 @@ export default function createClpService({
     async getPools() {
       try {
         const rawPools = await client.getPools();
-        notify({type:"success", message: "Liquidity Pools Found"})
         return rawPools.map(toPool(nativeAsset));
-      } catch(error) {
-        notify({type:"error", message: "No Liquidity Pools Found", detail: "Create liquidity pool to swap."})
-        return []
+      } catch (error) {
+        return [];
       }
     },
     async getPoolsByLiquidityProvider(address: string) {
@@ -131,8 +126,11 @@ export default function createClpService({
         )
         .map(toPool(nativeAsset));
     },
-    onPoolsUpdated(handler: PoolHandlerFn) {
+    onPoolsUpdated(handler: HandlerFn<Pool[]>) {
       poolHandler = handler;
+    },
+    onWSError(handler: HandlerFn<any>) {
+      wsErrorHandler = handler;
     },
     async addLiquidity(params: {
       fromAddress: string;

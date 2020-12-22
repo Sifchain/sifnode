@@ -77,13 +77,11 @@ export function createApi(
 ) {
   const context = getConfig(config, sifchainAssetTag, ethereumAssetTag);
   const EthereumService = ethereumService(context);
-
   const SifService = sifService(context);
   const ClpService = clpService(context);
-  return {  
+  return {
     ClpService,
     EthereumService,
-
     SifService,
   };
 }
