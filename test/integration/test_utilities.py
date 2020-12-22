@@ -206,7 +206,7 @@ def transact_ethereum_currency_to_sifchain_addr(sif_addr, ethereum_symbol, amoun
     advance_n_ethereum_blocks(n_wait_blocks)
     wait_for_sif_account(sif_addr)
     wait_for_sifchain_addr_balance(sif_addr, sifchain_symbol, starting_balance + amount, 6,
-                                   f"{sif_addr} / c{sifchain_symbol} / {amount}")
+                                   f"{sif_addr} / {sifchain_symbol} / {amount}")
 
 
 def advance_n_ethereum_blocks(n=50):

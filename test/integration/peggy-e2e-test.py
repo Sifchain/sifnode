@@ -19,11 +19,7 @@ ROWAN_AMOUNT = 5
 CLAIMLOCK = "lock"
 CLAIMBURN = "burn"
 
-ETH_OPERATOR = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57"
-ETH_ACCOUNT = os.environ.get("USER1ADDR")
-user1EthAddress = "0x4Bbb1BB825003eC701545524AaBDDCa1B970502C"
 operatorAddress = "0xf17f52151EbEF6C7334FAD080c5704D77216b732"
-ROWAN_CONTRACT = "0x409Ba3dd291bb5D48D5B4404F5EFa207441F6CbA"
 
 def get_eth_balance(account, symbol):
     command_line = cd_smart_contracts_dir + "yarn peggy:getTokenBalance {} {}".format(
