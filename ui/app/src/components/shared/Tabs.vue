@@ -28,6 +28,7 @@
 }
 .tab {
   cursor: pointer;
+  user-select: none;
   display: block;
   padding: 4px 24px;
   &:first-child {
