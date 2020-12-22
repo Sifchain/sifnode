@@ -40,14 +40,7 @@ clean:
 	rm -rf .depend
 
 pulldata: data
-	@vagrant ssh -c "docker exec integration_sifnode1_1 cat /tmp/testrun.sh" > data/clicmds.txt
-	@vagrant ssh -c "docker logs integration_sifnode1_1" > data/integrationlog.txt
-	@vagrant ssh -c "docker logs genesis_ganachecli_1" > data/ganachelog.txt
-	@vagrant ssh -c "docker logs genesis_ganachecli_1" > data/ganachelog.txt
-	@vagrant ssh -c "cat /sifnode/smart-contracts/.env" > data/env
-	@vagrant ssh -c "cat /sifnode/test/integration/vagrantenv.sh" > data/vagrantenv.sh
-	@vagrant ssh -c "touch /tmp/bridgebank.txt && cat /tmp/bridgebank.txt" > data/bridgebank.txt
-	@vagrant ssh -c "cd /sifnode/smart-contracts && truffle networks" > data/trufflenetworks.txt
+	vagrant ssh -c "bash /sifnode/test/integration/assemble_data.sh"
 	tar cfv datafiles.tar data/*
 	cp datafiles.tar datafiles.$(shell date +%m-%d-%H-%M-%S).tar
 	
