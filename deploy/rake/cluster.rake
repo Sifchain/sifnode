@@ -84,7 +84,7 @@ namespace :cluster do
         cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.moniker=#{args[:moniker]} \
-          --set sifnode.env.mnemonic=#{args[:mnemonic]} \
+          --set sifnode.mnemonic=#{args[:mnemonic]} \
           --install -n #{ns(args)} --create-namespace \
           --set image.tag=#{image_tag(args)} \
           --set image.repository=#{image_repository(args)}
@@ -101,7 +101,7 @@ namespace :cluster do
           --install -n #{ns(args)} --create-namespace \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.moniker=#{args[:moniker]} \
-          --set sifnode.env.mnemonic=#{args[:mnemonic]} \
+          --set sifnode.mnemonic=#{args[:mnemonic]} \
           --set sifnode.env.peerAddress=#{args[:peer_address]} \
           --set sifnode.env.genesisURL=#{args[:genesis_url]} \
           --set image.tag=#{image_tag(args)} \
@@ -129,7 +129,7 @@ namespace :cluster do
         --set ebrelayer.env.ethBridgeRegistryAddress=#{args[:eth_bridge_registry_address]} \
         --set ebrelayer.env.ethPrivateKey=#{args[:eth_private_key]} \
         --set ebrelayer.env.moniker=#{args[:moniker]} \
-        --set ebrelayer.env.mnemonic=#{args[:mnemonic]}
+        --set ebrelayer.mnemonic=#{args[:mnemonic]}
       }
 
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)

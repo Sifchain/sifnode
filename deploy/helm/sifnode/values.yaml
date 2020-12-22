@@ -21,12 +21,12 @@ image:
   tag: "testnet"
 
 sifnode:
+  mnemonic: ""
   env:
     chainnet:
     moniker:
     genesisURL:
     peerAddress:
-    mnemonic: ""
   service:
     type: LoadBalancer
 
