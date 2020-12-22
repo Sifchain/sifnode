@@ -31,13 +31,14 @@
 // text utilities
 .text--small {
     font-size: $fs_sm;
+    line-height: 14px;
 }
-
 
 // display
 .d-flex {
     display: flex;
 }
+
 .j-between {
     justify-content: space-between;
 }

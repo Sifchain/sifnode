@@ -80,7 +80,7 @@ export function createApi(
 
   const SifService = sifService(context);
   const ClpService = clpService(context);
-  return {
+  return {  
     ClpService,
     EthereumService,
 

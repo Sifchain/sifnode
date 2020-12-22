@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.16;
 
 import "./BridgeToken.sol";
 import "./EthereumBankStorage.sol";
@@ -129,7 +129,7 @@ contract EthereumBank is EthereumBankStorage {
 
         // Transfer funds to intended recipient
         if (_token == address(0)) {
-            _recipient.transfer(_amount);
+            _recipient.call.value(_amount)("");
         } else {
             IERC20 tokenToTransfer = IERC20(_token);
             tokenToTransfer.safeTransfer(_recipient, _amount);
