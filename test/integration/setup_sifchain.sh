@@ -9,7 +9,6 @@ set -e
 #
 # scaffold and boot the dockerized localnet
 #
-env | sort
 BASEDIR=${BASEDIR} rake genesis:network:scaffold['localnet']
 # see deploy/rake/genesis.rake for the description of the args to genesis:network:boot
 # :chainnet, :eth_bridge_registry_address, :eth_keys, :eth_websocket

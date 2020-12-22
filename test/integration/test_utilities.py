@@ -10,7 +10,7 @@ ETHEREUM_ETH = "eth"
 SIF_ROWAN = "rowan"
 ETHEREUM_ROWAN = "erowan"
 
-verbose = True
+verbose = False
 persistantLog = open("/tmp/testrun.sh", "a")
 n_wait_blocks = 50  # number of blocks to wait for the relayer to act
 
