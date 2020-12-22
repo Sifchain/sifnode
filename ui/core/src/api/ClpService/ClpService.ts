@@ -11,6 +11,7 @@ import { Fraction } from "../../entities/fraction/Fraction";
 import { SifUnSignedClient } from "../utils/SifClient";
 import { toPool } from "../utils/toPool";
 import ReconnectingWebSocket from "reconnecting-websocket";
+import notify from "../utils/Notifications"
 
 export type ClpServiceContext = {
   assets: Asset[];
@@ -40,7 +41,7 @@ type IClpService = {
     externalAssetAmount: AssetAmount;
   }) => any;
   getLiquidityProvider: (params: {
-    ticker: string;
+    symbol: string;
     lpAddress: string;
   }) => Promise<LiquidityProvider | null>;
   removeLiquidity: (params: {
@@ -92,19 +93,43 @@ export default function createClpService({
   }
 
   async function initialize() {
-    await setupPoolWatcher();
+    try {
+      await setupPoolWatcher();
+      notify({ type:"success", message: "Websocket Connected", detail: `${sifWsUrl}` })
+    } catch (error) {
+      // message is the key so will not be pushed to array more than once
+      notify({ type:"error", message: "Websocket Not Connected", detail: `${sifWsUrl}` })
+    }
   }
 
   initialize();
 
   const instance: IClpService = {
     async getPools() {
-      const rawPools = await client.getPools();
-      return rawPools.map(toPool(nativeAsset));
+      try {
+        const rawPools = await client.getPools();
+        notify({type:"success", message: "Liquidity Pools Found"})
+        return rawPools.map(toPool(nativeAsset));
+      } catch(error) {
+        notify({type:"error", message: "No Liquidity Pools Found", detail: "Create liquidity pool to swap."})
+        return []
+      }
     },
     async getPoolsByLiquidityProvider(address: string) {
-      const rawPools = await client.getAssets(address);
-      return rawPools.map(toPool(nativeAsset));
+      // Unfortunately it is expensive for the backend to
+      // filter pools so we need to annoyingly do this in two calls
+      // First we get the metadata
+      const poolMeta = await client.getAssets(address);
+      if (!poolMeta) return [];
+      const poolSymbols = poolMeta.map(({ symbol }) => symbol);
+
+      // Then we get the pools and filter for the metadata
+      const rawPools = await client.getPools();
+      return rawPools
+        .filter((rawPool) =>
+          poolSymbols.includes(rawPool.external_asset.symbol)
+        )
+        .map(toPool(nativeAsset));
     },
     onPoolsUpdated(handler: PoolHandlerFn) {
       poolHandler = handler;
@@ -160,16 +185,17 @@ export default function createClpService({
     },
     async getLiquidityProvider(params) {
       const response = await client.getLiquidityProvider(params);
-
       return LiquidityProvider(
         Coin({
-          name: response.result.asset.ticker,
-          symbol: response.result.asset.ticker,
+          name: response.result.LiquidityProvider.asset.symbol,
+          symbol: response.result.LiquidityProvider.asset.symbol,
           network: Network.SIFCHAIN,
           decimals: 18,
         }),
-        new Fraction(response.result.liquidity_provider_units),
-        response.result.liquidity_provider_address
+        new Fraction(
+          response.result.LiquidityProvider.liquidity_provider_units
+        ),
+        response.result.LiquidityProvider.liquidity_provider_address
       );
     },
 

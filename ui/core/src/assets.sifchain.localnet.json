@@ -1,0 +1,30 @@
+{
+  "assets": [
+    {
+      "symbol": "catk",
+      "decimals": 18,
+      "name": "Apple Coin",
+      "network": "sifchain"
+    },
+    {
+      "symbol": "cbtk",
+      "decimals": 18,
+      "name": "Banana Coin",
+      "network": "sifchain"
+    },
+    {
+      "symbol": "ceth",
+      "decimals": 18,
+      "name": "Ethereum",
+      "address": "",
+      "network": "sifchain"
+    },
+    {
+      "symbol": "rowan",
+      "decimals": 18,
+      "name": "Rowan",
+      "address": "",
+      "network": "sifchain"
+    }
+  ]
+}
