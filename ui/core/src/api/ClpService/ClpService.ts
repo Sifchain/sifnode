@@ -11,6 +11,7 @@ import { Fraction } from "../../entities/fraction/Fraction";
 import { SifUnSignedClient } from "../utils/SifClient";
 import { toPool } from "../utils/toPool";
 import ReconnectingWebSocket from "reconnecting-websocket";
+import notify from "../utils/Notifications"
 
 export type ClpServiceContext = {
   assets: Asset[];
@@ -92,15 +93,27 @@ export default function createClpService({
   }
 
   async function initialize() {
-    await setupPoolWatcher();
+    try {
+      await setupPoolWatcher();
+      notify({ type:"success", message: "Websocket Connected", detail: `${sifWsUrl}` })
+    } catch (error) {
+      // message is the key so will not be pushed to array more than once
+      notify({ type:"error", message: "Websocket Not Connected", detail: `${sifWsUrl}` })
+    }
   }
 
   initialize();
 
   const instance: IClpService = {
     async getPools() {
-      const rawPools = await client.getPools();
-      return rawPools.map(toPool(nativeAsset));
+      try {
+        const rawPools = await client.getPools();
+        notify({type:"success", message: "Liquidity Pools Found"})
+        return rawPools.map(toPool(nativeAsset));
+      } catch(error) {
+        notify({type:"error", message: "No Liquidity Pools Found", detail: "Create liquidity pool to swap."})
+        return []
+      }
     },
     async getPoolsByLiquidityProvider(address: string) {
       // Unfortunately it is expensive for the backend to
