@@ -21,6 +21,7 @@ image:
   tag: "testnet"
 
 ebrelayer:
+  mnemonic: ""
   env:
     chainnet: ""
     nodeHost: ""
@@ -28,7 +29,6 @@ ebrelayer:
     ethBridgeRegistryAddress: ""
     ethPrivateKey: ""
     moniker: ""
-    mnemonic: ""
 
 ingress:
   enabled: false

@@ -153,20 +153,55 @@ type StakingParams struct {
 	BondDenom         string `json:"bond_denom"`
 }
 
+type Distribution struct {
+	Params                          DistributionParams `json:"params" yaml:"params"`
+	FeePool                         interface{}        `json:"fee_pool" yaml:"fee_pool"`
+	DelegatorWithdrawInfos          interface{}        `json:"delegator_withdraw_infos" yaml:"delegator_withdraw_infos"`
+	PreviousProposer                interface{}        `json:"previous_proposer" yaml:"previous_proposer"`
+	OutstandingRewards              interface{}        `json:"outstanding_rewards" yaml:"outstanding_rewards"`
+	ValidatorAccumulatedCommissions interface{}        `json:"validator_accumulated_commissions" yaml:"validator_accumulated_commissions"`
+	ValidatorHistoricalRewards      interface{}        `json:"validator_historical_rewards" yaml:"validator_historical_rewards"`
+	ValidatorCurrentRewards         interface{}        `json:"validator_current_rewards" yaml:"validator_current_rewards"`
+	DelegatorStartingInfos          interface{}        `json:"delegator_starting_infos" yaml:"delegator_starting_infos"`
+	ValidatorSlashEvents            interface{}        `json:"validator_slash_events" yaml:"validator_slash_events"`
+}
+
+type DistributionParams struct {
+	CommunityTax        interface{} `json:"community_tax" yaml:"community_tax"`
+	BaseProposerReward  interface{} `json:"base_proposer_reward" yaml:"base_proposer_reward"`
+	BonusProposerReward interface{} `json:"bonus_proposer_reward" yaml:"bonus_proposer_reward"`
+	WithdrawAddrEnabled interface{} `json:"withdraw_addr_enabled" yaml:"withdraw_addr_enabled"`
+}
+
+type Slashing struct {
+	Params       SlashingParams `json:"params" yaml:"params"`
+	SigningInfos interface{}    `json:"signing_infos" yaml:"signing_infos"`
+	MissedBlocks interface{}    `json:"missed_blocks" yaml:"missed_blocks"`
+}
+
+type SlashingParams struct {
+	SignedBlocksWindow      interface{} `json:"signed_blocks_window" yaml:"signed_blocks_window"`
+	MinSignedPerWindow      interface{} `json:"min_signed_per_window" yaml:"min_signed_per_window"`
+	DowntimeJailDuration    interface{} `json:"downtime_jail_duration" yaml:"downtime_jail_duration"`
+	SlashFractionDoubleSign interface{} `json:"slash_fraction_double_sign" yaml:"slash_fraction_double_sign"`
+	SlashFractionDowntime   interface{} `json:"slash_fraction_downtime" yaml:"slash_fraction_downtime"`
+}
 type Bank struct {
 	SendEnabled bool `json:"send_enabled"`
 }
 
 type AppState struct {
-	Bank      Bank        `json:"bank"`
-	Staking   Staking     `json:"staking"`
-	Params    interface{} `json:"params"`
-	Supply    Supply      `json:"supply"`
-	Ethbridge interface{} `json:"ethbridge"`
-	CLP       CLP         `json:"clp"`
-	Oracle    interface{} `json:"oracle"`
-	Genutil   Genutil     `json:"genutil"`
-	Auth      Auth        `json:"auth"`
+	Bank         Bank         `json:"bank"`
+	Staking      Staking      `json:"staking"`
+	Slashing     Slashing     `json:"slashing"`
+	Distribution Distribution `json:"distribution"`
+	Params       interface{}  `json:"params"`
+	Supply       Supply       `json:"supply"`
+	Ethbridge    interface{}  `json:"ethbridge"`
+	CLP          CLP          `json:"clp"`
+	Oracle       interface{}  `json:"oracle"`
+	Genutil      Genutil      `json:"genutil"`
+	Auth         Auth         `json:"auth"`
 }
 
 type Evidence struct {
