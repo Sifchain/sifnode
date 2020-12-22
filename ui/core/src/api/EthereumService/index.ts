@@ -32,8 +32,6 @@ type MetaMaskProvider = WebsocketProvider & {
   isConnected(): boolean;
 };
 
-type IEthereumService = IWalletService & { getSupportedTokens: () => Asset[] };
-
 function isMetaMaskProvider(provider?: provider): provider is MetaMaskProvider {
   return typeof (provider as any).request === "function";
 }
@@ -46,7 +44,7 @@ const initState = {
   log: "unset",
 };
 
-export class EthereumService implements IEthereumService {
+export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
   private supportedTokens: Asset[] = [];
   private blockSubscription: any;
@@ -243,7 +241,7 @@ export class EthereumService implements IEthereumService {
   static create({
     getWeb3Provider,
     assets,
-  }: EthereumServiceContext): IEthereumService {
+  }: EthereumServiceContext): IWalletService {
     return new EthereumService(getWeb3Provider, assets);
   }
 }

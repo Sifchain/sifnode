@@ -14,6 +14,7 @@ beforeEach(() => {
       balances: [],
       log: "",
     }),
+    getSupportedTokens: () => [],
     isConnected: () => true,
     connect: async () => {},
     disconnect: jest.fn(async () => {}),

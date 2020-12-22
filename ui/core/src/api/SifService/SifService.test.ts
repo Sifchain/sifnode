@@ -50,6 +50,7 @@ const account = {
 const testConfig: SifServiceContext = {
   sifAddrPrefix: "sif",
   sifApiUrl: "http://127.0.0.1:1317",
+  assets: [],
 };
 
 function getBalance(balances: AssetAmount[], symbol: string): AssetAmount {

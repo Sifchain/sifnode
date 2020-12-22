@@ -8,26 +8,27 @@ export function useTokenListing({
   walletLimit,
   tokenLimit,
   selectedTokens = [],
+  topTokens = [],
 }: {
   searchText: Ref<string>;
   store: Store;
   walletLimit: number;
   tokenLimit: number;
   selectedTokens: string[];
+  topTokens?: Asset[];
 }): { filteredTokens: ComputedRef<Asset[]> } {
   const { balances } = useWallet(store);
 
   const walletTokens = computed(() => balances.value.map((tok) => tok.asset));
-  const topTokens = computed(() => store.asset.topTokens);
   const fullTokenList = computed(() => {
-    return Array.from(new Set([...walletTokens.value, ...topTokens.value]));
+    return Array.from(new Set([...walletTokens.value, ...topTokens]));
   });
 
   const limitedTokenList = computed(() => {
     return Array.from(
       new Set([
         ...walletTokens.value.slice(0, walletLimit),
-        ...topTokens.value.slice(0, tokenLimit),
+        ...topTokens.slice(0, tokenLimit),
       ])
     );
   });

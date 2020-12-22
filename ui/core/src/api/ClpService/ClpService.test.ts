@@ -5,7 +5,7 @@ new WS("ws://localhost:26667/websocket");
 // end HACK
 
 import createClpService from ".";
-import { AssetAmount, Coin, Network } from "../../entities";
+import { Asset, AssetAmount, Coin, Network } from "../../entities";
 
 const ROWAN = Coin({
   decimals: 18,
@@ -28,14 +28,11 @@ const CBTK = Coin({
   network: Network.SIFCHAIN,
 });
 
-const assets: any[] = [ROWAN, CATK, CBTK];
 let service: ReturnType<typeof createClpService>;
 
 beforeEach(() => {
   service = createClpService({
-    assets,
     nativeAsset: ROWAN,
-
     sifApiUrl: "http://localhost:1317",
     sifWsUrl: "ws://localhost:26667/websocket",
   });

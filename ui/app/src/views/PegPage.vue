@@ -1,6 +1,6 @@
 <template>
   <Layout class="peg">
-    <Tabs>
+    <Tabs @tabselected="onTabSelected">
       <Tab title="Standard">
         <AssetList :tokens="filteredTokens" />
       </Tab>
@@ -22,6 +22,7 @@ import { useTokenListing } from "@/components/tokenSelector/useSelectToken";
 
 import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";
+import { computed } from "@vue/reactivity";
 export default defineComponent({
   components: {
     Tab,
@@ -31,22 +32,28 @@ export default defineComponent({
     ActionsPanel,
   },
   setup() {
-    const { store } = useCore();
-    const searchText = ref("");
-    const { filteredTokens } = useTokenListing({
-      searchText,
-      store,
-      tokenLimit: 20,
-      walletLimit: 10,
-    });
+    const { store, actions } = useCore();
 
-    console.log(filteredTokens.value);
+    const searchText = ref("");
+    const selectedTab = ref("Standard");
+    const filteredTokens = computed(() => {
+      if (selectedTab.value === "Standard") {
+        return actions.peg.getEthTokens();
+      }
+
+      if (selectedTab.value === "Pegged") {
+        return actions.peg.getSifTokens();
+      }
+    });
 
     return {
       filteredTokens,
       searchText,
       handleNextStepClicked() {
         console.log("Next actions");
+      },
+      onTabSelected({ selectedTitle }) {
+        selectedTab.value = selectedTitle;
       },
     };
   },

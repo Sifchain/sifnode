@@ -27,6 +27,7 @@
   background: #818181;
 }
 .tab {
+  cursor: pointer;
   display: block;
   padding: 4px 24px;
   &:first-child {
@@ -63,6 +64,7 @@ import {
 } from "vue";
 import { effect } from "@vue/reactivity";
 export default {
+  emits: ["tabselected"],
   setup(_: any, context: SetupContext<EmitsOptions>) {
     const selectedIndex = ref(0);
     const slots = (context.slots.default && context.slots.default()) ?? [];
@@ -73,6 +75,10 @@ export default {
       const selectedProps = tabs[index].name;
       selectedIndex.value = index;
       selectedTitle.value = selectedProps;
+      context.emit("tabselected", {
+        selectedIndex: index,
+        selectedTitle: selectedProps,
+      });
     }
 
     provide("Tabs_selectedTitle", selectedTitle);

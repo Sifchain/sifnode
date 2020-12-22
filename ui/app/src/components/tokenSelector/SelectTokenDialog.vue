@@ -12,7 +12,7 @@ export default defineComponent({
   emits: ["tokenselected"],
   props: { selectedTokens: Array as PropType<string[]> },
   setup(props, context) {
-    const { store } = useCore();
+    const { store, actions } = useCore();
 
     const searchText = ref("");
 
@@ -22,6 +22,7 @@ export default defineComponent({
       tokenLimit: 20,
       walletLimit: 10,
       selectedTokens: props.selectedTokens || [],
+      // topTokens: actions.p
     });
 
     function selectToken(symbol: string) {

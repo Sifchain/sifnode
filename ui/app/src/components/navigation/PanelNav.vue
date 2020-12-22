@@ -2,7 +2,7 @@
   <div class="panel-nav">
     <PanelNavItem
       to="/peg"
-      disabled
+      color="pink"
       icon="circle-half"
       label="Peg"
     ></PanelNavItem>

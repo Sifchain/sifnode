@@ -23,5 +23,6 @@ export default defineComponent({
 .asset-list {
   background: white;
   padding: 10px;
+  min-height: 300px;
 }
 </style>
