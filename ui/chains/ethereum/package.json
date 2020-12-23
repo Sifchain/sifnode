@@ -8,7 +8,8 @@
     "migrate": "truffle migrate --reset"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "2.5.1"
+    "@openzeppelin/contracts": "2.5.1",
+    "truffle": "^5.1.58"
   },
   "devDependencies": {
     "concurrently": "^5.3.0"

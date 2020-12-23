@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ebrelayer.fullname" . }}
+  labels:
+    {{- include "ebrelayer.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "ebrelayer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "ebrelayer.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "ebrelayer.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh"]
+          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER \"{{ .Values.ebrelayer.mnemonic }}\" --chain-id $CHAINNET --rpc-url $NODE_HOST"]
+          env:
+            - name: NODE_HOST
+              value: {{ .Values.ebrelayer.env.nodeHost }}
+            - name: CHAINNET
+              value: {{ .Values.ebrelayer.env.chainnet }}
+            - name: ETH_WEBSOCKET_ADDRESS
+              value: {{ .Values.ebrelayer.env.ethWebsocketAddress }}
+            - name: ETH_BRIDGE_REGISTRY_ADDRESS
+              value: {{ .Values.ebrelayer.env.ethBridgeRegistryAddress }}
+            - name: MONIKER
+              value: {{ .Values.ebrelayer.env.moniker }}
+            - name: ETHEREUM_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ebrelayer.fullname" . }}
+                  key: ethPrivateKey
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

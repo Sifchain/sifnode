@@ -21,29 +21,16 @@ image:
   tag: "testnet"
 
 sifnode:
+  mnemonic: ""
   env:
     chainnet:
     moniker:
     genesisURL:
     peerAddress:
-    mnemonic: ""
   service:
     type: LoadBalancer
 
 sifnodecli:
-
-ebrelayer:
-  enabled: false
-  image:
-    repository: sifchain/ebrelayer
-    pullPolicy: Always
-    tag: "testnet"
-  env:
-    ethWebsocketAddress: ""
-    ethBridgeRegistryAddress: ""
-    ethPrivateKey: ""
-    moniker: ""
-    mnemonic: ""
 
 service:
   type: LoadBalancer

@@ -1,3 +1,5 @@
+require "securerandom"
+
 desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
   desc "Scaffold new cluster environment configuration"
@@ -82,7 +84,7 @@ namespace :cluster do
         cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.moniker=#{args[:moniker]} \
-          --set sifnode.env.mnemonic=#{args[:mnemonic]} \
+          --set sifnode.mnemonic=#{args[:mnemonic]} \
           --install -n #{ns(args)} --create-namespace \
           --set image.tag=#{image_tag(args)} \
           --set image.repository=#{image_repository(args)}
@@ -99,7 +101,7 @@ namespace :cluster do
           --install -n #{ns(args)} --create-namespace \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.moniker=#{args[:moniker]} \
-          --set sifnode.env.mnemonic=#{args[:mnemonic]} \
+          --set sifnode.mnemonic=#{args[:mnemonic]} \
           --set sifnode.env.peerAddress=#{args[:peer_address]} \
           --set sifnode.env.genesisURL=#{args[:genesis_url]} \
           --set image.tag=#{image_tag(args)} \
@@ -109,46 +111,25 @@ namespace :cluster do
         system({"KUBECONFIG" => kubeconfig(args) }, cmd)
       end
     end
-
-    desc "Destroy an existing namespace"
-    task :destroy, [:chainnet, :provider, :namespace, :skip_prompt] do |t, args|
-      check_args(args)
-      are_you_sure(args)
-      cmd = "kubectl delete namespace #{args[:namespace]}"
-      system({"KUBECONFIG" => kubeconfig(args)}, cmd)
-    end
   end
 
   desc "ebrelayer Operations"
   namespace :ebrelayer do
     desc "Deploy a new ebrelayer to an existing cluster"
-    task :deploy, [:chainnet, :provider, :namespace, :image, :image_tag, :mnemonic, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker] do |t, args|
+    task :deploy, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :node_host, :eth_websocket_address, :eth_bridge_registry_address, :eth_private_key, :moniker, :mnemonic] do |t, args|
       check_args(args)
 
-      cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
-        --set sifnode.env.chainnet=#{args[:chainnet]} \
-        --install -n #{ns(args)} \
-        --set ebrelayer.image.repository=#{image_repository(args)} \
-        --set ebrelayer.image.tag=#{image_tag(args)} \
-        --set ebrelayer.enabled=true \
-        --set ebrelayer.env.mnemonic=#{args[:mnemonic]} \
+      cmd = %Q{helm upgrade ebrelayer #{cwd}/../../deploy/helm/ebrelayer \
+        --install -n #{ns(args)} --create-namespace \
+        --set image.repository=#{image_repository(args)} \
+        --set image.tag=#{image_tag(args)} \
+        --set ebrelayer.env.chainnet=#{args[:chainnet]} \
+        --set ebrelayer.env.nodeHost=#{args[:node_host]} \
         --set ebrelayer.env.ethWebsocketAddress=#{args[:eth_websocket_address]} \
         --set ebrelayer.env.ethBridgeRegistryAddress=#{args[:eth_bridge_registry_address]} \
         --set ebrelayer.env.ethPrivateKey=#{args[:eth_private_key]} \
-        --set ebrelayer.env.moniker=#{args[:moniker]}
-      }
-
-      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
-    end
-
-    desc "Destroy a running ebrelayer on an existing cluster"
-    task :destroy, [:chainnet, :provider, :namespace] do |t, args|
-      check_args(args)
-
-      cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
-        --set sifnode.env.chainnet=#{args[:chainnet]} \
-        --install -n #{ns(args)} \
-        --set ebrelayer.enabled=false
+        --set ebrelayer.env.moniker=#{args[:moniker]} \
+        --set ebrelayer.mnemonic=#{args[:mnemonic]}
       }
 
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
@@ -158,34 +139,45 @@ namespace :cluster do
   desc "Block Explorer"
   namespace :blockexplorer do
     desc "Deploy a Block Explorer to an existing cluster"
-    task :deploy, [:chainnet, :provider] do |t, args|
+    task :deploy, [:chainnet, :provider, :namespace, :root_url, :genesis_url, :rpc_url, :lcd_url] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade block-explorer #{cwd}/../../deploy/helm/block-explorer \
-        --install -n block-explorer \
-        --create-namespace
-      }
-
-      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
-    end
-
-    desc "Destroy a running Block Explorer on an existing cluster"
-    task :destroy, [:chainnet, :provider] do |t, args|
-      check_args(args)
-
-      cmd = %Q{helm delete block-explorer --namespace block-explorer && \
-        kubectl delete ns block-explorer
+        --install -n #{ns(args)} --create-namespace \
+        --set blockExplorer.env.chainnet=#{args[:chainnet]} \
+        --set blockExplorer.env.rootURL=#{args[:root_url]} \
+        --set blockExplorer.env.genesisURL=#{args[:genesis_url]} \
+        --set blockExplorer.env.remote.rpcURL=#{args[:rpc_url]} \
+        --set blockExplorer.env.remote.lcdURL=#{args[:lcd_url]}
       }
 
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
   end
 
-  desc "Manage eth full node deploy, upgrade, etc processes"
-  namespace :ethnode do
-    desc "Deploy a full eth node onto your cluster"
-    task :deploy do
-      puts "Coming soon! "
+  desc "eth operations"
+  namespace :ethereum do
+    desc "Deploy an ETH node"
+    task :deploy, [:chainnet, :provider, :namespace] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm upgrade ethereum #{cwd}/../../deploy/helm/ethereum \
+            --install -n #{ns(args)} --create-namespace \
+            --set ethstats.env.websocketSecret=#{SecureRandom.base64 20}
+            }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+    end
+  end
+
+  desc "namespace operations"
+  namespace :namespace do
+    desc "Destroy an existing namespace"
+    task :destroy, [:chainnet, :provider, :namespace, :skip_prompt] do |t, args|
+      check_args(args)
+      are_you_sure(args)
+      cmd = "kubectl delete namespace #{args[:namespace]}"
+      system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end
 end
@@ -196,6 +188,8 @@ end
 # @param args Arguments passed to rake
 #
 def path(args)
+  return "#{cwd}/../../.live/sifchain-#{args[:provider]}-#{args[:cluster]}" if args.has_key? :cluster
+
   "#{cwd}/../../.live/sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 
@@ -205,6 +199,8 @@ end
 # @param args Arguments passed to rake
 #
 def kubeconfig(args)
+  return "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:cluster]}" if args.has_key? :cluster
+
   "#{path(args)}/kubeconfig_sifchain-#{args[:provider]}-#{args[:chainnet]}"
 end
 

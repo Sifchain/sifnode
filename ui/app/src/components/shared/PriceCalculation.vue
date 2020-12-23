@@ -6,15 +6,16 @@
 
 <script>
 export default {
-
 }
 </script>
 
 <style lang="scss">
 .price-calculation {
-  min-height: 120px;
+  height: 120px;
   margin-bottom: 10px;
   border-radius: $br_sm;
   background: $c_white;
+  padding: 16px;
+  overflow-y: auto;
 }
 </style>

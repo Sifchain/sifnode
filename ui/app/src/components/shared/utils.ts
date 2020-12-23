@@ -29,5 +29,11 @@ export function useAssetItem(symbol: Ref<string | undefined>) {
     return `background: ${color};`;
   });
 
-  return { token, tokenLabel, backgroundStyle };
+  const asset = {
+    token: token,
+    label: tokenLabel,
+    background: backgroundStyle
+  }
+
+  return asset;
 }

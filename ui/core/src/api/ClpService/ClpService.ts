@@ -11,16 +11,20 @@ import { Fraction } from "../../entities/fraction/Fraction";
 import { SifUnSignedClient } from "../utils/SifClient";
 import { toPool } from "../utils/toPool";
 import ReconnectingWebSocket from "reconnecting-websocket";
+import notify from "../utils/Notifications"
 
 export type ClpServiceContext = {
-  loadAssets: () => Promise<Asset[]>;
-  sifApiUrl: string;
+  assets: Asset[];
   nativeAsset: Asset;
+  sifApiUrl: string;
+  sifWsUrl: string;
+  client?: SifUnSignedClient;
 };
 
 type IClpService = {
   getPools: () => Promise<Pool[]>;
   onPoolsUpdated: (handler: PoolHandlerFn) => void;
+  getPoolsByLiquidityProvider: (address: string) => Promise<Pool[]>;
   swap: (params: {
     fromAddress: string;
     receivedAsset: Asset;
@@ -37,7 +41,7 @@ type IClpService = {
     externalAssetAmount: AssetAmount;
   }) => any;
   getLiquidityProvider: (params: {
-    ticker: string;
+    symbol: string;
     lpAddress: string;
   }) => Promise<LiquidityProvider | null>;
   removeLiquidity: (params: {
@@ -51,18 +55,19 @@ type IClpService = {
 type PoolHandlerFn = (pools: Pool[]) => void;
 
 export default function createClpService({
-  loadAssets,
+  assets,
   sifApiUrl,
   nativeAsset,
+  sifWsUrl,
+  client = new SifUnSignedClient(sifApiUrl),
 }: ClpServiceContext): IClpService {
-  const client = new SifUnSignedClient(sifApiUrl);
   let ws: ReconnectingWebSocket;
 
   let poolHandler: PoolHandlerFn = () => {};
 
   async function setupPoolWatcher() {
     await new Promise((res, rej) => {
-      ws = new ReconnectingWebSocket("ws://localhost:26657/websocket");
+      ws = new ReconnectingWebSocket(sifWsUrl);
       ws.onopen = () => {
         ws.send(
           JSON.stringify({
@@ -88,16 +93,43 @@ export default function createClpService({
   }
 
   async function initialize() {
-    await loadAssets();
-    await setupPoolWatcher();
+    try {
+      await setupPoolWatcher();
+      notify({ type:"success", message: "Websocket Connected", detail: `${sifWsUrl}` })
+    } catch (error) {
+      // message is the key so will not be pushed to array more than once
+      notify({ type:"error", message: "Websocket Not Connected", detail: `${sifWsUrl}` })
+    }
   }
 
   initialize();
 
   const instance: IClpService = {
     async getPools() {
+      try {
+        const rawPools = await client.getPools();
+        notify({type:"success", message: "Liquidity Pools Found"})
+        return rawPools.map(toPool(nativeAsset));
+      } catch(error) {
+        notify({type:"error", message: "No Liquidity Pools Found", detail: "Create liquidity pool to swap."})
+        return []
+      }
+    },
+    async getPoolsByLiquidityProvider(address: string) {
+      // Unfortunately it is expensive for the backend to
+      // filter pools so we need to annoyingly do this in two calls
+      // First we get the metadata
+      const poolMeta = await client.getAssets(address);
+      if (!poolMeta) return [];
+      const poolSymbols = poolMeta.map(({ symbol }) => symbol);
+
+      // Then we get the pools and filter for the metadata
       const rawPools = await client.getPools();
-      return rawPools.map(toPool);
+      return rawPools
+        .filter((rawPool) =>
+          poolSymbols.includes(rawPool.external_asset.symbol)
+        )
+        .map(toPool(nativeAsset));
     },
     onPoolsUpdated(handler: PoolHandlerFn) {
       poolHandler = handler;
@@ -153,16 +185,17 @@ export default function createClpService({
     },
     async getLiquidityProvider(params) {
       const response = await client.getLiquidityProvider(params);
-
       return LiquidityProvider(
         Coin({
-          name: response.result.asset.ticker,
-          symbol: response.result.asset.ticker,
+          name: response.result.LiquidityProvider.asset.symbol,
+          symbol: response.result.LiquidityProvider.asset.symbol,
           network: Network.SIFCHAIN,
           decimals: 18,
         }),
-        new Fraction(response.result.liquidity_provider_units),
-        response.result.liquidity_provider_address
+        new Fraction(
+          response.result.LiquidityProvider.liquidity_provider_units
+        ),
+        response.result.LiquidityProvider.liquidity_provider_address
       );
     },
 

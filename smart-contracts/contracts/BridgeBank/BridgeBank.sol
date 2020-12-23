@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.16;
 
 import "./CosmosBank.sol";
 import "./EthereumBank.sol";
@@ -261,10 +261,8 @@ contract BridgeBank is BankStorage,
             symbol = "ETH";
             // ERC20 deposit
         } else {
-            // Set symbol to the ERC20 token's symbol
-            symbol = BridgeToken(_token).symbol();
-
-            BridgeToken(_token).transferFrom(
+            IERC20 tokenToTransfer = IERC20(_token);
+            tokenToTransfer.safeTransferFrom(
                 msg.sender,
                 address(this),
                 _amount

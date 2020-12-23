@@ -10,9 +10,9 @@ BridgeBank: A smart contract on ethereum where users will unlock, lock, mint and
 
 BridgeToken: An ERC20 token that is created by the BridgeBank to represent a sifchain native asset on ethereum. BridgeTokens are minted by the BridgeBank whenever a user transfers a sifchain native asset to ethereum.
 
-LogLock: An event that is triggered when an ethereum native asset is locked in the BridgebBank contract.
+LogLock: An event that is triggered when an ethereum native asset is locked in the BridgeBank contract.
 
-LogBurn: An event that is triggered when a sifchain native asset is burned from the BridgebBank contract.
+LogBurn: An event that is triggered when a sifchain native asset is burned from the BridgeBank contract.
 
 MsgLock: A sifchain event that signals that a sifchain native asset has been locked.
 

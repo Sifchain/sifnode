@@ -4,7 +4,9 @@ RUN mkdir -p /ui/app
 RUN mkdir -p /ui/core
 
 ARG SIFNODE_API
+ARG SIFNODE_WS_API
 ENV VUE_APP_SIFNODE_API=$SIFNODE_API
+ENV VUE_APP_SIFNODE_WS_API=$SIFNODE_WS_API
 
 COPY ./package.json /ui/package.json
 COPY ./yarn.lock /ui/yarn.lock

@@ -1,4 +1,4 @@
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+const { deployProxy, silenceWarnings } = require('@openzeppelin/truffle-upgrades');
 
 const Valset = artifacts.require("Valset");
 const CosmosBridge = artifacts.require("CosmosBridge");
@@ -40,6 +40,7 @@ contract("BridgeBank", function (accounts) {
 
   describe("BridgeBank deployment and basics", function () {
     beforeEach(async function () {
+      await silenceWarnings();
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree];
       this.initialPowers = [5, 8, 12];
@@ -646,7 +647,7 @@ contract("BridgeBank", function (accounts) {
 
     it("should unlock Ethereum upon the processing of a burn prophecy", async function () {
       // Get prior balances of user and BridgeBank contract
-      const beforeUserBalance = Number(await web3.eth.getBalance(accounts[4]));
+      const beforeUserBalance = Number(await web3.eth.getBalance(this.recipient));
       const beforeContractBalance = Number(
         await web3.eth.getBalance(this.bridgeBank.address)
         );
@@ -665,7 +666,7 @@ contract("BridgeBank", function (accounts) {
       ).should.be.fulfilled;
 
       // Get balances after prophecy processing
-      const afterUserBalance = Number(await web3.eth.getBalance(accounts[4]));
+      const afterUserBalance = Number(await web3.eth.getBalance(this.recipient));
       const afterContractBalance = Number(
         await web3.eth.getBalance(this.bridgeBank.address)
       );
@@ -732,7 +733,7 @@ contract("BridgeBank", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
-        this.senderSequence,
+        ++this.senderSequence,
         this.recipient,
         this.ethereumSymbol,
         this.halfWeiAmount, {
