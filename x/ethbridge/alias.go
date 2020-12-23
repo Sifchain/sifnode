@@ -17,11 +17,11 @@ const (
 	StoreKey         = types.StoreKey
 	QuerierRoute     = types.QuerierRoute
 	RouterKey        = types.RouterKey
+	CethSymbol       = types.CethSymbol
 )
 
 var (
 	// functions aliases
-
 	NewKeeper                         = keeper.NewKeeper
 	NewQuerier                        = keeper.NewQuerier
 	NewEthBridgeClaim                 = types.NewEthBridgeClaim
@@ -52,6 +52,7 @@ type (
 	MsgCreateEthBridgeClaim  = types.MsgCreateEthBridgeClaim
 	MsgBurn                  = types.MsgBurn
 	MsgLock                  = types.MsgLock
+	MessageType              = types.MessageType
 	QueryEthProphecyParams   = types.QueryEthProphecyParams
 	QueryEthProphecyResponse = types.QueryEthProphecyResponse
 )

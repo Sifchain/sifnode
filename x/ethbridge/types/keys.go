@@ -12,4 +12,7 @@ const (
 
 	// RouterKey is the msg router key for the ethereum bridge module
 	RouterKey = ModuleName
+
+	// CethSymbol is the symbol of ceth
+	CethSymbol = "ceth"
 )

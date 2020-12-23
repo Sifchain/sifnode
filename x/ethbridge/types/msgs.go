@@ -15,8 +15,9 @@ import (
 type MessageType uint32
 
 const (
-	MSG_SUBMIT MessageType = 0
-	MSG_REVERT MessageType = 1
+	MSG_SUBMIT      MessageType = 0
+	MSG_REVERT      MessageType = 1
+	MSG_RETURN_CETH MessageType = 2
 )
 
 // MsgLock defines a message for locking coins and triggering a related event

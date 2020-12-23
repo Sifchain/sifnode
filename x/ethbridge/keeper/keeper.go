@@ -97,7 +97,28 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, amount
 	return nil
 }
 
+// ProcessUnburn processes the revert burn of bridged coins from the given sender
+func (k Keeper) ProcessUnburn(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
+
+	if err := k.supplyKeeper.MintCoins(ctx, types.ModuleName, amount); err != nil {
+		return err
+	}
+
+	if err := k.supplyKeeper.SendCoinsFromModuleToAccount(
+		ctx, types.ModuleName, cosmosSender, amount,
+	); err != nil {
+		panic(err)
+	}
+
+	return nil
+}
+
 // ProcessLock processes the lockup of cosmos coins from the given sender
 func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
 	return k.supplyKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, amount)
+}
+
+// ProcessUnlock processes the revert lockup of cosmos coins from the given sender
+func (k Keeper) ProcessUnlock(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
+	return k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosSender, amount)
 }
