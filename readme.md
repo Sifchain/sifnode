@@ -46,7 +46,7 @@ rake "keys:generate:mnemonic"
 6. Scaffold your node:
 
 ```
-rake "genesis:sifnode:scaffold[merry-go-round, <moniker>,'<mnemonic>','',ff0dd55dffa0e67fe21e2c85c80b0c2894bf2586@52.89.19.109:26656, http://52.89.19.109:26657/genesis]"
+rake "genesis:sifnode:scaffold[merry-go-round, <moniker>, '<mnemonic>', '', ff0dd55dffa0e67fe21e2c85c80b0c2894bf2586@52.89.19.109:26656, http://52.89.19.109:26657/genesis]"
 ```
 
 * Replace `<moniker>` with the moniker (name) of your node. 
