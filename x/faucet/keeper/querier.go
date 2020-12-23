@@ -24,15 +24,8 @@ func NewQuerier(k Keeper) sdk.Querier {
 }
 
 func queryBalance(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, error) {
-	var params types.QueryReqGetFaucetBalance
-	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
-	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
-	}
-
 	balance := keeper.GetBankKeeper().GetCoins(ctx, types.GetFaucetModuleAddress())
-	requiredCoin := balance.AmountOf(params.Denom)
-	res, err := codec.MarshalJSONIndent(keeper.cdc, requiredCoin)
+	res, err := codec.MarshalJSONIndent(keeper.cdc, balance)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

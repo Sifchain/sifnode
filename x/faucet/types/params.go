@@ -9,12 +9,11 @@ import (
 // Default parameter namespace
 const (
 	DefaultParamspace = ModuleName
-	// TODO: Define your default parameters
+	// TODO: WE need a param for max withdraw amount
 )
 
 // Parameter store keys
 var (
-// TODO: Define your keys for the parameter store
 // KeyParamName          = []byte("ParamName")
 )
 
@@ -25,15 +24,13 @@ func ParamKeyTable() params.KeyTable {
 
 // Params - used for initializing default parameter for faucet at genesis
 type Params struct {
-	// TODO: Add your Paramaters to the Paramter struct
+
 	// KeyParamName string `json:"key_param_name"`
 }
 
 // NewParams creates a new Params object
-func NewParams( /* TODO: Pass in the paramters*/ ) Params {
-	return Params{
-		// TODO: Create your Params Type
-	}
+func NewParams() Params {
+	return Params{}
 }
 
 // String implements the stringer interface for Params
@@ -45,13 +42,10 @@ func (p Params) String() string {
 
 // ParamSetPairs - Implements params.ParamSet
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
-	return params.ParamSetPairs{
-		// TODO: Pair your key with the param
-		// params.NewParamSetPair(KeyParamName, &p.ParamName),
-	}
+	return params.ParamSetPairs{}
 }
 
 // DefaultParams defines the parameters for this module
 func DefaultParams() Params {
-	return NewParams( /* TODO: Pass in your default Params */ )
+	return NewParams()
 }
