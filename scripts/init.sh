@@ -21,6 +21,7 @@ echo "hand inmate canvas head lunar naive increase recycle dog ecology inhale de
 
 sifnoded add-genesis-account $(sifnodecli keys show shadowfiend -a) 1000000000rowan,1000000000catk,1000000000cbtk,1000000000ceth,10000000000stake,1000000000cdash
 sifnoded add-genesis-account $(sifnodecli keys show akasha -a) 1000000000rowan,1000000000catk,1000000000cbtk,1000000000ceth,100000000000stake,1000000000cdash
+sifnoded add-genesis-account sif17s95c5jpc6x2l3edwh4dm8yhac68yru7a7kr3x 1000000000rowan,1000000000catk,1000000000cbtk,1000000000ceth,100000000000stake,1000000000cdash
 
 sifnoded add-genesis-clp-admin $(sifnodecli keys show shadowfiend -a)
 sifnoded add-genesis-clp-admin $(sifnodecli keys show akasha -a)

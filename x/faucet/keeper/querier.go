@@ -31,7 +31,8 @@ func queryBalance(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte
 	}
 
 	balance := keeper.GetBankKeeper().GetCoins(ctx, types.GetFaucetModuleAddress())
-	res, err := codec.MarshalJSONIndent(keeper.cdc, balance)
+	requiredCoin := balance.AmountOf(params.Denom)
+	res, err := codec.MarshalJSONIndent(keeper.cdc, requiredCoin)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

@@ -61,7 +61,9 @@ func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return cliCtx.PrintOutput(res)
+			var amount string
+			cdc.MustUnmarshalJSON(res, &amount)
+			return cliCtx.PrintOutput(amount)
 		},
 	}
 }
