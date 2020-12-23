@@ -118,7 +118,7 @@ where:
 e.g.:
 
 ```
-rake "cluster:sifnode:deploy:peer[merry-go-round,aws,sifnode,sifchain/sifnoded,merry-go-round-1,my-node,'my mnemonic',53b13d8391031f39f846c920762f322e5dde6af1@100.20.113.245:26656,http://100.20.113.245:26657/genesis]"
+rake "cluster:sifnode:deploy:peer[merry-go-round,aws,sifnode,sifchain/sifnoded,merry-go-round-1,my-node,'my mnemonic',32789411cfb76bf5cf5bbe2ee78bb7cf64085805@35.166.205.133:26656,http://35.166.205.133:26657/genesis]"
 ```
 
 5. Once deployed, check the status of the pods:
@@ -186,7 +186,7 @@ where:
 e.g.:
 
 ```
-rake "validator:stake[merry-go-round,my-node,10000000rowan,<public key>,tcp://100.20.113.245:26657]"
+rake "validator:stake[merry-go-round,my-node,10000000rowan,<public key>,tcp://35.166.205.133:26657]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
@@ -198,5 +198,5 @@ sifnodecli q tendermint-validator-set --node <node RPC address> --trust-node
 e.g.:
 
 ```
-sifnodecli q tendermint-validator-set --node tcp://100.20.113.245:26657 --trust-node
+sifnodecli q tendermint-validator-set --node tcp://35.166.205.133:26657 --trust-node
 ```

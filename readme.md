@@ -46,7 +46,7 @@ rake "keys:generate:mnemonic"
 6. Scaffold your node:
 
 ```
-rake "genesis:sifnode:scaffold[sandpit,<moniker>,'<mnemonic>','',53b13d8391031f39f846c920762f322e5dde6af1@100.20.113.245:26656, http://100.20.113.245:26657/genesis]"
+rake "genesis:sifnode:scaffold[sandpit,<moniker>,'<mnemonic>','',32789411cfb76bf5cf5bbe2ee78bb7cf64085805@35.166.205.133:26656, http://35.166.205.133:26657/genesis]"
 ```
 
 * Replace `<moniker>` with the moniker (name) of your node. 
@@ -85,13 +85,13 @@ sifnodecli unsafe-reset-all
 4. Download the new genesis file:
 
 ```
-curl http://100.20.113.245:26657/genesis | jq '.result.genesis' > ~/.sifnoded/config/genesis.json
+curl http://35.166.205.133:26657/genesis | jq '.result.genesis' > ~/.sifnoded/config/genesis.json
 ```
 
 5. Update your persistent peers in the file `~/.sifnoded/config/config.toml` so that it reads: 
 
 ```
-persistent_peers = "53b13d8391031f39f846c920762f322e5dde6af1@100.20.113.245:26656,f9459f02c0591ee25f79d9a1a9430e56a00a23b9@34.250.107.224:26656,dd5bc4a38852bc209278ca24a5ee959480432ec7@3.106.154.25:26656,9f0113530dc0574505e902298c2cf2e160a4f7a0@3.1.98.35:26656"
+persistent_peers = "32789411cfb76bf5cf5bbe2ee78bb7cf64085805@35.166.205.133:26656,e5da71b75d064bb7649c8d0f7c77063c743427b4@108.128.168.119:26656,93fa246f7af23fb51c824fcb72d04916e3a0dd8c@13.210.44.239:26656,b6a24bfbf50a6dbee83e75353817ab106eaeffa4@18.139.106.51:26656"
 ```
 
 6. Start your node:
@@ -114,21 +114,21 @@ and you should see the following primary validator node/s for Sifchain:
 
 ```
 validators:
-- address: sifvalcons1pulw6ucsaf2dtvuqwlr0qvyvhmql6xj60a45ua
-  pubkey: sifvalconspub1zcjduepqe4ddf985za6ffdme07xeu7zp8svkw6lf4pygq6dg856eu76gfxeskzpmqh
-  proposerpriority: 1875
+- address: sifvalcons1r2te04yyr5ryjnrremld67kektdddwhazqtwhk
+  pubkey: sifvalconspub1zcjduepqympmagddsq572s8jhumc59uu5q6s2sk3pext8txraamfwgyacyws2nmcky
+  proposerpriority: 9375
   votingpower: 5000
-- address: sifvalcons1wncevpl7pj0wdyy7u9mq2u8d906jrjce7nuznd
-  pubkey: sifvalconspub1zcjduepqcpmsx3l7axe8wjzxw4j0kd7gr9qv9q0qlktgyyaztgp7826r677qtkckcu
-  proposerpriority: -625
+- address: sifvalcons1dznuy3cq8ls97swx50z03qjune7gpataz24ec7
+  pubkey: sifvalconspub1zcjduepq8rkz0tda3h98s74k67mllg44v04gxpt5l7hhc3jhc9wxglltmq2sft23zz
+  proposerpriority: 3125
   votingpower: 5000
-- address: sifvalcons1k0qxjng82sz57w2rstgd5thfpxjwjkq9gjmarm
-  pubkey: sifvalconspub1zcjduepqh376rykq7qk9t4erl0g30l6f0gn24lmtph9grrf45mzun269g77qx4p0tt
-  proposerpriority: -1875
+- address: sifvalcons1hjej2hpwhtu0jw380cd2ek294vcxvl46ufu3gf
+  pubkey: sifvalconspub1zcjduepqwhsxwvr07l6357rvslp9f53trwam5rtfkn7fxs8p5nzjhlnjs4kstju0l7
+  proposerpriority: -9375
   votingpower: 5000
-- address: sifvalcons16cqp74x5cwat84fu7fpm7y0l5m0t6q3lg0m5tp
-  pubkey: sifvalconspub1zcjduepqp3y73kvq7992h7jcjmrv4tvv8pj4k8u7v2tzht94pqxcmfzj85aqlz3804
-  proposerpriority: 625
+- address: sifvalcons17cmmgphys058nhkt8sgpwv633fyj9238t4z8t0
+  pubkey: sifvalconspub1zcjduepqgeau6hn4q0v3nt2agnc65yceg42dsjedcqa0d3ehe9zcvw2lpadswvf6vf
+  proposerpriority: -3125
   votingpower: 5000
 ```
 
@@ -139,10 +139,10 @@ Congratulations. You are now connected to the network.
 The following can be used as additional peers on the network:
 
 ```
-53b13d8391031f39f846c920762f322e5dde6af1@100.20.113.245:26656
-f9459f02c0591ee25f79d9a1a9430e56a00a23b9@34.250.107.224:26656
-dd5bc4a38852bc209278ca24a5ee959480432ec7@3.106.154.25:26656
-9f0113530dc0574505e902298c2cf2e160a4f7a0@3.1.98.35:26656
+32789411cfb76bf5cf5bbe2ee78bb7cf64085805@35.166.205.133:26656
+e5da71b75d064bb7649c8d0f7c77063c743427b4@108.128.168.119:26656
+93fa246f7af23fb51c824fcb72d04916e3a0dd8c@13.210.44.239:26656
+b6a24bfbf50a6dbee83e75353817ab106eaeffa4@18.139.106.51:26656
 ```
 
 #### Become a Validator
