@@ -22,7 +22,7 @@
         </AssetList>
       </Tab>
     </Tabs>
-    <ActionsPanel ensureAllWalletsConnected />
+    <ActionsPanel connectType="connectToAll" />
   </Layout>
 </template>
 <style lang="scss" scoped>

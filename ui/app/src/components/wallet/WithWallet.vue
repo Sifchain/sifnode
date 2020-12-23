@@ -5,13 +5,19 @@
       <slot
         v-if="!connected"
         name="disconnected"
+        :connectedToEth="connectedToEth"
+        :connectedToSif="connectedToSif"
         :requestDialog="requestOpen"
+        :connectCta="connectCta"
       ></slot>
       <slot
         v-if="connected"
         name="connected"
+        :connectedToEth="connectedToEth"
+        :connectedToSif="connectedToSif"
         :connectedText="connectedText"
         :requestDialog="requestOpen"
+        :connectCta="connectCta"
       ></slot>
     </template>
     <template v-slot:default>
@@ -28,16 +34,32 @@ import { defineComponent, PropType } from "vue";
 import { useWalletButton } from "./useWalletButton";
 import EtheriumWalletPanel from "./EtheriumWalletPanel.vue";
 import SifWalletPanel from "./SifWalletPanel.vue";
-
 import Modal from "@/components/shared/Modal.vue";
+
 export default defineComponent({
   name: "WithWallet",
   components: { Modal, EtheriumWalletPanel, SifWalletPanel },
-  setup() {
-    const { connected, connectedText } = useWalletButton({
+  props: {
+    connectType: String as PropType<"connectToAny" | "connectToAll">,
+  },
+  setup(props) {
+    const {
+      connected,
+      connectedToEth,
+      connectedToSif,
+      connectedText,
+      connectCta,
+    } = useWalletButton({
       addrLen: 10,
+      connectType: props.connectType,
     });
-    return { connected, connectedText };
+    return {
+      connected,
+      connectedToEth,
+      connectedToSif,
+      connectedText,
+      connectCta,
+    };
   },
 });
 </script>
