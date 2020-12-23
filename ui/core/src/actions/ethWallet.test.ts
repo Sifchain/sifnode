@@ -27,7 +27,7 @@ beforeEach(() => {
   ethWalletActions = createActions({
     api: { EthereumService: mockEthereumService },
     store: {
-      asset: { assetMap: new Map(), topTokens: [] },
+      asset: { topTokens: [] },
       wallet: {
         eth: {
           balances: [],

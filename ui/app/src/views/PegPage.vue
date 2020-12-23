@@ -1,24 +1,29 @@
 <template>
   <Layout class="peg">
-    <SifInput
-      gold
-      placeholder="Search name or paste address"
-      class="sif-input"
-      type="text"
-      v-model="searchText"
-    />
+    <div class="search-text">
+      <SifInput
+        gold
+        placeholder="Search name or paste address"
+        type="text"
+        v-model="searchText"
+      />
+    </div>
     <Tabs @tabselected="onTabSelected">
       <Tab title="Standard">
-        <AssetList :tokens="filteredTokens" />
+        <AssetList :items="assetList" />
       </Tab>
       <Tab title="Pegged">
-        <AssetList :tokens="filteredTokens" />
+        <AssetList :items="assetList" />
       </Tab>
     </Tabs>
     <ActionsPanel />
   </Layout>
 </template>
-
+<style lang="scss" scoped>
+.search-text {
+  margin-bottom: 1rem;
+}
+</style>
 <script>
 import Tab from "@/components/shared/Tab.vue";
 import Tabs from "@/components/shared/Tabs.vue";
@@ -57,16 +62,20 @@ export default defineComponent({
       }
     });
 
-    const filteredTokens = computed(() => {
-      return allTokens.value.filter(
-        ({ symbol }) =>
-          symbol.toLowerCase().indexOf(searchText.value.toLowerCase().trim()) >
-          -1
-      );
+    // TODO: get balances and interleave balances
+    const assetList = computed(() => {
+      return allTokens.value
+        .filter(
+          ({ symbol }) =>
+            symbol
+              .toLowerCase()
+              .indexOf(searchText.value.toLowerCase().trim()) > -1
+        )
+        .map((asset) => ({ amount: "", asset }));
     });
 
     return {
-      filteredTokens,
+      assetList,
       searchText,
       handleNextStepClicked() {
         console.log("Next actions");
