@@ -10,12 +10,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	tmos "github.com/tendermint/tendermint/libs/os"
 
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
-
-	"github.com/Sifchain/sifnode/x/ethbridge"
-	"github.com/Sifchain/sifnode/x/oracle"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -29,6 +23,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	"github.com/Sifchain/sifnode/x/oracle"
 )
 
 const appName = "sifnode"

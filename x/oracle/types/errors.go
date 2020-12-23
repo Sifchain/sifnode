@@ -15,7 +15,8 @@ var (
 	ErrProphecyFinalized = sdkerrors.Register(ModuleName, 5, "prophecy already finalized")
 	ErrDuplicateMessage  = sdkerrors.Register(ModuleName, 6,
 		"already processed message from validator for this id")
-	ErrInvalidClaim     = sdkerrors.Register(ModuleName, 7, "claim cannot be empty string")
-	ErrInvalidValidator = sdkerrors.Register(ModuleName, 8, "claim must be made by actively bonded validator")
-	ErrInternalDB       = sdkerrors.Register(ModuleName, 9, " failed prophecy serialization/deserialization")
+	ErrInvalidClaim            = sdkerrors.Register(ModuleName, 7, "claim cannot be empty string")
+	ErrInvalidValidator        = sdkerrors.Register(ModuleName, 8, "claim must be made by actively bonded validator")
+	ErrInternalDB              = sdkerrors.Register(ModuleName, 9, " failed prophecy serialization/deserialization")
+	ErrValidatorNotInWhiteList = sdkerrors.Register(ModuleName, 10, "validator must be in whitelist")
 )
