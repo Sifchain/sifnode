@@ -4,7 +4,7 @@
       <AssetItem class="token" :symbol="item.asset.symbol" />
       <div class="amount">{{ item.amount }}</div>
       <div v-if="!!item.amount" class="action">
-        <SifButton primary>Peg</SifButton>
+        <slot :asset="item"></slot>
       </div>
     </div>
   </div>
@@ -13,12 +13,11 @@
 <script lang="ts">
 import { PropType, defineComponent } from "vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
-import SifButton from "@/components/shared/SifButton.vue";
+
 import { Asset } from "ui-core";
 export default defineComponent({
   components: {
     AssetItem,
-    SifButton,
   },
   props: {
     items: { type: Array as PropType<{ amount: string; asset: Asset }[]> },
