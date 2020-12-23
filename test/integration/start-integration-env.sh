@@ -9,6 +9,13 @@ BASEDIR=$(pwd)/$(dirname $0)/../..
 
 export envexportfile=$BASEDIR/test/integration/vagrantenv.sh
 rm -f $envexportfile
+echo "export envexportfile=$envexportfile" >> $envexportfile
+
+# datadir contains all the telemetry about the run; docker logs, etc
+export datadir=$BASEDIR/test/integration/vagrant/data
+echo "export datadir=$datadir" >> $envexportfile
+
+bash $BASEDIR/test/integration/start_watchers.sh
 
 export CONTAINER_NAME="integration_sifnode1_1"
 echo "export CONTAINER_NAME=$CONTAINER_NAME" >> $envexportfile
@@ -21,7 +28,7 @@ echo "export NETWORKDIR=$NETWORKDIR" >> $envexportfile
 #
 # Remove prior generations Config
 #
-rm -rf $NETWORKDIR && mkdir $NETWORKDIR
+sudo rm -rf $NETWORKDIR && mkdir $NETWORKDIR
 rm -rf ${BASEDIR}/smart-contracts/build ${BASEDIR}/smart-contracts/.openzeppelin
 make -C ${BASEDIR} install
 
@@ -83,10 +90,9 @@ sleep 15
 docker exec ${CONTAINER_NAME} bash -c ". /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/peggy-basic-test-docker.py /network-definition.yml"
 docker exec ${CONTAINER_NAME} bash -c '. /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/peggy-e2e-test.py /network-definition.yml'
 
-# Uncomment these tests in PR 378
 # Rebuild sifchain, but this time don't use validators
 
-#sudo rm -rf $NETWORKDIR && mkdir $NETWORKDIR
-#ADD_VALIDATOR_TO_WHITELIST= bash ${BASEDIR}/test/integration/setup_sifchain.sh && . $envexportfile
-#
-#docker exec ${CONTAINER_NAME} bash -c ". /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/no_whitelisted_validators.py /network-definition.yml"
+sudo rm -rf $NETWORKDIR && mkdir $NETWORKDIR
+ADD_VALIDATOR_TO_WHITELIST= bash ${BASEDIR}/test/integration/setup_sifchain.sh && . $envexportfile
+
+docker exec ${CONTAINER_NAME} bash -c ". /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/no_whitelisted_validators.py /network-definition.yml"
