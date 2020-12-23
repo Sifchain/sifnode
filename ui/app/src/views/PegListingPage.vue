@@ -1,5 +1,5 @@
 <template>
-  <Layout class="peg">
+  <Layout>
     <div class="search-text">
       <SifInput
         gold
@@ -22,7 +22,7 @@
         </AssetList>
       </Tab>
     </Tabs>
-    <ActionsPanel />
+    <ActionsPanel ensureAllWalletsConnected />
   </Layout>
 </template>
 <style lang="scss" scoped>
@@ -99,9 +99,6 @@ export default defineComponent({
     return {
       assetList,
       searchText,
-      handleNextStepClicked() {
-        console.log("Next actions");
-      },
       handlePegClicked(asset) {
         alert("Launch peg dialog");
       },

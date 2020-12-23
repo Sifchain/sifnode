@@ -4,11 +4,8 @@ import Swap from "@/views/SwapPage.vue";
 import Pool from "@/views/PoolPage.vue";
 import CreatePool from "@/views/CreatePoolPage.vue";
 import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
-import PegPage from "@/views/PegPage.vue";
-
-// Demo UI views
-import Ui from "@/views/uiDemo/Ui.vue";
-import UiPoolListPage from "@/views/uiDemo/uiPoolListPage.vue";
+import PegListingPage from "@/views/PegListingPage.vue";
+import PegAssetPage from "@/views/PegAssetPage.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -42,8 +39,13 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: "/peg",
-    name: "Peg",
-    component: PegPage,
+    name: "PegListingPage",
+    component: PegListingPage,
+  },
+  {
+    path: "/peg/:symbol",
+    name: "PegAssetPage",
+    component: PegAssetPage,
   },
 ];
 

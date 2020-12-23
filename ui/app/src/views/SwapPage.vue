@@ -191,7 +191,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="swap">
+  <Layout>
     <div>
       <Modal @close="handleSelectClosed">
         <template v-slot:activator="{ requestOpen }">
