@@ -46,7 +46,7 @@ func TestQueryEthProphecy(t *testing.T) {
 
 	initialEthBridgeClaim := types.CreateTestEthClaim(
 		t, testBridgeContractAddress, testTokenContractAddress, valAddress,
-		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.LockText)
+		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.LockText, 0)
 	oracleClaim, _ := types.CreateOracleClaimFromEthClaim(cdc, initialEthBridgeClaim)
 	_, err := oracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)

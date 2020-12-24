@@ -81,9 +81,9 @@ func handleMsgBurn(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	coins := sdk.NewCoins()
+	var coins sdk.Coins
 	switch msg.MessageType {
-	case types.MSG_SUBMIT:
+	case types.MsgSubmit:
 		if msg.Symbol == CethSymbol {
 			coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.Amount.Add(msg.CethAmount)))
 		} else {
@@ -93,7 +93,7 @@ func handleMsgBurn(
 			return nil, err
 		}
 
-	case types.MSG_REVERT:
+	case types.MsgRevert:
 		if msg.Symbol == CethSymbol {
 			coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.Amount.Add(msg.CethAmount)))
 		} else {
@@ -103,7 +103,7 @@ func handleMsgBurn(
 			return nil, err
 		}
 
-	case types.MSG_RETURN_CETH:
+	case types.MsgReturnCeth:
 		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount))
 		if err := bridgeKeeper.ProcessUnburn(ctx, msg.CosmosSender, coins); err != nil {
 			return nil, err
@@ -128,6 +128,8 @@ func handleMsgBurn(
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
 			sdk.NewAttribute(types.AttributeKeyCoins, coins.String()),
+			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyMessageType, strconv.Itoa(int(msg.MessageType))),
 		),
 	})
 
@@ -145,21 +147,21 @@ func handleMsgLock(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	coins := sdk.NewCoins()
+	var coins sdk.Coins
 	switch msg.MessageType {
-	case types.MSG_SUBMIT:
+	case types.MsgSubmit:
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 		if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, coins); err != nil {
 			return nil, err
 		}
 
-	case types.MSG_REVERT:
+	case types.MsgRevert:
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 		if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, coins); err != nil {
 			return nil, err
 		}
 
-	case types.MSG_RETURN_CETH:
+	case types.MsgReturnCeth:
 		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount))
 		if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, coins); err != nil {
 			return nil, err
@@ -185,7 +187,7 @@ func handleMsgLock(
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
 			sdk.NewAttribute(types.AttributeKeyCoins, coins.String()),
 			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
-			sdk.NewAttribute(types.AttributeKeyMessageType, string(msg.MessageType)),
+			sdk.NewAttribute(types.AttributeKeyMessageType, strconv.Itoa(int(msg.MessageType))),
 		),
 	})
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil

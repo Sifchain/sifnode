@@ -155,15 +155,15 @@ func TestNoMintFail(t *testing.T) {
 
 	ethClaim1 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
-		valAddressVal1Pow3, testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.LockText)
+		valAddressVal1Pow3, testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.LockText, 0)
 	ethMsg1 := NewMsgCreateEthBridgeClaim(ethClaim1)
 	ethClaim2 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
-		valAddressVal2Pow4, testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.LockText)
+		valAddressVal2Pow4, testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.LockText, 0)
 	ethMsg2 := NewMsgCreateEthBridgeClaim(ethClaim2)
 	ethClaim3 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
-		valAddressVal3Pow3, testEthereumAddress, types.AltTestCoinsAmountSDKInt, types.AltTestCoinsSymbol, types.LockText)
+		valAddressVal3Pow3, testEthereumAddress, types.AltTestCoinsAmountSDKInt, types.AltTestCoinsSymbol, types.LockText, 0)
 	ethMsg3 := NewMsgCreateEthBridgeClaim(ethClaim3)
 
 	//Initial message
@@ -229,36 +229,50 @@ func TestBurnEthSuccess(t *testing.T) {
 	testTokenContractAddress := types.NewEthereumAddress(types.TestTokenContractAddress)
 	testEthereumAddress := types.NewEthereumAddress(types.TestEthereumAddress)
 
+	// Mint ceth for account to pay fee in ethereum
+	ethClaim0 := types.CreateTestEthClaim(
+		t, testEthereumAddress, testTokenContractAddress,
+		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, "eth", types.LockText, 0)
+	ethMsg0 := NewMsgCreateEthBridgeClaim(ethClaim0)
+
+	res, err := handler(ctx, ethMsg0)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+
 	ethClaim1 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
-		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.LockText)
+		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.LockText, 1)
 	ethMsg1 := NewMsgCreateEthBridgeClaim(ethClaim1)
 
 	// Initial message succeeds and mints eth
-	res, err := handler(ctx, ethMsg1)
+	res, err = handler(ctx, ethMsg1)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	receiverCoins := bankKeeper.GetCoins(ctx, receiverAddress)
-	mintedCoins := sdk.Coins{sdk.NewCoin(coinsToMintSymbolLocked, coinsToMintAmount)}
+	mintedCoins := sdk.Coins{sdk.NewCoin(coinsToMintSymbolLocked, coinsToMintAmount), sdk.NewCoin("ceth", coinsToMintAmount)}
 	require.True(t, receiverCoins.IsEqual(mintedCoins))
+	fmt.Printf("mintedCoins is %v \n", mintedCoins)
 
 	coinsToBurnAmount := sdk.NewInt(3)
 	coinsToBurnSymbol := "ether"
 	coinsToBurnSymbolPrefixed := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, coinsToBurnSymbol)
+	coinsCethAmount := sdk.NewInt(1)
+	messageType := types.MsgSubmit
 
 	ethereumReceiver := types.NewEthereumAddress(types.AltTestEthereumAddress)
 
 	// Second message succeeds, burns eth and fires correct event
 	burnMsg := types.CreateTestBurnMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,
-		coinsToBurnSymbolPrefixed)
+		coinsToBurnSymbolPrefixed, coinsCethAmount, messageType)
 	res, err = handler(ctx, burnMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	senderAddress := receiverAddress
-	burnedCoins := sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}
+	burnedCoins := sdk.Coins{sdk.NewCoin("ceth", coinsCethAmount), sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}
 	senderSequence := "0"
+	fmt.Printf("burnedCoins is %v \n", burnedCoins)
 	remainingCoins := mintedCoins.Sub(burnedCoins)
 	senderCoins := bankKeeper.GetCoins(ctx, senderAddress)
 	require.True(t, senderCoins.IsEqual(remainingCoins))
@@ -269,6 +283,8 @@ func TestBurnEthSuccess(t *testing.T) {
 	eventAmount := ""
 	eventSymbol := ""
 	eventCoins := ""
+	eventCethAmount := ""
+	eventMessageType := ""
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
@@ -289,6 +305,10 @@ func TestBurnEthSuccess(t *testing.T) {
 				eventEthereumReceiver = value
 			case "amount":
 				eventAmount = value
+			case "ceth_amount":
+				eventCethAmount = value
+			case "message_type":
+				eventMessageType = value
 			case "symbol":
 				eventSymbol = value
 			case "coins":
@@ -304,11 +324,14 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
 	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
-	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
+	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin("ceth", coinsCethAmount), sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
+	fmt.Printf("eventCethAmount is %v, coinsCethAmount is %v", eventCethAmount, coinsCethAmount)
+	require.Equal(t, eventCethAmount, coinsCethAmount.String())
+	require.Equal(t, eventMessageType, "0")
 
 	// Third message succeeds, burns more eth and fires correct event
 	lockMsg := types.CreateTestLockMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,
-		coinsToBurnSymbolPrefixed)
+		coinsToBurnSymbolPrefixed, coinsCethAmount, messageType)
 	res, err = handler(ctx, lockMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -322,6 +345,8 @@ func TestBurnEthSuccess(t *testing.T) {
 	eventAmount = ""
 	eventSymbol = ""
 	eventCoins = ""
+	eventCethAmount = ""
+	eventMessageType = ""
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
@@ -342,6 +367,10 @@ func TestBurnEthSuccess(t *testing.T) {
 				eventEthereumReceiver = value
 			case "amount":
 				eventAmount = value
+			case "ceth_amount":
+				eventCethAmount = value
+			case "message_type":
+				eventMessageType = value
 			case "symbol":
 				eventSymbol = value
 			case "coins":
@@ -357,7 +386,9 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
 	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
-	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
+	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin("ceth", coinsCethAmount), sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
+	require.Equal(t, eventCethAmount, coinsCethAmount.String())
+	require.Equal(t, eventMessageType, "0")
 
 	// Fourth message fails, not enough eth
 	res, err = handler(ctx, burnMsg)

@@ -16,7 +16,6 @@ const (
 	TestBridgeContractAddress = "0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB"
 	TestAddress               = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
 	TestValidator             = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
-	TestNonce                 = 0
 	TestTokenContractAddress  = "0x0000000000000000000000000000000000000000"
 	TestEthereumAddress       = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207359"
 	AltTestEthereumAddress    = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207344"
@@ -25,6 +24,7 @@ const (
 	AltTestCoinsAmount        = 12
 	AltTestCoinsSymbol        = "eth"
 	TestCoinIntAmount         = 10
+	TestNonce                 = 0
 )
 
 var TestCoinsAmount = sdk.NewInt(10)
@@ -37,7 +37,7 @@ func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType C
 	testTokenAddress := NewEthereumAddress(TestTokenContractAddress)
 	ethClaim := CreateTestEthClaim(
 		t, testContractAddress, testTokenAddress, validatorAddress,
-		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
+		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType, 0)
 	ethMsg := NewMsgCreateEthBridgeClaim(ethClaim)
 	return ethMsg
 }
@@ -45,11 +45,11 @@ func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType C
 func CreateTestEthClaim(
 	t *testing.T, testContractAddress EthereumAddress, testTokenAddress EthereumAddress,
 	validatorAddress sdk.ValAddress, testEthereumAddress EthereumAddress, amount sdk.Int, symbol string, claimType ClaimType,
-) EthBridgeClaim {
+	testNonce int) EthBridgeClaim {
 	testCosmosAddress, err1 := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err1)
 	ethClaim := NewEthBridgeClaim(
-		TestEthereumChainID, testContractAddress, TestNonce, symbol,
+		TestEthereumChainID, testContractAddress, testNonce, symbol,
 		testTokenAddress, testEthereumAddress, testCosmosAddress, validatorAddress, amount, claimType)
 	return ethClaim
 }
@@ -77,7 +77,7 @@ func CreateTestQueryEthProphecyResponse(
 	testContractAddress := NewEthereumAddress(TestBridgeContractAddress)
 	testTokenAddress := NewEthereumAddress(TestTokenContractAddress)
 	ethBridgeClaim := CreateTestEthClaim(t, testContractAddress, testTokenAddress, validatorAddress,
-		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
+		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType, 0)
 	oracleClaim, _ := CreateOracleClaimFromEthClaim(cdc, ethBridgeClaim)
 	ethBridgeClaims := []EthBridgeClaim{ethBridgeClaim}
 
