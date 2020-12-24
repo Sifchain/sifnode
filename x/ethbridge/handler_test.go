@@ -321,6 +321,4 @@ func TestBurnEthSuccess(t *testing.T) {
 	res, err = handler(ctx, burnMsg)
 	require.Error(t, err)
 	require.Nil(t, res)
-	// senderCoins = bankKeeper.GetCoins(ctx, senderAddress)
-	// require.True(t, senderCoins.IsEqual(remainingCoins))
 }
