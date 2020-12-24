@@ -44,7 +44,7 @@ func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		Use:   "balance",
 		Short: "Get Faucet Balances",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query details for faucet balance.`,
+			fmt.Sprintf(`Query details for faucet balance.%s`,
 				version.ClientName,
 			),
 		),
@@ -70,7 +70,7 @@ func GetCmdFaucetAddress(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		Use:   "address",
 		Short: "Get Faucet Address",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query address for faucet.`,
+			fmt.Sprintf(`Query address for faucet. %s`,
 				version.ClientName,
 			),
 		),
