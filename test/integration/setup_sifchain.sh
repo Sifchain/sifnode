@@ -37,8 +37,6 @@ done
 
 export MONIKER=$(cat ${NETWORKDIR}/network-definition.yml | to_json | jq '.[0].moniker')
 echo "export MONIKER=$MONIKER" >> $envexportfile
-export MONIKER_ADDR=$(cat ${NETWORKDIR}/network-definition.yml | to_json | jq '.[0].moniker')
-echo "export MONIKER=$MONIKER" >> $envexportfile
 
 OWNER_PASSWORD=$(cat $NETDEF | yq r - ".password")
 echo "export OWNER_PASSWORD=$OWNER_PASSWORD" >> $envexportfile

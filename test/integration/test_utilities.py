@@ -110,6 +110,12 @@ def get_sifchain_addr_balance(sifaddress, denom):
     return 0
 
 
+def get_transaction_result(tx_hash):
+    command_line = f"sifnodecli q tx {tx_hash} -o json"
+    json_str = get_shell_output_json(command_line)
+    print(json_str)
+
+
 # balance_fn is a lambda that takes no arguments
 # and returns a result.  Runs the function up to
 # max_attempts times, or until the result is equal to target_balance

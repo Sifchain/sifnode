@@ -1,3 +1,5 @@
+require "securerandom"
+
 desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
   desc "Scaffold new cluster environment configuration"
@@ -82,7 +84,7 @@ namespace :cluster do
         cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.moniker=#{args[:moniker]} \
-          --set sifnode.env.mnemonic=#{args[:mnemonic]} \
+          --set sifnode.mnemonic=#{args[:mnemonic]} \
           --install -n #{ns(args)} --create-namespace \
           --set image.tag=#{image_tag(args)} \
           --set image.repository=#{image_repository(args)}
@@ -99,7 +101,7 @@ namespace :cluster do
           --install -n #{ns(args)} --create-namespace \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.moniker=#{args[:moniker]} \
-          --set sifnode.env.mnemonic=#{args[:mnemonic]} \
+          --set sifnode.mnemonic=#{args[:mnemonic]} \
           --set sifnode.env.peerAddress=#{args[:peer_address]} \
           --set sifnode.env.genesisURL=#{args[:genesis_url]} \
           --set image.tag=#{image_tag(args)} \
@@ -119,15 +121,15 @@ namespace :cluster do
 
       cmd = %Q{helm upgrade ebrelayer #{cwd}/../../deploy/helm/ebrelayer \
         --install -n #{ns(args)} --create-namespace \
-        --set ebrelayer.image.repository=#{image_repository(args)} \
-        --set ebrelayer.image.tag=#{image_tag(args)} \
+        --set image.repository=#{image_repository(args)} \
+        --set image.tag=#{image_tag(args)} \
         --set ebrelayer.env.chainnet=#{args[:chainnet]} \
         --set ebrelayer.env.nodeHost=#{args[:node_host]} \
         --set ebrelayer.env.ethWebsocketAddress=#{args[:eth_websocket_address]} \
         --set ebrelayer.env.ethBridgeRegistryAddress=#{args[:eth_bridge_registry_address]} \
         --set ebrelayer.env.ethPrivateKey=#{args[:eth_private_key]} \
         --set ebrelayer.env.moniker=#{args[:moniker]} \
-        --set ebrelayer.env.mnemonic=#{args[:mnemonic]}
+        --set ebrelayer.mnemonic=#{args[:mnemonic]}
       }
 
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)
@@ -153,11 +155,18 @@ namespace :cluster do
     end
   end
 
-  desc "Manage eth full node deploy, upgrade, etc processes"
-  namespace :ethnode do
-    desc "Deploy a full eth node onto your cluster"
-    task :deploy do
-      puts "Coming soon! "
+  desc "eth operations"
+  namespace :ethereum do
+    desc "Deploy an ETH node"
+    task :deploy, [:chainnet, :provider, :namespace] do |t, args|
+      check_args(args)
+
+      cmd = %Q{helm upgrade ethereum #{cwd}/../../deploy/helm/ethereum \
+            --install -n #{ns(args)} --create-namespace \
+            --set ethstats.env.websocketSecret=#{SecureRandom.base64 20}
+            }
+
+      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
     end
   end
 
