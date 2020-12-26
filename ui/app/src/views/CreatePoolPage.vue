@@ -17,6 +17,7 @@ import { computed } from "@vue/reactivity";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
+import { useTokenListing } from "../components/tokenSelector/useSelectToken";
 
 export default defineComponent({
   components: {
@@ -26,7 +27,7 @@ export default defineComponent({
     CurrencyPairPanel,
     SelectTokenDialog,
     PriceCalculation,
-    ConfirmationDialog, 
+    ConfirmationDialog,
     ModalView,
   },
   setup() {
@@ -107,7 +108,7 @@ export default defineComponent({
 
     function requestTransactionModalClose() {
       if (transactionState.value === "confirmed") {
-        router.push('/pool')
+        router.push("/pool");
       } else {
         transactionState.value = "selecting";
       }
@@ -161,8 +162,6 @@ export default defineComponent({
         }
         selectedField.value = null;
       },
-
-      
 
       handleNextStepClicked,
 
@@ -235,14 +234,25 @@ export default defineComponent({
         <h4 class="pool-share-title text--left">Prices and pool share</h4>
         <div class="pool-share-details" v-if="fromSymbol && aPerBRatioMessage">
           <div>
-            <span class="number">{{aPerBRatioMessage}}</span><br>
-            <span>{{ fromSymbol.toUpperCase() }} per {{ toSymbol.toUpperCase() }}</span>
+            <span class="number">{{ aPerBRatioMessage }}</span
+            ><br />
+            <span
+              >{{ fromSymbol.toUpperCase() }} per
+              {{ toSymbol.toUpperCase() }}</span
+            >
           </div>
           <div>
-            <span class="number">{{bPerARatioMessage}}</span><br>
-            <span>{{ toSymbol.toUpperCase() }} per {{ fromSymbol.toUpperCase() }}</span>
+            <span class="number">{{ bPerARatioMessage }}</span
+            ><br />
+            <span
+              >{{ toSymbol.toUpperCase() }} per
+              {{ fromSymbol.toUpperCase() }}</span
+            >
           </div>
-          <div><span class="number">{{ shareOfPoolPercent }}</span><br>Share of Pool </div>
+          <div>
+            <span class="number">{{ shareOfPoolPercent }}</span
+            ><br />Share of Pool
+          </div>
         </div>
       </div>
     </PriceCalculation>
@@ -270,33 +280,33 @@ export default defineComponent({
 </template>
 
 <style lang="scss">
-  .pool-share {
-    font-size: 12px;
-    font-weight: 400;
+.pool-share {
+  font-size: 12px;
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &-title {
+    text-align: left;
+    padding: 4px 16px;
+    border-bottom: $divider;
+  }
+
+  &-details {
     display: flex;
-    flex-direction: column;
-    height: 100%;
+    padding: 4px 16px;
+    flex-grow: 1;
+    justify-content: space-between;
+    align-items: center;
 
-    &-title {
-      text-align: left;
-      padding: 4px 16px;
-      border-bottom: $divider;
-    }
-
-    &-details {
-      display: flex;
-      padding: 4px 16px;
-      flex-grow: 1;
-      justify-content: space-between;
-      align-items: center;
-
-      div {
-        flex: 33%;
-      }
-    }
-    .number {
-      font-size: 16px;
-      font-weight: bold;
+    div {
+      flex: 33%;
     }
   }
+  .number {
+    font-size: 16px;
+    font-weight: bold;
+  }
+}
 </style>

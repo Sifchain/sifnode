@@ -5,7 +5,7 @@ import { computed, ref, toRefs } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
 import { Asset, SwapState, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
-import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
+import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
 import Modal from "@/components/shared/Modal.vue";
 import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
@@ -16,12 +16,11 @@ import ConfirmationDialog, {
 } from "@/components/confirmationDialog/ConfirmationDialog.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
+
 import { useRouter } from "vue-router";
 
 export default defineComponent({
-  components: {
-    Layout,
-  },
+  components: { Modal, Layout, CurrencyField, SelectTokenDialog },
 
   setup(_, context) {
     const router = useRouter();
@@ -30,8 +29,25 @@ export default defineComponent({
         ? "unpeg"
         : "peg";
     });
+
+    const symbol = ref<string | null>(null);
+
     return {
       mode,
+      symbol,
+      amount: ref("0"),
+      handleBlur: () => {},
+      handleSelectSymbol: () => {},
+      handleMaxClicked: () => {},
+      handleUpdateAmount: () => {},
+      handleFromUpdateSymbol: () => {},
+      handleSelectClosed(data: string) {
+        if (typeof data !== "string") {
+          return;
+        }
+
+        symbol.value = data;
+      },
     };
   },
 });
@@ -39,6 +55,28 @@ export default defineComponent({
 
 <template>
   <Layout backLink="/peg">
-    <div>{{ mode }} Asset</div>
+    <Modal @close="handleSelectClosed">
+      <template v-slot:activator="{ requestOpen }">
+        <CurrencyField
+          :amount="amount"
+          :max="true"
+          :selectable="true"
+          :symbol="symbol"
+          :symbolFixed="false"
+          @blur="handleBlur"
+          @maxclicked="handleMaxClicked"
+          @selectsymbol="requestOpen"
+          @update:amount="handleUpdateAmount"
+          @update:symbol="handleFromUpdateSymbol"
+          label="From"
+        />
+      </template>
+      <template v-slot:default="{ requestClose }">
+        <SelectTokenDialog
+          :selectedTokens="[symbol]"
+          @tokenselected="requestClose"
+        />
+      </template>
+    </Modal>
   </Layout>
 </template>

@@ -5,31 +5,34 @@ import { useCore } from "../../hooks/useCore";
 import AssetItem from "@/components/shared/AssetItem.vue";
 import { useTokenListing } from "./useSelectToken";
 import SifInput from "@/components/shared/SifInput.vue";
+import { Asset } from "ui-core";
 
 export default defineComponent({
   name: "SelectTokenDialog",
   components: { AssetItem, SifInput },
   emits: ["tokenselected"],
-  props: { selectedTokens: Array as PropType<string[]> },
+  props: {
+    selectedTokens: Array as PropType<string[]>,
+    // tokens: Array as PropType<Asset[]>,
+  },
   setup(props, context) {
     const { store, actions } = useCore();
 
     const searchText = ref("");
 
-    const { filteredTokens } = useTokenListing({
+    const { filteredTokens: tokens } = useTokenListing({
       searchText,
       store,
       tokenLimit: 20,
       walletLimit: 10,
       selectedTokens: props.selectedTokens || [],
-      // topTokens: actions.p
     });
 
     function selectToken(symbol: string) {
       context.emit("tokenselected", symbol);
     }
 
-    return { filteredTokens, searchText, selectToken };
+    return { searchText, selectToken };
   },
 });
 </script>
@@ -48,12 +51,12 @@ export default defineComponent({
   </div>
 
   <div class="body">
-    <div class="no-tokens-message" v-if="filteredTokens.length === 0">
+    <div class="no-tokens-message" v-if="tokens.length === 0">
       <p>No tokens available.</p>
     </div>
     <button
       class="option"
-      v-for="token in filteredTokens"
+      v-for="token in tokens"
       :disabled="token.disabled"
       :key="token.symbol"
       @click="selectToken(token.symbol)"
