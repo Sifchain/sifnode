@@ -16,20 +16,29 @@ import ConfirmationDialog, {
 } from "@/components/confirmationDialog/ConfirmationDialog.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
   components: {
     Layout,
   },
 
-  setup() {
-    return {};
+  setup(_, context) {
+    const router = useRouter();
+    const mode = computed(() => {
+      return router.currentRoute.value.path.indexOf("unpeg") > -1
+        ? "unpeg"
+        : "peg";
+    });
+    return {
+      mode,
+    };
   },
 });
 </script>
 
 <template>
-  <Layout>
-    <div>Peg Asset</div>
+  <Layout backLink="/peg">
+    <div>{{ mode }} Asset</div>
   </Layout>
 </template>

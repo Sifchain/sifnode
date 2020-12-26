@@ -14,7 +14,9 @@ export default defineComponent({
   props: {
     nextStepAllowed: Boolean,
     nextStepMessage: String,
-    connectType: String as PropType<"connectToAny" | "connectToAll">,
+    connectType: String as PropType<
+      "connectToAny" | "connectToAll" | "connectToSif"
+    >,
   },
   emits: ["nextstepclick"],
   setup(_, { emit }) {

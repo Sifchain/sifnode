@@ -229,6 +229,7 @@ export default defineComponent({
         :priceImpact="''"
       />
       <ActionsPanel
+        connectType="connectToSif"
         @nextstepclick="handleNextStepClicked"
         :nextStepAllowed="nextStepAllowed"
         :nextStepMessage="nextStepMessage"

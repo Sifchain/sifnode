@@ -1,9 +1,23 @@
 <template>
-  <button class="btn" :class="classes" :disabled="disabled">
-    <span class="content">
-      <slot></slot>
-    </span>
-  </button>
+  <span>
+    <button v-if="!to" class="btn" :class="classes" :disabled="disabled">
+      <span class="content">
+        <slot></slot>
+      </span>
+    </button>
+
+    <router-link
+      v-if="to"
+      :to="to"
+      class="btn"
+      :class="classes"
+      :disabled="disabled"
+    >
+      <span class="content">
+        <slot></slot>
+      </span>
+    </router-link>
+  </span>
 </template>
 
 <script>
@@ -45,6 +59,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    to: {
+      type: String,
+      default: "",
+    },
   },
 
   data() {
@@ -53,7 +71,7 @@ export default defineComponent({
         block: this.block,
         medium: this.medium,
         primary: this.primary,
-        'primary-outline': this.primaryOutline,
+        "primary-outline": this.primaryOutline,
         secondary: this.secondary,
         className: this.className,
         ghost: this.ghost,

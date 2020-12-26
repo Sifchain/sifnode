@@ -43,8 +43,13 @@ const routes: Array<RouteRecordRaw> = [
     component: PegListingPage,
   },
   {
-    path: "/peg/:symbol",
+    path: "/peg/:assetFrom/:assetTo",
     name: "PegAssetPage",
+    component: PegAssetPage,
+  },
+  {
+    path: "/unpeg/:assetFrom/:assetTo",
+    name: "UnpegAssetPage",
     component: PegAssetPage,
   },
 ];

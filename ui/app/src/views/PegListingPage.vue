@@ -11,12 +11,22 @@
     <Tabs @tabselected="onTabSelected">
       <Tab title="Standard">
         <AssetList :items="assetList" v-slot="{ asset }">
-          <SifButton @click="handlePegClicked(asset)" primary>Peg</SifButton>
+          <SifButton
+            :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
+              asset.asset.symbol
+            )}`"
+            primary
+            >Peg</SifButton
+          >
         </AssetList>
       </Tab>
       <Tab title="Pegged">
         <AssetList :items="assetList" v-slot="{ asset }">
-          <SifButton @click="handleUnpegClicked(asset)" primary
+          <SifButton
+            :to="`/unpeg/${asset.asset.symbol}/${unpeggedSymbol(
+              asset.asset.symbol
+            )}`"
+            primary
             >Unpeg</SifButton
           >
         </AssetList>
@@ -30,7 +40,7 @@
   margin-bottom: 1rem;
 }
 </style>
-<script>
+<script lang="ts">
 import Tab from "@/components/shared/Tab.vue";
 import Tabs from "@/components/shared/Tabs.vue";
 import Layout from "@/components/layout/Layout.vue";
@@ -53,7 +63,7 @@ export default defineComponent({
     SifInput,
     ActionsPanel,
   },
-  setup() {
+  setup(_, context) {
     const { store, actions } = useCore();
 
     const searchText = ref("");
@@ -67,6 +77,7 @@ export default defineComponent({
       if (selectedTab.value === "Pegged") {
         return actions.peg.getSifTokens();
       }
+      return [];
     });
 
     const assetList = computed(() => {
@@ -99,13 +110,21 @@ export default defineComponent({
     return {
       assetList,
       searchText,
-      handlePegClicked(asset) {
-        alert("Launch peg dialog");
+      peggedSymbol(unpeggedSymbol: string) {
+        if (unpeggedSymbol.toLowerCase() === "erowan") {
+          return "rowan";
+        }
+        return "c" + unpeggedSymbol;
       },
-      handleUnpegClicked(asset) {
-        alert("Launch unpeg dialog");
+
+      unpeggedSymbol(peggedSymbol: string) {
+        if (peggedSymbol.toLowerCase() === "rowan") {
+          return "erowan";
+        }
+        return peggedSymbol.replace(/^c/, "");
       },
-      onTabSelected({ selectedTitle }) {
+
+      onTabSelected({ selectedTitle }: { selectedTitle: string }) {
         selectedTab.value = selectedTitle;
       },
     };

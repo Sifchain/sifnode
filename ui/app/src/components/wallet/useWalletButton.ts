@@ -4,7 +4,7 @@ import { computed } from "@vue/reactivity";
 const shorten = (num: number) => (str: string) => str.slice(0, num) + "...";
 
 export function useWalletButton(props?: {
-  connectType?: "connectToAny" | "connectToAll";
+  connectType?: "connectToAny" | "connectToAll" | "connectToSif";
   addrLen?: number;
 }) {
   const connectType = props?.connectType || "connectToAny";
@@ -18,8 +18,13 @@ export function useWalletButton(props?: {
     if (connectType === "connectToAny") {
       return connectedToSif.value || connectedToEth.value;
     }
+
     if (connectType === "connectToAll") {
       return connectedToSif.value && connectedToEth.value;
+    }
+
+    if (connectType === "connectToSif") {
+      return connectedToSif.value;
     }
   });
 

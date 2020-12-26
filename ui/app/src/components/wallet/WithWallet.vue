@@ -40,7 +40,9 @@ export default defineComponent({
   name: "WithWallet",
   components: { Modal, EtheriumWalletPanel, SifWalletPanel },
   props: {
-    connectType: String as PropType<"connectToAny" | "connectToAll">,
+    connectType: String as PropType<
+      "connectToAny" | "connectToAll" | "connectToSif"
+    >,
   },
   setup(props) {
     const {
