@@ -29,7 +29,6 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 	faucetQueryCmd.AddCommand(
 		flags.GetCommands(
-			// this line is used by starport scaffolding # 1
 			GetCmdFaucet(queryRoute, cdc),
 			GetCmdFaucetAddress(queryRoute, cdc),
 		)...,

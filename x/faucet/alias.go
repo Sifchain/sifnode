@@ -18,6 +18,8 @@ var (
 	NewKeeper              = keeper.NewKeeper
 	NewQuerier             = keeper.NewQuerier
 	GetFaucetModuleAddress = types.GetFaucetModuleAddress
+	NewMsgRequestCoins     = types.NewMsgRequestCoins
+	NewMsgAddCoins         = types.NewMsgAddCoins
 )
 
 type (
