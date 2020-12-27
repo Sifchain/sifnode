@@ -2,18 +2,20 @@ name: Run integration tests
 on: [push]
 jobs:
   integration-tests:
+    timeout-minutes: 40
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Set up linux environment
         run: # installs development tools and updates .bash_profile
           bash test/integration/setup-linux-environment.sh
-      - name: Execute integration tests
+      - name: Execute main integration tests
         run: |
           source $HOME/.bash_profile
           bash test/integration/start-integration-env.sh
-      - name: Archive integration output
-        uses: actions/upload-artifact@v2
-        with:
-          name: integrationoutput.tar
-          path: test/integration/vagrant/datafiles.tar
+          bash test/integration/execute_integration_tests_main.sh
+      - name: Execute whitelisted validators integration tests
+        run: |
+          source $HOME/.bash_profile
+          bash test/integration/start-integration-env.sh
+          bash test/integration/execute_integration_tests_whitelisted_validators.sh
