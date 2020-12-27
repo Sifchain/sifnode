@@ -79,7 +79,7 @@ make install
 3. Reset your local state (please take a backup of your keyring first):
 
 ```
-sifnodecli unsafe-reset-all
+sifnoded unsafe-reset-all
 ```
 
 4. Download the new genesis file:
