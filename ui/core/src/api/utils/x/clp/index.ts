@@ -60,26 +60,30 @@ export type RawPool = {
   pool_units: string;
   pool_address: string;
 };
+
 type LiquidityDetailsResponse = {
   result: {
-    liquidity_provider_units: string;
-    liquidity_provider_address: string;
-    asset: {
-      symbol: string;
-      ticker: string;
-      source_chain: string;
+    LiquidityProvider: {
+      liquidity_provider_units: string;
+      liquidity_provider_address: string;
+      asset: {
+        symbol: string;
+        ticker: string;
+        source_chain: string;
+      };
     };
   };
   height: string;
 };
+
 type ClpCmdSwap = (params: SwapParams) => Promise<Msg>;
-
 type ClpQueryPools = () => Promise<RawPool[]>;
-
+type ClpQueryPool = (params: { ticker: string }) => Promise<RawPool>;
+type ClpQueryAssets = (address: string) => Promise<{ symbol: string }[]>;
 type ClpAddLiquidity = (params: LiquidityParams) => Promise<StdTx>;
 type ClpCreatePool = (params: LiquidityParams) => Promise<StdTx>;
 type ClpGetLiquidityProvider = (params: {
-  ticker: string;
+  symbol: string;
   lpAddress: string;
 }) => Promise<LiquidityDetailsResponse>;
 
@@ -89,10 +93,12 @@ export interface ClpExtension {
   readonly clp: {
     swap: ClpCmdSwap;
     getPools: ClpQueryPools;
+    getAssets: ClpQueryAssets;
     addLiquidity: ClpAddLiquidity;
     createPool: ClpCreatePool;
     getLiquidityProvider: ClpGetLiquidityProvider;
     removeLiquidity: ClpRemoveLiquidity;
+    getPool: ClpQueryPool;
   };
 }
 
@@ -100,7 +106,11 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
   return {
     clp: {
       getPools: async () => {
-        return (await base.get(`/clp/getPools`)).result;
+        return (await base.get(`/clp/getPools`)).result?.Pools;
+      },
+
+      getAssets: async (address) => {
+        return (await base.get(`/clp/getAssets?lpAddress=${address}`)).result;
       },
 
       swap: async (params) => {
@@ -115,14 +125,18 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
         return await base.post(`/clp/createPool`, params);
       },
 
-      getLiquidityProvider: async ({ ticker, lpAddress }) => {
+      getLiquidityProvider: async ({ symbol, lpAddress }) => {
         return await base.get(
-          `/clp/getLiquidityProvider?ticker=${ticker}&lpAddress=${lpAddress}`
+          `/clp/getLiquidityProvider?symbol=${symbol}&lpAddress=${lpAddress}`
         );
       },
 
       removeLiquidity: async (params) => {
         return await base.post(`/clp/removeLiquidity`, params);
+      },
+
+      getPool: async ({ ticker }) => {
+        return (await base.get(`/clp/getPool?ticker=${ticker}`)).result;
       },
     },
   };

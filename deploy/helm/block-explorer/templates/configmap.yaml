@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "block-explorer.fullname" . }}-settings
+  labels:
+    {{- include "block-explorer.labels" . | nindent 4 }}
+data:
+  settings: |
+    {
+        "public":{
+            "chainName": "Sifchain",
+            "chainId": "{{ .Values.blockExplorer.env.chainnet }}",
+            "gtm": "",
+            "slashingWindow": 10000,
+            "uptimeWindow": 250,
+            "initialPageSize": 30,
+            "secp256k1": false,
+            "bech32PrefixAccAddr": "sif",
+            "bech32PrefixAccPub": "sifpub",
+            "bech32PrefixValAddr": "sifvaloper",
+            "bech32PrefixValPub": "sifvaloperpub",
+            "bech32PrefixConsAddr": "sifvalcons",
+            "bech32PrefixConsPub": "sifvalconspub",
+            "bondDenom": "rowan",
+            "powerReduction": 1000000,
+            "coins": [
+                {
+                    "denom": "rowan",
+                    "displayName": "ROWAN",
+                    "displayNamePlural": "ROWAN",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cusdt",
+                    "displayName": "CUSDT",
+                    "displayNamePlural": "CUSDTS",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "cusdc",
+                    "displayName": "CUSDC",
+                    "displayNamePlural": "CUSDC",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "clink",
+                    "displayName": "CLINK",
+                    "displayNamePlural": "CLINKS",
+                    "fraction": 1000000000000000000
+                },
+                {
+                    "denom": "chot",
+                    "displayName": "CHOT",
+                    "displayNamePlural": "CHOTS",
+                    "fraction": 1000000000000000000
+                }
+            ],
+            "gasPrice": 0.02,
+            "coingeckoId": "sif"
+        },
+        "genesisFile": "{{ .Values.blockExplorer.env.genesisURL }}",
+        "remote":{
+            "rpc": "{{ .Values.blockExplorer.env.remote.rpcURL }}",
+            "lcd": "{{ .Values.blockExplorer.env.remote.lcdURL }}"
+        },
+        "debug": {
+            "startTimer": true,
+            "readGenesis": true
+        },
+        "params":{
+            "startHeight": 0,
+            "defaultBlockTime": 5000,
+            "blockInterval": 15000,
+            "consensusInterval": 1000,
+            "statusInterval":7500,
+            "signingInfoInterval": 1800000,
+            "proposalInterval": 5000,
+            "missedBlocksInterval": 60000,
+            "delegationInterval": 900000
+        }
+    }

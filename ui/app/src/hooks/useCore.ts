@@ -2,33 +2,23 @@ import {
   createStore,
   createApi,
   createActions,
-  getWeb3Provider,
-  getFakeTokens,
-  Coin,
-  Network,
+  createPoolFinder,
 } from "ui-core";
 
-const api = createApi({
-  // TODO: switch on env
-  sifAddrPrefix: "sif",
-  sifApiUrl: process.env.VUE_APP_SIFNODE_API || "http://127.0.0.1:1317",
-  getWeb3Provider,
-  nativeAsset: Coin({
-    name: "Rowan",
-    symbol: "rwn",
-    decimals: 18,
-    network: Network.SIFCHAIN,
-  }),
-  loadAssets: getFakeTokens,
-});
-
+const api = createApi(
+  process.env.VUE_APP_DEPLOYMENT_TAG,
+  process.env.VUE_APP_SIFCHAIN_ASSET_TAG,
+  process.env.VUE_APP_ETHEREUM_ASSET_TAG
+);
 const store = createStore();
 const actions = createActions({ store, api });
+const poolFinder = createPoolFinder(store);
 
 export function useCore() {
   return {
     store,
     api,
     actions,
+    poolFinder,
   };
 }

@@ -29,8 +29,8 @@ export default defineComponent({
   },
 
   setup() {
-    const { api, actions, store } = useCore();
-    const marketPairFinder = api.MarketService.find;
+    const { actions, poolFinder, store } = useCore();
+
     const {
       fromSymbol,
       fromAmount,
@@ -64,7 +64,7 @@ export default defineComponent({
       fromSymbol,
       selectedField,
       toSymbol,
-      marketPairFinder,
+      poolFinder,
     });
 
     function clearAmounts() {
@@ -210,7 +210,7 @@ export default defineComponent({
           :fromAmount="125"
           :fromToken="'usdt'"
           :toAmount="1250"
-          :toToken="'rwn'"
+          :toToken="'rowan'"
           :leastAmount="1248.976"
           :swapRate="10"
           :minimumReceived="100"

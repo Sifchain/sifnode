@@ -28,12 +28,11 @@ export default defineComponent({
     Slider,
   },
   setup() {
-    const { store, actions, api } = useCore();
-    const marketPairFinder = api.MarketService.find;
+    const { store, actions, poolFinder, api } = useCore();
 
     const asymmetry = ref("0");
     const wBasisPoints = ref("5000");
-    const nativeAssetSymbol = ref("rwn");
+    const nativeAssetSymbol = ref("rowan");
     const externalAssetSymbol = ref<string | null>(null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
@@ -45,7 +44,7 @@ export default defineComponent({
       if (!externalAssetSymbol.value) return null;
 
       api.ClpService.getLiquidityProvider({
-        ticker: externalAssetSymbol.value,
+        symbol: externalAssetSymbol.value,
         lpAddress: store.wallet.sif.address,
       }).then((liquidityProviderResult) => {
         liquidityProvider.value = liquidityProviderResult;
@@ -63,13 +62,13 @@ export default defineComponent({
       asymmetry,
       liquidityProvider,
       sifAddress: toRef(store.wallet.sif, "address"),
-      marketPairFinder,
+      poolFinder,
     });
     // input not updating for some reason?
     function clearFields() {
       asymmetry.value = "0";
       wBasisPoints.value = "0";
-      nativeAssetSymbol.value = "rwn";
+      nativeAssetSymbol.value = "rowan";
       externalAssetSymbol.value = null;
     }
     return {

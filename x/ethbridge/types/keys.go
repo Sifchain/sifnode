@@ -12,4 +12,11 @@ const (
 
 	// RouterKey is the msg router key for the ethereum bridge module
 	RouterKey = ModuleName
+
+	// PeggyTokenKey is the key for peggy token list
+	PeggyTokenKey = StoreKey + "PeggyToken"
+)
+
+var (
+	PeggyTokenKeyPrefix = []byte{0x00}
 )
