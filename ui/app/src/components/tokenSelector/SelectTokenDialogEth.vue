@@ -11,12 +11,16 @@ export default defineComponent({
     selectedTokens: Array as PropType<string[]>,
   },
   emits: ["tokenselected"],
-  setup() {
+  setup(_, context) {
     const { displayList, fullSearchList } = generateTokenSearchLists({
       walletTokens: useCore().store.wallet.eth.balances.map((tok) => tok.asset),
     });
 
-    return { displayList, fullSearchList };
+    function selectToken(symbol: string) {
+      context.emit("tokenselected", symbol);
+    }
+
+    return { selectToken, displayList, fullSearchList };
   },
 });
 </script>
@@ -25,6 +29,6 @@ export default defineComponent({
     :displayList="displayList"
     :fullSearchList="fullSearchList"
     :selectedTokens="selectedTokens"
-    @tokenselected="$emit('tokenselected')"
+    @tokenselected="selectToken"
   />
 </template>

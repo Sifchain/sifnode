@@ -187,7 +187,7 @@ export default defineComponent({
     height: auto;
     line-height: initial;
     position: relative;
-    top: 1px;
+    top: -1px;
     &:active {
       transform: translateY(1px);
     }

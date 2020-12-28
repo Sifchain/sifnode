@@ -51,6 +51,8 @@ export function filterTokenList({
   displayList?: Ref<Asset[]>;
 }) {
   return computed(() => {
+    console.log({ tokens: tokens.value });
+
     const list = searchText.value
       ? tokens.value.filter(
           ({ symbol }) =>

@@ -1,6 +1,3 @@
-
-
-
 <script lang="ts">
 import { defineComponent } from "vue";
 import { computed } from "@vue/reactivity";
@@ -9,6 +6,9 @@ import AssetItem from "@/components/shared/AssetItem.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import SifInput from "@/components/shared/SifInput.vue";
 import Caret from "@/components/shared/Caret.vue";
+import RaisedPanel from "@/components/shared/RaisedPanel.vue";
+import Label from "@/components/shared/Label.vue";
+import RaisedPanelColumn from "@/components/shared/RaisedPanelColumn.vue";
 
 export type BalanceShape = {
   symbol: string;
@@ -35,7 +35,16 @@ export default defineComponent({
     "update:symbol",
     "maxclicked",
   ],
-  components: { BalanceField, AssetItem, SifButton, Caret, SifInput },
+  components: {
+    RaisedPanelColumn,
+    RaisedPanel,
+    BalanceField,
+    AssetItem,
+    SifButton,
+    Caret,
+    SifInput,
+    Label,
+  },
   setup(props, context) {
     const localAmount = computed({
       get: () => props.amount,
@@ -53,9 +62,9 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="currency-field">
-    <div class="left">
-      <label class="label">{{ label }}</label>
+  <RaisedPanel>
+    <RaisedPanelColumn class="left">
+      <Label>{{ label }}</Label>
       <SifInput
         bold
         v-bind="$attrs"
@@ -75,12 +84,12 @@ export default defineComponent({
           ></template
         ></SifInput
       >
-    </div>
+    </RaisedPanelColumn>
 
-    <div class="right">
-      <label class="label">
+    <RaisedPanelColumn class="right">
+      <Label>
         <BalanceField :symbol="localSymbol" />
-      </label>
+      </Label>
 
       <SifButton
         nocase
@@ -105,8 +114,8 @@ export default defineComponent({
       >
         <span>Select</span>
       </SifButton>
-    </div>
-  </div>
+    </RaisedPanelColumn>
+  </RaisedPanel>
 </template>
 
 <style lang="scss" scoped>
@@ -116,20 +125,6 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   pointer-events: none;
-}
-.currency-field {
-  padding: 4px 15px 15px 15px;
-  border-radius: $br_sm;
-  border: 1px solid $c_gray_100;
-  background: $g_gray_reverse;
-  color: $c_gray_700;
-  display: flex;
-}
-
-.left,
-.right {
-  display: flex;
-  flex-direction: column;
 }
 
 .left {
@@ -142,10 +137,5 @@ export default defineComponent({
   align-items: flex-end;
   width: 128px;
   flex-shrink: 0;
-}
-
-.label {
-  font-size: $fs_sm;
-  white-space: nowrap;
 }
 </style>

@@ -3,7 +3,7 @@ import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { computed, ref, toRefs } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import { Asset, SwapState, useSwapCalculator } from "ui-core";
+import { Asset, Fraction, SwapState, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
 import Modal from "@/components/shared/Modal.vue";
@@ -17,19 +17,27 @@ import ConfirmationDialog, {
 } from "@/components/confirmationDialog/ConfirmationDialog.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
-
+import RaisedPanel from "@/components/shared/RaisedPanel.vue";
 import { useRouter } from "vue-router";
+import SifInput from "@/components/shared/SifInput.vue";
+import Label from "@/components/shared/Label.vue";
+import RaisedPanelColumn from "@/components/shared/RaisedPanelColumn.vue";
+import { trimZeros } from "ui-core/src/hooks/utils";
+import BigNumber from "bignumber.js";
 
 export default defineComponent({
   components: {
-    Modal,
     Layout,
-    SelectTokenDialogSif,
     CurrencyField,
-    SelectTokenDialogEth,
+    RaisedPanel,
+    Label,
+    SifInput,
+    ActionsPanel,
+    RaisedPanelColumn,
   },
 
-  setup(_, context) {
+  setup(props, context) {
+    const { store } = useCore();
     const router = useRouter();
     const mode = computed(() => {
       return router.currentRoute.value.path.indexOf("unpeg") > -1
@@ -37,59 +45,95 @@ export default defineComponent({
         : "peg";
     });
 
-    const symbol = ref<string | null>(null);
-
+    // const symbol = ref<string | null>(null);
+    const symbol = computed(() => {
+      const assetFrom = router.currentRoute.value.params.assetFrom;
+      return Array.isArray(assetFrom) ? assetFrom[0] : assetFrom;
+    });
+    const amount = ref("0.0");
+    const address = ref(store.wallet.sif.address);
     return {
       mode,
       symbol,
-      amount: ref("0"),
-      handleBlur: () => {},
-      handleSelectSymbol: () => {},
-      handleMaxClicked: () => {},
-      handleUpdateAmount: () => {},
-      handleFromUpdateSymbol: () => {},
-      handleSelectClosed(data: string) {
-        if (typeof data !== "string") {
-          return;
-        }
-
-        symbol.value = data;
+      amount,
+      address,
+      handleBlur: () => {
+        amount.value = trimZeros(amount.value);
       },
+      handleSelectSymbol: () => {},
+      handleMaxClicked: () => {
+        const balances =
+          mode.value === "peg"
+            ? store.wallet.eth.balances
+            : store.wallet.sif.balances;
+        const accountBalance = balances.find((balance) => {
+          return (
+            balance.asset.symbol.toLowerCase() === symbol.value.toLowerCase()
+          );
+        });
+
+        if (!accountBalance) return;
+
+        amount.value = accountBalance.toFixed();
+      },
+      handleAmountUpdated: (newAmount: string) => {
+        amount.value = newAmount;
+      },
+      handlePeg: () => {
+        alert("Peg");
+      },
+      nextStepAllowed: computed(() => {
+        const amountNum = new BigNumber(amount.value);
+        return amountNum.isGreaterThan("0.0") && address.value !== "";
+      }),
     };
   },
 });
 </script>
 
 <template>
-  <Layout backLink="/peg">
-    <Modal @close="handleSelectClosed">
-      <template v-slot:activator="{ requestOpen }">
-        <CurrencyField
-          :amount="amount"
-          :max="true"
-          :selectable="true"
-          :symbol="symbol"
-          :symbolFixed="false"
-          @blur="handleBlur"
-          @maxclicked="handleMaxClicked"
-          @selectsymbol="requestOpen"
-          @update:amount="handleUpdateAmount"
-          @update:symbol="handleFromUpdateSymbol"
-          label="From"
-        />
-      </template>
-      <template v-slot:default="{ requestClose }">
-        <SelectTokenDialogEth
-          v-if="mode === 'peg'"
-          :selectedTokens="[symbol]"
-          @tokenselected="requestClose"
-        />
-        <SelectTokenDialogSif
-          v-if="mode === 'unpeg'"
-          :selectedTokens="[symbol]"
-          @tokenselected="requestClose"
-        />
-      </template>
-    </Modal>
+  <Layout :title="mode === 'peg' ? 'Peg Asset' : 'Unpeg Asset'" backLink="/peg">
+    <div class="vspace">
+      <CurrencyField
+        :amount="amount"
+        :max="true"
+        :selectable="true"
+        :symbol="symbol"
+        :symbolFixed="true"
+        @blur="handleBlur"
+        @maxclicked="handleMaxClicked"
+        @update:amount="handleAmountUpdated"
+        label="From"
+      />
+      <RaisedPanel>
+        <RaisedPanelColumn>
+          <Label>Sifchain Recipient Address</Label>
+          <SifInput
+            v-model="address"
+            placeholder="Eg. sif21syavy2npfyt9tcncdtsdzf7kny9lh777yqcnd"
+          />
+        </RaisedPanelColumn>
+      </RaisedPanel>
+      <ActionsPanel
+        connectType="connectToAll"
+        @nextstepclick="handlePeg"
+        :nextStepAllowed="nextStepAllowed"
+        :nextStepMessage="mode === 'peg' ? 'Peg' : 'Unpeg'"
+      />
+    </div>
   </Layout>
 </template>
+
+<style lang="scss" scoped>
+.vspace {
+  display: flex;
+  flex-direction: column;
+  & > * {
+    margin-bottom: 1rem;
+  }
+
+  & > *:last-child {
+    margin-bottom: 0;
+  }
+}
+</style>
