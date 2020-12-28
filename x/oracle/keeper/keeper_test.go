@@ -262,5 +262,5 @@ func TestNonValidator(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, inActiveValidatorAddress, TestString)
 	_, err := keeper.ProcessClaim(ctx, oracleClaim)
 	require.Error(t, err)
-	require.True(t, strings.Contains(err.Error(), "claim must be made by actively bonded validator"))
+	require.True(t, strings.Contains(err.Error(), "validator must be in whitelist"))
 }

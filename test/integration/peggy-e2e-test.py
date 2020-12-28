@@ -4,7 +4,8 @@ import time
 import os
 
 from test_utilities import get_shell_output, SIF_ETH, burn_peggy_coin, ETHEREUM_ETH, owner_addr, moniker, \
-    get_sifchain_addr_balance, wait_for_sifchain_addr_balance
+    get_sifchain_addr_balance, wait_for_sifchain_addr_balance, advance_n_ethereum_blocks, n_wait_blocks, \
+    cd_smart_contracts_dir, send_eth_lock
 from test_utilities import print_error_message, get_user_account, get_sifchain_balance, network_password, \
     bridge_bank_address, \
     smart_contracts_dir, wait_for_sifchain_balance, wait_for_balance
@@ -18,17 +19,7 @@ ROWAN_AMOUNT = 5
 CLAIMLOCK = "lock"
 CLAIMBURN = "burn"
 
-ETH_OPERATOR = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57"
-ETH_ACCOUNT = os.environ.get("USER1ADDR")
-user1EthAddress = "0x4Bbb1BB825003eC701545524AaBDDCa1B970502C"
 operatorAddress = "0xf17f52151EbEF6C7334FAD080c5704D77216b732"
-ROWAN_CONTRACT = "0x409Ba3dd291bb5D48D5B4404F5EFa207441F6CbA"
-
-if smart_contracts_dir is None:
-    print_error_message("SMART_CONTRACTS_DIR env var is required")
-
-cd_smart_contracts_dir = f"cd {smart_contracts_dir}; "
-
 
 def get_eth_balance(account, symbol):
     command_line = cd_smart_contracts_dir + "yarn peggy:getTokenBalance {} {}".format(
@@ -57,13 +48,6 @@ def get_peggyrwn_balance(account, symbol):
         if balance:
             return balance.group(1)
     return 0
-
-
-# Send eth from ETHEREUM_PRIVATE_KEY to BridgeBank, lock the eth on bridgebank, ceth should end up in sifchain_user
-def send_eth_lock(sifchain_user, symbol, amount):
-    command_line = cd_smart_contracts_dir + "yarn peggy:lock {} {} {}".format(
-        get_user_account(sifchain_user, network_password), symbol, amount)
-    get_shell_output(command_line)
 
 
 def burn_peggyrwn(sifchain_user, peggyrwn_contract, amount):
@@ -101,6 +85,7 @@ def test_case_1():
 
     print(f"send_eth_lock({USER}, {ETHEREUM_ETH}, {AMOUNT})")
     send_eth_lock(USER, ETHEREUM_ETH, AMOUNT)
+    advance_n_ethereum_blocks(n_wait_blocks)
 
     wait_for_eth_balance(bridge_bank_address, ETHEREUM_ETH, bridge_bank_balance_before_tx + AMOUNT)
     wait_for_sifchain_balance(USER, SIF_ETH, network_password, user_balance_before_tx + AMOUNT)
@@ -126,5 +111,31 @@ def test_case_2():
     print("########## Test Case Two Over ##########")
 
 
+def test_balance_does_not_change_without_manual_block_advance():
+    print("########## test_balance_does_not_change_without_manual_block_advance")
+
+    user_balance_before_tx = get_sifchain_balance(USER, SIF_ETH, network_password)
+    send_eth_lock(USER, ETHEREUM_ETH, AMOUNT)
+
+    advance_n_ethereum_blocks(n_wait_blocks / 2)
+
+    # what we really want is to know that ebrelayer has done nothing,
+    # but it's not clear how to get that, so we just wait a bit
+    time.sleep(6)
+
+    user_balance_before_required_wait = get_sifchain_balance(USER, SIF_ETH, network_password)
+
+    print(f"Starting balance {user_balance_before_tx}, current balance {user_balance_before_required_wait} should be equal")
+
+    if user_balance_before_required_wait != user_balance_before_tx:
+        print_error_message(f"balance should not have changed yet.  Starting balance {user_balance_before_tx}, current balance {user_balance_before_required_wait}")
+
+    advance_n_ethereum_blocks(n_wait_blocks)
+
+    wait_for_sifchain_balance(USER, SIF_ETH, network_password, user_balance_before_tx + AMOUNT)
+    print(f"final balance is {get_sifchain_balance(USER, SIF_ETH, network_password)}")
+
+
 test_case_1()
 test_case_2()
+test_balance_does_not_change_without_manual_block_advance()

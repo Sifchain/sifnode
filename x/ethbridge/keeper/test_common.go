@@ -149,6 +149,8 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		stakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
 	}
 
+	oracleKeeper.SetOracleWhiteList(ctx, valAddrs)
+
 	return ctx, ethbridgeKeeper, bankKeeper, supplyKeeper, accountKeeper, valAddrs
 }
 

@@ -1,7 +1,8 @@
 import time
+import json
 
 from test_utilities import print_error_message, get_user_account, get_sifchain_balance, get_shell_output, get_shell_output_json, \
-    network_password, amount_in_wei, test_log_line, wait_for_sifchain_balance
+    network_password, amount_in_wei, test_log_line, wait_for_sifchain_balance, get_transaction_result
 
 # define users
 USER = "user1"
@@ -93,7 +94,10 @@ def test_case_1():
 
     print("Send lock claim to Sifchain...")
     amount = amount_in_wei(5)
-    print(create_claim(USER, VALIDATOR, amount, ETH, CLAIMLOCK))
+    tx_result = create_claim(USER, VALIDATOR, amount, ETH, CLAIMLOCK)
+    tx_hash = json.loads(tx_result)["txhash"]
+    time.sleep(SLEEPTIME)
+    get_transaction_result(tx_hash)
 
     wait_for_sifchain_balance(USER, PEGGYETH, network_password, balance_before_tx + amount, 30)
 
@@ -103,13 +107,13 @@ def test_case_1():
 
 def test_case_2():
     print(
-        "########## Test Case Two Start: burn ceth in sifchain then eth back to ethereum"
+        "########## Test Case Two Start: burn ceth in sifchain"
     )
     balance_before_tx = int(get_sifchain_balance(USER, PEGGYETH, network_password))
     print('before_tx', balance_before_tx)
     print("Before burn transaction {}'s balance of {} is {}".format(
         USER, PEGGYETH, balance_before_tx))
-    amount = amount_in_wei(3)
+    amount = amount_in_wei(1)
     if balance_before_tx < amount:
         print_error_message("No enough ceth to burn")
         return
