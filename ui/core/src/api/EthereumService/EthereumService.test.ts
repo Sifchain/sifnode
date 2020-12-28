@@ -137,13 +137,13 @@ describe("EthereumService", () => {
 
     expect(
       balanceAccount0
-        .find(({ asset: { symbol } }) => symbol === "ETH")
+        .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ETH")
         ?.toFixed()
     ).toEqual("89.950061140000000000"); // Including gas
 
     expect(
       balanceAccount1
-        .find(({ asset: { symbol } }) => symbol === "ETH")
+        .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ETH")
         ?.toFixed()
     ).toEqual("110.000000000000000000");
   });
