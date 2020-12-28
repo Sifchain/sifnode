@@ -1,0 +1,7 @@
+{
+  "sifAddrPrefix": "sif",
+  "sifApiUrl": "https://lcd-sandpit.sifchain.finance/",
+  "sifWsUrl": "wss://rpc-sandpit.sifchain.finance/websocket",
+  "web3Provider": "metamask",
+  "nativeAsset": "rowan"
+}

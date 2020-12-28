@@ -1,7 +1,7 @@
 {
   "sifAddrPrefix": "sif",
-  "sifApiUrl": "https://api-monkeybars.sifchain.finance",
-  "sifWsUrl": "ws://api-monkeybars.sifchain.finance:26657/websocket",
+  "sifApiUrl": "https://lcd-merry-go-round.sifchain.finance/",
+  "sifWsUrl": "wss://rpc-merry-go-round.sifchain.finance/websocket",
   "web3Provider": "metamask",
   "nativeAsset": "rowan"
 }
