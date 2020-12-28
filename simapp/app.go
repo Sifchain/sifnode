@@ -180,6 +180,7 @@ func NewSimApp(
 		app.cdc,
 		app.SupplyKeeper,
 		app.OracleKeeper,
+		keys[ethbridge.StoreKey],
 	)
 
 	app.ClpKeeper = clp.NewKeeper(
