@@ -193,6 +193,7 @@ func NewInitApp(
 		app.cdc,
 		app.SupplyKeeper,
 		app.OracleKeeper,
+		keys[ethbridge.StoreKey],
 	)
 
 	app.clpKeeper = clp.NewKeeper(
