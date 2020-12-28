@@ -8,12 +8,7 @@ import { Asset, AssetAmount } from "../../entities";
 
 import JSBI from "jsbi";
 import B from "../../entities/utils/B";
-import {
-  ChainConfig,
-  parseAssets,
-  parseConfig,
-  AssetConfig,
-} from "../utils/parseConfig";
+import { parseAssets, AssetConfig } from "../utils/parseConfig";
 
 describe("EthereumService", () => {
   let EthereumService: ReturnType<typeof createEthereumService>;
