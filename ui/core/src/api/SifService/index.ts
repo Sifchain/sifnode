@@ -190,7 +190,7 @@ export default function createSifService({
       if (!client) throw "No client. Please sign in.";
       try {
         const fee = {
-          amount: coins(0, "rwn"),
+          amount: coins(0, "rowan"),
           gas: "200000", // need gas fee for tx to work - see genesis file
         };
 

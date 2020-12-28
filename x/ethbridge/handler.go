@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/pkg/errors"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/oracle"
@@ -75,6 +76,9 @@ func handleMsgBurn(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
 	bridgeKeeper Keeper, msg MsgBurn,
 ) (*sdk.Result, error) {
+	if !bridgeKeeper.ExistsPeggyToken(ctx, msg.Symbol) {
+		return nil, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
+	}
 
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
@@ -112,6 +116,9 @@ func handleMsgLock(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
 	bridgeKeeper Keeper, msg MsgLock,
 ) (*sdk.Result, error) {
+	if bridgeKeeper.ExistsPeggyToken(ctx, msg.Symbol) {
+		return nil, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
+	}
 
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {

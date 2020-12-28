@@ -9,7 +9,12 @@ export default defineComponent({
   },
   setup(props) {
     const symbol = computed(() => props.symbol);
-    const { token, tokenLabel, backgroundStyle } = useAssetItem(symbol);
+
+    const asset = useAssetItem(symbol);
+
+    const token = asset.token;
+    const tokenLabel = asset.label;
+    const backgroundStyle = asset.background;
 
     return { token, tokenLabel, backgroundStyle };
   },

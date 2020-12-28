@@ -1,11 +1,12 @@
 package simapp
 
 import (
+	"io"
+	"os"
+
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/oracle"
-	"io"
-	"os"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -179,6 +180,7 @@ func NewSimApp(
 		app.cdc,
 		app.SupplyKeeper,
 		app.OracleKeeper,
+		keys[ethbridge.StoreKey],
 	)
 
 	app.ClpKeeper = clp.NewKeeper(

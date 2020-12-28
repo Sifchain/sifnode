@@ -51,7 +51,7 @@ const liquidityParams = {
   signer: "",
 };
 const getLiquidityProvider = {
-  ticker: "foo",
+  symbol: "foo",
   lpAddress: "bar",
 };
 let base: LcdClient;
@@ -78,6 +78,11 @@ test("getPools", async () => {
   expect(base.get).toHaveBeenCalledWith(`/clp/getPools`);
 });
 
+test("getAssets", async () => {
+  await clp.getAssets("abc1234");
+  expect(base.get).toHaveBeenCalledWith(`/clp/getAssets?lpAddress=abc1234`);
+});
+
 test("swap", async () => {
   await clp.swap(swapParams);
   expect(base.post).toHaveBeenCalledWith(`/clp/swap`, swapParams);
@@ -96,6 +101,6 @@ test("createPool", async () => {
 test("getLiquidityProvider", async () => {
   await clp.getLiquidityProvider(getLiquidityProvider);
   expect(base.get).toHaveBeenCalledWith(
-    `/clp/getLiquidityProvider?ticker=foo&lpAddress=bar`
+    `/clp/getLiquidityProvider?symbol=foo&lpAddress=bar`
   );
 });

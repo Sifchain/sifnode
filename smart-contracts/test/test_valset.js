@@ -1,6 +1,6 @@
 const Valset = artifacts.require("Valset");
 
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+const { deployProxy, silenceWarnings } = require('@openzeppelin/truffle-upgrades');
 
 const EVMRevert = "revert";
 const BigNumber = web3.BigNumber;
@@ -19,6 +19,8 @@ contract("Valset", function (accounts) {
 
   describe("Valset contract deployment", function () {
     beforeEach(async function () {
+      await silenceWarnings();
+
       this.initialValidators = [userOne, userTwo, userThree];
       this.initialPowers = [5, 8, 12];
 
