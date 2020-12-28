@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 import Layout from "@/components/layout/Layout.vue";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
-import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
+import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
 import ModalView from "@/components/shared/ModalView.vue";
 import ConfirmationDialog, {
@@ -17,7 +17,6 @@ import { computed } from "@vue/reactivity";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
-import { useTokenListing } from "../components/tokenSelector/useSelectToken";
 
 export default defineComponent({
   components: {
@@ -25,7 +24,7 @@ export default defineComponent({
     Layout,
     Modal,
     CurrencyPairPanel,
-    SelectTokenDialog,
+    SelectTokenDialogSif,
     PriceCalculation,
     ConfirmationDialog,
     ModalView,
@@ -222,7 +221,7 @@ export default defineComponent({
           canSwapIcon="plus"
       /></template>
       <template v-slot:default="{ requestClose }">
-        <SelectTokenDialog
+        <SelectTokenDialogSif
           :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
           @tokenselected="requestClose"
         />

@@ -48,7 +48,6 @@ import AssetList from "@/components/shared/AssetList.vue";
 import SifInput from "@/components/shared/SifInput.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
-import { useTokenListing } from "@/components/tokenSelector/useSelectToken";
 
 import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";

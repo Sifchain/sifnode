@@ -7,7 +7,8 @@ import { Asset, SwapState, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
 import Modal from "@/components/shared/Modal.vue";
-import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
+import SelectTokenDialogEth from "@/components/tokenSelector/SelectTokenDialogEth.vue";
+import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
@@ -20,7 +21,13 @@ import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import { useRouter } from "vue-router";
 
 export default defineComponent({
-  components: { Modal, Layout, CurrencyField, SelectTokenDialog },
+  components: {
+    Modal,
+    Layout,
+    SelectTokenDialogSif,
+    CurrencyField,
+    SelectTokenDialogEth,
+  },
 
   setup(_, context) {
     const router = useRouter();
@@ -72,7 +79,13 @@ export default defineComponent({
         />
       </template>
       <template v-slot:default="{ requestClose }">
-        <SelectTokenDialog
+        <SelectTokenDialogEth
+          v-if="mode === 'peg'"
+          :selectedTokens="[symbol]"
+          @tokenselected="requestClose"
+        />
+        <SelectTokenDialogSif
+          v-if="mode === 'unpeg'"
           :selectedTokens="[symbol]"
           @tokenselected="requestClose"
         />

@@ -1,0 +1,30 @@
+<script lang="ts">
+import { Asset } from "ui-core";
+import { defineComponent, PropType } from "vue";
+import { useCore } from "../../hooks/useCore";
+import { generateTokenSearchLists } from "./tokenLists";
+import SelectTokenDialog from "./SelectTokenDialog.vue";
+
+export default defineComponent({
+  components: { SelectTokenDialog },
+  props: {
+    selectedTokens: Array as PropType<string[]>,
+  },
+  emits: ["tokenselected"],
+  setup() {
+    const { displayList, fullSearchList } = generateTokenSearchLists({
+      walletTokens: useCore().store.wallet.eth.balances.map((tok) => tok.asset),
+    });
+
+    return { displayList, fullSearchList };
+  },
+});
+</script>
+<template>
+  <SelectTokenDialog
+    :displayList="displayList"
+    :fullSearchList="fullSearchList"
+    :selectedTokens="selectedTokens"
+    @tokenselected="$emit('tokenselected')"
+  />
+</template>

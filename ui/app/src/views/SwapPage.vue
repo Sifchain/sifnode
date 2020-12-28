@@ -7,7 +7,7 @@ import { Asset, SwapState, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/shared/Modal.vue";
-import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
+import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
@@ -24,7 +24,7 @@ export default defineComponent({
     Layout,
     Modal,
     DetailsPanel,
-    SelectTokenDialog,
+    SelectTokenDialogSif,
     ModalView,
     ConfirmationDialog,
   },
@@ -215,7 +215,7 @@ export default defineComponent({
           />
         </template>
         <template v-slot:default="{ requestClose }">
-          <SelectTokenDialog
+          <SelectTokenDialogSif
             :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
             @tokenselected="requestClose"
           />

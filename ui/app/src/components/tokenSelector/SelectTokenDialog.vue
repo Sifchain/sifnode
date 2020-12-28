@@ -1,9 +1,13 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue"; /* eslint-disable-line */
-import { ref } from "@vue/reactivity";
+import { Ref, ref, toRefs } from "@vue/reactivity";
 import { useCore } from "../../hooks/useCore";
 import AssetItem from "@/components/shared/AssetItem.vue";
-import { useTokenListing } from "./useSelectToken";
+import {
+  disableSelected,
+  filterTokenList,
+  generateTokenSearchLists,
+} from "./tokenLists";
 import SifInput from "@/components/shared/SifInput.vue";
 import { Asset } from "ui-core";
 
@@ -13,26 +17,33 @@ export default defineComponent({
   emits: ["tokenselected"],
   props: {
     selectedTokens: Array as PropType<string[]>,
-    // tokens: Array as PropType<Asset[]>,
+    displayList: { type: Object as PropType<Asset[]>, default: ref([]) },
+    fullSearchList: {
+      type: Object as PropType<Asset[]>,
+      default: ref([]),
+    },
   },
   setup(props, context) {
-    const { store, actions } = useCore();
+    const { actions } = useCore();
 
     const searchText = ref("");
+    const selectedTokens = props.selectedTokens || [];
 
-    const { filteredTokens: tokens } = useTokenListing({
+    const { fullSearchList, displayList } = toRefs(props);
+
+    const list = filterTokenList({
       searchText,
-      store,
-      tokenLimit: 20,
-      walletLimit: 10,
-      selectedTokens: props.selectedTokens || [],
+      tokens: fullSearchList,
+      displayList,
     });
+
+    const tokens = disableSelected({ list, selectedTokens });
 
     function selectToken(symbol: string) {
       context.emit("tokenselected", symbol);
     }
 
-    return { searchText, selectToken };
+    return { tokens, searchText, selectToken };
   },
 });
 </script>

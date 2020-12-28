@@ -61,7 +61,7 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
       config.web3Provider === "metamask"
         ? getMetamaskProvider
         : async () => config.web3Provider,
-    assets,
+    assets: assets.filter((asset) => asset.symbol !== nativeAsset.symbol),
     nativeAsset,
   };
 }

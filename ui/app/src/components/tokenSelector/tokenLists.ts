@@ -1,21 +1,17 @@
-import { Ref, computed, ComputedRef } from "@vue/reactivity";
+import { Ref, computed, ComputedRef, ref, effect } from "@vue/reactivity";
 import { Asset, Store } from "ui-core";
-import { useWallet } from "../../hooks/useWallet";
 
 export function generateTokenSearchLists({
-  store,
-  walletLimit,
-  tokenLimit,
+  walletLimit = 10,
+  tokenLimit = 20,
+  walletTokens = [],
   topTokens = [],
 }: {
-  store: Store;
-  walletLimit: number;
-  tokenLimit: number;
+  walletLimit?: number;
+  tokenLimit?: number;
+  walletTokens?: Asset[];
   topTokens?: Asset[];
 }) {
-  const { balances } = useWallet(store);
-
-  const walletTokens = computed(() => balances.value.map((tok) => tok.asset));
   // You can search through a larger list than we display by default
   // as we need to show tokens a user will have in their wallet
 
@@ -23,17 +19,24 @@ export function generateTokenSearchLists({
   // generate a combination of lists based on limits provided
   // fullTokenList for searching = top tokens and wallet tokens
   const fullSearchList = computed(() => {
-    return Array.from(new Set([...walletTokens.value, ...topTokens]));
+    return Array.from(new Set([...walletTokens, ...topTokens]));
   });
 
   // List for default display as we have limits on the wallet
   const displayList = computed(() => {
     return Array.from(
       new Set([
-        ...walletTokens.value.slice(0, walletLimit),
+        ...walletTokens.slice(0, walletLimit),
         ...topTokens.slice(0, tokenLimit),
       ])
     );
+  });
+
+  effect(() => {
+    console.log({
+      fullSearchList: fullSearchList.value,
+      displayList: displayList.value,
+    });
   });
   return { fullSearchList, displayList };
 }
@@ -41,7 +44,7 @@ export function generateTokenSearchLists({
 export function filterTokenList({
   searchText,
   tokens,
-  displayList,
+  displayList = ref([]),
 }: {
   searchText: Ref<string>;
   tokens: Ref<Asset[]>;
@@ -68,39 +71,12 @@ export function disableSelected({
   list: Ref<Asset[]>;
   selectedTokens: string[];
 }) {
-  return computed(() =>
-    list.value.map((item) =>
-      selectedTokens.includes(item.symbol) ? { disabled: true, ...item } : item
-    )
+  return computed(
+    () =>
+      list.value?.map((item) =>
+        selectedTokens.includes(item.symbol)
+          ? { disabled: true, ...item }
+          : item
+      ) ?? []
   );
-}
-
-export function useTokenListing({
-  searchText,
-  store,
-  walletLimit,
-  tokenLimit,
-  selectedTokens = [],
-  topTokens = [],
-}: {
-  searchText: Ref<string>;
-  store: Store;
-  walletLimit: number;
-  tokenLimit: number;
-  selectedTokens: string[];
-  topTokens?: Asset[];
-}): { filteredTokens: ComputedRef<Asset[]> } {
-  const { displayList, fullSearchList } = generateTokenSearchLists({
-    store,
-    tokenLimit,
-    walletLimit,
-    topTokens,
-  });
-  const list = filterTokenList({
-    searchText,
-    tokens: fullSearchList,
-    displayList,
-  });
-  const filteredTokens = disableSelected({ list, selectedTokens });
-  return { filteredTokens };
 }
