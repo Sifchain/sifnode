@@ -150,15 +150,21 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	// Universal logger
 	logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
 
-	// Initialize new Ethereum event listener
+	// Initialize the cosmos context for sending transaction
 	inBuf := bufio.NewReader(cmd.InOrStdin())
-	ethSub, err := relayer.NewEthereumSub(inBuf, rpcURL, cdc, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, mnemonic, logger)
+	cosmosContext, err := relayer.NewCosmosContext(inBuf, cdc, rpcURL, validatorMoniker, chainID, mnemonic, logger)
+	if err != nil {
+		return err
+	}
+
+	// Initialize new Ethereum event listener
+	ethSub, err := relayer.NewEthereumSub(web3Provider,
+		contractAddress, privateKey, cosmosContext, logger)
 	if err != nil {
 		return err
 	}
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, cosmosContext, logger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)

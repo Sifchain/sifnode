@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"math/big"
 	"os"
 	"os/signal"
 	"sync"
@@ -20,6 +21,13 @@ import (
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+
+	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
+)
+
+const (
+	// ReturnCethThreshold If more than 0.1 eth remaining after transaction
+	ReturnCethThreshold = 10000000000000000
 )
 
 // TODO: Move relay functionality out of CosmosSub into a new Relayer parent struct
@@ -30,17 +38,19 @@ type CosmosSub struct {
 	EthProvider             string
 	RegistryContractAddress common.Address
 	PrivateKey              *ecdsa.PrivateKey
+	CosmosContext           *types.CosmosContext
 	Logger                  tmLog.Logger
 }
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common.Address,
-	privateKey *ecdsa.PrivateKey, logger tmLog.Logger) CosmosSub {
+	privateKey *ecdsa.PrivateKey, cosmosContext *types.CosmosContext, logger tmLog.Logger) CosmosSub {
 	return CosmosSub{
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
 		PrivateKey:              privateKey,
+		CosmosContext:           cosmosContext,
 		Logger:                  logger,
 	}
 }
@@ -134,13 +144,31 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 	}
 	sub.Logger.Info(cosmosMsg.String())
 
-	// TODO: Ideally one validator should relay the prophecy and other validators make oracle claims upon that prophecy
+	// Only deal with submit message
+	if cosmosMsg.MessageType != ethbridge.MsgSubmit {
+		return nil
+	}
+
+	// CosmosMsg
+
+	// Check if the ceth paid in can cover the fee in Ethereum
+
 	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
-	err = txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
+	gasUsed, err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
 		claimType, prophecyClaim, sub.PrivateKey)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
+
+	// return remaining gas to sifchain account
+	cethAmount := cosmosMsg.CethAmount
+	tempAmount := big.NewInt(ReturnCethThreshold)
+	tempAmount = tempAmount.Add(tempAmount, big.NewInt(int64(gasUsed*3)))
+
+	if cosmosMsg.CethAmount > tempAmount {
+		tx.SendMsgToCosmos(sub.CosmosContext, cosmosMsg)
+	}
+
 	return nil
 }

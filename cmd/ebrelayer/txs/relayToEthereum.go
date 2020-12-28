@@ -5,6 +5,7 @@ package txs
 import (
 	"context"
 	"crypto/ecdsa"
+	goerrors "errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -24,11 +25,11 @@ const (
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
 func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
-	claim ProphecyClaim, key *ecdsa.PrivateKey) error {
+	claim ProphecyClaim, key *ecdsa.PrivateKey) (uint64, error) {
 	// Initialize client service, validator's tx auth, and target contract address
 	client, auth, target, err := initRelayConfig(provider, contractAddress, event, key)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// Initialize CosmosBridge instance
@@ -36,7 +37,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
 	if err != nil {
 		log.Println(err)
-		return err
+		return 0, err
 	}
 
 	// Send transaction
@@ -45,7 +46,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
 	if err != nil {
 		log.Println(err)
-		return err
+		return 0, err
 	}
 	fmt.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
 
@@ -53,16 +54,19 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 	if err != nil {
 		log.Println(err)
-		return err
+		return 0, err
 	}
 
 	switch receipt.Status {
 	case 0:
 		fmt.Println("Tx Status: 0 - Failed")
+		return 0, goerrors.New("NewProphecyClaim transaction failed ")
 	case 1:
 		fmt.Println("Tx Status: 1 - Successful")
+		return receipt.GasUsed, nil
 	}
-	return nil
+
+	return 0, nil
 }
 
 // initRelayConfig set up Ethereum client, validator's transaction auth, and the target contract's address

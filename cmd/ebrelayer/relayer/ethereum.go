@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"io"
 	"log"
 	"math/big"
 	"os"
@@ -15,20 +14,11 @@ import (
 	"syscall"
 	"time"
 
-	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/sethvargo/go-password/password"
-	"github.com/tendermint/go-amino"
 	tmLog "github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
@@ -37,95 +27,28 @@ import (
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
-// TODO: Move relay functionality out of EthereumSub into a new Relayer parent struct
-
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
 type EthereumSub struct {
-	Cdc                     *codec.Codec
 	EthProvider             string
 	RegistryContractAddress common.Address
-	ValidatorName           string
-	ValidatorAddress        sdk.ValAddress
-	CliCtx                  sdkContext.CLIContext
-	TxBldr                  authtypes.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
-	TempPassword            string
 	EventsBuffer            types.EthEventBuffer
+	CosmosContext           *types.CosmosContext
 	Logger                  tmLog.Logger
 }
 
-// NewKeybase create a new keybase instance
-func NewKeybase(validatorMoniker, mnemonic, password string) (keys.Keybase, keys.Info, error) {
-	keybase := keys.NewInMemory()
-	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
-	info, err := keybase.CreateAccount(validatorMoniker, mnemonic, "", password, hdpath.String(), keys.Secp256k1)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return keybase, info, nil
-}
-
 // NewEthereumSub initializes a new EthereumSub
-func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorMoniker, chainID, ethProvider string,
-	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, logger tmLog.Logger) (EthereumSub, error) {
-
-	tempPassword, _ := password.Generate(32, 5, 0, false, false)
-	keybase, info, err := NewKeybase(validatorMoniker, mnemonic, tempPassword)
-	if err != nil {
-		return EthereumSub{}, err
-	}
-
-	validatorAddress := sdk.ValAddress(info.GetAddress())
-
-	// Load CLI context and Tx builder
-	cliCtx, err := LoadTendermintCLIContext(cdc, validatorAddress, validatorMoniker, rpcURL, chainID)
-	if err != nil {
-		return EthereumSub{}, err
-	}
-
-	txBldr := authtypes.NewTxBuilderFromCLI(inBuf).
-		WithTxEncoder(utils.GetTxEncoder(cdc)).
-		WithChainID(chainID).
-		WithKeybase(keybase)
+func NewEthereumSub(ethProvider string,
+	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, cosmosContext *types.CosmosContext, logger tmLog.Logger) (EthereumSub, error) {
 
 	return EthereumSub{
-		Cdc:                     cdc,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
-		ValidatorName:           validatorMoniker,
-		ValidatorAddress:        validatorAddress,
-		CliCtx:                  cliCtx,
-		TxBldr:                  txBldr,
 		PrivateKey:              privateKey,
-		TempPassword:            tempPassword,
 		EventsBuffer:            types.NewEthEventBuffer(),
+		CosmosContext:           cosmosContext,
 		Logger:                  logger,
 	}, nil
-}
-
-// LoadTendermintCLIContext : loads CLI context for tendermint txs
-func LoadTendermintCLIContext(appCodec *amino.Codec, validatorAddress sdk.ValAddress, validatorName string,
-	rpcURL string, chainID string) (sdkContext.CLIContext, error) {
-	// Create the new CLI context
-	cliCtx := sdkContext.NewCLIContext().
-		WithCodec(appCodec).
-		WithFromAddress(sdk.AccAddress(validatorAddress)).
-		WithFromName(validatorName)
-
-	if rpcURL != "" {
-		cliCtx = cliCtx.WithNodeURI(rpcURL)
-	}
-	cliCtx.SkipConfirm = true
-
-	// Confirm that the validator's address exists
-	accountRetriever := authtypes.NewAccountRetriever(cliCtx)
-	err := accountRetriever.EnsureExists(sdk.AccAddress(validatorAddress))
-	if err != nil {
-		log.Println(err)
-		return sdkContext.CLIContext{}, err
-	}
-	return cliCtx, nil
 }
 
 // Start an Ethereum chain subscription
@@ -293,9 +216,9 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
 func (sub EthereumSub) handleEthereumEvent(event types.EthereumEvent) error {
-	prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.ValidatorAddress, &event)
+	prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.CosmosContext.ValidatorAddress, &event)
 	if err != nil {
 		return err
 	}
-	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, &prophecyClaim, sub.CliCtx, sub.TxBldr)
+	return txs.RelayToCosmos(sub.CosmosContext, &prophecyClaim)
 }

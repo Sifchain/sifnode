@@ -7,6 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -106,24 +107,30 @@ func (p ProphecyClaimEvent) String() string {
 
 // CosmosMsg contains data from MsgBurn and MsgLock events
 type CosmosMsg struct {
+	EthereumChainID      int
 	CosmosSender         []byte
 	CosmosSenderSequence *big.Int
 	Symbol               string
 	Amount               sdk.Int
 	EthereumReceiver     common.Address
 	ClaimType            Event
+	MessageType          types.MessageType
+	CethAmount           sdk.Int
 }
 
 // NewCosmosMsg creates a new CosmosMsg
-func NewCosmosMsg(claimType Event, cosmosSender []byte, cosmosSenderSequence *big.Int, ethereumReceiver common.Address, symbol string,
-	amount sdk.Int) CosmosMsg {
+func NewCosmosMsg(ethereumChainID int, claimType Event, cosmosSender []byte, cosmosSenderSequence *big.Int, ethereumReceiver common.Address, symbol string,
+	amount sdk.Int, messageType types.MessageType, cethAmount sdk.Int) CosmosMsg {
 	return CosmosMsg{
+		EthereumChainID:      ethereumChainID,
 		ClaimType:            claimType,
 		CosmosSender:         cosmosSender,
 		CosmosSenderSequence: cosmosSenderSequence,
 		EthereumReceiver:     ethereumReceiver,
 		Symbol:               symbol,
 		Amount:               amount,
+		MessageType:          messageType,
+		CethAmount:           cethAmount,
 	}
 }
 
@@ -155,9 +162,15 @@ const (
 	Amount
 	// Symbol is the coin type
 	Symbol
+	// MessageType could be commit, revert, pay back ceth
+	MessageType
+	// CethAmount paid in Sifchain for the cost of send tx in Ethereum
+	CethAmount
+	// EthereumChainID is
+	EthereumChainID
 )
 
 // String returns the event type as a string
 func (d CosmosMsgAttributeKey) String() string {
-	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol"}[d]
+	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol", "message_type", "ceth_amount", "ethereum_chain_id"}[d]
 }

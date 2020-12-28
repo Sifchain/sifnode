@@ -81,9 +81,11 @@ func CreateTestProphecyClaimEvent(t *testing.T) types.ProphecyClaimEvent {
 
 // CreateTestCosmosMsg creates a sample Cosmos Msg for testing purposes
 func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
+	testEthereumChainID := 1
 	testCosmosSender := []byte(TestCosmosAddress1)
 	testEthereumReceiver := common.HexToAddress(TestEthereumAddress1)
 	testAmount := testSDKAmount
+	testMessageType := ethbridge.MsgSubmit
 
 	var symbol string
 	if claimType == types.MsgBurn {
@@ -94,8 +96,8 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 	}
 
 	// Create new Cosmos Msg
-	cosmosMsg := types.NewCosmosMsg(claimType, testCosmosSender, big.NewInt(TestCosmosAddressSequence),
-		testEthereumReceiver, symbol, testAmount)
+	cosmosMsg := types.NewCosmosMsg(testEthereumChainID, claimType, testCosmosSender, big.NewInt(TestCosmosAddressSequence),
+		testEthereumReceiver, symbol, testAmount, testMessageType, testAmount)
 
 	return cosmosMsg
 }

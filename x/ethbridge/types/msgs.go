@@ -27,14 +27,13 @@ type MsgLock struct {
 	Amount           sdk.Int         `json:"amount" yaml:"amount"`
 	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
 	CethAmount       sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
-	MessageType      MessageType     `json:"type" yaml:"type"`
+	MessageType      MessageType     `json:"message_type" yaml:"message_type"`
 	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
 }
 
 // NewMsgLock is a constructor function for MsgLock
-func NewMsgLock(
-	ethereumChainID int, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int, messageType MessageType) MsgLock {
+func NewMsgLock(ethereumChainID int, cosmosSender sdk.AccAddress, ethereumReceiver EthereumAddress, amount sdk.Int,
+	symbol string, cethAmount sdk.Int, messageType MessageType) MsgLock {
 	return MsgLock{
 		EthereumChainID:  ethereumChainID,
 		CosmosSender:     cosmosSender,
@@ -111,7 +110,7 @@ type MsgBurn struct {
 	Amount           sdk.Int         `json:"amount" yaml:"amount"`
 	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
 	CethAmount       sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
-	MessageType      MessageType     `json:"type" yaml:"type"`
+	MessageType      MessageType     `json:"message_type" yaml:"message_type"`
 	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
 }
 

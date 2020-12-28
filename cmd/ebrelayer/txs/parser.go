@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"strconv"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -134,6 +135,9 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 	var ethereumReceiver common.Address
 	var symbol string
 	var amount sdk.Int
+	var cethAmount sdk.Int
+	var messageType ethbridge.MessageType
+	var ethereumChainID int
 
 	for _, attribute := range attributes {
 		key := string(attribute.GetKey())
@@ -175,9 +179,32 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 				return types.CosmosMsg{}, errors.New("invalid amount:" + val)
 			}
 			amount = tempAmount
+		case types.CethAmount.String():
+			tempAmount, ok := sdk.NewIntFromString(val)
+			if !ok {
+				log.Println("Invalid amount:", val)
+				return types.CosmosMsg{}, errors.New("invalid amount:" + val)
+			}
+			cethAmount = tempAmount
+		case types.MessageType.String():
+			tempMessageType, err := strconv.ParseInt(val, 10, 32)
+			if err != nil {
+				log.Println("Invalid message type:", val)
+				return types.CosmosMsg{}, errors.New("invalid message type:" + val)
+			}
+
+			messageType = ethbridge.MessageType(tempMessageType)
+		case types.EthereumChainID.String():
+			tempEthereumChainID, err := strconv.ParseInt(val, 10, 32)
+			if err != nil {
+				log.Println("Invalid Ethereum chain ID:", val)
+				return types.CosmosMsg{}, errors.New("invalid ethereum chain id:" + val)
+			}
+
+			ethereumChainID = int(tempEthereumChainID)
 		}
 	}
-	return types.NewCosmosMsg(claimType, cosmosSender, cosmosSenderSequence, ethereumReceiver, symbol, amount), nil
+	return types.NewCosmosMsg(ethereumChainID, claimType, cosmosSender, cosmosSenderSequence, ethereumReceiver, symbol, amount, messageType, cethAmount), nil
 }
 
 // isZeroAddress checks an Ethereum address and returns a bool which indicates if it is the null address
