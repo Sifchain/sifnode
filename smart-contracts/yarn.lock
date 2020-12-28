@@ -260,9 +260,9 @@
     solidity-ast "^0.4.4"
 
 "@openzeppelin/upgrades-core@^1.4.0":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-1.4.1.tgz#fe397ab3915d766553ae4b4f0ca89f7a7b270c05"
-  integrity sha512-n3chUL6PCY7f/25otWqvmhf8mdMj4oqY1AZLIFVP8eMMQy3xoBB5MomgnXs/9H86AnuWqM9PIzxNgxufi7gQIg==
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-1.4.2.tgz#e96dbb36f839ff4d39b314ab79b18a08dbf94c90"
+  integrity sha512-GbhPu8HXNdfHQNSIDkDvncWzZmwuv+RrOnDcePo2B++uMxFiEbKNyKCwUVvqZZd8StlxyxCs95E1ci/TZ6Dzfg==
   dependencies:
     bn.js "^5.1.2"
     cbor "^5.0.2"
@@ -286,6 +286,17 @@
   integrity sha1-sWZeLEYaLNkvTBu/UNVFTeDUtCE=
   dependencies:
     defer-to-connect "^1.0.1"
+
+"@truffle/artifactor@^4.0.90":
+  version "4.0.90"
+  resolved "https://registry.yarnpkg.com/@truffle/artifactor/-/artifactor-4.0.90.tgz#ab50844f66db6778997b371e97dcceebd6120bcb"
+  integrity sha512-cdJqwMxy918luqiNkErL+eFl8FnofsV+LfzLQADse9e9X0tAGV/c68adLpHP6rCGV/Z2MqZTomL356VYXXgR0Q==
+  dependencies:
+    "@truffle/contract-schema" "^3.3.2"
+    fs-extra "^8.1.0"
+    lodash.assign "^4.2.0"
+    lodash.merge "^4.6.2"
+    source-map-support "^0.5.19"
 
 "@truffle/blockchain-utils@^0.0.11":
   version "0.0.11"

@@ -16,6 +16,7 @@
     </Header>
 
     <router-view />
+    <Notifications/>
   </div>
 </template>
 
@@ -25,20 +26,15 @@ import { useCore } from "./hooks/useCore";
 import WithWallet from "@/components/wallet/WithWallet.vue";
 import Header from "./components/shared/Header.vue";
 import SifButton from "./components/shared/SifButton.vue";
+import Notifications from "./components/Notifications.vue";
 
 export default defineComponent({
   name: "App",
   components: {
     Header,
+    Notifications,
     WithWallet,
     SifButton,
-  },
-
-  setup() {
-    const { actions } = useCore();
-    onMounted(async () => {
-      await actions.token.refreshTokens();
-    });
   },
 });
 </script>

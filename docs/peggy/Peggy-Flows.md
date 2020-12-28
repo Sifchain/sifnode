@@ -12,7 +12,7 @@
 - Once enough relayers have signed off on the prophecyClaim in the CosmosBridge, the CosmosBridge calls the BridgeBank to unlock the eth for the intended recipient in the BridgeToken contract.
 
 Both scenarios 1 and 2 can be summarized with this image.
-![image info](./peggy-images/peggy-flow.png)
+![image info](images/peggy-flow.png)
 
 
 
@@ -36,7 +36,7 @@ event LogLock(
 - Once enough relayers have signed off on this Oracle Claim on cosmos, then pegged assets are minted on cosmos to the recipient.
 
 
-3. Cosmos Native Pegged Asset on Ethereum Being Transferred Back to Sifchain
+4. Cosmos Native Pegged Asset on Ethereum Being Transferred Back to Sifchain
 - A user sends a burn tx on ethereum to the BridgeBank contract specifying the token address, the amount of tokens to send, and the desired address of the sifchain recipient. This TX emits an ethereum event with all of these data fields.
 ```
 event LogBurn(

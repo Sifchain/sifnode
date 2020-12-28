@@ -18,7 +18,6 @@ type Keeper struct {
 	storeKey sdk.StoreKey // Unexposed key to access store from sdk.Context
 
 	stakeKeeper types.StakingKeeper
-
 	// TODO: use this as param instead
 	consensusNeeded float64 // The minimum % of stake needed to sign claims in order for consensus to occur
 }
@@ -75,6 +74,21 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 
 // ProcessClaim ...
 func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, error) {
+
+	inWhiteList := false
+	// Check if claim from whitelist validators
+	for _, address := range k.GetOracleWhiteList(ctx) {
+
+		if address.Equals(claim.ValidatorAddress) {
+			inWhiteList = true
+			break
+		}
+	}
+
+	if !inWhiteList {
+		return types.Status{}, types.ErrValidatorNotInWhiteList
+	}
+
 	activeValidator := k.checkActiveValidator(ctx, claim.ValidatorAddress)
 	if !activeValidator {
 		return types.Status{}, types.ErrInvalidValidator
@@ -126,12 +140,11 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 // will never be able to become successful due to not enough validation power being
 // left to push it over the threshold required for consensus.
 func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) types.Prophecy {
-	highestClaim, highestClaimPower, totalClaimsPower := prophecy.FindHighestClaim(ctx, k.stakeKeeper)
-	totalPower := k.stakeKeeper.GetLastTotalPower(ctx)
-	highestConsensusRatio := float64(highestClaimPower) / float64(totalPower.Int64())
-	remainingPossibleClaimPower := totalPower.Int64() - totalClaimsPower
+	highestClaim, highestClaimPower, totalClaimsPower, totalPower := prophecy.FindHighestClaim(ctx, k.stakeKeeper, k.GetOracleWhiteList(ctx))
+	highestConsensusRatio := float64(highestClaimPower) / float64(totalPower)
+	remainingPossibleClaimPower := totalPower - totalClaimsPower
 	highestPossibleClaimPower := highestClaimPower + remainingPossibleClaimPower
-	highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower.Int64())
+	highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower)
 	if highestConsensusRatio >= k.consensusNeeded {
 		prophecy.Status.Text = types.SuccessStatusText
 		prophecy.Status.FinalClaim = highestClaim
@@ -139,4 +152,10 @@ func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) type
 		prophecy.Status.Text = types.FailedStatusText
 	}
 	return prophecy
+}
+
+// Exists check if the key exists
+func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
+	store := ctx.KVStore(k.storeKey)
+	return store.Has(key)
 }

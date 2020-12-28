@@ -2,5 +2,6 @@
 
 killall sifnoded sifnodecli
 
-sifnoded start &
 sifnodecli rest-server &
+sifnoded start
+
