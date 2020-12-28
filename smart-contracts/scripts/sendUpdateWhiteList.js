@@ -16,7 +16,6 @@ module.exports = async () => {
   // Config values
   const NETWORK_ROPSTEN =
     process.argv[4] === "--network" && process.argv[5] === "ropsten";
-  console.log("argument length is ", process.argv.length)
   const NUM_ARGS = process.argv.length - 4;
 
   /*******************************************
@@ -39,7 +38,6 @@ module.exports = async () => {
     }
   }
 
-  console.log("Here her here ", NETWORK_ROPSTEN)
   /*******************************************
    *** Lock transaction parameters
    ******************************************/
