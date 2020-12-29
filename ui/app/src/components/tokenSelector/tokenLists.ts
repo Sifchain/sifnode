@@ -32,12 +32,6 @@ export function generateTokenSearchLists({
     );
   });
 
-  effect(() => {
-    console.log({
-      fullSearchList: fullSearchList.value,
-      displayList: displayList.value,
-    });
-  });
   return { fullSearchList, displayList };
 }
 
