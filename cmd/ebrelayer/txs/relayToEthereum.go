@@ -5,11 +5,13 @@ package txs
 import (
 	"context"
 	"crypto/ecdsa"
+	"errors"
 	goerrors "errors"
 	"fmt"
 	"log"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -23,13 +25,33 @@ const (
 	GasLimit = uint64(3000000)
 )
 
+var (
+	callMsg *ethereum.CallMsg
+)
+
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
 func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
-	claim ProphecyClaim, key *ecdsa.PrivateKey) (uint64, error) {
+	claim ProphecyClaim, key *ecdsa.PrivateKey, cethAmount *big.Int) (uint64, error) {
 	// Initialize client service, validator's tx auth, and target contract address
 	client, auth, target, err := initRelayConfig(provider, contractAddress, event, key)
 	if err != nil {
 		return 0, err
+	}
+
+	// Estimate the cost for the transaction
+	if callMsg != nil {
+		// Update gas price
+		callMsg.GasPrice = auth.GasPrice
+	}
+	estimateGas, err := client.EstimateGas(context.Background(), *callMsg)
+
+	if err != nil {
+		return 0, err
+	}
+
+	// If ceth amount is lower than estimated gas
+	if cethAmount.Cmp(big.NewInt(int64(estimateGas))) > 0 {
+		return 0, errors.New("ceth paid not enough")
 	}
 
 	// Initialize CosmosBridge instance
@@ -49,6 +71,18 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		return 0, err
 	}
 	fmt.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
+
+	// Init call message from transaction data
+	if callMsg == nil {
+		callMsg = &ethereum.CallMsg{
+			From:     auth.From,
+			To:       &contractAddress,
+			Gas:      0,
+			GasPrice: auth.GasPrice,
+			Value:    big.NewInt(0),
+			Data:     tx.Data(),
+		}
+	}
 
 	// Get the transaction receipt
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())

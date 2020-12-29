@@ -149,25 +149,30 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 		return nil
 	}
 
-	// CosmosMsg
-
-	// Check if the ceth paid in can cover the fee in Ethereum
-
 	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
 	gasUsed, err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
-		claimType, prophecyClaim, sub.PrivateKey)
+		claimType, prophecyClaim, sub.PrivateKey, cosmosMsg.CethAmount.BigInt())
+
+	// If failed to send prophecy claim to Ethereum
 	if err != nil {
 		fmt.Println(err)
+
+		if err.Error() == "ceth paid not enough" {
+			cosmosMsg.MessageType = ethbridge.MsgRevert
+			txs.SendMsgToCosmos(sub.CosmosContext, &cosmosMsg)
+		}
+
 		return err
 	}
 
 	// return remaining gas to sifchain account
-	cethAmount := cosmosMsg.CethAmount
+	cethAmount := cosmosMsg.CethAmount.BigInt()
 	tempAmount := big.NewInt(ReturnCethThreshold)
 	tempAmount = tempAmount.Add(tempAmount, big.NewInt(int64(gasUsed*3)))
 
-	if cosmosMsg.CethAmount > tempAmount {
-		tx.SendMsgToCosmos(sub.CosmosContext, cosmosMsg)
+	if cethAmount.Cmp(tempAmount) > 0 {
+		cosmosMsg.MessageType = ethbridge.MsgReturnCeth
+		txs.SendMsgToCosmos(sub.CosmosContext, &cosmosMsg)
 	}
 
 	return nil

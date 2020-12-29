@@ -23,6 +23,7 @@ import (
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 )
 
 var cdc *codec.Codec
@@ -152,7 +153,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 
 	// Initialize the cosmos context for sending transaction
 	inBuf := bufio.NewReader(cmd.InOrStdin())
-	cosmosContext, err := relayer.NewCosmosContext(inBuf, cdc, rpcURL, validatorMoniker, chainID, mnemonic, logger)
+	cosmosContext, err := types.NewCosmosContext(inBuf, cdc, rpcURL, validatorMoniker, chainID, mnemonic, logger)
 	if err != nil {
 		return err
 	}
