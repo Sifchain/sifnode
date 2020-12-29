@@ -168,10 +168,11 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 	// return remaining gas to sifchain account
 	cethAmount := cosmosMsg.CethAmount.BigInt()
 	tempAmount := big.NewInt(ReturnCethThreshold)
-	tempAmount = tempAmount.Add(tempAmount, big.NewInt(int64(gasUsed*3)))
+	tempAmount.Add(tempAmount, big.NewInt(int64(gasUsed*3)))
 
 	if cethAmount.Cmp(tempAmount) > 0 {
 		cosmosMsg.MessageType = ethbridge.MsgReturnCeth
+		cosmosMsg.CethAmount = cethAmount.Sub(big.NewInt(int64(gasUsed * 3)))
 		txs.SendMsgToCosmos(sub.CosmosContext, &cosmosMsg)
 	}
 

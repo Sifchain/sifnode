@@ -16,7 +16,7 @@ CLAIMBURN = "burn"
 ETHEREUM_SENDER_ADDRESS='0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9'
 ETHEREUM_NULL_ADDRESS='0x0000000000000000000000000000000000000000'
 ETHEREUM_CHAIN_ID='5777'
-
+CETH_AMOUNT = amount_in_wei(0.1)
 
 def get_moniker():
     command_line = "echo $MONIKER"
@@ -68,19 +68,19 @@ def create_claim(user, validator, amount, denom, claim_type):
 
 def burn_peggy_coin(user, validator, amount):
     command_line = """yes {} | sifnodecli tx ethbridge burn {} \
-    0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} {} \
+    0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} {} 0 {}\
     --ethereum-chain-id=5777 --from={} \
     --yes -o json""".format(network_password, get_user_account(user, network_password),
-                    amount, PEGGYETH, user)
+                    amount, PEGGYETH, user, CETH_AMOUNT)
     return get_shell_output(command_line)
 
 
 def lock_rowan(user, amount):
     print('lock')
     command_line = """yes {} |sifnodecli tx ethbridge lock {} \
-            0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rowan \
+            0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rowan 0 \
             --ethereum-chain-id=5777 --from={} --yes -o json
-    """.format(network_password, get_user_account(user, network_password), amount, user)
+    """.format(network_password, get_user_account(user, network_password), amount, user, CETH_AMOUNT)
     return get_shell_output(command_line)
 
 
@@ -120,7 +120,7 @@ def test_case_2():
     print("Send burn claim to Sifchain...")
     burn_peggy_coin(USER, VALIDATOR, amount)
 
-    wait_for_sifchain_balance(USER, PEGGYETH, network_password, balance_before_tx - amount)
+    wait_for_sifchain_balance(USER, PEGGYETH, network_password, balance_before_tx - amount - CETH_AMOUNT)
 
     print("########## Test Case Two Over ##########")
 
