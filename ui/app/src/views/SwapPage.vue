@@ -121,6 +121,9 @@ export default defineComponent({
             return "Swap";
         }
       }),
+      disableInputFields: computed(() => {
+        return state.value === SwapState.SELECT_TOKENS;
+      }),
       handleFromSymbolClicked(next: () => void) {
         selectedField.value = "from";
         next();
@@ -199,6 +202,8 @@ export default defineComponent({
             v-model:fromAmount="fromAmount"
             v-model:fromSymbol="fromSymbol"
             :fromMax="!!fromSymbol"
+            :fromDisabled="disableInputFields"
+            :toDisabled="disableInputFields"
             @frommaxclicked="handleFromMaxClicked"
             @fromfocus="handleFromFocused"
             @fromblur="handleBlur"

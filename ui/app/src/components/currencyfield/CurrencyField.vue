@@ -22,6 +22,7 @@ export default defineComponent({
     amount: String,
     symbol: String,
     available: String,
+    inputDisabled: { type: Boolean, default: false },
     selectable: { type: Boolean, default: true },
     max: { type: Boolean, default: false },
     symbolFixed: { type: Boolean, default: false },
@@ -70,6 +71,7 @@ export default defineComponent({
         v-bind="$attrs"
         type="number"
         v-model="localAmount"
+        :disabled="inputDisabled"
         @focus="$emit('focus', $event.target)"
         @blur="$emit('blur', $event.target)"
         @click="$event.target.select()"
