@@ -28,13 +28,22 @@ func NewHandler(keeper Keeper) sdk.Handler {
 func handleMsgRequestCoins(ctx sdk.Context, keeper Keeper, msg types.MsgRequestCoins) (*sdk.Result, error) {
 	bank := keeper.GetBankKeeper()
 	supply := keeper.GetSupplyKeeper()
-	ok := bank.HasCoins(ctx, types.GetFaucetModuleAddress(), msg.Coins)
+
+	ok, err := keeper.CanRequest(ctx, msg.Requester, msg.Coins)
+	if !ok || err != nil {
+		return nil, err
+	}
+	ok = bank.HasCoins(ctx, types.GetFaucetModuleAddress(), msg.Coins)
 	if !ok {
 		return nil, types.NotEnoughBalance
 	}
-	err := supply.SendCoinsFromModuleToAccount(ctx, types.ModuleName, msg.Requester, msg.Coins)
+	err = supply.SendCoinsFromModuleToAccount(ctx, types.ModuleName, msg.Requester, msg.Coins)
 	if err != nil {
 		return nil, errors.Wrap(err, types.ErrorRequestingTokens.Error())
+	}
+	ok, err = keeper.ExecuteRequest(ctx, msg.Requester, msg.Coins)
+	if !ok || err != nil {
+		return nil, err
 	}
 	return &sdk.Result{}, nil
 }

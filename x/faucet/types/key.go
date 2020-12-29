@@ -1,5 +1,10 @@
 package types
 
+import (
+	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
 const (
 	// ModuleName is the name of the module
 	ModuleName = "faucet"
@@ -17,5 +22,16 @@ const (
 )
 
 const (
-	FaucetPrefix = "faucet"
+	FaucetPrefix              = "faucet"
+	MaxWithdrawAmountPerEpoch = "100000"
 )
+
+// Todo : Add MaxWithdrawAmountPerEpoch to Genesis
+
+func KeyPrefix(p string) []byte {
+	return []byte(p)
+}
+
+func GetBalanceKey(user sdk.AccAddress, token string) []byte {
+	return []byte(fmt.Sprintf("%s_%s", user.String(), token))
+}

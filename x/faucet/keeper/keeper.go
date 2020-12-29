@@ -2,8 +2,8 @@ package keeper
 
 import (
 	"fmt"
-
 	"github.com/Sifchain/sifnode/x/faucet/types"
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -43,11 +43,66 @@ func (k Keeper) GetSupplyKeeper() types.SupplyKeeper {
 	return k.supplyKeeper
 }
 
-// TODO add functionality to keep track of how much a user withdrew , to prevent spam .
-//func (k Keeper) HasCoins(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) bool {
-//	return k.bankKeeper.HasCoins(ctx, user, coins)
-//}
-//
-//func (k Keeper) SendCoins(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddress, coins sdk.Coins) error {
-//	return k.bankKeeper.SendCoins(ctx, from, to, coins)
-//}
+func (k Keeper) GetWithdrawnAmountInEpoch(ctx sdk.Context, user sdk.AccAddress, token string) (sdk.Int, error) {
+	faucetTracker := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FaucetPrefix))
+	ok := faucetTracker.Has(types.GetBalanceKey(user, token))
+	if !ok {
+		return sdk.ZeroInt(), nil
+	}
+	amount := faucetTracker.Get(types.GetBalanceKey(user, token))
+	var am sdk.Int
+	err := k.cdc.UnmarshalBinaryBare(amount, &am)
+	if err != nil {
+		return sdk.ZeroInt(), err
+	}
+	return am, nil
+}
+
+func (k Keeper) SetWithdrawnAmountInEpoch(ctx sdk.Context, user sdk.AccAddress, amount sdk.Int, token string) error {
+	faucetTracker := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FaucetPrefix))
+	withdrawnAmount, err := k.GetWithdrawnAmountInEpoch(ctx, user, token)
+	if err != nil {
+		return err
+	}
+	totalAmountInEpoch := withdrawnAmount.Add(amount)
+	bz, err := k.cdc.MarshalBinaryBare(&totalAmountInEpoch)
+	if err != nil {
+		return err
+	}
+	faucetTracker.Set(types.GetBalanceKey(user, token), bz)
+	return nil
+}
+
+func (k Keeper) StartNextEpoch(ctx sdk.Context) {
+	faucetTracker := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(faucetTracker, types.KeyPrefix(types.FaucetPrefix))
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		faucetTracker.Delete(iterator.Key())
+	}
+}
+
+func (k Keeper) CanRequest(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) (bool, error) {
+	alreadyWithraw, err := k.GetWithdrawnAmountInEpoch(ctx, user, types.FaucetToken)
+	if err != nil {
+		return false, err
+	}
+	maxAllowedWithdraw, ok := sdk.NewIntFromString(types.MaxWithdrawAmountPerEpoch)
+	if !ok {
+		return false, nil
+	}
+	amount := coins.AmountOf(types.FaucetToken)
+	if alreadyWithraw.Add(amount).GT(maxAllowedWithdraw) {
+		return false, types.ErrInvalid
+	}
+	return true, nil
+}
+
+func (k Keeper) ExecuteRequest(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) (bool, error) {
+	amount := coins.AmountOf(types.FaucetToken)
+	err := k.SetWithdrawnAmountInEpoch(ctx, user, amount, types.FaucetToken)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
