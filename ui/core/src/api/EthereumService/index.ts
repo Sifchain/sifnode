@@ -203,7 +203,7 @@ export class EthereumService implements IWalletService {
           return AssetAmount(token, "0");
         }),
     ]);
-    console.log(balances.map((b) => b.toString()));
+
     return balances;
   }
 

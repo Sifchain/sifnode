@@ -17,7 +17,7 @@
       "symbol": "atk",
       "decimals": 6,
       "name": "Apple Coin",
-      "address": "0xbaAA2a3237035A2c7fA2A33c76B44a8C6Fe18e87",
+      "address": "0xB529f14AA8096f943177c09Ca294Ad66d2E08b1f",
       "network": "ethereum"
     },
 
@@ -25,7 +25,7 @@
       "symbol": "btk",
       "decimals": 6,
       "name": "Banana Coin",
-      "address": "0x13274Fe19C0178208bCbee397af8167A7be27f6f",
+      "address": "0x3d49d1eF2adE060a33c6E6Aa213513A7EE9a6241",
       "network": "ethereum"
     }
   ]

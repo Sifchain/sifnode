@@ -36,8 +36,8 @@ echo "${SIFUSER1_MNEMONIC}" | sifnodecli keys add ${SIFUSER1_NAME} --recover
 echo "Generating deterministic account - ${SIFUSER2_NAME}"
 echo "${SIFUSER2_MNEMONIC}" | sifnodecli keys add ${SIFUSER2_NAME} --recover
 
-sifnoded add-genesis-account $(sifnodecli keys show ${SIFUSER1_NAME} -a) 1000000000rwn,1000000000catk,1000000000cbtk,1000000000ceth,100000000stake
-sifnoded add-genesis-account $(sifnodecli keys show ${SIFUSER2_NAME} -a) 1000000000rwn,1000000000catk,1000000000cbtk,1000000000ceth,100000000stake
+sifnoded add-genesis-account $(sifnodecli keys show ${SIFUSER1_NAME} -a) 1000000000rowan,1000000000catk,1000000000cbtk,1000000000ceth,100000000stake
+sifnoded add-genesis-account $(sifnodecli keys show ${SIFUSER2_NAME} -a) 1000000000rowan,1000000000catk,1000000000cbtk,1000000000ceth,100000000stake
 
 sifnoded gentx --name ${SIFUSER1_NAME} --keyring-backend test
 

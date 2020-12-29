@@ -88,6 +88,7 @@ describe("sifService", () => {
     } catch (error) {
       expect(error).toEqual("Address not valid (length). Fail");
     }
+
     const balances = await sifService.getBalance(account.address);
     const balance = getBalance(balances, "rowan");
     expect(balance?.toFixed()).toEqual("1000000000");
