@@ -2,7 +2,7 @@
 
 import localethereumassets from "../../assets.ethereum.localnet.json";
 import localsifassets from "../../assets.sifchain.localnet.json";
-import createEthereumService from ".";
+import createEthereumService from "./EthereumService";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { Asset, AssetAmount } from "../../entities";
 

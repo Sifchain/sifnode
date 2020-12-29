@@ -1,4 +1,3 @@
-import { ROWAN } from "../../../constants";
 import { Asset, AssetAmount, Coin, Fraction, Pool } from "../../../entities";
 import { RawPool } from "./x/clp";
 
