@@ -9,7 +9,7 @@ import {
 import { Fraction } from "../../entities/fraction/Fraction";
 
 import { SifUnSignedClient } from "../utils/SifClient";
-import { toPool } from "../utils/toPool";
+import { toPool } from "../utils/SifClient/toPool";
 import ReconnectingWebSocket from "reconnecting-websocket";
 
 export type ClpServiceContext = {

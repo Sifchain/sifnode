@@ -1,7 +1,7 @@
 {
 	"folders": [
 		{
-			"name": "app",
+			"name": "view",
 			"path": "./app"
 		},
 		{
@@ -13,11 +13,15 @@
 			"path": "./chains"
 		},
 		{
-			"name": "root",
+			"name": "go",
 			"path": "../"
 		},
 		{
-			"name": "ui",
+			"name": "peggy",
+			"path": "../smart-contracts"
+		},
+		{
+			"name": "frontend",
 			"path": "."
 		}
 	],
