@@ -13,14 +13,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	tmKv "github.com/tendermint/tendermint/libs/kv"
 	tmLog "github.com/tendermint/tendermint/libs/log"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	tmTypes "github.com/tendermint/tendermint/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
