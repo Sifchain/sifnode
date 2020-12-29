@@ -1,12 +1,12 @@
-import { TxEventEmitter, TxEventPrepopulated } from "./types";
+import { PegTxEventEmitter, TxEventPrepopulated } from "./types";
 import { EventEmitter2 } from "eventemitter2";
 /**
  * Adds types around EventEmitter2
  * @param txHash transaction hash this emitter responds to
  */
-export function createTxEventEmitter(txHash: string) {
+export function createPegTxEventEmitter(txHash: string) {
   const emitter = new EventEmitter2();
-  const instance: TxEventEmitter = {
+  const instance: PegTxEventEmitter = {
     emit(e: TxEventPrepopulated) {
       emitter.emit(e.type, { ...e, txHash: e.txHash || txHash });
     },

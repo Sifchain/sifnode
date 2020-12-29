@@ -47,24 +47,24 @@ export type TxEvent =
 
 export type TxEventPrepopulated = Omit<TxEvent, "txHash"> & { txHash?: string };
 
-export type TxEventEmitter = {
+export type PegTxEventEmitter = {
   emit: (e: TxEventPrepopulated) => void;
-  onTxEvent: (handler: (e: TxEvent) => void) => TxEventEmitter;
+  onTxEvent: (handler: (e: TxEvent) => void) => PegTxEventEmitter;
   onEthConfCountChanged: (
     handler: (e: TxEventEthConfCountChanged) => void
-  ) => TxEventEmitter;
+  ) => PegTxEventEmitter;
   onEthTxInitiated: (
     handler: (e: TxEventEthTxInitiated) => void
-  ) => TxEventEmitter;
+  ) => PegTxEventEmitter;
   onEthTxConfirmed: (
     handler: (e: TxEventEthTxConfirmed) => void
-  ) => TxEventEmitter;
+  ) => PegTxEventEmitter;
   onSifTxInitiated: (
     handler: (e: TxEventSifTxInitiated) => void
-  ) => TxEventEmitter;
+  ) => PegTxEventEmitter;
   onSifTxConfirmed: (
     handler: (e: TxEventSifTxConfirmed) => void
-  ) => TxEventEmitter;
-  onComplete: (handler: (e: TxEventComplete) => void) => TxEventEmitter;
-  onError: (handler: (e: TxEventError) => void) => TxEventEmitter;
+  ) => PegTxEventEmitter;
+  onComplete: (handler: (e: TxEventComplete) => void) => PegTxEventEmitter;
+  onError: (handler: (e: TxEventError) => void) => PegTxEventEmitter;
 };

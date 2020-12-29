@@ -1,11 +1,11 @@
+import { ActionContext } from "..";
+import { createPegTxEventEmitter } from "./PegTxEventEmitter";
 import { AssetAmount } from "../../entities";
-import { IPeggyService } from "./IPeggyService";
-import { createTxEventEmitter } from "./TxEventEmitter";
-import { TxEventEmitter } from "./types";
+import { PegTxEventEmitter } from "./types";
 
 // MOCK SEQUENCES
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-function mockLockSequence(emitter: TxEventEmitter) {
+function mockLockSequence(emitter: PegTxEventEmitter) {
   (async () => {
     await sleep(20);
     emitter.emit({ type: "EthTxInitiated", payload: {} });
@@ -23,7 +23,7 @@ function mockLockSequence(emitter: TxEventEmitter) {
   return emitter;
 }
 
-function mockBurnSequence(emitter: TxEventEmitter) {
+function mockBurnSequence(emitter: PegTxEventEmitter) {
   (async () => {
     await sleep(20);
     emitter.emit({ type: "SifTxInitiated", payload: {} });
@@ -40,14 +40,23 @@ function mockBurnSequence(emitter: TxEventEmitter) {
   })();
   return emitter;
 }
+// end MOCK
 
-export default function createPeggyService(): IPeggyService {
-  return {
+export default ({
+  api,
+}: ActionContext<"SifService" | "EthereumService", "asset">) => {
+  const actions = {
+    getSifTokens() {
+      return api.SifService.getSupportedTokens();
+    },
+    getEthTokens() {
+      return api.EthereumService.getSupportedTokens();
+    },
     burn(ethereumRecipient: string, assetAmount: AssetAmount) {
       // Some random string for now
       const txHash = "abcd1234";
       // Create an emitter
-      const e = createTxEventEmitter(txHash);
+      const e = createPegTxEventEmitter(txHash);
       // Direct that emitter through a mock sequence
       return mockBurnSequence(e);
     },
@@ -55,7 +64,7 @@ export default function createPeggyService(): IPeggyService {
       // Some random string for now
       const txHash = "abcd1234";
       // Create an emitter
-      const e = createTxEventEmitter(txHash);
+      const e = createPegTxEventEmitter(txHash);
 
       // add chaos
       if (assetAmount.equalTo("100")) {
@@ -67,4 +76,6 @@ export default function createPeggyService(): IPeggyService {
       return mockLockSequence(e);
     },
   };
-}
+
+  return actions;
+};
