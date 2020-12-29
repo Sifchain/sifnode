@@ -53,15 +53,13 @@ module.exports = async (cb) => {
 
     try {
       const accounts = await web3.eth.getAccounts();
-      const bridgeToken = await contract.at(address);
 
       bridgeBank = await BridgeBank.deployed()
-      await bridgeBank.updateTokenLockBurnLimit(bridgeToken.address, amount, {
+      await bridgeBank.updateTokenLockBurnLimit(address, amount, {
         from: accounts[0],
         gas: 300000 // 300,000 gas
       });
 
-      console.log("New limit: ", await bridgeBank.maxTokenAmount(await bridgeToken.symbol()))
       cb();
     } catch (error) {
       console.error({ error });
