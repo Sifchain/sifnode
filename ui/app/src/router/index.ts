@@ -48,7 +48,7 @@ const routes: Array<RouteRecordRaw> = [
     component: PegAssetPage,
   },
   {
-    path: "/unpeg/:assetFrom/:assetTo",
+    path: "/peg/reverse/:assetFrom/:assetTo",
     name: "UnpegAssetPage",
     component: PegAssetPage,
   },

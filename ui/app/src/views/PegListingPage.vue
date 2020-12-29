@@ -23,7 +23,7 @@
       <Tab title="Pegged">
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
-            :to="`/unpeg/${asset.asset.symbol}/${unpeggedSymbol(
+            :to="`/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
               asset.asset.symbol
             )}`"
             primary

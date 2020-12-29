@@ -40,7 +40,7 @@ export default defineComponent({
     const { store } = useCore();
     const router = useRouter();
     const mode = computed(() => {
-      return router.currentRoute.value.path.indexOf("unpeg") > -1
+      return router.currentRoute.value.path.indexOf("/peg/reverse") > -1
         ? "unpeg"
         : "peg";
     });
