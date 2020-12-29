@@ -18,7 +18,7 @@ import (
 	tmLog "github.com/tendermint/tendermint/libs/log"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	tmTypes "github.com/tendermint/tendermint/types"
-
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 
@@ -172,7 +172,7 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 
 	if cethAmount.Cmp(tempAmount) > 0 {
 		cosmosMsg.MessageType = ethbridge.MsgReturnCeth
-		cosmosMsg.CethAmount = cethAmount.Sub(big.NewInt(int64(gasUsed * 3)))
+		cosmosMsg.CethAmount = sdk.NewIntFromBigInt(cethAmount.Sub(cethAmount, big.NewInt(int64(gasUsed*3))))
 		txs.SendMsgToCosmos(sub.CosmosContext, &cosmosMsg)
 	}
 
