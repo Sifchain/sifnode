@@ -2,7 +2,7 @@ name: Smart Contracts
 
 on:
   pull_request:
-    paths: ['smart-contracts/**']
+    paths: ['.github/**,smart-contracts/**']
 
 jobs:
   test:
