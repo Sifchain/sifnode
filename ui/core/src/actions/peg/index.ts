@@ -61,19 +61,21 @@ export default ({
       return mockBurnSequence(e);
     },
     lock(cosmosRecipient: string, assetAmount: AssetAmount) {
-      // Some random string for now
-      const txHash = "abcd1234";
-      // Create an emitter
-      const e = createPegTxEventEmitter(txHash);
-
-      // add chaos
-      if (assetAmount.equalTo("100")) {
-        setTimeout(() => {
-          e.emit({ txHash, type: "Error", payload: "Boom!" });
-        }, 345);
-      }
-      // Direct that emitter through a mock sequence
-      return mockLockSequence(e);
+      // 1. send tx to ethereum contract
+      //
+      //
+      // // Some random string for now
+      // const txHash = "abcd1234";
+      // // Create an emitter
+      // const e = createPegTxEventEmitter(txHash);
+      // // add chaos
+      // if (assetAmount.equalTo("100")) {
+      //   setTimeout(() => {
+      //     e.emit({ txHash, type: "Error", payload: "Boom!" });
+      //   }, 345);
+      // }
+      // // Direct that emitter through a mock sequence
+      // return mockLockSequence(e);
     },
   };
 

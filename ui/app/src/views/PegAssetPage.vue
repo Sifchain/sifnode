@@ -3,7 +3,13 @@ import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { computed, ref, toRefs } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import { Asset, Fraction, SwapState, useSwapCalculator } from "ui-core";
+import {
+  Asset,
+  AssetAmount,
+  Fraction,
+  SwapState,
+  useSwapCalculator,
+} from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
 import Modal from "@/components/shared/Modal.vue";
@@ -37,7 +43,7 @@ export default defineComponent({
   },
 
   setup(props, context) {
-    const { store } = useCore();
+    const { store, actions } = useCore();
     const router = useRouter();
     const mode = computed(() => {
       return router.currentRoute.value.path.indexOf("/peg/reverse") > -1
@@ -52,6 +58,20 @@ export default defineComponent({
     });
     const amount = ref("0.0");
     const address = ref(store.wallet.sif.address);
+
+    async function handlePeg() {
+      await actions.peg.lock(
+        address.value,
+        AssetAmount(Asset.get(symbol.value), amount.value)
+      );
+    }
+
+    async function handleUnpeg() {
+      await actions.peg.burn(
+        address.value,
+        AssetAmount(Asset.get(symbol.value), amount.value)
+      );
+    }
     return {
       mode,
       symbol,
@@ -79,9 +99,14 @@ export default defineComponent({
       handleAmountUpdated: (newAmount: string) => {
         amount.value = newAmount;
       },
-      handlePeg: () => {
-        alert("Peg");
+      handleActionClicked: () => {
+        if (mode.value === "peg") {
+          handlePeg();
+        } else {
+          handleUnpeg();
+        }
       },
+
       nextStepAllowed: computed(() => {
         const amountNum = new BigNumber(amount.value);
         return amountNum.isGreaterThan("0.0") && address.value !== "";
@@ -106,17 +131,24 @@ export default defineComponent({
         label="From"
       />
       <RaisedPanel>
-        <RaisedPanelColumn>
+        <RaisedPanelColumn v-if="mode === 'peg'">
           <Label>Sifchain Recipient Address</Label>
           <SifInput
             v-model="address"
             placeholder="Eg. sif21syavy2npfyt9tcncdtsdzf7kny9lh777yqcnd"
           />
         </RaisedPanelColumn>
+        <RaisedPanelColumn v-if="mode === 'unpeg'">
+          <Label>Ethereum Recipient Address</Label>
+          <SifInput
+            v-model="address"
+            placeholder="Eg. 0xeaf65652e380528fffbb9fc276dd8ef608931e3c"
+          />
+        </RaisedPanelColumn>
       </RaisedPanel>
       <ActionsPanel
         connectType="connectToAll"
-        @nextstepclick="handlePeg"
+        @nextstepclick="handleActionClicked"
         :nextStepAllowed="nextStepAllowed"
         :nextStepMessage="mode === 'peg' ? 'Peg' : 'Unpeg'"
       />

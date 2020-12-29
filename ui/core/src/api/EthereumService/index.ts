@@ -96,7 +96,7 @@ export class EthereumService implements IWalletService {
     }
     this.state.connected = !!this.web3;
     this.state.accounts = (await this.web3.eth.getAccounts()) ?? [];
-    [this.state.address] = this.state.accounts;
+    this.state.address = this.state.accounts[0];
     this.state.balances = await this.getBalance();
   }
 
@@ -203,7 +203,7 @@ export class EthereumService implements IWalletService {
           return AssetAmount(token, "0");
         }),
     ]);
-
+    console.log(balances.map((b) => b.toString()));
     return balances;
   }
 
