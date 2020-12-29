@@ -23,21 +23,17 @@ def test_chain_rollback():
     # transfer #2 should succeed.
 
     get_shell_output(f"{test_integration_dir}/apply_ganache_snapshot.sh {snapshot} 2>&1")
+    print("snapshot applied")
 
     advance_n_ethereum_blocks(n_wait_blocks * 2)
 
     if get_sifchain_addr_balance(user1_addr, SIF_ETH) != user_balance_before_tx:
         print_error_message("balance should be the same after applying snapshot and rolling forward n_wait_blocks * 2")
 
-    print("snapshot applied")
-
     new_amount = amount + 1
 
     print(f"transact_ethereum_currency_to_sifchain_addr {user1_addr} {new_amount}")
     transact_ethereum_currency_to_sifchain_addr(user1_addr, ETHEREUM_ETH, new_amount)
-
-    print("advance n_wait_blocks then sleep")
-    advance_n_ethereum_blocks(n_wait_blocks)
 
     # TODO we need to wait for ebrelayer directly
     time.sleep(10)
@@ -45,9 +41,9 @@ def test_chain_rollback():
     print(f"get_sifchain_addr_balance after sleep is {get_sifchain_addr_balance(user1_addr, SIF_ETH)} for {user1_addr}")
 
     expected_balance = user_balance_before_tx + new_amount
-    wait_for_sifchain_addr_balance(user1_addr, SIF_ETH, user_balance_before_tx + new_amount)
+    wait_for_sifchain_addr_balance(user1_addr, SIF_ETH, expected_balance)
 
-    print("test_chain_rollback complete, balance is correct at ")
+    print(f"test_chain_rollback complete, balance is correct at {expected_balance}")
 
 
 test_chain_rollback()
