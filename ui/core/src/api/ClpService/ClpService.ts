@@ -16,7 +16,7 @@ export type ClpServiceContext = {
   nativeAsset: Asset;
   sifApiUrl: string;
   sifWsUrl: string;
-  client?: SifUnSignedClient;
+  sifUnsignedClient?: SifUnSignedClient;
 };
 
 type IClpService = {
@@ -56,8 +56,9 @@ export default function createClpService({
   sifApiUrl,
   nativeAsset,
   sifWsUrl,
-  client = new SifUnSignedClient(sifApiUrl),
+  sifUnsignedClient = new SifUnSignedClient(sifApiUrl),
 }: ClpServiceContext): IClpService {
+  const client = sifUnsignedClient;
   let ws: ReconnectingWebSocket;
 
   let poolHandler: HandlerFn<Pool[]> = () => {};

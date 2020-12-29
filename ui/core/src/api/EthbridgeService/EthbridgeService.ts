@@ -3,7 +3,7 @@ import Web3 from "web3";
 import { getBridgeBankContract } from "./bridgebankContract";
 import { AssetAmount } from "../../entities";
 
-type EthbridgeServiceContext = {
+export type EthbridgeServiceContext = {
   // sifApiUrl: string;
   bridgeBankContractAddress: string;
   getWeb3Provider: () => Promise<provider>;
