@@ -170,12 +170,12 @@ contract("BridgeBank", function (accounts) {
       }).should.be.fulfilled;
 
       // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, 1000, {
+      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
         from: operator
       }).should.be.fulfilled;
 
       //Load user account with ERC20 tokens for testing
-      await this.token.mint(userOne, 1000, {
+      await this.token.mint(userOne, this.amount, {
         from: operator
       }).should.be.fulfilled;
 
@@ -589,14 +589,14 @@ contract("BridgeBank", function (accounts) {
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
       this.weiAmount = web3.utils.toWei("0.25", "ether");
       this.halfWeiAmount = web3.utils.toWei("0.125", "ether");
-
+      this.eth = web3.utils.toWei("1", "ether");
       //Load contract with ethereum so it can complete items
-      await this.bridgeBank.send(web3.utils.toWei("1", "ether"), {
-        from: operator
-      }).should.be.fulfilled;
+      // await this.bridgeBank.send(web3.utils.toWei("1", "ether"), {
+      //   from: operator
+      // }).should.be.fulfilled;
 
       // Update the lock/burn limit for this token
-      await this.bridgeBank.updateTokenLockBurnLimit(this.ethereumToken, this.weiAmount, {
+      await this.bridgeBank.updateTokenLockBurnLimit(this.ethereumToken, this.eth, {
         from: operator
       }).should.be.fulfilled;
 
@@ -607,6 +607,15 @@ contract("BridgeBank", function (accounts) {
         this.weiAmount, {
           from: userOne,
           value: this.weiAmount
+        }
+      );
+
+      await this.bridgeBank.lock(
+        this.sender,
+        this.ethereumToken,
+        this.eth, {
+          from: userOne,
+          value: this.eth
         }
       );
 
@@ -650,10 +659,11 @@ contract("BridgeBank", function (accounts) {
       const beforeUserBalance = Number(await web3.eth.getBalance(this.recipient));
       const beforeContractBalance = Number(
         await web3.eth.getBalance(this.bridgeBank.address)
-        );
+      );
         
       this.nonce = 1;
       // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
+
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,

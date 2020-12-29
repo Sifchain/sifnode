@@ -99,12 +99,6 @@ contract BridgeBank is BankStorage,
     }
 
     /*
-     * @dev: Fallback function allows operator to send funds to the bank directly
-     *       This feature is used for testing and is available at the operator's own risk.
-     */
-    function() external payable onlyOperator {}
-
-    /*
      * @dev: function to validate if a sif address has a correct prefix
      */
     function verifySifPrefix(bytes memory _sifAddress) public pure returns (bool) {
@@ -267,6 +261,7 @@ contract BridgeBank is BankStorage,
                 address(this),
                 _amount
             );
+            symbol = BridgeToken(_token).symbol();
         }
 
         if (_amount > maxTokenAmount[symbol]) {
@@ -297,8 +292,10 @@ contract BridgeBank is BankStorage,
         // Confirm that the bank holds sufficient balances to complete the unlock
         address tokenAddress = lockedTokenList[_symbol];
         if (tokenAddress == address(0)) {
+            // uint256 contractBalance = ;
+            // revert("no error before 299 for eth unlock");
             require(
-                address(this).balance >= _amount,
+                ((address(this)).balance) >= _amount,
                 "Insufficient ethereum balance for delivery."
             );
         } else {
