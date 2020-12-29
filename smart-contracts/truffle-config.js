@@ -55,5 +55,5 @@ module.exports = {
   mocha: {
     useColors: true
   },
-  plugins: ["truffle-contract-size"]
+  plugins: ["truffle-contract-size", "solidity-coverage"]
 };
