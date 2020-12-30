@@ -57,8 +57,8 @@ jobs:
         env:
           CI: true
           CONSENSUS_THRESHOLD: 100
-          OPERATOR: 0x627306090abaB3A6e1400e9345bC60c78a8BEf57
-          OWNER: 0x627306090abaB3A6e1400e9345bC60c78a8BEf57
+          OPERATOR: '0x627306090abaB3A6e1400e9345bC60c78a8BEf57'
+          OWNER: '0x627306090abaB3A6e1400e9345bC60c78a8BEf57'
       
       - name: Upload coverage report
         uses: codecov/codecov-action@v1
