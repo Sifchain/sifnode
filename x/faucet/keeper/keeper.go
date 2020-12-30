@@ -45,11 +45,11 @@ func (k Keeper) GetSupplyKeeper() types.SupplyKeeper {
 
 func (k Keeper) GetWithdrawnAmountInEpoch(ctx sdk.Context, user sdk.AccAddress, token string) (sdk.Int, error) {
 	faucetTracker := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FaucetPrefix))
-	ok := faucetTracker.Has(types.GetBalanceKey(user, token))
+	ok := faucetTracker.Has(types.GetBalanceKey(user.String(), token))
 	if !ok {
 		return sdk.ZeroInt(), nil
 	}
-	amount := faucetTracker.Get(types.GetBalanceKey(user, token))
+	amount := faucetTracker.Get(types.GetBalanceKey(user.String(), token))
 	var am sdk.Int
 	err := k.cdc.UnmarshalBinaryBare(amount, &am)
 	if err != nil {
@@ -69,7 +69,7 @@ func (k Keeper) SetWithdrawnAmountInEpoch(ctx sdk.Context, user sdk.AccAddress, 
 	if err != nil {
 		return err
 	}
-	faucetTracker.Set(types.GetBalanceKey(user, token), bz)
+	faucetTracker.Set(types.GetBalanceKey(user.String(), token), bz)
 	return nil
 }
 
