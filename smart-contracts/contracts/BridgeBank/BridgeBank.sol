@@ -175,7 +175,7 @@ contract BridgeBank is BankStorage,
     // private so that it is not inheritable or able to be called
     // by anyone other than this contract
     function _updateTokenLimits(address _token, uint256 _amount) private {
-        string memory symbol = uint256(_token) == 0 ? "ETH" : BridgeToken(_token).symbol();
+        string memory symbol = _token == address(0) ? "ETH" : BridgeToken(_token).symbol();
         maxTokenAmount[symbol] = _amount;
     }
 
@@ -198,7 +198,7 @@ contract BridgeBank is BankStorage,
         require(tokenAddresses.length == tokenLimit.length, "!same length");
         for (uint256 i = 0; i < tokenAddresses.length; i++) {
             _updateTokenLimits(tokenAddresses[i], tokenLimit[i]);
-            updateEthWhiteList(tokenAddresses[i], true);
+            setTokenInEthWhiteList(tokenAddresses[i], true);
         }
         return true;
     }
