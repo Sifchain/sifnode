@@ -171,13 +171,36 @@ contract BridgeBank is BankStorage,
         return setTokenInEthWhiteList(_token, _inList);
     }
 
+    // Method that is only for doing the setting of the mapping
+    // private so that it is not inheritable or able to be called
+    // by anyone other than this contract
+    function _updateTokenLimits(address _token, uint256 _amount) private {
+        string memory symbol = uint256(_token) == 0 ? "ETH" : BridgeToken(_token).symbol();
+        maxTokenAmount[symbol] = _amount;
+    }
+
     function updateTokenLockBurnLimit(address _token, uint256 _amount)
         public
         onlyOperator
         returns (bool)
     {
-        string memory symbol = uint256(_token) == 0 ? "ETH" : BridgeToken(_token).symbol();
-        maxTokenAmount[symbol] = _amount;
+        _updateTokenLimits(_token, _amount);
+        return true;
+    }
+
+    function bulkWhitelistUpdateLimits(
+        address[] memory tokenAddresses,
+        uint256[] memory tokenLimit
+        ) public
+        onlyOperator
+        returns (bool)
+    {
+        require(tokenAddresses.length == tokenLimit.length, "!same length");
+        for (uint256 i = 0; i < tokenAddresses.length; i++) {
+            _updateTokenLimits(tokenAddresses[i], tokenLimit[i]);
+            updateEthWhiteList(tokenAddresses[i], true);
+        }
+        return true;
     }
 
     /*
