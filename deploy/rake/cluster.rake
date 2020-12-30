@@ -158,11 +158,12 @@ namespace :cluster do
   desc "eth operations"
   namespace :ethereum do
     desc "Deploy an ETH node"
-    task :deploy, [:chainnet, :provider, :namespace] do |t, args|
+    task :deploy, [:chainnet, :provider, :namespace, :network] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade ethereum #{cwd}/../../deploy/helm/ethereum \
             --install -n #{ns(args)} --create-namespace \
+            --set geth.args.network='--#{args[:network]}' \
             --set ethstats.env.websocketSecret=#{SecureRandom.base64 20}
             }
 
