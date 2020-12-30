@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
-	goerrors "errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -94,7 +93,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	switch receipt.Status {
 	case 0:
 		fmt.Println("Tx Status: 0 - Failed")
-		return 0, goerrors.New("NewProphecyClaim transaction failed ")
+		return 0, errors.New("NewProphecyClaim transaction failed ")
 	case 1:
 		fmt.Println("Tx Status: 1 - Successful")
 		return receipt.GasUsed, nil

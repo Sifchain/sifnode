@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -46,7 +45,7 @@ type EthereumEvent struct {
 	Symbol                string
 	Value                 *big.Int
 	Nonce                 *big.Int
-	ClaimType             ethbridge.ClaimType
+	ClaimType             types.ClaimType
 }
 
 // Equal two events
