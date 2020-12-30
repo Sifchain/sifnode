@@ -78,8 +78,8 @@ func (n *Node) Build() (*string, error) {
 
 func (n *Node) setup() error {
 	err := n.CLI.Reset([]string{
-		fmt.Sprintf("%s/data", common.DefaultNodeHome),
-		fmt.Sprintf("%s/config", common.DefaultNodeHome),
+		fmt.Sprintf("%s/data/*", common.DefaultNodeHome),
+		fmt.Sprintf("%s/config/*", common.DefaultNodeHome),
 		common.DefaultCLIHome})
 	if err != nil {
 		return err

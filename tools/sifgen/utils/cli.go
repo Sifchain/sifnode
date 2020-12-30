@@ -61,7 +61,7 @@ func NewCLI(chainID string) CLI {
 func (c CLI) Reset(paths []string) error {
 	for _, path := range paths {
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
-			err = os.RemoveAll(path)
+			err = os.Remove(path)
 			if err != nil {
 				return err
 			}
