@@ -10,8 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install Dependencies
-        run: apt-get update && apt-get install -y git
       - uses: amondnet/vercel-action@v19
         with:
           scope: ${{ secrets.TEAM_ID }}
