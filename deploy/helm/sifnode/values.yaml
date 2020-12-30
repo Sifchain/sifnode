@@ -23,6 +23,10 @@ image:
 sifnode:
   mnemonic: ""
   env:
+    daemonHome: "/root/.sifnoded"
+    daemonName: "sifnode"
+    daemonAllowDownloadBinaries: false
+    daemonRestartAfterUpgrade: true
     chainnet:
     moniker:
     genesisURL:
