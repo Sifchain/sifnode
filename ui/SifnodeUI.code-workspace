@@ -13,15 +13,15 @@
 			"path": "./chains"
 		},
 		{
-			"name": "go",
+			"name": "root",
 			"path": "../"
 		},
 		{
-			"name": "peggy",
+			"name": "smart-contracts",
 			"path": "../smart-contracts"
 		},
 		{
-			"name": "frontend",
+			"name": "ui",
 			"path": "."
 		}
 	],
