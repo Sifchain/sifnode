@@ -1,7 +1,6 @@
 package types
 
 import (
-	"fmt"
 	"io"
 	"log"
 
@@ -24,9 +23,8 @@ type CosmosContext struct {
 	ValidatorAddress sdk.ValAddress
 	CliCtx           sdkContext.CLIContext
 	TxBldr           authtypes.TxBuilder
-	// PrivateKey       *ecdsa.PrivateKey
-	TempPassword string
-	Logger       tmLog.Logger
+	TempPassword     string
+	Logger           tmLog.Logger
 }
 
 // NewKeybase create a new keybase instance
@@ -71,7 +69,6 @@ func NewCosmosContext(inBuf io.Reader, cdc *codec.Codec, rpcURL, validatorMonike
 	tempPassword, _ := password.Generate(32, 5, 0, false, false)
 	keybase, info, err := NewKeybase(validatorMoniker, mnemonic, tempPassword)
 	if err != nil {
-		fmt.Println("error in NewKeybase")
 		return nil, err
 	}
 

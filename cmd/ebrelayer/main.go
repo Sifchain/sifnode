@@ -153,7 +153,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 
 	// Initialize the cosmos context for sending transaction
 	inBuf := bufio.NewReader(cmd.InOrStdin())
-	cosmosContext, err := types.NewCosmosContext(inBuf, cdc, rpcURL, validatorMoniker, chainID, mnemonic, logger)
+	cosmosContext, err := types.NewCosmosContext(inBuf, cdc, rpcURL, validatorMoniker, mnemonic, chainID, logger)
 	if err != nil {
 		return err
 	}
