@@ -9,14 +9,14 @@ Principles
 * `app` - Application Logic (Usecases)
   - `clp` - Continuous Liquidity Pool Logic
   - `peg` - Peggy Logic
-  - `wallets` - Wallet Logic
+  - `wallets` - Wallet Logic configure ethereum / sifchain providers
 * `services` - IO devices / detail
   - `clp` <-> go `/x/clp` module
   - `ethbridge` <-> go `/x/ethbridge` module
   - `ethereum` <-> General ethereum blockchain
   - `sifchain` <-> General Sifchain blockchain
-  - `view` <-> Frontend app
+  - `view` <-> Frontend app (currently store)
   - `notifications` <-> Notification Dispatcher (Frontend/Device/Logging)
 * `entities`
   - `formulae` - Domain logic for calculating values
-  - objects - Domain Objects
+  - `domain` - Domain Objects
