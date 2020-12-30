@@ -23,12 +23,10 @@ const (
 
 const (
 	FaucetPrefix              = "faucet"
-	MaxWithdrawAmountPerEpoch = "100000"
+	MaxWithdrawAmountPerEpoch = "5000000"
 	BlocksPerMinute           = 12
 	FaucetResetBlocks         = BlocksPerMinute * 60 * 4 // 4 hours
 )
-
-// Todo : Add MaxWithdrawAmountPerEpoch to Genesis
 
 func KeyPrefix(p string) []byte {
 	return []byte(p)

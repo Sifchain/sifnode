@@ -63,7 +63,7 @@ func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-// TODO Should we remove this ? We already have functions to add tokens and request tokens . We have a sifnoded command to fund the faucet as well . Is there any requirement for this function
+// TODO I think we should we remove this . We already have functions to add tokens and request tokens . We have a sifnoded command to fund the faucet as well . Is there any requirement for this function
 
 // Query to get faucet module address
 func GetCmdFaucetAddress(queryRoute string, cdc *codec.Codec) *cobra.Command {
