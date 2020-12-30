@@ -85,8 +85,9 @@ echo "export USER1ADDR=$USER1ADDR" >> $envexportfile
 #
 echo run python tests
 
-docker exec ${CONTAINER_NAME} bash -c ". /test/integration/vagrantenv.sh; cd /sifnode/smart-contracts; UPDATE_ADDRESS='0x0000000000000000000000000000000000000000' npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000"
+docker exec ${CONTAINER_NAME} bash -c ". /test/integration/vagrantenv.sh; cd /sifnode/smart-contracts; UPDATE_ADDRESS='0x0000000000000000000000000000000000000000' npx truffle exec scripts/setTokenLockBurnLimit.js 31000000000000000000"
 docker exec ${CONTAINER_NAME} bash -c ". /test/integration/vagrantenv.sh; cd /sifnode/smart-contracts; UPDATE_ADDRESS='0x0d8cc4b8d15D4c3eF1d70af0071376fb26B5669b' npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000"
+docker exec ${CONTAINER_NAME} bash -c ". /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/initial_test_balances.py /network-definition.yml"
 sleep 15
 docker exec ${CONTAINER_NAME} bash -c ". /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/peggy-basic-test-docker.py /network-definition.yml"
 docker exec ${CONTAINER_NAME} bash -c '. /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/peggy-e2e-test.py /network-definition.yml'
