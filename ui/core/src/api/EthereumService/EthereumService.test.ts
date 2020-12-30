@@ -8,7 +8,8 @@ import { Asset, AssetAmount } from "../../entities";
 
 import JSBI from "jsbi";
 import B from "../../entities/utils/B";
-import { parseAssets, AssetConfig } from "../utils/parseConfig";
+import { AssetConfig } from "../utils/parseConfig";
+import { getTokenFromSupported } from "../utils/getTokenFromSupported";
 
 describe("EthereumService", () => {
   let EthereumService: ReturnType<typeof createEthereumService>;
@@ -17,31 +18,18 @@ describe("EthereumService", () => {
   let ETH: Asset;
 
   beforeEach(async () => {
-    const supportedTokens = parseAssets([
+    const assetConfigs = [
       ...localethereumassets.assets,
       ...localsifassets.assets,
-    ] as AssetConfig[]);
+    ];
 
-    const a = supportedTokens.find(
-      ({ symbol }) => symbol.toUpperCase() === "ATK"
-    );
-    const b = supportedTokens.find(
-      ({ symbol }) => symbol.toUpperCase() === "BTK"
-    );
-    const c = supportedTokens.find(
-      ({ symbol }) => symbol.toUpperCase() === "ETH"
-    );
-
-    if (!a) throw new Error("ATK not returned");
-    if (!b) throw new Error("BTK not returned");
-    if (!c) throw new Error("ETH not returned");
-    ATK = a;
-    BTK = b;
-    ETH = c;
+    ATK = getTokenFromSupported(assetConfigs, "ATK");
+    BTK = getTokenFromSupported(assetConfigs, "BTK");
+    ETH = getTokenFromSupported(assetConfigs, "ETH");
 
     EthereumService = createEthereumService({
       getWeb3Provider,
-      assets: [a, b, c],
+      assets: [ATK, BTK, ETH],
     });
   });
 

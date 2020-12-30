@@ -7,4 +7,4 @@ export SIFUSER2_MNEMONIC="hand inmate canvas head lunar naive increase recycle d
 export ETHEREUM_ROOT_MNEMONIC="candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
 
 # Required to run ebrelayer
-export BRIDGE_TOKEN_ADDRESS="0x30753E4A8aad7F8597332E813735Def5dD395028"
+export BRIDGE_TOKEN_ADDRESS="0x0d8cc4b8d15D4c3eF1d70af0071376fb26B5669b"

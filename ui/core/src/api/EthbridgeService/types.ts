@@ -15,6 +15,10 @@ export type TxEventEthTxInitiated = {
   type: "EthTxInitiated";
 } & TxEventBase<unknown>;
 
+export type TxEventHashReceived = {
+  type: "HashReceived";
+} & TxEventBase<string>;
+
 export type TxEventEthTxConfirmed = {
   type: "EthTxConfirmed";
 } & TxEventBase<unknown>;
@@ -42,14 +46,22 @@ export type TxEvent =
   | TxEventEthTxConfirmed
   | TxEventSifTxInitiated
   | TxEventSifTxConfirmed
+  | TxEventHashReceived
   | TxEventError
   | TxEventComplete;
 
-export type TxEventPrepopulated = Omit<TxEvent, "txHash"> & { txHash?: string };
+export type TxEventPrepopulated<T extends TxEvent = TxEvent> = Omit<
+  T,
+  "txHash"
+> & {
+  txHash?: string;
+};
 
 export type PegTxEventEmitter = {
-  emit: (e: TxEventPrepopulated) => void;
+  setTxHash: (hash: string) => void;
+  emit: <T extends TxEvent>(e: TxEventPrepopulated<T>) => void;
   onTxEvent: (handler: (e: TxEvent) => void) => PegTxEventEmitter;
+  onTxHash: (handler: (e: TxEventHashReceived) => void) => PegTxEventEmitter;
   onEthConfCountChanged: (
     handler: (e: TxEventEthConfCountChanged) => void
   ) => PegTxEventEmitter;

@@ -1,7 +1,9 @@
-import { provider, TransactionReceipt } from "web3-core";
+import { provider } from "web3-core";
 import Web3 from "web3";
 import { getBridgeBankContract } from "./bridgebankContract";
-import { AssetAmount } from "../../entities";
+import { AssetAmount, Token } from "../../entities";
+import { createPegTxEventEmitter } from "./PegTxEventEmitter";
+import { confirmTx } from "./utils/confirmTx";
 
 export type EthbridgeServiceContext = {
   // sifApiUrl: string;
@@ -25,44 +27,62 @@ export default function createEthbridgeService({
   }
 
   return {
-    async lock(cosmosRecipient: string, assetAmount: AssetAmount) {
-      const web3 = await ensureWeb3();
-      const bridgeBankContract = getBridgeBankContract(
-        web3,
-        bridgebankContractAddress
-      );
-      const accounts = await web3.eth.getAccounts();
-      const coinDenom = assetAmount.asset.symbol;
-      const amount = assetAmount.amount.toString();
-      const fromAddress = accounts[0];
+    lock(
+      sifRecipient: string,
+      assetAmount: AssetAmount,
+      confirmations: number
+    ) {
+      const emitter = createPegTxEventEmitter();
 
-      return new Promise((resolve, reject) => {
-        let hash: string;
-        let receipt: TransactionReceipt;
+      function handleError(err: any) {
+        console.log("handleError");
+        emitter.emit({ type: "Error", payload: err });
+      }
 
-        function resolvePromise() {
-          if (receipt && hash) resolve(hash);
-        }
+      (async function() {
+        const web3 = await ensureWeb3();
+        const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
+        const bridgeBankContract = await getBridgeBankContract(
+          web3,
+          bridgebankContractAddress
+        );
+        const accounts = await web3.eth.getAccounts();
+        const coinDenom = (assetAmount.asset as Token).address ?? NULL_ADDRESS;
+        const amount = assetAmount.amount.toString();
+        const fromAddress = accounts[0];
+
+        const sendArgs = {
+          from: fromAddress,
+          value: coinDenom === NULL_ADDRESS ? amount : 0,
+          gas: 500000,
+        };
 
         bridgeBankContract.methods
-          .lock(cosmosRecipient, coinDenom, amount, {
-            from: fromAddress,
-            value: coinDenom === NULL_ADDRESS ? amount : 0,
-            gas: 300000,
-          })
-          .send()
-          .on("transactionHash", (_hash: string) => {
-            hash = _hash;
-            resolvePromise();
-          })
-          .on("receipt", (_receipt: any) => {
-            receipt = _receipt;
-            resolvePromise();
+          .lock(cosmosRecipient, coinDenom, amount)
+          .send(sendArgs)
+          .on("transactionHash", (hash: string) => {
+            emitter.setTxHash(hash);
           })
           .on("error", (err: any) => {
-            reject(err);
+            handleError(err);
           });
-      });
+
+        emitter.onTxHash(({ payload: txHash }) => {
+          confirmTx({
+            web3,
+            txHash,
+            confirmations,
+            onSuccess() {
+              emitter.emit({ type: "Complete", payload: null });
+            },
+            onCheckConfirmation(count) {
+              emitter.emit({ type: "EthConfCountChanged", payload: count });
+            },
+          });
+        });
+      })();
+
+      return emitter;
     },
   };
 }

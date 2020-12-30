@@ -38,6 +38,7 @@
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-typescript": "^7.12.1",
     "@metamask/inpage-provider": "^7.0.0",
+    "@openzeppelin/test-helpers": "^0.5.10",
     "@types/big.js": "^6.0.0",
     "@types/jest": "^26.0.14",
     "babel-jest": "^26.5.2",
@@ -53,6 +54,7 @@
     "testMatch": [
       "**/**.test.ts",
       "**/tests/unit/*.js"
-    ]
+    ],
+    "testTimeout": 10000
   }
 }
