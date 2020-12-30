@@ -1,7 +1,7 @@
 import time
 
 from test_utilities import network_password, owner_addr, amount_in_wei, user1_addr, \
-    sif_tx_send, transact_ethereum_currency_to_sifchain_addr, get_shell_output, wait_for_sif_account
+    sif_tx_send, transact_ethereum_currency_to_sifchain_addr
 
 
 def setup_currencies():
