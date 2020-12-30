@@ -137,6 +137,9 @@ func getOracleClaimType(eventType string) types.Event {
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.Event) error {
+
+	fmt.Println("handleBurnLockMsg start")
+
 	cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, attributes)
 	if err != nil {
 		fmt.Println(err)
@@ -146,10 +149,13 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 
 	// Only deal with submit message
 	if cosmosMsg.MessageType != ethbridge.MsgSubmit {
+		fmt.Println("handleBurnLockMsg not message submit")
 		return nil
 	}
 
 	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
+
+	fmt.Println("before    txs.RelayProphecyClaimToEthereum")
 	gasUsed, err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
 		claimType, prophecyClaim, sub.PrivateKey, cosmosMsg.CethAmount.BigInt())
 
@@ -164,6 +170,8 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 
 		return err
 	}
+
+	fmt.Println("handleBurnLockMsg before return remaining gas to sifchain account")
 
 	// return remaining gas to sifchain account
 	cethAmount := cosmosMsg.CethAmount.BigInt()
