@@ -28,6 +28,7 @@ FROM alpine
 ENV PACKAGES curl jq bind-tools expect
 
 ENV DAEMON_HOME /root/.sifnoded
+ENV PATH ${PATH}:${DAEMON_HOME}/cosmovisor/genesis/bin
 
 EXPOSE 1317
 EXPOSE 26656
@@ -36,7 +37,8 @@ EXPOSE 26657
 RUN apk add --update --no-cache $PACKAGES
 
 # Create the directory structure for Cosmosvisor
-RUN mkdir -p ${DAEMON_HOME}/cosmovisor/{genesis/bin,upgrades}
+RUN mkdir -p ${DAEMON_HOME}/cosmovisor/{genesis,upgrades}
+RUN mkdir ${DAEMON_HOME}/cosmovisor/genesis/bin
 
 # Copy the compiled binaires over.
 COPY --from=build /go/bin/cosmovisor /usr/bin/cosmovisor

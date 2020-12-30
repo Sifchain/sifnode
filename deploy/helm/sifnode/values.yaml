@@ -21,7 +21,8 @@ image:
   tag: "testnet"
 
 sifnode:
-  mnemonic: ""
+  args:
+    mnemonic: ""
   env:
     daemonHome: "/root/.sifnoded"
     daemonName: "sifnode"
