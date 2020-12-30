@@ -2,14 +2,17 @@ package faucet
 
 import (
 	"github.com/Sifchain/sifnode/x/faucet/keeper"
+	"github.com/Sifchain/sifnode/x/faucet/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 // BeginBlocker check for infraction evidence or downtime of validators
 // on every begin block
-func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k keeper.Keeper) {
-	// 	TODO: Call StartNextEpoch() from here , per period . Around 4 hrs
+func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
+	if ctx.BlockHeight()%types.FaucetResetBlocks == 0 {
+		k.StartNextEpoch(ctx)
+	}
+
 }
 
 // EndBlocker called every block, process inflation, update validator set.

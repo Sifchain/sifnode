@@ -24,6 +24,8 @@ const (
 const (
 	FaucetPrefix              = "faucet"
 	MaxWithdrawAmountPerEpoch = "100000"
+	BlocksPerMinute           = 12
+	FaucetResetBlocks         = BlocksPerMinute * 60 * 4 // 4 hours
 )
 
 // Todo : Add MaxWithdrawAmountPerEpoch to Genesis

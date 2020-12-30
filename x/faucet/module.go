@@ -128,7 +128,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 // InitGenesis performs genesis initialization for the faucet module. It returns
 // no validator updates.
-// TODO add functionality for Init genessis , Would need to verify if the faucet balance is automatically initiliazed by the supply module
+// TODO add functionality for Init genesis , Would need to verify if the faucet balance is automatically initialized by the supply module
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
@@ -145,8 +145,8 @@ func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 }
 
 // BeginBlock returns the begin blocker for the faucet module.
-func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
-	BeginBlocker(ctx, req, am.keeper)
+func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
+	BeginBlocker(ctx, am.keeper)
 }
 
 // EndBlock returns the end blocker for the faucet module. It returns no validator

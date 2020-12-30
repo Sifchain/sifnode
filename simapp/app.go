@@ -214,7 +214,14 @@ func NewSimApp(
 		faucet.NewAppModule(app.FaucetKeeper, app.BankKeeper, app.SupplyKeeper),
 	)
 
-	app.mm.SetOrderEndBlockers( /* crisis.ModuleName, gov.ModuleName, */ staking.ModuleName)
+	app.mm.SetOrderBeginBlockers(
+		staking.ModuleName,
+		faucet.ModuleName,
+	)
+
+	app.mm.SetOrderEndBlockers(
+		staking.ModuleName,
+	)
 
 	// NOTE: The genutils moodule must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
