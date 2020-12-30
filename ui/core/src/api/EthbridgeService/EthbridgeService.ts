@@ -5,14 +5,14 @@ import { AssetAmount } from "../../entities";
 
 export type EthbridgeServiceContext = {
   // sifApiUrl: string;
-  bridgeBankContractAddress: string;
+  bridgebankContractAddress: string;
   getWeb3Provider: () => Promise<provider>;
 };
 
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 export default function createEthbridgeService({
-  bridgeBankContractAddress,
+  bridgebankContractAddress,
   getWeb3Provider,
 }: EthbridgeServiceContext) {
   // Pull this out to a util?
@@ -29,7 +29,7 @@ export default function createEthbridgeService({
       const web3 = await ensureWeb3();
       const bridgeBankContract = getBridgeBankContract(
         web3,
-        bridgeBankContractAddress
+        bridgebankContractAddress
       );
       const accounts = await web3.eth.getAccounts();
       const coinDenom = assetAmount.asset.symbol;

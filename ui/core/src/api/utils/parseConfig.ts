@@ -39,6 +39,7 @@ export type ChainConfig = {
   web3Provider: "metamask" | string;
   assets: AssetConfig[];
   nativeAsset: string; // symbol
+  bridgebankContractAddress: string;
 };
 
 export function parseAssets(configAssets: AssetConfig[]): Asset[] {
@@ -63,5 +64,6 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
         : async () => config.web3Provider,
     assets: assets.filter((asset) => asset.symbol !== nativeAsset.symbol),
     nativeAsset,
+    bridgebankContractAddress: config.bridgebankContractAddress,
   };
 }
