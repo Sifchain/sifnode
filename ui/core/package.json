@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest --coverage",
+    "test": "jest --coverage --runInBand",
     "prepare": "npm run build"
   },
   "files": [
