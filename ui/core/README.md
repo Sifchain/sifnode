@@ -11,9 +11,11 @@ Principles
   - `peg` - Peggy Logic
   - `wallets` - Wallet Logic
 * `services` - IO devices / detail
-  - `ethereum` <-> Ethereum
-  - `sifchain` <-> Sifchain
-  - `view` <-> Frontend
+  - `clp` <-> go `/x/clp` module
+  - `ethbridge` <-> go `/x/ethbridge` module
+  - `ethereum` <-> General ethereum blockchain
+  - `sifchain` <-> General Sifchain blockchain
+  - `view` <-> Frontend app
   - `notifications` <-> Notification Dispatcher (Frontend/Device/Logging)
 * `entities`
   - `formulae` - Domain logic for calculating values
