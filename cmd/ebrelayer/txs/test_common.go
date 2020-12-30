@@ -37,6 +37,7 @@ const (
 	TestPrivHex               = "289c2857d4598e37fb9647507e47a309d6133539bf21a8b9cb6df88fd5232032"
 	TestNullAddress           = "0x0000000000000000000000000000000000000000"
 	TestOtherAddress          = "0x1000000000000000000000000000000000000000"
+	TestMessageType           = ethbridge.MsgSubmit
 )
 
 var testAmount = big.NewInt(5)
@@ -81,7 +82,7 @@ func CreateTestProphecyClaimEvent(t *testing.T) types.ProphecyClaimEvent {
 
 // CreateTestCosmosMsg creates a sample Cosmos Msg for testing purposes
 func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
-	testEthereumChainID := 1
+	// testEthereumChainID := 1
 	testCosmosSender := []byte(TestCosmosAddress1)
 	testEthereumReceiver := common.HexToAddress(TestEthereumAddress1)
 	testAmount := testSDKAmount
@@ -96,7 +97,7 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 	}
 
 	// Create new Cosmos Msg
-	cosmosMsg := types.NewCosmosMsg(testEthereumChainID, claimType, testCosmosSender, big.NewInt(TestCosmosAddressSequence),
+	cosmosMsg := types.NewCosmosMsg(TestEthereumChainID, claimType, testCosmosSender, big.NewInt(TestCosmosAddressSequence),
 		testEthereumReceiver, symbol, testAmount, testMessageType, testAmount)
 
 	return cosmosMsg
@@ -104,7 +105,17 @@ func CreateTestCosmosMsg(t *testing.T, claimType types.Event) types.CosmosMsg {
 
 // CreateCosmosMsgAttributes creates expected attributes for a MsgBurn/MsgLock for testing purposes
 func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair {
-	attributes := [6]tmKv.Pair{}
+	attributes := [9]tmKv.Pair{}
+
+	pairEthereumChainID := tmKv.Pair{
+		Key:   []byte("ethereum_chain_id"),
+		Value: []byte(strconv.Itoa(TestEthereumChainID)),
+	}
+
+	pairMessageType := tmKv.Pair{
+		Key:   []byte("message_type"),
+		Value: []byte(strconv.Itoa(int(TestMessageType))),
+	}
 
 	// (key, value) pairing for "cosmos_sender" key
 	pairCosmosSender := tmKv.Pair{
@@ -142,6 +153,12 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair 
 		Value: []byte(testAmount.String()),
 	}
 
+	// (key, value) pairing for "ceth_amount" key
+	pairCethAmount := tmKv.Pair{
+		Key:   []byte("ceth_amount"),
+		Value: []byte(testAmount.String()),
+	}
+
 	// (key, value) pairing for "token_contract_address" key
 	pairTokenContract := tmKv.Pair{
 		Key:   []byte("token_contract_address"),
@@ -149,12 +166,15 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair 
 	}
 
 	// Assign pairs to attributes array
-	attributes[0] = pairCosmosSender
-	attributes[1] = pairCosmosSenderSequence
-	attributes[2] = pairEthereumReceiver
-	attributes[3] = pairTokenContract
-	attributes[4] = pairSymbol
-	attributes[5] = pairAmount
+	attributes[0] = pairEthereumChainID
+	attributes[1] = pairCosmosSender
+	attributes[2] = pairCosmosSenderSequence
+	attributes[3] = pairEthereumReceiver
+	attributes[4] = pairTokenContract
+	attributes[5] = pairSymbol
+	attributes[6] = pairAmount
+	attributes[7] = pairMessageType
+	attributes[8] = pairCethAmount
 
 	return attributes[:]
 }

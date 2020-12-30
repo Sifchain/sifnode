@@ -1,0 +1,5 @@
+crytic-compile==0.1.10
+prettytable==2.0.0
+pysha3==1.0.2
+slither-analyzer==0.6.14
+wcwidth==0.2.5

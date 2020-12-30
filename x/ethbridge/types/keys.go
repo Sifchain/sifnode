@@ -15,4 +15,10 @@ const (
 
 	// CethSymbol is the symbol of ceth
 	CethSymbol = "ceth"
+	// PeggyTokenKey is the key for peggy token list
+	PeggyTokenKey = StoreKey + "PeggyToken"
+)
+
+var (
+	PeggyTokenKeyPrefix = []byte{0x00}
 )

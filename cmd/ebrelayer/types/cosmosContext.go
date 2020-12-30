@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"io"
 	"log"
 
@@ -70,6 +71,7 @@ func NewCosmosContext(inBuf io.Reader, cdc *codec.Codec, rpcURL, validatorMonike
 	tempPassword, _ := password.Generate(32, 5, 0, false, false)
 	keybase, info, err := NewKeybase(validatorMoniker, mnemonic, tempPassword)
 	if err != nil {
+		fmt.Println("error in NewKeybase")
 		return nil, err
 	}
 

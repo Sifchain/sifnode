@@ -1,0 +1,10 @@
+{
+    "detectors_to_exclude": "uninitialized-local",
+    "exclude_informational": true,
+    "exclude_low": true,
+    "exclude_medium": false,
+    "exclude_high": false,
+    "solc": "solc",
+    "solc_args": "",
+    "solc_disable_warnings": false
+}
