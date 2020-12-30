@@ -82,7 +82,7 @@ where:
 
 |Param|Description|
 |-----|----------|
-|<moniker>|The moniker or name of your node as you want it to appear on the network.|
+|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
 
 e.g.:
 
