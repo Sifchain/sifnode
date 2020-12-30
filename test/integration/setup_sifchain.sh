@@ -4,42 +4,49 @@ set -x
 set -e
 
 . $(dirname $0)/vagrantenv.sh
-. ${BASEDIR}/test/integration/shell_utilities.sh
+. ${TEST_INTEGRATION_DIR}/shell_utilities.sh
+
+pkill sifnodecli || true
+pkill sifnoded || true
+pkill ebrelayer || true
 
 #
-# scaffold and boot the dockerized localnet
+# Remove prior generations Config
 #
+if [ -d $NETWORKDIR ]
+then
+  # $NETWORKDIR has many directories without write permission, so change those
+  # before deleting it.
+  find $NETWORKDIR -type d | xargs chmod +w
+  rm -rf $NETWORKDIR && mkdir $NETWORKDIR
+fi
+
 BASEDIR=${BASEDIR} rake genesis:network:scaffold['localnet']
-# see deploy/rake/genesis.rake for the description of the args to genesis:network:boot
-# :chainnet, :eth_bridge_registry_address, :eth_keys, :eth_websocket
-BASEDIR=${BASEDIR} rake genesis:network:boot["localnet,${ETHEREUM_CONTRACT_ADDRESS},c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3,ws://192.168.2.6:7545/"]
 
-sleep 15
+set_persistant_env_var NETDEF $NETWORKDIR/network-definition.yml $envexportfile
+set_persistant_env_var NETDEF_JSON $datadir/netdef.json $envexportfile
+cat $NETDEF | to_json > $NETDEF_JSON
 
-#
-# Wait for the Websocket subscriptions to be initialized (like 10 seconds)
-#
-docker logs -f ${CONTAINER_NAME} | grep -m 1 "Subscribed"
+set_persistant_env_var MONIKER $(cat $NETDEF_JSON | jq -r '.[0].moniker') $envexportfile
+set_persistant_env_var OWNER_PASSWORD $(cat $NETDEF_JSON | jq -r '.[0].password') $envexportfile
+set_persistant_env_var OWNER_ADDR $(cat $NETDEF_JSON | jq -r '.[0].address') $envexportfile
+set_persistant_env_var MNEMONIC "$(cat $NETDEF_JSON | jq -r '.[0].mnemonic')" $envexportfile
+set_persistant_env_var CHAINDIR $NETWORKDIR/validators/$CHAINNET/$MONIKER $envexportfile
+set_persistant_env_var SIFNODED_LOG $datadir/logs/sifnoded.log $envexportfile
+set_persistant_env_var EBRELAYER_LOG $datadir/logs/ebrelayer.log $envexportfile
 
-# We need to forward the port used by ganache, since adding new network didn't allow
-# using the cli
-docker exec ${CONTAINER_NAME} bash -c "bash /test/integration/start-ganache-port-forwarding.sh"
+rm -f $EBRELAYER_LOG
+mkdir -p $datadir/logs
+nohup $TEST_INTEGRATION_DIR/sifchain_start_daemon.sh < /dev/null > $SIFNODED_LOG 2>&1 &
+set_persistant_env_var SIFNODED_PID $! $envexportfile
+nohup sifnodecli rest-server --laddr tcp://0.0.0.0:1317 < /dev/null > $datadir/logs/restserver.log 2>&1 &
+set_persistant_env_var REST_SERVER_PID $! $envexportfile
+nohup $TEST_INTEGRATION_DIR/sifchain_start_ebrelayer.sh < /dev/null > $EBRELAYER_LOG 2>&1 &
+set_persistant_env_var EBRELAYER_PID $! $envexportfile
 
-# those rake commands generate yaml that provides useful usernames and passwords
-# wait for it to appear
+# Wait for ebrelayer to subscribe
 
-NETDEF=$NETWORKDIR/network-definition.yml
-echo "export NETDEF=$NETDEF" >> $envexportfile
-while [ ! -f $NETWORKDIR/network-definition.yml ]
-do
-  sleep 2
-done
-
-export MONIKER=$(cat ${NETWORKDIR}/network-definition.yml | to_json | jq '.[0].moniker')
-echo "export MONIKER=$MONIKER" >> $envexportfile
-
-OWNER_PASSWORD=$(cat $NETDEF | yq r - ".password")
-echo "export OWNER_PASSWORD=$OWNER_PASSWORD" >> $envexportfile
-
-OWNER_ADDR=$(cat $NETDEF | yq r - ".address")
-echo "export OWNER_ADDR=$OWNER_ADDR" >> $envexportfile
+# Note that we're putting the tail in the background so we can exit immediately;
+# if you don't put it in the background, it can linger forever and the entire line
+# will never complete
+( tail -n +1 --retry --follow=name $EBRELAYER_LOG & ) | grep -m 1 "Subscribed to bridgebank contract at address"
