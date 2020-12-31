@@ -15,10 +15,24 @@ import (
 type MessageType uint32
 
 const (
-	MsgSubmit     MessageType = 0
-	MsgRevert     MessageType = 1
-	MsgReturnCeth MessageType = 2
+	MsgSubmit          MessageType = 0
+	MsgRevert          MessageType = 1
+	MsgReturnCeth      MessageType = 2
+	InvalidMessageType MessageType = 3
 )
+
+// MessageTypeStringToEnum return MessageType according to input string
+func MessageTypeStringToEnum(messageType string) MessageType {
+	switch messageType {
+	case "submit":
+		return MsgSubmit
+	case "revert":
+		return MsgSubmit
+	case "return":
+		return MsgSubmit
+	}
+	return InvalidMessageType
+}
 
 // MsgLock defines a message for locking coins and triggering a related event
 type MsgLock struct {

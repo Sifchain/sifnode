@@ -25,11 +25,6 @@ import (
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
-const (
-	// ReturnCethThreshold If more than 0.1 eth remaining after transaction
-	ReturnCethThreshold = 10000000000000000
-)
-
 // TODO: Move relay functionality out of CosmosSub into a new Relayer parent struct
 
 // CosmosSub defines a Cosmos listener that relays events to Ethereum and Cosmos
@@ -104,10 +99,12 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 			// Iterate over each event in the transaction
 			for _, event := range tx.Result.Events {
+				sub.Logger.Info("New transaction witnessed tx.Result.Events")
 				claimType := getOracleClaimType(event.GetType())
 
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
+					sub.Logger.Info("New transaction witnessed types.MsgBurn, types.MsgLock: ")
 					// Parse event data, then package it as a ProphecyClaim and relay to the Ethereum Network
 					err := sub.handleBurnLockMsg(event.GetAttributes(), claimType)
 					if err != nil {
@@ -138,8 +135,6 @@ func getOracleClaimType(eventType string) types.Event {
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.Event) error {
 
-	fmt.Println("handleBurnLockMsg start")
-
 	cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, attributes)
 	if err != nil {
 		fmt.Println(err)
@@ -149,21 +144,21 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 
 	// Only deal with submit message
 	if cosmosMsg.MessageType != ethbridge.MsgSubmit {
-		fmt.Println("handleBurnLockMsg not message submit")
 		return nil
 	}
 
 	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
 
-	fmt.Println("before    txs.RelayProphecyClaimToEthereum")
+	cethAmount := cosmosMsg.CethAmount.BigInt()
+
 	gasUsed, err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
-		claimType, prophecyClaim, sub.PrivateKey, cosmosMsg.CethAmount.BigInt())
+		claimType, prophecyClaim, sub.PrivateKey, cethAmount)
 
 	// If failed to send prophecy claim to Ethereum
 	if err != nil {
 		fmt.Println(err)
 
-		if err.Error() == "ceth paid not enough" {
+		if err.Error() == "not enough ceth to cover the gas costs" {
 			cosmosMsg.MessageType = ethbridge.MsgRevert
 			txs.SendMsgToCosmos(sub.CosmosContext, &cosmosMsg)
 		}
@@ -171,14 +166,7 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 		return err
 	}
 
-	fmt.Println("handleBurnLockMsg before return remaining gas to sifchain account")
-
-	// return remaining gas to sifchain account
-	cethAmount := cosmosMsg.CethAmount.BigInt()
-	tempAmount := big.NewInt(ReturnCethThreshold)
-	tempAmount.Add(tempAmount, big.NewInt(int64(gasUsed*3)))
-
-	if cethAmount.Cmp(tempAmount) > 0 {
+	if cethAmount.Cmp(big.NewInt(int64(gasUsed))) > 0 {
 		cosmosMsg.MessageType = ethbridge.MsgReturnCeth
 		cosmosMsg.CethAmount = sdk.NewIntFromBigInt(cethAmount.Sub(cethAmount, big.NewInt(int64(gasUsed*3))))
 		txs.SendMsgToCosmos(sub.CosmosContext, &cosmosMsg)

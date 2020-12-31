@@ -159,16 +159,13 @@ func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 				return types.ErrInvalidAmount
 			}
 
-			messageType, err := strconv.ParseInt(args[5], 10, 32)
+			messageType := types.MessageTypeStringToEnum(args[5])
 
-			if err != nil {
-				return err
-			}
-			if messageType < 0 {
+			if messageType == types.InvalidMessageType {
 				return types.ErrInvalidMessageType
 			}
 
-			msg := types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol, cethAmount, types.MessageType(messageType))
+			msg := types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol, cethAmount, messageType)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -232,16 +229,13 @@ func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 				return types.ErrInvalidAmount
 			}
 
-			messageType, err := strconv.ParseInt(args[5], 10, 32)
+			messageType := types.MessageTypeStringToEnum(args[5])
 
-			if err != nil {
-				return err
-			}
-			if messageType < 0 {
+			if messageType == types.InvalidMessageType {
 				return types.ErrInvalidMessageType
 			}
 
-			msg := types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol, cethAmount, types.MessageType(messageType))
+			msg := types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol, cethAmount, messageType)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
