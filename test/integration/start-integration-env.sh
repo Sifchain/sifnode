@@ -48,6 +48,7 @@ truffle deploy --network develop --reset
 # set it and BRIDGE_REGISTRY_ADDRESS to the same value
 echo "# BRIDGE_REGISTRY_ADDRESS and ETHEREUM_CONTRACT_ADDRESS are synonyms">> $envexportfile
 set_persistant_env_var BRIDGE_REGISTRY_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeRegistry.json | jq -r '.networks["5777"].address') $envexportfile required
+set_persistant_env_var BRIDGE_TOKEN_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeToken.json | jq -r '.networks["5777"].address') $envexportfile required
 set_persistant_env_var ETHEREUM_CONTRACT_ADDRESS $BRIDGE_REGISTRY_ADDRESS $envexportfile required
 
 set_persistant_env_var BRIDGE_BANK_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeBank.json | jq -r '.networks["5777"].address') $envexportfile required
@@ -68,5 +69,8 @@ set_persistant_env_var USER1ADDR $(cat $NETDEF_JSON | jq -r ".[1].address") $env
 
 rm -rf ~/.sifnodecli
 ln -s $CHAINDIR/.sifnodecli ~
+
+UPDATE_ADDRESS=0x0000000000000000000000000000000000000000 npx truffle exec scripts/setTokenLockBurnLimit.js 31000000000000000000
+UPDATE_ADDRESS=$BRIDGE_TOKEN_ADDRESS npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000
 
 logecho finished $0
