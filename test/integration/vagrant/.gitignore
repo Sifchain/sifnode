@@ -3,3 +3,4 @@
 /.depend/
 /data/
 /datafiles*tar.gz
+/.goBuild
