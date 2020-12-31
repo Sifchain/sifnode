@@ -189,9 +189,9 @@ contract BridgeBank is BankStorage,
     }
 
     function bulkWhitelistUpdateLimits(
-        address[] memory tokenAddresses,
-        uint256[] memory tokenLimit
-        ) public
+        address[] calldata tokenAddresses,
+        uint256[] calldata tokenLimit
+        ) external
         onlyOperator
         returns (bool)
     {
