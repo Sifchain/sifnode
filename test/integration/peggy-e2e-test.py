@@ -33,13 +33,13 @@ def get_eth_balance(account, symbol):
     return 0
 
 
-def wait_for_eth_balance(account, symbol, target_balance, max_attempts=30):
-    wait_for_balance(lambda: get_eth_balance(account, symbol), target_balance, max_attempts)
-
+def advance_n_ethereum_blocks(n=50):
+    command_line = cd_smart_contracts_dir + "yarn advance {}".format(n)
+    get_shell_output(command_line)
 
 def get_peggyrwn_balance(account, symbol):
-    command_line = cd_smart_contracts_dir + "yarn peggy:getTokenBalance {} {}".format(
-        account, symbol)
+    command_line = cd_smart_contracts_dir + "yarn peggy:getTokenBalance {} {} 0 {}".format(
+        account, symbol, )
     result = get_shell_output(command_line)
     lines = result.split('\n')
     for line in lines:
@@ -85,7 +85,7 @@ def test_case_1():
 
     print(f"send_eth_lock({USER}, {ETHEREUM_ETH}, {AMOUNT})")
     send_eth_lock(USER, ETHEREUM_ETH, AMOUNT)
-    advance_n_ethereum_blocks(n_wait_blocks)
+    advance_n_ethereum_blocks()
 
     wait_for_eth_balance(bridge_bank_address, ETHEREUM_ETH, bridge_bank_balance_before_tx + AMOUNT)
     wait_for_sifchain_balance(USER, SIF_ETH, network_password, user_balance_before_tx + AMOUNT)
@@ -100,13 +100,14 @@ def test_case_2():
 
     # send owner ceth to operator eth
     amount = 1 * 10 ** 18
+    ceth_amount = 1 * 10 ** 17
 
     operator_balance_before_tx = get_eth_balance(operatorAddress, ETHEREUM_ETH)
     owner_sifchain_balance_before_tx = get_sifchain_addr_balance(owner_addr, SIF_ETH)
     print(f"starting user_eth_balance_before_tx {operator_balance_before_tx}, owner_sifchain_balance_before_tx {owner_sifchain_balance_before_tx}, amount {amount}")
-    burn_peggy_coin(owner_addr, operatorAddress, amount)
+    burn_peggy_coin(owner_addr, operatorAddress, amount, ceth_amount)
 
-    wait_for_sifchain_addr_balance(owner_addr, SIF_ETH, owner_sifchain_balance_before_tx - amount)
+    wait_for_sifchain_addr_balance(owner_addr, SIF_ETH, owner_sifchain_balance_before_tx - amount - ceth_amount)
     wait_for_eth_balance(operatorAddress, ETHEREUM_ETH, operator_balance_before_tx + amount)
     print("########## Test Case Two Over ##########")
 
