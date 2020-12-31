@@ -8,6 +8,9 @@ BASEDIR=$(pwd)/$(dirname $0)/../..
 
 . ${BASEDIR}/test/integration/shell_utilities.sh
 
+# ===== Everything is executed with a working directory of $BASEDIR/smart-contracts
+cd $BASEDIR/smart-contracts
+
 export envexportfile=$BASEDIR/test/integration/vagrantenv.sh
 rm -f $envexportfile
 
@@ -26,20 +29,15 @@ set_persistant_env_var CHAINNET localnet $envexportfile
 
 mkdir -p $datadir
 
-#rm -rf ${BASEDIR}/smart-contracts/build ${BASEDIR}/smart-contracts/.openzeppelin
-make -C ${BASEDIR} install
-
-# ===== Everything from here on down is executed in the $BASEDIR/smart-contracts directory
-cd $BASEDIR/smart-contracts
-
-# Startup ganache-cli (https://github.com/trufflesuite/ganache)
+make -C ${TEST_INTEGRATION_DIR} vagrant/.goBuild
 
 cp ${TEST_INTEGRATION_DIR}/.env.ciExample .env
 
+make -C $SMART_CONTRACTS_DIR clean-smartcontracts
 yarn --cwd $BASEDIR/smart-contracts install
-#set_persistant_env_var YARN_CACHE_DIR $(yarn cache dir) $envexportfile
 
-# Uses GANACHE_DB_DIR for the --db argument to the chain
+# Startup ganache-cli (https://github.com/trufflesuite/ganache)
+#   Uses GANACHE_DB_DIR for the --db argument to the chain
 docker-compose --project-name genesis -f ${TEST_INTEGRATION_DIR}/docker-compose-ganache.yml up -d --force-recreate
 
 # https://www.trufflesuite.com/docs/truffle/overview

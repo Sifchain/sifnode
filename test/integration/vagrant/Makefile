@@ -5,11 +5,17 @@ SHELL=/bin/bash -o pipefail
 # where to mount the sifnode tree
 BASEDIR=/sifnode
 
+in_progress_marker=data/tests-in-progress.txt
+failure_marker=data/tests_failed.txt
+
 .PHONY: all
 all: 
 	rm -rf data/ ../ganachedb
-	-$(MAKE) test
+	$(MAKE) data
+	touch ${in_progress_marker}
+	if ! $(MAKE) test; then touch ${failure_marker}; fi
 	$(MAKE) pulldata
+	if [ -f ${failure_marker} ]; then echo tests failed; exit 1; else touch data/tests_passed; fi
 
 .depend data: 
 	mkdir -p $@
@@ -39,7 +45,8 @@ test-main: integrationenv
 	vagrant ssh -c "cd ${BASEDIR} && bash -x test/integration/execute_integration_tests_main.sh" 2>&1 | tee data/$@.sh
 
 .PHONY: test
-test: test-main
+test: test-main test-whitelistedvalidators
+	rm ${in_progress_marker}
 
 # convenience targets
 
@@ -51,6 +58,9 @@ reload:
 clean:
 	vagrant destroy -f
 	rm -rf .depend
+
+manytests::
+	while $(MAKE); do true; done
 
 pulldata: data
 	vagrant ssh -c "bash /sifnode/test/integration/assemble_data.sh"
