@@ -27,21 +27,16 @@ FROM alpine
 
 ENV PACKAGES curl jq bind-tools expect
 
-ENV DAEMON_HOME /root/.sifnoded
-ENV PATH ${PATH}:${DAEMON_HOME}/cosmovisor/genesis/bin
-
 EXPOSE 1317
 EXPOSE 26656
 EXPOSE 26657
 
 RUN apk add --update --no-cache $PACKAGES
 
-# Create the directory structure for Cosmosvisor
-RUN mkdir -p ${DAEMON_HOME}/cosmovisor/genesis/bin
-RUN mkdir -p ${DAEMON_HOME}/cosmovisor/upgrades
-
 # Copy the compiled binaires over.
 COPY --from=build /go/bin/cosmovisor /usr/bin/cosmovisor
-COPY --from=build /go/bin/sifnoded ${DAEMON_HOME}/cosmovisor/genesis/bin/sifnoded
+COPY --from=build /go/bin/sifnoded /usr/bin/sifnoded
 COPY --from=build /go/bin/sifnodecli /usr/bin/sifnodecli
 COPY --from=build /go/bin/sifgen /usr/bin/sifgen
+
+CMD ["sifnoded", "start", "--rpc.laddr", "tcp://0.0.0.0:26657"]

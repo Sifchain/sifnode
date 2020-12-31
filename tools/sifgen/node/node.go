@@ -3,6 +3,7 @@ package node
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Sifchain/sifnode/app"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -28,6 +29,7 @@ type Node struct {
 	Password    string    `yaml:"password"`
 	PeerAddress *string   `yaml:"-"`
 	GenesisURL  *string   `yaml:"-"`
+	WithCosmovisor bool `yaml:"-"`
 	Key         *key.Key  `yaml:"-"`
 	CLI         utils.CLI `yaml:"-"`
 }
@@ -48,7 +50,7 @@ func Reset(chainID string, nodeDir *string) error {
 	return nil
 }
 
-func NewNode(chainID, moniker, mnemonic, ipAddr string, peerAddress, genesisURL *string) *Node {
+func NewNode(chainID, moniker, mnemonic, ipAddr string, peerAddress, genesisURL *string, withCosmovisor *bool) *Node {
 	password, _ := password.Generate(32, 5, 0, false, false)
 	return &Node{
 		ChainID:     chainID,
@@ -56,8 +58,9 @@ func NewNode(chainID, moniker, mnemonic, ipAddr string, peerAddress, genesisURL 
 		Mnemonic:    mnemonic,
 		IPAddr:      ipAddr,
 		PeerAddress: peerAddress,
-		GenesisURL:  genesisURL,
 		Password:    password,
+		GenesisURL:  genesisURL,
+		WithCosmovisor: *withCosmovisor,
 		CLI:         utils.NewCLI(chainID),
 		Key:         key.NewKey(&moniker, &password),
 	}
@@ -69,6 +72,10 @@ func (n *Node) Build() (*string, error) {
 	}
 
 	if err := n.genesis(); err != nil {
+		return nil, err
+	}
+
+	if err := n.setupCosmovisor(); err != nil {
 		return nil, err
 	}
 
@@ -290,6 +297,37 @@ func (n *Node) parseConfig() (common.NodeConfig, error) {
 	}
 
 	return config, nil
+}
+
+func (n *Node) setupCosmovisor() error {
+	if !n.WithCosmovisor {
+		return nil
+	}
+
+	if err := n.CLI.CreateDir(fmt.Sprintf("%v/cosmovisor/genesis/bin", app.DefaultNodeHome)); err != nil {
+		return err
+	}
+
+	if err := n.CLI.CreateDir(fmt.Sprintf("%v/cosmovisor/upgrade", app.DefaultNodeHome)); err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("%v:%v", os.Getenv("PATH"), fmt.Sprintf("%v/cosmovisor/genesis/bin", app.DefaultNodeHome))
+	if err := os.Setenv("PATH", path); err != nil {
+		return err
+	}
+
+	daemon, err := n.CLI.DaemonPath()
+	if err != nil {
+		return err
+	}
+
+	_, err = n.CLI.MoveFile(strings.TrimSuffix(*daemon, "\n"), fmt.Sprintf("%v/cosmovisor/genesis/bin/", app.DefaultNodeHome))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (n *Node) summary() string {
