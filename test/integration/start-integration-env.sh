@@ -63,13 +63,6 @@ yes $OWNER_PASSWORD | sifnodecli keys show user1 --home $CHAINDIR/.sifnodecli >>
 cat $NETDEF | to_json > $NETDEF_JSON
 set_persistant_env_var USER1ADDR $(cat $NETDEF_JSON | jq -r ".[1].address") $envexportfile
 
-
-docker exec ${CONTAINER_NAME} bash -c ". /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/initial_test_balances.py /network-definition.yml"
-sleep 15
-docker exec ${CONTAINER_NAME} bash -c ". /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/peggy-basic-test-docker.py /network-definition.yml"
-sleep 15
-docker exec ${CONTAINER_NAME} bash -c '. /test/integration/vagrantenv.sh; cd /sifnode; SMART_CONTRACTS_DIR=/smart-contracts python3 /test/integration/peggy-e2e-test.py /network-definition.yml'
-
 # TODO the python tests use a lot of calls that require the owner password,
 # and they look it up every time.  Need to change that so they just have the
 # password passed in, but for now modify the user's ~/.sifnodecli directly

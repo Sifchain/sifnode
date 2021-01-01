@@ -12,7 +12,9 @@ python3 $TEST_INTEGRATION_DIR/initial_test_balances.py $NETDEF_JSON
 logecho $0 completed $TEST_INTEGRATION_DIR/initial_test_balances.py
 sleep 15
 python3 $TEST_INTEGRATION_DIR/peggy-basic-test-docker.py $NETDEF_JSON
+sleep 15
 python3 $TEST_INTEGRATION_DIR/peggy-e2e-test.py $NETDEF_JSON
+sleep 15
 python3 $TEST_INTEGRATION_DIR/test_chain_rollback.py $NETDEF_JSON
 
 # save sifchain transaction data; later whitelist testing will intentionally break transaction queries
