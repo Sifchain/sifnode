@@ -27,9 +27,9 @@ func MessageTypeStringToEnum(messageType string) MessageType {
 	case "submit":
 		return MsgSubmit
 	case "revert":
-		return MsgSubmit
+		return MsgRevert
 	case "return":
-		return MsgSubmit
+		return MsgReturnCeth
 	}
 	return InvalidMessageType
 }
