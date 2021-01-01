@@ -164,6 +164,12 @@ contract("BridgeBank", function (accounts) {
       this.token = await BridgeToken.new(this.symbol);
       this.amount = 100;
 
+      // Fail to remove the token from the white list if not there yet.
+      await expectRevert(
+          this.bridgeBank.updateEthWhiteList(this.token.address, false, {from: operator}),
+          "Token not whitelisted"
+      );
+
       // Add the token into white list
       await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
@@ -230,7 +236,7 @@ contract("BridgeBank", function (accounts) {
       const symbol = "TEST"
       const newToken = await BridgeToken.new(symbol);
       (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
-      // Remove the token from the white list
+      // Fail to add token already there
       await expectRevert(
         this.bridgeBank.updateEthWhiteList(newToken.address, true, {from: operator}),
         "Token already whitelisted"

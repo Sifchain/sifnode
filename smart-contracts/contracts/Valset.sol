@@ -96,7 +96,7 @@ contract Valset is ValsetStorage {
 
         require(
             validators[key],
-            "Can only update the power of active valdiators"
+            "Can only update the power of active validators"
         );
 
         // Adjust total power by new validator power
@@ -125,7 +125,7 @@ contract Valset is ValsetStorage {
             abi.encodePacked(currentValsetVersion, _validatorAddress)
         );
 
-        require(validators[key], "Can only remove active valdiators");
+        require(validators[key], "Can only remove active validators");
 
         // Update validator count and total power
         validatorCount = validatorCount.sub(1);

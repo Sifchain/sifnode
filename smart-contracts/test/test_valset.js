@@ -5,6 +5,10 @@ const { deployProxy, silenceWarnings } = require('@openzeppelin/truffle-upgrades
 const EVMRevert = "revert";
 const BigNumber = web3.BigNumber;
 
+const {
+  expectRevert, // Assertions for transactions that should fail
+} = require('@openzeppelin/test-helpers');
+
 require("chai")
   .use(require("chai-as-promised"))
   .use(require("chai-bignumber")(BigNumber))
@@ -160,6 +164,12 @@ contract("Valset", function (accounts) {
       });
 
       it("should allow the operator to add multiple new validators", async function () {
+        // Fail if not operator
+        await expectRevert(
+            this.valset.addValidator(userTwo, this.userTwoPower, {from: userThree}),
+            "Must be the operator."
+        );
+
         await this.valset.addValidator(userTwo, this.userTwoPower, {
           from: operator
         }).should.be.fulfilled;
@@ -217,6 +227,12 @@ contract("Valset", function (accounts) {
         const priorTotalPower = await this.valset.totalPower();
         Number(priorTotalPower).should.be.bignumber.equal(
           this.initialPowers[0]
+        );
+
+        // Fail if not operator
+        await expectRevert(
+            this.valset.updateValidatorPower(userOne, NEW_POWER, {from: userTwo}),
+            "Must be the operator."
         );
 
         // Operator updates the validator's initial power
@@ -282,6 +298,12 @@ contract("Valset", function (accounts) {
         const priorTotalPower = await this.valset.totalPower();
         Number(priorTotalPower).should.be.bignumber.equal(
           this.initialPowers[0] + this.initialPowers[1]
+        );
+
+        // Fail if not operator
+        await expectRevert(
+            this.valset.removeValidator(userTwo, {from: userOne}),
+            "Must be the operator."
         );
 
         // Operator removes a validator
@@ -531,6 +553,12 @@ contract("Valset", function (accounts) {
         userTwo
       );
       isUserTwoValidatorPost.should.be.equal(false);
+
+      // Fail if not operator
+      await expectRevert(
+          this.valset.recoverGas(1, userOne, {from: userTwo}),
+          "Must be the operator."
+      );
 
       // Operator recovers gas from inactive validator userOne
       await this.valset.recoverGas(1, userOne, {
