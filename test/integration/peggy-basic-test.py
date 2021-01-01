@@ -13,6 +13,7 @@ SLEEPTIME = 5
 AMOUNT = 10
 CLAIMLOCK = "lock"
 CLAIMBURN = "burn"
+CETHAMOUNT = 1
 
 def print_error_message(error_message):
     print("#################################")
@@ -66,18 +67,18 @@ def create_claim(user, validator, amount, denom, claim_type):
 
 def burn_peggy_coin(user, validator, amount):
     command_line = """sifnodecli tx ethbridge burn {} \
-    0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} {} \
+    0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} {} {} submit \
     --ethereum-chain-id=3 --from={} \
     --yes""".format(get_user_account(user),
-                    amount, PEGGYETH, user)
+                    amount, PEGGYETH, CETHAMOUNT, user)
     # print(command_line)
     return get_shell_output(command_line)
 
 def lock_rowan(user, amount):
     command_line = """sifnodecli tx ethbridge lock {} \
-        0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rwn \
+        0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rwn {} submit \
         --ethereum-chain-id=3 --from={} --yes    
-    """.format(get_user_account(user), amount, user)
+    """.format(get_user_account(user), amount, CETHAMOUNT, user)
     # print(command_line)
     return get_shell_output(command_line)
 
@@ -114,7 +115,7 @@ def test_case_2():
     balance_after_tx = int(get_balance(USER, PEGGYETH))
     print("After burn transaction {}'s balance of {} is {}".format(
         USER, PEGGYETH, balance_after_tx))
-    if balance_after_tx != balance_before_tx - AMOUNT:
+    if balance_after_tx != balance_before_tx - AMOUNT - CETHAMOUNT:
         print_error_message("balance is wrong after send eth lock claim")
     print("########## Test Case Two Over ##########")
 
