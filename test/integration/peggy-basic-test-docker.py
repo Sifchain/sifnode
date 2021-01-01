@@ -16,7 +16,7 @@ CLAIMBURN = "burn"
 ETHEREUM_SENDER_ADDRESS='0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9'
 ETHEREUM_NULL_ADDRESS='0x0000000000000000000000000000000000000000'
 ETHEREUM_CHAIN_ID='5777'
-CETH_AMOUNT = amount_in_wei(0.1)
+CETH_AMOUNT = 10 ** 17
 
 def get_moniker():
     command_line = "echo $MONIKER"
@@ -72,6 +72,7 @@ def burn_peggy_coin(user, validator, amount):
     --ethereum-chain-id=5777 --from={} \
     --yes -o json""".format(network_password, get_user_account(user, network_password),
                     amount, PEGGYETH, CETH_AMOUNT, user)
+    print(command_line)
     return get_shell_output(command_line)
 
 
