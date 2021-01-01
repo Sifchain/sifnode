@@ -118,7 +118,10 @@ def test_case_2():
         print_error_message("No enough ceth to burn")
         return
     print("Send burn claim to Sifchain...")
-    burn_peggy_coin(USER, VALIDATOR, amount)
+    tx_result = burn_peggy_coin(USER, VALIDATOR, amount)
+    tx_hash = json.loads(tx_result)["txhash"]
+    time.sleep(SLEEPTIME)
+    get_transaction_result(tx_hash)
 
     wait_for_sifchain_balance(USER, PEGGYETH, network_password, balance_before_tx - amount - CETH_AMOUNT)
 
