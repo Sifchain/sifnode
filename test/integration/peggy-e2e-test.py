@@ -33,6 +33,10 @@ def get_eth_balance(account, symbol):
     return 0
 
 
+def wait_for_eth_balance(account, symbol, target_balance, max_attempts=30):
+    wait_for_balance(lambda: get_eth_balance(account, symbol), target_balance, max_attempts)
+
+
 def advance_n_ethereum_blocks(n=50):
     command_line = cd_smart_contracts_dir + "yarn advance {}".format(n)
     get_shell_output(command_line)
