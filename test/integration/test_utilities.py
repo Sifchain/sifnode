@@ -11,15 +11,10 @@ SIF_ROWAN = "rowan"
 ETHEREUM_ROWAN = "erowan"
 
 verbose = False
-persistantLog = open("/tmp/testrun.sh", "a")
 n_wait_blocks = 50  # number of blocks to wait for the relayer to act
 
 
 def print_error_message(error_message):
-    print("#################################")
-    print("!!!!Error: ", error_message)
-    print("#################################")
-    traceback.print_stack()
     raise Exception(error_message)
 
 
@@ -36,6 +31,10 @@ cd_smart_contracts_dir = f"cd {smart_contracts_dir}; "
 moniker = get_required_env_var("MONIKER")
 owner_addr = get_required_env_var("OWNER_ADDR")
 user1_addr = get_required_env_var("USER1ADDR")
+test_integration_dir = get_required_env_var("TEST_INTEGRATION_DIR")
+datadir = get_required_env_var("datadir")
+
+persistantLog = open(f"{datadir}/python_commands.txt", "a")
 
 
 def test_log_line(s):
@@ -85,13 +84,11 @@ def get_user_account(user, network_password):
     return get_shell_output(command_line)
 
 
-def get_password(network_definition_file):
-    if not os.environ.get("MONIKER"):
-        print_error_message("MONIKER environment var not set")
-    f = get_shell_output(f"cat {network_definition_file}")
-    command_line = f"cat {network_definition_file} | yq r - \"(*==$MONIKER).password\""
-    output = get_shell_output(command_line)
-    return output
+def get_password(network_definition_file_json):
+    command_line = f"cat {network_definition_file_json} | jq '.[0].password'"
+    password = get_shell_output(command_line)
+    print(f"password is {password}")
+    return password
 
 
 # get the balance for user in the denom currency from sifnodecli
@@ -166,6 +163,7 @@ def send_eth_lock(sifchain_user, symbol, amount):
     return send_ethereum_currency_to_sifchain_addr(get_user_account(sifchain_user, network_password), symbol, amount)
 
 
+# this does not wait for the transaction to complete
 def send_ethereum_currency_to_sifchain_addr(sif_addr, symbol, amount):
     command_line = f"{cd_smart_contracts_dir} yarn peggy:lock {sif_addr} {symbol} {amount}"
     return get_shell_output(command_line)
@@ -215,6 +213,18 @@ def transact_ethereum_currency_to_sifchain_addr(sif_addr, ethereum_symbol, amoun
                                    f"{sif_addr} / {sifchain_symbol} / {amount}")
 
 
+def ganache_transactions_json():
+    transaction_cmd = f"{cd_smart_contracts_dir} npx truffle exec scripts/getIntegrationTestTransactions.js  |" \
+                      f" grep 'result:' | sed -e 's/.*result: //'"
+    return get_shell_output(transaction_cmd)
+
+
+def write_ganache_transactions_to_file(filename):
+    json = ganache_transactions_json()
+    with open(filename, "w") as text_file:
+        print(json, file=text_file)
+
+
 def advance_n_ethereum_blocks(n=50):
     return run_yarn_command(f"{cd_smart_contracts_dir} yarn advance {n}")
 
@@ -223,10 +233,10 @@ def amount_in_wei(amount):
     return amount * 10 ** 18
 
 
-network_definition_file = sys.argv[1]
-if not network_definition_file:
+network_definition_file_json = sys.argv[1]
+if not network_definition_file_json:
     print_error_message("missing network_definition_file")
 
-network_password = get_password(network_definition_file)
+network_password = get_password(network_definition_file_json)
 if not network_password:
-    print_error_message(f"unable to read network password from {network_definition_file}")
+    print_error_message(f"unable to read network password from {network_definition_file_json}")

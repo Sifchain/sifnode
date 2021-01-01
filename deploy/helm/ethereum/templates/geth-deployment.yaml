@@ -29,7 +29,7 @@ spec:
         command: ["/bin/sh"]
         args: 
         - "-c"
-        - "geth --http --http.api={{ .Values.geth.args.rpcapi }} --http.corsdomain='*' --http.addr 0.0.0.0 --http.port 8545 --networkid=3 --testnet --ethstats=${HOSTNAME}:${ETHSTATS_SECRET}@${ETHSTATS_SVC}"
+        - "geth --http --http.api={{ .Values.geth.args.rpcapi }} --http.corsdomain='*' --http.addr 0.0.0.0 --http.port 8545 {{ .Values.geth.args.network }} --ethstats=${HOSTNAME}:${ETHSTATS_SECRET}@${ETHSTATS_SVC} --ws --ws.addr 0.0.0.0 --ws.origins='*' --ws.port 8546"
         env:
         - name: ETHSTATS_SVC
           value: {{ template "ethereum.fullname" . }}-ethstats.{{ .Release.Namespace }}
@@ -41,6 +41,8 @@ spec:
         ports:
         - name: rpc
           containerPort: 8545
+        - name: ws
+          containerPort: 8546
         - name: discovery-udp
           containerPort: 30303
           protocol: UDP

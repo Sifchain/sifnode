@@ -29,6 +29,8 @@ contract BankStorage is
     */
     address public owner;
 
+    mapping (string => uint256) public maxTokenAmount;
+
     /**
     * @notice gap of storage for future upgrades
     */

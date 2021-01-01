@@ -1,9 +1,22 @@
 #!/bin/bash
 
-output=$(dirname $0)/vagrant/data/sifchaintxs.txt
-rm -f $output
+set -xe
 
-for i in $(docker logs integration_sifnode1_1 2>&1 | grep "^txhash: " | sed -e "s/txhash: //")
+basedir=$(dirname $0)
+. $basedir/vagrantenv.sh
+
+if [ -z $EBRELAYER_LOG ]
+then
+  echo $0: must specify EBRELAYER_LOG
+  exit 1
+fi
+
+output=$datadir/sifchaintxs
+rm -f $output*
+
+hashes=$(cat $EBRELAYER_LOG | grep "^txhash: " | sed -e "s/txhash: //")
+for i in $hashes
 do
-  docker exec -ti integration_sifnode1_1 bash -c "sifnodecli q tx $i" >> $output
+  sifnodecli q tx $i >> $output.txt
+  sifnodecli q tx $i -o json | jq -c . >> $output.json
 done

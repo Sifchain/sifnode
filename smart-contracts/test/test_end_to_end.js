@@ -143,6 +143,11 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
         from: operator
       });
+
+      // Update the lock/burn limit for this token
+      await this.bridgeBank.updateTokenLockBurnLimit(this.ethTokenAddress, this.amountWei, {
+        from: operator
+      }).should.be.fulfilled;
     });
 
     it("Burn prophecy claim flow", async function () {

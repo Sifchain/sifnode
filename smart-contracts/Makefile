@@ -20,3 +20,12 @@ slither-pretty-summary: setup
 # `make conformance CONTRACT=./contracts/ContractFile.sol CONTRACT_NAME=ContractName`
 erc-conformance: setup
 	slither-check-erc ${CONTRACT} ${CONTRACT_NAME}
+
+.PHONY: clean clean-smartcontracts clean-node
+clean: clean-node clean-smartcontracts
+
+clean-smartcontracts:
+	rm -rf build .openzepplin
+
+clean-node:
+	rm -rf node_modules
