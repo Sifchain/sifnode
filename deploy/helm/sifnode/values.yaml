@@ -21,8 +21,13 @@ image:
   tag: "testnet"
 
 sifnode:
-  mnemonic: ""
+  args:
+    mnemonic: ""
   env:
+    daemonHome: "/root/.sifnoded"
+    daemonName: "sifnoded"
+    daemonAllowDownloadBinaries: false
+    daemonRestartAfterUpgrade: true
     chainnet:
     moniker:
     genesisURL:
