@@ -2,9 +2,11 @@
 const { time } = require("@openzeppelin/test-helpers");
 
 export async function advanceBlock(count: number) {
+  console.log("Advancing time by " + count + " blocks");
   for (let i = 0; i < count; i++) {
     await time.advanceBlock();
     // Need to provide time between advances or it doesn't work
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
+  console.log("Finished advancing time.");
 }

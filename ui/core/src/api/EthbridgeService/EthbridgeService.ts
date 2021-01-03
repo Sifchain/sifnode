@@ -11,7 +11,7 @@ export type EthbridgeServiceContext = {
   getWeb3Provider: () => Promise<provider>;
 };
 
-const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
+const ETH_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 export default function createEthbridgeService({
   bridgebankContractAddress,
@@ -35,28 +35,28 @@ export default function createEthbridgeService({
       const emitter = createPegTxEventEmitter();
 
       function handleError(err: any) {
-        console.log("handleError");
         emitter.emit({ type: "Error", payload: err });
       }
 
       (async function() {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
+        console.log({ cosmosRecipient });
         const bridgeBankContract = await getBridgeBankContract(
           web3,
           bridgebankContractAddress
         );
         const accounts = await web3.eth.getAccounts();
-        const coinDenom = (assetAmount.asset as Token).address ?? NULL_ADDRESS;
-        const amount = assetAmount.amount.toString();
+        const coinDenom = (assetAmount.asset as Token).address ?? ETH_ADDRESS;
+        const amount = assetAmount.numerator.toString();
         const fromAddress = accounts[0];
 
         const sendArgs = {
           from: fromAddress,
-          value: coinDenom === NULL_ADDRESS ? amount : 0,
-          gas: 500000,
+          value: coinDenom === ETH_ADDRESS ? amount : 0,
+          gas: 5000000,
         };
-
+        console.log({ cosmosRecipient, coinDenom, amount, sendArgs });
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
           .send(sendArgs)

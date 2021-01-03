@@ -25,7 +25,9 @@ export type SifServiceContext = {
   assets: Asset[];
 };
 
-type ISifService = IWalletService & { getSupportedTokens: () => Asset[] };
+export type ISifService = IWalletService & {
+  getSupportedTokens: () => Asset[];
+};
 
 /**
  * Constructor for SifService

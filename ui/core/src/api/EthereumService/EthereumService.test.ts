@@ -5,10 +5,8 @@ import localsifassets from "../../assets.sifchain.localnet.json";
 import createEthereumService from "./EthereumService";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { Asset, AssetAmount } from "../../entities";
-
 import JSBI from "jsbi";
 import B from "../../entities/utils/B";
-import { AssetConfig } from "../utils/parseConfig";
 import { getTokenFromSupported } from "../utils/getTokenFromSupported";
 
 describe("EthereumService", () => {
