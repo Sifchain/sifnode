@@ -28,7 +28,7 @@ y chain:sif
 
 Effectively does the following:
 
-<details><summary>click for script ...</summary>
+<details><summary>yarn chain:sif</summary>
 <p>
 
 ```bash
@@ -99,6 +99,77 @@ create liquidity pools and deploy peggy contracts then run ebrelayer
 ```bash
 y chain:migrate && y chain:peggy
 ```
+
+<details><summary>yarn chain:migrate</summary><p>
+
+```bash
+#!/bin/bash
+
+# runs migrate in the smart-contracts folder against our local version of ganache
+. ../credentials.sh
+
+cd ../../../smart-contracts
+
+yarn && yarn migrate
+```
+
+```bash
+# Sets up a couple of liquidity pools to test against
+sifnodecli tx clp create-pool \
+ --from akasha \
+ --symbol catk \
+ --nativeAmount 1000000 \
+ --externalAmount 1000000 \
+ --yes
+
+sifnodecli tx clp create-pool \
+ --from akasha \
+ --symbol cbtk \
+ --nativeAmount 1000000 \
+ --externalAmount 1000000 \
+ --yes
+```
+
+```bash
+# deploys a few test erc-20 tokens for us to test swapping with in the interface
+
+cd ui/chains/ethereum
+yarn migrate
+```
+
+</p>
+</details>
+
+<details><summary>yarn chain:peggy</summary>
+<p>
+
+```bash
+#!/bin/bash
+
+# This script should be run with a CWD that is the local folder
+. ../credentials.sh
+. ../../../smart-contracts/.env
+
+
+BRIDGE_TOKEN_ADDRESS="0x82D50AD3C1091866E258Fd0f1a7cC9674609D254"
+
+echo "ETHEREUM_PRIVATE_KEY=$ETHEREUM_PRIVATE_KEY"
+echo "BRIDGE_TOKEN_ADDRESS=$BRIDGE_TOKEN_ADDRESS"
+echo "SIFUSER1_NAME=$SIFUSER1_NAME"
+
+ETHEREUM_PRIVATE_KEY=$ETHEREUM_PRIVATE_KEY ebrelayer init \
+  tcp://localhost:26657 \
+  ws://localhost:7545/ \
+  "$BRIDGE_TOKEN_ADDRESS" \
+  "$SIFUSER1_NAME" \
+  "$SIFUSER1_MNEMONIC" \
+  --chain-id=sifchain \
+  --gas 300000 \
+  --gas-adjustment 1.5
+```
+
+</p>
+</details>
 
 ---
 
