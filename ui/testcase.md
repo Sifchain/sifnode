@@ -23,7 +23,7 @@ yarn ganache-cli -m "$ETHEREUM_ROOT_MNEMONIC" -p 7545 --networkId 5777
 Run sifchain
 
 ```bash
-y chain:sif
+yarn chain:sif
 ```
 
 Effectively does the following:
@@ -175,6 +175,8 @@ ETHEREUM_PRIVATE_KEY=$ETHEREUM_PRIVATE_KEY ebrelayer init \
 
 ### Terminal 4
 
+Run the following in the `./smart-contracts` folder
+
 #### 1) Check ethereum balance
 
 ```bash
@@ -287,7 +289,7 @@ I[2021-01-03|12:01:19.336] Add event into buffer
 #### 4) run advance to advance the ethereum blockchain
 
 ```
-y advance 100
+yarn advance 100
 ```
 
 ```
