@@ -114,6 +114,13 @@ yarn && yarn migrate
 ```
 
 ```bash
+# deploys a few test erc-20 tokens for us to test swapping with in the interface
+
+cd ui/chains/ethereum
+yarn migrate
+```
+
+```bash
 # Sets up a couple of liquidity pools to test against
 sifnodecli tx clp create-pool \
  --from akasha \
@@ -128,13 +135,6 @@ sifnodecli tx clp create-pool \
  --nativeAmount 1000000 \
  --externalAmount 1000000 \
  --yes
-```
-
-```bash
-# deploys a few test erc-20 tokens for us to test swapping with in the interface
-
-cd ui/chains/ethereum
-yarn migrate
 ```
 
 </p>
