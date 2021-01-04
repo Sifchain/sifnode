@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	types2 "github.com/cosmos/cosmos-sdk/types"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -28,7 +29,6 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 
 	faucetQueryCmd.AddCommand(
 		flags.GetCommands(
-			// this line is used by starport scaffolding # 1
 			GetCmdFaucet(queryRoute, cdc),
 			GetCmdFaucetAddress(queryRoute, cdc),
 		)...,
@@ -40,41 +40,38 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 // Query to get faucet balance with the specified denom
 func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "faucet-balance [denom]",
-		Short: "Get account details for faucet",
+		Use:   "balance",
+		Short: "Get Faucet Balances",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query details for faucet balance.`,
+			fmt.Sprintf(`Query details for faucet balance.%s`,
 				version.ClientName,
 			),
 		),
-		Args: cobra.ExactArgs(1),
+		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryBalance)
-			denomString := args[0]
-			faucetBalanceRequest := types.NewQueryReqGetFaucetBalance(denomString)
-			bz, err := cliCtx.Codec.MarshalJSON(faucetBalanceRequest)
+			res, _, err := cliCtx.Query(route)
 			if err != nil {
 				return err
 			}
-			res, _, err := cliCtx.QueryWithData(route, bz)
-			if err != nil {
-				return err
-			}
-			var amount string
-			cdc.MustUnmarshalJSON(res, &amount)
-			return cliCtx.PrintOutput(amount)
+			var coins types2.Coins
+			cdc.MustUnmarshalJSON(res, &coins)
+			return cliCtx.PrintOutput(coins)
+
 		},
 	}
 }
 
+// TODO I think we should we remove this . We already have functions to add tokens and request tokens . We have a sifnoded command to fund the faucet as well . Is there any requirement for this function
+
 // Query to get faucet module address
 func GetCmdFaucetAddress(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "faucet-address",
-		Short: "Get account address for faucet",
+		Use:   "address",
+		Short: "Get Faucet Address",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query address for faucet.`,
+			fmt.Sprintf(`Query address for faucet. %s`,
 				version.ClientName,
 			),
 		),

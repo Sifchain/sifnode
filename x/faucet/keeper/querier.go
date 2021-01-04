@@ -14,25 +14,17 @@ import (
 func NewQuerier(k Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, error) {
 		switch path[0] {
-		// this line is used by starport scaffolding # 2
 		case types.QueryBalance:
-			return queryBalance(ctx, req, k)
+			return queryBalance(ctx, k)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown faucet query endpoint")
 		}
 	}
 }
 
-func queryBalance(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, error) {
-	var params types.QueryReqGetFaucetBalance
-	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
-	if err != nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
-	}
-
+func queryBalance(ctx sdk.Context, keeper Keeper) ([]byte, error) {
 	balance := keeper.GetBankKeeper().GetCoins(ctx, types.GetFaucetModuleAddress())
-	requiredCoin := balance.AmountOf(params.Denom)
-	res, err := codec.MarshalJSONIndent(keeper.cdc, requiredCoin)
+	res, err := codec.MarshalJSONIndent(keeper.cdc, balance)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

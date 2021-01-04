@@ -1,11 +1,12 @@
 package types
 
 import (
-	_ "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// TODO: Fill out some custom errors for the module
-// You can see how they are constructed below:
 var (
-// ErrInvalid = sdkerrors.Register(ModuleName, 1, "custom error message")
+	ErrInvalid            = errors.Register(ModuleName, 1, "Invalid Input")
+	NotEnoughBalance      = errors.Register(ModuleName, 2, "Faucet does not have enough balance ")
+	ErrorRequestingTokens = errors.Register(ModuleName, 3, "Faucet cannot fund the specified address")
+	ErrorAddingTokens     = errors.Register(ModuleName, 4, "Unable to fund faucet")
 )

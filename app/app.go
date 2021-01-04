@@ -214,6 +214,7 @@ func NewInitApp(
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(
 		staking.ModuleName,
+		faucet.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(

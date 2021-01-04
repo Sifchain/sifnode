@@ -3,11 +3,9 @@ package cli
 import (
 	"bufio"
 	"fmt"
-
+	"github.com/Sifchain/sifnode/x/faucet/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
-
-	"github.com/Sifchain/sifnode/x/faucet/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -15,10 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-)
-
-const (
-	flagAmount = "amount"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -42,7 +36,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 func GetCmdRequestCoins(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "request-coins [amount]",
-		Short: "request coins from faucet",
+		Short: "request coins from faucet ",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
@@ -53,16 +47,9 @@ func GetCmdRequestCoins(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
+			// TODO verify the type the tokens that the user can request , Limit it to rowan ?
 			signer := cliCtx.GetFromAddress()
-			if err != nil {
-				return err
-			}
-
-			msg := types.MsgRequestCoins{
-				Coins:     coins,
-				Requester: signer,
-			}
+			msg := types.NewMsgRequestCoins(signer, coins)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
@@ -84,16 +71,8 @@ func GetCmdAddCoins(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			signer := cliCtx.GetFromAddress()
-			if err != nil {
-				return err
-			}
-
-			msg := types.MsgAddCoins{
-				Signer: signer,
-				Coins:  coins,
-			}
+			msg := types.NewMsgAddCoins(signer, coins)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}

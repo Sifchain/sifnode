@@ -1,5 +1,9 @@
 package types
 
+import (
+	"fmt"
+)
+
 const (
 	// ModuleName is the name of the module
 	ModuleName = "faucet"
@@ -12,8 +16,21 @@ const (
 
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
+
+	FaucetToken = "rowan"
 )
 
 const (
-	FaucetPrefix = "faucet"
+	FaucetPrefix              = "faucet"
+	MaxWithdrawAmountPerEpoch = "5000000"
+	BlocksPerMinute           = 12
+	FaucetResetBlocks         = BlocksPerMinute * 60 * 4 // 4 hours
 )
+
+func KeyPrefix(p string) []byte {
+	return []byte(p)
+}
+
+func GetBalanceKey(user string, token string) []byte {
+	return []byte(fmt.Sprintf("%s_%s", user, token))
+}
