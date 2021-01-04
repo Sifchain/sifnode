@@ -41,7 +41,7 @@ export default function createEthbridgeService({
       (async function() {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
-        console.log({ cosmosRecipient });
+
         const bridgeBankContract = await getBridgeBankContract(
           web3,
           bridgebankContractAddress
@@ -56,10 +56,10 @@ export default function createEthbridgeService({
           value: coinDenom === ETH_ADDRESS ? amount : 0,
           gas: 5000000,
         };
-        console.log({ cosmosRecipient, coinDenom, amount, sendArgs });
+
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
-          .send(sendArgs)
+          .send({ ...sendArgs })
           .on("transactionHash", (hash: string) => {
             emitter.setTxHash(hash);
           })

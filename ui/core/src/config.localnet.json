@@ -4,5 +4,5 @@
   "sifWsUrl": "ws://localhost:26657/websocket",
   "web3Provider": "metamask",
   "nativeAsset": "rowan",
-  "bridgebankContractAddress": "0x30753E4A8aad7F8597332E813735Def5dD395028"
+  "bridgebankContractAddress": "0xf204a4Ef082f5c04bB89F7D5E6568B796096735a"
 }

@@ -29,7 +29,8 @@ export default ({
       // to centralize the business logic
       api.EthbridgeService.lock(cosmosRecipient, assetAmount, 50)
         .onError((err) => {
-          notify({ type: "error", message: `${err.payload}` });
+          const payload: any = err.payload;
+          notify({ type: "error", message: payload.message ?? err });
         })
         .onComplete(({ txHash }) => {
           notify({
