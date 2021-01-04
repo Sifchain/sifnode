@@ -7,6 +7,7 @@ export function createTestSifService(account?: TestSifAccount) {
   const sif = sifServiceInitializer({
     sifApiUrl: "http://localhost:1317",
     sifAddrPrefix: "sif",
+    sifWsUrl: "ws://localhost:26657",
     assets: [],
   });
 

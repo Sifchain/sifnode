@@ -17,7 +17,7 @@ import {
 } from "../../entities";
 import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
-import { SifClient, SifUnSignedClient } from "../utils/SifClient";
+import { SifClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 
 export type SifServiceContext = {
