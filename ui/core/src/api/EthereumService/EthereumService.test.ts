@@ -37,7 +37,7 @@ describe("EthereumService", () => {
 
     const balances = EthereumService.getState().balances;
 
-    expect(balances[0].amount.toString()).toEqual("99663433420000000000");
+    expect(balances[0].amount.toString()).toEqual("99399742420000000000");
     expect(balances[1].toFixed()).toEqual(
       AssetAmount(ATK, "10000.000000").toFixed()
     );
@@ -95,7 +95,7 @@ describe("EthereumService", () => {
         .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ETH")
         ?.amount.toString()
       // ).toEqual(AssetAmount(ETH, "99.95048114").toFixed());
-    ).toEqual("99663433420000000000");
+    ).toEqual("99399742420000000000");
 
     await EthereumService.transfer({
       amount: JSBI.BigInt(10 * 10 ** 18),
@@ -108,8 +108,8 @@ describe("EthereumService", () => {
     expect(
       balanceAccount0
         .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ETH")
-        ?.toFixed()
-    ).toEqual("89.663433210000000000"); // Including gas
+        ?.amount.toString()
+    ).toEqual("89663013420000000000"); // Including gas
 
     expect(
       balanceAccount1

@@ -5,9 +5,9 @@ var HDWalletProvider = require("@truffle/hdwallet-provider");
 module.exports = {
   solc: {
     optimizer: {
-        enabled: true,
-        runs: 200
-    }
+      enabled: true,
+      runs: 200,
+    },
   },
   networks: {
     develop: {
@@ -15,7 +15,7 @@ module.exports = {
       port: 7545, // Match default network 'ganache'
       network_id: 5777,
       gas: 6721975, // Truffle default development block gas limit
-      gasPrice: 200000000000
+      gasPrice: 200000000000,
     },
     ropsten: {
       provider: function () {
@@ -25,7 +25,7 @@ module.exports = {
         );
       },
       network_id: 3,
-      gas: 6000000
+      gas: 6000000,
     },
     mainnet: {
       provider: function () {
@@ -35,7 +35,7 @@ module.exports = {
         );
       },
       network_id: 1,
-      gas: 6000000
+      gas: 6000000,
     },
     xdai: {
       provider: function () {
@@ -45,15 +45,15 @@ module.exports = {
         );
       },
       network_id: 100,
-      gas: 6000000
-    }
+      gas: 6000000,
+    },
   },
   rpc: {
     host: "localhost",
-    post: 8080
+    post: 8080,
   },
   mocha: {
-    useColors: true
+    useColors: true,
   },
-  plugins: ["truffle-contract-size"]
+  plugins: ["truffle-contract-size"],
 };
