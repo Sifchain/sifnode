@@ -166,7 +166,7 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 
 		if err.Error() == "not enough ceth to cover the gas costs" {
 			cosmosMsg.MessageType = ethbridge.MsgRevert
-			txs.SendMsgToCosmos(sub.CosmosContext, &cosmosMsg)
+			txs.SendOutMessage(sub.CosmosContext, &cosmosMsg)
 		}
 
 		return err
@@ -175,7 +175,7 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 	if cethAmount.Cmp(big.NewInt(int64(gasUsed))) > 0 {
 		cosmosMsg.MessageType = ethbridge.MsgReturnCeth
 		cosmosMsg.CethAmount = sdk.NewIntFromBigInt(cethAmount.Sub(cethAmount, big.NewInt(int64(gasUsed))))
-		txs.SendMsgToCosmos(sub.CosmosContext, &cosmosMsg)
+		txs.SendOutMessage(sub.CosmosContext, &cosmosMsg)
 	}
 
 	return nil
