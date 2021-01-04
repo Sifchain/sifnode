@@ -109,7 +109,7 @@ describe("EthereumService", () => {
       balanceAccount0
         .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ETH")
         ?.amount.toString()
-    ).toEqual("89663013420000000000"); // Including gas
+    ).toEqual("89399322420000000000"); // Including gas
 
     expect(
       balanceAccount1
