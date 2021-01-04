@@ -10,7 +10,6 @@ import (
 	"log"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -25,7 +24,7 @@ const (
 )
 
 var (
-	callMsg *ethereum.CallMsg
+	gasUsedLastTx uint64
 )
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
@@ -38,22 +37,9 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		return 0, err
 	}
 
-	// Estimate the cost for the transaction
-	if callMsg != nil {
-		log.Println("callMsg != nil done")
-		// Update gas price
-		callMsg.GasPrice = auth.GasPrice
-
-		estimateGas, err := client.EstimateGas(context.Background(), *callMsg)
-
-		if err != nil {
-			return 0, err
-		}
-
-		// If ceth amount is lower than estimated gas
-		if cethAmount.Cmp(big.NewInt(int64(estimateGas))) > 0 {
-			return 0, errors.New("not enough ceth to cover the gas costs")
-		}
+	// If ceth amount is lower than estimated gas
+	if cethAmount.Cmp(big.NewInt(int64(gasUsedLastTx))) < 0 {
+		return 0, errors.New("not enough ceth to cover the gas costs")
 	}
 
 	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
@@ -83,6 +69,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		return 0, errors.New("NewProphecyClaim transaction failed ")
 	case 1:
 		fmt.Println("Tx Status: 1 - Successful")
+		gasUsedLastTx = receipt.GasUsed
 		return receipt.GasUsed, nil
 	}
 

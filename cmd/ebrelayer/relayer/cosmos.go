@@ -25,6 +25,11 @@ import (
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
+const (
+	// RelayerNodeNumber defined for estimate total fee of Ethereum transaction
+	RelayerNodeNumber = 3
+)
+
 // TODO: Move relay functionality out of CosmosSub into a new Relayer parent struct
 
 // CosmosSub defines a Cosmos listener that relays events to Ethereum and Cosmos
@@ -148,8 +153,9 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 	}
 
 	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
-
 	cethAmount := cosmosMsg.CethAmount.BigInt()
+
+	cethAmount = cethAmount.Div(cethAmount, big.NewInt(RelayerNodeNumber))
 
 	gasUsed, err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
 		claimType, prophecyClaim, sub.PrivateKey, cethAmount)
@@ -168,7 +174,7 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 
 	if cethAmount.Cmp(big.NewInt(int64(gasUsed))) > 0 {
 		cosmosMsg.MessageType = ethbridge.MsgReturnCeth
-		cosmosMsg.CethAmount = sdk.NewIntFromBigInt(cethAmount.Sub(cethAmount, big.NewInt(int64(gasUsed*3))))
+		cosmosMsg.CethAmount = sdk.NewIntFromBigInt(cethAmount.Sub(cethAmount, big.NewInt(int64(gasUsed))))
 		txs.SendMsgToCosmos(sub.CosmosContext, &cosmosMsg)
 	}
 
