@@ -1,13 +1,11 @@
 // This test must be run in an environment that supports ganace
 
-import localethereumassets from "../../assets.ethereum.localnet.json";
-import localsifassets from "../../assets.sifchain.localnet.json";
 import createEthereumService from "./EthereumService";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { Asset, AssetAmount } from "../../entities";
 import JSBI from "jsbi";
 import B from "../../entities/utils/B";
-import { getTokenFromSupported } from "../utils/getTokenFromSupported";
+import { getTestingTokens } from "../../test/utils/getTestingToken";
 
 describe("EthereumService", () => {
   let EthereumService: ReturnType<typeof createEthereumService>;
@@ -16,14 +14,7 @@ describe("EthereumService", () => {
   let ETH: Asset;
 
   beforeEach(async () => {
-    const assetConfigs = [
-      ...localethereumassets.assets,
-      ...localsifassets.assets,
-    ];
-
-    ATK = getTokenFromSupported(assetConfigs, "ATK");
-    BTK = getTokenFromSupported(assetConfigs, "BTK");
-    ETH = getTokenFromSupported(assetConfigs, "ETH");
+    [ATK, BTK, ETH] = getTestingTokens(["ATK", "BTK", "ETH"]);
 
     EthereumService = createEthereumService({
       getWeb3Provider,
