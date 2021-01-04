@@ -5,41 +5,11 @@ import { Asset, AssetAmount } from "../../entities";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { getTokenFromSupported } from "../utils/getTokenFromSupported";
 import { advanceBlock } from "../utils/advanceBlock";
-import createSifService, { ISifService } from "../SifService";
-
-import Web3 from "web3";
-import JSBI from "jsbi";
+import createSifService from "../SifService";
+import { createWaitForBalance } from "../../test/utils/waitForBalance";
 
 const mnemonic =
   "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow";
-const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
-const balanceWaiter = (sifService: ISifService) => {
-  async function getBalance(symbol: string) {
-    return (
-      await sifService.getBalance("sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd")
-    ).find((bal) => bal.asset.symbol === symbol);
-  }
-
-  return async function checkBalance(
-    symbol: string,
-    expectedAmount: string,
-    account: string,
-    maxTries = 100
-  ) {
-    for (let i = 0; i < maxTries; i++) {
-      await sleep(1000);
-
-      const newBalance = (await sifService.getBalance(account)).find(
-        (bal) => bal.asset.symbol === symbol
-      );
-
-      if (newBalance?.amount.toString() === expectedAmount) {
-        return newBalance;
-      }
-    }
-    throw new Error(`Balance of ${expectedAmount} was never realised`);
-  };
-};
 
 describe("PeggyService", () => {
   let EthbridgeService: ReturnType<typeof createEthbridgeService>;
@@ -62,7 +32,7 @@ describe("PeggyService", () => {
     });
   });
 
-  test.only("lock tokens", async () => {
+  test("lock tokens", async () => {
     // get sif balance
     const sifService = createSifService({
       sifApiUrl: "http://localhost:1317",
@@ -73,7 +43,7 @@ describe("PeggyService", () => {
     const sifAccount = "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5";
 
     await sifService.setPhrase(mnemonic);
-    const waitForBalance = balanceWaiter(sifService);
+    const waitForBalance = createWaitForBalance(sifService);
     await waitForBalance("ceth", "1000000000", sifAccount);
 
     await new Promise<void>(async (done) => {
