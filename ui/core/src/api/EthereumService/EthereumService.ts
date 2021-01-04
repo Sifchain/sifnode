@@ -2,6 +2,7 @@ import { reactive } from "@vue/reactivity";
 import Web3 from "web3";
 import { provider, WebsocketProvider } from "web3-core";
 import { IWalletService } from "../IWalletService";
+import { debounce } from "lodash";
 import {
   TxHash,
   TxParams,
@@ -86,19 +87,23 @@ export class EthereumService implements IWalletService {
     return this.state;
   }
 
-  private async updateData() {
-    if (!this.web3) {
-      this.state.connected = false;
-      this.state.accounts = [];
-      this.state.address = "";
-      this.state.balances = [];
-      return;
-    }
-    this.state.connected = !!this.web3;
-    this.state.accounts = (await this.web3.eth.getAccounts()) ?? [];
-    this.state.address = this.state.accounts[0];
-    this.state.balances = await this.getBalance();
-  }
+  private updateData = debounce(
+    async () => {
+      if (!this.web3) {
+        this.state.connected = false;
+        this.state.accounts = [];
+        this.state.address = "";
+        this.state.balances = [];
+        return;
+      }
+      this.state.connected = !!this.web3;
+      this.state.accounts = (await this.web3.eth.getAccounts()) ?? [];
+      this.state.address = this.state.accounts[0];
+      this.state.balances = await this.getBalance();
+    },
+    100,
+    { leading: true }
+  );
 
   getAddress(): Address {
     return this.state.address;
@@ -138,7 +143,8 @@ export class EthereumService implements IWalletService {
   addWeb3Subscription() {
     this.blockSubscription = this.web3?.eth.subscribe(
       "newBlockHeaders",
-      (error, result) => {
+      (_, result) => {
+        this.updateData();
         this.state.log = result?.hash ?? "null";
       }
     );

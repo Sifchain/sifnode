@@ -5,7 +5,7 @@ new WS("ws://localhost:26667/websocket");
 // end HACK
 
 import createClpService from ".";
-import { Asset, AssetAmount, Coin, Network } from "../../entities";
+import { AssetAmount, Coin, Network } from "../../entities";
 
 const ROWAN = Coin({
   decimals: 18,

@@ -6,6 +6,11 @@ import {
   setupAuthExtension,
 } from "@cosmjs/launchpad";
 
+import {
+  createTendermintSocketSubscriber,
+  TendermintSocketSubscriber,
+} from "./TendermintSocketSubscriber";
+
 import { ClpExtension, setupClpExtension } from "./x/clp";
 
 type CustomLcdClient = LcdClient & AuthExtension & ClpExtension;
@@ -22,11 +27,15 @@ function createLcdClient(
 }
 
 type IClpApi = ClpExtension["clp"];
-
+type HandlerFn<T> = (a: T) => void;
 export class SifUnSignedClient extends CosmosClient implements IClpApi {
   protected readonly lcdClient: CustomLcdClient;
-
-  constructor(apiUrl: string, broadcastMode?: BroadcastMode) {
+  private subscriber: TendermintSocketSubscriber;
+  constructor(
+    apiUrl: string,
+    wsUrl: string = "ws://localhost:26657/websocket",
+    broadcastMode?: BroadcastMode
+  ) {
     super(apiUrl, broadcastMode);
     this.lcdClient = createLcdClient(apiUrl, broadcastMode);
     this.swap = this.lcdClient.clp.swap;
@@ -37,6 +46,7 @@ export class SifUnSignedClient extends CosmosClient implements IClpApi {
     this.getLiquidityProvider = this.lcdClient.clp.getLiquidityProvider;
     this.removeLiquidity = this.lcdClient.clp.removeLiquidity;
     this.getPool = this.lcdClient.clp.getPool;
+    this.subscriber = createTendermintSocketSubscriber(wsUrl);
   }
 
   swap: IClpApi["swap"];
@@ -47,4 +57,16 @@ export class SifUnSignedClient extends CosmosClient implements IClpApi {
   getLiquidityProvider: IClpApi["getLiquidityProvider"];
   removeLiquidity: IClpApi["removeLiquidity"];
   getPool: IClpApi["getPool"];
+
+  onNewBlock<T>(handler: HandlerFn<T>) {
+    this.subscriber.on("NewBlock", handler);
+  }
+
+  onTx<T>(handler: HandlerFn<T>) {
+    this.subscriber.on("Tx", handler);
+  }
+
+  onSocketError<T>(handler: HandlerFn<T>) {
+    this.subscriber.on("error", handler);
+  }
 }

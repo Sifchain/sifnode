@@ -10,7 +10,7 @@ import { Fraction } from "../../entities/fraction/Fraction";
 
 import { SifUnSignedClient } from "../utils/SifClient";
 import { toPool } from "../utils/SifClient/toPool";
-import ReconnectingWebSocket from "reconnecting-websocket";
+import { createTendermintSocketSubscriber } from "../utils/SifClient/TendermintSocketSubscriber";
 
 export type ClpServiceContext = {
   nativeAsset: Asset;
@@ -52,55 +52,22 @@ type IClpService = {
 };
 
 type HandlerFn<T> = (a: T) => void;
+
 export default function createClpService({
   sifApiUrl,
   nativeAsset,
   sifWsUrl,
-  sifUnsignedClient = new SifUnSignedClient(sifApiUrl),
+  sifUnsignedClient: client = new SifUnSignedClient(sifApiUrl, sifWsUrl),
 }: ClpServiceContext): IClpService {
-  const client = sifUnsignedClient;
-  let ws: ReconnectingWebSocket;
-
   let poolHandler: HandlerFn<Pool[]> = () => {};
   let wsErrorHandler: HandlerFn<any> = () => {};
 
-  async function setupPoolWatcher() {
-    await new Promise((res, rej) => {
-      ws = new ReconnectingWebSocket(sifWsUrl);
-      ws.onopen = () => {
-        ws.send(
-          JSON.stringify({
-            jsonrpc: "2.0",
-            method: "subscribe",
-            id: "1",
-            params: {
-              query: `tm.event='Tx'`,
-            },
-          })
-        );
-        // This assumes every transaction means an update to pool values
-        // Subscribing to all pool addresses could mean having a tone of
-        // open connections to our node because there is no "OR" query
-        // syntax so have chosen to go with debouncing getPools for now.
-        ws.onmessage = async () => {
-          poolHandler(await instance.getPools());
-        };
-        res(ws);
-      };
-      ws.onerror = (err) => rej(err);
-    });
-  }
-
-  async function initialize() {
-    try {
-      await setupPoolWatcher();
-    } catch (error) {
-      // message is the key so will not be pushed to array more than once
-      wsErrorHandler({ error, sifWsUrl });
-    }
-  }
-
-  initialize();
+  client.onTx(async () => {
+    poolHandler(await instance.getPools());
+  });
+  client.onSocketError((error: any) => {
+    wsErrorHandler({ error, sifWsUrl });
+  });
 
   const instance: IClpService = {
     async getPools() {
