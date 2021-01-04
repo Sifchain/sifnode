@@ -59,7 +59,7 @@ export default function createEthbridgeService({
 
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
-          .send({ ...sendArgs })
+          .send(sendArgs)
           .on("transactionHash", (hash: string) => {
             emitter.setTxHash(hash);
           })

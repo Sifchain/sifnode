@@ -6,6 +6,7 @@ import {
   Secp256k1HdWallet,
 } from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
+import { debounce } from "lodash";
 import {
   Address,
   Asset,
@@ -16,12 +17,13 @@ import {
 } from "../../entities";
 import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
-import { SifClient } from "../utils/SifClient";
+import { SifClient, SifUnSignedClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
+  sifWsUrl: string;
   assets: Asset[];
 };
 
@@ -37,11 +39,13 @@ export type ISifService = IWalletService & {
 export default function createSifService({
   sifAddrPrefix,
   sifApiUrl,
+  sifWsUrl,
   assets,
 }: SifServiceContext): ISifService {
   const {} = sifAddrPrefix;
 
   // Reactive state for communicating state changes
+  // TODO this should be replaced with event handlers
   const state: {
     connected: boolean;
     address: Address;
@@ -62,7 +66,44 @@ export default function createSifService({
     (asset) => asset.network === Network.SIFCHAIN
   );
 
-  return {
+  async function createSifClientFromMnemonic(mnemonic: string) {
+    const wallet = await Secp256k1HdWallet.fromMnemonic(
+      mnemonic,
+      makeCosmoshubPath(0),
+      sifAddrPrefix
+    );
+    const accounts = await wallet.getAccounts();
+
+    const address = accounts.length > 0 ? accounts[0].address : "";
+
+    if (!address) {
+      throw new Error("No address on sif account");
+    }
+
+    return new SifClient(sifApiUrl, address, wallet, sifWsUrl);
+  }
+
+  const triggerUpdate = debounce(
+    async () => {
+      if (!client) {
+        state.connected = false;
+        state.address = "";
+        state.balances = [];
+        state.accounts = [];
+        state.log = "";
+        return;
+      }
+
+      state.connected = !!client;
+      state.address = client.senderAddress;
+      state.accounts = await client.getAccounts();
+      state.balances = await instance.getBalance(client.senderAddress);
+    },
+    100,
+    { leading: true }
+  );
+
+  const instance = {
     /**
      * getState returns the service's reactive state to be listened to by consuming clients.
      */
@@ -74,9 +115,13 @@ export default function createSifService({
       return supportedTokens;
     },
 
-    async connect() {},
+    async connect() {
+      // connect to Keplr
+    },
 
-    async disconnect() {},
+    async disconnect() {
+      // disconnect from Keplr
+    },
 
     isConnected() {
       return state.connected;
@@ -88,35 +133,23 @@ export default function createSifService({
           throw "No mnemonic. Can't generate wallet.";
         }
 
-        const wallet = await Secp256k1HdWallet.fromMnemonic(
-          mnemonic,
-          makeCosmoshubPath(0),
-          sifAddrPrefix
-        );
+        client = await createSifClientFromMnemonic(mnemonic);
 
-        state.accounts = (await wallet.getAccounts()).map(
-          ({ address }) => address
-        );
+        client.getUnsignedClient().onNewBlock(() => {
+          triggerUpdate();
+        });
 
-        [state.address] = state.accounts;
+        triggerUpdate();
 
-        client = new SifClient(sifApiUrl, state.address, wallet);
-
-        state.log = "signed in";
-        state.connected = true;
-        this.getBalance(state.address);
-        return state.address;
+        return client.senderAddress;
       } catch (error) {
         throw error;
       }
     },
 
     purgeClient() {
-      state.address = "";
-      state.connected = false;
-      state.balances = [];
-      state.accounts = [];
-      state.log = "";
+      client = null;
+      triggerUpdate();
     },
 
     async getBalance(address?: Address): Promise<AssetAmount[]> {
@@ -130,7 +163,7 @@ export default function createSifService({
 
         if (!account) throw "No Address found on chain";
 
-        state.balances = account.balance.map(({ amount, denom }) => {
+        const balances = account.balance.map(({ amount, denom }) => {
           // HACK: Following should be a lookup of tokens loaded from genesis somehow
           const asset = Coin({
             symbol: denom,
@@ -140,7 +173,7 @@ export default function createSifService({
           });
           return AssetAmount(asset, amount);
         });
-        return state.balances;
+        return balances;
       } catch (error) {
         throw error;
       }
@@ -172,7 +205,7 @@ export default function createSifService({
 
         const txHash = await client.signAndBroadcast([msg], fee, params.memo);
 
-        this.getBalance(state.address);
+        triggerUpdate();
 
         return txHash;
       } catch (err) {
@@ -196,7 +229,8 @@ export default function createSifService({
           console.log(txHash.rawLog);
           throw new Error(txHash.rawLog);
         }
-        this.getBalance(state.address);
+
+        triggerUpdate();
 
         return txHash;
       } catch (err) {
@@ -204,4 +238,5 @@ export default function createSifService({
       }
     },
   };
+  return instance;
 }
