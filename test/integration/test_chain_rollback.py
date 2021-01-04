@@ -30,7 +30,7 @@ def test_chain_rollback():
     if get_sifchain_addr_balance(user1_addr, SIF_ETH) != user_balance_before_tx:
         print_error_message("balance should be the same after applying snapshot and rolling forward n_wait_blocks * 2")
 
-    new_amount = amount + 1
+    new_amount = amount + 1000
 
     print(f"transact_ethereum_currency_to_sifchain_addr {user1_addr} {new_amount}")
     transact_ethereum_currency_to_sifchain_addr(user1_addr, ETHEREUM_ETH, new_amount)
