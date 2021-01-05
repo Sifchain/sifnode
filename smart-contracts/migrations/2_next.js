@@ -74,15 +74,15 @@ module.exports = function(deployer, network, accounts) {
     // 1. Deploy Valset contract:
     //    Gas used:          909,879 Gwei
     //    Total cost:    0.01819758 Ether
-    const valset = await deployProxy(Valset, [operator, initialValidators, initialPowers], 
-      setTxSpecifications(6721975, operator, deployer)
-    );
-    console.log("valset address: ", valset.address)
+    // const valset = await deployProxy(Valset, [operator, initialValidators, initialPowers], 
+    //   setTxSpecifications(6721975, operator, deployer)
+    // );
+    // console.log("valset address: ", valset.address)
 
     // 2. Deploy CosmosBridge contract:
     //    Gas used:       2,649,300 Gwei
     //    Total cost:     0.052986 Ether
-    const cosmosBridge = await deployProxy(CosmosBridge, [operator, Valset.address],
+    const cosmosBridge = await deployProxy(CosmosBridge, [operator],
       setTxSpecifications(6721975, operator, deployer)
     );
     console.log("cosmosBridge address: ", cosmosBridge.address)
@@ -94,9 +94,10 @@ module.exports = function(deployer, network, accounts) {
       Oracle,
       [
         operator,
-        Valset.address,
         CosmosBridge.address,
-        consensusThreshold
+        consensusThreshold,
+        initialValidators,
+        initialPowers
       ],
       setTxSpecifications(6721975, operator, deployer)
     );
@@ -126,13 +127,13 @@ module.exports = function(deployer, network, accounts) {
         CosmosBridge.address,
         BridgeBank.address,
         Oracle.address,
-        Valset.address
+        Oracle.address
       ],
       setTxSpecifications(6721975, operator, deployer)
     );
 
     // Set both the oracle and bridge bank address on the cosmos bridge
-    await cosmosBridge.setOracle(oracle.address,
+    await cosmosBridge.setOracle(Oracle.address,
       setTxSpecifications(600000, operator)
     );
 

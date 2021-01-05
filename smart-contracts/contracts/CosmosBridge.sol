@@ -78,13 +78,12 @@ contract CosmosBridge is CosmosBridgeStorage {
     /*
      * @dev: Constructor
      */
-    function initialize(address _operator, address payable _valset) public {
+    function initialize(address _operator) public {
         require(!_initialized, "Initialized");
 
         COSMOS_NATIVE_ASSET_PREFIX = "e";
         prophecyClaimCount = 0;
         operator = _operator;
-        valset = _valset;
         hasOracle = false;
         hasBridgeBank = false;
         _initialized = true;
@@ -101,6 +100,7 @@ contract CosmosBridge is CosmosBridgeStorage {
 
         hasOracle = true;
         oracle = _oracle;
+        valset = _oracle;
 
         emit LogOracleSet(oracle);
     }

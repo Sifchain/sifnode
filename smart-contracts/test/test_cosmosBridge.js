@@ -477,6 +477,36 @@ contract("CosmosBridge", function (accounts) {
       status.should.be.equal(true);
     });
 
+    it("should allow us to check the cost of submitting a prophecy claim", async function () {
+      // Create the prophecy claim
+      const tx = await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_LOCK,
+        this.cosmosSender,
+        ++this.cosmosSenderSequence,
+        this.ethereumReceiver,
+        this.symbol,
+        this.amount,
+        {
+          from: userOne
+        }
+      );
+      console.log("tx: ", tx);
+
+      const event = logs.find(e => e.event === "LogNewProphecyClaim");
+      const prophecyClaimCount = event.args._prophecyID;
+
+      // Get the ProphecyClaim's status
+      const status = await this.cosmosBridge.isProphecyClaimActive(
+        prophecyClaimCount,
+        {
+          from: accounts[7]
+        }
+      );
+
+      // Bridge claim should be active
+      status.should.be.equal(true);
+    });
+
     it("should allow users to check if a prophecy claim's original validator is currently an active validator", async function () {
       // Create the ProphecyClaim
       const { logs } = await this.cosmosBridge.newProphecyClaim(
