@@ -90,11 +90,13 @@ func NewPoolsResponse(pools Pools, height int64, address string) PoolsResponse {
 
 type LiquidityProviderResponse struct {
 	LiquidityProvider
-	Height int64 `json:"height"`
+	NativeAssetBalance   string `json:"native_asset_balance"`
+	ExternalAssetBalance string `json:"external_asset_balance"`
+	Height               int64  `json:"height"`
 }
 
-func NewLiquidityProviderResponse(liquidityProvider LiquidityProvider, height int64) LiquidityProviderResponse {
-	return LiquidityProviderResponse{LiquidityProvider: liquidityProvider, Height: height}
+func NewLiquidityProviderResponse(liquidityProvider LiquidityProvider, height int64, nativeBalance string, externalBalance string) LiquidityProviderResponse {
+	return LiquidityProviderResponse{LiquidityProvider: liquidityProvider, Height: height, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
 }
 
 type AssetListResponse struct {

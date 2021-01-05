@@ -30,7 +30,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER \"$MNEMONIC\" --chain-id $CHAINNET --rpc-url $NODE_HOST"]
+          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER \"{{ .Values.ebrelayer.mnemonic }}\" --chain-id $CHAINNET --rpc-url $NODE_HOST"]
           env:
             - name: NODE_HOST
               value: {{ .Values.ebrelayer.env.nodeHost }}
@@ -47,11 +47,6 @@ spec:
                 secretKeyRef:
                   name: {{ include "ebrelayer.fullname" . }}
                   key: ethPrivateKey
-            - name: MNEMONIC
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "ebrelayer.fullname" . }}
-                  key: mnemonic
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

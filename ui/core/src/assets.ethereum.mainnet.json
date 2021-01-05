@@ -1,0 +1,417 @@
+{
+  "assets": [
+    {
+      "symbol": "erowan",
+      "decimals": 18,
+      "name": "Rowan",
+      "address": "",
+      "network": "ethereum"
+    },
+    {
+      "name": "Ethereum",
+      "symbol": "eth",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Tether",
+      "symbol": "usdt",
+      "imageUrl": "https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707",
+      "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "network": "ethereum",
+      "decimals": 6
+    },
+    {
+      "name": "Chainlink",
+      "symbol": "link",
+      "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png?1547034700",
+      "address": "0x514910771af9ca656af840dff83e8264ecf986ca",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "USD Coin",
+      "symbol": "usdc",
+      "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389",
+      "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "network": "ethereum",
+      "decimals": 6
+    },
+    {
+      "name": "Crypto.com Coin",
+      "symbol": "cro",
+      "imageUrl": "https://assets.coingecko.com/coins/images/7310/large/cypto.png?1547043960",
+      "address": "0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b",
+      "network": "ethereum",
+      "decimals": 8
+    },
+    {
+      "name": "cDAI",
+      "symbol": "cdai",
+      "imageUrl": "https://assets.coingecko.com/coins/images/9281/large/cDAI.png?1576467585",
+      "address": "0x5d3a536e4d6dbd6114cc1ead35777bab948e3643",
+      "network": "ethereum",
+      "decimals": 8
+    },
+    {
+      "name": "Wrapped Bitcoin",
+      "symbol": "wbtc",
+      "imageUrl": "https://assets.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1548822744",
+      "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+      "network": "ethereum",
+      "decimals": 8
+    },
+    {
+      "name": "OKB",
+      "symbol": "okb",
+      "imageUrl": "https://assets.coingecko.com/coins/images/4463/large/okb_token.png?1548386209",
+      "address": "0x75231f58b43240c9718dd58b4967c5114342a86c",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "LEO Token",
+      "symbol": "leo",
+      "imageUrl": "https://assets.coingecko.com/coins/images/8418/large/leo-token.png?1558326215",
+      "address": "0x2af5d2ad76741191d15dfe7bf6ac92d4bd912ca3",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Huobi Token",
+      "symbol": "ht",
+      "imageUrl": "https://assets.coingecko.com/coins/images/2822/large/huobi-token-logo.png?1547036992",
+      "address": "0x6f259637dcd74c767781e37bc6133cd6a68aa161",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Dai",
+      "symbol": "dai",
+      "imageUrl": "https://assets.coingecko.com/coins/images/9956/large/dai-multi-collateral-mcd.png?1574218774",
+      "address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Binance USD",
+      "symbol": "busd",
+      "imageUrl": "https://assets.coingecko.com/coins/images/9576/large/BUSD.png?1568947766",
+      "address": "0x4fabb145d64652a948d72533023f6e7a623c7c53",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Uniswap",
+      "symbol": "uni",
+      "imageUrl": "https://assets.coingecko.com/coins/images/12504/large/uniswap-uni.png?1600306604",
+      "address": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Maker",
+      "symbol": "mkr",
+      "imageUrl": "https://assets.coingecko.com/coins/images/1364/large/Mark_Maker.png?1585191826",
+      "address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "OMG Network",
+      "symbol": "omg",
+      "imageUrl": "https://assets.coingecko.com/coins/images/776/large/OMG_Network.jpg?1591167168",
+      "address": "0xd26114cd6ee289accf82350c8d8487fedb8a0c07",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Celsius Network",
+      "symbol": "cel",
+      "imageUrl": "https://assets.coingecko.com/coins/images/3263/large/New_CEL_Token_Logo.jpg?1600913901",
+      "address": "0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d",
+      "network": "ethereum",
+      "decimals": 4
+    },
+    {
+      "name": "Synthetix Network Token",
+      "symbol": "snx",
+      "imageUrl": "https://assets.coingecko.com/coins/images/3406/large/SNX.png?1598631139",
+      "address": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "yearn.finance",
+      "symbol": "yfi",
+      "imageUrl": "https://assets.coingecko.com/coins/images/11849/large/yfi-192x192.png?1598325330",
+      "address": "0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "UMA",
+      "symbol": "uma",
+      "imageUrl": "https://assets.coingecko.com/coins/images/10951/large/UMA.png?1586307916",
+      "address": "0x04fa0d235c4abf4bcf4787af4cf447de572ef828",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Aave",
+      "symbol": "aave",
+      "imageUrl": "https://assets.coingecko.com/coins/images/12645/large/AAVE.png?1601374110",
+      "address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "cETH",
+      "symbol": "ceth",
+      "imageUrl": "https://assets.coingecko.com/coins/images/10643/large/ceth2.JPG?1581389598",
+      "address": "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5",
+      "network": "ethereum",
+      "decimals": 8
+    },
+    {
+      "name": "Compound",
+      "symbol": "comp",
+      "imageUrl": "https://assets.coingecko.com/coins/images/10775/large/COMP.png?1592625425",
+      "address": "0xc00e94cb662c3520282e6f5717214004a7f26888",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Paxos Standard",
+      "symbol": "pax",
+      "imageUrl": "https://assets.coingecko.com/coins/images/6013/large/paxos_standard.png?1548386291",
+      "address": "0x8e870d67f660d95d5be530380d0ec0bd388289e1",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "FTX Token",
+      "symbol": "ftt",
+      "imageUrl": "https://assets.coingecko.com/coins/images/9026/large/ftt.png?1563776835",
+      "address": "0x50d1c9771902476076ecfc8b2a83ad6b9355a4c9",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Aave LINK",
+      "symbol": "alink",
+      "imageUrl": "https://assets.coingecko.com/coins/images/11729/large/aLINK.png?1593084323",
+      "address": "0xa64bd6c70cb9051f6a9ba1f163fdc07e0dfb5f84",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "renBTC",
+      "symbol": "renbtc",
+      "imageUrl": "https://assets.coingecko.com/coins/images/11370/large/renBTC.png?1589985711",
+      "address": "0xeb4c2781e4eba804ce9a9803c67d0893436bb27d",
+      "network": "ethereum",
+      "decimals": 8
+    },
+    {
+      "name": "Basic Attention Token",
+      "symbol": "bat",
+      "imageUrl": "https://assets.coingecko.com/coins/images/677/large/basic-attention-token.png?1547034427",
+      "address": "0x0d8775f648430679a709e98d2b0cb6250d2887ef",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "TrueUSD",
+      "symbol": "tusd",
+      "imageUrl": "https://assets.coingecko.com/coins/images/3449/large/TUSD.png?1559172762",
+      "address": "0x0000000000085d4780b73119b644ae5ecd22b376",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "REN",
+      "symbol": "ren",
+      "imageUrl": "https://assets.coingecko.com/coins/images/3139/large/REN.png?1589985807",
+      "address": "0x408e41876cccdc0f92210600ef50372656052a38",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "0x",
+      "symbol": "zrx",
+      "imageUrl": "https://assets.coingecko.com/coins/images/863/large/0x.png?1547034672",
+      "address": "0xe41d2489571d322189246dafa5ebde1f4699f498",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "cUSDC",
+      "symbol": "cusdc",
+      "imageUrl": "https://assets.coingecko.com/coins/images/9442/large/Compound_USDC.png?1567581577",
+      "address": "0x39aa39c021dfbae8fac545936693ac917d5e7563",
+      "network": "ethereum",
+      "decimals": 8
+    },
+    {
+      "name": "HUSD",
+      "symbol": "husd",
+      "imageUrl": "https://assets.coingecko.com/coins/images/9567/large/HUSD.jpg?1568889385",
+      "address": "0xdf574c24545e5ffecb9a659c229253d4111d87e1",
+      "network": "ethereum",
+      "decimals": 8
+    },
+    {
+      "name": "Aave ETH",
+      "symbol": "aeth",
+      "imageUrl": "https://assets.coingecko.com/coins/images/11619/large/aETH_2x.png?1591976597",
+      "address": "0x3a3a65aab0dd2a17e3f1947ba16138cd37d08c04",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Nexus Mutual",
+      "symbol": "nxm",
+      "imageUrl": "https://assets.coingecko.com/coins/images/11810/large/nexus-mutual.jpg?1594547726",
+      "address": "0xd7c49cee7e9188cca6ad8ff264c1da2e69d4cf3b",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Loopring",
+      "symbol": "lrc",
+      "imageUrl": "https://assets.coingecko.com/coins/images/913/large/LRC.png?1572852344",
+      "address": "0xbbbbca6a901c926f240b89eacb641d8aec7aeafd",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Kyber Network",
+      "symbol": "knc",
+      "imageUrl": "https://assets.coingecko.com/coins/images/947/large/kyber-logo.png?1547034806",
+      "address": "0xdd974d5c2e2928dea5f71b9825b8b646686bd200",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Quant",
+      "symbol": "qnt",
+      "imageUrl": "https://assets.coingecko.com/coins/images/3370/large/QNT.jpg?1547038004",
+      "address": "0x4a220e6096b25eadb88358cb44068a3248254675",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Ocean Protocol",
+      "symbol": "ocean",
+      "imageUrl": "https://assets.coingecko.com/coins/images/3687/large/ocean-protocol-logo.jpg?1547038686",
+      "address": "0x967da4048cd07ab37855c090aaf366e4ce1b9f48",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Aave USDC",
+      "symbol": "ausdc",
+      "imageUrl": "https://assets.coingecko.com/coins/images/11674/large/aUSDC.png?1592546449",
+      "address": "0x9ba00d6856a4edf4665bca2c2309936572473b7e",
+      "network": "ethereum",
+      "decimals": 6
+    },
+    {
+      "name": "Enjin Coin",
+      "symbol": "enj",
+      "imageUrl": "https://assets.coingecko.com/coins/images/1102/large/enjin-coin-logo.png?1547035078",
+      "address": "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Numeraire",
+      "symbol": "nmr",
+      "imageUrl": "https://assets.coingecko.com/coins/images/752/large/numeraire.png?1592538976",
+      "address": "0x1776e1f26f98b1a5df9cd347953a26dd3cb46671",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Band Protocol",
+      "symbol": "band",
+      "imageUrl": "https://assets.coingecko.com/coins/images/9545/large/band-protocol.png?1568730326",
+      "address": "0xba11d00c5f74255f56a5e366f4f77f5a186d7f55",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Reserve Rights Token",
+      "symbol": "rsr",
+      "imageUrl": "https://assets.coingecko.com/coins/images/8365/large/Reserve_Rights.png?1557737411",
+      "address": "0x8762db106b2c2a0bccb3a80d1ed41273552616e8",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Ampleforth",
+      "symbol": "ampl",
+      "imageUrl": "https://assets.coingecko.com/coins/images/4708/large/Ampleforth.png?1561684250",
+      "address": "0xd46ba6d942050d489dbd938a2c909a5d5039a161",
+      "network": "ethereum",
+      "decimals": 9
+    },
+    {
+      "name": "Aragon",
+      "symbol": "ant",
+      "imageUrl": "https://assets.coingecko.com/coins/images/681/large/JelZ58cv_400x400.png?1601449653",
+      "address": "0x960b236a07cf122663c4303350609a66a7b288c0",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Aave TUSD",
+      "symbol": "atusd",
+      "imageUrl": "https://assets.coingecko.com/coins/images/11724/large/aTUSD.png?1593082700",
+      "address": "0x4da9b813057d04baef4e5800e36083717b4a0341",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Decentraland",
+      "symbol": "mana",
+      "imageUrl": "https://assets.coingecko.com/coins/images/878/large/decentraland-mana.png?1550108745",
+      "address": "0x0f5d2fb29fb7d3cfee444a200298f468908cc942",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Balancer",
+      "symbol": "bal",
+      "imageUrl": "https://assets.coingecko.com/coins/images/11683/large/Balancer.png?1592792958",
+      "address": "0xba100000625a3754423978a60c9317c58a424e3d",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "GateToken",
+      "symbol": "gt",
+      "imageUrl": "https://assets.coingecko.com/coins/images/8183/large/gt.png?1556085624",
+      "address": "0xe66747a101bff2dba3697199dcce5b743b454759",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Golem",
+      "symbol": "gnt",
+      "imageUrl": "https://assets.coingecko.com/coins/images/542/large/golem_token.png?1548838076",
+      "address": "0xa74476443119a942de498590fe1f2454d7d4ac0d",
+      "network": "ethereum",
+      "decimals": 18
+    },
+    {
+      "name": "Status",
+      "symbol": "SNT",
+      "imageUrl": "https://assets.coingecko.com/coins/images/779/large/status.png?1548610778",
+      "address": "0x744d70fdbe2ba4cf95131626614a1763df805b9e",
+      "network": "ethereum",
+      "decimals": 18
+    }
+  ]
+}

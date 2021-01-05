@@ -16,7 +16,6 @@ module.exports = async () => {
   // Config values
   const NETWORK_ROPSTEN =
     process.argv[4] === "--network" && process.argv[5] === "ropsten";
-  console.log("argument length is ", process.argv.length)
   const NUM_ARGS = process.argv.length - 4;
 
   /*******************************************
@@ -39,7 +38,6 @@ module.exports = async () => {
     }
   }
 
-  console.log("Here her here ", NETWORK_ROPSTEN)
   /*******************************************
    *** Lock transaction parameters
    ******************************************/
@@ -66,7 +64,7 @@ module.exports = async () => {
   let provider;
   if (NETWORK_ROPSTEN) {
     provider = new HDWalletProvider(
-      process.env.MNEMONIC,
+      process.env.ETHEREUM_PRIVATE_KEY,
       "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
     );
   } else {

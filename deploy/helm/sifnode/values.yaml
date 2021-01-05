@@ -21,12 +21,17 @@ image:
   tag: "testnet"
 
 sifnode:
+  args:
+    mnemonic: ""
   env:
+    daemonHome: "/root/.sifnoded"
+    daemonName: "sifnoded"
+    daemonAllowDownloadBinaries: true
+    daemonRestartAfterUpgrade: true
     chainnet:
     moniker:
     genesisURL:
     peerAddress:
-    mnemonic: ""
   service:
     type: LoadBalancer
 

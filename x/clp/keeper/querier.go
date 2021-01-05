@@ -69,7 +69,13 @@ func queryLiquidityProvider(ctx sdk.Context, req abci.RequestQuery, keeper Keepe
 	if err != nil {
 		return nil, err
 	}
-	res, err := codec.MarshalJSONIndent(keeper.cdc, lp)
+	pool, err := keeper.GetPool(ctx, params.Symbol)
+	if err != nil {
+		return nil, err
+	}
+	native, external, _, _ := CalculateAllAssetsForLP(pool, lp)
+	lpResponse := types.NewLiquidityProviderResponse(lp, ctx.BlockHeight(), native.String(), external.String())
+	res, err := codec.MarshalJSONIndent(keeper.cdc, lpResponse)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

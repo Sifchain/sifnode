@@ -20,14 +20,16 @@ type Keeper struct {
 
 	supplyKeeper types.SupplyKeeper
 	oracleKeeper types.OracleKeeper
+	storeKey     sdk.StoreKey
 }
 
 // NewKeeper creates new instances of the oracle Keeper
-func NewKeeper(cdc *codec.Codec, supplyKeeper types.SupplyKeeper, oracleKeeper types.OracleKeeper) Keeper {
+func NewKeeper(cdc *codec.Codec, supplyKeeper types.SupplyKeeper, oracleKeeper types.OracleKeeper, storeKey sdk.StoreKey) Keeper {
 	return Keeper{
 		cdc:          cdc,
 		supplyKeeper: supplyKeeper,
 		oracleKeeper: oracleKeeper,
+		storeKey:     storeKey,
 	}
 }
 
@@ -59,6 +61,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 	switch oracleClaim.ClaimType {
 	case types.LockText:
 		symbol := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, oracleClaim.Symbol)
+		k.AddPeggyToken(ctx, symbol)
 
 		coins = sdk.Coins{sdk.NewCoin(symbol, oracleClaim.Amount)}
 		err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
@@ -100,4 +103,10 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, amount
 // ProcessLock processes the lockup of cosmos coins from the given sender
 func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
 	return k.supplyKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, amount)
+}
+
+// Exists chec if the key existed in db.
+func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
+	store := ctx.KVStore(k.storeKey)
+	return store.Has(key)
 }
