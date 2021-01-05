@@ -149,15 +149,15 @@ contract("CosmosBridge", function (accounts) {
       const event = logs.find(e => e.event === "LogNewProphecyClaim");
       const prophecyClaimCount = event.args._prophecyID;
       // Get the ProphecyClaim's status
-      let status = await this.cosmosBridge.isProphecyClaimActive(
-        prophecyClaimCount,
-        {
-          from: accounts[7]
-        }
-      );
+      // let status = await this.cosmosBridge.isProphecyClaimActive(
+      //   prophecyClaimCount,
+      //   {
+      //     from: accounts[7]
+      //   }
+      // );
 
-      // Bridge claim should be active
-      status.should.be.equal(true);
+      // // Bridge claim should be active
+      // status.should.be.equal(true);
 
       console.log("tx: ", receipt.gasUsed)
 
@@ -174,15 +174,15 @@ contract("CosmosBridge", function (accounts) {
         }
       );
 
-      status = await this.cosmosBridge.isProphecyClaimActive(
-        prophecyClaimCount,
-        {
-          from: accounts[7]
-        }
-      );
+      // status = await this.cosmosBridge.isProphecyClaimActive(
+      //   prophecyClaimCount,
+      //   {
+      //     from: accounts[7]
+      //   }
+      // );
 
-      // Bridge claim should be active
-      status.should.be.equal(true);
+      // // Bridge claim should be active
+      // status.should.be.equal(true);
 
       console.log("tx2: ", tx.receipt.gasUsed);
       sum += tx.receipt.gasUsed
@@ -201,16 +201,16 @@ contract("CosmosBridge", function (accounts) {
       sum += tx.receipt.gasUsed
 
       console.log("tx3: ", tx.receipt.gasUsed);
-      status = await this.cosmosBridge.isProphecyClaimActive(
-        prophecyClaimCount,
-        {
-          from: accounts[7]
-        }
-      );
+      // status = await this.cosmosBridge.isProphecyClaimActive(
+      //   prophecyClaimCount,
+      //   {
+      //     from: accounts[7]
+      //   }
+      // );
 
       // Bridge claim should be active
-      status.should.be.equal(false);
-      console.log(`\n\n~~~~Total Gas Used~~~~~\n${sum}`);
+      // status.should.be.equal(false);
+      console.log(`~~~~~~~~~~~~\nTotal: ${sum}`);
 
     });
 
@@ -232,15 +232,15 @@ contract("CosmosBridge", function (accounts) {
       const prophecyClaimCount = event.args._prophecyID;
 
       // Get the ProphecyClaim's status
-      const status = await this.cosmosBridge.isProphecyClaimActive(
-        prophecyClaimCount,
-        {
-          from: accounts[7]
-        }
-      );
+      // const status = await this.cosmosBridge.isProphecyClaimActive(
+      //   prophecyClaimCount,
+      //   {
+      //     from: accounts[7]
+      //   }
+      // );
 
-      // Bridge claim should be active
-      status.should.be.equal(true);
+      // // Bridge claim should be active
+      // status.should.be.equal(true);
     });
   });
 });
@@ -297,8 +297,57 @@ run: 6 (cut down on storage used when creating prophecy claim)
 tx:  230957
 tx2:  68763
 tx3:  112208
+~~~~~~~~~~~~
+Total: 411928
 
+run: 7 (use 1 less storage slot when creating prophecy claim)
+tx:  221869
+tx2:  68763
+tx3:  118444
+~~~~~~~~~~~~
+Total: 409076
+
+run 8: (do not make call to BridgeBank to check if we have enough funds)
+tx:  213875
+tx2:  68763
+tx3:  118444
 
 ~~~~Total Gas Used~~~~~
-411928
+401082
+
+run: 9 (use 2 less storage slots for the propheyClaim)
+tx:  194043
+tx2:  71652
+tx3:  111847
+~~~~~~~~~~~~
+Total: 377542
+
+run: 10 (remove prophecyClaim Count)
+tx:  173135
+tx2:  71652
+tx3:  111847
+~~~~~~~~~~~~
+Total: 356634
+
+run: 11 (remove usedNonce mapping)
+tx:  152245
+tx2:  71652
+tx3:  111847
+~~~~~~~~~~~~
+Total: 335744
+
+run: 12 (remove branching before calling newOracleClaim)
+tx:  152241
+tx2:  71638
+tx3:  111833
+~~~~~~~~~~~~
+Total: 335712
+
+run: 13 (add balance check back in)
+tx:  160235
+tx2:  71638
+tx3:  111833
+~~~~~~~~~~~~
+Total: 343706
+
 */

@@ -25,23 +25,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 _prophecyID,
         ClaimType _claimType,
         address payable _ethereumReceiver,
-        address _tokenAddress,
         string _symbol,
         uint256 _amount
     );
 
     event LogProphecyCompleted(uint256 _prophecyID, ClaimType _claimType);
-
-    /*
-     * @dev: Modifier which only allows access to currently pending prophecies
-     */
-    modifier isPending(uint256 _prophecyID) {
-        require(
-            isProphecyClaimActive(_prophecyID),
-            "Prophecy claim is not active"
-        );
-        _;
-    }
 
     /*
      * @dev: Modifier to restrict access to the operator.
@@ -131,12 +119,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         string calldata _symbol,
         uint256 _amount
     ) external onlyValidator {
-        bool claimComplete;
         uint256 _prophecyID = uint256(keccak256(abi.encodePacked(_claimType, _cosmosSender, _cosmosSenderSequence, _ethereumReceiver, _symbol, _amount)));
-        if (usedNonce[_prophecyID]) {
-            claimComplete = newOracleClaim(_prophecyID, msg.sender);
-        } else {
-            address tokenAddress;
+        (bool prophecyCompleted, , ) = getProphecyThreshold(_prophecyID);
+        require(!prophecyCompleted, "prophecyCompleted");
+
+        if (prophecyClaims[_prophecyID].amount == 0) {
             string memory symbol;
             if (_claimType == ClaimType.Burn) {
                 require(
@@ -144,16 +131,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                     "Not enough locked assets to complete the proposed prophecy"
                 );
                 symbol = _symbol;
-                tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(_symbol);
             } else if (_claimType == ClaimType.Lock) {
                 symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol); // Add 'e' symbol prefix
                 address bridgeTokenAddress = BridgeBank(bridgeBank).getBridgeToken(symbol);
                 if (bridgeTokenAddress == address(0)) {
                     // First lock of this asset, deploy new contract and get new symbol/token address
-                    tokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(symbol);
-                } else {
-                    // Not the first lock of this asset, get existing symbol/token address
-                    tokenAddress = bridgeTokenAddress;
+                    BridgeBank(bridgeBank).createNewBridgeToken(symbol);
                 }
             } else {
                 revert("Invalid claim type, only burn and lock are supported.");
@@ -161,33 +144,29 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
             // Create the new ProphecyClaim
             ProphecyClaim memory prophecyClaim = ProphecyClaim(
-                _claimType,
                 _ethereumReceiver,
-                tokenAddress,
                 symbol,
-                _amount,
-                Status.Pending
+                _amount
             );
 
             // Increment count and add the new ProphecyClaim to the mapping
-            prophecyClaimCount = prophecyClaimCount.add(1);
+            // prophecyClaimCount = prophecyClaimCount.add(1);
             prophecyClaims[_prophecyID] = prophecyClaim;
 
             emit LogNewProphecyClaim(
                 _prophecyID,
                 _claimType,
                 _ethereumReceiver,
-                tokenAddress,
                 symbol,
                 _amount
             );
-
-            usedNonce[_prophecyID] = true;
-            claimComplete = newOracleClaim(_prophecyID, msg.sender);
         }
 
+        bool claimComplete = newOracleClaim(_prophecyID, msg.sender);
+
         if (claimComplete) {
-            completeProphecyClaim(_prophecyID, _cosmosSender);
+            address tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(_symbol);
+            completeProphecyClaim(_prophecyID, _cosmosSender, tokenAddress, _claimType);
         }
     }
 
@@ -197,17 +176,17 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      *       Burn claims unlock tokens stored by BridgeBank.
      *       Lock claims mint BridgeTokens on BridgeBank's token whitelist.
      */
-    function completeProphecyClaim(uint256 _prophecyID, bytes memory cosmosSender)
-        internal
-        isPending(_prophecyID)
-    {
-        prophecyClaims[_prophecyID].status = Status.Success;
+    function completeProphecyClaim(
+        uint256 _prophecyID,
+        bytes memory cosmosSender,
+        address tokenAddress,
+        ClaimType claimType
+    ) internal {
 
-        ClaimType claimType = prophecyClaims[_prophecyID].claimType;
         if (claimType == ClaimType.Burn) {
             unlockTokens(_prophecyID);
         } else {
-            issueBridgeTokens(_prophecyID, cosmosSender);
+            issueBridgeTokens(_prophecyID, cosmosSender, tokenAddress);
         }
 
         emit LogProphecyCompleted(_prophecyID, claimType);
@@ -217,13 +196,13 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      * @dev: issueBridgeTokens
      *       Issues a request for the BridgeBank to mint new BridgeTokens
      */
-    function issueBridgeTokens(uint256 _prophecyID, bytes memory cosmosSender) internal {
+    function issueBridgeTokens(uint256 _prophecyID, bytes memory cosmosSender, address tokenAddress) internal {
         ProphecyClaim memory prophecyClaim = prophecyClaims[_prophecyID];
 
         BridgeBank(bridgeBank).mintBridgeTokens(
             cosmosSender,
             prophecyClaim.ethereumReceiver,
-            prophecyClaim.tokenAddress,
+            tokenAddress,
             prophecyClaim.symbol,
             prophecyClaim.amount
         );
@@ -241,18 +220,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             prophecyClaim.symbol,
             prophecyClaim.amount
         );
-    }
-
-    /*
-     * @dev: isProphecyClaimActive
-     *       Returns boolean indicating if the ProphecyClaim is active
-     */
-    function isProphecyClaimActive(uint256 _prophecyID)
-        public
-        view
-        returns (bool)
-    {
-        return prophecyClaims[_prophecyID].status == Status.Pending;
     }
 
     /*

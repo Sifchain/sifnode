@@ -68,12 +68,9 @@ contract CosmosBridgeStorage {
     * @notice Prophecy claim struct
     */
     struct ProphecyClaim {
-        ClaimType claimType;
         address payable ethereumReceiver;
-        address tokenAddress;
         string symbol;
         uint256 amount;
-        Status status;
     }
 
     /**
