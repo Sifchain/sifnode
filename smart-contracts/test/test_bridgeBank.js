@@ -887,6 +887,12 @@ contract("BridgeBank", function (accounts) {
       this.token = await BridgeToken.new(symbol, {from: operator});
 
       await this.token.addMinter(this.bridgeBank.address, {from: operator})
+
+      // Fail to addExistingBridgeToken unless operator
+      await expectRevert(
+          this.bridgeBank.addExistingBridgeToken(this.token.address, {from: userOne}),
+          "Must be Owner."
+      );
       // Attempt to lock tokens
       await this.bridgeBank.addExistingBridgeToken(this.token.address, {from: operator}).should.be.fulfilled;
 

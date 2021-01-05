@@ -13,6 +13,10 @@ require("chai")
   .use(require("chai-bignumber")(BigNumber))
   .should();
 
+const {
+  expectRevert, // Assertions for transactions that should fail
+} = require('@openzeppelin/test-helpers');
+
 contract("CosmosBridge", function (accounts) {
   // System operator
   const operator = accounts[0];
@@ -181,15 +185,47 @@ contract("CosmosBridge", function (accounts) {
         {unsafeAllowCustomTypes: true}
       );
 
+      // Fail to set Oracle if not the operator.
+      await expectRevert(
+          this.cosmosBridge.setOracle(this.oracle.address, {
+            from: userOne
+          }),
+          "Must be the operator."
+      );
+
       // Operator sets Oracle
       await this.cosmosBridge.setOracle(this.oracle.address, {
         from: operator
       });
 
+      // Fail to set Oracle if a second time.
+      await expectRevert(
+          this.cosmosBridge.setOracle(this.oracle.address, {
+            from: operator
+          }),
+          "The Oracle cannot be updated once it has been set"
+      );
+
+      // Fail to set BridgeBank if not the operator.
+      await expectRevert(
+          this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
+            from: userOne
+          }),
+          "Must be the operator."
+      );
+
       // Operator sets Bridge Bank
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
         from: operator
       });
+
+      // Fail to set BridgeBank a second time.
+      await expectRevert(
+          this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
+            from: operator
+          }),
+          "The Bridge Bank cannot be updated once it has been set"
+      );
 
       // Deploy TEST tokens
       this.symbol = "TEST";
