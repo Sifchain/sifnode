@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	// this line is used by starport scaffolding # 1
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/Sifchain/sifnode/x/faucet/types"

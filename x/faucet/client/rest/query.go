@@ -12,21 +12,20 @@ import (
 )
 
 func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	// TODO: Define your GET REST endpoints
 	r.HandleFunc(
-		"/faucet/parameters",
-		queryParamsHandlerFn(cliCtx),
+		"/faucet/getBalance",
+		getFaucetBalance(cliCtx),
 	).Methods("GET")
 }
 
-func queryParamsHandlerFn(cliCtx context.CLIContext) http.HandlerFunc {
+func getFaucetBalance(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
 			return
 		}
 
-		route := fmt.Sprintf("custom/%s/parameters", types.QuerierRoute)
+		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryBalance)
 
 		res, height, err := cliCtx.QueryWithData(route, nil)
 		if err != nil {

@@ -2,8 +2,9 @@ package cli
 
 import (
 	"fmt"
-	types2 "github.com/cosmos/cosmos-sdk/types"
 	"strings"
+
+	types2 "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/spf13/cobra"
 
@@ -16,9 +17,7 @@ import (
 	"github.com/Sifchain/sifnode/x/faucet/types"
 )
 
-// GetQueryCmd returns the cli query commands for this module
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	// Group faucet queries under a subcommand
 	faucetQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
@@ -30,7 +29,6 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	faucetQueryCmd.AddCommand(
 		flags.GetCommands(
 			GetCmdFaucet(queryRoute, cdc),
-			GetCmdFaucetAddress(queryRoute, cdc),
 		)...,
 	)
 
@@ -59,26 +57,6 @@ func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			cdc.MustUnmarshalJSON(res, &coins)
 			return cliCtx.PrintOutput(coins)
 
-		},
-	}
-}
-
-// TODO I think we should we remove this . We already have functions to add tokens and request tokens . We have a sifnoded command to fund the faucet as well . Is there any requirement for this function
-
-// Query to get faucet module address
-func GetCmdFaucetAddress(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	return &cobra.Command{
-		Use:   "address",
-		Short: "Get Faucet Address",
-		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query address for faucet. %s`,
-				version.ClientName,
-			),
-		),
-		Args: cobra.ExactArgs(0),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			return cliCtx.PrintOutput(types.GetFaucetModuleAddress())
 		},
 	}
 }

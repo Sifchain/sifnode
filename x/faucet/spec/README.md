@@ -1,17 +1,23 @@
-# faucet module specification
+# README
 
-## Abstract
+### Summary
 
-<!-- TODO: Create a abstract definition of what this module does, what functionality does it enable and how it can be used. -->
+For the Sifchain MVP, the faucet module provides the following functionality
+- Initialize a module account in genesis with token balances
+- Transfer tokens from the faucet module to a requesting account
+- Refill the faucet module balance from an external account
+- Query the faucet module balance
 
-## Contents
+## Trasactions supported
 
-// TODO: Create the below files if they are needed.
-1. **[Concepts](01_concepts.md)**
-2. **[State](02_state.md)**
-3. **[Messages](03_messages.md)**
-4. **[Begin-Block](04_begin_block.md)**
-5. **[End-Block](06_end_bloc.md)**
-6. **[05_hooks](06_hooks.md)**
-7. **[Events](07_events.md)**
-8. **[Parameters](08_params.md)**
+ - **Request coins**
+    - sifnodecli tx faucet request-coins 1000ceth --from shadowfiend
+
+ - **Query module account balance**
+    - sifnodecli query faucet balance 
+
+ - **Query signer account balance**
+    - sifnodecli query account $(sifnodecli keys show shadowfiend -a)
+    
+ - **Add to faucet**
+    - sifnodecli tx faucet add-coins 10000ceth --from shadowfiend
