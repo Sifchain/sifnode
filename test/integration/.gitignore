@@ -1,1 +1,3 @@
 vagrantenv.sh
+/__pycache__/
+/watcher_pids.txt

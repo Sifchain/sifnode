@@ -8,6 +8,11 @@ const BridgeToken = artifacts.require("BridgeToken");
 const EVMRevert = "revert";
 const BigNumber = web3.BigNumber;
 
+
+const {
+  expectRevert, // Assertions for transactions that should fail
+} = require('@openzeppelin/test-helpers');
+
 require("chai")
   .use(require("chai-as-promised"))
   .use(require("chai-bignumber")(BigNumber))
@@ -196,15 +201,28 @@ contract("CosmosBridge", function (accounts) {
       this.token = await BridgeToken.new(this.symbol);
       this.amount = 100;
 
+      // sifchain address
+      this.cosmosRecipient = web3.utils.utf8ToHex(
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
+      );
+
+      // address 0
+      this.ethereumToken = "0x0000000000000000000000000000000000000000";
+
       // Add the token into white list
       await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
+        from: operator
+      }).should.be.fulfilled;
+
+      // Update the lock/burn limit for this token
+      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
         from: operator
       }).should.be.fulfilled;
     });
 
     it("should allow for the creation of new burn prophecy claims", async function () {
       // Load user account with ERC20 tokens
-      await this.token.mint(userOne, 1000, {
+      await this.token.mint(userOne, 2000, {
         from: operator
       }).should.be.fulfilled;
 
@@ -213,13 +231,8 @@ contract("CosmosBridge", function (accounts) {
         from: userOne
       }).should.be.fulfilled;
 
-      // Lock tokens on contract
-      const cosmosRecipient = web3.utils.utf8ToHex(
-        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
-      );
-
       const { logs } = await this.bridgeBank.lock(
-        cosmosRecipient,
+        this.cosmosRecipient,
         this.token.address,
         this.amount,
         {
@@ -302,6 +315,61 @@ contract("CosmosBridge", function (accounts) {
 
       const postProphecyClaimCount = await this.cosmosBridge.prophecyClaimCount();
       Number(postProphecyClaimCount).should.be.bignumber.equal(1);
+    });
+
+    it("should not allow a eth to be locked if the amount is over the limit", async function () {
+      const maxLockAmount = Number(await this.bridgeBank.maxTokenAmount("ETH"));
+      // Calculate and check expected max lock amount
+      maxLockAmount.should.be.bignumber.equal(Number(0));
+      
+      await expectRevert(
+        this.bridgeBank.lock(
+          this.cosmosRecipient,
+          this.ethereumToken,
+          this.amount, {
+            from: userOne,
+            value: this.amount
+          }
+        ),
+        "Amount being transferred is over the limit"
+      );
+    });
+
+    it("should not allow a token to be locked if the amount is over the limit", async function () {
+      // Update the lock/burn limit for this token
+      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, 0, {
+        from: operator
+      }).should.be.fulfilled;
+      
+      const maxLockAmount = Number(await this.bridgeBank.maxTokenAmount(await this.token.symbol()));
+      // Calculate and check expected balances
+      maxLockAmount.should.be.bignumber.equal(Number(0));
+      
+      // Approve tokens to bridge bank contract
+      await this.token.approve(this.bridgeBank.address, this.amount, {
+        from: userOne
+      }).should.be.fulfilled;
+
+      // mint user tokens
+      await this.token.mint(userOne, 2000, {
+        from: operator
+      }).should.be.fulfilled;
+
+
+
+      await expectRevert(
+        this.bridgeBank.lock(
+          this.cosmosRecipient,
+          this.token.address,
+          100,
+          {
+            from: userOne,
+            value: 0
+          }
+        ),
+        "Amount being transferred is over the limit"
+      );
+
     });
   });
 

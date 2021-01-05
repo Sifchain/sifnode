@@ -24,6 +24,7 @@ sifnoded add-genesis-account $(sifnodecli keys show akasha -a) 1000000000rowan,1
 sifnoded add-genesis-clp-admin $(sifnodecli keys show sif -a)
 sifnoded add-genesis-clp-admin $(sifnodecli keys show akasha -a)
 
+sifnoded  add-genesis-validators $(sifnodecli keys show shadowfiend -a --bech val)
 
 sifnoded gentx --name sif --keyring-backend test
 
