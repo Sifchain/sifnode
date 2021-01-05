@@ -12,7 +12,7 @@
 This ADR contains a summary of decisions taken during the implementation of the clp module and a summary of the final outcome
 ### Summary
 
-For the Sifchain MVP ,CLP module provides the following functionalities 
+For the Sifchain MVP, CLP module provides the following functionalities 
 - Create New Liquidity Pool
 - Add Liquidity to an Existing Liquidity pool 
 - Remove Liquidity from an Existing Liquidity pool 
@@ -51,7 +51,7 @@ LiquidityProviderUnits: 1000
 liquidityOroviderAddress: sif15tyrwghfcjszj7sckxvqh0qpzprup9mhksmuzm 
 ````
     
-## Decicions 
+## Decisions 
  - **Create new liquidity pool**
     - Creating a pool has a minimum threshold for the amount of liquidity provided. This is a genesis parameter and can be tweaked later.
     - The user who creates a new pool automatically becomes its first liquidity provider.
@@ -195,7 +195,7 @@ liquidityOroviderAddress: sif15tyrwghfcjszj7sckxvqh0qpzprup9mhksmuzm
    }
    ````
    ***Consequences***
-   - Positive - Users haev the flexibility to swap any asset for any different asset 
+   - Positive - Users have the flexibility to swap any asset for any different asset 
    - Negative - None
    - Neutral  - Node
 
