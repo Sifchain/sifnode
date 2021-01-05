@@ -33,7 +33,7 @@ module.exports = function (deployer, network, accounts) {
   let initialValidators = process.env.INITIAL_VALIDATOR_ADDRESSES.split(",");
   let initialPowers = process.env.INITIAL_VALIDATOR_POWERS.split(",");
   const tokenAmount = web3.utils.toWei("120000000");
-  console.log({ initialValidators, initialPowers });
+
   if (!initialPowers.length || !initialValidators.length) {
     return console.error("Must provide validator and power.");
   }

@@ -2,4 +2,9 @@
 
 . ../credentials.sh
 
-yarn ganache-cli -m "$ETHEREUM_ROOT_MNEMONIC" -p 7545 --networkId 5777 -g 20000000000
+yarn ganache-cli \
+  -m "$ETHEREUM_ROOT_MNEMONIC" \
+  -p 7545 \
+  --networkId 5777 \
+  -g 20000000000 \
+  --gasLimit 6721975
