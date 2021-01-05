@@ -43,7 +43,7 @@ contract BridgeBank is BankStorage,
         CosmosWhiteList.initialize();
 
         operator = _operatorAddress;
-        oracle = _oracleAddress;
+        oracle = _cosmosBridgeAddress;
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
         _initialized = true;

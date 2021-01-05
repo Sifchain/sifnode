@@ -2,7 +2,6 @@ pragma solidity 0.5.16;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Valset.sol";
-import "./CosmosBridge.sol";
 import "./OracleStorage.sol";
 import "./Valset.sol";
 
@@ -36,37 +35,14 @@ contract Oracle is OracleStorage, Valset {
     }
 
     /*
-     * @dev: Modifier to restrict access to current ValSet validators
-     */
-    modifier onlyCosmosBridge() {
-        require(
-            msg.sender == cosmosBridge,
-            "Must be Cosmos Bridge"
-        );
-        _;
-    }
-
-    /*
-     * @dev: Modifier to restrict access to current ValSet validators
-     */
-    modifier isPending(uint256 _prophecyID) {
-        require(
-            CosmosBridge(cosmosBridge).isProphecyClaimActive(_prophecyID) == true,
-            "The prophecy must be pending for this operation"
-        );
-        _;
-    }
-
-    /*
      * @dev: Initialize Function
      */
-    function initialize(
+    function _initialize(
         address _operator,
-        address _cosmosBridge,
         uint256 _consensusThreshold,
         address[] memory _initValidators,
         uint256[] memory _initPowers
-    ) public {
+    ) internal {
         require(!_initialized, "Initialized");
         require(
             _consensusThreshold > 0,
@@ -77,11 +53,10 @@ contract Oracle is OracleStorage, Valset {
             "Invalid consensus threshold."
         );
         operator = _operator;
-        cosmosBridge = _cosmosBridge;
         consensusThreshold = _consensusThreshold;
         _initialized = true;
 
-        Valset.initialize(_operator, _initValidators, _initPowers);
+        Valset._initialize(_operator, _initValidators, _initPowers);
     }
 
     /*
@@ -91,9 +66,7 @@ contract Oracle is OracleStorage, Valset {
     function newOracleClaim(
         uint256 _prophecyID,
         address validatorAddress
-    ) public
-        onlyCosmosBridge
-        isPending(_prophecyID)
+    ) internal
         returns (bool)
     {
         // Confirm that this address has not already made an oracle claim on this prophecy
@@ -116,25 +89,6 @@ contract Oracle is OracleStorage, Valset {
         (bool valid, , ) = getProphecyThreshold(_prophecyID);
 
         return valid;
-    }
-
-    /*
-     * @dev: checkBridgeProphecy
-     *       Operator accessor method which checks if a prophecy has passed
-     *       the validity threshold, without actually completing the prophecy.
-     */
-    function checkBridgeProphecy(uint256 _prophecyID)
-        public
-        view
-        onlyOperator
-        isPending(_prophecyID)
-        returns (bool, uint256, uint256)
-    {
-        require(
-            CosmosBridge(cosmosBridge).isProphecyClaimActive(_prophecyID) == true,
-            "Can only check active prophecies"
-        );
-        return getProphecyThreshold(_prophecyID);
     }
 
     /*

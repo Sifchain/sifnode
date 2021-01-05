@@ -55,39 +55,37 @@ contract("CosmosBridge", function (accounts) {
       console.log("Here: 0")
 
       this.cosmosBridge = await deployProxy(CosmosBridge, [
-        operator
+        operator,
+        consensusThreshold,
+        this.initialValidators,
+        this.initialPowers
       ],
         {unsafeAllowCustomTypes: true}
       );
 
       console.log("Here: 1")
       // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle,
-        [
-          operator,
-          this.cosmosBridge.address,
-          consensusThreshold,
-          this.initialValidators,
-          this.initialPowers
-        ],
-        {unsafeAllowCustomTypes: true}
-        );
-      console.log("Here: 2")
+      // this.oracle = await deployProxy(Oracle,
+      //   [
+      //     operator,
+      //     this.cosmosBridge.address,
+      //     consensusThreshold,
+      //     this.initialValidators,
+      //     this.initialPowers
+      //   ],
+      //   {unsafeAllowCustomTypes: true}
+      //   );
+      // console.log("Here: 2")
 
       // Deploy BridgeBank contract
       this.bridgeBank = await deployProxy(BridgeBank,[
         operator,
-        this.oracle.address,
+        this.cosmosBridge.address,
         this.cosmosBridge.address,
         operator
       ],
       {unsafeAllowCustomTypes: true}
       );
-
-      // Operator sets Oracle
-      await this.cosmosBridge.setOracle(this.oracle.address, {
-        from: operator
-      });
 
       // Operator sets Bridge Bank
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
@@ -116,6 +114,7 @@ contract("CosmosBridge", function (accounts) {
     });
 
     it("should allow us to check the cost of submitting a prophecy claim", async function () {
+        let sum = 0;
         this.cosmosSenderSequence = 10;
         const estimatedGas = await this.cosmosBridge.newProphecyClaim.estimateGas(
           CLAIM_TYPE_BURN,
@@ -144,7 +143,7 @@ contract("CosmosBridge", function (accounts) {
       );
       console.log("Estimated Gas: ", estimatedGas)
       console.log("Gas price: ", await web3.eth.getGasPrice())
-      
+      sum += receipt.gasUsed
 
 
       const event = logs.find(e => e.event === "LogNewProphecyClaim");
@@ -186,6 +185,7 @@ contract("CosmosBridge", function (accounts) {
       status.should.be.equal(true);
 
       console.log("tx2: ", tx.receipt.gasUsed);
+      sum += tx.receipt.gasUsed
       tx = await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.cosmosSender,
@@ -198,6 +198,7 @@ contract("CosmosBridge", function (accounts) {
           gasPrice: "1"
         }
       );
+      sum += tx.receipt.gasUsed
 
       console.log("tx3: ", tx.receipt.gasUsed);
       status = await this.cosmosBridge.isProphecyClaimActive(
@@ -209,6 +210,7 @@ contract("CosmosBridge", function (accounts) {
 
       // Bridge claim should be active
       status.should.be.equal(false);
+      console.log(`\n\n~~~~Total Gas Used~~~~~\n${sum}`);
 
     });
 
@@ -230,7 +232,7 @@ contract("CosmosBridge", function (accounts) {
       const prophecyClaimCount = event.args._prophecyID;
 
       // Get the ProphecyClaim's status
-      const status = await this.cosmosBridge.isProphecyClaimValidatorActive(
+      const status = await this.cosmosBridge.isProphecyClaimActive(
         prophecyClaimCount,
         {
           from: accounts[7]
@@ -267,4 +269,36 @@ tx3:  137421
 ~~~~~~~~~~~~
 Total: 582356
 
+run: 3
+
+tx:  355079
+tx2:  89388
+tx3:  137187
+~~~~~~~~~~~~
+Total: 581654
+
+run: 4 (make newProphecyClaim external)
+
+tx:  353990
+tx2:  88705
+tx3:  136503
+~~~~~~~~~~~~
+Total: 579198
+
+run: 5 (combine oracle, valset and cosmosBridge together)
+tx:  334064
+tx2:  68773
+tx3:  116571
+~~~~~~~~~~~~
+Total: 519408
+
+
+run: 6 (cut down on storage used when creating prophecy claim)
+tx:  230957
+tx2:  68763
+tx3:  112208
+
+
+~~~~Total Gas Used~~~~~
+411928
 */

@@ -2,7 +2,6 @@ require("dotenv").config();
 
 const { deployProxy } = require('@openzeppelin/truffle-upgrades');
 
-const Valset = artifacts.require("Valset");
 const CosmosBridge = artifacts.require("CosmosBridge");
 const Oracle = artifacts.require("Oracle");
 const BridgeBank = artifacts.require("BridgeBank");
@@ -82,26 +81,22 @@ module.exports = function(deployer, network, accounts) {
     // 2. Deploy CosmosBridge contract:
     //    Gas used:       2,649,300 Gwei
     //    Total cost:     0.052986 Ether
-    const cosmosBridge = await deployProxy(CosmosBridge, [operator],
-      setTxSpecifications(6721975, operator, deployer)
-    );
-    console.log("cosmosBridge address: ", cosmosBridge.address)
-
+    
     // 3. Deploy Oracle contract:
     //    Gas used:        1,769,740 Gwei
     //    Total cost:     0.0353948 Ether
-    const oracle = await deployProxy(
-      Oracle,
+    const cosmosBridge = await deployProxy(
+      CosmosBridge,
       [
         operator,
-        CosmosBridge.address,
         consensusThreshold,
         initialValidators,
         initialPowers
       ],
       setTxSpecifications(6721975, operator, deployer)
     );
-    console.log("Oracle address: ", oracle.address)
+
+    console.log("cosmosBridge address: ", cosmosBridge.address)
 
     // 4. Deploy BridgeBank contract:
     //    Gas used:        4,823,348 Gwei
@@ -110,7 +105,7 @@ module.exports = function(deployer, network, accounts) {
       BridgeBank,
       [
         operator,
-        Oracle.address,
+        CosmosBridge.address,
         CosmosBridge.address,
         owner
       ],
@@ -126,16 +121,16 @@ module.exports = function(deployer, network, accounts) {
       [
         CosmosBridge.address,
         BridgeBank.address,
-        Oracle.address,
-        Oracle.address
+        CosmosBridge.address,
+        CosmosBridge.address
       ],
       setTxSpecifications(6721975, operator, deployer)
     );
 
     // Set both the oracle and bridge bank address on the cosmos bridge
-    await cosmosBridge.setOracle(Oracle.address,
-      setTxSpecifications(600000, operator)
-    );
+    // await cosmosBridge.setOracle(Oracle.address,
+    //   setTxSpecifications(600000, operator)
+    // );
 
     await cosmosBridge.setBridgeBank(bridgeBank.address, 
       setTxSpecifications(600000, operator)

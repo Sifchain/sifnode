@@ -58,11 +58,11 @@ contract Valset is ValsetStorage {
     /*
      * @dev: Constructor
      */
-    function initialize(
+    function _initialize(
         address _operator,
         address[] memory _initValidators,
         uint256[] memory _initPowers
-    ) public {
+    ) internal {
         require(!_initialized, "Initialized");
 
         operator = _operator;
