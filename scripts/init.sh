@@ -23,7 +23,7 @@ sifnoded add-genesis-account $(sifnodecli keys show shadowfiend -a) 1000000000ro
 sifnoded add-genesis-account $(sifnodecli keys show akasha -a) 1000000000rowan,1000000000catk,1000000000cbtk,1000000000ceth,100000000000stake,1000000000cdash
 #sifnoded add-genesis-account sif17s95c5jpc6x2l3edwh4dm8yhac68yru7a7kr3x 1000000000rowan,1000000000catk,1000000000cbtk,1000000000ceth,100000000000stake,1000000000cdash
 
-sifnoded add-faucet 10000000000000000rowan
+sifnoded add-faucet 10000000000000000rowan,10000000000000000ceth,10000000000000000chot,10000000000000000clink,10000000000000000cusdc,10000000000000000cusdt
 
 sifnoded add-genesis-clp-admin $(sifnodecli keys show shadowfiend -a)
 sifnoded add-genesis-clp-admin $(sifnodecli keys show akasha -a)
