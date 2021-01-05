@@ -46,7 +46,6 @@ func createCoinsHandler(cliCtx context.CLIContext) http.HandlerFunc {
 		}
 		coins, err := sdk.ParseCoins(req.Amount)
 		msg := types.NewMsgRequestCoins(signer, coins)
-		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
