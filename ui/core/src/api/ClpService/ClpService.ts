@@ -10,7 +10,6 @@ import { Fraction } from "../../entities/fraction/Fraction";
 
 import { SifUnSignedClient } from "../utils/SifClient";
 import { toPool } from "../utils/SifClient/toPool";
-import { createTendermintSocketSubscriber } from "../utils/SifClient/TendermintSocketSubscriber";
 
 export type ClpServiceContext = {
   nativeAsset: Asset;
@@ -21,8 +20,6 @@ export type ClpServiceContext = {
 
 type IClpService = {
   getPools: () => Promise<Pool[]>;
-  onPoolsUpdated: (handler: HandlerFn<Pool[]>) => void;
-  onWSError: (handler: HandlerFn<any>) => void;
   getPoolsByLiquidityProvider: (address: string) => Promise<Pool[]>;
   swap: (params: {
     fromAddress: string;
@@ -51,23 +48,13 @@ type IClpService = {
   }) => any;
 };
 
-type HandlerFn<T> = (a: T) => void;
-
 export default function createClpService({
   sifApiUrl,
   nativeAsset,
   sifWsUrl,
-  sifUnsignedClient: client = new SifUnSignedClient(sifApiUrl, sifWsUrl),
+  sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl),
 }: ClpServiceContext): IClpService {
-  let poolHandler: HandlerFn<Pool[]> = () => {};
-  let wsErrorHandler: HandlerFn<any> = () => {};
-
-  client.onTx(async () => {
-    poolHandler(await instance.getPools());
-  });
-  client.onSocketError((error: any) => {
-    wsErrorHandler({ error, sifWsUrl });
-  });
+  const client = sifUnsignedClient;
 
   const instance: IClpService = {
     async getPools() {
@@ -94,12 +81,7 @@ export default function createClpService({
         )
         .map(toPool(nativeAsset));
     },
-    onPoolsUpdated(handler: HandlerFn<Pool[]>) {
-      poolHandler = handler;
-    },
-    onWSError(handler: HandlerFn<any>) {
-      wsErrorHandler = handler;
-    },
+
     async addLiquidity(params: {
       fromAddress: string;
       nativeAssetAmount: AssetAmount;
