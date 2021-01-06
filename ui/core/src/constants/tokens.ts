@@ -1,7 +1,7 @@
 import { Network, Coin, Token } from "../entities";
 
 export const ETH = Coin({
-  symbol: "ETH",
+  symbol: "eth",
   decimals: 18,
   name: "Etherium",
   network: Network.ETHEREUM,
@@ -12,6 +12,14 @@ export const ROWAN = Coin({
   decimals: 18,
   name: "Rowan",
   network: Network.SIFCHAIN,
+});
+
+export const ATK = Token({
+  symbol: "atk",
+  address: "0xbaAA2a3237035A2c7fA2A33c76B44a8C6Fe18e87",
+  decimals: 18,
+  name: "atk",
+  network: Network.ETHEREUM,
 });
 
 export const CATK = Coin({
@@ -36,7 +44,7 @@ export const CETH = Coin({
 });
 
 export const ZRX = Token({
-  symbol: "ZRX",
+  symbol: "zrx",
   decimals: 6,
   name: "0x",
   network: Network.ETHEREUM,
@@ -44,7 +52,7 @@ export const ZRX = Token({
 });
 
 export const AAVE = Token({
-  symbol: "AAVE",
+  symbol: "aave",
   decimals: 6,
   name: "Aave [New]",
   network: Network.ETHEREUM,
@@ -52,7 +60,7 @@ export const AAVE = Token({
 });
 
 export const ELF = Token({
-  symbol: "ELF",
+  symbol: "elf",
   decimals: 6,
   name: "elf",
   network: Network.ETHEREUM,
@@ -60,7 +68,7 @@ export const ELF = Token({
 });
 
 export const AION = Token({
-  symbol: "AION",
+  symbol: "aion",
   decimals: 6,
   name: "Aion",
   network: Network.ETHEREUM,
@@ -68,7 +76,7 @@ export const AION = Token({
 });
 
 export const AMPL = Token({
-  symbol: "AMPL",
+  symbol: "ampl",
   decimals: 6,
   name: "Ampleforth",
   network: Network.ETHEREUM,
@@ -76,7 +84,7 @@ export const AMPL = Token({
 });
 
 export const ANKR = Token({
-  symbol: "ANKR",
+  symbol: "ankr",
   decimals: 6,
   name: "Ankr",
   network: Network.ETHEREUM,
@@ -84,7 +92,7 @@ export const ANKR = Token({
 });
 
 export const ANT = Token({
-  symbol: "ANT",
+  symbol: "ant",
   decimals: 6,
   name: "Aragon",
   network: Network.ETHEREUM,
@@ -92,7 +100,7 @@ export const ANT = Token({
 });
 
 export const BAL = Token({
-  symbol: "BAL",
+  symbol: "bal",
   decimals: 6,
   name: "Balancer",
   network: Network.ETHEREUM,
@@ -100,7 +108,7 @@ export const BAL = Token({
 });
 
 export const BNANA = Token({
-  symbol: "BNANA",
+  symbol: "bnana",
   decimals: 6,
   name: "Chimpion",
   network: Network.ETHEREUM,
@@ -108,7 +116,7 @@ export const BNANA = Token({
 });
 
 export const BNT = Token({
-  symbol: "BNT",
+  symbol: "bnt",
   decimals: 6,
   name: "Bancor Network Token",
   network: Network.ETHEREUM,
@@ -116,7 +124,7 @@ export const BNT = Token({
 });
 
 export const BAND = Token({
-  symbol: "BAND",
+  symbol: "band",
   decimals: 6,
   name: "Band Protocol",
   network: Network.ETHEREUM,
@@ -124,7 +132,7 @@ export const BAND = Token({
 });
 
 export const BAT = Token({
-  symbol: "BAT",
+  symbol: "bat",
   decimals: 6,
   name: "Basic Attention Token",
   network: Network.ETHEREUM,
@@ -132,7 +140,7 @@ export const BAT = Token({
 });
 
 export const BNB = Token({
-  symbol: "BNB",
+  symbol: "bnb",
   decimals: 6,
   name: "Binance Coin",
   network: Network.ETHEREUM,
@@ -140,7 +148,7 @@ export const BNB = Token({
 });
 
 export const BUSD = Token({
-  symbol: "BUSD",
+  symbol: "busd",
   decimals: 6,
   name: "Binance USD",
   network: Network.ETHEREUM,
@@ -148,7 +156,7 @@ export const BUSD = Token({
 });
 
 export const BTMX = Token({
-  symbol: "BTMX",
+  symbol: "btmx",
   decimals: 6,
   name: "Bitmax Token",
   network: Network.ETHEREUM,
@@ -156,7 +164,7 @@ export const BTMX = Token({
 });
 
 export const BTM = Token({
-  symbol: "BTM",
+  symbol: "btm",
   decimals: 6,
   name: "Bytom",
   network: Network.ETHEREUM,
@@ -164,7 +172,7 @@ export const BTM = Token({
 });
 
 export const CEL = Token({
-  symbol: "CEL",
+  symbol: "cel",
   decimals: 6,
   name: "Celsius Network",
   network: Network.ETHEREUM,
@@ -172,7 +180,7 @@ export const CEL = Token({
 });
 
 export const LINK = Token({
-  symbol: "LINK",
+  symbol: "link",
   decimals: 6,
   name: "Chainlink",
   network: Network.ETHEREUM,
@@ -180,7 +188,7 @@ export const LINK = Token({
 });
 
 export const CHZ = Token({
-  symbol: "CHZ",
+  symbol: "chz",
   decimals: 6,
   name: "Chiliz",
   network: Network.ETHEREUM,
@@ -188,7 +196,7 @@ export const CHZ = Token({
 });
 
 export const COMP = Token({
-  symbol: "COMP",
+  symbol: "comp",
   decimals: 6,
   name: "Compound",
   network: Network.ETHEREUM,
@@ -196,7 +204,7 @@ export const COMP = Token({
 });
 
 export const CRO = Token({
-  symbol: "CRO",
+  symbol: "cro",
   decimals: 6,
   name: "Crypto.com Coin",
   network: Network.ETHEREUM,
@@ -204,7 +212,7 @@ export const CRO = Token({
 });
 
 export const CRV = Token({
-  symbol: "CRV",
+  symbol: "crv",
   decimals: 6,
   name: "Curve DAO Token",
   network: Network.ETHEREUM,
@@ -212,7 +220,7 @@ export const CRV = Token({
 });
 
 export const DAI = Token({
-  symbol: "DAI",
+  symbol: "dai",
   decimals: 6,
   name: "Dai",
   network: Network.ETHEREUM,
@@ -220,7 +228,7 @@ export const DAI = Token({
 });
 
 export const MANA = Token({
-  symbol: "MANA",
+  symbol: "mana",
   decimals: 6,
   name: "Decentraland",
   network: Network.ETHEREUM,
@@ -228,7 +236,7 @@ export const MANA = Token({
 });
 
 export const DX = Token({
-  symbol: "DX",
+  symbol: "dx",
   decimals: 6,
   name: "DxChain Token",
   network: Network.ETHEREUM,
@@ -236,7 +244,7 @@ export const DX = Token({
 });
 
 export const ENG = Token({
-  symbol: "ENG",
+  symbol: "eng",
   decimals: 6,
   name: "Enigma",
   network: Network.ETHEREUM,
@@ -244,7 +252,7 @@ export const ENG = Token({
 });
 
 export const ENJ = Token({
-  symbol: "ENJ",
+  symbol: "enj",
   decimals: 6,
   name: "Enjin Coin",
   network: Network.ETHEREUM,
@@ -252,7 +260,7 @@ export const ENJ = Token({
 });
 
 export const LEND = Token({
-  symbol: "LEND",
+  symbol: "lend",
   decimals: 6,
   name: "Aave",
   network: Network.ETHEREUM,
@@ -260,7 +268,7 @@ export const LEND = Token({
 });
 
 export const FTM = Token({
-  symbol: "FTM",
+  symbol: "ftm",
   decimals: 6,
   name: "Fantom",
   network: Network.ETHEREUM,
@@ -268,7 +276,7 @@ export const FTM = Token({
 });
 
 export const FET = Token({
-  symbol: "FET",
+  symbol: "fet",
   decimals: 6,
   name: "FirstEnergy Token",
   network: Network.ETHEREUM,
@@ -276,7 +284,7 @@ export const FET = Token({
 });
 
 export const GNO = Token({
-  symbol: "GNO",
+  symbol: "gno",
   decimals: 6,
   name: "Gnosis",
   network: Network.ETHEREUM,
@@ -284,7 +292,7 @@ export const GNO = Token({
 });
 
 export const GNT = Token({
-  symbol: "GNT",
+  symbol: "gnt",
   decimals: 6,
   name: "Golem",
   network: Network.ETHEREUM,
@@ -292,7 +300,7 @@ export const GNT = Token({
 });
 
 export const ONE = Token({
-  symbol: "ONE",
+  symbol: "one",
   decimals: 6,
   name: "One Hundred Coin",
   network: Network.ETHEREUM,
@@ -300,7 +308,7 @@ export const ONE = Token({
 });
 
 export const SNX = Token({
-  symbol: "SNX",
+  symbol: "snx",
   decimals: 6,
   name: "Synthetix Network Token",
   network: Network.ETHEREUM,
@@ -308,7 +316,7 @@ export const SNX = Token({
 });
 
 export const HOT = Token({
-  symbol: "HOT",
+  symbol: "hot",
   decimals: 6,
   name: "Hydro Protocol",
   network: Network.ETHEREUM,
@@ -316,7 +324,7 @@ export const HOT = Token({
 });
 
 export const HT = Token({
-  symbol: "HT",
+  symbol: "ht",
   decimals: 6,
   name: "Huobi Token",
   network: Network.ETHEREUM,
@@ -324,7 +332,7 @@ export const HT = Token({
 });
 
 export const HUSD = Token({
-  symbol: "HUSD",
+  symbol: "husd",
   decimals: 6,
   name: "HUSD",
   network: Network.ETHEREUM,
@@ -332,7 +340,7 @@ export const HUSD = Token({
 });
 
 export const RLC = Token({
-  symbol: "RLC",
+  symbol: "rlc",
   decimals: 6,
   name: "iExec RLC",
   network: Network.ETHEREUM,
@@ -340,7 +348,7 @@ export const RLC = Token({
 });
 
 export const IOST = Token({
-  symbol: "IOST",
+  symbol: "iost",
   decimals: 6,
   name: "IOST",
   network: Network.ETHEREUM,
@@ -348,7 +356,7 @@ export const IOST = Token({
 });
 
 export const IOTX = Token({
-  symbol: "IOTX",
+  symbol: "iotx",
   decimals: 6,
   name: "IoTeX",
   network: Network.ETHEREUM,
@@ -356,7 +364,7 @@ export const IOTX = Token({
 });
 
 export const KEEP = Token({
-  symbol: "KEEP",
+  symbol: "keep",
   decimals: 6,
   name: "Keep Network",
   network: Network.ETHEREUM,
@@ -364,7 +372,7 @@ export const KEEP = Token({
 });
 
 export const KCS = Token({
-  symbol: "KCS",
+  symbol: "kcs",
   decimals: 6,
   name: "KuCoin Shares",
   network: Network.ETHEREUM,
@@ -372,7 +380,7 @@ export const KCS = Token({
 });
 
 export const KNC = Token({
-  symbol: "KNC",
+  symbol: "knc",
   decimals: 6,
   name: "Kyber Network",
   network: Network.ETHEREUM,
@@ -380,7 +388,7 @@ export const KNC = Token({
 });
 
 export const LEO = Token({
-  symbol: "LEO",
+  symbol: "leo",
   decimals: 6,
   name: "LEO Token",
   network: Network.ETHEREUM,
@@ -388,7 +396,7 @@ export const LEO = Token({
 });
 
 export const LPT = Token({
-  symbol: "LPT",
+  symbol: "lpt",
   decimals: 6,
   name: "Livepeer",
   network: Network.ETHEREUM,
@@ -396,7 +404,7 @@ export const LPT = Token({
 });
 
 export const LRC = Token({
-  symbol: "LRC",
+  symbol: "lrc",
   decimals: 6,
   name: "Loopring",
   network: Network.ETHEREUM,
@@ -404,7 +412,7 @@ export const LRC = Token({
 });
 
 export const MKR = Token({
-  symbol: "MKR",
+  symbol: "mkr",
   decimals: 6,
   name: "Maker",
   network: Network.ETHEREUM,
@@ -412,7 +420,7 @@ export const MKR = Token({
 });
 
 export const MATIC = Token({
-  symbol: "MATIC",
+  symbol: "matic",
   decimals: 6,
   name: "Matic Network",
   network: Network.ETHEREUM,
@@ -420,7 +428,7 @@ export const MATIC = Token({
 });
 
 export const MCO = Token({
-  symbol: "MCO",
+  symbol: "mco",
   decimals: 6,
   name: "MCO",
   network: Network.ETHEREUM,
@@ -428,7 +436,7 @@ export const MCO = Token({
 });
 
 export const MXC = Token({
-  symbol: "MXC",
+  symbol: "mxc",
   decimals: 6,
   name: "MXC",
   network: Network.ETHEREUM,
@@ -436,7 +444,7 @@ export const MXC = Token({
 });
 
 export const NEXO = Token({
-  symbol: "NEXO",
+  symbol: "nexo",
   decimals: 6,
   name: "NEXO",
   network: Network.ETHEREUM,
@@ -444,7 +452,7 @@ export const NEXO = Token({
 });
 
 export const NMR = Token({
-  symbol: "NMR",
+  symbol: "nmr",
   decimals: 6,
   name: "Numeraire",
   network: Network.ETHEREUM,
@@ -452,7 +460,7 @@ export const NMR = Token({
 });
 
 export const NXM = Token({
-  symbol: "NXM",
+  symbol: "nxm",
   decimals: 6,
   name: "Nexus Mutual",
   network: Network.ETHEREUM,
@@ -460,7 +468,7 @@ export const NXM = Token({
 });
 
 export const OCEAN = Token({
-  symbol: "OCEAN",
+  symbol: "ocean",
   decimals: 6,
   name: "Ocean Protocol",
   network: Network.ETHEREUM,
@@ -468,7 +476,7 @@ export const OCEAN = Token({
 });
 
 export const OKB = Token({
-  symbol: "OKB",
+  symbol: "okb",
   decimals: 6,
   name: "OKB",
   network: Network.ETHEREUM,
@@ -476,7 +484,7 @@ export const OKB = Token({
 });
 
 export const OMG = Token({
-  symbol: "OMG",
+  symbol: "omg",
   decimals: 6,
   name: "OMG Network",
   network: Network.ETHEREUM,
@@ -484,7 +492,7 @@ export const OMG = Token({
 });
 
 export const TRAC = Token({
-  symbol: "TRAC",
+  symbol: "trac",
   decimals: 6,
   name: "OriginTrail",
   network: Network.ETHEREUM,
@@ -492,7 +500,7 @@ export const TRAC = Token({
 });
 
 export const PAXG = Token({
-  symbol: "PAXG",
+  symbol: "paxg",
   decimals: 6,
   name: "PAX Gold",
   network: Network.ETHEREUM,
@@ -500,7 +508,7 @@ export const PAXG = Token({
 });
 
 export const PAX = Token({
-  symbol: "PAX",
+  symbol: "pax",
   decimals: 6,
   name: "PayperEx",
   network: Network.ETHEREUM,
@@ -508,7 +516,7 @@ export const PAX = Token({
 });
 
 export const NPXS = Token({
-  symbol: "NPXS",
+  symbol: "npxs",
   decimals: 6,
   name: "Pundi X",
   network: Network.ETHEREUM,
@@ -516,7 +524,7 @@ export const NPXS = Token({
 });
 
 export const QNT = Token({
-  symbol: "QNT",
+  symbol: "qnt",
   decimals: 6,
   name: "Quant",
   network: Network.ETHEREUM,
@@ -524,7 +532,7 @@ export const QNT = Token({
 });
 
 export const REN = Token({
-  symbol: "REN",
+  symbol: "ren",
   decimals: 6,
   name: "REN",
   network: Network.ETHEREUM,
@@ -532,7 +540,7 @@ export const REN = Token({
 });
 
 export const RSR = Token({
-  symbol: "RSR",
+  symbol: "rsr",
   decimals: 6,
   name: "Reserve Rights Token",
   network: Network.ETHEREUM,
@@ -540,7 +548,7 @@ export const RSR = Token({
 });
 
 export const RPL = Token({
-  symbol: "RPL",
+  symbol: "rpl",
   decimals: 6,
   name: "Rocket Pool",
   network: Network.ETHEREUM,
@@ -548,7 +556,7 @@ export const RPL = Token({
 });
 
 export const SRM = Token({
-  symbol: "SRM",
+  symbol: "srm",
   decimals: 6,
   name: "Serum",
   network: Network.ETHEREUM,
@@ -556,7 +564,7 @@ export const SRM = Token({
 });
 
 export const AGI = Token({
-  symbol: "AGI",
+  symbol: "agi",
   decimals: 6,
   name: "SingularityNET",
   network: Network.ETHEREUM,
@@ -564,7 +572,7 @@ export const AGI = Token({
 });
 
 export const EURS = Token({
-  symbol: "EURS",
+  symbol: "eurs",
   decimals: 6,
   name: "STASIS EURO",
   network: Network.ETHEREUM,
@@ -572,7 +580,7 @@ export const EURS = Token({
 });
 
 export const SNT = Token({
-  symbol: "SNT",
+  symbol: "snt",
   decimals: 6,
   name: "Status",
   network: Network.ETHEREUM,
@@ -580,7 +588,7 @@ export const SNT = Token({
 });
 
 export const STORJ = Token({
-  symbol: "STORJ",
+  symbol: "storj",
   decimals: 6,
   name: "Storj",
   network: Network.ETHEREUM,
@@ -588,7 +596,7 @@ export const STORJ = Token({
 });
 
 export const SUSHI = Token({
-  symbol: "SUSHI",
+  symbol: "sushi",
   decimals: 6,
   name: "Sushi",
   network: Network.ETHEREUM,
@@ -596,7 +604,7 @@ export const SUSHI = Token({
 });
 
 export const SXP = Token({
-  symbol: "SXP",
+  symbol: "sxp",
   decimals: 6,
   name: "Swipe",
   network: Network.ETHEREUM,
@@ -604,7 +612,7 @@ export const SXP = Token({
 });
 
 export const CHSB = Token({
-  symbol: "CHSB",
+  symbol: "chsb",
   decimals: 6,
   name: "SwissBorg",
   network: Network.ETHEREUM,
@@ -612,7 +620,7 @@ export const CHSB = Token({
 });
 
 export const USDT = Token({
-  symbol: "USDT",
+  symbol: "usdt",
   decimals: 6,
   name: "Tether",
   network: Network.ETHEREUM,
@@ -620,7 +628,7 @@ export const USDT = Token({
 });
 
 export const THETA = Token({
-  symbol: "THETA",
+  symbol: "theta",
   decimals: 6,
   name: "Theta Network",
   network: Network.ETHEREUM,
@@ -628,7 +636,7 @@ export const THETA = Token({
 });
 
 export const TUSD = Token({
-  symbol: "TUSD",
+  symbol: "tusd",
   decimals: 6,
   name: "TrueUSD",
   network: Network.ETHEREUM,
@@ -636,7 +644,7 @@ export const TUSD = Token({
 });
 
 export const UMA = Token({
-  symbol: "UMA",
+  symbol: "uma",
   decimals: 6,
   name: "UMA",
   network: Network.ETHEREUM,
@@ -644,7 +652,7 @@ export const UMA = Token({
 });
 
 export const UBT = Token({
-  symbol: "UBT",
+  symbol: "ubt",
   decimals: 6,
   name: "Unibright",
   network: Network.ETHEREUM,
@@ -652,7 +660,7 @@ export const UBT = Token({
 });
 
 export const UNI = Token({
-  symbol: "UNI",
+  symbol: "uni",
   decimals: 6,
   name: "UNIVERSE Token",
   network: Network.ETHEREUM,
@@ -660,7 +668,7 @@ export const UNI = Token({
 });
 
 export const UQC = Token({
-  symbol: "UQC",
+  symbol: "uqc",
   decimals: 6,
   name: "Uquid Coin",
   network: Network.ETHEREUM,
@@ -668,7 +676,7 @@ export const UQC = Token({
 });
 
 export const USDC = Token({
-  symbol: "USDC",
+  symbol: "usdc",
   decimals: 6,
   name: "USD Coin",
   network: Network.ETHEREUM,
@@ -676,7 +684,7 @@ export const USDC = Token({
 });
 
 export const UTK = Token({
-  symbol: "UTK",
+  symbol: "utk",
   decimals: 6,
   name: "UTRUST",
   network: Network.ETHEREUM,
@@ -684,7 +692,7 @@ export const UTK = Token({
 });
 
 export const WIC = Token({
-  symbol: "WIC",
+  symbol: "wic",
   decimals: 6,
   name: "Wi Coin",
   network: Network.ETHEREUM,
@@ -692,7 +700,7 @@ export const WIC = Token({
 });
 
 export const WBTC = Token({
-  symbol: "WBTC",
+  symbol: "wbtc",
   decimals: 6,
   name: "Wrapped Bitcoin",
   network: Network.ETHEREUM,
@@ -700,7 +708,7 @@ export const WBTC = Token({
 });
 
 export const STAKE = Token({
-  symbol: "STAKE",
+  symbol: "stake",
   decimals: 6,
   name: "xDAI Stake",
   network: Network.ETHEREUM,
@@ -708,7 +716,7 @@ export const STAKE = Token({
 });
 
 export const YFI = Token({
-  symbol: "YFI",
+  symbol: "yfi",
   decimals: 6,
   name: "yearn.finance",
   network: Network.ETHEREUM,
@@ -716,7 +724,7 @@ export const YFI = Token({
 });
 
 export const ZIL = Token({
-  symbol: "ZIL",
+  symbol: "zil",
   decimals: 6,
   name: "Zilliqa",
   network: Network.ETHEREUM,

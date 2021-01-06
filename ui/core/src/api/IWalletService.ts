@@ -18,6 +18,7 @@ export type IWalletService = {
     log: string;
   };
   isConnected(): boolean;
+  getSupportedTokens: () => Asset[];
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   transfer(params: TxParams): Promise<TxHash>;

@@ -16,6 +16,7 @@ func main() {
 	_nodeCmd := nodeCmd()
 	_nodeCreateCmd := nodeCreateCmd()
 	_nodeCreateCmd.PersistentFlags().Bool("print-details", false, "print the node details")
+	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
 
 	_keyCmd := keyCmd()
@@ -71,10 +72,11 @@ func nodeCreateCmd() *cobra.Command {
 		Args:  cobra.MinimumNArgs(4),
 		Run: func(cmd *cobra.Command, args []string) {
 			printDetails, _ := cmd.Flags().GetBool("print-details")
+			withCosmovisor, _ := cmd.Flags().GetBool("with-cosmovisor")
 			if len(args) == 4 {
-				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], args[3], nil, nil, &printDetails)
+				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], args[3], nil, nil, &printDetails, &withCosmovisor)
 			} else {
-				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], args[3], &args[4], &args[5], &printDetails)
+				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], args[3], &args[4], &args[5], &printDetails, &withCosmovisor)
 			}
 		},
 	}
