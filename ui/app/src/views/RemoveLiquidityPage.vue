@@ -7,7 +7,7 @@ import Modal from "@/components/shared/Modal.vue";
 import { Asset, PoolState, useRemoveLiquidityCalculator } from "ui-core";
 import { LiquidityProvider } from "ui-core";
 import { useCore } from "@/hooks/useCore";
-
+import { useRoute } from 'vue-router';
 import { computed, effect, Ref, toRef } from "@vue/reactivity";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
@@ -29,11 +29,12 @@ export default defineComponent({
   },
   setup() {
     const { store, actions, poolFinder, api } = useCore();
+    const route = useRoute();
 
     const asymmetry = ref("0");
     const wBasisPoints = ref("5000");
     const nativeAssetSymbol = ref("rowan");
-    const externalAssetSymbol = ref<string | null>(null);
+    const externalAssetSymbol = ref<string | null>(route.params.externalAsset ? route.params.externalAsset.toString() : null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
     });
