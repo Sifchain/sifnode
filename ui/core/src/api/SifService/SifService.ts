@@ -26,9 +26,11 @@ export type SifServiceContext = {
   sifWsUrl: string;
   assets: Asset[];
 };
-
+type HandlerFn<T> = (a: T) => void;
 export type ISifService = IWalletService & {
   getSupportedTokens: () => Asset[];
+  onSocketError: (handler: HandlerFn<any>) => void;
+  onTx: (handler: HandlerFn<any>) => void;
 };
 
 /**
@@ -125,6 +127,14 @@ export default function createSifService({
 
     isConnected() {
       return state.connected;
+    },
+
+    onSocketError(handler: HandlerFn<any>) {
+      client?.getUnsignedClient().onSocketError(handler);
+    },
+
+    onTx(handler: HandlerFn<any>) {
+      client?.getUnsignedClient().onTx(handler);
     },
 
     async setPhrase(mnemonic: Mnemonic): Promise<Address> {
