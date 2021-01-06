@@ -33,7 +33,7 @@ const routes: Array<RouteRecordRaw> = [
     component: CreatePool,
   },
   {
-    path: "/pool/remove-liquidity",
+    path: "/pool/remove-liquidity/:externalAsset?",
     name: "RemoveLiquidity",
     component: RemoveLiquidity,
   },
