@@ -32,7 +32,7 @@ func TestBlackListedAddrs(t *testing.T) {
 	}
 }
 
-func setGenesis(app *NewApp) error {
+func setGenesis(app *SifchainApp) error {
 	genesisState := NewDefaultGenesisState()
 	stateBytes, err := codec.MarshalJSONIndent(app.cdc, genesisState)
 	if err != nil {
