@@ -29,7 +29,7 @@ set_persistant_env_var CHAINNET localnet $envexportfile
 
 mkdir -p $datadir
 
-make -C ${TEST_INTEGRATION_DIR} vagrant/.goBuild
+make -C ${TEST_INTEGRATION_DIR}
 
 cp ${TEST_INTEGRATION_DIR}/.env.ciExample .env
 

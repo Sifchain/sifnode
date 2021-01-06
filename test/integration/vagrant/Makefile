@@ -10,7 +10,7 @@ failure_marker=data/tests_failed.txt
 
 .PHONY: all
 all: 
-	rm -rf data/ ../ganachedb
+	rm -rf data/ ../ganachedb ../__pycache__
 	$(MAKE) data
 	touch ${in_progress_marker}
 	if ! $(MAKE) test; then touch ${failure_marker}; fi
@@ -67,20 +67,8 @@ pulldata: data
 	tar cfz datafiles.tar.gz data/*
 	cp datafiles.tar.gz datafiles.$(shell date +%m-%d-%H-%M-%S).tar.gz
 	
-cmds:
-	@vagrant ssh -c "docker exec integration_sifnode1_1 cat /tmp/testrun.sh"
-
-cmdsrm:
-	vagrant ssh -c "docker exec integration_sifnode1_1 bash -c 'rm -f /tmp/testrun.sh'"
-
 ssh:
-	vagrant ssh -c "cd /sifnode && . test/integration/vagrantenv.sh && bash -i"
-
-sshi:
-	vagrant ssh -c "cd /sifnode && . test/integration/vagrantenv.sh && docker exec -ti integration_sifnode1_1 bash -c 'cd /sifnode && bash -i'"
-
-sshg:
-	vagrant ssh -c "cd /sifnode && . test/integration/vagrantenv.sh && docker exec -ti genesis_ganachecli_1 sh"
+	vagrant ssh -c "cd /sifnode/test/integration && . vagrantenv.sh && bash -i"
 
 truffle:
 	vagrant ssh -c "cd /sifnode && . test/integration/vagrantenv.sh && cd /sifnode/smart-contracts && truffle console --network develop --verbose-rpc"

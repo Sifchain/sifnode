@@ -1,25 +1,37 @@
 import json
+import logging
 import re
+import sys
 import time
-import os
 
-from test_utilities import get_shell_output, SIF_ETH, burn_peggy_coin, ETHEREUM_ETH, owner_addr, moniker, \
+from test_utilities import get_shell_output, SIF_ETH, burn_peggy_coin, ETHEREUM_ETH, \
     get_sifchain_addr_balance, wait_for_sifchain_addr_balance, advance_n_ethereum_blocks, n_wait_blocks, \
-    cd_smart_contracts_dir, send_eth_lock, amount_in_wei
-from test_utilities import print_error_message, get_user_account, get_sifchain_balance, network_password, \
-    bridge_bank_address, \
-    smart_contracts_dir, wait_for_sifchain_balance, wait_for_balance
+    amount_in_wei, get_required_env_var, send_ethereum_currency_to_sifchain_addr
+from test_utilities import print_error_message, get_user_account, \
+    wait_for_balance
 
 # define users
-USER = "user1"
 ETH_CONTRACT = "0x0000000000000000000000000000000000000000"
 SLEEPTIME = 5
 AMOUNT = 3 * 10 ** 18
 ROWAN_AMOUNT = 5
 CLAIMLOCK = "lock"
 CLAIMBURN = "burn"
+user1_addr = get_required_env_var("USER1ADDR")
 
 operatorAddress = "0xf17f52151EbEF6C7334FAD080c5704D77216b732"
+
+owner_addr = get_required_env_var("OWNER_ADDR")
+smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
+cd_smart_contracts_dir = f"cd {smart_contracts_dir}; "
+bridge_bank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
+network_password = get_required_env_var("OWNER_PASSWORD")
+
+logging.basicConfig(
+    level="DEBUG",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+
 
 def get_eth_balance(account, symbol):
     command_line = cd_smart_contracts_dir + "yarn peggy:getTokenBalance {} {}".format(
@@ -81,14 +93,15 @@ def test_case_1():
         "########## Test Case One Start: lock eth in ethereum then mint ceth in sifchain"
     )
     bridge_bank_balance_before_tx = get_eth_balance(bridge_bank_address, ETHEREUM_ETH)
-    user_balance_before_tx = get_sifchain_balance(USER, SIF_ETH, network_password)
+    user_balance_before_tx = get_sifchain_addr_balance(user1_addr, SIF_ETH)
 
-    print(f"send_eth_lock({USER}, {ETHEREUM_ETH}, {AMOUNT})")
-    send_eth_lock(USER, ETHEREUM_ETH, AMOUNT)
-    advance_n_ethereum_blocks(n_wait_blocks)
+    print(f"send_ethereum_currency_to_sifchain_addr({user1_addr}, {ETHEREUM_ETH}, {AMOUNT}), balance {user_balance_before_tx}")
+    send_ethereum_currency_to_sifchain_addr(user1_addr, ETHEREUM_ETH, AMOUNT, smart_contracts_dir)
+    advance_n_ethereum_blocks(n_wait_blocks, smart_contracts_dir)
 
     wait_for_eth_balance(bridge_bank_address, ETHEREUM_ETH, bridge_bank_balance_before_tx + AMOUNT)
-    wait_for_sifchain_balance(USER, SIF_ETH, network_password, user_balance_before_tx + AMOUNT)
+    print(f"wait_for_sifchain_addr_balance({user1_addr}, {SIF_ETH}, {AMOUNT}), balance {user_balance_before_tx}")
+    wait_for_sifchain_addr_balance(user1_addr, SIF_ETH, user_balance_before_tx + AMOUNT)
 
     print("########## Test Case One Over ##########")
 
@@ -103,7 +116,8 @@ def test_case_2():
 
     operator_balance_before_tx = get_eth_balance(operatorAddress, ETHEREUM_ETH)
     owner_sifchain_balance_before_tx = get_sifchain_addr_balance(owner_addr, SIF_ETH)
-    print(f"starting user_eth_balance_before_tx {operator_balance_before_tx}, owner_sifchain_balance_before_tx {owner_sifchain_balance_before_tx}, amount {amount}")
+    print(
+        f"starting user_eth_balance_before_tx {operator_balance_before_tx}, owner_sifchain_balance_before_tx {owner_sifchain_balance_before_tx}, amount {amount}")
     burn_peggy_coin(owner_addr, operatorAddress, amount)
 
     wait_for_sifchain_addr_balance(owner_addr, SIF_ETH, owner_sifchain_balance_before_tx - amount)
@@ -114,26 +128,28 @@ def test_case_2():
 def test_balance_does_not_change_without_manual_block_advance():
     print("########## test_balance_does_not_change_without_manual_block_advance")
 
-    user_balance_before_tx = get_sifchain_balance(USER, SIF_ETH, network_password)
-    send_eth_lock(USER, ETHEREUM_ETH, AMOUNT)
+    user_balance_before_tx = get_sifchain_addr_balance(user1_addr, SIF_ETH)
+    send_ethereum_currency_to_sifchain_addr(user1_addr, ETHEREUM_ETH, AMOUNT, smart_contracts_dir)
 
-    advance_n_ethereum_blocks(n_wait_blocks / 2)
+    advance_n_ethereum_blocks(n_wait_blocks / 2, smart_contracts_dir)
 
     # what we really want is to know that ebrelayer has done nothing,
     # but it's not clear how to get that, so we just wait a bit
     time.sleep(6)
 
-    user_balance_before_required_wait = get_sifchain_balance(USER, SIF_ETH, network_password)
+    user_balance_before_required_wait = get_sifchain_addr_balance(user1_addr, SIF_ETH)
 
-    print(f"Starting balance {user_balance_before_tx}, current balance {user_balance_before_required_wait} should be equal")
+    print(
+        f"Starting balance {user_balance_before_tx}, current balance {user_balance_before_required_wait} should be equal")
 
     if user_balance_before_required_wait != user_balance_before_tx:
-        print_error_message(f"balance should not have changed yet.  Starting balance {user_balance_before_tx}, current balance {user_balance_before_required_wait}")
+        print_error_message(
+            f"balance should not have changed yet.  Starting balance {user_balance_before_tx}, current balance {user_balance_before_required_wait}")
 
-    advance_n_ethereum_blocks(n_wait_blocks)
+    advance_n_ethereum_blocks(n_wait_blocks, smart_contracts_dir)
 
-    wait_for_sifchain_balance(USER, SIF_ETH, network_password, user_balance_before_tx + AMOUNT)
-    print(f"final balance is {get_sifchain_balance(USER, SIF_ETH, network_password)}")
+    wait_for_sifchain_addr_balance(user1_addr, SIF_ETH, user_balance_before_tx + AMOUNT)
+    print(f"final balance is {get_sifchain_addr_balance(user1_addr, SIF_ETH)}")
 
 
 def test_case_over_limit():
@@ -142,7 +158,7 @@ def test_case_over_limit():
     )
     received_exception = False
     try:
-        send_eth_lock(USER, ETHEREUM_ETH, amount_in_wei(50))
+        send_ethereum_currency_to_sifchain_addr(user1_addr, ETHEREUM_ETH, amount_in_wei(50), smart_contracts_dir)
     except:
         received_exception = True
 
