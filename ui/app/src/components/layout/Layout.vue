@@ -1,15 +1,19 @@
 <template>
   <div class="layout">
-    <Panel dark class="swap-panel">
+    <Panel dark>
       <template v-slot:header>
         <PanelNav />
       </template>
       <div class="header" v-if="backLink || title">
         <div v-if="backLink">
-          <router-link  class="back-link" :to="backLink"><Icon icon="back" /></router-link>
+          <router-link class="back-link" :to="backLink"
+            ><Icon icon="back"
+          /></router-link>
         </div>
         <div v-if="emitBack">
-          <span @click="$emit('back')" class="back-link"><Icon icon="back" /></span>
+          <span @click="$emit('back')" class="back-link"
+            ><Icon icon="back"
+          /></span>
         </div>
         <div class="title">
           {{ title }}
@@ -17,7 +21,7 @@
       </div>
       <slot></slot>
     </Panel>
-    <Panel v-if="!!$slots.after" class="swap-panel-after">
+    <Panel v-if="!!$slots.after" class="after">
       <slot name="after"></slot>
     </Panel>
   </div>
@@ -34,7 +38,7 @@ export default defineComponent({
     backLink: String,
     emitBack: {
       type: Boolean,
-      default: false
+      default: false,
     },
     title: String,
   },
@@ -56,7 +60,7 @@ export default defineComponent({
   align-items: center;
 }
 
-.swap-panel-after {
+.after {
   margin-top: 15px;
   padding: 25px;
   background: linear-gradient(180deg, $c_gray_50 0%, $c_gray_200 100%);

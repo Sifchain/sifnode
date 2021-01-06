@@ -18,6 +18,7 @@ export function getMockWalletService(
     getState: () => state,
     transfer: async () => "",
     getBalance: jest.fn(async () => walletBalances),
+    getSupportedTokens: () => [],
     connect: jest.fn(async () => {
       state.connected = true;
       state.balances = walletBalances;

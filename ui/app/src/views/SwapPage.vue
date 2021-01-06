@@ -7,7 +7,7 @@ import { Asset, SwapState, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/shared/Modal.vue";
-import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
+import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
@@ -24,7 +24,7 @@ export default defineComponent({
     Layout,
     Modal,
     DetailsPanel,
-    SelectTokenDialog,
+    SelectTokenDialogSif,
     ModalView,
     ConfirmationDialog,
   },
@@ -121,6 +121,9 @@ export default defineComponent({
             return "Swap";
         }
       }),
+      disableInputFields: computed(() => {
+        return state.value === SwapState.SELECT_TOKENS;
+      }),
       handleFromSymbolClicked(next: () => void) {
         selectedField.value = "from";
         next();
@@ -191,7 +194,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="swap">
+  <Layout>
     <div>
       <Modal @close="handleSelectClosed">
         <template v-slot:activator="{ requestOpen }">
@@ -199,6 +202,8 @@ export default defineComponent({
             v-model:fromAmount="fromAmount"
             v-model:fromSymbol="fromSymbol"
             :fromMax="!!fromSymbol"
+            :fromDisabled="disableInputFields"
+            :toDisabled="disableInputFields"
             @frommaxclicked="handleFromMaxClicked"
             @fromfocus="handleFromFocused"
             @fromblur="handleBlur"
@@ -215,7 +220,7 @@ export default defineComponent({
           />
         </template>
         <template v-slot:default="{ requestClose }">
-          <SelectTokenDialog
+          <SelectTokenDialogSif
             :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
             @tokenselected="requestClose"
           />
@@ -229,6 +234,7 @@ export default defineComponent({
         :priceImpact="''"
       />
       <ActionsPanel
+        connectType="connectToSif"
         @nextstepclick="handleNextStepClicked"
         :nextStepAllowed="nextStepAllowed"
         :nextStepMessage="nextStepMessage"
