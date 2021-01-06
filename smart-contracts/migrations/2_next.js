@@ -106,7 +106,6 @@ module.exports = function(deployer, network, accounts) {
       [
         operator,
         CosmosBridge.address,
-        CosmosBridge.address,
         owner
       ],
       setTxSpecifications(6721975, operator, deployer)

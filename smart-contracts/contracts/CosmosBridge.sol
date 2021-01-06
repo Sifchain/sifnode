@@ -62,9 +62,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         require(!_initialized, "Initialized");
 
         COSMOS_NATIVE_ASSET_PREFIX = "e";
-        prophecyClaimCount = 0;
         operator = _operator;
-        hasOracle = false;
         hasBridgeBank = false;
         _initialized = true;
         Oracle._initialize(
@@ -73,21 +71,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             _initValidators,
             _initPowers
         );
-    }
-
-    /*
-     * @dev: setOracle
-     */
-    function setOracle(address payable _oracle) public onlyOperator {
-        // require(
-        //     !hasOracle,
-        //     "The Oracle cannot be updated once it has been set"
-        // );
-
-        // oracle = _oracle;
-        // valset = _oracle;
-
-        // emit LogOracleSet(oracle);
     }
 
     /*
@@ -123,7 +106,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         (bool prophecyCompleted, , ) = getProphecyThreshold(_prophecyID);
         require(!prophecyCompleted, "prophecyCompleted");
 
-        if (prophecyClaims[_prophecyID].amount == 0) {
+        if (oracleClaimValidators[_prophecyID] == 0) {
             string memory symbol;
             if (_claimType == ClaimType.Burn) {
                 require(
@@ -142,17 +125,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
                 revert("Invalid claim type, only burn and lock are supported.");
             }
 
-            // Create the new ProphecyClaim
-            ProphecyClaim memory prophecyClaim = ProphecyClaim(
-                _ethereumReceiver,
-                symbol,
-                _amount
-            );
-
-            // Increment count and add the new ProphecyClaim to the mapping
-            // prophecyClaimCount = prophecyClaimCount.add(1);
-            prophecyClaims[_prophecyID] = prophecyClaim;
-
             emit LogNewProphecyClaim(
                 _prophecyID,
                 _claimType,
@@ -166,7 +138,15 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
         if (claimComplete) {
             address tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(_symbol);
-            completeProphecyClaim(_prophecyID, _cosmosSender, tokenAddress, _claimType);
+            completeProphecyClaim(
+                _prophecyID,
+                _cosmosSender,
+                tokenAddress,
+                _claimType,
+                _ethereumReceiver,
+                _symbol,
+                _amount
+            );
         }
     }
 
@@ -180,13 +160,16 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         uint256 _prophecyID,
         bytes memory cosmosSender,
         address tokenAddress,
-        ClaimType claimType
+        ClaimType claimType,
+        address payable ethereumReceiver,
+        string memory symbol,
+        uint256 amount
     ) internal {
 
         if (claimType == ClaimType.Burn) {
-            unlockTokens(_prophecyID);
+            unlockTokens(ethereumReceiver, symbol, amount);
         } else {
-            issueBridgeTokens(_prophecyID, cosmosSender, tokenAddress);
+            issueBridgeTokens(cosmosSender, tokenAddress, ethereumReceiver, symbol, amount);
         }
 
         emit LogProphecyCompleted(_prophecyID, claimType);
@@ -196,15 +179,19 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      * @dev: issueBridgeTokens
      *       Issues a request for the BridgeBank to mint new BridgeTokens
      */
-    function issueBridgeTokens(uint256 _prophecyID, bytes memory cosmosSender, address tokenAddress) internal {
-        ProphecyClaim memory prophecyClaim = prophecyClaims[_prophecyID];
-
+    function issueBridgeTokens(
+        bytes memory cosmosSender,
+        address tokenAddress,
+        address payable ethereumReceiver,
+        string memory symbol,
+        uint256 amount
+    ) internal {
         BridgeBank(bridgeBank).mintBridgeTokens(
             cosmosSender,
-            prophecyClaim.ethereumReceiver,
+            ethereumReceiver,
             tokenAddress,
-            prophecyClaim.symbol,
-            prophecyClaim.amount
+            symbol,
+            amount
         );
     }
 
@@ -212,13 +199,15 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      * @dev: unlockTokens
      *       Issues a request for the BridgeBank to unlock funds held on contract
      */
-    function unlockTokens(uint256 _prophecyID) internal {
-        ProphecyClaim memory prophecyClaim = prophecyClaims[_prophecyID];
-
+    function unlockTokens(
+        address payable ethereumReceiver,
+        string memory symbol,
+        uint256 amount
+    ) internal {
         BridgeBank(bridgeBank).unlock(
-            prophecyClaim.ethereumReceiver,
-            prophecyClaim.symbol,
-            prophecyClaim.amount
+            ethereumReceiver,
+            symbol,
+            amount
         );
     }
 

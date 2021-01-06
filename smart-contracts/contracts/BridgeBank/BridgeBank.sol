@@ -33,7 +33,6 @@ contract BridgeBank is BankStorage,
      */
     function initialize(
         address _operatorAddress,
-        address _oracleAddress,
         address _cosmosBridgeAddress,
         address _owner
     ) public {
@@ -43,7 +42,6 @@ contract BridgeBank is BankStorage,
         CosmosWhiteList.initialize();
 
         operator = _operatorAddress;
-        oracle = _cosmosBridgeAddress;
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
         _initialized = true;
@@ -54,17 +52,6 @@ contract BridgeBank is BankStorage,
      */
     modifier onlyOperator() {
         require(msg.sender == operator, "Must be BridgeBank operator.");
-        _;
-    }
-
-    /*
-     * @dev: Modifier to restrict access to the oracle
-     */
-    modifier onlyOracle() {
-        require(
-            msg.sender == oracle,
-            "Access restricted to the oracle"
-        );
         _;
     }
 

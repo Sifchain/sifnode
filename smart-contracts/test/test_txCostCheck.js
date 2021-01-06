@@ -29,6 +29,7 @@ contract("CosmosBridge", function (accounts) {
 
   describe("Bridge claim status", function () {
     beforeEach(async function () {
+
       // Set up ProphecyClaim values
       this.cosmosSender = web3.utils.utf8ToHex(
         "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
@@ -42,18 +43,8 @@ contract("CosmosBridge", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
-      // this.valset = await deployProxy(Valset,
-      //   [
-      //     operator,
-      //     this.initialValidators,
-      //     this.initialPowers
-      //   ],
-      //   {unsafeAllowCustomTypes: true}
-      // );
 
       // Deploy CosmosBridge contract
-      console.log("Here: 0")
-
       this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
         consensusThreshold,
@@ -63,24 +54,9 @@ contract("CosmosBridge", function (accounts) {
         {unsafeAllowCustomTypes: true}
       );
 
-      console.log("Here: 1")
-      // Deploy Oracle contract
-      // this.oracle = await deployProxy(Oracle,
-      //   [
-      //     operator,
-      //     this.cosmosBridge.address,
-      //     consensusThreshold,
-      //     this.initialValidators,
-      //     this.initialPowers
-      //   ],
-      //   {unsafeAllowCustomTypes: true}
-      //   );
-      // console.log("Here: 2")
-
       // Deploy BridgeBank contract
       this.bridgeBank = await deployProxy(BridgeBank,[
         operator,
-        this.cosmosBridge.address,
         this.cosmosBridge.address,
         operator
       ],
@@ -148,16 +124,6 @@ contract("CosmosBridge", function (accounts) {
 
       const event = logs.find(e => e.event === "LogNewProphecyClaim");
       const prophecyClaimCount = event.args._prophecyID;
-      // Get the ProphecyClaim's status
-      // let status = await this.cosmosBridge.isProphecyClaimActive(
-      //   prophecyClaimCount,
-      //   {
-      //     from: accounts[7]
-      //   }
-      // );
-
-      // // Bridge claim should be active
-      // status.should.be.equal(true);
 
       console.log("tx: ", receipt.gasUsed)
 
@@ -349,5 +315,12 @@ tx2:  71638
 tx3:  111833
 ~~~~~~~~~~~~
 Total: 343706
+
+run: 14 (remove all use of ProphecyClaim stored in the struct inside of cosmos bridge and 100% leverage data in oracle contract)
+tx:  97855
+tx2:  71588
+tx3:  108160
+~~~~~~~~~~~~
+Total: 277603
 
 */
