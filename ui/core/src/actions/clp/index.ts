@@ -23,9 +23,10 @@ export default ({
     }
   }
 
+  // Sync on load
   syncPools();
 
-  // Sync MarketService with pool store
+  // Then every transaction
   api.SifService.onTx(syncPools);
 
   api.SifService.onSocketError(({ sifWsUrl }) => {
