@@ -109,7 +109,6 @@ export default defineComponent({
           <div  class="text--small mb-6">
             <a href="#">View pool info</a>
           </div>
-          
           <router-link :to="`/pool/remove-liquidity/${fromSymbol}`"
             ><SifButton primaryOutline nocase block >Remove Liquidity</SifButton></router-link
           >
@@ -118,7 +117,9 @@ export default defineComponent({
           <div  class="text--small mb-6">
             <a href="#">Blockexplorer</a>
           </div>
-          <SifButton primary nocase block>Add Liquidity</SifButton>
+          <router-link :to="`/pool/add-liquidity/${fromSymbol}`"
+            ><SifButton primary nocase block>Add Liquidity</SifButton></router-link
+          >
         </div>
       </div>
     </div>
