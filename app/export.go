@@ -15,7 +15,7 @@ import (
 
 // ExportAppStateAndValidators exports the state of the application for a genesis
 // file.
-func (app *NewApp) ExportAppStateAndValidators(
+func (app *SifchainApp) ExportAppStateAndValidators(
 	forZeroHeight bool, jailWhiteList []string,
 ) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
 
@@ -39,7 +39,7 @@ func (app *NewApp) ExportAppStateAndValidators(
 // prepare for fresh start at zero height
 // NOTE zero height genesis is a temporary feature which will be deprecated
 //      in favour of export at a block height
-func (app *NewApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []string) {
+func (app *SifchainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList []string) {
 	applyWhiteList := false
 
 	//Check if there is a whitelist
