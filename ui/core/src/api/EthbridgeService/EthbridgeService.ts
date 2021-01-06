@@ -103,7 +103,10 @@ export default function createEthbridgeService({
 
       return await sifUnsignedClient.burn({
         ethereum_receiver: params.ethereumRecipient,
-        base_req: { chain_id: "sifchain", from: params.fromAddress },
+        base_req: {
+          chain_id: "sifchain",
+          from: params.fromAddress,
+        },
         amount: params.assetAmount.toFixed(0),
         symbol: params.assetAmount.asset.symbol,
         cosmos_sender: params.fromAddress,
