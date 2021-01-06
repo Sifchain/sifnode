@@ -44,9 +44,9 @@ spec:
             - name: data
               mountPath: /root/
           {{- if .Values.sifnode.env.peerAddress }}
-          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"$MNEMONIC\" $EXTERNAL_IP $PEER_ADDRESS $GENESIS_URL; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
+          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" $EXTERNAL_IP $PEER_ADDRESS $GENESIS_URL --with-cosmovisor; cosmovisor start --rpc.laddr tcp://0.0.0.0:26657"]
           {{- else }}
-          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"$MNEMONIC\" $EXTERNAL_IP; sifnoded start --rpc.laddr tcp://0.0.0.0:26657"]
+          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" $EXTERNAL_IP --with-cosmovisor; cosmovisor start --rpc.laddr tcp://0.0.0.0:26657"]
           {{- end }}
           ports:
             - name: p2p
@@ -56,15 +56,18 @@ spec:
               containerPort: 26657
               protocol: TCP
           env:
+            - name: DAEMON_HOME
+              value: {{ .Values.sifnode.env.daemonHome }}
+            - name: DAEMON_NAME
+              value: {{ .Values.sifnode.env.daemonName }}
+            - name: DAEMON_ALLOW_DOWNLOAD_BINARIES
+              value: "{{ .Values.sifnode.env.daemonAllowDownloadBinaries }}"
+            - name: DAEMON_RESTART_AFTER_UPGRADE
+              value: "{{ .Values.sifnode.env.daemonRestartAfterUpgrade }}"
             - name: CHAINNET
               value: {{ .Values.sifnode.env.chainnet }}
             - name: MONIKER
               value: {{ .Values.sifnode.env.moniker }}
-            - name: MNEMONIC
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "sifnode.fullname" . }}
-                  key: mnemonic
             - name: EXTERNAL_IP
               valueFrom:
                 configMapKeyRef:

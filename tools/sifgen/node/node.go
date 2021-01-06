@@ -3,6 +3,7 @@ package node
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Sifchain/sifnode/app"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -20,16 +21,17 @@ import (
 )
 
 type Node struct {
-	ChainID     string    `yaml:"chain_id"`
-	Moniker     string    `yaml:"moniker"`
-	Mnemonic    string    `yaml:"mnemonic"`
-	IPAddr      string    `yml:"ip_address"`
-	Address     string    `yaml:"address"`
-	Password    string    `yaml:"password"`
-	PeerAddress *string   `yaml:"-"`
-	GenesisURL  *string   `yaml:"-"`
-	Key         *key.Key  `yaml:"-"`
-	CLI         utils.CLI `yaml:"-"`
+	ChainID        string    `yaml:"chain_id"`
+	Moniker        string    `yaml:"moniker"`
+	Mnemonic       string    `yaml:"mnemonic"`
+	IPAddr         string    `yml:"ip_address"`
+	Address        string    `yaml:"address"`
+	Password       string    `yaml:"password"`
+	PeerAddress    *string   `yaml:"-"`
+	GenesisURL     *string   `yaml:"-"`
+	WithCosmovisor bool      `yaml:"-"`
+	Key            *key.Key  `yaml:"-"`
+	CLI            utils.CLI `yaml:"-"`
 }
 
 func Reset(chainID string, nodeDir *string) error {
@@ -48,18 +50,19 @@ func Reset(chainID string, nodeDir *string) error {
 	return nil
 }
 
-func NewNode(chainID, moniker, mnemonic, ipAddr string, peerAddress, genesisURL *string) *Node {
+func NewNode(chainID, moniker, mnemonic, ipAddr string, peerAddress, genesisURL *string, withCosmovisor *bool) *Node {
 	password, _ := password.Generate(32, 5, 0, false, false)
 	return &Node{
-		ChainID:     chainID,
-		Moniker:     moniker,
-		Mnemonic:    mnemonic,
-		IPAddr:      ipAddr,
-		PeerAddress: peerAddress,
-		GenesisURL:  genesisURL,
-		Password:    password,
-		CLI:         utils.NewCLI(chainID),
-		Key:         key.NewKey(&moniker, &password),
+		ChainID:        chainID,
+		Moniker:        moniker,
+		Mnemonic:       mnemonic,
+		IPAddr:         ipAddr,
+		PeerAddress:    peerAddress,
+		Password:       password,
+		GenesisURL:     genesisURL,
+		WithCosmovisor: *withCosmovisor,
+		CLI:            utils.NewCLI(chainID),
+		Key:            key.NewKey(&moniker, &password),
 	}
 }
 
@@ -72,15 +75,15 @@ func (n *Node) Build() (*string, error) {
 		return nil, err
 	}
 
+	if err := n.setupCosmovisor(); err != nil {
+		return nil, err
+	}
+
 	summary := n.summary()
 	return &summary, nil
 }
 
 func (n *Node) setup() error {
-	if err := n.CLI.Reset([]string{common.DefaultNodeHome, common.DefaultCLIHome}); err != nil {
-		return err
-	}
-
 	_, err := n.CLI.InitChain(n.ChainID, n.Moniker, common.DefaultNodeHome)
 	if err != nil {
 		return err
@@ -260,7 +263,12 @@ func (n *Node) replaceConfig() error {
 		config.P2P.PersistentPeers = strings.Join(addressList[:], ",")
 	}
 
-	config.P2P.ExternalAddress = fmt.Sprintf("%v:%v", n.IPAddr, common.P2PPort)
+	if n.IPAddr != "" {
+		config.P2P.ExternalAddress = fmt.Sprintf("%v:%v", n.IPAddr, common.P2PPort)
+	}
+
+	config.RPC.CorsAllowedOrigins = []string{"*"}
+	config.RPC.CorsAllowedHeaders = []string{"*"}
 	config.P2P.MaxNumInboundPeers = common.MaxNumInboundPeers
 	config.P2P.MaxNumOutboundPeers = common.MaxNumOutboundPeers
 	config.P2P.AllowDuplicateIP = common.AllowDuplicateIP
@@ -289,6 +297,37 @@ func (n *Node) parseConfig() (common.NodeConfig, error) {
 	}
 
 	return config, nil
+}
+
+func (n *Node) setupCosmovisor() error {
+	if !n.WithCosmovisor {
+		return nil
+	}
+
+	if err := n.CLI.CreateDir(fmt.Sprintf("%v/cosmovisor/genesis/bin", app.DefaultNodeHome)); err != nil {
+		return err
+	}
+
+	if err := n.CLI.CreateDir(fmt.Sprintf("%v/cosmovisor/upgrade", app.DefaultNodeHome)); err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("%v:%v", os.Getenv("PATH"), fmt.Sprintf("%v/cosmovisor/genesis/bin", app.DefaultNodeHome))
+	if err := os.Setenv("PATH", path); err != nil {
+		return err
+	}
+
+	daemon, err := n.CLI.DaemonPath()
+	if err != nil {
+		return err
+	}
+
+	_, err = n.CLI.MoveFile(strings.TrimSuffix(*daemon, "\n"), fmt.Sprintf("%v/cosmovisor/genesis/bin/", app.DefaultNodeHome))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (n *Node) summary() string {

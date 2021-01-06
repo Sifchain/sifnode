@@ -3,8 +3,8 @@ import json
 import time
 
 # define users
-VALIDATOR = "user1"
-USER = "user2"
+VALIDATOR = "shadowfiend"
+USER = "akasha"
 ROWAN = "rwn"
 PEGGYETH = "ceth"
 PEGGYROWAN = "erwn"

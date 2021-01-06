@@ -1,5 +1,4 @@
 import { ref, Ref } from "@vue/reactivity";
-import { LiquidityParams } from "../api/utils/x/clp";
 import { CATK, ROWAN } from "../constants";
 import { AssetAmount, LiquidityProvider, Pool } from "../entities";
 import { Fraction, IFraction } from "../entities/fraction/Fraction";

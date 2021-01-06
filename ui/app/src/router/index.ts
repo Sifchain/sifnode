@@ -3,8 +3,9 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Swap from "@/views/SwapPage.vue";
 import Pool from "@/views/PoolPage.vue";
 import CreatePool from "@/views/CreatePoolPage.vue";
-import Ui from "@/views/Ui.vue";
 import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
+import PegListingPage from "@/views/PegListingPage.vue";
+import PegAssetPage from "@/views/PegAssetPage.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -36,12 +37,20 @@ const routes: Array<RouteRecordRaw> = [
     name: "RemoveLiquidity",
     component: RemoveLiquidity,
   },
-
-  // route for UI elements showcase - To Be Deleted
   {
-    path: "/ui",
-    name: "Ui",
-    component: Ui,
+    path: "/peg",
+    name: "PegListingPage",
+    component: PegListingPage,
+  },
+  {
+    path: "/peg/:assetFrom/:assetTo",
+    name: "PegAssetPage",
+    component: PegAssetPage,
+  },
+  {
+    path: "/peg/reverse/:assetFrom/:assetTo",
+    name: "UnpegAssetPage",
+    component: PegAssetPage,
   },
 ];
 

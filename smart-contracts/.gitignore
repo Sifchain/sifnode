@@ -1,6 +1,6 @@
-.openzeppelin
-deployments/*/.openzeppelin
+/.openzeppelin
 build/
 node_modules/
 flat/
 .env
+venv

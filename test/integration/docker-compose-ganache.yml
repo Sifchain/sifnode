@@ -1,19 +1,10 @@
-networks:
-  sifchain:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 192.168.2.0/24
-
 services:
   ganachecli:
     image: trufflesuite/ganache-cli:latest
-    networks:
-      sifchain:
-        ipv4_address: '192.168.2.6'
     ports:
       - "7545:7545"
+    volumes:
+      - ${GANACHE_DB_DIR}:/ganachedb
     entrypoint:
       - node
       - /app/ganache-core.docker.cli
@@ -21,7 +12,7 @@ services:
       - 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat'
       - --networkId
       - '5777'
-      - --hostname
-      - '192.168.2.6'
       - --port
       - '7545'
+      - --db
+      - /ganachedb

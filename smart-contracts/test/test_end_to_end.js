@@ -1,4 +1,4 @@
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+const { deployProxy, silenceWarnings } = require('@openzeppelin/truffle-upgrades');
 
 const Valset = artifacts.require("Valset");
 const CosmosBridge = artifacts.require("CosmosBridge");
@@ -35,6 +35,7 @@ contract("CosmosBridge", function (accounts) {
 
   describe("CosmosBridge smart contract deployment", function () {
     beforeEach(async function () {
+      await silenceWarnings();
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
@@ -142,6 +143,11 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
         from: operator
       });
+
+      // Update the lock/burn limit for this token
+      await this.bridgeBank.updateTokenLockBurnLimit(this.ethTokenAddress, this.amountWei, {
+        from: operator
+      }).should.be.fulfilled;
     });
 
     it("Burn prophecy claim flow", async function () {

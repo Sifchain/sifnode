@@ -36,7 +36,7 @@ namespace :validator do
         exit(1)
       end
 
-      cmd = %Q{kubectl exec --stdin --tty #{pod_name} -n #{args[:namespace]} -- sifnoded tendermint show-validator}
+      cmd = %Q{kubectl exec --stdin --tty #{pod_name} -n #{args[:namespace]} -- cosmovisor tendermint show-validator}
       system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end
