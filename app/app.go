@@ -71,7 +71,7 @@ func MakeCodec() *codec.Codec {
 	return cdc.Seal()
 }
 
-type NewApp struct {
+type SifchainApp struct {
 	*bam.BaseApp
 	cdc *codec.Codec
 
@@ -99,12 +99,12 @@ type NewApp struct {
 	sm *module.SimulationManager
 }
 
-var _ simapp.App = (*NewApp)(nil)
+var _ simapp.App = (*SifchainApp)(nil)
 
 func NewInitApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
 	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
-) *NewApp {
+) *SifchainApp {
 
 	cdc := MakeCodec()
 
@@ -127,7 +127,7 @@ func NewInitApp(
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
-	var app = &NewApp{
+	var app = &SifchainApp{
 		BaseApp:        bApp,
 		cdc:            cdc,
 		invCheckPeriod: invCheckPeriod,
@@ -271,7 +271,7 @@ func NewDefaultGenesisState() GenesisState {
 	return ModuleBasics.DefaultGenesis()
 }
 
-func (app *NewApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *SifchainApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
 
 	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
@@ -279,32 +279,32 @@ func (app *NewApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
-func (app *NewApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *SifchainApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
 
-func (app *NewApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *SifchainApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
 }
 
-func (app *NewApp) Codec() *codec.Codec {
+func (app *SifchainApp) Codec() *codec.Codec {
 	return app.cdc
 }
 
-func (app *NewApp) GetKey(storeKey string) *sdk.KVStoreKey {
+func (app *SifchainApp) GetKey(storeKey string) *sdk.KVStoreKey {
 	return app.keys[storeKey]
 }
 
 // GetTKey returns the TransientStoreKey for the provided store key
-func (app *NewApp) GetTKey(storeKey string) *sdk.TransientStoreKey {
+func (app *SifchainApp) GetTKey(storeKey string) *sdk.TransientStoreKey {
 	return app.tKeys[storeKey]
 }
 
-func (app *NewApp) LoadHeight(height int64) error {
+func (app *SifchainApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
 
-func (app *NewApp) ModuleAccountAddrs() map[string]bool {
+func (app *SifchainApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
@@ -313,7 +313,7 @@ func (app *NewApp) ModuleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
-func (app *NewApp) SimulationManager() *module.SimulationManager {
+func (app *SifchainApp) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 

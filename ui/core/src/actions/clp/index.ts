@@ -9,8 +9,8 @@ export default ({
 }: ActionContext<"SifService" | "ClpService", "pools" | "wallet">) => {
   const state = api.SifService.getState();
 
-  // Sync MarketService with pool store
-  api.ClpService.onPoolsUpdated((pools) => {
+  async function syncPools() {
+    const pools = await api.ClpService.getPools();
     for (let pool of pools) {
       store.pools[pool.symbol()] = pool;
     }
@@ -21,9 +21,15 @@ export default ({
         detail: "Create liquidity pool to swap.",
       });
     }
-  });
+  }
 
-  api.ClpService.onWSError(({ sifWsUrl }) => {
+  // Sync on load
+  syncPools();
+
+  // Then every transaction
+  api.SifService.onTx(syncPools);
+
+  api.SifService.onSocketError(({ sifWsUrl }) => {
     notify({
       type: "error",
       message: "Websocket Not Connected",
