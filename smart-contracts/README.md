@@ -59,6 +59,22 @@ Run individual tests: `$ truffle test test/<test_name.js>`
 Expected output of the test suite:
 ![peggytestsuite](https://user-images.githubusercontent.com/15370712/58388940-34fb6700-7fda-11e9-9aef-6ae7b2442a55.png)
 
+### Slither
+
+#### Dependencies
+
+* Python 3.4 or newer
+
+#### Configuration
+
+`slither.config.json` contains various configurations on what severity of issue should be reported and which detectors should be included or excluded. 
+
+`slither.db.json` contains a generated config from `slither . --triage` which lets us excluded false positives. If you generate a new `db.json`, please delete all key/value pairs related to the local computer (/home/{user}/foo/bar) - the file will still. 
+
+#### Run
+
+To run [slither](https://github.com/crytic/slither) over all smart contracts you can run `make slither` in this directory. 
+
 ## Security, Privacy, Risks
 
 Disclaimer: These contracts are for testing purposes only and are NOT intended for production. In order to prevent any loss of user funds, locked Ethereum and ERC20 tokens can be withdrawn directly by the original sender at any time. However, these contracts have not undergone external audits and should not be trusted with mainnet funds. Any use of Peggy is at the user’s own risk.

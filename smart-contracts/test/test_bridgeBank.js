@@ -169,8 +169,13 @@ contract("BridgeBank", function (accounts) {
         from: operator
       }).should.be.fulfilled;
 
+      // Update the lock/burn limit for this token
+      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
+        from: operator
+      }).should.be.fulfilled;
+
       //Load user account with ERC20 tokens for testing
-      await this.token.mint(userOne, 1000, {
+      await this.token.mint(userOne, this.amount, {
         from: operator
       }).should.be.fulfilled;
 
@@ -304,6 +309,11 @@ contract("BridgeBank", function (accounts) {
         from: operator
       }).should.be.fulfilled;
 
+      // Update the lock/burn limit for this token
+      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
+        from: operator
+      }).should.be.fulfilled;      
+
       //Load user account with ERC20 tokens for testing
       await this.token.mint(userOne, 1000, {
         from: operator
@@ -397,6 +407,16 @@ contract("BridgeBank", function (accounts) {
 
       // Add the token into white list
       await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
+        from: operator
+      }).should.be.fulfilled;
+
+      // Update the lock/burn limit for this token
+      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
+        from: operator
+      }).should.be.fulfilled;
+
+      // Update the lock/burn limit for this token
+      await this.bridgeBank.updateTokenLockBurnLimit(this.ethereumToken, this.weiAmount, {
         from: operator
       }).should.be.fulfilled;
 
@@ -569,9 +589,14 @@ contract("BridgeBank", function (accounts) {
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
       this.weiAmount = web3.utils.toWei("0.25", "ether");
       this.halfWeiAmount = web3.utils.toWei("0.125", "ether");
-
+      this.eth = web3.utils.toWei("1", "ether");
       //Load contract with ethereum so it can complete items
-      await this.bridgeBank.send(web3.utils.toWei("1", "ether"), {
+      // await this.bridgeBank.send(web3.utils.toWei("1", "ether"), {
+      //   from: operator
+      // }).should.be.fulfilled;
+
+      // Update the lock/burn limit for this token
+      await this.bridgeBank.updateTokenLockBurnLimit(this.ethereumToken, this.eth, {
         from: operator
       }).should.be.fulfilled;
 
@@ -585,6 +610,15 @@ contract("BridgeBank", function (accounts) {
         }
       );
 
+      await this.bridgeBank.lock(
+        this.sender,
+        this.ethereumToken,
+        this.eth, {
+          from: userOne,
+          value: this.eth
+        }
+      );
+
       // Lock an ERC20 deposit
       this.symbol = "TEST";
       this.token = await BridgeToken.new(this.symbol);
@@ -592,6 +626,10 @@ contract("BridgeBank", function (accounts) {
 
       // Add the token into white list
       await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
+        from: operator
+      }).should.be.fulfilled;
+
+      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
         from: operator
       }).should.be.fulfilled;
 
@@ -618,13 +656,14 @@ contract("BridgeBank", function (accounts) {
 
     it("should unlock Ethereum upon the processing of a burn prophecy", async function () {
       // Get prior balances of user and BridgeBank contract
-      const beforeUserBalance = Number(await web3.eth.getBalance(accounts[4]));
+      const beforeUserBalance = Number(await web3.eth.getBalance(this.recipient));
       const beforeContractBalance = Number(
         await web3.eth.getBalance(this.bridgeBank.address)
-        );
+      );
         
       this.nonce = 1;
       // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
+
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
@@ -637,7 +676,7 @@ contract("BridgeBank", function (accounts) {
       ).should.be.fulfilled;
 
       // Get balances after prophecy processing
-      const afterUserBalance = Number(await web3.eth.getBalance(accounts[4]));
+      const afterUserBalance = Number(await web3.eth.getBalance(this.recipient));
       const afterContractBalance = Number(
         await web3.eth.getBalance(this.bridgeBank.address)
       );
@@ -704,7 +743,7 @@ contract("BridgeBank", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.sender,
-        this.senderSequence,
+        ++this.senderSequence,
         this.recipient,
         this.ethereumSymbol,
         this.halfWeiAmount, {
@@ -886,6 +925,9 @@ contract("BridgeBank", function (accounts) {
 
       const tokenAddress = await this.bridgeBank.getBridgeToken(symbol);
       tokenAddress.should.be.equal(this.token.address);
+      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, 100000, {
+        from: operator
+      }).should.be.fulfilled;
     });
 
     it("should burn eRowan to create rowan on sifchain", async function () {

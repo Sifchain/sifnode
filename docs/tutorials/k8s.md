@@ -2,8 +2,11 @@
 
 #### Demo Videos
 
+1. https://youtu.be/dlPLIivwRGg
+2. https://youtu.be/ff9CZkmHo3o
+3. https://youtu.be/iJjXGXWMfsk
 
-#### Dependencies:
+#### Prerequisites / Dependencies:
 
 - Clone the repository (`git clone git@github.com:Sifchain/sifnode.git`)
 - [Ruby 2.7.x](https://www.ruby-lang.org/en/documentation/installation)
@@ -38,8 +41,8 @@ where:
 
 |Param|Description|
 |-----|----------|
-|<chainID>|The Chain ID of the network (e.g.: merry-go-round).|
-|<provider>|The cloud provider to use (currently only AWS is supported).|
+|`<chainID>`|The Chain ID of the network (e.g.: merry-go-round).|
+|`<provider>`|The cloud provider to use (currently only AWS is supported).|
 
 3. Once complete, you'll notice that several Terraform files/folders have been setup inside of the `.live` directory. We recommend you leave the defaults as-is, but for those that have experience with Terraform, feel free to adjust the configuration as you see fit.
 
@@ -58,10 +61,10 @@ rake "cluster:deploy[merry-go-round,aws]"
 5. Once complete, you should see your cluster on your AWS account. You can also check using `kubectl`:
 
 ```
-kubectl get pods --all-namespaces --kubeconfig ./.live/sifchain-aws-monkey-bars/kubeconfig_sifchain-aws-monkey-bars
+kubectl get pods --all-namespaces --kubeconfig ./.live/sifchain-aws-merry-go-round/kubeconfig_sifchain-aws-merry-go-round
 ```
 
-## Deploy a new cluster
+## Deploy a new node
 
 1. Generate a new mnemonic key for your node. This key is what your node will use to eventually sign transactions/blocks on the network.
 
@@ -79,7 +82,7 @@ where:
 
 |Param|Description|
 |-----|----------|
-|<moniker>|The moniker or name of your node as you want it to appear on the network.|
+|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
 
 e.g.:
 
@@ -103,25 +106,25 @@ where:
 
 |Param|Description|
 |-----|----------|
-|<chainID>|The Chain ID of the network (e.g.: merry-go-round).|
-|<provider>|The cloud provider to use (currently only AWS is supported).|
-|<namespace>|The Kubernetes namespace to use (e.g.: sifnode).|
-|<image>|The image to pull down from Docker Hub (e.g.: sifchain/sifnoded).|
-|<image tag>|The image tag to use (e.g.: merry-go-round).|
-|<moniker>|The moniker or name of your node as you want it to appear on the network.|
-|<peer address>|The address of the peer to connect to.|
-|<genesis URL>|The URL of genesis file for the network.|
+|`<chainID>`|The Chain ID of the network (e.g.: merry-go-round).|
+|`<provider>`|The cloud provider to use (currently only AWS is supported).|
+|`<namespace>`|The Kubernetes namespace to use (e.g.: sifnode).|
+|`<image>`|The image to pull down from Docker Hub (e.g.: sifchain/sifnoded).|
+|`<image tag>`|The image tag to use (e.g.: merry-go-round).|
+|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
+|`<peer address>`|The address of the peer to connect to.|
+|`<genesis URL>`|The URL of genesis file for the network.|
 
 e.g.:
 
 ```
-rake "cluster:sifnode:deploy:peer[merry-go-round,aws,sifnode,sifchain/sifnoded,merry-go-round,my-node,'my mnemonic',bc8bc2ff0749a247e34a99b377b587fbf950057a@100.21.251.71:26656,http://100.21.251.71:26657/genesis]"
+rake "cluster:sifnode:deploy:peer[merry-go-round,aws,sifnode,sifchain/sifnoded,merry-go-round-1,my-node,'my mnemonic',ff0dd55dffa0e67fe21e2c85c80b0c2894bf2586@52.89.19.109:26656,http://52.89.19.109:26657/genesis]"
 ```
 
 5. Once deployed, check the status of the pods:
 
 ```
-kubectl get pods -n sifnode --kubeconfig ./.live/sifchain-aws-monkey-bars/kubeconfig_sifchain-aws-monkey-bars
+kubectl get pods -n sifnode --kubeconfig ./.live/sifchain-aws-merry-go-round/kubeconfig_sifchain-aws-merry-go-round
 ```
 
 and you should see something that resembles the following:
@@ -133,6 +136,18 @@ sifnode-cli-67bcfd4b54-mhdjx   0/1     Running    0          10s
 ```
 
 _It may take several minutes for your node to become active._
+
+6. Once your node is active (Status of "Running"), you can view it's sync status by looking at the logs. Run:
+
+```
+kubectl -n sifnode logs <pod> --kubeconfig ./.live/sifchain-aws-merry-go-round/kubeconfig_sifchain-aws-merry-go-round
+```
+
+e.g.:
+
+```
+kubectl -n sifnode logs sifnode-65fbd7798f-6wqhb --kubeconfig ./.live/sifchain-aws-merry-go-round/kubeconfig_sifchain-aws-merry-go-round
+```
 
 ## Stake to become a validator
 
@@ -162,11 +177,17 @@ where:
 
 |Param|Description|
 |-----|----------|
-|<chainID>|The Chain ID of the network (e.g.: merry-go-round).|
-|<moniker>|The moniker or name of your node as you want it to appear on the network.|
-|<amount>|The amount to stake, including the denomination (e.g.: 100000000rowan).|
-|<public key>|The public key of your validator (you got this in the previous step).|
-|<node RPC address>|The address to broadcast the transaction to (e.g.: tcp://<node IP address>:26657).|
+|`<chainID>`|The Chain ID of the network (e.g.: merry-go-round).|
+|`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
+|`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan).|
+|`<public key>`|The public key of your validator (you got this in the previous step).|
+|`<node RPC address>`|The address to broadcast the transaction to (e.g.: tcp://<node IP address>:26657).|
+
+e.g.:
+
+```
+rake "validator:stake[merry-go-round,my-node,10000000rowan,<public key>,tcp://52.89.19.109:26657]"
+```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
 
@@ -177,5 +198,5 @@ sifnodecli q tendermint-validator-set --node <node RPC address> --trust-node
 e.g.:
 
 ```
-sifnodecli q tendermint-validator-set --node tcp://100.21.251.71:26657 --trust-node
+sifnodecli q tendermint-validator-set --node tcp://52.89.19.109:26657 --trust-node
 ```

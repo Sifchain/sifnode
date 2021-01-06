@@ -2,6 +2,7 @@
 export * from "./EthereumService/utils/getMetamaskProvider";
 
 import ethereumService, { EthereumServiceContext } from "./EthereumService";
+import ethbridgeService, { EthbridgeServiceContext } from "./EthbridgeService";
 import sifService, { SifServiceContext } from "./SifService";
 import clpService, { ClpServiceContext } from "./ClpService";
 
@@ -14,7 +15,8 @@ export type WithApi<T extends keyof Api = keyof Api> = {
 export type ApiContext = EthereumServiceContext &
   SifServiceContext &
   ClpServiceContext &
-  Omit<ClpServiceContext, "getPools">; // add contexts from other APIs
+  EthbridgeServiceContext &
+  ClpServiceContext; // add contexts from other APIs
 
 // TODO - Conditional load or build-time tree shake
 import localnetconfig from "../config.localnet.json";
@@ -77,13 +79,13 @@ export function createApi(
 ) {
   const context = getConfig(config, sifchainAssetTag, ethereumAssetTag);
   const EthereumService = ethereumService(context);
-
+  const EthbridgeService = ethbridgeService(context);
   const SifService = sifService(context);
   const ClpService = clpService(context);
   return {
     ClpService,
     EthereumService,
-
     SifService,
+    EthbridgeService,
   };
 }

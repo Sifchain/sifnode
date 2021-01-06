@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.16;
 
 import "./CosmosBank.sol";
 import "./EthereumBank.sol";
@@ -99,12 +99,6 @@ contract BridgeBank is BankStorage,
     }
 
     /*
-     * @dev: Fallback function allows operator to send funds to the bank directly
-     *       This feature is used for testing and is available at the operator's own risk.
-     */
-    function() external payable onlyOperator {}
-
-    /*
      * @dev: function to validate if a sif address has a correct prefix
      */
     function verifySifPrefix(bytes memory _sifAddress) public pure returns (bool) {
@@ -177,6 +171,38 @@ contract BridgeBank is BankStorage,
         return setTokenInEthWhiteList(_token, _inList);
     }
 
+    // Method that is only for doing the setting of the mapping
+    // private so that it is not inheritable or able to be called
+    // by anyone other than this contract
+    function _updateTokenLimits(address _token, uint256 _amount) private {
+        string memory symbol = _token == address(0) ? "ETH" : BridgeToken(_token).symbol();
+        maxTokenAmount[symbol] = _amount;
+    }
+
+    function updateTokenLockBurnLimit(address _token, uint256 _amount)
+        public
+        onlyOperator
+        returns (bool)
+    {
+        _updateTokenLimits(_token, _amount);
+        return true;
+    }
+
+    function bulkWhitelistUpdateLimits(
+        address[] calldata tokenAddresses,
+        uint256[] calldata tokenLimit
+        ) external
+        onlyOperator
+        returns (bool)
+    {
+        require(tokenAddresses.length == tokenLimit.length, "!same length");
+        for (uint256 i = 0; i < tokenAddresses.length; i++) {
+            _updateTokenLimits(tokenAddresses[i], tokenLimit[i]);
+            setTokenInEthWhiteList(tokenAddresses[i], true);
+        }
+        return true;
+    }
+
     /*
      * @dev: Mints new BankTokens
      *
@@ -215,8 +241,13 @@ contract BridgeBank is BankStorage,
         address _token,
         uint256 _amount
     ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) {
-        BridgeToken(_token).burnFrom(msg.sender, _amount);
         string memory symbol = BridgeToken(_token).symbol();
+
+        if (_amount > maxTokenAmount[symbol]) {
+            revert("Amount being transferred is over the limit for this token");
+        }
+
+        BridgeToken(_token).burnFrom(msg.sender, _amount);
         burnFunds(msg.sender, _recipient, _token, symbol, _amount);
     }
 
@@ -253,11 +284,12 @@ contract BridgeBank is BankStorage,
                 address(this),
                 _amount
             );
-  
-            // Set symbol to the ERC20 token's symbol
             symbol = BridgeToken(_token).symbol();
         }
 
+        if (_amount > maxTokenAmount[symbol]) {
+            revert("Amount being transferred is over the limit");
+        }
         lockFunds(msg.sender, _recipient, _token, symbol, _amount);
     }
 
@@ -283,8 +315,10 @@ contract BridgeBank is BankStorage,
         // Confirm that the bank holds sufficient balances to complete the unlock
         address tokenAddress = lockedTokenList[_symbol];
         if (tokenAddress == address(0)) {
+            // uint256 contractBalance = ;
+            // revert("no error before 299 for eth unlock");
             require(
-                address(this).balance >= _amount,
+                ((address(this)).balance) >= _amount,
                 "Insufficient ethereum balance for delivery."
             );
         } else {

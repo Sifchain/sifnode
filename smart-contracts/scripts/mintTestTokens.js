@@ -23,23 +23,6 @@ module.exports = async () => {
   // Mint transaction parameters
   const TOKEN_AMOUNT = (1).toString().padEnd(20, "0")
     console.log({TOKEN_AMOUNT})
-  /*******************************************
-   *** Command line argument error checking
-   ***
-   *** truffle exec lacks support for dynamic command line arguments:
-   *** https://github.com/trufflesuite/truffle/issues/889#issuecomment-522581580
-   ******************************************/
-  // if (NETWORK_ROPSTEN) {
-  //   return console.error(
-  //     "Error: token minting on Ropsten network is not supported at this time"
-  //   );
-  // } else {
-  //   if (NUM_ARGS !== 0) {
-  //     return console.error(
-  //       "Error: custom parameters for token minting are not supported at this time."
-  //     );
-  //   }
-  // }
 
   /*******************************************
    *** Web3 provider
@@ -47,7 +30,7 @@ module.exports = async () => {
   let provider;
   if (NETWORK_ROPSTEN) {
     provider = new HDWalletProvider(
-      process.env.MNEMONIC,
+      process.env.ETHEREUM_PRIVATE_KEY,
       "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
     );
   } else {

@@ -4,7 +4,7 @@
       "symbol": "erowan",
       "decimals": 18,
       "name": "Rowan",
-      "address": "",
+      "address": "0x0d8cc4b8d15D4c3eF1d70af0071376fb26B5669b",
       "network": "ethereum"
     },
     {
@@ -17,14 +17,14 @@
       "symbol": "atk",
       "decimals": 6,
       "name": "Apple Coin",
-      "address": "0xe17ea03FDb6cc222eA18b7FDeB81B67eB904F67b",
+      "address": "0x3d49d1eF2adE060a33c6E6Aa213513A7EE9a6241",
       "network": "ethereum"
     },
     {
       "symbol": "btk",
       "decimals": 6,
       "name": "Banana Coin",
-      "address": "0x88E775C90031CedC975B7568D4fDCf4E3Dd06C9e",
+      "address": "0x2a504B5e7eC284ACa5b6f49716611237239F0b97",
       "network": "ethereum"
     }
   ]

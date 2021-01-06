@@ -14,6 +14,7 @@ const {
   BN,
   expectRevert, // Assertions for transactions that should fail
 } = require('@openzeppelin/test-helpers');
+const { expect } = require('chai');
 
 require("chai")
   .use(require("chai-as-promised"))
@@ -210,6 +211,88 @@ contract("BridgeBank", function (accounts) {
         ),
         "Consensus threshold must be positive."
       );
+    });
+  });
+
+  describe("Bulk whitelist and limit add", function () {
+    before(async function () {
+      // this test needs to create a new token contract that will
+      // effectively be able to be treated as if it was a cosmos native asset
+      // even though it was created on top of ethereum
+
+      // Deploy Valset contract
+      this.initialValidators = [userOne, userTwo, userThree];
+      this.initialPowers = [33, 33, 33];
+      this.valset = await deployProxy(Valset,
+        [
+          operator,
+          this.initialValidators,
+          this.initialPowers
+        ],
+        {unsafeAllowCustomTypes: true}
+      );
+
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address], {unsafeAllowCustomTypes: true});
+
+      // Deploy Oracle contract
+      this.oracle = await deployProxy(Oracle,
+        [
+          operator,
+          this.valset.address,
+          this.cosmosBridge.address,
+          consensusThreshold
+        ],
+        {unsafeAllowCustomTypes: true}
+      );
+
+      // Deploy BridgeBank contract
+      this.bridgeBank = await deployProxy(BridgeBank,
+        [
+          operator,
+          this.oracle.address,
+          this.cosmosBridge.address,
+          operator
+        ],
+        {unsafeAllowCustomTypes: true}
+      );
+
+      // Set oracle and bridge bank for the cosmos bridge
+      await this.cosmosBridge.setOracle(this.oracle.address, {from: operator})
+      await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {from: operator})
+    });
+
+    it("should not allow a non operator to call the function", async function () {
+      await expectRevert(
+        this.bridgeBank.bulkWhitelistUpdateLimits([], [], {from: userOne}),
+        "Must be BridgeBank operator."
+      );
+    });
+
+    it("should not allow arrays of different sizes", async function () {
+      await expectRevert(
+        this.bridgeBank.bulkWhitelistUpdateLimits([], [1], {from: operator}),
+        "!same length"
+      );
+    });
+
+    it("Should allow bulk whitelisting", async function () {
+      const addresses = [];
+      const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+      // create tokens and address array
+      for (let i = 0; i < 10; i++) {
+        const bridgeToken = await BridgeToken.new("eRowan" + i.toString());
+        addresses.push(bridgeToken.address);
+      }
+
+      await this.bridgeBank.bulkWhitelistUpdateLimits(addresses, nums, {from: operator});
+
+      // query each token in the array and make sure that the limit is correct
+      for (let i = 0; i < 10; i++) {
+        const limit = Number(await this.bridgeBank.maxTokenAmount("eRowan" + i.toString()));
+        expect(limit).to.be.equal(nums[i]);
+      }
     });
   });
 });

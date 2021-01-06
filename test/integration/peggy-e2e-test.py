@@ -5,7 +5,7 @@ import os
 
 from test_utilities import get_shell_output, SIF_ETH, burn_peggy_coin, ETHEREUM_ETH, owner_addr, moniker, \
     get_sifchain_addr_balance, wait_for_sifchain_addr_balance, advance_n_ethereum_blocks, n_wait_blocks, \
-    cd_smart_contracts_dir, send_eth_lock
+    cd_smart_contracts_dir, send_eth_lock, amount_in_wei
 from test_utilities import print_error_message, get_user_account, get_sifchain_balance, network_password, \
     bridge_bank_address, \
     smart_contracts_dir, wait_for_sifchain_balance, wait_for_balance
@@ -19,11 +19,7 @@ ROWAN_AMOUNT = 5
 CLAIMLOCK = "lock"
 CLAIMBURN = "burn"
 
-ETH_OPERATOR = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57"
-ETH_ACCOUNT = os.environ.get("USER1ADDR")
-user1EthAddress = "0x4Bbb1BB825003eC701545524AaBDDCa1B970502C"
 operatorAddress = "0xf17f52151EbEF6C7334FAD080c5704D77216b732"
-ROWAN_CONTRACT = "0x409Ba3dd291bb5D48D5B4404F5EFa207441F6CbA"
 
 def get_eth_balance(account, symbol):
     command_line = cd_smart_contracts_dir + "yarn peggy:getTokenBalance {} {}".format(
@@ -140,6 +136,23 @@ def test_balance_does_not_change_without_manual_block_advance():
     print(f"final balance is {get_sifchain_balance(USER, SIF_ETH, network_password)}")
 
 
+def test_case_over_limit():
+    print(
+        "########## Test Over Limit: send more eth than allowed"
+    )
+    received_exception = False
+    try:
+        send_eth_lock(USER, ETHEREUM_ETH, amount_in_wei(50))
+    except:
+        received_exception = True
+
+    if not received_exception:
+        raise Exception("Should have received exception sending amount over limit")
+
+    print("########## Test Over Limit Over ##########")
+
+
 test_case_1()
 test_case_2()
+test_case_over_limit()
 test_balance_does_not_change_without_manual_block_advance()

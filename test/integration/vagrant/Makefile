@@ -1,13 +1,21 @@
 # default to running tests
 
+SHELL=/bin/bash -o pipefail
+
 # where to mount the sifnode tree
 BASEDIR=/sifnode
+
+in_progress_marker=data/tests-in-progress.txt
+failure_marker=data/tests_failed.txt
 
 .PHONY: all
 all: 
 	rm -rf data/ ../ganachedb
-	-$(MAKE) test
+	$(MAKE) data
+	touch ${in_progress_marker}
+	if ! $(MAKE) test; then touch ${failure_marker}; fi
 	$(MAKE) pulldata
+	if [ -f ${failure_marker} ]; then echo tests failed; exit 1; else touch data/tests_passed; fi
 
 .depend data: 
 	mkdir -p $@
@@ -24,9 +32,21 @@ all:
 	vagrant ssh -c "docker rmi -f integration_sifnode1:latest"
 	touch $@
 
+.PHONY: integrationenv
+integrationenv: .depend/setup .depend/dockerrmi data
+	vagrant ssh -c "cd ${BASEDIR} && bash -x test/integration/start-integration-env.sh" 2>&1 | tee data/start-integration-env.txt
+
+.PHONY: test-whitelistedvalidators
+test-whitelistedvalidators: integrationenv
+	vagrant ssh -c "cd ${BASEDIR} && bash -x test/integration/execute_integration_tests_whitelisted_validators.sh" 2>&1 | tee data/$@.sh
+
+.PHONY: test-main
+test-main: integrationenv
+	vagrant ssh -c "cd ${BASEDIR} && bash -x test/integration/execute_integration_tests_main.sh" 2>&1 | tee data/$@.sh
+
 .PHONY: test
-test: .depend/setup .depend/dockerrmi data
-	vagrant ssh -c "cd ${BASEDIR} && bash -x test/integration/start-integration-env.sh" 2>&1 | tee data/testrun.sh
+test: test-main test-whitelistedvalidators
+	rm ${in_progress_marker}
 
 # convenience targets
 
@@ -39,17 +59,13 @@ clean:
 	vagrant destroy -f
 	rm -rf .depend
 
+manytests::
+	while $(MAKE); do true; done
+
 pulldata: data
-	@vagrant ssh -c "docker exec integration_sifnode1_1 cat /tmp/testrun.sh" > data/clicmds.txt
-	@vagrant ssh -c "docker logs integration_sifnode1_1" > data/integrationlog.txt
-	@vagrant ssh -c "docker logs genesis_ganachecli_1" > data/ganachelog.txt
-	@vagrant ssh -c "docker logs genesis_ganachecli_1" > data/ganachelog.txt
-	@vagrant ssh -c "cat /sifnode/smart-contracts/.env" > data/env
-	@vagrant ssh -c "cat /sifnode/test/integration/vagrantenv.sh" > data/vagrantenv.sh
-	@vagrant ssh -c "touch /tmp/bridgebank.txt && cat /tmp/bridgebank.txt" > data/bridgebank.txt
-	@vagrant ssh -c "cd /sifnode/smart-contracts && truffle networks" > data/trufflenetworks.txt
-	tar cfv datafiles.tar data/*
-	cp datafiles.tar datafiles.$(shell date +%m-%d-%H-%M-%S).tar
+	vagrant ssh -c "bash /sifnode/test/integration/assemble_data.sh"
+	tar cfz datafiles.tar.gz data/*
+	cp datafiles.tar.gz datafiles.$(shell date +%m-%d-%H-%M-%S).tar.gz
 	
 cmds:
 	@vagrant ssh -c "docker exec integration_sifnode1_1 cat /tmp/testrun.sh"

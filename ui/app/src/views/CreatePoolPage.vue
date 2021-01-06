@@ -1,10 +1,15 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
+import { useRouter } from "vue-router";
 import Layout from "@/components/layout/Layout.vue";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
-import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
+import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
+import ModalView from "@/components/shared/ModalView.vue";
+import ConfirmationDialog, {
+  ConfirmState,
+} from "@/components/confirmationDialog/PoolConfirmationDialog.vue";
 import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
@@ -19,12 +24,16 @@ export default defineComponent({
     Layout,
     Modal,
     CurrencyPairPanel,
-    SelectTokenDialog,
+    SelectTokenDialogSif,
     PriceCalculation,
+    ConfirmationDialog,
+    ModalView,
   },
   setup() {
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
+    const transactionState = ref<ConfirmState>("selecting");
+    const router = useRouter();
 
     const {
       fromSymbol,
@@ -55,6 +64,7 @@ export default defineComponent({
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
+      shareOfPool,
       shareOfPoolPercent,
       fromFieldAmount,
       toFieldAmount,
@@ -70,6 +80,39 @@ export default defineComponent({
       poolFinder,
     });
 
+    function handleNextStepClicked() {
+      if (!fromFieldAmount.value)
+        throw new Error("from field amount is not defined");
+      if (!toFieldAmount.value)
+        throw new Error("to field amount is not defined");
+
+      transactionState.value = "confirming";
+    }
+
+    async function handleAskConfirmClicked() {
+      if (!fromFieldAmount.value)
+        throw new Error("Token A field amount is not defined");
+      if (!toFieldAmount.value)
+        throw new Error("Token B field amount is not defined");
+
+      transactionState.value = "signing";
+      await actions.clp.addLiquidity(
+        toFieldAmount.value,
+        fromFieldAmount.value
+      );
+      transactionState.value = "confirmed";
+
+      clearAmounts();
+    }
+
+    function requestTransactionModalClose() {
+      if (transactionState.value === "confirmed") {
+        router.push("/pool");
+      } else {
+        transactionState.value = "selecting";
+      }
+    }
+
     return {
       fromAmount,
       fromSymbol,
@@ -77,7 +120,6 @@ export default defineComponent({
       toAmount,
       toSymbol,
 
-      priceMessage,
       connected,
       aPerBRatioMessage,
       bPerARatioMessage,
@@ -119,22 +161,21 @@ export default defineComponent({
         }
         selectedField.value = null;
       },
-      async handleNextStepClicked() {
-        if (!fromFieldAmount.value)
-          throw new Error("Token A field amount is not defined");
-        if (!toFieldAmount.value)
-          throw new Error("Token B field amount is not defined");
 
-        await actions.clp.addLiquidity(
-          toFieldAmount.value,
-          fromFieldAmount.value
+      handleNextStepClicked,
+
+      handleAskConfirmClicked,
+
+      requestTransactionModalClose,
+
+      transactionState,
+
+      transactionModalOpen: computed(() => {
+        return ["confirming", "signing", "confirmed"].includes(
+          transactionState.value
         );
+      }),
 
-        // TODO Tidy up transaction
-        alert("Liquidity added");
-
-        clearAmounts();
-      },
       handleBlur() {
         selectedField.value = null;
       },
@@ -144,6 +185,14 @@ export default defineComponent({
       handleToFocused() {
         selectedField.value = "to";
       },
+      handleFromMaxClicked() {
+        selectedField.value = "from";
+        const accountBalance = balances.value.find(
+          (balance) => balance.asset.symbol === fromSymbol.value
+        );
+        if (!accountBalance) return;
+        fromAmount.value = accountBalance.subtract("1").toFixed(1);
+      },
       shareOfPoolPercent,
       connectedText,
     };
@@ -152,7 +201,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" backLink="/pool">
+  <Layout class="pool" backLink="/pool" title="Add Liquidity">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel
@@ -162,14 +211,17 @@ export default defineComponent({
           @fromblur="handleBlur"
           @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
           :fromSymbolSelectable="connected"
+          :fromMax="true"
+          @frommaxclicked="handleFromMaxClicked"
           v-model:toAmount="toAmount"
           v-model:toSymbol="toSymbol"
           @tofocus="handleToFocused"
           @toblur="handleBlur"
           toSymbolFixed
+          canSwapIcon="plus"
       /></template>
       <template v-slot:default="{ requestClose }">
-        <SelectTokenDialog
+        <SelectTokenDialogSif
           :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
           @tokenselected="requestClose"
         />
@@ -177,16 +229,83 @@ export default defineComponent({
     </Modal>
 
     <PriceCalculation>
-      <div>{{ aPerBRatioMessage }}</div>
-      <div>{{ bPerARatioMessage }}</div>
-      <div>{{ shareOfPoolPercent }}</div>
+      <div class="pool-share">
+        <h4 class="pool-share-title text--left">Prices and pool share</h4>
+        <div class="pool-share-details" v-if="fromSymbol && aPerBRatioMessage">
+          <div>
+            <span class="number">{{ aPerBRatioMessage }}</span
+            ><br />
+            <span
+              >{{ fromSymbol.toUpperCase() }} per
+              {{ toSymbol.toUpperCase() }}</span
+            >
+          </div>
+          <div>
+            <span class="number">{{ bPerARatioMessage }}</span
+            ><br />
+            <span
+              >{{ toSymbol.toUpperCase() }} per
+              {{ fromSymbol.toUpperCase() }}</span
+            >
+          </div>
+          <div>
+            <span class="number">{{ shareOfPoolPercent }}</span
+            ><br />Share of Pool
+          </div>
+        </div>
+      </div>
     </PriceCalculation>
     <ActionsPanel
       @nextstepclick="handleNextStepClicked"
       :nextStepAllowed="nextStepAllowed"
       :nextStepMessage="nextStepMessage"
     />
+    <ModalView
+      :requestClose="requestTransactionModalClose"
+      :isOpen="transactionModalOpen"
+      ><ConfirmationDialog
+        @confirmswap="handleAskConfirmClicked"
+        :state="transactionState"
+        :requestClose="requestTransactionModalClose"
+        :fromToken="fromSymbol"
+        :fromAmount="fromAmount"
+        :toAmount="toAmount"
+        :toToken="toSymbol"
+        :aPerB="aPerBRatioMessage"
+        :bPerA="bPerARatioMessage"
+        :shareOfPool="shareOfPoolPercent"
+    /></ModalView>
   </Layout>
 </template>
 
+<style lang="scss">
+.pool-share {
+  font-size: 12px;
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 
+  &-title {
+    text-align: left;
+    padding: 4px 16px;
+    border-bottom: $divider;
+  }
+
+  &-details {
+    display: flex;
+    padding: 4px 16px;
+    flex-grow: 1;
+    justify-content: space-between;
+    align-items: center;
+
+    div {
+      flex: 33%;
+    }
+  }
+  .number {
+    font-size: 16px;
+    font-weight: bold;
+  }
+}
+</style>
