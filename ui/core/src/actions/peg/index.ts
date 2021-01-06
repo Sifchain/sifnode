@@ -4,30 +4,35 @@ import notify from "../../api/utils/Notifications";
 
 export default ({
   api,
+  store,
 }: ActionContext<
   "SifService" | "EthbridgeService" | "EthereumService",
-  "asset"
+  "wallet"
 >) => {
   const actions = {
     getSifTokens() {
       return api.SifService.getSupportedTokens();
     },
+
     getEthTokens() {
       return api.EthereumService.getSupportedTokens();
     },
-    burn(ethereumRecipient: string, assetAmount: AssetAmount) {
-      // Some random string for now
-      // const txHash = "abcd1234";
-      // Create an emitter
-      // const e = createPegTxEventEmitter(txHash);
-      // Direct that emitter through a mock sequence
-      // return mockBurnSequence(e);
+
+    async burn(assetAmount: AssetAmount) {
+      const tx = await api.EthbridgeService.burn({
+        assetAmount,
+        ethereumRecipient: store.wallet.eth.address,
+        fromAddress: store.wallet.sif.address,
+      });
+
+      return await api.SifService.signAndBroadcast(tx.value.msg);
     },
-    async lock(cosmosRecipient: string, assetAmount: AssetAmount) {
+
+    async lock(assetAmount: AssetAmount) {
       // listen for 50 confirmations
       // Eventually this should be set on ebrelayer
       // to centralize the business logic
-      api.EthbridgeService.lock(cosmosRecipient, assetAmount, 50)
+      api.EthbridgeService.lock(store.wallet.sif.address, assetAmount, 50)
         .onError((err) => {
           const payload: any = err.payload;
           notify({ type: "error", message: payload.message ?? err });

@@ -233,6 +233,7 @@ export default function createSifService({
 
         const msgArr = Array.isArray(msg) ? msg : [msg];
 
+        console.log({ signAndBroadcast: { msgArr, fee, memo } });
         const txHash = await client.signAndBroadcast(msgArr, fee, memo);
 
         if (isBroadcastTxFailure(txHash)) {

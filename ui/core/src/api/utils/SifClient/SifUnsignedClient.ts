@@ -12,8 +12,12 @@ import {
 } from "./TendermintSocketSubscriber";
 
 import { ClpExtension, setupClpExtension } from "./x/clp";
+import { EthbridgeExtension, setupEthbridgeExtension } from "./x/ethbridge";
 
-type CustomLcdClient = LcdClient & AuthExtension & ClpExtension;
+type CustomLcdClient = LcdClient &
+  AuthExtension &
+  ClpExtension &
+  EthbridgeExtension;
 
 function createLcdClient(
   apiUrl: string,
@@ -22,15 +26,19 @@ function createLcdClient(
   return LcdClient.withExtensions(
     { apiUrl: apiUrl, broadcastMode: broadcastMode },
     setupAuthExtension,
-    setupClpExtension
+    setupClpExtension,
+    setupEthbridgeExtension
   );
 }
 
 type IClpApi = ClpExtension["clp"];
+type IEthbridgeApi = EthbridgeExtension["ethbridge"];
 type HandlerFn<T> = (a: T) => void;
-export class SifUnSignedClient extends CosmosClient implements IClpApi {
+
+export class SifUnSignedClient extends CosmosClient
+  implements IClpApi, IEthbridgeApi {
   protected readonly lcdClient: CustomLcdClient;
-  private subscriber: TendermintSocketSubscriber;
+  private subscriber: TendermintSocketSubscriber | undefined;
   constructor(
     apiUrl: string,
     wsUrl: string = "ws://localhost:26657/websocket",
@@ -46,9 +54,12 @@ export class SifUnSignedClient extends CosmosClient implements IClpApi {
     this.getLiquidityProvider = this.lcdClient.clp.getLiquidityProvider;
     this.removeLiquidity = this.lcdClient.clp.removeLiquidity;
     this.getPool = this.lcdClient.clp.getPool;
-    this.subscriber = createTendermintSocketSubscriber(wsUrl);
+    this.burn = this.lcdClient.ethbridge.burn;
+
+    if (wsUrl) this.subscriber = createTendermintSocketSubscriber(wsUrl);
   }
 
+  // Clp Extension
   swap: IClpApi["swap"];
   getPools: IClpApi["getPools"];
   getAssets: IClpApi["getAssets"];
@@ -58,15 +69,20 @@ export class SifUnSignedClient extends CosmosClient implements IClpApi {
   removeLiquidity: IClpApi["removeLiquidity"];
   getPool: IClpApi["getPool"];
 
+  // Ethbridge Extension
+  burn: IEthbridgeApi["burn"];
+
+  // Custom event handlers
   onNewBlock<T>(handler: HandlerFn<T>) {
-    this.subscriber.on("NewBlock", handler);
+    this.subscriber?.on("NewBlock", handler);
   }
 
   onTx<T>(handler: HandlerFn<T>) {
-    this.subscriber.on("Tx", handler);
+    console.log("subscribing for Tx", this.subscriber);
+    this.subscriber?.on("Tx", handler);
   }
 
   onSocketError<T>(handler: HandlerFn<T>) {
-    this.subscriber.on("error", handler);
+    this.subscriber?.on("error", handler);
   }
 }

@@ -5,18 +5,10 @@ import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { Asset, AssetAmount } from "../../entities";
 import JSBI from "jsbi";
 import B from "../../entities/utils/B";
-import { getTestingTokens } from "../../test/utils/getTestingToken";
+import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
 
 // ^ NOTE: we have had issues where truffle deploys contracts that cost a different amount of gas in CI versus locally.
 // These test have been altered to be less deterministic as a consequence
-
-function getBalance(balances: AssetAmount[], symbol: string) {
-  const bal = balances.find(
-    ({ asset }) => asset.symbol.toUpperCase() === symbol.toUpperCase()
-  );
-  if (!bal) throw new Error("Symbol not found in balances");
-  return bal;
-}
 
 describe("EthereumService", () => {
   let EthereumService: ReturnType<typeof createEthereumService>;
