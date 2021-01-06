@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import Layout from "@/components/layout/Layout.vue";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
@@ -34,6 +34,7 @@ export default defineComponent({
     const selectedField = ref<"from" | "to" | null>(null);
     const transactionState = ref<ConfirmState>("selecting");
     const router = useRouter();
+    const route = useRoute();
 
     const {
       fromSymbol,
@@ -43,6 +44,7 @@ export default defineComponent({
     } = useCurrencyFieldState();
 
     toSymbol.value = "rowan";
+    fromSymbol.value = route.params.externalAsset ? route.params.externalAsset.toString() : null;
 
     const priceMessage = ref("");
 
