@@ -1,5 +1,9 @@
 <template>
-  <router-link class="link" :to="to" :class="{'disabled': disabled, 'router-link-active': subPageIsActive(to)}">
+  <router-link
+    class="link"
+    :to="to"
+    :class="{ disabled: disabled, 'router-link-active': subPageIsActive(to) }"
+  >
     <div class="icon-button">
       <div class="icon" :class="colorClass"></div>
       <Icon class="icon-svg" :icon="icon" />
@@ -31,25 +35,26 @@ export default defineComponent({
     },
     color: {
       type: String,
-      default: 'blue'
-    }
+      default: "blue",
+    },
   },
   data() {
     return {
       colorClass: {
-        'green': this.color === 'green',
-        'blue': this.color === 'blue'
-      }
-    }
+        green: this.color === "green",
+        blue: this.color === "blue",
+        pink: this.color === "pink",
+      },
+    };
   },
   methods: {
-    subPageIsActive(input:string) {
-      const paths = [input]
-      return paths.some(path => {
-        return this.$route.path.indexOf(path) === 0 // current path starts with this path string
-      })
-    }
-  }
+    subPageIsActive(input: string) {
+      const paths = [input];
+      return paths.some((path) => {
+        return this.$route.path.indexOf(path) === 0; // current path starts with this path string
+      });
+    },
+  },
 });
 </script>
 
@@ -146,10 +151,19 @@ export default defineComponent({
     .icon.green {
       border-color: $c_green;
       &::after {
-        background: linear-gradient(to bottom, #A0DD2B 0%,#A5DE30 100%);
+        background: linear-gradient(to bottom, #a0dd2b 0%, #a5de30 100%);
       }
       &::before {
-        background: linear-gradient(to bottom, #8FD817 0%, #B1E245 100%);
+        background: linear-gradient(to bottom, #8fd817 0%, #b1e245 100%);
+      }
+    }
+    .icon.pink {
+      border-color: $c_pink;
+      &::after {
+        background: linear-gradient(to bottom, #f09680 0%, #f1a3ac 100%);
+      }
+      &::before {
+        background: linear-gradient(to bottom, #f3afb7 0%, #f1a4ae 100%);
       }
     }
   }
