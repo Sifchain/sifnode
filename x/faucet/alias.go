@@ -13,7 +13,6 @@ const (
 	DefaultParamspace = types.DefaultParamspace
 )
 
-//TODO add required alias
 var (
 	NewKeeper              = keeper.NewKeeper
 	NewQuerier             = keeper.NewQuerier

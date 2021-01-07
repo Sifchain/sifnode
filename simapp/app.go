@@ -153,14 +153,14 @@ func NewSimApp(
 	notBondedPool := supply.NewEmptyModuleAccount(staking.NotBondedPoolName, supply.Burner, supply.Staking)
 	bondPool := supply.NewEmptyModuleAccount(staking.BondedPoolName, supply.Burner, supply.Staking)
 	distrAcc := supply.NewEmptyModuleAccount(clp.ModuleName)
-	//faucetAcc := supply.NewEmptyModuleAccount(faucet.ModuleName)
+	faucetAcc := supply.NewEmptyModuleAccount(faucet.ModuleName)
 
 	blacklistedAddrs := make(map[string]bool)
 	blacklistedAddrs[feeCollectorAcc.GetAddress().String()] = true
 	blacklistedAddrs[notBondedPool.GetAddress().String()] = true
 	blacklistedAddrs[bondPool.GetAddress().String()] = true
 	blacklistedAddrs[distrAcc.GetAddress().String()] = true
-	//blacklistedAddrs[faucetAcc.GetAddress().String()] = true
+	blacklistedAddrs[faucetAcc.GetAddress().String()] = true
 
 	// add keepers
 	app.AccountKeeper = auth.NewAccountKeeper(
