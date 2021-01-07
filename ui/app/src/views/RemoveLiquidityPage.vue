@@ -2,7 +2,7 @@
 import { defineComponent, ref } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
-import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
+import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
 import { Asset, PoolState, useRemoveLiquidityCalculator } from "ui-core";
 import { LiquidityProvider } from "ui-core";
@@ -21,7 +21,7 @@ export default defineComponent({
     AssetItem,
     Layout,
     Modal,
-    SelectTokenDialog,
+    SelectTokenDialogSif,
     ActionsPanel,
     SifButton,
     Caret,
@@ -188,7 +188,7 @@ export default defineComponent({
             </SifButton>
           </template>
           <template v-slot:default="{ requestClose }">
-            <SelectTokenDialog
+            <SelectTokenDialogSif
               :selectedTokens="[externalAssetSymbol].filter(Boolean)"
               @tokenselected="requestClose"
             />

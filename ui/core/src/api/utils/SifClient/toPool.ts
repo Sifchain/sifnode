@@ -1,5 +1,4 @@
-import { ROWAN } from "../../constants";
-import { Asset, AssetAmount, Coin, Fraction, Pool } from "../../entities";
+import { Asset, AssetAmount, Coin, Fraction, Pool } from "../../../entities";
 import { RawPool } from "./x/clp";
 
 export const toPool = (nativeAsset: Coin) => (poolData: RawPool): Pool => {

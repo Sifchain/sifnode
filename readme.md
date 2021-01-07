@@ -79,7 +79,7 @@ make install
 3. Reset your local state (please take a backup of your keyring first):
 
 ```
-sifnodecli unsafe-reset-all
+sifnoded unsafe-reset-all
 ```
 
 4. Download the new genesis file:
@@ -176,9 +176,15 @@ sifnodecli tx staking create-validator \
 
 * Replace `<moniker>` with the moniker (name) of your node. 
 
+#### Block Explorer
+
+A block explorer is available at:
+
+* https://blockexplorer-testnet.sifchain.finance
+
 ## Additional Resources
 
 - [Additional instructions on standing up Sifnode](https://www.youtube.com/watch?v=1kjdjCEcYak&feature=youtu.be&ab_channel=utx0_).
-- [Instructions on using Ethereum <> Sifchain cross-chain functionality](https://youtu.be/r81NQLxMers).
+- [Instructions on using Ethereum <> Sifchain cross-chain functionality](https://www.youtube.com/watch?v=z1EZcetmDMI&t=2s).
 
 You can also ask questions on Discord [here](https://discord.com/invite/zZTYnNG).

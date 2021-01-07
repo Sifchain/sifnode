@@ -1,5 +1,5 @@
 import { LcdClient, Msg } from "@cosmjs/launchpad";
-import { StdTx } from "../../../../entities/noncore/Bank";
+import { StdTx } from "../../../../../entities/noncore/Bank";
 
 export type SwapParams = {
   sent_asset: {

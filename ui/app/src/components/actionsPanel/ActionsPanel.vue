@@ -1,6 +1,6 @@
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, PropType } from "vue";
 import WithWallet from "@/components/wallet/WithWallet.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import Icon from "@/components/shared/Icon.vue";
@@ -14,6 +14,9 @@ export default defineComponent({
   props: {
     nextStepAllowed: Boolean,
     nextStepMessage: String,
+    connectType: String as PropType<
+      "connectToAny" | "connectToAll" | "connectToSif"
+    >,
   },
   emits: ["nextstepclick"],
   setup(_, { emit }) {
@@ -28,13 +31,13 @@ export default defineComponent({
 
 <template>
   <div class="actions">
-    <WithWallet>
-      <template v-slot:disconnected="{ requestDialog }">
+    <WithWallet :connectType="connectType">
+      <template v-slot:disconnected="{ requestDialog, connectCta }">
         <div class="wallet-status">
           No wallet connected <Icon icon="cross" />
         </div>
         <SifButton primary block @click="requestDialog">
-          Connect Wallet
+          {{ connectCta }}
         </SifButton>
       </template>
       <template v-slot:connected="{ connectedText }"
@@ -43,6 +46,7 @@ export default defineComponent({
             Connected to {{ connectedText }} <Icon icon="tick" />
           </div>
           <SifButton
+            v-if="nextStepMessage"
             block
             primary
             :disabled="!nextStepAllowed"
