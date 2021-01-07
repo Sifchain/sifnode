@@ -1,9 +1,20 @@
-CHAINNET?=localnet # Options; localnet, testnet, chaosnet ,mainnet
+CHAINNET?=testnet # Options; localnet, testnet, chaosnet ,mainnet
 BINARY?=sifnoded
 GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
+
+ifeq (mainnet,${CHAINNET})
+	BUILD_TAGS=mainnet
+else
+	BUILD_TAGS=testnet
+endif
+
+whitespace :=
+whitespace += $(whitespace)
+comma := ,
+build_tags_comma_sep := $(subst $(whitespace),$(comma),$(BUILD_TAGS))
 
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
@@ -11,11 +22,16 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
 
-BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${CHAINNET} -a
+BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${BUILD_TAGS} -a
 
 BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen ./cmd/sifcrg ./cmd/ebrelayer
 
 all: lint install
+
+build-config:
+	echo $(CHAINNET)
+	echo $(BUILD_TAGS)
+	echo $(BUILD_FLAGS)
 
 lint-pre:
 	@test -z $(gofmt -l .)
@@ -23,9 +39,15 @@ lint-pre:
 
 lint: lint-pre
 	@golangci-lint run
-
+ 
 lint-verbose: lint-pre
 	@golangci-lint run -v --timeout=5m
+
+init:
+	./scripts/init.sh
+
+start:
+	sifnodecli rest-server & sifnoded start
 
 install: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
