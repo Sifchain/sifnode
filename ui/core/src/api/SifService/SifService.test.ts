@@ -50,6 +50,8 @@ const account = {
 const testConfig: SifServiceContext = {
   sifAddrPrefix: "sif",
   sifApiUrl: "http://127.0.0.1:1317",
+  sifWsUrl: "ws://127.0.0.1:26657/websocket",
+  assets: [],
 };
 
 function getBalance(balances: AssetAmount[], symbol: string): AssetAmount {
@@ -87,6 +89,7 @@ describe("sifService", () => {
     } catch (error) {
       expect(error).toEqual("Address not valid (length). Fail");
     }
+
     const balances = await sifService.getBalance(account.address);
     const balance = getBalance(balances, "rowan");
     expect(balance?.toFixed()).toEqual("1000000000");

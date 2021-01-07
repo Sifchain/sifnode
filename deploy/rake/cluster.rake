@@ -84,7 +84,7 @@ namespace :cluster do
         cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.moniker=#{args[:moniker]} \
-          --set sifnode.mnemonic=#{args[:mnemonic]} \
+          --set sifnode.args.mnemonic=#{args[:mnemonic]} \
           --install -n #{ns(args)} --create-namespace \
           --set image.tag=#{image_tag(args)} \
           --set image.repository=#{image_repository(args)}
@@ -101,7 +101,7 @@ namespace :cluster do
           --install -n #{ns(args)} --create-namespace \
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.moniker=#{args[:moniker]} \
-          --set sifnode.mnemonic=#{args[:mnemonic]} \
+          --set sifnode.args.mnemonic=#{args[:mnemonic]} \
           --set sifnode.env.peerAddress=#{args[:peer_address]} \
           --set sifnode.env.genesisURL=#{args[:genesis_url]} \
           --set image.tag=#{image_tag(args)} \
@@ -158,11 +158,12 @@ namespace :cluster do
   desc "eth operations"
   namespace :ethereum do
     desc "Deploy an ETH node"
-    task :deploy, [:chainnet, :provider, :namespace] do |t, args|
+    task :deploy, [:chainnet, :provider, :namespace, :network] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade ethereum #{cwd}/../../deploy/helm/ethereum \
             --install -n #{ns(args)} --create-namespace \
+            --set geth.args.network='--#{args[:network]}' \
             --set ethstats.env.websocketSecret=#{SecureRandom.base64 20}
             }
 

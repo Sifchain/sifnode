@@ -1,5 +1,5 @@
 import { ref, Ref } from "@vue/reactivity";
-import { Asset, IAssetAmount } from "../entities";
+import { Asset, IAssetAmount, Network, Token } from "../entities";
 import { useField } from "./useField";
 
 // TODO eventually delete me as this is an implementation detail
@@ -9,7 +9,13 @@ describe("useField", () => {
 
   let asset: Ref<Asset | null>;
   let fieldAmount: Ref<IAssetAmount | null>;
-
+  Token({
+    address: "1234",
+    decimals: 6,
+    name: "Apple Token",
+    network: Network.SIFCHAIN,
+    symbol: "atk",
+  });
   beforeEach(() => {
     amount = ref("0");
     symbol = ref<string | null>(null);
