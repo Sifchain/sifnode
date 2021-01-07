@@ -916,6 +916,7 @@ contract("BridgeBank", function (accounts) {
       )).toString();
 
       const status = await this.cosmosBridge.getProphecyThreshold(claimID);
+      status['0'].should.be.equal(true);
       (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(amount)).toString())
     });
   });
