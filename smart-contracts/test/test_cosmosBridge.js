@@ -8,11 +8,6 @@ const BridgeToken = artifacts.require("BridgeToken");
 const EVMRevert = "revert";
 const BigNumber = web3.BigNumber;
 
-
-const {
-  expectRevert, // Assertions for transactions that should fail
-} = require('@openzeppelin/test-helpers');
-
 require("chai")
   .use(require("chai-as-promised"))
   .use(require("chai-bignumber")(BigNumber))
