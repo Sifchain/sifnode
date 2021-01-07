@@ -44,13 +44,13 @@ func (k Keeper) GetSupplyKeeper() types.SupplyKeeper {
 	return k.supplyKeeper
 }
 
-func (k Keeper) GetWithdrawnAmountInEpoch(ctx sdk.Context, user sdk.AccAddress, token string) (sdk.Int, error) {
+func (k Keeper) GetWithdrawnAmountInEpoch(ctx sdk.Context, user string, token string) (sdk.Int, error) {
 	faucetTracker := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FaucetPrefix))
-	ok := faucetTracker.Has(types.GetBalanceKey(user.String(), token))
+	ok := faucetTracker.Has(types.GetBalanceKey(user, token))
 	if !ok {
 		return sdk.ZeroInt(), nil
 	}
-	amount := faucetTracker.Get(types.GetBalanceKey(user.String(), token))
+	amount := faucetTracker.Get(types.GetBalanceKey(user, token))
 	var am sdk.Int
 	err := k.cdc.UnmarshalBinaryBare(amount, &am)
 	if err != nil {
@@ -59,7 +59,7 @@ func (k Keeper) GetWithdrawnAmountInEpoch(ctx sdk.Context, user sdk.AccAddress, 
 	return am, nil
 }
 
-func (k Keeper) SetWithdrawnAmountInEpoch(ctx sdk.Context, user sdk.AccAddress, amount sdk.Int, token string) error {
+func (k Keeper) SetWithdrawnAmountInEpoch(ctx sdk.Context, user string, amount sdk.Int, token string) error {
 	faucetTracker := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FaucetPrefix))
 	withdrawnAmount, err := k.GetWithdrawnAmountInEpoch(ctx, user, token)
 	if err != nil {
@@ -70,7 +70,7 @@ func (k Keeper) SetWithdrawnAmountInEpoch(ctx sdk.Context, user sdk.AccAddress, 
 	if err != nil {
 		return err
 	}
-	faucetTracker.Set(types.GetBalanceKey(user.String(), token), bz)
+	faucetTracker.Set(types.GetBalanceKey(user, token), bz)
 	return nil
 }
 
@@ -84,7 +84,7 @@ func (k Keeper) StartNextEpoch(ctx sdk.Context) {
 }
 
 func (k Keeper) CanRequest(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) (bool, error) {
-	alreadyWithraw, err := k.GetWithdrawnAmountInEpoch(ctx, user, types.FaucetToken)
+	alreadyWithraw, err := k.GetWithdrawnAmountInEpoch(ctx, user.String(), types.FaucetToken)
 	if err != nil {
 		return false, err
 	}
@@ -101,7 +101,7 @@ func (k Keeper) CanRequest(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins
 
 func (k Keeper) ExecuteRequest(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) (bool, error) {
 	amount := coins.AmountOf(types.FaucetToken)
-	err := k.SetWithdrawnAmountInEpoch(ctx, user, amount, types.FaucetToken)
+	err := k.SetWithdrawnAmountInEpoch(ctx, user.String(), amount, types.FaucetToken)
 	if err != nil {
 		return false, err
 	}
