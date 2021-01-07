@@ -9,6 +9,7 @@ import { SifUnSignedClient } from "../utils/SifClient";
 export type EthbridgeServiceContext = {
   sifApiUrl: string;
   sifWsUrl: string;
+  sifChainId: string;
   bridgebankContractAddress: string;
   getWeb3Provider: () => Promise<provider>;
   sifUnsignedClient?: SifUnSignedClient;
@@ -19,6 +20,7 @@ const ETH_ADDRESS = "0x0000000000000000000000000000000000000000";
 export default function createEthbridgeService({
   sifApiUrl,
   sifWsUrl,
+  sifChainId,
   bridgebankContractAddress,
   getWeb3Provider,
   sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl),
@@ -104,7 +106,7 @@ export default function createEthbridgeService({
       return await sifUnsignedClient.burn({
         ethereum_receiver: params.ethereumRecipient,
         base_req: {
-          chain_id: "sifchain",
+          chain_id: sifChainId,
           from: params.fromAddress,
         },
         amount: params.assetAmount.toFixed(0),

@@ -69,6 +69,7 @@ export default function createSifService({
   );
 
   async function createSifClientFromMnemonic(mnemonic: string) {
+    console.log("Received mnemonic: ", mnemonic);
     const wallet = await Secp256k1HdWallet.fromMnemonic(
       mnemonic,
       makeCosmoshubPath(0),
@@ -77,7 +78,7 @@ export default function createSifService({
     const accounts = await wallet.getAccounts();
 
     const address = accounts.length > 0 ? accounts[0].address : "";
-
+    console.log("Creating SIF client with address:", address);
     if (!address) {
       throw new Error("No address on sif account");
     }
@@ -233,10 +234,11 @@ export default function createSifService({
 
         const msgArr = Array.isArray(msg) ? msg : [msg];
 
-        console.log({ signAndBroadcast: { msgArr, fee, memo } });
+        console.log("signAndBroadcast:", JSON.stringify({ msgArr, fee, memo }));
         const txHash = await client.signAndBroadcast(msgArr, fee, memo);
 
         if (isBroadcastTxFailure(txHash)) {
+          console.log(txHash);
           console.log(txHash.rawLog);
           throw new Error(txHash.rawLog);
         }

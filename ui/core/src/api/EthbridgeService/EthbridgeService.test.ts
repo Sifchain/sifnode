@@ -21,13 +21,14 @@ describe("PeggyService", () => {
 
     EthbridgeService = createEthbridgeService({
       sifApiUrl: "http://localhost:1317",
-      sifWsUrl: "ws://localhost:26667/websocket",
+      sifWsUrl: "ws://localhost:26667/nosocket",
+      sifChainId: "sifchain",
       bridgebankContractAddress: "0xf204a4Ef082f5c04bB89F7D5E6568B796096735a",
       getWeb3Provider,
     });
   });
 
-  test("lock eth", async () => {
+  async function testLockEth() {
     // get sif balance
     const sifService = createTestSifService(akasha);
 
@@ -50,9 +51,14 @@ describe("PeggyService", () => {
         });
       advanceBlock(200);
     });
-  });
+  }
+
+  test("lock eth", testLockEth);
 
   test.only("burn ceth", async () => {
+    // we need to lock eth in the contract to test burn
+    await testLockEth();
+
     const web3 = new Web3(await getWeb3Provider());
     const sifService = createTestSifService(akasha);
     const accounts = await web3.eth.getAccounts();
@@ -100,6 +106,22 @@ describe("PeggyService", () => {
         signatures: null,
         memo: "",
       },
+    });
+
+    console.log(
+      "Message to be broadcast:\n\n",
+      JSON.stringify(message.value.msg, null, 2)
+    );
+
+    await sifService.signAndBroadcast(message.value.msg);
+
+    const recipientBalanceAfter = await web3.eth.getBalance(ethereumRecipient);
+
+    console.log({
+      ethereumRecipient,
+      recipientBalanceBefore,
+      senderBalanceBefore,
+      recipientBalanceAfter,
     });
   });
 });

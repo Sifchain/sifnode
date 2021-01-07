@@ -18,3 +18,8 @@ tmux \
   split-window 'yarn wait-on http-get://localhost:1317/node_info && yarn chain:migrate && yarn chain:peggy' \; \
   
   
+## CHEAT SHEET
+
+# ctrl+b (left|right|up|down) - select window
+# ctrl+b [ - scroll mode 
+# ctrl+c - exit

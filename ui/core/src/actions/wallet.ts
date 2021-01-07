@@ -36,6 +36,9 @@ export default ({
   });
 
   effect(() => {
+    console.log("(akasha: sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd)");
+    console.log("(shadowfiend: sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5)");
+    console.log("sifAddress:", state.address);
     store.wallet.sif.address = state.address;
   });
 
