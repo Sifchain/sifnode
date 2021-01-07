@@ -886,8 +886,6 @@ contract("BridgeBank", function (accounts) {
       // operator should not have any eRowan
       (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(0)).toString())
 
-      console.log("getBridgeToken: ", await this.bridgeBank.getBridgeToken('eRowan'));
-      console.log("token address: ", await this.token.address);
       // Enum in cosmosbridge: enum ClaimType {Unsupported, Burn, Lock}
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
