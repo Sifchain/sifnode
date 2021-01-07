@@ -98,7 +98,7 @@ contract Oracle is OracleStorage, Valset {
      *       The threshold is x% of Total power, where x is the consensusThreshold param.
      */
     function getProphecyThreshold(uint256 _prophecyID)
-        internal
+        public
         view
         returns (bool, uint256, uint256)
     {

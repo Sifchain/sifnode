@@ -16,6 +16,7 @@ const {
   expectEvent,  // Assertions for emitted events
   expectRevert, // Assertions for transactions that should fail
 } = require('@openzeppelin/test-helpers');
+const { expect } = require('chai');
 
 require("chai")
   .use(require("chai-as-promised"))
@@ -802,7 +803,8 @@ contract("BridgeBank", function (accounts) {
 
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree];
-      this.initialPowers = [33, 33, 33];
+      this.initialPowers = [50, 50, 20];
+
       // Deploy CosmosBridge contract
       this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
@@ -863,7 +865,7 @@ contract("BridgeBank", function (accounts) {
         amount, { from: operator }
       ).should.be.fulfilled;
 
-      tx.receipt.logs[0].args['3'].should.be.equal(symbol)
+      (tx.receipt.logs[0].args['3']).should.be.equal(symbol);
     });
 
     it("should mint eRowan to transfer Rowan from sifchain to ethereum", async function () {
@@ -884,6 +886,8 @@ contract("BridgeBank", function (accounts) {
       // operator should not have any eRowan
       (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(0)).toString())
 
+      console.log("getBridgeToken: ", await this.bridgeBank.getBridgeToken('eRowan'));
+      console.log("token address: ", await this.token.address);
       // Enum in cosmosbridge: enum ClaimType {Unsupported, Burn, Lock}
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
@@ -893,7 +897,27 @@ contract("BridgeBank", function (accounts) {
         symbol,
         amount,
         {from: userOne}
-      );
+      );  
+      await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_LOCK,
+        cosmosSender,
+        senderSequence,
+        operator,
+        symbol,
+        amount,
+        {from: userTwo}
+      );  
+
+      const claimID = (await this.cosmosBridge.getProphecyID(
+        CLAIM_TYPE_LOCK,
+        cosmosSender,
+        senderSequence,
+        operator,
+        symbol,
+        amount,
+      )).toString();
+
+      const status = await this.cosmosBridge.getProphecyThreshold(claimID);
       (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(amount)).toString())
     });
   });

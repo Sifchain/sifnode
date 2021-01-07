@@ -27,7 +27,7 @@ contract("CosmosBridge", function (accounts) {
   // Consensus threshold of 70%
   const consensusThreshold = 70;
 
-  describe("Bridge claim status", function () {
+  // describe("Bridge claim status", function () {
     beforeEach(async function () {
 
       // Set up ProphecyClaim values
@@ -208,7 +208,7 @@ contract("CosmosBridge", function (accounts) {
       // // Bridge claim should be active
       // status.should.be.equal(true);
     });
-  });
+  // });
 });
 
 /*
@@ -322,5 +322,12 @@ tx2:  71588
 tx3:  108160
 ~~~~~~~~~~~~
 Total: 277603
+
+run: 15 (more EVM wizardry)
+tx:  88797
+tx2:  65469
+tx3:  94453
+~~~~~~~~~~~~
+Total: 248719
 
 */
