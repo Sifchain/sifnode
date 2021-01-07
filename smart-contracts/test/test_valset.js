@@ -382,6 +382,18 @@ contract("Valset", function (accounts) {
           this.initialPowers[0] + this.initialPowers[1]
         );
 
+        // Fail if not operator
+        await expectRevert(
+            this.valset.updateValset(
+                this.secondValidators,
+                this.secondPowers,
+                {
+                  from: userOne
+                }
+            ),
+            "Must be the operator."
+        );
+
         // Operator resets the valset
         await this.valset.updateValset(
           this.secondValidators,
