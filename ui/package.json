@@ -12,7 +12,7 @@
     "chain:migrate:sif": "cd ./chains/cosmos && ./migrate.sh",
     "chain:migrate:eth": "cd ./chains/ethereum && ./migrate.sh",
     "chain:migrate:peggy": "cd ./chains/peggy && ./migrate.sh",
-    "chain:migrate": "yarn chain:migrate:peggy && yarn chain:migrate:eth && yarn chain:migrate:sif",
+    "chain:migrate": "yarn chain:migrate:peggy && yarn chain:migrate:eth && yarn chain:migrate:sif && cd core && ./scripts/updateLocalTestAddresses.js",
     "chain:eth:build": "cd ./chains/ethereum && yarn install --frozen-lockfile --silent && truffle build",
     "chain:eth": "cd ./chains/ethereum && ./run.sh",
     "chain:peggy": "cd ./chains/peggy && ./run.sh",

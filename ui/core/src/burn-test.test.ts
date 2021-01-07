@@ -1,0 +1,1 @@
+test("ethbridge::burn", () => {});
