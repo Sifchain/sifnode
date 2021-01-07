@@ -70,21 +70,9 @@ module.exports = function(deployer, network, accounts) {
       return txObj;
     }
 
-    // 1. Deploy Valset contract:
-    //    Gas used:          909,879 Gwei
-    //    Total cost:    0.01819758 Ether
-    // const valset = await deployProxy(Valset, [operator, initialValidators, initialPowers], 
-    //   setTxSpecifications(6721975, operator, deployer)
-    // );
-    // console.log("valset address: ", valset.address)
-
-    // 2. Deploy CosmosBridge contract:
+    // 1. Deploy CosmosBridge contract:
     //    Gas used:       2,649,300 Gwei
     //    Total cost:     0.052986 Ether
-    
-    // 3. Deploy Oracle contract:
-    //    Gas used:        1,769,740 Gwei
-    //    Total cost:     0.0353948 Ether
     const cosmosBridge = await deployProxy(
       CosmosBridge,
       [
@@ -98,7 +86,7 @@ module.exports = function(deployer, network, accounts) {
 
     console.log("cosmosBridge address: ", cosmosBridge.address)
 
-    // 4. Deploy BridgeBank contract:
+    // 2. Deploy BridgeBank contract:
     //    Gas used:        4,823,348 Gwei
     //    Total cost:    0.09646696 Ether
     const bridgeBank = await deployProxy(
@@ -112,7 +100,7 @@ module.exports = function(deployer, network, accounts) {
     );
     console.log("bridgeBank address: ", bridgeBank.address)
 
-    // 5. Deploy BridgeRegistry contract:
+    // 3. Deploy BridgeRegistry contract:
     //    Gas used:          363,370 Gwei
     //    Total cost:     0.0072674 Ether
     await deployProxy(
