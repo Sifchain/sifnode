@@ -291,6 +291,37 @@ contract("CosmosBridge", function (accounts) {
       ).should.be.fulfilled;
     });
 
+    it("should not allow for the creation of a new burn prophecy claim over current amount locked", async function () {
+      await expectRevert(
+          this.cosmosBridge.newProphecyClaim(
+              CLAIM_TYPE_BURN,
+              this.cosmosSender,
+              ++this.cosmosSenderSequence,
+              this.ethereumReceiver,
+              this.symbol,
+              1,
+              {
+                from: userOne
+              }
+          ),
+          "Not enough locked assets to complete the proposed prophecy"
+      );
+    });
+
+    it("should not allow for anything other than BURN/LOCK (1 or 2)", async function () {
+      await this.cosmosBridge.newProphecyClaim(
+          3,
+          this.cosmosSender,
+          ++this.cosmosSenderSequence,
+          this.ethereumReceiver,
+          this.symbol,
+          this.amount,
+          {
+            from: userOne
+          }
+      ).should.be.rejectedWith(EVMRevert);
+    });
+
     it("should allow for the creation of new lock prophecy claims", async function () {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
@@ -385,8 +416,6 @@ contract("CosmosBridge", function (accounts) {
       await this.token.mint(userOne, 2000, {
         from: operator
       }).should.be.fulfilled;
-
-
 
       await expectRevert(
         this.bridgeBank.lock(

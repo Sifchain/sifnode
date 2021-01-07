@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/Oracle.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">contracts/</a> Oracle.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/30</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/20</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/8</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/34</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity 0.5.16;
+&nbsp;
+import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./Valset.sol";
+import "./CosmosBridge.sol";
+import "./OracleStorage.sol";
+&nbsp;
+&nbsp;
+contract Oracle is OracleStorage {
+    using SafeMath for uint256;
+&nbsp;
+    bool private _initialized;
+&nbsp;
+    /*
+     * @dev: Event declarations
+     */
+    event LogNewOracleClaim(
+        uint256 _prophecyID,
+        address _validatorAddress
+    );
+&nbsp;
+    event LogProphecyProcessed(
+        uint256 _prophecyID,
+        uint256 _prophecyPowerCurrent,
+        uint256 _prophecyPowerThreshold,
+        address _submitter
+    );
+&nbsp;
+    /*
+     * @dev: Modifier to restrict access to the operator.
+     */
+<span class="fstat-no" title="function not covered" >    modifier onlyOperator() {</span>
+<span class="cstat-no" title="statement not covered" >        require(msg.sender == operator, "Must be the operator.")</span>;
+        _;
+    }
+&nbsp;
+    /*
+     * @dev: Modifier to restrict access to current ValSet validators
+     */
+<span class="fstat-no" title="function not covered" >    modifier onlyValidator(address _user) {</span>
+<span class="cstat-no" title="statement not covered" >        require(</span>
+            Valset(valset).isActiveValidator(_user),
+            "Must be an active validator"
+        );
+        _;
+    }
+&nbsp;
+    /*
+     * @dev: Modifier to restrict access to current ValSet validators
+     */
+<span class="fstat-no" title="function not covered" >    modifier onlyCosmosBridge() {</span>
+<span class="cstat-no" title="statement not covered" >        require(</span>
+            msg.sender == cosmosBridge,
+            "Must be Cosmos Bridge"
+        );
+        _;
+    }
+&nbsp;
+    /*
+     * @dev: Modifier to restrict access to current ValSet validators
+     */
+<span class="fstat-no" title="function not covered" >    modifier isPending(uint256 _prophecyID) {</span>
+<span class="cstat-no" title="statement not covered" >        require(</span>
+            CosmosBridge(cosmosBridge).isProphecyClaimActive(_prophecyID) == true,
+            "The prophecy must be pending for this operation"
+        );
+        _;
+    }
+&nbsp;
+    /*
+     * @dev: Initialize Function
+     */
+<span class="fstat-no" title="function not covered" >    function initialize(</span>
+        address _operator,
+        address _valset,
+        address _cosmosBridge,
+        uint256 _consensusThreshold
+    ) public {
+<span class="cstat-no" title="statement not covered" >        require(!_initialized, "Initialized")</span>;
+<span class="cstat-no" title="statement not covered" >        require(</span>
+            _consensusThreshold &gt; 0,
+            "Consensus threshold must be positive."
+        );
+<span class="cstat-no" title="statement not covered" >        require(</span>
+            _consensusThreshold &lt;= 100,
+            "Invalid consensus threshold."
+        );
+<span class="cstat-no" title="statement not covered" >        operator = _operator</span>;
+<span class="cstat-no" title="statement not covered" >        cosmosBridge = _cosmosBridge</span>;
+<span class="cstat-no" title="statement not covered" >        valset = _valset</span>;
+<span class="cstat-no" title="statement not covered" >        consensusThreshold = _consensusThreshold</span>;
+<span class="cstat-no" title="statement not covered" >        _initialized = true</span>;
+    }
+&nbsp;
+    /*
+     * @dev: newOracleClaim
+     *       Allows validators to make new OracleClaims on an existing Prophecy
+     */
+<span class="fstat-no" title="function not covered" >    function newOracleClaim(</span>
+        uint256 _prophecyID,
+        address validatorAddress
+    ) public
+        onlyCosmosBridge
+        onlyValidator(validatorAddress)
+        isPending(_prophecyID)
+        returns (bool)
+    {
+        // Confirm that this address has not already made an oracle claim on this prophecy
+<span class="cstat-no" title="statement not covered" >        require(</span>
+            !hasMadeClaim[_prophecyID][validatorAddress],
+            "Cannot make duplicate oracle claims from the same address."
+        );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        hasMadeClaim[_prophecyID][validatorAddress] = true</span>;
+<span class="cstat-no" title="statement not covered" >        oracleClaimValidators[_prophecyID].push(validatorAddress)</span>;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        emit LogNewOracleClaim(</span>
+            _prophecyID,
+            validatorAddress
+        );
+&nbsp;
+        // Process the prophecy
+<span class="cstat-no" title="statement not covered" >        (bool valid, , ) = getProphecyThreshold(_prophecyID);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        return valid;</span>
+    }
+&nbsp;
+    /*
+     * @dev: checkBridgeProphecy
+     *       Operator accessor method which checks if a prophecy has passed
+     *       the validity threshold, without actually completing the prophecy.
+     */
+<span class="fstat-no" title="function not covered" >    function checkBridgeProphecy(uint256 _prophecyID)</span>
+        public
+        view
+        onlyOperator
+        isPending(_prophecyID)
+        returns (bool, uint256, uint256)
+    {
+<span class="cstat-no" title="statement not covered" >        require(</span>
+            CosmosBridge(cosmosBridge).isProphecyClaimActive(_prophecyID) == true,
+            "Can only check active prophecies"
+        );
+<span class="cstat-no" title="statement not covered" >        return getProphecyThreshold(_prophecyID);</span>
+    }
+&nbsp;
+    /*
+     * @dev: processProphecy
+     *       Calculates the status of a prophecy. The claim is considered valid if the
+     *       combined active signatory validator powers pass the consensus threshold.
+     *       The threshold is x% of Total power, where x is the consensusThreshold param.
+     */
+<span class="fstat-no" title="function not covered" >    function getProphecyThreshold(uint256 _prophecyID)</span>
+        internal
+        view
+        returns (bool, uint256, uint256)
+    {
+<span class="cstat-no" title="statement not covered" >        uint256 signedPower = 0;</span>
+<span class="cstat-no" title="statement not covered" >        uint256 totalPower = Valset(valset).totalPower();</span>
+&nbsp;
+        // Iterate over the signatory addresses
+<span class="cstat-no" title="statement not covered" >        for (</span>
+            uint256 i = 0;
+            i &lt; oracleClaimValidators[_prophecyID].length;
+            i = i.add(1)
+        ) {
+<span class="cstat-no" title="statement not covered" >            address signer = oracleClaimValidators[_prophecyID][i];</span>
+&nbsp;
+            // Only add the power of active validators
+<span class="cstat-no" title="statement not covered" >            if (Valset(valset).isActiveValidator(signer)) {</span>
+<span class="cstat-no" title="statement not covered" >                signedPower = signedPower.add(Valset(valset).getValidatorPower(signer))</span>;
+            }
+        }
+&nbsp;
+        // Prophecy must reach total signed power % threshold in order to pass consensus
+<span class="cstat-no" title="statement not covered" >        uint256 prophecyPowerThreshold = totalPower.mul(consensusThreshold);</span>
+        // consensusThreshold is a decimal multiplied by 100, so signedPower must also be multiplied by 100
+<span class="cstat-no" title="statement not covered" >        uint256 prophecyPowerCurrent = signedPower.mul(100);</span>
+<span class="cstat-no" title="statement not covered" >        bool hasReachedThreshold = prophecyPowerCurrent &gt;=</span>
+            prophecyPowerThreshold;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        return (</span>
+            hasReachedThreshold,
+            prophecyPowerCurrent,
+            prophecyPowerThreshold
+        );
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Jan 05 2021 14:31:30 GMT-0800 (Pacific Standard Time)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/BridgeBank/CosmosBank.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">contracts/BridgeBank/</a> CosmosBank.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/24</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/4</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/7</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/24</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity 0.5.16;
+&nbsp;
+import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./BridgeToken.sol";
+import "./CosmosBankStorage.sol";
+&nbsp;
+/**
+ * @title CosmosBank
+ * @dev Manages the deployment and minting of ERC20 compatible BridgeTokens
+ *      which represent assets based on the Cosmos blockchain.
+ **/
+&nbsp;
+contract CosmosBank is CosmosBankStorage {
+    using SafeMath for uint256;
+&nbsp;
+    /*
+     * @dev: Event declarations
+     */
+    event LogNewBridgeToken(address _token, string _symbol);
+&nbsp;
+    event LogBridgeTokenMint(
+        address _token,
+        string _symbol,
+        uint256 _amount,
+        address _beneficiary
+    );
+&nbsp;
+    /*
+     * @dev: Get a token symbol's corresponding bridge token address.
+     *
+     * @param _symbol: The token's symbol/denom without 'e' prefix.
+     * @return: Address associated with the given symbol. Returns address(0) if none is found.
+     */
+<span class="fstat-no" title="function not covered" >    function getBridgeToken(string memory _symbol)</span>
+        public
+        view
+        returns (address)
+    {
+<span class="cstat-no" title="statement not covered" >        return (controlledBridgeTokens[_symbol]);</span>
+    }
+&nbsp;
+    /*
+     * @dev: Creates a new CosmosDeposit with a unique ID
+     *
+     * @param _cosmosSender: The sender's Cosmos address in bytes.
+     * @param _ethereumRecipient: The intended recipient's Ethereum address.
+     * @param _token: The currency type
+     * @param _amount: The amount in the deposit.
+     * @return: The newly created CosmosDeposit's unique id.
+     */
+<span class="fstat-no" title="function not covered" >    function newCosmosDeposit(</span>
+        bytes memory _cosmosSender,
+        address payable _ethereumRecipient,
+        address _token,
+        uint256 _amount
+    ) internal returns (bytes32) {
+<span class="cstat-no" title="statement not covered" >        cosmosDepositNonce = cosmosDepositNonce.add(1)</span>;
+<span class="cstat-no" title="statement not covered" >        bytes32 depositID = keccak256(</span>
+            abi.encodePacked(_cosmosSender, _ethereumRecipient, _token, _amount, cosmosDepositNonce)
+        );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        cosmosDeposits[depositID] = CosmosDeposit(</span>
+            _cosmosSender,
+            _ethereumRecipient,
+            _token,
+            _amount,
+            true
+        );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        return depositID;</span>
+    }
+&nbsp;
+    /*
+     * @dev: Deploys a new BridgeToken contract
+     *
+     * @param _symbol: The BridgeToken's symbol
+     */
+<span class="fstat-no" title="function not covered" >    function deployNewBridgeToken(string memory _symbol)</span>
+        internal
+        returns (address)
+    {
+<span class="cstat-no" title="statement not covered" >        bridgeTokenCount = bridgeTokenCount.add(1)</span>;
+&nbsp;
+        // Deploy new bridge token contract
+<span class="cstat-no" title="statement not covered" >        BridgeToken newBridgeToken = (new BridgeToken)(_symbol);</span>
+&nbsp;
+        // Set address in tokens mapping
+<span class="cstat-no" title="statement not covered" >        address newBridgeTokenAddress = address(newBridgeToken);</span>
+<span class="cstat-no" title="statement not covered" >        controlledBridgeTokens[_symbol] = newBridgeTokenAddress</span>;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        emit LogNewBridgeToken(newBridgeTokenAddress, _symbol);</span>
+<span class="cstat-no" title="statement not covered" >        return newBridgeTokenAddress;</span>
+    }
+&nbsp;
+    /*
+     * @dev: Deploys a new BridgeToken contract
+     *
+     * @param _symbol: The BridgeToken's symbol
+     *
+     * @note the Rowan token symbol needs to be "Rowan" so that it integrates correctly with the cosmos bridge 
+     */
+<span class="fstat-no" title="function not covered" >    function useExistingBridgeToken(address _contractAddress)</span>
+        internal
+        returns (address)
+    {
+<span class="cstat-no" title="statement not covered" >        bridgeTokenCount = bridgeTokenCount.add(1)</span>;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        string memory _symbol = BridgeToken(_contractAddress).symbol();</span>
+        // Set address in tokens mapping
+<span class="cstat-no" title="statement not covered" >        address newBridgeTokenAddress = _contractAddress;</span>
+<span class="cstat-no" title="statement not covered" >        controlledBridgeTokens[_symbol] = newBridgeTokenAddress</span>;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        emit LogNewBridgeToken(newBridgeTokenAddress, _symbol);</span>
+<span class="cstat-no" title="statement not covered" >        return newBridgeTokenAddress;</span>
+    }
+&nbsp;
+    /*
+     * @dev: Mints new cosmos tokens
+     *
+     * @param _cosmosSender: The sender's Cosmos address in bytes.
+     * @param _ethereumRecipient: The intended recipient's Ethereum address.
+     * @param _cosmosTokenAddress: The currency type
+     * @param _symbol: comsos token symbol
+     * @param _amount: number of comsos tokens to be minted
+     */
+<span class="fstat-no" title="function not covered" >    function mintNewBridgeTokens(</span>
+        bytes memory _cosmosSender,
+        address payable _intendedRecipient,
+        address _bridgeTokenAddress,
+        string memory _symbol,
+        uint256 _amount
+    ) internal {
+<span class="cstat-no" title="statement not covered" >        require(</span>
+            controlledBridgeTokens[_symbol] == _bridgeTokenAddress,
+            "Token must be a controlled bridge token"
+        );
+&nbsp;
+        // Mint bridge tokens
+<span class="cstat-no" title="statement not covered" >        require(</span>
+            BridgeToken(_bridgeTokenAddress).mint(_intendedRecipient, _amount),
+            "Attempted mint of bridge tokens failed"
+        );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        newCosmosDeposit(</span>
+            _cosmosSender,
+            _intendedRecipient,
+            _bridgeTokenAddress,
+            _amount
+        );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        emit LogBridgeTokenMint(</span>
+            _bridgeTokenAddress,
+            _symbol,
+            _amount,
+            _intendedRecipient
+        );
+    }
+&nbsp;
+    /*
+     * @dev: Checks if an individual CosmosDeposit exists.
+     *
+     * @param _id: The unique CosmosDeposit's id.
+     * @return: Boolean indicating if the CosmosDeposit exists in memory.
+     */
+<span class="fstat-no" title="function not covered" >    function isLockedCosmosDeposit(bytes32 _id) internal view returns (bool) {</span>
+<span class="cstat-no" title="statement not covered" >        return (cosmosDeposits[_id].locked);</span>
+    }
+&nbsp;
+    /*
+     * @dev: Gets an item's information
+     *
+     * @param _Id: The item containing the desired information.
+     * @return: Sender's address.
+     * @return: Recipient's address in bytes.
+     * @return: Token address.
+     * @return: Amount of ethereum/erc20 in the item.
+     * @return: Unique nonce of the item.
+     */
+<span class="fstat-no" title="function not covered" >    function getCosmosDeposit(bytes32 _id)</span>
+        internal
+        view
+        returns (bytes memory, address payable, address, uint256)
+    {
+<span class="cstat-no" title="statement not covered" >        CosmosDeposit memory deposit = cosmosDeposits[_id];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        return (</span>
+            deposit.cosmosSender,
+            deposit.ethereumRecipient,
+            deposit.bridgeTokenAddress,
+            deposit.amount
+        );
+    }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Tue Jan 05 2021 14:31:30 GMT-0800 (Pacific Standard Time)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>
