@@ -108,6 +108,8 @@ export default function createEthbridgeService({
         base_req: {
           chain_id: sifChainId,
           from: params.fromAddress,
+          // account_number: "4",
+          // sequence: "3",
         },
         amount: params.assetAmount.toFixed(0),
         symbol: params.assetAmount.asset.symbol,

@@ -1,0 +1,46 @@
+
+Messages 
+
+REST
+
+------------------
+ethereumChainID: 5777
+cosmosSender: 'sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5'
+ethereumReceiver: '0x627306090abaB3A6e1400e9345bC60c78a8BEf57'
+req.Amount: '2000000000000000000'
+req.Symbol: 'ceth'
+------------------
+
+   Error: unauthorized: signature verification failed; verify correct account sequence and chain-id
+        at Object.signAndBroadcast (/Users/rudiyardley/go/src/github.com/Sifchain/sifnode/ui/core/src/api/SifService/SifService.ts:243:17)
+        at runMicrotasks (<anonymous>)
+        at processTicksAndRejections (internal/process/task_queues.js:93:5)
+        at Object.<anonymous> (/Users/rudiyardley/go/src/github.com/Sifchain/sifnode/ui/core/src/api/EthbridgeService/EthbridgeService.test.ts:116:5)
+
+CLI: 
+
+```
+sifnodecli tx ethbridge burn $(sifnodecli keys show akasha -a) 0x627306090abaB3A6e1400e9345bC60c78a8BEf57 2000000000000000000 ceth --ethereum-chain-id=5777 --from=akasha --yes
+```
+
+------------------
+ethereumChainID: 5777 
+cosmosSender: 'sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5' 
+ethereumReceiver: '0x627306090abaB3A6e1400e9345bC60c78a8BEf57' 
+amount: '2000000000000000000' 
+symbol: 'ceth' 
+------------------
+
+{
+  "height": "0",
+  "txhash": "D3C8D2392BC3AC47D96C5FF3748DDD626ED9B604922996FC2431A5493A82DED4",
+  "raw_log": "[]"
+}
+
+sifnodecli keys show akasha   
+{
+  "name": "akasha",
+  "type": "local",
+  "address": "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
+  "pubkey": "sifpub1addwnpepqdycrc8usnjh0yk7cd532ushualgsderdqj8jr9m2rzy8stqrlpj5vymlww"
+}

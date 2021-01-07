@@ -75,6 +75,7 @@ export default function createSifService({
       makeCosmoshubPath(0),
       sifAddrPrefix
     );
+
     const accounts = await wallet.getAccounts();
 
     const address = accounts.length > 0 ? accounts[0].address : "";

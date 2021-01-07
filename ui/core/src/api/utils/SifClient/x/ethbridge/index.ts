@@ -3,6 +3,8 @@ import { LcdClient, Msg } from "@cosmjs/launchpad";
 type BaseReq = {
   from: string;
   chain_id: string;
+  account_number?: string;
+  sequence?: string;
 };
 
 type BurnOrLockReq = {

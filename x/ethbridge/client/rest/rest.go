@@ -192,12 +192,20 @@ func burnOrLockHandler(cliCtx context.CLIContext, lockOrBurn string) http.Handle
 
 		// create the message
 		var msg sdk.Msg
+		fmt.Println("------------------")
+		fmt.Printf("ethereumChainID: %d \n", ethereumChainID)
+		fmt.Printf("cosmosSender: '%s' \n", cosmosSender.String())
+		fmt.Printf("ethereumReceiver: '%s' \n", ethereumReceiver.String())
+		fmt.Printf("req.Amount: '%s' \n", req.Amount.String())
+		fmt.Printf("req.Symbol: '%s' \n", req.Symbol)
+		fmt.Println("------------------")
 		switch lockOrBurn {
 		case "lock":
 			msg = types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol)
 		case "burn":
 			msg = types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol)
 		}
+
 		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

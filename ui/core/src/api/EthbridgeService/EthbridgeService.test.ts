@@ -5,6 +5,7 @@ import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { advanceBlock } from "../../test/utils/advanceBlock";
 import { createWaitForBalance } from "../../test/utils/waitForBalance";
 import { akasha } from "../../test/utils/accounts";
+
 import { createTestSifService } from "../../test/utils/services";
 import { getBalance, getTestingToken } from "../../test/utils/getTestingToken";
 import Web3 from "web3";

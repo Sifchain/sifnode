@@ -150,6 +150,14 @@ func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 
 			symbol := args[3]
 
+			fmt.Println("------------------")
+			fmt.Printf("ethereumChainID: %d \n", ethereumChainID)
+			fmt.Printf("cosmosSender: '%s' \n", cosmosSender.String())
+			fmt.Printf("ethereumReceiver: '%s' \n", ethereumReceiver.String())
+			fmt.Printf("amount: '%s' \n", amount.String())
+			fmt.Printf("symbol: '%s' \n", symbol)
+			fmt.Println("------------------")
+
 			msg := types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
