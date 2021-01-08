@@ -288,7 +288,7 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
           CLAIM_TYPE_BURN,
           this.cosmosSender,
-          this.cosmosSenderSequence+1,
+          ++this.cosmosSenderSequence,
           this.ethereumReceiver,
           this.symbol,
           this.amountWei,
@@ -300,7 +300,7 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
           CLAIM_TYPE_BURN,
           this.cosmosSender,
-          this.cosmosSenderSequence+1,
+          this.cosmosSenderSequence,
           this.ethereumReceiver,
           this.symbol,
           this.amountWei,
@@ -312,7 +312,7 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
           CLAIM_TYPE_BURN,
           this.cosmosSender,
-          this.cosmosSenderSequence+1,
+          this.cosmosSenderSequence,
           this.ethereumReceiver,
           this.symbol,
           this.amountWei,
@@ -336,7 +336,6 @@ contract("CosmosBridge", function (accounts) {
       receivedFunds.should.be.equal(true);
 
       // Also make sure everything runs third time after switching validators.
-      console.log("Try switching validators...")
 
       // Operator resets the valset
       await this.valset.updateValset(
@@ -398,7 +397,7 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
           CLAIM_TYPE_BURN,
           this.cosmosSender,
-          this.cosmosSenderSequence+3,
+          ++this.cosmosSenderSequence,
           this.ethereumReceiver,
           this.symbol,
           this.amountWei,
@@ -410,7 +409,7 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
           CLAIM_TYPE_BURN,
           this.cosmosSender,
-          this.cosmosSenderSequence+3,
+          this.cosmosSenderSequence,
           this.ethereumReceiver,
           this.symbol,
           this.amountWei,
@@ -424,7 +423,7 @@ contract("CosmosBridge", function (accounts) {
           this.cosmosBridge.newProphecyClaim(
               CLAIM_TYPE_BURN,
               this.cosmosSender,
-              this.cosmosSenderSequence+3,
+              this.cosmosSenderSequence,
               this.ethereumReceiver,
               this.symbol,
               this.amountWei,
@@ -450,7 +449,6 @@ contract("CosmosBridge", function (accounts) {
       receivedFunds.should.be.equal(true);
 
       // Also make sure everything runs fourth time after switching validators a second time.
-      console.log("Try switching validators...")
 
       // Operator resets the valset
       await this.valset.updateValset(
@@ -512,7 +510,7 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
           CLAIM_TYPE_BURN,
           this.cosmosSender,
-          this.cosmosSenderSequence+4,
+          ++this.cosmosSenderSequence,
           this.ethereumReceiver,
           this.symbol,
           this.amountWei,
@@ -524,7 +522,7 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.newProphecyClaim(
           CLAIM_TYPE_BURN,
           this.cosmosSender,
-          this.cosmosSenderSequence+4,
+          this.cosmosSenderSequence,
           this.ethereumReceiver,
           this.symbol,
           this.amountWei,
@@ -538,7 +536,7 @@ contract("CosmosBridge", function (accounts) {
           this.cosmosBridge.newProphecyClaim(
               CLAIM_TYPE_BURN,
               this.cosmosSender,
-              this.cosmosSenderSequence+3,
+              this.cosmosSenderSequence,
               this.ethereumReceiver,
               this.symbol,
               this.amountWei,
