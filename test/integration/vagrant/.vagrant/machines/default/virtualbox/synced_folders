@@ -1,1 +1,0 @@
-{"virtualbox":{"/sifnode":{"guestpath":"/sifnode","hostpath":"/home/tanmay/go/src/sif/sifnode","disabled":false,"__vagrantfile":true},"/vagrant":{"guestpath":"/vagrant","hostpath":"/home/tanmay/go/src/sif/sifnode/test/integration/vagrant","disabled":false,"__vagrantfile":true}}}
