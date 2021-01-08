@@ -2,6 +2,7 @@ const { deployProxy, silenceWarnings } = require('@openzeppelin/truffle-upgrades
 const CosmosBridge = artifacts.require("CosmosBridge");
 const Oracle = artifacts.require("Oracle");
 const BridgeBank = artifacts.require("BridgeBank");
+const BridgeToken = artifacts.require("BridgeToken");
 
 const BigNumber = web3.BigNumber;
 
@@ -27,7 +28,8 @@ contract("CosmosBridge", function (accounts) {
   // Consensus threshold of 70%
   const consensusThreshold = 70;
 
-  // describe("Bridge claim status", function () {
+
+  describe("Unlock Gas Cost With 3 Validators", function () {
     beforeEach(async function () {
 
       // Set up ProphecyClaim values
@@ -140,16 +142,6 @@ contract("CosmosBridge", function (accounts) {
         }
       );
 
-      // status = await this.cosmosBridge.isProphecyClaimActive(
-      //   prophecyClaimCount,
-      //   {
-      //     from: accounts[7]
-      //   }
-      // );
-
-      // // Bridge claim should be active
-      // status.should.be.equal(true);
-
       console.log("tx2: ", tx.receipt.gasUsed);
       sum += tx.receipt.gasUsed
       tx = await this.cosmosBridge.newProphecyClaim(
@@ -167,15 +159,15 @@ contract("CosmosBridge", function (accounts) {
       sum += tx.receipt.gasUsed
 
       console.log("tx3: ", tx.receipt.gasUsed);
-      // status = await this.cosmosBridge.isProphecyClaimActive(
-      //   prophecyClaimCount,
-      //   {
-      //     from: accounts[7]
-      //   }
-      // );
+      status = await this.cosmosBridge.getProphecyThreshold(
+        prophecyClaimCount,
+        {
+          from: accounts[7]
+        }
+      );
 
-      // Bridge claim should be active
-      // status.should.be.equal(false);
+      // Bridge claim should be completed
+      status['0'].should.be.equal(true);
       console.log(`~~~~~~~~~~~~\nTotal: ${sum}`);
 
     });
@@ -198,19 +190,165 @@ contract("CosmosBridge", function (accounts) {
       const prophecyClaimCount = event.args._prophecyID;
 
       // Get the ProphecyClaim's status
-      // const status = await this.cosmosBridge.isProphecyClaimActive(
-      //   prophecyClaimCount,
-      //   {
-      //     from: accounts[7]
-      //   }
-      // );
+      const status = await this.cosmosBridge.getProphecyThreshold(
+        prophecyClaimCount,
+        {
+          from: accounts[7]
+        }
+      );
 
-      // // Bridge claim should be active
-      // status.should.be.equal(true);
+      // Bridge claim should be active
+      status['0'].should.be.equal(false);
     });
-  // });
+  });
+  describe("Unlock Gas Cost With 3 Validators", function () {
+    beforeEach(async function () {
+      
+      // Set up ProphecyClaim values
+      this.cosmosSender = web3.utils.utf8ToHex(
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
+      );
+      this.cosmosSenderSequence = 1;
+      this.ethereumReceiver = userOne;
+      this.symbol = "erowan";
+      this.passSymbol = "rowan";
+      this.amount = 100;
+
+      this.token = await BridgeToken.new(this.symbol, { from: operator });
+      this.tokenAddress = this.token.address;
+
+      // Deploy Valset contract
+      this.initialValidators = [userOne, userTwo, userThree, userFour];
+      this.initialPowers = [30, 20, 21, 29];
+
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
+        operator,
+        consensusThreshold,
+        this.initialValidators,
+        this.initialPowers
+      ],
+        {unsafeAllowCustomTypes: true}
+      );
+
+      // Deploy BridgeBank contract
+      this.bridgeBank = await deployProxy(BridgeBank,[
+        operator,
+        this.cosmosBridge.address,
+        operator
+      ],
+      {unsafeAllowCustomTypes: true}
+      );
+
+      // Operator sets Bridge Bank
+      await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
+        from: operator
+      });
+
+      this.recipient = web3.utils.utf8ToHex(
+        "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
+      );
+
+      this.weiAmount = web3.utils.toWei("0.25", "ether");
+
+      // Update the lock/burn limit for this token
+      await this.bridgeBank.updateTokenLockBurnLimit(this.tokenAddress, this.weiAmount, {
+        from: operator
+      }).should.be.fulfilled;
+
+      await this.bridgeBank.addExistingBridgeToken(this.token.address, { from: operator });
+  
+      // allow 10 eth to be sent at once
+      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, '10000000000000000000', {from: operator });
+
+      await this.token.addMinter(this.bridgeBank.address, { from: operator });    
+    });
+
+    it("should allow us to check the cost of submitting a prophecy claim", async function () {
+      let sum = 0;
+      this.cosmosSenderSequence = 10;
+      const estimatedGas = await this.cosmosBridge.newProphecyClaim.estimateGas(
+        CLAIM_TYPE_LOCK,
+        this.cosmosSender,
+        this.cosmosSenderSequence,
+        this.ethereumReceiver,
+        this.passSymbol,
+        this.amount,
+        {
+            from: userOne
+        }
+      );
+    // console.log("Params: ", CLAIM_TYPE_LOCK, this.cosmosSender, this.cosmosSenderSequence, this.ethereumReceiver, this.symbol, this.amount)
+      // Create the prophecy claim
+    let {receipt, logs} = await this.cosmosBridge.newProphecyClaim(
+      CLAIM_TYPE_LOCK,
+      this.cosmosSender,
+      this.cosmosSenderSequence,
+      this.ethereumReceiver,
+      this.passSymbol,
+      this.amount,
+      {
+        from: userOne,
+        gasPrice: "1"
+      }
+    );
+    console.log("Estimated Gas: ", estimatedGas)
+    console.log("Gas price: ", await web3.eth.getGasPrice())
+    sum += receipt.gasUsed
+
+
+    const event = logs.find(e => e.event === "LogNewProphecyClaim");
+    const prophecyClaimCount = event.args._prophecyID;
+
+    console.log("tx: ", receipt.gasUsed)
+
+    let tx = await this.cosmosBridge.newProphecyClaim(
+      CLAIM_TYPE_LOCK,
+      this.cosmosSender,
+      this.cosmosSenderSequence,
+      this.ethereumReceiver,
+      this.passSymbol,
+      this.amount,
+      {
+        from: userTwo,
+        gasPrice: "1"
+      }
+    );
+
+    console.log("tx2: ", tx.receipt.gasUsed);
+    sum += tx.receipt.gasUsed
+    tx = await this.cosmosBridge.newProphecyClaim(
+      CLAIM_TYPE_LOCK,
+      this.cosmosSender,
+      this.cosmosSenderSequence,
+      this.ethereumReceiver,
+      this.passSymbol,
+      this.amount,
+      {
+        from: userThree,
+        gasPrice: "1"
+      }
+    );
+    sum += tx.receipt.gasUsed
+
+    console.log("tx3: ", tx.receipt.gasUsed);
+    status = await this.cosmosBridge.getProphecyThreshold(
+      prophecyClaimCount,
+      {
+        from: accounts[7]
+      }
+    );
+
+    // Bridge claim should be completed
+    status['0'].should.be.equal(true);
+    console.log(`~~~~~~~~~~~~\nTotal: ${sum}`);
+
+  });
+  });
 });
 
+
+// Cost to unlock ethereum
 /*
 
 run: 1
@@ -330,4 +468,36 @@ tx3:  94453
 ~~~~~~~~~~~~
 Total: 248719
 
+*/
+
+
+// Cost to mint erowan
+/*
+run: 1
+tx:  89888
+tx2:  65597
+tx3:  290227
+~~~~~~~~~~~~
+Total: 445712
+
+run: 2 (remove cosmos deposit stored in storage)
+tx:  89888
+tx2:  65597
+tx3:  127339
+~~~~~~~~~~~~
+Total: 282824
+
+run: 3 (remove function params)
+tx:  89866
+tx2:  65597
+tx3:  126573
+~~~~~~~~~~~~
+Total: 282036
+
+run: 4 (remove more function params)
+tx:  89866
+tx2:  65597
+tx3:  126568
+~~~~~~~~~~~~
+Total: 282031
 */

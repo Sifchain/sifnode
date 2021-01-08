@@ -158,7 +158,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
             completeProphecyClaim(
                 _prophecyID,
-                _cosmosSender,
                 tokenAddress,
                 _claimType,
                 _ethereumReceiver,
@@ -176,7 +175,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      */
     function completeProphecyClaim(
         uint256 _prophecyID,
-        bytes memory cosmosSender,
         address tokenAddress,
         ClaimType claimType,
         address payable ethereumReceiver,
@@ -187,7 +185,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         if (claimType == ClaimType.Burn) {
             unlockTokens(ethereumReceiver, symbol, amount);
         } else {
-            issueBridgeTokens(cosmosSender, ethereumReceiver, tokenAddress, symbol, amount);
+            issueBridgeTokens(ethereumReceiver, tokenAddress, symbol, amount);
         }
 
         emit LogProphecyCompleted(_prophecyID, claimType);
@@ -198,14 +196,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      *       Issues a request for the BridgeBank to mint new BridgeTokens
      */
     function issueBridgeTokens(
-        bytes memory cosmosSender,
         address payable ethereumReceiver,
         address tokenAddress,
         string memory symbol,
         uint256 amount
     ) internal {
         BridgeBank(bridgeBank).mintBridgeTokens(
-            cosmosSender,
             ethereumReceiver,
             tokenAddress,
             symbol,
