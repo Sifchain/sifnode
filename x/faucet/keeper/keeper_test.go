@@ -50,12 +50,12 @@ func TestKeeper_CanRequest(t *testing.T) {
 	assert.True(t, ok)
 	keeper := app.FaucetKeeper
 	unitCoins := sdk.Coins{sdk.NewCoin(types.FaucetToken, sdk.NewInt(1))}
-	ok, err := keeper.CanRequest(ctx, user, unitCoins)
+	ok, err := keeper.CanRequest(ctx, user.String(), unitCoins)
 	assert.True(t, ok)
 	assert.NoError(t, err)
 	err = keeper.SetWithdrawnAmountInEpoch(ctx, user.String(), faucetRequestAmount, types.FaucetToken)
 	assert.NoError(t, err)
-	ok, err = keeper.CanRequest(ctx, user, unitCoins)
+	ok, err = keeper.CanRequest(ctx, user.String(), unitCoins)
 	assert.False(t, ok)
 	assert.Error(t, err)
 }
@@ -67,13 +67,13 @@ func TestKeeper_ExecuteRequest(t *testing.T) {
 	assert.True(t, ok)
 	keeper := app.FaucetKeeper
 	coins := sdk.Coins{sdk.NewCoin(types.FaucetToken, faucetRequestAmount)}
-	ok, err := keeper.CanRequest(ctx, user, coins)
+	ok, err := keeper.CanRequest(ctx, user.String(), coins)
 	assert.True(t, ok)
 	assert.NoError(t, err)
-	ok, err = keeper.ExecuteRequest(ctx, user, coins)
+	ok, err = keeper.ExecuteRequest(ctx, user.String(), coins)
 	assert.True(t, ok)
 	assert.NoError(t, err)
-	ok, err = keeper.CanRequest(ctx, user, coins)
+	ok, err = keeper.CanRequest(ctx, user.String(), coins)
 	assert.False(t, ok)
 	assert.Error(t, err)
 }

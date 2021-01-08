@@ -29,7 +29,7 @@ func handleMsgRequestCoins(ctx sdk.Context, keeper Keeper, msg types.MsgRequestC
 	bank := keeper.GetBankKeeper()
 	supply := keeper.GetSupplyKeeper()
 
-	ok, err := keeper.CanRequest(ctx, msg.Requester, msg.Coins)
+	ok, err := keeper.CanRequest(ctx, msg.Requester.String(), msg.Coins)
 	if !ok || err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func handleMsgRequestCoins(ctx sdk.Context, keeper Keeper, msg types.MsgRequestC
 	if err != nil {
 		return nil, errors.Wrap(err, types.ErrorRequestingTokens.Error())
 	}
-	ok, err = keeper.ExecuteRequest(ctx, msg.Requester, msg.Coins)
+	ok, err = keeper.ExecuteRequest(ctx, msg.Requester.String(), msg.Coins)
 	if !ok || err != nil {
 		return nil, err
 	}
