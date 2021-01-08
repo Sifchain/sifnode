@@ -46,7 +46,7 @@ var (
 
 type (
 	Keeper                      = keeper.Keeper
-	EthBridgeClaim              = types.EthBridgeClaim //nolint:golint
+	EthBridgeClaim              = types.EthBridgeClaim
 	OracleClaimContent          = types.OracleClaimContent
 	EthereumAddress             = types.EthereumAddress
 	MsgCreateEthBridgeClaim     = types.MsgCreateEthBridgeClaim
