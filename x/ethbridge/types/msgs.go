@@ -146,12 +146,7 @@ func (msg MsgBurn) ValidateBasic() error {
 
 // GetSignBytes encodes the message for signing
 func (msg MsgBurn) GetSignBytes() []byte {
-	b, err := json.Marshal(msg)
-	if err != nil {
-		panic(err)
-	}
-
-	return sdk.MustSortJSON(b)
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // GetSigners defines whose signature is required
