@@ -57,7 +57,7 @@ export default defineComponent({
       return Array.isArray(assetFrom) ? assetFrom[0] : assetFrom;
     });
     const amount = ref("0.0");
-    const address = ref(store.wallet.sif.address);
+    const address = toRefs(store.wallet.sif).address;
 
     async function handlePeg() {
       await actions.peg.lock(
@@ -133,10 +133,7 @@ export default defineComponent({
       <RaisedPanel>
         <RaisedPanelColumn v-if="mode === 'peg'">
           <Label>Sifchain Recipient Address</Label>
-          <SifInput
-            v-model="address"
-            placeholder="Eg. sif21syavy2npfyt9tcncdtsdzf7kny9lh777yqcnd"
-          />
+          <SifInput disabled v-model="address" />
         </RaisedPanelColumn>
         <RaisedPanelColumn v-if="mode === 'unpeg'">
           <Label>Ethereum Recipient Address</Label>

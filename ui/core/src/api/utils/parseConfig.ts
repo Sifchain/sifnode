@@ -36,6 +36,7 @@ export type ChainConfig = {
   sifAddrPrefix: string;
   sifApiUrl: string;
   sifWsUrl: string;
+  sifChainId: string;
   web3Provider: "metamask" | string;
   assets: AssetConfig[];
   nativeAsset: string; // symbol
@@ -58,6 +59,7 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
     sifAddrPrefix: config.sifAddrPrefix,
     sifApiUrl: config.sifApiUrl,
     sifWsUrl: config.sifWsUrl,
+    sifChainId: config.sifChainId,
     getWeb3Provider:
       config.web3Provider === "metamask"
         ? getMetamaskProvider

@@ -15,6 +15,7 @@ export type ClpServiceContext = {
   nativeAsset: Asset;
   sifApiUrl: string;
   sifWsUrl: string;
+  sifChainId: string;
   sifUnsignedClient?: SifUnSignedClient;
 };
 
@@ -51,6 +52,7 @@ type IClpService = {
 export default function createClpService({
   sifApiUrl,
   nativeAsset,
+  sifChainId,
   sifWsUrl,
   sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl),
 }: ClpServiceContext): IClpService {
@@ -88,7 +90,7 @@ export default function createClpService({
       externalAssetAmount: AssetAmount;
     }) {
       return await client.addLiquidity({
-        base_req: { chain_id: "sifnode", from: params.fromAddress },
+        base_req: { chain_id: sifChainId, from: params.fromAddress },
         external_asset: {
           source_chain: params.externalAssetAmount.asset.network as string,
           symbol: params.externalAssetAmount.asset.symbol,
@@ -102,7 +104,7 @@ export default function createClpService({
 
     async createPool(params) {
       return await client.createPool({
-        base_req: { chain_id: "sifnode", from: params.fromAddress },
+        base_req: { chain_id: sifChainId, from: params.fromAddress },
         external_asset: {
           source_chain: params.externalAssetAmount.asset.network as string,
           symbol: params.externalAssetAmount.asset.symbol,
@@ -116,7 +118,7 @@ export default function createClpService({
 
     async swap(params) {
       return await client.swap({
-        base_req: { chain_id: "sifchain", from: params.fromAddress },
+        base_req: { chain_id: sifChainId, from: params.fromAddress },
         received_asset: {
           source_chain: params.receivedAsset.network as string,
           symbol: params.receivedAsset.symbol,
@@ -150,7 +152,7 @@ export default function createClpService({
     async removeLiquidity(params) {
       return await client.removeLiquidity({
         asymmetry: params.asymmetry,
-        base_req: { chain_id: "sifchain", from: params.fromAddress },
+        base_req: { chain_id: sifChainId, from: params.fromAddress },
         external_asset: {
           source_chain: params.asset.network as string,
           symbol: params.asset.symbol,
