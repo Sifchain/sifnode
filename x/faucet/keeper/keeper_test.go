@@ -1,11 +1,12 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/Sifchain/sifnode/x/faucet/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestKeeper_SetWithdrawnAmountInEpoch(t *testing.T) {
@@ -13,7 +14,7 @@ func TestKeeper_SetWithdrawnAmountInEpoch(t *testing.T) {
 	user := test.GenerateAddress("")
 	faucetRequestAmount := sdk.NewInt(1000)
 	keeper := app.FaucetKeeper
-	err := keeper.SetWithdrawnAmountInEpoch(ctx, user, faucetRequestAmount, types.FaucetToken)
+	err := keeper.SetWithdrawnAmountInEpoch(ctx, user.String(), faucetRequestAmount, types.FaucetToken)
 	assert.NoError(t, err)
 }
 
@@ -22,9 +23,9 @@ func TestKeeper_GetWithdrawnAmountInEpoch(t *testing.T) {
 	user := test.GenerateAddress("")
 	faucetRequestAmount := sdk.NewInt(1000)
 	keeper := app.FaucetKeeper
-	err := keeper.SetWithdrawnAmountInEpoch(ctx, user, faucetRequestAmount, types.FaucetToken)
+	err := keeper.SetWithdrawnAmountInEpoch(ctx, user.String(), faucetRequestAmount, types.FaucetToken)
 	assert.NoError(t, err)
-	amt, err := keeper.GetWithdrawnAmountInEpoch(ctx, user, types.FaucetToken)
+	amt, err := keeper.GetWithdrawnAmountInEpoch(ctx, user.String(), types.FaucetToken)
 	assert.NoError(t, err)
 	assert.Equal(t, amt.String(), faucetRequestAmount.String())
 }
@@ -34,10 +35,10 @@ func TestKeeper_StartNextEpoch(t *testing.T) {
 	user := test.GenerateAddress("")
 	faucetRequestAmount := sdk.NewInt(1000)
 	keeper := app.FaucetKeeper
-	err := keeper.SetWithdrawnAmountInEpoch(ctx, user, faucetRequestAmount, types.FaucetToken)
+	err := keeper.SetWithdrawnAmountInEpoch(ctx, user.String(), faucetRequestAmount, types.FaucetToken)
 	assert.NoError(t, err)
 	keeper.StartNextEpoch(ctx)
-	amt, err := keeper.GetWithdrawnAmountInEpoch(ctx, user, types.FaucetToken)
+	amt, err := keeper.GetWithdrawnAmountInEpoch(ctx, user.String(), types.FaucetToken)
 	assert.NoError(t, err)
 	assert.Equal(t, sdk.ZeroInt().String(), amt.String())
 }
@@ -52,7 +53,7 @@ func TestKeeper_CanRequest(t *testing.T) {
 	ok, err := keeper.CanRequest(ctx, user, unitCoins)
 	assert.True(t, ok)
 	assert.NoError(t, err)
-	err = keeper.SetWithdrawnAmountInEpoch(ctx, user, faucetRequestAmount, types.FaucetToken)
+	err = keeper.SetWithdrawnAmountInEpoch(ctx, user.String(), faucetRequestAmount, types.FaucetToken)
 	assert.NoError(t, err)
 	ok, err = keeper.CanRequest(ctx, user, unitCoins)
 	assert.False(t, ok)
