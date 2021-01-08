@@ -6,7 +6,7 @@ export const createWaitForBalance = (sifService: ISifService) => {
     symbol: string,
     expectedAmount: string,
     account: string,
-    maxTries = 100
+    maxTries = 20 // 20 seconds
   ) {
     let latestBalance: string = "-no balance-";
     for (let i = 0; i < maxTries; i++) {

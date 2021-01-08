@@ -29,31 +29,27 @@ describe("PeggyService", () => {
     });
   });
 
-  test("burn ceth", async () => {
-    // we need to lock eth in the contract to test burn
+  test("lock and burn eth <-> ceth", async () => {
+    // Setup services
     const sifService = createTestSifService(akasha);
-
     const waitForBalance = createWaitForBalance(sifService);
-
     const web3 = new Web3(await getWeb3Provider());
 
+    // Check the balance
     await waitForBalance("ceth", "1000000000", akasha.address);
 
+    // Send funds to the smart contract
     await new Promise<void>(async (done) => {
       EthbridgeService.lock(akasha.address, AssetAmount(ETH, "2"), 10)
-        .onTxEvent((evt) => {
-          console.log(evt);
-        })
         .onComplete(async () => {
-          // Not testing balances because we have no
-          // way to correlate against transaction
+          // Check they arrived
           await waitForBalance("ceth", "2000000001000000000", akasha.address);
           done();
         })
         .onError((err) => {
           throw err.payload;
         });
-      advanceBlock(200);
+      advanceBlock(100);
     });
 
     const accounts = await web3.eth.getAccounts();
