@@ -58,12 +58,14 @@ function updateBtk(asset) {
   return { ...asset, address };
 }
 
-const configLocation = resolve(
+// ASSET ADDRESSES
+
+const assetsEthereumLocation = resolve(
   __dirname,
   "../src/assets.ethereum.localnet.json"
 );
 
-const data = loadData(configLocation);
+const data = loadData(assetsEthereumLocation);
 
 data.assets = data.assets.map((asset) => {
   switch (asset.symbol) {
@@ -77,4 +79,32 @@ data.assets = data.assets.map((asset) => {
   return asset;
 });
 
-saveData(configLocation, data);
+saveData(assetsEthereumLocation, data);
+
+// BRIDGEBANK ADDRESS
+
+function updateBridgeBankLocation() {
+  // update bridgeBank location
+  const configLocalnetLocation = resolve(
+    __dirname,
+    "../src/config.localnet.json"
+  );
+
+  const configData = loadData(configLocalnetLocation);
+  const bridgeBankLocation = resolve(
+    __dirname,
+    "../../../smart-contracts/build/contracts/BridgeBank.json"
+  );
+
+  const {
+    networks: {
+      5777: { address: bridgeBankAddress },
+    },
+  } = loadData(bridgeBankLocation);
+
+  configData.bridgebankContractAddress = bridgeBankAddress;
+
+  saveData(configLocalnetLocation, configData);
+}
+
+updateBridgeBankLocation();

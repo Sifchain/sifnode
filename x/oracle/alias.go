@@ -30,6 +30,8 @@ var (
 	CreateTestPubKeys = keeper.CreateTestPubKeys
 	CreateTestKeepers = keeper.CreateTestKeepers
 
+	// ProcessUpdateWhiteListValidator = keeper.ProcessUpdateWhiteListValidator
+
 	NewClaim                         = types.NewClaim
 	ErrProphecyNotFound              = types.ErrProphecyNotFound
 	ErrMinimumConsensusNeededInvalid = types.ErrMinimumConsensusNeededInvalid
