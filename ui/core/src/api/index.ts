@@ -20,7 +20,7 @@ export type ApiContext = EthereumServiceContext &
 
 // TODO - Conditional load or build-time tree shake
 import localnetconfig from "../config.localnet.json";
-import testnetconfig from "../config.testnet.json";
+import testnetconfig from "../config.sandpit.json";
 
 import assetsEthereumLocalnet from "../assets.ethereum.localnet.json";
 import assetsEthereumMainnet from "../assets.ethereum.mainnet.json";

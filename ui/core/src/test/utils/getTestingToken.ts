@@ -2,6 +2,7 @@ import localethereumassets from "../../assets.ethereum.localnet.json";
 import localsifassets from "../../assets.sifchain.localnet.json";
 
 import { parseAssets } from "../../api/utils/parseConfig";
+import { IAssetAmount } from "../../entities";
 
 const assets = [...localethereumassets.assets, ...localsifassets.assets];
 
@@ -19,4 +20,12 @@ export function getTestingToken(tokenSymbol: string) {
 
 export function getTestingTokens(tokens: string[]) {
   return tokens.map(getTestingToken);
+}
+
+export function getBalance(balances: IAssetAmount[], symbol: string) {
+  const bal = balances.find(
+    ({ asset }) => asset.symbol.toUpperCase() === symbol.toUpperCase()
+  );
+  if (!bal) throw new Error("Symbol not found in balances");
+  return bal;
 }

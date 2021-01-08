@@ -33,6 +33,7 @@ let service: ReturnType<typeof createClpService>;
 beforeEach(() => {
   service = createClpService({
     nativeAsset: ROWAN,
+    sifChainId: "sifchain",
     sifApiUrl: "http://localhost:1317",
     sifWsUrl: "ws://localhost:26667/websocket",
   });
