@@ -56,17 +56,25 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 
 // RegisterRESTRoutes registers the REST routes for the faucet module.
 func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	rest.RegisterRoutes(ctx, rtr)
+	if profile == TESTNET {
+		rest.RegisterRoutes(ctx, rtr)
+	}
 }
 
 // GetTxCmd returns the root tx command for the faucet module.
 func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	return cli.GetTxCmd(cdc)
+	if profile == TESTNET {
+		return cli.GetTxCmd(cdc)
+	}
+	return nil
 }
 
 // GetQueryCmd returns no root query command for the faucet module.
 func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
-	return cli.GetQueryCmd(types.StoreKey, cdc)
+	if profile == TESTNET {
+		return cli.GetQueryCmd(types.StoreKey, cdc)
+	}
+	return nil
 }
 
 //____________________________________________________________________________
@@ -113,7 +121,10 @@ func (AppModule) Route() string {
 
 // NewHandler returns an sdk.Handler for the faucet module.
 func (am AppModule) NewHandler() sdk.Handler {
-	return NewHandler(am.keeper)
+	if profile == TESTNET {
+		return NewHandler(am.keeper)
+	}
+	return nil
 }
 
 // QuerierRoute returns the faucet module's querier route name.
