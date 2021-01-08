@@ -83,8 +83,8 @@ func (k Keeper) StartNextEpoch(ctx sdk.Context) {
 	}
 }
 
-func (k Keeper) CanRequest(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) (bool, error) {
-	alreadyWithraw, err := k.GetWithdrawnAmountInEpoch(ctx, user.String(), types.FaucetToken)
+func (k Keeper) CanRequest(ctx sdk.Context, user string, coins sdk.Coins) (bool, error) {
+	alreadyWithraw, err := k.GetWithdrawnAmountInEpoch(ctx, user, types.FaucetToken)
 	if err != nil {
 		return false, err
 	}
@@ -99,9 +99,9 @@ func (k Keeper) CanRequest(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins
 	return true, nil
 }
 
-func (k Keeper) ExecuteRequest(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) (bool, error) {
+func (k Keeper) ExecuteRequest(ctx sdk.Context, user string, coins sdk.Coins) (bool, error) {
 	amount := coins.AmountOf(types.FaucetToken)
-	err := k.SetWithdrawnAmountInEpoch(ctx, user.String(), amount, types.FaucetToken)
+	err := k.SetWithdrawnAmountInEpoch(ctx, user, amount, types.FaucetToken)
 	if err != nil {
 		return false, err
 	}
