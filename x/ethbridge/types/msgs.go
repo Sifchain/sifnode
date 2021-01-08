@@ -242,6 +242,7 @@ func (msg MsgUpdateWhiteListValidator) Type() string { return "update_whitelist_
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgUpdateWhiteListValidator) ValidateBasic() error {
+	fmt.Println(" MsgUpdateWhiteListValidator ValidateBasic")
 
 	if msg.CosmosSender.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
@@ -250,6 +251,8 @@ func (msg MsgUpdateWhiteListValidator) ValidateBasic() error {
 	if msg.Validator.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator.String())
 	}
+	fmt.Println(" MsgUpdateWhiteListValidator ValidateBasic over")
+
 	return nil
 }
 

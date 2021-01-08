@@ -148,6 +148,7 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sd
 	default:
 		return types.ErrInvalidOperationType
 	}
+
 	return nil
 }
 

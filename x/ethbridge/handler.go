@@ -158,6 +158,7 @@ func handleMsgUpdateWhiteListValidator(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
 	bridgeKeeper Keeper, msg MsgUpdateWhiteListValidator,
 ) (*sdk.Result, error) {
+	fmt.Println("handleMsgUpdateWhiteListValidator ")
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())

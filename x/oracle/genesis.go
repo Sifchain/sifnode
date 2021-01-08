@@ -12,6 +12,10 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res [
 		keeper.SetOracleWhiteList(ctx, data.AddressWhitelist)
 	}
 
+	if data.AdminAddress != nil {
+		keeper.SetAdminAccount(ctx, data.AdminAddress)
+	}
+
 	return []abci.ValidatorUpdate{}
 }
 
