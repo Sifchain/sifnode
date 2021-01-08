@@ -95,6 +95,8 @@ test("ethbridge::burn", async () => {
     amount: [],
     gas: "200000",
   };
+
+  // This makes the call to http://localhost:1317/tx
   const txHash = await signingClient.signAndBroadcast(msg, fee, "");
 
   if (isBroadcastTxFailure(txHash)) {
