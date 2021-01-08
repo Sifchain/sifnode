@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "2.5.1",
+    "ganache-cli": "^6.12.1",
     "truffle": "^5.1.58"
   },
   "devDependencies": {

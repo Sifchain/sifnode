@@ -3,6 +3,7 @@ import { Store, WithStore } from "../store";
 import ethWalletActions from "./ethWallet";
 import clpActions from "./clp";
 import walletActions from "./wallet";
+import pegActions from "./peg";
 
 export type ActionContext<
   T extends keyof Api = keyof Api,
@@ -14,6 +15,7 @@ export function createActions(context: ActionContext) {
     ethWallet: ethWalletActions(context),
     clp: clpActions(context),
     wallet: walletActions(context),
+    peg: pegActions(context),
   };
 }
 
