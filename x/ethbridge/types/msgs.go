@@ -217,6 +217,60 @@ func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
 }
 
+// MsgUpdateWhiteListValidator add or remove validator from whitelist
+type MsgUpdateWhiteListValidator struct {
+	CosmosSender  sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
+	Validator     sdk.ValAddress `json:"validator" yaml:"validator"`
+	OperationType string         `json:"operation_tyoe" yaml:"operation_type"`
+}
+
+// NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
+func NewMsgUpdateWhiteListValidator(cosmosSender sdk.AccAddress,
+	validator sdk.ValAddress, operationType string) MsgUpdateWhiteListValidator {
+	return MsgUpdateWhiteListValidator{
+		CosmosSender:  cosmosSender,
+		Validator:     validator,
+		OperationType: operationType,
+	}
+}
+
+// Route should return the name of the module
+func (msg MsgUpdateWhiteListValidator) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgUpdateWhiteListValidator) Type() string { return "update_whitelist_validator" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgUpdateWhiteListValidator) ValidateBasic() error {
+	fmt.Println(" MsgUpdateWhiteListValidator ValidateBasic")
+
+	if msg.CosmosSender.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	}
+
+	if msg.Validator.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator.String())
+	}
+	fmt.Println(" MsgUpdateWhiteListValidator ValidateBasic over")
+
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgUpdateWhiteListValidator) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.CosmosSender}
+}
+
 // MapOracleClaimsToEthBridgeClaims maps a set of generic oracle claim data into EthBridgeClaim objects
 func MapOracleClaimsToEthBridgeClaims(
 	ethereumChainID int, bridgeContract EthereumAddress, nonce int, symbol string,

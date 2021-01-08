@@ -214,3 +214,40 @@ func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 }
+
+// GetCmdUpdateWhiteListValidator is the CLI command for update the validator whitelist
+func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "update_whitelist_validator [cosmos-sender-address] [validator-address] [operation-type] --node [node-address]",
+		Short: "This should be used to update the validator whitelist.",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			cosmosSender, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			validatorAddress, err := sdk.ValAddressFromBech32(args[1])
+			if err != nil {
+				return err
+			}
+
+			operationType := args[2]
+			if operationType != "add" && operationType != "remove" {
+				return errors.Errorf("invalid [operation-type]: %s", args[2])
+			}
+
+			msg := types.NewMsgUpdateWhiteListValidator(cosmosSender, validatorAddress, operationType)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
