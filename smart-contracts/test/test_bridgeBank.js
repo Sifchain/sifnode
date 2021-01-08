@@ -348,7 +348,7 @@ contract("BridgeBank", function (accounts) {
         }
       ).should.be.fulfilled;
 
-        // Attempt to lock tokens
+      // Attempt to lock tokens
       await expectRevert(
         this.bridgeBank.lock(
           this.recipient,
