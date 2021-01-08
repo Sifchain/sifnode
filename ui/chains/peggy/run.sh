@@ -4,9 +4,6 @@
 . ../credentials.sh
 . ../../../smart-contracts/.env
 
-
-BRIDGE_TOKEN_ADDRESS="0x82D50AD3C1091866E258Fd0f1a7cC9674609D254"
-
 echo "  "
 echo "-----------------------------------------------------"
 echo "BRIDGE_TOKEN_ADDRESS='$BRIDGE_TOKEN_ADDRESS'"
