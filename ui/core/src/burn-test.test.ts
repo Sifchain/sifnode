@@ -40,6 +40,14 @@ test("ethbridge::burn", async () => {
     return account?.balance.find((coin) => coin.denom === symbol)?.amount;
   }
 
+  async function getNextSequence(address: string) {
+    const currentSequence = (
+      await axios.get(`http://127.0.0.1:1317/auth/accounts/${address}`)
+    ).data.result.value.sequence;
+
+    return `${parseInt(currentSequence) + 1}`;
+  }
+
   await runCmd(
     `yarn peggy:lock ${akasha.address} 0x0000000000000000000000000000000000000000 2000000000000000000`
   );
@@ -57,12 +65,15 @@ test("ethbridge::burn", async () => {
   // );
 
   // The following is the JS/REST equivalent of the above
+
+  // return;
   const result = (
     await axios.post("http://127.0.0.1:1317/ethbridge/burn", {
       ethereum_receiver: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
       base_req: {
         chain_id: "sifchain",
         from: akasha.address,
+        sequence: await getNextSequence(akasha.address),
       },
       amount: "2000000000000000000",
       symbol: "ceth",
@@ -71,7 +82,9 @@ test("ethbridge::burn", async () => {
       token_contract_address: "0x0000000000000000000000000000000000000000",
     })
   ).data;
+
   const msg: any[] = result.value.msg;
+
   const fee = {
     amount: [],
     gas: "200000",
