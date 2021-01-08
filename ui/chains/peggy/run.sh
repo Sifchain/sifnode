@@ -4,12 +4,10 @@
 . ../credentials.sh
 . ../../../smart-contracts/.env
 
-
-BRIDGE_TOKEN_ADDRESS="0x82D50AD3C1091866E258Fd0f1a7cC9674609D254"
-
 echo "  "
 echo "-----------------------------------------------------"
 echo "BRIDGE_TOKEN_ADDRESS='$BRIDGE_TOKEN_ADDRESS'"
+echo "BRIDGE_REGISTRY_ADDRESS='$BRIDGE_REGISTRY_ADDRESS'"
 echo "CI=$CI"
 echo "CONSENSUS_THRESHOLD='$CONSENSUS_THRESHOLD'"
 echo "EROWAN_ADDRESS='$EROWAN_ADDRESS'"
@@ -28,7 +26,7 @@ echo "  "
 ETHEREUM_PRIVATE_KEY=$ETHEREUM_PRIVATE_KEY ebrelayer init \
   tcp://localhost:26657 \
   ws://localhost:7545/ \
-  "$BRIDGE_TOKEN_ADDRESS" \
+  "$BRIDGE_REGISTRY_ADDRESS" \
   "$SHADOWFIEND_NAME" \
   "$SHADOWFIEND_MNEMONIC" \
   --chain-id=sifchain \
