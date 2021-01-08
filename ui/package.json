@@ -34,7 +34,8 @@
     "ganache-cli": "^6.12.0",
     "lerna": "^3.22.1",
     "truffle": "^5.1.48",
-    "vercel": "^21.0.1"
+    "vercel": "^21.0.1",
+    "wait-on": "^5.2.1"
   },
   "workspaces": {
     "packages": [
