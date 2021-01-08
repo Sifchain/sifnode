@@ -19,4 +19,6 @@ var (
 	ErrInvalidValidator        = sdkerrors.Register(ModuleName, 8, "claim must be made by actively bonded validator")
 	ErrInternalDB              = sdkerrors.Register(ModuleName, 9, " failed prophecy serialization/deserialization")
 	ErrValidatorNotInWhiteList = sdkerrors.Register(ModuleName, 10, "validator must be in whitelist")
+	ErrNotAdminAccount         = sdkerrors.Register(ModuleName, 11, "update whitelist validator must be admin account")
+	ErrInvalidOperationType    = sdkerrors.Register(ModuleName, 12, "invalid operation type for validator whitelist")
 )
