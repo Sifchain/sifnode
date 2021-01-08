@@ -294,7 +294,7 @@ func SetGenesisOracleAdminCmd(
 	cmd := &cobra.Command{
 		Use:   "set-genesis-oracle-admin [address_or_key_name]",
 		Short: "Set a genesis account to genesis.json",
-		Long: `Set a genesis account to genesis.json. The account has the priviledge to update whitelist validators.
+		Long: `Set a genesis account to genesis.json. The account has the privilege to update whitelist validators.
 `,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
