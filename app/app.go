@@ -5,13 +5,15 @@ import (
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	"github.com/tendermint/tendermint/libs/log"
+
 	tmos "github.com/tendermint/tendermint/libs/os"
+
 	"io"
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
@@ -203,7 +205,15 @@ func NewInitApp(
 	skipUpgradeHeights := make(map[int64]bool)
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
+
 	app.UpgradeKeeper.SetUpgradeHandler("testupgrade", func(ctx sdk.Context, plan upgrade.Plan) {
+		file, _ := os.OpenFile("upInside.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+		l := log.NewTMLogger(file)
+		i := `{"binaries":{"any":"https://srv-store2.gofile.io/download/K9xJtY/sifnoded.zip?checksum=sha256:8630d1e36017ca680d572926d6a4fc7fe9a24901c52f48c70523b7d44ad0cfb2"}}`
+		l.Info("JS",i)
+		plan.Time = ctx.BlockTime()
+		plan.Info = i
+		plan.Name = "testupgrade"
 		ethAsset := clp.NewAsset("Ethereum", "ETH", "ceth")
 		pool, err := clp.NewPool(ethAsset, sdk.NewUint(100), sdk.NewUint(100), sdk.NewUint(10))
 		if err != nil {

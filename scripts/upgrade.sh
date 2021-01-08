@@ -10,7 +10,7 @@
 
 cosmovisor start >> sifnode.log 2>&1  &
 sleep 10
-yes Y | sifnodecli tx gov submit-proposal software-upgrade testupgrade --from shadowfiend --deposit 100000000stake --upgrade-height 15 --title testupgrade --description testupgrade
+yes Y | sifnodecli tx gov submit-proposal software-upgrade testupgrade --from shadowfiend --deposit 100000000stake --upgrade-height 5 --title testupgrade --description testupgrade
 sleep 5
 yes Y | sifnodecli tx gov vote 1 yes --from shadowfiend --keyring-backend test --chain-id sifchain
 clear
