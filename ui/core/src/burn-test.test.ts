@@ -67,23 +67,29 @@ test("ethbridge::burn", async () => {
   // The following is the JS/REST equivalent of the above
 
   // return;
-  const result = (
-    await axios.post("http://127.0.0.1:1317/ethbridge/burn", {
-      ethereum_receiver: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
-      base_req: {
-        chain_id: "sifchain",
-        from: akasha.address,
-        sequence: await getNextSequence(akasha.address),
-      },
-      amount: "2000000000000000000",
-      symbol: "ceth",
-      cosmos_sender: akasha.address,
-      ethereum_chain_id: "5777",
-      token_contract_address: "0x0000000000000000000000000000000000000000",
-    })
-  ).data;
 
-  const msg: any[] = result.value.msg;
+  const burnPayload = {
+    ethereum_receiver: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
+    base_req: {
+      chain_id: "sifchain",
+      from: akasha.address,
+      sequence: await getNextSequence(akasha.address),
+    },
+    amount: "2000000000000000000",
+    symbol: "ceth",
+    cosmos_sender: akasha.address,
+    ethereum_chain_id: "5777",
+    token_contract_address: "0x0000000000000000000000000000000000000000",
+  };
+
+  console.log("burnPayload:", burnPayload);
+
+  const burnResult = await axios.post(
+    "http://127.0.0.1:1317/ethbridge/burn",
+    burnPayload
+  );
+
+  const msg: any[] = burnResult.data.value.msg;
 
   const fee = {
     amount: [],
