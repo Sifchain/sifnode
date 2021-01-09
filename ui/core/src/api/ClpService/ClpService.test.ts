@@ -25,8 +25,8 @@ test("getPools()", async () => {
   const pools = await service.getPools();
 
   expect(pools.map((pool) => pool.toString())).toEqual([
-    "1000000.000000000000000000 ROWAN | 1000000.000000000000000000 CATK",
-    "1000000.000000000000000000 ROWAN | 1000000.000000000000000000 CBTK",
+    "1000000.000000000000000000 ROWAN | 1000000.000000 CATK",
+    "1000000.000000000000000000 ROWAN | 1000000.000000 CBTK",
   ]);
 });
 
@@ -36,8 +36,8 @@ test("getPoolsByLiquidityProvider()", async () => {
   );
 
   expect(pools.map((pool) => pool.toString())).toEqual([
-    "1000000.000000000000000000 ROWAN | 1000000.000000000000000000 CATK",
-    "1000000.000000000000000000 ROWAN | 1000000.000000000000000000 CBTK",
+    "1000000.000000000000000000 ROWAN | 1000000.000000 CATK",
+    "1000000.000000000000000000 ROWAN | 1000000.000000 CBTK",
   ]);
 });
 
@@ -142,7 +142,7 @@ test("swap()", async () => {
           type: "clp/Swap",
           value: {
             ReceivedAsset: { symbol: "catk" },
-            SentAmount: "1000000000000000000000",
+            SentAmount: "1000000000",
             SentAsset: { symbol: "cbtk" },
             Signer: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
           },

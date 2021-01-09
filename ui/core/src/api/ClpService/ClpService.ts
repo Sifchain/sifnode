@@ -124,7 +124,7 @@ export default function createClpService({
           symbol: params.receivedAsset.symbol,
           ticker: params.receivedAsset.symbol,
         },
-        sent_amount: params.sentAmount.numerator.toString(),
+        sent_amount: params.sentAmount.toBaseUnits().toString(),
         sent_asset: {
           source_chain: params.sentAmount.asset.network as string,
           symbol: params.sentAmount.asset.symbol,
