@@ -46,7 +46,7 @@ export function buildAssetAmount(asset: Asset | null, amount: string) {
   return asset ? AssetAmount(asset, amount) : asset;
 }
 
-// Major HACK alert to get the demo working instead of changing a tonne of tests
+// Major HACK alert to get the demo working for a demo instead of changing a tonne of tests
 // we are simply renaming tokens in the view to look like real ERC-20 tokens
 
 export function HACK_labelDecorator(symbol: string) {
@@ -86,3 +86,5 @@ export function HACK_assetAmountDecorator(assetAmount: AssetAmount) {
     assetAmount.amount
   );
 }
+
+// end HACK
