@@ -71,7 +71,7 @@ export async function transferToken(
     }
 
     contract.methods
-      .transfer(toAddress, JSBI.toNumber(amount))
+      .transfer(toAddress, amount.toString())
       .send({ from: fromAddress })
       .on("transactionHash", (_hash: string) => {
         hash = _hash;

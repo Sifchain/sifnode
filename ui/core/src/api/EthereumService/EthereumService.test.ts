@@ -47,8 +47,8 @@ describe("EthereumService", () => {
     // We dont know what the amount is going to be as it changes
     // depending on a bunch of factors so just checking for a string of digits
     expect(/^\d+/.test(ethAmount.toString())).toBeTruthy();
-    expect(atkAmount.toString()).toEqual("10000000000");
-    expect(btkAmount.toString()).toEqual("10000000000");
+    expect(atkAmount.toString()).toEqual("10000000000000000000000");
+    expect(btkAmount.toString()).toEqual("10000000000000000000000");
   });
 
   test("isConnected", async () => {
@@ -64,10 +64,10 @@ describe("EthereumService", () => {
     const balances = state.balances;
     const account0AtkAmount = getBalance(balances, "atk").amount;
 
-    expect(account0AtkAmount.toString()).toEqual("10000000000");
+    expect(account0AtkAmount.toString()).toEqual("10000000000000000000000");
 
     await EthereumService.transfer({
-      amount: B("10.000000", ATK.decimals),
+      amount: JSBI.BigInt("10000000"),
       recipient: state.accounts[1],
       asset: ATK,
     });
@@ -81,7 +81,7 @@ describe("EthereumService", () => {
       "atk"
     ).amount;
 
-    expect(account0NewAtkAmount.toString()).toEqual("9990000000");
+    expect(account0NewAtkAmount.toString()).toEqual("9999999999999990000000");
     expect(account1NewAtkAmount.toString()).toEqual("10000000");
   });
 
