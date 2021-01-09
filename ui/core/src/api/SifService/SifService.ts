@@ -15,6 +15,7 @@ import {
   Network,
   TxParams,
 } from "../../entities";
+import B from "../../entities/utils/B";
 import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
 import { SifClient } from "../utils/SifClient";
@@ -183,7 +184,8 @@ export default function createSifService({
             if (!asset) {
               throw new Error(`Asset ${denom} not found in supported tokens!`);
             }
-            return AssetAmount(asset, amount);
+
+            return AssetAmount(asset, amount, { inBaseUnit: true });
           });
         return balances;
       } catch (error) {
