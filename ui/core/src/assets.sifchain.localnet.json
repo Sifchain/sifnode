@@ -17,7 +17,7 @@
     },
     {
       "symbol": "catk",
-      "decimals": 6,
+      "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png",
       "name": "Apple Coin",
       "network": "sifchain"
@@ -25,7 +25,7 @@
     {
       "symbol": "cbtk",
       "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png",
-      "decimals": 6,
+      "decimals": 18,
       "name": "Banana Coin",
       "network": "sifchain"
     }
