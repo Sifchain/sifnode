@@ -5,28 +5,10 @@ new WS("ws://localhost:26667/websocket");
 // end HACK
 
 import createClpService from ".";
-import { AssetAmount, Coin, Network } from "../../entities";
+import { AssetAmount } from "../../entities";
+import { getTestingTokens } from "../../test/utils/getTestingToken";
 
-const ROWAN = Coin({
-  decimals: 18,
-  symbol: "rowan",
-  name: "Rowan",
-  network: Network.SIFCHAIN,
-});
-
-const CATK = Coin({
-  decimals: 18,
-  symbol: "catk",
-  name: "Apple Token",
-  network: Network.SIFCHAIN,
-});
-
-const CBTK = Coin({
-  decimals: 18,
-  symbol: "cbtk",
-  name: "Banana Token",
-  network: Network.SIFCHAIN,
-});
+const [ROWAN, CATK, CBTK] = getTestingTokens(["ROWAN", "CATK", "CBTK"]);
 
 let service: ReturnType<typeof createClpService>;
 
