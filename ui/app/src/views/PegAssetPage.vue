@@ -61,14 +61,12 @@ export default defineComponent({
 
     async function handlePeg() {
       await actions.peg.lock(
-        address.value,
         AssetAmount(Asset.get(symbol.value), amount.value)
       );
     }
 
     async function handleUnpeg() {
       await actions.peg.burn(
-        address.value,
         AssetAmount(Asset.get(symbol.value), amount.value)
       );
     }
