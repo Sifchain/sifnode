@@ -21,7 +21,7 @@ export type ClpServiceContext = {
 
 type IClpService = {
   getPools: () => Promise<Pool[]>;
-  getPoolsByLiquidityProvider: (address: string) => Promise<Pool[]>;
+  getPoolSymbolsByLiquidityProvider: (address: string) => Promise<string[]>;
   swap: (params: {
     fromAddress: string;
     receivedAsset: Asset;
@@ -67,21 +67,13 @@ export default function createClpService({
         return [];
       }
     },
-    async getPoolsByLiquidityProvider(address: string) {
+    async getPoolSymbolsByLiquidityProvider(address: string) {
       // Unfortunately it is expensive for the backend to
       // filter pools so we need to annoyingly do this in two calls
       // First we get the metadata
       const poolMeta = await client.getAssets(address);
       if (!poolMeta) return [];
-      const poolSymbols = poolMeta.map(({ symbol }) => symbol);
-
-      // Then we get the pools and filter for the metadata
-      const rawPools = await client.getPools();
-      return rawPools
-        .filter((rawPool) =>
-          poolSymbols.includes(rawPool.external_asset.symbol)
-        )
-        .map(toPool(nativeAsset));
+      return poolMeta.map(({ symbol }) => symbol);
     },
 
     async addLiquidity(params: {

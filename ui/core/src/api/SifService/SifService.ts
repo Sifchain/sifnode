@@ -7,18 +7,11 @@ import {
 } from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
 import { debounce } from "lodash";
-import {
-  Address,
-  Asset,
-  AssetAmount,
-  Coin,
-  Network,
-  TxParams,
-} from "../../entities";
-import B from "../../entities/utils/B";
+import { Address, Asset, AssetAmount, Network, TxParams } from "../../entities";
+
 import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
-import { SifClient } from "../utils/SifClient";
+import { SifClient, SifUnSignedClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 
 export type SifServiceContext = {
@@ -32,6 +25,7 @@ export type ISifService = IWalletService & {
   getSupportedTokens: () => Asset[];
   onSocketError: (handler: HandlerFn<any>) => void;
   onTx: (handler: HandlerFn<any>) => void;
+  onNewBlock: (handler: HandlerFn<any>) => void;
 };
 
 /**
@@ -64,7 +58,9 @@ export default function createSifService({
   });
 
   let client: SifClient | null = null;
-  console.log("all our sif assets:", assets);
+
+  const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl);
+
   const supportedTokens = assets.filter(
     (asset) => asset.network === Network.SIFCHAIN
   );
@@ -88,6 +84,7 @@ export default function createSifService({
 
   const triggerUpdate = debounce(
     async () => {
+      console.log("triggerUpdate" + client?.senderAddress);
       if (!client) {
         state.connected = false;
         state.address = "";
@@ -131,11 +128,15 @@ export default function createSifService({
     },
 
     onSocketError(handler: HandlerFn<any>) {
-      client?.getUnsignedClient().onSocketError(handler);
+      unSignedClient.onSocketError(handler);
     },
 
     onTx(handler: HandlerFn<any>) {
-      client?.getUnsignedClient().onTx(handler);
+      unSignedClient.onTx(handler);
+    },
+
+    onNewBlock(handler: HandlerFn<any>) {
+      unSignedClient.onNewBlock(handler);
     },
 
     async setPhrase(mnemonic: Mnemonic): Promise<Address> {
@@ -180,10 +181,7 @@ export default function createSifService({
           .map(({ amount, denom }) => {
             const asset = supportedTokens.find(
               (token) => token.symbol === denom
-            );
-            if (!asset) {
-              throw new Error(`Asset ${denom} not found in supported tokens!`);
-            }
+            )!; // will be found because of filter above
 
             return AssetAmount(asset, amount, { inBaseUnit: true });
           });
@@ -240,7 +238,6 @@ export default function createSifService({
         const txHash = await client.signAndBroadcast(msgArr, fee, memo);
 
         if (isBroadcastTxFailure(txHash)) {
-          console.log(txHash.rawLog);
           throw new Error(txHash.rawLog);
         }
 

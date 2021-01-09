@@ -38,11 +38,11 @@ export default defineComponent({
     const {
       fromSymbol,
       fromAmount,
-      toSymbol,
+
       toAmount,
     } = useCurrencyFieldState();
 
-    toSymbol.value = "rowan";
+    const toSymbol = ref("rowan");
 
     const priceMessage = ref("");
 
@@ -51,11 +51,7 @@ export default defineComponent({
       toAmount.value = "0.0";
     }
 
-    const {
-      connected,
-
-      connectedText,
-    } = useWalletButton({
+    const { connected, connectedText } = useWalletButton({
       addrLen: 8,
     });
 
