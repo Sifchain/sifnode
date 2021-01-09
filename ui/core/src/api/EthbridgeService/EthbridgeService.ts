@@ -88,7 +88,7 @@ export default function createEthbridgeService({
           value: coinDenom === ETH_ADDRESS ? amount : 0,
           gas: 5000000,
         };
-
+        console.log({ cosmosRecipient, coinDenom, amount, sendArgs });
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
           .send(sendArgs)

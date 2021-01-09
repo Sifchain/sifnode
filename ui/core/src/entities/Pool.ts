@@ -158,7 +158,7 @@ export function Pool(
   return instance;
 }
 
-export function CompositePool(pair1: Pool, pair2: Pool): IPool {
+export function CompositePool(pair1: IPool, pair2: IPool): IPool {
   // The combined asset is the
   const pair1Assets = pair1.amounts.map((a) => a.asset.symbol);
   const pair2Assets = pair2.amounts.map((a) => a.asset.symbol);

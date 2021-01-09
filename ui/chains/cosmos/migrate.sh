@@ -25,3 +25,13 @@ sifnodecli tx clp create-pool \
  --yes
 
 # should now be able to swap from catk:cbtk
+
+
+sifnodecli tx clp create-pool \
+ --from akasha \
+ --symbol ceth \
+ --nativeAmount 1000000 \
+ --externalAmount 1000000 \
+ --yes
+
+ # should now be able to swap from x:ceth
