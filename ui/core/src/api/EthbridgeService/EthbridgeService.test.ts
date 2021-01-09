@@ -13,8 +13,9 @@ import {
 } from "../../test/utils/getTestingToken";
 import config from "../../config.localnet.json";
 import Web3 from "web3";
+import JSBI from "jsbi";
 
-const [ETH, CETH, CATK] = getTestingTokens(["ETH", "CETH", "CATK"]);
+const [ETH, CETH, ATK, CATK] = getTestingTokens(["ETH", "CETH", "ATK", "CATK"]);
 
 describe("PeggyService", () => {
   let EthbridgeService: ReturnType<typeof createEthbridgeService>;
@@ -115,4 +116,6 @@ describe("PeggyService", () => {
       recipientBalanceAfter,
     });
   });
+
+  test.todo("lock and burn atk <-> catk");
 });

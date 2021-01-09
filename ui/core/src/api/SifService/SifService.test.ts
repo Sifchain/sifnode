@@ -2,7 +2,7 @@ import JSBI from "jsbi";
 
 import { AssetAmount } from "../../entities";
 import createSifService, { SifServiceContext } from ".";
-import { getTestingTokens } from "../../test/utils/getTestingToken";
+import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
 
 const [ROWAN, CATK, CBTK, CETH] = getTestingTokens([
   "ROWAN",
@@ -45,12 +45,6 @@ const testConfig: SifServiceContext = {
   sifWsUrl: "ws://127.0.0.1:26657/websocket",
   assets: [ROWAN, CATK, CBTK, CETH],
 };
-
-function getBalance(balances: AssetAmount[], symbol: string): AssetAmount {
-  const bal = balances.find((bal) => bal.asset.symbol === symbol);
-  if (!bal) throw new Error("Asset not found in balances");
-  return bal;
-}
 
 // This is redundant. CWalletActions and SifService should be combined imo
 describe("sifService", () => {

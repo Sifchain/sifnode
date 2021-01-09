@@ -2,9 +2,8 @@
 
 import createEthereumService from "./EthereumService";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
-import { Asset, AssetAmount } from "../../entities";
+import { Asset } from "../../entities";
 import JSBI from "jsbi";
-import B from "../../entities/utils/B";
 import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
 
 // ^ NOTE: we have had issues where truffle deploys contracts that cost a different amount of gas in CI versus locally.

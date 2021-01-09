@@ -21,7 +21,7 @@ export const createWaitForBalance = (sifService: ISifService) => {
       }
     }
     throw new Error(
-      `Balance of ${expectedAmount} was never realised. Last recorded balance was ${latestBalance}`
+      `Balance of ${expectedAmount} (${symbol}) was never realised. Last recorded balance was ${latestBalance} (${symbol})`
     );
   };
 };
