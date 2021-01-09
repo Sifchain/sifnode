@@ -8,7 +8,7 @@ export function Coin(p: {
   network: Network;
   symbol: string;
 }) {
-  Asset.set(p.symbol, p);
+  // Asset.set(p.symbol, p);
   return p;
 }
 
