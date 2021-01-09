@@ -4,7 +4,12 @@
       "symbol": "erowan",
       "decimals": 18,
       "name": "Rowan",
+<<<<<<< HEAD
       "address": "0xf204a4Ef082f5c04bB89F7D5E6568B796096735a",
+=======
+      "imageUrl": "/images/siflogo.png",
+      "address": "0x0d8cc4b8d15D4c3eF1d70af0071376fb26B5669b",
+>>>>>>> Wip: Added new coins for demo
       "network": "ethereum"
     },
     {
@@ -28,6 +33,22 @@
       "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png",
       "name": "Banana Coin",
       "address": "0x2a504B5e7eC284ACa5b6f49716611237239F0b97",
+      "network": "ethereum"
+    },
+    {
+      "symbol": "usdc",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png",
+      "name": "USD Coin",
+      "address": "0xBd2c938B9F6Bfc1A66368D08CB44dC3EB2aE27bE",
+      "network": "ethereum"
+    },
+    {
+      "symbol": "link",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png",
+      "name": "Chainlink",
+      "address": "0x2EcA6FCFef74E2c8D03fBAf0ff6712314c9BD58B",
       "network": "ethereum"
     }
   ]

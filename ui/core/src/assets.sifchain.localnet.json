@@ -5,6 +5,7 @@
       "decimals": 18,
       "name": "Rowan",
       "address": "",
+      "imageUrl": "/images/siflogo.png",
       "network": "sifchain"
     },
     {
@@ -30,31 +31,17 @@
       "network": "sifchain"
     },
     {
-      "symbol": "chot",
+      "symbol": "cusdc",
       "decimals": 18,
-      "name": "Wrapped Holo Coin",
-      "address": "",
+      "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png",
+      "name": "USD Coin",
       "network": "sifchain"
     },
     {
       "symbol": "clink",
       "decimals": 18,
-      "name": "Wrapped Link",
-      "address": "",
-      "network": "sifchain"
-    },
-    {
-      "symbol": "cusdc",
-      "decimals": 18,
-      "name": "Wrapped USDC",
-      "address": "",
-      "network": "sifchain"
-    },
-    {
-      "symbol": "cusdt",
-      "decimals": 18,
-      "name": "Wrapped USDT",
-      "address": "",
+      "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png",
+      "name": "Chainlink",
       "network": "sifchain"
     }
   ]
