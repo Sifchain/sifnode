@@ -14,7 +14,7 @@
     >
       <div v-if="minimumReceived && toToken" class="details-row">
         <span>Expected Amount Received</span>
-        <span>{{ minimumReceived }} {{ symbol }}</span>
+        <span>{{ minimumReceived }} {{ toToken }}</span>
       </div>
       <div v-if="priceImpact" class="details-row">
         <span>Price Impact</span>
@@ -22,7 +22,7 @@
       </div>
       <div v-if="providerFee && toToken" class="details-row">
         <span>Liquidity Provider Fee</span>
-        <span>{{ providerFee }} {{ symbol }}</span>
+        <span>{{ providerFee }} {{ toToken }}</span>
       </div>
     </div>
   </div>
@@ -61,7 +61,6 @@
 </style>
 <script lang="ts">
 import { defineComponent } from "vue";
-import { HACK_labelDecorator } from "ui-core";
 import { computed } from "@vue/reactivity";
 
 export default defineComponent({
@@ -71,10 +70,6 @@ export default defineComponent({
     minimumReceived: { type: String, default: "" },
     providerFee: { type: String, default: "" },
     priceImpact: { type: String, default: "" },
-  },
-  setup(props) {
-    const symbol = computed(() => HACK_labelDecorator(props.toToken));
-    return { symbol };
   },
 });
 </script>

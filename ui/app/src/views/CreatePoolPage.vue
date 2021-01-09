@@ -10,7 +10,7 @@ import ModalView from "@/components/shared/ModalView.vue";
 import ConfirmationDialog, {
   ConfirmState,
 } from "@/components/confirmationDialog/PoolConfirmationDialog.vue";
-import { HACK_labelDecorator, PoolState, usePoolCalculator } from "ui-core";
+import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
@@ -116,12 +116,10 @@ export default defineComponent({
     return {
       fromAmount,
       fromSymbol,
-      fromSymbolLabel: computed(() =>
-        HACK_labelDecorator(fromSymbol.value || "")
-      ),
+
       toAmount,
       toSymbol,
-      toSymbolLabel: computed(() => HACK_labelDecorator(toSymbol.value || "")),
+
       connected,
       aPerBRatioMessage,
       bPerARatioMessage,
@@ -238,16 +236,16 @@ export default defineComponent({
             <span class="number">{{ aPerBRatioMessage }}</span
             ><br />
             <span
-              >{{ fromSymbolLabel.toUpperCase() }} per
-              {{ toSymbolLabel.toUpperCase() }}</span
+              >{{ fromSymbol.toUpperCase() }} per
+              {{ toSymbol.toUpperCase() }}</span
             >
           </div>
           <div>
             <span class="number">{{ bPerARatioMessage }}</span
             ><br />
             <span
-              >{{ toSymbolLabel.toUpperCase() }} per
-              {{ fromSymbolLabel.toUpperCase() }}</span
+              >{{ toSymbol.toUpperCase() }} per
+              {{ fromSymbol.toUpperCase() }}</span
             >
           </div>
           <div>
@@ -269,10 +267,10 @@ export default defineComponent({
         @confirmswap="handleAskConfirmClicked"
         :state="transactionState"
         :requestClose="requestTransactionModalClose"
-        :fromToken="fromSymbol"
+        :fromToken="fromSymbolLabel"
         :fromAmount="fromAmount"
         :toAmount="toAmount"
-        :toToken="toSymbol"
+        :toToken="toSymbolLabel"
         :aPerB="aPerBRatioMessage"
         :bPerA="bPerARatioMessage"
         :shareOfPool="shareOfPoolPercent"
