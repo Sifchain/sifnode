@@ -9,9 +9,8 @@
 
 <script lang="ts">
 import { computed } from "@vue/reactivity";
-import { AssetAmount } from "ui-core";
+import { HACK_labelDecorator, AssetAmount } from "ui-core";
 import { defineComponent } from "vue";
-import { labelDecorator } from "@/utils/labelDecorator";
 
 export default defineComponent({
   props: ["balances"],
@@ -20,7 +19,7 @@ export default defineComponent({
       balanceList: computed(() =>
         props.balances.map((balance: AssetAmount) => {
           return {
-            symbol: labelDecorator(balance.asset.symbol),
+            symbol: HACK_labelDecorator(balance.asset.symbol),
             amount: balance.toFixed(),
           };
         })

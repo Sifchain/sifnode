@@ -1,5 +1,5 @@
 import { computed, Ref } from "@vue/reactivity";
-import { Asset, AssetAmount, IPool, Pool } from "../entities";
+import { Asset, Token, AssetAmount, IPool, Pool } from "../entities";
 
 export function assetPriceMessage(
   amount: AssetAmount | null,
@@ -13,10 +13,10 @@ export function assetPriceMessage(
     swapResult
       .divide(amount)
       .toFixed(decimals > -1 ? decimals : amount.asset.decimals),
-    swapResult.asset.symbol.toUpperCase(),
+    HACK_labelDecorator(swapResult.asset.symbol),
   ].join(" ");
 
-  const formattedPerSymbol = amount.asset.symbol.toUpperCase();
+  const formattedPerSymbol = HACK_labelDecorator(amount.asset.symbol);
 
   return `${assetPriceStr} per ${formattedPerSymbol}`;
 }
@@ -44,4 +44,45 @@ export function buildAsset(val: string | null) {
 
 export function buildAssetAmount(asset: Asset | null, amount: string) {
   return asset ? AssetAmount(asset, amount) : asset;
+}
+
+// Major HACK alert to get the demo working instead of changing a tonne of tests
+// we are simply renaming tokens in the view to look like real ERC-20 tokens
+
+export function HACK_labelDecorator(symbol: string) {
+  // Return fake labels
+  if (symbol.toUpperCase() === "ATK") {
+    return "USDC";
+  }
+
+  // Return fake labels
+  if (symbol.toUpperCase() === "BTK") {
+    return "LINK";
+  }
+
+  // Return fake labels
+  if (symbol.toUpperCase() === "CATK") {
+    return "cUSDC";
+  }
+
+  // Return fake labels
+  if (symbol.toUpperCase() === "CBTK") {
+    return "cLINK";
+  }
+  return symbol;
+}
+
+export function HACK_assetDecorator(asset: Asset) {
+  return Token({
+    address: "",
+    ...asset,
+    symbol: HACK_labelDecorator(asset.symbol),
+  });
+}
+
+export function HACK_assetAmountDecorator(assetAmount: AssetAmount) {
+  return AssetAmount(
+    HACK_assetDecorator(assetAmount.asset),
+    assetAmount.amount
+  );
 }
