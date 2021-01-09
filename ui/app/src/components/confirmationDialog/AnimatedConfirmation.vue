@@ -49,6 +49,8 @@
 import { defineComponent } from "vue";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
+import { computed } from "@vue/reactivity";
+
 export default defineComponent({
   components: { Loader, SifButton },
   props: {

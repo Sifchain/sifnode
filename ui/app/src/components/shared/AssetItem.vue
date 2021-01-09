@@ -1,6 +1,6 @@
 <script lang="ts">
 import { computed, ref } from "@vue/reactivity";
-import { Asset, HACK_labelDecorator } from "ui-core";
+import { Asset } from "ui-core";
 import { defineComponent, PropType } from "vue";
 import { useAssetItem } from "./utils";
 
@@ -15,9 +15,8 @@ export default defineComponent({
     const asset = useAssetItem(symbol);
 
     const token = props.asset ? ref(props.asset) : asset.token;
-    const tokenLabel = computed(() => {
-      return HACK_labelDecorator(asset.label.value);
-    });
+    const tokenLabel = asset.label.value;
+
     const backgroundStyle = asset.background;
 
     return { token, tokenLabel, backgroundStyle };
