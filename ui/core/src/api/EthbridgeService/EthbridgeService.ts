@@ -51,7 +51,7 @@ export default function createEthbridgeService({
           chain_id: sifChainId,
           from: params.fromAddress,
         },
-        amount: params.assetAmount.toFixed(0),
+        amount: params.assetAmount.toBaseUnits().toString(),
         symbol: params.assetAmount.asset.symbol,
         cosmos_sender: params.fromAddress,
         ethereum_chain_id: `${ethereumChainId}`,
