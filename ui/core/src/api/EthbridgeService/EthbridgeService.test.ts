@@ -70,7 +70,7 @@ describe("PeggyService", () => {
     const ethereumChainId = await web3.eth.net.getId();
     const message = await EthbridgeService.burn({
       fromAddress: akasha.address,
-      assetAmount: AssetAmount(CETH, "2000000000000000000"),
+      assetAmount: AssetAmount(CETH, "2"),
       ethereumRecipient,
     });
 
