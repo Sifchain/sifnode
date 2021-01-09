@@ -63,7 +63,7 @@ export default function createSifService({
   });
 
   let client: SifClient | null = null;
-
+  console.log("all our sif assets:", assets);
   const supportedTokens = assets.filter(
     (asset) => asset.network === Network.SIFCHAIN
   );
@@ -174,13 +174,10 @@ export default function createSifService({
         if (!account) throw "No Address found on chain";
 
         const balances = account.balance.map(({ amount, denom }) => {
-          // HACK: Following should be a lookup of tokens loaded from genesis somehow
-          const asset = Coin({
-            symbol: denom,
-            decimals: 0,
-            name: denom,
-            network: Network.SIFCHAIN,
-          });
+          const asset = supportedTokens.find((token) => token.symbol === denom);
+          if (!asset) {
+            throw new Error(`Asset ${denom} not found in supported tokens!`);
+          }
           return AssetAmount(asset, amount);
         });
         return balances;

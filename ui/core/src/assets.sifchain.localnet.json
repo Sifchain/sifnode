@@ -1,29 +1,32 @@
 {
   "assets": [
     {
-      "symbol": "catk",
+      "symbol": "rowan",
       "decimals": 18,
-      "name": "Apple Coin",
-      "network": "sifchain"
-    },
-    {
-      "symbol": "cbtk",
-      "decimals": 18,
-      "name": "Banana Coin",
+      "name": "Rowan",
+      "address": "",
       "network": "sifchain"
     },
     {
       "symbol": "ceth",
       "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
       "name": "Ethereum",
       "address": "",
       "network": "sifchain"
     },
     {
-      "symbol": "rowan",
-      "decimals": 18,
-      "name": "Rowan",
-      "address": "",
+      "symbol": "catk",
+      "decimals": 6,
+      "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png",
+      "name": "Apple Coin",
+      "network": "sifchain"
+    },
+    {
+      "symbol": "cbtk",
+      "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png",
+      "decimals": 6,
+      "name": "Banana Coin",
       "network": "sifchain"
     }
   ]

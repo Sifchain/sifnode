@@ -38,7 +38,10 @@ import { Asset } from "../entities";
 
 type ConfigMap = { [s: string]: ApiContext };
 type AssetMap = { [s: string]: Asset[] };
-
+function cacheAsset(asset: Asset) {
+  Asset.set(asset.symbol, asset);
+  return asset;
+}
 function getConfig(
   config = "localnet",
   sifchainAssetTag = "sifchain.localnet",
@@ -61,7 +64,7 @@ function getConfig(
 
   const sifchainAssets = assetMap[sifchainAssetTag];
   const ethereumAssets = assetMap[ethereumAssetTag];
-  const allAssets = [...sifchainAssets, ...ethereumAssets];
+  const allAssets = [...sifchainAssets, ...ethereumAssets].map(cacheAsset);
 
   const configMap: ConfigMap = {
     localnet: parseConfig(localnetconfig as ChainConfig, allAssets),
