@@ -14,6 +14,7 @@ export default ({
     for (let pool of pools) {
       store.pools[pool.symbol()] = pool;
     }
+
     if (pools.length === 0) {
       notify({
         type: "error",

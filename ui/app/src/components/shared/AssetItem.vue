@@ -3,7 +3,7 @@ import { computed, ref } from "@vue/reactivity";
 import { Asset } from "ui-core";
 import { defineComponent, PropType } from "vue";
 import { useAssetItem } from "./utils";
-
+import { labelDecorator } from "@/utils/labelDecorator";
 export default defineComponent({
   props: {
     symbol: String,
@@ -15,7 +15,9 @@ export default defineComponent({
     const asset = useAssetItem(symbol);
 
     const token = props.asset ? ref(props.asset) : asset.token;
-    const tokenLabel = asset.label;
+    const tokenLabel = computed(() => {
+      return labelDecorator(asset.label.value);
+    });
     const backgroundStyle = asset.background;
 
     return { token, tokenLabel, backgroundStyle };
