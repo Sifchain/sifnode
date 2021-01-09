@@ -1,6 +1,6 @@
 <template>
   <div class="asset-list">
-    <div class="line" v-for="item in filteredItems" :key="item.asset.symbol">
+    <div class="line" v-for="item in items" :key="item.asset.symbol">
       <AssetItem class="token" :symbol="item.asset.symbol" />
       <div class="amount">{{ item.amount }}</div>
       <div v-if="!!item.amount" class="action">
@@ -22,16 +22,6 @@ export default defineComponent({
   },
   props: {
     items: { type: Array as PropType<{ amount: string; asset: Asset }[]> },
-  },
-  setup(props) {
-    return {
-      filteredItems: computed(() =>
-        props.items?.filter((item) => {
-          // Remove ATK and BTK as these are test tokens
-          return !["atk", "btk", "catk", "cbtk"].includes(item.asset.symbol);
-        })
-      ),
-    };
   },
 });
 </script>

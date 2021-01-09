@@ -13,10 +13,10 @@ export function assetPriceMessage(
     swapResult
       .divide(amount)
       .toFixed(decimals > -1 ? decimals : amount.asset.decimals),
-    swapResult.asset.symbol,
+    swapResult.asset.symbol.toUpperCase(),
   ].join(" ");
 
-  const formattedPerSymbol = amount.asset.symbol;
+  const formattedPerSymbol = amount.asset.symbol.toUpperCase();
 
   return `${assetPriceStr} per ${formattedPerSymbol}`;
 }
