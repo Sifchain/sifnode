@@ -6,20 +6,20 @@ import { advanceBlock } from "../../test/utils/advanceBlock";
 import { createWaitForBalance } from "../../test/utils/waitForBalance";
 import { akasha } from "../../test/utils/accounts";
 import { createTestSifService } from "../../test/utils/services";
-import { getBalance, getTestingToken } from "../../test/utils/getTestingToken";
+import {
+  getBalance,
+  getTestingToken,
+  getTestingTokens,
+} from "../../test/utils/getTestingToken";
 import config from "../../config.localnet.json";
 import Web3 from "web3";
+
+const [ETH, CETH, CATK] = getTestingTokens(["ETH", "CETH", "CATK"]);
 
 describe("PeggyService", () => {
   let EthbridgeService: ReturnType<typeof createEthbridgeService>;
 
-  let ETH: Asset;
-  let CETH: Asset;
-
   beforeEach(async () => {
-    ETH = getTestingToken("ETH");
-    CETH = getTestingToken("CETH");
-
     EthbridgeService = createEthbridgeService({
       sifApiUrl: "http://localhost:1317",
       sifWsUrl: "ws://localhost:26667/nosocket",

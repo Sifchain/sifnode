@@ -173,13 +173,18 @@ export default function createSifService({
 
         if (!account) throw "No Address found on chain";
 
-        const balances = account.balance.map(({ amount, denom }) => {
-          const asset = supportedTokens.find((token) => token.symbol === denom);
-          if (!asset) {
-            throw new Error(`Asset ${denom} not found in supported tokens!`);
-          }
-          return AssetAmount(asset, amount);
-        });
+        const supportedTokenSymbols = supportedTokens.map((s) => s.symbol);
+        const balances = account.balance
+          .filter((balance) => supportedTokenSymbols.includes(balance.denom))
+          .map(({ amount, denom }) => {
+            const asset = supportedTokens.find(
+              (token) => token.symbol === denom
+            );
+            if (!asset) {
+              throw new Error(`Asset ${denom} not found in supported tokens!`);
+            }
+            return AssetAmount(asset, amount);
+          });
         return balances;
       } catch (error) {
         throw error;

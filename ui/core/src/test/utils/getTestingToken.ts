@@ -2,12 +2,15 @@ import localethereumassets from "../../assets.ethereum.localnet.json";
 import localsifassets from "../../assets.sifchain.localnet.json";
 
 import { parseAssets } from "../../api/utils/parseConfig";
-import { IAssetAmount } from "../../entities";
+import { Asset, IAssetAmount } from "../../entities";
 
 const assets = [...localethereumassets.assets, ...localsifassets.assets];
 
 export function getTestingToken(tokenSymbol: string) {
-  const supportedTokens = parseAssets(assets as any[]);
+  const supportedTokens = parseAssets(assets as any[]).map((asset) => {
+    Asset.set(asset.symbol, asset);
+    return asset;
+  });
 
   const asset = supportedTokens.find(
     ({ symbol }) => symbol.toUpperCase() === tokenSymbol.toUpperCase()

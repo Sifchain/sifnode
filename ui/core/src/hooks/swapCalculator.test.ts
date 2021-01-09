@@ -1,37 +1,9 @@
 import { Ref, ref } from "@vue/reactivity";
 import { AssetAmount, IAssetAmount, Network, Pool, Token } from "../entities";
+import { getTestingTokens } from "../test/utils/getTestingToken";
 import { SwapState, useSwapCalculator } from "./swapCalculator";
 
-const TOKENS = {
-  atk: Token({
-    decimals: 18,
-    symbol: "atk",
-    name: "AppleToken",
-    address: "123",
-    network: Network.ETHEREUM,
-  }),
-  btk: Token({
-    decimals: 18,
-    symbol: "btk",
-    name: "BananaToken",
-    address: "1234",
-    network: Network.ETHEREUM,
-  }),
-  rowan: Token({
-    decimals: 18,
-    symbol: "rowan",
-    name: "Rowan",
-    address: "1234",
-    network: Network.ETHEREUM,
-  }),
-  eth: Token({
-    decimals: 18,
-    symbol: "eth",
-    name: "Ethereum",
-    address: "1234",
-    network: Network.ETHEREUM,
-  }),
-};
+const [ATK, BTK, ROWAN, ETH] = getTestingTokens(["ATK", "BTK", "ROWAN", "ETH"]);
 
 describe("swapCalculator", () => {
   // input
@@ -49,15 +21,15 @@ describe("swapCalculator", () => {
   test("calculate swap usecase", () => {
     const pool1 = ref(
       Pool(
-        AssetAmount(TOKENS.atk, "2000000000000"),
-        AssetAmount(TOKENS.rowan, "1000000000000")
+        AssetAmount(ATK, "2000000000000"),
+        AssetAmount(ROWAN, "1000000000000")
       )
     ) as Ref<Pool | null>;
 
     const pool2 = ref(
       Pool(
-        AssetAmount(TOKENS.btk, "1000000000000"),
-        AssetAmount(TOKENS.rowan, "1000000000000")
+        AssetAmount(BTK, "1000000000000"),
+        AssetAmount(ROWAN, "1000000000000")
       )
     ) as Ref<Pool | null>;
 
@@ -82,9 +54,9 @@ describe("swapCalculator", () => {
     expect(state.value).toBe(SwapState.SELECT_TOKENS);
 
     balances.value = [
-      AssetAmount(TOKENS.atk, "1000"),
-      AssetAmount(TOKENS.btk, "1000"),
-      AssetAmount(TOKENS.eth, "1234"),
+      AssetAmount(ATK, "1000"),
+      AssetAmount(BTK, "1000"),
+      AssetAmount(ETH, "1234"),
     ];
 
     fromSymbol.value = "atk";
@@ -103,8 +75,8 @@ describe("swapCalculator", () => {
 
     // Check background update
     pool1.value = Pool(
-      AssetAmount(TOKENS.atk, "1000000000000"),
-      AssetAmount(TOKENS.rowan, "1000000000000")
+      AssetAmount(ATK, "1000000000000"),
+      AssetAmount(ROWAN, "1000000000000")
     );
 
     selectedField.value = "from";
@@ -114,8 +86,8 @@ describe("swapCalculator", () => {
     expect(toAmount.value).toBe("999.999996");
 
     pool1.value = Pool(
-      AssetAmount(TOKENS.atk, "2000000000000"),
-      AssetAmount(TOKENS.rowan, "1000000000000")
+      AssetAmount(ATK, "2000000000000"),
+      AssetAmount(ROWAN, "1000000000000")
     );
 
     selectedField.value = "from";
@@ -142,17 +114,11 @@ describe("swapCalculator", () => {
 
   test("Avoid division by zero", () => {
     const pool1 = ref(
-      Pool(
-        AssetAmount(TOKENS.atk, "1000000"),
-        AssetAmount(TOKENS.rowan, "1000000")
-      )
+      Pool(AssetAmount(ATK, "1000000"), AssetAmount(ROWAN, "1000000"))
     ) as Ref<Pool | null>;
 
     const pool2 = ref(
-      Pool(
-        AssetAmount(TOKENS.btk, "2000000"),
-        AssetAmount(TOKENS.rowan, "1000000")
-      )
+      Pool(AssetAmount(BTK, "2000000"), AssetAmount(ROWAN, "1000000"))
     ) as Ref<Pool | null>;
 
     const poolFinder: any = jest.fn((a: string, b: string) => {
