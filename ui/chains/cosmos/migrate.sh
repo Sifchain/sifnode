@@ -28,6 +28,7 @@ sifnodecli tx clp create-pool \
 
 sleep 5
 
+echo "create liquidity pool from ceth:rowan"
 sifnodecli tx clp create-pool \
  --from akasha \
  --symbol ceth \
@@ -36,3 +37,24 @@ sifnodecli tx clp create-pool \
  --yes
 
  # should now be able to swap from x:ceth
+
+sleep 5
+
+echo "create liquidity pool from cusdc:rowan"
+sifnodecli tx clp create-pool \
+ --from akasha \
+ --symbol cusdc \
+ --nativeAmount   10000000000000000000 \
+ --externalAmount 10000000000000000000 \
+ --yes
+
+sleep 5
+
+echo "create liquidity pool from clink:rowan"
+sifnodecli tx clp create-pool \
+ --from akasha \
+ --symbol clink \
+ --nativeAmount   10000000000000000000 \
+ --externalAmount 10000000000000000000 \
+ --yes
+
