@@ -1,9 +1,8 @@
 <script lang="ts">
 import { useCore } from "@/hooks/useCore";
 import { computed } from "@vue/reactivity";
-import { AssetAmount } from "ui-core";
+import { AssetAmount, HACK_assetAmountDecorator } from "ui-core";
 import { defineComponent } from "vue";
-import { assetAmountDecorator } from "@/utils/labelDecorator";
 
 export default defineComponent({
   props: ["symbol"],
@@ -20,7 +19,7 @@ export default defineComponent({
       );
       if (!found) return "0";
 
-      return assetAmountDecorator(found).toFormatted({
+      return HACK_assetAmountDecorator(found).toFormatted({
         decimals: Math.min(found.asset.decimals, 2),
         separator: true,
       });

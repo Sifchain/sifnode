@@ -10,7 +10,7 @@ import ModalView from "@/components/shared/ModalView.vue";
 import ConfirmationDialog, {
   ConfirmState,
 } from "@/components/confirmationDialog/PoolConfirmationDialog.vue";
-import { PoolState, usePoolCalculator } from "ui-core";
+import { HACK_labelDecorator, PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
@@ -116,10 +116,12 @@ export default defineComponent({
     return {
       fromAmount,
       fromSymbol,
-
+      fromSymbolLabel: computed(() =>
+        HACK_labelDecorator(fromSymbol.value || "")
+      ),
       toAmount,
       toSymbol,
-
+      toSymbolLabel: computed(() => HACK_labelDecorator(toSymbol.value || "")),
       connected,
       aPerBRatioMessage,
       bPerARatioMessage,
@@ -236,16 +238,16 @@ export default defineComponent({
             <span class="number">{{ aPerBRatioMessage }}</span
             ><br />
             <span
-              >{{ fromSymbol.toUpperCase() }} per
-              {{ toSymbol.toUpperCase() }}</span
+              >{{ fromSymbolLabel.toUpperCase() }} per
+              {{ toSymbolLabel.toUpperCase() }}</span
             >
           </div>
           <div>
             <span class="number">{{ bPerARatioMessage }}</span
             ><br />
             <span
-              >{{ toSymbol.toUpperCase() }} per
-              {{ fromSymbol.toUpperCase() }}</span
+              >{{ toSymbolLabel.toUpperCase() }} per
+              {{ fromSymbolLabel.toUpperCase() }}</span
             >
           </div>
           <div>
