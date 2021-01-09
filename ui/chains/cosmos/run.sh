@@ -36,8 +36,8 @@ echo "${SHADOWFIEND_MNEMONIC}" | sifnodecli keys add ${SHADOWFIEND_NAME} --recov
 echo "Generating deterministic account - ${AKASHA_NAME}"
 echo "${AKASHA_MNEMONIC}" | sifnodecli keys add ${AKASHA_NAME} --recover
 
-sifnoded add-genesis-account $(sifnodecli keys show ${SHADOWFIEND_NAME} -a) 1000000000rowan,1000000000catk,1000000000cbtk,1000000000ceth,100000000stake
-sifnoded add-genesis-account $(sifnodecli keys show ${AKASHA_NAME} -a) 1000000000rowan,1000000000catk,1000000000cbtk,1000000000ceth,100000000stake
+sifnoded add-genesis-account $(sifnodecli keys show ${SHADOWFIEND_NAME} -a) 1000000000000000000000000000rowan,1000000000000000000000000000catk,1000000000000000000000000000cbtk,1000000000000000000000000000ceth,100000000000000000000000000stake
+sifnoded add-genesis-account $(sifnodecli keys show ${AKASHA_NAME} -a) 1000000000000000000000000000rowan,1000000000000000000000000000catk,1000000000000000000000000000cbtk,1000000000000000000000000000ceth,100000000000000000000000000stake
 
 sifnoded add-genesis-validators $(sifnodecli keys show ${SHADOWFIEND_NAME} -a --bech val)
 
