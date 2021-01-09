@@ -22,7 +22,13 @@ NOTE: If you are using VSCode you should use the code-workspace at `./ui/Sifnode
 
 #### Launching locally
 
-`yarn app:serve:all`
+Run the backing services using tmux. (Requires [tmux](https://github.com/tmux/tmux/wiki/Installing))
+
+```bash
+yarn stack
+```
+
+<img src="docs/tmux-example.png" />
 
 #### Run tests in core
 

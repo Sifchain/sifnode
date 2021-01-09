@@ -1,8 +1,15 @@
 #!/bin/bash
 
 # Run a tmux session with all the background services running requires tmux
+if ! command -v tmux &> /dev/null
+then
+    echo "You need tmux to run this script. Install instructions: https://github.com/tmux/tmux/wiki"
+    exit
+fi
 
 killall sifnoded sifnodecli ganache-cli
+
+
 
 tmux \
   new-session 'yarn app:serve || echo "process finished" && sleep 1000' \; \
