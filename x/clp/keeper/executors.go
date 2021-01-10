@@ -1,10 +1,11 @@
 package keeper
 
 import (
+	"strconv"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	"strconv"
 )
 
 func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg types.MsgCreatePool) (*types.Pool, error) {
