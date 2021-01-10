@@ -24,7 +24,7 @@ sifnodecli query clp pool catk
 
 echo "adding new liquidity provider"
 sleep 8
-yes Y | sifnodecli tx clp add-liquidity --from shadowfiend --symbol catk --nativeAmount 10000 --externalAmount 10000
+yes Y | sifnodecli tx clp add-liquidity --from sif --symbol catk --nativeAmount 5000000000000000000000 --externalAmount 5000000000000000000
 
 echo "Query 1st Liquidity Provider / Pool creator is the first lp for the pool"
 sleep 8
@@ -32,7 +32,7 @@ sifnodecli query clp lp catk $(sifnodecli keys show akasha -a)
 
 echo "Query 2nd Liquidity Provider "
 sleep 8
-sifnodecli query clp lp catk $(sifnodecli keys show shadowfiend -a)
+sifnodecli query clp lp catk $(sifnodecli keys show sif -a)
 
 
 pkill sifnoded
