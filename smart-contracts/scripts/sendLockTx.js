@@ -14,7 +14,9 @@ module.exports = async (cb) => {
 
   const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-  console.log("Expected usage: \ntruffle exec scripts/sendLockTx.js --network ropsten sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace eth 100\n");
+  console.log(
+    "Expected usage: \ntruffle exec scripts/sendLockTx.js --network ropsten sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace eth 100\n"
+  );
   /*******************************************
    *** Constants
    ******************************************/
@@ -86,12 +88,12 @@ module.exports = async (cb) => {
       amount = new BigNumber(process.argv[6]);
     }
   }
-  
+
   // Convert default 'eth' coin denom into null address
   if (coinDenom == "eth") {
     coinDenom = NULL_ADDRESS;
   }
-  
+
   /*******************************************
    *** Web3 provider
    *** Set contract provider based on --network flag
@@ -101,14 +103,14 @@ module.exports = async (cb) => {
     provider = new HDWalletProvider(
       process.env.ETHEREUM_PRIVATE_KEY,
       "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
-      );
-      console.log("~~~~~~~ Provider set to ropsten and connected ~~~~~~~")
-    } else if (NETWORK_MAINNET) {
+    );
+    console.log("~~~~~~~ Provider set to ropsten and connected ~~~~~~~");
+  } else if (NETWORK_MAINNET) {
     provider = new HDWalletProvider(
       process.env.ETHEREUM_PRIVATE_KEY,
       "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
-      );
-    console.log("~~~~~~~ Provider set to mainnet and connected ~~~~~~~")
+    );
+    console.log("~~~~~~~ Provider set to mainnet and connected ~~~~~~~");
   } else {
     provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
   }
@@ -127,16 +129,16 @@ module.exports = async (cb) => {
     const { logs } = await contract.deployed().then(function (instance) {
       console.log("Connected to contract, sending lock...");
       return instance.lock(cosmosRecipient, coinDenom, amount, {
-        from: accounts[0],
+        from: accounts[2],
         value: coinDenom === NULL_ADDRESS ? amount : 0,
-        gas: 300000 // 300,000 Gwei
+        gas: 300000, // 300,000 Gwei
       });
     });
 
     console.log("Sent lock...");
 
     // Get event logs
-    const event = logs.find(e => e.event === "LogLock");
+    const event = logs.find((e) => e.event === "LogLock");
 
     // Parse event fields
     const lockEvent = {
@@ -145,7 +147,7 @@ module.exports = async (cb) => {
       symbol: event.args._symbol,
       token: event.args._token,
       value: Number(event.args._value),
-      nonce: Number(event.args._nonce)
+      nonce: Number(event.args._nonce),
     };
 
     console.log(lockEvent);
