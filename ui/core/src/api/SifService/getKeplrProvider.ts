@@ -12,7 +12,9 @@ export default (): provider => {
 
   if (!win) return null;
 
-  if (win.keplr || win.getOfflineSigner) {
+  if (win.keplr && win.getOfflineSigner) {
+    // assign offline signer (they use __proto__ for some reason), so this is not as pretty as i'd like)
+    win.keplr.__proto__.getOfflineSigner = win.getOfflineSigner
     return win.keplr
   }
 
