@@ -19,11 +19,14 @@ import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
 import { SifClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
+import getKeplrProvider from "./getKeplrProvider"
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
   sifWsUrl: string;
+  // todo fix
+  keplrChainConfig: any;
   assets: Asset[];
 };
 type HandlerFn<T> = (a: T) => void;
@@ -32,7 +35,6 @@ export type ISifService = IWalletService & {
   onSocketError: (handler: HandlerFn<any>) => void;
   onTx: (handler: HandlerFn<any>) => void;
 };
-
 /**
  * Constructor for SifService
  *
@@ -42,10 +44,12 @@ export default function createSifService({
   sifAddrPrefix,
   sifApiUrl,
   sifWsUrl,
+  keplrChainConfig,
   assets,
 }: SifServiceContext): ISifService {
   const {} = sifAddrPrefix;
-
+  const keplrProvider = getKeplrProvider()
+  console.log('pro', keplrProvider)
   // Reactive state for communicating state changes
   // TODO this should be replaced with event handlers
   const state: {
@@ -119,6 +123,31 @@ export default function createSifService({
 
     async connect() {
       // connect to Keplr
+      console.log('connect service', keplrChainConfig. keplrProvider)
+      if (!keplrProvider) {
+        throw {message: "Keplr Not Found", detail: "Check if extension enabled for this URL"}
+      }
+      // open extension
+      if (keplrProvider.experimentalSuggestChain) {
+        try {
+          await keplrProvider.experimentalSuggestChain(keplrChainConfig)
+          await keplrProvider.enable(keplrChainConfig.chainId);
+          console.dir(keplrProvider.getOfflineSigner)
+          const offlineSigner = keplrProvider.getOfflineSigner(keplrChainConfig.chainId);
+          // https://github.com/chainapsis/keplr-extension/blob/960e50f1d9360d21d6935b974a0cb8b57c27d9d9/src/content-scripts/inject/cosmjs-offline-signer.ts
+          const accounts = await offlineSigner.getAccounts();
+          // console.log(accounts)
+          // get balances
+          // return to controller so can set state
+          return accounts[0]
+          // keep open
+        } catch (error) {
+          console.log(error)
+          throw {message: "Failed to Suggest Chain"}
+        }
+      } else {
+        throw {message: "Keplr Outdated", detail: "Need at least 0.6.4"}
+      }
     },
 
     async disconnect() {
