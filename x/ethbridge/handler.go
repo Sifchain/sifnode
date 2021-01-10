@@ -27,6 +27,8 @@ func NewHandler(
 			return handleMsgBurn(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		case MsgLock:
 			return handleMsgLock(ctx, cdc, accountKeeper, bridgeKeeper, msg)
+		case MsgUpdateWhiteListValidator:
+			return handleMsgUpdateWhiteListValidator(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized ethbridge message type: %v", msg.Type())
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
@@ -150,4 +152,35 @@ func handleMsgLock(
 
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 
+}
+
+func handleMsgUpdateWhiteListValidator(
+	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
+	bridgeKeeper Keeper, msg MsgUpdateWhiteListValidator,
+) (*sdk.Result, error) {
+	fmt.Println("handleMsgUpdateWhiteListValidator ")
+	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
+	if account == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	}
+
+	if err := bridgeKeeper.ProcessUpdateWhiteListValidator(ctx, msg.CosmosSender, msg.Validator, msg.OperationType); err != nil {
+		return nil, err
+	}
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender.String()),
+		),
+		sdk.NewEvent(
+			types.EventTypeLock,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender.String()),
+			sdk.NewAttribute(types.AttributeKeyValidator, msg.Validator.String()),
+			sdk.NewAttribute(types.AttributeKeyEthereumChainID, msg.OperationType),
+		),
+	})
+
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }

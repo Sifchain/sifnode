@@ -11,12 +11,14 @@ import (
 //TODO: Add parameters to Genesis state ,such as minimum liquidity required to create a pool
 type GenesisState struct {
 	AddressWhitelist []sdk.ValAddress `json:"address_whitelist"`
+	AdminAddress     sdk.AccAddress   `json:"admin_address"`
 }
 
 // NewGenesisState creates a new GenesisState instance
 func NewGenesisState() GenesisState {
 	return GenesisState{
 		AddressWhitelist: []sdk.ValAddress{},
+		AdminAddress:     sdk.AccAddress{},
 	}
 }
 
@@ -24,9 +26,11 @@ func NewGenesisState() GenesisState {
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
 		AddressWhitelist: []sdk.ValAddress{},
+		AdminAddress:     sdk.AccAddress{},
 	}
 }
 
+// GetGenesisStateFromAppState gets the GenesisState from raw message
 func GetGenesisStateFromAppState(cdc *codec.Codec, appState map[string]json.RawMessage) GenesisState {
 	var genesisState GenesisState
 	if appState[ModuleName] != nil {
