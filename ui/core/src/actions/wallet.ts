@@ -31,7 +31,12 @@ export default ({
     },
     async connectToWallet() {
       try  {
-        await api.SifService.connect();
+        const account: any = await api.SifService.connect();
+        // notify connected
+        notify({type: "success", message: "Sif Account connected", 
+        detail: account.address })
+        // set state to isCnnected, with address and send balances
+
       } catch (error) {
         // to the ui??
         notify({type:"error", ...error})
