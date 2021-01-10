@@ -24,6 +24,7 @@
       <div class="vstack">
         <EtheriumWalletPanel />
         <SifWalletPanel />
+        <KeplrWalletPanel />
       </div>
     </template>
   </Modal>
@@ -34,11 +35,12 @@ import { defineComponent, PropType } from "vue";
 import { useWalletButton } from "./useWalletButton";
 import EtheriumWalletPanel from "./EtheriumWalletPanel.vue";
 import SifWalletPanel from "./SifWalletPanel.vue";
+import KeplrWalletPanel from "./KeplrWalletPanel.vue";
 import Modal from "@/components/shared/Modal.vue";
 
 export default defineComponent({
   name: "WithWallet",
-  components: { Modal, EtheriumWalletPanel, SifWalletPanel },
+  components: { Modal, EtheriumWalletPanel, SifWalletPanel, KeplrWalletPanel },
   props: {
     connectType: String as PropType<
       "connectToAny" | "connectToAll" | "connectToSif"
