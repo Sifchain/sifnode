@@ -88,8 +88,10 @@ export default function createClpService({
           symbol: params.externalAssetAmount.asset.symbol,
           ticker: params.externalAssetAmount.asset.symbol,
         },
-        external_asset_amount: params.externalAssetAmount.toFixed(0),
-        native_asset_amount: params.nativeAssetAmount.toFixed(0),
+        external_asset_amount: params.externalAssetAmount
+          .toBaseUnits()
+          .toString(),
+        native_asset_amount: params.nativeAssetAmount.toBaseUnits().toString(),
         signer: params.fromAddress,
       });
     },
@@ -102,8 +104,10 @@ export default function createClpService({
           symbol: params.externalAssetAmount.asset.symbol,
           ticker: params.externalAssetAmount.asset.symbol,
         },
-        external_asset_amount: params.externalAssetAmount.toFixed(0),
-        native_asset_amount: params.nativeAssetAmount.toFixed(0),
+        external_asset_amount: params.externalAssetAmount
+          .toBaseUnits()
+          .toString(),
+        native_asset_amount: params.nativeAssetAmount.toBaseUnits().toString(),
         signer: params.fromAddress,
       });
     },

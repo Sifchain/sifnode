@@ -33,7 +33,7 @@ sifnodecli tx clp create-pool \
  --from akasha \
  --symbol ceth \
  --nativeAmount   10000000000000000000 \
- --externalAmount 10000000000000000000 \
+ --externalAmount 8300000000000000 \
  --yes
 
  # should now be able to swap from x:ceth

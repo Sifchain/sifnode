@@ -30,17 +30,6 @@ test("getPools()", async () => {
   ]);
 });
 
-test("getPoolsByLiquidityProvider()", async () => {
-  const pools = await service.getPoolsByLiquidityProvider(
-    "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5"
-  );
-
-  expect(pools.map((pool) => pool.toString())).toEqual([
-    "1000000.000000000000000000 ROWAN | 1000000.000000000000000000 CATK",
-    "1000000.000000000000000000 ROWAN | 1000000.000000000000000000 CBTK",
-  ]);
-});
-
 test("addLiquidity", async () => {
   const message = await service.addLiquidity({
     fromAddress: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",

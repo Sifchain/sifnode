@@ -122,6 +122,14 @@ export default defineComponent({
           >
             Akasha
           </button>
+          <button
+            @click="
+              mnemonic =
+                'clump genre baby drum canvas uncover firm liberty verb moment access draft erupt fog alter gadget elder elephant divide biology choice sentence oppose avoid'
+            "
+          >
+            Juniper
+          </button>
         </div>
         <textarea
           class="textarea"
