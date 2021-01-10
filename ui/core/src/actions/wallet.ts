@@ -3,7 +3,7 @@ import { validateMnemonic } from "bip39";
 import { Mnemonic } from "../entities/Wallet";
 import { ActionContext } from ".";
 import { effect } from "@vue/reactivity";
-
+import notify from "../api/utils/Notifications"
 export default ({
   api,
   store,
@@ -28,6 +28,17 @@ export default ({
 
     async disconnect() {
       api.SifService.purgeClient();
+    },
+    async connectToWallet() {
+      try  {
+        await api.SifService.connect();
+      } catch (error) {
+        // to the ui??
+        notify({type:"error", ...error})
+      }
+    },
+    async disconnectWallet() {
+      await api.SifService.disconnect();
     },
   };
 
