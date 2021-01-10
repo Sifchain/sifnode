@@ -5,68 +5,13 @@ import os
 import sys
 import tempfile
 import textwrap
-from dataclasses import dataclass
 from typing import List
 
 from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks, \
     n_wait_blocks, print_error_message, wait_for_sifchain_addr_balance, send_ethereum_currency_to_sifchain_addr, \
     get_eth_balance, send_from_sifchain_to_ethereum, wait_for_eth_balance, \
     current_ethereum_block_number, wait_for_ethereum_block_number, sif_tx_send, wait_for_sif_account, \
-    get_shell_output_json
-
-
-@dataclass
-class EthereumToSifchainTransferRequest:
-    sifchain_address: str = ""
-    sifchain_destination_address: str = ""
-    ethereum_address: str = ""
-    sifchain_symbol: str = "ceth"
-    ethereum_symbol: str = "eth"
-    amount: int = 0
-    smart_contracts_dir: str = ""
-    ethereum_chain_id: str = "5777"
-    chain_id: str = "localnet"
-    manual_block_advance: bool = True
-    n_wait_blocks: int = 50
-
-    def as_json(self):
-        return json.dumps(self.__dict__)
-
-    @staticmethod
-    def from_args(args):
-        return EthereumToSifchainTransferRequest(
-            sifchain_address=args.sifchain_address[0],
-            sifchain_destination_address=args.sifchain_destination_address[0],
-            ethereum_address=args.ethereum_address[0],
-            sifchain_symbol=args.sifchain_symbol[0],
-            ethereum_symbol=args.ethereum_symbol[0],
-            amount=int(args.amount[0]),
-            smart_contracts_dir=args.smart_contracts_dir[0],
-            ethereum_chain_id=args.ethereum_chain_id[0],
-            manual_block_advance=args.manual_block_advance,
-            n_wait_blocks=int(args.n_wait_blocks[0]),
-        )
-
-
-@dataclass
-class SifchaincliCredentials:
-    keyring_passphrase: str
-    keyring_backend: str
-    from_key: str
-    sifnodecli_homedir: str
-
-    def printable_entries(self):
-        return {**(self.__dict__), "keyring_passphrase": "** hidden **"}
-
-    def as_json(self):
-        return json.dumps(self.printable_entries())
-
-
-@dataclass
-class RequestAndCredentials:
-    transfer_request: EthereumToSifchainTransferRequest
-    credentials: SifchaincliCredentials
-    args: object
+    get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
 
 
 # def delay_n_blocks(n, transfer_request: EthereumToSifchainTransferRequest):
@@ -98,24 +43,21 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     status = {
         "action": "transfer_ethereum_to_sifchain",
         "sifchain_starting_balance": sifchain_starting_balance,
+        "transfer_request": transfer_request.__dict__,
     }
-    logging.info(status)
+    logging.info(f"transfer_ethereum_to_sifchain_json: {json.dumps(status)}", )
 
-    send_tx = send_ethereum_currency_to_sifchain_addr(
-        transfer_request.sifchain_address,
-        transfer_request.ethereum_symbol,
-        transfer_request.amount,
-        transfer_request.smart_contracts_dir
-    )
+    send_tx = send_ethereum_currency_to_sifchain_addr(transfer_request)
     starting_block = current_ethereum_block_number(transfer_request.smart_contracts_dir)
     half_n_wait_blocks = n_wait_blocks / 2 + 1
     logging.debug("wait half the blocks, transfer should not complete")
     if transfer_request.manual_block_advance:
         advance_n_ethereum_blocks(half_n_wait_blocks, transfer_request.smart_contracts_dir)
-    wait_for_ethereum_block_number(
-        starting_block + half_n_wait_blocks,
-        smart_contracts_dir=transfer_request.smart_contracts_dir
-    )
+    else:
+        wait_for_ethereum_block_number(
+            block_number=starting_block + half_n_wait_blocks,
+            transfer_request=transfer_request
+        )
 
     # we still may not have an account
     try:
@@ -134,15 +76,17 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
 
     if transfer_request.manual_block_advance:
         advance_n_ethereum_blocks(half_n_wait_blocks, transfer_request.smart_contracts_dir)
-    wait_for_ethereum_block_number(
-        starting_block + n_wait_blocks,
-        smart_contracts_dir=transfer_request.smart_contracts_dir
-    )
+    else:
+        wait_for_ethereum_block_number(
+            block_number=starting_block + n_wait_blocks,
+            transfer_request=transfer_request
+        )
 
     target_balance = sifchain_starting_balance + transfer_request.amount
 
-    logging.debug("wait for account and new balance")
+    logging.debug(f"wait for account {transfer_request.sifchain_address}")
     wait_for_sif_account(transfer_request.sifchain_address, max_attempts=max_attempts)
+
     wait_for_sifchain_addr_balance(
         transfer_request.sifchain_address,
         transfer_request.sifchain_symbol,
@@ -162,11 +106,9 @@ def transfer_sifchain_to_ethereum(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials,
 ):
-    ethereum_starting_balance = get_eth_balance(
-        transfer_request.ethereum_address,
-        transfer_request.ethereum_symbol,
-        transfer_request.smart_contracts_dir
-    )
+    logging.info(f"transfer_sifchain_to_ethereum_json: {transfer_request.as_json()}")
+
+    ethereum_starting_balance = get_eth_balance(transfer_request)
 
     sifchain_starting_balance = get_sifchain_addr_balance(
         transfer_request.sifchain_address,
@@ -204,10 +146,8 @@ def transfer_sifchain_to_ethereum(
     target_balance = ethereum_starting_balance + transfer_request.amount
 
     wait_for_eth_balance(
-        ethereum_address=transfer_request.ethereum_address,
-        symbol=transfer_request.ethereum_symbol,
+        transfer_request=transfer_request,
         target_balance=ethereum_starting_balance + transfer_request.amount,
-        smart_contracts_dir=transfer_request.smart_contracts_dir,
     )
 
     sifchain_ending_balance = get_sifchain_addr_balance(
@@ -270,10 +210,6 @@ def transfer_argument_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=textwrap.dedent("""
     Transfer from Ethereum to Sifchain
-    
-    example:
-    
-    python3 burn_lock_functions.py --sifchain_address sif132tc0acwt8klntn53xatchqztl3ajfxxxsawn8 --ethereum_symbol eth --sifchain_symbol ceth --amount 7000
     """))
     parser.add_argument(
         '--sifchain_address',
@@ -352,6 +288,18 @@ def transfer_argument_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         '--chain_id',
+        type=str,
+        nargs=1,
+        required=True
+    )
+    parser.add_argument(
+        '--bridgebank_address',
+        type=str,
+        nargs=1,
+        required=True
+    )
+    parser.add_argument(
+        '--bridgetoken_address',
         type=str,
         nargs=1,
         required=True

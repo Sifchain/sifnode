@@ -88,24 +88,6 @@ def lock_rowan(user, eth_user, amount):
     return get_shell_output(command_line)
 
 
-def test_case_1():
-    print(
-        "########## Test Case One Start: lock eth in ethereum then mint ceth in sifchain"
-    )
-    bridge_bank_balance_before_tx = get_eth_balance(bridge_bank_address, ETHEREUM_ETH)
-    user_balance_before_tx = get_sifchain_addr_balance(user1_addr, SIF_ETH)
-
-    print(f"send_ethereum_currency_to_sifchain_addr({user1_addr}, {ETHEREUM_ETH}, {AMOUNT}), balance {user_balance_before_tx}")
-    send_ethereum_currency_to_sifchain_addr(user1_addr, ETHEREUM_ETH, AMOUNT, smart_contracts_dir)
-    advance_n_ethereum_blocks(n_wait_blocks, smart_contracts_dir)
-
-    wait_for_eth_balance(bridge_bank_address, ETHEREUM_ETH, bridge_bank_balance_before_tx + AMOUNT)
-    print(f"wait_for_sifchain_addr_balance({user1_addr}, {SIF_ETH}, {AMOUNT}), balance {user_balance_before_tx}")
-    wait_for_sifchain_addr_balance(user1_addr, SIF_ETH, user_balance_before_tx + AMOUNT)
-
-    print("########## Test Case One Over ##########")
-
-
 def test_case_2():
     print(
         "########## Test Case Two Start: ceth => eth"
