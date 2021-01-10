@@ -7,6 +7,7 @@
         v-bind="$attrs"
         v-model="localValue"
         class="sif-input-control"
+        :disabled="disabled"
         :placeholder="placeholder"
       />
       <slot name="end"></slot>
@@ -34,6 +35,10 @@ export default defineComponent({
       default: "",
     },
     bold: {
+      type: Boolean,
+      default: false,
+    },
+    disabled: {
       type: Boolean,
       default: false,
     },
