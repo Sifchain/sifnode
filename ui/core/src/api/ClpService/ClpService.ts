@@ -9,18 +9,18 @@ import {
 import { Fraction } from "../../entities/fraction/Fraction";
 
 import { SifUnSignedClient } from "../utils/SifClient";
-import { toPool } from "../utils/toPool";
-import ReconnectingWebSocket from "reconnecting-websocket";
+import { toPool } from "../utils/SifClient/toPool";
 
 export type ClpServiceContext = {
-  loadAssets: () => Promise<Asset[]>;
-  sifApiUrl: string;
   nativeAsset: Asset;
+  sifApiUrl: string;
+  sifWsUrl: string;
+  sifUnsignedClient?: SifUnSignedClient;
 };
 
 type IClpService = {
   getPools: () => Promise<Pool[]>;
-  onPoolsUpdated: (handler: PoolHandlerFn) => void;
+  getPoolsByLiquidityProvider: (address: string) => Promise<Pool[]>;
   swap: (params: {
     fromAddress: string;
     receivedAsset: Asset;
@@ -37,7 +37,7 @@ type IClpService = {
     externalAssetAmount: AssetAmount;
   }) => any;
   getLiquidityProvider: (params: {
-    ticker: string;
+    symbol: string;
     lpAddress: string;
   }) => Promise<LiquidityProvider | null>;
   removeLiquidity: (params: {
@@ -48,60 +48,40 @@ type IClpService = {
   }) => any;
 };
 
-type PoolHandlerFn = (pools: Pool[]) => void;
-
 export default function createClpService({
-  loadAssets,
   sifApiUrl,
   nativeAsset,
+  sifWsUrl,
+  sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl),
 }: ClpServiceContext): IClpService {
-  const client = new SifUnSignedClient(sifApiUrl);
-  let ws: ReconnectingWebSocket;
-
-  let poolHandler: PoolHandlerFn = () => {};
-
-  async function setupPoolWatcher() {
-    await new Promise((res, rej) => {
-      ws = new ReconnectingWebSocket("ws://localhost:26657/websocket");
-      ws.onopen = () => {
-        ws.send(
-          JSON.stringify({
-            jsonrpc: "2.0",
-            method: "subscribe",
-            id: "1",
-            params: {
-              query: `tm.event='Tx'`,
-            },
-          })
-        );
-        // This assumes every transaction means an update to pool values
-        // Subscribing to all pool addresses could mean having a tone of
-        // open connections to our node because there is no "OR" query
-        // syntax so have chosen to go with debouncing getPools for now.
-        ws.onmessage = async () => {
-          poolHandler(await instance.getPools());
-        };
-        res(ws);
-      };
-      ws.onerror = (err) => rej(err);
-    });
-  }
-
-  async function initialize() {
-    await loadAssets();
-    await setupPoolWatcher();
-  }
-
-  initialize();
+  const client = sifUnsignedClient;
 
   const instance: IClpService = {
     async getPools() {
+      try {
+        const rawPools = await client.getPools();
+        return rawPools.map(toPool(nativeAsset));
+      } catch (error) {
+        return [];
+      }
+    },
+    async getPoolsByLiquidityProvider(address: string) {
+      // Unfortunately it is expensive for the backend to
+      // filter pools so we need to annoyingly do this in two calls
+      // First we get the metadata
+      const poolMeta = await client.getAssets(address);
+      if (!poolMeta) return [];
+      const poolSymbols = poolMeta.map(({ symbol }) => symbol);
+
+      // Then we get the pools and filter for the metadata
       const rawPools = await client.getPools();
-      return rawPools.map(toPool);
+      return rawPools
+        .filter((rawPool) =>
+          poolSymbols.includes(rawPool.external_asset.symbol)
+        )
+        .map(toPool(nativeAsset));
     },
-    onPoolsUpdated(handler: PoolHandlerFn) {
-      poolHandler = handler;
-    },
+
     async addLiquidity(params: {
       fromAddress: string;
       nativeAssetAmount: AssetAmount;
@@ -153,16 +133,17 @@ export default function createClpService({
     },
     async getLiquidityProvider(params) {
       const response = await client.getLiquidityProvider(params);
-
       return LiquidityProvider(
         Coin({
-          name: response.result.asset.ticker,
-          symbol: response.result.asset.ticker,
+          name: response.result.LiquidityProvider.asset.symbol,
+          symbol: response.result.LiquidityProvider.asset.symbol,
           network: Network.SIFCHAIN,
           decimals: 18,
         }),
-        new Fraction(response.result.liquidity_provider_units),
-        response.result.liquidity_provider_address
+        new Fraction(
+          response.result.LiquidityProvider.liquidity_provider_units
+        ),
+        response.result.LiquidityProvider.liquidity_provider_address
       );
     },
 

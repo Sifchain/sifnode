@@ -58,8 +58,8 @@ namespace :genesis do
   desc "node operations"
   namespace :sifnode do
     desc "Scaffold a new local node and configure it to connect to an existing network"
-    task :scaffold, [:chainnet, :peer_address, :genesis_url] do |t, args|
-      safe_system("sifgen node create #{args[:chainnet]} #{args[:peer_address]} #{args[:genesis_url]}")
+    task :scaffold, [:chainnet, :moniker, :mnemonic, :ipv4_address, :peer_address, :genesis_url] do |t, args|
+      safe_system("sifgen node create #{args[:chainnet]} #{args[:moniker]} #{args[:mnemonic]} #{args[:ipv4_address]} #{args[:peer_address]} #{args[:genesis_url]} --print-details")
     end
 
     desc "boot scaffolded node and connect to existing network"

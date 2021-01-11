@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.16;
 
 import "./CosmosBank.sol";
 import "./EthereumBank.sol";
@@ -33,7 +33,6 @@ contract BridgeBank is BankStorage,
      */
     function initialize(
         address _operatorAddress,
-        address _oracleAddress,
         address _cosmosBridgeAddress,
         address _owner
     ) public {
@@ -43,7 +42,6 @@ contract BridgeBank is BankStorage,
         CosmosWhiteList.initialize();
 
         operator = _operatorAddress;
-        oracle = _oracleAddress;
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
         _initialized = true;
@@ -54,17 +52,6 @@ contract BridgeBank is BankStorage,
      */
     modifier onlyOperator() {
         require(msg.sender == operator, "Must be BridgeBank operator.");
-        _;
-    }
-
-    /*
-     * @dev: Modifier to restrict access to the oracle
-     */
-    modifier onlyOracle() {
-        require(
-            msg.sender == oracle,
-            "Access restricted to the oracle"
-        );
         _;
     }
 
@@ -97,12 +84,6 @@ contract BridgeBank is BankStorage,
         require(verifySifPrefix(_sifAddress) == true, "Invalid sif address prefix");
         _;
     }
-
-    /*
-     * @dev: Fallback function allows operator to send funds to the bank directly
-     *       This feature is used for testing and is available at the operator's own risk.
-     */
-    function() external payable onlyOperator {}
 
     /*
      * @dev: function to validate if a sif address has a correct prefix
@@ -177,6 +158,38 @@ contract BridgeBank is BankStorage,
         return setTokenInEthWhiteList(_token, _inList);
     }
 
+    // Method that is only for doing the setting of the mapping
+    // private so that it is not inheritable or able to be called
+    // by anyone other than this contract
+    function _updateTokenLimits(address _token, uint256 _amount) private {
+        string memory symbol = _token == address(0) ? "ETH" : BridgeToken(_token).symbol();
+        maxTokenAmount[symbol] = _amount;
+    }
+
+    function updateTokenLockBurnLimit(address _token, uint256 _amount)
+        public
+        onlyOperator
+        returns (bool)
+    {
+        _updateTokenLimits(_token, _amount);
+        return true;
+    }
+
+    function bulkWhitelistUpdateLimits(
+        address[] calldata tokenAddresses,
+        uint256[] calldata tokenLimit
+        ) external
+        onlyOperator
+        returns (bool)
+    {
+        require(tokenAddresses.length == tokenLimit.length, "!same length");
+        for (uint256 i = 0; i < tokenAddresses.length; i++) {
+            _updateTokenLimits(tokenAddresses[i], tokenLimit[i]);
+            setTokenInEthWhiteList(tokenAddresses[i], true);
+        }
+        return true;
+    }
+
     /*
      * @dev: Mints new BankTokens
      *
@@ -187,7 +200,6 @@ contract BridgeBank is BankStorage,
      * @param _amount: number of comsos tokens to be minted
      */
     function mintBridgeTokens(
-        bytes memory _cosmosSender,
         address payable _intendedRecipient,
         address _bridgeTokenAddress,
         string memory _symbol,
@@ -195,7 +207,6 @@ contract BridgeBank is BankStorage,
     ) public onlyCosmosBridge {
         return
             mintNewBridgeTokens(
-                _cosmosSender,
                 _intendedRecipient,
                 _bridgeTokenAddress,
                 _symbol,
@@ -215,8 +226,13 @@ contract BridgeBank is BankStorage,
         address _token,
         uint256 _amount
     ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) {
-        BridgeToken(_token).burnFrom(msg.sender, _amount);
         string memory symbol = BridgeToken(_token).symbol();
+
+        if (_amount > maxTokenAmount[symbol]) {
+            revert("Amount being transferred is over the limit for this token");
+        }
+
+        BridgeToken(_token).burnFrom(msg.sender, _amount);
         burnFunds(msg.sender, _recipient, _token, symbol, _amount);
     }
 
@@ -247,18 +263,18 @@ contract BridgeBank is BankStorage,
             symbol = "ETH";
             // ERC20 deposit
         } else {
-            require(
-                BridgeToken(_token).transferFrom(
-                    msg.sender,
-                    address(this),
-                    _amount
-                ),
-                "Contract token allowances insufficient to complete this lock request"
+            IERC20 tokenToTransfer = IERC20(_token);
+            tokenToTransfer.safeTransferFrom(
+                msg.sender,
+                address(this),
+                _amount
             );
-            // Set symbol to the ERC20 token's symbol
             symbol = BridgeToken(_token).symbol();
         }
 
+        if (_amount > maxTokenAmount[symbol]) {
+            revert("Amount being transferred is over the limit");
+        }
         lockFunds(msg.sender, _recipient, _token, symbol, _amount);
     }
 
@@ -284,8 +300,10 @@ contract BridgeBank is BankStorage,
         // Confirm that the bank holds sufficient balances to complete the unlock
         address tokenAddress = lockedTokenList[_symbol];
         if (tokenAddress == address(0)) {
+            // uint256 contractBalance = ;
+            // revert("no error before 299 for eth unlock");
             require(
-                address(this).balance >= _amount,
+                ((address(this)).balance) >= _amount,
                 "Insufficient ethereum balance for delivery."
             );
         } else {
@@ -295,38 +313,5 @@ contract BridgeBank is BankStorage,
             );
         }
         unlockFunds(_recipient, tokenAddress, _symbol, _amount);
-    }
-
-    /*
-     * @dev: Exposes an item's current status.
-     *
-     * @param _id: The item in question.
-     * @return: Boolean indicating the lock status.
-     */
-    function getCosmosDepositStatus(bytes32 _id) public view returns (bool) {
-        return isLockedCosmosDeposit(_id);
-    }
-
-    /*
-     * @dev: Allows access to a Cosmos deposit's information via its unique identifier.
-     *
-     * @param _id: The deposit to be viewed.
-     * @return: Original sender's Ethereum address.
-     * @return: Intended Cosmos recipient's address in bytes.
-     * @return: The lock deposit's currency, denoted by a token address.
-     * @return: The amount locked in the deposit.
-     * @return: The deposit's unique nonce.
-     */
-    function viewCosmosDeposit(bytes32 _id)
-        public
-        view
-        returns (
-            bytes memory,
-            address payable,
-            address,
-            uint256
-        )
-    {
-        return getCosmosDeposit(_id);
     }
 }

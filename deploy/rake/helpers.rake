@@ -79,8 +79,7 @@ end
 #
 def pod_name(args)
   cmd = %Q{kubectl get pods --selector=app.kubernetes.io/instance=sifnode \
-          -n #{args[:namespace]} -o json | jq '.items[0].metadata.name'}
-  system("export KUBECONFIG=#{kubeconfig(args)}")
+          -n #{args[:namespace]} --kubeconfig #{kubeconfig(args)} -o json | jq '.items[0].metadata.name'}
   `#{cmd}`.strip
 end
 

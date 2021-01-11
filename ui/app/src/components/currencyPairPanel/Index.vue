@@ -9,6 +9,7 @@
       @focus="handleFromFocused"
       @blur="handleFromBlur"
       :amount="fromAmount"
+      :inputDisabled="fromDisabled"
       @selectsymbol="$emit('fromsymbolclicked')"
       @maxclicked="handleFromMaxClicked"
       @update:amount="handleFromUpdateAmount"
@@ -17,13 +18,19 @@
       :selectable="fromSymbolSelectable"
       @update:symbol="handleFromUpdateSymbol"
     />
-    <ArrowIconButton @click="$emit('arrowclicked')" :enabled="canSwap" />
+    <ArrowIconButton
+      @click="$emit('arrowclicked')"
+      :enabled="canSwap"
+      v-if="canSwapIcon === 'arrow'"
+    />
+    <Icon icon="plus" v-if="canSwapIcon === 'plus'" />
     <CurrencyField
       label="To"
       tabindex="2"
       @focus="handleToFocused"
       @blur="handleToBlur"
       :amount="toAmount"
+      :inputDisabled="toDisabled"
       @selectsymbol="$emit('tosymbolclicked')"
       @update:amount="handleToUpdateAmount"
       :symbol="toSymbol"
@@ -38,8 +45,9 @@
 import { defineComponent } from "vue";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
 import ArrowIconButton from "@/components/shared/ArrowIconButton.vue";
+import Icon from "@/components/shared/Icon.vue";
 export default defineComponent({
-  components: { CurrencyField, ArrowIconButton },
+  components: { CurrencyField, ArrowIconButton, Icon },
   props: {
     priceMessage: String,
     fromAmount: String,
@@ -50,6 +58,9 @@ export default defineComponent({
     connected: Boolean,
     nextStepMessage: String,
     canSwap: { type: Boolean, default: false },
+    fromDisabled: { type: Boolean, default: false },
+    toDisabled: { type: Boolean, default: false },
+    canSwapIcon: { type: String, default: "arrow" },
     connectedText: String,
     fromSymbolFixed: { type: Boolean, default: false },
     fromSymbolSelectable: { type: Boolean, default: true },

@@ -6,6 +6,10 @@ export function getAssetLabel(t: Asset) {
   if (t.network === Network.SIFCHAIN && t.symbol.indexOf("c") === 0) {
     return ["c", t.symbol.slice(1).toUpperCase()].join("");
   }
+
+  if (t.network === Network.ETHEREUM && t.symbol.toLowerCase() === "erowan") {
+    return "eROWAN";
+  }
   return t.symbol.toUpperCase();
 }
 
@@ -29,5 +33,11 @@ export function useAssetItem(symbol: Ref<string | undefined>) {
     return `background: ${color};`;
   });
 
-  return { token, tokenLabel, backgroundStyle };
+  const asset = {
+    token: token,
+    label: tokenLabel,
+    background: backgroundStyle,
+  };
+
+  return asset;
 }
