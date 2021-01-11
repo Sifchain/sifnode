@@ -57,11 +57,11 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 		nativeAssetBalance = nativeAssetBalance.Sub(withdrawNativeAsset)
 		externalAssetBalance = externalAssetBalance.Sub(withdrawExternalAsset)
 
-		withdrawNativeAssetInt, ok := keeper.ParseToInt(withdrawNativeAsset)
+		withdrawNativeAssetInt, ok := keeper.ParseToInt(withdrawNativeAsset.String())
 		if !ok {
 			return nil, types.ErrUnableToParseInt
 		}
-		withdrawExternalAssetInt, ok := keeper.ParseToInt(withdrawExternalAsset)
+		withdrawExternalAssetInt, ok := keeper.ParseToInt(withdrawExternalAsset.String())
 		if !ok {
 			return nil, types.ErrUnableToParseInt
 		}
@@ -190,11 +190,11 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 		pool.NativeAssetBalance.String(), pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(),
 		msg.WBasisPoints.String(), msg.Asymmetry)
 
-	withdrawExternalAssetAmountInt, ok := keeper.ParseToInt(withdrawExternalAssetAmount)
+	withdrawExternalAssetAmountInt, ok := keeper.ParseToInt(withdrawExternalAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
-	withdrawNativeAssetAmountInt, ok := keeper.ParseToInt(withdrawNativeAssetAmount)
+	withdrawNativeAssetAmountInt, ok := keeper.ParseToInt(withdrawNativeAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
@@ -217,11 +217,11 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 			return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
 		if !swapResult.IsZero() {
-			swapResultInt, ok := keeper.ParseToInt(swapResult)
+			swapResultInt, ok := keeper.ParseToInt(swapResult.String())
 			if !ok {
 				return nil, types.ErrUnableToParseInt
 			}
-			swapAmountInt, ok := keeper.ParseToInt(swapAmount)
+			swapAmountInt, ok := keeper.ParseToInt(swapAmount.String())
 			if !ok {
 				return nil, types.ErrUnableToParseInt
 			}
@@ -238,11 +238,11 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 			return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 		}
 		if !swapResult.IsZero() {
-			swapInt, ok := keeper.ParseToInt(swapResult)
+			swapInt, ok := keeper.ParseToInt(swapResult.String())
 			if !ok {
 				return nil, types.ErrUnableToParseInt
 			}
-			swapAmountInt, ok := keeper.ParseToInt(swapAmount)
+			swapAmountInt, ok := keeper.ParseToInt(swapAmount.String())
 			if !ok {
 				return nil, types.ErrUnableToParseInt
 			}
@@ -307,7 +307,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// Deducting Balance from the user , Sent Asset is the asset the user is sending to the Pool
 	// Case 1 . Deducting his RWN and adding to RWN:ETH pool
 	// Case 2 , Deduction his ETH and adding to RWN:ETH pool
-	sentAmountInt, ok := keeper.ParseToInt(sentAmount)
+	sentAmountInt, ok := keeper.ParseToInt(sentAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}

@@ -9,11 +9,11 @@ import (
 
 func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg types.MsgCreatePool) (*types.Pool, error) {
 
-	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount)
+	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
-	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount)
+	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
@@ -49,11 +49,11 @@ func (k Keeper) CreateLiquidityProvider(ctx sdk.Context, asset types.Asset, lpun
 func (k Keeper) AddLiquidity(ctx sdk.Context, msg types.MsgAddLiquidity, pool types.Pool, newPoolUnits sdk.Uint, lpUnits sdk.Uint) (*types.LiquidityProvider, error) {
 
 	// Verify user has coins to add liquidiy
-	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount)
+	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
-	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount)
+	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
@@ -168,7 +168,7 @@ func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount sdk.Uint, finalPool typ
 	if err != nil {
 		return errors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
-	sentAmountInt, ok := k.ParseToInt(sentAmount)
+	sentAmountInt, ok := k.ParseToInt(sentAmount.String())
 	if !ok {
 		return types.ErrUnableToParseInt
 	}
@@ -184,6 +184,6 @@ func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount sdk.Uint, finalPool typ
 }
 
 // Use strings instead of Unit/Int in between conventions
-func (k Keeper) ParseToInt(nu sdk.Uint) (sdk.Int, bool) {
-	return sdk.NewIntFromString(nu.String())
+func (k Keeper) ParseToInt(nu string) (sdk.Int, bool) {
+	return sdk.NewIntFromString(nu)
 }
