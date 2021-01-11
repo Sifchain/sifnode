@@ -58,11 +58,11 @@ contract Valset is ValsetStorage {
     /*
      * @dev: Constructor
      */
-    function initialize(
+    function _initialize(
         address _operator,
         address[] memory _initValidators,
         uint256[] memory _initPowers
-    ) public {
+    ) internal {
         require(!_initialized, "Initialized");
 
         operator = _operator;
@@ -89,23 +89,19 @@ contract Valset is ValsetStorage {
         address _validatorAddress,
         uint256 _newValidatorPower
     ) public onlyOperator {
-        // Create a unique key which for this validator's position in the current version of the mapping
-        bytes32 key = keccak256(
-            abi.encodePacked(currentValsetVersion, _validatorAddress)
-        );
 
         require(
-            validators[key],
+            validators[_validatorAddress][currentValsetVersion],
             "Can only update the power of active valdiators"
         );
 
         // Adjust total power by new validator power
-        uint256 priorPower = powers[key];
+        uint256 priorPower = powers[_validatorAddress][currentValsetVersion];
         totalPower = totalPower.sub(priorPower);
         totalPower = totalPower.add(_newValidatorPower);
 
         // Set validator's new power
-        powers[key] = _newValidatorPower;
+        powers[_validatorAddress][currentValsetVersion] = _newValidatorPower;
 
         emit LogValidatorPowerUpdated(
             _validatorAddress,
@@ -120,20 +116,15 @@ contract Valset is ValsetStorage {
      * @dev: removeValidator
      */
     function removeValidator(address _validatorAddress) public onlyOperator {
-        // Create a unique key which for this validator's position in the current version of the mapping
-        bytes32 key = keccak256(
-            abi.encodePacked(currentValsetVersion, _validatorAddress)
-        );
-
-        require(validators[key], "Can only remove active valdiators");
+        require(validators[_validatorAddress][currentValsetVersion], "Can only remove active valdiators");
 
         // Update validator count and total power
         validatorCount = validatorCount.sub(1);
-        totalPower = totalPower.sub(powers[key]);
+        totalPower = totalPower.sub(powers[_validatorAddress][currentValsetVersion]);
 
         // Delete validator and power
-        delete validators[key];
-        delete powers[key];
+        delete validators[_validatorAddress][currentValsetVersion];
+        delete powers[_validatorAddress][currentValsetVersion];
 
         emit LogValidatorRemoved(
             _validatorAddress,
@@ -173,13 +164,8 @@ contract Valset is ValsetStorage {
         view
         returns (bool)
     {
-        // Recreate the unique key for this address given the current mapping version
-        bytes32 key = keccak256(
-            abi.encodePacked(currentValsetVersion, _validatorAddress)
-        );
-
         // Return bool indicating if this address is an active validator
-        return validators[key];
+        return validators[_validatorAddress][currentValsetVersion];
     }
 
     /*
@@ -190,12 +176,7 @@ contract Valset is ValsetStorage {
         view
         returns (uint256)
     {
-        // Recreate the unique key for this address given the current mapping version
-        bytes32 key = keccak256(
-            abi.encodePacked(currentValsetVersion, _validatorAddress)
-        );
-
-        return powers[key];
+        return powers[_validatorAddress][currentValsetVersion];
     }
 
     /*
@@ -209,15 +190,9 @@ contract Valset is ValsetStorage {
             _valsetVersion < currentValsetVersion,
             "Gas recovery only allowed for previous validator sets"
         );
-
-        // Recreate the unique key used to identify this validator in the given version
-        bytes32 key = keccak256(
-            abi.encodePacked(_valsetVersion, _validatorAddress)
-        );
-
         // Delete from mappings and recover gas
-        delete (validators[key]);
-        delete (powers[key]);
+        delete (validators[_validatorAddress][currentValsetVersion]);
+        delete (powers[_validatorAddress][currentValsetVersion]);
     }
 
     /*
@@ -227,17 +202,12 @@ contract Valset is ValsetStorage {
         address _validatorAddress,
         uint256 _validatorPower
     ) internal {
-        // Create a unique key which for this validator's position in the current version of the mapping
-        bytes32 key = keccak256(
-            abi.encodePacked(currentValsetVersion, _validatorAddress)
-        );
-
         validatorCount = validatorCount.add(1);
         totalPower = totalPower.add(_validatorPower);
 
         // Set validator as active and set their power
-        validators[key] = true;
-        powers[key] = _validatorPower;
+        validators[_validatorAddress][currentValsetVersion] = true;
+        powers[_validatorAddress][currentValsetVersion] = _validatorPower;
 
         emit LogValidatorAdded(
             _validatorAddress,
@@ -257,17 +227,5 @@ contract Valset is ValsetStorage {
         totalPower = 0;
 
         emit LogValsetReset(currentValsetVersion, validatorCount, totalPower);
-    }
-
-    /**
-     * toEthSignedMessageHash
-     * @dev prefix a bytes32 value with "\x19Ethereum Signed Message:"
-     * and hash the result
-     */
-    function ethMessageHash(bytes32 message) internal pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked("\x19Ethereum Signed Message:\n32", message)
-            );
     }
 }
