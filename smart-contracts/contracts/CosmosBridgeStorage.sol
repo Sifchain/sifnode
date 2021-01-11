@@ -27,27 +27,12 @@ contract CosmosBridgeStorage {
     /**
     * @notice gap of storage for future upgrades
     */
-    bool public hasOracle;
-    
-    /**
-    * @notice gap of storage for future upgrades
-    */
     address payable public bridgeBank;
     
     /**
     * @notice gap of storage for future upgrades
     */
     bool public hasBridgeBank;
-
-    /**
-    * @notice gap of storage for future upgrades
-    */
-    uint256 public prophecyClaimCount;
-
-    /**
-    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
-    */
-    mapping(uint256 => bool) public usedNonce;
 
     /**
     * @notice gap of storage for future upgrades
@@ -68,14 +53,9 @@ contract CosmosBridgeStorage {
     * @notice Prophecy claim struct
     */
     struct ProphecyClaim {
-        ClaimType claimType;
-        bytes cosmosSender;
         address payable ethereumReceiver;
-        address originalValidator;
-        address tokenAddress;
         string symbol;
         uint256 amount;
-        Status status;
     }
 
     /**

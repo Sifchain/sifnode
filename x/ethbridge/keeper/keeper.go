@@ -126,6 +126,11 @@ func (k Keeper) ProcessUnlock(ctx sdk.Context, cosmosSender sdk.AccAddress, amou
 	return k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosSender, amount)
 }
 
+// ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error {
+	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender, validator, operationtype)
+}
+
 // Exists chec if the key existed in db.
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)

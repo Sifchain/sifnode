@@ -35,42 +35,24 @@ contract("CosmosBridge Upgrade", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
-      this.valset = await deployProxy(Valset,
-        [
-          operator,
-          this.initialValidators,
-          this.initialPowers
-        ],
+
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
+        operator,
+        consensusThreshold,
+        this.initialValidators,
+        this.initialPowers
+      ],
         {unsafeAllowCustomTypes: true}
       );
 
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address], {unsafeAllowCustomTypes: true});
-
-      // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle,
-        [
-          operator,
-          this.valset.address,
-          this.cosmosBridge.address,
-          consensusThreshold
-        ],
-        {
-          unsafeAllowCustomTypes: true
-        }
-      );
-
       // Deploy BridgeBank contract
-      this.bridgeBank = await deployProxy(BridgeBank,
-        [
-          operator,
-          this.oracle.address,
-          this.cosmosBridge.address,
-          operator
-        ],
-        {
-          unsafeAllowCustomTypes: true
-        }
+      this.bridgeBank = await deployProxy(BridgeBank, [
+        operator,
+        this.cosmosBridge.address,
+        operator
+      ],
+      {unsafeAllowCustomTypes: true}
       );
 
       this.cosmosBridge = await upgradeProxy(
@@ -80,16 +62,6 @@ contract("CosmosBridge Upgrade", function (accounts) {
       )
     });
 
-    it("should deploy the CosmosBridge with the correct parameters", async function () {
-      this.cosmosBridge.should.exist;
-
-      const claimCount = await this.cosmosBridge.prophecyClaimCount();
-      Number(claimCount).should.be.bignumber.equal(0);
-
-      const cosmosBridgeValset = await this.cosmosBridge.valset();
-      cosmosBridgeValset.should.be.equal(this.valset.address);
-    });
-    
     it("should be able to mint tokens for a user", async function () {
       const amount = 100000000000;
       this.cosmosBridge.should.exist;
@@ -120,55 +92,31 @@ contract("CosmosBridge Upgrade", function (accounts) {
       this.cosmosBridge.should.exist;
 
       await expectRevert(
-        this.cosmosBridge.initialize(userFour, userThree),
+        this.cosmosBridge.initialize(userFour, 50, this.initialValidators, this.initialPowers),
         "Initialized"
       )
     });
 
     describe("CosmosBridge has all previous functionality", function () {
 
-    it("should allow the operator to set the Oracle", async function () {
-      this.oracle.should.exist;
+      it("should allow the operator to set the Bridge Bank", async function () {
+        this.bridgeBank.should.exist;
 
-      await this.cosmosBridge.setOracle(this.oracle.address, {
-        from: operator
-      }).should.be.fulfilled;
-
-      const bridgeOracle = await this.cosmosBridge.oracle();
-      bridgeOracle.should.be.equal(this.oracle.address);
-    });
-
-    
-    it("should not allow the operator to update the Oracle once it has been set", async function () {
-      await this.cosmosBridge.setOracle(this.oracle.address, {
-        from: operator
-      }).should.be.fulfilled;
-
-      await this.cosmosBridge
-        .setOracle(this.oracle.address, {
+        await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
           from: operator
-        })
-        .should.be.rejectedWith(EVMRevert);
-    });
+        }).should.be.fulfilled;
 
-    it("should allow the operator to set the Bridge Bank", async function () {
-      this.bridgeBank.should.exist;
+        const bridgeBank = await this.cosmosBridge.bridgeBank();
+        bridgeBank.should.be.equal(this.bridgeBank.address);
+      });
 
-      await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
-        from: operator
-      }).should.be.fulfilled;
+      it("should not allow the operator to update the Bridge Bank once it has been set", async function () {
+        await this.cosmosBridge.setBridgeBank(operator, {
+          from: operator
+        }).should.be.fulfilled;
 
-      const bridgeBank = await this.cosmosBridge.bridgeBank();
-      bridgeBank.should.be.equal(this.bridgeBank.address);
-    });
-
-    it("should not allow the operator to update the Bridge Bank once it has been set", async function () {
-      await this.cosmosBridge.setBridgeBank(this.oracle.address, {
-        from: operator
-      }).should.be.fulfilled;
-
-      await this.cosmosBridge
-        .setBridgeBank(this.oracle.address, {
+        await this.cosmosBridge
+        .setBridgeBank(operator, {
           from: operator
         })
         .should.be.rejectedWith(EVMRevert);

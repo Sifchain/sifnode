@@ -2,10 +2,11 @@ package types
 
 // Ethbridge module event types
 var (
-	EventTypeCreateClaim    = "create_claim"
-	EventTypeProphecyStatus = "prophecy_status"
-	EventTypeBurn           = "burn"
-	EventTypeLock           = "lock"
+	EventTypeCreateClaim              = "create_claim"
+	EventTypeProphecyStatus           = "prophecy_status"
+	EventTypeBurn                     = "burn"
+	EventTypeLock                     = "lock"
+	EventTypeUpdateWhiteListValidator = "update_whitelist_validator"
 
 	AttributeKeyEthereumSender = "ethereum_sender"
 	AttributeKeyCosmosReceiver = "cosmos_receiver"
@@ -16,6 +17,8 @@ var (
 	AttributeKeyStatus         = "status"
 	AttributeKeyClaimType      = "claim_type"
 	AttributeKeyMessageType    = "message_type"
+	AttributeKeyValidator      = "validator"
+	AttributeKeyOperationType  = "operation_type"
 
 	AttributeKeyEthereumChainID      = "ethereum_chain_id"
 	AttributeKeyTokenContract        = "token_contract_address"

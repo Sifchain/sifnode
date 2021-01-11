@@ -9,6 +9,7 @@
       @focus="handleFromFocused"
       @blur="handleFromBlur"
       :amount="fromAmount"
+      :inputDisabled="fromDisabled"
       @selectsymbol="$emit('fromsymbolclicked')"
       @maxclicked="handleFromMaxClicked"
       @update:amount="handleFromUpdateAmount"
@@ -17,7 +18,11 @@
       :selectable="fromSymbolSelectable"
       @update:symbol="handleFromUpdateSymbol"
     />
-    <ArrowIconButton @click="$emit('arrowclicked')" :enabled="canSwap" v-if="canSwapIcon === 'arrow'" />
+    <ArrowIconButton
+      @click="$emit('arrowclicked')"
+      :enabled="canSwap"
+      v-if="canSwapIcon === 'arrow'"
+    />
     <Icon icon="plus" v-if="canSwapIcon === 'plus'" />
     <CurrencyField
       label="To"
@@ -25,6 +30,7 @@
       @focus="handleToFocused"
       @blur="handleToBlur"
       :amount="toAmount"
+      :inputDisabled="toDisabled"
       @selectsymbol="$emit('tosymbolclicked')"
       @update:amount="handleToUpdateAmount"
       :symbol="toSymbol"
@@ -52,7 +58,9 @@ export default defineComponent({
     connected: Boolean,
     nextStepMessage: String,
     canSwap: { type: Boolean, default: false },
-    canSwapIcon: { type: String, default: 'arrow'},
+    fromDisabled: { type: Boolean, default: false },
+    toDisabled: { type: Boolean, default: false },
+    canSwapIcon: { type: String, default: "arrow" },
     connectedText: String,
     fromSymbolFixed: { type: Boolean, default: false },
     fromSymbolSelectable: { type: Boolean, default: true },

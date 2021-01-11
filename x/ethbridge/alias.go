@@ -45,14 +45,15 @@ var (
 )
 
 type (
-	Keeper                   = keeper.Keeper
-	EthBridgeClaim           = types.EthBridgeClaim //nolint:golint
-	OracleClaimContent       = types.OracleClaimContent
-	EthereumAddress          = types.EthereumAddress
-	MsgCreateEthBridgeClaim  = types.MsgCreateEthBridgeClaim
-	MsgBurn                  = types.MsgBurn
-	MsgLock                  = types.MsgLock
-	MessageType              = types.MessageType
-	QueryEthProphecyParams   = types.QueryEthProphecyParams
-	QueryEthProphecyResponse = types.QueryEthProphecyResponse
+	Keeper                      = keeper.Keeper
+	EthBridgeClaim              = types.EthBridgeClaim //nolint:golint
+	OracleClaimContent          = types.OracleClaimContent
+	EthereumAddress             = types.EthereumAddress
+	MsgCreateEthBridgeClaim     = types.MsgCreateEthBridgeClaim
+	MsgBurn                     = types.MsgBurn
+	MsgLock                     = types.MsgLock
+	MessageType                 = types.MessageType
+	MsgUpdateWhiteListValidator = types.MsgUpdateWhiteListValidator
+	QueryEthProphecyParams      = types.QueryEthProphecyParams
+	QueryEthProphecyResponse    = types.QueryEthProphecyResponse
 )

@@ -46,7 +46,7 @@ variable "min_capacity" {
 }
 
 variable "instance_type" {
-  default = "t2.medium"
+  default = "t2.xlarge"
 }
 
 variable "ami_type" {

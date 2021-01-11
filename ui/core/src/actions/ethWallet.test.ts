@@ -14,6 +14,7 @@ beforeEach(() => {
       balances: [],
       log: "",
     }),
+    getSupportedTokens: () => [],
     isConnected: () => true,
     connect: async () => {},
     disconnect: jest.fn(async () => {}),
@@ -26,7 +27,7 @@ beforeEach(() => {
   ethWalletActions = createActions({
     api: { EthereumService: mockEthereumService },
     store: {
-      asset: { assetMap: new Map(), topTokens: [] },
+      asset: { topTokens: [] },
       wallet: {
         eth: {
           balances: [],

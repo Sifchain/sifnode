@@ -1,34 +1,49 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue"; /* eslint-disable-line */
-import { ref } from "@vue/reactivity";
+import { Ref, ref, toRefs } from "@vue/reactivity";
 import { useCore } from "../../hooks/useCore";
 import AssetItem from "@/components/shared/AssetItem.vue";
-import { useTokenListing } from "./useSelectToken";
+import {
+  disableSelected,
+  filterTokenList,
+  generateTokenSearchLists,
+} from "./tokenLists";
 import SifInput from "@/components/shared/SifInput.vue";
+import { Asset } from "ui-core";
 
 export default defineComponent({
   name: "SelectTokenDialog",
   components: { AssetItem, SifInput },
   emits: ["tokenselected"],
-  props: { selectedTokens: Array as PropType<string[]> },
+  props: {
+    selectedTokens: Array as PropType<string[]>,
+    displayList: { type: Object as PropType<Asset[]>, default: ref([]) },
+    fullSearchList: {
+      type: Object as PropType<Asset[]>,
+      default: ref([]),
+    },
+  },
   setup(props, context) {
-    const { store } = useCore();
+    const { actions } = useCore();
 
     const searchText = ref("");
+    const selectedTokens = props.selectedTokens || [];
 
-    const { filteredTokens } = useTokenListing({
+    const { fullSearchList, displayList } = toRefs(props);
+
+    const list = filterTokenList({
       searchText,
-      store,
-      tokenLimit: 20,
-      walletLimit: 10,
-      selectedTokens: props.selectedTokens || [],
+      tokens: fullSearchList,
+      displayList,
     });
+
+    const tokens = disableSelected({ list, selectedTokens });
 
     function selectToken(symbol: string) {
       context.emit("tokenselected", symbol);
     }
 
-    return { filteredTokens, searchText, selectToken };
+    return { tokens, searchText, selectToken };
   },
 });
 </script>
@@ -47,12 +62,12 @@ export default defineComponent({
   </div>
 
   <div class="body">
-    <div class="no-tokens-message" v-if="filteredTokens.length === 0">
+    <div class="no-tokens-message" v-if="tokens.length === 0">
       <p>No tokens available.</p>
     </div>
     <button
       class="option"
-      v-for="token in filteredTokens"
+      v-for="token in tokens"
       :disabled="token.disabled"
       :key="token.symbol"
       @click="selectToken(token.symbol)"

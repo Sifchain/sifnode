@@ -13,3 +13,8 @@ const (
 	// RouterKey is the msg router key for the oracle module
 	RouterKey = ModuleName
 )
+
+var (
+	WhiteListValidatorPrefix = []byte{0x00}
+	AdminAccountPrefix       = []byte{0x01}
+)

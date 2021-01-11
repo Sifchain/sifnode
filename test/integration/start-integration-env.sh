@@ -23,7 +23,7 @@ set_persistant_env_var SMART_CONTRACTS_DIR ${BASEDIR}/smart-contracts $envexport
 set_persistant_env_var datadir ${TEST_INTEGRATION_DIR}/vagrant/data $envexportfile
 set_persistant_env_var CONTAINER_NAME integration_sifnode1_1 $envexportfile
 set_persistant_env_var NETWORKDIR $BASEDIR/deploy/networks $envexportfile
-set_persistant_env_var GANACHE_DB_DIR $(mktemp -d --tmpdir ganachedb.XXXX) $envexportfile
+set_persistant_env_var GANACHE_DB_DIR $(mktemp -d /tmp/ganachedb.XXXX) $envexportfile
 set_persistant_env_var ETHEREUM_WEBSOCKET_ADDRESS ws://localhost:7545/ $envexportfile
 set_persistant_env_var CHAINNET localnet $envexportfile
 
