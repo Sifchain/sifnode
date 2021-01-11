@@ -28,56 +28,62 @@ func NewHandler(keeper Keeper) sdk.Handler {
 // Handle the incoming request message and distribute coins from the module to the requesters account.
 // Will need to update this in the future with some distribution limitations
 func handleMsgRequestCoins(ctx sdk.Context, keeper Keeper, msg types.MsgRequestCoins) (*sdk.Result, error) {
-	bank := keeper.GetBankKeeper()
-	supply := keeper.GetSupplyKeeper()
+	if ctx.ChainID() != "mainnet" {
+		bank := keeper.GetBankKeeper()
+		supply := keeper.GetSupplyKeeper()
 
-	ok, err := keeper.CanRequest(ctx, msg.Requester.String(), msg.Coins)
-	if !ok || err != nil {
-		return nil, err
+		ok, err := keeper.CanRequest(ctx, msg.Requester.String(), msg.Coins)
+		if !ok || err != nil {
+			return nil, err
+		}
+		ok = bank.HasCoins(ctx, types.GetFaucetModuleAddress(), msg.Coins)
+		if !ok {
+			return nil, types.NotEnoughBalance
+		}
+		err = supply.SendCoinsFromModuleToAccount(ctx, types.ModuleName, msg.Requester, msg.Coins)
+		if err != nil {
+			return nil, errors.Wrap(err, types.ErrorRequestingTokens.Error())
+		}
+		ok, err = keeper.ExecuteRequest(ctx, msg.Requester.String(), msg.Coins)
+		if !ok || err != nil {
+			return nil, err
+		}
+		ctx.EventManager().EmitEvents(sdk.Events{
+			sdk.NewEvent(
+				types.EventTypeRequestCoins,
+				sdk.NewAttribute(types.AttributeKeyFaucet, types.ModuleName),
+			),
+			sdk.NewEvent(
+				sdk.EventTypeMessage,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+				sdk.NewAttribute(sdk.AttributeKeySender, msg.Requester.String()),
+			),
+		})
+		return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 	}
-	ok = bank.HasCoins(ctx, types.GetFaucetModuleAddress(), msg.Coins)
-	if !ok {
-		return nil, types.NotEnoughBalance
-	}
-	err = supply.SendCoinsFromModuleToAccount(ctx, types.ModuleName, msg.Requester, msg.Coins)
-	if err != nil {
-		return nil, errors.Wrap(err, types.ErrorRequestingTokens.Error())
-	}
-	ok, err = keeper.ExecuteRequest(ctx, msg.Requester.String(), msg.Coins)
-	if !ok || err != nil {
-		return nil, err
-	}
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeRequestCoins,
-			sdk.NewAttribute(types.AttributeKeyFaucet, types.ModuleName),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Requester.String()),
-		),
-	})
-	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
+	return nil, nil
 }
 
 // Handle the add coins message and send coins from the signers account to the module account.
 func handleMsgAddCoins(ctx sdk.Context, keeper Keeper, msg types.MsgAddCoins) (*sdk.Result, error) {
-	bank := keeper.GetBankKeeper()
-	err := bank.SendCoins(ctx, msg.Signer, types.GetFaucetModuleAddress(), msg.Coins)
-	if err != nil {
-		return nil, errors.Wrap(err, types.ErrorAddingTokens.Error())
+	if ctx.ChainID() != "mainnet" {
+		bank := keeper.GetBankKeeper()
+		err := bank.SendCoins(ctx, msg.Signer, types.GetFaucetModuleAddress(), msg.Coins)
+		if err != nil {
+			return nil, errors.Wrap(err, types.ErrorAddingTokens.Error())
+		}
+		ctx.EventManager().EmitEvents(sdk.Events{
+			sdk.NewEvent(
+				types.EventTypeAddCoins,
+				sdk.NewAttribute(types.AttributeKeyFaucet, types.ModuleName),
+			),
+			sdk.NewEvent(
+				sdk.EventTypeMessage,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+				sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer.String()),
+			),
+		})
+		return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 	}
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeAddCoins,
-			sdk.NewAttribute(types.AttributeKeyFaucet, types.ModuleName),
-		),
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer.String()),
-		),
-	})
-	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
+	return nil, nil
 }

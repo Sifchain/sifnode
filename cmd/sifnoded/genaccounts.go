@@ -248,13 +248,41 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 
 			//addr,_:= sdk.AccAddressFromBech32("sif17s95c5jpc6x2l3edwh4dm8yhac68yru7a7kr3x")
 			addr := faucet.GetFaucetModuleAddress()
-			_, err := sdk.ParseCoins(args[0])
+			coins, err := sdk.ParseCoins(args[0])
 			if err != nil {
 				return fmt.Errorf("failed to parse coins: %w", err)
 			}
 
+			vestingStart := viper.GetInt64(flagVestingStart)
+			vestingEnd := viper.GetInt64(flagVestingEnd)
+			vestingAmt, err := sdk.ParseCoins(viper.GetString(flagVestingAmt))
+			if err != nil {
+				return fmt.Errorf("failed to parse vesting amount: %w", err)
+			}
+
 			// create concrete account type based on input parameters
 			var genAccount authexported.GenesisAccount
+
+			baseAccount := auth.NewBaseAccount(addr, coins.Sort(), nil, 0, 0)
+			if !vestingAmt.IsZero() {
+				baseVestingAccount, err := authvesting.NewBaseVestingAccount(baseAccount, vestingAmt.Sort(), vestingEnd)
+				if err != nil {
+					return fmt.Errorf("failed to create base vesting account: %w", err)
+				}
+
+				switch {
+				case vestingStart != 0 && vestingEnd != 0:
+					genAccount = authvesting.NewContinuousVestingAccountRaw(baseVestingAccount, vestingStart)
+
+				case vestingEnd != 0:
+					genAccount = authvesting.NewDelayedVestingAccountRaw(baseVestingAccount)
+
+				default:
+					return errors.New("invalid vesting parameters; must supply start and end time or end time")
+				}
+			} else {
+				genAccount = baseAccount
+			}
 
 			if err := genAccount.Validate(); err != nil {
 				return fmt.Errorf("failed to validate new genesis account: %w", err)
@@ -297,6 +325,10 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 	cmd.Flags().String(cli.HomeFlag, defaultNodeHome, "node's home directory")
 	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
 	cmd.Flags().String(flagClientHome, defaultClientHome, "client's home directory")
+	cmd.Flags().String(flagVestingAmt, "", "amount of coins for vesting accounts")
+	cmd.Flags().Uint64(flagVestingStart, 0, "schedule start time (unix epoch) for vesting accounts")
+	cmd.Flags().Uint64(flagVestingEnd, 0, "schedule end time (unix epoch) for vesting accounts")
+
 	return cmd
 }
 

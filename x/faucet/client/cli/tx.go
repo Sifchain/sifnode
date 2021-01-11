@@ -18,22 +18,19 @@ import (
 
 // GetTxCmd returns the transaction commands for this module
 func GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	if context.NewCLIContext().ChainID != "sifchain" {
-		faucetTxCmd := &cobra.Command{
-			Use:                        types.ModuleName,
-			Short:                      fmt.Sprintf("%s transactions subcommands", types.ModuleName),
-			DisableFlagParsing:         true,
-			SuggestionsMinimumDistance: 2,
-			RunE:                       client.ValidateCmd,
-		}
-
-		faucetTxCmd.AddCommand(flags.PostCommands(
-			GetCmdRequestCoins(cdc),
-			GetCmdAddCoins(cdc))...)
-
-		return faucetTxCmd
+	faucetTxCmd := &cobra.Command{
+		Use:                        types.ModuleName,
+		Short:                      fmt.Sprintf("%s transactions subcommands", types.ModuleName),
+		DisableFlagParsing:         true,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
 	}
-	return nil
+
+	faucetTxCmd.AddCommand(flags.PostCommands(
+		GetCmdRequestCoins(cdc),
+		GetCmdAddCoins(cdc))...)
+
+	return faucetTxCmd
 }
 
 // TX to request coins from faucet module account to the requesters account
@@ -46,15 +43,18 @@ func GetCmdRequestCoins(cdc *codec.Codec) *cobra.Command {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			amount := args[0]
-			coins, err := sdk.ParseCoins(amount)
-			if err != nil {
-				return err
+			if cliCtx.ChainID != "mainnet" {
+				amount := args[0]
+				coins, err := sdk.ParseCoins(amount)
+				if err != nil {
+					return err
+				}
+				// TODO verify the type the tokens that the user can request , Limit it to rowan ?
+				signer := cliCtx.GetFromAddress()
+				msg := types.NewMsgRequestCoins(signer, coins)
+				return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 			}
-			// TODO verify the type the tokens that the user can request , Limit it to rowan ?
-			signer := cliCtx.GetFromAddress()
-			msg := types.NewMsgRequestCoins(signer, coins)
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return nil
 		},
 	}
 	return cmd
@@ -70,14 +70,17 @@ func GetCmdAddCoins(cdc *codec.Codec) *cobra.Command {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			amount := args[0]
-			coins, err := sdk.ParseCoins(amount)
-			if err != nil {
-				return err
+			if cliCtx.ChainID != "mainnet" {
+				amount := args[0]
+				coins, err := sdk.ParseCoins(amount)
+				if err != nil {
+					return err
+				}
+				signer := cliCtx.GetFromAddress()
+				msg := types.NewMsgAddCoins(signer, coins)
+				return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 			}
-			signer := cliCtx.GetFromAddress()
-			msg := types.NewMsgAddCoins(signer, coins)
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return nil
 		},
 	}
 	return cmd

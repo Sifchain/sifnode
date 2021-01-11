@@ -8,7 +8,7 @@ import (
 
 // RegisterRoutes checks chain id for mainnet safeguard
 func RegisterRoutes(cliCtx context.CLIContext, r *mux.Router) {
-	if context.NewCLIContext().ChainID != "sifchain" {
+	if context.NewCLIContext().ChainID != "mainnet" {
 		registerQueryRoutes(cliCtx, r)
 		registerTxRoutes(cliCtx, r)
 	}

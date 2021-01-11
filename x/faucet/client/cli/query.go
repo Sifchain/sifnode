@@ -18,25 +18,22 @@ import (
 )
 
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	cliCtx := context.NewCLIContext().WithCodec(cdc)
-	if cliCtx.ChainID != "banana" {
-		faucetQueryCmd := &cobra.Command{
-			Use:                        types.ModuleName,
-			Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
-			DisableFlagParsing:         true,
-			SuggestionsMinimumDistance: 2,
-			RunE:                       client.ValidateCmd,
-		}
-
-		faucetQueryCmd.AddCommand(
-			flags.GetCommands(
-				GetCmdFaucet(queryRoute, cdc),
-			)...,
-		)
-
-		return faucetQueryCmd
+	faucetQueryCmd := &cobra.Command{
+		Use:                        types.ModuleName,
+		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
+		DisableFlagParsing:         true,
+		SuggestionsMinimumDistance: 2,
+		RunE:                       client.ValidateCmd,
 	}
-	return nil
+
+	faucetQueryCmd.AddCommand(
+		flags.GetCommands(
+			GetCmdFaucet(queryRoute, cdc),
+		)...,
+	)
+
+	return faucetQueryCmd
+
 }
 
 // GetCmdFaucet Query to get faucet balance with the specified denom
@@ -52,14 +49,17 @@ func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryBalance)
-			res, _, err := cliCtx.Query(route)
-			if err != nil {
-				return err
+			if cliCtx.ChainID != "mainnet" {
+				route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryBalance)
+				res, _, err := cliCtx.Query(route)
+				if err != nil {
+					return err
+				}
+				var coins types2.Coins
+				cdc.MustUnmarshalJSON(res, &coins)
+				return cliCtx.PrintOutput(coins)
 			}
-			var coins types2.Coins
-			cdc.MustUnmarshalJSON(res, &coins)
-			return cliCtx.PrintOutput(coins)
+			return nil
 		},
 	}
 }
