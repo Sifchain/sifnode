@@ -44,9 +44,9 @@ spec:
             - name: data
               mountPath: /root/
           {{- if .Values.sifnode.env.peerAddress }}
-          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" $EXTERNAL_IP $PEER_ADDRESS $GENESIS_URL --with-cosmovisor; cosmovisor start --rpc.laddr tcp://0.0.0.0:26657"]
+          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" \"\" \"\" $EXTERNAL_IP $PEER_ADDRESS $GENESIS_URL --with-cosmovisor; cosmovisor start --rpc.laddr tcp://0.0.0.0:26657"]
           {{- else }}
-          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" $EXTERNAL_IP --with-cosmovisor; cosmovisor start --rpc.laddr tcp://0.0.0.0:26657"]
+          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" \"{{ .Values.sifnode.args.adminCLPAddresses }}\" \"{{ .Values.sifnode.args.adminOracleAddress }}\" $EXTERNAL_IP --with-cosmovisor; cosmovisor start --rpc.laddr tcp://0.0.0.0:26657"]
           {{- end }}
           ports:
             - name: p2p
@@ -77,6 +77,8 @@ spec:
               value: {{ .Values.sifnode.env.peerAddress }}
             - name: GENESIS_URL
               value: {{ .Values.sifnode.env.genesisURL }}
+            - name: MIN_CLP_CREATE_POOL_THRESHOLD
+              value: {{ .Values.sifnode.env.minPoolThreshold }}
           livenessProbe:
             tcpSocket:
               port: 26657
