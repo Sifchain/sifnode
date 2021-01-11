@@ -21,19 +21,19 @@ import (
 )
 
 type Node struct {
-	ChainID           string    `yaml:"chain_id"`
-	Moniker           string    `yaml:"moniker"`
-	Mnemonic          string    `yaml:"mnemonic"`
-	AdminCLPAddresses []string  `yaml:"admin_clp_addresses"`
-	AdminOracleAddress string `yaml:"admin_oracle_address"`
-	IPAddr            string    `yml:"ip_address"`
-	Address           string    `yaml:"address"`
-	Password          string    `yaml:"password"`
-	PeerAddress       *string   `yaml:"-"`
-	GenesisURL        *string   `yaml:"-"`
-	WithCosmovisor    bool      `yaml:"-"`
-	Key               *key.Key  `yaml:"-"`
-	CLI               utils.CLI `yaml:"-"`
+	ChainID            string    `yaml:"chain_id"`
+	Moniker            string    `yaml:"moniker"`
+	Mnemonic           string    `yaml:"mnemonic"`
+	AdminCLPAddresses  []string  `yaml:"admin_clp_addresses"`
+	AdminOracleAddress string    `yaml:"admin_oracle_address"`
+	IPAddr             string    `yml:"ip_address"`
+	Address            string    `yaml:"address"`
+	Password           string    `yaml:"password"`
+	PeerAddress        *string   `yaml:"-"`
+	GenesisURL         *string   `yaml:"-"`
+	WithCosmovisor     bool      `yaml:"-"`
+	Key                *key.Key  `yaml:"-"`
+	CLI                utils.CLI `yaml:"-"`
 }
 
 func Reset(chainID string, nodeDir *string) error {
@@ -55,18 +55,18 @@ func Reset(chainID string, nodeDir *string) error {
 func NewNode(chainID, moniker, mnemonic string, adminCLPAddresses []string, adminOracleAddress, ipAddr string, peerAddress, genesisURL *string, withCosmovisor *bool) *Node {
 	password, _ := password.Generate(32, 5, 0, false, false)
 	return &Node{
-		ChainID:           chainID,
-		Moniker:           moniker,
-		Mnemonic:          mnemonic,
-		AdminCLPAddresses: adminCLPAddresses,
+		ChainID:            chainID,
+		Moniker:            moniker,
+		Mnemonic:           mnemonic,
+		AdminCLPAddresses:  adminCLPAddresses,
 		AdminOracleAddress: adminOracleAddress,
-		IPAddr:            ipAddr,
-		PeerAddress:       peerAddress,
-		Password:          password,
-		GenesisURL:        genesisURL,
-		WithCosmovisor:    *withCosmovisor,
-		CLI:               utils.NewCLI(chainID),
-		Key:               key.NewKey(&moniker, &password),
+		IPAddr:             ipAddr,
+		PeerAddress:        peerAddress,
+		Password:           password,
+		GenesisURL:         genesisURL,
+		WithCosmovisor:     *withCosmovisor,
+		CLI:                utils.NewCLI(chainID),
+		Key:                key.NewKey(&moniker, &password),
 	}
 }
 
