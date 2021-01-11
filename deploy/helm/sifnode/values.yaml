@@ -24,6 +24,7 @@ sifnode:
   args:
     mnemonic: ""
     adminCLPAddresses: ""
+    adminOracleAddress: ""
   env:
     daemonHome: "/root/.sifnoded"
     daemonName: "sifnoded"

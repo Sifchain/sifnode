@@ -39,6 +39,7 @@ type CLIUtils interface {
 	AddKey(string, string, string, string) (*string, error)
 	AddGenesisAccount(string, string, []string) (*string, error)
 	AddGenesisCLPAdmin(string, string) (*string, error)
+	SetGenesisOracleAdmin(string, string) (*string, error)
 	GenerateGenesisTxn(string, string, string, string, string, string, string, string, string) (*string, error)
 	CollectGenesisTxns(string, string) (*string, error)
 	ExportGenesis() (*string, error)
@@ -142,6 +143,10 @@ func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string
 
 func (c CLI) AddGenesisCLPAdmin(address, nodeDir string) (*string, error) {
 	return c.shellExec("sifnoded", "add-genesis-clp-admin", address, "--home", nodeDir)
+}
+
+func (c CLI) SetGenesisOracleAdmin(address, nodeDir string) (*string, error) {
+	return c.shellExec("sifnoded", "set-genesis-oracle-admin", address, "--home", nodeDir)
 }
 
 func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, cliDir, outputFile, nodeID, pubKey, ipV4Addr string) (*string, error) {

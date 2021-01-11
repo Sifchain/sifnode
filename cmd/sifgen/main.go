@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -68,17 +69,34 @@ func nodeCmd() *cobra.Command {
 
 func nodeCreateCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "create [chain-id] [moniker] [mnemonic] [admin-clp-addresses] [ip_addr] [peer-address] [genesis-url]",
+		Use:   "create [chain-id] [moniker] [mnemonic] [admin-clp-addresses] [admin-oracle-address] [bind-ip-addr] [peer-address] [genesis-url]",
 		Short: "Create a new node.",
 		Args:  cobra.MinimumNArgs(5),
 		Run: func(cmd *cobra.Command, args []string) {
 			printDetails, _ := cmd.Flags().GetBool("print-details")
 			withCosmovisor, _ := cmd.Flags().GetBool("with-cosmovisor")
 			adminCLPAddresses := strings.Split(args[3], ",")
-			if len(args) == 5 {
-				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], adminCLPAddresses, args[4], nil, nil, &printDetails, &withCosmovisor)
+			fmt.Println(args)
+			if len(args) == 6 {
+				sifgen.NewSifgen(&args[0]).NodeCreate(args[1],
+					args[2],
+					adminCLPAddresses,
+					args[4],
+					args[5],
+					nil,
+					nil,
+					&printDetails,
+					&withCosmovisor)
 			} else {
-				sifgen.NewSifgen(&args[0]).NodeCreate(args[1], args[2], adminCLPAddresses, args[4], &args[5], &args[6], &printDetails, &withCosmovisor)
+				sifgen.NewSifgen(&args[0]).NodeCreate(args[1],
+					args[2],
+					adminCLPAddresses,
+					args[4],
+					args[5],
+					&args[6],
+					&args[7],
+					&printDetails,
+					&withCosmovisor)
 			}
 		},
 	}

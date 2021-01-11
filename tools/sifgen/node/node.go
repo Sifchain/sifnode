@@ -24,7 +24,8 @@ type Node struct {
 	ChainID           string    `yaml:"chain_id"`
 	Moniker           string    `yaml:"moniker"`
 	Mnemonic          string    `yaml:"mnemonic"`
-	AdminCLPAddresses []string  `yaml:"admin_addresses"`
+	AdminCLPAddresses []string  `yaml:"admin_clp_addresses"`
+	AdminOracleAddress string `yaml:"admin_oracle_address"`
 	IPAddr            string    `yml:"ip_address"`
 	Address           string    `yaml:"address"`
 	Password          string    `yaml:"password"`
@@ -51,13 +52,14 @@ func Reset(chainID string, nodeDir *string) error {
 	return nil
 }
 
-func NewNode(chainID, moniker, mnemonic string, adminCLPAddresses []string, ipAddr string, peerAddress, genesisURL *string, withCosmovisor *bool) *Node {
+func NewNode(chainID, moniker, mnemonic string, adminCLPAddresses []string, adminOracleAddress, ipAddr string, peerAddress, genesisURL *string, withCosmovisor *bool) *Node {
 	password, _ := password.Generate(32, 5, 0, false, false)
 	return &Node{
 		ChainID:           chainID,
 		Moniker:           moniker,
 		Mnemonic:          mnemonic,
 		AdminCLPAddresses: adminCLPAddresses,
+		AdminOracleAddress: adminOracleAddress,
 		IPAddr:            ipAddr,
 		PeerAddress:       peerAddress,
 		Password:          password,
@@ -156,6 +158,11 @@ func (n *Node) seedGenesis() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	_, err = n.CLI.SetGenesisOracleAdmin(n.AdminOracleAddress, common.DefaultNodeHome)
+	if err != nil {
+		return err
 	}
 
 	gentxDir, err := ioutil.TempDir("", "gentx")
