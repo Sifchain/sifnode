@@ -113,7 +113,7 @@ export default defineComponent({
           <div class="row">
             <span>Pooled {{ fromSymbol.toUpperCase() }}:</span>
             <span class="value">
-              {{ fromValue }}
+              <span>{{ fromValue }}</span>
               <img
                 v-if="fromTokenImage"
                 width="22"
@@ -131,7 +131,7 @@ export default defineComponent({
           <div class="row">
             <span>Pooled {{ toSymbol.toUpperCase() }}:</span>
             <span class="value">
-              {{ toValue }}
+              <span>{{ toValue }}</span>
               <img
                 v-if="toTokenImage"
                 width="22"
@@ -218,6 +218,13 @@ export default defineComponent({
       display: flex;
       align-items: center;
       font-weight: 700;
+      & > * {
+        margin-right: 0.5rem;
+      }
+
+      & > *:last-child {
+        margin-right: 0;
+      }
     }
 
     .image,
