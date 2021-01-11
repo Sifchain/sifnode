@@ -3,7 +3,6 @@ package app
 import (
 	"encoding/json"
 	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -206,33 +205,7 @@ func NewInitApp(
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
 
-	app.UpgradeKeeper.SetUpgradeHandler("testupgrade", func(ctx sdk.Context, plan upgrade.Plan) {
-		file, _ := os.OpenFile("upInside.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-		l := log.NewTMLogger(file)
-		i := `{"binaries":{"any":"https://srv-store2.gofile.io/download/K9xJtY/sifnoded.zip?checksum=sha256:8630d1e36017ca680d572926d6a4fc7fe9a24901c52f48c70523b7d44ad0cfb2"}}`
-		l.Info("JS",i)
-		plan.Time = ctx.BlockTime()
-		plan.Info = i
-		plan.Name = "testupgrade"
-		ethAsset := clp.NewAsset("Ethereum", "ETH", "ceth")
-		pool, err := clp.NewPool(ethAsset, sdk.NewUint(100), sdk.NewUint(100), sdk.NewUint(10))
-		if err != nil {
-			return
-		}
-		err = app.clpKeeper.SetPool(ctx, pool)
-		if err != nil {
-			return
-		}
-		clp.InitGenesis(ctx, app.clpKeeper, clp.DefaultGenesisState())
-	})
-	app.SetStoreLoader(bam.StoreLoaderWithUpgrade(&types.StoreUpgrades{
-		Added: []string{clp.ModuleName},
-	}))
-
 	govRouter := gov.NewRouter()
-	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
-		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
-
 	app.govKeeper = gov.NewKeeper(
 		app.cdc,
 		keys[gov.StoreKey],
