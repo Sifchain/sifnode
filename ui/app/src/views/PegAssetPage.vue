@@ -75,6 +75,7 @@ export default defineComponent({
         await actions.peg.burn(
           AssetAmount(Asset.get(symbol.value), amount.value)
         );
+        router.push("/peg");
       } catch (err) {
         console.error(err);
       }
