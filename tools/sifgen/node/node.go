@@ -21,17 +21,19 @@ import (
 )
 
 type Node struct {
-	ChainID        string    `yaml:"chain_id"`
-	Moniker        string    `yaml:"moniker"`
-	Mnemonic       string    `yaml:"mnemonic"`
-	IPAddr         string    `yml:"ip_address"`
-	Address        string    `yaml:"address"`
-	Password       string    `yaml:"password"`
-	PeerAddress    *string   `yaml:"-"`
-	GenesisURL     *string   `yaml:"-"`
-	WithCosmovisor bool      `yaml:"-"`
-	Key            *key.Key  `yaml:"-"`
-	CLI            utils.CLI `yaml:"-"`
+	ChainID            string    `yaml:"chain_id"`
+	Moniker            string    `yaml:"moniker"`
+	Mnemonic           string    `yaml:"mnemonic"`
+	AdminCLPAddresses  []string  `yaml:"admin_clp_addresses"`
+	AdminOracleAddress string    `yaml:"admin_oracle_address"`
+	IPAddr             string    `yml:"ip_address"`
+	Address            string    `yaml:"address"`
+	Password           string    `yaml:"password"`
+	PeerAddress        *string   `yaml:"-"`
+	GenesisURL         *string   `yaml:"-"`
+	WithCosmovisor     bool      `yaml:"-"`
+	Key                *key.Key  `yaml:"-"`
+	CLI                utils.CLI `yaml:"-"`
 }
 
 func Reset(chainID string, nodeDir *string) error {
@@ -50,19 +52,21 @@ func Reset(chainID string, nodeDir *string) error {
 	return nil
 }
 
-func NewNode(chainID, moniker, mnemonic, ipAddr string, peerAddress, genesisURL *string, withCosmovisor *bool) *Node {
+func NewNode(chainID, moniker, mnemonic string, adminCLPAddresses []string, adminOracleAddress, ipAddr string, peerAddress, genesisURL *string, withCosmovisor *bool) *Node {
 	password, _ := password.Generate(32, 5, 0, false, false)
 	return &Node{
-		ChainID:        chainID,
-		Moniker:        moniker,
-		Mnemonic:       mnemonic,
-		IPAddr:         ipAddr,
-		PeerAddress:    peerAddress,
-		Password:       password,
-		GenesisURL:     genesisURL,
-		WithCosmovisor: *withCosmovisor,
-		CLI:            utils.NewCLI(chainID),
-		Key:            key.NewKey(&moniker, &password),
+		ChainID:            chainID,
+		Moniker:            moniker,
+		Mnemonic:           mnemonic,
+		AdminCLPAddresses:  adminCLPAddresses,
+		AdminOracleAddress: adminOracleAddress,
+		IPAddr:             ipAddr,
+		PeerAddress:        peerAddress,
+		Password:           password,
+		GenesisURL:         genesisURL,
+		WithCosmovisor:     *withCosmovisor,
+		CLI:                utils.NewCLI(chainID),
+		Key:                key.NewKey(&moniker, &password),
 	}
 }
 
@@ -149,6 +153,18 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
+	for _, adminAddress := range n.AdminCLPAddresses {
+		_, err := n.CLI.AddGenesisCLPAdmin(adminAddress, common.DefaultNodeHome)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = n.CLI.SetGenesisOracleAdmin(n.AdminOracleAddress, common.DefaultNodeHome)
+	if err != nil {
+		return err
+	}
+
 	gentxDir, err := ioutil.TempDir("", "gentx")
 	if err != nil {
 		return err
@@ -182,6 +198,15 @@ func (n *Node) seedGenesis() error {
 	}
 
 	if err = genesis.ReplaceStakingBondDenom(common.DefaultNodeHome); err != nil {
+		return err
+	}
+
+	minCLPCreatePoolThreshold := os.Getenv("MIN_CLP_CREATE_POOL_THRESHOLD")
+	if minCLPCreatePoolThreshold == "" {
+		minCLPCreatePoolThreshold = common.MinCLPCreatePoolThreshold
+	}
+
+	if err = genesis.ReplaceCLPMinCreatePoolThreshold(common.DefaultNodeHome, minCLPCreatePoolThreshold); err != nil {
 		return err
 	}
 
