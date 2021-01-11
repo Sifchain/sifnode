@@ -19,7 +19,7 @@ export function usePoolCalculator(input: {
   toSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
-  marketPairFinder: (a: Asset | string, b: Asset | string) => Pool | null;
+  poolFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
 }) {
   const fromField = useField(input.fromAmount, input.fromSymbol);
   const toField = useField(input.toAmount, input.toSymbol);
@@ -54,11 +54,12 @@ export function usePoolCalculator(input: {
     )
       return null;
 
-    // Find pool from marketPairFinder
-    return input.marketPairFinder(
+    // Find pool from poolFinder
+    const pool = input.poolFinder(
       fromField.asset.value.symbol,
       toField.asset.value.symbol
     );
+    return pool?.value ?? null;
   });
 
   const liquidityPool = computed(() => {
@@ -99,17 +100,13 @@ export function usePoolCalculator(input: {
   const shareOfPoolPercent = computed(() => {
     return `${shareOfPool.value.multiply("100").toFixed(2)}%`;
   });
-
+  
   const aPerBRatioMessage = computed(() => {
     const aAmount = fromField.fieldAmount.value;
     const bAmount = toField.fieldAmount.value;
     if (!aAmount || !bAmount) return "";
     if (bAmount.equalTo("0")) return "";
-    return `${aAmount
-      .divide(bAmount)
-      .toFixed(
-        8
-      )} ${aAmount.asset.symbol.toUpperCase()} per ${bAmount.asset.symbol.toUpperCase()}`;
+    return aAmount.divide(bAmount).toFixed(8);
   });
 
   const bPerARatioMessage = computed(() => {
@@ -118,11 +115,7 @@ export function usePoolCalculator(input: {
     if (!aAmount || !bAmount) return "";
     if (aAmount.equalTo("0")) return "";
 
-    return `${bAmount
-      .divide(aAmount)
-      .toFixed(
-        8
-      )} ${bAmount.asset.symbol.toUpperCase()} per ${aAmount.asset.symbol.toUpperCase()}`;
+    return bAmount.divide(aAmount).toFixed(8);
   });
 
   const state = computed(() => {

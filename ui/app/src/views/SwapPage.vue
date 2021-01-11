@@ -1,13 +1,13 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
-import { computed, ref } from "@vue/reactivity";
+import { computed, ref, toRefs } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import { SwapState, useSwapCalculator } from "ui-core";
+import { Asset, SwapState, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/shared/Modal.vue";
-import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
+import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
@@ -24,14 +24,14 @@ export default defineComponent({
     Layout,
     Modal,
     DetailsPanel,
-    SelectTokenDialog,
+    SelectTokenDialogSif,
     ModalView,
     ConfirmationDialog,
   },
 
   setup() {
-    const { api, actions, store } = useCore();
-    const marketPairFinder = api.MarketService.find;
+    const { actions, poolFinder, store } = useCore();
+
     const {
       fromSymbol,
       fromAmount,
@@ -43,6 +43,7 @@ export default defineComponent({
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
     });
+
     function requestTransactionModalClose() {
       transactionState.value = "selecting";
     }
@@ -63,11 +64,13 @@ export default defineComponent({
       fromSymbol,
       selectedField,
       toSymbol,
-      marketPairFinder,
+      poolFinder,
     });
+
     const minimumReceived = computed(() =>
       parseFloat(toAmount.value).toPrecision(10)
     );
+
     function clearAmounts() {
       fromAmount.value = "0.0";
       toAmount.value = "0.0";
@@ -117,6 +120,9 @@ export default defineComponent({
           case SwapState.VALID_INPUT:
             return "Swap";
         }
+      }),
+      disableInputFields: computed(() => {
+        return state.value === SwapState.SELECT_TOKENS;
       }),
       handleFromSymbolClicked(next: () => void) {
         selectedField.value = "from";
@@ -188,7 +194,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="swap">
+  <Layout>
     <div>
       <Modal @close="handleSelectClosed">
         <template v-slot:activator="{ requestOpen }">
@@ -196,6 +202,8 @@ export default defineComponent({
             v-model:fromAmount="fromAmount"
             v-model:fromSymbol="fromSymbol"
             :fromMax="!!fromSymbol"
+            :fromDisabled="disableInputFields"
+            :toDisabled="disableInputFields"
             @frommaxclicked="handleFromMaxClicked"
             @fromfocus="handleFromFocused"
             @fromblur="handleBlur"
@@ -212,7 +220,7 @@ export default defineComponent({
           />
         </template>
         <template v-slot:default="{ requestClose }">
-          <SelectTokenDialog
+          <SelectTokenDialogSif
             :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
             @tokenselected="requestClose"
           />
@@ -226,6 +234,7 @@ export default defineComponent({
         :priceImpact="''"
       />
       <ActionsPanel
+        connectType="connectToSif"
         @nextstepclick="handleNextStepClicked"
         :nextStepAllowed="nextStepAllowed"
         :nextStepMessage="nextStepMessage"

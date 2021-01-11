@@ -7,7 +7,7 @@ import { SwapState, useSwapCalculator } from "../../../core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/shared/Modal.vue";
-import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
+import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
@@ -22,15 +22,15 @@ export default defineComponent({
     Layout,
     Modal,
     PriceCalculation,
-    SelectTokenDialog,
+    SelectTokenDialogSif,
     ModalView,
     AskConfirmation,
     SwapProgress,
   },
 
   setup() {
-    const { api, actions, store } = useCore();
-    const marketPairFinder = api.MarketService.find;
+    const { actions, poolFinder, store } = useCore();
+
     const {
       fromSymbol,
       fromAmount,
@@ -64,7 +64,7 @@ export default defineComponent({
       fromSymbol,
       selectedField,
       toSymbol,
-      marketPairFinder,
+      poolFinder,
     });
 
     function clearAmounts() {
@@ -187,7 +187,7 @@ export default defineComponent({
           />
         </template>
         <template v-slot:default="{ requestClose }">
-          <SelectTokenDialog
+          <SelectTokenDialogSif
             :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
             @tokenselected="requestClose"
           />
@@ -210,7 +210,7 @@ export default defineComponent({
           :fromAmount="125"
           :fromToken="'usdt'"
           :toAmount="1250"
-          :toToken="'rwn'"
+          :toToken="'rowan'"
           :leastAmount="1248.976"
           :swapRate="10"
           :minimumReceived="100"

@@ -4,8 +4,8 @@ import { AssetAmount, Coin, Network } from "../../entities";
 import createSifService, { SifServiceContext } from ".";
 
 const TOKENS = {
-  rwn: Coin({
-    symbol: "rwn",
+  rowan: Coin({
+    symbol: "rowan",
     decimals: 0,
     name: "Rowan",
     network: Network.SIFCHAIN,
@@ -38,7 +38,7 @@ const mnemonic =
 // To be kept up to date with test state
 const account = {
   address: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-  balance: [AssetAmount(TOKENS.rwn, "1000")],
+  balance: [AssetAmount(TOKENS.rowan, "1000")],
   pubkey: {
     type: "tendermint/PubKeySecp256k1",
     value: "AvUEsFHbsr40nTSmWh7CWYRZHGwf4cpRLtJlaRO4VAoq",
@@ -50,6 +50,8 @@ const account = {
 const testConfig: SifServiceContext = {
   sifAddrPrefix: "sif",
   sifApiUrl: "http://127.0.0.1:1317",
+  sifWsUrl: "ws://127.0.0.1:26657/websocket",
+  assets: [],
 };
 
 function getBalance(balances: AssetAmount[], symbol: string): AssetAmount {
@@ -87,8 +89,9 @@ describe("sifService", () => {
     } catch (error) {
       expect(error).toEqual("Address not valid (length). Fail");
     }
+
     const balances = await sifService.getBalance(account.address);
-    const balance = getBalance(balances, "rwn");
+    const balance = getBalance(balances, "rowan");
     expect(balance?.toFixed()).toEqual("1000000000");
   });
 
@@ -98,12 +101,12 @@ describe("sifService", () => {
     const address = await sifService.setPhrase(mnemonic);
     await sifService.transfer({
       amount: JSBI.BigInt("50"),
-      asset: TOKENS.rwn,
+      asset: TOKENS.rowan,
       recipient: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
       memo: "",
     });
     const balances = await sifService.getBalance(address);
-    const balance = getBalance(balances, "rwn");
+    const balance = getBalance(balances, "rowan");
     expect(balance?.toFixed()).toEqual("999999950");
   });
 });

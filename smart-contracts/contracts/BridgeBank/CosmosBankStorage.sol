@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.16;
 
 contract CosmosBankStorage {
 
@@ -27,11 +27,6 @@ contract CosmosBankStorage {
     * @notice mapping of symbols to token addresses
     */
     mapping(string => address) controlledBridgeTokens;
-
-    /**
-    * @notice mapping of cosmos deposit id's to deposit receipts
-    */
-    mapping(bytes32 => CosmosDeposit) cosmosDeposits;
 
     /**
     * @notice gap of storage for future upgrades

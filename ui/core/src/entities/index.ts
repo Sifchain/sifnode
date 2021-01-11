@@ -9,4 +9,5 @@ export * from "./Pool";
 export * from "./Token";
 export * from "./Transaction";
 export * from "./Wallet";
+export * from "./Notifications";
 export * from "./fraction/Fraction"

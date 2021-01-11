@@ -1,9 +1,23 @@
 <template>
-  <button class="btn" :class="classes" :disabled="disabled">
-    <span class="content">
-      <slot></slot>
-    </span>
-  </button>
+  <span>
+    <button v-if="!to" class="btn" :class="classes" :disabled="disabled">
+      <span class="content">
+        <slot></slot>
+      </span>
+    </button>
+
+    <router-link
+      v-if="to"
+      :to="to"
+      class="btn"
+      :class="classes"
+      :disabled="disabled"
+    >
+      <span class="content">
+        <slot></slot>
+      </span>
+    </router-link>
+  </span>
 </template>
 
 <script>
@@ -29,6 +43,9 @@ export default defineComponent({
     primary: {
       type: Boolean,
     },
+    primaryOutline: {
+      type: Boolean,
+    },
     secondary: {
       type: Boolean,
     },
@@ -42,6 +59,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    to: {
+      type: String,
+      default: "",
+    },
   },
 
   data() {
@@ -50,6 +71,7 @@ export default defineComponent({
         block: this.block,
         medium: this.medium,
         primary: this.primary,
+        "primary-outline": this.primaryOutline,
         secondary: this.secondary,
         className: this.className,
         ghost: this.ghost,
@@ -65,21 +87,26 @@ export default defineComponent({
 .btn {
   @include resetButton;
   position: relative;
-  display: inline-block;
+  display: inline-flex;
   height: 30px;
   padding: 0 18px;
+  align-items: center;
   overflow: hidden;
   font: inherit;
   text-transform: uppercase;
   font-size: $fs_md;
-  line-height: $lh_btn;
+  // line-height: $lh_btn;
   letter-spacing: 1px;
   border-radius: $br_sm;
   transform: perspective(1px) translateZ(0);
   cursor: pointer;
+  box-sizing: border-box;
 
   &.nocase {
     text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    font-size: $fs_sm;
   }
 
   &:not(:last-of-type) {
@@ -120,6 +147,16 @@ export default defineComponent({
     }
   }
 
+  &.primary-outline {
+    border: 1px solid $c_gold;
+    color: $c_gold;
+    transition: all $trans_fast;
+    &:hover {
+      background: $c_gold;
+      color: white;
+    }
+  }
+
   &.secondary {
     background: $c_gray_100;
     border: 1px solid $c_gray_200;
@@ -150,7 +187,7 @@ export default defineComponent({
     height: auto;
     line-height: initial;
     position: relative;
-    top: 1px;
+    top: -1px;
     &:active {
       transform: translateY(1px);
     }
