@@ -292,7 +292,7 @@ contract("CosmosBridge", function (accounts) {
       );
 
       const receivedFunds2 = expectedBalance.equals(postRecipientBalance);
-      receivedFunds.should.be.equal(true);
+      receivedFunds2.should.be.equal(true);
 
       // Also make sure everything runs third time after switching validators.
 
@@ -405,7 +405,7 @@ contract("CosmosBridge", function (accounts) {
       );
 
       const receivedFunds3 = expectedBalance.equals(postRecipientBalance);
-      receivedFunds.should.be.equal(true);
+      receivedFunds3.should.be.equal(true);
 
       // Also make sure everything runs fourth time after switching validators a second time.
 
@@ -518,7 +518,7 @@ contract("CosmosBridge", function (accounts) {
       );
 
       const receivedFunds4 = expectedBalance.equals(postRecipientBalance);
-      receivedFunds.should.be.equal(true);
+      receivedFunds4.should.be.equal(true);
 
 
     });
