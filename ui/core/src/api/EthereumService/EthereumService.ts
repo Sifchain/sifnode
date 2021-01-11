@@ -156,16 +156,8 @@ export class EthereumService implements IWalletService {
 
   async disconnect() {
     if (isMetaMaskProvider(this.provider)) {
-      if (this.provider.request) {
-        await this.provider.request({
-          method: "wallet_requestPermissions",
-          params: [
-            {
-              eth_accounts: {},
-            },
-          ],
-        });
-      }
+      this.provider.disconnect &&
+        this.provider.disconnect(0, "Website disconnected wallet");
     }
     this.removeWeb3Subscription();
     this.web3 = null;

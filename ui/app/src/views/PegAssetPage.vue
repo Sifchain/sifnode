@@ -60,15 +60,24 @@ export default defineComponent({
     const address = toRefs(store.wallet.sif).address;
 
     async function handlePeg() {
-      await actions.peg.lock(
-        AssetAmount(Asset.get(symbol.value), amount.value)
-      );
+      try {
+        await actions.peg.lock(
+          AssetAmount(Asset.get(symbol.value), amount.value)
+        );
+        router.push("/peg");
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     async function handleUnpeg() {
-      await actions.peg.burn(
-        AssetAmount(Asset.get(symbol.value), amount.value)
-      );
+      try {
+        await actions.peg.burn(
+          AssetAmount(Asset.get(symbol.value), amount.value)
+        );
+      } catch (err) {
+        console.error(err);
+      }
     }
     return {
       mode,

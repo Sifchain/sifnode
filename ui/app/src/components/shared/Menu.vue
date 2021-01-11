@@ -3,7 +3,7 @@
     <div>
       <router-link class="logo" to="/">S</router-link>
     </div>
-    <div class="item">
+    <!-- <div class="item">
       <router-link class="link" to="/">Discover</router-link>
     </div>
     <div class="item">
@@ -14,7 +14,7 @@
     </div>
     <div class="item">
       <router-link class="link" to="/">Deposit</router-link>
-    </div>
+    </div> -->
   </div>
 </template>
 
