@@ -43,48 +43,24 @@ contract("CosmosBridge", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
-      this.valset = await deployProxy(Valset, [
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
+        consensusThreshold,
         this.initialValidators,
         this.initialPowers
-
       ],
-      {unsafeAllowCustomTypes: true}
-      );
-
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
-        {unsafeAllowCustomTypes: true});
-
-      // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle, [
-        operator,
-        this.valset.address,
-        this.cosmosBridge.address,
-        consensusThreshold
-      ],
-      {unsafeAllowCustomTypes: true}
+        {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
-        this.oracle.address,
         this.cosmosBridge.address,
         operator
       ],
       {unsafeAllowCustomTypes: true}
       );
-    });
-
-    it("should deploy the CosmosBridge with the correct parameters", async function () {
-      this.cosmosBridge.should.exist;
-
-      const claimCount = await this.cosmosBridge.prophecyClaimCount();
-      Number(claimCount).should.be.bignumber.equal(0);
-
-      const cosmosBridgeValset = await this.cosmosBridge.valset();
-      cosmosBridgeValset.should.be.equal(this.valset.address);
     });
   });
 
@@ -110,42 +86,25 @@ contract("CosmosBridge", function (accounts) {
       this.secondPowers = [50, 50];
       this.thirdValidators = [userThree, userFour];
       this.thirdPowers = [50, 50];
-      this.valset = await deployProxy(Valset, [
+
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
+        consensusThreshold,
         this.initialValidators,
         this.initialPowers
       ],
-      {unsafeAllowCustomTypes: true}
-      );
-
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
-        {unsafeAllowCustomTypes: true});
-
-      // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle, [
-        operator,
-        this.valset.address,
-        this.cosmosBridge.address,
-        consensusThreshold
-      ],
-      {unsafeAllowCustomTypes: true}
+        {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
-        this.oracle.address,
         this.cosmosBridge.address,
         operator
       ],
       {unsafeAllowCustomTypes: true}
       );
-
-      // Operator sets Oracle
-      await this.cosmosBridge.setOracle(this.oracle.address, {
-        from: operator
-      });
 
       // Operator sets Bridge Bank
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
@@ -338,7 +297,7 @@ contract("CosmosBridge", function (accounts) {
       // Also make sure everything runs third time after switching validators.
 
       // Operator resets the valset
-      await this.valset.updateValset(
+      await this.cosmosBridge.updateValset(
           this.secondValidators,
           this.secondPowers,
           {
@@ -347,21 +306,21 @@ contract("CosmosBridge", function (accounts) {
       ).should.be.fulfilled;
 
       // Confirm that both initial validators are now active validators
-      const isUserOneValidator = await this.valset.isActiveValidator.call(
+      const isUserOneValidator = await this.cosmosBridge.isActiveValidator.call(
           userOne
       );
       isUserOneValidator.should.be.equal(true);
-      const isUserTwoValidator = await this.valset.isActiveValidator.call(
+      const isUserTwoValidator = await this.cosmosBridge.isActiveValidator.call(
           userTwo
       );
       isUserTwoValidator.should.be.equal(true);
 
       // Confirm that all both secondary validators are not active validators
-      const isUserThreeValidator = await this.valset.isActiveValidator.call(
+      const isUserThreeValidator = await this.cosmosBridge.isActiveValidator.call(
           userThree
       );
       isUserThreeValidator.should.be.equal(false);
-      const isUserFourValidator = await this.valset.isActiveValidator.call(
+      const isUserFourValidator = await this.cosmosBridge.isActiveValidator.call(
           userFour
       );
       isUserFourValidator.should.be.equal(false);
@@ -451,7 +410,7 @@ contract("CosmosBridge", function (accounts) {
       // Also make sure everything runs fourth time after switching validators a second time.
 
       // Operator resets the valset
-      await this.valset.updateValset(
+      await this.cosmosBridge.updateValset(
           this.thirdValidators,
           this.thirdPowers,
           {
@@ -460,21 +419,21 @@ contract("CosmosBridge", function (accounts) {
       ).should.be.fulfilled;
 
       // Confirm that both initial validators are no longer an active validators
-      const isUserOneValidator2 = await this.valset.isActiveValidator.call(
+      const isUserOneValidator2 = await this.cosmosBridge.isActiveValidator.call(
           userOne
       );
       isUserOneValidator2.should.be.equal(false);
-      const isUserTwoValidator2 = await this.valset.isActiveValidator.call(
+      const isUserTwoValidator2 = await this.cosmosBridge.isActiveValidator.call(
           userTwo
       );
       isUserTwoValidator2.should.be.equal(false);
 
       // Confirm that both secondary validators are now active validators
-      const isUserThreeValidator2 = await this.valset.isActiveValidator.call(
+      const isUserThreeValidator2 = await this.cosmosBridge.isActiveValidator.call(
           userThree
       );
       isUserThreeValidator2.should.be.equal(true);
-      const isUserFourValidator2 = await this.valset.isActiveValidator.call(
+      const isUserFourValidator2 = await this.cosmosBridge.isActiveValidator.call(
           userFour
       );
       isUserFourValidator2.should.be.equal(true);
