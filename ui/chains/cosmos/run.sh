@@ -23,6 +23,7 @@ rm -rf ~/.sifnoded
 rm -rf ~/.sifnodecli
 
 sifnoded init test --chain-id=sifchain
+cp ./config.toml ~/.sifnoded/config
 
 sifnodecli config output json
 sifnodecli config indent true
