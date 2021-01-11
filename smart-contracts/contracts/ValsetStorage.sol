@@ -20,7 +20,7 @@ contract ValsetStorage {
     /**
      * @dev: Keep track of active validator
      */
-    mapping(bytes32 => bool) public validators;
+    mapping(address => mapping(uint256 => bool)) public validators;
 
     /**
      * @dev: operator address
@@ -30,7 +30,7 @@ contract ValsetStorage {
     /**
      * @dev: validator address + uint then hashed equals key mapped to powers
      */
-    mapping(bytes32 => uint256) public powers;
+    mapping(address => mapping(uint256 => uint256)) public powers;
 
     /**
     * @notice gap of storage for future upgrades
