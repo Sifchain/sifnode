@@ -26,20 +26,23 @@ export default ({
       return await api.SifService.signAndBroadcast(tx.value.msg);
     },
     async lock(assetAmount: AssetAmount) {
-      // listen for 50 confirmations
-      // Eventually this should be set on ebrelayer
-      // to centralize the business logic
-      api.EthbridgeService.lock(store.wallet.sif.address, assetAmount, 50)
-        .onError((err) => {
-          const payload: any = err.payload;
-          notify({ type: "error", message: payload.message ?? err });
-        })
-        .onComplete(({ txHash }) => {
-          notify({
-            type: "success",
-            message: `Transfer ${txHash} has succeded.`,
+      return await new Promise<any>((done) => {
+        // listen for 50 confirmations
+        // Eventually this should be set on ebrelayer
+        // to centralize the business logic
+        api.EthbridgeService.lock(store.wallet.sif.address, assetAmount, 50)
+          .onTxHash(done)
+          .onError((err) => {
+            const payload: any = err.payload;
+            notify({ type: "error", message: payload.message ?? err });
+          })
+          .onComplete(({ txHash }) => {
+            notify({
+              type: "success",
+              message: `Transfer ${txHash} has succeded.`,
+            });
           });
-        });
+      });
     },
   };
 

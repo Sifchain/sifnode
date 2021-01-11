@@ -34,10 +34,7 @@ export function useWalletButton(props?: {
       store.wallet.sif.address,
     ].filter(Boolean);
 
-    const addrLen = props?.addrLen || 10;
-    return addresses
-      .map(shorten(Math.round(addrLen / addresses.length)))
-      .join(", ");
+    return addresses.length > 0 ? "Connected" : "Connected";
   });
 
   const connectCta = computed(() => {
