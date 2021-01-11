@@ -1,7 +1,6 @@
 <script lang="ts">
 import { useCore } from "@/hooks/useCore";
 import { computed } from "@vue/reactivity";
-import { AssetAmount } from "ui-core";
 import { defineComponent } from "vue";
 
 export default defineComponent({
