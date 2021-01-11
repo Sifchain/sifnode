@@ -134,6 +134,24 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 	return validator.IsBonded()
 }
 
+// ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error {
+	if !k.IsAdminAccount(ctx, cosmosSender) {
+		return types.ErrNotAdminAccount
+	}
+
+	switch operationtype {
+	case "add":
+		k.AddOracleWhiteList(ctx, validator)
+	case "remove":
+		k.RemoveOracleWhiteList(ctx, validator)
+	default:
+		return types.ErrInvalidOperationType
+	}
+
+	return nil
+}
+
 // processCompletion looks at a given prophecy
 // an assesses whether the claim with the highest power on that prophecy has enough
 // power to be considered successful, or alternatively,
