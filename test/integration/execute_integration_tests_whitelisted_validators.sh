@@ -10,4 +10,4 @@ set -e
 
 ADD_VALIDATOR_TO_WHITELIST= bash ${BASEDIR}/test/integration/setup_sifchain.sh && . $envexportfile
 
-python3 $TEST_INTEGRATION_DIR/no_whitelisted_validators.py $NETDEF_JSON
+python3 $TEST_INTEGRATION_PY_DIR/no_whitelisted_validators.py $NETDEF_JSON

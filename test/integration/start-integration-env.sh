@@ -19,6 +19,7 @@ set_persistant_env_var BASEDIR $(fullpath $BASEDIR) $envexportfile
 set_persistant_env_var SIFCHAIN_BIN $BASEDIR/cmd $envexportfile
 set_persistant_env_var envexportfile $(fullpath $envexportfile) $envexportfile
 set_persistant_env_var TEST_INTEGRATION_DIR ${BASEDIR}/test/integration $envexportfile
+set_persistant_env_var TEST_INTEGRATION_PY_DIR ${BASEDIR}/test/integration/src/py $envexportfile
 set_persistant_env_var SMART_CONTRACTS_DIR ${BASEDIR}/smart-contracts $envexportfile
 set_persistant_env_var datadir ${TEST_INTEGRATION_DIR}/vagrant/data $envexportfile
 set_persistant_env_var CONTAINER_NAME integration_sifnode1_1 $envexportfile
@@ -42,7 +43,7 @@ docker-compose --project-name genesis -f ${TEST_INTEGRATION_DIR}/docker-compose-
 
 # https://www.trufflesuite.com/docs/truffle/overview
 # and note that truffle migrate and truffle deploy are the same command
-truffle deploy --network develop --reset
+npx truffle deploy --network develop --reset
 
 # ETHEREUM_CONTRACT_ADDRESS is used for the BridgeRegistry address in many places, so we
 # set it and BRIDGE_REGISTRY_ADDRESS to the same value

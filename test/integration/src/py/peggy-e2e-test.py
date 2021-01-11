@@ -88,51 +88,6 @@ def lock_rowan(user, eth_user, amount):
     return get_shell_output(command_line)
 
 
-def test_case_2():
-    print(
-        "########## Test Case Two Start: ceth => eth"
-    )
-
-    # send owner ceth to operator eth
-    amount = 1 * 10 ** 18
-
-    operator_balance_before_tx = get_eth_balance(operatorAddress, ETHEREUM_ETH)
-    owner_sifchain_balance_before_tx = get_sifchain_addr_balance(owner_addr, SIF_ETH)
-    print(
-        f"starting user_eth_balance_before_tx {operator_balance_before_tx}, owner_sifchain_balance_before_tx {owner_sifchain_balance_before_tx}, amount {amount}")
-    burn_peggy_coin(owner_addr, operatorAddress, amount)
-
-    wait_for_sifchain_addr_balance(owner_addr, SIF_ETH, owner_sifchain_balance_before_tx - amount)
-    wait_for_eth_balance(operatorAddress, ETHEREUM_ETH, operator_balance_before_tx + amount)
-    print("########## Test Case Two Over ##########")
-
-
-def test_balance_does_not_change_without_manual_block_advance():
-    print("########## test_balance_does_not_change_without_manual_block_advance")
-
-    user_balance_before_tx = get_sifchain_addr_balance(user1_addr, SIF_ETH)
-    send_ethereum_currency_to_sifchain_addr(user1_addr, ETHEREUM_ETH, AMOUNT, smart_contracts_dir)
-
-    advance_n_ethereum_blocks(n_wait_blocks / 2, smart_contracts_dir)
-
-    # what we really want is to know that ebrelayer has done nothing,
-    # but it's not clear how to get that, so we just wait a bit
-    time.sleep(6)
-
-    user_balance_before_required_wait = get_sifchain_addr_balance(user1_addr, SIF_ETH)
-
-    print(
-        f"Starting balance {user_balance_before_tx}, current balance {user_balance_before_required_wait} should be equal")
-
-    if user_balance_before_required_wait != user_balance_before_tx:
-        print_error_message(
-            f"balance should not have changed yet.  Starting balance {user_balance_before_tx}, current balance {user_balance_before_required_wait}")
-
-    advance_n_ethereum_blocks(n_wait_blocks, smart_contracts_dir)
-
-    wait_for_sifchain_addr_balance(user1_addr, SIF_ETH, user_balance_before_tx + AMOUNT)
-    print(f"final balance is {get_sifchain_addr_balance(user1_addr, SIF_ETH)}")
-
 
 def test_case_over_limit():
     print(
@@ -150,7 +105,6 @@ def test_case_over_limit():
     print("########## Test Over Limit Over ##########")
 
 
-test_case_1()
 test_case_2()
 test_case_over_limit()
 test_balance_does_not_change_without_manual_block_advance()

@@ -21,8 +21,8 @@ args="
 --loglevel debug
 "
 
-# python3 $TEST_INTEGRATION_DIR/sifchain_to_ethereum.py $args
+# python3 $TEST_INTEGRATION_PY_DIR/sifchain_to_ethereum.py $args
 
-python3 $TEST_INTEGRATION_DIR/ethereum_to_sifchain.py $args
+python3 $TEST_INTEGRATION_PY_DIR/ethereum_to_sifchain.py $args
 
 # clear && python3 -m pytest -o log_cli=true -o log_cli_level=INFO  $TEST_INTEGRATION_DIR/test_new_account.py

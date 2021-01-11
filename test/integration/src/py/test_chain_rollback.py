@@ -12,7 +12,7 @@ def test_chain_rollback():
 
     amount = amount_in_wei(1)
     snapshot = get_shell_output(f"{test_integration_dir}/snapshot_ganache_chain.sh")
-    user_balance_before_tx = get_sifchain_addr_balance(user1_addr, SIF_ETH)
+    user_balance_before_tx = get_sifchain_addr_balance(user1_addr, "", SIF_ETH)
     print(f"user_balance_before_tx {user_balance_before_tx}")
     smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
     send_ethereum_currency_to_sifchain_addr(user1_addr, ETHEREUM_ETH, amount, smart_contracts_dir)
@@ -28,7 +28,7 @@ def test_chain_rollback():
 
     advance_n_ethereum_blocks(n_wait_blocks * 2, smart_contracts_dir)
 
-    if get_sifchain_addr_balance(user1_addr, SIF_ETH) != user_balance_before_tx:
+    if get_sifchain_addr_balance(user1_addr, "", SIF_ETH) != user_balance_before_tx:
         print_error_message("balance should be the same after applying snapshot and rolling forward n_wait_blocks * 2")
 
     new_amount = amount + 1000
@@ -39,7 +39,8 @@ def test_chain_rollback():
     # TODO we need to wait for ebrelayer directly
     time.sleep(10)
 
-    print(f"get_sifchain_addr_balance after sleep is {get_sifchain_addr_balance(user1_addr, SIF_ETH)} for {user1_addr}")
+    balance_after_sleep = get_sifchain_addr_balance(user1_addr, "", SIF_ETH)
+    print(f"get_sifchain_addr_balance after sleep is {balance_after_sleep} for {user1_addr}")
 
     expected_balance = user_balance_before_tx + new_amount
     wait_for_sifchain_addr_balance(user1_addr, SIF_ETH, expected_balance)

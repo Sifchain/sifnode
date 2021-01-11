@@ -35,6 +35,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     try:
         sifchain_starting_balance = get_sifchain_addr_balance(
             transfer_request.sifchain_address,
+            transfer_request.sifnodecli_node,
             transfer_request.sifchain_symbol
         )
     except:
@@ -63,6 +64,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     try:
         sifchain_balance_before_required_elapsed_blocks = get_sifchain_addr_balance(
             transfer_request.sifchain_address,
+            transfer_request.sifnodecli_node,
             transfer_request.sifchain_symbol
         )
     except:
@@ -85,14 +87,17 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     target_balance = sifchain_starting_balance + transfer_request.amount
 
     logging.debug(f"wait for account {transfer_request.sifchain_address}")
-    wait_for_sif_account(transfer_request.sifchain_address, max_attempts=max_attempts)
+    wait_for_sif_account(transfer_request.sifchain_address,
+                         transfer_request.sifnodecli_node,
+                         max_attempts=max_attempts)
 
     wait_for_sifchain_addr_balance(
-        transfer_request.sifchain_address,
-        transfer_request.sifchain_symbol,
-        target_balance,
-        30,
-        f"transfer {transfer_request}"
+        sifchain_address=transfer_request.sifchain_address,
+        symbol=transfer_request.sifchain_symbol,
+        sifchaincli_node=transfer_request.sifnodecli_node,
+        target_balance=target_balance,
+        max_attempts=30,
+        debug_prefix=f"transfer {transfer_request}"
     )
 
     return {
@@ -112,6 +117,7 @@ def transfer_sifchain_to_ethereum(
 
     sifchain_starting_balance = get_sifchain_addr_balance(
         transfer_request.sifchain_address,
+        transfer_request.sifnodecli_node,
         transfer_request.sifchain_symbol
     )
 
@@ -140,6 +146,7 @@ def transfer_sifchain_to_ethereum(
     wait_for_sifchain_addr_balance(
         sifchain_address=transfer_request.sifchain_address,
         symbol=transfer_request.sifchain_symbol,
+        sifchaincli_node=transfer_request.sifnodecli_node,
         target_balance=sifchain_starting_balance - transfer_request.amount
     )
 
@@ -152,10 +159,11 @@ def transfer_sifchain_to_ethereum(
 
     sifchain_ending_balance = get_sifchain_addr_balance(
         transfer_request.sifchain_address,
+        transfer_request.sifnodecli_node,
         transfer_request.sifchain_symbol
     )
 
-    logging.info(f"transfer_sifchain_to_ethereum_complete_json: {json.dumps(send_tx)}")
+    logging.debug(f"transfer_sifchain_to_ethereum_complete_json: {json.dumps(send_tx)}")
 
     return {
         **status,
@@ -173,6 +181,7 @@ def transfer_sifchain_to_sifchain(
 
     sifchain_starting_balance = get_sifchain_addr_balance(
         transfer_request.sifchain_destination_address,
+        transfer_request.sifnodecli_node,
         transfer_request.sifchain_symbol
     )
 
@@ -193,6 +202,7 @@ def transfer_sifchain_to_sifchain(
     wait_for_sifchain_addr_balance(
         transfer_request.sifchain_destination_address,
         transfer_request.sifchain_symbol,
+        transfer_request.sifnodecli_node,
         target_balance,
         30,
         f"transfer sifchain to sifchain {transfer_request}"
@@ -303,6 +313,12 @@ def transfer_argument_parser() -> argparse.ArgumentParser:
         type=str,
         nargs=1,
         required=True
+    )
+    parser.add_argument(
+        '--sifnodecli_node',
+        type=str,
+        nargs=1,
+        default="tcp://localhost:26657",
     )
     parser.add_argument('--manual_block_advance', action='store_true')
     return parser

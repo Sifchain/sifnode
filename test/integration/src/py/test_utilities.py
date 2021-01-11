@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import re
 import subprocess
 import time
 from dataclasses import dataclass
@@ -24,6 +23,7 @@ class EthereumToSifchainTransferRequest:
     n_wait_blocks: int = 50
     bridgebank_address: str = ""
     bridgetoken_address: str = ""
+    sifnodecli_node: str = "tcp://localhost:26657"
 
     def as_json(self):
         return json.dumps(self.__dict__)
@@ -144,12 +144,6 @@ def get_password(network_definition_file_json):
     return password
 
 
-# get the balance for user in the denom currency from sifnodecli
-def get_sifchain_balance(user, denom, network_password):
-    sif_address = get_user_account(user, network_password)
-    return get_sifchain_addr_balance(sif_address, denom)
-
-
 def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
     command_line = f"yarn --cwd {transfer_request.smart_contracts_dir} " \
                    f"integrationtest:getTokenBalance " \
@@ -160,8 +154,12 @@ def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
     return int(result["balanceWei"])
 
 
-def get_sifchain_addr_balance(sifaddress, denom):
-    command_line = f"sifnodecli q auth account {sifaddress} -o json"
+def get_sifchain_addr_balance(sifaddress, sifnodecli_node, denom):
+    print(f"nodeis: x{sifnodecli_node}x")
+    if sifnodecli_node == "90000":
+        raise Exception("not 9k")
+    node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
+    command_line = f"sifnodecli q auth account {node} {sifaddress} -o json"
     json_str = get_shell_output_json(command_line)
     coins = json_str["value"]["coins"]
     for coin in coins:
@@ -170,8 +168,9 @@ def get_sifchain_addr_balance(sifaddress, denom):
     return 0
 
 
-def get_transaction_result(tx_hash):
-    command_line = f"sifnodecli q tx {tx_hash} -o json"
+def get_transaction_result(tx_hash, sifnodecli_node):
+    node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
+    command_line = f"sifnodecli q tx {node} {tx_hash} -o json"
     json_str = get_shell_output_json(command_line)
     print(json_str)
 
@@ -206,14 +205,10 @@ def wait_for_eth_balance(transfer_request: EthereumToSifchainTransferRequest, ta
     )
 
 
-def wait_for_sifchain_balance(user, denom, network_password, target_balance, max_attempts=30):
-    wait_for_balance(lambda: int(get_sifchain_balance(user, denom, network_password)), target_balance, max_attempts)
-
-
-def wait_for_sifchain_addr_balance(sifchain_address, symbol, target_balance, max_attempts=30, debug_prefix=""):
+def wait_for_sifchain_addr_balance(sifchain_address, symbol, target_balance, sifchaincli_node, max_attempts=30, debug_prefix=""):
     if not max_attempts: max_attempts = 30
-    logging.debug(f"wait_for_sifchain_addr_balance {wait_for_sifchain_addr_balance} {symbol} {target_balance}")
-    return wait_for_balance(lambda: int(get_sifchain_addr_balance(sifchain_address, symbol)), target_balance,
+    logging.debug(f"wait_for_sifchain_addr_balance {sifchaincli_node} {symbol} {target_balance}")
+    return wait_for_balance(lambda: int(get_sifchain_addr_balance(sifchain_address, sifchaincli_node, symbol)), target_balance,
                             max_attempts,
                             debug_prefix)
 
@@ -226,9 +221,11 @@ def sif_tx_send(from_address, to_address, amount, currency, yes_password):
 def burn_peggy_coin(transfer_request: EthereumToSifchainTransferRequest, credentials: SifchaincliCredentials):
     yes_entry = f"yes {credentials.keyring_passphrase} |" if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
+    node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
     chaindir = get_required_env_var("CHAINDIR")
     command_line = f"{yes_entry} | " \
-                   f"sifnodecli tx ethbridge burn {transfer_request.sifchain_address} " \
+                   f"sifnodecli tx ethbridge burn {node} " \
+                   f"{transfer_request.sifchain_address} " \
                    f"{transfer_request.ethereum_address} " \
                    f"{transfer_request.amount} " \
                    f"{transfer_request.sifchain_symbol} " \
@@ -286,10 +283,10 @@ def mirror_of(currency):
     return currency_pairs.get(currency)
 
 
-def wait_for_sif_account(sif_addr, max_attempts=30):
+def wait_for_sif_account(sif_addr, sifchaincli_node, max_attempts=30):
     def fn():
         try:
-            get_sifchain_addr_balance(sif_addr, "eth")
+            get_sifchain_addr_balance(sif_addr, sifchaincli_node, "eth")
             return True
         except:
             return False
@@ -318,10 +315,10 @@ def wait_for_predicate(predicate, success_result, max_attempts=30, debug_prefix=
 smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
 
 
-def transact_ethereum_currency_to_sifchain_addr(sif_addr, ethereum_symbol, amount):
+def transact_ethereum_currency_to_sifchain_addr(sif_addr, sifchaincli_node, ethereum_symbol, amount):
     sifchain_symbol = mirror_of(ethereum_symbol)
     try:
-        starting_balance = get_sifchain_addr_balance(sif_addr, sifchain_symbol)
+        starting_balance = get_sifchain_addr_balance(sif_addr, sifchaincli_node, sifchain_symbol)
     except:
         # Sometimes we're creating an account by sending it currency for the
         # first time, so you can't get a balance.

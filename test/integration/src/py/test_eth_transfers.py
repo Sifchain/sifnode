@@ -6,14 +6,23 @@ import os
 # ETHEREUM_PRIVATE_KEY
 # ETHEREUM_NETWORK = ropsten
 #
+from copy import copy
+from json import JSONDecodeError
+
+import pytest
 
 import burn_lock_functions
 from burn_lock_functions import EthereumToSifchainTransferRequest
 from integration_env_credentials import sifchain_cli_credentials_for_test
-from test_utilities import get_required_env_var, get_shell_output
+from test_utilities import get_required_env_var, get_shell_output, SifchaincliCredentials, amount_in_wei
+
+request: EthereumToSifchainTransferRequest
+credentials: SifchaincliCredentials
 
 
-def test_transfer_eth_to_new_sifchain_account():
+def test_transfer_eth_to_ceth():
+    global request
+    global credentials
     new_account_key = get_shell_output("uuidgen")
     credentials = sifchain_cli_credentials_for_test(new_account_key)
     new_addr = burn_lock_functions.create_new_sifaddr(credentials=credentials, keyname=new_account_key)
@@ -30,9 +39,25 @@ def test_transfer_eth_to_new_sifchain_account():
 
     result = burn_lock_functions.transfer_ethereum_to_sifchain(request, 50)
     logging.info(f"transfer_ethereum_to_sifchain_result_json: {result}")
+
+
+def test_transfer_eth_to_ceth_over_limit():
+    global request
+    global credentials
+    assert credentials is not None, "run test_transfer_eth_to_ceth first"
+    assert request is not None
+    invalid_request = copy(request)
+    invalid_request.amount = amount_in_wei(35)
+    with pytest.raises(JSONDecodeError):
+        burn_lock_functions.transfer_ethereum_to_sifchain(invalid_request, credentials)
+
+
+def test_transfer_ceth_to_eth():
+    global request
+    global credentials
+    assert credentials is not None, "run test_transfer_eth_to_ceth first"
+    assert request is not None
     return_result = burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
     logging.info(f"transfer_sifchain_to_ethereum__result_json: {return_result}")
 
 
-if __name__ == "__main__":
-    test_transfer_eth_to_new_sifchain_account()
