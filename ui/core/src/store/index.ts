@@ -3,14 +3,14 @@ import { wallet, WalletStore } from "./wallet";
 import { asset, AssetStore } from "./asset";
 import { pools, PoolStore } from "./pools";
 import { notifications, NotificationsStore } from "./notifications";
-import { Pool } from "../entities";
+import { LiquidityProvider, Pool } from "../entities";
 export * from "./poolFinder";
 
 export type Store = {
   wallet: WalletStore;
   asset: AssetStore;
   pools: PoolStore;
-  accountpools: Pool[];
+  accountpools: { lp: LiquidityProvider; pool: Pool }[];
   notifications: NotificationsStore;
 };
 

@@ -131,17 +131,29 @@ export default function createClpService({
     },
     async getLiquidityProvider(params) {
       const response = await client.getLiquidityProvider(params);
-      return LiquidityProvider(
-        Coin({
-          name: response.result.LiquidityProvider.asset.symbol,
-          symbol: response.result.LiquidityProvider.asset.symbol,
+      let asset: Asset;
+
+      const {
+        asset: { symbol },
+        liquidity_provider_units,
+        liquidity_provider_address,
+      } = response.result.LiquidityProvider;
+
+      try {
+        asset = Asset.get(symbol);
+      } catch (err) {
+        asset = Coin({
+          name: symbol,
+          symbol,
           network: Network.SIFCHAIN,
           decimals: 18,
-        }),
-        new Fraction(
-          response.result.LiquidityProvider.liquidity_provider_units
-        ),
-        response.result.LiquidityProvider.liquidity_provider_address
+        });
+      }
+
+      return LiquidityProvider(
+        asset,
+        new Fraction(liquidity_provider_units).divide("1000000000000000000"),
+        liquidity_provider_address
       );
     },
 

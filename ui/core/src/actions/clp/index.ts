@@ -1,4 +1,4 @@
-import { Asset, AssetAmount } from "../../entities";
+import { Asset, AssetAmount, LiquidityProvider, Pool } from "../../entities";
 import { ActionContext } from "..";
 import { PoolStore } from "../../store/pools";
 import notify from "../../api/utils/Notifications";
@@ -28,9 +28,17 @@ export default ({
         state.address
       );
 
-      store.accountpools = accountPoolSymbols.map((symbol) => {
-        return store.pools[`${symbol}_rowan`];
-      });
+      const accountPools: { lp: LiquidityProvider; pool: Pool }[] = [];
+      for (const symbol of accountPoolSymbols) {
+        const lp = await api.ClpService.getLiquidityProvider({
+          symbol,
+          lpAddress: state.address,
+        });
+        if (!lp) continue;
+        const pool = store.pools[`${symbol}_rowan`];
+        accountPools.push({ lp, pool });
+      }
+      store.accountpools = accountPools;
     }
 
     if (pools.length === 0) {

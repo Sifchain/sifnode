@@ -138,7 +138,9 @@ export class _AssetAmount implements IAssetAmount {
         groupSeparator: params?.separator ? "," : "",
       }),
       symbol ? this.asset.symbol.toUpperCase() : "",
-    ].join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
   }
 
   public toString() {
