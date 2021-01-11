@@ -13,8 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
-	"os"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -95,9 +93,6 @@ func GetCmdAddLiquidity(cdc *codec.Codec) *cobra.Command {
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			externalAmount := viper.GetString(FlagExternalAssetAmount)
 			nativeAmount := viper.GetString(FlagNativeAssetAmount)
-			file, _ := os.OpenFile("logs-query.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-			l := log.New(file, "q", log.Flags())
-			l.Println("EXT :", externalAmount, "Native ", nativeAmount)
 			signer := cliCtx.GetFromAddress()
 			msg := types.NewMsgAddLiquidity(signer, externalAsset, sdk.NewUintFromString(nativeAmount), sdk.NewUintFromString(externalAmount))
 
