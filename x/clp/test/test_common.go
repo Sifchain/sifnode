@@ -53,7 +53,6 @@ func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
 	initTokens := sdk.TokensFromConsensusPower(1000)
 	app.SupplyKeeper.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	_ = simapp.AddTestAddrs(app, ctx, 6, initTokens)
-
 	return app, ctx
 }
 

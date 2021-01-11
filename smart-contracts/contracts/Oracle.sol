@@ -2,11 +2,11 @@ pragma solidity 0.5.16;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Valset.sol";
-import "./CosmosBridge.sol";
 import "./OracleStorage.sol";
+import "./Valset.sol";
 
 
-contract Oracle is OracleStorage {
+contract Oracle is OracleStorage, Valset {
     using SafeMath for uint256;
 
     bool private _initialized;
@@ -35,47 +35,14 @@ contract Oracle is OracleStorage {
     }
 
     /*
-     * @dev: Modifier to restrict access to current ValSet validators
-     */
-    modifier onlyValidator(address _user) {
-        require(
-            Valset(valset).isActiveValidator(_user),
-            "Must be an active validator"
-        );
-        _;
-    }
-
-    /*
-     * @dev: Modifier to restrict access to current ValSet validators
-     */
-    modifier onlyCosmosBridge() {
-        require(
-            msg.sender == cosmosBridge,
-            "Must be Cosmos Bridge"
-        );
-        _;
-    }
-
-    /*
-     * @dev: Modifier to restrict access to current ValSet validators
-     */
-    modifier isPending(uint256 _prophecyID) {
-        require(
-            CosmosBridge(cosmosBridge).isProphecyClaimActive(_prophecyID) == true,
-            "The prophecy must be pending for this operation"
-        );
-        _;
-    }
-
-    /*
      * @dev: Initialize Function
      */
-    function initialize(
+    function _initialize(
         address _operator,
-        address _valset,
-        address _cosmosBridge,
-        uint256 _consensusThreshold
-    ) public {
+        uint256 _consensusThreshold,
+        address[] memory _initValidators,
+        uint256[] memory _initPowers
+    ) internal {
         require(!_initialized, "Initialized");
         require(
             _consensusThreshold > 0,
@@ -86,10 +53,10 @@ contract Oracle is OracleStorage {
             "Invalid consensus threshold."
         );
         operator = _operator;
-        cosmosBridge = _cosmosBridge;
-        valset = _valset;
         consensusThreshold = _consensusThreshold;
         _initialized = true;
+
+        Valset._initialize(_operator, _initValidators, _initPowers);
     }
 
     /*
@@ -99,10 +66,7 @@ contract Oracle is OracleStorage {
     function newOracleClaim(
         uint256 _prophecyID,
         address validatorAddress
-    ) public
-        onlyCosmosBridge
-        onlyValidator(validatorAddress)
-        isPending(_prophecyID)
+    ) internal
         returns (bool)
     {
         // Confirm that this address has not already made an oracle claim on this prophecy
@@ -112,8 +76,10 @@ contract Oracle is OracleStorage {
         );
 
         hasMadeClaim[_prophecyID][validatorAddress] = true;
-        oracleClaimValidators[_prophecyID].push(validatorAddress);
-
+        // oracleClaimValidators[_prophecyID].push(validatorAddress);
+        oracleClaimValidators[_prophecyID] = oracleClaimValidators[_prophecyID].add(
+            this.getValidatorPower(validatorAddress)
+        );
         emit LogNewOracleClaim(
             _prophecyID,
             validatorAddress
@@ -126,51 +92,20 @@ contract Oracle is OracleStorage {
     }
 
     /*
-     * @dev: checkBridgeProphecy
-     *       Operator accessor method which checks if a prophecy has passed
-     *       the validity threshold, without actually completing the prophecy.
-     */
-    function checkBridgeProphecy(uint256 _prophecyID)
-        public
-        view
-        onlyOperator
-        isPending(_prophecyID)
-        returns (bool, uint256, uint256)
-    {
-        require(
-            CosmosBridge(cosmosBridge).isProphecyClaimActive(_prophecyID) == true,
-            "Can only check active prophecies"
-        );
-        return getProphecyThreshold(_prophecyID);
-    }
-
-    /*
      * @dev: processProphecy
      *       Calculates the status of a prophecy. The claim is considered valid if the
      *       combined active signatory validator powers pass the consensus threshold.
      *       The threshold is x% of Total power, where x is the consensusThreshold param.
      */
     function getProphecyThreshold(uint256 _prophecyID)
-        internal
+        public
         view
         returns (bool, uint256, uint256)
     {
         uint256 signedPower = 0;
-        uint256 totalPower = Valset(valset).totalPower();
+        uint256 totalPower = totalPower;
 
-        // Iterate over the signatory addresses
-        for (
-            uint256 i = 0;
-            i < oracleClaimValidators[_prophecyID].length;
-            i = i.add(1)
-        ) {
-            address signer = oracleClaimValidators[_prophecyID][i];
-
-            // Only add the power of active validators
-            if (Valset(valset).isActiveValidator(signer)) {
-                signedPower = signedPower.add(Valset(valset).getValidatorPower(signer));
-            }
-        }
+        signedPower = oracleClaimValidators[_prophecyID];
 
         // Prophecy must reach total signed power % threshold in order to pass consensus
         uint256 prophecyPowerThreshold = totalPower.mul(consensusThreshold);

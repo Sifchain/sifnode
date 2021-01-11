@@ -31,6 +31,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/miguelmota/go-solidity-sha3 v0.1.0
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
+	github.com/mossid/sdk-nameservice-example v0.0.0-20181003181416-88f91e053619
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.4
