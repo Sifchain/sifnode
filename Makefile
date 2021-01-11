@@ -1,21 +1,44 @@
-CHAINNET?=localnet # Options; localnet, testnet, chaosnet ,mainnet
+CHAINNET?=testnet # Options; localnet, testnet, chaosnet ,mainnet
 BINARY?=sifnoded
 GOBIN?=${GOPATH}/bin
 NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
 
+ifeq (mainnet,${CHAINNET})
+	BUILD_TAGS=mainnet
+else
+	BUILD_TAGS=testnet
+endif
+
+whitespace :=
+whitespace += $(whitespace)
+comma := ,
+build_tags_comma_sep := $(subst $(whitespace),$(comma),$(BUILD_TAGS))
+
 ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 		  -X github.com/cosmos/cosmos-sdk/version.ServerName=sifnoded \
 		  -X github.com/cosmos/cosmos-sdk/version.ClientName=sifnodecli \
 		  -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 		  -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
+		  -X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
 
-BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${CHAINNET} -a
+BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${BUILD_TAGS} -a
 
 BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen ./cmd/sifcrg ./cmd/ebrelayer
 
 all: lint install
+
+build-config:
+	echo $(CHAINNET)
+	echo $(BUILD_TAGS)
+	echo $(BUILD_FLAGS)
+
+init:
+	./scripts/init.sh
+
+start:
+	sifnodecli rest-server & sifnoded start
 
 lint-pre:
 	@test -z $(gofmt -l .)
