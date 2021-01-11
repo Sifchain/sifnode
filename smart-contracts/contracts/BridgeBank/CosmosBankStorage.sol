@@ -29,11 +29,6 @@ contract CosmosBankStorage {
     mapping(string => address) controlledBridgeTokens;
 
     /**
-    * @notice mapping of cosmos deposit id's to deposit receipts
-    */
-    mapping(bytes32 => CosmosDeposit) cosmosDeposits;
-
-    /**
     * @notice gap of storage for future upgrades
     */
     uint256[100] private ____gap;
