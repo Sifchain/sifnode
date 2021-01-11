@@ -1,5 +1,0 @@
-{
-  "binaries": {
-    "linux/amd64":"https://github.com/Sifchain/sifnode/blob/feature/clp-upgrade/sifnoded.zip?checksum=sha256:8630d1e36017ca680d572926d6a4fc7fe9a24901c52f48c70523b7d44ad0cfb2"
-  }
-}
