@@ -78,7 +78,7 @@ namespace :cluster do
   namespace :sifnode do
     namespace :deploy do
       desc "Deploy a single standalone sifnode on to your cluster"
-      task :standalone, [:chainnet, :provider, :namespace, :image, :image_tag, :moniker, :mnemonic, :admin_clp_addresses, :admin_oracle_address] do |t, args|
+      task :standalone, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :moniker, :mnemonic, :admin_clp_addresses, :admin_oracle_address] do |t, args|
         check_args(args)
 
         cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
@@ -96,7 +96,7 @@ namespace :cluster do
       end
 
       desc "Deploy a single network-aware sifnode on to your cluster"
-      task :peer, [:chainnet, :provider, :namespace, :image, :image_tag, :moniker, :mnemonic, :peer_address, :genesis_url] do |t, args|
+      task :peer, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :moniker, :mnemonic, :peer_address, :genesis_url] do |t, args|
         check_args(args)
 
         cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
