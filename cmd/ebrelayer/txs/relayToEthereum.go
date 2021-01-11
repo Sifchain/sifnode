@@ -21,10 +21,10 @@ import (
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
 	GasLimit = uint64(3000000)
-)
-
-var (
-	gasUsedLastTx uint64
+	// GasForMint mint a cosmos native token in Ethereum
+	GasForMint = int64(282031)
+	// GasForBurn burn pegged Ethereum token in Sifchain
+	GasForBurn = int64(248692)
 )
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
@@ -37,9 +37,17 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		return 0, err
 	}
 
-	// If ceth amount is lower than estimated gas
-	if cethAmount.Cmp(big.NewInt(int64(gasUsedLastTx))) < 0 {
-		return 0, errors.New("not enough ceth to cover the gas costs")
+	switch claim.ClaimType {
+	case types.MsgBurn:
+		if cethAmount.Cmp(big.NewInt(GasForBurn)) < 0 {
+			return 0, errors.New("not enough ceth to cover the gas costs")
+		}
+	case types.MsgLock:
+		if cethAmount.Cmp(big.NewInt(GasForMint)) < 0 {
+			return 0, errors.New("not enough ceth to cover the gas costs")
+		}
+	default:
+		return 0, errors.New("wrong message type")
 	}
 
 	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
@@ -69,7 +77,6 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		return 0, errors.New("NewProphecyClaim transaction failed ")
 	case 1:
 		fmt.Println("Tx Status: 1 - Successful")
-		gasUsedLastTx = receipt.GasUsed
 		return receipt.GasUsed, nil
 	}
 

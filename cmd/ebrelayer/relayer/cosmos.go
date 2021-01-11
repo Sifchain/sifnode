@@ -155,8 +155,6 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
 	cethAmount := cosmosMsg.CethAmount.BigInt()
 
-	cethAmount = cethAmount.Div(cethAmount, big.NewInt(RelayerNodeNumber))
-
 	gasUsed, err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
 		claimType, prophecyClaim, sub.PrivateKey, cethAmount)
 
@@ -171,6 +169,8 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 
 		return err
 	}
+
+	cethAmount = cethAmount.Div(cethAmount, big.NewInt(RelayerNodeNumber))
 
 	if cethAmount.Cmp(big.NewInt(int64(gasUsed))) > 0 {
 		cosmosMsg.MessageType = ethbridge.MsgReturnCeth
