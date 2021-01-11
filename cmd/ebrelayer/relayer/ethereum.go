@@ -228,6 +228,52 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	}
 }
 
+// Replay the missed events
+func (sub EthereumSub) Replay(fromBlock *big.Int, toBlock *big.Int, contractName txs.ContractRegistry) {
+	client, err := SetupRPCEthClient(sub.EthProvider)
+	if err != nil {
+		sub.Logger.Error(err.Error())
+		return
+	}
+	defer client.Close()
+
+	clientChainID, err := client.NetworkID(context.Background())
+	if err != nil {
+		sub.Logger.Error(err.Error())
+		return
+	}
+
+	// Get the contract address for this subscription
+	subContractAddress, err := txs.GetAddressFromBridgeRegistry(client, sub.RegistryContractAddress, contractName)
+	if err != nil {
+		sub.Logger.Error(err.Error())
+		return
+	}
+	bridgeBankContractABI := contract.LoadABI(txs.BridgeBank)
+	// We need the address in []bytes for the query
+	subQuery := ethereum.FilterQuery{
+		Addresses: []common.Address{subContractAddress},
+		FromBlock: fromBlock,
+		ToBlock:   toBlock,
+	}
+
+	logs, err := client.FilterLogs(context.Background(), subQuery)
+	if err != nil {
+		sub.Logger.Error(err.Error())
+		return
+	}
+	for _, log := range logs {
+		fmt.Printf("log is %v", log)
+		event, isBurnLock, err := sub.logToEvent(clientChainID, subContractAddress, bridgeBankContractABI, log)
+		if err != nil {
+			sub.Logger.Error("Failed to get event from ethereum log")
+		} else if isBurnLock {
+			sub.Logger.Info("Add event into buffer")
+			sub.handleEthereumEvent(event)
+		}
+	}
+}
+
 // startContractEventSub : starts an event subscription on the specified Peggy contract
 func (sub EthereumSub) startContractEventSub(logs chan ctypes.Log, client *ethclient.Client,
 	contractName txs.ContractRegistry) (common.Address, ethereum.Subscription) {

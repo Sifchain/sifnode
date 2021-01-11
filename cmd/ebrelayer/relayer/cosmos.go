@@ -111,6 +111,38 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	}
 }
 
+// Replay the missed events
+func (sub CosmosSub) Replay(fromBlock int64, toBlock int64) {
+	client, err := tmClient.New(sub.TmProvider, "")
+	if err != nil {
+		sub.Logger.Error("failed to initialize a client", "err", err)
+		return
+	}
+	client.SetLogger(sub.Logger)
+
+	if err := client.Start(); err != nil {
+		sub.Logger.Error("failed to start a client", "err", err)
+		return
+	}
+
+	defer client.Stop() //nolint:errcheck
+
+	for blockNumber := fromBlock; blockNumber < toBlock; {
+		block, err := client.BlockResults(&blockNumber)
+		blockNumber++
+		sub.Logger.Info("Replay start to process block %d", blockNumber)
+
+		if err != nil {
+			sub.Logger.Error("failed to start a client", "err", err)
+			continue
+		}
+		for _, log := range block.EndBlockEvents {
+			sub.Logger.Info("failed to start a client %v", log)
+		}
+	}
+
+}
+
 // getOracleClaimType sets the OracleClaim's claim type based upon the witnessed event type
 func getOracleClaimType(eventType string) types.Event {
 	var claimType types.Event
