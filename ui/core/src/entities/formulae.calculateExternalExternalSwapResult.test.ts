@@ -15,6 +15,20 @@ const tests = [
     },
     expected: "1204.818696472882384427",
   },
+
+  {
+    skip: false,
+    only: false,
+    name: "even",
+    input: {
+      ax: "1",
+      aX: "588235000", // link
+      aY: "10000000000",
+      bX: "10000000000", // cusdc
+      bY: "10000000000",
+    },
+    expected: "17.000008384404135090",
+  },
 ];
 
 tests.forEach(({ name, only, skip, input, expected }) => {

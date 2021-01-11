@@ -15,7 +15,7 @@ export default defineComponent({
     const asset = useAssetItem(symbol);
 
     const token = props.asset ? ref(props.asset) : asset.token;
-    const tokenLabel = asset.label.value;
+    const tokenLabel = asset.label;
 
     const backgroundStyle = asset.background;
 
