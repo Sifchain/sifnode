@@ -108,7 +108,7 @@ export default defineComponent({
         >
       </div>
       <div v-else>
-        <!-- <div v-if="isLocalChain">
+        <div v-if="isLocalChain">
           <button
             @click="
               mnemonic =
@@ -133,7 +133,7 @@ export default defineComponent({
           >
             Juniper
           </button>
-        </div> -->
+        </div>
         <textarea
           class="textarea"
           v-model="mnemonic"
