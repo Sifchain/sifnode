@@ -9,6 +9,7 @@ export function createTestSifService(account?: TestSifAccount) {
     sifAddrPrefix: "sif",
     sifWsUrl: "ws://localhost:26657",
     assets: [],
+    keplrChainConfig: {}
   });
 
   if (account) {

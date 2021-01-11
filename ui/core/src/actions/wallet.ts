@@ -11,6 +11,12 @@ export default ({
   const state = api.SifService.getState();
 
   const actions = {
+
+    // initialize() {
+    // something like this on load
+    // or maybe on createApi ??
+    // but where notification
+    // },
     async getCosmosBalances(address: Address) {
       // TODO: validate sif prefix
       return await api.SifService.getBalance(address);
@@ -31,14 +37,20 @@ export default ({
     },
     async connectToWallet() {
       try  {
-        const account: any = await api.SifService.connect();
+        const address: any = await api.SifService.connect();
+        console.log(address)
         // notify connected
         notify({type: "success", message: "Sif Account connected", 
-        detail: account.address })
-        // set state to isCnnected, with address and send balances
-
+        detail: address })
+        store.wallet.sif.isConnected = true
+        store.wallet.sif.address = address
+        // get balance in this context, not service.connect in case you connect but there's not balance
+        const balances: any = await api.SifService.getBalance(address)
+        // if no address found on chain therefore no balance throws from getBalance... 
+        store.wallet.sif.balances = balances;
       } catch (error) {
         // to the ui??
+        console.log(error)
         notify({type:"error", ...error})
       }
     },
@@ -47,17 +59,17 @@ export default ({
     },
   };
 
-  effect(() => {
-    store.wallet.sif.isConnected = state.connected;
-  });
+  // effect(() => {
+  //   store.wallet.sif.isConnected = state.connected;
+  // });
 
-  effect(() => {
-    store.wallet.sif.address = state.address;
-  });
+  // effect(() => {
+  //   store.wallet.sif.address = state.address;
+  // });
 
-  effect(() => {
-    store.wallet.sif.balances = state.balances;
-  });
+  // effect(() => {
+  //   store.wallet.sif.balances = state.balances;
+  // });
 
   return actions;
 };

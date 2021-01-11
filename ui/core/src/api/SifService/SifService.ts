@@ -20,7 +20,7 @@ import { IWalletService } from "../IWalletService";
 import { SifClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 import getKeplrProvider from "./getKeplrProvider"
-
+import notify from "../utils/Notifications"
 export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
@@ -49,7 +49,10 @@ export default function createSifService({
 }: SifServiceContext): ISifService {
   const {} = sifAddrPrefix;
   const keplrProvider = getKeplrProvider()
-  console.log('pro', keplrProvider)
+  // createSifService would need to be invoked at actions level for this to be cleaner imo.. maybe some sort of app initialize 
+  if(!keplrProvider) {
+    notify({type: "error", message: "Keplr not found.", detail: "Check if extension enabled for this URL."})
+  }
   // Reactive state for communicating state changes
   // TODO this should be replaced with event handlers
   const state: {
@@ -136,11 +139,17 @@ export default function createSifService({
           const offlineSigner = keplrProvider.getOfflineSigner(keplrChainConfig.chainId);
           // https://github.com/chainapsis/keplr-extension/blob/960e50f1d9360d21d6935b974a0cb8b57c27d9d9/src/content-scripts/inject/cosmjs-offline-signer.ts
           const accounts = await offlineSigner.getAccounts();
-          // console.log(accounts)
           // get balances
-          // return to controller so can set state
-          return accounts[0]
-          // keep open
+          const address = accounts.length > 0 ? accounts[0].address : "";
+
+          if (!address) { throw "No address on sif account"; }
+          
+          client = new SifClient(sifApiUrl, address, offlineSigner, sifWsUrl)
+
+          // const balances = await this.getBalance(address)
+          triggerUpdate()
+          // return address and balances to controller so can set state
+          return address
         } catch (error) {
           console.log(error)
           throw {message: "Failed to Suggest Chain"}
@@ -199,7 +208,7 @@ export default function createSifService({
 
       try {
         const account = await client.getAccount(address);
-
+        console.log(account)
         if (!account) throw "No Address found on chain";
 
         const balances = account.balance.map(({ amount, denom }) => {
@@ -261,11 +270,12 @@ export default function createSifService({
         };
 
         const msgArr = Array.isArray(msg) ? msg : [msg];
+        console.log('msgArr', msgArr)
 
         const txHash = await client.signAndBroadcast(msgArr, fee, memo);
-
+        console.log('txHash', txHash)
         if (isBroadcastTxFailure(txHash)) {
-          console.log(txHash.rawLog);
+          console.log('fail', txHash.rawLog);
           throw new Error(txHash.rawLog);
         }
 

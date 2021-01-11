@@ -52,6 +52,64 @@ const testConfig: SifServiceContext = {
   sifApiUrl: "http://127.0.0.1:1317",
   sifWsUrl: "ws://127.0.0.1:26657/websocket",
   assets: [],
+  keplrChainConfig:   {  "keplrChainConfig": {
+    "chainId": "sifchain",
+    "chainName": "Sifchain",
+    "stakeCurrency": {
+        "coinDenom": "ROWAN",
+        "coinMinimalDenom": "rowan",
+        "coinDecimals": 18
+    },
+    "bip44": {
+        "coinType": 118
+    },
+    "bech32Config": {
+        "bech32PrefixAccAddr": "sif",
+        "bech32PrefixAccPub": "sifpub",
+        "bech32PrefixValAddr": "sifvaloper",
+        "bech32PrefixValPub": "sifvaloperpub",
+        "bech32PrefixConsAddr": "sifvalcons",
+        "bech32PrefixConsPub": "sifvalconspub"
+    },
+    "currencies": [{
+        "coinDenom": "ROWAN",
+        "coinMinimalDenom": "rowan",
+        "coinDecimals": 18
+    },
+    {
+      "coinDenom": "catk",
+      "coinMinimalDenom": "catk",
+      "coinDecimals": 18
+    },
+    {
+      "coinDenom": "cbtk",
+      "coinMinimalDenom": "cbtk",
+      "coinDecimals": 18
+    },
+    {
+      "coinDenom": "ceth",
+      "coinMinimalDenom": "ceth",
+      "coinDecimals": 18
+    },
+    {
+      "coinDenom": "stake",
+      "coinMinimalDenom": "stake",
+      "coinDecimals": 18
+    }
+  ],
+    "feeCurrencies": [{
+        "coinDenom": "ROWAN",
+        "coinMinimalDenom": "rowan",
+        "coinDecimals": 18
+    }],
+    "coinType": 118,
+    "gasPriceStep": {
+        "low": 0.01,
+        "average": 0.025,
+        "high": 0.04
+    }
+  }
+}
 };
 
 function getBalance(balances: AssetAmount[], symbol: string): AssetAmount {
