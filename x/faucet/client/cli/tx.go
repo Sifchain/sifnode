@@ -43,7 +43,7 @@ func GetCmdRequestCoins(cdc *codec.Codec) *cobra.Command {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			if cliCtx.ChainID != "mainnet" {
+			if cliCtx.ChainID != "sifchain" {
 				amount := args[0]
 				coins, err := sdk.ParseCoins(amount)
 				if err != nil {
@@ -70,7 +70,7 @@ func GetCmdAddCoins(cdc *codec.Codec) *cobra.Command {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
-			if cliCtx.ChainID != "mainnet" {
+			if cliCtx.ChainID != "sifchain" {
 				amount := args[0]
 				coins, err := sdk.ParseCoins(amount)
 				if err != nil {

@@ -28,7 +28,7 @@ func NewHandler(keeper Keeper) sdk.Handler {
 // Handle the incoming request message and distribute coins from the module to the requesters account.
 // Will need to update this in the future with some distribution limitations
 func handleMsgRequestCoins(ctx sdk.Context, keeper Keeper, msg types.MsgRequestCoins) (*sdk.Result, error) {
-	if ctx.ChainID() != "mainnet" {
+	if ctx.ChainID() != "sifchain" {
 		bank := keeper.GetBankKeeper()
 		supply := keeper.GetSupplyKeeper()
 
@@ -66,7 +66,7 @@ func handleMsgRequestCoins(ctx sdk.Context, keeper Keeper, msg types.MsgRequestC
 
 // Handle the add coins message and send coins from the signers account to the module account.
 func handleMsgAddCoins(ctx sdk.Context, keeper Keeper, msg types.MsgAddCoins) (*sdk.Result, error) {
-	if ctx.ChainID() != "mainnet" {
+	if ctx.ChainID() != "sifchain" {
 		bank := keeper.GetBankKeeper()
 		err := bank.SendCoins(ctx, msg.Signer, types.GetFaucetModuleAddress(), msg.Coins)
 		if err != nil {

@@ -4,12 +4,12 @@
 
 
 make clean install
-sifnoded init test --chain-id=sifchain
+sifnoded init test --chain-id=localnet
 
 sifnodecli config output json
 sifnodecli config indent true
 sifnodecli config trust-node true
-sifnodecli config chain-id sifchain
+sifnodecli config chain-id localnet
 sifnodecli config keyring-backend test
 
 echo "Generating deterministic account - sif"

@@ -49,7 +49,7 @@ func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		Args: cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-			if cliCtx.ChainID != "mainnet" {
+			if cliCtx.ChainID != "sifchain" {
 				route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryBalance)
 				res, _, err := cliCtx.Query(route)
 				if err != nil {
