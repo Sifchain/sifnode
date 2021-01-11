@@ -3,6 +3,7 @@ package cli
 import (
 	"bufio"
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/faucet/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
@@ -17,19 +18,22 @@ import (
 
 // GetTxCmd returns the transaction commands for this module
 func GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	faucetTxCmd := &cobra.Command{
-		Use:                        types.ModuleName,
-		Short:                      fmt.Sprintf("%s transactions subcommands", types.ModuleName),
-		DisableFlagParsing:         true,
-		SuggestionsMinimumDistance: 2,
-		RunE:                       client.ValidateCmd,
+	if context.NewCLIContext().ChainID != "sifchain" {
+		faucetTxCmd := &cobra.Command{
+			Use:                        types.ModuleName,
+			Short:                      fmt.Sprintf("%s transactions subcommands", types.ModuleName),
+			DisableFlagParsing:         true,
+			SuggestionsMinimumDistance: 2,
+			RunE:                       client.ValidateCmd,
+		}
+
+		faucetTxCmd.AddCommand(flags.PostCommands(
+			GetCmdRequestCoins(cdc),
+			GetCmdAddCoins(cdc))...)
+
+		return faucetTxCmd
 	}
-
-	faucetTxCmd.AddCommand(flags.PostCommands(
-		GetCmdRequestCoins(cdc),
-		GetCmdAddCoins(cdc))...)
-
-	return faucetTxCmd
+	return nil
 }
 
 // TX to request coins from faucet module account to the requesters account

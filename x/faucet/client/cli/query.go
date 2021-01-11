@@ -18,24 +18,28 @@ import (
 )
 
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	faucetQueryCmd := &cobra.Command{
-		Use:                        types.ModuleName,
-		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
-		DisableFlagParsing:         true,
-		SuggestionsMinimumDistance: 2,
-		RunE:                       client.ValidateCmd,
+	cliCtx := context.NewCLIContext().WithCodec(cdc)
+	if cliCtx.ChainID != "banana" {
+		faucetQueryCmd := &cobra.Command{
+			Use:                        types.ModuleName,
+			Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
+			DisableFlagParsing:         true,
+			SuggestionsMinimumDistance: 2,
+			RunE:                       client.ValidateCmd,
+		}
+
+		faucetQueryCmd.AddCommand(
+			flags.GetCommands(
+				GetCmdFaucet(queryRoute, cdc),
+			)...,
+		)
+
+		return faucetQueryCmd
 	}
-
-	faucetQueryCmd.AddCommand(
-		flags.GetCommands(
-			GetCmdFaucet(queryRoute, cdc),
-		)...,
-	)
-
-	return faucetQueryCmd
+	return nil
 }
 
-// Query to get faucet balance with the specified denom
+// GetCmdFaucet Query to get faucet balance with the specified denom
 func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "balance",
@@ -56,7 +60,6 @@ func GetCmdFaucet(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			var coins types2.Coins
 			cdc.MustUnmarshalJSON(res, &coins)
 			return cliCtx.PrintOutput(coins)
-
 		},
 	}
 }
