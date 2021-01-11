@@ -229,7 +229,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 }
 
 // Replay the missed events
-func (sub EthereumSub) Replay(fromBlock *big.Int, toBlock *big.Int, contractName txs.ContractRegistry) {
+func (sub EthereumSub) Replay(fromBlock *big.Int, toBlock *big.Int) {
 	client, err := SetupRPCEthClient(sub.EthProvider)
 	if err != nil {
 		sub.Logger.Error(err.Error())
@@ -244,7 +244,7 @@ func (sub EthereumSub) Replay(fromBlock *big.Int, toBlock *big.Int, contractName
 	}
 
 	// Get the contract address for this subscription
-	subContractAddress, err := txs.GetAddressFromBridgeRegistry(client, sub.RegistryContractAddress, contractName)
+	subContractAddress, err := txs.GetAddressFromBridgeRegistry(client, sub.RegistryContractAddress, txs.BridgeBank)
 	if err != nil {
 		sub.Logger.Error(err.Error())
 		return
@@ -268,7 +268,6 @@ func (sub EthereumSub) Replay(fromBlock *big.Int, toBlock *big.Int, contractName
 		if err != nil {
 			sub.Logger.Error("Failed to get event from ethereum log")
 		} else if isBurnLock {
-			sub.Logger.Info("Add event into buffer")
 			sub.handleEthereumEvent(event)
 		}
 	}

@@ -106,6 +106,9 @@ func generateBindingsCmd() *cobra.Command {
 
 // RunInitRelayerCmd executes initRelayerCmd
 func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
+	tmpRPCURL := viper.GetString(FlagRPCURL)
+	fmt.Printf("rpcRUL is  %v \n", tmpRPCURL)
+
 	// Load the validator's Ethereum private key from environment variables
 	privateKey, err := txs.LoadPrivateKey()
 	if err != nil {
@@ -195,7 +198,7 @@ func replayEthereumCmd() *cobra.Command {
 	replayEthereumCmd := &cobra.Command{
 		Use:     "replayEthereum [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [validatorMnemonic] [fromBlock] [toBlock]",
 		Short:   "replay missed ethereum events",
-		Args:    cobra.ExactArgs(5),
+		Args:    cobra.ExactArgs(6),
 		Example: "replayEthereum tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic --chain-id=peggy",
 		RunE:    RunReplayEthereumCmd,
 	}
@@ -206,14 +209,14 @@ func replayEthereumCmd() *cobra.Command {
 func replayCosmosCmd() *cobra.Command {
 	//nolint:lll
 	replayCosmosCmd := &cobra.Command{
-		Use:     "replayCosmos [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [validatorMnemonic] [fromBlock] [toBlock]",
+		Use:     "replayCosmos [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [fromBlock] [toBlock]",
 		Short:   "replay missed cosmos events",
 		Args:    cobra.ExactArgs(5),
-		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic --chain-id=peggy",
+		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 100 200 --chain-id=peggy",
 		RunE:    RunReplayCosmosCmd,
 	}
 
-	return replayEthereumCmd
+	return replayCosmosCmd
 }
 
 func main() {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"math/big"
 	"net/url"
 	"os"
 	"strconv"
@@ -41,27 +42,33 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Validate and parse arguments
-	if len(strings.Trim(args[0], "")) == 0 {
-		return errors.Errorf("invalid [tendermint-node]: %s", args[0])
-	}
-	tendermintNode := args[0]
-
-	if !relayer.IsWebsocketURL(args[1]) {
-		return errors.Errorf("invalid [web3-provider]: %s", args[1])
+	if !relayer.IsWebsocketURL(args[0]) {
+		return errors.Errorf("invalid [web3-provider]: %s", args[0])
 	}
 	web3Provider := args[1]
 
-	if !common.IsHexAddress(args[2]) {
-		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[2])
+	if !common.IsHexAddress(args[1]) {
+		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[1])
 	}
-	contractAddress := common.HexToAddress(args[2])
+	contractAddress := common.HexToAddress(args[1])
 
-	if len(strings.Trim(args[3], "")) == 0 {
-		return errors.Errorf("invalid [validator-moniker]: %s", args[3])
+	if len(strings.Trim(args[2], "")) == 0 {
+		return errors.Errorf("invalid [validator-moniker]: %s", args[2])
 	}
-	validatorMoniker := args[3]
-	mnemonic := args[4]
+	validatorMoniker := args[2]
+	mnemonic := args[3]
+
+	tmpBlock := new(big.Int)
+	fromBlock, ok := tmpBlock.SetString(args[4], 10)
+	if !ok {
+		return errors.Errorf("invalid [from-block]: %s", args[4])
+	}
+
+	tmpBlock = new(big.Int)
+	toBlock, ok := tmpBlock.SetString(args[5], 10)
+	if !ok {
+		return errors.Errorf("invalid [to-block]: %s", args[5])
+	}
 
 	// Universal logger
 	logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
@@ -75,7 +82,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	ethSub.Replay()
+	ethSub.Replay(fromBlock, toBlock)
 
 	return nil
 }
@@ -119,27 +126,27 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 	}
 	contractAddress := common.HexToAddress(args[2])
 
-	if len(strings.Trim(args[3], "")) == 0 {
-		return errors.Errorf("invalid [validator-moniker]: %s", args[3])
-	}
-	validatorMoniker := args[3]
-	mnemonic := args[4]
+	// if len(strings.Trim(args[3], "")) == 0 {
+	// 	return errors.Errorf("invalid [validator-moniker]: %s", args[3])
+	// }
+	// validatorMoniker := args[3]
+	// mnemonic := args[4]
 
-	fromBlock, err := strconv.ParseInt(args[5], 10, 64)
+	fromBlock, err := strconv.ParseInt(args[3], 10, 64)
 	if err != nil {
-		return errors.Errorf("invalid [from-block]: %s", args[5])
+		return errors.Errorf("invalid [from-block]: %s", args[3])
 	}
 
-	toBlock, err := strconv.ParseInt(args[6], 10, 64)
+	toBlock, err := strconv.ParseInt(args[4], 10, 64)
 	if err != nil {
-		return errors.Errorf("invalid [to-block]: %s", args[6])
+		return errors.Errorf("invalid [to-block]: %s", args[4])
 	}
 
 	// Universal logger
 	logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
 
 	// Initialize new Ethereum event listener
-	inBuf := bufio.NewReader(cmd.InOrStdin())
+	// inBuf := bufio.NewReader(cmd.InOrStdin())
 
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)

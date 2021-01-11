@@ -128,7 +128,8 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64) {
 	defer client.Stop() //nolint:errcheck
 
 	for blockNumber := fromBlock; blockNumber < toBlock; {
-		block, err := client.BlockResults(&blockNumber)
+		tmpBlockNumber := blockNumber
+		block, err := client.BlockResults(&tmpBlockNumber)
 		blockNumber++
 		sub.Logger.Info("Replay start to process block %d", blockNumber)
 
