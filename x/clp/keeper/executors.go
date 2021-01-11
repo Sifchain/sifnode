@@ -163,12 +163,12 @@ func (k Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.Acc
 	return nil
 
 }
-func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount sdk.Uint, finalPool types.Pool, msg types.MsgSwap) error {
+func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool types.Pool, msg types.MsgSwap) error {
 	err := k.SetPool(ctx, finalPool)
 	if err != nil {
 		return errors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
-	sentAmountInt, ok := k.ParseToInt(sentAmount.String())
+	sentAmountInt, ok := k.ParseToInt(sentAmount)
 	if !ok {
 		return types.ErrUnableToParseInt
 	}
