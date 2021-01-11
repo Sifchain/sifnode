@@ -24,9 +24,12 @@ beforeEach(() => {
 test("getPools()", async () => {
   const pools = await service.getPools();
 
-  expect(pools.map((pool) => pool.toString())).toEqual([
-    "1000000.000000000000000000 ROWAN | 1000000.000000000000000000 CATK",
-    "1000000.000000000000000000 ROWAN | 1000000.000000000000000000 CBTK",
+  expect(pools.map(pool => pool.toString())).toEqual([
+    "10000000.000000000000000000 ROWAN | 10000000.000000000000000000 CATK",
+    "10000000.000000000000000000 ROWAN | 10000000.000000000000000000 CBTK",
+    "10000000.000000000000000000 ROWAN | 8300.000000000000000000 CETH",
+    "10000000.000000000000000000 ROWAN | 588235.000000000000000000 CLINK",
+    "10000000.000000000000000000 ROWAN | 10000000.000000000000000000 CUSDC",
   ]);
 });
 
@@ -46,8 +49,8 @@ test("addLiquidity", async () => {
           type: "clp/AddLiquidity",
           value: {
             ExternalAsset: { symbol: "catk" },
-            ExternalAssetAmount: "1000",
-            NativeAssetAmount: "1000",
+            ExternalAssetAmount: "1000000000000000000000",
+            NativeAssetAmount: "1000000000000000000000",
             Signer: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
           },
         },
@@ -103,8 +106,8 @@ test("createPool()", async () => {
           type: "clp/CreatePool",
           value: {
             ExternalAsset: { symbol: "catk" },
-            ExternalAssetAmount: "1000",
-            NativeAssetAmount: "1000",
+            ExternalAssetAmount: "1000000000000000000000",
+            NativeAssetAmount: "1000000000000000000000",
             Signer: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
           },
         },
@@ -149,5 +152,5 @@ test("getLiquidityProvider()", async () => {
 
   expect(lp?.asset.symbol).toEqual("catk");
   expect(lp?.address).toEqual("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5");
-  expect(lp?.units.toFixed(0)).toEqual("1000000");
+  expect(lp?.units.toFixed(0)).toEqual("10000000");
 });

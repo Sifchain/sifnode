@@ -78,7 +78,7 @@ describe("sifService", () => {
 
     const balances = await sifService.getBalance(account.address);
     const balance = getBalance(balances, "rowan");
-    expect(balance?.toFixed()).toEqual("0.000000001000000000");
+    expect(balance?.toFixed()).toEqual("100000000000.000000000000000000");
   });
 
   it("should transfer transaction", async () => {
@@ -93,6 +93,6 @@ describe("sifService", () => {
     });
     const balances = await sifService.getBalance(address);
     const balance = getBalance(balances, "rowan");
-    expect(balance?.toFixed()).toEqual("0.000000000999999950");
+    expect(balance?.toFixed()).toEqual("99999999999.999999999999999950");
   });
 });

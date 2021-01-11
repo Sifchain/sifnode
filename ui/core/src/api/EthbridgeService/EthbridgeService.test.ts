@@ -37,17 +37,25 @@ describe("PeggyService", () => {
     const web3 = new Web3(await getWeb3Provider());
 
     // Check the balance
-    await waitForBalance("ceth", "1000000000", akasha.address);
+    await waitForBalance(
+      "ceth",
+      "99999991700000000000000000000",
+      akasha.address
+    );
 
     // Send funds to the smart contract
-    await new Promise<void>(async (done) => {
+    await new Promise<void>(async done => {
       EthbridgeService.lock(akasha.address, AssetAmount(ETH, "2"), 10)
         .onComplete(async () => {
           // Check they arrived
-          await waitForBalance("ceth", "2000000001000000000", akasha.address);
+          await waitForBalance(
+            "ceth",
+            "99999991702000000000000000000",
+            akasha.address
+          );
           done();
         })
-        .onError((err) => {
+        .onError(err => {
           throw err.payload;
         });
       advanceBlock(100);
