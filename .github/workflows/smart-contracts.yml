@@ -2,7 +2,7 @@ name: Smart Contracts
 
 on:
   pull_request:
-    paths: ['.github/**,smart-contracts/**']
+    paths: ['smart-contracts/**']
 
 jobs:
   test:
@@ -30,6 +30,3 @@ jobs:
 
       - name: Run truffle tests
         run: npm run test
-
-      - name: Test Code Coverage
-        run: npm run coverage
