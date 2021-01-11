@@ -7,9 +7,13 @@ import (
 
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
 	tmos "github.com/tendermint/tendermint/libs/os"
 
+	"github.com/cosmos/cosmos-sdk/x/slashing"
+
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	"github.com/Sifchain/sifnode/x/faucet"
+	"github.com/Sifchain/sifnode/x/oracle"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -26,8 +30,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
-	"github.com/Sifchain/sifnode/x/ethbridge"
-	"github.com/Sifchain/sifnode/x/oracle"
 )
 
 const appName = "sifnode"
@@ -46,6 +48,7 @@ var (
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
+		faucet.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 	)
 
@@ -56,6 +59,7 @@ var (
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
 		clp.ModuleName:            {supply.Burner, supply.Minter},
+		faucet.ModuleName:         {supply.Minter},
 	}
 )
 
@@ -94,7 +98,9 @@ type SifchainApp struct {
 	EthBridgeKeeper ethbridge.Keeper
 	OracleKeeper    oracle.Keeper
 	clpKeeper       clp.Keeper
-	mm              *module.Manager
+
+	faucetKeeper faucet.Keeper
+	mm           *module.Manager
 
 	sm *module.SimulationManager
 }
@@ -121,6 +127,7 @@ func NewInitApp(
 		oracle.StoreKey,
 		ethbridge.StoreKey,
 		clp.StoreKey,
+		faucet.StoreKey,
 		distr.StoreKey,
 		slashing.StoreKey,
 	)
@@ -203,6 +210,12 @@ func NewInitApp(
 		app.SupplyKeeper,
 		app.subspaces[clp.ModuleName])
 
+	app.faucetKeeper = faucet.NewKeeper(
+		app.SupplyKeeper,
+		app.cdc,
+		keys[faucet.StoreKey],
+		app.bankKeeper)
+
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.AccountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.AccountKeeper),
@@ -214,12 +227,13 @@ func NewInitApp(
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
 		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
+		faucet.NewAppModule(app.faucetKeeper, app.bankKeeper, app.SupplyKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
-	app.mm.SetOrderBeginBlockers(distr.ModuleName, slashing.ModuleName)
+	app.mm.SetOrderBeginBlockers(distr.ModuleName, slashing.ModuleName, faucet.ModuleName)
 
 	app.mm.SetOrderEndBlockers(staking.ModuleName)
 
@@ -236,6 +250,7 @@ func NewInitApp(
 		oracle.ModuleName,
 		ethbridge.ModuleName,
 		clp.ModuleName,
+		faucet.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())

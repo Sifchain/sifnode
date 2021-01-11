@@ -130,6 +130,10 @@ type CLP struct {
 	LiquidityProviderList interface{} `json:"liquidity_provider_list"`
 }
 
+type Faucet struct {
+	Value string `json:"value"`
+}
+
 type Supply struct {
 	Supply []interface{} `json:"supply"`
 }
@@ -202,6 +206,7 @@ type AppState struct {
 	Oracle       interface{}  `json:"oracle"`
 	Genutil      Genutil      `json:"genutil"`
 	Auth         Auth         `json:"auth"`
+	Faucet       Faucet       `json:"faucet"`
 }
 
 type Evidence struct {
