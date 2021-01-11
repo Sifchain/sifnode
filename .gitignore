@@ -13,3 +13,5 @@ log/*.log
 .env
 .backups
 .ssh
+
+.vercel

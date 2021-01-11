@@ -25,6 +25,34 @@
       "name": "Rowan",
       "address": "",
       "network": "sifchain"
+    },
+    {
+      "symbol": "chot",
+      "decimals": 18,
+      "name": "Wrapped Holo Coin",
+      "address": "",
+      "network": "sifchain"
+    },
+    {
+      "symbol": "clink",
+      "decimals": 18,
+      "name": "Wrapped Link",
+      "address": "",
+      "network": "sifchain"
+    },
+    {
+      "symbol": "cusdc",
+      "decimals": 18,
+      "name": "Wrapped USDC",
+      "address": "",
+      "network": "sifchain"
+    },
+    {
+      "symbol": "cusdt",
+      "decimals": 18,
+      "name": "Wrapped USDT",
+      "address": "",
+      "network": "sifchain"
     }
   ]
 }
