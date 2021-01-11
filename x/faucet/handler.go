@@ -2,12 +2,14 @@ package faucet
 
 import (
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/faucet/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
 )
 
+// NewHandler creates an sdk.Handler for all the faucet type messages
 func NewHandler(keeper Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
@@ -45,7 +47,18 @@ func handleMsgRequestCoins(ctx sdk.Context, keeper Keeper, msg types.MsgRequestC
 	if !ok || err != nil {
 		return nil, err
 	}
-	return &sdk.Result{}, nil
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeRequestCoins,
+			sdk.NewAttribute(types.AttributeKeyFaucet, types.ModuleName),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Requester.String()),
+		),
+	})
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
 // Handle the add coins message and send coins from the signers account to the module account.
@@ -55,5 +68,16 @@ func handleMsgAddCoins(ctx sdk.Context, keeper Keeper, msg types.MsgAddCoins) (*
 	if err != nil {
 		return nil, errors.Wrap(err, types.ErrorAddingTokens.Error())
 	}
-	return &sdk.Result{}, nil
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeAddCoins,
+			sdk.NewAttribute(types.AttributeKeyFaucet, types.ModuleName),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer.String()),
+		),
+	})
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }

@@ -44,6 +44,8 @@ func (k Keeper) GetSupplyKeeper() types.SupplyKeeper {
 	return k.supplyKeeper
 }
 
+// GetWithdrawnAmountInEpoch validates if a user has utilized faucet functionality within the last 4 hours
+// If a withdrawal action has occurred the module will block withdraws until the timer is reset
 func (k Keeper) GetWithdrawnAmountInEpoch(ctx sdk.Context, user string, token string) (sdk.Int, error) {
 	faucetTracker := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.FaucetPrefix))
 	ok := faucetTracker.Has(types.GetBalanceKey(user, token))

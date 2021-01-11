@@ -2,6 +2,8 @@ package types
 
 // faucet module event types
 const (
-	//TODO Create events for all trasactions
 	AttributeValueCategory = ModuleName
+	EventTypeRequestCoins  = "request_coins"
+	EventTypeAddCoins      = "add_coins"
+	AttributeKeyFaucet     = "faucet"
 )
