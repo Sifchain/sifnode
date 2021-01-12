@@ -1,19 +1,22 @@
 <script lang="ts">
-import { computed } from "@vue/reactivity";
-import { defineComponent } from "vue";
+import { computed, ref } from "@vue/reactivity";
+import { Asset } from "ui-core";
+import { defineComponent, PropType } from "vue";
 import { useAssetItem } from "./utils";
 
 export default defineComponent({
   props: {
     symbol: String,
+    asset: Object as PropType<Asset>,
   },
   setup(props) {
     const symbol = computed(() => props.symbol);
 
     const asset = useAssetItem(symbol);
 
-    const token = asset.token;
+    const token = props.asset ? ref(props.asset) : asset.token;
     const tokenLabel = asset.label;
+
     const backgroundStyle = asset.background;
 
     return { token, tokenLabel, backgroundStyle };

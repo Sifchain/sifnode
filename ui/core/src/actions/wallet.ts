@@ -3,6 +3,7 @@ import { validateMnemonic } from "bip39";
 import { Mnemonic } from "../entities/Wallet";
 import { ActionContext } from ".";
 import { effect } from "@vue/reactivity";
+import notify from "../api/utils/Notifications";
 
 export default ({
   api,
@@ -32,7 +33,16 @@ export default ({
   };
 
   effect(() => {
-    store.wallet.sif.isConnected = state.connected;
+    if (store.wallet.sif.isConnected !== state.connected) {
+      store.wallet.sif.isConnected = state.connected;
+      if (store.wallet.sif.isConnected) {
+        notify({
+          type: "success",
+          message: "Connected to Sifchain",
+          detail: ``,
+        });
+      }
+    }
   });
 
   effect(() => {

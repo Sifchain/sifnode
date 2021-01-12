@@ -7,3 +7,5 @@ export type PoolStore = {
 };
 
 export const pools = reactive<PoolStore>({}) as PoolStore;
+
+export const accountpools = reactive<PoolStore>({}) as PoolStore;

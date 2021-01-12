@@ -47,7 +47,10 @@ function useCosmosWallet({
 
 export default defineComponent({
   name: "SifWalletController",
-  components: { BalanceTable, SifButton },
+  components: {
+    // BalanceTable,
+    SifButton,
+  },
   setup() {
     const error = ref("");
     // TODO: remove hard coded mnemonic
@@ -93,7 +96,7 @@ export default defineComponent({
   <div class="wrapper">
     <div v-if="connected">
       <p>{{ address }}</p>
-      <BalanceTable :balances="balances" />
+      <!-- <BalanceTable :balances="balances" /> -->
       <SifButton secondary @click="handleDisconnectClicked">
         Disconnect SifWallet
       </SifButton>
@@ -121,6 +124,14 @@ export default defineComponent({
             "
           >
             Akasha
+          </button>
+          <button
+            @click="
+              mnemonic =
+                'clump genre baby drum canvas uncover firm liberty verb moment access draft erupt fog alter gadget elder elephant divide biology choice sentence oppose avoid'
+            "
+          >
+            Juniper
           </button>
         </div>
         <textarea

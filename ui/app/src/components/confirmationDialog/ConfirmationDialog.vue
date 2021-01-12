@@ -18,7 +18,16 @@ export default defineComponent({
     state: { type: String as PropType<ConfirmState>, default: "confirming" },
     requestClose: Function,
     priceMessage: { type: String, default: "" },
+    fromAmount: String,
+    toAmount: String,
+    toToken: String,
+    leastAmount: String,
+    swapRate: String,
+    minimumReceived: String,
+    providerFee: String,
+    priceImpact: String,
   },
+  emits: ["confirmswap"],
   setup(props) {
     const confirmed = computed(() => {
       return props.state === "confirmed";
