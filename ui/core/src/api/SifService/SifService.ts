@@ -14,7 +14,7 @@ import { IWalletService } from "../IWalletService";
 import { SifClient, SifUnSignedClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 import getKeplrProvider from "./getKeplrProvider";
-import notify from "../utils/Notifications";
+
 export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
@@ -30,6 +30,7 @@ export type ISifService = IWalletService & {
   onTx: (handler: HandlerFn<any>) => void;
   onNewBlock: (handler: HandlerFn<any>) => void;
 };
+
 /**
  * Constructor for SifService
  *
@@ -43,15 +44,7 @@ export default function createSifService({
   assets,
 }: SifServiceContext): ISifService {
   const {} = sifAddrPrefix;
-  const keplrProvider = getKeplrProvider();
-  // createSifService would need to be invoked at actions level for this to be cleaner imo.. maybe some sort of app initialize
-  if (!keplrProvider) {
-    notify({
-      type: "error",
-      message: "Keplr not found.",
-      detail: "Check if extension enabled for this URL.",
-    });
-  }
+
   // Reactive state for communicating state changes
   // TODO this should be replaced with event handlers
   const state: {
@@ -68,7 +61,9 @@ export default function createSifService({
     log: "unset",
   });
 
+  const keplrProvider = getKeplrProvider();
   let client: SifClient | null = null;
+  let closeUpdateListener = () => {};
 
   const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl);
 
@@ -76,6 +71,7 @@ export default function createSifService({
     asset => asset.network === Network.SIFCHAIN
   );
 
+  // TODO: deletion ?
   async function createSifClientFromMnemonic(mnemonic: string) {
     const wallet = await Secp256k1HdWallet.fromMnemonic(
       mnemonic,
@@ -146,6 +142,7 @@ export default function createSifService({
           );
           // https://github.com/chainapsis/keplr-extension/blob/960e50f1d9360d21d6935b974a0cb8b57c27d9d9/src/content-scripts/inject/cosmjs-offline-signer.ts
           const accounts = await offlineSigner.getAccounts();
+
           // get balances
           const address = accounts.length > 0 ? accounts[0].address : "";
 
@@ -154,7 +151,8 @@ export default function createSifService({
           }
 
           client = new SifClient(sifApiUrl, address, offlineSigner, sifWsUrl);
-          client.getUnsignedClient().onNewBlock(() => {
+          triggerUpdate();
+          closeUpdateListener = client.getUnsignedClient().onNewBlock(() => {
             triggerUpdate();
           });
         } catch (error) {
@@ -168,6 +166,7 @@ export default function createSifService({
 
     async disconnect() {
       // disconnect from Keplr
+      await this.purgeClient();
     },
 
     isConnected() {
@@ -202,9 +201,10 @@ export default function createSifService({
       }
     },
 
-    purgeClient() {
+    async purgeClient() {
       client = null;
-      triggerUpdate();
+      await triggerUpdate();
+      closeUpdateListener();
     },
 
     async getBalance(address?: Address): Promise<AssetAmount[]> {

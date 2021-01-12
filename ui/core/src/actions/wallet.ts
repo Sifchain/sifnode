@@ -12,11 +12,6 @@ export default ({
   const state = api.SifService.getState();
 
   const actions = {
-    // initialize() {
-    // something like this on load
-    // or maybe on createApi ??
-    // but where notification
-    // },
     async getCosmosBalances(address: Address) {
       // TODO: validate sif prefix
       return await api.SifService.getBalance(address);
