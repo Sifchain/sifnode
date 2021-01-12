@@ -191,7 +191,7 @@ func TestProcessBurn(t *testing.T) {
 
 	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
-	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], cosmosSenderSequence, coins)
+	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], cosmosSenderSequence++, coins)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
@@ -207,7 +207,7 @@ func TestProcessBurn(t *testing.T) {
 	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
 	require.NoError(t, err)
 
-	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], cosmosSenderSequence, coins)
+	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], cosmosSenderSequence++, coins)
 	require.NoError(t, err)
 	// lock stake
 
@@ -224,7 +224,7 @@ func TestProcessLock(t *testing.T) {
 	require.Equal(t, receiverCoins, sdk.Coins{})
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount))
-	err := keeper.ProcessLock(ctx, cosmosReceivers[0], cosmosSenderSequence, coins)
+	err := keeper.ProcessLock(ctx, cosmosReceivers[0], cosmosSenderSequence++, coins)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
 	//process successful claim to get stake
@@ -242,7 +242,7 @@ func TestProcessLock(t *testing.T) {
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), "10stake")
 
-	err = keeper.ProcessLock(ctx, cosmosReceivers[0], cosmosSenderSequence, coins)
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], cosmosSenderSequence++, coins)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])

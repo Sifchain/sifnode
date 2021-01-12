@@ -86,6 +86,7 @@ func handleMsgBurn(
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
+	fmt.Printf("\n JJJJ account sequence is %d \n", account.GetSequence())
 	msg.SetSequence(account.GetSequence())
 
 	var coins sdk.Coins
