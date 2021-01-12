@@ -12,7 +12,6 @@ export default ({
   const state = api.SifService.getState();
 
   const actions = {
-
     // initialize() {
     // something like this on load
     // or maybe on createApi ??
@@ -36,26 +35,18 @@ export default ({
     async disconnect() {
       api.SifService.purgeClient();
     },
+
     async connectToWallet() {
-      try  {
+      try {
         // TODO type
-        const address: any = await api.SifService.connect();
-        notify({
-          type: "success", 
-          message: "Sif Account connected", 
-          detail: address 
-        });
+        await api.SifService.connect();
         store.wallet.sif.isConnected = true;
-        store.wallet.sif.address = address;
-        // get balance in this context, not service.connect in case you connect but there's not balance
-        // TODO type
-        const balances: any = await api.SifService.getBalance(address);
-        store.wallet.sif.balances = balances;
       } catch (error) {
         // to the ui??
-        notify({type:"error", ...error})
+        notify({ type: "error", ...error });
       }
     },
+
     async disconnectWallet() {
       await api.SifService.disconnect();
     },
@@ -67,20 +58,20 @@ export default ({
       if (store.wallet.sif.isConnected) {
         notify({
           type: "success",
-          message: "Connected to Sifchain",
-          detail: ``,
+          message: "Sif Account connected",
+          detail: store.wallet.sif.address,
         });
       }
     }
   });
 
-  // effect(() => {
-  //   store.wallet.sif.address = state.address;
-  // });
+  effect(() => {
+    store.wallet.sif.address = state.address;
+  });
 
-  // effect(() => {
-  //   store.wallet.sif.balances = state.balances;
-  // });
+  effect(() => {
+    store.wallet.sif.balances = state.balances;
+  });
 
   return actions;
 };

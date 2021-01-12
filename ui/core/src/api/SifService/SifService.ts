@@ -13,8 +13,8 @@ import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
 import { SifClient, SifUnSignedClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
-import getKeplrProvider from "./getKeplrProvider"
-import notify from "../utils/Notifications"
+import getKeplrProvider from "./getKeplrProvider";
+import notify from "../utils/Notifications";
 export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
@@ -43,10 +43,14 @@ export default function createSifService({
   assets,
 }: SifServiceContext): ISifService {
   const {} = sifAddrPrefix;
-  const keplrProvider = getKeplrProvider()
-  // createSifService would need to be invoked at actions level for this to be cleaner imo.. maybe some sort of app initialize 
-  if(!keplrProvider) {
-    notify({type: "error", message: "Keplr not found.", detail: "Check if extension enabled for this URL."})
+  const keplrProvider = getKeplrProvider();
+  // createSifService would need to be invoked at actions level for this to be cleaner imo.. maybe some sort of app initialize
+  if (!keplrProvider) {
+    notify({
+      type: "error",
+      message: "Keplr not found.",
+      detail: "Check if extension enabled for this URL.",
+    });
   }
   // Reactive state for communicating state changes
   // TODO this should be replaced with event handlers
@@ -69,7 +73,7 @@ export default function createSifService({
   const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl);
 
   const supportedTokens = assets.filter(
-    (asset) => asset.network === Network.SIFCHAIN
+    asset => asset.network === Network.SIFCHAIN
   );
 
   async function createSifClientFromMnemonic(mnemonic: string) {
@@ -124,36 +128,41 @@ export default function createSifService({
 
     async connect() {
       // connect to Keplr
-      console.log('connect service', keplrChainConfig, keplrProvider)
+      console.log("connect service", keplrChainConfig, keplrProvider);
       if (!keplrProvider) {
-        throw {message: "Keplr Not Found", detail: "Check if extension enabled for this URL"}
+        throw {
+          message: "Keplr Not Found",
+          detail: "Check if extension enabled for this URL",
+        };
       }
       // open extension
       if (keplrProvider.experimentalSuggestChain) {
         try {
-          await keplrProvider.experimentalSuggestChain(keplrChainConfig)
+          await keplrProvider.experimentalSuggestChain(keplrChainConfig);
           await keplrProvider.enable(keplrChainConfig.chainId);
-          console.dir(keplrProvider.getOfflineSigner)
-          const offlineSigner = keplrProvider.getOfflineSigner(keplrChainConfig.chainId);
+
+          const offlineSigner = keplrProvider.getOfflineSigner(
+            keplrChainConfig.chainId
+          );
           // https://github.com/chainapsis/keplr-extension/blob/960e50f1d9360d21d6935b974a0cb8b57c27d9d9/src/content-scripts/inject/cosmjs-offline-signer.ts
           const accounts = await offlineSigner.getAccounts();
           // get balances
           const address = accounts.length > 0 ? accounts[0].address : "";
 
-          if (!address) { throw "No address on sif account"; }
-          
-          client = new SifClient(sifApiUrl, address, offlineSigner, sifWsUrl)
+          if (!address) {
+            throw "No address on sif account";
+          }
 
-          // const balances = await this.getBalance(address)
-          triggerUpdate()
-          // return address and balances to controller so can set state
-          return address
+          client = new SifClient(sifApiUrl, address, offlineSigner, sifWsUrl);
+          client.getUnsignedClient().onNewBlock(() => {
+            triggerUpdate();
+          });
         } catch (error) {
-          console.log(error)
-          throw {message: "Failed to Suggest Chain"}
+          console.log(error);
+          throw { message: "Failed to Suggest Chain" };
         }
       } else {
-        throw {message: "Keplr Outdated", detail: "Need at least 0.6.4"}
+        throw { message: "Keplr Outdated", detail: "Need at least 0.6.4" };
       }
     },
 
@@ -182,15 +191,11 @@ export default function createSifService({
         if (!mnemonic) {
           throw "No mnemonic. Can't generate wallet.";
         }
-
         client = await createSifClientFromMnemonic(mnemonic);
-
         client.getUnsignedClient().onNewBlock(() => {
           triggerUpdate();
         });
-
         triggerUpdate();
-
         return client.senderAddress;
       } catch (error) {
         throw error;
@@ -210,15 +215,15 @@ export default function createSifService({
 
       try {
         const account = await client.getAccount(address);
-        console.log(account)
+        console.log(account);
         if (!account) throw "No Address found on chain";
 
-        const supportedTokenSymbols = supportedTokens.map((s) => s.symbol);
+        const supportedTokenSymbols = supportedTokens.map(s => s.symbol);
         const balances = account.balance
-          .filter((balance) => supportedTokenSymbols.includes(balance.denom))
+          .filter(balance => supportedTokenSymbols.includes(balance.denom))
           .map(({ amount, denom }) => {
             const asset = supportedTokens.find(
-              (token) => token.symbol === denom
+              token => token.symbol === denom
             )!; // will be found because of filter above
 
             return AssetAmount(asset, amount, { inBaseUnit: true });
@@ -272,7 +277,7 @@ export default function createSifService({
         };
 
         const msgArr = Array.isArray(msg) ? msg : [msg];
-        console.log('msgArr', msgArr)
+        console.log("msgArr", msgArr);
 
         const txHash = await client.signAndBroadcast(msgArr, fee, memo);
 

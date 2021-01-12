@@ -11,57 +11,60 @@
     "chainId": "sifchain",
     "chainName": "Sifchain",
     "stakeCurrency": {
-        "coinDenom": "ROWAN",
-        "coinMinimalDenom": "rowan",
-        "coinDecimals": 18
+      "coinDenom": "ROWAN",
+      "coinMinimalDenom": "rowan",
+      "coinDecimals": 18
     },
     "bip44": {
-        "coinType": 118
+      "coinType": 118
     },
     "bech32Config": {
-        "bech32PrefixAccAddr": "sif",
-        "bech32PrefixAccPub": "sifpub",
-        "bech32PrefixValAddr": "sifvaloper",
-        "bech32PrefixValPub": "sifvaloperpub",
-        "bech32PrefixConsAddr": "sifvalcons",
-        "bech32PrefixConsPub": "sifvalconspub"
+      "bech32PrefixAccAddr": "sif",
+      "bech32PrefixAccPub": "sifpub",
+      "bech32PrefixValAddr": "sifvaloper",
+      "bech32PrefixValPub": "sifvaloperpub",
+      "bech32PrefixConsAddr": "sifvalcons",
+      "bech32PrefixConsPub": "sifvalconspub"
     },
-    "currencies": [{
+    "currencies": [
+      {
         "coinDenom": "ROWAN",
         "coinMinimalDenom": "rowan",
         "coinDecimals": 18
-    },
-    {
-      "coinDenom": "catk",
-      "coinMinimalDenom": "catk",
-      "coinDecimals": 18
-    },
-    {
-      "coinDenom": "cbtk",
-      "coinMinimalDenom": "cbtk",
-      "coinDecimals": 18
-    },
-    {
-      "coinDenom": "ceth",
-      "coinMinimalDenom": "ceth",
-      "coinDecimals": 18
-    },
-    {
-      "coinDenom": "stake",
-      "coinMinimalDenom": "stake",
-      "coinDecimals": 18
-    }
-  ],
-    "feeCurrencies": [{
+      },
+      {
+        "coinDenom": "catk",
+        "coinMinimalDenom": "catk",
+        "coinDecimals": 18
+      },
+      {
+        "coinDenom": "cbtk",
+        "coinMinimalDenom": "cbtk",
+        "coinDecimals": 18
+      },
+      {
+        "coinDenom": "ceth",
+        "coinMinimalDenom": "ceth",
+        "coinDecimals": 18
+      },
+      {
+        "coinDenom": "stake",
+        "coinMinimalDenom": "stake",
+        "coinDecimals": 18
+      }
+    ],
+    "feeCurrencies": [
+      {
         "coinDenom": "ROWAN",
         "coinMinimalDenom": "rowan",
         "coinDecimals": 18
-    }],
+      }
+    ],
     "coinType": 118,
     "gasPriceStep": {
-        "low": 0.01,
-        "average": 0.025,
-        "high": 0.04
+      "low": 0.01,
+      "average": 0.025,
+      "high": 0.04
     }
   }
 }
