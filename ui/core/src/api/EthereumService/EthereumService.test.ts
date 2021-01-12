@@ -2,21 +2,12 @@
 
 import createEthereumService from "./EthereumService";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
-import { Asset, AssetAmount } from "../../entities";
+import { Asset } from "../../entities";
 import JSBI from "jsbi";
-import B from "../../entities/utils/B";
-import { getTestingTokens } from "../../test/utils/getTestingToken";
+import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
 
 // ^ NOTE: we have had issues where truffle deploys contracts that cost a different amount of gas in CI versus locally.
 // These test have been altered to be less deterministic as a consequence
-
-function getBalance(balances: AssetAmount[], symbol: string) {
-  const bal = balances.find(
-    ({ asset }) => asset.symbol.toUpperCase() === symbol.toUpperCase()
-  );
-  if (!bal) throw new Error("Symbol not found in balances");
-  return bal;
-}
 
 describe("EthereumService", () => {
   let EthereumService: ReturnType<typeof createEthereumService>;
@@ -55,8 +46,8 @@ describe("EthereumService", () => {
     // We dont know what the amount is going to be as it changes
     // depending on a bunch of factors so just checking for a string of digits
     expect(/^\d+/.test(ethAmount.toString())).toBeTruthy();
-    expect(atkAmount.toString()).toEqual("10000000000");
-    expect(btkAmount.toString()).toEqual("10000000000");
+    expect(atkAmount.toString()).toEqual("10000000000000000000000");
+    expect(btkAmount.toString()).toEqual("10000000000000000000000");
   });
 
   test("isConnected", async () => {
@@ -72,10 +63,10 @@ describe("EthereumService", () => {
     const balances = state.balances;
     const account0AtkAmount = getBalance(balances, "atk").amount;
 
-    expect(account0AtkAmount.toString()).toEqual("10000000000");
+    expect(account0AtkAmount.toString()).toEqual("10000000000000000000000");
 
     await EthereumService.transfer({
-      amount: B("10.000000", ATK.decimals),
+      amount: JSBI.BigInt("10000000"),
       recipient: state.accounts[1],
       asset: ATK,
     });
@@ -89,7 +80,7 @@ describe("EthereumService", () => {
       "atk"
     ).amount;
 
-    expect(account0NewAtkAmount.toString()).toEqual("9990000000");
+    expect(account0NewAtkAmount.toString()).toEqual("9999999999999990000000");
     expect(account1NewAtkAmount.toString()).toEqual("10000000");
   });
 

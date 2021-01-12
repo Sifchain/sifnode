@@ -31,25 +31,12 @@ function updateERowan(asset) {
   return { ...asset, address };
 }
 
-function updateAtk(asset) {
+function updateToken(contractName, asset) {
   const location = resolve(
     __dirname,
-    "../../chains/ethereum/build/contracts/AliceToken.json"
+    `../../chains/ethereum/build/contracts/${contractName}.json`
   );
 
-  const {
-    networks: {
-      5777: { address },
-    },
-  } = loadData(location);
-  return { ...asset, address };
-}
-
-function updateBtk(asset) {
-  const location = resolve(
-    __dirname,
-    "../../chains/ethereum/build/contracts/BobToken.json"
-  );
   const {
     networks: {
       5777: { address },
@@ -70,9 +57,13 @@ const data = loadData(assetsEthereumLocation);
 data.assets = data.assets.map((asset) => {
   switch (asset.symbol) {
     case "atk":
-      return updateAtk(asset);
+      return updateToken("AliceToken", asset);
     case "btk":
-      return updateBtk(asset);
+      return updateToken("BobToken", asset);
+    case "usdc":
+      return updateToken("UsdCoin", asset);
+    case "link":
+      return updateToken("LinkCoin", asset);
     case "erowan":
       return updateERowan(asset);
   }

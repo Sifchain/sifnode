@@ -1,19 +1,46 @@
-import { Asset, AssetAmount } from "../../entities";
+import { Asset, AssetAmount, LiquidityProvider, Pool } from "../../entities";
 import { ActionContext } from "..";
 import { PoolStore } from "../../store/pools";
 import notify from "../../api/utils/Notifications";
+import { toPool } from "../../api/utils/SifClient/toPool";
 
 export default ({
   api,
   store,
-}: ActionContext<"SifService" | "ClpService", "pools" | "wallet">) => {
+}: ActionContext<
+  "SifService" | "ClpService",
+  "pools" | "wallet" | "accountpools"
+>) => {
   const state = api.SifService.getState();
 
   async function syncPools() {
+    const state = api.SifService.getState();
+
+    // UPdate pools
     const pools = await api.ClpService.getPools();
     for (let pool of pools) {
       store.pools[pool.symbol()] = pool;
     }
+
+    // Update lp pools
+    if (state.address) {
+      const accountPoolSymbols = await api.ClpService.getPoolSymbolsByLiquidityProvider(
+        state.address
+      );
+
+      const accountPools: { lp: LiquidityProvider; pool: Pool }[] = [];
+      for (const symbol of accountPoolSymbols) {
+        const lp = await api.ClpService.getLiquidityProvider({
+          symbol,
+          lpAddress: state.address,
+        });
+        if (!lp) continue;
+        const pool = store.pools[`${symbol}_rowan`];
+        accountPools.push({ lp, pool });
+      }
+      store.accountpools = accountPools;
+    }
+
     if (pools.length === 0) {
       notify({
         type: "error",
@@ -27,7 +54,10 @@ export default ({
   syncPools();
 
   // Then every transaction
-  api.SifService.onTx(syncPools);
+
+  api.SifService.onNewBlock(async () => {
+    await syncPools();
+  });
 
   api.SifService.onSocketError(({ sifWsUrl }) => {
     notify({
@@ -93,10 +123,6 @@ export default ({
       });
 
       return await api.SifService.signAndBroadcast(tx.value.msg);
-    },
-
-    async getLiquidityProviderPools() {
-      return await api.ClpService.getPoolsByLiquidityProvider(state.address);
     },
 
     async disconnect() {

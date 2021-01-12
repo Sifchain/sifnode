@@ -10,6 +10,7 @@ export function getAssetLabel(t: Asset) {
   if (t.network === Network.ETHEREUM && t.symbol.toLowerCase() === "erowan") {
     return "eROWAN";
   }
+
   return t.symbol.toUpperCase();
 }
 

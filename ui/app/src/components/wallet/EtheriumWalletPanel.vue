@@ -30,7 +30,10 @@ function useEtheriumWallet() {
 
 export default defineComponent({
   name: "EtheriumWalletController",
-  components: { BalanceTable, SifButton },
+  components: {
+    // BalanceTable,
+    SifButton,
+  },
   setup() {
     const {
       address,
@@ -54,7 +57,7 @@ export default defineComponent({
   <div class="wrapper">
     <div v-if="connected">
       <p>{{ address }}</p>
-      <BalanceTable :balances="balances" />
+      <!-- <BalanceTable :balances="balances" /> -->
       <SifButton secondary @click="handleDisconnectClicked"
         >Disconnect Metamask</SifButton
       >

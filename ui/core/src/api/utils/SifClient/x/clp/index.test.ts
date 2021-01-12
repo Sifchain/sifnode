@@ -5,7 +5,7 @@ import { ClpExtension, setupClpExtension } from "./index";
 const removeLiquidityParams = {
   asymmetry: "10000",
   base_req: {
-    chain_id: Network.SIFCHAIN,
+    chain_id: "sifchain",
     from: "",
   },
   external_asset: {
