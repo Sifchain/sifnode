@@ -43,18 +43,18 @@ export default ({
     }
   }
 
-  effect(() => {
-    if (Object.keys(store.pools).length === 0) {
-      notify({
-        type: "error",
-        message: "No Liquidity Pools Found",
-        detail: "Create liquidity pool to swap.",
-      });
-    }
-  });
-
   // Sync on load
-  syncPools();
+  syncPools().then(() => {
+    effect(() => {
+      if (Object.keys(store.pools).length === 0) {
+        notify({
+          type: "error",
+          message: "No Liquidity Pools Found",
+          detail: "Create liquidity pool to swap.",
+        });
+      }
+    });
+  });
 
   // Then every transaction
 
