@@ -75,17 +75,26 @@ export class SifUnSignedClient extends CosmosClient
     console.log("received onNewBlock handler");
     if (!this.subscriber) console.error("Subscriber not setup");
     this.subscriber?.on("NewBlock", handler);
+    return () => {
+      this.subscriber?.off("NewBlock", handler);
+    };
   }
 
   onTx<T>(handler: HandlerFn<T>) {
     console.log("received onTx handler");
     if (!this.subscriber) console.error("Subscriber not setup");
     this.subscriber?.on("Tx", handler);
+    return () => {
+      this.subscriber?.off("Tx", handler);
+    };
   }
 
   onSocketError<T>(handler: HandlerFn<T>) {
     console.log("received onSocketError handler");
     if (!this.subscriber) console.error("Subscriber not setup");
     this.subscriber?.on("error", handler);
+    return () => {
+      this.subscriber?.off("error", handler);
+    };
   }
 }
