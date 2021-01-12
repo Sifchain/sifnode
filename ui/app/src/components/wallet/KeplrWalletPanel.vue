@@ -5,21 +5,21 @@ import BalanceTable from "./BalanceTable.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import Icon from "@/components/shared/Icon.vue";
 
-function useEtheriumWallet() {
+function useKeplrWallet() {
   const { store, actions } = useCore();
-
   async function handleDisconnectClicked() {
-    await actions.ethWallet.disconnectWallet();
+    await actions.wallet.disconnectWallet();
   }
-
   async function handleConnectClicked() {
-    await actions.ethWallet.connectToWallet();
+    try{
+      await actions.wallet.connectToWallet();
+    } catch (error) {
+      console.log('ui', error)
+    }
   }
-
-  const address = computed(() => store.wallet.eth.address);
-  const balances = computed(() => store.wallet.eth.balances);
-  const connected = computed(() => store.wallet.eth.isConnected);
-
+  const address = computed(() => store.wallet.sif.address);
+  const balances = computed(() => store.wallet.sif.balances);
+  const connected = computed(() => store.wallet.sif.isConnected);
   return {
     address,
     balances,
@@ -28,14 +28,9 @@ function useEtheriumWallet() {
     handleDisconnectClicked,
   };
 }
-
 export default defineComponent({
-  name: "EtheriumWalletController",
-  components: {
-    // BalanceTable,
-    SifButton,
-    Icon
-  },
+  name: "KeplrWalletController",
+  components: { BalanceTable, SifButton, Icon },
   setup() {
     const {
       address,
@@ -43,7 +38,7 @@ export default defineComponent({
       connected,
       handleConnectClicked,
       handleDisconnectClicked,
-    } = useEtheriumWallet();
+    } = useKeplrWallet();
     return {
       address,
       balances,
@@ -61,11 +56,11 @@ export default defineComponent({
       <p class="mb-2" v-if="address">{{ address }} <Icon icon="tick" /></p>
       <!-- <BalanceTable :balances="balances" /> -->
       <SifButton connect active @click="handleDisconnectClicked"
-        >Disconnect Metamask</SifButton
+        >Disconnect Keplr</SifButton
       >
     </div>
     <SifButton connect v-else @click="handleConnectClicked"
-      >Metamask</SifButton
+      >Keplr</SifButton
     >
   </div>
 </template>
