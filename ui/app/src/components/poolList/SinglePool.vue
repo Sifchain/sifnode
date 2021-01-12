@@ -1,12 +1,10 @@
 <script lang="ts">
-import { defineComponent, PropType, ref } from "vue";
-import { computed, effect, toRefs } from "@vue/reactivity";
+import { defineComponent, PropType } from "vue";
+import { computed } from "@vue/reactivity";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { useAssetItem } from "@/components/shared/utils";
-import { Fraction, LiquidityProvider, Pool, usePoolCalculator } from "ui-core";
-import { useWallet } from "@/hooks/useWallet";
-import { useCore } from "@/hooks/useCore";
+import { Fraction, LiquidityProvider, Pool } from "ui-core";
 
 export default defineComponent({
   components: { Layout, SifButton },
@@ -153,7 +151,13 @@ export default defineComponent({
           </div>
         </div>
       </div>
-
+      <div class="section">
+        <div class="info">
+          <h3 class="mb-2">Liquidity provider rewards</h3>
+          <p class="text--small mb-2">Liquidity providers earn a 0.3% fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.</p>
+          <p class="text--small mb-2"><a href="https://docs.sifchain.finance/core-concepts/liquidity-pool">Read more about providing liquidity</a></p>
+        </div>
+      </div>
       <div class="section footer">
         <div class="mr-1">
           <div class="text--small mb-6">
