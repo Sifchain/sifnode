@@ -126,7 +126,7 @@ export default function createSifService({
 
     async connect() {
       // connect to Keplr
-      console.log('connect service', keplrChainConfig. keplrProvider)
+      console.log('connect service', keplrChainConfig, keplrProvider)
       if (!keplrProvider) {
         throw {message: "Keplr Not Found", detail: "Check if extension enabled for this URL"}
       }
