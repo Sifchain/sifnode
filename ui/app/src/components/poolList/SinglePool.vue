@@ -1,21 +1,29 @@
-<script>
-import { defineComponent, ref } from "vue";
-import { computed } from '@vue/reactivity';
+<script lang="ts">
+import { defineComponent, PropType, ref } from "vue";
+import { computed, effect, toRefs } from "@vue/reactivity";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { useAssetItem } from "@/components/shared/utils";
-import { usePoolCalculator } from "ui-core";
+import { Fraction, LiquidityProvider, Pool, usePoolCalculator } from "ui-core";
 import { useWallet } from "@/hooks/useWallet";
 import { useCore } from "@/hooks/useCore";
 
 export default defineComponent({
   components: { Layout, SifButton },
-  props: { 
-    pool: Object
+  props: {
+    accountPool: Object as PropType<{
+      lp: LiquidityProvider;
+      pool: Pool;
+    } | null>,
   },
+
   setup(props) {
-    console.log(props.pool);
-    const fromSymbol = computed(() => props.pool.amounts[1].asset.symbol);
+    // TODO This needs tidying up poor componentization
+    // useAssetItem should not really be used outside of a display component
+    const thePool = computed(() => props.accountPool?.pool);
+    const fromSymbol = computed(
+      () => thePool.value?.amounts[1].asset.symbol ?? ""
+    );
     const fromAsset = useAssetItem(fromSymbol);
     const fromToken = fromAsset.token;
     const fromBackgroundStyle = fromAsset.background;
@@ -25,9 +33,11 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    const fromValue = props.pool.amounts[1].fraction.toFixed(4);
+    const fromValue = computed(() => thePool.value?.amounts[1].toFixed(0));
 
-    const toSymbol = computed(() => props.pool.amounts[0].asset.symbol);
+    const toSymbol = computed(
+      () => thePool.value?.amounts[0].asset.symbol ?? ""
+    );
     const toAsset = useAssetItem(toSymbol);
     const toToken = toAsset.token;
     const toBackgroundStyle = toAsset.background;
@@ -36,16 +46,35 @@ export default defineComponent({
       const t = toToken.value;
       return t.imageUrl;
     });
-    const toValue = props.pool.amounts[0].fraction.toFixed(4);
+    const toValue = computed(() => thePool.value?.amounts[0].toFixed(0));
 
-    const poolUnits = props.pool.poolUnits.toFixed(4);
+    const poolUnitsAsFraction = computed(
+      () => props.accountPool?.lp.units || new Fraction("0")
+    );
+
+    const myPoolShare = computed(() => {
+      if (!thePool.value?.poolUnits) return null;
+      const perc = poolUnitsAsFraction.value
+        .divide(thePool.value?.poolUnits)
+        .multiply("100")
+        .toFixed(2);
+      return `${perc} %`;
+    });
+    const myPoolUnits = computed(() => poolUnitsAsFraction.value.toFixed(0));
 
     return {
-      fromSymbol, fromBackgroundStyle, fromTokenImage, fromValue,
-      toSymbol, toBackgroundStyle, toTokenImage, toValue,
-      poolUnits
-    }
-  }
+      fromSymbol,
+      fromBackgroundStyle,
+      fromTokenImage,
+      fromValue,
+      toSymbol,
+      toBackgroundStyle,
+      toTokenImage,
+      toValue,
+      myPoolUnits,
+      myPoolShare,
+    };
+  },
 });
 </script>
 
@@ -53,11 +82,23 @@ export default defineComponent({
   <Layout class="pool" @back="$emit('back')" emitBack title="Your Pair">
     <div class="sheet">
       <div class="section">
-        <div class="header" @click="$emit('poolSelected')">
+        <div class="header" @click="$emit('poolselected')">
           <div class="image">
-            <img v-if="fromTokenImage" width="22" height="22" :src="fromTokenImage" class="info-img" />
+            <img
+              v-if="fromTokenImage"
+              width="22"
+              height="22"
+              :src="fromTokenImage"
+              class="info-img"
+            />
             <div class="placeholder" :style="fromBackgroundStyle" v-else></div>
-            <img v-if="toTokenImage" width="22" height="22" :src="toTokenImage" class="info-img" />
+            <img
+              v-if="toTokenImage"
+              width="22"
+              height="22"
+              :src="toTokenImage"
+              class="info-img"
+            />
             <div class="placeholder" :style="toBackgroundStyle" v-else></div>
           </div>
           <div class="symbol">
@@ -69,50 +110,59 @@ export default defineComponent({
       </div>
       <div class="section">
         <div class="details">
-
           <div class="row">
             <span>Pooled {{ fromSymbol.toUpperCase() }}:</span>
             <span class="value">
-              {{ fromValue }}
-              <img v-if="fromTokenImage" width="22" height="22" :src="fromTokenImage" class="info-img" />
-              <div class="placeholder" :style="fromBackgroundStyle" v-else></div>
+              <span>{{ fromValue }}</span>
+              <img
+                v-if="fromTokenImage"
+                width="22"
+                height="22"
+                :src="fromTokenImage"
+                class="info-img"
+              />
+              <div
+                class="placeholder"
+                :style="fromBackgroundStyle"
+                v-else
+              ></div>
             </span>
           </div>
           <div class="row">
             <span>Pooled {{ toSymbol.toUpperCase() }}:</span>
             <span class="value">
-              {{ toValue }}
-              <img v-if="toTokenImage" width="22" height="22" :src="toTokenImage" class="info-img" />
+              <span>{{ toValue }}</span>
+              <img
+                v-if="toTokenImage"
+                width="22"
+                height="22"
+                :src="toTokenImage"
+                class="info-img"
+              />
               <div class="placeholder" :style="toBackgroundStyle" v-else></div>
             </span>
           </div>
 
           <div class="row">
             <span>Your pool tokens:</span>
-            <span class="value">{{ poolUnits }}</span>
+            <span class="value">{{ myPoolUnits }}</span>
           </div>
           <div class="row">
             <span>Your pool share:</span>
-            <span class="value"></span>
+            <span class="value">{{ myPoolShare }}</span>
           </div>
         </div>
       </div>
-      <div class="section">
-        <div class="info">
-          <h3 class="mb-2">Liquidity provider rewards</h3>
-          <p class="text--small mb-2">Liquidity providers earn a 0.3% fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.</p>
-          <p class="text--small mb-2"><a href="#">Read more about providing liquidity</a></p>
-        </div>
-      </div>
+
       <div class="section footer">
         <div class="mr-1">
-          <div  class="text--small mb-6">
+          <div class="text--small mb-6">
             <a href="#">View pool info</a>
           </div>
-          <SifButton primaryOutline nocase block >Remove Liquidity</SifButton>
+          <SifButton primaryOutline nocase block>Remove Liquidity</SifButton>
         </div>
         <div class="ml-1">
-          <div  class="text--small mb-6">
+          <div class="text--small mb-6">
             <a href="#">Blockexplorer</a>
           </div>
           <SifButton primary nocase block>Add Liquidity</SifButton>
@@ -151,7 +201,7 @@ export default defineComponent({
       border-radius: 16px;
 
       &:nth-child(2) {
-        position: relative; 
+        position: relative;
         left: -6px;
       }
     }
@@ -168,9 +218,17 @@ export default defineComponent({
       display: flex;
       align-items: center;
       font-weight: 700;
+      & > * {
+        margin-right: 0.5rem;
+      }
+
+      & > *:last-child {
+        margin-right: 0;
+      }
     }
 
-    .image, .placeholder {
+    .image,
+    .placeholder {
       margin-left: 4px;
     }
   }

@@ -134,11 +134,11 @@
       "decimals": 18
     },
     {
-      "name": "cETH",
-      "symbol": "cceth",
-      "imageUrl": "https://assets.coingecko.com/coins/images/10643/large/ceth2.JPG?1581389598",
+      "name": "Ethereum",
+      "symbol": "ceth",
+      "imageUrl": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
       "network": "sifchain",
-      "decimals": 8
+      "decimals": 18
     },
     {
       "name": "Compound",

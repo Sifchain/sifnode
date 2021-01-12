@@ -1,7 +1,6 @@
 <script lang="ts">
 import { computed, defineComponent } from "vue";
 import { useAssetItem } from "./utils";
-
 export default defineComponent({
   props: {
     symbol: String,
@@ -12,7 +11,7 @@ export default defineComponent({
     const asset = useAssetItem(symbol);
 
     const token = asset.token;
-    const tokenLabel = asset.label;
+    const tokenLabel = asset.label.value;
     const backgroundStyle = asset.background;
 
     const tokenImage = computed(() => {

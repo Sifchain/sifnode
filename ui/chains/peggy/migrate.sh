@@ -5,3 +5,4 @@
 cd ../../../smart-contracts
 
 yarn && yarn migrate 
+

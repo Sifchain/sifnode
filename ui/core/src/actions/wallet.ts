@@ -3,7 +3,8 @@ import { validateMnemonic } from "bip39";
 import { Mnemonic } from "../entities/Wallet";
 import { ActionContext } from ".";
 import { effect } from "@vue/reactivity";
-import notify from "../api/utils/Notifications"
+import notify from "../api/utils/Notifications";
+
 export default ({
   api,
   store,
@@ -37,20 +38,21 @@ export default ({
     },
     async connectToWallet() {
       try  {
+        // TODO type
         const address: any = await api.SifService.connect();
-        console.log(address)
-        // notify connected
-        notify({type: "success", message: "Sif Account connected", 
-        detail: address })
-        store.wallet.sif.isConnected = true
-        store.wallet.sif.address = address
+        notify({
+          type: "success", 
+          message: "Sif Account connected", 
+          detail: address 
+        });
+        store.wallet.sif.isConnected = true;
+        store.wallet.sif.address = address;
         // get balance in this context, not service.connect in case you connect but there's not balance
-        const balances: any = await api.SifService.getBalance(address)
-        // if no address found on chain therefore no balance throws from getBalance... 
+        // TODO type
+        const balances: any = await api.SifService.getBalance(address);
         store.wallet.sif.balances = balances;
       } catch (error) {
         // to the ui??
-        console.log(error)
         notify({type:"error", ...error})
       }
     },
@@ -59,9 +61,18 @@ export default ({
     },
   };
 
-  // effect(() => {
-  //   store.wallet.sif.isConnected = state.connected;
-  // });
+  effect(() => {
+    if (store.wallet.sif.isConnected !== state.connected) {
+      store.wallet.sif.isConnected = state.connected;
+      if (store.wallet.sif.isConnected) {
+        notify({
+          type: "success",
+          message: "Connected to Sifchain",
+          detail: ``,
+        });
+      }
+    }
+  });
 
   // effect(() => {
   //   store.wallet.sif.address = state.address;

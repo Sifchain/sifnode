@@ -4,18 +4,26 @@ import { getBridgeBankContract } from "./bridgebankContract";
 import { AssetAmount, Token } from "../../entities";
 import { createPegTxEventEmitter } from "./PegTxEventEmitter";
 import { confirmTx } from "./utils/confirmTx";
+import { SifUnSignedClient } from "../utils/SifClient";
 
 export type EthbridgeServiceContext = {
-  // sifApiUrl: string;
+  sifApiUrl: string;
+  sifWsUrl: string;
+  sifChainId: string;
   bridgebankContractAddress: string;
   getWeb3Provider: () => Promise<provider>;
+  sifUnsignedClient?: SifUnSignedClient;
 };
 
 const ETH_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 export default function createEthbridgeService({
+  sifApiUrl,
+  sifWsUrl,
+  sifChainId,
   bridgebankContractAddress,
   getWeb3Provider,
+  sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl),
 }: EthbridgeServiceContext) {
   // Pull this out to a util?
   let _web3: Web3 | null = null;
@@ -27,6 +35,30 @@ export default function createEthbridgeService({
   }
 
   return {
+    async burn(params: {
+      fromAddress: string;
+      ethereumRecipient: string;
+      assetAmount: AssetAmount;
+    }) {
+      const web3 = await ensureWeb3();
+      const ethereumChainId = await web3.eth.net.getId();
+      const tokenAddress =
+        (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
+
+      return await sifUnsignedClient.burn({
+        ethereum_receiver: params.ethereumRecipient,
+        base_req: {
+          chain_id: sifChainId,
+          from: params.fromAddress,
+        },
+        amount: params.assetAmount.toBaseUnits().toString(),
+        symbol: params.assetAmount.asset.symbol,
+        cosmos_sender: params.fromAddress,
+        ethereum_chain_id: `${ethereumChainId}`,
+        token_contract_address: tokenAddress,
+      });
+    },
+
     lock(
       sifRecipient: string,
       assetAmount: AssetAmount,
@@ -56,7 +88,7 @@ export default function createEthbridgeService({
           value: coinDenom === ETH_ADDRESS ? amount : 0,
           gas: 5000000,
         };
-
+        console.log({ cosmosRecipient, coinDenom, amount, sendArgs });
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
           .send(sendArgs)

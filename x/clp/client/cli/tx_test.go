@@ -36,12 +36,12 @@ func TestGetCmdAddLiquidity(t *testing.T) {
 	cdc := test.MakeTestCodec()
 	clpcmd := cli.GetCmdAddLiquidity(cdc)
 	SetupViper()
-	viper.Set(cli.FlagExternalAssetAmount, "100")
-	viper.Set(cli.FlagNativeAssetAmount, "100")
+	viper.Set(cli.FlagExternalAssetAmount, "5000000000000000000")
+	viper.Set(cli.FlagNativeAssetAmount, "5000000000000000000000")
 	viper.Set(cli.FlagAssetSymbol, "eth")
 	clpcmd.SetArgs([]string{
-		"--externalAmount", "100",
-		"--nativeAmount", "100",
+		"--externalAmount", "5000000000000000000",
+		"--nativeAmount", "5000000000000000000000",
 		"--symbol", "eth"})
 	err := clpcmd.Execute()
 	assert.NoError(t, err)

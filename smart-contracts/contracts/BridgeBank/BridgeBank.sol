@@ -33,7 +33,6 @@ contract BridgeBank is BankStorage,
      */
     function initialize(
         address _operatorAddress,
-        address _oracleAddress,
         address _cosmosBridgeAddress,
         address _owner
     ) public {
@@ -43,7 +42,6 @@ contract BridgeBank is BankStorage,
         CosmosWhiteList.initialize();
 
         operator = _operatorAddress;
-        oracle = _oracleAddress;
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
         _initialized = true;
@@ -54,17 +52,6 @@ contract BridgeBank is BankStorage,
      */
     modifier onlyOperator() {
         require(msg.sender == operator, "Must be BridgeBank operator.");
-        _;
-    }
-
-    /*
-     * @dev: Modifier to restrict access to the oracle
-     */
-    modifier onlyOracle() {
-        require(
-            msg.sender == oracle,
-            "Access restricted to the oracle"
-        );
         _;
     }
 
@@ -213,7 +200,6 @@ contract BridgeBank is BankStorage,
      * @param _amount: number of comsos tokens to be minted
      */
     function mintBridgeTokens(
-        bytes memory _cosmosSender,
         address payable _intendedRecipient,
         address _bridgeTokenAddress,
         string memory _symbol,
@@ -221,7 +207,6 @@ contract BridgeBank is BankStorage,
     ) public onlyCosmosBridge {
         return
             mintNewBridgeTokens(
-                _cosmosSender,
                 _intendedRecipient,
                 _bridgeTokenAddress,
                 _symbol,
@@ -328,38 +313,5 @@ contract BridgeBank is BankStorage,
             );
         }
         unlockFunds(_recipient, tokenAddress, _symbol, _amount);
-    }
-
-    /*
-     * @dev: Exposes an item's current status.
-     *
-     * @param _id: The item in question.
-     * @return: Boolean indicating the lock status.
-     */
-    function getCosmosDepositStatus(bytes32 _id) public view returns (bool) {
-        return isLockedCosmosDeposit(_id);
-    }
-
-    /*
-     * @dev: Allows access to a Cosmos deposit's information via its unique identifier.
-     *
-     * @param _id: The deposit to be viewed.
-     * @return: Original sender's Ethereum address.
-     * @return: Intended Cosmos recipient's address in bytes.
-     * @return: The lock deposit's currency, denoted by a token address.
-     * @return: The amount locked in the deposit.
-     * @return: The deposit's unique nonce.
-     */
-    function viewCosmosDeposit(bytes32 _id)
-        public
-        view
-        returns (
-            bytes memory,
-            address payable,
-            address,
-            uint256
-        )
-    {
-        return getCosmosDeposit(_id);
     }
 }

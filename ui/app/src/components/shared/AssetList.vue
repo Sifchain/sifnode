@@ -2,9 +2,9 @@
   <div class="asset-list">
     <div class="line" v-for="item in items" :key="item.asset.symbol">
       <AssetItem class="token" :symbol="item.asset.symbol" />
-      <div class="amount">{{ item.amount }}</div>
-      <div v-if="!!item.amount" class="action">
-        <slot :asset="item"></slot>
+      <div class="amount">{{ item.amount || "0" }}</div>
+      <div class="action">
+        <slot v-if="!!item.amount" :asset="item"></slot>
       </div>
     </div>
   </div>
@@ -15,6 +15,7 @@ import { PropType, defineComponent } from "vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
 
 import { Asset } from "ui-core";
+import { computed } from "@vue/reactivity";
 export default defineComponent({
   components: {
     AssetItem,

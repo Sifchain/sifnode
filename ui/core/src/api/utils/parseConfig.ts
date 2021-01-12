@@ -37,6 +37,7 @@ export type ChainConfig = {
   sifApiUrl: string;
   sifWsUrl: string;
   sifRpcUrl: string;
+  sifChainId: string;
   web3Provider: "metamask" | string;
   assets: AssetConfig[];
   nativeAsset: string; // symbol
@@ -56,15 +57,22 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
       "No nativeAsset defined for chain config:" + JSON.stringify(config)
     );
 
+  // HACK: Filtering out our testing tokens if not in CI for the demo
+  const HACK_blacklist = process.env.CI ? [] : ["atk", "btk", "catk", "cbtk"];
+  const HACK_filteredAssets = assets.filter(
+    (a) => !HACK_blacklist.includes(a.symbol)
+  );
+
   return {
     sifAddrPrefix: config.sifAddrPrefix,
     sifApiUrl: config.sifApiUrl,
     sifWsUrl: config.sifWsUrl,
+    sifChainId: config.sifChainId,
     getWeb3Provider:
       config.web3Provider === "metamask"
         ? getMetamaskProvider
         : async () => config.web3Provider,
-    assets: assets.filter((asset) => asset.symbol !== nativeAsset.symbol),
+    assets: HACK_filteredAssets,
     nativeAsset,
     bridgebankContractAddress: config.bridgebankContractAddress,
     keplrChainConfig: {
