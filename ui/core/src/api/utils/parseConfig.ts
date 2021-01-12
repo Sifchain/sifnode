@@ -36,11 +36,13 @@ export type ChainConfig = {
   sifAddrPrefix: string;
   sifApiUrl: string;
   sifWsUrl: string;
+  sifRpcUrl: string;
   sifChainId: string;
   web3Provider: "metamask" | string;
   assets: AssetConfig[];
   nativeAsset: string; // symbol
   bridgebankContractAddress: string;
+  keplrChainConfig: object;
 };
 
 export function parseAssets(configAssets: AssetConfig[]): Asset[] {
@@ -73,5 +75,10 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
     assets: HACK_filteredAssets,
     nativeAsset,
     bridgebankContractAddress: config.bridgebankContractAddress,
+    keplrChainConfig: {
+      rest: config.sifApiUrl,
+      rpc: config.sifRpcUrl,
+      ...config.keplrChainConfig
+    }
   };
 }
