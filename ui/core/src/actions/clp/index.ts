@@ -3,6 +3,7 @@ import { ActionContext } from "..";
 import { PoolStore } from "../../store/pools";
 import notify from "../../api/utils/Notifications";
 import { toPool } from "../../api/utils/SifClient/toPool";
+import { effect } from "@vue/reactivity";
 
 export default ({
   api,
@@ -40,18 +41,20 @@ export default ({
       }
       store.accountpools = accountPools;
     }
-
-    if (pools.length === 0) {
-      notify({
-        type: "error",
-        message: "No Liquidity Pools Found",
-        detail: "Create liquidity pool to swap.",
-      });
-    }
   }
 
   // Sync on load
-  syncPools();
+  syncPools().then(() => {
+    effect(() => {
+      if (Object.keys(store.pools).length === 0) {
+        notify({
+          type: "error",
+          message: "No Liquidity Pools Found",
+          detail: "Create liquidity pool to swap.",
+        });
+      }
+    });
+  });
 
   // Then every transaction
 
