@@ -14,13 +14,14 @@ import { IWalletService } from "../IWalletService";
 import { SifClient, SifUnSignedClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 import getKeplrProvider from "./getKeplrProvider";
+import { KeplrChainConfig } from "../../utils/parseConfig";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
   sifWsUrl: string;
   // todo fix
-  keplrChainConfig: any;
+  keplrChainConfig: KeplrChainConfig;
   assets: Asset[];
 };
 type HandlerFn<T> = (a: T) => void;

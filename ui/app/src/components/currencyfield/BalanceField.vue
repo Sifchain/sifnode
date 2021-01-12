@@ -2,6 +2,7 @@
 import { useCore } from "@/hooks/useCore";
 import { computed } from "@vue/reactivity";
 import { defineComponent } from "vue";
+import { getAssetLabel } from "../shared/utils";
 
 export default defineComponent({
   props: ["symbol"],
@@ -18,10 +19,14 @@ export default defineComponent({
       );
       if (!found) return "0";
 
-      return found.toFormatted({
-        decimals: Math.min(found.asset.decimals, 2),
-        separator: true,
-      });
+      return [
+        found.toFormatted({
+          decimals: Math.min(found.asset.decimals, 2),
+          separator: true,
+          symbol: false,
+        }),
+        getAssetLabel(found.asset),
+      ].join(" ");
     });
 
     return { available };
