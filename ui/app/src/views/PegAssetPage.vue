@@ -57,20 +57,28 @@ export default defineComponent({
       return Array.isArray(assetFrom) ? assetFrom[0] : assetFrom;
     });
     const amount = ref("0.0");
-    const address = ref(store.wallet.sif.address);
+    const address = toRefs(store.wallet.sif).address;
 
     async function handlePeg() {
-      await actions.peg.lock(
-        address.value,
-        AssetAmount(Asset.get(symbol.value), amount.value)
-      );
+      try {
+        await actions.peg.lock(
+          AssetAmount(Asset.get(symbol.value), amount.value)
+        );
+        router.push("/peg");
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     async function handleUnpeg() {
-      await actions.peg.burn(
-        address.value,
-        AssetAmount(Asset.get(symbol.value), amount.value)
-      );
+      try {
+        await actions.peg.burn(
+          AssetAmount(Asset.get(symbol.value), amount.value)
+        );
+        router.push("/peg");
+      } catch (err) {
+        console.error(err);
+      }
     }
     return {
       mode,
@@ -133,10 +141,7 @@ export default defineComponent({
       <RaisedPanel>
         <RaisedPanelColumn v-if="mode === 'peg'">
           <Label>Sifchain Recipient Address</Label>
-          <SifInput
-            v-model="address"
-            placeholder="Eg. sif21syavy2npfyt9tcncdtsdzf7kny9lh777yqcnd"
-          />
+          <SifInput disabled v-model="address" />
         </RaisedPanelColumn>
         <RaisedPanelColumn v-if="mode === 'unpeg'">
           <Label>Ethereum Recipient Address</Label>

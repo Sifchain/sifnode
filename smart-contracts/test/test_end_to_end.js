@@ -13,6 +13,10 @@ require("chai")
   .use(require("chai-bignumber")(web3.BigNumber))
   .should();
 
+const {
+  expectRevert, // Assertions for transactions that should fail
+} = require('@openzeppelin/test-helpers');
+
 contract("CosmosBridge", function (accounts) {
   // System operator
   const operator = accounts[0];
@@ -78,6 +82,10 @@ contract("CosmosBridge", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
+      this.secondValidators = [userOne, userTwo];
+      this.secondPowers = [50, 50];
+      this.thirdValidators = [userThree, userFour];
+      this.thirdPowers = [50, 50];
 
       // Deploy CosmosBridge contract
       this.cosmosBridge = await deployProxy(CosmosBridge, [
@@ -189,6 +197,330 @@ contract("CosmosBridge", function (accounts) {
 
       const receivedFunds = expectedBalance.equals(postRecipientBalance);
       receivedFunds.should.be.equal(true);
+
+      // Fail to create prophecy claim if from non validator
+      await expectRevert(
+          this.cosmosBridge.newProphecyClaim(
+              CLAIM_TYPE_BURN,
+              this.cosmosSender,
+              this.cosmosSenderSequence,
+              this.ethereumReceiver,
+              this.symbol,
+              this.amountWei,
+              {
+                from: userSeven
+              }
+          ),
+          "Must be an active validator"
+      );
+
+      // Also make sure everything runs twice.
+
+      // --------------------------------------------------------
+      //  Lock ethereum on contract in advance of burn
+      // --------------------------------------------------------
+      await this.bridgeBank.lock(
+          this.cosmosSender,
+          this.ethTokenAddress,
+          this.amountWei,
+          {
+            from: userOne,
+            value: this.amountWei
+          }
+      ).should.be.fulfilled;
+
+      const contractBalanceWei2 = await web3.eth.getBalance(
+          this.bridgeBank.address
+      );
+
+      // Confirm that the contract has been loaded with funds
+      contractBalanceWei2.should.be.bignumber.equal(this.amountWei);
+
+      // --------------------------------------------------------
+      //  Check receiver's account balance prior to the claims
+      // --------------------------------------------------------
+      const priorRecipientBalance2 = await web3.eth.getBalance(userSeven);
+
+      // --------------------------------------------------------
+      //  Create a new burn prophecy claim on cosmos bridge
+      // --------------------------------------------------------
+      await this.cosmosBridge.newProphecyClaim(
+          CLAIM_TYPE_BURN,
+          this.cosmosSender,
+          ++this.cosmosSenderSequence,
+          this.ethereumReceiver,
+          this.symbol,
+          this.amountWei,
+          {
+            from: userOne
+          }
+      ).should.be.fulfilled;
+
+      await this.cosmosBridge.newProphecyClaim(
+          CLAIM_TYPE_BURN,
+          this.cosmosSender,
+          this.cosmosSenderSequence,
+          this.ethereumReceiver,
+          this.symbol,
+          this.amountWei,
+          {
+            from: userTwo
+          }
+      ).should.be.fulfilled;
+
+      await this.cosmosBridge.newProphecyClaim(
+          CLAIM_TYPE_BURN,
+          this.cosmosSender,
+          this.cosmosSenderSequence,
+          this.ethereumReceiver,
+          this.symbol,
+          this.amountWei,
+          {
+            from: userFour
+          }
+      ).should.be.fulfilled;
+
+      // --------------------------------------------------------
+      //  Check receiver's account balance after the claim is processed
+      // --------------------------------------------------------
+      const postRecipientBalance2 = bigInt(
+          String(await web3.eth.getBalance(userSeven))
+      );
+
+      var expectedBalance2 = bigInt(String(priorRecipientBalance)).plus(
+          String(this.amountWei)
+      );
+
+      const receivedFunds2 = expectedBalance.equals(postRecipientBalance);
+      receivedFunds2.should.be.equal(true);
+
+      // Also make sure everything runs third time after switching validators.
+
+      // Operator resets the valset
+      await this.cosmosBridge.updateValset(
+          this.secondValidators,
+          this.secondPowers,
+          {
+            from: operator
+          }
+      ).should.be.fulfilled;
+
+      // Confirm that both initial validators are now active validators
+      const isUserOneValidator = await this.cosmosBridge.isActiveValidator.call(
+          userOne
+      );
+      isUserOneValidator.should.be.equal(true);
+      const isUserTwoValidator = await this.cosmosBridge.isActiveValidator.call(
+          userTwo
+      );
+      isUserTwoValidator.should.be.equal(true);
+
+      // Confirm that all both secondary validators are not active validators
+      const isUserThreeValidator = await this.cosmosBridge.isActiveValidator.call(
+          userThree
+      );
+      isUserThreeValidator.should.be.equal(false);
+      const isUserFourValidator = await this.cosmosBridge.isActiveValidator.call(
+          userFour
+      );
+      isUserFourValidator.should.be.equal(false);
+
+      // --------------------------------------------------------
+      //  Lock ethereum on contract in advance of burn
+      // --------------------------------------------------------
+      await this.bridgeBank.lock(
+          this.cosmosSender,
+          this.ethTokenAddress,
+          this.amountWei,
+          {
+            from: userOne,
+            value: this.amountWei
+          }
+      ).should.be.fulfilled;
+
+      const contractBalanceWei3 = await web3.eth.getBalance(
+          this.bridgeBank.address
+      );
+
+      // Confirm that the contract has been loaded with funds
+      contractBalanceWei3.should.be.bignumber.equal(this.amountWei);
+
+      // --------------------------------------------------------
+      //  Check receiver's account balance prior to the claims
+      // --------------------------------------------------------
+      const priorRecipientBalance3 = await web3.eth.getBalance(userSeven);
+
+      // --------------------------------------------------------
+      //  Create a new burn prophecy claim on cosmos bridge
+      // --------------------------------------------------------
+      await this.cosmosBridge.newProphecyClaim(
+          CLAIM_TYPE_BURN,
+          this.cosmosSender,
+          ++this.cosmosSenderSequence,
+          this.ethereumReceiver,
+          this.symbol,
+          this.amountWei,
+          {
+            from: userOne
+          }
+      ).should.be.fulfilled;
+
+      await this.cosmosBridge.newProphecyClaim(
+          CLAIM_TYPE_BURN,
+          this.cosmosSender,
+          this.cosmosSenderSequence,
+          this.ethereumReceiver,
+          this.symbol,
+          this.amountWei,
+          {
+            from: userTwo
+          }
+      ).should.be.fulfilled;
+
+      // Fail to create prophecy claim if from non validator
+      await expectRevert(
+          this.cosmosBridge.newProphecyClaim(
+              CLAIM_TYPE_BURN,
+              this.cosmosSender,
+              this.cosmosSenderSequence,
+              this.ethereumReceiver,
+              this.symbol,
+              this.amountWei,
+              {
+                from: userThree
+              }
+          ),
+          "Must be an active validator"
+      );
+
+      // --------------------------------------------------------
+      //  Check receiver's account balance after the claim is processed
+      // --------------------------------------------------------
+      const postRecipientBalance3 = bigInt(
+          String(await web3.eth.getBalance(userSeven))
+      );
+
+      var expectedBalance3 = bigInt(String(priorRecipientBalance)).plus(
+          String(this.amountWei)
+      );
+
+      const receivedFunds3 = expectedBalance.equals(postRecipientBalance);
+      receivedFunds3.should.be.equal(true);
+
+      // Also make sure everything runs fourth time after switching validators a second time.
+
+      // Operator resets the valset
+      await this.cosmosBridge.updateValset(
+          this.thirdValidators,
+          this.thirdPowers,
+          {
+            from: operator
+          }
+      ).should.be.fulfilled;
+
+      // Confirm that both initial validators are no longer an active validators
+      const isUserOneValidator2 = await this.cosmosBridge.isActiveValidator.call(
+          userOne
+      );
+      isUserOneValidator2.should.be.equal(false);
+      const isUserTwoValidator2 = await this.cosmosBridge.isActiveValidator.call(
+          userTwo
+      );
+      isUserTwoValidator2.should.be.equal(false);
+
+      // Confirm that both secondary validators are now active validators
+      const isUserThreeValidator2 = await this.cosmosBridge.isActiveValidator.call(
+          userThree
+      );
+      isUserThreeValidator2.should.be.equal(true);
+      const isUserFourValidator2 = await this.cosmosBridge.isActiveValidator.call(
+          userFour
+      );
+      isUserFourValidator2.should.be.equal(true);
+
+      // --------------------------------------------------------
+      //  Lock ethereum on contract in advance of burn
+      // --------------------------------------------------------
+      await this.bridgeBank.lock(
+          this.cosmosSender,
+          this.ethTokenAddress,
+          this.amountWei,
+          {
+            from: userOne,
+            value: this.amountWei
+          }
+      ).should.be.fulfilled;
+
+      const contractBalanceWei4 = await web3.eth.getBalance(
+          this.bridgeBank.address
+      );
+
+      // Confirm that the contract has been loaded with funds
+      contractBalanceWei4.should.be.bignumber.equal(this.amountWei);
+
+      // --------------------------------------------------------
+      //  Check receiver's account balance prior to the claims
+      // --------------------------------------------------------
+      const priorRecipientBalance4 = await web3.eth.getBalance(userSeven);
+
+      // --------------------------------------------------------
+      //  Create a new burn prophecy claim on cosmos bridge
+      // --------------------------------------------------------
+      await this.cosmosBridge.newProphecyClaim(
+          CLAIM_TYPE_BURN,
+          this.cosmosSender,
+          ++this.cosmosSenderSequence,
+          this.ethereumReceiver,
+          this.symbol,
+          this.amountWei,
+          {
+            from: userThree
+          }
+      ).should.be.fulfilled;
+
+      await this.cosmosBridge.newProphecyClaim(
+          CLAIM_TYPE_BURN,
+          this.cosmosSender,
+          this.cosmosSenderSequence,
+          this.ethereumReceiver,
+          this.symbol,
+          this.amountWei,
+          {
+            from: userFour
+          }
+      ).should.be.fulfilled;
+
+      // Fail to create prophecy claim if from non validator
+      await expectRevert(
+          this.cosmosBridge.newProphecyClaim(
+              CLAIM_TYPE_BURN,
+              this.cosmosSender,
+              this.cosmosSenderSequence,
+              this.ethereumReceiver,
+              this.symbol,
+              this.amountWei,
+              {
+                from: userOne
+              }
+          ),
+          "Must be an active validator"
+      );
+
+      // --------------------------------------------------------
+      //  Check receiver's account balance after the claim is processed
+      // --------------------------------------------------------
+      const postRecipientBalance4 = bigInt(
+          String(await web3.eth.getBalance(userSeven))
+      );
+
+      var expectedBalance4 = bigInt(String(priorRecipientBalance)).plus(
+          String(this.amountWei)
+      );
+
+      const receivedFunds4 = expectedBalance.equals(postRecipientBalance);
+      receivedFunds4.should.be.equal(true);
+
+
     });
 
     it("Lock prophecy claim flow", async function () {

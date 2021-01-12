@@ -32,15 +32,23 @@ export function useSwapCalculator(input: {
   toSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
-  poolFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
+  poolFinder: (a: Asset | string, b: Asset | string) => Ref<IPool> | null;
 }) {
   // extracting selectedField so we can use it without tracking its change
   let selectedField: "from" | "to" | null = null;
   effect(() => (selectedField = input.selectedField.value));
 
   // We use a composite pool pair to work out rates
-  const pool = computed(() => {
+  const pool = computed<IPool | null>(() => {
     if (!input.fromSymbol.value || !input.toSymbol.value) return null;
+
+    if (input.fromSymbol.value === "rowan") {
+      return input.poolFinder(input.toSymbol.value, "rowan")?.value ?? null;
+    }
+
+    if (input.toSymbol.value === "rowan") {
+      return input.poolFinder(input.fromSymbol.value, "rowan")?.value ?? null;
+    }
 
     const fromPair = input.poolFinder(input.fromSymbol.value, "rowan");
     const toPair = input.poolFinder(input.toSymbol.value, "rowan");
@@ -79,7 +87,7 @@ export function useSwapCalculator(input: {
       selectedField === "from"
     ) {
       input.toAmount.value = calculateFormattedSwapResult(
-        pool.value,
+        pool.value as IPool,
         fromField.fieldAmount.value
       );
     }

@@ -4,27 +4,47 @@
       "symbol": "erowan",
       "decimals": 18,
       "name": "Rowan",
+      "imageUrl": "/images/siflogo.png",
       "address": "0xf204a4Ef082f5c04bB89F7D5E6568B796096735a",
       "network": "ethereum"
     },
     {
       "name": "Ethereum",
       "symbol": "eth",
+      "imageUrl": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
       "network": "ethereum",
       "decimals": 18
     },
     {
       "symbol": "atk",
-      "decimals": 6,
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png",
       "name": "Apple Coin",
-      "address": "0x3d49d1eF2adE060a33c6E6Aa213513A7EE9a6241",
+      "address": "0x4E72770760c011647D4873f60A3CF6cDeA896CD8",
       "network": "ethereum"
     },
     {
       "symbol": "btk",
-      "decimals": 6,
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png",
       "name": "Banana Coin",
-      "address": "0x2a504B5e7eC284ACa5b6f49716611237239F0b97",
+      "address": "0xbaAA2a3237035A2c7fA2A33c76B44a8C6Fe18e87",
+      "network": "ethereum"
+    },
+    {
+      "symbol": "usdc",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png",
+      "name": "USD Coin",
+      "address": "0x13274Fe19C0178208bCbee397af8167A7be27f6f",
+      "network": "ethereum"
+    },
+    {
+      "symbol": "link",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png",
+      "name": "Chainlink",
+      "address": "0xA4392264a2d8c998901D10C154C91725b1BF0158",
       "network": "ethereum"
     }
   ]

@@ -36,8 +36,12 @@ echo "${SHADOWFIEND_MNEMONIC}" | sifnodecli keys add ${SHADOWFIEND_NAME} --recov
 echo "Generating deterministic account - ${AKASHA_NAME}"
 echo "${AKASHA_MNEMONIC}" | sifnodecli keys add ${AKASHA_NAME} --recover
 
-sifnoded add-genesis-account $(sifnodecli keys show ${SHADOWFIEND_NAME} -a) 1000000000rowan,1000000000catk,1000000000cbtk,1000000000ceth,100000000stake
-sifnoded add-genesis-account $(sifnodecli keys show ${AKASHA_NAME} -a) 1000000000rowan,1000000000catk,1000000000cbtk,1000000000ceth,100000000stake
+echo "Generating deterministic account - ${JUNIPER_NAME}"
+echo "${JUNIPER_MNEMONIC}" | sifnodecli keys add ${JUNIPER_NAME} --recover
+
+sifnoded add-genesis-account $(sifnodecli keys show ${SHADOWFIEND_NAME} -a) 100000000000000000000000000000rowan,100000000000000000000000000000catk,100000000000000000000000000000cbtk,100000000000000000000000000000ceth,100000000000000000000000000000cusdc,100000000000000000000000000000clink,100000000000000000000000000stake
+sifnoded add-genesis-account $(sifnodecli keys show ${AKASHA_NAME} -a) 100000000000000000000000000000rowan,100000000000000000000000000000catk,100000000000000000000000000000cbtk,100000000000000000000000000000ceth,100000000000000000000000000000cusdc,100000000000000000000000000000clink,100000000000000000000000000stake
+sifnoded add-genesis-account $(sifnodecli keys show ${JUNIPER_NAME} -a) 10000000000000000000000rowan,10000000000000000000000cusdc,100000000000000000000clink
 
 sifnoded add-genesis-validators $(sifnodecli keys show ${SHADOWFIEND_NAME} -a --bech val)
 

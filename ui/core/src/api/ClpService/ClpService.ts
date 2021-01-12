@@ -15,12 +15,13 @@ export type ClpServiceContext = {
   nativeAsset: Asset;
   sifApiUrl: string;
   sifWsUrl: string;
+  sifChainId: string;
   sifUnsignedClient?: SifUnSignedClient;
 };
 
 type IClpService = {
   getPools: () => Promise<Pool[]>;
-  getPoolsByLiquidityProvider: (address: string) => Promise<Pool[]>;
+  getPoolSymbolsByLiquidityProvider: (address: string) => Promise<string[]>;
   swap: (params: {
     fromAddress: string;
     receivedAsset: Asset;
@@ -51,6 +52,7 @@ type IClpService = {
 export default function createClpService({
   sifApiUrl,
   nativeAsset,
+  sifChainId,
   sifWsUrl,
   sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl),
 }: ClpServiceContext): IClpService {
@@ -65,21 +67,13 @@ export default function createClpService({
         return [];
       }
     },
-    async getPoolsByLiquidityProvider(address: string) {
+    async getPoolSymbolsByLiquidityProvider(address: string) {
       // Unfortunately it is expensive for the backend to
       // filter pools so we need to annoyingly do this in two calls
       // First we get the metadata
       const poolMeta = await client.getAssets(address);
       if (!poolMeta) return [];
-      const poolSymbols = poolMeta.map(({ symbol }) => symbol);
-
-      // Then we get the pools and filter for the metadata
-      const rawPools = await client.getPools();
-      return rawPools
-        .filter((rawPool) =>
-          poolSymbols.includes(rawPool.external_asset.symbol)
-        )
-        .map(toPool(nativeAsset));
+      return poolMeta.map(({ symbol }) => symbol);
     },
 
     async addLiquidity(params: {
@@ -88,41 +82,45 @@ export default function createClpService({
       externalAssetAmount: AssetAmount;
     }) {
       return await client.addLiquidity({
-        base_req: { chain_id: "sifnode", from: params.fromAddress },
+        base_req: { chain_id: sifChainId, from: params.fromAddress },
         external_asset: {
           source_chain: params.externalAssetAmount.asset.network as string,
           symbol: params.externalAssetAmount.asset.symbol,
           ticker: params.externalAssetAmount.asset.symbol,
         },
-        external_asset_amount: params.externalAssetAmount.toFixed(0),
-        native_asset_amount: params.nativeAssetAmount.toFixed(0),
+        external_asset_amount: params.externalAssetAmount
+          .toBaseUnits()
+          .toString(),
+        native_asset_amount: params.nativeAssetAmount.toBaseUnits().toString(),
         signer: params.fromAddress,
       });
     },
 
     async createPool(params) {
       return await client.createPool({
-        base_req: { chain_id: "sifnode", from: params.fromAddress },
+        base_req: { chain_id: sifChainId, from: params.fromAddress },
         external_asset: {
           source_chain: params.externalAssetAmount.asset.network as string,
           symbol: params.externalAssetAmount.asset.symbol,
           ticker: params.externalAssetAmount.asset.symbol,
         },
-        external_asset_amount: params.externalAssetAmount.toFixed(0),
-        native_asset_amount: params.nativeAssetAmount.toFixed(0),
+        external_asset_amount: params.externalAssetAmount
+          .toBaseUnits()
+          .toString(),
+        native_asset_amount: params.nativeAssetAmount.toBaseUnits().toString(),
         signer: params.fromAddress,
       });
     },
 
     async swap(params) {
       return await client.swap({
-        base_req: { chain_id: "sifchain", from: params.fromAddress },
+        base_req: { chain_id: sifChainId, from: params.fromAddress },
         received_asset: {
           source_chain: params.receivedAsset.network as string,
           symbol: params.receivedAsset.symbol,
           ticker: params.receivedAsset.symbol,
         },
-        sent_amount: params.sentAmount.numerator.toString(),
+        sent_amount: params.sentAmount.toBaseUnits().toString(),
         sent_asset: {
           source_chain: params.sentAmount.asset.network as string,
           symbol: params.sentAmount.asset.symbol,
@@ -133,24 +131,36 @@ export default function createClpService({
     },
     async getLiquidityProvider(params) {
       const response = await client.getLiquidityProvider(params);
-      return LiquidityProvider(
-        Coin({
-          name: response.result.LiquidityProvider.asset.symbol,
-          symbol: response.result.LiquidityProvider.asset.symbol,
+      let asset: Asset;
+
+      const {
+        asset: { symbol },
+        liquidity_provider_units,
+        liquidity_provider_address,
+      } = response.result.LiquidityProvider;
+
+      try {
+        asset = Asset.get(symbol);
+      } catch (err) {
+        asset = Coin({
+          name: symbol,
+          symbol,
           network: Network.SIFCHAIN,
           decimals: 18,
-        }),
-        new Fraction(
-          response.result.LiquidityProvider.liquidity_provider_units
-        ),
-        response.result.LiquidityProvider.liquidity_provider_address
+        });
+      }
+
+      return LiquidityProvider(
+        asset,
+        new Fraction(liquidity_provider_units).divide("1000000000000000000"),
+        liquidity_provider_address
       );
     },
 
     async removeLiquidity(params) {
       return await client.removeLiquidity({
         asymmetry: params.asymmetry,
-        base_req: { chain_id: "sifchain", from: params.fromAddress },
+        base_req: { chain_id: sifChainId, from: params.fromAddress },
         external_asset: {
           source_chain: params.asset.network as string,
           symbol: params.asset.symbol,

@@ -1,29 +1,21 @@
 import JSBI from "jsbi";
 
-import { AssetAmount, Coin, Network } from "../../entities";
+import { AssetAmount } from "../../entities";
 import createSifService, { SifServiceContext } from ".";
+import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
+
+const [ROWAN, CATK, CBTK, CETH] = getTestingTokens([
+  "ROWAN",
+  "CATK",
+  "CBTK",
+  "CETH",
+]);
 
 const TOKENS = {
-  rowan: Coin({
-    symbol: "rowan",
-    decimals: 0,
-    name: "Rowan",
-    network: Network.SIFCHAIN,
-  }),
-
-  atk: Coin({
-    symbol: "catk",
-    decimals: 0,
-    name: "catk",
-    network: Network.SIFCHAIN,
-  }),
-
-  btk: Coin({
-    symbol: "cbtk",
-    decimals: 0,
-    name: "cbtk",
-    network: Network.SIFCHAIN,
-  }),
+  rowan: ROWAN,
+  atk: CATK,
+  btk: CBTK,
+  eth: CETH,
 };
 
 // This is required because we need to wait for the blockchain to process transactions
@@ -51,14 +43,8 @@ const testConfig: SifServiceContext = {
   sifAddrPrefix: "sif",
   sifApiUrl: "http://127.0.0.1:1317",
   sifWsUrl: "ws://127.0.0.1:26657/websocket",
-  assets: [],
+  assets: [ROWAN, CATK, CBTK, CETH],
 };
-
-function getBalance(balances: AssetAmount[], symbol: string): AssetAmount {
-  const bal = balances.find((bal) => bal.asset.symbol === symbol);
-  if (!bal) throw new Error("Asset not found in balances");
-  return bal;
-}
 
 // This is redundant. CWalletActions and SifService should be combined imo
 describe("sifService", () => {
@@ -92,7 +78,7 @@ describe("sifService", () => {
 
     const balances = await sifService.getBalance(account.address);
     const balance = getBalance(balances, "rowan");
-    expect(balance?.toFixed()).toEqual("1000000000");
+    expect(balance?.toFixed()).toEqual("100000000000.000000000000000000");
   });
 
   it("should transfer transaction", async () => {
@@ -107,6 +93,6 @@ describe("sifService", () => {
     });
     const balances = await sifService.getBalance(address);
     const balance = getBalance(balances, "rowan");
-    expect(balance?.toFixed()).toEqual("999999950");
+    expect(balance?.toFixed()).toEqual("99999999999.999999999999999950");
   });
 });

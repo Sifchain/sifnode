@@ -10,6 +10,7 @@
     {
       "name": "Ethereum",
       "symbol": "eth",
+      "imageUrl": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
       "network": "ethereum",
       "decimals": 18
     },
@@ -168,7 +169,7 @@
     {
       "name": "cETH",
       "symbol": "ceth",
-      "imageUrl": "https://assets.coingecko.com/coins/images/10643/large/ceth2.JPG?1581389598",
+      "imageUrl": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
       "address": "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5",
       "network": "ethereum",
       "decimals": 8

@@ -2,7 +2,8 @@
   "sifAddrPrefix": "sif",
   "sifApiUrl": "http://127.0.0.1:1317",
   "sifWsUrl": "ws://localhost:26657/websocket",
+  "sifChainId": "sifchain",
   "web3Provider": "metamask",
   "nativeAsset": "rowan",
-  "bridgebankContractAddress": "0xf204a4Ef082f5c04bB89F7D5E6568B796096735a"
+  "bridgebankContractAddress": "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4"
 }
