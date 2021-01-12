@@ -2,12 +2,13 @@ package keeper
 
 import (
 	"encoding/json"
+	"strings"
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	"strings"
-	"testing"
 )
 
 var (
@@ -18,6 +19,7 @@ var (
 	ethBridgeAddress     types.EthereumAddress = types.NewEthereumAddress(strings.ToLower("0x30753E4A8aad7F8597332E813735Def5dD395028"))
 	ethereumSender                             = types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57")
 	//BadValidatorAddress                        = sdk.ValAddress(CreateTestPubKeys(1)[0].Address().Bytes())
+	cosmosSenderSequence = uint64(0)
 )
 
 func TestProcessClaimLock(t *testing.T) {
@@ -189,7 +191,7 @@ func TestProcessBurn(t *testing.T) {
 
 	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
-	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], coins)
+	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], cosmosSenderSequence, coins)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
@@ -205,7 +207,7 @@ func TestProcessBurn(t *testing.T) {
 	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
 	require.NoError(t, err)
 
-	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], coins)
+	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], cosmosSenderSequence, coins)
 	require.NoError(t, err)
 	// lock stake
 
@@ -222,7 +224,7 @@ func TestProcessLock(t *testing.T) {
 	require.Equal(t, receiverCoins, sdk.Coins{})
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount))
-	err := keeper.ProcessLock(ctx, cosmosReceivers[0], coins)
+	err := keeper.ProcessLock(ctx, cosmosReceivers[0], cosmosSenderSequence, coins)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
 	//process successful claim to get stake
@@ -240,10 +242,9 @@ func TestProcessLock(t *testing.T) {
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), "10stake")
 
-	err = keeper.ProcessLock(ctx, cosmosReceivers[0], coins)
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], cosmosSenderSequence, coins)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), string(""))
-
 }

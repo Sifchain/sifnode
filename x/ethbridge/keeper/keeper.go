@@ -86,7 +86,12 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 }
 
 // ProcessBurn processes the burn of bridged coins from the given sender
-func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
+func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, cosmosSenderSequence uint64, amount sdk.Coins) error {
+	err := k.InsertNewID(ctx, BuildLockBurnID(cosmosSender, cosmosSenderSequence))
+	if err != nil {
+		return err
+	}
+
 	if err := k.supplyKeeper.SendCoinsFromAccountToModule(
 		ctx, cosmosSender, types.ModuleName, amount,
 	); err != nil {
@@ -101,7 +106,15 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, amount
 }
 
 // ProcessUnburn processes the revert burn of bridged coins from the given sender
-func (k Keeper) ProcessUnburn(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
+func (k Keeper) ProcessUnburn(ctx sdk.Context, cosmosSender sdk.AccAddress, cosmosSenderSequence uint64, amount sdk.Coins) error {
+	updated, err := k.SetLockBurnID(ctx, BuildLockBurnID(cosmosSender, cosmosSenderSequence))
+	if err != nil {
+		return err
+	}
+
+	if !updated {
+		return nil
+	}
 
 	if err := k.supplyKeeper.MintCoins(ctx, types.ModuleName, amount); err != nil {
 		return err
@@ -117,12 +130,25 @@ func (k Keeper) ProcessUnburn(ctx sdk.Context, cosmosSender sdk.AccAddress, amou
 }
 
 // ProcessLock processes the lockup of cosmos coins from the given sender
-func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
+func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, cosmosSenderSequence uint64, amount sdk.Coins) error {
+	err := k.InsertNewID(ctx, BuildLockBurnID(cosmosSender, cosmosSenderSequence))
+	if err != nil {
+		return err
+	}
 	return k.supplyKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, amount)
 }
 
 // ProcessUnlock processes the revert lockup of cosmos coins from the given sender
-func (k Keeper) ProcessUnlock(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
+func (k Keeper) ProcessUnlock(ctx sdk.Context, cosmosSender sdk.AccAddress, cosmosSenderSequence uint64, amount sdk.Coins) error {
+	updated, err := k.SetLockBurnID(ctx, BuildLockBurnID(cosmosSender, cosmosSenderSequence))
+	if err != nil {
+		return err
+	}
+
+	if !updated {
+		return nil
+	}
+
 	return k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosSender, amount)
 }
 

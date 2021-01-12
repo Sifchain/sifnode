@@ -40,11 +40,11 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	switch claim.ClaimType {
 	case types.MsgBurn:
 		if cethAmount.Cmp(big.NewInt(GasForBurn)) < 0 {
-			return 0, errors.New("not enough ceth to cover the gas costs")
+			return 0, errors.New(types.ErrorCethNotEnough)
 		}
 	case types.MsgLock:
 		if cethAmount.Cmp(big.NewInt(GasForMint)) < 0 {
-			return 0, errors.New("not enough ceth to cover the gas costs")
+			return 0, errors.New(types.ErrorCethNotEnough)
 		}
 	default:
 		return 0, errors.New("wrong message type")

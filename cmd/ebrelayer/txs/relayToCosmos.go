@@ -55,12 +55,14 @@ func SendOutMessage(cosmosContext *types.CosmosContext, message *types.CosmosMsg
 	if message.ClaimType == types.MsgLock {
 		msg := bridgetypes.NewMsgLock(message.EthereumChainID, sdk.AccAddress(message.CosmosSender), bridgetypes.EthereumAddress(message.EthereumReceiver),
 			message.Amount, message.Symbol, message.CethAmount, message.MessageType)
+		msg.SetSequence(uint64(message.CosmosSenderSequence.Int64()))
 		return SendMsgToCosmos(cosmosContext, msg)
 	}
 
 	if message.ClaimType == types.MsgBurn {
 		msg := bridgetypes.NewMsgBurn(message.EthereumChainID, sdk.AccAddress(message.CosmosSender), bridgetypes.EthereumAddress(message.EthereumReceiver),
 			message.Amount, message.Symbol, message.CethAmount, message.MessageType)
+		msg.SetSequence(uint64(message.CosmosSenderSequence.Int64()))
 		return SendMsgToCosmos(cosmosContext, msg)
 	}
 	return nil

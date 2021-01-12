@@ -36,28 +36,33 @@ func MessageTypeStringToEnum(messageType string) MessageType {
 
 // MsgLock defines a message for locking coins and triggering a related event
 type MsgLock struct {
-	CosmosSender     sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`
-	Symbol           string          `json:"symbol" yaml:"symbol"`
-	Amount           sdk.Int         `json:"amount" yaml:"amount"`
-	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
-	CethAmount       sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
-	MessageType      MessageType     `json:"message_type" yaml:"message_type"`
-	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
+	CosmosSender         sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`
+	CosmosSenderSequence uint64          `json:"cosmos_sender_sequence" yaml:"cosmos_sender_sequence"`
+	Symbol               string          `json:"symbol" yaml:"symbol"`
+	Amount               sdk.Int         `json:"amount" yaml:"amount"`
+	EthereumChainID      int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
+	CethAmount           sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
+	MessageType          MessageType     `json:"message_type" yaml:"message_type"`
+	EthereumReceiver     EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
 }
 
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(ethereumChainID int, cosmosSender sdk.AccAddress, ethereumReceiver EthereumAddress, amount sdk.Int,
 	symbol string, cethAmount sdk.Int, messageType MessageType) MsgLock {
 	return MsgLock{
-		EthereumChainID:  ethereumChainID,
-		CosmosSender:     cosmosSender,
-		EthereumReceiver: ethereumReceiver,
-		Amount:           amount,
-		Symbol:           symbol,
-		CethAmount:       cethAmount,
-		MessageType:      messageType,
+		EthereumChainID:      ethereumChainID,
+		CosmosSender:         cosmosSender,
+		CosmosSenderSequence: 0,
+		EthereumReceiver:     ethereumReceiver,
+		Amount:               amount,
+		Symbol:               symbol,
+		CethAmount:           cethAmount,
+		MessageType:          messageType,
 	}
 }
+
+// SetSequence set cosmos sender sequence
+func (msg *MsgLock) SetSequence(sequence uint64) { msg.CosmosSenderSequence = sequence }
 
 // Route should return the name of the module
 func (msg MsgLock) Route() string { return RouterKey }
@@ -119,13 +124,14 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 
 // MsgBurn defines a message for burning coins and triggering a related event
 type MsgBurn struct {
-	CosmosSender     sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`
-	Symbol           string          `json:"symbol" yaml:"symbol"`
-	Amount           sdk.Int         `json:"amount" yaml:"amount"`
-	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
-	CethAmount       sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
-	MessageType      MessageType     `json:"message_type" yaml:"message_type"`
-	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
+	CosmosSender         sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`
+	CosmosSenderSequence uint64          `json:"cosmos_sender_sequence" yaml:"cosmos_sender_sequence"`
+	Symbol               string          `json:"symbol" yaml:"symbol"`
+	Amount               sdk.Int         `json:"amount" yaml:"amount"`
+	EthereumChainID      int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
+	CethAmount           sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
+	MessageType          MessageType     `json:"message_type" yaml:"message_type"`
+	EthereumReceiver     EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
 }
 
 // NewMsgBurn is a constructor function for MsgBurn
@@ -133,15 +139,19 @@ func NewMsgBurn(
 	ethereumChainID int, cosmosSender sdk.AccAddress,
 	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int, messageType MessageType) MsgBurn {
 	return MsgBurn{
-		EthereumChainID:  ethereumChainID,
-		CosmosSender:     cosmosSender,
-		EthereumReceiver: ethereumReceiver,
-		Amount:           amount,
-		Symbol:           symbol,
-		CethAmount:       cethAmount,
-		MessageType:      messageType,
+		EthereumChainID:      ethereumChainID,
+		CosmosSender:         cosmosSender,
+		CosmosSenderSequence: 0,
+		EthereumReceiver:     ethereumReceiver,
+		Amount:               amount,
+		Symbol:               symbol,
+		CethAmount:           cethAmount,
+		MessageType:          messageType,
 	}
 }
+
+// SetSequence set cosmos sender sequence
+func (msg *MsgBurn) SetSequence(sequence uint64) { msg.CosmosSenderSequence = sequence }
 
 // Route should return the name of the module
 func (msg MsgBurn) Route() string { return RouterKey }

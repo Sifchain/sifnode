@@ -86,6 +86,7 @@ func handleMsgBurn(
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
+	msg.SetSequence(account.GetSequence())
 
 	var coins sdk.Coins
 	switch msg.MessageType {
@@ -95,7 +96,7 @@ func handleMsgBurn(
 		} else {
 			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 		}
-		if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, coins); err != nil {
+		if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
 			return nil, err
 		}
 
@@ -105,13 +106,13 @@ func handleMsgBurn(
 		} else {
 			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 		}
-		if err := bridgeKeeper.ProcessUnburn(ctx, msg.CosmosSender, coins); err != nil {
+		if err := bridgeKeeper.ProcessUnburn(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
 			return nil, err
 		}
 
 	case types.MsgReturnCeth:
 		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount))
-		if err := bridgeKeeper.ProcessUnburn(ctx, msg.CosmosSender, coins); err != nil {
+		if err := bridgeKeeper.ProcessUnburn(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
 			return nil, err
 		}
 
@@ -156,23 +157,24 @@ func handleMsgLock(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
+	msg.SetSequence(account.GetSequence())
 	var coins sdk.Coins
 	switch msg.MessageType {
 	case types.MsgSubmit:
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
-		if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, coins); err != nil {
+		if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
 			return nil, err
 		}
 
 	case types.MsgRevert:
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
-		if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, coins); err != nil {
+		if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
 			return nil, err
 		}
 
 	case types.MsgReturnCeth:
 		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount))
-		if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, coins); err != nil {
+		if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
 			return nil, err
 		}
 
