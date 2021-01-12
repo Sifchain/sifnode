@@ -100,17 +100,13 @@ export function usePoolCalculator(input: {
   const shareOfPoolPercent = computed(() => {
     return `${shareOfPool.value.multiply("100").toFixed(2)}%`;
   });
-
+  
   const aPerBRatioMessage = computed(() => {
     const aAmount = fromField.fieldAmount.value;
     const bAmount = toField.fieldAmount.value;
     if (!aAmount || !bAmount) return "";
     if (bAmount.equalTo("0")) return "";
-    return `${aAmount
-      .divide(bAmount)
-      .toFixed(
-        8
-      )} ${aAmount.asset.symbol.toUpperCase()} per ${bAmount.asset.symbol.toUpperCase()}`;
+    return aAmount.divide(bAmount).toFixed(8);
   });
 
   const bPerARatioMessage = computed(() => {
@@ -119,11 +115,7 @@ export function usePoolCalculator(input: {
     if (!aAmount || !bAmount) return "";
     if (aAmount.equalTo("0")) return "";
 
-    return `${bAmount
-      .divide(aAmount)
-      .toFixed(
-        8
-      )} ${bAmount.asset.symbol.toUpperCase()} per ${aAmount.asset.symbol.toUpperCase()}`;
+    return bAmount.divide(aAmount).toFixed(8);
   });
 
   const state = computed(() => {

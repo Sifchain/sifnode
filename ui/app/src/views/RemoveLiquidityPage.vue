@@ -2,7 +2,7 @@
 import { defineComponent, ref } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
-import SelectTokenDialog from "@/components/tokenSelector/SelectTokenDialog.vue";
+import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
 import { Asset, PoolState, useRemoveLiquidityCalculator } from "ui-core";
 import { LiquidityProvider } from "ui-core";
@@ -21,7 +21,7 @@ export default defineComponent({
     AssetItem,
     Layout,
     Modal,
-    SelectTokenDialog,
+    SelectTokenDialogSif,
     ActionsPanel,
     SifButton,
     Caret,
@@ -32,7 +32,7 @@ export default defineComponent({
 
     const asymmetry = ref("0");
     const wBasisPoints = ref("5000");
-    const nativeAssetSymbol = ref("rwn");
+    const nativeAssetSymbol = ref("rowan");
     const externalAssetSymbol = ref<string | null>(null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
@@ -44,7 +44,7 @@ export default defineComponent({
       if (!externalAssetSymbol.value) return null;
 
       api.ClpService.getLiquidityProvider({
-        ticker: externalAssetSymbol.value,
+        symbol: externalAssetSymbol.value,
         lpAddress: store.wallet.sif.address,
       }).then((liquidityProviderResult) => {
         liquidityProvider.value = liquidityProviderResult;
@@ -68,7 +68,7 @@ export default defineComponent({
     function clearFields() {
       asymmetry.value = "0";
       wBasisPoints.value = "0";
-      nativeAssetSymbol.value = "rwn";
+      nativeAssetSymbol.value = "rowan";
       externalAssetSymbol.value = null;
     }
     return {
@@ -188,7 +188,7 @@ export default defineComponent({
             </SifButton>
           </template>
           <template v-slot:default="{ requestClose }">
-            <SelectTokenDialog
+            <SelectTokenDialogSif
               :selectedTokens="[externalAssetSymbol].filter(Boolean)"
               @tokenselected="requestClose"
             />

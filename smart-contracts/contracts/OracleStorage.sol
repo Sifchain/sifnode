@@ -1,15 +1,10 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.16;
 
 contract OracleStorage {
     /*
      * @dev: Public variable declarations
      */
     address public cosmosBridge;
-
-    /**
-    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
-    */
-    address public valset;
 
     /**
     * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
@@ -24,7 +19,7 @@ contract OracleStorage {
     /**
     * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
     */
-    mapping(uint256 => address[]) public oracleClaimValidators;
+    mapping(uint256 => uint256) public oracleClaimValidators;
 
     /**
     * @notice mapping of prophecyid to validator address to boolean

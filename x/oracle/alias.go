@@ -30,6 +30,8 @@ var (
 	CreateTestPubKeys = keeper.CreateTestPubKeys
 	CreateTestKeepers = keeper.CreateTestKeepers
 
+	// ProcessUpdateWhiteListValidator = keeper.ProcessUpdateWhiteListValidator
+
 	NewClaim                         = types.NewClaim
 	ErrProphecyNotFound              = types.ErrProphecyNotFound
 	ErrMinimumConsensusNeededInvalid = types.ErrMinimumConsensusNeededInvalid
@@ -42,7 +44,8 @@ var (
 	ErrInternalDB                    = types.ErrInternalDB
 	NewProphecy                      = types.NewProphecy
 	NewStatus                        = types.NewStatus
-
+	ModuleCdc                        = types.ModuleCdc
+	GetGenesisStateFromAppState      = types.GetGenesisStateFromAppState
 	// variable aliases
 
 	StatusTextToString = types.StatusTextToString
@@ -50,10 +53,11 @@ var (
 )
 
 type (
-	Keeper     = keeper.Keeper
-	Claim      = types.Claim
-	Prophecy   = types.Prophecy
-	DBProphecy = types.DBProphecy
-	Status     = types.Status
-	StatusText = types.StatusText
+	Keeper       = keeper.Keeper
+	Claim        = types.Claim
+	Prophecy     = types.Prophecy
+	DBProphecy   = types.DBProphecy
+	Status       = types.Status
+	StatusText   = types.StatusText
+	GenesisState = types.GenesisState
 )

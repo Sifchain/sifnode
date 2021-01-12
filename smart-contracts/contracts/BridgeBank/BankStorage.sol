@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.16;
 
 import "./CosmosBankStorage.sol";
 import "./EthereumBankStorage.sol";
@@ -28,6 +28,8 @@ contract BankStorage is
     * @notice owner address that can use the admin API
     */
     address public owner;
+
+    mapping (string => uint256) public maxTokenAmount;
 
     /**
     * @notice gap of storage for future upgrades

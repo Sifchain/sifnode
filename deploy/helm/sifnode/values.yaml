@@ -21,29 +21,24 @@ image:
   tag: "testnet"
 
 sifnode:
+  args:
+    mnemonic: ""
+    adminCLPAddresses: ""
+    adminOracleAddress: ""
   env:
+    daemonHome: "/root/.sifnoded"
+    daemonName: "sifnoded"
+    daemonAllowDownloadBinaries: true
+    daemonRestartAfterUpgrade: true
     chainnet:
     moniker:
     genesisURL:
     peerAddress:
-    mnemonic: ""
+    minCLPCreatePoolThreshold: "100"
   service:
     type: LoadBalancer
 
 sifnodecli:
-
-ebrelayer:
-  enabled: false
-  image:
-    repository: sifchain/ebrelayer
-    pullPolicy: Always
-    tag: "testnet"
-  env:
-    ethWebsocketAddress: ""
-    ethBridgeRegistryAddress: ""
-    ethPrivateKey: ""
-    moniker: ""
-    mnemonic: ""
 
 service:
   type: LoadBalancer

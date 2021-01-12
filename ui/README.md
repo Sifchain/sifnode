@@ -18,9 +18,17 @@
 1. `yarn` - Install dependencies
 1. `yarn build` - Build the blockchains to test against
 
+NOTE: If you are using VSCode you should use the code-workspace at `./ui/SifnodeUI.code-workspace` to ensure that Vetur works correctly.
+
 #### Launching locally
 
-`yarn app:serve:all`
+Run the backing services using tmux. (Requires [tmux](https://github.com/tmux/tmux/wiki/Installing))
+
+```bash
+yarn stack
+```
+
+<img src="docs/tmux-example.png" />
 
 #### Run tests in core
 
@@ -92,13 +100,13 @@ type ActionContext<ServiceKeys, StoreKeys>
 export default function createAction({
   api,
   store,
-}: ActionContext<"WalletService" | "TokenService", "WalletStore">) {
+}: ActionContext<"WalletService" | "SifService", "WalletStore">) {
   return {
     async disconnectWallet() {
       await api.WalletService.disconnect();
       store.WalletStore.isConnected = false;
       store.WalletStore.balances = [];
-      await api.TokenService.purgeTokens();
+      await api.SifService.disconnect();
     },
   };
 }

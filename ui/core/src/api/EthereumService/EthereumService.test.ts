@@ -1,12 +1,13 @@
 // This test must be run in an environment that supports ganace
 
-import { getFakeTokens } from "./utils/getFakeTokens";
-import createEthereumService from ".";
+import createEthereumService from "./EthereumService";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
-import { Asset, AssetAmount, Network, Token } from "../../entities";
-
+import { Asset } from "../../entities";
 import JSBI from "jsbi";
-import B from "../../entities/utils/B";
+import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
+
+// ^ NOTE: we have had issues where truffle deploys contracts that cost a different amount of gas in CI versus locally.
+// These test have been altered to be less deterministic as a consequence
 
 describe("EthereumService", () => {
   let EthereumService: ReturnType<typeof createEthereumService>;
@@ -15,27 +16,11 @@ describe("EthereumService", () => {
   let ETH: Asset;
 
   beforeEach(async () => {
-    const supportedTokens = await getFakeTokens();
-    const a = supportedTokens.find(
-      ({ symbol }) => symbol.toUpperCase() === "ATK"
-    );
-    const b = supportedTokens.find(
-      ({ symbol }) => symbol.toUpperCase() === "BTK"
-    );
-    const c = supportedTokens.find(
-      ({ symbol }) => symbol.toUpperCase() === "ETH"
-    );
-
-    if (!a) throw new Error("ATK not returned");
-    if (!b) throw new Error("BTK not returned");
-    if (!c) throw new Error("ETH not returned");
-    ATK = a;
-    BTK = b;
-    ETH = c;
+    [ATK, BTK, ETH] = getTestingTokens(["ATK", "BTK", "ETH"]);
 
     EthereumService = createEthereumService({
       getWeb3Provider,
-      loadAssets: async () => supportedTokens,
+      assets: [ATK, BTK, ETH],
     });
   });
 
@@ -50,25 +35,19 @@ describe("EthereumService", () => {
   });
 
   test("that it returns the correct wallet amounts", async () => {
-    // const supportedTokens = await getFakeTokens();
-    // const EthereumService = createEthereumService({
-    //   getWeb3Provider,
-    //   loadAssets: async () => supportedTokens,
-    // });
     await EthereumService.connect();
 
-    const balances = await EthereumService.getBalance();
+    const balances = EthereumService.getState().balances;
 
-    expect(balances[0].toFixed()).toEqual(
-      // TODO: Work out a better way to deal with natural amounts eg 99.95048114 ETH
-      AssetAmount(ETH, "99.950481140000000000").toFixed()
-    );
-    expect(balances[1].toFixed()).toEqual(
-      AssetAmount(ATK, "10000.000000").toFixed()
-    );
-    expect(balances[2].toFixed()).toEqual(
-      AssetAmount(BTK, "10000.000000").toFixed()
-    );
+    const ethAmount = getBalance(balances, "eth").amount;
+    const atkAmount = getBalance(balances, "atk").amount;
+    const btkAmount = getBalance(balances, "btk").amount;
+
+    // We dont know what the amount is going to be as it changes
+    // depending on a bunch of factors so just checking for a string of digits
+    expect(/^\d+/.test(ethAmount.toString())).toBeTruthy();
+    expect(atkAmount.toString()).toEqual("10000000000000000000000");
+    expect(btkAmount.toString()).toEqual("10000000000000000000000");
   });
 
   test("isConnected", async () => {
@@ -80,67 +59,48 @@ describe("EthereumService", () => {
   test("transfer ERC-20 to smart contract", async () => {
     await EthereumService.connect();
     const state = EthereumService.getState();
-    const origBalanceAccount0 = await EthereumService.getBalance();
 
-    expect(
-      origBalanceAccount0
-        .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ATK")
-        ?.toFixed()
-    ).toEqual("10000.000000");
+    const balances = state.balances;
+    const account0AtkAmount = getBalance(balances, "atk").amount;
+
+    expect(account0AtkAmount.toString()).toEqual("10000000000000000000000");
 
     await EthereumService.transfer({
-      amount: B("10.000000", ATK.decimals),
+      amount: JSBI.BigInt("10000000"),
       recipient: state.accounts[1],
       asset: ATK,
     });
 
-    const balanceAccount0 = await EthereumService.getBalance();
-    const balanceAccount1 = await EthereumService.getBalance(state.accounts[1]);
+    const account0NewAtkAmount = getBalance(
+      await EthereumService.getBalance(),
+      "atk"
+    ).amount;
+    const account1NewAtkAmount = getBalance(
+      await EthereumService.getBalance(state.accounts[1]),
+      "atk"
+    ).amount;
 
-    expect(
-      balanceAccount0
-        .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ATK")
-        ?.toFixed(2)
-    ).toEqual("9990.00");
-
-    expect(
-      balanceAccount1
-        .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ATK")
-        ?.toFixed(2)
-    ).toEqual("10.00");
+    expect(account0NewAtkAmount.toString()).toEqual("9999999999999990000000");
+    expect(account1NewAtkAmount.toString()).toEqual("10000000");
   });
 
   test("transfer ETH", async () => {
     await EthereumService.connect();
     const state = EthereumService.getState();
-    const origBalanceAccount0 = await EthereumService.getBalance();
 
-    expect(
-      origBalanceAccount0
-        .find(({ asset: { symbol } }) => symbol.toUpperCase() === "ETH")
-        ?.toFixed()
-    ).toEqual(AssetAmount(ETH, "99.95048114").toFixed());
+    const TEN_ETH = JSBI.BigInt(10 * 10 ** 18);
 
     await EthereumService.transfer({
-      amount: JSBI.BigInt(10 * 10 ** 18),
+      amount: TEN_ETH,
       recipient: state.accounts[1],
     });
 
-    const balanceAccount0 = await EthereumService.getBalance();
     const balanceAccount1 = await EthereumService.getBalance(state.accounts[1]);
+    const account1NewBalance = getBalance(balanceAccount1, "ETH").amount;
 
-    expect(
-      balanceAccount0
-        .find(({ asset: { symbol } }) => symbol === "ETH")
-        ?.toFixed()
-    ).toEqual("89.950061140000000000"); // Including gas
-
-    expect(
-      balanceAccount1
-        .find(({ asset: { symbol } }) => symbol === "ETH")
-        ?.toFixed()
-    ).toEqual("110.000000000000000000");
+    expect(account1NewBalance.toString()).toEqual("110000000000000000000");
   });
+
   it("should disconnect", async () => {
     await EthereumService.disconnect();
     expect(EthereumService.getState().accounts).toEqual([]);

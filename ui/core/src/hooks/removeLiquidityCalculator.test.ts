@@ -1,10 +1,12 @@
 import { ref, Ref } from "@vue/reactivity";
-import { LiquidityParams } from "../api/utils/x/clp";
-import { CATK, RWN } from "../constants";
+
 import { AssetAmount, LiquidityProvider, Pool } from "../entities";
 import { Fraction, IFraction } from "../entities/fraction/Fraction";
+import { getTestingTokens } from "../test/utils/getTestingToken";
 import { PoolState } from "./addLiquidityCalculator";
 import { useRemoveLiquidityCalculator } from "./removeLiquidityCalculator";
+
+const [CATK, ROWAN] = getTestingTokens(["CATK", "ROWAN"]);
 
 describe("useRemoveLiquidityCalculator", () => {
   // input
@@ -49,7 +51,7 @@ describe("useRemoveLiquidityCalculator", () => {
         ref(
           Pool(
             AssetAmount(CATK, "1000000"),
-            AssetAmount(RWN, "1000000"),
+            AssetAmount(ROWAN, "1000000"),
             new Fraction("1000000")
           )
         ) as Ref<Pool>
@@ -58,7 +60,7 @@ describe("useRemoveLiquidityCalculator", () => {
     expect(state.value).toBe(PoolState.SELECT_TOKENS);
     asymmetry.value = "0";
     externalAssetSymbol.value = "catk";
-    nativeAssetSymbol.value = "rwn";
+    nativeAssetSymbol.value = "rowan";
     sifAddress.value = "sif123456876512341234";
     wBasisPoints.value = "0";
 
@@ -67,14 +69,14 @@ describe("useRemoveLiquidityCalculator", () => {
     expect(state.value).toBe(PoolState.VALID_INPUT);
 
     expect(withdrawExternalAssetAmount.value).toEqual("100000.0 CATK");
-    expect(withdrawNativeAssetAmount.value).toEqual("100000.0 RWN");
+    expect(withdrawNativeAssetAmount.value).toEqual("100000.0 ROWAN");
     asymmetry.value = "10000";
 
     expect(withdrawExternalAssetAmount.value).toEqual("181000.0 CATK");
-    expect(withdrawNativeAssetAmount.value).toEqual("0.0 RWN");
+    expect(withdrawNativeAssetAmount.value).toEqual("0.0 ROWAN");
     wBasisPoints.value = "5000";
 
     expect(withdrawExternalAssetAmount.value).toEqual("95125.0 CATK");
-    expect(withdrawNativeAssetAmount.value).toEqual("0.0 RWN");
+    expect(withdrawNativeAssetAmount.value).toEqual("0.0 ROWAN");
   });
 });

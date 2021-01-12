@@ -22,20 +22,24 @@ var (
 )
 
 type CLIUtils interface {
+	DaemonPath() (*string, error)
 	Reset([]string) error
 	ResetState(string) (*string, error)
 	CreateDir(string) error
+	MoveFile(string, string) (*string, error)
 	CurrentChainID() (*string, error)
-	NodeID(nodeDir string) (*string, error)
-	ValidatorAddress(nodeDir string) (*string, error)
-	ValidatorConsensusAddress(nodeDir string) (*string, error)
+	NodeID(string) (*string, error)
+	ValidatorAddress(string) (*string, error)
+	ValidatorConsensusAddress(string) (*string, error)
 	InitChain(string, string, string) (*string, error)
 	SetKeyRingStorage() (*string, error)
 	SetConfigChainID(string) (*string, error)
 	SetConfigIndent(bool) (*string, error)
 	SetConfigTrustNode(bool) (*string, error)
-	AddKey(string, string, string) (*string, error)
+	AddKey(string, string, string, string) (*string, error)
 	AddGenesisAccount(string, string, []string) (*string, error)
+	AddGenesisCLPAdmin(string, string) (*string, error)
+	SetGenesisOracleAdmin(string, string) (*string, error)
 	GenerateGenesisTxn(string, string, string, string, string, string, string, string, string) (*string, error)
 	CollectGenesisTxns(string, string) (*string, error)
 	ExportGenesis() (*string, error)
@@ -61,7 +65,7 @@ func NewCLI(chainID string) CLI {
 func (c CLI) Reset(paths []string) error {
 	for _, path := range paths {
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
-			err = os.RemoveAll(path)
+			err = os.Remove(path)
 			if err != nil {
 				return err
 			}
@@ -71,12 +75,20 @@ func (c CLI) Reset(paths []string) error {
 	return nil
 }
 
+func (c CLI) DaemonPath() (*string, error) {
+	return c.shellExec("which", "sifnoded")
+}
+
 func (c CLI) ResetState(nodeDir string) (*string, error) {
 	return c.shellExec("sifnoded", "unsafe-reset-all", "--home", nodeDir)
 }
 
 func (c CLI) CreateDir(path string) error {
 	return os.MkdirAll(path, 0755)
+}
+
+func (c CLI) MoveFile(src, dest string) (*string, error) {
+	return c.shellExec("mv", src, dest)
 }
 
 func (c CLI) CurrentChainID() (*string, error) {
@@ -127,6 +139,14 @@ func (c CLI) AddKey(name, mnemonic, keyPassword, cliDir string) (*string, error)
 
 func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {
 	return c.shellExec("sifnoded", "add-genesis-account", address, strings.Join(coins[:], ","), "--home", nodeDir)
+}
+
+func (c CLI) AddGenesisCLPAdmin(address, nodeDir string) (*string, error) {
+	return c.shellExec("sifnoded", "add-genesis-clp-admin", address, "--home", nodeDir)
+}
+
+func (c CLI) SetGenesisOracleAdmin(address, nodeDir string) (*string, error) {
+	return c.shellExec("sifnoded", "set-genesis-oracle-admin", address, "--home", nodeDir)
 }
 
 func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, cliDir, outputFile, nodeID, pubKey, ipV4Addr string) (*string, error) {

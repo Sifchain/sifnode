@@ -51,13 +51,29 @@ Note: This project currently uses solc@0.5.0, make sure that this version of the
 
 ## Testing
 
-Run commands from the appropriate directory: `$ cd testnet-contracts`  
+Run commands from the appropriate directory: `$ cd smart-contracts`  
 Start the truffle environment: `$ truffle develop`  
 In another tab, run tests: `$ truffle test --network develop`  
 Run individual tests: `$ truffle test test/<test_name.js>`
 
 Expected output of the test suite:
 ![peggytestsuite](https://user-images.githubusercontent.com/15370712/58388940-34fb6700-7fda-11e9-9aef-6ae7b2442a55.png)
+
+### Slither
+
+#### Dependencies
+
+* Python 3.4 or newer
+
+#### Configuration
+
+`slither.config.json` contains various configurations on what severity of issue should be reported and which detectors should be included or excluded. 
+
+`slither.db.json` contains a generated config from `slither . --triage` which lets us excluded false positives. If you generate a new `db.json`, please delete all key/value pairs related to the local computer (/home/{user}/foo/bar) - the file will still. 
+
+#### Run
+
+To run [slither](https://github.com/crytic/slither) over all smart contracts you can run `make slither` in this directory. 
 
 ## Security, Privacy, Risks
 

@@ -1,5 +1,6 @@
 import { ref, Ref } from "@vue/reactivity";
-import { Asset, IAssetAmount } from "../entities";
+import { Asset, IAssetAmount, Network, Token } from "../entities";
+import { getTestingToken } from "../test/utils/getTestingToken";
 import { useField } from "./useField";
 
 // TODO eventually delete me as this is an implementation detail
@@ -9,6 +10,8 @@ describe("useField", () => {
 
   let asset: Ref<Asset | null>;
   let fieldAmount: Ref<IAssetAmount | null>;
+
+  getTestingToken("ATK");
 
   beforeEach(() => {
     amount = ref("0");
@@ -21,8 +24,8 @@ describe("useField", () => {
     amount.value = "12";
 
     expect(asset.value?.symbol).toBe("atk");
-    expect(fieldAmount.value?.toFixed()).toBe("12.000000");
+    expect(fieldAmount.value?.toFixed()).toBe("12.000000000000000000");
     amount.value = "123.123123";
-    expect(fieldAmount.value?.toFixed()).toBe("123.123123");
+    expect(fieldAmount.value?.toFixed()).toBe("123.123123000000000000");
   });
 });

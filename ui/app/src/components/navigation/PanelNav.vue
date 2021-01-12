@@ -2,7 +2,7 @@
   <div class="panel-nav">
     <PanelNavItem
       to="/peg"
-      disabled
+      color="pink"
       icon="circle-half"
       label="Peg"
     ></PanelNavItem>
@@ -14,7 +14,6 @@
     ></PanelNavItem>
     <PanelNavItem
       to="/pool"
-      disabled
       icon="pool"
       label="Pool"
       color="green"

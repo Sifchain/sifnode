@@ -1,29 +1,10 @@
 import { ref, Ref } from "@vue/reactivity";
 import { AssetAmount, Coin, IAssetAmount, Network, Pool } from "../entities";
 import { Fraction } from "../entities/fraction/Fraction";
+import { getTestingTokens } from "../test/utils/getTestingToken";
 import { PoolState, usePoolCalculator } from "./addLiquidityCalculator";
 
-const ASSETS = {
-  atk: Coin({
-    decimals: 18,
-    name: "AppleToken",
-    network: Network.SIFCHAIN,
-    symbol: "atk",
-  }),
-  btk: Coin({
-    decimals: 18,
-    name: "BananaToken",
-    network: Network.SIFCHAIN,
-    symbol: "btk",
-  }),
-
-  rwn: Coin({
-    decimals: 18,
-    name: "Rowan",
-    network: Network.SIFCHAIN,
-    symbol: "rwn",
-  }),
-};
+const [ATK, ROWAN] = getTestingTokens(["ATK", "ROWAN"]);
 
 describe("usePoolCalculator", () => {
   // input
@@ -70,10 +51,10 @@ describe("usePoolCalculator", () => {
     fromAmount.value = "1000";
     toAmount.value = "500";
     fromSymbol.value = "atk";
-    toSymbol.value = "rwn";
+    toSymbol.value = "rowan";
 
-    expect(aPerBRatioMessage.value).toBe("2.00000000 ATK per RWN");
-    expect(bPerARatioMessage.value).toBe("0.50000000 RWN per ATK");
+    expect(aPerBRatioMessage.value).toBe("2.00000000");
+    expect(bPerARatioMessage.value).toBe("0.50000000");
     expect(shareOfPoolPercent.value).toBe("100.00%");
   });
 
@@ -81,19 +62,16 @@ describe("usePoolCalculator", () => {
     poolFinder.mockImplementation(
       () =>
         ref(
-          Pool(
-            AssetAmount(ASSETS.atk, "1000000"),
-            AssetAmount(ASSETS.rwn, "1000000")
-          )
+          Pool(AssetAmount(ATK, "1000000"), AssetAmount(ROWAN, "1000000"))
         ) as Ref<Pool>
     );
     fromAmount.value = "1000";
     toAmount.value = "500";
     fromSymbol.value = "atk";
-    toSymbol.value = "rwn";
+    toSymbol.value = "rowan";
 
-    expect(aPerBRatioMessage.value).toBe("2.00000000 ATK per RWN");
-    expect(bPerARatioMessage.value).toBe("0.50000000 RWN per ATK");
+    expect(aPerBRatioMessage.value).toBe("2.00000000");
+    expect(bPerARatioMessage.value).toBe("0.50000000");
     expect(shareOfPoolPercent.value).toBe("0.07%");
   });
 
@@ -101,7 +79,7 @@ describe("usePoolCalculator", () => {
     fromAmount.value = "0";
     toAmount.value = "0";
     fromSymbol.value = "atk";
-    toSymbol.value = "rwn";
+    toSymbol.value = "rowan";
     expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
     expect(aPerBRatioMessage.value).toBe("");
     expect(bPerARatioMessage.value).toBe("");

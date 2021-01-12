@@ -1,29 +1,21 @@
 import JSBI from "jsbi";
 
-import { AssetAmount, Coin, Network } from "../../entities";
+import { AssetAmount } from "../../entities";
 import createSifService, { SifServiceContext } from ".";
+import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
+
+const [ROWAN, CATK, CBTK, CETH] = getTestingTokens([
+  "ROWAN",
+  "CATK",
+  "CBTK",
+  "CETH",
+]);
 
 const TOKENS = {
-  rwn: Coin({
-    symbol: "rwn",
-    decimals: 0,
-    name: "Rowan",
-    network: Network.SIFCHAIN,
-  }),
-
-  atk: Coin({
-    symbol: "catk",
-    decimals: 0,
-    name: "catk",
-    network: Network.SIFCHAIN,
-  }),
-
-  btk: Coin({
-    symbol: "cbtk",
-    decimals: 0,
-    name: "cbtk",
-    network: Network.SIFCHAIN,
-  }),
+  rowan: ROWAN,
+  atk: CATK,
+  btk: CBTK,
+  eth: CETH,
 };
 
 // This is required because we need to wait for the blockchain to process transactions
@@ -38,7 +30,7 @@ const mnemonic =
 // To be kept up to date with test state
 const account = {
   address: "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-  balance: [AssetAmount(TOKENS.rwn, "1000")],
+  balance: [AssetAmount(TOKENS.rowan, "1000")],
   pubkey: {
     type: "tendermint/PubKeySecp256k1",
     value: "AvUEsFHbsr40nTSmWh7CWYRZHGwf4cpRLtJlaRO4VAoq",
@@ -50,13 +42,67 @@ const account = {
 const testConfig: SifServiceContext = {
   sifAddrPrefix: "sif",
   sifApiUrl: "http://127.0.0.1:1317",
+  sifWsUrl: "ws://127.0.0.1:26657/websocket",
+  assets: [ROWAN, CATK, CBTK, CETH],
+  keplrChainConfig:   {  "keplrChainConfig": {
+    "chainId": "sifchain",
+    "chainName": "Sifchain",
+    "stakeCurrency": {
+        "coinDenom": "ROWAN",
+        "coinMinimalDenom": "rowan",
+        "coinDecimals": 18
+    },
+    "bip44": {
+        "coinType": 118
+    },
+    "bech32Config": {
+        "bech32PrefixAccAddr": "sif",
+        "bech32PrefixAccPub": "sifpub",
+        "bech32PrefixValAddr": "sifvaloper",
+        "bech32PrefixValPub": "sifvaloperpub",
+        "bech32PrefixConsAddr": "sifvalcons",
+        "bech32PrefixConsPub": "sifvalconspub"
+    },
+    "currencies": [{
+        "coinDenom": "ROWAN",
+        "coinMinimalDenom": "rowan",
+        "coinDecimals": 18
+    },
+    {
+      "coinDenom": "catk",
+      "coinMinimalDenom": "catk",
+      "coinDecimals": 18
+    },
+    {
+      "coinDenom": "cbtk",
+      "coinMinimalDenom": "cbtk",
+      "coinDecimals": 18
+    },
+    {
+      "coinDenom": "ceth",
+      "coinMinimalDenom": "ceth",
+      "coinDecimals": 18
+    },
+    {
+      "coinDenom": "stake",
+      "coinMinimalDenom": "stake",
+      "coinDecimals": 18
+    }
+  ],
+    "feeCurrencies": [{
+        "coinDenom": "ROWAN",
+        "coinMinimalDenom": "rowan",
+        "coinDecimals": 18
+    }],
+    "coinType": 118,
+    "gasPriceStep": {
+        "low": 0.01,
+        "average": 0.025,
+        "high": 0.04
+    }
+  }
+},
 };
-
-function getBalance(balances: AssetAmount[], symbol: string): AssetAmount {
-  const bal = balances.find((bal) => bal.asset.symbol === symbol);
-  if (!bal) throw new Error("Asset not found in balances");
-  return bal;
-}
 
 // This is redundant. CWalletActions and SifService should be combined imo
 describe("sifService", () => {
@@ -87,9 +133,10 @@ describe("sifService", () => {
     } catch (error) {
       expect(error).toEqual("Address not valid (length). Fail");
     }
+
     const balances = await sifService.getBalance(account.address);
-    const balance = getBalance(balances, "rwn");
-    expect(balance?.toFixed()).toEqual("1000000000");
+    const balance = getBalance(balances, "rowan");
+    expect(balance?.toFixed()).toEqual("100000000000.000000000000000000");
   });
 
   it("should transfer transaction", async () => {
@@ -98,12 +145,12 @@ describe("sifService", () => {
     const address = await sifService.setPhrase(mnemonic);
     await sifService.transfer({
       amount: JSBI.BigInt("50"),
-      asset: TOKENS.rwn,
+      asset: TOKENS.rowan,
       recipient: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
       memo: "",
     });
     const balances = await sifService.getBalance(address);
-    const balance = getBalance(balances, "rwn");
-    expect(balance?.toFixed()).toEqual("999999950");
+    const balance = getBalance(balances, "rowan");
+    expect(balance?.toFixed()).toEqual("99999999999.999999999999999950");
   });
 });

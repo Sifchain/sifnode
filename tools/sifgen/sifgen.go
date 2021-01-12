@@ -41,12 +41,25 @@ func (s Sifgen) NetworkReset(networkDir string) {
 	}
 }
 
-func (s Sifgen) NodeCreate(moniker, mnemonic, ipAddr string, peerAddress, genesisURL *string) {
-	witness := node.NewNode(*s.chainID, moniker, mnemonic, ipAddr, peerAddress, genesisURL)
-	_, err := witness.Build()
+func (s Sifgen) NodeCreate(moniker, mnemonic string, adminCLPAddresses []string, adminOracleAddress, ipAddr string, peerAddress, genesisURL *string, printDetails, withCosmovisor *bool) {
+	validator := node.NewNode(*s.chainID,
+		moniker,
+		mnemonic,
+		adminCLPAddresses,
+		adminOracleAddress,
+		ipAddr,
+		peerAddress,
+		genesisURL,
+		withCosmovisor)
+
+	summary, err := validator.Build()
 	if err != nil {
 		log.Fatal(err)
 		return
+	}
+
+	if *printDetails {
+		fmt.Println(*summary)
 	}
 }
 

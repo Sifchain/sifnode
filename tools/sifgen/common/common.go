@@ -25,6 +25,10 @@ var (
 )
 
 var (
+	MinCLPCreatePoolThreshold = "100"
+)
+
+var (
 	ToFund = types.ToFund
 	ToBond = types.ToBond
 )

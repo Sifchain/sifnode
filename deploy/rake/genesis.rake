@@ -58,8 +58,8 @@ namespace :genesis do
   desc "node operations"
   namespace :sifnode do
     desc "Scaffold a new local node and configure it to connect to an existing network"
-    task :scaffold, [:chainnet, :peer_address, :genesis_url] do |t, args|
-      safe_system("sifgen node create #{args[:chainnet]} #{args[:peer_address]} #{args[:genesis_url]}")
+    task :scaffold, [:chainnet, :moniker, :mnemonic, :ipv4_address, :peer_address, :genesis_url] do |t, args|
+      safe_system("sifgen node create #{args[:chainnet]} #{args[:moniker]} #{args[:mnemonic]} #{args[:ipv4_address]} #{args[:peer_address]} #{args[:genesis_url]} --print-details")
     end
 
     desc "boot scaffolded node and connect to existing network"
@@ -103,7 +103,7 @@ def boot_docker_network(chainnet:, seed_network_address:, eth_config:)
     cmd += "MONIKER#{idx+1}=#{node['moniker']} MNEMONIC#{idx+1}=\"#{node['mnemonic']}\" IPV4_ADDRESS#{idx+1}=#{node['ipv4_address']} "
   end
   if chainnet == 'localnet'
-    cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../../test/integration/docker-compose-integration.yml up -d | tee #{cwd}/../../log/#{chainnet}.log"
+    cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../../test/integration/docker-compose-integration.yml up -d --force-recreate | tee #{cwd}/../../log/#{chainnet}.log"
   else
     cmd += "IPV4_SUBNET=#{seed_network_address} #{eth_config} docker-compose -f #{cwd}/../genesis/docker-compose.yml up #{instances} | tee #{cwd}/../../log/#{chainnet}.log"
   end

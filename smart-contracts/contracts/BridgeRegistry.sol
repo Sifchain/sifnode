@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.16;
 
 
 contract BridgeRegistry {
@@ -20,16 +20,12 @@ contract BridgeRegistry {
 
     function initialize(
         address _cosmosBridge,
-        address _bridgeBank,
-        address _oracle,
-        address _valset
+        address _bridgeBank
     ) public {
         require(!_initialized, "Initialized");
 
         cosmosBridge = _cosmosBridge;
         bridgeBank = _bridgeBank;
-        oracle = _oracle;
-        valset = _valset;
         _initialized = true;
 
         emit LogContractsRegistered(cosmosBridge, bridgeBank, oracle, valset);
