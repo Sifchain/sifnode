@@ -1,51 +1,89 @@
+import logging
+import os
 import time
 
+import burn_lock_functions
+from integration_env_credentials import sifchain_cli_credentials_for_test
 from test_utilities import amount_in_wei, test_integration_dir, wait_for_sifchain_addr_balance, \
-    transact_ethereum_currency_to_sifchain_addr, print_error_message, get_required_env_var
-from test_utilities import get_shell_output, SIF_ETH, ETHEREUM_ETH, get_sifchain_addr_balance, \
+    transact_ethereum_to_sifchain, get_required_env_var, \
+    EthereumToSifchainTransferRequest
+from test_utilities import get_shell_output, SIF_ETH, get_sifchain_addr_balance, \
     advance_n_ethereum_blocks, n_wait_blocks, \
-    user1_addr, send_ethereum_currency_to_sifchain_addr
+    send_from_ethereum_to_sifchain
 
 
 def test_chain_rollback():
-    print("########## test_chain_rollback")
+    logging.info("start test_chain_rollback")
 
-    amount = amount_in_wei(1)
+    new_account_key = get_shell_output("uuidgen")
+    credentials = sifchain_cli_credentials_for_test(new_account_key)
+    new_account = burn_lock_functions.create_new_sifaddr(credentials=credentials, keyname=new_account_key)
+    credentials.from_key = new_account["name"]
+
+    # Any amount will work
+    amount = 11000
+
+    request = EthereumToSifchainTransferRequest(
+        sifchain_address=new_account["address"],
+        smart_contracts_dir=get_required_env_var("SMART_CONTRACTS_DIR"),
+        ethereum_address=get_required_env_var("ETHEREUM_ADDRESS"),
+        ethereum_private_key_env_var="ETHEREUM_PRIVATE_KEY",
+        bridgebank_address=get_required_env_var("BRIDGE_BANK_ADDRESS"),
+        ethereum_network=(os.environ.get("ETHEREUM_NETWORK") or ""),
+        amount=amount
+    )
+
+    logging.info(f"create account with a balance of {request.amount}")
+    burn_lock_functions.transfer_ethereum_to_sifchain(request, 50)
+
+    new_addr = new_account["address"]
+
+    logging.info("created new account, taking ganache snapshot")
     snapshot = get_shell_output(f"{test_integration_dir}/snapshot_ganache_chain.sh")
-    user_balance_before_tx = get_sifchain_addr_balance(user1_addr, "", SIF_ETH)
-    print(f"user_balance_before_tx {user_balance_before_tx}")
-    smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
-    send_ethereum_currency_to_sifchain_addr(user1_addr, ETHEREUM_ETH, amount, smart_contracts_dir)
+    initial_user_balance = get_sifchain_addr_balance(new_addr, "", request.sifchain_symbol)
+    logging.info(f"initial_user_balance {initial_user_balance}")
 
-    advance_n_ethereum_blocks(n_wait_blocks / 2, smart_contracts_dir)
+    transfer_1 = send_from_ethereum_to_sifchain(transfer_request=request)
+    logging.info(f"transfer {transfer_1} started but it will never complete")
 
-    # the transaction should not have happened on the sifchain side.
-    # roll back ganache to the snapshot and try transfer #2, and only
-    # transfer #2 should succeed.
+    logging.info("advance less than wait blocks")
+    advance_n_ethereum_blocks(n_wait_blocks / 2, request.smart_contracts_dir)
 
+    # the transaction should not have happened on the sifchain side yet
+    # since we haven't waited for the right number of blocks.
+    # roll back ganache to the snapshot and try another transfer that
+    # should succeed.
+
+    logging.info("apply snapshot - this should eliminate transfer_1")
     get_shell_output(f"{test_integration_dir}/apply_ganache_snapshot.sh {snapshot} 2>&1")
-    print("snapshot applied")
 
-    advance_n_ethereum_blocks(n_wait_blocks * 2, smart_contracts_dir)
+    logging.info("advance past block wait")
+    advance_n_ethereum_blocks(n_wait_blocks * 2, request.smart_contracts_dir)
+    time.sleep(5)
 
-    if get_sifchain_addr_balance(user1_addr, "", SIF_ETH) != user_balance_before_tx:
-        print_error_message("balance should be the same after applying snapshot and rolling forward n_wait_blocks * 2")
+    second_user_balance = get_sifchain_addr_balance(new_addr, "", request.sifchain_symbol)
+    if second_user_balance == initial_user_balance:
+        logging.info(f"got expected outcome of no balance change @ {initial_user_balance}")
+    else:
+        raise Exception(
+            f"balance should be the same after applying snapshot and rolling forward n_wait_blocks * 2.  initial_user_balance: {initial_user_balance} second_user_balance: {second_user_balance}"
+        )
 
-    new_amount = amount + 1000
+    request.amount = 10000
 
-    print(f"transact_ethereum_currency_to_sifchain_addr {user1_addr} {new_amount}")
-    transact_ethereum_currency_to_sifchain_addr(user1_addr, ETHEREUM_ETH, new_amount)
+    logging.info(f"sending more eth: {request.amount} to {new_addr}")
+    burn_lock_functions.transfer_ethereum_to_sifchain(request)
 
-    # TODO we need to wait for ebrelayer directly
+    # We want to know that ebrelayer will never do a second transaction.
+    # We can't know that, so just delay a reasonable amount of time.
+    logging.info("delay to give ebrelayer time to make a mistake")
     time.sleep(10)
 
-    balance_after_sleep = get_sifchain_addr_balance(user1_addr, "", SIF_ETH)
-    print(f"get_sifchain_addr_balance after sleep is {balance_after_sleep} for {user1_addr}")
+    balance_after_sleep = get_sifchain_addr_balance(new_addr, "", request.sifchain_symbol)
+    logging.info(f"get_sifchain_addr_balance after sleep is {balance_after_sleep} for {new_addr}")
 
-    expected_balance = user_balance_before_tx + new_amount
-    wait_for_sifchain_addr_balance(user1_addr, SIF_ETH, expected_balance)
+    expected_balance = initial_user_balance + request.amount
+    logging.info(f"look for a balance of {expected_balance}")
+    wait_for_sifchain_addr_balance(new_addr, request.sifchain_symbol, expected_balance, "")
 
-    print(f"test_chain_rollback complete, balance is correct at {expected_balance}")
-
-
-test_chain_rollback()
+    logging.info(f"test_chain_rollback complete, balance is correct at {expected_balance}")

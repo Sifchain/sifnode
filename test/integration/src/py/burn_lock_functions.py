@@ -8,9 +8,9 @@ import textwrap
 from typing import List
 
 from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks, \
-    n_wait_blocks, print_error_message, wait_for_sifchain_addr_balance, send_ethereum_currency_to_sifchain_addr, \
+    n_wait_blocks, print_error_message, wait_for_sifchain_addr_balance, send_from_ethereum_to_sifchain, \
     get_eth_balance, send_from_sifchain_to_ethereum, wait_for_eth_balance, \
-    current_ethereum_block_number, wait_for_ethereum_block_number, sif_tx_send, wait_for_sif_account, \
+    current_ethereum_block_number, wait_for_ethereum_block_number, send_from_sifchain_to_sifchain, wait_for_sif_account, \
     get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
 
 
@@ -26,7 +26,7 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
 #     )
 
 
-def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest, max_attempts):
+def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest, max_attempts=30):
     logging.debug(f"transfer_ethereum_to_sifchain {transfer_request.as_json()}")
 
     # it's possible that this is the first transfer to the address, so there's
@@ -39,6 +39,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
             transfer_request.sifchain_symbol
         )
     except:
+        logging.debug(f"transfer_ethereum_to_sifchain failed to get starting balance, this is probably a new account")
         sifchain_starting_balance = 0
 
     status = {
@@ -46,9 +47,9 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
         "sifchain_starting_balance": sifchain_starting_balance,
         "transfer_request": transfer_request.__dict__,
     }
-    logging.info(f"transfer_ethereum_to_sifchain_json: {json.dumps(status)}", )
+    logging.debug(f"transfer_ethereum_to_sifchain_json: {json.dumps(status)}", )
 
-    send_tx = send_ethereum_currency_to_sifchain_addr(transfer_request)
+    send_tx = send_from_ethereum_to_sifchain(transfer_request)
     starting_block = current_ethereum_block_number(transfer_request.smart_contracts_dir)
     half_n_wait_blocks = n_wait_blocks / 2 + 1
     logging.debug("wait half the blocks, transfer should not complete")
@@ -87,31 +88,35 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     target_balance = sifchain_starting_balance + transfer_request.amount
 
     logging.debug(f"wait for account {transfer_request.sifchain_address}")
-    wait_for_sif_account(transfer_request.sifchain_address,
-                         transfer_request.sifnodecli_node,
-                         max_attempts=max_attempts)
+    wait_for_sif_account(
+        sif_addr=transfer_request.sifchain_address,
+        sifchaincli_node=transfer_request.sifnodecli_node,
+        max_attempts=max_attempts
+    )
 
     wait_for_sifchain_addr_balance(
         sifchain_address=transfer_request.sifchain_address,
         symbol=transfer_request.sifchain_symbol,
         sifchaincli_node=transfer_request.sifnodecli_node,
         target_balance=target_balance,
-        max_attempts=30,
-        debug_prefix=f"transfer {transfer_request}"
+        max_attempts=max_attempts,
+        debug_prefix=f"transfer_ethereum_to_sifchain waiting for balance {transfer_request}"
     )
 
-    return {
+    result = {
         **status,
         "sifchain_ending_balance": target_balance,
         "send_tx": send_tx
     }
+    logging.debug(f"account created {result}")
+    return result
 
 
 def transfer_sifchain_to_ethereum(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials,
 ):
-    logging.info(f"transfer_sifchain_to_ethereum_json: {transfer_request.as_json()}")
+    logging.debug(f"transfer_sifchain_to_ethereum_json: {transfer_request.as_json()}")
 
     ethereum_starting_balance = get_eth_balance(transfer_request)
 
@@ -126,22 +131,9 @@ def transfer_sifchain_to_ethereum(
         "ethereum_starting_balance": ethereum_starting_balance,
         "sifchain_starting_balance": sifchain_starting_balance,
     }
-    logging.info(status)
+    logging.debug(status)
 
-    send_tx = send_from_sifchain_to_ethereum(
-        sifchain_address=transfer_request.sifchain_address,
-        ethereum_address=transfer_request.ethereum_address,
-        amount=transfer_request.amount,
-        token=transfer_request.sifchain_symbol,
-        ethereum_chain_id=transfer_request.ethereum_chain_id,
-        chain_id=transfer_request.chain_id,
-        keyring_password=credentials.keyring_passphrase,
-        from_key=credentials.from_key,
-        homedir=credentials.sifnodecli_homedir,
-        keyring_backend=credentials.keyring_backend
-    )
-
-    logging.debug(f"send_from_sifchain_to_ethereum_json: {json.dumps(send_tx)}")
+    send_tx = send_from_sifchain_to_ethereum(transfer_request, credentials)
 
     wait_for_sifchain_addr_balance(
         sifchain_address=transfer_request.sifchain_address,
@@ -177,7 +169,7 @@ def transfer_sifchain_to_sifchain(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials,
 ):
-    logging.debug(f"transfer_ethereum_to_sifchain_json: {transfer_request.as_json()}")
+    logging.debug(f"transfer_sifchain_to_sifchain: {transfer_request.as_json()}")
 
     sifchain_starting_balance = get_sifchain_addr_balance(
         transfer_request.sifchain_destination_address,
@@ -191,7 +183,7 @@ def transfer_sifchain_to_sifchain(
     }
     logging.info(status)
 
-    send_tx = sif_tx_send(
+    send_tx = send_from_sifchain_to_sifchain(
         from_address=transfer_request.sifchain_address,
         to_address=transfer_request.sifchain_destination_address,
         amount=transfer_request.amount,
@@ -205,7 +197,7 @@ def transfer_sifchain_to_sifchain(
         transfer_request.sifnodecli_node,
         target_balance,
         30,
-        f"transfer sifchain to sifchain {transfer_request}"
+        f"transfer_sifchain_to_sifchain {transfer_request}"
     )
 
     return {

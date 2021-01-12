@@ -13,7 +13,9 @@ jobs:
         run: |
           source $HOME/.bash_profile
           bash test/integration/start-integration-env.sh
-          bash test/integration/execute_integration_tests_main.sh
+          . test/integration/vagrantenv.sh
+          bash test/integration/./execute_integration_tests_against_any_chain.sh
+          bash test/integration/./execute_integration_tests_against_test_chain.sh
       - name: Execute whitelisted validators integration tests
         run: |
           source $HOME/.bash_profile

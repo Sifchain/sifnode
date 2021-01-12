@@ -26,7 +26,7 @@ def test_transfer_eth_to_ceth():
     new_account_key = get_shell_output("uuidgen")
     credentials = sifchain_cli_credentials_for_test(new_account_key)
     new_addr = burn_lock_functions.create_new_sifaddr(credentials=credentials, keyname=new_account_key)
-
+    credentials.from_key = new_addr["name"]
     request = EthereumToSifchainTransferRequest(
         sifchain_address=new_addr["address"],
         smart_contracts_dir=get_required_env_var("SMART_CONTRACTS_DIR"),
@@ -37,8 +37,7 @@ def test_transfer_eth_to_ceth():
         amount=90000
     )
 
-    result = burn_lock_functions.transfer_ethereum_to_sifchain(request, 50)
-    logging.info(f"transfer_ethereum_to_sifchain_result_json: {result}")
+    burn_lock_functions.transfer_ethereum_to_sifchain(request, 50)
 
 
 def test_transfer_eth_to_ceth_over_limit():
@@ -59,5 +58,3 @@ def test_transfer_ceth_to_eth():
     assert request is not None
     return_result = burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
     logging.info(f"transfer_sifchain_to_ethereum__result_json: {return_result}")
-
-

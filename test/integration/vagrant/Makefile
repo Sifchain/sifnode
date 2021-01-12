@@ -10,7 +10,7 @@ failure_marker=data/tests_failed.txt
 
 .PHONY: all
 all: 
-	rm -rf data/ ../ganachedb ../__pycache__
+	rm -rf data/ ../ganachedb ../__pycache__ .depend/integrationenv
 	$(MAKE) data
 	touch ${in_progress_marker}
 	if ! $(MAKE) test; then touch ${failure_marker}; fi
@@ -28,21 +28,20 @@ all:
 	vagrant ssh -c "cd ${BASEDIR} && bash test/integration/setup-linux-environment.sh"
 	touch $@
 
-.depend/dockerrmi: $(shell find ../../../ -name *.go) | .depend
-	vagrant ssh -c "docker rmi -f integration_sifnode1:latest"
+.depend/integrationenv: .depend/setup | data
+	vagrant ssh -c "cd ${BASEDIR} && bash -x test/integration/start-integration-env.sh" 2>&1 | tee data/start-integration-env.txt
 	touch $@
 
-.PHONY: integrationenv
-integrationenv: .depend/setup .depend/dockerrmi data
-	vagrant ssh -c "cd ${BASEDIR} && bash -x test/integration/start-integration-env.sh" 2>&1 | tee data/start-integration-env.txt
-
 .PHONY: test-whitelistedvalidators
-test-whitelistedvalidators: integrationenv
+test-whitelistedvalidators: .depend/integrationenv
 	vagrant ssh -c "cd ${BASEDIR} && bash -x test/integration/execute_integration_tests_whitelisted_validators.sh" 2>&1 | tee data/$@.sh
 
 .PHONY: test-main
-test-main: integrationenv
-	vagrant ssh -c "cd ${BASEDIR} && bash -x test/integration/execute_integration_tests_main.sh" 2>&1 | tee data/$@.sh
+test-main: .depend/integrationenv
+	for i in execute_integration_tests_against_any_chain execute_integration_tests_against_test_chain execute_integration_tests_whitelisted_validators; \
+      do \
+        vagrant ssh -c "cd ${BASEDIR} && . test/integration/vagrantenv.sh; cd \$${TEST_INTEGRATION_DIR}; bash $${i}.sh" 2>&1 | tee data/$${i}.sh; \
+      done
 
 .PHONY: test
 test: test-main test-whitelistedvalidators

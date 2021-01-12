@@ -1,5 +1,6 @@
+import burn_lock_functions
 from burn_lock_functions import SifchaincliCredentials
-from test_utilities import get_required_env_var
+from test_utilities import get_required_env_var, get_shell_output
 
 
 def sifchain_cli_credentials_for_test(key: str):
