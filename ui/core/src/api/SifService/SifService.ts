@@ -7,17 +7,11 @@ import {
 } from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
 import { debounce } from "lodash";
-import {
-  Address,
-  Asset,
-  AssetAmount,
-  Coin,
-  Network,
-  TxParams,
-} from "../../entities";
+import { Address, Asset, AssetAmount, Network, TxParams } from "../../entities";
+
 import { Mnemonic } from "../../entities/Wallet";
 import { IWalletService } from "../IWalletService";
-import { SifClient } from "../utils/SifClient";
+import { SifClient, SifUnSignedClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 
 export type SifServiceContext = {
@@ -31,6 +25,7 @@ export type ISifService = IWalletService & {
   getSupportedTokens: () => Asset[];
   onSocketError: (handler: HandlerFn<any>) => void;
   onTx: (handler: HandlerFn<any>) => void;
+  onNewBlock: (handler: HandlerFn<any>) => void;
 };
 
 /**
@@ -64,6 +59,8 @@ export default function createSifService({
 
   let client: SifClient | null = null;
 
+  const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl);
+
   const supportedTokens = assets.filter(
     (asset) => asset.network === Network.SIFCHAIN
   );
@@ -87,6 +84,7 @@ export default function createSifService({
 
   const triggerUpdate = debounce(
     async () => {
+      console.log("triggerUpdate" + client?.senderAddress);
       if (!client) {
         state.connected = false;
         state.address = "";
@@ -130,11 +128,15 @@ export default function createSifService({
     },
 
     onSocketError(handler: HandlerFn<any>) {
-      client?.getUnsignedClient().onSocketError(handler);
+      unSignedClient.onSocketError(handler);
     },
 
     onTx(handler: HandlerFn<any>) {
-      client?.getUnsignedClient().onTx(handler);
+      unSignedClient.onTx(handler);
+    },
+
+    onNewBlock(handler: HandlerFn<any>) {
+      unSignedClient.onNewBlock(handler);
     },
 
     async setPhrase(mnemonic: Mnemonic): Promise<Address> {
@@ -173,16 +175,16 @@ export default function createSifService({
 
         if (!account) throw "No Address found on chain";
 
-        const balances = account.balance.map(({ amount, denom }) => {
-          // HACK: Following should be a lookup of tokens loaded from genesis somehow
-          const asset = Coin({
-            symbol: denom,
-            decimals: 0,
-            name: denom,
-            network: Network.SIFCHAIN,
+        const supportedTokenSymbols = supportedTokens.map((s) => s.symbol);
+        const balances = account.balance
+          .filter((balance) => supportedTokenSymbols.includes(balance.denom))
+          .map(({ amount, denom }) => {
+            const asset = supportedTokens.find(
+              (token) => token.symbol === denom
+            )!; // will be found because of filter above
+
+            return AssetAmount(asset, amount, { inBaseUnit: true });
           });
-          return AssetAmount(asset, amount);
-        });
         return balances;
       } catch (error) {
         throw error;
@@ -236,7 +238,6 @@ export default function createSifService({
         const txHash = await client.signAndBroadcast(msgArr, fee, memo);
 
         if (isBroadcastTxFailure(txHash)) {
-          console.log(txHash.rawLog);
           throw new Error(txHash.rawLog);
         }
 

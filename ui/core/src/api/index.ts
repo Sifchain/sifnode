@@ -20,7 +20,7 @@ export type ApiContext = EthereumServiceContext &
 
 // TODO - Conditional load or build-time tree shake
 import localnetconfig from "../config.localnet.json";
-import testnetconfig from "../config.testnet.json";
+import testnetconfig from "../config.sandpit.json";
 
 import assetsEthereumLocalnet from "../assets.ethereum.localnet.json";
 import assetsEthereumMainnet from "../assets.ethereum.mainnet.json";
@@ -38,7 +38,10 @@ import { Asset } from "../entities";
 
 type ConfigMap = { [s: string]: ApiContext };
 type AssetMap = { [s: string]: Asset[] };
-
+function cacheAsset(asset: Asset) {
+  Asset.set(asset.symbol, asset);
+  return asset;
+}
 function getConfig(
   config = "localnet",
   sifchainAssetTag = "sifchain.localnet",
@@ -61,7 +64,7 @@ function getConfig(
 
   const sifchainAssets = assetMap[sifchainAssetTag];
   const ethereumAssets = assetMap[ethereumAssetTag];
-  const allAssets = [...sifchainAssets, ...ethereumAssets];
+  const allAssets = [...sifchainAssets, ...ethereumAssets].map(cacheAsset);
 
   const configMap: ConfigMap = {
     localnet: parseConfig(localnetconfig as ChainConfig, allAssets),

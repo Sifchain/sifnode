@@ -55,6 +55,12 @@ export default defineComponent({
     small: {
       type: Boolean,
     },
+    success: {
+      type: Boolean,
+    },
+    round: {
+      type: Boolean,
+    },
     nocase: {
       type: Boolean,
       default: false,
@@ -77,6 +83,8 @@ export default defineComponent({
         ghost: this.ghost,
         small: this.small,
         nocase: this.nocase,
+        success: this.success,
+        round: this.round,
       },
     };
   },
@@ -156,7 +164,9 @@ export default defineComponent({
       color: white;
     }
   }
-
+  &.round {
+    border-radius: 10px;
+  }
   &.secondary {
     background: $c_gray_100;
     border: 1px solid $c_gray_200;
@@ -170,8 +180,30 @@ export default defineComponent({
 
   &.ghost {
     background: transparent;
-    color: $c_gold;
-    border: 2px solid $c_gold;
+    &.secondary {
+      color: $c_gray_300;
+      border: 2px solid $c_gray_300;
+      &:hover {
+        background: transparent;
+        border: 2px solid $c_gray_400;
+      }
+    }
+    &.success {
+      color: #689829;
+      border: 2px solid #689829;
+      &:hover {
+        background: transparent;
+        border: 2px solid #689829;
+      }
+    }
+    &.primary {
+      color: $c_gold;
+      border: 2px solid $c_gold;
+      &:hover {
+        background: transparent;
+        border: 2px solid $c_gray_400;
+      }
+    }
   }
 
   // sizes:
