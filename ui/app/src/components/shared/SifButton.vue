@@ -33,6 +33,14 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    connect: {
+      type: Boolean,
+      default: false,
+    },
+    active: {
+      type: Boolean,
+      default: false,
+    },
     medium: {
       type: Boolean,
       default: false,
@@ -55,6 +63,12 @@ export default defineComponent({
     small: {
       type: Boolean,
     },
+    success: {
+      type: Boolean,
+    },
+    round: {
+      type: Boolean,
+    },
     nocase: {
       type: Boolean,
       default: false,
@@ -69,6 +83,8 @@ export default defineComponent({
     return {
       classes: {
         block: this.block,
+        connect: this.connect,
+        active: this.active,
         medium: this.medium,
         primary: this.primary,
         "primary-outline": this.primaryOutline,
@@ -77,6 +93,8 @@ export default defineComponent({
         ghost: this.ghost,
         small: this.small,
         nocase: this.nocase,
+        success: this.success,
+        round: this.round,
       },
     };
   },
@@ -156,7 +174,9 @@ export default defineComponent({
       color: white;
     }
   }
-
+  &.round {
+    border-radius: 10px;
+  }
   &.secondary {
     background: $c_gray_100;
     border: 1px solid $c_gray_200;
@@ -168,10 +188,55 @@ export default defineComponent({
     }
   }
 
+  &.connect {
+    background: $g_gray;
+    width: 100%;
+    padding: 24px 0;
+    display: flex;
+    justify-content: center;
+    border: 1px solid $c_gold;
+    border-radius: 24px;
+    border-radius: 12px;
+    &:hover {
+      background: $g_gold;
+      color: $c_white;
+    }
+    &.active {
+      background: $g_gold;
+      color: $c_white;
+      &:hover {
+        background: $g_gray;
+        color: initial
+      }
+    }
+  }
+  
   &.ghost {
     background: transparent;
-    color: $c_gold;
-    border: 2px solid $c_gold;
+    &.secondary {
+      color: $c_gray_300;
+      border: 2px solid $c_gray_300;
+      &:hover {
+        background: transparent;
+        border: 2px solid $c_gray_400;
+      }
+    }
+    &.success {
+      color: #689829;
+      border: 2px solid #689829;
+      &:hover {
+        background: transparent;
+        border: 2px solid #689829;
+      }
+    }
+    &.primary {
+      color: $c_gold;
+      border: 2px solid $c_gold;
+      &:hover {
+        background: transparent;
+        border: 2px solid $c_gray_400;
+      }
+    }
   }
 
   // sizes:

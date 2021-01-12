@@ -3,6 +3,7 @@ import { computed, defineComponent } from "vue";
 import { useCore } from "@/hooks/useCore";
 import BalanceTable from "./BalanceTable.vue";
 import SifButton from "@/components/shared/SifButton.vue";
+import Icon from "@/components/shared/Icon.vue";
 
 function useEtheriumWallet() {
   const { store, actions } = useCore();
@@ -30,7 +31,11 @@ function useEtheriumWallet() {
 
 export default defineComponent({
   name: "EtheriumWalletController",
-  components: { BalanceTable, SifButton },
+  components: {
+    // BalanceTable,
+    SifButton,
+    Icon
+  },
   setup() {
     const {
       address,
@@ -53,14 +58,14 @@ export default defineComponent({
 <template>
   <div class="wrapper">
     <div v-if="connected">
-      <p>{{ address }}</p>
-      <BalanceTable :balances="balances" />
-      <SifButton secondary @click="handleDisconnectClicked"
+      <p class="mb-2" v-if="address">{{ address }} <Icon icon="tick" /></p>
+      <!-- <BalanceTable :balances="balances" /> -->
+      <SifButton connect active @click="handleDisconnectClicked"
         >Disconnect Metamask</SifButton
       >
     </div>
-    <SifButton secondary v-else @click="handleConnectClicked"
-      >Connect to Metamask</SifButton
+    <SifButton connect v-else @click="handleConnectClicked"
+      >Metamask</SifButton
     >
   </div>
 </template>

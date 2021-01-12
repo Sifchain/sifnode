@@ -5,6 +5,10 @@ const { deployProxy, silenceWarnings } = require('@openzeppelin/truffle-upgrades
 const EVMRevert = "revert";
 const BigNumber = web3.BigNumber;
 
+const {
+  expectRevert, // Assertions for transactions that should fail
+} = require('@openzeppelin/test-helpers');
+
 require("chai")
   .use(require("chai-as-promised"))
   .use(require("chai-bignumber")(BigNumber))
@@ -165,6 +169,12 @@ contract("Valset", function (accounts) {
       });
 
       it("should allow the operator to add multiple new validators", async function () {
+        // Fail if not operator
+        await expectRevert(
+            this.cosmosBridge.addValidator(userTwo, this.userTwoPower, {from: userThree}),
+            "Must be the operator."
+        );
+
         await this.cosmosBridge.addValidator(userTwo, this.userTwoPower, {
           from: operator
         }).should.be.fulfilled;
@@ -224,6 +234,12 @@ contract("Valset", function (accounts) {
         const priorTotalPower = await this.cosmosBridge.totalPower();
         Number(priorTotalPower).should.be.bignumber.equal(
           this.initialPowers[0]
+        );
+
+        // Fail if not operator
+        await expectRevert(
+            this.cosmosBridge.updateValidatorPower(userOne, NEW_POWER, {from: userTwo}),
+            "Must be the operator."
         );
 
         // Operator updates the validator's initial power
@@ -291,6 +307,12 @@ contract("Valset", function (accounts) {
         const priorTotalPower = await this.cosmosBridge.totalPower();
         Number(priorTotalPower).should.be.bignumber.equal(
           this.initialPowers[0] + this.initialPowers[1]
+        );
+
+        // Fail if not operator
+        await expectRevert(
+            this.cosmosBridge.removeValidator(userTwo, {from: userOne}),
+            "Must be the operator."
         );
 
         // Operator removes a validator
@@ -369,6 +391,18 @@ contract("Valset", function (accounts) {
         const priorTotalPower = await this.cosmosBridge.totalPower();
         Number(priorTotalPower).should.be.bignumber.equal(
           this.initialPowers[0] + this.initialPowers[1]
+        );
+
+        // Fail if not operator
+        await expectRevert(
+            this.cosmosBridge.updateValset(
+                this.secondValidators,
+                this.secondPowers,
+                {
+                  from: userOne
+                }
+            ),
+            "Must be the operator."
         );
 
         // Operator resets the valset
@@ -544,6 +578,12 @@ contract("Valset", function (accounts) {
         userTwo
       );
       isUserTwoValidatorPost.should.be.equal(false);
+
+      // Fail if not operator
+      await expectRevert(
+          this.cosmosBridge.recoverGas(1, userOne, {from: userTwo}),
+          "Must be the operator."
+      );
 
       // Operator recovers gas from inactive validator userOne
       await this.cosmosBridge.recoverGas(1, userOne, {

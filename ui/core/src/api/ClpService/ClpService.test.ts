@@ -5,34 +5,17 @@ new WS("ws://localhost:26667/websocket");
 // end HACK
 
 import createClpService from ".";
-import { AssetAmount, Coin, Network } from "../../entities";
+import { AssetAmount } from "../../entities";
+import { getTestingTokens } from "../../test/utils/getTestingToken";
 
-const ROWAN = Coin({
-  decimals: 18,
-  symbol: "rowan",
-  name: "Rowan",
-  network: Network.SIFCHAIN,
-});
-
-const CATK = Coin({
-  decimals: 18,
-  symbol: "catk",
-  name: "Apple Token",
-  network: Network.SIFCHAIN,
-});
-
-const CBTK = Coin({
-  decimals: 18,
-  symbol: "cbtk",
-  name: "Banana Token",
-  network: Network.SIFCHAIN,
-});
+const [ROWAN, CATK, CBTK] = getTestingTokens(["ROWAN", "CATK", "CBTK"]);
 
 let service: ReturnType<typeof createClpService>;
 
 beforeEach(() => {
   service = createClpService({
     nativeAsset: ROWAN,
+    sifChainId: "sifchain",
     sifApiUrl: "http://localhost:1317",
     sifWsUrl: "ws://localhost:26667/websocket",
   });
@@ -41,20 +24,12 @@ beforeEach(() => {
 test("getPools()", async () => {
   const pools = await service.getPools();
 
-  expect(pools.map((pool) => pool.toString())).toEqual([
-    "1000000.000000000000000000 ROWAN | 1000000.000000000000000000 CATK",
-    "1000000.000000000000000000 ROWAN | 1000000.000000000000000000 CBTK",
-  ]);
-});
-
-test("getPoolsByLiquidityProvider()", async () => {
-  const pools = await service.getPoolsByLiquidityProvider(
-    "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5"
-  );
-
-  expect(pools.map((pool) => pool.toString())).toEqual([
-    "1000000.000000000000000000 ROWAN | 1000000.000000000000000000 CATK",
-    "1000000.000000000000000000 ROWAN | 1000000.000000000000000000 CBTK",
+  expect(pools.map(pool => pool.toString())).toEqual([
+    "10000000.000000000000000000 ROWAN | 10000000.000000000000000000 CATK",
+    "10000000.000000000000000000 ROWAN | 10000000.000000000000000000 CBTK",
+    "10000000.000000000000000000 ROWAN | 8300.000000000000000000 CETH",
+    "10000000.000000000000000000 ROWAN | 588235.000000000000000000 CLINK",
+    "10000000.000000000000000000 ROWAN | 10000000.000000000000000000 CUSDC",
   ]);
 });
 
@@ -74,8 +49,8 @@ test("addLiquidity", async () => {
           type: "clp/AddLiquidity",
           value: {
             ExternalAsset: { symbol: "catk" },
-            ExternalAssetAmount: "1000",
-            NativeAssetAmount: "1000",
+            ExternalAssetAmount: "1000000000000000000000",
+            NativeAssetAmount: "1000000000000000000000",
             Signer: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
           },
         },
@@ -131,8 +106,8 @@ test("createPool()", async () => {
           type: "clp/CreatePool",
           value: {
             ExternalAsset: { symbol: "catk" },
-            ExternalAssetAmount: "1000",
-            NativeAssetAmount: "1000",
+            ExternalAssetAmount: "1000000000000000000000",
+            NativeAssetAmount: "1000000000000000000000",
             Signer: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
           },
         },
@@ -177,5 +152,5 @@ test("getLiquidityProvider()", async () => {
 
   expect(lp?.asset.symbol).toEqual("catk");
   expect(lp?.address).toEqual("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5");
-  expect(lp?.units.toFixed(0)).toEqual("1000000");
+  expect(lp?.units.toFixed(0)).toEqual("10000000");
 });

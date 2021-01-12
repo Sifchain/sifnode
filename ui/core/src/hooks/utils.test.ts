@@ -1,20 +1,12 @@
 import { AssetAmount, Pool, Coin, Network } from "../entities";
+import { getTestingTokens } from "../test/utils/getTestingToken";
 import { assetPriceMessage } from "./utils";
 
 describe("assets with decimals", () => {
+  const [CATK, CBTK] = getTestingTokens(["CATK", "CBTK"]);
   const ASSETS = {
-    atk: Coin({
-      symbol: "catk",
-      name: "Atk",
-      network: Network.SIFCHAIN,
-      decimals: 18,
-    }),
-    btk: Coin({
-      symbol: "cbtk",
-      name: "Btk",
-      network: Network.SIFCHAIN,
-      decimals: 18,
-    }),
+    atk: CATK,
+    btk: CBTK,
   };
   test("assetPriceMessage", () => {
     const msg = assetPriceMessage(

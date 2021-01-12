@@ -1,14 +1,16 @@
-import { reactive, Ref, toRefs } from "@vue/reactivity";
+import { reactive } from "@vue/reactivity";
 import { wallet, WalletStore } from "./wallet";
 import { asset, AssetStore } from "./asset";
 import { pools, PoolStore } from "./pools";
-import { notifications, NotificationsStore } from "./notifications"
+import { notifications, NotificationsStore } from "./notifications";
+import { LiquidityProvider, Pool } from "../entities";
 export * from "./poolFinder";
 
 export type Store = {
   wallet: WalletStore;
   asset: AssetStore;
   pools: PoolStore;
+  accountpools: { lp: LiquidityProvider; pool: Pool }[];
   notifications: NotificationsStore;
 };
 
@@ -17,7 +19,8 @@ export function createStore() {
     wallet,
     asset,
     pools,
-    notifications
+    accountpools: [],
+    notifications,
   }) as Store;
 
   return state;

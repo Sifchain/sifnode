@@ -78,10 +78,10 @@ export default defineComponent({
         ><template v-slot:end
           ><SifButton
             v-if="max"
-            class="max-button"
             @click="$emit('maxclicked')"
             small
             ghost
+            primary
             >MAX</SifButton
           ></template
         ></SifInput
