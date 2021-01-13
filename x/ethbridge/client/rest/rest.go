@@ -193,6 +193,9 @@ func burnOrLockHandler(cliCtx context.CLIContext, lockOrBurn string) http.Handle
 
 		// create the message
 		var msg sdk.Msg
+		fmt.Sprintf("qqr req is %v", req)
+		fmt.Sprintf("qqr req.Ceth is %v", req.CethAmount)
+
 		switch lockOrBurn {
 		case "lock":
 			msg = types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount, types.MessageType(0))
