@@ -17,6 +17,7 @@ sifnodecli tx gov submit-proposal software-upgrade <upgrade_name> --from <from> 
 ```
 
 | Parameter | Description |
+|-----------|-------------|
 | `<upgrade_name>` | Name of the upgrade. |
 | `<from>` | The moniker of the validator proposing the upgrade. |
 | `<deposit>` | The deposit/fee for proposing the upgrade. |
