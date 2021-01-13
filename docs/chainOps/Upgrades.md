@@ -13,7 +13,13 @@ Also, get the full S3 URL by clicking on the binary itself (inside the S3 consol
 3. Submit an upgrade proposal to the network:
 
 ```
-sifnodecli tx gov submit-proposal software-upgrade <upgrade_name> --from <from> --deposit <deposit> --upgrade-height <height> --info '{"binaries":{"linux/amd64":"<url>"}}' --title <title> --description <description>
+sifnodecli tx gov submit-proposal software-upgrade <upgrade_name> \
+    --from <from> \
+    --deposit <deposit> \
+    --upgrade-height <height> \
+    --info '{"binaries":{"linux/amd64":"<url>"}}' \
+    --title <title> \
+    --description <description>
 ```
 
 | Parameter | Description |
