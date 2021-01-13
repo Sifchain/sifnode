@@ -1,5 +1,7 @@
 # Sifnode Upgrades
 
+## Packaging and proposing an upgrade
+
 Upgrades on the Sifnodes themselves are automated, however there are several actions required to be performed prior.
 
 1. Generate a new release [here](https://github.com/Sifchain/sifnode/releases).
@@ -22,6 +24,8 @@ sifnodecli tx gov submit-proposal software-upgrade <upgrade_name> \
     --description <description>
 ```
 
+Where:
+
 | Parameter | Description |
 |-----------|-------------|
 | `<upgrade_name>` | Name of the upgrade. This must match the upgrade name being used by the upgrade handler in the new binary. |
@@ -42,4 +46,29 @@ sifnodecli tx gov submit-proposal software-upgrade sifnoded \
     --info '{"binaries":{"linux/amd64":"https://example.com/sifnode.zip?checksum=sha256:8630d1e36017ca680d572926d6a4fc7fe9a24901c52f48c70523b7d44ad0cfb2"}}' \
     --title 'Brave new world' \
     --description 'A special new upgrade'
+```
+
+## Voting on an upgrade proposal
+
+To vote on a proposal, simply run:
+
+```
+sifnodecli tx gov vote 1 yes \
+    --from <from> \
+    --keyring-backend file \
+    --chain-id <chain_id>
+```
+
+| Parameter | Description |
+|-----------|-------------|
+| `<from>` | The moniker of the validator voting on the upgrade. |
+| `<chain_id>` | The chain ID of the network. |
+
+e.g.:
+ 
+```
+sifnodecli tx gov vote 1 yes \
+    --from my-node-moniker \
+    --keyring-backend file \
+    --chain-id sifchain
 ```
