@@ -142,11 +142,14 @@ def get_password(network_definition_file_json):
 
 
 def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
+    network_element = "--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
     command_line = f"yarn --cwd {transfer_request.smart_contracts_dir} " \
                    f"integrationtest:getTokenBalance " \
                    f"--ethereum_address {transfer_request.ethereum_address} " \
-                   f"--bridgetoken_address {transfer_request.bridgebank_address} " \
-                   f"--ethereum_network {transfer_request.ethereum_network} "
+                   f"--bridgetoken_address {transfer_request.bridgetoken_address} " \
+                   f"{symbol_element} " \
+                   f"{network_element}"
     result = run_yarn_command(command_line)
     return int(result["balanceWei"])
 
@@ -218,9 +221,9 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
-    chaindir = get_required_env_var("CHAINDIR")
+    direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
     command_line = f"{yes_entry} " \
-                   f"sifnodecli tx ethbridge burn {node} " \
+                   f"sifnodecli tx ethbridge {direction} {node} " \
                    f"{transfer_request.sifchain_address} " \
                    f"{transfer_request.ethereum_address} " \
                    f"{transfer_request.amount} " \
@@ -247,6 +250,15 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
     command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     logging.debug(f"send_ethereum_currency_to_sifchain_addr")
     return run_yarn_command(command_line)
+
+
+def lock_rowan(user, amount):
+    command_line = """yes {} |sifnodecli tx ethbridge lock {} \
+            0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rowan \
+            --ethereum-chain-id=5777 --from={} --yes -o json
+    """.format(network_password, get_user_account(user, network_password), amount, user)
+    return get_shell_output(command_line)
+
 
 
 currency_pairs = {
@@ -288,36 +300,6 @@ def wait_for_predicate(predicate, success_result, max_attempts=30, debug_prefix=
                 logging.debug(
                     f"{debug_prefix} waiting for predicate, attempt {attempts}")
                 time.sleep(5)
-
-
-def transact_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest):
-    sifchain_symbol = mirror_of(transfer_request.ethereum_symbol)
-    try:
-        starting_balance = get_sifchain_addr_balance(
-            sifaddress=transfer_request.sifchain_address,
-            sifnodecli_node=transfer_request.sifnodecli_node,
-            denom=sifchain_symbol
-        )
-    except:
-        # Sometimes we're creating an account by sending it currency for the
-        # first time, so you can't get a balance.
-        logging.debug(f"creating the account now {transfer_request}")
-        starting_balance = 0
-    logging.debug(f"starting balance for {transfer_request.sifchain_address} is {starting_balance}")
-    send_from_ethereum_to_sifchain(transfer_request=transfer_request)
-    advance_n_ethereum_blocks(n_wait_blocks, smart_contracts_dir=transfer_request.smart_contracts_dir)
-    wait_for_sif_account(
-        transfer_request.sifchain_address,
-        sifchaincli_node=transfer_request.sifnodecli_node
-    )
-    wait_for_sifchain_addr_balance(
-        sifchain_address=transfer_request.sifchain_address,
-        symbol=sifchain_symbol,
-        target_balance=starting_balance + transfer_request.amount,
-        sifchaincli_node=transfer_request.sifnodecli_node,
-        max_attempts=30,
-        debug_prefix=f"{transfer_request.sifchain_address} / {sifchain_symbol} / {transfer_request.amount}"
-    )
 
 
 def ganache_transactions_json():

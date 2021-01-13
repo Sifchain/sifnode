@@ -4,12 +4,12 @@ import time
 
 import burn_lock_functions
 from integration_env_credentials import sifchain_cli_credentials_for_test
-from test_utilities import amount_in_wei, test_integration_dir, wait_for_sifchain_addr_balance, \
-    transact_ethereum_to_sifchain, get_required_env_var, \
-    EthereumToSifchainTransferRequest
-from test_utilities import get_shell_output, SIF_ETH, get_sifchain_addr_balance, \
+from test_utilities import get_shell_output, get_sifchain_addr_balance, \
     advance_n_ethereum_blocks, n_wait_blocks, \
     send_from_ethereum_to_sifchain
+from test_utilities import test_integration_dir, wait_for_sifchain_addr_balance, \
+    get_required_env_var, \
+    EthereumToSifchainTransferRequest
 
 
 def test_chain_rollback():
@@ -44,7 +44,7 @@ def test_chain_rollback():
     logging.info(f"initial_user_balance {initial_user_balance}")
 
     transfer_1 = send_from_ethereum_to_sifchain(transfer_request=request)
-    logging.info(f"transfer {transfer_1} started but it will never complete")
+    logging.info(f"transfer started but it will never complete (by design): {transfer_1} ")
 
     logging.info("advance less than wait blocks")
     advance_n_ethereum_blocks(n_wait_blocks / 2, request.smart_contracts_dir)

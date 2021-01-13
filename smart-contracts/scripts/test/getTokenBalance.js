@@ -1,5 +1,6 @@
 module.exports = async (cb) => {
     const Web3 = require("web3");
+    const BigNumber = require("bignumber.js")
 
     const sifchainUtilities = require('./sifchainUtilities')
     const contractUtilites = require('./contractUtilities');
@@ -22,27 +23,23 @@ module.exports = async (cb) => {
     let balanceWei, balanceEth;
     let result = {};
     try {
+        const web3instance = contractUtilites.buildWeb3(this, argv);
         if (argv.symbol === 'eth') {
-            const web3instance = contractUtilites.buildWeb3(this, argv);
             balanceWei = await web3instance.eth.getBalance(argv.ethereum_address);
-            balanceEth = web3instance.utils.fromWei(balanceWei);
+            result.symbol = "eth";
         } else {
             const addr = argv.bridgetoken_address;
             if (!addr)
                 throw "must provide --bridgetoken_address for non-eth"
-            const bridgeTokenContract = contractUtilites.buildContract(this, argv, "BridgeToken", argv.bridgetoken_address);
-            const tokenInstance = await bridgeTokenContract.at(token);
-            const name = await tokenInstance.name();
-            const symbol = await tokenInstance.symbol();
-            const decimals = await tokenInstance.decimals();
-            balanceWei = new BigNumber(await tokenInstance.balanceOf(account));
-            balanceEth = balanceWei.div(new BigNumber(10).pow(decimals.toNumber()));
+            const bridgeTokenContract = await contractUtilites.buildContract(this, argv, "BridgeToken", argv.bridgetoken_address);
+            result["symbol"] = bridgeTokenContract.symbol;
+            balanceWei = new BigNumber(await bridgeTokenContract.balanceOf(argv.ethereum_address))
         }
+        balanceEth = web3instance.utils.fromWei(balanceWei.toString());
         result = {
             ...result,
             balanceWei,
             balanceEth,
-            "symbol": argv.symbol
         }
         console.log(JSON.stringify(result, undefined, 0));
         return cb();

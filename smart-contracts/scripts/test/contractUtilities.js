@@ -44,11 +44,8 @@ let web3 = undefined;
 
 function buildWeb3(context, argv) {
     if (web3) {
-        console.log("use existing web3");
         return web3;
     } else {
-        console.log("build new web3");
-
         const provider = buildProvider(context, argv);
         const Web3 = context.require("web3");
         web3 = new Web3(provider);

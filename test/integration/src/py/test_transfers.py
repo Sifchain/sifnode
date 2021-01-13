@@ -7,16 +7,6 @@ import pytest
 
 
 @pytest.mark.skip(reason="not implemented")
-def test_transfer_erowan_to_rowan():
-    assert False
-
-
-@pytest.mark.skip(reason="not implemented")
-def test_transfer_rowan_to_erowan():
-    assert False
-
-
-@pytest.mark.skip(reason="not implemented")
 def test_transfer_usdt_to_cusdt():
     assert False
 
