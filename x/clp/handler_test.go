@@ -239,7 +239,7 @@ func TestSwap(t *testing.T) {
 	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin1, nativeCoin})
 	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin2})
 
-	msg := clp.NewMsgSwap(signer, assetEth, assetDash, sdk.NewUint(1))
+	msg := clp.NewMsgSwap(signer, assetEth, assetDash, sdk.NewUint(1), sdk.ZeroUint())
 	res, err := handler(ctx, msg)
 	require.Error(t, err)
 	require.Nil(t, res)
@@ -254,7 +254,7 @@ func TestSwap(t *testing.T) {
 	require.NotNil(t, res)
 	receivedAmount := CalculateSwapReceived(t, keeper, ctx, assetEth, assetDash, swapSentAssetETH)
 
-	msg = clp.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH)
+	msg = clp.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, receivedAmount)
 	res, err = handler(ctx, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)

@@ -337,7 +337,12 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	if err != nil {
 		return nil, err
 	}
+	if emitAmount.LT(msg.MinReceivingAmount) {
+		return nil, types.ErrReceivedAmountBelowExpected
+	}
+
 	err = keeper.FinalizeSwap(ctx, emitAmount.String(), finalPool, msg)
+
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 	}
