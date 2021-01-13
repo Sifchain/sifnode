@@ -1,8 +1,7 @@
 import { effect } from "@vue/reactivity";
-import { Asset } from "../entities";
 import { ActionContext } from "..";
+import { Asset } from "../entities";
 import B from "../entities/utils/B";
-import { ETH } from "../constants";
 
 export default ({
   api,
@@ -17,11 +16,7 @@ export default ({
     async connectToWallet() {
       await api.EthereumService.connect();
     },
-    async transferEthWallet(
-      amount: number,
-      recipient: string,
-      asset: Asset = ETH
-    ) {
+    async transferEthWallet(amount: number, recipient: string, asset: Asset) {
       const hash = await api.EthereumService.transfer({
         amount: B(amount, asset.decimals),
         recipient,

@@ -4,10 +4,12 @@
       <template v-slot:right>
         <WithWallet>
           <template v-slot:disconnected="{ requestDialog }">
-            <SifButton primary @click="requestDialog">Connect Wallet</SifButton>
+            <SifButton round small ghost secondary @click="requestDialog"
+              >Not connected</SifButton
+            >
           </template>
           <template v-slot:connected="{ connectedText, requestDialog }">
-            <SifButton primary @click="requestDialog">
+            <SifButton small ghost success round @click="requestDialog">
               {{ connectedText }}
             </SifButton>
           </template>
@@ -16,7 +18,7 @@
     </Header>
 
     <router-view />
-    <Notifications/>
+    <Notifications />
   </div>
 </template>
 

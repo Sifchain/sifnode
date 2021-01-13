@@ -116,7 +116,7 @@ contract Valset is ValsetStorage {
      * @dev: removeValidator
      */
     function removeValidator(address _validatorAddress) public onlyOperator {
-        require(validators[_validatorAddress][currentValsetVersion], "Can only remove active valdiators");
+        require(validators[_validatorAddress][currentValsetVersion], "Can only remove active validators");
 
         // Update validator count and total power
         validatorCount = validatorCount.sub(1);

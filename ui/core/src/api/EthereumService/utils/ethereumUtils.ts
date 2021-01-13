@@ -7,11 +7,9 @@ import {
   WebsocketProvider,
 } from "web3-core";
 
-import { ETH } from "../../../constants";
-import { Address, Asset, AssetAmount, Token } from "../../../entities";
+import { Address, Asset, AssetAmount, Network, Token } from "../../../entities";
 import B from "../../../entities/utils/B";
 import { isToken } from "../../../entities/utils/isToken";
-
 import erc20TokenAbi from "./erc20TokenAbi";
 
 export function getTokenContract(web3: Web3, asset: Token) {
@@ -73,7 +71,7 @@ export async function transferToken(
     }
 
     contract.methods
-      .transfer(toAddress, JSBI.toNumber(amount))
+      .transfer(toAddress, amount.toString())
       .send({ from: fromAddress })
       .on("transactionHash", (_hash: string) => {
         hash = _hash;
@@ -126,5 +124,15 @@ export async function transferEther(
 
 export async function getEtheriumBalance(web3: Web3, address: Address) {
   const ethBalance = await web3.eth.getBalance(address);
-  return AssetAmount(ETH, web3.utils.fromWei(ethBalance));
+  // TODO: Pull as search from supported tokens
+  return AssetAmount(
+    {
+      symbol: "eth",
+      address: "",
+      decimals: 18,
+      name: "Ethereum",
+      network: Network.ETHEREUM,
+    },
+    web3.utils.fromWei(ethBalance)
+  );
 }
