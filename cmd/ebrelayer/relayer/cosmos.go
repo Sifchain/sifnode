@@ -90,6 +90,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 			if !ok {
 				sub.Logger.Error("new tx: error while extracting event data from new tx")
 			}
+
 			sub.Logger.Info("New transaction witnessed")
 
 			// Iterate over each event in the transaction
@@ -113,7 +114,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 // Replay the missed events
 func (sub CosmosSub) Replay(fromBlock int64, toBlock int64) {
-	client, err := tmClient.New(sub.TmProvider, "")
+	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.Logger.Error("failed to initialize a client", "err", err)
 		return
@@ -131,17 +132,16 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64) {
 		tmpBlockNumber := blockNumber
 		block, err := client.BlockResults(&tmpBlockNumber)
 		blockNumber++
-		sub.Logger.Info("Replay start to process block %d", blockNumber)
+		sub.Logger.Info(fmt.Sprintf("Replay start to process block %d", blockNumber))
 
 		if err != nil {
-			sub.Logger.Error("failed to start a client", "err", err)
+			sub.Logger.Error(fmt.Sprintf("failed to start a client", "err", err))
 			continue
 		}
 		for _, log := range block.EndBlockEvents {
-			sub.Logger.Info("failed to start a client %v", log)
+			sub.Logger.Info(fmt.Sprintf("Get log from block %v", log))
 		}
 	}
-
 }
 
 // getOracleClaimType sets the OracleClaim's claim type based upon the witnessed event type
