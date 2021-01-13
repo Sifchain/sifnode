@@ -57,13 +57,21 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg types.MsgAddLiquidity, pool ty
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
-	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, extInt)
-	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, nativeInt)
-	if !k.HasCoins(ctx, msg.Signer, sdk.Coins{externalAssetCoin, nativeAssetCoin}) {
+	var coins sdk.Coins
+	if extInt != sdk.ZeroInt() {
+		externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, extInt)
+		coins = coins.Add(externalAssetCoin)
+	}
+	if nativeInt != sdk.ZeroInt() {
+		nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, nativeInt)
+		coins = coins.Add(nativeAssetCoin)
+	}
+
+	if !k.HasCoins(ctx, msg.Signer, coins) {
 		return nil, types.ErrBalanceNotAvailable
 	}
 	// Send from user to pool
-	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, msg.Signer, types.ModuleName, sdk.Coins{externalAssetCoin, nativeAssetCoin})
+	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, msg.Signer, types.ModuleName, coins)
 	if err != nil {
 		return nil, err
 	}
