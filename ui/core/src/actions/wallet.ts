@@ -30,6 +30,21 @@ export default ({
     async disconnect() {
       api.SifService.purgeClient();
     },
+
+    async connectToWallet() {
+      try {
+        // TODO type
+        await api.SifService.connect();
+        store.wallet.sif.isConnected = true;
+      } catch (error) {
+        // to the ui??
+        notify({ type: "error", ...error });
+      }
+    },
+
+    async disconnectWallet() {
+      await api.SifService.disconnect();
+    },
   };
 
   effect(() => {
@@ -38,8 +53,8 @@ export default ({
       if (store.wallet.sif.isConnected) {
         notify({
           type: "success",
-          message: "Connected to Sifchain",
-          detail: ``,
+          message: "Sif Account connected",
+          detail: store.wallet.sif.address,
         });
       }
     }
