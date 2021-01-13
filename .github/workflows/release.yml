@@ -1,4 +1,4 @@
-name: Publish Release Images
+name: Release and Upgrade Images
 
 on:
   release:
