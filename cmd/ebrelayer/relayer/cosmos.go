@@ -135,11 +135,24 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64) {
 		sub.Logger.Info(fmt.Sprintf("Replay start to process block %d", blockNumber))
 
 		if err != nil {
-			sub.Logger.Error(fmt.Sprintf("failed to start a client", "err", err))
+			sub.Logger.Error(fmt.Sprintf("failed to start a client %s", err))
 			continue
 		}
-		for _, log := range block.EndBlockEvents {
-			sub.Logger.Info(fmt.Sprintf("Get log from block %v", log))
+
+		for _, log := range block.TxsResults {
+			for _, event := range log.Events {
+
+				claimType := getOracleClaimType(event.GetType())
+
+				switch claimType {
+				case types.MsgBurn, types.MsgLock:
+					// Parse event data, then package it as a ProphecyClaim and relay to the Ethereum Network
+					err := sub.handleBurnLockMsg(event.GetAttributes(), claimType)
+					if err != nil {
+						sub.Logger.Error(err.Error())
+					}
+				}
+			}
 		}
 	}
 }
@@ -167,7 +180,6 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 	}
 	sub.Logger.Info(cosmosMsg.String())
 
-	// TODO: Ideally one validator should relay the prophecy and other validators make oracle claims upon that prophecy
 	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
 	err = txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
 		claimType, prophecyClaim, sub.PrivateKey)

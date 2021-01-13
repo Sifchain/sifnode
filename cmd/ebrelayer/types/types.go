@@ -130,13 +130,13 @@ func NewCosmosMsg(claimType Event, cosmosSender []byte, cosmosSenderSequence *bi
 // String implements fmt.Stringer
 func (c CosmosMsg) String() string {
 	if c.ClaimType == MsgLock {
-		return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nEthereum Recipient: %v"+
+		return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+
 			"\nSymbol: %v\nAmount: %v\n",
-			c.ClaimType.String(), string(c.CosmosSender), c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
+			c.ClaimType.String(), string(c.CosmosSender), c.CosmosSenderSequence, c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
 	}
-	return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nEthereum Recipient: %v"+
+	return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+
 		"\nSymbol: %v\nAmount: %v\n",
-		c.ClaimType.String(), string(c.CosmosSender), c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
+		c.ClaimType.String(), string(c.CosmosSender), c.CosmosSenderSequence, c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
 }
 
 // CosmosMsgAttributeKey enum containing supported attribute keys
