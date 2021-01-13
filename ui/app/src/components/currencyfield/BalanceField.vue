@@ -2,6 +2,7 @@
 import { useCore } from "@/hooks/useCore";
 import { computed } from "@vue/reactivity";
 import { defineComponent } from "vue";
+
 export default defineComponent({
   props: ["symbol"],
   setup(props) {

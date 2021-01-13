@@ -8,15 +8,14 @@ const BridgeToken = artifacts.require("BridgeToken");
 const EVMRevert = "revert";
 const BigNumber = web3.BigNumber;
 
-
-const {
-  expectRevert, // Assertions for transactions that should fail
-} = require('@openzeppelin/test-helpers');
-
 require("chai")
   .use(require("chai-as-promised"))
   .use(require("chai-bignumber")(BigNumber))
   .should();
+
+const {
+  expectRevert, // Assertions for transactions that should fail
+} = require('@openzeppelin/test-helpers');
 
 contract("CosmosBridge", function (accounts) {
   // System operator
@@ -43,76 +42,25 @@ contract("CosmosBridge", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
-      this.valset = await deployProxy(Valset,
-        [
-          operator,
-          this.initialValidators,
-          this.initialPowers
-        ],
+      
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
+        operator,
+        consensusThreshold,
+        this.initialValidators,
+        this.initialPowers
+      ],
         {unsafeAllowCustomTypes: true}
       );
-
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address], {unsafeAllowCustomTypes: true});
-
-      // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle,
-        [
-          operator,
-          this.valset.address,
-          this.cosmosBridge.address,
-          consensusThreshold
-        ],
-        {
-          unsafeAllowCustomTypes: true
-        }
-      );
-
+      
       // Deploy BridgeBank contract
-      this.bridgeBank = await deployProxy(BridgeBank,
-        [
-          operator,
-          this.oracle.address,
-          this.cosmosBridge.address,
-          operator
-        ],
-        {
-          unsafeAllowCustomTypes: true
-        }
+      this.bridgeBank = await deployProxy(BridgeBank, [
+        operator,
+        this.cosmosBridge.address,
+        operator
+      ],
+      {unsafeAllowCustomTypes: true}
       );
-    });
-
-    it("should deploy the CosmosBridge with the correct parameters", async function () {
-      this.cosmosBridge.should.exist;
-
-      const claimCount = await this.cosmosBridge.prophecyClaimCount();
-      Number(claimCount).should.be.bignumber.equal(0);
-
-      const cosmosBridgeValset = await this.cosmosBridge.valset();
-      cosmosBridgeValset.should.be.equal(this.valset.address);
-    });
-
-    it("should allow the operator to set the Oracle", async function () {
-      this.oracle.should.exist;
-
-      await this.cosmosBridge.setOracle(this.oracle.address, {
-        from: operator
-      }).should.be.fulfilled;
-
-      const bridgeOracle = await this.cosmosBridge.oracle();
-      bridgeOracle.should.be.equal(this.oracle.address);
-    });
-
-    it("should not allow the operator to update the Oracle once it has been set", async function () {
-      await this.cosmosBridge.setOracle(this.oracle.address, {
-        from: operator
-      }).should.be.fulfilled;
-
-      await this.cosmosBridge
-        .setOracle(this.oracle.address, {
-          from: operator
-        })
-        .should.be.rejectedWith(EVMRevert);
     });
 
     it("should allow the operator to set the Bridge Bank", async function () {
@@ -127,12 +75,12 @@ contract("CosmosBridge", function (accounts) {
     });
 
     it("should not allow the operator to update the Bridge Bank once it has been set", async function () {
-      await this.cosmosBridge.setBridgeBank(this.oracle.address, {
+      await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
         from: operator
       }).should.be.fulfilled;
 
       await this.cosmosBridge
-        .setBridgeBank(this.oracle.address, {
+        .setBridgeBank(operator, {
           from: operator
         })
         .should.be.rejectedWith(EVMRevert);
@@ -151,50 +99,46 @@ contract("CosmosBridge", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
-      this.valset = await deployProxy(Valset,
-        [
-          operator,
-          this.initialValidators,
-          this.initialPowers
-        ],
-        {unsafeAllowCustomTypes: true}
-      );
-
+      
       // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
-        {unsafeAllowCustomTypes: true});
-
-      // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle,
-        [
-          operator,
-          this.valset.address,
-          this.cosmosBridge.address,
-          consensusThreshold
-        ],
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
+        operator,
+        consensusThreshold,
+        this.initialValidators,
+        this.initialPowers
+      ],
         {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
-      this.bridgeBank = await deployProxy(BridgeBank,
-        [
-          operator,
-          this.oracle.address,
-          this.cosmosBridge.address,
-          operator
-        ],
-        {unsafeAllowCustomTypes: true}
+      this.bridgeBank = await deployProxy(BridgeBank, [
+        operator,
+        this.cosmosBridge.address,
+        operator
+      ],
+      {unsafeAllowCustomTypes: true}
       );
 
-      // Operator sets Oracle
-      await this.cosmosBridge.setOracle(this.oracle.address, {
-        from: operator
-      });
+      // Fail to set BridgeBank if not the operator.
+      await expectRevert(
+          this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
+            from: userOne
+          }),
+          "Must be the operator."
+      );
 
       // Operator sets Bridge Bank
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
         from: operator
       });
+
+      // Fail to set BridgeBank a second time.
+      await expectRevert(
+          this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
+            from: operator
+          }),
+          "The Bridge Bank cannot be updated once it has been set"
+      );
 
       // Deploy TEST tokens
       this.symbol = "TEST";
@@ -260,6 +204,37 @@ contract("CosmosBridge", function (accounts) {
       ).should.be.fulfilled;
     });
 
+    it("should not allow for the creation of a new burn prophecy claim over current amount locked", async function () {
+      await expectRevert(
+          this.cosmosBridge.newProphecyClaim(
+              CLAIM_TYPE_BURN,
+              this.cosmosSender,
+              ++this.cosmosSenderSequence,
+              this.ethereumReceiver,
+              this.symbol,
+              1,
+              {
+                from: userOne
+              }
+          ),
+          "Not enough locked assets to complete the proposed prophecy"
+      );
+    });
+
+    it("should not allow for anything other than BURN/LOCK (1 or 2)", async function () {
+      await this.cosmosBridge.newProphecyClaim(
+          3,
+          this.cosmosSender,
+          ++this.cosmosSenderSequence,
+          this.ethereumReceiver,
+          this.symbol,
+          this.amount,
+          {
+            from: userOne
+          }
+      ).should.be.rejectedWith(EVMRevert);
+    });
+
     it("should allow for the creation of new lock prophecy claims", async function () {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
@@ -290,17 +265,13 @@ contract("CosmosBridge", function (accounts) {
       const event = logs.find(e => e.event === "LogNewProphecyClaim");
 
       Number(event.args._claimType).should.be.bignumber.equal(CLAIM_TYPE_LOCK);
-      event.args._cosmosSender.should.be.equal(this.cosmosSender);
+
       event.args._ethereumReceiver.should.be.equal(this.ethereumReceiver);
-      event.args._validatorAddress.should.be.equal(userOne);
       event.args._symbol.should.be.equal(defaultTokenPrefix + this.symbol);
       Number(event.args._amount).should.be.bignumber.equal(this.amount);
     });
 
-    it("should increase the prophecy claim count upon the creation of new a prophecy claim", async function () {
-      const priorProphecyClaimCount = await this.cosmosBridge.prophecyClaimCount();
-      Number(priorProphecyClaimCount).should.be.bignumber.equal(0);
-
+    it("should be able to create a new prophecy claim", async function () {
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
@@ -313,8 +284,6 @@ contract("CosmosBridge", function (accounts) {
         }
       ).should.be.fulfilled;
 
-      const postProphecyClaimCount = await this.cosmosBridge.prophecyClaimCount();
-      Number(postProphecyClaimCount).should.be.bignumber.equal(1);
     });
 
     it("should not allow a eth to be locked if the amount is over the limit", async function () {
@@ -355,8 +324,6 @@ contract("CosmosBridge", function (accounts) {
         from: operator
       }).should.be.fulfilled;
 
-
-
       await expectRevert(
         this.bridgeBank.lock(
           this.cosmosRecipient,
@@ -388,64 +355,30 @@ contract("CosmosBridge", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree, userFour];
       this.initialPowers = [30, 20, 21, 29];
-      this.valset = await deployProxy(Valset,
-        [
-          operator,
-          this.initialValidators,
-          this.initialPowers
-        ],
-        {unsafeAllowCustomTypes: true}
-      );
 
       // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
-        {unsafeAllowCustomTypes: true});
-
-      // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle,
-        [
-          operator,
-          this.valset.address,
-          this.cosmosBridge.address,
-          consensusThreshold
-        ],
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
+        operator,
+        consensusThreshold,
+        this.initialValidators,
+        this.initialPowers
+      ],
         {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
-      this.bridgeBank = await deployProxy(BridgeBank,[
+      this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
-        this.oracle.address,
         this.cosmosBridge.address,
         operator
       ],
       {unsafeAllowCustomTypes: true}
       );
 
-      // Operator sets Oracle
-      await this.cosmosBridge.setOracle(this.oracle.address, {
-        from: operator
-      });
-
       // Operator sets Bridge Bank
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
         from: operator
       });
-    });
-
-    it("should not show fake prophecy claims as active", async function () {
-      const prophecyClaimCount = 4;
-
-      // Get a prophecy claim's status
-      const status = await this.cosmosBridge.isProphecyClaimActive(
-        prophecyClaimCount,
-        {
-          from: accounts[7]
-        }
-      );
-
-      // Bridge claim should not be active
-      status.should.be.equal(false);
     });
 
     it("should allow users to check if a prophecy claim is currently active", async function () {
@@ -466,23 +399,23 @@ contract("CosmosBridge", function (accounts) {
       const prophecyClaimCount = event.args._prophecyID;
 
       // Get the ProphecyClaim's status
-      const status = await this.cosmosBridge.isProphecyClaimActive(
+      const status = await this.cosmosBridge.getProphecyThreshold(
         prophecyClaimCount,
         {
           from: accounts[7]
         }
       );
 
-      // Bridge claim should be active
-      status.should.be.equal(true);
+      // Bridge claim should be active. False means it has not been 100% confirmed yet
+      (status['0']).should.be.equal(false);
     });
 
-    it("should allow users to check if a prophecy claim's original validator is currently an active validator", async function () {
-      // Create the ProphecyClaim
+    it("should allow us to check the cost of submitting a prophecy claim", async function () {
+      // Create the prophecy claim
       const { logs } = await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_LOCK,
         this.cosmosSender,
-        this.cosmosSenderSequence,
+        ++this.cosmosSenderSequence,
         this.ethereumReceiver,
         this.symbol,
         this.amount,
@@ -495,15 +428,56 @@ contract("CosmosBridge", function (accounts) {
       const prophecyClaimCount = event.args._prophecyID;
 
       // Get the ProphecyClaim's status
-      const status = await this.cosmosBridge.isProphecyClaimValidatorActive(
-        prophecyClaimCount,
-        {
-          from: accounts[7]
-        }
-      );
+      const status = await this.cosmosBridge.getProphecyThreshold(prophecyClaimCount);
 
       // Bridge claim should be active
-      status.should.be.equal(true);
+      (status[0]).should.be.equal(false);
+    });
+
+    it("should revert when a prophecy is resubmitted after payout", async function () {
+      // Create the ProphecyClaim
+
+      for (let i = 0; i < this.initialValidators.length - 1; i++) {
+        await this.cosmosBridge.newProphecyClaim(
+          CLAIM_TYPE_LOCK,
+          this.cosmosSender,
+          this.cosmosSenderSequence,
+          this.ethereumReceiver,
+          this.symbol,
+          this.amount,
+          {
+            from: this.initialValidators[i]
+          }
+        );
+      }
+
+      await expectRevert(
+        this.cosmosBridge.newProphecyClaim(
+          CLAIM_TYPE_LOCK,
+          this.cosmosSender,
+          this.cosmosSenderSequence,
+          this.ethereumReceiver,
+          this.symbol,
+          this.amount,
+          {
+            from: this.initialValidators[ (this.initialValidators.length - 1) ]
+          }
+        ),
+        "prophecyCompleted"
+      );
+      const claimID = (await this.cosmosBridge.getProphecyID(
+        CLAIM_TYPE_LOCK,
+        this.cosmosSender,
+        this.cosmosSenderSequence,
+        this.ethereumReceiver,
+        this.symbol,
+        this.amount,
+      )).toString();
+
+      const status = await this.cosmosBridge.getProphecyThreshold(claimID);
+
+      // Bridge claim should be finished
+      (status[0]).should.be.equal(true);
     });
   });
 });

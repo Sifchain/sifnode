@@ -21,6 +21,8 @@ export interface IAssetAmount extends IFraction {
   toFixed(decimalPlaces?: number, format?: object, rounding?: Rounding): string;
   asset: Asset;
   amount: JSBI;
+  toBaseUnits: () => JSBI;
+  toBaseUnitsFr: () => IFraction;
   toFormatted: (p?: {
     separator?: boolean;
     symbol?: boolean;
@@ -35,6 +37,16 @@ export class _AssetAmount implements IAssetAmount {
       parseBigintIsh(amount),
       JSBI.exponentiate(TEN, JSBI.BigInt(asset.decimals))
     );
+  }
+
+  public toBaseUnits() {
+    return this.multiply(
+      JSBI.exponentiate(TEN, JSBI.BigInt(this.asset.decimals))
+    ).quotient;
+  }
+
+  public toBaseUnitsFr() {
+    return new Fraction(this.toBaseUnits());
   }
 
   public toSignificant(
@@ -126,7 +138,9 @@ export class _AssetAmount implements IAssetAmount {
         groupSeparator: params?.separator ? "," : "",
       }),
       symbol ? this.asset.symbol.toUpperCase() : "",
-    ].join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
   }
 
   public toString() {
@@ -144,8 +158,13 @@ export type AssetAmount = IAssetAmount;
  */
 export function AssetAmount(
   asset: Asset,
-  amount: string | number | JSBI | IFraction
+  amount: string | number | JSBI | IFraction,
+  options?: { inBaseUnit?: boolean }
 ): IAssetAmount {
+  const { inBaseUnit = false } = options ?? {};
+  if (inBaseUnit && typeof amount === "string") {
+    return new _AssetAmount(asset, JSBI.BigInt(amount));
+  }
   const unfractionedAmount = isFraction(amount)
     ? amount.toFixed(asset.decimals)
     : amount;

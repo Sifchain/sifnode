@@ -31,10 +31,10 @@ function updateERowan(asset) {
   return { ...asset, address };
 }
 
-function updateAtk(asset) {
+function updateToken(contractName, asset) {
   const location = resolve(
     __dirname,
-    "../../chains/ethereum/build/contracts/AliceToken.json"
+    `../../chains/ethereum/build/contracts/${contractName}.json`
   );
 
   const {
@@ -45,36 +45,57 @@ function updateAtk(asset) {
   return { ...asset, address };
 }
 
-function updateBtk(asset) {
-  const location = resolve(
-    __dirname,
-    "../../chains/ethereum/build/contracts/BobToken.json"
-  );
-  const {
-    networks: {
-      5777: { address },
-    },
-  } = loadData(location);
-  return { ...asset, address };
-}
+// ASSET ADDRESSES
 
-const configLocation = resolve(
+const assetsEthereumLocation = resolve(
   __dirname,
   "../src/assets.ethereum.localnet.json"
 );
 
-const data = loadData(configLocation);
+const data = loadData(assetsEthereumLocation);
 
 data.assets = data.assets.map((asset) => {
   switch (asset.symbol) {
     case "atk":
-      return updateAtk(asset);
+      return updateToken("AliceToken", asset);
     case "btk":
-      return updateBtk(asset);
+      return updateToken("BobToken", asset);
+    case "usdc":
+      return updateToken("UsdCoin", asset);
+    case "link":
+      return updateToken("LinkCoin", asset);
     case "erowan":
       return updateERowan(asset);
   }
   return asset;
 });
 
-saveData(configLocation, data);
+saveData(assetsEthereumLocation, data);
+
+// BRIDGEBANK ADDRESS
+
+function updateBridgeBankLocation() {
+  // update bridgeBank location
+  const configLocalnetLocation = resolve(
+    __dirname,
+    "../src/config.localnet.json"
+  );
+
+  const configData = loadData(configLocalnetLocation);
+  const bridgeBankLocation = resolve(
+    __dirname,
+    "../../../smart-contracts/build/contracts/BridgeBank.json"
+  );
+
+  const {
+    networks: {
+      5777: { address: bridgeBankAddress },
+    },
+  } = loadData(bridgeBankLocation);
+
+  configData.bridgebankContractAddress = bridgeBankAddress;
+
+  saveData(configLocalnetLocation, configData);
+}
+
+updateBridgeBankLocation();

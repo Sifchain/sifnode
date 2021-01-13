@@ -1,29 +1,10 @@
 import { ref, Ref } from "@vue/reactivity";
 import { AssetAmount, Coin, IAssetAmount, Network, Pool } from "../entities";
 import { Fraction } from "../entities/fraction/Fraction";
+import { getTestingTokens } from "../test/utils/getTestingToken";
 import { PoolState, usePoolCalculator } from "./addLiquidityCalculator";
 
-const ASSETS = {
-  atk: Coin({
-    decimals: 18,
-    name: "AppleToken",
-    network: Network.SIFCHAIN,
-    symbol: "atk",
-  }),
-  btk: Coin({
-    decimals: 18,
-    name: "BananaToken",
-    network: Network.SIFCHAIN,
-    symbol: "btk",
-  }),
-
-  rowan: Coin({
-    decimals: 18,
-    name: "Rowan",
-    network: Network.SIFCHAIN,
-    symbol: "rowan",
-  }),
-};
+const [ATK, ROWAN] = getTestingTokens(["ATK", "ROWAN"]);
 
 describe("usePoolCalculator", () => {
   // input
@@ -81,10 +62,7 @@ describe("usePoolCalculator", () => {
     poolFinder.mockImplementation(
       () =>
         ref(
-          Pool(
-            AssetAmount(ASSETS.atk, "1000000"),
-            AssetAmount(ASSETS.rowan, "1000000")
-          )
+          Pool(AssetAmount(ATK, "1000000"), AssetAmount(ROWAN, "1000000"))
         ) as Ref<Pool>
     );
     fromAmount.value = "1000";

@@ -10,7 +10,7 @@ import PegAssetPage from "@/views/PegAssetPage.vue";
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    redirect: { name: "Swap" },
+    redirect: { name: "PegListingPage" },
   },
   {
     path: "/swap",

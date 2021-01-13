@@ -16,6 +16,7 @@ const {
   expectEvent,  // Assertions for emitted events
   expectRevert, // Assertions for transactions that should fail
 } = require('@openzeppelin/test-helpers');
+const { expect } = require('chai');
 
 require("chai")
   .use(require("chai-as-promised"))
@@ -44,33 +45,20 @@ contract("BridgeBank", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree];
       this.initialPowers = [5, 8, 12];
-      this.valset = await deployProxy(Valset, [
+
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
+        consensusThreshold,
         this.initialValidators,
         this.initialPowers
       ],
-      {unsafeAllowCustomTypes: true}
-      );
-
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
-      {unsafeAllowCustomTypes: true}
-      );
-      
-      // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle, [
-        operator,
-        this.valset.address,
-        this.cosmosBridge.address,
-        consensusThreshold
-      ],
-      {unsafeAllowCustomTypes: true}
+        {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
-        this.oracle.address,
         this.cosmosBridge.address,
         operator
       ],
@@ -78,14 +66,11 @@ contract("BridgeBank", function (accounts) {
       );
     });
 
-    it("should deploy the BridgeBank, correctly setting the operator and valset", async function () {
+    it("should deploy the BridgeBank, correctly setting the operator", async function () {
       this.bridgeBank.should.exist;
 
       const bridgeBankOperator = await this.bridgeBank.operator();
       bridgeBankOperator.should.be.equal(operator);
-
-      const bridgeBankOracle = await this.bridgeBank.oracle();
-      bridgeBankOracle.should.be.equal(this.oracle.address);
     });
 
     it("should correctly set initial values", async function () {
@@ -112,42 +97,24 @@ contract("BridgeBank", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree];
       this.initialPowers = [50, 1, 1];
-      this.valset = await deployProxy(Valset, [
+
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
+        consensusThreshold,
         this.initialValidators,
         this.initialPowers
       ],
-      {unsafeAllowCustomTypes: true}
+        {unsafeAllowCustomTypes: true}
       );
-
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
-        {unsafeAllowCustomTypes: true});
-
-      // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle, [
-        operator,
-        this.valset.address,
-        this.cosmosBridge.address,
-        consensusThreshold
-      ],
-      {unsafeAllowCustomTypes: true}
-      );
-
       // Deploy BridgeBank contract
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
-        this.oracle.address,
         this.cosmosBridge.address,
         operator
       ],
       {unsafeAllowCustomTypes: true}
       );
-
-      // Operator sets Oracle
-      await this.cosmosBridge.setOracle(this.oracle.address, {
-        from: operator
-      });
 
       // Operator sets Bridge Bank
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
@@ -163,6 +130,12 @@ contract("BridgeBank", function (accounts) {
       this.symbol = "TEST";
       this.token = await BridgeToken.new(this.symbol);
       this.amount = 100;
+
+      // Fail to remove the token from the white list if not there yet.
+      await expectRevert(
+          this.bridgeBank.updateEthWhiteList(this.token.address, false, {from: operator}),
+          "Token not whitelisted"
+      );
 
       // Add the token into white list
       await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
@@ -235,7 +208,7 @@ contract("BridgeBank", function (accounts) {
       const symbol = "TEST"
       const newToken = await BridgeToken.new(symbol);
       (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
-      // Remove the token from the white list
+      // Fail to add token already there
       await expectRevert(
         this.bridgeBank.updateEthWhiteList(newToken.address, true, {from: operator}),
         "Token already whitelisted"
@@ -261,32 +234,20 @@ contract("BridgeBank", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree];
       this.initialPowers = [5, 8, 12];
-      this.valset = await deployProxy(Valset, [
+      
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
+        consensusThreshold,
         this.initialValidators,
         this.initialPowers
       ],
-      {unsafeAllowCustomTypes: true}
-      );
-
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
-        {unsafeAllowCustomTypes: true});
-
-      // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle, [
-        operator,
-        this.valset.address,
-        this.cosmosBridge.address,
-        consensusThreshold
-      ],
-      {unsafeAllowCustomTypes: true}
+        {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
-        this.oracle.address,
         this.cosmosBridge.address,
         operator
       ],
@@ -342,7 +303,7 @@ contract("BridgeBank", function (accounts) {
         }
       ).should.be.fulfilled;
 
-        // Attempt to lock tokens
+      // Attempt to lock tokens
       await expectRevert(
         this.bridgeBank.lock(
           this.recipient,
@@ -362,32 +323,19 @@ contract("BridgeBank", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree];
       this.initialPowers = [5, 8, 12];
-      this.valset = await deployProxy(Valset, [
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
+        consensusThreshold,
         this.initialValidators,
         this.initialPowers
       ],
-      {unsafeAllowCustomTypes: true}
-      );
-
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
-        {unsafeAllowCustomTypes: true});
-
-      // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle, [
-        operator,
-        this.valset.address,
-        this.cosmosBridge.address,
-        consensusThreshold
-      ],
-      {unsafeAllowCustomTypes: true}
+        {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
-        this.oracle.address,
         this.cosmosBridge.address,
         operator
       ],
@@ -537,42 +485,26 @@ contract("BridgeBank", function (accounts) {
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree];
       this.initialPowers = [50, 1, 1];
-      this.valset = await deployProxy(Valset, [
+
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
+        consensusThreshold,
         this.initialValidators,
         this.initialPowers
       ],
-      {unsafeAllowCustomTypes: true}
-      );
-
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
-        {unsafeAllowCustomTypes: true});
-
-      // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle, [
-        operator,
-        this.valset.address,
-        this.cosmosBridge.address,
-        consensusThreshold
-      ],
-      {unsafeAllowCustomTypes: true}
+        {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
-        this.oracle.address,
         this.cosmosBridge.address,
         operator
       ],
       {unsafeAllowCustomTypes: true}
       );
 
-      // Operator sets Oracle
-      await this.cosmosBridge.setOracle(this.oracle.address, {
-        from: operator
-      });
 
       // Operator sets Bridge Bank
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
@@ -877,32 +809,20 @@ contract("BridgeBank", function (accounts) {
 
       // Deploy Valset contract
       this.initialValidators = [userOne, userTwo, userThree];
-      this.initialPowers = [33, 33, 33];
-      this.valset = await deployProxy(Valset, [
+      this.initialPowers = [50, 50, 20];
+
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
+        consensusThreshold,
         this.initialValidators,
         this.initialPowers
       ],
-      {unsafeAllowCustomTypes: true}
-      );
-
-      // Deploy CosmosBridge contract
-      this.cosmosBridge = await deployProxy(CosmosBridge, [operator, this.valset.address],
-        {unsafeAllowCustomTypes: true});
-
-      // Deploy Oracle contract
-      this.oracle = await deployProxy(Oracle, [
-        operator,
-        this.valset.address,
-        this.cosmosBridge.address,
-        33
-      ],
-      {unsafeAllowCustomTypes: true}
+        {unsafeAllowCustomTypes: true}
       );
 
       // Deploy BridgeBank contract
       this.bridgeBank = await deployProxy(BridgeBank, [
-        operator,
         operator,
         this.cosmosBridge.address,
         operator
@@ -911,7 +831,6 @@ contract("BridgeBank", function (accounts) {
       );
 
       // Set oracle and bridge bank for the cosmos bridge
-      await this.cosmosBridge.setOracle(this.oracle.address, {from: operator})
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {from: operator})
     });
 
@@ -920,6 +839,12 @@ contract("BridgeBank", function (accounts) {
       this.token = await BridgeToken.new(symbol, {from: operator});
 
       await this.token.addMinter(this.bridgeBank.address, {from: operator})
+
+      // Fail to addExistingBridgeToken unless operator
+      await expectRevert(
+          this.bridgeBank.addExistingBridgeToken(this.token.address, {from: userOne}),
+          "Must be Owner."
+      );
       // Attempt to lock tokens
       await this.bridgeBank.addExistingBridgeToken(this.token.address, {from: operator}).should.be.fulfilled;
 
@@ -952,7 +877,7 @@ contract("BridgeBank", function (accounts) {
         amount, { from: operator }
       ).should.be.fulfilled;
 
-      tx.receipt.logs[0].args['3'].should.be.equal(symbol)
+      (tx.receipt.logs[0].args['3']).should.be.equal(symbol);
     });
 
     it("should mint eRowan to transfer Rowan from sifchain to ethereum", async function () {
@@ -982,7 +907,28 @@ contract("BridgeBank", function (accounts) {
         symbol,
         amount,
         {from: userOne}
-      );
+      );  
+      await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_LOCK,
+        cosmosSender,
+        senderSequence,
+        operator,
+        symbol,
+        amount,
+        {from: userTwo}
+      );  
+
+      const claimID = (await this.cosmosBridge.getProphecyID(
+        CLAIM_TYPE_LOCK,
+        cosmosSender,
+        senderSequence,
+        operator,
+        symbol,
+        amount,
+      )).toString();
+
+      const status = await this.cosmosBridge.getProphecyThreshold(claimID);
+      status['0'].should.be.equal(true);
       (await this.token.balanceOf(operator)).toString().should.be.equal((new BN(amount)).toString())
     });
   });

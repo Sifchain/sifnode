@@ -33,4 +33,5 @@ var (
 	ErrUnableToSwap                    = sdkerrors.Register(ModuleName, 27, "Unable to swap")
 	ErrUnableToRemoveLiquidityProvider = sdkerrors.Register(ModuleName, 28, "Unable to add liquidity provider")
 	ErrUnableToDecommissionPool        = sdkerrors.Register(ModuleName, 29, "Unable to decommission pool")
+	ErrUnableToParseInt                = sdkerrors.Register(ModuleName, 30, "Unable to parse to Int")
 )
