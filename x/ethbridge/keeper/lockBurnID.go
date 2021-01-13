@@ -53,6 +53,6 @@ func (k Keeper) GetLockBurnID(ctx sdk.Context, lockBurnID string) (bool, error) 
 
 // BuildLockBurnID return lockBurnID from address and its sequence number
 func BuildLockBurnID(cosmosSender fmt.Stringer, cosmosSenderSequence uint64) string {
-	lockBurnID := cosmosSender.String() + strconv.Itoa(int(cosmosSenderSequence))
+	lockBurnID := cosmosSender.String() + strconv.FormatUint(cosmosSenderSequence, 10)
 	return lockBurnID
 }
