@@ -30,7 +30,7 @@ Where:
 |-----------|-------------|
 | `<upgrade_name>` | Name of the upgrade. This must match the upgrade name being used by the upgrade handler in the new binary. |
 | `<from>` | The moniker of the validator proposing the upgrade. |
-| `<deposit>` | The deposit/fee for proposing the upgrade. |
+| `<deposit>` | The deposit/fee for proposing the upgrade (this is configurable in genesis). |
 | `<height>` | The block height at which the upgrade should take place. |
 | `<url>` | The URL to the new binary, including the SHA256 checksum as a query parameter. |
 | `<title>` | The title of the upgrade. |
@@ -53,7 +53,7 @@ sifnodecli tx gov submit-proposal software-upgrade sifnoded \
 To vote on a proposal, simply run:
 
 ```
-sifnodecli tx gov vote 1 yes \
+sifnodecli tx gov vote <period> yes \
     --from <from> \
     --keyring-backend file \
     --chain-id <chain_id>
@@ -61,6 +61,7 @@ sifnodecli tx gov vote 1 yes \
 
 | Parameter | Description |
 |-----------|-------------|
+| `<period>` | The voting period. |
 | `<from>` | The moniker of the validator voting on the upgrade. |
 | `<chain_id>` | The chain ID of the network. |
 
