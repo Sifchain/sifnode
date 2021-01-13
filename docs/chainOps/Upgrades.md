@@ -18,7 +18,7 @@ sifnodecli tx gov submit-proposal software-upgrade <upgrade_name> --from <from> 
 
 | Parameter | Description |
 |-----------|-------------|
-| `<upgrade_name>` | Name of the upgrade. |
+| `<upgrade_name>` | Name of the upgrade. This must match the upgrade name being used by the upgrade handler in the new binary. |
 | `<from>` | The moniker of the validator proposing the upgrade. |
 | `<deposit>` | The deposit/fee for proposing the upgrade. |
 | `<height>` | The block height at which the upgrade should take place. |
