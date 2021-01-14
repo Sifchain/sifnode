@@ -31,7 +31,8 @@
     "truffle-contract": "^4.0.31",
     "truffle-contract-size": "^2.0.0",
     "utf8": "^3.0.0",
-    "web3": "^1.2.6"
+    "web3": "^1.2.6",
+    "solidity-coverage": "^0.7.11"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.6",
@@ -69,6 +70,7 @@
     "token:mint": "npx truffle exec scripts/mintTestTokens.js",
     "token:approve": "npx truffle exec scripts/sendApproveTx.js",
     "test:setup": "cp .env.example .env",
+    "coverage": "truffle run coverage",
     "test": "concurrently -r -k -s first \"yarn develop\" \"truffle test --network develop\" "
   }
 }

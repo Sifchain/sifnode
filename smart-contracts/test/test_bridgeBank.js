@@ -131,6 +131,12 @@ contract("BridgeBank", function (accounts) {
       this.token = await BridgeToken.new(this.symbol);
       this.amount = 100;
 
+      // Fail to remove the token from the white list if not there yet.
+      await expectRevert(
+          this.bridgeBank.updateEthWhiteList(this.token.address, false, {from: operator}),
+          "Token not whitelisted"
+      );
+
       // Add the token into white list
       await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
@@ -202,7 +208,7 @@ contract("BridgeBank", function (accounts) {
       const symbol = "TEST"
       const newToken = await BridgeToken.new(symbol);
       (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
-      // Remove the token from the white list
+      // Fail to add token already there
       await expectRevert(
         this.bridgeBank.updateEthWhiteList(newToken.address, true, {from: operator}),
         "Token already whitelisted"
@@ -297,7 +303,7 @@ contract("BridgeBank", function (accounts) {
         }
       ).should.be.fulfilled;
 
-        // Attempt to lock tokens
+      // Attempt to lock tokens
       await expectRevert(
         this.bridgeBank.lock(
           this.recipient,
@@ -833,6 +839,12 @@ contract("BridgeBank", function (accounts) {
       this.token = await BridgeToken.new(symbol, {from: operator});
 
       await this.token.addMinter(this.bridgeBank.address, {from: operator})
+
+      // Fail to addExistingBridgeToken unless operator
+      await expectRevert(
+          this.bridgeBank.addExistingBridgeToken(this.token.address, {from: userOne}),
+          "Must be Owner."
+      );
       // Attempt to lock tokens
       await this.bridgeBank.addExistingBridgeToken(this.token.address, {from: operator}).should.be.fulfilled;
 
