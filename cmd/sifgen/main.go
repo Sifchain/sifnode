@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"strconv"
 	"strings"
 
 	"github.com/Sifchain/sifnode/tools/sifgen"
@@ -10,6 +13,11 @@ import (
 
 func main() {
 	rootCmd := &cobra.Command{Use: "sifgen"}
+
+	_networkCmd := networkCmd()
+	_networkCmd.PersistentFlags().String("bond-amount", "100000000000000000rowan", "bond amount")
+	_networkCmd.PersistentFlags().String("mint-amount", "1000000000000000000000000000rowan", "mint amount")
+	_networkCmd.AddCommand(networkCreateCmd(), networkResetCmd())
 
 	_nodeCmd := nodeCmd()
 	_nodeCreateCmd := nodeCreateCmd()
@@ -26,10 +34,55 @@ func main() {
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
 
 	_keyCmd := keyCmd()
-	_keyCmd.AddCommand(keyGenerateMnemonicCmd(), keyRecoverFromMnemonicCmd())
+	_keyCmd.AddCommand(keyGenerateMnemonicCmd(), keyGenerateMnemonicCmd(), keyRecoverFromMnemonicCmd())
 
 	rootCmd.AddCommand(_nodeCmd, _keyCmd)
 	_ = rootCmd.Execute()
+}
+
+func networkCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "network",
+		Short: "Network commands.",
+		Args:  cobra.MaximumNArgs(1),
+	}
+}
+
+func networkCreateCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "create [chain-id] [validator-count] [output-dir] [seed-ip-address] [output-file]",
+		Short: "Create a new network.",
+		Args:  cobra.MinimumNArgs(4),
+		Run: func(cmd *cobra.Command, args []string) {
+			bondAmount, _ := cmd.Flags().GetString("bond-amount")
+			mintAmount, _ := cmd.Flags().GetString("mint-amount")
+
+			count, _ := strconv.Atoi(args[1])
+			network := sifgen.NewSifgen(&args[0]).NewNetwork()
+			network.BondAmount = bondAmount
+			network.MintAmount = mintAmount
+
+			summary, err := network.Build(count, args[2], args[3])
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if err = ioutil.WriteFile(args[4], []byte(*summary), 0600); err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+}
+
+func networkResetCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "reset [chain-id] [network-directory]",
+		Short: "Reset the state of a network.",
+		Args:  cobra.MinimumNArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			sifgen.NewSifgen(&args[0]).NetworkReset(args[1])
+		},
+	}
 }
 
 func nodeCmd() *cobra.Command {

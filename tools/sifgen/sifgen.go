@@ -2,11 +2,14 @@ package sifgen
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/Sifchain/sifnode/tools/sifgen/key"
+	"github.com/Sifchain/sifnode/tools/sifgen/network"
 	"github.com/Sifchain/sifnode/tools/sifgen/node"
+	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 )
 
 type Sifgen struct {
@@ -19,8 +22,38 @@ func NewSifgen(chainID *string) Sifgen {
 	}
 }
 
+func (s Sifgen) NewNetwork() *network.Network {
+	return &network.Network{
+		ChainID: *s.chainID,
+		CLI:     utils.NewCLI(*s.chainID),
+	}
+}
+
+func (s Sifgen) NetworkCreate(count int, outputDir, startingIPAddress string, outputFile string) {
+	net := network.NewNetwork(*s.chainID)
+	summary, err := net.Build(count, outputDir, startingIPAddress)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	if err = ioutil.WriteFile(outputFile, []byte(*summary), 0600); err != nil {
+		log.Fatal(err)
+		return
+	}
+}
+
+func (s Sifgen) NetworkReset(networkDir string) {
+	if err := network.Reset(*s.chainID, networkDir); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func (s Sifgen) NewNode() *node.Node {
-	return &node.Node{}
+	return &node.Node{
+		ChainID: *s.chainID,
+		CLI:     utils.NewCLI(*s.chainID),
+	}
 }
 
 func (s Sifgen) NodeReset(nodeHomeDir *string) {
