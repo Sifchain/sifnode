@@ -23,8 +23,11 @@ image:
 sifnode:
   args:
     mnemonic: ""
+    genesisURL:
+    peerAddress:
     adminCLPAddresses: ""
     adminOracleAddress: ""
+    minimumGasPrices: "500000000000000000.0rowan"
   env:
     daemonHome: "/root/.sifnoded"
     daemonName: "sifnoded"
@@ -32,8 +35,6 @@ sifnode:
     daemonRestartAfterUpgrade: true
     chainnet:
     moniker:
-    genesisURL:
-    peerAddress:
     minCLPCreatePoolThreshold: "100"
   service:
     type: LoadBalancer
