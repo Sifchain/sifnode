@@ -8,8 +8,17 @@ import (
 )
 
 func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg types.MsgCreatePool) (*types.Pool, error) {
-	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, sdk.NewIntFromUint64(msg.ExternalAssetAmount.Uint64()))
-	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromUint64(msg.NativeAssetAmount.Uint64()))
+
+	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
+	if !ok {
+		return nil, types.ErrUnableToParseInt
+	}
+	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
+	if !ok {
+		return nil, types.ErrUnableToParseInt
+	}
+	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, extInt)
+	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, nativeInt)
 	if !k.HasCoins(ctx, msg.Signer, sdk.Coins{externalAssetCoin, nativeAssetCoin}) {
 		return nil, types.ErrBalanceNotAvailable
 	}
@@ -39,14 +48,30 @@ func (k Keeper) CreateLiquidityProvider(ctx sdk.Context, asset types.Asset, lpun
 
 func (k Keeper) AddLiquidity(ctx sdk.Context, msg types.MsgAddLiquidity, pool types.Pool, newPoolUnits sdk.Uint, lpUnits sdk.Uint) (*types.LiquidityProvider, error) {
 
-	// Verify user has coins to add liquidity
-	externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, sdk.NewIntFromUint64(msg.ExternalAssetAmount.Uint64()))
-	nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, sdk.NewIntFromUint64(msg.NativeAssetAmount.Uint64()))
-	if !k.HasCoins(ctx, msg.Signer, sdk.Coins{externalAssetCoin, nativeAssetCoin}) {
+	// Verify user has coins to add liquidiy
+	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
+	if !ok {
+		return nil, types.ErrUnableToParseInt
+	}
+	nativeInt, ok := k.ParseToInt(msg.NativeAssetAmount.String())
+	if !ok {
+		return nil, types.ErrUnableToParseInt
+	}
+	var coins sdk.Coins
+	if extInt != sdk.ZeroInt() {
+		externalAssetCoin := sdk.NewCoin(msg.ExternalAsset.Symbol, extInt)
+		coins = coins.Add(externalAssetCoin)
+	}
+	if nativeInt != sdk.ZeroInt() {
+		nativeAssetCoin := sdk.NewCoin(types.GetSettlementAsset().Symbol, nativeInt)
+		coins = coins.Add(nativeAssetCoin)
+	}
+
+	if !k.HasCoins(ctx, msg.Signer, coins) {
 		return nil, types.ErrBalanceNotAvailable
 	}
 	// Send from user to pool
-	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, msg.Signer, types.ModuleName, sdk.Coins{externalAssetCoin, nativeAssetCoin})
+	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, msg.Signer, types.ModuleName, coins)
 	if err != nil {
 		return nil, err
 	}
@@ -146,18 +171,27 @@ func (k Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.Acc
 	return nil
 
 }
-func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount sdk.Uint, finalPool types.Pool, msg types.MsgSwap) error {
+func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool types.Pool, msg types.MsgSwap) error {
 	err := k.SetPool(ctx, finalPool)
 	if err != nil {
 		return errors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
+	sentAmountInt, ok := k.ParseToInt(sentAmount)
+	if !ok {
+		return types.ErrUnableToParseInt
+	}
 	// Adding balance to users account ,Received Asset is the asset the user wants to receive
 	// Case 1 . Adding his ETH and deducting from  RWN:ETH pool
 	// Case 2 , Adding his XCT and deducting from  RWN:XCT pool
-	sentCoin := sdk.NewCoin(msg.ReceivedAsset.Symbol, sdk.NewIntFromUint64(sentAmount.Uint64()))
+	sentCoin := sdk.NewCoin(msg.ReceivedAsset.Symbol, sentAmountInt)
 	err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, msg.Signer, sdk.Coins{sentCoin})
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// Use strings instead of Unit/Int in between conventions
+func (k Keeper) ParseToInt(nu string) (sdk.Int, bool) {
+	return sdk.NewIntFromString(nu)
 }

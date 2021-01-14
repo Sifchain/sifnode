@@ -4,8 +4,16 @@
       <router-link class="logo" to="/">S</router-link>
     </div>
     <div class="item">
-      <router-link class="link" to="/">Discover</router-link>
+      <router-link class="link" to="https://docs.sifchain.finance"
+        >Discover</router-link
+      >
     </div>
+    <div class="item">
+      <router-link class="link" to="https://docs.sifchain.finance"
+        >Get Rowan</router-link
+      >
+    </div>
+    <!-- 
     <div class="item">
       <router-link class="link" to="/">New wallet</router-link>
     </div>
@@ -14,7 +22,7 @@
     </div>
     <div class="item">
       <router-link class="link" to="/">Deposit</router-link>
-    </div>
+    </div> -->
   </div>
 </template>
 

@@ -38,11 +38,11 @@ export default defineComponent({
     const {
       fromSymbol,
       fromAmount,
-      toSymbol,
+
       toAmount,
     } = useCurrencyFieldState();
 
-    toSymbol.value = "rowan";
+    const toSymbol = ref("rowan");
 
     const priceMessage = ref("");
 
@@ -51,11 +51,7 @@ export default defineComponent({
       toAmount.value = "0.0";
     }
 
-    const {
-      connected,
-
-      connectedText,
-    } = useWalletButton({
+    const { connected, connectedText } = useWalletButton({
       addrLen: 8,
     });
 
@@ -66,6 +62,7 @@ export default defineComponent({
       bPerARatioMessage,
       shareOfPool,
       shareOfPoolPercent,
+      poolUnits,
       fromFieldAmount,
       toFieldAmount,
       preExistingPool,
@@ -195,6 +192,7 @@ export default defineComponent({
       },
       shareOfPoolPercent,
       connectedText,
+      poolUnits,
     };
   },
 });
@@ -269,6 +267,7 @@ export default defineComponent({
         :requestClose="requestTransactionModalClose"
         :fromToken="fromSymbol"
         :fromAmount="fromAmount"
+        :poolUnits="poolUnits"
         :toAmount="toAmount"
         :toToken="toSymbol"
         :aPerB="aPerBRatioMessage"

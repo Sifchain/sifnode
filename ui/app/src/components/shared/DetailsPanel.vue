@@ -14,7 +14,7 @@
     >
       <div v-if="minimumReceived && toToken" class="details-row">
         <span>Expected Amount Received</span>
-        <span>{{ minimumReceived }} {{ toToken.toUpperCase() }}</span>
+        <span>{{ minimumReceived }} {{ toToken }}</span>
       </div>
       <div v-if="priceImpact" class="details-row">
         <span>Price Impact</span>
@@ -22,7 +22,7 @@
       </div>
       <div v-if="providerFee && toToken" class="details-row">
         <span>Liquidity Provider Fee</span>
-        <span>{{ providerFee }} {{ toToken.toUpperCase() }}</span>
+        <span>{{ providerFee }} {{ toToken }}</span>
       </div>
     </div>
   </div>
@@ -61,6 +61,7 @@
 </style>
 <script lang="ts">
 import { defineComponent } from "vue";
+import { computed } from "@vue/reactivity";
 
 export default defineComponent({
   props: {

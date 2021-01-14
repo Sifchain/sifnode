@@ -2,6 +2,7 @@
   "sifAddrPrefix": "sif",
   "sifApiUrl": "https://lcd-sandpit.sifchain.finance/",
   "sifWsUrl": "wss://rpc-sandpit.sifchain.finance/websocket",
+  "sifChainId": "sandpit",
   "web3Provider": "metamask",
   "nativeAsset": "rowan",
   "bridgebankContractAddress": "0xa5658e85bc7AC7F0388E60E58BEd5aFB41143330"
