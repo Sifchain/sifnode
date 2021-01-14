@@ -29,42 +29,43 @@ const (
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
 func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
-	claim ProphecyClaim, key *ecdsa.PrivateKey, cethAmount *big.Int) (uint64, error) {
+	claim ProphecyClaim, key *ecdsa.PrivateKey, cethAmount *big.Int) (*big.Int, error) {
 
 	// Initialize client service, validator's tx auth, and target contract address
 	client, auth, target, err := initRelayConfig(provider, contractAddress, event, key)
 	if err != nil {
-		return 0, err
+		return big.NewInt(0), err
 	}
 
 	gasPrice := auth.GasPrice
+	bigGasForTX := big.NewInt(0)
 
 	switch claim.ClaimType {
 	case types.MsgBurn:
-		bigGasForBurn := big.NewInt(GasForBurn)
-		if cethAmount.Cmp(bigGasForBurn.Mul(bigGasForBurn, gasPrice)) < 0 {
-			return 0, errors.New(types.ErrorCethNotEnough)
+		bigGasForTX = big.NewInt(GasForBurn)
+		if cethAmount.Cmp(bigGasForTX.Mul(bigGasForTX, gasPrice)) < 0 {
+			return big.NewInt(0), errors.New(types.ErrorCethNotEnough)
 		}
 	case types.MsgLock:
-		bigGasForLock := big.NewInt(GasForMint)
-		if cethAmount.Cmp(bigGasForLock.Mul(bigGasForLock, gasPrice)) < 0 {
-			return 0, errors.New(types.ErrorCethNotEnough)
+		bigGasForTX = big.NewInt(GasForMint)
+		if cethAmount.Cmp(bigGasForTX.Mul(bigGasForTX, gasPrice)) < 0 {
+			return big.NewInt(0), errors.New(types.ErrorCethNotEnough)
 		}
 	default:
-		return 0, errors.New("wrong message type")
+		return big.NewInt(0), errors.New("wrong message type")
 	}
 
 	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
 	if err != nil {
 		log.Println(err)
-		return 0, err
+		return big.NewInt(0), err
 	}
 
 	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
 		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
 	if err != nil {
 		log.Println(err)
-		return 0, err
+		return big.NewInt(0), err
 	}
 	fmt.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
 
@@ -72,19 +73,19 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 	if err != nil {
 		log.Println(err)
-		return 0, err
+		return big.NewInt(0), err
 	}
 
 	switch receipt.Status {
 	case 0:
 		fmt.Println("Tx Status: 0 - Failed")
-		return 0, errors.New("NewProphecyClaim transaction failed ")
+		return big.NewInt(0), errors.New("NewProphecyClaim transaction failed ")
 	case 1:
 		fmt.Println("Tx Status: 1 - Successful")
-		return receipt.GasUsed * uint64(gasPrice.Int64()), nil
+		return bigGasForTX, nil
 	}
 
-	return 0, nil
+	return big.NewInt(0), nil
 }
 
 // initRelayConfig set up Ethereum client, validator's transaction auth, and the target contract's address

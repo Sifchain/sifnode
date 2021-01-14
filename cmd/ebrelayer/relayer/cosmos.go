@@ -163,7 +163,7 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 		return err
 	}
 
-	bigGasUsed := big.NewInt(int64(gasUsed * RelayerNodeNumber))
+	bigGasUsed := gasUsed.Mul(gasUsed, big.NewInt(RelayerNodeNumber))
 
 	if cethAmount.Cmp(bigGasUsed) > 0 {
 		cosmosMsg.CethAmount = sdk.NewIntFromBigInt(cethAmount.Sub(cethAmount, bigGasUsed))
