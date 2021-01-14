@@ -62,6 +62,7 @@ export default defineComponent({
       bPerARatioMessage,
       shareOfPool,
       shareOfPoolPercent,
+      poolUnits,
       fromFieldAmount,
       toFieldAmount,
       preExistingPool,
@@ -191,6 +192,7 @@ export default defineComponent({
       },
       shareOfPoolPercent,
       connectedText,
+      poolUnits,
     };
   },
 });
@@ -263,10 +265,11 @@ export default defineComponent({
         @confirmswap="handleAskConfirmClicked"
         :state="transactionState"
         :requestClose="requestTransactionModalClose"
-        :fromToken="fromSymbolLabel"
+        :fromToken="fromSymbol"
         :fromAmount="fromAmount"
+        :poolUnits="poolUnits"
         :toAmount="toAmount"
-        :toToken="toSymbolLabel"
+        :toToken="toSymbol"
         :aPerB="aPerBRatioMessage"
         :bPerA="bPerARatioMessage"
         :shareOfPool="shareOfPoolPercent"

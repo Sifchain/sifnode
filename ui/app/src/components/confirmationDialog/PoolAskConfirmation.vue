@@ -7,7 +7,11 @@ import { computed } from "@vue/reactivity";
 import { useAssetItem } from "@/components/shared/utils";
 
 export default defineComponent({
-  components: { DetailsPanelPool, SifButton, ArrowIconButton },
+  components: {
+    DetailsPanelPool,
+    SifButton,
+    // ArrowIconButton
+  },
   props: {
     requestClose: Function,
     fromAmount: String,
@@ -15,6 +19,7 @@ export default defineComponent({
     leastAmount: String,
     fromToken: String,
     toToken: String,
+    poolUnits: String,
     aPerB: Number,
     bPerA: Number,
     shareOfPool: Number,
@@ -27,8 +32,8 @@ export default defineComponent({
     const fromTokenLabel = fromAsset.label;
     const fromBackgroundStyle = fromAsset.background;
     const fromTokenImage = computed(() => {
-      if (!fromToken.value) return "";
-      const t = fromToken.value;
+      if (!fromAsset.token.value) return "";
+      const t = fromAsset.token.value;
       return t.imageUrl;
     });
 
@@ -39,16 +44,23 @@ export default defineComponent({
     const toTokenLabel = toAsset.label;
     const toBackgroundStyle = toAsset.background;
     const toTokenImage = computed(() => {
-      if (!toToken.value) return "";
-      const t = toToken.value;
+      if (!toAsset.token.value) return "";
+      const t = toAsset.token.value;
       return t.imageUrl;
     });
 
-    return { 
-      fromAsset, fromToken, fromTokenLabel, fromBackgroundStyle, fromTokenImage, 
-      toAsset, toToken, toTokenLabel, toBackgroundStyle, toTokenImage,
+    return {
+      fromAsset,
+      // fromToken,
+      fromTokenLabel,
+      fromBackgroundStyle,
+      fromTokenImage,
+      toAsset,
+      // toToken,
+      toTokenLabel,
+      toBackgroundStyle,
+      toTokenImage,
     };
-
   },
 });
 </script>
@@ -58,21 +70,33 @@ export default defineComponent({
     <h3 class="title mb-10">You will receive</h3>
     <div class="pool-token">
       <div class="pool-token-value">
-        <!-- TODO - what's this value? Where do I read it from? -->
-        0.0000273
+        {{ poolUnits }}
       </div>
       <div class="pool-token-image">
-        <img v-if="fromTokenImage" width="24" :src="fromTokenImage" class="info-img" />
+        <img
+          v-if="fromTokenImage"
+          width="24"
+          :src="fromTokenImage"
+          class="info-img"
+        />
         <div class="placeholder" :style="fromBackgroundStyle" v-else></div>
-        <img v-if="toTokenImage" width="24" :src="toTokenImage" class="info-img" />
+        <img
+          v-if="toTokenImage"
+          width="24"
+          :src="toTokenImage"
+          class="info-img"
+        />
         <div class="placeholder" :style="toBackgroundStyle" v-else></div>
       </div>
     </div>
     <div class="pool-token-label">
-      {{fromTokenLabel}}/{{toTokenLabel}} Pool Tokens<br>
+      {{ fromTokenLabel }}/{{ toTokenLabel }} Pool Tokens<br />
     </div>
 
-    <div class="estimate">Output is estimated. If the price changes more than 0.5% your transaction will revert.</div>
+    <div class="estimate">
+      Output is estimated. If the price changes more than 0.5% your transaction
+      will revert.
+    </div>
     <DetailsPanelPool
       class="details"
       :fromTokenLabel="fromTokenLabel"
@@ -142,7 +166,7 @@ export default defineComponent({
       border-radius: 16px;
 
       &:nth-child(2) {
-        position: relative; 
+        position: relative;
         left: -8px;
       }
     }
