@@ -96,7 +96,7 @@ func TestGetCmdSwap(t *testing.T) {
 	viper.Set(cli.FlagMinimumReceivingAmount, "90")
 	clpcmd.SetArgs([]string{
 		"--sentAmount", "100",
-		"--minReceivingAmount", "100",
+		"--minReceivingAmount", "90",
 		"--receivedSymbol", "dash",
 		"--sentSymbol", "eth"})
 	err := clpcmd.Execute()
