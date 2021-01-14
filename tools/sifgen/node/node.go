@@ -98,6 +98,10 @@ func (n *Node) setup() error {
 		return err
 	}
 
+	if err := n.generatePassword(); err != nil {
+		return err
+	}
+
 	err = n.generateNodeKeyAddress()
 	if err != nil {
 		return err
@@ -160,10 +164,6 @@ func (n *Node) seedGenesis() error {
 
 	pubKey, err := n.CLI.ValidatorAddress(common.DefaultNodeHome)
 	if err != nil {
-		return err
-	}
-
-	if err := n.generatePassword(); err != nil {
 		return err
 	}
 

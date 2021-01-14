@@ -129,7 +129,7 @@ func nodeCreateCmd() *cobra.Command {
 			node.WithCosmovisor = withCosmovisor
 			summary, err := node.Build()
 			if err != nil {
-				panic(err)
+				log.Fatal(err)
 			}
 
 			if printDetails {
