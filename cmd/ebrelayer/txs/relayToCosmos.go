@@ -58,8 +58,15 @@ func SendOutRevertMessage(cosmosContext *types.CosmosContext, validatorAddress s
 	if err != nil {
 		return errors.New("wrong cosmos sender address")
 	}
+
+	symbol := message.Symbol
+
+	if message.ClaimType == types.MsgBurn {
+		symbol = defaultSifchainPrefix + symbol
+	}
+
 	msg := bridgetypes.NewMsgRevert(tmpAddress, uint64(message.CosmosSenderSequence.Int64()),
-		message.Amount, message.Symbol, message.CethAmount, validatorAddress)
+		message.Amount, symbol, message.CethAmount, validatorAddress)
 	return SendMsgToCosmos(cosmosContext, msg)
 }
 

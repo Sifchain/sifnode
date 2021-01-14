@@ -82,23 +82,36 @@ func handleMsgBurn(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
 	bridgeKeeper Keeper, msg MsgBurn,
 ) (*sdk.Result, error) {
+
+	fmt.Println("handleMsgBurn check 1")
+
 	if !bridgeKeeper.ExistsPeggyToken(ctx, msg.Symbol) {
 		return nil, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
 	}
-
+	fmt.Println("handleMsgBurn check 2")
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
+
+	fmt.Println("handleMsgBurn check 3")
 	msg.SetSequence(account.GetSequence())
+
+	fmt.Println("handleMsgBurn check 4")
 
 	var coins sdk.Coins
 	if msg.Symbol == CethSymbol {
+		fmt.Println("handleMsgBurn check 5")
 		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.Amount.Add(msg.CethAmount)))
 	} else {
+		fmt.Println("handleMsgBurn check 6")
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 	}
+
+	fmt.Println("handleMsgBurn check 7")
+
 	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
+		fmt.Println("handleMsgBurn check 8")
 		return nil, err
 	}
 
@@ -129,54 +142,78 @@ func handleMsgRevert(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
 	bridgeKeeper Keeper, msg MsgRevert,
 ) (*sdk.Result, error) {
-
-	fmt.Println("handleMsgRevert ")
-
-	if bridgeKeeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		return nil, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
-	}
-	fmt.Println("handleMsgRefund check 1")
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
-	fmt.Println("handleMsgRefund check 2")
 	account = accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.ValidatorAddress))
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
 	}
 
-	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
+	var coins sdk.Coins
+	if msg.Symbol == CethSymbol {
+		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.Amount.Add(msg.CethAmount)))
+	} else {
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
+	}
+
 	if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins, msg.ValidatorAddress); err != nil {
 		return nil, err
 	}
-	return nil, nil
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender.String()),
+		),
+		sdk.NewEvent(
+			types.EventTypeRevert,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender.String()),
+			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
+			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
+			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
+			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress.String()),
+		),
+	})
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
 func handleMsgRefund(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
 	bridgeKeeper Keeper, msg MsgRefund,
 ) (*sdk.Result, error) {
-	fmt.Printf("handleMsgRefund %s \n", msg.CosmosSender)
-	fmt.Printf("handleMsgRefund %d \n", msg.CosmosSenderSequence)
-	fmt.Printf("handleMsgRefund %s \n", msg.CethAmount)
-
-	fmt.Printf("handleMsgRefund %s \n", msg.ValidatorAddress)
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
-	fmt.Println("handleMsgRefund check 1")
 	account = accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.ValidatorAddress))
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
 	}
-	fmt.Println("handleMsgRefund check 2")
 	coins := sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount))
+
 	if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins, msg.ValidatorAddress); err != nil {
+		fmt.Printf("handleMsgRefund with error %s\n", err)
 		return nil, err
 	}
-	return nil, nil
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender.String()),
+		),
+		sdk.NewEvent(
+			types.EventTypeRefund,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender.String()),
+			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
+			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
+			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress.String()),
+		),
+	})
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
 func handleMsgLock(
@@ -194,28 +231,10 @@ func handleMsgLock(
 
 	msg.SetSequence(account.GetSequence())
 	var coins sdk.Coins
-	// switch msg.MessageType {
-	// case types.MsgSubmit:
 	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 	if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
 		return nil, err
 	}
-
-	// case types.MsgRevert:
-	// 	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
-	// 	if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
-	// 		return nil, err
-	// 	}
-
-	// case types.MsgReturnCeth:
-	// 	coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount))
-	// 	if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
-	// 		return nil, err
-	// 	}
-
-	// default:
-	// 	return nil, types.ErrInvalidMessageType
-	// }
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -242,7 +261,6 @@ func handleMsgUpdateWhiteListValidator(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
 	bridgeKeeper Keeper, msg MsgUpdateWhiteListValidator,
 ) (*sdk.Result, error) {
-	fmt.Println("handleMsgUpdateWhiteListValidator ")
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())

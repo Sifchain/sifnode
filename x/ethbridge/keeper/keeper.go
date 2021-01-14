@@ -152,9 +152,15 @@ func (k Keeper) ProcessUnlock(ctx sdk.Context, cosmosSender sdk.AccAddress, cosm
 	if err != nil {
 		return err
 	}
-
 	if !updated {
 		return nil
+	}
+
+	err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, amount)
+
+	if err != nil {
+		fmt.Printf("ProcessUnlock failed in Mint coins %s \n", err)
+		return err
 	}
 
 	return k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosSender, amount)

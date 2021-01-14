@@ -6,6 +6,8 @@ var (
 	EventTypeProphecyStatus           = "prophecy_status"
 	EventTypeBurn                     = "burn"
 	EventTypeLock                     = "lock"
+	EventTypeRevert                   = "revert"
+	EventTypeRefund                   = "refund"
 	EventTypeUpdateWhiteListValidator = "update_whitelist_validator"
 
 	AttributeKeyEthereumSender = "ethereum_sender"
