@@ -194,19 +194,19 @@ export class EthereumService implements IWalletService {
         const tokenBalance = await getTokenBalance(web3, addr, asset);
         balances = [tokenBalance];
       }
+    } else {
+      // No address no asset get everything
+      balances = await Promise.all([
+        getEtheriumBalance(web3, addr),
+        ...supportedTokens
+          .slice(0, 10)
+          .filter(t => t.symbol !== "eth")
+          .map((token: Asset) => {
+            if (isToken(token)) return getTokenBalance(web3, addr, token);
+            return AssetAmount(token, "0");
+          }),
+      ]);
     }
-
-    // No address no asset get everything
-    balances = await Promise.all([
-      getEtheriumBalance(web3, addr),
-      ...supportedTokens
-        .slice(0, 10)
-        .filter(t => t.symbol !== "eth")
-        .map((token: Asset) => {
-          if (isToken(token)) return getTokenBalance(web3, addr, token);
-          return AssetAmount(token, "0");
-        }),
-    ]);
 
     return balances;
   }

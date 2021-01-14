@@ -13,6 +13,13 @@ export const shadowfiend = {
   name: "shadowfiend",
 };
 
+export const juniper = {
+  name: "juniper",
+  mnemonic:
+    "clump genre baby drum canvas uncover firm liberty verb moment access draft erupt fog alter gadget elder elephant divide biology choice sentence oppose avoid",
+  address: "sif1m625hcmnkc84cgmef6upzzyfu6mxd4jkpnfwwl",
+};
+
 export const ethAccounts = [
   {
     public: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57",

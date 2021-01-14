@@ -140,10 +140,12 @@ export default function createEthbridgeService({
         token_contract_address: tokenAddress,
       });
     },
+
     burnToSifchain(
       sifRecipient: string,
       assetAmount: AssetAmount,
-      confirmations: number
+      confirmations: number,
+      account?: string
     ) {
       const emitter = createPegTxEventEmitter();
 
@@ -162,7 +164,7 @@ export default function createEthbridgeService({
         const accounts = await web3.eth.getAccounts();
         const coinDenom = (assetAmount.asset as Token).address ?? ETH_ADDRESS;
         const amount = assetAmount.numerator.toString();
-        const fromAddress = accounts[0];
+        const fromAddress = account || accounts[0];
 
         const sendArgs = {
           from: fromAddress,
