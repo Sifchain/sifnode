@@ -114,7 +114,7 @@ def test_case_3():
     balance_before_tx = int(get_sifchain_balance(USER, ROWAN, network_password))
     print("Before lock transaction {}'s balance of {} is {}".format(
         USER, ROWAN, balance_before_tx))
-    amount = 12
+    amount = 120000
     if balance_before_tx < amount:
         print_error_message("No enough rowan to lock")
     print("Send lock claim to Sifchain...")
@@ -131,7 +131,7 @@ def test_case_4():
     print("Before lock transaction {}'s balance of {} is {}".format(
         USER, ROWAN, balance_before_tx))
     print("Send burn claim to Sifchain...")
-    amount = 13
+    amount = 130000
     create_claim(USER, VALIDATOR, amount, ROWAN, CLAIMBURN)
     wait_for_sifchain_balance(USER, ROWAN, network_password, balance_before_tx + amount)
     print("########## Test Case Four Over ##########")
