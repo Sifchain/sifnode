@@ -4,6 +4,7 @@ import { defineComponent, PropType } from "vue";
 import { computed } from "@vue/reactivity";
 import AskConfirmation from "./PoolAskConfirmation.vue";
 import AnimatedConfirmation from "./PoolAnimatedConfirmation.vue";
+import { Fraction } from "ui-core";
 
 export type ConfirmState =
   | "selecting"
@@ -17,6 +18,9 @@ export default defineComponent({
   props: {
     state: { type: String as PropType<ConfirmState>, default: "confirming" },
     requestClose: Function,
+    poolUnits: Fraction,
+    fromToken: String,
+    toToken: String,
   },
   setup(props) {
     const confirmed = computed(() => {
@@ -36,6 +40,7 @@ export default defineComponent({
     :fromToken="fromToken"
     :toAmount="toAmount"
     :toToken="toToken"
+    :poolUnits="poolUnits"
     :aPerB="aPerB"
     :bPerA="bPerA"
     :shareOfPool="shareOfPool"

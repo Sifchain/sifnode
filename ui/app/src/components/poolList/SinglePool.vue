@@ -3,7 +3,7 @@ import { defineComponent, PropType, ref } from "vue";
 import { computed, effect, toRefs } from "@vue/reactivity";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
-import { useAssetItem } from "@/components/shared/utils";
+import { getAssetLabel, useAssetItem } from "@/components/shared/utils";
 import { Fraction, LiquidityProvider, Pool, usePoolCalculator } from "ui-core";
 import { useWallet } from "@/hooks/useWallet";
 import { useCore } from "@/hooks/useCore";
@@ -21,8 +21,10 @@ export default defineComponent({
     // TODO This needs tidying up poor componentization
     // useAssetItem should not really be used outside of a display component
     const thePool = computed(() => props.accountPool?.pool);
-    const fromSymbol = computed(
-      () => thePool.value?.amounts[1].asset.symbol ?? ""
+    const fromSymbol = computed(() =>
+      props.accountPool?.pool.amounts[1].asset
+        ? getAssetLabel(props.accountPool?.pool.amounts[1].asset)
+        : ""
     );
     const fromAsset = useAssetItem(fromSymbol);
     const fromToken = fromAsset.token;
@@ -35,8 +37,10 @@ export default defineComponent({
 
     const fromValue = computed(() => thePool.value?.amounts[1].toFixed(0));
 
-    const toSymbol = computed(
-      () => thePool.value?.amounts[0].asset.symbol ?? ""
+    const toSymbol = computed(() =>
+      props.accountPool?.pool.amounts[0].asset
+        ? getAssetLabel(props.accountPool?.pool.amounts[0].asset)
+        : ""
     );
     const toAsset = useAssetItem(toSymbol);
     const toToken = toAsset.token;
@@ -102,16 +106,16 @@ export default defineComponent({
             <div class="placeholder" :style="toBackgroundStyle" v-else></div>
           </div>
           <div class="symbol">
-            <span>{{ fromSymbol.toUpperCase() }}</span>
+            <span>{{ fromSymbol }}</span>
             /
-            <span>{{ toSymbol.toUpperCase() }}</span>
+            <span>{{ toSymbol }}</span>
           </div>
         </div>
       </div>
       <div class="section">
         <div class="details">
           <div class="row">
-            <span>Pooled {{ fromSymbol.toUpperCase() }}:</span>
+            <span>Pooled {{ fromSymbol }}:</span>
             <span class="value">
               <span>{{ fromValue }}</span>
               <img

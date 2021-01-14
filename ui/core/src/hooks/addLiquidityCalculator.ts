@@ -79,19 +79,27 @@ export function usePoolCalculator(input: {
       )
     );
   });
-
-  const shareOfPool = computed(() => {
+  const poolUnitsArray = computed(() => {
     if (
       !liquidityPool.value ||
       !toField.fieldAmount.value ||
       !fromField.fieldAmount.value
     )
-      return new Fraction("0");
+      return [new Fraction("0"), new Fraction("0")];
 
-    const [units, lpUnits] = liquidityPool.value.calculatePoolUnits(
+    return liquidityPool.value.calculatePoolUnits(
       toField.fieldAmount.value,
       fromField.fieldAmount.value
     );
+  });
+
+  const poolUnits = computed(() => poolUnitsArray.value[1].toFixed(0));
+  const totalPoolUnits = computed(() => poolUnitsArray.value[1].toFixed(0));
+
+  const shareOfPool = computed(() => {
+    if (!poolUnitsArray.value) return new Fraction("0");
+
+    const [units, lpUnits] = poolUnitsArray.value;
 
     // if no units lp owns 100% of pool
     return units.equalTo("0") ? new Fraction("1") : lpUnits.divide(units);
@@ -100,7 +108,7 @@ export function usePoolCalculator(input: {
   const shareOfPoolPercent = computed(() => {
     return `${shareOfPool.value.multiply("100").toFixed(2)}%`;
   });
-  
+
   const aPerBRatioMessage = computed(() => {
     const aAmount = fromField.fieldAmount.value;
     const bAmount = toField.fieldAmount.value;
@@ -139,6 +147,8 @@ export function usePoolCalculator(input: {
     shareOfPool,
     shareOfPoolPercent,
     preExistingPool,
+    poolUnits,
+    totalPoolUnits,
     fromFieldAmount: fromField.fieldAmount,
     toFieldAmount: toField.fieldAmount,
   };
