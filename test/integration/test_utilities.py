@@ -151,7 +151,7 @@ def sif_tx_send(from_address, to_address, amount, currency, network_password):
 
 def burn_peggy_coin(user, eth_user, amount, ceth_amount):
     command_line = f"""yes {network_password} | sifnodecli tx ethbridge burn {get_user_account(moniker, network_password)} \
-    {eth_user} {amount} {SIF_ETH} {ceth_amount} submit \
+    {eth_user} {amount} {SIF_ETH} {ceth_amount} \
     --ethereum-chain-id=5777 \
     --home deploy/networks/validators/localnet/{moniker}/.sifnodecli/ --from={moniker} \
     --yes"""

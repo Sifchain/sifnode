@@ -67,7 +67,7 @@ def create_claim(user, validator, amount, denom, claim_type):
 
 def burn_peggy_coin(user, validator, amount):
     command_line = """sifnodecli tx ethbridge burn {} \
-    0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} {} {} submit \
+    0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} {} {} \
     --ethereum-chain-id=3 --from={} \
     --yes""".format(get_user_account(user),
                     amount, PEGGYETH, CETHAMOUNT, user)
@@ -76,7 +76,7 @@ def burn_peggy_coin(user, validator, amount):
 
 def lock_rowan(user, amount):
     command_line = """sifnodecli tx ethbridge lock {} \
-        0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rwn {} submit \
+        0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rwn {} \
         --ethereum-chain-id=3 --from={} --yes    
     """.format(get_user_account(user), amount, CETHAMOUNT, user)
     # print(command_line)
