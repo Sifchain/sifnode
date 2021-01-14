@@ -21,19 +21,22 @@ import (
 )
 
 type Node struct {
+	CLI                utils.CLI `yaml:"-"`
+	AdminCLPAddresses  []string  `yaml:"admin_clp_addresses"`
 	ChainID            string    `yaml:"chain_id"`
 	Moniker            string    `yaml:"moniker"`
 	Mnemonic           string    `yaml:"mnemonic"`
-	AdminCLPAddresses  []string  `yaml:"admin_clp_addresses"`
 	AdminOracleAddress string    `yaml:"admin_oracle_address"`
 	IPAddr             string    `yml:"ip_address"`
 	Address            string    `yaml:"address"`
 	Password           string    `yaml:"password"`
-	PeerAddress        *string   `yaml:"-"`
-	GenesisURL         *string   `yaml:"-"`
-	WithCosmovisor     bool      `yaml:"-"`
+	BondAmount         string    `yaml:"-"`
+	MintAmount         string    `yaml:"-"`
+	PeerAddress        string    `yaml:"-"`
+	GenesisURL         string    `yaml:"-"`
 	Key                *key.Key  `yaml:"-"`
-	CLI                utils.CLI `yaml:"-"`
+	Standalone         bool      `yaml:"-"`
+	WithCosmovisor     bool      `yaml:"-"`
 }
 
 func Reset(chainID string, nodeDir *string) error {
@@ -50,24 +53,6 @@ func Reset(chainID string, nodeDir *string) error {
 	}
 
 	return nil
-}
-
-func NewNode(chainID, moniker, mnemonic string, adminCLPAddresses []string, adminOracleAddress, ipAddr string, peerAddress, genesisURL *string, withCosmovisor *bool) *Node {
-	password, _ := password.Generate(32, 5, 0, false, false)
-	return &Node{
-		ChainID:            chainID,
-		Moniker:            moniker,
-		Mnemonic:           mnemonic,
-		AdminCLPAddresses:  adminCLPAddresses,
-		AdminOracleAddress: adminOracleAddress,
-		IPAddr:             ipAddr,
-		PeerAddress:        peerAddress,
-		Password:           password,
-		GenesisURL:         genesisURL,
-		WithCosmovisor:     *withCosmovisor,
-		CLI:                utils.NewCLI(chainID),
-		Key:                key.NewKey(&moniker, &password),
-	}
 }
 
 func (n *Node) Build() (*string, error) {
@@ -113,6 +98,10 @@ func (n *Node) setup() error {
 		return err
 	}
 
+	if err := n.generatePassword(); err != nil {
+		return err
+	}
+
 	err = n.generateNodeKeyAddress()
 	if err != nil {
 		return err
@@ -122,11 +111,11 @@ func (n *Node) setup() error {
 }
 
 func (n *Node) genesis() error {
-	if n.GenesisURL != nil {
-		return n.networkGenesis()
+	if n.Standalone {
+		return n.seedGenesis()
 	}
 
-	return n.seedGenesis()
+	return n.networkGenesis()
 }
 
 func (n *Node) networkGenesis() error {
@@ -148,7 +137,7 @@ func (n *Node) networkGenesis() error {
 }
 
 func (n *Node) seedGenesis() error {
-	_, err := n.CLI.AddGenesisAccount(n.Address, common.DefaultNodeHome, common.ToFund)
+	_, err := n.CLI.AddGenesisAccount(n.Address, common.DefaultNodeHome, []string{n.MintAmount})
 	if err != nil {
 		return err
 	}
@@ -181,13 +170,13 @@ func (n *Node) seedGenesis() error {
 	_, err = n.CLI.GenerateGenesisTxn(
 		n.Moniker,
 		n.Password,
-		common.ToBond,
+		n.BondAmount,
 		common.DefaultNodeHome,
 		common.DefaultCLIHome,
 		outputFile,
 		strings.TrimSuffix(*nodeID, "\n"),
 		strings.TrimSuffix(*pubKey, "\n"),
-		"127.0.0.1")
+		n.IPAddr)
 	if err != nil {
 		return err
 	}
@@ -218,6 +207,17 @@ func (n *Node) seedGenesis() error {
 	return nil
 }
 
+func (n *Node) generatePassword() error {
+	password, err := password.Generate(32, 5, 0, false, false)
+	if err != nil {
+		return err
+	}
+
+	n.Password = password
+
+	return nil
+}
+
 func (n *Node) generateNodeKeyAddress() error {
 	output, err := n.CLI.AddKey(n.Moniker, n.Mnemonic, n.Password, common.DefaultCLIHome)
 	if err != nil {
@@ -244,7 +244,7 @@ func (n *Node) generateNodeKeyAddress() error {
 func (n *Node) downloadGenesis() (types.Genesis, error) {
 	var genesis types.Genesis
 
-	response, err := http.Get(fmt.Sprintf("%v", *n.GenesisURL))
+	response, err := http.Get(fmt.Sprintf("%v", n.GenesisURL))
 	if err != nil {
 		return genesis, err
 	}
@@ -283,8 +283,8 @@ func (n *Node) replaceConfig() error {
 		return err
 	}
 
-	if (*n).PeerAddress != nil {
-		addressList := []string{*n.PeerAddress}
+	if !n.Standalone {
+		addressList := []string{n.PeerAddress}
 		config.P2P.PersistentPeers = strings.Join(addressList[:], ",")
 	}
 

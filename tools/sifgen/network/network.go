@@ -17,8 +17,10 @@ import (
 )
 
 type Network struct {
-	chainID string
-	CLI     utils.CLI
+	ChainID    string
+	CLI        utils.CLI
+	BondAmount string
+	MintAmount string
 }
 
 func Reset(chainID, networkDir string) error {
@@ -49,7 +51,7 @@ func Reset(chainID, networkDir string) error {
 
 func NewNetwork(chainID string) *Network {
 	return &Network{
-		chainID: chainID,
+		ChainID: chainID,
 		CLI:     utils.NewCLI(chainID),
 	}
 }
@@ -156,7 +158,7 @@ func (n *Network) initValidators(count int, outputDir, seedIPv4Addr string) []*V
 			lastIPv4Addr = seedIPv4Addr
 		}
 
-		validator := NewValidator(outputDir, n.chainID, seed, lastIPv4Addr)
+		validator := NewValidator(outputDir, n.ChainID, seed, lastIPv4Addr)
 		validators = append(validators, validator)
 
 		lastIPv4Addr = validator.IPv4Address
@@ -177,7 +179,7 @@ func (n *Network) createDirs(toCreate []string) error {
 
 func (n *Network) setDefaultConfig(configPath string) error {
 	config := common.CLIConfig{
-		ChainID:        n.chainID,
+		ChainID:        n.ChainID,
 		Indent:         true,
 		KeyringBackend: "file",
 		TrustNode:      true,
@@ -276,7 +278,7 @@ func (n *Network) getSeedValidator(validators []*Validator) *Validator {
 }
 
 func (n *Network) addGenesis(address, validatorHomeDir string) error {
-	_, err := n.CLI.AddGenesisAccount(address, validatorHomeDir, common.ToFund)
+	_, err := n.CLI.AddGenesisAccount(address, validatorHomeDir, []string{n.MintAmount})
 	if err != nil {
 		return err
 	}
@@ -288,7 +290,7 @@ func (n *Network) generateTx(validator *Validator, validatorDir, outputDir strin
 	_, err := n.CLI.GenerateGenesisTxn(
 		validator.Moniker,
 		validator.Password,
-		common.ToBond,
+		n.BondAmount,
 		validatorDir,
 		validator.CLIHomeDir,
 		fmt.Sprintf("%s/%s.json", outputDir, validator.Moniker),

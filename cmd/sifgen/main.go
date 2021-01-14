@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
 	"strconv"
 	"strings"
 
@@ -13,16 +15,26 @@ func main() {
 	rootCmd := &cobra.Command{Use: "sifgen"}
 
 	_networkCmd := networkCmd()
+	_networkCmd.PersistentFlags().String("bond-amount", "100000000000000000rowan", "bond amount")
+	_networkCmd.PersistentFlags().String("mint-amount", "1000000000000000000000000000rowan", "mint amount")
 	_networkCmd.AddCommand(networkCreateCmd(), networkResetCmd())
 
 	_nodeCmd := nodeCmd()
 	_nodeCreateCmd := nodeCreateCmd()
+	_nodeCreateCmd.PersistentFlags().Bool("standalone", false, "standalone node")
+	_nodeCreateCmd.PersistentFlags().String("admin-clp-addresses", "", "admin clp addresses")
+	_nodeCreateCmd.PersistentFlags().String("admin-oracle-address", "", "admin oracle addresses")
+	_nodeCreateCmd.PersistentFlags().String("bind-ip-address", "127.0.0.1", "IPv4 address to bind the node to")
+	_nodeCreateCmd.PersistentFlags().String("peer-address", "", "peer node to connect to")
+	_nodeCreateCmd.PersistentFlags().String("genesis-url", "", "genesis URL")
+	_nodeCreateCmd.PersistentFlags().String("bond-amount", "100000000000000000rowan", "bond amount")
+	_nodeCreateCmd.PersistentFlags().String("mint-amount", "1000000000000000000000000000rowan", "mint amount")
 	_nodeCreateCmd.PersistentFlags().Bool("print-details", false, "print the node details")
 	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
 
 	_keyCmd := keyCmd()
-	_keyCmd.AddCommand(keyGenerateMnemonicCmd(), keyRecoverFromMnemonicCmd())
+	_keyCmd.AddCommand(keyGenerateMnemonicCmd(), keyGenerateMnemonicCmd(), keyRecoverFromMnemonicCmd())
 
 	rootCmd.AddCommand(_networkCmd, _nodeCmd, _keyCmd)
 	_ = rootCmd.Execute()
@@ -42,8 +54,22 @@ func networkCreateCmd() *cobra.Command {
 		Short: "Create a new network.",
 		Args:  cobra.MinimumNArgs(4),
 		Run: func(cmd *cobra.Command, args []string) {
+			bondAmount, _ := cmd.Flags().GetString("bond-amount")
+			mintAmount, _ := cmd.Flags().GetString("mint-amount")
+
 			count, _ := strconv.Atoi(args[1])
-			sifgen.NewSifgen(&args[0]).NetworkCreate(count, args[2], args[3], args[4])
+			network := sifgen.NewSifgen(&args[0]).NewNetwork()
+			network.BondAmount = bondAmount
+			network.MintAmount = mintAmount
+
+			summary, err := network.Build(count, args[2], args[3])
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if err = ioutil.WriteFile(args[4], []byte(*summary), 0600); err != nil {
+				log.Fatal(err)
+			}
 		},
 	}
 }
@@ -69,34 +95,45 @@ func nodeCmd() *cobra.Command {
 
 func nodeCreateCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "create [chain-id] [moniker] [mnemonic] [admin-clp-addresses] [admin-oracle-address] [bind-ip-addr] [peer-address] [genesis-url]",
+		Use:   "create [chain-id] [moniker] [mnemonic]",
 		Short: "Create a new node.",
-		Args:  cobra.MinimumNArgs(5),
+		Args:  cobra.MinimumNArgs(3),
 		Run: func(cmd *cobra.Command, args []string) {
+			standalone, _ := cmd.Flags().GetBool("standalone")
+			adminCLPAddresses, _ := cmd.Flags().GetString("admin-clp-addresses")
+			adminOracleAddress, _ := cmd.Flags().GetString("admin-oracle-address")
+			bindIPAddress, _ := cmd.Flags().GetString("bind-ip-address")
+			peerAddress, _ := cmd.Flags().GetString("peer-address")
+			genesisURL, _ := cmd.Flags().GetString("genesis-url")
+			bondAmount, _ := cmd.Flags().GetString("bond-amount")
+			mintAmount, _ := cmd.Flags().GetString("mint-amount")
 			printDetails, _ := cmd.Flags().GetBool("print-details")
 			withCosmovisor, _ := cmd.Flags().GetBool("with-cosmovisor")
-			adminCLPAddresses := strings.Split(args[3], ",")
-			fmt.Println(args)
-			if len(args) == 6 {
-				sifgen.NewSifgen(&args[0]).NodeCreate(args[1],
-					args[2],
-					adminCLPAddresses,
-					args[4],
-					args[5],
-					nil,
-					nil,
-					&printDetails,
-					&withCosmovisor)
+
+			node := sifgen.NewSifgen(&args[0]).NewNode()
+			node.Moniker = args[1]
+			node.Mnemonic = args[2]
+
+			if standalone {
+				node.Standalone = true
+				node.AdminCLPAddresses = strings.Split(adminCLPAddresses, ",")
+				node.AdminOracleAddress = adminOracleAddress
+				node.IPAddr = bindIPAddress
+				node.BondAmount = bondAmount
+				node.MintAmount = mintAmount
 			} else {
-				sifgen.NewSifgen(&args[0]).NodeCreate(args[1],
-					args[2],
-					adminCLPAddresses,
-					args[4],
-					args[5],
-					&args[6],
-					&args[7],
-					&printDetails,
-					&withCosmovisor)
+				node.PeerAddress = peerAddress
+				node.GenesisURL = genesisURL
+			}
+
+			node.WithCosmovisor = withCosmovisor
+			summary, err := node.Build()
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if printDetails {
+				fmt.Println(*summary)
 			}
 		},
 	}
