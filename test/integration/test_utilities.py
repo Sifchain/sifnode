@@ -3,7 +3,6 @@ import os
 import subprocess
 import sys
 import time
-import traceback
 
 SIF_ETH = "ceth"
 ETHEREUM_ETH = "eth"
@@ -125,8 +124,9 @@ def wait_for_balance(balance_fn, target_balance, max_attempts=30, debug_prefix="
         else:
             attempts += 1
             if attempts >= max_attempts:
+                diff = target_balance - balance
                 print_error_message(
-                    f"{debug_prefix} Failed to get target balance of {target_balance}, balance is {balance}")
+                    f"{debug_prefix} Failed to get target balance of {target_balance}, balance is {balance} diff is {diff}, dif(eth) is {float(diff) / (10 ** 18)}")
             else:
                 if verbose:
                     print(

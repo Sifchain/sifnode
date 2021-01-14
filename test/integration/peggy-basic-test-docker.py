@@ -96,7 +96,9 @@ def test_case_1():
     print("Send lock claim to Sifchain...")
     amount = amount_in_wei(5)
     tx_result = create_claim(USER, VALIDATOR, amount, ETH, CLAIMLOCK)
-    tx_hash = json.loads(tx_result)["txhash"]
+    jsonresult = json.loads(tx_result)
+    tx_hash = jsonresult["txhash"]
+    print(f"jsonresult: \n{jsonresult}\n, then sleep for {SLEEPTIME} so the transaction can be checked")
     time.sleep(SLEEPTIME)
     get_transaction_result(tx_hash)
 
