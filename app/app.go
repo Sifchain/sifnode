@@ -2,12 +2,19 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	"github.com/tendermint/tendermint/libs/log"
+
+	tmos "github.com/tendermint/tendermint/libs/os"
+
 	"io"
 	"os"
 
-	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
-	tmos "github.com/tendermint/tendermint/libs/os"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	abci "github.com/tendermint/tendermint/abci/types"
+	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 
@@ -27,9 +34,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
+
+	"github.com/cosmos/cosmos-sdk/x/upgrade"
+	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 )
 
 const appName = "sifnode"
@@ -43,9 +50,13 @@ var (
 		bank.AppModuleBasic{},
 		staking.AppModuleBasic{},
 		distr.AppModuleBasic{},
+		gov.NewAppModuleBasic(
+			upgradeclient.ProposalHandler,
+		),
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		clp.AppModuleBasic{},
+		upgrade.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
 		faucet.AppModuleBasic{},
@@ -57,6 +68,7 @@ var (
 		distr.ModuleName:          nil,
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
+		gov.ModuleName:            {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
 		clp.ModuleName:            {supply.Burner, supply.Minter},
 		faucet.ModuleName:         {supply.Minter},
@@ -87,22 +99,22 @@ type SifchainApp struct {
 	subspaces map[string]params.Subspace
 
 	AccountKeeper  auth.AccountKeeper
+	paramsKeeper   params.Keeper
+	UpgradeKeeper  upgrade.Keeper
+	govKeeper      gov.Keeper
 	bankKeeper     bank.Keeper
 	stakingKeeper  staking.Keeper
 	slashingKeeper slashing.Keeper
 	distrKeeper    distr.Keeper
 	SupplyKeeper   supply.Keeper
-	paramsKeeper   params.Keeper
 
 	// Peggy keepers
 	EthBridgeKeeper ethbridge.Keeper
 	OracleKeeper    oracle.Keeper
 	clpKeeper       clp.Keeper
-
-	faucetKeeper faucet.Keeper
-	mm           *module.Manager
-
-	sm *module.SimulationManager
+	mm              *module.Manager
+	faucetKeeper    faucet.Keeper
+	sm              *module.SimulationManager
 }
 
 var _ simapp.App = (*SifchainApp)(nil)
@@ -124,9 +136,11 @@ func NewInitApp(
 		staking.StoreKey,
 		supply.StoreKey,
 		params.StoreKey,
+		upgrade.StoreKey,
 		oracle.StoreKey,
 		ethbridge.StoreKey,
 		clp.StoreKey,
+		gov.StoreKey,
 		faucet.StoreKey,
 		distr.StoreKey,
 		slashing.StoreKey,
@@ -148,6 +162,7 @@ func NewInitApp(
 	app.subspaces[bank.ModuleName] = app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
 	app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
+	app.subspaces[gov.ModuleName] = app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	app.subspaces[distr.ModuleName] = app.paramsKeeper.Subspace(distr.DefaultParamspace)
 	app.subspaces[slashing.ModuleName] = app.paramsKeeper.Subspace(slashing.DefaultParamspace)
 
@@ -216,6 +231,33 @@ func NewInitApp(
 		keys[faucet.StoreKey],
 		app.bankKeeper)
 
+	// This map defines heights to skip for updates
+	// The mapping represents height to bool. if the value is true for a height that height
+	// will be skipped even if we have a update proposal for it
+
+	skipUpgradeHeights := make(map[int64]bool)
+	skipUpgradeHeights[0] = true
+	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
+
+	app.UpgradeKeeper.SetUpgradeHandler("sifUpdate1", func(ctx sdk.Context, plan upgrade.Plan) {
+		clp.InitGenesis(ctx, app.clpKeeper, clp.DefaultGenesisState())
+	})
+	app.SetStoreLoader(bam.StoreLoaderWithUpgrade(&types.StoreUpgrades{
+		Added: []string{clp.ModuleName},
+	}))
+
+	govRouter := gov.NewRouter()
+	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
+		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
+	app.govKeeper = gov.NewKeeper(
+		app.cdc,
+		keys[gov.StoreKey],
+		app.subspaces[gov.ModuleName],
+		app.SupplyKeeper,
+		app.stakingKeeper,
+		govRouter,
+	)
+
 	app.mm = module.NewManager(
 		genutil.NewAppModule(app.AccountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.AccountKeeper),
@@ -224,18 +266,26 @@ func NewInitApp(
 		distr.NewAppModule(app.distrKeeper, app.AccountKeeper, app.SupplyKeeper, app.stakingKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.AccountKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.AccountKeeper, app.SupplyKeeper),
+		upgrade.NewAppModule(app.UpgradeKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
 		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
 		faucet.NewAppModule(app.faucetKeeper, app.bankKeeper, app.SupplyKeeper),
+		gov.NewAppModule(app.govKeeper, app.AccountKeeper, app.SupplyKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
-	app.mm.SetOrderBeginBlockers(distr.ModuleName, slashing.ModuleName, faucet.ModuleName)
+	app.mm.SetOrderBeginBlockers(distr.ModuleName,
+		slashing.ModuleName,
+		faucet.ModuleName,
+		upgrade.ModuleName)
 
-	app.mm.SetOrderEndBlockers(staking.ModuleName)
+	app.mm.SetOrderEndBlockers(
+		staking.ModuleName,
+		gov.ModuleName,
+	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -250,6 +300,7 @@ func NewInitApp(
 		oracle.ModuleName,
 		ethbridge.ModuleName,
 		clp.ModuleName,
+		gov.ModuleName,
 		faucet.ModuleName,
 	)
 
