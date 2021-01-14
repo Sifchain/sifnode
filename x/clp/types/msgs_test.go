@@ -70,15 +70,15 @@ func TestNewMsgDecommissionPool(t *testing.T) {
 func TestNewMsgSwap(t *testing.T) {
 	signer := NewSigner("A58856F0FD53BF058B4909A21AEC019107BA6")
 	asset := GetETHAsset()
-	tx := NewMsgSwap(signer, asset, GetSettlementAsset(), sdk.NewUint(100))
+	tx := NewMsgSwap(signer, asset, GetSettlementAsset(), sdk.NewUint(100), sdk.NewUint(90))
 	err := tx.ValidateBasic()
 	assert.NoError(t, err)
 	assert.Equal(t, tx.GetSigners()[0], signer)
 	wrongAsset := GetWrongAsset()
-	tx = NewMsgSwap(signer, wrongAsset, GetSettlementAsset(), sdk.NewUint(100))
+	tx = NewMsgSwap(signer, wrongAsset, GetSettlementAsset(), sdk.NewUint(100), sdk.NewUint(90))
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
-	tx = NewMsgSwap(signer, asset, GetSettlementAsset(), sdk.NewUint(0))
+	tx = NewMsgSwap(signer, asset, GetSettlementAsset(), sdk.NewUint(0), sdk.NewUint(90))
 	err = tx.ValidateBasic()
 	assert.Error(t, err)
 }
