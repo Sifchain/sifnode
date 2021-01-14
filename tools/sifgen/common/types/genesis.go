@@ -1,26 +1,11 @@
 package types
 
 import (
-	"fmt"
 	"time"
 )
 
 const (
-	BondAmount      = "5000000000"
 	StakeTokenDenom = "rowan"
-	StakeFundAmount = "10000000000000000000000"
-	SwapFundAmount  = "10000000000000000000000000000000000"
-)
-
-var (
-	ToBond = fmt.Sprintf("%s%s", BondAmount, StakeTokenDenom)
-	ToFund = []string{
-		fmt.Sprintf("%s%s", StakeFundAmount, StakeTokenDenom),
-		fmt.Sprintf("%s%s", SwapFundAmount, "clink"),
-		fmt.Sprintf("%s%s", SwapFundAmount, "chot"),
-		fmt.Sprintf("%s%s", SwapFundAmount, "cusdt"),
-		fmt.Sprintf("%s%s", SwapFundAmount, "cusdc"),
-	}
 )
 
 type AuthAccountValueCoin struct {
