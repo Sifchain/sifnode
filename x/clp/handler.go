@@ -146,7 +146,12 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
-	newPoolUnits, lpUnits, err := clpkeeper.CalculatePoolUnits(pool.PoolUnits, pool.NativeAssetBalance, pool.ExternalAssetBalance, msg.NativeAssetAmount, msg.ExternalAssetAmount)
+	newPoolUnits, lpUnits, err := clpkeeper.CalculatePoolUnits(
+		pool.PoolUnits,
+		pool.NativeAssetBalance,
+		pool.ExternalAssetBalance,
+		msg.NativeAssetAmount,
+		msg.ExternalAssetAmount)
 	if err != nil {
 		return nil, err
 	}
@@ -280,9 +285,11 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		liquidityFee sdk.Uint
 		tradeSlip    sdk.Uint
 	)
+
 	liquidityFee = sdk.ZeroUint()
 	tradeSlip = sdk.ZeroUint()
 	sentAmount := msg.SentAmount
+
 	sentAsset := msg.SentAsset
 	receivedAsset := msg.ReceivedAsset
 	// Get native asset
@@ -308,6 +315,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// Case 1 . Deducting his RWN and adding to RWN:ETH pool
 	// Case 2 , Deduction his ETH and adding to RWN:ETH pool
 	sentAmountInt, ok := keeper.ParseToInt(sentAmount.String())
+
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
@@ -318,6 +326,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	}
 	// Check if its a two way swap, swapping non native fro non native .
 	// If its one way we can skip this if condition and add balance to users account from outpool
+
 	if msg.SentAsset != nativeAsset && msg.ReceivedAsset != nativeAsset {
 		emitAmount, lp, ts, finalPool, err := clpkeeper.SwapOne(sentAsset, sentAmount, nativeAsset, inPool)
 		if err != nil {
@@ -337,7 +346,13 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	if err != nil {
 		return nil, err
 	}
+
+	if emitAmount.LT(msg.MinReceivingAmount) {
+		return nil, types.ErrReceivedAmountBelowExpected
+	}
+
 	err = keeper.FinalizeSwap(ctx, emitAmount.String(), finalPool, msg)
+
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 	}
