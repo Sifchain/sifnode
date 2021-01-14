@@ -111,8 +111,8 @@ func nodeCreateCmd() *cobra.Command {
 			withCosmovisor, _ := cmd.Flags().GetBool("with-cosmovisor")
 
 			node := sifgen.NewSifgen(&args[0]).NewNode()
-			node.Moniker = args[2]
-			node.Mnemonic = args[3]
+			node.Moniker = args[1]
+			node.Mnemonic = args[2]
 
 			if standalone {
 				node.Standalone = true
