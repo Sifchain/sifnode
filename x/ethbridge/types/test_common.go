@@ -2,6 +2,7 @@ package types
 
 import (
 	"testing"
+	"math/big"
 
 	"github.com/stretchr/testify/require"
 
@@ -26,7 +27,7 @@ const (
 	AltTestCoinsSymbol        = "eth"
 	TestCoinIntAmount         = 10
 )
-
+var testCethAmount = big.NewInt(65000000000 * 300000)
 var TestCoinsAmount = sdk.NewInt(10)
 var AltTestCoinsAmountSDKInt = sdk.NewInt(12)
 
@@ -58,7 +59,7 @@ func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	coinsAmount sdk.Int, coinsSymbol string) MsgBurn {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
-	burnEth := NewMsgBurn(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol)
+	burnEth := NewMsgBurn(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
 	return burnEth
 }
 
@@ -66,7 +67,7 @@ func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	coinsAmount sdk.Int, coinsSymbol string) MsgLock {
 	testCosmosAddress, err := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err)
-	lockEth := NewMsgLock(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol)
+	lockEth := NewMsgLock(TestEthereumChainID, testCosmosAddress, ethereumReceiver, coinsAmount, coinsSymbol, testCethAmount)
 	return lockEth
 }
 
