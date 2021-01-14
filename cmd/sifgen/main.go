@@ -44,7 +44,7 @@ func nodeCreateCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "create [chain-id] [moniker] [mnemonic]",
 		Short: "Create a new node.",
-		Args:  cobra.MinimumNArgs(5),
+		Args:  cobra.MinimumNArgs(3),
 		Run: func(cmd *cobra.Command, args []string) {
 			standalone, _ := cmd.Flags().GetBool("standalone")
 			adminCLPAddresses, _ := cmd.Flags().GetString("admin-clp-addresses")
