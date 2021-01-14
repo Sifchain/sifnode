@@ -5,14 +5,15 @@ import (
 )
 
 const (
-	FlagAssetSymbol         = "symbol"
-	FlagSentAssetSymbol     = "sentSymbol"
-	FlagReceivedAssetSymbol = "receivedSymbol"
-	FlagNativeAssetAmount   = "nativeAmount"
-	FlagExternalAssetAmount = "externalAmount"
-	FlagWBasisPoints        = "wBasis"
-	FlagAsymmetry           = "asymmetry"
-	FlagAmount              = "sentAmount"
+	FlagAssetSymbol            = "symbol"
+	FlagSentAssetSymbol        = "sentSymbol"
+	FlagReceivedAssetSymbol    = "receivedSymbol"
+	FlagNativeAssetAmount      = "nativeAmount"
+	FlagExternalAssetAmount    = "externalAmount"
+	FlagWBasisPoints           = "wBasis"
+	FlagAsymmetry              = "asymmetry"
+	FlagAmount                 = "sentAmount"
+	FlagMinimumReceivingAmount = "minReceivingAmount"
 )
 
 // common flagsets to add to various functions
@@ -25,6 +26,7 @@ var (
 	FsSentAssetSymbol     = flag.NewFlagSet("", flag.ContinueOnError)
 	FsReceivedAssetSymbol = flag.NewFlagSet("", flag.ContinueOnError)
 	FsAmount              = flag.NewFlagSet("", flag.ContinueOnError)
+	FsMinReceivingAmount  = flag.NewFlagSet("", flag.ContinueOnError)
 )
 
 func init() {
@@ -37,5 +39,6 @@ func init() {
 	FsSentAssetSymbol.String(FlagSentAssetSymbol, "", "Symbol for Sent Asset")
 	FsReceivedAssetSymbol.String(FlagReceivedAssetSymbol, "", "Symbol for Received Asset")
 	FsAmount.String(FlagAmount, "", "Sent amount")
+	FsMinReceivingAmount.String(FlagMinimumReceivingAmount, "", "Min threshold for receiving amount")
 
 }

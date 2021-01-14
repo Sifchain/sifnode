@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 
@@ -15,10 +16,9 @@ import (
 func TestExport(t *testing.T) {
 	db := db.NewMemDB()
 	app := NewInitApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
-	setGenesis(app)
-	// Making a new app object with the db, so that initchain hasn't been called
-	newApp := NewInitApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
-	_, _, err := newApp.ExportAppStateAndValidators(false, []string{})
+	err := setGenesis(app)
+	assert.NoError(t, err)
+	_, _, err = app.ExportAppStateAndValidators(false, []string{})
 	require.NoError(t, err, "ExportAppStateAndValidators should not have an error")
 }
 

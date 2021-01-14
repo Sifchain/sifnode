@@ -16,7 +16,7 @@ func (k Keeper) ExistsOracleWhiteList(ctx sdk.Context) bool {
 	return k.Exists(ctx, key)
 }
 
-// 
+//
 func (k Keeper) GetOracleWhiteList(ctx sdk.Context) (valList []sdk.ValAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
