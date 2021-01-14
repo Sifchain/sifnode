@@ -231,6 +231,10 @@ func NewInitApp(
 		keys[faucet.StoreKey],
 		app.bankKeeper)
 
+	// This map defines heights to skip for updates
+	// The mapping represents height to bool. if the value is true for a height that height
+	// will be skipped even if we have a update proposal for it
+
 	skipUpgradeHeights := make(map[int64]bool)
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
@@ -270,17 +274,13 @@ func NewInitApp(
 		gov.NewAppModule(app.govKeeper, app.AccountKeeper, app.SupplyKeeper),
 	)
 
-	//// there is nothing left over in the validator fee pool, so as to keep the
-	//// CanWithdrawInvariant invariant.
-	//app.mm.SetOrderBeginBlockers(
-	//	upgrade.ModuleName,
-	//	staking.ModuleName,
-	//)
-
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
-	app.mm.SetOrderBeginBlockers(distr.ModuleName, slashing.ModuleName, faucet.ModuleName, upgrade.ModuleName)
+	app.mm.SetOrderBeginBlockers(distr.ModuleName,
+		slashing.ModuleName,
+		faucet.ModuleName,
+		upgrade.ModuleName)
 
 	app.mm.SetOrderEndBlockers(
 		staking.ModuleName,

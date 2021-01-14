@@ -1,13 +1,5 @@
 #!/usr/bin/env bash
 
-
-#original="voting_period\": \"172800000000000"
-#new="voting_period\": \"10"
-#while read a; do
-#    echo "${a//$original/$new}"
-#done < $DAEMON_HOME/config/genesis.json > $DAEMON_HOME/config/genesis.json.t
-#mv $DAEMON_HOME/config/genesis.json{.t,}
-
 cosmovisor start >> sifnode.log 2>&1  &
 sleep 10
 yes Y | sifnodecli tx gov submit-proposal software-upgrade testupgrade --from shadowfiend --deposit 100000000stake --upgrade-height 5 --info '{"binaries":{"linux/amd64":"https://srv-store2.gofile.io/download/K9xJtY/sifnoded.zip?checksum=sha256:8630d1e36017ca680d572926d6a4fc7fe9a24901c52f48c70523b7d44ad0cfb2"}}' --title testupgrade --description testupgrade

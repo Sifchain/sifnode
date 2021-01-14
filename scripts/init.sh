@@ -34,18 +34,3 @@ sifnoded collect-gentxs
 
 echo "Validating genesis file..."
 sifnoded validate-genesis
-
-
-
-#mkdir -p $DAEMON_HOME/cosmovisor/genesis/bin
-
-
-#cp $GOPATH/src/old/sifnoded $DAEMON_HOME/cosmovisor/genesis/bin
-#cp $GOPATH/src/old/sifnodecli $GOPATH/bin/
-
-#mkdir -p $DAEMON_HOME/cosmovisor/upgrades/testupgrade/bin
-#cp $GOPATH/src/new/sifnoded $DAEMON_HOME/cosmovisor/upgrades/testupgrade/bin/
-
-
-#contents="$(jq '.gov.voting_params.voting_period = 10' $DAEMON_HOME/config/genesis.json)" && \
-#echo "${contents}" > $DAEMON_HOME/config/genesis.json
