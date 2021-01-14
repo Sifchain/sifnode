@@ -92,7 +92,6 @@ export default function createSifService({
 
   const triggerUpdate = debounce(
     async () => {
-      console.log("triggerUpdate" + client?.senderAddress);
       if (!client) {
         state.connected = false;
         state.address = "";
@@ -196,6 +195,7 @@ export default function createSifService({
           triggerUpdate();
         });
         triggerUpdate();
+
         return client.senderAddress;
       } catch (error) {
         throw error;
@@ -216,9 +216,7 @@ export default function createSifService({
 
       try {
         const account = await client.getAccount(address);
-        console.log(account);
         if (!account) throw "No Address found on chain";
-
         const supportedTokenSymbols = supportedTokens.map(s => s.symbol);
         const balances = account.balance
           .filter(balance => supportedTokenSymbols.includes(balance.denom))

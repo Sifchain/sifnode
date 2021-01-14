@@ -34,7 +34,7 @@ export class _AssetAmount implements IAssetAmount {
   protected fraction: IFraction;
   constructor(public asset: Asset, public amount: JSBI) {
     this.fraction = new Fraction(
-      parseBigintIsh(amount),
+      amount,
       JSBI.exponentiate(TEN, JSBI.BigInt(asset.decimals))
     );
   }

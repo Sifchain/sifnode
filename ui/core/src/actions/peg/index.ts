@@ -1,6 +1,14 @@
 import { ActionContext } from "..";
-import { AssetAmount } from "../../entities";
+import { Asset, AssetAmount, Network } from "../../entities";
 import notify from "../../api/utils/Notifications";
+
+function isOriginallySifchainNativeToken(asset: Asset) {
+  return ["erowan", "rowan"].includes(asset.symbol);
+}
+// listen for 50 confirmations
+// Eventually this should be set on ebrelayer
+// to centralize the business logic
+const ETH_CONFIRMATIONS = 50;
 
 export default ({
   api,
@@ -16,8 +24,12 @@ export default ({
     getEthTokens() {
       return api.EthereumService.getSupportedTokens();
     },
-    async burn(assetAmount: AssetAmount) {
-      const tx = await api.EthbridgeService.burn({
+    async unpeg(assetAmount: AssetAmount) {
+      const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
+        ? api.EthbridgeService.lockToEthereum
+        : api.EthbridgeService.burnToEthereum;
+
+      const tx = await lockOrBurnFn({
         assetAmount,
         ethereumRecipient: store.wallet.eth.address,
         fromAddress: store.wallet.sif.address,
@@ -25,14 +37,16 @@ export default ({
 
       return await api.SifService.signAndBroadcast(tx.value.msg);
     },
-    async lock(assetAmount: AssetAmount) {
-      return await new Promise<any>((done) => {
-        // listen for 50 confirmations
-        // Eventually this should be set on ebrelayer
-        // to centralize the business logic
-        api.EthbridgeService.lock(store.wallet.sif.address, assetAmount, 50)
+
+    async peg(assetAmount: AssetAmount) {
+      const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
+        ? api.EthbridgeService.burnToSifchain
+        : api.EthbridgeService.lockToSifchain;
+
+      return await new Promise<any>(done => {
+        lockOrBurnFn(store.wallet.sif.address, assetAmount, ETH_CONFIRMATIONS)
           .onTxHash(done)
-          .onError((err) => {
+          .onError(err => {
             const payload: any = err.payload;
             notify({ type: "error", message: payload.message ?? err });
           })
