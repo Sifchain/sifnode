@@ -113,13 +113,12 @@ type CosmosMsg struct {
 	Amount               sdk.Int
 	EthereumReceiver     common.Address
 	ClaimType            Event
-	MessageType          types.MessageType
 	CethAmount           sdk.Int
 }
 
 // NewCosmosMsg creates a new CosmosMsg
 func NewCosmosMsg(ethereumChainID int, claimType Event, cosmosSender []byte, cosmosSenderSequence *big.Int, ethereumReceiver common.Address, symbol string,
-	amount sdk.Int, messageType types.MessageType, cethAmount sdk.Int) CosmosMsg {
+	amount sdk.Int, cethAmount sdk.Int) CosmosMsg {
 	return CosmosMsg{
 		EthereumChainID:      ethereumChainID,
 		ClaimType:            claimType,
@@ -128,7 +127,6 @@ func NewCosmosMsg(ethereumChainID int, claimType Event, cosmosSender []byte, cos
 		EthereumReceiver:     ethereumReceiver,
 		Symbol:               symbol,
 		Amount:               amount,
-		MessageType:          messageType,
 		CethAmount:           cethAmount,
 	}
 }
@@ -161,8 +159,6 @@ const (
 	Amount
 	// Symbol is the coin type
 	Symbol
-	// MessageType could be commit, revert, pay back ceth
-	MessageType
 	// CethAmount paid in Sifchain for the cost of send tx in Ethereum
 	CethAmount
 	// EthereumChainID is
@@ -171,5 +167,5 @@ const (
 
 // String returns the event type as a string
 func (d CosmosMsgAttributeKey) String() string {
-	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol", "message_type", "ceth_amount", "ethereum_chain_id"}[d]
+	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol", "ceth_amount", "ethereum_chain_id"}[d]
 }

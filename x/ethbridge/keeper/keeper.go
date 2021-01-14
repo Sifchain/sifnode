@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/tendermint/tendermint/libs/log"
@@ -106,7 +107,10 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, cosmos
 }
 
 // ProcessUnburn processes the revert burn of bridged coins from the given sender
-func (k Keeper) ProcessUnburn(ctx sdk.Context, cosmosSender sdk.AccAddress, cosmosSenderSequence uint64, amount sdk.Coins) error {
+func (k Keeper) ProcessUnburn(ctx sdk.Context, cosmosSender sdk.AccAddress, cosmosSenderSequence uint64, amount sdk.Coins, validatorAddress sdk.ValAddress) error {
+	if !k.oracleKeeper.ValidateAddress(ctx, validatorAddress) {
+		return errors.New("validator not in the white list")
+	}
 	updated, err := k.SetLockBurnID(ctx, BuildLockBurnID(cosmosSender, cosmosSenderSequence))
 	if err != nil {
 		return err
@@ -139,7 +143,11 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, cosmos
 }
 
 // ProcessUnlock processes the revert lockup of cosmos coins from the given sender
-func (k Keeper) ProcessUnlock(ctx sdk.Context, cosmosSender sdk.AccAddress, cosmosSenderSequence uint64, amount sdk.Coins) error {
+func (k Keeper) ProcessUnlock(ctx sdk.Context, cosmosSender sdk.AccAddress, cosmosSenderSequence uint64, amount sdk.Coins, validatorAddress sdk.ValAddress) error {
+	if !k.oracleKeeper.ValidateAddress(ctx, validatorAddress) {
+		return errors.New("validator not in the white list")
+	}
+
 	updated, err := k.SetLockBurnID(ctx, BuildLockBurnID(cosmosSender, cosmosSenderSequence))
 	if err != nil {
 		return err

@@ -50,20 +50,16 @@ func SendMsgToCosmos(cosmosContext *types.CosmosContext, msg sdk.Msg) error {
 	return nil
 }
 
-// SendOutMessage send cosmos message to Sifchain
-func SendOutMessage(cosmosContext *types.CosmosContext, message *types.CosmosMsg) error {
-	if message.ClaimType == types.MsgLock {
-		msg := bridgetypes.NewMsgLock(message.EthereumChainID, sdk.AccAddress(message.CosmosSender), bridgetypes.EthereumAddress(message.EthereumReceiver),
-			message.Amount, message.Symbol, message.CethAmount, message.MessageType)
-		msg.SetSequence(uint64(message.CosmosSenderSequence.Int64()))
-		return SendMsgToCosmos(cosmosContext, msg)
-	}
+// SendOutRevertMessage send cosmos message to Sifchain
+func SendOutRevertMessage(cosmosContext *types.CosmosContext, validatorAddress sdk.ValAddress, message *types.CosmosMsg) error {
+	msg := bridgetypes.NewMsgRevert(sdk.AccAddress(message.CosmosSender), uint64(message.CosmosSenderSequence.Int64()),
+		message.Amount, message.Symbol, message.CethAmount, validatorAddress)
+	return SendMsgToCosmos(cosmosContext, msg)
+}
 
-	if message.ClaimType == types.MsgBurn {
-		msg := bridgetypes.NewMsgBurn(message.EthereumChainID, sdk.AccAddress(message.CosmosSender), bridgetypes.EthereumAddress(message.EthereumReceiver),
-			message.Amount, message.Symbol, message.CethAmount, message.MessageType)
-		msg.SetSequence(uint64(message.CosmosSenderSequence.Int64()))
-		return SendMsgToCosmos(cosmosContext, msg)
-	}
-	return nil
+// SendOutRefundMessage send cosmos message to Sifchain
+func SendOutRefundMessage(cosmosContext *types.CosmosContext, validatorAddress sdk.ValAddress, message *types.CosmosMsg) error {
+	msg := bridgetypes.NewMsgRefund(sdk.AccAddress(message.CosmosSender), uint64(message.CosmosSenderSequence.Int64()),
+		message.CethAmount, validatorAddress)
+	return SendMsgToCosmos(cosmosContext, msg)
 }

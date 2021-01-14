@@ -27,6 +27,10 @@ func NewHandler(
 			return handleMsgBurn(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		case MsgLock:
 			return handleMsgLock(ctx, cdc, accountKeeper, bridgeKeeper, msg)
+		case MsgRevert:
+			return handleMsgRevert(ctx, cdc, accountKeeper, bridgeKeeper, msg)
+		case MsgRefund:
+			return handleMsgRefund(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		case MsgUpdateWhiteListValidator:
 			return handleMsgUpdateWhiteListValidator(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		default:
@@ -86,39 +90,16 @@ func handleMsgBurn(
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
-	fmt.Printf("\n JJJJ account sequence is %d \n", account.GetSequence())
 	msg.SetSequence(account.GetSequence())
 
 	var coins sdk.Coins
-	switch msg.MessageType {
-	case types.MsgSubmit:
-		if msg.Symbol == CethSymbol {
-			coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.Amount.Add(msg.CethAmount)))
-		} else {
-			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
-		}
-		if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
-			return nil, err
-		}
-
-	case types.MsgRevert:
-		if msg.Symbol == CethSymbol {
-			coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.Amount.Add(msg.CethAmount)))
-		} else {
-			coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
-		}
-		if err := bridgeKeeper.ProcessUnburn(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
-			return nil, err
-		}
-
-	case types.MsgReturnCeth:
-		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount))
-		if err := bridgeKeeper.ProcessUnburn(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
-			return nil, err
-		}
-
-	default:
-		return nil, types.ErrInvalidMessageType
+	if msg.Symbol == CethSymbol {
+		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.Amount.Add(msg.CethAmount)))
+	} else {
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
+	}
+	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
+		return nil, err
 	}
 
 	ctx.EventManager().EmitEvents(sdk.Events{
@@ -137,12 +118,58 @@ func handleMsgBurn(
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
 			sdk.NewAttribute(types.AttributeKeyCoins, coins.String()),
 			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
-			sdk.NewAttribute(types.AttributeKeyMessageType, strconv.Itoa(int(msg.MessageType))),
 		),
 	})
 
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 
+}
+
+func handleMsgRevert(
+	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
+	bridgeKeeper Keeper, msg MsgRevert,
+) (*sdk.Result, error) {
+	if bridgeKeeper.ExistsPeggyToken(ctx, msg.Symbol) {
+		return nil, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
+	}
+
+	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
+	if account == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	}
+
+	account = accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.ValidatorAddress))
+	if account == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
+	}
+
+	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
+	if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins, msg.ValidatorAddress); err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func handleMsgRefund(
+	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
+	bridgeKeeper Keeper, msg MsgRefund,
+) (*sdk.Result, error) {
+
+	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
+	if account == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	}
+
+	account = accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.ValidatorAddress))
+	if account == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
+	}
+
+	coins := sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount))
+	if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins, msg.ValidatorAddress); err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
 
 func handleMsgLock(
@@ -160,28 +187,28 @@ func handleMsgLock(
 
 	msg.SetSequence(account.GetSequence())
 	var coins sdk.Coins
-	switch msg.MessageType {
-	case types.MsgSubmit:
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
-		if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
-			return nil, err
-		}
-
-	case types.MsgRevert:
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
-		if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
-			return nil, err
-		}
-
-	case types.MsgReturnCeth:
-		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount))
-		if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
-			return nil, err
-		}
-
-	default:
-		return nil, types.ErrInvalidMessageType
+	// switch msg.MessageType {
+	// case types.MsgSubmit:
+	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
+	if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
+		return nil, err
 	}
+
+	// case types.MsgRevert:
+	// 	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
+	// 	if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
+	// 		return nil, err
+	// 	}
+
+	// case types.MsgReturnCeth:
+	// 	coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount))
+	// 	if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
+	// 		return nil, err
+	// 	}
+
+	// default:
+	// 	return nil, types.ErrInvalidMessageType
+	// }
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -199,7 +226,6 @@ func handleMsgLock(
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
 			sdk.NewAttribute(types.AttributeKeyCoins, coins.String()),
 			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
-			sdk.NewAttribute(types.AttributeKeyMessageType, strconv.Itoa(int(msg.MessageType))),
 		),
 	})
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil

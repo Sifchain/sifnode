@@ -195,10 +195,10 @@ func burnOrLockHandler(cliCtx context.CLIContext, lockOrBurn string) http.Handle
 		var msg sdk.Msg
 		switch lockOrBurn {
 		case "lock":
-			msg = types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount, types.MessageType(0))
+			msg = types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
 
 		case "burn":
-			msg = types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount, types.MessageType(0))
+			msg = types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
 		}
 		err = msg.ValidateBasic()
 		if err != nil {

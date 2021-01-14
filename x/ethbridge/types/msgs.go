@@ -12,43 +12,149 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-type MessageType uint32
+// MsgRevert defines a message for locking coins and triggering a related event
+type MsgRevert struct {
+	CosmosSender         sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
+	CosmosSenderSequence uint64         `json:"cosmos_sender_sequence" yaml:"cosmos_sender_sequence"`
+	Symbol               string         `json:"symbol" yaml:"symbol"`
+	Amount               sdk.Int        `json:"amount" yaml:"amount"`
+	CethAmount           sdk.Int        `json:"ceth_amount" yaml:"ceth_amount"`
+	ValidatorAddress     sdk.ValAddress `json:"validator_address" yaml:"validator_address"`
+}
 
-const (
-	MsgSubmit          MessageType = 0
-	MsgRevert          MessageType = 1
-	MsgReturnCeth      MessageType = 2
-	InvalidMessageType MessageType = 3
-)
-
-// MessageTypeStringToEnum return MessageType according to input string
-func MessageTypeStringToEnum(messageType string) MessageType {
-	switch messageType {
-	case "submit":
-		return MsgSubmit
-	case "revert":
-		return MsgRevert
-	case "return":
-		return MsgReturnCeth
+// NewMsgRevert is a constructor function for MsgLock
+func NewMsgRevert(cosmosSender sdk.AccAddress, cosmosSenderSequence uint64, amount sdk.Int,
+	symbol string, cethAmount sdk.Int, validatorAddress sdk.ValAddress) MsgRevert {
+	return MsgRevert{
+		CosmosSender:         cosmosSender,
+		CosmosSenderSequence: cosmosSenderSequence,
+		Amount:               amount,
+		Symbol:               symbol,
+		CethAmount:           cethAmount,
+		ValidatorAddress:     validatorAddress,
 	}
-	return InvalidMessageType
+}
+
+// Route should return the name of the module
+func (msg MsgRevert) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgRevert) Type() string { return "revert" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgRevert) ValidateBasic() error {
+
+	if msg.CosmosSender.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	}
+
+	if msg.ValidatorAddress.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
+	}
+
+	if msg.Amount.LTE(sdk.NewInt(0)) {
+		return ErrInvalidAmount
+	}
+
+	if msg.CethAmount.LT(sdk.NewInt(0)) {
+		return ErrInvalidAmount
+	}
+
+	if len(msg.Symbol) == 0 {
+		return ErrInvalidSymbol
+	}
+
+	fmt.Println("Validate basic succeeded for burn tx")
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgRevert) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgRevert) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
+}
+
+// MsgRefund defines a message for locking coins and triggering a related event
+type MsgRefund struct {
+	CosmosSender         sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
+	CosmosSenderSequence uint64         `json:"cosmos_sender_sequence" yaml:"cosmos_sender_sequence"`
+	CethAmount           sdk.Int        `json:"ceth_amount" yaml:"ceth_amount"`
+	ValidatorAddress     sdk.ValAddress `json:"validator_address" yaml:"validator_address"`
+}
+
+// NewMsgRefund is a constructor function for MsgLock
+func NewMsgRefund(cosmosSender sdk.AccAddress, cosmosSenderSequence uint64, cethAmount sdk.Int, validatorAddress sdk.ValAddress) MsgRefund {
+	return MsgRefund{
+		CosmosSender:         cosmosSender,
+		CosmosSenderSequence: cosmosSenderSequence,
+		CethAmount:           cethAmount,
+		ValidatorAddress:     validatorAddress,
+	}
+}
+
+// Route should return the name of the module
+func (msg MsgRefund) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgRefund) Type() string { return "refund" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgRefund) ValidateBasic() error {
+
+	if msg.CosmosSender.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	}
+
+	if msg.ValidatorAddress.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
+	}
+
+	if msg.CethAmount.LT(sdk.NewInt(0)) {
+		return ErrInvalidAmount
+	}
+
+	fmt.Println("Validate basic succeeded for burn tx")
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgRefund) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgRefund) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
 }
 
 // MsgLock defines a message for locking coins and triggering a related event
 type MsgLock struct {
 	CosmosSender         sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`
 	CosmosSenderSequence uint64          `json:"cosmos_sender_sequence" yaml:"cosmos_sender_sequence"`
-	Symbol               string          `json:"symbol" yaml:"symbol"`
 	Amount               sdk.Int         `json:"amount" yaml:"amount"`
-	EthereumChainID      int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
+	Symbol               string          `json:"symbol" yaml:"symbol"`
 	CethAmount           sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
-	MessageType          MessageType     `json:"message_type" yaml:"message_type"`
+	EthereumChainID      int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
 	EthereumReceiver     EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
 }
 
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(ethereumChainID int, cosmosSender sdk.AccAddress, ethereumReceiver EthereumAddress, amount sdk.Int,
-	symbol string, cethAmount sdk.Int, messageType MessageType) MsgLock {
+	symbol string, cethAmount sdk.Int) MsgLock {
 	return MsgLock{
 		EthereumChainID:      ethereumChainID,
 		CosmosSender:         cosmosSender,
@@ -57,7 +163,6 @@ func NewMsgLock(ethereumChainID int, cosmosSender sdk.AccAddress, ethereumReceiv
 		Amount:               amount,
 		Symbol:               symbol,
 		CethAmount:           cethAmount,
-		MessageType:          messageType,
 	}
 }
 
@@ -100,9 +205,6 @@ func (msg MsgLock) ValidateBasic() error {
 		return ErrInvalidSymbol
 	}
 
-	if msg.MessageType != MsgSubmit && msg.MessageType != MsgRevert {
-		return ErrInvalidClaimType
-	}
 	fmt.Println("Validate basic succeeded for burn tx")
 	return nil
 }
@@ -130,14 +232,13 @@ type MsgBurn struct {
 	Amount               sdk.Int         `json:"amount" yaml:"amount"`
 	EthereumChainID      int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
 	CethAmount           sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
-	MessageType          MessageType     `json:"message_type" yaml:"message_type"`
 	EthereumReceiver     EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
 }
 
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
 	ethereumChainID int, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int, messageType MessageType) MsgBurn {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgBurn {
 	return MsgBurn{
 		EthereumChainID:      ethereumChainID,
 		CosmosSender:         cosmosSender,
@@ -146,7 +247,6 @@ func NewMsgBurn(
 		Amount:               amount,
 		Symbol:               symbol,
 		CethAmount:           cethAmount,
-		MessageType:          messageType,
 	}
 }
 
@@ -178,9 +278,6 @@ func (msg MsgBurn) ValidateBasic() error {
 	}
 	if msg.CethAmount.LT(sdk.NewInt(0)) {
 		return ErrInvalidAmount
-	}
-	if msg.MessageType != MsgSubmit && msg.MessageType != MsgRevert {
-		return ErrInvalidClaimType
 	}
 	prefixLength := len(PeggedCoinPrefix)
 	if len(msg.Symbol) <= prefixLength+1 {

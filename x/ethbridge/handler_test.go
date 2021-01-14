@@ -259,13 +259,12 @@ func TestBurnEthSuccess(t *testing.T) {
 	coinsToBurnSymbol := "ether"
 	coinsToBurnSymbolPrefixed := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, coinsToBurnSymbol)
 	coinsCethAmount := sdk.NewInt(1)
-	messageType := types.MsgSubmit
 
 	ethereumReceiver := types.NewEthereumAddress(types.AltTestEthereumAddress)
 
 	// Second message succeeds, burns eth and fires correct event
 	burnMsg := types.CreateTestBurnMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,
-		coinsToBurnSymbolPrefixed, coinsCethAmount, messageType)
+		coinsToBurnSymbolPrefixed, coinsCethAmount)
 	res, err = handler(ctx, burnMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -284,7 +283,6 @@ func TestBurnEthSuccess(t *testing.T) {
 	eventSymbol := ""
 	eventCoins := ""
 	eventCethAmount := ""
-	eventMessageType := ""
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
@@ -307,8 +305,6 @@ func TestBurnEthSuccess(t *testing.T) {
 				eventAmount = value
 			case "ceth_amount":
 				eventCethAmount = value
-			case "message_type":
-				eventMessageType = value
 			case "symbol":
 				eventSymbol = value
 			case "coins":
@@ -327,11 +323,10 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin("ceth", coinsCethAmount), sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
 	fmt.Printf("eventCethAmount is %v, coinsCethAmount is %v", eventCethAmount, coinsCethAmount)
 	require.Equal(t, eventCethAmount, coinsCethAmount.String())
-	require.Equal(t, eventMessageType, "0")
 
 	// Third message failed since pegged token can be lock.
 	lockMsg := types.CreateTestLockMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,
-		coinsToBurnSymbolPrefixed, coinsCethAmount, messageType)
+		coinsToBurnSymbolPrefixed, coinsCethAmount)
 	_, err = handler(ctx, lockMsg)
 	require.NotNil(t, err)
 	require.Equal(t, "Pegged token cether can't be lock.", err.Error())

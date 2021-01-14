@@ -27,4 +27,5 @@ type OracleKeeper interface {
 	ProcessClaim(ctx sdk.Context, claim oracle.Claim) (oracle.Status, error)
 	GetProphecy(ctx sdk.Context, id string) (oracle.Prophecy, bool)
 	ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error
+	ValidateAddress(ctx sdk.Context, address sdk.ValAddress) bool
 }

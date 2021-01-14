@@ -19,5 +19,5 @@ var (
 	ErrInvalidSymbol          = sdkerrors.Register(ModuleName, 8, "symbol must be 1 character or more")
 	ErrInvalidBurnSymbol      = sdkerrors.Register(ModuleName, 9,
 		fmt.Sprintf("symbol of token to burn must be in the form %v{ethereumSymbol}", PeggedCoinPrefix))
-	ErrInvalidMessageType = sdkerrors.Register(ModuleName, 10, "Message type is invalid")
+	// ErrInvalidMessageType = sdkerrors.Register(ModuleName, 10, "Message type is invalid")
 )

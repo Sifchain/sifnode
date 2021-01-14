@@ -21,8 +21,6 @@ import (
 	tmLog "github.com/tendermint/tendermint/libs/log"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	tmTypes "github.com/tendermint/tendermint/types"
-
-	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
 const (
@@ -147,11 +145,6 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 	}
 	sub.Logger.Info(cosmosMsg.String())
 
-	// Only deal with submit message
-	if cosmosMsg.MessageType != ethbridge.MsgSubmit {
-		return nil
-	}
-
 	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
 	cethAmount := cosmosMsg.CethAmount.BigInt()
 
@@ -163,8 +156,7 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 		fmt.Println(err)
 
 		if err.Error() == types.ErrorCethNotEnough {
-			cosmosMsg.MessageType = ethbridge.MsgRevert
-			txs.SendOutMessage(sub.CosmosContext, &cosmosMsg)
+			txs.SendOutRevertMessage(sub.CosmosContext, sub.CosmosContext.ValidatorAddress, &cosmosMsg)
 		}
 
 		return err
@@ -173,9 +165,8 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 	bigGasUsed := big.NewInt(int64(gasUsed * RelayerNodeNumber))
 
 	if cethAmount.Cmp(bigGasUsed) > 0 {
-		cosmosMsg.MessageType = ethbridge.MsgReturnCeth
 		cosmosMsg.CethAmount = sdk.NewIntFromBigInt(cethAmount.Sub(cethAmount, bigGasUsed))
-		txs.SendOutMessage(sub.CosmosContext, &cosmosMsg)
+		txs.SendOutRefundMessage(sub.CosmosContext, sub.CosmosContext.ValidatorAddress, &cosmosMsg)
 	}
 
 	return nil

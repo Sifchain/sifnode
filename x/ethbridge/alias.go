@@ -52,7 +52,8 @@ type (
 	MsgCreateEthBridgeClaim     = types.MsgCreateEthBridgeClaim
 	MsgBurn                     = types.MsgBurn
 	MsgLock                     = types.MsgLock
-	MessageType                 = types.MessageType
+	MsgRevert                   = types.MsgRevert
+	MsgRefund                   = types.MsgRefund
 	MsgUpdateWhiteListValidator = types.MsgUpdateWhiteListValidator
 	QueryEthProphecyParams      = types.QueryEthProphecyParams
 	QueryEthProphecyResponse    = types.QueryEthProphecyResponse
