@@ -264,7 +264,7 @@ paths:
                   properties:
                     symbol:
                       type: string
-               external_asset_amount:
+                external_asset_amount:
                   type: string
                 native_asset_amount:
                   type: string
