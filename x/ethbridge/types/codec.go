@@ -9,6 +9,8 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgCreateEthBridgeClaim{}, "ethbridge/MsgCreateEthBridgeClaim", nil)
 	cdc.RegisterConcrete(MsgBurn{}, "ethbridge/MsgBurn", nil)
 	cdc.RegisterConcrete(MsgLock{}, "ethbridge/MsgLock", nil)
+	cdc.RegisterConcrete(MsgRevert{}, "ethbridge/MsgRevert", nil)
+	cdc.RegisterConcrete(MsgRefund{}, "ethbridge/MsgRefund", nil)
 	cdc.RegisterConcrete(MsgUpdateWhiteListValidator{}, "ethbridge/MsgUpdateWhiteListValidator", nil)
 }
 

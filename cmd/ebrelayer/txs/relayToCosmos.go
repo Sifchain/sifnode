@@ -3,6 +3,8 @@ package txs
 // DONTCOVER
 
 import (
+	"errors"
+
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
@@ -52,14 +54,23 @@ func SendMsgToCosmos(cosmosContext *types.CosmosContext, msg sdk.Msg) error {
 
 // SendOutRevertMessage send cosmos message to Sifchain
 func SendOutRevertMessage(cosmosContext *types.CosmosContext, validatorAddress sdk.ValAddress, message *types.CosmosMsg) error {
-	msg := bridgetypes.NewMsgRevert(sdk.AccAddress(message.CosmosSender), uint64(message.CosmosSenderSequence.Int64()),
+	tmpAddress, err := sdk.AccAddressFromBech32(string(message.CosmosSender))
+	if err != nil {
+		return errors.New("wrong cosmos sender address")
+	}
+	msg := bridgetypes.NewMsgRevert(tmpAddress, uint64(message.CosmosSenderSequence.Int64()),
 		message.Amount, message.Symbol, message.CethAmount, validatorAddress)
 	return SendMsgToCosmos(cosmosContext, msg)
 }
 
 // SendOutRefundMessage send cosmos message to Sifchain
 func SendOutRefundMessage(cosmosContext *types.CosmosContext, validatorAddress sdk.ValAddress, message *types.CosmosMsg) error {
-	msg := bridgetypes.NewMsgRefund(sdk.AccAddress(message.CosmosSender), uint64(message.CosmosSenderSequence.Int64()),
+	tmpAddress, err := sdk.AccAddressFromBech32(string(message.CosmosSender))
+	if err != nil {
+		return errors.New("wrong cosmos sender address")
+	}
+
+	msg := bridgetypes.NewMsgRefund(tmpAddress, uint64(message.CosmosSenderSequence.Int64()),
 		message.CethAmount, validatorAddress)
 	return SendMsgToCosmos(cosmosContext, msg)
 }

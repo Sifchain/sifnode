@@ -129,15 +129,18 @@ func handleMsgRevert(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
 	bridgeKeeper Keeper, msg MsgRevert,
 ) (*sdk.Result, error) {
+
+	fmt.Println("handleMsgRevert ")
+
 	if bridgeKeeper.ExistsPeggyToken(ctx, msg.Symbol) {
 		return nil, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
 	}
-
+	fmt.Println("handleMsgRefund check 1")
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
-
+	fmt.Println("handleMsgRefund check 2")
 	account = accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.ValidatorAddress))
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
@@ -154,17 +157,21 @@ func handleMsgRefund(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
 	bridgeKeeper Keeper, msg MsgRefund,
 ) (*sdk.Result, error) {
+	fmt.Printf("handleMsgRefund %s \n", msg.CosmosSender)
+	fmt.Printf("handleMsgRefund %d \n", msg.CosmosSenderSequence)
+	fmt.Printf("handleMsgRefund %s \n", msg.CethAmount)
 
+	fmt.Printf("handleMsgRefund %s \n", msg.ValidatorAddress)
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
-
+	fmt.Println("handleMsgRefund check 1")
 	account = accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.ValidatorAddress))
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
 	}
-
+	fmt.Println("handleMsgRefund check 2")
 	coins := sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount))
 	if err := bridgeKeeper.ProcessUnlock(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins, msg.ValidatorAddress); err != nil {
 		return nil, err

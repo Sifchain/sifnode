@@ -111,6 +111,7 @@ func (k Keeper) ProcessUnburn(ctx sdk.Context, cosmosSender sdk.AccAddress, cosm
 	if !k.oracleKeeper.ValidateAddress(ctx, validatorAddress) {
 		return errors.New("validator not in the white list")
 	}
+
 	updated, err := k.SetLockBurnID(ctx, BuildLockBurnID(cosmosSender, cosmosSenderSequence))
 	if err != nil {
 		return err
@@ -147,7 +148,6 @@ func (k Keeper) ProcessUnlock(ctx sdk.Context, cosmosSender sdk.AccAddress, cosm
 	if !k.oracleKeeper.ValidateAddress(ctx, validatorAddress) {
 		return errors.New("validator not in the white list")
 	}
-
 	updated, err := k.SetLockBurnID(ctx, BuildLockBurnID(cosmosSender, cosmosSenderSequence))
 	if err != nil {
 		return err

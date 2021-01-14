@@ -137,7 +137,7 @@ func getOracleClaimType(eventType string) types.Event {
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.Event) error {
-
+	sub.Logger.Info(" Junius   handleBurnLockMsg")
 	cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, attributes)
 	if err != nil {
 		fmt.Println(err)
@@ -150,6 +150,8 @@ func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.E
 
 	gasUsed, err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
 		claimType, prophecyClaim, sub.PrivateKey, cethAmount)
+
+	sub.Logger.Info(fmt.Sprintf(" gasused %d ", gasUsed))
 
 	// If failed to send prophecy claim to Ethereum
 	if err != nil {

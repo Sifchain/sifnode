@@ -37,13 +37,17 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		return 0, err
 	}
 
+	gasPrice := auth.GasPrice
+
 	switch claim.ClaimType {
 	case types.MsgBurn:
-		if cethAmount.Cmp(big.NewInt(GasForBurn)) < 0 {
+		bigGasForBurn := big.NewInt(GasForBurn)
+		if cethAmount.Cmp(bigGasForBurn.Mul(bigGasForBurn, gasPrice)) < 0 {
 			return 0, errors.New(types.ErrorCethNotEnough)
 		}
 	case types.MsgLock:
-		if cethAmount.Cmp(big.NewInt(GasForMint)) < 0 {
+		bigGasForLock := big.NewInt(GasForMint)
+		if cethAmount.Cmp(bigGasForLock.Mul(bigGasForLock, gasPrice)) < 0 {
 			return 0, errors.New(types.ErrorCethNotEnough)
 		}
 	default:
@@ -77,7 +81,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		return 0, errors.New("NewProphecyClaim transaction failed ")
 	case 1:
 		fmt.Println("Tx Status: 1 - Successful")
-		return receipt.GasUsed, nil
+		return receipt.GasUsed * uint64(gasPrice.Int64()), nil
 	}
 
 	return 0, nil

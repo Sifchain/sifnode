@@ -64,7 +64,7 @@ func (msg MsgRevert) ValidateBasic() error {
 		return ErrInvalidSymbol
 	}
 
-	fmt.Println("Validate basic succeeded for burn tx")
+	fmt.Println("Validate basic succeeded for revert tx")
 	return nil
 }
 
@@ -122,7 +122,7 @@ func (msg MsgRefund) ValidateBasic() error {
 		return ErrInvalidAmount
 	}
 
-	fmt.Println("Validate basic succeeded for burn tx")
+	fmt.Println("Validate basic succeeded for refund tx")
 	return nil
 }
 

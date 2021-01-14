@@ -159,12 +159,6 @@ func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 				return types.ErrInvalidAmount
 			}
 
-			// messageType := types.MessageTypeStringToEnum(args[5])
-
-			// if messageType == types.InvalidMessageType {
-			// 	return types.ErrInvalidMessageType
-			// }
-
 			msg := types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
