@@ -20,7 +20,7 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().String("peer-address", "", "peer node to connect to")
 	_nodeCreateCmd.PersistentFlags().String("genesis-url", "", "genesis URL")
 	_nodeCreateCmd.PersistentFlags().String("bond-amount", "100000000000000000rowan", "bond amount")
-	_nodeCreateCmd.PersistentFlags().String("mint-amount", "1000000000000000000000000000rowan", "bond amount")
+	_nodeCreateCmd.PersistentFlags().String("mint-amount", "1000000000000000000000000000rowan", "mint amount")
 	_nodeCreateCmd.PersistentFlags().Bool("print-details", false, "print the node details")
 	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
