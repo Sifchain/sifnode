@@ -217,7 +217,6 @@ func (c CLI) CreateValidator(moniker, validatorPublicKey, keyPassword, bondAmoun
 
 func (c CLI) shellExec(cmd string, args ...string) (*string, error) {
 	cm := exec.Command(cmd, args...)
-	fmt.Println(cm.String())
 	var out bytes.Buffer
 	cm.Stdout = &out
 
@@ -232,7 +231,6 @@ func (c CLI) shellExec(cmd string, args ...string) (*string, error) {
 
 func (c CLI) shellExecInput(cmd string, inputs [][]byte, args ...string) (*string, error) {
 	cm := exec.Command(cmd, args...)
-	fmt.Println(cm.String())
 	var stderr bytes.Buffer
 	cm.Stderr = &stderr
 
