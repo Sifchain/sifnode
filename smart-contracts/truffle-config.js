@@ -6,7 +6,7 @@ module.exports = {
   solc: {
     optimizer: {
         enabled: true,
-        runs: 200
+        runs: 1000
     }
   },
   networks: {
@@ -55,5 +55,5 @@ module.exports = {
   mocha: {
     useColors: true
   },
-  plugins: ["truffle-contract-size"]
+  plugins: ["truffle-contract-size", "solidity-coverage"]
 };

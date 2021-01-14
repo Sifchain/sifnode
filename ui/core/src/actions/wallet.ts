@@ -3,6 +3,7 @@ import { validateMnemonic } from "bip39";
 import { Mnemonic } from "../entities/Wallet";
 import { ActionContext } from ".";
 import { effect } from "@vue/reactivity";
+import notify from "../api/utils/Notifications";
 
 export default ({
   api,
@@ -29,10 +30,34 @@ export default ({
     async disconnect() {
       api.SifService.purgeClient();
     },
+
+    async connectToWallet() {
+      try {
+        // TODO type
+        await api.SifService.connect();
+        store.wallet.sif.isConnected = true;
+      } catch (error) {
+        // to the ui??
+        notify({ type: "error", ...error });
+      }
+    },
+
+    async disconnectWallet() {
+      await api.SifService.disconnect();
+    },
   };
 
   effect(() => {
-    store.wallet.sif.isConnected = state.connected;
+    if (store.wallet.sif.isConnected !== state.connected) {
+      store.wallet.sif.isConnected = state.connected;
+      if (store.wallet.sif.isConnected) {
+        notify({
+          type: "success",
+          message: "Sif Account connected",
+          detail: store.wallet.sif.address,
+        });
+      }
+    }
   });
 
   effect(() => {

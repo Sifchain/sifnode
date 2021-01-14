@@ -87,13 +87,13 @@ func TestAddLiquidity(t *testing.T) {
 	res, err = handler(ctx, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	msg = clp.NewMsgAddLiquidity(signer, asset, addLiquidityAmount, addLiquidityAmount)
+	msg = clp.NewMsgAddLiquidity(signer, asset, sdk.ZeroUint(), addLiquidityAmount)
 	res, err = handler(ctx, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	// Subtracted twice , during create and add
 	externalCoin = sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(addLiquidityAmount)))
-	nativeCoin = sdk.NewCoin(clp.NativeSymbol, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(addLiquidityAmount)))
+	nativeCoin = sdk.NewCoin(clp.NativeSymbol, sdk.Int(initialBalance.Sub(addLiquidityAmount).Sub(sdk.ZeroUint())))
 	ok := keeper.HasCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
 	assert.True(t, ok, "")
 

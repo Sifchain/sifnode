@@ -29,6 +29,7 @@ test("Shorthand", () => {
   expect(AssetAmount(ETH, "10.1234567").toFixed()).toBe(
     "10.123456700000000000"
   );
+  expect(AssetAmount(ETH, "10.1234567").toFixed(0)).toBe("10");
 });
 
 test("it takes a fraction", () => {
@@ -39,4 +40,15 @@ test("it takes a fraction", () => {
 test("Formatted", () => {
   const f = AssetAmount(USD, "100.12");
   expect(f.toFormatted()).toBe("100.12 USD");
+  expect(f.toFormatted({ symbol: false })).toBe("100.12");
+});
+
+test("To base units", () => {
+  expect(AssetAmount(ETH, "10").toString()).toBe("10.000000000000000000 ETH");
+
+  expect(
+    AssetAmount(ETH, "10")
+      .toBaseUnits()
+      .toString()
+  ).toBe("10000000000000000000");
 });

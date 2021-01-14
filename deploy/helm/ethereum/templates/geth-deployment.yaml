@@ -27,9 +27,11 @@ spec:
         image: {{ .Values.geth.image.repository }}:{{ .Values.geth.image.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command: ["/bin/sh"]
-        args: 
-        - "-c"
-        - "geth --http --http.api={{ .Values.geth.args.rpcapi }} --http.corsdomain='*' --http.addr 0.0.0.0 --http.port 8545 {{ .Values.geth.args.network }} --ethstats=${HOSTNAME}:${ETHSTATS_SECRET}@${ETHSTATS_SVC} --ws --ws.addr 0.0.0.0 --ws.origins='*' --ws.port 8546"
+        {{- if .Values.geth.args.network }}
+        args: ["-c", "geth --http --http.api={{ .Values.geth.args.rpcapi }} --http.corsdomain='*' --http.addr 0.0.0.0 --http.port 8545 {{ .Values.geth.args.network }} --networkid={{ .Values.geth.args.networkID }} --ethstats=${HOSTNAME}:${ETHSTATS_SECRET}@${ETHSTATS_SVC} --ws --ws.addr 0.0.0.0 --ws.origins='*' --ws.port 8546"]
+        {{- else }}
+        args: ["-c", "geth --http --http.api={{ .Values.geth.args.rpcapi }} --http.corsdomain='*' --http.addr 0.0.0.0 --http.port 8545 --networkid={{ .Values.geth.args.networkID }} --ethstats=${HOSTNAME}:${ETHSTATS_SECRET}@${ETHSTATS_SVC} --ws --ws.addr 0.0.0.0 --ws.origins='*' --ws.port 8546"]
+        {{- end }}
         env:
         - name: ETHSTATS_SVC
           value: {{ template "ethereum.fullname" . }}-ethstats.{{ .Release.Namespace }}
