@@ -54,6 +54,36 @@ type Auth struct {
 	Accounts []AuthAccount `json:"accounts"`
 }
 
+type GovTallyParams struct {
+	Quorum    string `json:"quorum"`
+	Threshold string `json:"threshold"`
+	Veto      string `json:"veto"`
+}
+
+type GovVotingParams struct {
+	VotingPeriod string `json:"voting_period"`
+}
+
+type GovMinDeposit []struct {
+	Denom  string `json:"denom"`
+	Amount string `json:"amount"`
+}
+
+type GovDepositParams struct {
+	MinDeposit       GovMinDeposit `json:"min_deposit"`
+	MaxDepositPeriod string        `json:"max_deposit_period"`
+}
+
+type Gov struct {
+	StartingProposalID string           `json:"starting_proposal_id"`
+	Deposits           interface{}      `json:"deposits"`
+	Votes              interface{}      `json:"votes"`
+	Proposals          interface{}      `json:"proposals"`
+	DepositParams      GovDepositParams `json:"deposit_params"`
+	VotingParams       GovVotingParams  `json:"voting_params"`
+	TallyParams        GovTallyParams   `json:"tally_params"`
+}
+
 type GentxValueSignaturePubKey struct {
 	Type  string `json:"type"`
 	Value string `json:"value"`
@@ -119,15 +149,17 @@ type Genutil struct {
 	Gentxs []Gentx `json:"gentxs"`
 }
 
+type Upgrade struct{}
+
 type CLPParams struct {
 	MinCreatePoolThreshold string `json:"min_create_pool_threshold"`
 }
 
 type CLP struct {
-	Params                CLPParams   `json:"params"`
-	AddressWhitelist      []string    `json:"address_whitelist"`
-	PoolList              interface{} `json:"pool_list"`
-	LiquidityProviderList interface{} `json:"liquidity_provider_list"`
+	Params                    CLPParams   `json:"params"`
+	WhiteListValidatorAddress interface{} `json:"white_list_validator_address"`
+	PoolList                  interface{} `json:"pool_list"`
+	LiquidityProviderList     interface{} `json:"liquidity_provider_list"`
 }
 
 type Faucet struct {
@@ -197,15 +229,17 @@ type Bank struct {
 type AppState struct {
 	Bank         Bank         `json:"bank"`
 	Staking      Staking      `json:"staking"`
-	Slashing     Slashing     `json:"slashing"`
-	Distribution Distribution `json:"distribution"`
 	Params       interface{}  `json:"params"`
 	Supply       Supply       `json:"supply"`
 	Ethbridge    interface{}  `json:"ethbridge"`
 	CLP          CLP          `json:"clp"`
+	Upgrade      Upgrade      `json:"upgrade"`
 	Oracle       interface{}  `json:"oracle"`
 	Genutil      Genutil      `json:"genutil"`
+	Gov          Gov          `json:"gov"`
 	Auth         Auth         `json:"auth"`
+	Slashing     Slashing     `json:"slashing"`
+	Distribution Distribution `json:"distribution"`
 	Faucet       Faucet       `json:"faucet"`
 }
 
