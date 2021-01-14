@@ -105,26 +105,6 @@ def test_case_1():
     test_log_line("########## Test Case One Over ##########\n")
 
 
-def test_case_2():
-    print(
-        "########## Test Case Two Start: burn ceth in sifchain"
-    )
-    balance_before_tx = int(get_sifchain_balance(USER, PEGGYETH, network_password))
-    print('before_tx', balance_before_tx)
-    print("Before burn transaction {}'s balance of {} is {}".format(
-        USER, PEGGYETH, balance_before_tx))
-    amount = amount_in_wei(1)
-    if balance_before_tx < amount:
-        print_error_message("No enough ceth to burn")
-        return
-    print("Send burn claim to Sifchain...")
-    burn_peggy_coin(USER, VALIDATOR, amount)
-
-    wait_for_sifchain_balance(USER, PEGGYETH, network_password, balance_before_tx - amount)
-
-    print("########## Test Case Two Over ##########")
-
-
 def test_case_3():
     print(
         "########## Test Case Three Start: lock rowan in sifchain transfer to ethereum"
@@ -156,6 +136,5 @@ def test_case_4():
 
 
 test_case_1()
-test_case_2()
 test_case_3()
 test_case_4()
