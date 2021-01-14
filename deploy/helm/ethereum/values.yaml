@@ -28,7 +28,8 @@ geth:
     testnet: true
   args:
     rpcapi: 'eth,net,web3'
-    network: '--ropsten'
+    network:
+    networkID: 1
   persistence:
     enabled: true
     size: 750Gi
