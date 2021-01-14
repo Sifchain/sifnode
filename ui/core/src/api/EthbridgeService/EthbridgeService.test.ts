@@ -49,7 +49,7 @@ describe("PeggyService", () => {
     });
   });
 
-  // This is not working so skipping
+  // Values here are not working so skipping
   // test.skip("lock and burn eth <-> ceth", async () => {
   //   // Setup services
   //   const sifService = await createTestSifService(akasha);
