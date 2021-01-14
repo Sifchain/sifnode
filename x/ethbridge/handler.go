@@ -82,36 +82,24 @@ func handleMsgBurn(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
 	bridgeKeeper Keeper, msg MsgBurn,
 ) (*sdk.Result, error) {
-
-	fmt.Println("handleMsgBurn check 1")
-
 	if !bridgeKeeper.ExistsPeggyToken(ctx, msg.Symbol) {
 		return nil, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
 	}
-	fmt.Println("handleMsgBurn check 2")
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	fmt.Println("handleMsgBurn check 3")
 	msg.SetSequence(account.GetSequence())
-
-	fmt.Println("handleMsgBurn check 4")
 
 	var coins sdk.Coins
 	if msg.Symbol == CethSymbol {
-		fmt.Println("handleMsgBurn check 5")
 		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.Amount.Add(msg.CethAmount)))
 	} else {
-		fmt.Println("handleMsgBurn check 6")
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 	}
 
-	fmt.Println("handleMsgBurn check 7")
-
 	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, msg.CosmosSenderSequence, coins); err != nil {
-		fmt.Println("handleMsgBurn check 8")
 		return nil, err
 	}
 
