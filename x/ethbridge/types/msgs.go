@@ -24,7 +24,7 @@ type MsgLock struct {
 	Symbol           string          `json:"symbol" yaml:"symbol"`
 	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
 	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
-	CethAmount       sdk.Int        `json:"ceth_amount" yaml:"ceth_amount"`
+	CethAmount       sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
 }
 
 // NewMsgLock is a constructor function for MsgLock
@@ -104,7 +104,7 @@ type MsgBurn struct {
 	Symbol           string          `json:"symbol" yaml:"symbol"`
 	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
 	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
-	CethAmount       sdk.Int        `json:"ceth_amount" yaml:"ceth_amount"`
+	CethAmount       sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
 }
 
 // NewMsgBurn is a constructor function for MsgBurn
