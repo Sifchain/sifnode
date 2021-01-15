@@ -1,6 +1,7 @@
 import { provider } from "web3-core";
 import Web3 from "web3";
 import { getBridgeBankContract } from "./bridgebankContract";
+import { getBridgeTokenContract } from "./bridgeTokenContract";
 import { AssetAmount, Token } from "../../entities";
 import { createPegTxEventEmitter } from "./PegTxEventEmitter";
 import { confirmTx } from "./utils/confirmTx";
@@ -11,6 +12,7 @@ export type EthbridgeServiceContext = {
   sifWsUrl: string;
   sifChainId: string;
   bridgebankContractAddress: string;
+  bridgetokenContractAddress: string;
   getWeb3Provider: () => Promise<provider>;
   sifUnsignedClient?: SifUnSignedClient;
 };
@@ -22,6 +24,7 @@ export default function createEthbridgeService({
   sifWsUrl,
   sifChainId,
   bridgebankContractAddress,
+  bridgetokenContractAddress,
   getWeb3Provider,
   sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl),
 }: EthbridgeServiceContext) {
@@ -45,7 +48,7 @@ export default function createEthbridgeService({
       const tokenAddress =
         (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
 
-      return await sifUnsignedClient.burn({
+      const txReceipt = await sifUnsignedClient.burn({
         ethereum_receiver: params.ethereumRecipient,
         base_req: {
           chain_id: sifChainId,
@@ -57,6 +60,27 @@ export default function createEthbridgeService({
         ethereum_chain_id: `${ethereumChainId}`,
         token_contract_address: tokenAddress,
       });
+
+      return txReceipt;
+    },
+
+    async approveBridgeBank(account: string, amount: AssetAmount) {
+      const web3 = await ensureWeb3();
+      const bridgeTokenContract = await getBridgeTokenContract(
+        web3,
+        bridgetokenContractAddress
+      );
+
+      const sendArgs = {
+        from: account,
+        value: 0,
+        gas: 5000000,
+      };
+
+      // Hmm what happens when there is a signing failure but we have approved bridgebank
+      await bridgeTokenContract.methods
+        .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
+        .send(sendArgs);
     },
 
     lockToSifchain(
@@ -127,7 +151,7 @@ export default function createEthbridgeService({
       const tokenAddress =
         (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
 
-      return await sifUnsignedClient.lock({
+      const lockReceipt = await sifUnsignedClient.lock({
         ethereum_receiver: params.ethereumRecipient,
         base_req: {
           chain_id: sifChainId,
@@ -139,6 +163,8 @@ export default function createEthbridgeService({
         ethereum_chain_id: `${ethereumChainId}`,
         token_contract_address: tokenAddress,
       });
+
+      return lockReceipt;
     },
 
     burnToSifchain(

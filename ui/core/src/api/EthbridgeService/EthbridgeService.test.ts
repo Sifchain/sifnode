@@ -1,5 +1,5 @@
 import createEthbridgeService from ".";
-import { AssetAmount } from "../../entities";
+import { AssetAmount, Token } from "../../entities";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { advanceBlock } from "../../test/utils/advanceBlock";
 import {
@@ -45,6 +45,7 @@ describe("PeggyService", () => {
       sifWsUrl: "ws://localhost:26667/nosocket",
       sifChainId: "sifchain",
       bridgebankContractAddress: config.bridgebankContractAddress,
+      bridgetokenContractAddress: (EROWAN as Token).address,
       getWeb3Provider,
     });
   });
@@ -200,6 +201,7 @@ describe("PeggyService", () => {
     );
 
     // Burn eRowan to Rowan
+    // SEEMS TO CAUSE "burn amount exceeds allowance"
     await new Promise<void>(done => {
       EthbridgeService.burnToSifchain(
         juniper.address,

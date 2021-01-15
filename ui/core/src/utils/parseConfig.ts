@@ -95,6 +95,10 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
       "No nativeAsset defined for chain config:" + JSON.stringify(config)
     );
 
+  const bridgetokenContractAddress = (assets.find(
+    token => token.symbol === "erowan"
+  ) as Token).address;
+
   // HACK: Filtering out our testing tokens if not in CI for the demo
   const HACK_blacklist = process.env.CI ? [] : ["atk", "btk", "catk", "cbtk"];
   const HACK_filteredAssets = assets.filter(
@@ -113,6 +117,7 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
     assets: HACK_filteredAssets,
     nativeAsset,
     bridgebankContractAddress: config.bridgebankContractAddress,
+    bridgetokenContractAddress,
     keplrChainConfig: {
       rest: config.sifApiUrl,
       rpc: config.sifRpcUrl,
