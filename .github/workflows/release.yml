@@ -28,7 +28,7 @@ jobs:
 
       - name: Create zip
         run: |
-          mkdir -p /tmp/bin && mv $GOPATH/bin/sifnoded /tmp/bin/sifnoded
+          mkdir -p /tmp/bin && mv $GOBIN/bin/sifnoded /tmp/bin/sifnoded
           cd /tmp/ && zip -r09 sifnoded.zip bin/
 
       - name: Upload sifnoded to S3
