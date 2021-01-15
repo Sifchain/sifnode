@@ -106,7 +106,6 @@ def test_case_2():
     print(f"starting user_eth_balance_before_tx {operator_balance_before_tx}, owner_sifchain_balance_before_tx {owner_sifchain_balance_before_tx}, amount {amount}")
     burn_peggy_coin(owner_addr, operatorAddress, amount)
 
-    wait_for_sifchain_addr_balance(owner_addr, SIF_ETH, owner_sifchain_balance_before_tx - amount)
     wait_for_eth_balance(operatorAddress, ETHEREUM_ETH, operator_balance_before_tx + amount)
     print("########## Test Case Two Over ##########")
 

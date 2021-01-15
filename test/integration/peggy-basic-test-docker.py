@@ -68,7 +68,7 @@ def create_claim(user, validator, amount, denom, claim_type):
 
 def burn_peggy_coin(user, validator, amount):
     command_line = """yes {} | sifnodecli tx ethbridge burn {} \
-    0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} {} \
+    0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} {} 18332015000000000 \
     --ethereum-chain-id=5777 --from={} \
     --yes -o json""".format(network_password, get_user_account(user, network_password),
                     amount, PEGGYETH, user)
@@ -78,7 +78,7 @@ def burn_peggy_coin(user, validator, amount):
 def lock_rowan(user, amount):
     print('lock')
     command_line = """yes {} |sifnodecli tx ethbridge lock {} \
-            0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rowan \
+            0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rowan 18332015000000000 \
             --ethereum-chain-id=5777 --from={} --yes -o json
     """.format(network_password, get_user_account(user, network_password), amount, user)
     return get_shell_output(command_line)
@@ -95,7 +95,9 @@ def test_case_1():
     print("Send lock claim to Sifchain...")
     amount = amount_in_wei(5)
     tx_result = create_claim(USER, VALIDATOR, amount, ETH, CLAIMLOCK)
-    tx_hash = json.loads(tx_result)["txhash"]
+    jsonresult = json.loads(tx_result)
+    tx_hash = jsonresult["txhash"]
+    print(f"jsonresult: \n{jsonresult}\n, then sleep for {SLEEPTIME} so the transaction can be checked")
     time.sleep(SLEEPTIME)
     get_transaction_result(tx_hash)
 
@@ -105,26 +107,6 @@ def test_case_1():
     test_log_line("########## Test Case One Over ##########\n")
 
 
-def test_case_2():
-    print(
-        "########## Test Case Two Start: burn ceth in sifchain"
-    )
-    balance_before_tx = int(get_sifchain_balance(USER, PEGGYETH, network_password))
-    print('before_tx', balance_before_tx)
-    print("Before burn transaction {}'s balance of {} is {}".format(
-        USER, PEGGYETH, balance_before_tx))
-    amount = amount_in_wei(1)
-    if balance_before_tx < amount:
-        print_error_message("No enough ceth to burn")
-        return
-    print("Send burn claim to Sifchain...")
-    burn_peggy_coin(USER, VALIDATOR, amount)
-
-    wait_for_sifchain_balance(USER, PEGGYETH, network_password, balance_before_tx - amount)
-
-    print("########## Test Case Two Over ##########")
-
-
 def test_case_3():
     print(
         "########## Test Case Three Start: lock rowan in sifchain transfer to ethereum"
@@ -132,7 +114,7 @@ def test_case_3():
     balance_before_tx = int(get_sifchain_balance(USER, ROWAN, network_password))
     print("Before lock transaction {}'s balance of {} is {}".format(
         USER, ROWAN, balance_before_tx))
-    amount = 12
+    amount = 120000
     if balance_before_tx < amount:
         print_error_message("No enough rowan to lock")
     print("Send lock claim to Sifchain...")
@@ -149,13 +131,12 @@ def test_case_4():
     print("Before lock transaction {}'s balance of {} is {}".format(
         USER, ROWAN, balance_before_tx))
     print("Send burn claim to Sifchain...")
-    amount = 13
+    amount = 130000
     create_claim(USER, VALIDATOR, amount, ROWAN, CLAIMBURN)
     wait_for_sifchain_balance(USER, ROWAN, network_password, balance_before_tx + amount)
     print("########## Test Case Four Over ##########")
 
 
 test_case_1()
-test_case_2()
 test_case_3()
 test_case_4()

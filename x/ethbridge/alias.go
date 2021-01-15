@@ -17,6 +17,7 @@ const (
 	StoreKey         = types.StoreKey
 	QuerierRoute     = types.QuerierRoute
 	RouterKey        = types.RouterKey
+	CethSymbol       = types.CethSymbol
 )
 
 var (
