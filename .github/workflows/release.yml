@@ -24,11 +24,11 @@ jobs:
 
       - name: Set env vars
         run: |
-          echo "SIFNODED_SHA256_CHECKSUM=$(sha256sum $GOBIN/sifnoded | cut -c 1-64)" >> $GITHUB_ENV
+          echo "SIFNODED_SHA256_CHECKSUM=$(sha256sum $GOROOT/bin/sifnoded | cut -c 1-64)" >> $GITHUB_ENV
 
       - name: Create zip
         run: |
-          mkdir -p /tmp/bin && mv $GOBIN/bin/sifnoded /tmp/bin/sifnoded
+          mkdir -p /tmp/bin && mv $GOROOT/bin/sifnoded /tmp/bin/sifnoded
           cd /tmp/ && zip -r09 sifnoded.zip bin/
 
       - name: Upload sifnoded to S3
