@@ -2,28 +2,49 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/rpc"
+	"github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/server/api"
+	"github.com/cosmos/cosmos-sdk/server/config"
+	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/gorilla/mux"
+	"github.com/rakyll/statik/fs"
 	"github.com/tendermint/tendermint/libs/log"
+	"net/http"
 
 	tmos "github.com/tendermint/tendermint/libs/os"
 
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
+	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	dbm "github.com/tendermint/tm-db"
 	"io"
 	"os"
 
-	"github.com/cosmos/cosmos-sdk/x/gov"
-	abci "github.com/tendermint/tendermint/abci/types"
-	dbm "github.com/tendermint/tm-db"
-
-	"github.com/cosmos/cosmos-sdk/x/slashing"
-
-	"github.com/Sifchain/sifnode/x/ethbridge"
-	"github.com/Sifchain/sifnode/x/faucet"
-	"github.com/Sifchain/sifnode/x/oracle"
+	//"github.com/Sifchain/sifnode/x/faucet"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -33,8 +54,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/supply"
 
+	sifappparams "github.com/Sifchain/sifnode/app/params"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 )
@@ -54,182 +75,181 @@ var (
 			upgradeclient.ProposalHandler,
 		),
 		params.AppModuleBasic{},
-		supply.AppModuleBasic{},
-		clp.AppModuleBasic{},
+		//clp.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
-		oracle.AppModuleBasic{},
-		ethbridge.AppModuleBasic{},
-		faucet.AppModuleBasic{},
+		//oracle.AppModuleBasic{},
+		//ethbridge.AppModuleBasic{},
+		//faucet.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
-		auth.FeeCollectorName:     nil,
-		distr.ModuleName:          nil,
-		staking.BondedPoolName:    {supply.Burner, supply.Staking},
-		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
-		gov.ModuleName:            {supply.Burner, supply.Staking},
-		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
-		clp.ModuleName:            {supply.Burner, supply.Minter},
-		faucet.ModuleName:         {supply.Minter},
+		authtypes.FeeCollectorName:     nil,
+		distrtypes.ModuleName:          nil,
+		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
+		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
+		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
+		//ethbridge.ModuleName:      {authtypes.Burner, authtypes.Minter},
+		//clp.ModuleName:            {authtypes.Burner, authtypes.Minter},
+		//faucet.ModuleName:         {authtypes.Minter},
+	}
+	allowedReceivingModAcc = map[string]bool{
+		distrtypes.ModuleName: true,
 	}
 )
 
-func MakeCodec() *codec.Codec {
-	var cdc = codec.New()
-
-	ModuleBasics.RegisterCodec(cdc)
-	vesting.RegisterCodec(cdc) // Need to verify if we need this
-	sdk.RegisterCodec(cdc)
-	codec.RegisterCrypto(cdc)
-	codec.RegisterEvidences(cdc)
-
-	return cdc.Seal()
-}
+//func MakeCodec() *codec.Codec {
+//	var cdc = codec.New()
+//
+//	ModuleBasics.RegisterCodec(cdc)
+//	vesting.RegisterCodec(cdc) // Need to verify if we need this
+//	sdk.RegisterCodec(cdc)
+//	codec.RegisterCrypto(cdc)
+//	codec.RegisterEvidences(cdc)
+//
+//	return cdc.Seal()
+//}
 
 type SifchainApp struct {
 	*bam.BaseApp
-	cdc *codec.Codec
+	legacyAmino       *codec.LegacyAmino
+	appCodec          codec.Marshaler
+	interfaceRegistry types.InterfaceRegistry
+	invCheckPeriod    uint
 
-	invCheckPeriod uint
+	keys    map[string]*sdk.KVStoreKey
+	tKeys   map[string]*sdk.TransientStoreKey
+	memKeys map[string]*sdk.MemoryStoreKey
 
-	keys  map[string]*sdk.KVStoreKey
-	tKeys map[string]*sdk.TransientStoreKey
+	AccountKeeper  authkeeper.AccountKeeper
+	paramsKeeper   paramskeeper.Keeper
+	UpgradeKeeper  upgradekeeper.Keeper
+	govKeeper      govkeeper.Keeper
+	bankKeeper     bankkeeper.Keeper
+	stakingKeeper  stakingkeeper.Keeper
+	slashingKeeper slashingkeeper.Keeper
+	distrKeeper    distrkeeper.Keeper
 
-	subspaces map[string]params.Subspace
-
-	AccountKeeper  auth.AccountKeeper
-	paramsKeeper   params.Keeper
-	UpgradeKeeper  upgrade.Keeper
-	govKeeper      gov.Keeper
-	bankKeeper     bank.Keeper
-	stakingKeeper  staking.Keeper
-	slashingKeeper slashing.Keeper
-	distrKeeper    distr.Keeper
-	SupplyKeeper   supply.Keeper
-
-	// Peggy keepers
-	EthBridgeKeeper ethbridge.Keeper
-	OracleKeeper    oracle.Keeper
-	clpKeeper       clp.Keeper
-	mm              *module.Manager
-	faucetKeeper    faucet.Keeper
-	sm              *module.SimulationManager
+	// Sifchain keepers
+	//EthBridgeKeeper ethbridge.Keeper
+	//OracleKeeper    oracle.Keeper
+	//clpKeeper       clp.Keeper
+	mm *module.Manager
+	//faucetKeeper    faucet.Keeper
+	sm *module.SimulationManager
 }
 
-var _ simapp.App = (*SifchainApp)(nil)
-
-func NewInitApp(
-	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool,
-	invCheckPeriod uint, baseAppOptions ...func(*bam.BaseApp),
+func NewSifChainApp(
+	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, homePath string,
+	invCheckPeriod uint, encodingConfig sifappparams.EncodingConfig, baseAppOptions ...func(*bam.BaseApp),
 ) *SifchainApp {
+	appCodec := encodingConfig.Marshaler
+	legacyAmino := encodingConfig.Amino
+	interfaceRegistry := encodingConfig.InterfaceRegistry
 
-	cdc := MakeCodec()
-
-	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
+	bApp := bam.NewBaseApp(appName, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetAppVersion(version.Version)
+	bApp.SetInterfaceRegistry(interfaceRegistry)
 
 	keys := sdk.NewKVStoreKeys(
-		bam.MainStoreKey,
-		auth.StoreKey,
-		staking.StoreKey,
-		supply.StoreKey,
-		params.StoreKey,
-		upgrade.StoreKey,
-		oracle.StoreKey,
-		ethbridge.StoreKey,
-		clp.StoreKey,
-		gov.StoreKey,
-		faucet.StoreKey,
-		distr.StoreKey,
-		slashing.StoreKey,
+		//	bam.MainStoreKey,
+		authtypes.StoreKey,
+		stakingtypes.StoreKey,
+		banktypes.StoreKey,
+		paramstypes.StoreKey,
+		upgradetypes.StoreKey,
+		//oracle.StoreKey,
+		//ethbridge.StoreKey,
+		//clp.StoreKey,
+		govtypes.StoreKey,
+		//faucet.StoreKey,
+		distrtypes.StoreKey,
+		slashingtypes.StoreKey,
 	)
 
-	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
+	tKeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 
 	var app = &SifchainApp{
-		BaseApp:        bApp,
-		cdc:            cdc,
-		invCheckPeriod: invCheckPeriod,
-		keys:           keys,
-		tKeys:          tKeys,
-		subspaces:      make(map[string]params.Subspace),
+		BaseApp:           bApp,
+		legacyAmino:       legacyAmino,
+		appCodec:          appCodec,
+		interfaceRegistry: interfaceRegistry,
+		invCheckPeriod:    invCheckPeriod,
+		keys:              keys,
+		tKeys:             tKeys,
 	}
 
-	app.paramsKeeper = params.NewKeeper(app.cdc, keys[params.StoreKey], tKeys[params.TStoreKey])
-	app.subspaces[auth.ModuleName] = app.paramsKeeper.Subspace(auth.DefaultParamspace)
-	app.subspaces[bank.ModuleName] = app.paramsKeeper.Subspace(bank.DefaultParamspace)
-	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
-	app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
-	app.subspaces[gov.ModuleName] = app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
-	app.subspaces[distr.ModuleName] = app.paramsKeeper.Subspace(distr.DefaultParamspace)
-	app.subspaces[slashing.ModuleName] = app.paramsKeeper.Subspace(slashing.DefaultParamspace)
-
-	app.AccountKeeper = auth.NewAccountKeeper(
-		app.cdc,
-		keys[auth.StoreKey],
-		app.subspaces[auth.ModuleName],
-		auth.ProtoBaseAccount,
-	)
-
-	app.bankKeeper = bank.NewBaseKeeper(
-		app.AccountKeeper,
-		app.subspaces[bank.ModuleName],
-		app.ModuleAccountAddrs(),
-	)
-
-	app.SupplyKeeper = supply.NewKeeper(
-		app.cdc,
-		keys[supply.StoreKey],
-		app.AccountKeeper,
-		app.bankKeeper,
+	app.paramsKeeper = initParamsKeeper(appCodec, app.legacyAmino, keys[paramstypes.StoreKey], tKeys[paramstypes.TStoreKey])
+	app.AccountKeeper = authkeeper.NewAccountKeeper(
+		appCodec,
+		keys[authtypes.StoreKey],
+		app.GetSubspace(authtypes.ModuleName),
+		authtypes.ProtoBaseAccount,
 		maccPerms,
 	)
 
-	stakingKeeper := staking.NewKeeper(
-		app.cdc,
-		keys[staking.StoreKey],
-		app.SupplyKeeper,
-		app.subspaces[staking.ModuleName],
+	app.bankKeeper = bankkeeper.NewBaseKeeper(
+		appCodec,
+		keys[banktypes.StoreKey],
+		app.AccountKeeper,
+		app.GetSubspace(banktypes.ModuleName),
+		app.ModuleAccountAddrs(),
 	)
 
-	app.distrKeeper = distr.NewKeeper(app.cdc, keys[distr.StoreKey], app.subspaces[distr.ModuleName], &stakingKeeper,
-		app.SupplyKeeper, auth.FeeCollectorName, app.ModuleAccountAddrs())
-
-	app.slashingKeeper = slashing.NewKeeper(
-		app.cdc, keys[slashing.StoreKey], &stakingKeeper, app.subspaces[slashing.ModuleName],
-	)
-
-	app.stakingKeeper = *stakingKeeper.SetHooks(
-		staking.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()))
-
-	app.OracleKeeper = oracle.NewKeeper(
-		app.cdc,
-		keys[oracle.StoreKey],
-		app.stakingKeeper,
-		oracle.DefaultConsensusNeeded,
-	)
-
-	app.EthBridgeKeeper = ethbridge.NewKeeper(
-		app.cdc,
-		app.SupplyKeeper,
-		app.OracleKeeper,
-		keys[ethbridge.StoreKey],
-	)
-
-	app.clpKeeper = clp.NewKeeper(
-		app.cdc,
-		keys[clp.StoreKey],
+	stakingKeeper := stakingkeeper.NewKeeper(
+		appCodec, keys[stakingtypes.StoreKey],
+		app.AccountKeeper,
 		app.bankKeeper,
-		app.SupplyKeeper,
-		app.subspaces[clp.ModuleName])
+		app.GetSubspace(stakingtypes.ModuleName),
+	)
 
-	app.faucetKeeper = faucet.NewKeeper(
-		app.SupplyKeeper,
-		app.cdc,
-		keys[faucet.StoreKey],
-		app.bankKeeper)
+	app.distrKeeper = distrkeeper.NewKeeper(
+		appCodec, keys[distrtypes.StoreKey],
+		app.GetSubspace(distrtypes.ModuleName),
+		app.AccountKeeper,
+		app.bankKeeper,
+		&stakingKeeper,
+		authtypes.FeeCollectorName,
+		app.ModuleAccountAddrs(),
+	)
+
+	app.slashingKeeper = slashingkeeper.NewKeeper(
+		appCodec,
+		keys[slashingtypes.StoreKey],
+		&stakingKeeper,
+		app.GetSubspace(slashingtypes.ModuleName),
+	)
+	app.stakingKeeper = *stakingKeeper.SetHooks(
+		stakingtypes.NewMultiStakingHooks(app.distrKeeper.Hooks(), app.slashingKeeper.Hooks()),
+	)
+
+	//app.OracleKeeper = oracle.NewKeeper(
+	//	app.cdc,
+	//	keys[oracle.StoreKey],
+	//	app.stakingKeeper,
+	//	oracle.DefaultConsensusNeeded,
+	//)
+
+	//app.EthBridgeKeeper = ethbridge.NewKeeper(
+	//	app.cdc,
+	//	app.SupplyKeeper,
+	//	app.OracleKeeper,
+	//	keys[ethbridge.StoreKey],
+	//)
+
+	//app.clpKeeper = clp.NewKeeper(
+	//	app.cdc,
+	//	keys[clp.StoreKey],
+	//	app.bankKeeper,
+	//	app.SupplyKeeper,
+	//	app.subspaces[clp.ModuleName])
+
+	//app.faucetKeeper = faucet.NewKeeper(
+	//	app.SupplyKeeper,
+	//	app.cdc,
+	//	keys[faucet.StoreKey],
+	//	app.bankKeeper)
 
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
@@ -237,114 +257,126 @@ func NewInitApp(
 
 	skipUpgradeHeights := make(map[int64]bool)
 	skipUpgradeHeights[0] = true
-	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
+	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath)
 
-	app.UpgradeKeeper.SetUpgradeHandler("sifUpdate1", func(ctx sdk.Context, plan upgrade.Plan) {
-		clp.InitGenesis(ctx, app.clpKeeper, clp.DefaultGenesisState())
-	})
-	app.SetStoreLoader(bam.StoreLoaderWithUpgrade(&types.StoreUpgrades{
-		Added: []string{clp.ModuleName},
-	}))
+	//app.UpgradeKeeper.SetUpgradeHandler("sifUpdate1", func(ctx sdk.Context, plan upgrade.Plan) {
+	//	clp.InitGenesis(ctx, app.clpKeeper, clp.DefaultGenesisState())
+	//})
+	//app.SetStoreLoader(bam.StoreLoaderWithUpgrade(&types.StoreUpgrades{
+	//	Added: []string{clp.ModuleName},
+	//}))
 
-	govRouter := gov.NewRouter()
-	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
-		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
-	app.govKeeper = gov.NewKeeper(
-		app.cdc,
-		keys[gov.StoreKey],
-		app.subspaces[gov.ModuleName],
-		app.SupplyKeeper,
-		app.stakingKeeper,
+	govRouter := govtypes.NewRouter()
+	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
+		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
+	app.govKeeper = govkeeper.NewKeeper(
+		appCodec, keys[govtypes.StoreKey],
+		app.GetSubspace(govtypes.ModuleName),
+		app.AccountKeeper,
+		app.bankKeeper,
+		&stakingKeeper,
 		govRouter,
 	)
 
 	app.mm = module.NewManager(
-		genutil.NewAppModule(app.AccountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
-		auth.NewAppModule(app.AccountKeeper),
-		bank.NewAppModule(app.bankKeeper, app.AccountKeeper),
-		supply.NewAppModule(app.SupplyKeeper, app.AccountKeeper),
-		distr.NewAppModule(app.distrKeeper, app.AccountKeeper, app.SupplyKeeper, app.stakingKeeper),
-		slashing.NewAppModule(app.slashingKeeper, app.AccountKeeper, app.stakingKeeper),
-		staking.NewAppModule(app.stakingKeeper, app.AccountKeeper, app.SupplyKeeper),
+		genutil.NewAppModule(
+			app.AccountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx,
+			encodingConfig.TxConfig,
+		),
+		auth.NewAppModule(appCodec, app.AccountKeeper, nil),
+		vesting.NewAppModule(app.AccountKeeper, app.bankKeeper),
+		bank.NewAppModule(appCodec, app.bankKeeper, app.AccountKeeper),
+		gov.NewAppModule(appCodec, app.govKeeper, app.AccountKeeper, app.bankKeeper),
+		slashing.NewAppModule(appCodec, app.slashingKeeper, app.AccountKeeper, app.bankKeeper, app.stakingKeeper),
+		distr.NewAppModule(appCodec, app.distrKeeper, app.AccountKeeper, app.bankKeeper, app.stakingKeeper),
+		staking.NewAppModule(appCodec, app.stakingKeeper, app.AccountKeeper, app.bankKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
-		oracle.NewAppModule(app.OracleKeeper),
-		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
-		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
-		faucet.NewAppModule(app.faucetKeeper, app.bankKeeper, app.SupplyKeeper),
-		gov.NewAppModule(app.govKeeper, app.AccountKeeper, app.SupplyKeeper),
+		params.NewAppModule(app.paramsKeeper),
 	)
-
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
-	app.mm.SetOrderBeginBlockers(distr.ModuleName,
-		slashing.ModuleName,
-		faucet.ModuleName,
-		upgrade.ModuleName)
+	app.mm.SetOrderBeginBlockers(distrtypes.ModuleName,
+		stakingtypes.ModuleName,
+		//faucet.ModuleName,
+		upgradetypes.ModuleName)
 
 	app.mm.SetOrderEndBlockers(
-		staking.ModuleName,
-		gov.ModuleName,
+		stakingtypes.ModuleName,
+		govtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
 	app.mm.SetOrderInitGenesis(
-		distr.ModuleName,
-		staking.ModuleName,
-		auth.ModuleName,
-		bank.ModuleName,
-		slashing.ModuleName,
-		supply.ModuleName,
-		genutil.ModuleName,
-		oracle.ModuleName,
-		ethbridge.ModuleName,
-		clp.ModuleName,
-		gov.ModuleName,
-		faucet.ModuleName,
+		distrtypes.ModuleName,
+		stakingtypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		slashingtypes.ModuleName,
+
+		genutiltypes.ModuleName,
+		//oracle.ModuleName,
+		//ethbridge.ModuleName,
+		//clp.ModuleName,
+		govtypes.ModuleName,
+		//faucet.ModuleName,
 	)
 
-	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
+	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
+	app.mm.RegisterServices(module.NewConfigurator(app.MsgServiceRouter(), app.GRPCQueryRouter()))
+
+	app.sm.RegisterStoreDecoders()
 
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
 	app.SetAnteHandler(
-		auth.NewAnteHandler(
-			app.AccountKeeper,
-			app.SupplyKeeper,
-			auth.DefaultSigVerificationGasConsumer,
+		ante.NewAnteHandler(
+			app.AccountKeeper, app.bankKeeper, ante.DefaultSigVerificationGasConsumer,
+			encodingConfig.TxConfig.SignModeHandler(),
 		),
 	)
 
 	app.MountKVStores(keys)
 	app.MountTransientStores(tKeys)
+	//app.MountMemoryStores(memKeys)
 
 	if loadLatest {
-		err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
+		err := app.LoadLatestVersion()
 		if err != nil {
 			tmos.Exit(err.Error())
 		}
-	}
 
+	}
 	return app
 }
 
 type GenesisState map[string]json.RawMessage
 
-func NewDefaultGenesisState() GenesisState {
-	return ModuleBasics.DefaultGenesis()
+//func NewDefaultGenesisState() GenesisState {
+//	return ModuleBasics.DefaultGenesis()
+//}
+
+func MakeCodecs() (codec.Marshaler, *codec.LegacyAmino) {
+	config := MakeEncodingConfig()
+	return config.Marshaler, config.Amino
 }
+
+func (app *SifchainApp) Name() string { return app.BaseApp.Name() }
 
 func (app *SifchainApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
 
-	app.cdc.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
+	app.legacyAmino.MustUnmarshalJSON(req.AppStateBytes, &genesisState)
 
-	return app.mm.InitGenesis(ctx, genesisState)
+	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
+func (app *SifchainApp) LoadHeight(height int64) error {
+	return app.LoadVersion(height)
+}
 func (app *SifchainApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
@@ -353,8 +385,34 @@ func (app *SifchainApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) ab
 	return app.mm.EndBlock(ctx, req)
 }
 
-func (app *SifchainApp) Codec() *codec.Codec {
-	return app.cdc
+func (app *SifchainApp) ModuleAccountAddrs() map[string]bool {
+	modAccAddrs := make(map[string]bool)
+	for acc := range maccPerms {
+		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
+	}
+
+	return modAccAddrs
+}
+
+func (app *SifchainApp) BlockedAddrs() map[string]bool {
+	blockedAddrs := make(map[string]bool)
+	for acc := range maccPerms {
+		blockedAddrs[authtypes.NewModuleAddress(acc).String()] = !allowedReceivingModAcc[acc]
+	}
+
+	return blockedAddrs
+}
+
+func (app *SifchainApp) LegacyAmino() *codec.LegacyAmino {
+	return app.legacyAmino
+}
+
+func (app *SifchainApp) AppCodec() codec.Marshaler {
+	return app.appCodec
+}
+
+func (app *SifchainApp) InterfaceRegistry() types.InterfaceRegistry {
+	return app.interfaceRegistry
 }
 
 func (app *SifchainApp) GetKey(storeKey string) *sdk.KVStoreKey {
@@ -366,17 +424,9 @@ func (app *SifchainApp) GetTKey(storeKey string) *sdk.TransientStoreKey {
 	return app.tKeys[storeKey]
 }
 
-func (app *SifchainApp) LoadHeight(height int64) error {
-	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
-}
-
-func (app *SifchainApp) ModuleAccountAddrs() map[string]bool {
-	modAccAddrs := make(map[string]bool)
-	for acc := range maccPerms {
-		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
-	}
-
-	return modAccAddrs
+func (app *SifchainApp) GetSubspace(moduleName string) paramstypes.Subspace {
+	subspace, _ := app.paramsKeeper.GetSubspace(moduleName)
+	return subspace
 }
 
 func (app *SifchainApp) SimulationManager() *module.SimulationManager {
@@ -389,4 +439,44 @@ func GetMaccPerms() map[string][]string {
 		modAccPerms[k] = v
 	}
 	return modAccPerms
+}
+
+func initParamsKeeper(appCodec codec.BinaryMarshaler, legacyAmino *codec.LegacyAmino, key, tkey sdk.StoreKey) paramskeeper.Keeper {
+	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
+	paramsKeeper.Subspace(authtypes.ModuleName)
+	paramsKeeper.Subspace(banktypes.ModuleName)
+	paramsKeeper.Subspace(stakingtypes.ModuleName)
+	paramsKeeper.Subspace(distrtypes.ModuleName)
+	paramsKeeper.Subspace(slashingtypes.ModuleName)
+	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
+	//app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
+	return paramsKeeper
+}
+
+func (app *SifchainApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
+	clientCtx := apiSvr.ClientCtx
+	rpc.RegisterRoutes(clientCtx, apiSvr.Router)
+	authrest.RegisterTxRoutes(clientCtx, apiSvr.Router)
+
+	ModuleBasics.RegisterRESTRoutes(clientCtx, apiSvr.Router)
+	ModuleBasics.RegisterGRPCGatewayRoutes(apiSvr.ClientCtx, apiSvr.GRPCGatewayRouter)
+
+	// register swagger API from root so that other applications can override easily
+	if apiConfig.Swagger {
+		RegisterSwaggerAPI(clientCtx, apiSvr.Router)
+	}
+}
+
+func (app *SifchainApp) RegisterTxService(clientCtx client.Context) {
+	tx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
+}
+
+func RegisterSwaggerAPI(ctx client.Context, rtr *mux.Router) {
+	statikFS, err := fs.New()
+	if err != nil {
+		panic(err)
+	}
+
+	staticServer := http.FileServer(statikFS)
+	rtr.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", staticServer))
 }
