@@ -9,6 +9,9 @@
   "bridgebankContractAddress": "0xa5658e85bc7AC7F0388E60E58BEd5aFB41143330",
   "keplrChainConfig": {
     "chainName": "Sifchain",
+    "chainId": "",
+    "rpc": "",
+    "rest": "", 
     "stakeCurrency": {
       "coinDenom": "ROWAN",
       "coinMinimalDenom": "rowan",
