@@ -1,6 +1,6 @@
 <script lang="ts">
-import { defineComponent, PropType, ref } from "vue";
-import { computed, effect, toRefs } from "@vue/reactivity";
+import { defineComponent, PropType } from "vue";
+import { computed } from "@vue/reactivity";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { getAssetLabel, useAssetItem } from "@/components/shared/utils";
@@ -157,7 +157,12 @@ export default defineComponent({
           </div>
         </div>
       </div>
-
+      <div class="section">
+        <div class="info">
+          <h3 class="mb-2">Liquidity provider rewards</h3>
+          <p class="text--small mb-2">Liquidity providers earn a percentage fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity. To learn more, reference of documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool">here</a></p>
+        </div>
+      </div>
       <div class="section footer">
         <div class="mr-1">
           <div class="text--small mb-6">
