@@ -87,7 +87,13 @@ func handleMsgBurn(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
+	var coins sdk.Coins
+
+	if msg.Symbol == CethSymbol {
+		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount.Add(msg.Amount)))
+	} else {
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
+	}
 	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, coins); err != nil {
 		return nil, err
 	}
