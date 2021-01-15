@@ -39,6 +39,7 @@ export default function createEthbridgeService({
       fromAddress: string;
       ethereumRecipient: string;
       assetAmount: AssetAmount;
+      cethAmount: AssetAmount;
     }) {
       const web3 = await ensureWeb3();
       const ethereumChainId = await web3.eth.net.getId();
@@ -56,6 +57,7 @@ export default function createEthbridgeService({
         cosmos_sender: params.fromAddress,
         ethereum_chain_id: `${ethereumChainId}`,
         token_contract_address: tokenAddress,
+        ceth_amount: params.cethAmount.toBaseUnits().toString(),
       });
     },
 
