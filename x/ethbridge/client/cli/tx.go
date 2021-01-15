@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
@@ -109,7 +108,7 @@ func GetCmdCreateEthBridgeClaim(cdc *codec.Codec) *cobra.Command {
 //nolint:lll
 func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] --ethereum-chain-id [ethereum-chain-id]",
+		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [cethAmount] --ethereum-chain-id [ethereum-chain-id]",
 		Short: "burn cETH or cERC20 on the Cosmos chain",
 		Long: `This should be used to burn cETH or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
 		It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the withdrawal of the original ETH/ERC20 to you from the Ethereum contract!`,
@@ -151,8 +150,7 @@ func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 
 			symbol := args[3]
 
-			cethAmount := big.NewInt(0)
-			cethAmount, ok = cethAmount.SetString(args[4], 10)
+			cethAmount, ok := sdk.NewIntFromString(args[4])
 			if !ok {
 				return errors.New("Error parsing ceth amount")
 			}
@@ -171,7 +169,7 @@ func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 	//nolint:lll
 	return &cobra.Command{
-		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] --ethereum-chain-id [ethereum-chain-id]",
+		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [cethAmount] --ethereum-chain-id [ethereum-chain-id]",
 		Short: "This should be used to lock Cosmos-originating coins (eg: ATOM). It will lock up your coins in the supply module, removing them from your account. It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the minting of the pegged token on Etherum to you!",
 		Args:  cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -212,8 +210,7 @@ func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 
 			symbol := args[3]
 
-			cethAmount := big.NewInt(0)
-			cethAmount, ok = cethAmount.SetString(args[4], 10)
+			cethAmount, ok := sdk.NewIntFromString(args[4])
 			if !ok {
 				return errors.New("Error parsing ceth amount")
 			}

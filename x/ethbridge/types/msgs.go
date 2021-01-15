@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"math/big"
 
 	gethCommon "github.com/ethereum/go-ethereum/common"
 
@@ -25,13 +24,13 @@ type MsgLock struct {
 	Symbol           string          `json:"symbol" yaml:"symbol"`
 	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
 	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
-	CethAmount       *big.Int        `json:"ceth_amount" yaml:"ceth_amount"`
+	CethAmount       sdk.Int        `json:"ceth_amount" yaml:"ceth_amount"`
 }
 
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
 	ethereumChainID int, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount *big.Int) MsgLock {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgLock {
 	return MsgLock{
 		EthereumChainID:  ethereumChainID,
 		CosmosSender:     cosmosSender,
@@ -70,8 +69,9 @@ func (msg MsgLock) ValidateBasic() error {
 		return ErrInvalidAmount
 	}
 
+	
 	// if you don't pay enough gas, this tx won't go through
-	if msg.CethAmount.Cmp(big.NewInt(lockGasCost)) < 0 {
+	if msg.CethAmount.LT(sdk.NewInt(lockGasCost)) {
 		return ErrCethAmount
 	}
 
@@ -104,13 +104,13 @@ type MsgBurn struct {
 	Symbol           string          `json:"symbol" yaml:"symbol"`
 	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
 	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
-	CethAmount       *big.Int        `json:"ceth_amount" yaml:"ceth_amount"`
+	CethAmount       sdk.Int        `json:"ceth_amount" yaml:"ceth_amount"`
 }
 
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
 	ethereumChainID int, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount *big.Int) MsgBurn {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgBurn {
 	return MsgBurn{
 		EthereumChainID:  ethereumChainID,
 		CosmosSender:     cosmosSender,
@@ -153,7 +153,7 @@ func (msg MsgBurn) ValidateBasic() error {
 		return ErrInvalidBurnSymbol
 	}
 	// check that enough ceth is sent to cover the gas cost.
-	if msg.CethAmount.Cmp(big.NewInt(burnGasCost)) < 0 {
+	if msg.CethAmount.LT(sdk.NewInt(burnGasCost)) {
 		return ErrCethAmount
 	}
 

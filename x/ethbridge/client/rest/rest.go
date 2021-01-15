@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"math/big"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/types/rest"
@@ -49,7 +48,7 @@ type burnOrLockEthReq struct {
 	EthereumReceiver string       `json:"ethereum_receiver"`
 	Amount           sdk.Int      `json:"amount"`
 	Symbol           string       `json:"symbol"`
-	CethAmount       *big.Int     `json:"ceth_amount" yaml:"ceth_amount"`
+	CethAmount       sdk.Int      `json:"ceth_amount" yaml:"ceth_amount"`
 }
 
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application

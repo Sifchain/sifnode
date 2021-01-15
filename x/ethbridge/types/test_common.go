@@ -2,7 +2,6 @@ package types
 
 import (
 	"testing"
-	"math/big"
 
 	"github.com/stretchr/testify/require"
 
@@ -27,7 +26,7 @@ const (
 	AltTestCoinsSymbol        = "eth"
 	TestCoinIntAmount         = 10
 )
-var testCethAmount = big.NewInt(65000000000 * 300000)
+var testCethAmount = sdk.NewInt(65000000000 * 300000)
 var TestCoinsAmount = sdk.NewInt(10)
 var AltTestCoinsAmountSDKInt = sdk.NewInt(12)
 
