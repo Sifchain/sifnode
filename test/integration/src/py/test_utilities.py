@@ -16,6 +16,7 @@ class EthereumToSifchainTransferRequest:
     ethereum_symbol: str = "eth"
     ethereum_network: str = ""  # mainnet, ropsten, http:// for localnet
     amount: int = 0
+    ceth_amount: int = 0
     smart_contracts_dir: str = ""
     ethereum_chain_id: str = "5777"
     chain_id: str = "localnet"
@@ -173,43 +174,50 @@ def get_transaction_result(tx_hash, sifnodecli_node):
 
 
 # balance_fn is a lambda that takes no arguments
-# and returns a result.  Runs the function up to
-# max_attempts times, or until the result is equal to target_balance
-def wait_for_balance(balance_fn, target_balance, max_attempts=30, debug_prefix="") -> int:
-    attempts = 0
+# and returns a result.  Runs the function until
+# max_seconds have passed, or until the result is equal to target_balance
+def wait_for_balance(balance_fn, target_balance, max_seconds=30, debug_prefix="") -> int:
+    done_at_time = time.time() + max_seconds
     while True:
         balance = balance_fn()
         if balance == target_balance:
             return int(target_balance)
         else:
-            attempts += 1
-            if attempts >= max_attempts:
-                errmsg = f"{debug_prefix} Failed to get target balance of {target_balance}, balance is {balance}"
+            if time.time() >= done_at_time:
+                errmsg = f"{debug_prefix} Failed to get target balance of {target_balance}, balance is {balance}, waited for {max_seconds} seconds"
                 logging.critical(errmsg)
                 raise Exception(errmsg)
             else:
                 logging.debug(
-                    f"waiting for target balance {debug_prefix}: {target_balance}, current balance is {balance}, attempt {attempts}"
+                    f"waiting for target balance {debug_prefix}: {target_balance}, current balance is {balance}"
                 )
                 time.sleep(5)
 
 
-def wait_for_eth_balance(transfer_request: EthereumToSifchainTransferRequest, target_balance, max_attempts=30):
+def wait_for_eth_balance(transfer_request: EthereumToSifchainTransferRequest, target_balance, max_seconds=30):
     wait_for_balance(
         lambda: get_eth_balance(transfer_request),
         target_balance,
-        max_attempts
+        max_seconds
     )
 
 
-def wait_for_sifchain_addr_balance(sifchain_address, symbol, target_balance, sifchaincli_node, max_attempts=30,
-                                   debug_prefix=""):
-    if not max_attempts: max_attempts = 30
+def wait_for_sifchain_addr_balance(
+        sifchain_address,
+        symbol,
+        target_balance,
+        sifchaincli_node,
+        max_seconds=30,
+        debug_prefix=""
+):
+    if not max_seconds: max_seconds = 30
     logging.debug(f"wait_for_sifchain_addr_balance {sifchaincli_node} {symbol} {target_balance}")
-    return wait_for_balance(lambda: int(get_sifchain_addr_balance(sifchain_address, sifchaincli_node, symbol)),
-                            target_balance,
-                            max_attempts,
-                            debug_prefix)
+    return wait_for_balance(
+        lambda: int(get_sifchain_addr_balance(sifchain_address, sifchaincli_node, symbol)),
+        target_balance,
+        max_seconds,
+        debug_prefix
+    )
 
 
 def send_from_sifchain_to_sifchain(from_address, to_address, amount, currency, yes_password):
@@ -217,7 +225,8 @@ def send_from_sifchain_to_sifchain(from_address, to_address, amount, currency, y
     return get_shell_output(cmd)
 
 
-def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferRequest, credentials: SifchaincliCredentials):
+def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferRequest,
+                                   credentials: SifchaincliCredentials):
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
@@ -228,6 +237,7 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
                    f"{transfer_request.ethereum_address} " \
                    f"{transfer_request.amount} " \
                    f"{transfer_request.sifchain_symbol} " \
+                   f"{transfer_request.ceth_amount} " \
                    f"{keyring_backend_entry} " \
                    f"--ethereum-chain-id={transfer_request.ethereum_chain_id} " \
                    f"--chain-id={transfer_request.chain_id} " \
@@ -260,7 +270,6 @@ def lock_rowan(user, amount):
     return get_shell_output(command_line)
 
 
-
 currency_pairs = {
     "eth": "ceth",
     "ceth": "eth",
@@ -273,7 +282,7 @@ def mirror_of(currency):
     return currency_pairs.get(currency)
 
 
-def wait_for_sif_account(sif_addr, sifchaincli_node, max_attempts=30):
+def wait_for_sif_account(sif_addr, sifchaincli_node, max_seconds=30):
     def fn():
         try:
             get_sifchain_addr_balance(sif_addr, sifchaincli_node, "eth")
@@ -281,24 +290,22 @@ def wait_for_sif_account(sif_addr, sifchaincli_node, max_attempts=30):
         except:
             return False
 
-    wait_for_predicate(lambda: fn(), True, max_attempts, f"wait for account {sif_addr}")
+    wait_for_predicate(lambda: fn(), True, max_seconds, f"wait for account {sif_addr}")
 
 
-def wait_for_predicate(predicate, success_result, max_attempts=30, debug_prefix="") -> int:
-    attempts = 0
+def wait_for_predicate(predicate, success_result, max_seconds=30, debug_prefix="") -> int:
+    done_at_time = time.time() + max_seconds
     while True:
         if predicate():
             return success_result
         else:
-            attempts += 1
-            logging.debug(f"wait_for_predicate: attempts: {attempts}, max_attempts: {max_attempts}")
-            if attempts >= max_attempts:
+            t = time.time()
+            logging.debug(f"wait_for_predicate: wait for {done_at_time - t} more seconds")
+            if t >= done_at_time:
                 msg = f"{debug_prefix} wait_for_predicate failed"
                 logging.debug(msg)
                 raise Exception(msg)
             else:
-                logging.debug(
-                    f"{debug_prefix} waiting for predicate, attempt {attempts}")
                 time.sleep(5)
 
 

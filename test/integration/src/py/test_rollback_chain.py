@@ -12,9 +12,7 @@ from test_utilities import test_integration_dir, wait_for_sifchain_addr_balance,
     EthereumToSifchainTransferRequest
 
 
-def test_chain_rollback():
-    logging.info("start test_chain_rollback")
-
+def test_rollback_chain():
     new_account_key = get_shell_output("uuidgen")
     credentials = sifchain_cli_credentials_for_test(new_account_key)
     new_account = burn_lock_functions.create_new_sifaddr(credentials=credentials, keyname=new_account_key)
@@ -85,5 +83,3 @@ def test_chain_rollback():
     expected_balance = initial_user_balance + request.amount
     logging.info(f"look for a balance of {expected_balance}")
     wait_for_sifchain_addr_balance(new_addr, request.sifchain_symbol, expected_balance, "")
-
-    logging.info(f"test_chain_rollback complete, balance is correct at {expected_balance}")

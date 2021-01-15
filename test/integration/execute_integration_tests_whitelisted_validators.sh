@@ -5,7 +5,7 @@ set -e
 . $(dirname $0)/vagrantenv.sh
 . ${BASEDIR}/test/integration/shell_utilities.sh
 
-loglevel=${LOG_LEVEL:-DEBUG}
+loglevel=${LOG_LEVEL:-INFO}
 
 # Rebuild sifchain, but this time don't use validators
 

@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     logging.info(f"transferrequestjson: {json.dumps(request.__dict__)}")
 
-    transfer_result = burn_lock_functions.transfer_ethereum_to_sifchain(request, max_attempts=30)
+    transfer_result = burn_lock_functions.transfer_ethereum_to_sifchain(request, max_seconds=30)
     final_balance = transfer_result["sifchain_ending_balance"]
 
     result = json.dumps({

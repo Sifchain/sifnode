@@ -14,19 +14,7 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
     get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
 
 
-# def delay_n_blocks(n, transfer_request: EthereumToSifchainTransferRequest):
-#     current_block = current_ethereum_block_number(smart_contracts_dir=transfer_request.smart_contracts_dir)
-#     logging.debug(f"wait for {n} blocks, current block is {current_block}")
-#     if transfer_request.manual_block_advance:
-#         advance_n_ethereum_blocks(n, transfer_request.smart_contracts_dir)
-#     wait_for_ethereum_block_number(
-#         current_block + n,
-#         smart_contracts_dir=transfer_request.smart_contracts_dir,
-#         max_attempts=30
-#     )
-
-
-def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest, max_attempts=30):
+def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest, max_seconds: int = 30):
     logging.debug(f"transfer_ethereum_to_sifchain {transfer_request.as_json()}")
 
     # it's possible that this is the first transfer to the address, so there's
@@ -91,7 +79,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     wait_for_sif_account(
         sif_addr=transfer_request.sifchain_address,
         sifchaincli_node=transfer_request.sifnodecli_node,
-        max_attempts=max_attempts
+        max_seconds=max_seconds
     )
 
     wait_for_sifchain_addr_balance(
@@ -99,7 +87,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
         symbol=transfer_request.sifchain_symbol,
         sifchaincli_node=transfer_request.sifnodecli_node,
         target_balance=target_balance,
-        max_attempts=max_attempts,
+        max_seconds=max_seconds,
         debug_prefix=f"transfer_ethereum_to_sifchain waiting for balance {transfer_request}"
     )
 
@@ -135,18 +123,12 @@ def transfer_sifchain_to_ethereum(
 
     send_tx = send_from_sifchain_to_ethereum(transfer_request, credentials)
 
-    wait_for_sifchain_addr_balance(
-        sifchain_address=transfer_request.sifchain_address,
-        symbol=transfer_request.sifchain_symbol,
-        sifchaincli_node=transfer_request.sifnodecli_node,
-        target_balance=sifchain_starting_balance - transfer_request.amount
-    )
-
     target_balance = ethereum_starting_balance + transfer_request.amount
 
     wait_for_eth_balance(
         transfer_request=transfer_request,
         target_balance=ethereum_starting_balance + transfer_request.amount,
+        max_seconds=30
     )
 
     sifchain_ending_balance = get_sifchain_addr_balance(

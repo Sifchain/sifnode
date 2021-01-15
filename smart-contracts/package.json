@@ -31,7 +31,6 @@
     "truffle-contract": "^4.0.31",
     "truffle-contract-size": "^2.0.0",
     "utf8": "^3.0.0",
-    "web3": "^1.2.6",
     "solidity-coverage": "^0.7.11",
     "winston": "^3.3.3",
     "yargs": "^16"
