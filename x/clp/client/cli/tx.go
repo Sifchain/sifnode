@@ -155,9 +155,9 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 			sentAsset := types.NewAsset(viper.GetString(FlagSentAssetSymbol))
 			receivedAsset := types.NewAsset(viper.GetString(FlagReceivedAssetSymbol))
 			sentAmount := viper.GetString(FlagAmount)
+			minReceivingAmount := viper.GetString(FlagMinimumReceivingAmount)
 			signer := cliCtx.GetFromAddress()
-			msg := types.NewMsgSwap(signer, sentAsset, receivedAsset, sdk.NewUintFromString(sentAmount))
-
+			msg := types.NewMsgSwap(signer, sentAsset, receivedAsset, sdk.NewUintFromString(sentAmount), sdk.NewUintFromString(minReceivingAmount))
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
@@ -165,10 +165,12 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().AddFlagSet(FsSentAssetSymbol)
 	cmd.Flags().AddFlagSet(FsReceivedAssetSymbol)
 	cmd.Flags().AddFlagSet(FsAmount)
+	cmd.Flags().AddFlagSet(FsMinReceivingAmount)
 
 	cmd.MarkFlagRequired(FlagSentAssetSymbol)
 	cmd.MarkFlagRequired(FlagReceivedAssetSymbol)
 	cmd.MarkFlagRequired(FlagAmount)
+	cmd.MarkFlagRequired(FlagMinimumReceivingAmount)
 
 	return cmd
 }
