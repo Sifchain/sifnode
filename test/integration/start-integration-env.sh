@@ -19,6 +19,7 @@ set_persistant_env_var BASEDIR $(fullpath $BASEDIR) $envexportfile
 set_persistant_env_var SIFCHAIN_BIN $BASEDIR/cmd $envexportfile
 set_persistant_env_var envexportfile $(fullpath $envexportfile) $envexportfile
 set_persistant_env_var TEST_INTEGRATION_DIR ${BASEDIR}/test/integration $envexportfile
+set_persistant_env_var TEST_INTEGRATION_PY_DIR ${BASEDIR}/test/integration/src/py $envexportfile
 set_persistant_env_var SMART_CONTRACTS_DIR ${BASEDIR}/smart-contracts $envexportfile
 set_persistant_env_var datadir ${TEST_INTEGRATION_DIR}/vagrant/data $envexportfile
 set_persistant_env_var CONTAINER_NAME integration_sifnode1_1 $envexportfile
@@ -29,7 +30,7 @@ set_persistant_env_var CHAINNET localnet $envexportfile
 
 mkdir -p $datadir
 
-make -C ${TEST_INTEGRATION_DIR} vagrant/.goBuild
+make -C ${TEST_INTEGRATION_DIR}
 
 cp ${TEST_INTEGRATION_DIR}/.env.ciExample .env
 
@@ -54,21 +55,6 @@ set_persistant_env_var ETHEREUM_CONTRACT_ADDRESS $BRIDGE_REGISTRY_ADDRESS $envex
 set_persistant_env_var BRIDGE_BANK_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeBank.json | jq -r '.networks["5777"].address') $envexportfile required
 
 ADD_VALIDATOR_TO_WHITELIST=true bash ${BASEDIR}/test/integration/setup_sifchain.sh && . $envexportfile
-
-#
-# Add keys for a second account to test functions against
-
-yes $OWNER_PASSWORD | sifnodecli keys add user1 --home $CHAINDIR/.sifnodecli || true
-yes $OWNER_PASSWORD | sifnodecli keys show user1 --home $CHAINDIR/.sifnodecli >> $NETDEF || true
-cat $NETDEF | to_json > $NETDEF_JSON
-set_persistant_env_var USER1ADDR $(cat $NETDEF_JSON | jq -r ".[1].address") $envexportfile
-
-# TODO the python tests use a lot of calls that require the owner password,
-# and they look it up every time.  Need to change that so they just have the
-# password passed in, but for now modify the user's ~/.sifnodecli directly
-
-rm -rf ~/.sifnodecli
-ln -s $CHAINDIR/.sifnodecli ~
 
 UPDATE_ADDRESS=0x0000000000000000000000000000000000000000 npx truffle exec scripts/setTokenLockBurnLimit.js 31000000000000000000
 UPDATE_ADDRESS=$BRIDGE_TOKEN_ADDRESS npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000

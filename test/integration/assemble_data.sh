@@ -6,5 +6,5 @@ basedir=$(dirname $0)
 docker logs -t genesis_ganachecli_1 > ${datadir}/ganachelog.txt 2>&1
 cp $SMART_CONTRACTS_DIR/.env ${datadir}/env
 cp $TEST_INTEGRATION_DIR/vagrantenv.sh ${datadir}/vagrantenv.sh
-( cd $SMART_CONTRACTS_DIR && truffle networks ) > ${datadir}/trufflenetworks.txt
+( cd $SMART_CONTRACTS_DIR && npx truffle networks ) > ${datadir}/trufflenetworks.txt
 sudo rsync -a $GANACHE_DB_DIR/ ${datadir}/ganachedb/ && chown -R $(id -u) ${datadir}/ganachedb/
