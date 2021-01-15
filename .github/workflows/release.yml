@@ -14,6 +14,8 @@ jobs:
 
       - name: Setup GO
         uses: actions/setup-go@v2
+        with:
+          go-version: '1.15'
 
       - name: Build
         run: |
@@ -22,7 +24,7 @@ jobs:
 
       - name: Set env vars
         run: |
-          echo "SIFNODED_SHA256_CHECKSUM=$(sha256sum $GOPATH/bin/sifnoded | cut -c 1-64)" >> $GITHUB_ENV
+          echo "SIFNODED_SHA256_CHECKSUM=$(sha256sum $GOBIN/sifnoded | cut -c 1-64)" >> $GITHUB_ENV
 
       - name: Create zip
         run: |
