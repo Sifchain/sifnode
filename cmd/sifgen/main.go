@@ -116,7 +116,7 @@ func nodeCreateCmd() *cobra.Command {
 
 			if standalone {
 				node.Standalone = true
-				node.AdminCLPAddresses = strings.Split(adminCLPAddresses, ",")
+				node.AdminCLPAddresses = strings.Split(adminCLPAddresses, "|")
 				node.AdminOracleAddress = adminOracleAddress
 				node.IPAddr = bindIPAddress
 				node.BondAmount = bondAmount
