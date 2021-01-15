@@ -37,6 +37,25 @@ export default function createEthbridgeService({
     return _web3;
   }
 
+  async function approveBridgeBank(account: string, amount: AssetAmount) {
+    const web3 = await ensureWeb3();
+    const bridgeTokenContract = await getBridgeTokenContract(
+      web3,
+      bridgetokenContractAddress
+    );
+
+    const sendArgs = {
+      from: account,
+      value: 0,
+      gas: 5000000,
+    };
+
+    // Hmm what happens when there is a signing failure but we have approved bridgebank
+    await bridgeTokenContract.methods
+      .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
+      .send(sendArgs);
+  }
+
   return {
     async burnToEthereum(params: {
       fromAddress: string;
@@ -62,25 +81,6 @@ export default function createEthbridgeService({
       });
 
       return txReceipt;
-    },
-
-    async approveBridgeBank(account: string, amount: AssetAmount) {
-      const web3 = await ensureWeb3();
-      const bridgeTokenContract = await getBridgeTokenContract(
-        web3,
-        bridgetokenContractAddress
-      );
-
-      const sendArgs = {
-        from: account,
-        value: 0,
-        gas: 5000000,
-      };
-
-      // Hmm what happens when there is a signing failure but we have approved bridgebank
-      await bridgeTokenContract.methods
-        .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
-        .send(sendArgs);
     },
 
     lockToSifchain(
@@ -198,6 +198,11 @@ export default function createEthbridgeService({
           gas: 5000000,
         };
         console.log({ cosmosRecipient, coinDenom, amount, sendArgs });
+
+        await approveBridgeBank(fromAddress, assetAmount);
+
+        console.log("bridgebank amount approved! " + assetAmount.toString());
+
         bridgeBankContract.methods
           .burn(cosmosRecipient, coinDenom, amount)
           .send(sendArgs)
@@ -209,6 +214,7 @@ export default function createEthbridgeService({
           });
 
         emitter.onTxHash(({ payload: txHash }) => {
+          console.log("Waiting for confirmation... ");
           confirmTx({
             web3,
             txHash,

@@ -15,6 +15,7 @@ import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
 import config from "../../config.localnet.json";
 import Web3 from "web3";
 import JSBI from "jsbi";
+import { sleep } from "../../test/utils/sleep";
 
 const [ETH, CETH, ATK, CATK, ROWAN, EROWAN] = getTestingTokens([
   "ETH",
@@ -26,9 +27,12 @@ const [ETH, CETH, ATK, CATK, ROWAN, EROWAN] = getTestingTokens([
 ]);
 
 async function waitFor(getter: () => Promise<any>, expected: any) {
+  console.log(`Waiting for value to be ${expected.toString()}`);
   let value: any;
   for (let i = 0; i < 100; i++) {
+    await sleep(1000);
     value = await getter();
+    console.log(`${value.toString()} ==? ${expected.toString()}`);
     if (value.toString() === expected.toString()) {
       return;
     }
@@ -185,43 +189,50 @@ describe("PeggyService", () => {
 
     await waitFor(
       async () => (await getERowanBalance()).toString(),
-      expectedERowanBalance
+      expectedERowanBalance.toString()
     );
+
+    await sleep(2000);
 
     ////////////////////////
     // eRowan -> Rowan
     ////////////////////////
-    const startingRowanBalance = (
-      await ethService.getBalance(ethAccounts[2].public, EROWAN)
-    )[0].toBaseUnits();
+    const startingRowanBalance = await getRowanBalance();
 
     const expectedRowanBalance = JSBI.add(
       startingRowanBalance,
       AssetAmount(ROWAN, "10").toBaseUnits()
     );
 
+    console.log(
+      `${startingRowanBalance.toString()}: ${expectedRowanBalance.toString()}`
+    );
+
     // Burn eRowan to Rowan
     // SEEMS TO CAUSE "burn amount exceeds allowance"
-    await new Promise<void>(done => {
+    await new Promise<void>((done, reject) => {
       EthbridgeService.burnToSifchain(
         juniper.address,
         AssetAmount(EROWAN, "10"),
         50,
         ethAccounts[2].public
       )
-        .onComplete(() => {
+        .onTxHash(async () => {
+          await advanceBlock(100);
+        })
+        .onComplete(async () => {
+          console.log("COMPLETE!! 🍾");
           done();
         })
         .onError(err => {
-          throw err;
+          reject(err);
         });
-      advanceBlock(52);
     });
 
     // wait for the balance to change
     await waitFor(
       async () => (await getRowanBalance()).toString(),
-      expectedRowanBalance
+      expectedRowanBalance.toString()
     );
   });
 });
