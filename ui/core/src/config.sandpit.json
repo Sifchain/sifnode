@@ -8,7 +8,6 @@
   "nativeAsset": "rowan",
   "bridgebankContractAddress": "0xa5658e85bc7AC7F0388E60E58BEd5aFB41143330",
   "keplrChainConfig": {
-    "chainId": "sifchain",
     "chainName": "Sifchain",
     "stakeCurrency": {
       "coinDenom": "ROWAN",
