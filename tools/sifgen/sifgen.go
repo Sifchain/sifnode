@@ -9,6 +9,7 @@ import (
 	"github.com/Sifchain/sifnode/tools/sifgen/key"
 	"github.com/Sifchain/sifnode/tools/sifgen/network"
 	"github.com/Sifchain/sifnode/tools/sifgen/node"
+	"github.com/Sifchain/sifnode/tools/sifgen/utils"
 )
 
 type Sifgen struct {
@@ -18,6 +19,13 @@ type Sifgen struct {
 func NewSifgen(chainID *string) Sifgen {
 	return Sifgen{
 		chainID: chainID,
+	}
+}
+
+func (s Sifgen) NewNetwork() *network.Network {
+	return &network.Network{
+		ChainID: *s.chainID,
+		CLI:     utils.NewCLI(*s.chainID),
 	}
 }
 
@@ -41,25 +49,10 @@ func (s Sifgen) NetworkReset(networkDir string) {
 	}
 }
 
-func (s Sifgen) NodeCreate(moniker, mnemonic string, adminCLPAddresses []string, adminOracleAddress, ipAddr string, peerAddress, genesisURL *string, printDetails, withCosmovisor *bool) {
-	validator := node.NewNode(*s.chainID,
-		moniker,
-		mnemonic,
-		adminCLPAddresses,
-		adminOracleAddress,
-		ipAddr,
-		peerAddress,
-		genesisURL,
-		withCosmovisor)
-
-	summary, err := validator.Build()
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	if *printDetails {
-		fmt.Println(*summary)
+func (s Sifgen) NewNode() *node.Node {
+	return &node.Node{
+		ChainID: *s.chainID,
+		CLI:     utils.NewCLI(*s.chainID),
 	}
 }
 

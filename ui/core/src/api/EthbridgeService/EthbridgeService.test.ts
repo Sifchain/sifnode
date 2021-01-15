@@ -81,6 +81,7 @@ describe("PeggyService", () => {
       fromAddress: akasha.address,
       assetAmount: AssetAmount(CETH, "2"),
       ethereumRecipient,
+      feeAmount: AssetAmount(CETH, JSBI.BigInt("16164980000000000")),
     });
 
     // Message has the expected format
@@ -92,6 +93,7 @@ describe("PeggyService", () => {
             type: "ethbridge/MsgBurn",
             value: {
               cosmos_sender: akasha.address,
+              ceth_amount: "16164980000000000",
               amount: "2000000000000000000",
               symbol: "ceth",
               ethereum_chain_id: `${ethereumChainId}`,

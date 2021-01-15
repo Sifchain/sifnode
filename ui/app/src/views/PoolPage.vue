@@ -1,6 +1,6 @@
 <script lang="ts">
-import { defineComponent, onMounted, ref, unref } from "vue";
-import { computed, effect, reactive, toRef, toRefs } from "@vue/reactivity";
+import { defineComponent, ref } from "vue";
+import { computed, toRefs } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
 import { LiquidityProvider, Pool } from "ui-core";
 import Layout from "@/components/layout/Layout.vue";
@@ -8,7 +8,6 @@ import PoolList from "@/components/poolList/PoolList.vue";
 import PoolListItem from "@/components/poolList/PoolListItem.vue";
 import SinglePool from "@/components/poolList/SinglePool.vue";
 import SifButton from "@/components/shared/SifButton.vue";
-// import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 type AccountPool = { lp: LiquidityProvider; pool: Pool };
 export default defineComponent({
   components: {
@@ -51,31 +50,19 @@ export default defineComponent({
           ><SifButton primary nocase>Add Liquidity</SifButton></router-link
         >
       </div>
-      <!-- <div class="mb-8">
-        <SifButton primaryOutline nocase block
-          >Account analytics and accrued fees</SifButton
-        >
-      </div> -->
-      <!-- <PriceCalculation class="mb-8"> -->
-      <!-- <div class="info">
+        <PriceCalculation class="mb-8">
+        <div class="info">
           <h3 class="mb-2">Liquidity provider rewards</h3>
-          <p class="text--small mb-2">
-            Liquidity providers earn a 0.3% fee on all trades proportional to
-            their share of the pool. Fees are added to the pool, accrue in real
-            time and can be claimed by withdrawing your liquidity.
-          </p>
-          <p class="text--small mb-2">
-            <a href="#">Read more about providing liquidity</a>
-          </p>
-        </div> -->
-      <!-- </PriceCalculation> -->
-      <PoolList class="mb-2">
-        <PoolListItem
-          v-for="(accountPool, index) in accountPools"
-          :key="index"
-          :accountPool="accountPool"
-          @click="selectedPool = accountPool"
-        />
+          <p class="text--small mb-2">Liquidity providers earn a percentage fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity. To learn more, reference of documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool">here</a></p>
+        </div>
+        </PriceCalculation>
+        <PoolList class="mb-2">
+            <PoolListItem
+                    v-for="(accountPool, index) in accountPools"
+                    :key="index"
+                    :accountPool="accountPool"
+                    @click="selectedPool = accountPool"
+            />
       </PoolList>
     </div>
   </Layout>

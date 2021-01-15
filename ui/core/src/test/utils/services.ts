@@ -1,6 +1,7 @@
 // Consolodated place where we can setup testing services
 
 import sifServiceInitializer from "../../api/SifService";
+import { KeplrChainConfig } from "../../utils/parseConfig";
 import { TestSifAccount } from "./accounts";
 import { getTestingTokens } from "./getTestingToken";
 
@@ -10,7 +11,7 @@ export function createTestSifService(account?: TestSifAccount) {
     sifAddrPrefix: "sif",
     sifWsUrl: "ws://localhost:26657/websocket",
     assets: getTestingTokens(["CATK", "CBTK", "CETH", "ROWAN"]),
-    keplrChainConfig: {}
+    keplrChainConfig: {} as KeplrChainConfig,
   });
 
   if (account) {
