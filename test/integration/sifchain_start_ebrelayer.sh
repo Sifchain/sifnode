@@ -4,7 +4,7 @@
 # Sifnode entrypoint.
 #
 
-set -x
+set -xe
 
 . $TEST_INTEGRATION_DIR/vagrantenv.sh
 
@@ -20,7 +20,7 @@ wait_for_rpc() {
 wait_for_rpc
 
 echo TEST_INTEGRATION_DIR is $TEST_INTEGRATION_DIR
-USER1ADDR=nothing python3 $TEST_INTEGRATION_DIR/wait_for_sif_account.py $NETDEF_JSON $OWNER_ADDR
+USER1ADDR=nothing python3 $TEST_INTEGRATION_PY_DIR/wait_for_sif_account.py $NETDEF_JSON $OWNER_ADDR
 
 echo ETHEREUM_WEBSOCKET_ADDRESS $ETHEREUM_WEBSOCKET_ADDRESS
 echo ETHEREUM_CONTRACT_ADDRESS $ETHEREUM_CONTRACT_ADDRESS
