@@ -98,7 +98,6 @@ describe("PeggyService", () => {
               symbol: "ceth",
               ethereum_chain_id: `${ethereumChainId}`,
               ethereum_receiver: ethereumRecipient,
-              ceth_amount: "18332015000000000",
             },
           },
         ],
