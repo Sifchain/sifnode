@@ -68,11 +68,12 @@ type (
 		Ticker  string       `json:"ticker"` // ExternalAsset Ticker in the pool pair (ex rwn:ceth ,would be ceth)
 	}
 	SwapReq struct {
-		BaseReq       rest.BaseReq `json:"base_req"`
-		Signer        string       `json:"signer"`         // User who is trying to swap
-		SentAsset     types.Asset  `json:"sent_asset"`     // Asset which the user is sending ,can be an external asset or RWN
-		ReceivedAsset types.Asset  `json:"received_asset"` // Asset which the user wants to receive ,can be an external asset or RWN
-		SentAmount    sdk.Uint     `json:"sent_amount"`    // Amount of SentAsset being sent
+		BaseReq            rest.BaseReq `json:"base_req"`
+		Signer             string       `json:"signer"`               // User who is trying to swap
+		SentAsset          types.Asset  `json:"sent_asset"`           // Asset which the user is sending ,can be an external asset or RWN
+		ReceivedAsset      types.Asset  `json:"received_asset"`       // Asset which the user wants to receive ,can be an external asset or RWN
+		SentAmount         sdk.Uint     `json:"sent_amount"`          // Amount of SentAsset being sent
+		MinReceivingAmount sdk.Uint     `json:"min_receiving_amount"` // Min amount specified by the user m the swap will not go through if the receiving amount drops below this value
 	}
 )
 
@@ -196,7 +197,7 @@ func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		msg := types.NewMsgSwap(signer, req.SentAsset, req.ReceivedAsset, req.SentAmount)
+		msg := types.NewMsgSwap(signer, req.SentAsset, req.ReceivedAsset, req.SentAmount, req.MinReceivingAmount)
 		err = msg.ValidateBasic()
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

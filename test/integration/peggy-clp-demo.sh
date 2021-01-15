@@ -76,7 +76,7 @@ yes Y | sifnodecli tx clp add-liquidity --from user2 --symbol ceth --nativeAmoun
 
 echo "swap"
 sleep 8
-yes Y |  sifnodecli tx clp swap --from user2 --sentSymbol ceth --receivedSymbol cdash --sentAmount 20
+yes Y |  sifnodecli tx clp swap --from user2 --sentSymbol ceth --receivedSymbol cdash --sentAmount 20 ---minReceivingAmount 0
 
 
 echo "removing Liquidity"
