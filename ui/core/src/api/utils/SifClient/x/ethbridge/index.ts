@@ -15,6 +15,7 @@ type BurnOrLockReq = {
   ethereum_receiver: string;
   amount: string;
   symbol: string;
+  ceth_amount: string;
 };
 
 export interface EthbridgeExtension {
@@ -26,7 +27,7 @@ export interface EthbridgeExtension {
 export function setupEthbridgeExtension(base: LcdClient): EthbridgeExtension {
   return {
     ethbridge: {
-      burn: async (params) => {
+      burn: async params => {
         return await base.post(`/ethbridge/burn`, params);
       },
     },

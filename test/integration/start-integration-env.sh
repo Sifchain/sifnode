@@ -42,7 +42,7 @@ docker-compose --project-name genesis -f ${TEST_INTEGRATION_DIR}/docker-compose-
 
 # https://www.trufflesuite.com/docs/truffle/overview
 # and note that truffle migrate and truffle deploy are the same command
-truffle deploy --network develop --reset
+npx truffle deploy --network develop --reset
 
 # ETHEREUM_CONTRACT_ADDRESS is used for the BridgeRegistry address in many places, so we
 # set it and BRIDGE_REGISTRY_ADDRESS to the same value

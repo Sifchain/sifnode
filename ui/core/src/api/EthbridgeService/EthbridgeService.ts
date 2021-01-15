@@ -1,7 +1,7 @@
 import { provider } from "web3-core";
 import Web3 from "web3";
 import { getBridgeBankContract } from "./bridgebankContract";
-import { AssetAmount, Token } from "../../entities";
+import { Asset, AssetAmount, Token } from "../../entities";
 import { createPegTxEventEmitter } from "./PegTxEventEmitter";
 import { confirmTx } from "./utils/confirmTx";
 import { SifUnSignedClient } from "../utils/SifClient";
@@ -39,6 +39,7 @@ export default function createEthbridgeService({
       fromAddress: string;
       ethereumRecipient: string;
       assetAmount: AssetAmount;
+      feeAmount: AssetAmount;
     }) {
       const web3 = await ensureWeb3();
       const ethereumChainId = await web3.eth.net.getId();
@@ -56,6 +57,7 @@ export default function createEthbridgeService({
         cosmos_sender: params.fromAddress,
         ethereum_chain_id: `${ethereumChainId}`,
         token_contract_address: tokenAddress,
+        ceth_amount: params.feeAmount.toBaseUnits().toString(),
       });
     },
 
