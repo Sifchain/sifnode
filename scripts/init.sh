@@ -5,7 +5,7 @@ rm -rf ~/.sifnoded
 #rm -rf testlog.log
 
 
-sifnoded init test --chain-id=sifchain
+sifnoded init rnode --chain-id my-test-chain
 
 #sifnoded config output json
 #sifnoded config indent true
@@ -29,7 +29,7 @@ sifnoded add-genesis-account $(sifnoded keys show akasha -a --keyring-backend te
 #sifnoded add-genesis-clp-admin $(sifnodecli keys show akasha -a)
 
 
-sifnoded gentx shadowfiend 1000000rowan --chain-id my-test-chain --keyring-backend test
+sifnoded gentx shadowfiend 10000000stake --chain-id my-test-chain --keyring-backend test
 echo "Collecting genesis txs..."
 sifnoded collect-gentxs
 

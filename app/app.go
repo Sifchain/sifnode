@@ -10,8 +10,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/config"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
+	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
-	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -57,6 +57,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
 	sifappparams "github.com/Sifchain/sifnode/app/params"
+	baseapp "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 )
@@ -147,7 +148,9 @@ func NewSifChainApp(
 	appCodec := encodingConfig.Marshaler
 	legacyAmino := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
-
+	file, _ := os.OpenFile("info.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	l := log.NewTMFmtLogger(file)
+	_ = l.Log("base app options : ", baseAppOptions)
 	bApp := bam.NewBaseApp(appName, logger, db, encodingConfig.TxConfig.TxDecoder(), baseAppOptions...)
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetAppVersion(version.Version)
@@ -181,7 +184,9 @@ func NewSifChainApp(
 		tKeys:             tKeys,
 	}
 
-	app.paramsKeeper = initParamsKeeper(appCodec, app.legacyAmino, keys[paramstypes.StoreKey], tKeys[paramstypes.TStoreKey])
+	app.paramsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tKeys[paramstypes.TStoreKey])
+	bApp.SetParamStore(app.paramsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramskeeper.ConsensusParamsKeyTable()))
+
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
 		appCodec,
 		keys[authtypes.StoreKey],
@@ -287,7 +292,7 @@ func NewSifChainApp(
 			encodingConfig.TxConfig,
 		),
 		auth.NewAppModule(appCodec, app.AccountKeeper, nil),
-		vesting.NewAppModule(app.AccountKeeper, app.bankKeeper),
+		//vesting.NewAppModule(app.AccountKeeper, app.bankKeeper),
 		bank.NewAppModule(appCodec, app.bankKeeper, app.AccountKeeper),
 		gov.NewAppModule(appCodec, app.govKeeper, app.AccountKeeper, app.bankKeeper),
 		slashing.NewAppModule(appCodec, app.slashingKeeper, app.AccountKeeper, app.bankKeeper, app.stakingKeeper),
@@ -329,6 +334,15 @@ func NewSifChainApp(
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
 	app.mm.RegisterServices(module.NewConfigurator(app.MsgServiceRouter(), app.GRPCQueryRouter()))
 
+	app.sm = module.NewSimulationManager(
+		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
+		bank.NewAppModule(appCodec, app.bankKeeper, app.AccountKeeper),
+		gov.NewAppModule(appCodec, app.govKeeper, app.AccountKeeper, app.bankKeeper),
+		staking.NewAppModule(appCodec, app.stakingKeeper, app.AccountKeeper, app.bankKeeper),
+		distr.NewAppModule(appCodec, app.distrKeeper, app.AccountKeeper, app.bankKeeper, app.stakingKeeper),
+		slashing.NewAppModule(appCodec, app.slashingKeeper, app.AccountKeeper, app.bankKeeper, app.stakingKeeper),
+		params.NewAppModule(app.paramsKeeper),
+	)
 	app.sm.RegisterStoreDecoders()
 
 	app.SetInitChainer(app.InitChainer)
