@@ -42,7 +42,10 @@ def test_transfer_rowan_to_erowan():
     request.sifchain_symbol = "rowan"
     request.amount = 12000
     logging.info(f"transfer rowan to erowan: {request}")
+    starting_balance = burn_lock_functions.get_eth_balance(request)
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
+    ending_balance = burn_lock_functions.get_eth_balance(request)
+    assert(ending_balance == starting_balance + request.amount)
 
 
 @pytest.mark.skip(reason="not implemented")
