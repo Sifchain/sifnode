@@ -4,5 +4,5 @@
 
 cd ../../../smart-contracts
 
-yarn && yarn migrate 
+yarn && yarn test:setup && yarn migrate 
 
