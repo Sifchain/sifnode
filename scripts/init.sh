@@ -5,11 +5,11 @@
 make clean install
 sifnoded init test --chain-id=localnet
 
-sifnodecli config output json
-sifnodecli config indent true
-sifnodecli config trust-node true
-sifnodecli config chain-id localnet
-sifnodecli config keyring-backend test
+sifnoded config output json
+sifnoded config indent true
+sifnoded config trust-node true
+sifnoded config chain-id localnet
+sifnoded config keyring-backend test
 
 echo "Generating deterministic account - sif"
 echo "race draft rival universe maid cheese steel logic crowd fork comic easy truth drift tomorrow eye buddy head time cash swing swift midnight borrow" | sifnodecli keys add sif --recover

@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server/api"
@@ -140,7 +141,7 @@ type SifchainApp struct {
 }
 
 func NewSifChainApp(
-	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, homePath string,
+	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, skipUpgradeHeights map[int64]bool, homePath string,
 	invCheckPeriod uint, encodingConfig sifappparams.EncodingConfig, baseAppOptions ...func(*bam.BaseApp),
 ) *SifchainApp {
 	appCodec := encodingConfig.Marshaler
@@ -255,9 +256,9 @@ func NewSifChainApp(
 	// The mapping represents height to bool. if the value is true for a height that height
 	// will be skipped even if we have a update proposal for it
 
-	skipUpgradeHeights := make(map[int64]bool)
-	skipUpgradeHeights[0] = true
-	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath)
+	//skipUpgradeHeights := make(map[int64]bool)
+	//skipUpgradeHeights[0] = true
+	//app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath)
 
 	//app.UpgradeKeeper.SetUpgradeHandler("sifUpdate1", func(ctx sdk.Context, plan upgrade.Plan) {
 	//	clp.InitGenesis(ctx, app.clpKeeper, clp.DefaultGenesisState())
@@ -265,6 +266,8 @@ func NewSifChainApp(
 	//app.SetStoreLoader(bam.StoreLoaderWithUpgrade(&types.StoreUpgrades{
 	//	Added: []string{clp.ModuleName},
 	//}))
+
+	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath)
 
 	govRouter := govtypes.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
@@ -469,6 +472,11 @@ func (app *SifchainApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.A
 
 func (app *SifchainApp) RegisterTxService(clientCtx client.Context) {
 	tx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
+}
+
+// RegisterTendermintService implements the Application.RegisterTendermintService method.
+func (app *SifchainApp) RegisterTendermintService(clientCtx client.Context) {
+	tmservice.RegisterTendermintService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.interfaceRegistry)
 }
 
 func RegisterSwaggerAPI(ctx client.Context, rtr *mux.Router) {
