@@ -69,7 +69,6 @@ func (msg MsgLock) ValidateBasic() error {
 		return ErrInvalidAmount
 	}
 
-	
 	// if you don't pay enough gas, this tx won't go through
 	if msg.CethAmount.LT(sdk.NewInt(lockGasCost)) {
 		return ErrCethAmount
@@ -236,7 +235,7 @@ func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
 type MsgUpdateWhiteListValidator struct {
 	CosmosSender  sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
 	Validator     sdk.ValAddress `json:"validator" yaml:"validator"`
-	OperationType string         `json:"operation_tyoe" yaml:"operation_type"`
+	OperationType string         `json:"operation_type" yaml:"operation_type"`
 }
 
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
@@ -257,8 +256,6 @@ func (msg MsgUpdateWhiteListValidator) Type() string { return "update_whitelist_
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgUpdateWhiteListValidator) ValidateBasic() error {
-	fmt.Println(" MsgUpdateWhiteListValidator ValidateBasic")
-
 	if msg.CosmosSender.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
@@ -266,8 +263,6 @@ func (msg MsgUpdateWhiteListValidator) ValidateBasic() error {
 	if msg.Validator.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator.String())
 	}
-	fmt.Println(" MsgUpdateWhiteListValidator ValidateBasic over")
-
 	return nil
 }
 
