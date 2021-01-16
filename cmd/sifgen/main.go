@@ -15,8 +15,8 @@ func main() {
 	rootCmd := &cobra.Command{Use: "sifgen"}
 
 	_networkCmd := networkCmd()
-	_networkCmd.PersistentFlags().String("bond-amount", "10000000000000000000000000rowan", "bond amount")
-	_networkCmd.PersistentFlags().String("mint-amount", "990000000000000000000000000rowan", "mint amount")
+	_networkCmd.PersistentFlags().String("bond-amount", "100000000000000000rowan", "bond amount")
+	_networkCmd.PersistentFlags().String("mint-amount", "1000000000000000000000000000rowan", "mint amount")
 	_networkCmd.AddCommand(networkCreateCmd(), networkResetCmd())
 
 	_nodeCmd := nodeCmd()
