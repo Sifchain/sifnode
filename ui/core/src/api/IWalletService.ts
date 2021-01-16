@@ -26,6 +26,7 @@ export type IWalletService = {
   signAndBroadcast(msg: Msg, memo?: string): Promise<any>;
   setPhrase(phrase: string): Promise<Address>;
   purgeClient(): void;
+  testTriggerUpdate(): void;
 
   // FOLLOWING ARE YTI:
 

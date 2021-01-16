@@ -5,7 +5,7 @@ import {
   Msg,
   Secp256k1HdWallet,
 } from "@cosmjs/launchpad";
-import { reactive } from "@vue/reactivity";
+import {reactive, trigger} from "@vue/reactivity";
 import { debounce } from "lodash";
 import { Address, Asset, AssetAmount, Network, TxParams } from "../../entities";
 
@@ -120,6 +120,10 @@ export default function createSifService({
 
     getSupportedTokens() {
       return supportedTokens;
+    },
+
+    testTriggerUpdate() {
+      triggerUpdate();
     },
 
     async connect() {

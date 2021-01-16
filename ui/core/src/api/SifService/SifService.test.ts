@@ -110,7 +110,7 @@ describe("sifService", () => {
     const sifService = createSifService(testConfig);
     // catch Error["Bad mnemonic"]??
     test.todo("more tests on bad mnemonic ");
-
+    sifService.testTriggerUpdate();
     try {
       await sifService.setPhrase("");
     } catch (error) {
