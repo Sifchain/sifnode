@@ -118,15 +118,14 @@ func nodeCreateCmd() *cobra.Command {
 				node.Standalone = true
 				node.AdminCLPAddresses = strings.Split(adminCLPAddresses, "|")
 				node.AdminOracleAddress = adminOracleAddress
-				node.IPAddr = bindIPAddress
 				node.BondAmount = bondAmount
 				node.MintAmount = mintAmount
 			} else {
-				node.IPAddr = bindIPAddress
 				node.PeerAddress = peerAddress
 				node.GenesisURL = genesisURL
 			}
 
+			node.IPAddr = bindIPAddress
 			node.WithCosmovisor = withCosmovisor
 			summary, err := node.Build()
 			if err != nil {
