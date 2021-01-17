@@ -2,7 +2,10 @@
 
 # This script should be run with a CWD that is the local folder
 . ../credentials.sh
-. ../../../smart-contracts/.env
+
+if [[ -f "../../smart-contracts/.env" ]]; then
+  . ../../smart-contracts/.env
+fi
 
 echo "  "
 echo "-----------------------------------------------------"
