@@ -6,7 +6,7 @@ import {
   Secp256k1HdWallet,
 } from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
-import { debounce } from "lodash";
+import { debounce, filter } from "lodash";
 import { Address, Asset, AssetAmount, Network, TxParams } from "../../entities";
 
 import { Mnemonic } from "../../entities/Wallet";
@@ -208,7 +208,7 @@ export default function createSifService({
       closeUpdateListener();
     },
 
-    async getBalance(address?: Address): Promise<AssetAmount[]> {
+    async getBalance(address?: Address, asset?: Asset): Promise<AssetAmount[]> {
       if (!client) throw "No client. Please sign in.";
       if (!address) throw "Address undefined. Fail";
 
@@ -226,7 +226,15 @@ export default function createSifService({
             )!; // will be found because of filter above
 
             return AssetAmount(asset, amount, { inBaseUnit: true });
+          })
+          .filter(balance => {
+            // If an aseet is supplied filter for it
+            if (!asset) {
+              return true;
+            }
+            return balance.asset.symbol === asset.symbol;
           });
+
         return balances;
       } catch (error) {
         throw error;

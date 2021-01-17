@@ -154,7 +154,7 @@ export default function createEthbridgeService({
       const tokenAddress =
         (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
 
-      const lockReceipt = await sifUnsignedClient.lock({
+      const lockParams = {
         ethereum_receiver: params.ethereumRecipient,
         base_req: {
           chain_id: sifChainId,
@@ -166,7 +166,10 @@ export default function createEthbridgeService({
         ethereum_chain_id: `${ethereumChainId}`,
         token_contract_address: tokenAddress,
         ceth_amount: params.feeAmount.toBaseUnits().toString(),
-      });
+      };
+      console.log({ lockParams });
+
+      const lockReceipt = await sifUnsignedClient.lock(lockParams);
 
       return lockReceipt;
     },

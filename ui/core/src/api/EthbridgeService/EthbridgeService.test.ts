@@ -2,10 +2,6 @@ import createEthbridgeService from ".";
 import { Asset, AssetAmount, Token } from "../../entities";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { advanceBlock } from "../../test/utils/advanceBlock";
-import {
-  createWaitForBalance,
-  createWaitForBalanceEth,
-} from "../../test/utils/waitForBalance";
 import { juniper, akasha, ethAccounts } from "../../test/utils/accounts";
 import {
   createTestEthService,
@@ -26,8 +22,12 @@ const [ETH, CETH, ATK, CATK, ROWAN, EROWAN] = getTestingTokens([
   "EROWAN",
 ]);
 
-async function waitFor(getter: () => Promise<any>, expected: any) {
-  console.log(`Waiting for value to be ${expected.toString()}`);
+async function waitFor(
+  getter: () => Promise<any>,
+  expected: any,
+  name: string
+) {
+  console.log(`Starting wait: "${name}"`);
   let value: any;
   for (let i = 0; i < 100; i++) {
     await sleep(1000);
@@ -59,30 +59,28 @@ describe("PeggyService", () => {
     // Setup services
     const sifService = await createTestSifService(akasha);
     const ethService = await createTestEthService();
-    const waitForBalance = createWaitForBalance(sifService);
-    const waitForBalanceEth = createWaitForBalanceEth(ethService);
+
+    async function getEthBalance() {
+      const bals = await ethService.getBalance(ethAccounts[0].public, ETH);
+      console.log(bals.map(b => b.toString()));
+      return bals[0].toBaseUnits();
+    }
+
+    async function getCethBalance() {
+      const bals = await sifService.getBalance(juniper.address, CETH);
+      console.log(bals.map(b => b.toString()));
+      return bals[0].toBaseUnits();
+    }
+
     const web3 = new Web3(await getWeb3Provider());
 
     // Check the balance
-    const cethBalance = getBalance(
-      await sifService.getBalance(akasha.address),
-      "ceth"
-    ).toBaseUnits();
+    const cethBalance = await getCethBalance();
 
     // Send funds to the smart contract
     await new Promise<void>(async done => {
       EthbridgeService.lockToSifchain(akasha.address, AssetAmount(ETH, "2"), 10)
-        .onComplete(async () => {
-          // Check they arrived
-          await waitForBalance(
-            "ceth",
-            JSBI.add(
-              cethBalance,
-              AssetAmount(ETH, "2").toBaseUnits()
-            ).toString(),
-            akasha.address,
-            50
-          );
+        .onComplete(() => {
           done();
         })
         .onError(err => {
@@ -91,11 +89,19 @@ describe("PeggyService", () => {
       advanceBlock(100);
     });
 
-    const accounts = await web3.eth.getAccounts();
-    const ethereumRecipient = accounts[0];
-    const recipientBalanceBefore = await web3.eth.getBalance(ethereumRecipient);
+    const expectedCethAmount = JSBI.add(
+      cethBalance,
+      AssetAmount(ETH, "2").toBaseUnits()
+    );
 
-    const ethereumChainId = await web3.eth.net.getId();
+    await waitFor(
+      async () => await getCethBalance(),
+      expectedCethAmount,
+      "expectedCethAmount"
+    );
+
+    const recipientBalanceBefore = await getEthBalance();
+
     const message = await EthbridgeService.burnToEthereum({
       fromAddress: akasha.address,
       assetAmount: AssetAmount(CETH, "2"),
@@ -103,10 +109,12 @@ describe("PeggyService", () => {
         Asset.get("ceth"),
         JSBI.BigInt("16164980000000000")
       ),
-      ethereumRecipient,
+      ethereumRecipient: ethAccounts[0].public,
     });
 
     // Message has the expected format
+    const ethereumChainId = await web3.eth.net.getId();
+
     expect(message).toEqual({
       type: "cosmos-sdk/StdTx",
       value: {
@@ -118,7 +126,7 @@ describe("PeggyService", () => {
               amount: "2000000000000000000",
               symbol: "ceth",
               ethereum_chain_id: `${ethereumChainId}`,
-              ethereum_receiver: ethereumRecipient,
+              ethereum_receiver: ethAccounts[0].public,
             },
           },
         ],
@@ -133,14 +141,15 @@ describe("PeggyService", () => {
 
     await sifService.signAndBroadcast(message.value.msg);
 
-    await waitForBalanceEth(
-      "eth",
-      JSBI.add(
-        JSBI.BigInt(recipientBalanceBefore),
-        JSBI.BigInt("2000000000000000000")
-      ).toString(),
-      ethereumRecipient,
-      100
+    const expectedEthAmount = JSBI.add(
+      recipientBalanceBefore,
+      JSBI.BigInt("2000000000000000000")
+    ).toString();
+
+    await waitFor(
+      async () => await getEthBalance(),
+      expectedEthAmount,
+      "expectedEthAmount"
     );
   });
 
@@ -148,16 +157,22 @@ describe("PeggyService", () => {
     const sifService = await createTestSifService(juniper);
     const ethService = await createTestEthService();
 
+    function getEthAddress() {
+      return ethAccounts[2].public;
+    }
+
+    function getSifAddress() {
+      return juniper.address;
+    }
+
     async function getERowanBalance() {
-      return (
-        await ethService.getBalance(ethAccounts[2].public, EROWAN)
-      )[0].toBaseUnits();
+      const bals = await ethService.getBalance(getEthAddress(), EROWAN);
+      return bals[0].toBaseUnits();
     }
 
     async function getRowanBalance() {
-      return (
-        await sifService.getBalance(juniper.address, ROWAN)
-      )[0].toBaseUnits();
+      const bals = await sifService.getBalance(getSifAddress(), ROWAN);
+      return bals[0].toBaseUnits();
     }
 
     ////////////////////////
@@ -168,55 +183,64 @@ describe("PeggyService", () => {
     const startingERowanBalance = await getERowanBalance();
 
     // lock Rowan to eRowan
+    const sendRowanAmount = AssetAmount(ROWAN, "100");
+
     const msg = await EthbridgeService.lockToEthereum({
-      fromAddress: juniper.address,
-      assetAmount: AssetAmount(ROWAN, "100"),
-      ethereumRecipient: ethAccounts[2].public,
+      fromAddress: getSifAddress(),
+      assetAmount: sendRowanAmount,
+      ethereumRecipient: getEthAddress(),
       feeAmount: AssetAmount(
         Asset.get("ceth"),
         JSBI.BigInt("18332015000000000")
       ),
     });
 
+    expect(msg.value.msg).toEqual([
+      {
+        type: "ethbridge/MsgLock",
+        value: {
+          amount: "100000000000000000000",
+          ceth_amount: "18332015000000000",
+          cosmos_sender: getSifAddress(),
+          ethereum_chain_id: "5777",
+          ethereum_receiver: getEthAddress(),
+          symbol: "rowan",
+        },
+      },
+    ]);
+
     await sifService.signAndBroadcast(msg.value.msg);
+
+    await sleep(2000);
 
     const expectedERowanBalance = JSBI.add(
       startingERowanBalance,
-      AssetAmount(ROWAN, "100").toBaseUnits()
+      sendRowanAmount.toBaseUnits()
     );
 
     await waitFor(
-      async () => (await getERowanBalance()).toString(),
-      expectedERowanBalance.toString()
+      async () => await getERowanBalance(),
+      expectedERowanBalance,
+      "expectedERowanBalance"
     );
-
-    await sleep(2000);
 
     ////////////////////////
     // eRowan -> Rowan
     ////////////////////////
     const startingRowanBalance = await getRowanBalance();
 
-    const expectedRowanBalance = JSBI.add(
-      startingRowanBalance,
-      AssetAmount(ROWAN, "10").toBaseUnits()
-    );
-
-    console.log(
-      `${startingRowanBalance.toString()}: ${expectedRowanBalance.toString()}`
-    );
+    const sendERowanAmount = AssetAmount(EROWAN, "10");
 
     // Burn eRowan to Rowan
-    // SEEMS TO CAUSE "burn amount exceeds allowance"
     await new Promise<void>((done, reject) => {
       EthbridgeService.burnToSifchain(
-        juniper.address,
-        AssetAmount(EROWAN, "10"),
+        getSifAddress(),
+        sendERowanAmount,
         50,
-        ethAccounts[2].public
+        getEthAddress()
       )
-        .onTxHash(async () => {
-          await advanceBlock(100);
+        .onTxHash(() => {
+          advanceBlock(52);
         })
         .onComplete(async () => {
           console.log("COMPLETE!! 🍾");
@@ -227,10 +251,18 @@ describe("PeggyService", () => {
         });
     });
 
+    await sleep(2000);
+
     // wait for the balance to change
+    const expectedRowanBalance = JSBI.add(
+      startingRowanBalance,
+      sendERowanAmount.toBaseUnits()
+    );
+
     await waitFor(
-      async () => (await getRowanBalance()).toString(),
-      expectedRowanBalance.toString()
+      async () => await getRowanBalance(),
+      expectedRowanBalance,
+      "expectedRowanBalance"
     );
   });
 });
