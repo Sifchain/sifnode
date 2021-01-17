@@ -36,7 +36,7 @@ export default ({
         fromAddress: store.wallet.sif.address,
         feeAmount: AssetAmount(
           Asset.get("ceth"),
-          JSBI.BigInt("16164980000000000")
+          JSBI.BigInt("18332015000000000")
         ),
       });
 
