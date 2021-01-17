@@ -141,10 +141,10 @@ type CLPParams struct {
 }
 
 type CLP struct {
-	Params                    CLPParams   `json:"params"`
-	WhiteListValidatorAddress interface{} `json:"white_list_validator_address"`
-	PoolList                  interface{} `json:"pool_list"`
-	LiquidityProviderList     interface{} `json:"liquidity_provider_list"`
+	Params                CLPParams   `json:"params"`
+	AddressWhitelist      interface{} `json:"address_whitelist"`
+	PoolList              interface{} `json:"pool_list"`
+	LiquidityProviderList interface{} `json:"liquidity_provider_list"`
 }
 
 type Faucet struct {

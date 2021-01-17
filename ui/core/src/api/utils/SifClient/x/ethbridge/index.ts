@@ -15,6 +15,7 @@ type BurnOrLockReq = {
   ethereum_receiver: string;
   amount: string;
   symbol: string;
+  ceth_amount: string;
 };
 
 export interface EthbridgeExtension {
