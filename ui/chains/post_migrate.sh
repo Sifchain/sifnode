@@ -1,7 +1,10 @@
 #!/bin/bash
 
 . ./credentials.sh
-. ../../smart-contracts/.env
+
+if [[ -f "../../smart-contracts/.env" ]]; then
+  . ../../smart-contracts/.env
+fi
 
 BASE_DIR=$PWD/../../
 

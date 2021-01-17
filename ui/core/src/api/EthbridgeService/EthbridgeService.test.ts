@@ -90,13 +90,15 @@ describe("PeggyService", () => {
         AssetAmount(ETH, "2"),
         10
       )
+        .onTxHash(() => {
+          advanceBlock(100);
+        })
         .onComplete(() => {
           done();
         })
         .onError(err => {
           throw err.payload;
         });
-      advanceBlock(100);
     });
 
     const expectedCethAmount = JSBI.add(
@@ -112,42 +114,33 @@ describe("PeggyService", () => {
 
     const recipientBalanceBefore = await getEthBalance();
 
+    const amountToSend = AssetAmount(CETH, "2");
+    const feeAmount = AssetAmount(
+      Asset.get("ceth"),
+      JSBI.BigInt("16164980000000000")
+    );
+
     const message = await EthbridgeService.burnToEthereum({
       fromAddress: getSifAddress(),
-      assetAmount: AssetAmount(CETH, "2"),
-      feeAmount: AssetAmount(
-        Asset.get("ceth"),
-        JSBI.BigInt("16164980000000000")
-      ),
+      assetAmount: amountToSend,
+      feeAmount,
       ethereumRecipient: getEthAddress(),
     });
 
     // Message has the expected format
     const ethereumChainId = await web3.eth.net.getId();
-
-    expect(message).toEqual({
-      type: "cosmos-sdk/StdTx",
-      value: {
-        msg: [
-          {
-            type: "ethbridge/MsgBurn",
-            value: {
-              cosmos_sender: getSifAddress(),
-              amount: "2000000000000000000",
-              symbol: "ceth",
-              ethereum_chain_id: `${ethereumChainId}`,
-              ethereum_receiver: getEthAddress(),
-            },
-          },
-        ],
-        fee: {
-          amount: [],
-          gas: "200000",
+    expect(message.value.msg).toEqual([
+      {
+        type: "ethbridge/MsgBurn",
+        value: {
+          cosmos_sender: getSifAddress(),
+          amount: "2000000000000000000",
+          symbol: "ceth",
+          ethereum_chain_id: `${ethereumChainId}`,
+          ethereum_receiver: getEthAddress(),
         },
-        signatures: null,
-        memo: "",
       },
-    });
+    ]);
 
     await sifService.signAndBroadcast(message.value.msg);
 
@@ -166,6 +159,7 @@ describe("PeggyService", () => {
   test("rowan -> erowan -> rowan", async () => {
     const sifService = await createTestSifService(juniper);
     const ethService = await createTestEthService();
+    const web3 = new Web3(await getWeb3Provider());
 
     function getEthAddress() {
       return ethAccounts[2].public;
@@ -205,6 +199,7 @@ describe("PeggyService", () => {
       ),
     });
 
+    const ethereumChainId = await web3.eth.net.getId();
     expect(msg.value.msg).toEqual([
       {
         type: "ethbridge/MsgLock",
@@ -212,7 +207,7 @@ describe("PeggyService", () => {
           amount: "100000000000000000000",
           ceth_amount: "18332015000000000",
           cosmos_sender: getSifAddress(),
-          ethereum_chain_id: "5777",
+          ethereum_chain_id: `${ethereumChainId}`,
           ethereum_receiver: getEthAddress(),
           symbol: "rowan",
         },
