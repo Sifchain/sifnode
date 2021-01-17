@@ -8,6 +8,7 @@
 - [Golang](https://golang.org/doc/install)
 - [jq](https://stedolan.github.io/jq/download/)
 - [curl](https://curl.haxx.se/download.html)
+- [gcc](https://gcc.gnu.org/install/)
 
 ## Getting started
 
