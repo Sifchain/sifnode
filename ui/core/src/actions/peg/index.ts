@@ -26,18 +26,17 @@ export default ({
       return api.EthereumService.getSupportedTokens();
     },
     async unpeg(assetAmount: AssetAmount) {
-      const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
-        ? api.EthbridgeService.lockToEthereum
-        : api.EthbridgeService.burnToEthereum;
+      const [lockOrBurnFn, feeNumber] = isOriginallySifchainNativeToken(
+        assetAmount.asset
+      )
+        ? [api.EthbridgeService.lockToEthereum, "18332015000000000"]
+        : [api.EthbridgeService.burnToEthereum, "16164980000000000"];
 
       const tx = await lockOrBurnFn({
         assetAmount,
         ethereumRecipient: store.wallet.eth.address,
         fromAddress: store.wallet.sif.address,
-        feeAmount: AssetAmount(
-          Asset.get("ceth"),
-          JSBI.BigInt("18332015000000000")
-        ),
+        feeAmount: AssetAmount(Asset.get("ceth"), JSBI.BigInt(feeNumber)),
       });
 
       return await api.SifService.signAndBroadcast(tx.value.msg);
