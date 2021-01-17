@@ -122,6 +122,7 @@ func nodeCreateCmd() *cobra.Command {
 				node.BondAmount = bondAmount
 				node.MintAmount = mintAmount
 			} else {
+				node.IPAddr = bindIPAddress
 				node.PeerAddress = peerAddress
 				node.GenesisURL = genesisURL
 			}
