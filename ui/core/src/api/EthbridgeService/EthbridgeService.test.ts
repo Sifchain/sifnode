@@ -1,5 +1,5 @@
 import createEthbridgeService from ".";
-import { AssetAmount, Token } from "../../entities";
+import { Asset, AssetAmount, Token } from "../../entities";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { advanceBlock } from "../../test/utils/advanceBlock";
 import {
@@ -178,6 +178,10 @@ describe("PeggyService", () => {
       fromAddress: juniper.address,
       assetAmount: AssetAmount(ROWAN, "100"),
       ethereumRecipient: ethAccounts[2].public,
+      feeAmount: AssetAmount(
+        Asset.get("ceth"),
+        JSBI.BigInt("16164980000000000")
+      ),
     });
 
     await sifService.signAndBroadcast(msg.value.msg);
