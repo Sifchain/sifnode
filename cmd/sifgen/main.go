@@ -15,8 +15,8 @@ func main() {
 	rootCmd := &cobra.Command{Use: "sifgen"}
 
 	_networkCmd := networkCmd()
-	_networkCmd.PersistentFlags().String("bond-amount", "1000000000000000000000000rowan", "bond amount")
-	_networkCmd.PersistentFlags().String("mint-amount", "999000000000000000000000000rowan", "mint amount")
+	_networkCmd.PersistentFlags().String("bond-amount", "100000000000000rowan", "bond amount")
+	_networkCmd.PersistentFlags().String("mint-amount", "99900000000000000rowan", "mint amount")
 	_networkCmd.AddCommand(networkCreateCmd(), networkResetCmd())
 
 	_nodeCmd := nodeCmd()
@@ -27,8 +27,8 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().String("bind-ip-address", "127.0.0.1", "IPv4 address to bind the node to")
 	_nodeCreateCmd.PersistentFlags().String("peer-address", "", "peer node to connect to")
 	_nodeCreateCmd.PersistentFlags().String("genesis-url", "", "genesis URL")
-	_nodeCreateCmd.PersistentFlags().String("bond-amount", "1000000000000000000000000rowan", "bond amount")
-	_nodeCreateCmd.PersistentFlags().String("mint-amount", "999000000000000000000000000rowan", "mint amount")
+	_nodeCreateCmd.PersistentFlags().String("bond-amount", "100000000000000rowan", "bond amount")
+	_nodeCreateCmd.PersistentFlags().String("mint-amount", "99900000000000000rowan", "mint amount")
 	_nodeCreateCmd.PersistentFlags().Bool("print-details", false, "print the node details")
 	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
