@@ -60,15 +60,21 @@ describe("PeggyService", () => {
     const sifService = await createTestSifService(akasha);
     const ethService = await createTestEthService();
 
+    function getEthAddress() {
+      return ethAccounts[0].public;
+    }
+
+    function getSifAddress() {
+      return akasha.address;
+    }
+
     async function getEthBalance() {
-      const bals = await ethService.getBalance(ethAccounts[0].public, ETH);
-      console.log(bals.map(b => b.toString()));
+      const bals = await ethService.getBalance(getEthAddress(), ETH);
       return bals[0].toBaseUnits();
     }
 
     async function getCethBalance() {
-      const bals = await sifService.getBalance(juniper.address, CETH);
-      console.log(bals.map(b => b.toString()));
+      const bals = await sifService.getBalance(getSifAddress(), CETH);
       return bals[0].toBaseUnits();
     }
 
@@ -79,7 +85,11 @@ describe("PeggyService", () => {
 
     // Send funds to the smart contract
     await new Promise<void>(async done => {
-      EthbridgeService.lockToSifchain(akasha.address, AssetAmount(ETH, "2"), 10)
+      EthbridgeService.lockToSifchain(
+        getSifAddress(),
+        AssetAmount(ETH, "2"),
+        10
+      )
         .onComplete(() => {
           done();
         })
@@ -103,13 +113,13 @@ describe("PeggyService", () => {
     const recipientBalanceBefore = await getEthBalance();
 
     const message = await EthbridgeService.burnToEthereum({
-      fromAddress: akasha.address,
+      fromAddress: getSifAddress(),
       assetAmount: AssetAmount(CETH, "2"),
       feeAmount: AssetAmount(
         Asset.get("ceth"),
         JSBI.BigInt("16164980000000000")
       ),
-      ethereumRecipient: ethAccounts[0].public,
+      ethereumRecipient: getEthAddress(),
     });
 
     // Message has the expected format
@@ -122,11 +132,11 @@ describe("PeggyService", () => {
           {
             type: "ethbridge/MsgBurn",
             value: {
-              cosmos_sender: akasha.address,
+              cosmos_sender: getSifAddress(),
               amount: "2000000000000000000",
               symbol: "ceth",
               ethereum_chain_id: `${ethereumChainId}`,
-              ethereum_receiver: ethAccounts[0].public,
+              ethereum_receiver: getEthAddress(),
             },
           },
         ],
