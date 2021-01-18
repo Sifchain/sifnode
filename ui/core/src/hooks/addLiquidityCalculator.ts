@@ -10,6 +10,7 @@ export enum PoolState {
   INSUFFICIENT_FUNDS,
   VALID_INPUT,
   NO_LIQUIDITY,
+  ZERO_ROWAN,
 }
 
 export function usePoolCalculator(input: {
@@ -129,11 +130,10 @@ export function usePoolCalculator(input: {
   const state = computed(() => {
     if (!input.fromSymbol.value || !input.toSymbol.value)
       return PoolState.SELECT_TOKENS;
-    if (
-      fromField.fieldAmount.value?.equalTo("0") ||
-      toField.fieldAmount.value?.equalTo("0")
-    )
+    if (fromField.fieldAmount.value?.equalTo("0"))
       return PoolState.ZERO_AMOUNTS;
+    if (toField.fieldAmount.value?.equalTo("0"))
+      return PoolState.ZERO_ROWAN;
     if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value) {
       return PoolState.INSUFFICIENT_FUNDS;
     }
