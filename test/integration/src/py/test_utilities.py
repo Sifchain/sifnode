@@ -98,10 +98,13 @@ def get_shell_output(command_line):
     sub = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     subprocess_return = sub.stdout.read().rstrip().decode("utf-8")
     error_return = sub.stderr.read().rstrip().decode("utf-8")
-    if error_return and error_return != "incorrect passphrase":
-        print_error_message(f"error running command: {command_line}\n{error_return}")
+    if sub.returncode is not None:
+        raise Exception(f"error running command: {sub.returncode} for command {command_line}\n{error_return}")
     logging.debug(f"shell command result: {subprocess_return}")
     if error_return:
+        # don't use error level logging here.  The problem is that
+        # lots of times we run a shell script in a loop until it succeeds,
+        # so failures often aren't very important
         logging.debug(f"shell command error: {error_return}")
     return subprocess_return
 
@@ -202,6 +205,10 @@ def wait_for_eth_balance(transfer_request: EthereumToSifchainTransferRequest, ta
     )
 
 
+def normalize_symbol(symbol: str):
+    return symbol.lower()
+
+
 def wait_for_sifchain_addr_balance(
         sifchain_address,
         symbol,
@@ -210,10 +217,12 @@ def wait_for_sifchain_addr_balance(
         max_seconds=30,
         debug_prefix=""
 ):
-    if not max_seconds: max_seconds = 30
-    logging.debug(f"wait_for_sifchain_addr_balance {sifchaincli_node} {symbol} {target_balance}")
+    normalized_symbol = normalize_symbol(symbol)
+    if not max_seconds:
+        max_seconds = 30
+    logging.debug(f"wait_for_sifchain_addr_balance {sifchaincli_node} {normalized_symbol} {target_balance}")
     return wait_for_balance(
-        lambda: int(get_sifchain_addr_balance(sifchain_address, sifchaincli_node, symbol)),
+        lambda: int(get_sifchain_addr_balance(sifchain_address, sifchaincli_node, normalized_symbol)),
         target_balance,
         max_seconds,
         debug_prefix
@@ -343,3 +352,12 @@ network_password = get_required_env_var("OWNER_PASSWORD")
 
 def amount_in_wei(amount):
     return amount * 10 ** 18
+
+
+def ganache_accounts(smart_contracts_dir: str):
+    accounts = run_yarn_command(
+        f"yarn --cwd {smart_contracts_dir} "
+        f"integrationtest:ganacheAccounts"
+    )
+    logging.debug(f"ganache accounts: {accounts}")
+    return accounts
