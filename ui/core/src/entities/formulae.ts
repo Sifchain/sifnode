@@ -9,10 +9,10 @@ export function calcLpUnits(
 ) {
   // Not necessarily native but we will treat it like so as the formulae are symmetrical
   const nativeAssetBalance = amounts.find(
-    (a) => a.asset.symbol === nativeAssetAmount.asset.symbol
+    a => a.asset.symbol === nativeAssetAmount.asset.symbol
   );
   const externalAssetBalance = amounts.find(
-    (a) => a.asset.symbol === externalAssetAmount.asset.symbol
+    a => a.asset.symbol === externalAssetAmount.asset.symbol
   );
 
   if (!nativeAssetBalance || !externalAssetBalance) {
@@ -116,6 +116,7 @@ export function calculateWithdrawal({
 }
 
 export function calculateSwapResult(X: IFraction, x: IFraction, Y: IFraction) {
+  if (x.equalTo("0")) return new Fraction("0");
   return x
     .multiply(X)
     .multiply(Y)
