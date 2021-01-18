@@ -27,7 +27,9 @@ async function waitFor(
   expected: any,
   name: string
 ) {
-  console.log(`Starting wait: "${name}"`);
+  console.log(
+    `Starting wait: "${name}" for value to be ${expected.toString()}`
+  );
   let value: any;
   for (let i = 0; i < 100; i++) {
     await sleep(1000);
@@ -37,7 +39,9 @@ async function waitFor(
       return;
     }
   }
-  throw new Error(`${value.toString()} never was ${expected.toString()}`);
+  throw new Error(
+    `${value.toString()} never was ${expected.toString()} in wait: ${name}`
+  );
 }
 
 describe("PeggyService", () => {
@@ -55,7 +59,7 @@ describe("PeggyService", () => {
   });
 
   // Values here are not working so skipping
-  test.skip("lock and burn eth <-> ceth", async () => {
+  test("lock and burn eth <-> ceth", async () => {
     // Setup services
     const sifService = await createTestSifService(akasha);
     const ethService = await createTestEthService();
@@ -70,11 +74,13 @@ describe("PeggyService", () => {
 
     async function getEthBalance() {
       const bals = await ethService.getBalance(getEthAddress(), ETH);
+      console.log(bals.map(b => b.toString()));
       return bals[0].toBaseUnits();
     }
 
     async function getCethBalance() {
       const bals = await sifService.getBalance(getSifAddress(), CETH);
+      console.log(bals.map(b => b.toString()));
       return bals[0].toBaseUnits();
     }
 
@@ -83,17 +89,17 @@ describe("PeggyService", () => {
     // Check the balance
     const cethBalance = await getCethBalance();
 
+    const amountToLock = AssetAmount(ETH, "3");
+
     // Send funds to the smart contract
     await new Promise<void>(async done => {
-      EthbridgeService.lockToSifchain(
-        getSifAddress(),
-        AssetAmount(ETH, "2"),
-        10
-      )
+      EthbridgeService.lockToSifchain(getSifAddress(), amountToLock, 10)
         .onTxHash(() => {
+          console.log("advancing block on txreceipt");
           advanceBlock(100);
         })
-        .onComplete(() => {
+        .onComplete(async () => {
+          console.log("COMPLETE! 🎸");
           done();
         })
         .onError(err => {
@@ -103,9 +109,9 @@ describe("PeggyService", () => {
 
     const expectedCethAmount = JSBI.add(
       cethBalance,
-      AssetAmount(ETH, "2").toBaseUnits()
+      amountToLock.toBaseUnits()
     );
-
+    await sleep(30 * 1000);
     await waitFor(
       async () => await getCethBalance(),
       expectedCethAmount,
@@ -133,8 +139,9 @@ describe("PeggyService", () => {
       {
         type: "ethbridge/MsgBurn",
         value: {
-          cosmos_sender: getSifAddress(),
           amount: "2000000000000000000",
+          ceth_amount: "16164980000000000",
+          cosmos_sender: getSifAddress(),
           symbol: "ceth",
           ethereum_chain_id: `${ethereumChainId}`,
           ethereum_receiver: getEthAddress(),
