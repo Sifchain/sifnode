@@ -4,10 +4,11 @@ import Layout from "@/components/layout/Layout.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
+import ModalView from "@/components/shared/ModalView.vue";
 import { Asset, PoolState, useRemoveLiquidityCalculator } from "ui-core";
 import { LiquidityProvider } from "ui-core";
 import { useCore } from "@/hooks/useCore";
-
+import { useRoute, useRouter } from 'vue-router';
 import { computed, effect, Ref, toRef } from "@vue/reactivity";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
@@ -15,25 +16,32 @@ import AssetItem from "@/components/shared/AssetItem.vue";
 import Caret from "@/components/shared/Caret.vue";
 import { Fraction } from "ui-core";
 import Slider from "@/components/shared/Slider.vue";
+import ConfirmationDialog, {
+  ConfirmState,
+} from "@/components/confirmationDialog/RemoveConfirmationDialog.vue";
 
 export default defineComponent({
   components: {
     AssetItem,
     Layout,
     Modal,
+    ModalView,
     SelectTokenDialogSif,
     ActionsPanel,
     SifButton,
     Caret,
     Slider,
+    ConfirmationDialog,
   },
   setup() {
     const { store, actions, poolFinder, api } = useCore();
-
+    const route = useRoute();
+    const router = useRouter();
+    const transactionState = ref<ConfirmState>("selecting");
     const asymmetry = ref("0");
     const wBasisPoints = ref("5000");
     const nativeAssetSymbol = ref("rowan");
-    const externalAssetSymbol = ref<string | null>(null);
+    const externalAssetSymbol = ref<string | null>(route.params.externalAsset ? route.params.externalAsset.toString() : null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
     });
@@ -98,7 +106,7 @@ export default defineComponent({
 
         externalAssetSymbol.value = data;
       },
-      async handleNextStepClicked() {
+      handleNextStepClicked() {
         if (
           !externalAssetSymbol.value ||
           !wBasisPoints.value ||
@@ -106,17 +114,43 @@ export default defineComponent({
         )
           return;
 
+        transactionState.value = "confirming";
+      },
+      async handleAskConfirmClicked() {
+        if (
+          !externalAssetSymbol.value ||
+          !wBasisPoints.value ||
+          !asymmetry.value
+        )
+          return;
+
+        transactionState.value = "signing";
         try {
           await actions.clp.removeLiquidity(
             Asset.get(externalAssetSymbol.value),
             wBasisPoints.value,
             asymmetry.value
           );
-          alert("Liquidity Removed");
+          transactionState.value = "confirmed";
         } catch (err) {
-          alert(err);
+          transactionState.value = "failed";
         }
+
         clearFields();
+      },
+
+      transactionModalOpen: computed(() => {
+        return ["confirming", "signing", "confirmed"].includes(
+          transactionState.value
+        );
+      }),
+
+      requestTransactionModalClose() {
+        if (transactionState.value === "confirmed") {
+          router.push("/pool");
+        } else {
+          transactionState.value = "selecting";
+        }
       },
       PoolState,
       wBasisPoints,
@@ -126,6 +160,7 @@ export default defineComponent({
       withdrawNativeAssetAmount,
       connectedText,
       externalAssetSymbol,
+      transactionState
     };
   },
 });
@@ -206,6 +241,19 @@ export default defineComponent({
       :nextStepAllowed="nextStepAllowed"
       :nextStepMessage="nextStepMessage"
     />
+
+    <ModalView
+      :requestClose="requestTransactionModalClose"
+      :isOpen="transactionModalOpen"
+      ><ConfirmationDialog
+        @confirmswap="handleAskConfirmClicked"
+        :state="transactionState"
+        :externalAssetSymbol="externalAssetSymbol"
+        :nativeAssetSymbol="nativeAssetSymbol"
+        :externalAssetAmount="withdrawExternalAssetAmount"
+        :nativeAssetAmount="withdrawNativeAssetAmount"
+        :requestClose="requestTransactionModalClose"
+    /></ModalView>
   </Layout>
 </template>
 
