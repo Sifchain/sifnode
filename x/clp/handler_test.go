@@ -228,9 +228,9 @@ func TestSwap(t *testing.T) {
 	assetDash := clp.NewAsset("dash")
 
 	// Test Parameters for swap
-	initialBalance := sdk.NewInt(10000)  // Initial account balance for all assets created
-	poolBalance := sdk.NewUint(1000)     // Amount funded to pool , This same amount is used both for native and external asset
-	swapSentAssetETH := sdk.NewUint(100) // Amount Swapped
+	initialBalance := sdk.NewInt(10000) // Initial account balance for all assets created
+	poolBalance := sdk.NewUint(1000)    // Amount funded to pool , This same amount is used both for native and external asset
+	swapSentAssetETH := sdk.NewUint(100)
 
 	externalCoin1 := sdk.NewCoin(assetEth.Symbol, initialBalance)
 	externalCoin2 := sdk.NewCoin(assetDash.Symbol, initialBalance)
@@ -239,7 +239,7 @@ func TestSwap(t *testing.T) {
 	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin1, nativeCoin})
 	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin2})
 
-	msg := clp.NewMsgSwap(signer, assetEth, assetDash, sdk.NewUint(1))
+	msg := clp.NewMsgSwap(signer, assetEth, assetDash, sdk.NewUint(1), sdk.NewUint(10))
 	res, err := handler(ctx, msg)
 	require.Error(t, err)
 	require.Nil(t, res)
@@ -254,7 +254,7 @@ func TestSwap(t *testing.T) {
 	require.NotNil(t, res)
 	receivedAmount := CalculateSwapReceived(t, keeper, ctx, assetEth, assetDash, swapSentAssetETH)
 
-	msg = clp.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH)
+	msg = clp.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, receivedAmount)
 	res, err = handler(ctx, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -264,6 +264,11 @@ func TestSwap(t *testing.T) {
 	CoinsExt2 := sdk.NewCoin(assetDash.Symbol, initialBalance.Sub(sdk.Int(poolBalance)).Add(sdk.Int(receivedAmount)))  // Created one pool and Received swap amount
 	ok := keeper.HasCoins(ctx, signer, sdk.Coins{CoinsExt1, CoinsNative, CoinsExt2})
 	assert.True(t, ok, "")
+
+	msg = clp.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, swapSentAssetETH)
+	res, err = handler(ctx, msg)
+	require.Error(t, err)
+	require.Nil(t, res)
 
 }
 

@@ -19,9 +19,22 @@ Running `make` again will run the tests again in the existing environment.
 
 ## Execute
 
-[start-integration-env.sh](./start-integration-env.sh) starts docker instances and runs the integration tests.  The tests are scripts that exit with a non-zero status if they fail.
+[start-integration-env.sh](./start-integration-env.sh) starts 
+sifnoded and ganache.
 
-If you have a clean Ubuntu environment, these two commands will install everything and run the tests:
+Run the tests with:
+
+```
+python3 -m pytest -v src/py/test_*
+```
+
+You can control the log level and which tests are run
+with standard pytest options:
+
+```
+python3 -m pytest -olog_cli=true -olog_level=DEBUG -olog_file=/tmp/log.txt -v src/py/test_rowan_transfers.py::test_transfer_rowan_to_erowan
+```
+If you have a clean Ubuntu environment, these two commands will set up everything you need:
 
 ```
 test/integration/setup-linux-environment.sh

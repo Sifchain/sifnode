@@ -34,7 +34,7 @@ export default defineComponent({
     <WithWallet :connectType="connectType">
       <template v-slot:disconnected="{ requestDialog, connectCta }">
         <div class="wallet-status">
-          No wallet connected <Icon icon="cross" />
+          No wallet connected
         </div>
         <SifButton primary block @click="requestDialog">
           {{ connectCta }}

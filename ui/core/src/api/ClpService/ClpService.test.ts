@@ -135,6 +135,7 @@ test("swap()", async () => {
           value: {
             ReceivedAsset: { symbol: "catk" },
             SentAmount: "1000000000000000000000",
+            MinReceivingAmount:"0",
             SentAsset: { symbol: "cbtk" },
             Signer: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
           },
