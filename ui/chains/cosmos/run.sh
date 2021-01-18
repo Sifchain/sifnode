@@ -46,7 +46,7 @@ sifnoded add-genesis-account $(sifnodecli keys show ${JUNIPER_NAME} -a) 10000000
 
 sifnoded add-genesis-validators $(sifnodecli keys show ${SHADOWFIEND_NAME} -a --bech val)
 
-sifnoded gentx --name ${SHADOWFIEND_NAME} --keyring-backend test
+sifnoded gentx --name ${SHADOWFIEND_NAME} --amount 1000000000000000000000000stake --keyring-backend test
 
 echo "Collecting genesis txs..."
 sifnoded collect-gentxs
