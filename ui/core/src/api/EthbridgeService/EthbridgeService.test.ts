@@ -7,11 +7,12 @@ import {
   createTestEthService,
   createTestSifService,
 } from "../../test/utils/services";
-import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
+import { getTestingTokens } from "../../test/utils/getTestingToken";
 import config from "../../config.localnet.json";
 import Web3 from "web3";
 import JSBI from "jsbi";
 import { sleep } from "../../test/utils/sleep";
+import { waitFor } from "../../test/utils/waitFor";
 
 const [ETH, CETH, ATK, CATK, ROWAN, EROWAN] = getTestingTokens([
   "ETH",
@@ -22,29 +23,7 @@ const [ETH, CETH, ATK, CATK, ROWAN, EROWAN] = getTestingTokens([
   "EROWAN",
 ]);
 
-async function waitFor(
-  getter: () => Promise<any>,
-  expected: any,
-  name: string
-) {
-  console.log(
-    `Starting wait: "${name}" for value to be ${expected.toString()}`
-  );
-  let value: any;
-  for (let i = 0; i < 100; i++) {
-    await sleep(1000);
-    value = await getter();
-    console.log(`${value.toString()} ==? ${expected.toString()}`);
-    if (value.toString() === expected.toString()) {
-      return;
-    }
-  }
-  throw new Error(
-    `${value.toString()} never was ${expected.toString()} in wait: ${name}`
-  );
-}
-
-describe("PeggyService", () => {
+describe("EthbridgeService", () => {
   let EthbridgeService: ReturnType<typeof createEthbridgeService>;
 
   beforeEach(async () => {
@@ -59,29 +38,27 @@ describe("PeggyService", () => {
   });
 
   // Values here are not working so skipping
-  test.skip("lock and burn eth <-> ceth", async () => {
+  test("lock and burn eth <-> ceth", async () => {
     // Setup services
-    const sifService = await createTestSifService(akasha);
+    const sifService = await createTestSifService(juniper);
     const ethService = await createTestEthService();
 
     function getEthAddress() {
-      return ethAccounts[0].public;
+      return ethAccounts[2].public;
     }
 
     function getSifAddress() {
-      return akasha.address;
+      return juniper.address;
     }
 
     async function getEthBalance() {
-      const bals = await ethService.getBalance(getEthAddress(), ETH);
-      console.log(bals.map(b => b.toString()));
-      return bals[0].toBaseUnits();
+      const [bal] = await ethService.getBalance(getEthAddress(), ETH);
+      return bal.toBaseUnits();
     }
 
     async function getCethBalance() {
-      const bals = await sifService.getBalance(getSifAddress(), CETH);
-      console.log(bals.map(b => b.toString()));
-      return bals[0].toBaseUnits();
+      const [bal] = await sifService.getBalance(getSifAddress(), CETH);
+      return bal.toBaseUnits();
     }
 
     const web3 = new Web3(await getWeb3Provider());
@@ -93,13 +70,11 @@ describe("PeggyService", () => {
 
     // Send funds to the smart contract
     await new Promise<void>(async done => {
-      EthbridgeService.lockToSifchain(getSifAddress(), amountToLock, 10)
+      EthbridgeService.lockToSifchain(getSifAddress(), amountToLock, 100)
         .onTxHash(() => {
-          console.log("advancing block on txreceipt");
           advanceBlock(100);
         })
         .onComplete(async () => {
-          console.log("COMPLETE! 🎸");
           done();
         })
         .onError(err => {
@@ -111,7 +86,7 @@ describe("PeggyService", () => {
       cethBalance,
       amountToLock.toBaseUnits()
     );
-    await sleep(30 * 1000);
+
     await waitFor(
       async () => await getCethBalance(),
       expectedCethAmount,
@@ -255,7 +230,6 @@ describe("PeggyService", () => {
           advanceBlock(52);
         })
         .onComplete(async () => {
-          console.log("COMPLETE!! 🍾");
           done();
         })
         .onError(err => {

@@ -114,7 +114,7 @@ export default function createEthbridgeService({
           value: coinDenom === ETH_ADDRESS ? amount : 0,
           gas: 5000000,
         };
-        console.log({ cosmosRecipient, coinDenom, amount, sendArgs });
+
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
           .send(sendArgs)
@@ -167,7 +167,6 @@ export default function createEthbridgeService({
         token_contract_address: tokenAddress,
         ceth_amount: params.feeAmount.toBaseUnits().toString(),
       };
-      console.log({ lockParams });
 
       const lockReceipt = await sifUnsignedClient.lock(lockParams);
 
@@ -204,11 +203,8 @@ export default function createEthbridgeService({
           value: coinDenom === ETH_ADDRESS ? amount : 0,
           gas: 5000000,
         };
-        console.log({ cosmosRecipient, coinDenom, amount, sendArgs });
 
         await approveBridgeBank(fromAddress, assetAmount);
-
-        console.log("bridgebank amount approved! " + assetAmount.toString());
 
         bridgeBankContract.methods
           .burn(cosmosRecipient, coinDenom, amount)
