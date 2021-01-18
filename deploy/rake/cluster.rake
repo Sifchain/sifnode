@@ -78,7 +78,7 @@ namespace :cluster do
   namespace :sifnode do
     namespace :deploy do
       desc "Deploy a single standalone sifnode on to your cluster"
-      task :standalone, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :moniker, :mnemonic, :admin_clp_addresses, :admin_oracle_address] do |t, args|
+      task :standalone, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :moniker, :mnemonic, :admin_clp_addresses, :admin_oracle_address, :minimum_gas_prices] do |t, args|
         check_args(args)
 
         cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
@@ -87,6 +87,7 @@ namespace :cluster do
           --set sifnode.args.mnemonic=#{args[:mnemonic]} \
           --set sifnode.args.adminCLPAddresses=#{args[:admin_clp_addresses]} \
           --set sifnode.args.adminOracleAddress=#{args[:admin_oracle_address]} \
+          --set sifnode.args.minimumGasPrices=#{args[:minimum_gas_prices]} \
           --install -n #{ns(args)} --create-namespace \
           --set image.tag=#{image_tag(args)} \
           --set image.repository=#{image_repository(args)}
@@ -104,8 +105,8 @@ namespace :cluster do
           --set sifnode.env.chainnet=#{args[:chainnet]} \
           --set sifnode.env.moniker=#{args[:moniker]} \
           --set sifnode.args.mnemonic=#{args[:mnemonic]} \
-          --set sifnode.env.peerAddress=#{args[:peer_address]} \
-          --set sifnode.env.genesisURL=#{args[:genesis_url]} \
+          --set sifnode.args.peerAddress=#{args[:peer_address]} \
+          --set sifnode.args.genesisURL=#{args[:genesis_url]} \
           --set image.tag=#{image_tag(args)} \
           --set image.repository=#{image_repository(args)}
         }

@@ -149,6 +149,7 @@ module.exports = async (cb) => {
     };
 
     console.log(lockEvent);
+    console.log(JSON.stringify(lockEvent, undefined, 0))
   } catch (error) {
     console.error({ error });
   }
