@@ -160,22 +160,19 @@ export default defineComponent({
       <div class="section">
         <div class="info">
           <h3 class="mb-2">Liquidity provider rewards</h3>
-          <p class="text--small mb-2">Liquidity providers earn a percentage fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity. To learn more, reference of documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool">here</a></p>
+          <p class="text--small mb-2">Liquidity providers earn a percentage fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity. To learn more, reference of documentation <a target="_blank" href="https://docs.sifchain.finance/core-concepts/liquidity-pool">here</a></p>
         </div>
+      </div>
+      <div class="text--small mt-6 mb-2">
+        <a href="https://blockexplorer-testnet.sifchain.finance/" target="_blank">Blockexplorer</a>
       </div>
       <div class="section footer">
         <div class="mr-1">
-          <div class="text--small mb-6">
-            <a href="#">View pool info</a>
-          </div>
           <router-link :to="`/pool/remove-liquidity/${fromSymbol}`"
             ><SifButton primaryOutline nocase block >Remove Liquidity</SifButton></router-link
           >
         </div>
         <div class="ml-1">
-          <div class="text--small mb-6">
-            <a href="#">Blockexplorer</a>
-          </div>
           <router-link :to="`/pool/add-liquidity/${fromSymbol}`"
             ><SifButton primary nocase block>Add Liquidity</SifButton></router-link
           >
