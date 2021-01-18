@@ -4,7 +4,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/clp/test"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/supply"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -123,7 +123,7 @@ func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 
 func TestKeeper_GetModuleAccount(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
-	moduleAccount := keeper.GetSupplyKeeper().GetModuleAccount(ctx, clp.ModuleName)
+	moduleAccount := keeper.GetAccountKeeper().GetModuleAccount(ctx, clp.ModuleName)
 	assert.Equal(t, moduleAccount.GetName(), clp.ModuleName)
-	assert.Equal(t, moduleAccount.GetPermissions(), []string{supply.Burner, supply.Minter})
+	assert.Equal(t, moduleAccount.GetPermissions(), []string{authtypes.Burner, authtypes.Minter})
 }

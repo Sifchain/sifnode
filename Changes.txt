@@ -1,0 +1,67 @@
+
+Main application
+Required changes have been done
+
+CMD (Depends on the effort required for Ebrelayer)
+Sifnoded : Complete change  - > Done
+Sifnodecli : Complete change - > Done
+Sifgen : Errors need to be fixed
+Ebrelayer : Not sure of the effort required
+
+Tools ( MEDIUM )
+The main keyring interface has been changed
+///*    * [\#5904](https://github.com/cosmos/cosmos-sdk/pull/5904) `Keybase` -> `Keyring` interfaces migration. `LegacyKeybase` interface is added in order
+//  to guarantee limited backward compatibility with the old Keybase interface for the sole purpose of migrating keys across the new keyring backends. `NewLegacy`
+//  constructor is provided [\#5889](https://github.com/cosmos/cosmos-sdk/pull/5889) to allow for smooth migration of keys from the legacy LevelDB based implementation
+//  to new keyring backends. Plus, the package and the new keyring no longer depends on the sdk.Config singleton. Please consult the [package documentation](https://github.com/cosmos/cosmos-sdk/tree/master/crypto/keyring/doc.go) for more
+//  information on how to implement the new `Keyring` interface.
+I am guessing changing the key.go to use the new interface might fix the whole package , but not really sure about this
+
+
+For each modules
+Proto : (MAJOR IN BOLD)
+    Create a proto folder and add required .proto files
+    Write a module to generate cosmos-sdk go bindings for the proto files
+
+    Example :
+    proto-all: proto-format proto-lint proto-gen
+    proto-gen:
+    @echo "Generating Protobuf files"
+    $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./scripts/protocgen.sh
+
+    proto-format:
+    @echo "Formatting Protobuf files"
+    $(DOCKER) run --rm -v $(CURDIR):/workspace \
+    --workdir /workspace tendermintdev/docker-build-proto \
+    find ./ -not -path "./third_party/*" -name *.proto -exec clang-format -i {} \;
+
+    The proto files should go in x/module/types
+
+
+Entry points(MEDIUM)
+    CLI , GRPC   ( Rest will be deprecated soon ) currently the rest calls use
+                   grpc bindings in 0.40)
+
+Keeper (Major)
+    Setup grpc_query.go
+
+    Setup msg_server.go  : Msg server now takes goCtx instead ctx which needs to be unwrapped
+
+Msgs (Major)
+    The msg types defined in the types.go need to be discarded . They will be replaced by the go proto bindings generated from the
+    generator mentioned above .
+
+Handler(Minor)
+    Handlers now use msg server to make state changes, they are responsible for wrapping the ctx into goCtx
+
+Keeper :(Major)
+    Replace supply module with auth module
+    Change the paramsubspace
+    Change Codec
+    All function to get and set need to use new codec.BinaryMarshaler
+    The codec is used throughout the module so almost every function needs to change in some way
+
+Tests :( Major in Bold)
+   New test framework for the grpc server
+   New tests for msg_server
+   Old tests need to be rewritten

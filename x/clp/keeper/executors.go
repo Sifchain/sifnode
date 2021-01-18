@@ -28,7 +28,7 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg types.MsgCre
 	}
 	// Send coins from user to pool
 
-	err = k.supplyKeeper.SendCoinsFromAccountToModule(ctx, msg.Signer, types.ModuleName, sdk.Coins{externalAssetCoin, nativeAssetCoin})
+	err = k.authKeeper.SendCoinsFromAccountToModule(ctx, msg.Signer, types.ModuleName, sdk.Coins{externalAssetCoin, nativeAssetCoin})
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg types.MsgAddLiquidity, pool ty
 		return nil, types.ErrBalanceNotAvailable
 	}
 	// Send from user to pool
-	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, msg.Signer, types.ModuleName, coins)
+	err := k.authKeeper.SendCoinsFromAccountToModule(ctx, msg.Signer, types.ModuleName, coins)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg types.MsgAddLiquidity, pool ty
 }
 
 func (k Keeper) RemoveLiquidityProvider(ctx sdk.Context, coins sdk.Coins, lp types.LiquidityProvider) error {
-	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lp.LiquidityProviderAddress, coins)
+	err := k.authKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lp.LiquidityProviderAddress, coins)
 	if err != nil {
 		return errors.Wrap(types.ErrUnableToAddBalance, err.Error())
 	}
@@ -145,7 +145,7 @@ func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetC
 		if !k.HasCoins(ctx, types.GetCLPModuleAddress(), sendCoins) {
 			return types.ErrNotEnoughLiquidity
 		}
-		err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lp.LiquidityProviderAddress, sendCoins)
+		err = k.authKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lp.LiquidityProviderAddress, sendCoins)
 		if err != nil {
 			return err
 		}
@@ -164,7 +164,7 @@ func (k Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.Acc
 	if !k.HasCoins(ctx, swapper, sdk.Coins{sentCoin}) {
 		return types.ErrBalanceNotAvailable
 	}
-	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, swapper, types.ModuleName, sdk.Coins{sentCoin})
+	err := k.authKeeper.SendCoinsFromAccountToModule(ctx, swapper, types.ModuleName, sdk.Coins{sentCoin})
 	if err != nil {
 		return err
 	}
@@ -184,7 +184,7 @@ func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool types
 	// Case 1 . Adding his ETH and deducting from  RWN:ETH pool
 	// Case 2 , Adding his XCT and deducting from  RWN:XCT pool
 	sentCoin := sdk.NewCoin(msg.ReceivedAsset.Symbol, sentAmountInt)
-	err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, msg.Signer, sdk.Coins{sentCoin})
+	err = k.authKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, msg.Signer, sdk.Coins{sentCoin})
 	if err != nil {
 		return err
 	}

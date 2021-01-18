@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
@@ -77,7 +78,7 @@ var (
 			upgradeclient.ProposalHandler,
 		),
 		params.AppModuleBasic{},
-		//clp.AppModuleBasic{},
+		clp.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
 		//oracle.AppModuleBasic{},
 		//ethbridge.AppModuleBasic{},
@@ -92,7 +93,7 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
 		//ethbridge.ModuleName:      {authtypes.Burner, authtypes.Minter},
-		//clp.ModuleName:            {authtypes.Burner, authtypes.Minter},
+		clp.ModuleName: {authtypes.Burner, authtypes.Minter},
 		//faucet.ModuleName:         {authtypes.Minter},
 	}
 	allowedReceivingModAcc = map[string]bool{
@@ -165,7 +166,7 @@ func NewSifChainApp(
 		upgradetypes.StoreKey,
 		//oracle.StoreKey,
 		//ethbridge.StoreKey,
-		//clp.StoreKey,
+		clp.StoreKey,
 		govtypes.StoreKey,
 		//faucet.StoreKey,
 		distrtypes.StoreKey,
@@ -244,12 +245,12 @@ func NewSifChainApp(
 	//	keys[ethbridge.StoreKey],
 	//)
 
-	//app.clpKeeper = clp.NewKeeper(
-	//	app.cdc,
-	//	keys[clp.StoreKey],
-	//	app.bankKeeper,
-	//	app.SupplyKeeper,
-	//	app.subspaces[clp.ModuleName])
+	app.clpKeeper = clp.NewKeeper(
+		app.cdc,
+		keys[clp.StoreKey],
+		app.bankKeeper,
+		app.SupplyKeeper,
+		app.subspaces[clp.ModuleName])
 
 	//app.faucetKeeper = faucet.NewKeeper(
 	//	app.SupplyKeeper,
