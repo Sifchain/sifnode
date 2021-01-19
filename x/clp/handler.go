@@ -298,18 +298,22 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// If its two swap . this pool would be RWN:EXTERNAL1 ( Ex User sends ETH wants XCT , ETH is EXTERNAL1)
 	//CASE 1 : RWN:ETH
 	//CASE 2 : RWN:ETH
-	inPool, err := keeper.GetPool(ctx, msg.SentAsset.Symbol)
-	if err != nil {
-		return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
+	inPool, outPool := types.Pool{}, types.Pool{}
+	err := errors.New("Blank")
+	if msg.SentAsset != types.GetSettlementAsset() {
+		inPool, err = keeper.GetPool(ctx, msg.SentAsset.Symbol)
+		if err != nil {
+			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
+		}
 	}
 	// If its one swap , this pool would be RWN:EXTERNAL ( Ex User sends RWN wants ETH , ETH IS EXTERNAL )
 	// If its two swap . this pool would be RWN:EXTERNAL2 ( Ex User sends ETH wants XCT , XCT is EXTERNAL2)
 	//CASE 1 : RWN:ETH
 	//CASE 2 : RWN:XCT
-	outPool, err := keeper.GetPool(ctx, msg.ReceivedAsset.Symbol)
-	if err != nil {
-		return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.ReceivedAsset.String())
-	}
+	//outPool, err := keeper.GetPool(ctx, msg.ReceivedAsset.Symbol)
+	//if err != nil {
+	//	return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.ReceivedAsset.String())
+	//}
 
 	// Deducting Balance from the user , Sent Asset is the asset the user is sending to the Pool
 	// Case 1 . Deducting his RWN and adding to RWN:ETH pool
@@ -340,6 +344,18 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		sentAsset = nativeAsset
 		liquidityFee = liquidityFee.Add(lp)
 		tradeSlip = tradeSlip.Add(ts)
+	}
+
+	if msg.ReceivedAsset == types.GetSettlementAsset() {
+		outPool, err = keeper.GetPool(ctx, msg.SentAsset.Symbol)
+		if err != nil {
+			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
+		}
+	} else {
+		outPool, err = keeper.GetPool(ctx, msg.ReceivedAsset.Symbol)
+		if err != nil {
+			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.ReceivedAsset.String())
+		}
 	}
 	// Calculating amount user receives
 	emitAmount, lp, ts, finalPool, err := clpkeeper.SwapOne(sentAsset, sentAmount, receivedAsset, outPool)
