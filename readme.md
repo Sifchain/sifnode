@@ -166,12 +166,12 @@ sifnodecli tx staking create-validator \
     --commission-max-change-rate="0.1" \
     --commission-max-rate="0.1" \
     --commission-rate="0.1" \
-    --amount="1000000000000000000rowan" \
+    --amount="10000000000000000000rowan" \
     --pubkey=$(sifnoded tendermint show-validator) \
     --moniker=<moniker> \
     --chain-id=merry-go-round \
     --min-self-delegation="1" \
-    ---gas-prices="500000000000000000.0rowan" \
+    ---gas-prices="0.5rowan" \
     --from=<moniker> \
     --keyring-backend=file
 ```
