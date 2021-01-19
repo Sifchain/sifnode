@@ -12,6 +12,8 @@ const (
 	AttributeKeySwapAmount           = "swap_amount"
 	AttributeKeyLiquidityFee         = "liquidity_fee"
 	AttributeKeyTradeSlip            = "trade_slip"
+	AttributeKeyInPool               = "in_pool"
+	AttributeKeyOutPool              = "out_pool"
 	AttributeKeyPool                 = "pool"
 	AttributeKeyHeight               = "height"
 	AttributeKeyLiquidityProvider    = "liquidity_provider"
