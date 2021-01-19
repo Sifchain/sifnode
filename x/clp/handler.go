@@ -332,7 +332,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		liquidityFee = liquidityFee.Add(lp)
 		tradeSlip = tradeSlip.Add(ts)
 	}
-	// If receiving  rowan , deduct directly from the Native balance  instead of fetching from rowan pool
+	// If receiving  rowan , add directly to  Native balance  instead of fetching from rowan pool
 	if msg.ReceivedAsset == types.GetSettlementAsset() {
 		outPool, err = keeper.GetPool(ctx, msg.SentAsset.Symbol)
 		if err != nil {
