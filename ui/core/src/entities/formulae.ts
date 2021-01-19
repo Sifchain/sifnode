@@ -1,6 +1,8 @@
 import Big from "big.js";
-import { AssetAmount, IAssetAmount } from "./AssetAmount";
-import { Fraction, IFraction } from "./fraction/Fraction";
+import {AssetAmount, IAssetAmount} from "./AssetAmount";
+import {Fraction, IFraction} from "./fraction/Fraction";
+import {IPool} from "./Pool";
+import JSBI from "jsbi";
 
 export function calcLpUnits(
   amounts: [IAssetAmount, IAssetAmount],
@@ -9,10 +11,10 @@ export function calcLpUnits(
 ) {
   // Not necessarily native but we will treat it like so as the formulae are symmetrical
   const nativeAssetBalance = amounts.find(
-    (a) => a.asset.symbol === nativeAssetAmount.asset.symbol
+    a => a.asset.symbol === nativeAssetAmount.asset.symbol
   );
   const externalAssetBalance = amounts.find(
-    (a) => a.asset.symbol === externalAssetAmount.asset.symbol
+    a => a.asset.symbol === externalAssetAmount.asset.symbol
   );
 
   if (!nativeAssetBalance || !externalAssetBalance) {
@@ -116,6 +118,7 @@ export function calculateWithdrawal({
 }
 
 export function calculateSwapResult(X: IFraction, x: IFraction, Y: IFraction) {
+  if (x.equalTo("0") || Y.equalTo("0")) return new Fraction("0");
   return x
     .multiply(X)
     .multiply(Y)
@@ -159,3 +162,136 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
   const x = numerator.div(denominator);
   return x;
 }
+
+// Formula: ( x^2 * Y ) / ( x + X )^2
+export function calculateProviderFee(X: IFraction, x: IFraction, Y: IFraction) {
+  if (x.equalTo("0") || Y.equalTo("0")) return new Fraction("0");
+  const xPlusX = x.add(X);
+  return x
+    .multiply(x)
+    .multiply(Y)
+    .divide(xPlusX.multiply(xPlusX));
+}
+
+// x * (2*X + x) / (X * X)
+export function calculatePriceImpact(X: IFraction, x: IFraction) {
+  if (x.equalTo("0") || X.equalTo("0")) return new Fraction("0");
+  const numerator = X.multiply("2").add(x);
+  const denominator = X.multiply(X);
+  return x.multiply(numerator).divide(denominator);
+}
+
+export const getSwapSlip = (x: AssetAmount, pool: IPool, toRowan: boolean): IFraction => {
+  // formula: (x) / (x + X)
+  const X = pool.amounts.find(a => (toRowan ? a.asset.symbol === x.asset.symbol : a.asset.symbol !== x.asset.symbol));
+  if (x && X && JSBI.toNumber(x.amount) && JSBI.toNumber(X.amount)) {
+    return x.divide(x.add(X))
+  } else {
+    return new Fraction("0");
+  }
+};
+
+export const getSwapFee = (x: AssetAmount, pool: IPool, toRowan: boolean): AssetAmount => {
+  // formula: (x * x * Y) / (x + X) ^ 2
+  const X = pool.amounts.find(a => (toRowan ? a.asset.symbol === x.asset.symbol : a.asset.symbol !== x.asset.symbol));
+  const Y = pool.amounts.find(a => (toRowan ? a.asset.symbol !== x.asset.symbol : a.asset.symbol === x.asset.symbol));
+  if (x && X && Y && JSBI.toNumber(x.amount) && JSBI.toNumber(X.amount)) {
+    const numerator = x.multiply(x).multiply(Y);
+    const xPlusX = x.add(X);
+    const denominator = xPlusX.multiply(xPlusX);
+    return AssetAmount(Y.asset, numerator.divide(denominator));
+  } else {
+    return AssetAmount(x.asset, "0");
+  }
+};
+
+export const getSwapOutput = (x: AssetAmount, pool: IPool, toRowan: boolean): AssetAmount => {
+  // formula: (x * X * Y) / (x + X) ^ 2
+  const X = pool.amounts.find(a => (toRowan ? a.asset.symbol === x.asset.symbol : a.asset.symbol !== x.asset.symbol));
+  const Y = pool.amounts.find(a => (toRowan ? a.asset.symbol !== x.asset.symbol : a.asset.symbol === x.asset.symbol));
+  if (x && X && Y && JSBI.toNumber(x.amount) && JSBI.toNumber(X.amount)) {
+    const numerator = x.multiply(x).multiply(Y);
+    const xPlusX = x.add(X);
+    const denominator = xPlusX.multiply(xPlusX);
+    return AssetAmount(Y.asset, numerator.divide(denominator));
+  } else {
+    return AssetAmount(x.asset, "0");
+  }
+};
+
+export const getSwapOutputWithFee = (
+  x: AssetAmount,
+  pool: IPool,
+  toRowan: boolean,
+  transactionFee: AssetAmount = AssetAmount(x.asset,"1"),
+): IFraction => {
+  // formula: getSwapOutput() - one rowan
+  const r = getSwapOutput(x, pool, toRowan);
+  const a = pool.amounts.find(a => a.asset.symbol === x.asset.symbol);
+  const b = pool.amounts.find(a => a.asset.symbol !== x.asset.symbol);
+  if (a && b) {
+    const poolAfterTransaction: IPool = toRowan ? {
+      ...pool,
+      amounts: [a, b]
+    } : {
+      ...pool,
+      amounts: [a, b]
+    };
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    const rowanFee = toRowan ? transactionFee : getValueOfRowanInAsset(transactionFee, poolAfterTransaction);
+    return r.subtract(rowanFee);
+  } else {
+    return new Fraction("0");
+  }
+};
+
+export const getDoubleSwapSlip = (x: AssetAmount, pool1: IPool, pool2: IPool): AssetAmount => {
+  // formula: getSwapSlip1(input1) + getSwapSlip2(getSwapOutput1 => input2)
+  const swapSlip1 = getSwapSlip(x, pool1, true);
+  const r = getSwapOutput(x, pool1, true);
+  const swapSlip2 = getSwapSlip(r, pool2, false);
+  return AssetAmount(x.asset, swapSlip1.add(swapSlip2));
+};
+
+export const getValueOfRowanInAsset = (r: AssetAmount, pool: IPool): AssetAmount => {
+  // formula: ((r * A) / R) => A per R ($ per rowan)
+  const R = pool.amounts.find(a => a.asset.symbol !== r.asset.symbol);
+  const A = pool.amounts.find(a => a.asset.symbol === r.asset.symbol);
+  if (A && R && JSBI.toNumber(R.amount)) {
+    return AssetAmount(A.asset, r.multiply(A).divide(R));
+  } else {
+    return AssetAmount(r.asset,"0");
+  }
+};
+
+export const getValueOfAssetInRowan = (x: AssetAmount, pool: IPool): AssetAmount => {
+  // formula: ((a * R) / A) => R per A (rowan per $)
+  const R = pool.amounts.find(a => a.asset.symbol !== x.asset.symbol);
+  const A = pool.amounts.find(a => a.asset.symbol === x.asset.symbol);
+  if (R && A && JSBI.toNumber(A.amount)) {
+    return AssetAmount(R.asset, x.multiply(R).divide(A));
+  } else {
+    return AssetAmount(x.asset,"0");
+  }
+};
+
+export const assetToBase = (asset: AssetAmount): AssetAmount => {
+  return AssetAmount(asset.asset, asset.multiply(JSBI.BigInt(10 ** asset.asset.decimals)).toFixed(0));
+};
+
+export const getValueOfAsset1InAsset2 = (inputAsset: AssetAmount, pool1: IPool, pool2: IPool): AssetAmount => {
+  // formula: (A2 / R) * (R / A1) => A2/A1 => A2 per A1 ($ per Asset)
+  const oneAsset = AssetAmount(inputAsset.asset, 1);
+  const A2perR = getValueOfRowanInAsset(oneAsset, pool2);
+  const RperA1 = getValueOfAssetInRowan(inputAsset, pool1);
+  return AssetAmount(inputAsset.asset, A2perR.multiply(RperA1));
+};
+
+export const getDoubleSwapFee = (x: AssetAmount, pool1: IPool, pool2: IPool): AssetAmount => {
+  // formula: getSwapFee1 + getSwapFee2
+  const fee1 = getSwapFee(x, pool1, true);
+  const r = getSwapOutput(x, pool1, true);
+  const fee2 = getSwapFee(r, pool2, false);
+  const assetValue = getValueOfRowanInAsset(fee1, pool2);
+  return AssetAmount(x.asset, fee2.add(assetValue));
+};
