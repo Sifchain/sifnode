@@ -175,7 +175,7 @@ export function calculateLiquidityFee(
 }
 
 // x * (2*X + x) / (X * X)
-export function calculateTradeSlip(X: IFraction, x: IFraction, Y: IFraction) {
+export function calculateTradeSlip(X: IFraction, x: IFraction) {
   const numerator = X.multiply("2").add(x);
   const denominator = X.multiply(X);
   return x.multiply(numerator).divide(denominator);
