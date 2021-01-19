@@ -13,6 +13,9 @@ sifnodecli tx clp swap --from sif --sentSymbol rowan --receivedSymbol ceth --sen
 sleep 8
 echo "Swap Pegged for Native - Sent ceth Get rowan"
 sifnodecli tx clp swap --from sif --sentSymbol ceth --receivedSymbol rowan --sentAmount 2000000000000000000 --minReceivingAmount 0 --yes
+sleep 8
+echo "Swap Pegged for Pegged - Sent ceth Get cdash"
+sifnodecli tx clp swap --from sif --sentSymbol ceth --receivedSymbol cdash --sentAmount 2000000000000000000 --minReceivingAmount 0 --yes
 
 sifnodecli q clp pools
 
