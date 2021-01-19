@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/tendermint/tendermint/libs/log"
+	"math/big"
 
 	tmos "github.com/tendermint/tendermint/libs/os"
 
@@ -85,6 +86,10 @@ func MakeCodec() *codec.Codec {
 	codec.RegisterEvidences(cdc)
 
 	return cdc.Seal()
+}
+
+func init() {
+	sdk.PowerReduction = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
 }
 
 type SifchainApp struct {
