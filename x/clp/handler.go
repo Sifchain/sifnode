@@ -296,7 +296,6 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	nativeAsset := types.GetSettlementAsset()
 
 	sentAmountInt, ok := keeper.ParseToInt(sentAmount.String())
-
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
@@ -338,6 +337,10 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		if err != nil {
 			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.ReceivedAsset.String())
 		}
+	}
+	f := types.Pool{}
+	if outPool == f {
+		return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.ReceivedAsset.String())
 	}
 	// Calculating amount user receives
 	emitAmount, lp, ts, finalPool, err := clpkeeper.SwapOne(sentAsset, sentAmount, receivedAsset, outPool)
