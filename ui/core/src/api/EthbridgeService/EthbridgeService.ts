@@ -115,6 +115,11 @@ export default function createEthbridgeService({
           gas: 5000000,
         };
 
+        console.log(
+          "lockToSifchain: bridgeBankContract.lock",
+          JSON.stringify({ cosmosRecipient, coinDenom, amount, sendArgs })
+        );
+
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
           .send(sendArgs)
@@ -122,6 +127,7 @@ export default function createEthbridgeService({
             emitter.setTxHash(hash);
           })
           .on("error", (err: any) => {
+            console.log("lockToSifchain: bridgeBankContract.lock ERROR", err);
             handleError(err);
           });
 
@@ -131,6 +137,7 @@ export default function createEthbridgeService({
             txHash,
             confirmations,
             onSuccess() {
+              console.log("lockToSifchain: bridgeBankContract.lock complete");
               emitter.emit({ type: "Complete", payload: null });
             },
             onCheckConfirmation(count) {
@@ -203,8 +210,16 @@ export default function createEthbridgeService({
           value: coinDenom === ETH_ADDRESS ? amount : 0,
           gas: 5000000,
         };
-
+        console.log(
+          "burnToSifchain: approveBridgeBank",
+          JSON.stringify({ fromAddress, assetAmount })
+        );
         await approveBridgeBank(fromAddress, assetAmount);
+
+        console.log(
+          "burnToSifchain: bridgeBankContract.burn",
+          JSON.stringify({ cosmosRecipient, coinDenom, amount, sendArgs })
+        );
 
         bridgeBankContract.methods
           .burn(cosmosRecipient, coinDenom, amount)
@@ -213,6 +228,7 @@ export default function createEthbridgeService({
             emitter.setTxHash(hash);
           })
           .on("error", (err: any) => {
+            console.log("lockToSifchain: bridgeBankContract.burn ERROR", err);
             handleError(err);
           });
 

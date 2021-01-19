@@ -62,7 +62,8 @@ export default function createSifService({
     log: "unset",
   });
 
-  const keplrProvider = getKeplrProvider();
+  const keplrProviderPromise = getKeplrProvider();
+
   let client: SifClient | null = null;
   let closeUpdateListener = () => {};
 
@@ -123,6 +124,8 @@ export default function createSifService({
     },
 
     async connect() {
+      const keplrProvider = await keplrProviderPromise;
+
       // connect to Keplr
       console.log("connect service", keplrChainConfig, keplrProvider);
       if (!keplrProvider) {
