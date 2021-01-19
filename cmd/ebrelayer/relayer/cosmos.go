@@ -6,20 +6,24 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"log"
+	"math/big"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
 
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 	tmKv "github.com/tendermint/tendermint/libs/kv"
 	tmLog "github.com/tendermint/tendermint/libs/log"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	tmTypes "github.com/tendermint/tendermint/types"
-
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 )
 
 // TODO: Move relay functionality out of CosmosSub into a new Relayer parent struct
@@ -112,8 +116,154 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	}
 }
 
+func (sub CosmosSub) getAll(ethFromBlock int64, ethToBlock int64) error {
+	log.Printf("getAll %d %d\n", ethFromBlock, ethToBlock)
+	// Start Ethereum client
+	client, err := ethclient.Dial(sub.EthProvider)
+	if err != nil {
+		log.Printf("%s \n", err.Error())
+		return nil
+	}
+
+	clientChainID, err := client.NetworkID(context.Background())
+	if err != nil {
+		sub.Logger.Error(err.Error())
+		return nil
+	}
+	log.Printf("clientChainID is %d \n", clientChainID)
+
+	// Used to recover address from transaction
+	eIP155Signer := ethTypes.NewEIP155Signer(big.NewInt(1))
+
+	// Load the validator's ethereum address
+	_, err = txs.LoadSender()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	// subContractAddress, err := txs.GetAddressFromBridgeRegistry(client, sub.RegistryContractAddress, txs.CosmosBridge)
+	// if err != nil {
+	// 	sub.Logger.Error(err.Error())
+	// 	return err
+	// }
+
+	CosmosBridgeContractABI := contract.LoadABI(txs.CosmosBridge)
+	methodID := CosmosBridgeContractABI.Methods[types.NewProphecyClaim.String()].ID()
+
+	method := types.NewProphecyClaim.String()
+
+	fmt.Printf("method name is %s %v \n", method, methodID)
+
+	for blockNumber := ethFromBlock; blockNumber < ethToBlock; {
+		fmt.Printf("loop blockNumber is %d \n", blockNumber)
+
+		block, err := client.BlockByNumber(context.Background(), big.NewInt(blockNumber))
+		if err != nil {
+			blockNumber++
+			continue
+		}
+		for _, tx := range block.Transactions() {
+			fmt.Println("tx is ")
+
+			sender, err := eIP155Signer.Sender(tx) // use it to filter
+
+			if err != nil {
+				continue
+			}
+			fmt.Printf("sender is %s \n", sender.String())
+
+			fmt.Println("sender print is over ")
+
+			// to := tx.To() // use it to filter
+			// var data []byte
+			// length := hex.Encode(&data, tx.Data())
+			// data := string(tx.Data())
+			// fmt.Printf("sender is %s \n", string(data))
+
+			// decode txInput method signature
+			// decodedSig, err := hex.DecodeString(string(tx.Data()[2:10]))
+			// if err != nil {
+			// 	fmt.Println("sender print is  1")
+			// 	log.Fatal(err)
+			// }
+
+			// recover Method from signature and ABI
+			// method, err := CosmosBridgeContractABI.MethodById(tx.Data()[1:5])
+			method, err := CosmosBridgeContractABI.MethodById(methodID)
+
+			if err != nil {
+				fmt.Println("sender print is  2")
+				log.Fatal(err)
+			}
+
+			fmt.Printf("Data  is  %v \n", tx.Data())
+
+			decodedData := tx.Data()[5:]
+
+			// decode txInput Payload
+			// decodedData, err := hex.DecodeString(tx.Data()[10:])
+			// if err != nil {
+			// 	fmt.Println("sender print is  3")
+			// 	log.Fatal(err)
+			// }
+
+			// create strut that matches input names to unpack
+			// for example my function takes 2 inputs, with names "Name1" and "Name2" and of type uint256 (solidity)
+
+			// type FunctionInputs struct {
+			// 	ClaimType            uint8
+			// 	CosmosSender         bytes
+			// 	CosmosSenderSequence *big.Int
+
+			// 	EthereumReceiver common.Address
+			// 	Symbol           string
+			// 	Amount           *big.Int
+			// }
+
+			// ClaimType _claimType,
+			// bytes memory _cosmosSender,
+			// uint256 _cosmosSenderSequence,
+			// address payable _ethereumReceiver,
+			// string memory _symbol,
+			// uint256 _amount
+
+			// var functionInputs FunctionInputs
+
+			// unpack method inputs
+			// err = method.Inputs.Unpack(&functionInputs, decodedData)
+
+			argMap := make(map[string]interface{})
+			err = method.Inputs.UnpackIntoMap(argMap, decodedData)
+
+			if err != nil {
+				fmt.Println("sender print is 4")
+				// log.Fatal(err)
+				continue
+			}
+
+			fmt.Println(argMap)
+
+			// message := tx.AsMessage(sender)
+
+		}
+		blockNumber++
+	}
+	return nil
+}
+
 // Replay the missed events
-func (sub CosmosSub) Replay(fromBlock int64, toBlock int64) {
+func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
+	err := sub.getAll(ethFromBlock, ethToBlock)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	if fromBlock > 0 {
+		return
+	}
+
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.Logger.Error("failed to initialize a client", "err", err)
@@ -127,6 +277,12 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64) {
 	}
 
 	defer client.Stop() //nolint:errcheck
+
+	// TODO  junius
+	// read all txs and transform to message from eth block and end eth block
+	// match message to address compare with smart contract address
+	// parse the data to smart contract call, the method and the arguments.
+	// to check if match with msg burn, msg lock.
 
 	for blockNumber := fromBlock; blockNumber < toBlock; {
 		tmpBlockNumber := blockNumber

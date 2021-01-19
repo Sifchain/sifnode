@@ -27,11 +27,13 @@ const (
 	LogBurn
 	// LogNewProphecyClaim is an Ethereum event named 'LogNewProphecyClaim'
 	LogNewProphecyClaim
+	// NewProphecyClaim for newProphecyClaim method in smart contract
+	NewProphecyClaim
 )
 
 // String returns the event type as a string
 func (d Event) String() string {
-	return [...]string{"unsupported", "burn", "lock", "LogLock", "LogBurn", "LogNewProphecyClaim"}[d]
+	return [...]string{"unsupported", "burn", "lock", "LogLock", "LogBurn", "LogNewProphecyClaim", "newProphecyClaim"}[d]
 }
 
 // EthereumEvent struct is used by LogLock and LogBurn

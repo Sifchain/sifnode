@@ -264,6 +264,8 @@ func (sub EthereumSub) Replay(fromBlock *big.Int, toBlock *big.Int) {
 	}
 	for _, log := range logs {
 		fmt.Printf("log is %v", log)
+		// Before deal with it, we need check in cosmos if it is already handled by myself bofore.
+		// TODO junius add validator address in claim log in cosmos side. then check it is already handled.
 		event, isBurnLock, err := sub.logToEvent(clientChainID, subContractAddress, bridgeBankContractABI, log)
 		if err != nil {
 			sub.Logger.Error("Failed to get event from ethereum log")

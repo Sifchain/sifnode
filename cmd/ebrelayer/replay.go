@@ -126,12 +126,6 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 	}
 	contractAddress := common.HexToAddress(args[2])
 
-	// if len(strings.Trim(args[3], "")) == 0 {
-	// 	return errors.Errorf("invalid [validator-moniker]: %s", args[3])
-	// }
-	// validatorMoniker := args[3]
-	// mnemonic := args[4]
-
 	fromBlock, err := strconv.ParseInt(args[3], 10, 64)
 	if err != nil {
 		return errors.Errorf("invalid [from-block]: %s", args[3])
@@ -142,16 +136,23 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [to-block]: %s", args[4])
 	}
 
+	ethFromBlock, err := strconv.ParseInt(args[5], 10, 64)
+	if err != nil {
+		return errors.Errorf("invalid [eth-from-block]: %s", args[3])
+	}
+
+	ethToBlock, err := strconv.ParseInt(args[6], 10, 64)
+	if err != nil {
+		return errors.Errorf("invalid [eth-to-block]: %s", args[4])
+	}
+
 	// Universal logger
 	logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
-
-	// Initialize new Ethereum event listener
-	// inBuf := bufio.NewReader(cmd.InOrStdin())
 
 	// Initialize new Cosmos event listener
 	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)
 
-	cosmosSub.Replay(fromBlock, toBlock)
+	cosmosSub.Replay(fromBlock, toBlock, ethFromBlock, ethToBlock)
 
 	return nil
 }

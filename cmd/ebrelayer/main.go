@@ -209,9 +209,9 @@ func replayEthereumCmd() *cobra.Command {
 func replayCosmosCmd() *cobra.Command {
 	//nolint:lll
 	replayCosmosCmd := &cobra.Command{
-		Use:     "replayCosmos [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [fromBlock] [toBlock]",
+		Use:     "replayCosmos [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [fromBlock] [toBlock] [ethFromBlock] [ethToBlock]",
 		Short:   "replay missed cosmos events",
-		Args:    cobra.ExactArgs(5),
+		Args:    cobra.ExactArgs(7),
 		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 100 200 --chain-id=peggy",
 		RunE:    RunReplayCosmosCmd,
 	}
