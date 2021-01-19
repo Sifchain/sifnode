@@ -2,33 +2,68 @@ import Big from "big.js";
 import { AssetAmount, IAssetAmount } from "./AssetAmount";
 import { Fraction, IFraction } from "./fraction/Fraction";
 
-export function calcLpUnits(
-  amounts: [IAssetAmount, IAssetAmount],
-  nativeAssetAmount: AssetAmount,
-  externalAssetAmount: AssetAmount
-) {
-  // Not necessarily native but we will treat it like so as the formulae are symmetrical
-  const nativeAssetBalance = amounts.find(
-    (a) => a.asset.symbol === nativeAssetAmount.asset.symbol
+function logAmounts(o: any) {
+  console.log(
+    Object.entries(o).reduce((obj, [k, v]: any) => {
+      return {
+        ...obj,
+        [k]: v.toFixed(0),
+      };
+    }, {})
   );
-  const externalAssetBalance = amounts.find(
-    (a) => a.asset.symbol === externalAssetAmount.asset.symbol
-  );
+}
 
-  if (!nativeAssetBalance || !externalAssetBalance) {
-    throw new Error("Pool does not contain given assets");
+// XXX: Struggling with existing pool units being zero for some stupid reason...
+/**
+ *
+ * @param r Native amount added
+ * @param a External amount added
+ * @param R Native Balance (before)
+ * @param A External Balance (before)
+ * @param P Existing Pool Units
+ * @returns
+ */
+export function calculatePoolUnits(
+  r: IFraction, // Native amount added
+  a: IFraction, // External amount added
+  R: IFraction, // Native Balance (before)
+  A: IFraction, // External Balance (before)
+  P: IFraction // existing Pool Units
+) {
+  logAmounts({ r, a, R, A, P });
+  if (A.equalTo("0") || R.equalTo("0")) {
+    return r;
+  }
+  // slipAdjustment = ((R a - r A)/((2 r + R) (a + A)))
+  const slipAdjDenominator = new Fraction("2")
+    .multiply(r)
+    .add(R)
+    .multiply(a.add(A));
+
+  let slipAdjustmentReciprocal: IFraction;
+  if (R.multiply(a).greaterThan(r.multiply(A))) {
+    slipAdjustmentReciprocal = R.multiply(a)
+      .subtract(r.multiply(A))
+      .divide(slipAdjDenominator);
+  } else {
+    slipAdjustmentReciprocal = r
+      .multiply(A)
+      .subtract(R.multiply(a))
+      .divide(slipAdjDenominator);
   }
 
-  const R = nativeAssetBalance.add(nativeAssetAmount);
-  const A = externalAssetBalance.add(externalAssetAmount);
-  const r = nativeAssetAmount;
-  const a = externalAssetAmount;
-  const term1 = R.add(A); // R + A
-  const term2 = r.multiply(A).add(R.multiply(a)); // r * A + R * a
-  const numerator = term1.multiply(term2);
-  const denominator = R.multiply(A).multiply("4");
-  return numerator.divide(denominator);
+  // (1 - ABS((R a - r A)/((2 r + R) (a + A))))
+  const slipAdjustment = new Fraction("1").subtract(slipAdjustmentReciprocal);
+
+  // ((P (a R + A r))
+  const numerator = P.multiply(a.multiply(R).add(A.multiply(r)));
+  const denominator = new Fraction("2").multiply(A).multiply(R);
+
+  const units = numerator.divide(denominator).multiply(slipAdjustment);
+
+  return units;
 }
+
 function abs(num: Fraction) {
   if (num.lessThan("0")) {
     return num.multiply("-1");
