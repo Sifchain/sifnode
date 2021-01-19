@@ -46,7 +46,7 @@ rake "keys:generate:mnemonic"
 6. Scaffold your node:
 
 ```
-rake "genesis:sifnode:scaffold[merry-go-round, <moniker>, '<mnemonic>', '', ff0dd55dffa0e67fe21e2c85c80b0c2894bf2586@52.89.19.109:26656, http://52.89.19.109:26657/genesis]"
+rake "genesis:sifnode:scaffold[merry-go-round, <moniker>, '<mnemonic>', '', a00c8a5f07d87754e9a2d428ad7e1877dbe12ddd@35.165.17.164:26656, http://35.165.17.164:26657/genesis]"
 ```
 
 * Replace `<moniker>` with the moniker (name) of your node. 
@@ -67,7 +67,7 @@ and your node will start synchronizing with the network. Please note that this m
 1. Checkout the latest testnet release:
 
 ```
-git fetch && git checkout tags/merry-go-round-1
+git fetch && git checkout tags/merry-go-round-2
 ```
 
 2. Build:
@@ -85,13 +85,13 @@ sifnoded unsafe-reset-all
 4. Download the new genesis file:
 
 ```
-curl http://52.89.19.109:26657/genesis | jq '.result.genesis' > ~/.sifnoded/config/genesis.json
+curl http://35.165.17.164:26657/genesis | jq '.result.genesis' > ~/.sifnoded/config/genesis.json
 ```
 
 5. Update your persistent peers in the file `~/.sifnoded/config/config.toml` so that it reads: 
 
 ```
-persistent_peers = "ff0dd55dffa0e67fe21e2c85c80b0c2894bf2586@52.89.19.109:26656,8e58e41e9e47c53f63755d60fe0f35286a96b70f@54.74.58.153:26656,853ae9203af1606ca3497b845f775ece249be5ff@13.54.242.178:26656,910336f8e1342915c3adc40a73a6924d4d974c85@3.0.235.227:26656"
+persistent_peers = "a00c8a5f07d87754e9a2d428ad7e1877dbe12ddd@35.165.17.164:26656,231a0b22837c1ad627d34748ac27e21f540dbb87@54.195.149.238:26656,69b0b8fe353ea3e25b23fad18796056bdf5ce9c1@3.24.153.2:26656,38305e1e64fadb5f1201819d4a1d41f4f83cee60@52.77.101.121:26656"
 ```
 
 6. Start your node:
@@ -114,22 +114,22 @@ and you should see the following primary validator node/s for Sifchain:
 
 ```
 validators:
-- address: sifvalcons1z8jyamggawyute8m7a6tfk76whdegz4hhu47kx
-  pubkey: sifvalconspub1zcjduepq5geuxq3kyuwayc9ht82y997ncmh3qfe4eqg837kmf6d3tnyspemq6e83zz
-  proposerpriority: 5625
-  votingpower: 5000
-- address: sifvalcons1rya4cf6ejuzsn3qv5c97j3spsr70dwftdygktq
-  pubkey: sifvalconspub1zcjduepqewcxpth6dtk82f826gh5te07xyuk04t9y8dg63ndkngsr79dtu0skarrel
-  proposerpriority: 4375
-  votingpower: 5000
-- address: sifvalcons1tzsa80axse3urga7vcck2r638awkgfj6sddm8q
-  pubkey: sifvalconspub1zcjduepqdp72sdqtwjujpqlzfg0ku8smark7832ck4440nnqh5yz7yly78fsc0sjqx
-  proposerpriority: 3125
-  votingpower: 5000
-- address: sifvalcons1s00sdg5z5wv89yxjc66ft6uaf0lcqphvef4f9h
-  pubkey: sifvalconspub1zcjduepq25y7tsy0c9f0d7u43x7csfpry7t5ur4lcemfdjcrkctjv4hv7taqxvvhx7
-  proposerpriority: -13125
-  votingpower: 5000
+- address: sifvalcons1rcwmttxswcc8sqq5rp4ysj4gl8963a0kkfl7kc
+  pubkey: sifvalconspub1zcjduepqdgnxx8hl83tukd7ly2dg3jr5rf625na5p4vx0ccxqemkxr7f2wtsahhpyq
+  proposerpriority: -375000
+  votingpower: 1000000
+- address: sifvalcons1hd3u9fy64saqcndxgmwqcqlg8xt67x8vl9wse2
+  pubkey: sifvalconspub1zcjduepqj6fmv5pqdg9xfpuydmzv3lupve6cr4uefmfmvpmc54qwhmeh64qqc26amp
+  proposerpriority: 125000
+  votingpower: 1000000
+- address: sifvalcons16n3fc45snzmhp8evw5pwlevff2t2rc6lk5de2g
+  pubkey: sifvalconspub1zcjduepqr3mjukr0hzr8xce22lfxq4fhwp8wwflga8jea3yzerf0rhr6m0uq5zf37k
+  proposerpriority: -125000
+  votingpower: 1000000
+- address: sifvalcons1mgqwmk7le4geddltf8m0y2y5ym7sk823n0jdp0
+  pubkey: sifvalconspub1zcjduepqg5gwfe0eymzu8zqkuyhkqvfjqyd4d6rslm5qx3guxmj8jzjhrzzqwnu444
+  proposerpriority: 375000
+  votingpower: 1000000
 ```
 
 Congratulations. You are now connected to the network.
@@ -139,10 +139,10 @@ Congratulations. You are now connected to the network.
 The following can be used as additional peers on the network:
 
 ```
-ff0dd55dffa0e67fe21e2c85c80b0c2894bf2586@52.89.19.109:26656
-8e58e41e9e47c53f63755d60fe0f35286a96b70f@54.74.58.153:26656
-853ae9203af1606ca3497b845f775ece249be5ff@13.54.242.178:26656
-910336f8e1342915c3adc40a73a6924d4d974c85@3.0.235.227:26656
+a00c8a5f07d87754e9a2d428ad7e1877dbe12ddd@35.165.17.164:26656
+231a0b22837c1ad627d34748ac27e21f540dbb87@54.195.149.238:26656
+69b0b8fe353ea3e25b23fad18796056bdf5ce9c1@3.24.153.2:26656
+38305e1e64fadb5f1201819d4a1d41f4f83cee60@52.77.101.121:26656
 ```
 
 #### Become a Validator
@@ -164,12 +164,12 @@ sifnodecli tx staking create-validator \
     --commission-max-change-rate="0.1" \
     --commission-max-rate="0.1" \
     --commission-rate="0.1" \
-    --amount=1000000000rowan \
+    --amount="1000000000000000000rowan" \
     --pubkey=$(sifnoded tendermint show-validator) \
     --moniker=<moniker> \
     --chain-id=merry-go-round \
     --min-self-delegation="1" \
-    --gas="auto" \
+    ---gas-prices="500000000000000000.0rowan" \
     --from=<moniker> \
     --keyring-backend=file
 ```
