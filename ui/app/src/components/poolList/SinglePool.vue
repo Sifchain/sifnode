@@ -18,6 +18,7 @@ export default defineComponent({
   },
 
   setup(props) {
+    const { config } = useCore();
     // TODO This needs tidying up poor componentization
     // useAssetItem should not really be used outside of a display component
     const thePool = computed(() => props.accountPool?.pool);
@@ -77,6 +78,7 @@ export default defineComponent({
       toValue,
       myPoolUnits,
       myPoolShare,
+      chainId: config.sifChainId,
     };
   },
 });
@@ -160,7 +162,15 @@ export default defineComponent({
       <div class="section">
         <div class="info">
           <h3 class="mb-2">Liquidity provider rewards</h3>
-          <p class="text--small mb-2">Liquidity providers earn a percentage fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity. To learn more, reference of documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool">here</a></p>
+          <p class="text--small mb-2">
+            Liquidity providers earn a percentage fee on all trades proportional
+            to their share of the pool. Fees are added to the pool, accrue in
+            real time and can be claimed by withdrawing your liquidity. To learn
+            more, reference of documentation
+            <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool"
+              >here</a
+            >
+          </p>
         </div>
       </div>
       <div class="section footer">
@@ -169,15 +179,21 @@ export default defineComponent({
             <a href="#">View pool info</a>
           </div>
           <router-link :to="`/pool/remove-liquidity/${fromSymbol}`"
-            ><SifButton primaryOutline nocase block >Remove Liquidity</SifButton></router-link
+            ><SifButton primaryOutline nocase block
+              >Remove Liquidity</SifButton
+            ></router-link
           >
         </div>
         <div class="ml-1">
           <div class="text--small mb-6">
-            <a href="#">Blockexplorer</a>
+            <a :href="`https://blockexplorer-${chainId}.sifchain.finance/`"
+              >Blockexplorer</a
+            >
           </div>
           <router-link :to="`/pool/add-liquidity/${fromSymbol}`"
-            ><SifButton primary nocase block>Add Liquidity</SifButton></router-link
+            ><SifButton primary nocase block
+              >Add Liquidity</SifButton
+            ></router-link
           >
         </div>
       </div>
