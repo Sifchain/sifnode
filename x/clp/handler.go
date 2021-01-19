@@ -295,23 +295,13 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// Get native asset
 	nativeAsset := types.GetSettlementAsset()
 
-	inPool, outPool := types.Pool{}, types.Pool{}
-	err := errors.New("Swap Error")
-	// If sending rowan ,deduct directly from the Native balance  instead of fetching from rowan pool
-	if msg.SentAsset != types.GetSettlementAsset() {
-		inPool, err = keeper.GetPool(ctx, msg.SentAsset.Symbol)
-		if err != nil {
-			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
-		}
-	}
-
 	sentAmountInt, ok := keeper.ParseToInt(sentAmount.String())
 
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
 	sentCoin := sdk.NewCoin(msg.SentAsset.Symbol, sentAmountInt)
-	err = keeper.InitiateSwap(ctx, sentCoin, msg.Signer)
+	err := keeper.InitiateSwap(ctx, sentCoin, msg.Signer)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 	}
@@ -319,6 +309,10 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// If its one way we can skip this if condition and add balance to users account from outpool
 
 	if msg.SentAsset != nativeAsset && msg.ReceivedAsset != nativeAsset {
+		inPool, err := keeper.GetPool(ctx, msg.SentAsset.Symbol)
+		if err != nil {
+			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
+		}
 		emitAmount, lp, ts, finalPool, err := clpkeeper.SwapOne(sentAsset, sentAmount, nativeAsset, inPool)
 		if err != nil {
 			return nil, err
@@ -332,6 +326,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		liquidityFee = liquidityFee.Add(lp)
 		tradeSlip = tradeSlip.Add(ts)
 	}
+	outPool := types.Pool{}
 	// If receiving  rowan , add directly to  Native balance  instead of fetching from rowan pool
 	if msg.ReceivedAsset == types.GetSettlementAsset() {
 		outPool, err = keeper.GetPool(ctx, msg.SentAsset.Symbol)
