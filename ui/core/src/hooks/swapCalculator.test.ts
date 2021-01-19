@@ -11,6 +11,8 @@ describe("swapCalculator", () => {
   const fromSymbol: Ref<string | null> = ref(null);
   const toAmount: Ref<string> = ref("0");
   const toSymbol: Ref<string | null> = ref(null);
+  const priceImpact: Ref<string | null> = ref(null);
+  const providerFee: Ref<string | null> = ref(null);
   const balances = ref([]) as Ref<IAssetAmount[]>;
   const selectedField: Ref<"from" | "to" | null> = ref("from");
 
@@ -49,6 +51,8 @@ describe("swapCalculator", () => {
       selectedField,
       toSymbol,
       poolFinder,
+      priceImpact,
+      providerFee
     }));
     selectedField.value = "from";
     expect(state.value).toBe(SwapState.SELECT_TOKENS);
@@ -137,6 +141,8 @@ describe("swapCalculator", () => {
       selectedField,
       toSymbol,
       poolFinder,
+      priceImpact,
+      providerFee
     }));
 
     selectedField.value = "from";
