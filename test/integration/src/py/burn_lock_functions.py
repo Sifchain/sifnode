@@ -75,6 +75,8 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
 
     target_balance = sifchain_starting_balance + transfer_request.amount
 
+    # You can't get the balance of an account that doesn't exist yet,
+    # so wait for the account to be there before asking for the balance
     logging.debug(f"wait for account {transfer_request.sifchain_address}")
     wait_for_sif_account(
         sif_addr=transfer_request.sifchain_address,
@@ -96,7 +98,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
         "sifchain_ending_balance": target_balance,
         "send_tx": send_tx
     }
-    logging.debug(f"account created {result}")
+    logging.debug(f"transfer_ethereum_to_sifchain completed {result}")
     return result
 
 
