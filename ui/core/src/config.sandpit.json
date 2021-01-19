@@ -2,8 +2,45 @@
   "sifAddrPrefix": "sif",
   "sifApiUrl": "https://lcd-sandpit.sifchain.finance/",
   "sifWsUrl": "wss://rpc-sandpit.sifchain.finance/websocket",
+  "sifRpcUrl": "https://rpc-sandpit.sifchain.finance/",
   "sifChainId": "sandpit",
   "web3Provider": "metamask",
   "nativeAsset": "rowan",
-  "bridgebankContractAddress": "0xa5658e85bc7AC7F0388E60E58BEd5aFB41143330"
+  "bridgebankContractAddress": "0xD67F01EdA3541BBf0D17A87BBe8B30E21A822B26",
+  "keplrChainConfig": {
+    "chainName": "Sifchain",
+    "chainId": "",
+    "rpc": "",
+    "rest": "", 
+    "stakeCurrency": {
+      "coinDenom": "ROWAN",
+      "coinMinimalDenom": "rowan",
+      "coinDecimals": 18
+    },
+    "bip44": {
+      "coinType": 118
+    },
+    "bech32Config": {
+      "bech32PrefixAccAddr": "sif",
+      "bech32PrefixAccPub": "sifpub",
+      "bech32PrefixValAddr": "sifvaloper",
+      "bech32PrefixValPub": "sifvaloperpub",
+      "bech32PrefixConsAddr": "sifvalcons",
+      "bech32PrefixConsPub": "sifvalconspub"
+    },
+    "currencies": [],
+    "feeCurrencies": [
+      {
+        "coinDenom": "ROWAN",
+        "coinMinimalDenom": "rowan",
+        "coinDecimals": 18
+      }
+    ],
+    "coinType": 118,
+    "gasPriceStep": {
+      "low": 0.5,
+      "average": 0.65,
+      "high": 0.8
+    }
+  }
 }

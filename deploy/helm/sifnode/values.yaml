@@ -27,7 +27,7 @@ sifnode:
     peerAddress:
     adminCLPAddresses: ""
     adminOracleAddress: ""
-    minimumGasPrices: "0.5rowan"
+    minimumGasPrices: "500000000000000000.0rowan"
   env:
     daemonHome: "/root/.sifnoded"
     daemonName: "sifnoded"

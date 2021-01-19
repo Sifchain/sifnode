@@ -61,7 +61,7 @@ export default defineComponent({
 
     async function handlePeg() {
       try {
-        await actions.peg.lock(
+        await actions.peg.peg(
           AssetAmount(Asset.get(symbol.value), amount.value)
         );
         router.push("/peg");
@@ -72,7 +72,7 @@ export default defineComponent({
 
     async function handleUnpeg() {
       try {
-        await actions.peg.burn(
+        await actions.peg.unpeg(
           AssetAmount(Asset.get(symbol.value), amount.value)
         );
         router.push("/peg");
