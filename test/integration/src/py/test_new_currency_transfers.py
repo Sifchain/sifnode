@@ -45,88 +45,15 @@ def build_request(new_currency, amount):
     return request
 
 
-@pytest.mark.xfail
 def test_can_create_a_new_token_with_a_one_number_name_and_peg_it():
-    new_account_key = "0"
+    new_account_key = "Foo"
     amount = amount_in_wei(9)
     new_currency = create_new_currency(amount, new_account_key)
     request1 = build_request(new_currency, amount)
     burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
 
-
-@pytest.mark.xfail
-def test_can_create_a_new_token_with_a_one_letter_name_and_peg_it():
-    new_account_key = "a"
+    new_account_key = "foo"
     amount = amount_in_wei(9)
     new_currency = create_new_currency(amount, new_account_key)
-    request1 = build_request(new_currency, amount)
-    burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
-
-
-@pytest.mark.xfail
-def test_can_create_a_new_token_with_a_long_name_and_peg_it():
-    new_account_key = "ca36e47edfeb28489d8e110fb91d351bcd"
-    amount = amount_in_wei(9)
-    new_currency = create_new_currency(amount, new_account_key)
-    request1 = build_request(new_currency, amount)
-    burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
-
-
-def test_can_create_a_new_token_with_a_7_char_name_and_peg_it():
-    new_account_key = ("a" + get_shell_output("uuidgen").replace("-", ""))[:7]
-    amount = amount_in_wei(9)
-    new_currency = create_new_currency(amount, new_account_key)
-    request1 = build_request(new_currency, amount)
-    burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
-
-
-def test_can_create_dai_and_peg_it():
-    new_account_key = "Dai"
-    amount = amount_in_wei(9)
-    new_currency = create_new_currency(amount, new_account_key)
-    request1 = build_request(new_currency, amount)
-    burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
-
-
-@pytest.mark.xfail
-def test_two_currencies_with_different_capitalization_should_not_interfere_with_each_other():
-    new_account_key = ("a" + get_shell_output("uuidgen").replace("-", "").lower())[:5]
-    amount = amount_in_wei(9)
-
-    new_currency = create_new_currency(amount, new_account_key)
-    request1 = build_request(new_currency, amount)
-    burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
-    balance_1 = get_sifchain_addr_balance(request1.sifchain_address, request1.sifnodecli_node, request1.sifchain_symbol)
-    assert(balance_1 == request1.amount)
-
-    new_currency = create_new_currency(amount, new_account_key.upper)
-    request2 = build_request(new_currency, amount + 70000)
+    request2 = build_request(new_currency, amount)
     burn_lock_functions.transfer_ethereum_to_sifchain(request2, 10)
-
-    balance_1_again = get_sifchain_addr_balance(request1.sifchain_address, request1.sifnodecli_node, request1.sifchain_symbol)
-
-    assert(balance_1 == balance_1_again)
-
-
-@pytest.mark.xfail
-def test_cannot_create_two_currencies_that_only_differ_in_capitalization():
-    new_account_key = get_shell_output("uuidgen").replace("-", "").lower()
-    create_new_currency(amount_in_wei(10), new_account_key)
-    with pytest.raises(Exception):
-        create_new_currency(amount_in_wei(10), new_account_key.upper())
-
-
-@pytest.mark.xfail
-def test_cannot_create_two_currencies_with_the_same_name():
-    new_account_key = get_shell_output("uuidgen").replace("-", "")
-    create_new_currency(amount_in_wei(10), new_account_key)
-    with pytest.raises(Exception):
-        create_new_currency(amount_in_wei(10), new_account_key)
-
-
-@pytest.mark.xfail
-def test_can_use_a_token_with_a_dash_in_the_name():
-    n = "a-b"
-    new_currency = create_new_currency(amount_in_wei(10), n)
-    request = build_request(new_currency, 60000)
-    burn_lock_functions.transfer_ethereum_to_sifchain(request, 10)
