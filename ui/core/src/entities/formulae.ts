@@ -162,7 +162,11 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
 }
 
 // Formula: ( x^2 * Y ) / ( x + X )^2
-export function calculateSlipFee(X: IFraction, x: IFraction, Y: IFraction) {
+export function calculateLiquidityFee(
+  X: IFraction,
+  x: IFraction,
+  Y: IFraction
+) {
   const xPlusX = x.add(X);
   return x
     .multiply(x)
@@ -171,7 +175,7 @@ export function calculateSlipFee(X: IFraction, x: IFraction, Y: IFraction) {
 }
 
 // x * (2*X + x) / (X * X)
-export function tradeSlip(X: IFraction, x: IFraction, Y: IFraction) {
+export function calculateTradeSlip(X: IFraction, x: IFraction, Y: IFraction) {
   const numerator = X.multiply("2").add(x);
   const denominator = X.multiply(X);
   return x.multiply(numerator).divide(denominator);
