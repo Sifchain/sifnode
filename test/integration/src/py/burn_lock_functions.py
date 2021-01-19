@@ -113,7 +113,7 @@ def transfer_sifchain_to_ethereum(
     sifchain_starting_balance = get_sifchain_addr_balance(
         transfer_request.sifchain_address,
         transfer_request.sifnodecli_node,
-        transfer_request.sifchain_symbol
+        transfer_request.sifchain_symbol.lower()
     )
 
     status = {
@@ -136,7 +136,7 @@ def transfer_sifchain_to_ethereum(
     sifchain_ending_balance = get_sifchain_addr_balance(
         transfer_request.sifchain_address,
         transfer_request.sifnodecli_node,
-        transfer_request.sifchain_symbol
+        transfer_request.sifchain_symbol.lower()
     )
 
     logging.debug(f"transfer_sifchain_to_ethereum_complete_json: {json.dumps(send_tx)}")

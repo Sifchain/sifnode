@@ -1,3 +1,5 @@
+import copy
+import logging
 import os
 
 import pytest
@@ -45,15 +47,22 @@ def build_request(new_currency, amount):
     return request
 
 
-def test_can_create_a_new_token_with_a_one_number_name_and_peg_it():
+def test_reproduce_safe_erc20_bug():
     new_account_key = "Foo"
     amount = amount_in_wei(9)
     new_currency = create_new_currency(amount, new_account_key)
     request1 = build_request(new_currency, amount)
     burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
 
-    new_account_key = "foo"
-    amount = amount_in_wei(9)
-    new_currency = create_new_currency(amount, new_account_key)
-    request2 = build_request(new_currency, amount)
-    burn_lock_functions.transfer_ethereum_to_sifchain(request2, 10)
+    logging.info("get ceth to pay lock/burn fees")
+    eth_request: EthereumToSifchainTransferRequest = copy.deepcopy(request1)
+    eth_request.sifchain_symbol = "ceth"
+    eth_request.ethereum_symbol = "eth"
+    eth_request.ethereum_address = bridgebank_address
+    burn_lock_functions.transfer_ethereum_to_sifchain(eth_request, 5)
+
+    ceth_balance = get_sifchain_addr_balance(eth_request.sifchain_address, eth_request.sifnodecli_node, eth_request.sifchain_symbol)
+    logging.info(f"ceth balance is {ceth_balance}")
+
+    return_request: EthereumToSifchainTransferRequest = copy.deepcopy(request1)
+    burn_lock_functions.transfer_sifchain_to_ethereum(return_request)

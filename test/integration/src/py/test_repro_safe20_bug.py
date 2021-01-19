@@ -12,6 +12,7 @@ from test_utilities import get_required_env_var, get_shell_output, amount_in_wei
 
 smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
 bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
+bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
 
 
 def create_new_currency(amount, symbol):
@@ -34,32 +35,37 @@ def build_request(new_currency, amount):
     request = EthereumToSifchainTransferRequest(
         ethereum_symbol=new_currency["newtoken_address"],
         sifchain_symbol="c" + new_currency["newtoken_symbol"],
-        sifchain_address=get_required_env_var("OWNER_ADDR"),
+        sifchain_address=new_addr["address"],
         smart_contracts_dir=smart_contracts_dir,
         ethereum_address=accounts["accounts"][0],
         ethereum_private_key_env_var="ETHEREUM_PRIVATE_KEY",
         bridgebank_address=get_required_env_var("BRIDGE_BANK_ADDRESS"),
+        bridgetoken_address=bridgetoken_address,
         ethereum_network=(os.environ.get("ETHEREUM_NETWORK") or ""),
         amount=amount,
         ceth_amount=2 * (10 ** 16)
     )
 
-    return request
+    return (request, credentials)
 
 
-def test_reproduce_safe_erc20_bug():
+def test_transfer_tokens_with_a_capital_letter_in_the_name():
     new_account_key = "Foo"
     amount = amount_in_wei(9)
     new_currency = create_new_currency(amount, new_account_key)
-    request1 = build_request(new_currency, amount)
-    burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
+    (foo_request, credentials) = build_request(new_currency, amount)
+    burn_lock_functions.transfer_ethereum_to_sifchain(foo_request, 10)
 
     logging.info("get ceth to pay lock/burn fees")
-    eth_request: EthereumToSifchainTransferRequest = copy.deepcopy(request1)
+    accounts = ganache_accounts(smart_contracts_dir=smart_contracts_dir)
+    eth_request: EthereumToSifchainTransferRequest = copy.deepcopy(foo_request)
     eth_request.sifchain_symbol = "ceth"
     eth_request.ethereum_symbol = "eth"
-    eth_request.ethereum_address = bridgebank_address
-    burn_lock_functions.transfer_ethereum_to_sifchain(request1, 5)
+    eth_request.ethereum_address=accounts["accounts"][0]
+    eth_request.bridgebank_address=bridgebank_address
+    eth_request.bridgetoken_address=bridgetoken_address
+    burn_lock_functions.transfer_ethereum_to_sifchain(eth_request, 5)
 
-    return_request: EthereumToSifchainTransferRequest = copy.deepcopy(request1)
-    burn_lock_functions.transfer_sifchain_to_ethereum(return_request)
+    logging.info("sending cFoo back to ethereum")
+    return_request: EthereumToSifchainTransferRequest = copy.deepcopy(foo_request)
+    burn_lock_functions.transfer_sifchain_to_ethereum(return_request, credentials)

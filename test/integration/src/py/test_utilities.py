@@ -245,7 +245,7 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
                    f"{transfer_request.sifchain_address} " \
                    f"{transfer_request.ethereum_address} " \
                    f"{transfer_request.amount} " \
-                   f"{transfer_request.sifchain_symbol} " \
+                   f"{normalize_symbol(transfer_request.sifchain_symbol)} " \
                    f"{transfer_request.ceth_amount} " \
                    f"{keyring_backend_entry} " \
                    f"--ethereum-chain-id={transfer_request.ethereum_chain_id} " \
