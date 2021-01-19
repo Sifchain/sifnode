@@ -21,6 +21,7 @@ type BurnOrLockReq = {
 export interface EthbridgeExtension {
   readonly ethbridge: {
     burn: (params: BurnOrLockReq) => Promise<Msg>;
+    lock: (params: BurnOrLockReq) => Promise<Msg>;
   };
 }
 
@@ -28,7 +29,12 @@ export function setupEthbridgeExtension(base: LcdClient): EthbridgeExtension {
   return {
     ethbridge: {
       burn: async params => {
+        console.log(`/ethbridge/burn`, JSON.stringify(params, null, 2));
         return await base.post(`/ethbridge/burn`, params);
+      },
+      lock: async params => {
+        console.log(`/ethbridge/lock`, JSON.stringify(params, null, 2));
+        return await base.post(`/ethbridge/lock`, params);
       },
     },
   };
