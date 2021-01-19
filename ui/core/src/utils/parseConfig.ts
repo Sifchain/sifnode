@@ -99,12 +99,6 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
     token => token.symbol === "erowan"
   ) as Token).address;
 
-  // HACK: Filtering out our testing tokens if not in CI for the demo
-  const HACK_blacklist = process.env.CI ? [] : ["atk", "btk", "catk", "cbtk"];
-  const HACK_filteredAssets = assets.filter(
-    a => !HACK_blacklist.includes(a.symbol)
-  );
-
   return {
     sifAddrPrefix: config.sifAddrPrefix,
     sifApiUrl: config.sifApiUrl,
@@ -114,7 +108,7 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
       config.web3Provider === "metamask"
         ? getMetamaskProvider
         : async () => config.web3Provider,
-    assets: HACK_filteredAssets,
+    assets,
     nativeAsset,
     bridgebankContractAddress: config.bridgebankContractAddress,
     bridgetokenContractAddress,
