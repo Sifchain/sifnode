@@ -299,6 +299,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// If sending rowan ,deduct directly from the Native balance  instead of fetching from rowan pool
 	if msg.SentAsset != types.GetSettlementAsset() {
 		err := errors.New("Swap Error")
+		err = nil
 		inPool, err = keeper.GetPool(ctx, msg.SentAsset.Symbol)
 		if err != nil {
 			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
