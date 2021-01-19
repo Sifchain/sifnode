@@ -33,8 +33,8 @@ function parseAsset(a: unknown): Asset {
 }
 
 export type KeplrChainConfig = {
-  rest?: string;
-  rpc?: string;
+  rest: string;
+  rpc: string;
   chainId: string;
   chainName: string;
   stakeCurrency: {
@@ -119,9 +119,10 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
     bridgebankContractAddress: config.bridgebankContractAddress,
     bridgetokenContractAddress,
     keplrChainConfig: {
+      ...config.keplrChainConfig,
       rest: config.sifApiUrl,
       rpc: config.sifRpcUrl,
-      ...config.keplrChainConfig,
+      chainId: config.sifChainId,
       currencies: assets.map(asset => ({
         coinDenom: asset.symbol,
         coinDecimals: asset.decimals,

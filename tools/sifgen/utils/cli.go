@@ -38,6 +38,7 @@ type CLIUtils interface {
 	SetConfigTrustNode(bool) (*string, error)
 	AddKey(string, string, string, string) (*string, error)
 	AddGenesisAccount(string, string, []string) (*string, error)
+	AddFaucet(string) (*string, error)
 	AddGenesisCLPAdmin(string, string) (*string, error)
 	SetGenesisOracleAdmin(string, string) (*string, error)
 	GenerateGenesisTxn(string, string, string, string, string, string, string, string, string) (*string, error)
@@ -139,6 +140,10 @@ func (c CLI) AddKey(name, mnemonic, keyPassword, cliDir string) (*string, error)
 
 func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {
 	return c.shellExec("sifnoded", "add-genesis-account", address, strings.Join(coins[:], ","), "--home", nodeDir)
+}
+
+func (c CLI) AddFaucet(amount string) (*string, error) {
+	return c.shellExec("sifnoded", "add-faucet", amount)
 }
 
 func (c CLI) AddGenesisCLPAdmin(address, nodeDir string) (*string, error) {

@@ -20,7 +20,6 @@ export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
   sifWsUrl: string;
-  // todo fix
   keplrChainConfig: KeplrChainConfig;
   assets: Asset[];
 };
