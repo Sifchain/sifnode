@@ -48,7 +48,7 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event *types.Ethereum
 	tokenContractAddress := ethbridge.NewEthereumAddress(event.Token.Hex())
 
 	// Symbol formatted to lowercase
-	symbol := strings.ToLower(event.Symbol)
+	symbol := event.Symbol
 	switch event.ClaimType {
 	case ethbridge.LockText:
 		if symbol == "eth" && !isZeroAddress(event.Token) {

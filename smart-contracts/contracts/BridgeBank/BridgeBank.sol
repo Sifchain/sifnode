@@ -162,7 +162,7 @@ contract BridgeBank is BankStorage,
     // private so that it is not inheritable or able to be called
     // by anyone other than this contract
     function _updateTokenLimits(address _token, uint256 _amount) private {
-        string memory symbol = _token == address(0) ? "ETH" : BridgeToken(_token).symbol();
+        string memory symbol = _token == address(0) ? "eth" : BridgeToken(_token).symbol();
         maxTokenAmount[symbol] = _amount;
     }
 
@@ -260,7 +260,7 @@ contract BridgeBank is BankStorage,
                 msg.value == _amount,
                 "The transactions value must be equal the specified amount (in wei)"
             );
-            symbol = "ETH";
+            symbol = "eth";
             // ERC20 deposit
         } else {
             IERC20 tokenToTransfer = IERC20(_token);
