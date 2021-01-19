@@ -296,22 +296,21 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	nativeAsset := types.GetSettlementAsset()
 
 	inPool, outPool := types.Pool{}, types.Pool{}
-
+	err := errors.New("Swap Error")
 	// If sending rowan ,deduct directly from the Native balance  instead of fetching from rowan pool
 	if msg.SentAsset != types.GetSettlementAsset() {
-		err := errors.New("Swap Error")
 		inPool, err = keeper.GetPool(ctx, msg.SentAsset.Symbol)
 		if err != nil {
 			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
 		}
 	}
-
+	fmt.Println(err)
 	sentAmountInt, ok := keeper.ParseToInt(sentAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
 	sentCoin := sdk.NewCoin(msg.SentAsset.Symbol, sentAmountInt)
-	err := keeper.InitiateSwap(ctx, sentCoin, msg.Signer)
+	err = keeper.InitiateSwap(ctx, sentCoin, msg.Signer)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 	}
