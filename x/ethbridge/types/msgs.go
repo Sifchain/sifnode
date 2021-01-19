@@ -3,10 +3,8 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
-	"strings"
-
 	gethCommon "github.com/ethereum/go-ethereum/common"
+	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
