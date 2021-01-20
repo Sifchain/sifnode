@@ -8,7 +8,7 @@ import {
   calculatePriceImpact,
   calculateProviderFee,
   calculateReverseSwapResult,
-  calculateSwapResult,
+  calculateSwapResult, getDoubleSwapFee, getDoubleSwapOutputWithFee, getDoubleSwapSlip,
 } from "./formulae";
 
 export type Pool = ReturnType<typeof Pool>;
@@ -185,14 +185,11 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
     },
 
     calcProviderFee(x: AssetAmount) {
-      const [first, second] = pair1.contains(x.asset) ? [pair1, pair2] : [pair2, pair1];
-      const nativeAmount = first.calcProviderFee(x);
-      return second.calcProviderFee(nativeAmount);
+      return getDoubleSwapFee(x, pair1, pair2);
     },
 
     calcPriceImpact(x: AssetAmount) {
-      const first = pair1.contains(x.asset) ? pair1 : pair2;
-      return first.calcPriceImpact(x);
+      return getDoubleSwapSlip(x, pair1, pair2);
     },
 
     calcSwapResult(x: AssetAmount) {
