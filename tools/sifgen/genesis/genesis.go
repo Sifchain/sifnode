@@ -47,6 +47,25 @@ func ReplaceCLPMinCreatePoolThreshold(nodeHomeDir, minCreatePoolThreshold string
 	return nil
 }
 
+func ReplaceGovDepositParamsMinDeposit(nodeHomeDir, tokenDenom string) error {
+	genesis, err := readGenesis(nodeHomeDir)
+	if err != nil {
+		return err
+	}
+
+	(*genesis).AppState.Gov.DepositParams.MinDeposit[0].Denom = tokenDenom
+	content, err := json.Marshal(genesis)
+	if err != nil {
+		return err
+	}
+
+	if err := writeGenesis(nodeHomeDir, content); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func readGenesis(nodeHomeDir string) (*common.Genesis, error) {
 	var genesis common.Genesis
 

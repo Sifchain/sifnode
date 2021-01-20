@@ -209,6 +209,10 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
+	if err = genesis.ReplaceGovDepositParamsMinDeposit(common.DefaultNodeHome, common.StakeTokenDenom); err != nil {
+		return err
+	}
+
 	err = n.replaceConfig()
 	if err != nil {
 		return err
