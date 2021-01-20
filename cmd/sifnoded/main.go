@@ -14,6 +14,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/Sifchain/sifnode/app"
+	"github.com/Sifchain/sifnode/app/validation"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client/debug"
@@ -32,6 +33,9 @@ var invCheckPeriod uint
 
 func main() {
 	cdc := app.MakeCodec()
+	sdk.SetCoinDenomRegex(func() string {
+		return validation.ReDnmString
+	})
 
 	app.SetConfig()
 	ctx := server.NewDefaultContext()
