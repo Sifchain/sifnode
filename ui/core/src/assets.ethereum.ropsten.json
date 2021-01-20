@@ -9,12 +9,11 @@
       "network": "ropsten"
     },
     {
+      "name": "Ethereum",
       "symbol": "eth",
-      "decimals": 18,
-      "name": "ethereum",
-      "imageUrl": "/images/siflogo.png",
-      "address": "0xec035305F7d0BFE43D4Ad686BDD4fE53CA1562AC",
-      "network": "ropsten"
+      "imageUrl": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
+      "network": "ethereum",
+      "decimals": 18
     },
     {
       "address": "0xfA8fC9C22C33FE62BabD5D92DD38Aa27B730d562",

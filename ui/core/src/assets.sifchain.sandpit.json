@@ -15,6 +15,13 @@
       "network": "sifchain"
     },
     {
+      "symbol": "ceth",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
+      "name": "ceth",
+      "network": "sifchain"
+    },
+    {
       "symbol": "ctoken",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png",
