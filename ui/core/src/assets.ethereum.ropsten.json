@@ -5,7 +5,7 @@
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png?1598003707",
       "name": "Tether",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "USDT",
       "transferLimit": 5006563604
     },
@@ -14,7 +14,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png?1547034700",
       "name": "Chainlink",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "LINK",
       "transferLimit": 229568411386593180000
     },
@@ -23,7 +23,7 @@
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/6319/small/USD_Coin_icon.png?1547042389",
       "name": "USD Coin",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "USDC",
       "transferLimit": 5009764030
     },
@@ -32,7 +32,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/10775/small/COMP.png?1592625425",
       "name": "Compound",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "COMP",
       "transferLimit": 22131728045325780000
     },
@@ -41,7 +41,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/1364/small/Mark_Maker.png?1585191826",
       "name": "Maker",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "MKR",
       "transferLimit": 3442293393550519300
     },
@@ -50,7 +50,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/7196/small/to3Vj4EZ_400x400.jpg?1547043758",
       "name": "HedgeTrade",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "HEDG",
       "transferLimit": 2.6455026455026456e+21
     },
@@ -59,7 +59,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/677/small/basic-attention-token.png?1547034427",
       "name": "Basic Attention Token",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "BAT",
       "transferLimit": 1.737999979144e+22
     },
@@ -68,7 +68,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/4463/small/okb_token.png?1548386209",
       "name": "OKB",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "OKB",
       "transferLimit": 768049155145929300000
     },
@@ -77,7 +77,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/863/small/0x.png?1547034672",
       "name": "0x",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "ZRX",
       "transferLimit": 8.431603674155618e+21
     },
@@ -86,7 +86,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/947/small/kyber-logo.png?1547034806",
       "name": "Kyber Network",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "KNC",
       "transferLimit": 4.065040650406504e+21
     },
@@ -95,7 +95,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/776/small/OMG_Network.jpg?1591167168",
       "name": "OMG Network",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "OMG",
       "transferLimit": 1.2345679012345678e+21
     },
@@ -104,7 +104,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/1365/small/ethlend.png?1547394586",
       "name": "Aave",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "LEND",
       "transferLimit": 2.6595744680851066e+21
     },
@@ -113,7 +113,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/3406/small/SNX.png?1598631139",
       "name": "Synthetix Network Token",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "SNX",
       "transferLimit": 329380764163372900000
     }
