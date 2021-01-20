@@ -12,11 +12,11 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
 
-      - run: |
-          mkdir ./cmd/sifnoded/bin
-
       - name: Build/Release
         uses: wangyoucao577/go-release-action@v1.13
+        env:
+          RELEASE_ASSET_EXT: ".zip"
+          MEDIA_TYPE: "application/zip"
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: linux
@@ -24,6 +24,5 @@ jobs:
           goversion: "https://dl.google.com/go/go1.15.1.linux-amd64.tar.gz"
           project_path: "./cmd/sifnoded"
           binary_name: "sifnoded"
-          build_flags: "-o bin/sifnoded"
           sha256sum: true
           overwrite: true
