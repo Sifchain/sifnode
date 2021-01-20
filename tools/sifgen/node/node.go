@@ -27,7 +27,7 @@ type Node struct {
 	Moniker            string    `yaml:"moniker"`
 	Mnemonic           string    `yaml:"mnemonic"`
 	AdminOracleAddress string    `yaml:"admin_oracle_address"`
-	IPAddr             string    `yml:"ip_address"`
+	IPAddr             string    `yaml:"ip_address"`
 	Address            string    `yaml:"address"`
 	Password           string    `yaml:"password"`
 	BondAmount         string    `yaml:"-"`
