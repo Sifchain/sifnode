@@ -13,15 +13,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build/Release
-        uses: wangyoucao577/go-release-action@v1.13
-        env:
-          RELEASE_ASSET_EXT: ".zip"
-          MEDIA_TYPE: "application/zip"
+        uses: ./deploy/release
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: linux
           goarch: amd64
-          goversion: "https://dl.google.com/go/go1.15.1.linux-amd64.tar.gz"
           project_path: "./cmd/sifnoded"
           binary_name: "sifnoded"
           sha256sum: true
