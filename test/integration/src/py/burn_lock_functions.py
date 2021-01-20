@@ -131,6 +131,7 @@ def transfer_sifchain_to_ethereum(
 ):
     logging.debug(f"transfer_sifchain_to_ethereum_json: {transfer_request.as_json()}")
 
+    original_log_level = decrease_log_level(logging.WARNING)
     ethereum_starting_balance = get_eth_balance(transfer_request)
 
     sifchain_starting_balance = get_sifchain_addr_balance(
@@ -146,7 +147,9 @@ def transfer_sifchain_to_ethereum(
     }
     logging.debug(status)
 
+    force_log_level(original_log_level)
     send_tx = send_from_sifchain_to_ethereum(transfer_request, credentials)
+    original_log_level = decrease_log_level(logging.WARNING)
 
     target_balance = ethereum_starting_balance + transfer_request.amount
 
@@ -162,6 +165,7 @@ def transfer_sifchain_to_ethereum(
         transfer_request.sifchain_symbol
     )
 
+    force_log_level(original_log_level)
     logging.debug(f"transfer_sifchain_to_ethereum_complete_json: {json.dumps(send_tx)}")
 
     return {
