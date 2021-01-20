@@ -94,13 +94,12 @@ datadir = get_required_env_var("datadir")
 
 
 def get_shell_output(command_line):
-    logging.debug(f"execute shell command: {command_line}")
     sub = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     subprocess_return = sub.stdout.read().rstrip().decode("utf-8")
     error_return = sub.stderr.read().rstrip().decode("utf-8")
+    logging.debug(f"execute shell command: {command_line}\n\nresult:\n\n{subprocess_return}")
     if error_return and error_return != "incorrect passphrase":
         print_error_message(f"error running command: {command_line}\n{error_return}")
-    logging.debug(f"shell command result: {subprocess_return}")
     if error_return:
         logging.debug(f"shell command error: {error_return}")
     return subprocess_return
@@ -112,8 +111,6 @@ def get_shell_output_json(command_line):
         print_error_message(f"no result returned from {command_line}")
     try:
         result = json.loads(output)
-        logoutput = json.dumps({"command": command_line, "result": result})
-        logging.debug(f"shell_json: {logoutput}")
         return result
     except:
         logging.critical(f"failed to decode json.  cmd is: {command_line}, output is: {output}")
@@ -191,7 +188,7 @@ def wait_for_balance(balance_fn, target_balance, max_seconds=30, debug_prefix=""
                 logging.debug(
                     f"waiting for target balance {debug_prefix}: {target_balance}, current balance is {balance}"
                 )
-                time.sleep(5)
+                time.sleep(1)
 
 
 def wait_for_eth_balance(transfer_request: EthereumToSifchainTransferRequest, target_balance, max_seconds=30):
