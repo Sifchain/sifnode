@@ -98,7 +98,6 @@ export default function createEthbridgeService({
       assetAmount: AssetAmount,
       confirmations: number
     ) {
-      console.log({ assetAmount });
       const emitter = createPegTxEventEmitter();
 
       function handleError(err: any) {
