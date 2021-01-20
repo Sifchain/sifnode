@@ -8,8 +8,10 @@
   "nativeAsset": "rowan",
   "bridgebankContractAddress": "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4",
   "keplrChainConfig": {
-    "chainId": "sifchain",
     "chainName": "Sifchain",
+    "chainId": "",
+    "rpc": "",
+    "rest": "",
     "stakeCurrency": {
       "coinDenom": "ROWAN",
       "coinMinimalDenom": "rowan",
@@ -36,9 +38,9 @@
     ],
     "coinType": 118,
     "gasPriceStep": {
-      "low": 0.01,
-      "average": 0.025,
-      "high": 0.04
+      "low": 0.5,
+      "average": 0.65,
+      "high": 0.8
     }
   }
 }
