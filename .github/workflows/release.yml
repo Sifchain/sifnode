@@ -1,8 +1,8 @@
-name: Release and Upgrade Images
+name: Release/Build Images
 
 on:
   release:
-    type: created
+    types: [published]
 
 jobs:
   release:
