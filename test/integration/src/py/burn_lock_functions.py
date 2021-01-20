@@ -14,11 +14,28 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
     get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
 
 
+def decrease_log_level(new_level):
+    logger = logging.getLogger()
+    existing_level = logger.level
+    if new_level > existing_level:
+        logger.setLevel(new_level)
+    return existing_level
+
+
+def force_log_level(new_level):
+    logger = logging.getLogger()
+    existing_level = logger.level
+    logger.setLevel(new_level)
+    return existing_level
+
+
 def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest, max_seconds: int = 30):
     logging.debug(f"transfer_ethereum_to_sifchain {transfer_request.as_json()}")
 
     # it's possible that this is the first transfer to the address, so there's
     # no balance to retrieve.  Catch that exception.
+
+    original_log_level = decrease_log_level(logging.WARNING)
 
     try:
         sifchain_starting_balance = get_sifchain_addr_balance(
@@ -37,7 +54,11 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     }
     logging.debug(f"transfer_ethereum_to_sifchain_json: {json.dumps(status)}", )
 
+    force_log_level(original_log_level)
     send_tx = send_from_ethereum_to_sifchain(transfer_request)
+    original_log_level = decrease_log_level(logging.WARNING)
+
+
     starting_block = current_ethereum_block_number(transfer_request.smart_contracts_dir)
     half_n_wait_blocks = n_wait_blocks / 2 + 1
     logging.debug("wait half the blocks, transfer should not complete")
@@ -92,6 +113,8 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
         max_seconds=max_seconds,
         debug_prefix=f"transfer_ethereum_to_sifchain waiting for balance {transfer_request}"
     )
+
+    force_log_level(original_log_level)
 
     result = {
         **status,
