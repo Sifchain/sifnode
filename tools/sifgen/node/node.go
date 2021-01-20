@@ -57,6 +57,10 @@ func Reset(chainID string, nodeDir *string) error {
 }
 
 func (n *Node) Build() (*string, error) {
+	if _, err := os.Stat(fmt.Sprintf("%v/config/genesis.json", common.DefaultNodeHome)); err == nil {
+		return nil, nil
+	}
+
 	if err := n.setup(); err != nil {
 		return nil, err
 	}
