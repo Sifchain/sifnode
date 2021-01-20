@@ -64,6 +64,6 @@ export function getConfig(
     monkeybars: parseConfig(monkeybarsconfig as ChainConfig, allAssets),
     sandpit: parseConfig(sandpitconfig as ChainConfig, allAssets),
   };
-  console.log(configMap[config.toLocaleLowerCase()])
+
   return configMap[config.toLowerCase()];
 }
