@@ -29,11 +29,13 @@ const (
 	LogNewProphecyClaim
 	// NewProphecyClaim for newProphecyClaim method in smart contract
 	NewProphecyClaim
+	// CreateEthBridgeClaim is a Cosmos msg of type MsgCreateEthBridgeClaim
+	CreateEthBridgeClaim
 )
 
 // String returns the event type as a string
 func (d Event) String() string {
-	return [...]string{"unsupported", "burn", "lock", "LogLock", "LogBurn", "LogNewProphecyClaim", "newProphecyClaim"}[d]
+	return [...]string{"unsupported", "burn", "lock", "LogLock", "LogBurn", "LogNewProphecyClaim", "newProphecyClaim", "create_claim"}[d]
 }
 
 // EthereumEvent struct is used by LogLock and LogBurn
@@ -157,9 +159,20 @@ const (
 	Amount
 	// Symbol is the coin type
 	Symbol
+	// EthereumSender is ethereum sender address
+	EthereumSender
+	// EthereumSenderNonce is ethereum sender nonce
+	EthereumSenderNonce
 )
 
 // String returns the event type as a string
 func (d CosmosMsgAttributeKey) String() string {
-	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol"}[d]
+	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol", "ethereum_sender", "ethereum_sender_nonce"}[d]
+}
+
+// EthereumBridgeClaim for store the EventTypeCreateClaim from cosmos
+type EthereumBridgeClaim struct {
+	EthereumSender common.Address
+	CosmosSender   sdk.ValAddress
+	Nonce          sdk.Int
 }

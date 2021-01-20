@@ -3,6 +3,7 @@ package relayer
 // DONTCOVER
 
 import (
+	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"fmt"
@@ -17,6 +18,7 @@ import (
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
+	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -142,18 +144,11 @@ func (sub CosmosSub) getAll(ethFromBlock int64, ethToBlock int64) error {
 		return nil
 	}
 
-	// subContractAddress, err := txs.GetAddressFromBridgeRegistry(client, sub.RegistryContractAddress, txs.CosmosBridge)
-	// if err != nil {
-	// 	sub.Logger.Error(err.Error())
-	// 	return err
-	// }
-
 	CosmosBridgeContractABI := contract.LoadABI(txs.CosmosBridge)
 	methodID := CosmosBridgeContractABI.Methods[types.NewProphecyClaim.String()].ID()
 
-	method := types.NewProphecyClaim.String()
-
-	fmt.Printf("method name is %s %v \n", method, methodID)
+	// method := types.NewProphecyClaim.String()
+	fmt.Printf("method ID is %v \n", methodID)
 
 	for blockNumber := ethFromBlock; blockNumber < ethToBlock; {
 		fmt.Printf("loop blockNumber is %d \n", blockNumber)
@@ -164,88 +159,47 @@ func (sub CosmosSub) getAll(ethFromBlock int64, ethToBlock int64) error {
 			continue
 		}
 		for _, tx := range block.Transactions() {
-			fmt.Println("tx is ")
 
-			sender, err := eIP155Signer.Sender(tx) // use it to filter
+			sender, err := eIP155Signer.Sender(tx)
 
 			if err != nil {
 				continue
 			}
 			fmt.Printf("sender is %s \n", sender.String())
 
-			fmt.Println("sender print is over ")
-
-			// to := tx.To() // use it to filter
-			// var data []byte
-			// length := hex.Encode(&data, tx.Data())
-			// data := string(tx.Data())
-			// fmt.Printf("sender is %s \n", string(data))
-
-			// decode txInput method signature
-			// decodedSig, err := hex.DecodeString(string(tx.Data()[2:10]))
-			// if err != nil {
-			// 	fmt.Println("sender print is  1")
-			// 	log.Fatal(err)
-			// }
-
-			// recover Method from signature and ABI
-			// method, err := CosmosBridgeContractABI.MethodById(tx.Data()[1:5])
-			method, err := CosmosBridgeContractABI.MethodById(methodID)
+			_, err = CosmosBridgeContractABI.MethodById(methodID)
 
 			if err != nil {
 				fmt.Println("sender print is  2")
 				log.Fatal(err)
 			}
 
-			fmt.Printf("Data  is  %v \n", tx.Data())
-
-			decodedData := tx.Data()[5:]
-
-			// decode txInput Payload
-			// decodedData, err := hex.DecodeString(tx.Data()[10:])
-			// if err != nil {
-			// 	fmt.Println("sender print is  3")
-			// 	log.Fatal(err)
-			// }
-
-			// create strut that matches input names to unpack
-			// for example my function takes 2 inputs, with names "Name1" and "Name2" and of type uint256 (solidity)
-
-			// type FunctionInputs struct {
-			// 	ClaimType            uint8
-			// 	CosmosSender         bytes
-			// 	CosmosSenderSequence *big.Int
-
-			// 	EthereumReceiver common.Address
-			// 	Symbol           string
-			// 	Amount           *big.Int
-			// }
-
-			// ClaimType _claimType,
-			// bytes memory _cosmosSender,
-			// uint256 _cosmosSenderSequence,
-			// address payable _ethereumReceiver,
-			// string memory _symbol,
-			// uint256 _amount
-
-			// var functionInputs FunctionInputs
-
-			// unpack method inputs
-			// err = method.Inputs.Unpack(&functionInputs, decodedData)
-
-			argMap := make(map[string]interface{})
-			err = method.Inputs.UnpackIntoMap(argMap, decodedData)
-
-			if err != nil {
-				fmt.Println("sender print is 4")
-				// log.Fatal(err)
+			fmt.Printf("Data method part  is  %v \n", tx.Data()[:])
+			if bytes.Compare(tx.Data()[0:4], methodID) != 0 {
 				continue
 			}
 
-			fmt.Println(argMap)
+			// nolint
+			type FunctionInputs struct {
+				ClaimType            ethbridge.ClaimType
+				CosmosSender         []byte
+				CosmosSenderSequence *big.Int
 
-			// message := tx.AsMessage(sender)
+				EthereumReceiver common.Address
+				Symbol           string
+				Amount           *big.Int
+			}
 
+			functionInputs := FunctionInputs{}
+
+			err = CosmosBridgeContractABI.Unpack(&functionInputs, types.NewProphecyClaim.String(), tx.Data())
+
+			if err != nil {
+				fmt.Printf(" errir is %s \n", err.Error())
+				continue
+			}
+
+			fmt.Printf("functionInputs is %v\n", functionInputs)
 		}
 		blockNumber++
 	}

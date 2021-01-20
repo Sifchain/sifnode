@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"math/big"
+	"fmt"
 	"net/url"
 	"os"
 	"strconv"
@@ -35,6 +35,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 
 	// Parse flag --rpc-url
 	rpcURL := viper.GetString(FlagRPCURL)
+	fmt.Printf("RunReplayEthereumCmd rpcURL is %s\n ", rpcURL)
 	if rpcURL != "" {
 		_, err := url.Parse(rpcURL)
 		if rpcURL != "" && err != nil {
@@ -42,32 +43,32 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if !relayer.IsWebsocketURL(args[0]) {
-		return errors.Errorf("invalid [web3-provider]: %s", args[0])
-	}
+	// if !relayer.IsWebsocketURL(args[0]) {
+	// 	return errors.Errorf("invalid [web3-provider]: %s", args[0])
+	// }
+
+	tendermintNode := args[0]
 	web3Provider := args[1]
 
-	if !common.IsHexAddress(args[1]) {
+	if !common.IsHexAddress(args[2]) {
 		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[1])
 	}
-	contractAddress := common.HexToAddress(args[1])
+	contractAddress := common.HexToAddress(args[2])
 
-	if len(strings.Trim(args[2], "")) == 0 {
+	if len(strings.Trim(args[3], "")) == 0 {
 		return errors.Errorf("invalid [validator-moniker]: %s", args[2])
 	}
-	validatorMoniker := args[2]
-	mnemonic := args[3]
+	validatorMoniker := args[3]
+	mnemonic := args[4]
 
-	tmpBlock := new(big.Int)
-	fromBlock, ok := tmpBlock.SetString(args[4], 10)
-	if !ok {
-		return errors.Errorf("invalid [from-block]: %s", args[4])
+	fromBlock, err := strconv.ParseInt(args[5], 10, 64)
+	if err != nil {
+		return errors.Errorf("invalid [from-block]: %s", args[5])
 	}
 
-	tmpBlock = new(big.Int)
-	toBlock, ok := tmpBlock.SetString(args[5], 10)
-	if !ok {
-		return errors.Errorf("invalid [to-block]: %s", args[5])
+	toBlock, err := strconv.ParseInt(args[6], 10, 64)
+	if err != nil {
+		return errors.Errorf("invalid [to-block]: %s", args[6])
 	}
 
 	// Universal logger
@@ -76,7 +77,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
 
-	ethSub, err := relayer.NewEthereumSub(inBuf, rpcURL, cdc, validatorMoniker, chainID, web3Provider,
+	ethSub, err := relayer.NewEthereumSub(inBuf, tendermintNode, cdc, validatorMoniker, chainID, web3Provider,
 		contractAddress, privateKey, mnemonic, logger)
 	if err != nil {
 		return err
