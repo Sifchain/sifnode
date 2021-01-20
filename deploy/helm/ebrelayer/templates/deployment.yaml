@@ -30,18 +30,12 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER \"{{ .Values.ebrelayer.mnemonic }}\" --chain-id $CHAINNET --rpc-url $NODE_HOST"]
+          args: ["-c", "ebrelayer init {{ .Values.ebrelayer.args.nodeHost }} {{ .Values.ebrelayer.args.ethWebsocketAddress }} {{ .Values.ebrelayer.args.ethBridgeRegistryAddress }} $MONIKER \"{{ .Values.ebrelayer.args.mnemonic }}\" --chain-id $CHAINNET --rpc-url {{ .Values.ebrelayer.args.nodeHost }} --gas-prices {{ .Values.ebrelayer.args.gasPrices }}"]
           env:
-            - name: NODE_HOST
-              value: {{ .Values.ebrelayer.env.nodeHost }}
-            - name: CHAINNET
-              value: {{ .Values.ebrelayer.env.chainnet }}
-            - name: ETH_WEBSOCKET_ADDRESS
-              value: {{ .Values.ebrelayer.env.ethWebsocketAddress }}
-            - name: ETH_BRIDGE_REGISTRY_ADDRESS
-              value: {{ .Values.ebrelayer.env.ethBridgeRegistryAddress }}
             - name: MONIKER
               value: {{ .Values.ebrelayer.env.moniker }}
+            - name: CHAINNET
+              value: {{ .Values.ebrelayer.env.chainnet }}
             - name: ETHEREUM_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:

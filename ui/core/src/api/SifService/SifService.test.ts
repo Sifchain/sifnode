@@ -45,6 +45,8 @@ const testConfig: SifServiceContext = {
   sifWsUrl: "ws://127.0.0.1:26657/websocket",
   assets: [ROWAN, CATK, CBTK, CETH],
   keplrChainConfig: {
+    rest: "",
+    rpc: "",
     chainId: "sifchain",
     chainName: "Sifchain",
     stakeCurrency: {
@@ -63,33 +65,7 @@ const testConfig: SifServiceContext = {
       bech32PrefixConsAddr: "sifvalcons",
       bech32PrefixConsPub: "sifvalconspub",
     },
-    currencies: [
-      {
-        coinDenom: "ROWAN",
-        coinMinimalDenom: "rowan",
-        coinDecimals: 18,
-      },
-      {
-        coinDenom: "catk",
-        coinMinimalDenom: "catk",
-        coinDecimals: 18,
-      },
-      {
-        coinDenom: "cbtk",
-        coinMinimalDenom: "cbtk",
-        coinDecimals: 18,
-      },
-      {
-        coinDenom: "ceth",
-        coinMinimalDenom: "ceth",
-        coinDecimals: 18,
-      },
-      {
-        coinDenom: "stake",
-        coinMinimalDenom: "stake",
-        coinDecimals: 18,
-      },
-    ],
+    currencies: [],
     feeCurrencies: [
       {
         coinDenom: "ROWAN",
