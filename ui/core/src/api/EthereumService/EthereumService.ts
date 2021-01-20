@@ -50,6 +50,7 @@ export class EthereumService implements IWalletService {
   private supportedTokens: Asset[] = [];
   private blockSubscription: any;
   private provider: provider | undefined;
+  private providerPromise: Promise<provider>;
 
   // This is shared reactive state
   private state: {
@@ -63,10 +64,13 @@ export class EthereumService implements IWalletService {
   constructor(getWeb3Provider: () => Promise<provider>, assets: Asset[]) {
     // init state
     this.state = reactive({ ...initState });
-    this.supportedTokens = assets.filter((t) => t.network === Network.ETHEREUM);
+    this.supportedTokens = assets.filter(t => t.network === Network.ETHEREUM);
 
-    getWeb3Provider()
-      .then((provider) => {
+    // TODO refactor to similar pattern in TendermintSocketSubscriber
+    // around waiting for provider
+    this.providerPromise = getWeb3Provider();
+    this.providerPromise
+      .then(provider => {
         if (!provider) return (this.provider = null);
         if (isEventEmittingProvider(provider)) {
           provider.on("connect", () => {
@@ -78,7 +82,7 @@ export class EthereumService implements IWalletService {
         }
         this.provider = provider;
       })
-      .catch((error) => {
+      .catch(error => {
         console.log("er", error);
       });
   }
@@ -118,17 +122,18 @@ export class EthereumService implements IWalletService {
   }
 
   async connect() {
+    const provider = await this.providerPromise;
     try {
-      if (!this.provider)
+      if (!provider)
         throw new Error("Cannot connect because provider is not yet loaded!");
 
-      this.web3 = new Web3(this.provider);
+      this.web3 = new Web3(provider);
 
       // Let's test for Metamask
-      if (isMetaMaskProvider(this.provider)) {
-        if (this.provider.request) {
+      if (isMetaMaskProvider(provider)) {
+        if (provider.request) {
           // If metamask lets try and connect
-          await this.provider.request({ method: "eth_requestAccounts" });
+          await provider.request({ method: "eth_requestAccounts" });
         }
       }
 
@@ -136,6 +141,7 @@ export class EthereumService implements IWalletService {
       notify({ type: "success", message: "Connected to Metamask" });
       await this.updateData();
     } catch (err) {
+      console.log(err);
       this.web3 = null;
     }
   }
@@ -188,19 +194,19 @@ export class EthereumService implements IWalletService {
         const tokenBalance = await getTokenBalance(web3, addr, asset);
         balances = [tokenBalance];
       }
+    } else {
+      // No address no asset get everything
+      balances = await Promise.all([
+        getEtheriumBalance(web3, addr),
+        ...supportedTokens
+          .slice(0, 10)
+          .filter(t => t.symbol !== "eth")
+          .map((token: Asset) => {
+            if (isToken(token)) return getTokenBalance(web3, addr, token);
+            return AssetAmount(token, "0");
+          }),
+      ]);
     }
-
-    // No address no asset get everything
-    balances = await Promise.all([
-      getEtheriumBalance(web3, addr),
-      ...supportedTokens
-        .slice(0, 10)
-        .filter((t) => t.symbol !== "eth")
-        .map((token: Asset) => {
-          if (isToken(token)) return getTokenBalance(web3, addr, token);
-          return AssetAmount(token, "0");
-        }),
-    ]);
 
     return balances;
   }

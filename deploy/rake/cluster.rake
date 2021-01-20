@@ -127,12 +127,12 @@ namespace :cluster do
         --set image.repository=#{image_repository(args)} \
         --set image.tag=#{image_tag(args)} \
         --set ebrelayer.env.chainnet=#{args[:chainnet]} \
-        --set ebrelayer.env.nodeHost=#{args[:node_host]} \
-        --set ebrelayer.env.ethWebsocketAddress=#{args[:eth_websocket_address]} \
-        --set ebrelayer.env.ethBridgeRegistryAddress=#{args[:eth_bridge_registry_address]} \
+        --set ebrelayer.args.nodeHost=#{args[:node_host]} \
+        --set ebrelayer.args.ethWebsocketAddress=#{args[:eth_websocket_address]} \
+        --set ebrelayer.args.ethBridgeRegistryAddress=#{args[:eth_bridge_registry_address]} \
         --set ebrelayer.env.ethPrivateKey=#{args[:eth_private_key]} \
         --set ebrelayer.env.moniker=#{args[:moniker]} \
-        --set ebrelayer.mnemonic=#{args[:mnemonic]}
+        --set ebrelayer.args.mnemonic=#{args[:mnemonic]}
       }
 
       system({"KUBECONFIG" => kubeconfig(args) }, cmd)

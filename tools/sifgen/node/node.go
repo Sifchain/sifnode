@@ -32,6 +32,7 @@ type Node struct {
 	Password           string    `yaml:"password"`
 	BondAmount         string    `yaml:"-"`
 	MintAmount         string    `yaml:"-"`
+	FaucetAmount       string    `yaml:"-"`
 	PeerAddress        string    `yaml:"-"`
 	GenesisURL         string    `yaml:"-"`
 	Key                *key.Key  `yaml:"-"`
@@ -138,6 +139,11 @@ func (n *Node) networkGenesis() error {
 
 func (n *Node) seedGenesis() error {
 	_, err := n.CLI.AddGenesisAccount(n.Address, common.DefaultNodeHome, []string{n.MintAmount})
+	if err != nil {
+		return err
+	}
+
+	_, err = n.CLI.AddFaucet(n.FaucetAmount)
 	if err != nil {
 		return err
 	}

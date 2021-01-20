@@ -5,7 +5,9 @@
 ## Prerequisites / Dependencies
 
 - [Ruby 2.6.x](https://www.ruby-lang.org/en/documentation/installation)
-- [Golang](https://golang.org/doc/install)
+- [Golang](https://golang.org/doc/install) 
+  - Add `export GOPATH=~/go` to your shell
+  - Add `export PATH=$PATH:$GOPATH/bin` to your shell
 - [jq](https://stedolan.github.io/jq/download/)
 - [curl](https://curl.haxx.se/download.html)
 
@@ -28,7 +30,7 @@ git clone ssh://git@github.com/Sifchain/sifnode && cd sifnode
 3. Checkout the latest testnet release:
 
 ```
-git checkout tags/merry-go-round-1
+git checkout tags/merry-go-round-2
 ```
 
 4. Build:
@@ -46,7 +48,7 @@ rake "keys:generate:mnemonic"
 6. Scaffold your node:
 
 ```
-rake "genesis:sifnode:scaffold[merry-go-round, <moniker>, '<mnemonic>', '', ff0dd55dffa0e67fe21e2c85c80b0c2894bf2586@52.89.19.109:26656, http://52.89.19.109:26657/genesis]"
+rake "genesis:sifnode:scaffold[merry-go-round, <moniker>, '<mnemonic>', a75d98a0195596ce7043f7fe14a5498df6279bd3@34.212.71.53:26656, http://34.212.71.53:26657/genesis]"
 ```
 
 * Replace `<moniker>` with the moniker (name) of your node. 
@@ -67,7 +69,7 @@ and your node will start synchronizing with the network. Please note that this m
 1. Checkout the latest testnet release:
 
 ```
-git fetch && git checkout tags/merry-go-round-1
+git fetch && git checkout tags/merry-go-round-2
 ```
 
 2. Build:
@@ -85,13 +87,13 @@ sifnoded unsafe-reset-all
 4. Download the new genesis file:
 
 ```
-curl http://52.89.19.109:26657/genesis | jq '.result.genesis' > ~/.sifnoded/config/genesis.json
+curl http://34.212.71.53:26657/genesis | jq '.result.genesis' > ~/.sifnoded/config/genesis.json
 ```
 
 5. Update your persistent peers in the file `~/.sifnoded/config/config.toml` so that it reads: 
 
 ```
-persistent_peers = "ff0dd55dffa0e67fe21e2c85c80b0c2894bf2586@52.89.19.109:26656,8e58e41e9e47c53f63755d60fe0f35286a96b70f@54.74.58.153:26656,853ae9203af1606ca3497b845f775ece249be5ff@13.54.242.178:26656,910336f8e1342915c3adc40a73a6924d4d974c85@3.0.235.227:26656"
+persistent_peers = "a75d98a0195596ce7043f7fe14a5498df6279bd3@34.212.71.53:26656,c4205fd291f3f8d163e0055d859e23ea1b31219a@34.248.75.35:26656,b77e0a8c16462f105669ad5966a10993cbf23205@52.65.129.116:26656,62a91f190ff08861f0602d146c39367b4be7589a@18.140.216.206:26656"
 ```
 
 6. Start your node:
@@ -114,22 +116,22 @@ and you should see the following primary validator node/s for Sifchain:
 
 ```
 validators:
-- address: sifvalcons1z8jyamggawyute8m7a6tfk76whdegz4hhu47kx
-  pubkey: sifvalconspub1zcjduepq5geuxq3kyuwayc9ht82y997ncmh3qfe4eqg837kmf6d3tnyspemq6e83zz
-  proposerpriority: 5625
-  votingpower: 5000
-- address: sifvalcons1rya4cf6ejuzsn3qv5c97j3spsr70dwftdygktq
-  pubkey: sifvalconspub1zcjduepqewcxpth6dtk82f826gh5te07xyuk04t9y8dg63ndkngsr79dtu0skarrel
-  proposerpriority: 4375
-  votingpower: 5000
-- address: sifvalcons1tzsa80axse3urga7vcck2r638awkgfj6sddm8q
-  pubkey: sifvalconspub1zcjduepqdp72sdqtwjujpqlzfg0ku8smark7832ck4440nnqh5yz7yly78fsc0sjqx
-  proposerpriority: 3125
-  votingpower: 5000
-- address: sifvalcons1s00sdg5z5wv89yxjc66ft6uaf0lcqphvef4f9h
-  pubkey: sifvalconspub1zcjduepq25y7tsy0c9f0d7u43x7csfpry7t5ur4lcemfdjcrkctjv4hv7taqxvvhx7
-  proposerpriority: -13125
-  votingpower: 5000
+- address: sifvalcons1vnys998s8d0xkl9lqvzwn6wp6hyfjlp9k7kyrf
+  pubkey: sifvalconspub1zcjduepqw0yxxc28dl2e5ruhzssmpah7kvlxgs0f7m54akcsv9ph529pqxhqmjna3h
+  proposerpriority: 125000
+  votingpower: 1000000
+- address: sifvalcons10qh4zdt9c6htlayjcm96t6umnndhh4049se4cl
+  pubkey: sifvalconspub1zcjduepqsu6vj3y2mpzq384q8f3xed85y5upv7gqzscxp0aegax4rg8uh93seezgwk
+  proposerpriority: -1125000
+  votingpower: 1000000
+- address: sifvalcons1sqnsu6zd3tsqah9052xwsxjucauwfcrhx6xn7s
+  pubkey: sifvalconspub1zcjduepqu22nqvrq0dntlpa3d8fxx0wq8agc0jr66jkqy7nhc0pr0uujjlmqxam24v
+  proposerpriority: -1375000
+  votingpower: 1000000
+- address: sifvalcons16akkf32nnt44988u5skh0d9llpa2y7tawxumxh
+  pubkey: sifvalconspub1zcjduepqk8yrxfvg432qnq489s5pdnq5vg9v4459ewplek6vcmrcl2fp9h3qgha6qw
+  proposerpriority: 2375000
+  votingpower: 1000000
 ```
 
 Congratulations. You are now connected to the network.
@@ -139,10 +141,10 @@ Congratulations. You are now connected to the network.
 The following can be used as additional peers on the network:
 
 ```
-ff0dd55dffa0e67fe21e2c85c80b0c2894bf2586@52.89.19.109:26656
-8e58e41e9e47c53f63755d60fe0f35286a96b70f@54.74.58.153:26656
-853ae9203af1606ca3497b845f775ece249be5ff@13.54.242.178:26656
-910336f8e1342915c3adc40a73a6924d4d974c85@3.0.235.227:26656
+a75d98a0195596ce7043f7fe14a5498df6279bd3@34.212.71.53:26656
+c4205fd291f3f8d163e0055d859e23ea1b31219a@34.248.75.35:26656
+b77e0a8c16462f105669ad5966a10993cbf23205@52.65.129.116:26656
+62a91f190ff08861f0602d146c39367b4be7589a@18.140.216.206:26656
 ```
 
 #### Become a Validator
@@ -164,12 +166,12 @@ sifnodecli tx staking create-validator \
     --commission-max-change-rate="0.1" \
     --commission-max-rate="0.1" \
     --commission-rate="0.1" \
-    --amount=1000000000rowan \
+    --amount="10000000000000000000rowan" \
     --pubkey=$(sifnoded tendermint show-validator) \
     --moniker=<moniker> \
     --chain-id=merry-go-round \
     --min-self-delegation="1" \
-    --gas="auto" \
+    ---gas-prices="0.5rowan" \
     --from=<moniker> \
     --keyring-backend=file
 ```
