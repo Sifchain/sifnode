@@ -27,6 +27,7 @@ jobs:
           cd ./api/openapi
           make CHAINNET=${{ env.GITHUB_REF_SLUG }} build-image-swagger-iu
           make CHAINNET=${{ env.GITHUB_REF_SLUG }} build-image-prim
+
       - name: Push docker images
         run: |
           docker push sifchain/sifnoded:${{ env.GITHUB_REF_SLUG }}
@@ -36,7 +37,7 @@ jobs:
           docker push sifchain/prism:${{ env.GITHUB_REF_SLUG }}
           docker push sifchain/ebrelayer:${{ env.GITHUB_REF_SLUG }}
 
-      - name: Build/Release
+      - name: Release a new sifnoded binary
         uses: ./deploy/release
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
