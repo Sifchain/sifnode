@@ -264,7 +264,6 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
                    f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
                    f""
     command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
-    logging.debug(f"send_ethereum_currency_to_sifchain_addr")
     return run_yarn_command(command_line)
 
 
@@ -356,5 +355,4 @@ def ganache_accounts(smart_contracts_dir: str):
         f"yarn --cwd {smart_contracts_dir} "
         f"integrationtest:ganacheAccounts"
     )
-    logging.debug(f"ganache accounts: {accounts}")
     return accounts
