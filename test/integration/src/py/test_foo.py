@@ -82,4 +82,5 @@ def test_transfer_tokens_with_a_capital_letter_in_the_name():
 
     logging.info("sending cFoo back to ethereum")
     return_request: EthereumToSifchainTransferRequest = copy.deepcopy(foo_request)
+    return_request.sifchain_symbol = return_request.sifchain_symbol.lower()
     burn_lock_functions.transfer_sifchain_to_ethereum(return_request, credentials)
