@@ -7,18 +7,18 @@ on:
 jobs:
   release:
     name: Release Sifnode Binary
-      runs-on: ubuntu-latest
-      steps:
-        - name: Check out the repo
-          uses: actions/checkout@v2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
 
-        - name: Build/Release
-          uses: wangyoucao577/go-release-action@v1.13
-          with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            goos: linux
-            goarch: amd64
-            goversion: "https://dl.google.com/go/go1.15.1.linux-amd64.tar.gz"
-            project_path: "./cmd/sifnoded"
-            binary_name: "sifnoded"
-            sha256sum: true
+      - name: Build/Release
+        uses: wangyoucao577/go-release-action@v1.13
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          goos: linux
+          goarch: amd64
+          goversion: "https://dl.google.com/go/go1.15.1.linux-amd64.tar.gz"
+          project_path: "./cmd/sifnoded"
+          binary_name: "sifnoded"
+          sha256sum: true
