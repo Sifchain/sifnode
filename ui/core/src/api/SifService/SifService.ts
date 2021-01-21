@@ -6,7 +6,7 @@ import {
   Secp256k1HdWallet,
 } from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
-import { debounce } from "lodash";
+import { debounce, filter } from "lodash";
 import { Address, Asset, AssetAmount, Network, TxParams } from "../../entities";
 
 import { Mnemonic } from "../../entities/Wallet";
