@@ -91,7 +91,7 @@ func ReplaceGovVotingParamsVotingPeriod(nodeHomeDir, period string) error {
 		return err
 	}
 
-	(*genesis).AppState.Gov.DepositParams.MaxDepositPeriod = period
+	(*genesis).AppState.Gov.VotingParams.VotingPeriod = period
 	content, err := json.Marshal(genesis)
 	if err != nil {
 		return err
