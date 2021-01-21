@@ -178,6 +178,7 @@ export default defineComponent({
         </RaisedPanelColumn>
       </RaisedPanel>
       <DetailsTable
+        v-if="mode === 'unpeg'"
         :header="{
           show: amount !== '0.0',
           label: `${modeLabel} Amount`,
