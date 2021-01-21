@@ -213,6 +213,16 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
+	govDepositParamsMaxDepositPeriod := os.Getenv("GOV_DEPOSIT_PARAMS_MAX_DEPOSIT_PERIOD")
+	if err = genesis.ReplaceGovDepositParamsMaxDepositPeriod(common.DefaultNodeHome, govDepositParamsMaxDepositPeriod); err != nil {
+		return err
+	}
+
+	govVotingParamsVotingPeriod := os.Getenv("GOV_VOTING_PARAMS_VOTING_PERIOD")
+	if err = genesis.ReplaceGovVotingParamsVotingPeriod(common.DefaultNodeHome, govVotingParamsVotingPeriod); err != nil {
+		return err
+	}
+
 	err = n.replaceConfig()
 	if err != nil {
 		return err
