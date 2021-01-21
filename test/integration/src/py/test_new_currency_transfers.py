@@ -134,25 +134,3 @@ def test_can_use_a_token_with_a_dash_in_the_name():
     new_currency = create_new_currency(amount_in_wei(10), n)
     (request, _) = build_request(new_currency, 60000)
     burn_lock_functions.transfer_ethereum_to_sifchain(request, 10)
-
-
-def test_transfer_tokens_with_a_capital_letter_in_the_name():
-    new_account_key = "Foo"
-    amount = amount_in_wei(9)
-    new_currency = create_new_currency(amount, new_account_key)
-    (foo_request, credentials) = build_request(new_currency, amount)
-    burn_lock_functions.transfer_ethereum_to_sifchain(foo_request, 10)
-
-    logging.info("get ceth to pay lock/burn fees")
-    accounts = ganache_accounts(smart_contracts_dir=smart_contracts_dir)
-    eth_request: EthereumToSifchainTransferRequest = copy.deepcopy(foo_request)
-    eth_request.sifchain_symbol = "ceth"
-    eth_request.ethereum_symbol = "eth"
-    eth_request.ethereum_address=accounts["accounts"][0]
-    eth_request.bridgebank_address=bridgebank_address
-    eth_request.bridgetoken_address=bridgetoken_address
-    burn_lock_functions.transfer_ethereum_to_sifchain(eth_request, 5)
-
-    logging.info("sending cFoo back to ethereum")
-    return_request: EthereumToSifchainTransferRequest = copy.deepcopy(foo_request)
-    burn_lock_functions.transfer_sifchain_to_ethereum(return_request, credentials)
