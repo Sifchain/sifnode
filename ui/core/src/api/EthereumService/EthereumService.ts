@@ -147,13 +147,28 @@ export class EthereumService implements IWalletService {
   }
 
   addWeb3Subscription() {
-    this.blockSubscription = this.web3?.eth.subscribe(
-      "newBlockHeaders",
-      (_, result) => {
-        this.updateData();
-        this.state.log = result?.hash ?? "null";
-      }
-    );
+    // TODO: Work out why we cannot subscribe to events when using metamask
+    //       provider and reinstate the following
+    //       Commenting out for now
+    //
+    // this.blockSubscription = this.web3?.eth.subscribe("newBlockHeaders");
+    // this.blockSubscription.on("data", (result: any) => {
+    //   console.log("Ethereum new block header");
+    //   this.updateData();
+    //   this.state.log = result?.hash ?? "null";
+    // });
+
+    // So the above is not working for Metamask instead we setup an interval and do a simple poll
+    let count = 0;
+    let interval = setInterval(() => {
+      this.updateData();
+      this.state.log = `${++count}`;
+    }, 2000);
+    this.blockSubscription = {
+      unsubscribe() {
+        clearInterval(interval);
+      },
+    };
   }
 
   removeWeb3Subscription() {

@@ -53,7 +53,7 @@ export default defineComponent({
         <PriceCalculation class="mb-8">
         <div class="info">
           <h3 class="mb-2">Liquidity provider rewards</h3>
-          <p class="text--small mb-2">Liquidity providers earn a percentage fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity. To learn more, reference of documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool">here</a></p>
+          <p class="text--small mb-2">Liquidity providers earn a percentage fee on all trades proportional to their share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity. To learn more, reference of documentation <a target="_blank" href="https://docs.sifchain.finance/roles/liquidity-providers">here</a></p>
         </div>
         </PriceCalculation>
         <PoolList class="mb-2">

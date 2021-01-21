@@ -30,7 +30,7 @@ git clone ssh://git@github.com/Sifchain/sifnode && cd sifnode
 3. Checkout the latest testnet release:
 
 ```
-git checkout tags/merry-go-round-1
+git checkout tags/merry-go-round-2
 ```
 
 4. Build:
@@ -48,7 +48,7 @@ rake "keys:generate:mnemonic"
 6. Scaffold your node:
 
 ```
-rake "genesis:sifnode:scaffold[merry-go-round, <moniker>, '<mnemonic>', '', a00c8a5f07d87754e9a2d428ad7e1877dbe12ddd@35.165.17.164:26656, http://35.165.17.164:26657/genesis]"
+rake "genesis:sifnode:scaffold[merry-go-round, <moniker>, '<mnemonic>', a75d98a0195596ce7043f7fe14a5498df6279bd3@34.212.71.53:26656, http://34.212.71.53:26657/genesis]"
 ```
 
 * Replace `<moniker>` with the moniker (name) of your node. 
@@ -87,13 +87,13 @@ sifnoded unsafe-reset-all
 4. Download the new genesis file:
 
 ```
-curl http://35.165.17.164:26657/genesis | jq '.result.genesis' > ~/.sifnoded/config/genesis.json
+curl http://34.212.71.53:26657/genesis | jq '.result.genesis' > ~/.sifnoded/config/genesis.json
 ```
 
 5. Update your persistent peers in the file `~/.sifnoded/config/config.toml` so that it reads: 
 
 ```
-persistent_peers = "a00c8a5f07d87754e9a2d428ad7e1877dbe12ddd@35.165.17.164:26656,231a0b22837c1ad627d34748ac27e21f540dbb87@54.195.149.238:26656,69b0b8fe353ea3e25b23fad18796056bdf5ce9c1@3.24.153.2:26656,38305e1e64fadb5f1201819d4a1d41f4f83cee60@52.77.101.121:26656"
+persistent_peers = "a75d98a0195596ce7043f7fe14a5498df6279bd3@34.212.71.53:26656,c4205fd291f3f8d163e0055d859e23ea1b31219a@34.248.75.35:26656,b77e0a8c16462f105669ad5966a10993cbf23205@52.65.129.116:26656,62a91f190ff08861f0602d146c39367b4be7589a@18.140.216.206:26656"
 ```
 
 6. Start your node:
@@ -116,21 +116,21 @@ and you should see the following primary validator node/s for Sifchain:
 
 ```
 validators:
-- address: sifvalcons1rcwmttxswcc8sqq5rp4ysj4gl8963a0kkfl7kc
-  pubkey: sifvalconspub1zcjduepqdgnxx8hl83tukd7ly2dg3jr5rf625na5p4vx0ccxqemkxr7f2wtsahhpyq
-  proposerpriority: -375000
-  votingpower: 1000000
-- address: sifvalcons1hd3u9fy64saqcndxgmwqcqlg8xt67x8vl9wse2
-  pubkey: sifvalconspub1zcjduepqj6fmv5pqdg9xfpuydmzv3lupve6cr4uefmfmvpmc54qwhmeh64qqc26amp
+- address: sifvalcons1vnys998s8d0xkl9lqvzwn6wp6hyfjlp9k7kyrf
+  pubkey: sifvalconspub1zcjduepqw0yxxc28dl2e5ruhzssmpah7kvlxgs0f7m54akcsv9ph529pqxhqmjna3h
   proposerpriority: 125000
   votingpower: 1000000
-- address: sifvalcons16n3fc45snzmhp8evw5pwlevff2t2rc6lk5de2g
-  pubkey: sifvalconspub1zcjduepqr3mjukr0hzr8xce22lfxq4fhwp8wwflga8jea3yzerf0rhr6m0uq5zf37k
-  proposerpriority: -125000
+- address: sifvalcons10qh4zdt9c6htlayjcm96t6umnndhh4049se4cl
+  pubkey: sifvalconspub1zcjduepqsu6vj3y2mpzq384q8f3xed85y5upv7gqzscxp0aegax4rg8uh93seezgwk
+  proposerpriority: -1125000
   votingpower: 1000000
-- address: sifvalcons1mgqwmk7le4geddltf8m0y2y5ym7sk823n0jdp0
-  pubkey: sifvalconspub1zcjduepqg5gwfe0eymzu8zqkuyhkqvfjqyd4d6rslm5qx3guxmj8jzjhrzzqwnu444
-  proposerpriority: 375000
+- address: sifvalcons1sqnsu6zd3tsqah9052xwsxjucauwfcrhx6xn7s
+  pubkey: sifvalconspub1zcjduepqu22nqvrq0dntlpa3d8fxx0wq8agc0jr66jkqy7nhc0pr0uujjlmqxam24v
+  proposerpriority: -1375000
+  votingpower: 1000000
+- address: sifvalcons16akkf32nnt44988u5skh0d9llpa2y7tawxumxh
+  pubkey: sifvalconspub1zcjduepqk8yrxfvg432qnq489s5pdnq5vg9v4459ewplek6vcmrcl2fp9h3qgha6qw
+  proposerpriority: 2375000
   votingpower: 1000000
 ```
 
@@ -141,10 +141,10 @@ Congratulations. You are now connected to the network.
 The following can be used as additional peers on the network:
 
 ```
-a00c8a5f07d87754e9a2d428ad7e1877dbe12ddd@35.165.17.164:26656
-231a0b22837c1ad627d34748ac27e21f540dbb87@54.195.149.238:26656
-69b0b8fe353ea3e25b23fad18796056bdf5ce9c1@3.24.153.2:26656
-38305e1e64fadb5f1201819d4a1d41f4f83cee60@52.77.101.121:26656
+a75d98a0195596ce7043f7fe14a5498df6279bd3@34.212.71.53:26656
+c4205fd291f3f8d163e0055d859e23ea1b31219a@34.248.75.35:26656
+b77e0a8c16462f105669ad5966a10993cbf23205@52.65.129.116:26656
+62a91f190ff08861f0602d146c39367b4be7589a@18.140.216.206:26656
 ```
 
 #### Become a Validator
@@ -166,12 +166,12 @@ sifnodecli tx staking create-validator \
     --commission-max-change-rate="0.1" \
     --commission-max-rate="0.1" \
     --commission-rate="0.1" \
-    --amount="1000000000000000000rowan" \
+    --amount="10000000000000000000rowan" \
     --pubkey=$(sifnoded tendermint show-validator) \
     --moniker=<moniker> \
     --chain-id=merry-go-round \
     --min-self-delegation="1" \
-    ---gas-prices="500000000000000000.0rowan" \
+    ---gas-prices="0.5rowan" \
     --from=<moniker> \
     --keyring-backend=file
 ```
