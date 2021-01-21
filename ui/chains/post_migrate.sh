@@ -35,6 +35,10 @@ cd $BASE_DIR/smart-contracts
 # Set token limits
 UPDATE_ADDRESS=0x0000000000000000000000000000000000000000 npx truffle exec scripts/setTokenLockBurnLimit.js 31000000000000000000
 UPDATE_ADDRESS=$BRIDGE_TOKEN_ADDRESS npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000
+UPDATE_ADDRESS=$ATK_ADDRESS npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000
+UPDATE_ADDRESS=$BTK_ADDRESS npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000
+UPDATE_ADDRESS=$USDC_ADDRESS npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000
+UPDATE_ADDRESS=$LINK_ADDRESS npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000
 
 # Whitelist test tokens
 yarn peggy:whiteList "$ATK_ADDRESS" true
