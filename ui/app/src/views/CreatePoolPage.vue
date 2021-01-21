@@ -134,18 +134,11 @@ export default defineComponent({
             return "Please enter an amount";
           case PoolState.INSUFFICIENT_FUNDS:
             return "Insufficient Funds";
-          case PoolState.ZERO_ROWAN: 
-            if (props.title === 'Create Pair')
-              return "Please enter an amount";
-            return "Add liquidity"
           case PoolState.VALID_INPUT:
             return preExistingPool.value ? "Add liquidity" : "Create Pool";
         }
       }),
       nextStepAllowed: computed(() => {
-        if (props.title === 'Add Liquidity') {
-          return state.value === PoolState.VALID_INPUT || state.value === PoolState.ZERO_ROWAN
-        } 
         return state.value === PoolState.VALID_INPUT;
       }),
       handleFromSymbolClicked(next: () => void) {
