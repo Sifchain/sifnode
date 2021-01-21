@@ -13,7 +13,6 @@ function logAmounts(o: any) {
   );
 }
 
-// XXX: Struggling with existing pool units being zero for some stupid reason...
 /**
  *
  * @param r Native amount added
