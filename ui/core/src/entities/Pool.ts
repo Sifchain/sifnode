@@ -8,7 +8,7 @@ import {
   calculatePriceImpact,
   calculateProviderFee,
   calculateReverseSwapResult,
-  calculateSwapResult, getDoubleSwapFee, getDoubleSwapOutputWithFee, getDoubleSwapSlip,
+  calculateSwapResult
 } from "./formulae";
 
 export type Pool = ReturnType<typeof Pool>;
@@ -60,8 +60,7 @@ export function Pool(
             x.asset.symbol
           } does not exist in this pair: ${this.toString()}`
         );
-      const priceImpact = calculatePriceImpact(x, X).multiply("100");
-      return AssetAmount(this.otherAsset(x.asset), priceImpact);
+      return calculatePriceImpact(x, X).multiply("100");
     },
 
     // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
@@ -185,11 +184,20 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
     },
 
     calcProviderFee(x: AssetAmount) {
-      return getDoubleSwapFee(x, pair1, pair2);
+      const [first, second] = pair1.contains(x.asset) ? [pair1, pair2] : [pair2, pair1];
+      const firstSwapFee = first.calcProviderFee(x);
+      const firstSwapOutput = first.calcSwapResult(x);
+      const secondSwapFee = second.calcProviderFee(firstSwapOutput);
+      const firstSwapFeeInOutputAsset = second.calcSwapResult(firstSwapFee);
+      return AssetAmount(second.otherAsset(firstSwapFee.asset), firstSwapFeeInOutputAsset.add(secondSwapFee));
     },
 
     calcPriceImpact(x: AssetAmount) {
-      return getDoubleSwapSlip(x, pair1, pair2);
+      const [first, second] = pair1.contains(x.asset) ? [pair1, pair2] : [pair2, pair1];
+      const firstPoolImpact = first.calcPriceImpact(x);
+      const r = first.calcSwapResult(x);
+      const secondPoolImpact = second.calcPriceImpact(r);
+      return firstPoolImpact.add(secondPoolImpact);
     },
 
     calcSwapResult(x: AssetAmount) {
