@@ -48,7 +48,7 @@ export function Pool(
         );
       const Y = amounts.find(a => a.asset.symbol !== x.asset.symbol);
       if (!Y) throw new Error("Pool does not have an opposite asset."); // For Typescript's sake will probably never happen
-      const providerFee = calculateProviderFee(X, x, Y);
+      const providerFee = calculateProviderFee(x, X, Y);
       return AssetAmount(this.otherAsset(x.asset), providerFee);
     },
 
