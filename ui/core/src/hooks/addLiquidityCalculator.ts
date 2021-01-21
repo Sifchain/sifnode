@@ -47,8 +47,6 @@ export function usePoolCalculator(input: {
 
   const preExistingPool = computed(() => {
     if (
-      !fromField.fieldAmount.value ||
-      !toField.fieldAmount.value ||
       !fromField.asset.value ||
       !toField.asset.value
     )
@@ -129,14 +127,21 @@ export function usePoolCalculator(input: {
   const state = computed(() => {
     if (!input.fromSymbol.value || !input.toSymbol.value)
       return PoolState.SELECT_TOKENS;
+
+    if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value) 
+      return PoolState.INSUFFICIENT_FUNDS;
+
     if (
-      fromField.fieldAmount.value?.equalTo("0") ||
-      toField.fieldAmount.value?.equalTo("0")
+      preExistingPool.value &&
+      fromField.fieldAmount.value?.equalTo("0") 
     )
       return PoolState.ZERO_AMOUNTS;
-    if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value) {
-      return PoolState.INSUFFICIENT_FUNDS;
-    }
+
+    if (
+      !preExistingPool.value && 
+      (fromField.fieldAmount.value?.equalTo("0") || toField.fieldAmount.value?.equalTo("0"))
+    )
+      return PoolState.ZERO_AMOUNTS;
 
     return PoolState.VALID_INPUT;
   });
