@@ -1,5 +1,6 @@
 import Big from "big.js";
-import { Fraction, IFraction } from "./fraction/Fraction";
+import {AssetAmount, IAssetAmount} from "./AssetAmount";
+import {Fraction, IFraction} from "./fraction/Fraction";
 
 /**
  *
@@ -136,7 +137,9 @@ export function calculateWithdrawal({
   };
 }
 
+// ( x * X * Y ) / ( x + X ) ^ 2
 export function calculateSwapResult(X: IFraction, x: IFraction, Y: IFraction) {
+  if (x.equalTo("0") || Y.equalTo("0")) return new Fraction("0");
   return x
     .multiply(X)
     .multiply(Y)
@@ -179,4 +182,21 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
 
   const x = numerator.div(denominator);
   return x;
+}
+
+// Formula: ( x^2 * Y ) / ( x + X )^2
+export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
+  if (x.equalTo("0") || Y.equalTo("0")) return new Fraction("0");
+  const xPlusX = x.add(X);
+  return x
+    .multiply(x)
+    .multiply(Y)
+    .divide(xPlusX.multiply(xPlusX));
+}
+
+// (x) / (x + X)
+export function calculatePriceImpact(x: IFraction, X: IFraction) {
+  if (x.equalTo("0")) return new Fraction("0");
+  const denominator = x.add(X);
+  return x.divide(denominator);
 }
