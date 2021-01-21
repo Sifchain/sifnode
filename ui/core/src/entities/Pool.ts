@@ -60,7 +60,7 @@ export function Pool(
             x.asset.symbol
           } does not exist in this pair: ${this.toString()}`
         );
-      const priceImpact = calculatePriceImpact(X, x).multiply("100");
+      const priceImpact = calculatePriceImpact(x, X).multiply("100");
       return AssetAmount(this.otherAsset(x.asset), priceImpact);
     },
 

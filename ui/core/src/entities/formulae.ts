@@ -173,12 +173,11 @@ export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
     .divide(xPlusX.multiply(xPlusX));
 }
 
-// x * (2*X + x) / (X * X)
-export function calculatePriceImpact(X: IFraction, x: IFraction) {
+// (x) / (x + X)
+export function calculatePriceImpact(x: IFraction, X: IFraction) {
   if (x.equalTo("0") || X.equalTo("0")) return new Fraction("0");
-  const numerator = X.multiply("2").add(x);
-  const denominator = X.multiply(X);
-  return x.multiply(numerator).divide(denominator);
+  const denominator = x.add(X);
+  return x.divide(denominator);
 }
 
 export const getSwapSlip = (x: AssetAmount, pool: IPool, toRowan: boolean): AssetAmount => {
