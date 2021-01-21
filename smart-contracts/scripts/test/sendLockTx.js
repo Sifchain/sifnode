@@ -6,9 +6,6 @@ module.exports = async (cb) => {
 
     const logging = sifchainUtilities.configureLogging(this);
 
-    const blockNumber = await web3.eth.getBlockNumber();
-    logging.debug(`blockNumber: ${blockNumber}`);
-
     const argv = sifchainUtilities.processArgs(this, {
         ...sifchainUtilities.sharedYargOptions,
         ...sifchainUtilities.transactionYargOptions
@@ -39,7 +36,13 @@ module.exports = async (cb) => {
                 value: coinDenom === NULL_ADDRESS ? amount : 0,
                 gas: argv.gas
             };
-            logging.debug(`Connected to contract, sending lock, request is ${JSON.stringify(request)}`)
+            let debugOutput = {
+                cosmosRecipient,
+                coinDenom,
+                amount,
+                request
+            }
+            logging.debug(`sending lock ${JSON.stringify(debugOutput, undefined, 0)}`);
             return instance.lock(cosmosRecipient, coinDenom, amount, request);
         });
 
@@ -56,7 +59,6 @@ module.exports = async (cb) => {
             token: event.args._token,
             value: Number(event.args._value),
             nonce: Number(event.args._nonce),
-            argv: argv,
         };
 
         logging.debug(`lockEvent is ${JSON.stringify(lockEvent, undefined, 2)}`);
