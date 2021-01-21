@@ -1,17 +1,5 @@
 import Big from "big.js";
-import { AssetAmount, IAssetAmount } from "./AssetAmount";
 import { Fraction, IFraction } from "./fraction/Fraction";
-
-function logAmounts(o: any) {
-  console.log(
-    Object.entries(o).reduce((obj, [k, v]: any) => {
-      return {
-        ...obj,
-        [k]: v.toFixed(0),
-      };
-    }, {})
-  );
-}
 
 /**
  *
@@ -29,7 +17,6 @@ export function calculatePoolUnits(
   A: IFraction, // External Balance (before)
   P: IFraction // existing Pool Units
 ) {
-  logAmounts({ r, a, R, A, P });
   if (A.equalTo("0") || R.equalTo("0")) {
     return r;
   }
