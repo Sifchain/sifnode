@@ -244,6 +244,20 @@ func TestBurnEthSuccess(t *testing.T) {
 	mintedCoins := sdk.Coins{sdk.NewCoin(coinsToMintSymbolLocked, coinsToMintAmount)}
 	require.True(t, receiverCoins.IsEqual(mintedCoins))
 
+	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
+	coinsToMintSymbol = "eth"
+	testEthereumAddress = types.NewEthereumAddress(types.AltTestEthereumAddress)
+
+	ethClaim1 = types.CreateTestEthClaim(
+		t, testEthereumAddress, testTokenContractAddress,
+		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.LockText)
+	ethMsg1 = NewMsgCreateEthBridgeClaim(ethClaim1)
+
+	// Initial message succeeds and mints eth
+	res, err = handler(ctx, ethMsg1)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+
 	coinsToBurnAmount := sdk.NewInt(3)
 	coinsToBurnSymbol := "ether"
 	coinsToBurnSymbolPrefixed := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, coinsToBurnSymbol)
@@ -304,7 +318,21 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
 	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
-	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
+	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin("ceth", sdk.NewInt(65000000000*300000)), sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
+
+	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
+	coinsToMintSymbol = "eth"
+	testEthereumAddress = types.NewEthereumAddress(types.Alt2TestEthereumAddress)
+
+	ethClaim1 = types.CreateTestEthClaim(
+		t, testEthereumAddress, testTokenContractAddress,
+		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.LockText)
+	ethMsg1 = NewMsgCreateEthBridgeClaim(ethClaim1)
+
+	// Initial message succeeds and mints eth
+	res, err = handler(ctx, ethMsg1)
+	require.NoError(t, err)
+	require.NotNil(t, res)
 
 	// Third message failed since pegged token can be lock.
 	lockMsg := types.CreateTestLockMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,

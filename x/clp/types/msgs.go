@@ -51,14 +51,15 @@ func (m MsgDecommissionPool) GetSigners() []sdk.AccAddress {
 }
 
 type MsgSwap struct {
-	Signer        sdk.AccAddress
-	SentAsset     Asset
-	ReceivedAsset Asset
-	SentAmount    sdk.Uint
+	Signer             sdk.AccAddress
+	SentAsset          Asset
+	ReceivedAsset      Asset
+	SentAmount         sdk.Uint
+	MinReceivingAmount sdk.Uint
 }
 
-func NewMsgSwap(signer sdk.AccAddress, sentAsset Asset, receivedAsset Asset, sentAmount sdk.Uint) MsgSwap {
-	return MsgSwap{Signer: signer, SentAsset: sentAsset, ReceivedAsset: receivedAsset, SentAmount: sentAmount}
+func NewMsgSwap(signer sdk.AccAddress, sentAsset Asset, receivedAsset Asset, sentAmount sdk.Uint, minReceivingAmount sdk.Uint) MsgSwap {
+	return MsgSwap{Signer: signer, SentAsset: sentAsset, ReceivedAsset: receivedAsset, SentAmount: sentAmount, MinReceivingAmount: minReceivingAmount}
 }
 
 func (m MsgSwap) Route() string {

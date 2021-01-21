@@ -1,8 +1,15 @@
 #!/bin/bash
 
 # This script should be run with a CWD that is the local folder
-. ../credentials.sh
-. ../../../smart-contracts/.env
+. $PWD/../credentials.sh
+
+if [[ -f "$PWD/../../../smart-contracts/.env" ]]; then
+  . $PWD/../../../smart-contracts/.env
+fi
+
+# Required to run ebrelayer
+export BRIDGE_TOKEN_ADDRESS=$(cat $PWD/../../../smart-contracts/build/contracts/BridgeToken.json | jq -r '.networks["5777"].address')
+export BRIDGE_REGISTRY_ADDRESS=$(cat $PWD/../../../smart-contracts/build/contracts/BridgeRegistry.json | jq -r '.networks["5777"].address') 
 
 echo "  "
 echo "-----------------------------------------------------"

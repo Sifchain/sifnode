@@ -3,6 +3,7 @@ pragma solidity 0.5.16;
 import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./BridgeToken.sol";
 import "./CosmosBankStorage.sol";
+import "./ToLower.sol";
 
 /**
  * @title CosmosBank
@@ -10,7 +11,7 @@ import "./CosmosBankStorage.sol";
  *      which represent assets based on the Cosmos blockchain.
  **/
 
-contract CosmosBank is CosmosBankStorage {
+contract CosmosBank is CosmosBankStorage, ToLower {
     using SafeMath for uint256;
 
     /*
@@ -39,6 +40,15 @@ contract CosmosBank is CosmosBankStorage {
         return (controlledBridgeTokens[_symbol]);
     }
 
+    function safeLowerToUpperTokens(string memory _symbol)
+        public
+        view
+        returns (string memory)
+    {
+        string memory retrievedSymbol = lowerToUpperTokens[_symbol];
+        return keccak256(abi.encodePacked(retrievedSymbol)) == keccak256("") ? _symbol : retrievedSymbol;
+    }
+
     /*
      * @dev: Deploys a new BridgeToken contract
      *
@@ -56,6 +66,7 @@ contract CosmosBank is CosmosBankStorage {
         // Set address in tokens mapping
         address newBridgeTokenAddress = address(newBridgeToken);
         controlledBridgeTokens[_symbol] = newBridgeTokenAddress;
+        lowerToUpperTokens[toLower(_symbol)] = _symbol;
 
         emit LogNewBridgeToken(newBridgeTokenAddress, _symbol);
         return newBridgeTokenAddress;
@@ -78,6 +89,7 @@ contract CosmosBank is CosmosBankStorage {
         // Set address in tokens mapping
         address newBridgeTokenAddress = _contractAddress;
         controlledBridgeTokens[_symbol] = newBridgeTokenAddress;
+        lowerToUpperTokens[toLower(_symbol)] = _symbol;
 
         emit LogNewBridgeToken(newBridgeTokenAddress, _symbol);
         return newBridgeTokenAddress;

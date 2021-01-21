@@ -57,11 +57,13 @@ export default defineComponent({
       return Array.isArray(assetFrom) ? assetFrom[0] : assetFrom;
     });
     const amount = ref("0.0");
-    const address = toRefs(store.wallet.sif).address;
+    const address = computed(() =>
+      mode.value === "peg" ? store.wallet.sif.address : store.wallet.eth.address
+    );
 
     async function handlePeg() {
       try {
-        await actions.peg.lock(
+        await actions.peg.peg(
           AssetAmount(Asset.get(symbol.value), amount.value)
         );
         router.push("/peg");
@@ -72,7 +74,7 @@ export default defineComponent({
 
     async function handleUnpeg() {
       try {
-        await actions.peg.burn(
+        await actions.peg.unpeg(
           AssetAmount(Asset.get(symbol.value), amount.value)
         );
         router.push("/peg");

@@ -5,7 +5,7 @@ import {
   Msg,
   Secp256k1HdWallet,
 } from "@cosmjs/launchpad";
-import {reactive, trigger} from "@vue/reactivity";
+import { reactive } from "@vue/reactivity";
 import { debounce } from "lodash";
 import { Address, Asset, AssetAmount, Network, TxParams } from "../../entities";
 
@@ -14,13 +14,13 @@ import { IWalletService } from "../IWalletService";
 import { SifClient, SifUnSignedClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 import getKeplrProvider from "./getKeplrProvider";
+import { KeplrChainConfig } from "../../utils/parseConfig";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
   sifWsUrl: string;
-  // todo fix
-  keplrChainConfig: any;
+  keplrChainConfig: KeplrChainConfig;
   assets: Asset[];
 };
 type HandlerFn<T> = (a: T) => void;
@@ -61,7 +61,8 @@ export default function createSifService({
     log: "unset",
   });
 
-  const keplrProvider = getKeplrProvider();
+  const keplrProviderPromise = getKeplrProvider();
+
   let client: SifClient | null = null;
   let closeUpdateListener = () => {};
 
@@ -91,7 +92,6 @@ export default function createSifService({
 
   const triggerUpdate = debounce(
     async () => {
-      console.log("triggerUpdate" + client?.senderAddress);
       if (!client) {
         state.connected = false;
         state.address = "";
@@ -127,6 +127,8 @@ export default function createSifService({
     },
 
     async connect() {
+      const keplrProvider = await keplrProviderPromise;
+
       // connect to Keplr
       console.log("connect service", keplrChainConfig, keplrProvider);
       if (!keplrProvider) {
@@ -199,6 +201,7 @@ export default function createSifService({
           triggerUpdate();
         });
         triggerUpdate();
+
         return client.senderAddress;
       } catch (error) {
         throw error;
@@ -211,7 +214,7 @@ export default function createSifService({
       closeUpdateListener();
     },
 
-    async getBalance(address?: Address): Promise<AssetAmount[]> {
+    async getBalance(address?: Address, asset?: Asset): Promise<AssetAmount[]> {
       if (!client) throw "No client. Please sign in.";
       if (!address) throw "Address undefined. Fail";
 
@@ -219,9 +222,7 @@ export default function createSifService({
 
       try {
         const account = await client.getAccount(address);
-        console.log(account);
         if (!account) throw "No Address found on chain";
-
         const supportedTokenSymbols = supportedTokens.map(s => s.symbol);
         const balances = account.balance
           .filter(balance => supportedTokenSymbols.includes(balance.denom))
@@ -231,7 +232,15 @@ export default function createSifService({
             )!; // will be found because of filter above
 
             return AssetAmount(asset, amount, { inBaseUnit: true });
+          })
+          .filter(balance => {
+            // If an aseet is supplied filter for it
+            if (!asset) {
+              return true;
+            }
+            return balance.asset.symbol === asset.symbol;
           });
+
         return balances;
       } catch (error) {
         throw error;

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { computed, ref } from "@vue/reactivity";
 import { defineComponent, PropType } from "vue";
-import { useAssetItem } from "@/components/shared/utils";
+import { getAssetLabel, useAssetItem } from "@/components/shared/utils";
 import { LiquidityProvider, Pool } from "ui-core";
 
 export default defineComponent({
@@ -12,8 +12,10 @@ export default defineComponent({
   },
 
   setup(props) {
-    const fromSymbol = computed(
-      () => props.accountPool?.pool.amounts[1].asset.symbol ?? ""
+    const fromSymbol = computed(() =>
+      props.accountPool?.pool.amounts[1].asset
+        ? getAssetLabel(props.accountPool?.pool.amounts[1].asset)
+        : ""
     );
     const fromAsset = useAssetItem(fromSymbol);
     const fromToken = fromAsset.token;
@@ -24,8 +26,10 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    const toSymbol = computed(
-      () => props.accountPool?.pool.amounts[0].asset.symbol ?? ""
+    const toSymbol = computed(() =>
+      props.accountPool?.pool.amounts[0].asset
+        ? getAssetLabel(props.accountPool?.pool.amounts[0].asset)
+        : ""
     );
     const toAsset = useAssetItem(toSymbol);
     const toToken = toAsset.token;
@@ -69,9 +73,9 @@ export default defineComponent({
       <div class="placeholder" :style="toBackgroundStyle" v-else></div>
     </div>
     <div class="symbol">
-      <span>{{ fromSymbol.toUpperCase() }}</span>
+      <span>{{ fromSymbol }}</span>
       /
-      <span>{{ toSymbol.toUpperCase() }}</span>
+      <span>{{ toSymbol }}</span>
     </div>
     <div class="button">Manage</div>
   </div>
