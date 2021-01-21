@@ -14,11 +14,28 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
     get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
 
 
+def decrease_log_level(new_level):
+    logger = logging.getLogger()
+    existing_level = logger.level
+    if new_level > existing_level:
+        logger.setLevel(new_level)
+    return existing_level
+
+
+def force_log_level(new_level):
+    logger = logging.getLogger()
+    existing_level = logger.level
+    logger.setLevel(new_level)
+    return existing_level
+
+
 def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest, max_seconds: int = 30):
     logging.debug(f"transfer_ethereum_to_sifchain {transfer_request.as_json()}")
 
     # it's possible that this is the first transfer to the address, so there's
     # no balance to retrieve.  Catch that exception.
+
+    original_log_level = decrease_log_level(logging.WARNING)
 
     try:
         sifchain_starting_balance = get_sifchain_addr_balance(
@@ -37,7 +54,11 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     }
     logging.debug(f"transfer_ethereum_to_sifchain_json: {json.dumps(status)}", )
 
+    force_log_level(original_log_level)
     send_tx = send_from_ethereum_to_sifchain(transfer_request)
+    original_log_level = decrease_log_level(logging.WARNING)
+
+
     starting_block = current_ethereum_block_number(transfer_request.smart_contracts_dir)
     half_n_wait_blocks = n_wait_blocks / 2 + 1
     logging.debug("wait half the blocks, transfer should not complete")
@@ -75,6 +96,8 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
 
     target_balance = sifchain_starting_balance + transfer_request.amount
 
+    # You can't get the balance of an account that doesn't exist yet,
+    # so wait for the account to be there before asking for the balance
     logging.debug(f"wait for account {transfer_request.sifchain_address}")
     wait_for_sif_account(
         sif_addr=transfer_request.sifchain_address,
@@ -91,12 +114,14 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
         debug_prefix=f"transfer_ethereum_to_sifchain waiting for balance {transfer_request}"
     )
 
+    force_log_level(original_log_level)
+
     result = {
         **status,
         "sifchain_ending_balance": target_balance,
         "send_tx": send_tx
     }
-    logging.debug(f"account created {result}")
+    logging.debug(f"transfer_ethereum_to_sifchain completed {result}")
     return result
 
 
@@ -106,6 +131,7 @@ def transfer_sifchain_to_ethereum(
 ):
     logging.debug(f"transfer_sifchain_to_ethereum_json: {transfer_request.as_json()}")
 
+    original_log_level = decrease_log_level(logging.WARNING)
     ethereum_starting_balance = get_eth_balance(transfer_request)
 
     sifchain_starting_balance = get_sifchain_addr_balance(
@@ -121,7 +147,9 @@ def transfer_sifchain_to_ethereum(
     }
     logging.debug(status)
 
+    force_log_level(original_log_level)
     send_tx = send_from_sifchain_to_ethereum(transfer_request, credentials)
+    original_log_level = decrease_log_level(logging.WARNING)
 
     target_balance = ethereum_starting_balance + transfer_request.amount
 
@@ -137,6 +165,7 @@ def transfer_sifchain_to_ethereum(
         transfer_request.sifchain_symbol
     )
 
+    force_log_level(original_log_level)
     logging.debug(f"transfer_sifchain_to_ethereum_complete_json: {json.dumps(send_tx)}")
 
     return {

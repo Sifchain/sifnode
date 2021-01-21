@@ -142,7 +142,8 @@ contract("CosmosBridge", function (accounts) {
 
       // Deploy TEST tokens
       this.symbol = "TEST";
-      this.token = await BridgeToken.new(this.symbol);
+      this.actualSymbol = "eTEST"
+      this.token = await BridgeToken.new(this.actualSymbol);
       this.amount = 100;
 
       // sifchain address
@@ -187,16 +188,17 @@ contract("CosmosBridge", function (accounts) {
 
       const event = logs.find(e => e.event === "LogLock");
       event.args._token.should.be.equal(this.token.address);
-      event.args._symbol.should.be.equal(this.symbol);
-      Number(event.args._value).should.be.bignumber.equal(Number(this.amount));
+      event.args._symbol.should.be.equal(this.actualSymbol);
+      Number(event.args._value).should.be.equal(Number(this.amount));
 
       const nonce = 0;
+
       await this.cosmosBridge.newProphecyClaim(
         CLAIM_TYPE_BURN,
         this.cosmosSender,
         this.cosmosSenderSequence,
         userFour,
-        this.symbol,
+        this.actualSymbol.toLowerCase(),
         this.amount,
         {
           from: userOne
@@ -255,7 +257,7 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosSender,
         ++this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.symbol,
+        this.symbol.toLowerCase(),
         this.amount,
         {
           from: userOne
@@ -264,11 +266,11 @@ contract("CosmosBridge", function (accounts) {
 
       const event = logs.find(e => e.event === "LogNewProphecyClaim");
 
-      Number(event.args._claimType).should.be.bignumber.equal(CLAIM_TYPE_LOCK);
+      Number(event.args._claimType).should.be.equal(CLAIM_TYPE_LOCK);
 
       event.args._ethereumReceiver.should.be.equal(this.ethereumReceiver);
       event.args._symbol.should.be.equal(defaultTokenPrefix + this.symbol);
-      Number(event.args._amount).should.be.bignumber.equal(this.amount);
+      Number(event.args._amount).should.be.equal(this.amount);
     });
 
     it("should be able to create a new prophecy claim", async function () {
@@ -289,7 +291,7 @@ contract("CosmosBridge", function (accounts) {
     it("should not allow a eth to be locked if the amount is over the limit", async function () {
       const maxLockAmount = Number(await this.bridgeBank.maxTokenAmount("ETH"));
       // Calculate and check expected max lock amount
-      maxLockAmount.should.be.bignumber.equal(Number(0));
+      maxLockAmount.should.be.equal(Number(0));
       
       await expectRevert(
         this.bridgeBank.lock(
@@ -312,7 +314,7 @@ contract("CosmosBridge", function (accounts) {
       
       const maxLockAmount = Number(await this.bridgeBank.maxTokenAmount(await this.token.symbol()));
       // Calculate and check expected balances
-      maxLockAmount.should.be.bignumber.equal(Number(0));
+      maxLockAmount.should.be.equal(Number(0));
       
       // Approve tokens to bridge bank contract
       await this.token.approve(this.bridgeBank.address, this.amount, {
@@ -350,6 +352,8 @@ contract("CosmosBridge", function (accounts) {
       this.ethereumReceiver = userOne;
       this.tokenAddress = "0x0000000000000000000000000000000000000000";
       this.symbol = "TEST";
+      this.actualSymbol = "eTEST"
+      this.token = await BridgeToken.new(this.actualSymbol);
       this.amount = 100;
 
       // Deploy Valset contract
@@ -379,6 +383,17 @@ contract("CosmosBridge", function (accounts) {
       await this.cosmosBridge.setBridgeBank(this.bridgeBank.address, {
         from: operator
       });
+      // Add the token into white list
+      await this.bridgeBank.addExistingBridgeToken(this.token.address, {
+        from: operator
+      }).should.be.fulfilled;
+
+      // Update the lock/burn limit for this token
+      await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
+        from: operator
+      }).should.be.fulfilled;
+      await this.token.addMinter(this.bridgeBank.address);
+
     });
 
     it("should allow users to check if a prophecy claim is currently active", async function () {
@@ -443,7 +458,7 @@ contract("CosmosBridge", function (accounts) {
           this.cosmosSender,
           this.cosmosSenderSequence,
           this.ethereumReceiver,
-          this.symbol,
+          this.symbol.toLowerCase(),
           this.amount,
           {
             from: this.initialValidators[i]
@@ -457,7 +472,7 @@ contract("CosmosBridge", function (accounts) {
           this.cosmosSender,
           this.cosmosSenderSequence,
           this.ethereumReceiver,
-          this.symbol,
+          this.symbol.toLowerCase(),
           this.amount,
           {
             from: this.initialValidators[ (this.initialValidators.length - 1) ]
@@ -470,7 +485,7 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.symbol,
+        this.symbol.toLowerCase(),
         this.amount,
       )).toString();
 
