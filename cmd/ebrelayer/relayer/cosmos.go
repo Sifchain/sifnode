@@ -6,11 +6,13 @@ import (
 	"bytes"
 	"context"
 	"crypto/ecdsa"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"math/big"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -18,11 +20,9 @@ import (
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
-	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	tmKv "github.com/tendermint/tendermint/libs/kv"
 	tmLog "github.com/tendermint/tendermint/libs/log"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	tmTypes "github.com/tendermint/tendermint/types"
@@ -105,11 +105,13 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
-					// Parse event data, then package it as a ProphecyClaim and relay to the Ethereum Network
-					err := sub.handleBurnLockMsg(event.GetAttributes(), claimType)
+					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
 					if err != nil {
-						sub.Logger.Error(err.Error())
+						fmt.Println(err)
+						continue
 					}
+					// Parse event data, then package it as a ProphecyClaim and relay to the Ethereum Network
+					sub.handleBurnLockMsg(cosmosMsg, claimType)
 				}
 			}
 		case <-quit:
@@ -118,105 +120,122 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	}
 }
 
-func (sub CosmosSub) getAll(ethFromBlock int64, ethToBlock int64) error {
-	log.Printf("getAll %d %d\n", ethFromBlock, ethToBlock)
+func (sub CosmosSub) getAllProphecyClaim(ethFromBlock int64, ethToBlock int64) []types.ProphecyClaimUnique {
+	log.Printf("getAllProphecyClaim from %d block to %d block\n", ethFromBlock, ethToBlock)
+
+	var prophecyClaimArray []types.ProphecyClaimUnique
+
 	// Start Ethereum client
 	client, err := ethclient.Dial(sub.EthProvider)
 	if err != nil {
 		log.Printf("%s \n", err.Error())
-		return nil
+		return prophecyClaimArray
 	}
 
 	clientChainID, err := client.NetworkID(context.Background())
 	if err != nil {
-		sub.Logger.Error(err.Error())
-		return nil
+		log.Printf("%s \n", err.Error())
+		return prophecyClaimArray
 	}
 	log.Printf("clientChainID is %d \n", clientChainID)
 
-	// Used to recover address from transaction
+	// Used to recover address from transaction, the clientChainID doesn't work in ganache, hardcoded to 1
 	eIP155Signer := ethTypes.NewEIP155Signer(big.NewInt(1))
 
 	// Load the validator's ethereum address
-	_, err = txs.LoadSender()
+	mySender, err := txs.LoadSender()
 	if err != nil {
 		log.Println(err)
-		return nil
+		return prophecyClaimArray
 	}
 
 	CosmosBridgeContractABI := contract.LoadABI(txs.CosmosBridge)
 	methodID := CosmosBridgeContractABI.Methods[types.NewProphecyClaim.String()].ID()
 
-	fmt.Printf(" argument is %s \n", CosmosBridgeContractABI.Methods[types.NewProphecyClaim.String()].String())
-
-	// method := types.NewProphecyClaim.String()
-	fmt.Printf("method ID is %v \n", methodID)
-
 	for blockNumber := ethFromBlock; blockNumber < ethToBlock; {
-		fmt.Printf("loop blockNumber is %d \n", blockNumber)
+		log.Printf("getAllProphecyClaim current blockNumber is %d\n", blockNumber)
 
 		block, err := client.BlockByNumber(context.Background(), big.NewInt(blockNumber))
 		if err != nil {
+			log.Printf("failed to get block from ethereum, block number is %d\n", blockNumber)
 			blockNumber++
 			continue
 		}
+
 		for _, tx := range block.Transactions() {
-
+			// recover sender from tx
 			sender, err := eIP155Signer.Sender(tx)
-
 			if err != nil {
+				log.Println("failed to recover sender from tx")
 				continue
 			}
-			fmt.Printf("sender is %s \n", sender.String())
 
-			_, err = CosmosBridgeContractABI.MethodById(methodID)
-
-			if err != nil {
-				fmt.Println("sender print is  2")
-				log.Fatal(err)
+			// compare tx sender with my ethereum account
+			if sender != mySender {
+				// the prophecy claim not sent by me
+				continue
 			}
 
-			fmt.Printf("Data method part  is  %v \n", tx.Data()[:])
+			// compare method id to check if it is NewProphecyClaim method
 			if bytes.Compare(tx.Data()[0:4], methodID) != 0 {
 				continue
 			}
 
-			type FunctionInputs struct {
-				ClaimType            ethbridge.ClaimType
-				CosmosSenderSequence *big.Int
-				EthereumReceiver     common.Address
-				Amount               *big.Int
-				CosmosSender         []byte
-				Symbol               string
-			}
-
-			functionInputs := FunctionInputs{}
-
-			err = CosmosBridgeContractABI.Unpack(&functionInputs, types.NewProphecyClaim.String(), tx.Data())
-
+			// decode data via a hardcode method since the abi unpack failed
+			prophecyClaim, err := MyDecode(tx.Data()[4:])
 			if err != nil {
-				fmt.Printf(" errir is %s \n", err.Error())
+				fmt.Printf("decode prophecy claim failed with %s \n", err.Error())
 				continue
 			}
 
-			fmt.Printf("functionInputs is %v\n", functionInputs)
+			// put matched prophecyClaim into result
+			prophecyClaimArray = append(prophecyClaimArray, prophecyClaim)
 		}
 		blockNumber++
 	}
-	return nil
+	return prophecyClaimArray
+}
+
+// MyDecode decode data in ProphecyClaim transaction
+func MyDecode(data []byte) (types.ProphecyClaimUnique, error) {
+
+	src := data[64:96]
+	dst := make([]byte, hex.EncodedLen(len(src)))
+	hex.Encode(dst, src)
+
+	sequence, err := strconv.ParseUint(string(dst), 16, 32)
+	if err != nil {
+		fmt.Printf("Decode data failed with %s \n", err.Error())
+		return types.ProphecyClaimUnique{}, err
+	}
+	fmt.Printf("CosmosSenderSequence is %d \n", sequence)
+
+	// the length of sifnode acc account is 42
+	cosmosSender := string(data[32*7 : 32*7+42])
+	fmt.Printf("CosmosSender is %s \n", cosmosSender)
+
+	return types.ProphecyClaimUnique{
+		CosmosSenderSequence: big.NewInt(int64(sequence)),
+		CosmosSender:         data[32*7 : 32*7+42],
+	}, nil
+}
+
+// MessageProcessed check if cosmogs message already processed
+func MessageProcessed(message types.CosmosMsg, prophecyClaims []types.ProphecyClaimUnique) bool {
+	for _, prophecyClaim := range prophecyClaims {
+		if bytes.Compare(message.CosmosSender, prophecyClaim.CosmosSender) == 0 &&
+			message.CosmosSenderSequence.Cmp(prophecyClaim.CosmosSenderSequence) == 0 {
+			return true
+		}
+	}
+	return false
 }
 
 // Replay the missed events
 func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
-	err := sub.getAll(ethFromBlock, ethToBlock)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+	ProphecyClaims := sub.getAllProphecyClaim(ethFromBlock, ethToBlock)
 
-	if fromBlock > 0 {
-		return
-	}
+	fmt.Printf("found out %d prophecy claims I sent from %d to %d block", len(ProphecyClaims), ethFromBlock, ethToBlock)
 
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
@@ -256,10 +275,14 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
-					// Parse event data, then package it as a ProphecyClaim and relay to the Ethereum Network
-					err := sub.handleBurnLockMsg(event.GetAttributes(), claimType)
+					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
 					if err != nil {
-						sub.Logger.Error(err.Error())
+						fmt.Println(err)
+						continue
+					}
+
+					if !MessageProcessed(cosmosMsg, ProphecyClaims) {
+						sub.handleBurnLockMsg(cosmosMsg, claimType)
 					}
 				}
 			}
@@ -282,20 +305,13 @@ func getOracleClaimType(eventType string) types.Event {
 }
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
-func (sub CosmosSub) handleBurnLockMsg(attributes []tmKv.Pair, claimType types.Event) error {
-	cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, attributes)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
+func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType types.Event) {
 	sub.Logger.Info(cosmosMsg.String())
 
 	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
-	err = txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
+	err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
 		claimType, prophecyClaim, sub.PrivateKey)
 	if err != nil {
 		fmt.Println(err)
-		return err
 	}
-	return nil
 }

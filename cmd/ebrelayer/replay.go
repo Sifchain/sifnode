@@ -71,6 +71,16 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [to-block]: %s", args[6])
 	}
 
+	cosmosFromBlock, err := strconv.ParseInt(args[7], 10, 64)
+	if err != nil {
+		return errors.Errorf("invalid [from-block]: %s", args[7])
+	}
+
+	cosmosToBlock, err := strconv.ParseInt(args[8], 10, 64)
+	if err != nil {
+		return errors.Errorf("invalid [to-block]: %s", args[8])
+	}
+
 	// Universal logger
 	logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
 
@@ -83,7 +93,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	ethSub.Replay(fromBlock, toBlock)
+	ethSub.Replay(fromBlock, toBlock, cosmosFromBlock, cosmosToBlock)
 
 	return nil
 }

@@ -269,10 +269,9 @@ func (sub EthereumSub) getAllClaims(fromBlock int64, toBlock int64) []types.Ethe
 
 					// Check if sender is me
 					if claim.CosmosSender.Equals(sub.ValidatorAddress) {
+						sub.Logger.Info("We got a eth bridge claim message %s", claim.EthereumSender.String())
 						claimArray = append(claimArray, claim)
 					}
-					sub.Logger.Info("We got a eth bridge claim message %s", claim.EthereumSender.String())
-
 				}
 			}
 		}
@@ -281,12 +280,22 @@ func (sub EthereumSub) getAllClaims(fromBlock int64, toBlock int64) []types.Ethe
 	return claimArray
 }
 
-// Replay the missed events
-func (sub EthereumSub) Replay(fromBlock int64, toBlock int64) {
-	result := sub.getAllClaims(fromBlock, toBlock)
-	if len(result) > 0 {
-		return
+// EventProcessed check if the event processed by relayer
+func EventProcessed(bridgeClaims []types.EthereumBridgeClaim, event types.EthereumEvent) bool {
+	for _, claim := range bridgeClaims {
+		if event.From == claim.EthereumSender && event.Nonce == claim.Nonce.BigInt() {
+			return true
+		}
 	}
+	return false
+}
+
+// Replay the missed events
+func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64) {
+	sub.Logger.Info(fmt.Sprintf("ethereum replay for %d block to %d block\n", fromBlock, toBlock))
+
+	bridgeClaims := sub.getAllClaims(cosmosFromBlock, cosmosToBlock)
+	sub.Logger.Info(fmt.Sprintf("ethereum replay for %d block to %d block\n", fromBlock, toBlock))
 
 	client, err := SetupRPCEthClient(sub.EthProvider)
 	if err != nil {
@@ -328,7 +337,9 @@ func (sub EthereumSub) Replay(fromBlock int64, toBlock int64) {
 		if err != nil {
 			sub.Logger.Error("Failed to get event from ethereum log")
 		} else if isBurnLock {
-			sub.handleEthereumEvent(event)
+			if !EventProcessed(bridgeClaims, event) {
+				sub.handleEthereumEvent(event)
+			}
 		}
 	}
 }
