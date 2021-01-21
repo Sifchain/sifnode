@@ -43,9 +43,6 @@ export default defineComponent({
     <div>
       <div class="heading mb-8">
         <h3>Your Liquidity</h3>
-        <router-link to="/pool/create-pool" class="pr-4"
-          ><SifButton primaryOutline nocase>Create Pair</SifButton></router-link
-        >&nbsp;
         <router-link to="/pool/add-liquidity"
           ><SifButton primary nocase>Add Liquidity</SifButton></router-link
         >
