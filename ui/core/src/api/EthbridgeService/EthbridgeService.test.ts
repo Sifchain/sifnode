@@ -39,7 +39,7 @@ describe("EthbridgeService", () => {
 
   // Values here are not working so skipping
   // Skipping as there is an issue with this test however works fine manually testing
-  test.skip("lock and burn eth <-> ceth", async () => {
+  test("eth -> ceth -> eth", async () => {
     // Setup services
     const sifService = await createTestSifService(juniper);
     const ethService = await createTestEthService();
