@@ -36,8 +36,8 @@ sifnode:
     chainnet:
     moniker:
     minCLPCreatePoolThreshold: "100"
-    govDepositParamsMaxDepositPeriod: "25"
-    govVotingParamsVotingPeriod: "25"
+    govDepositParamsMaxDepositPeriod: "900000000000"
+    govVotingParamsVotingPeriod: "900000000000"
   service:
     type: LoadBalancer
 
