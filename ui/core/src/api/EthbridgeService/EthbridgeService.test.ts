@@ -178,7 +178,6 @@ describe("EthbridgeService", () => {
       ),
     });
 
-    // const ethereumChainId = await web3.eth.net.getId();
     expect(msg.value.msg).toEqual([
       {
         type: "ethbridge/MsgLock",
