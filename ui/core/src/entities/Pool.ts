@@ -4,7 +4,7 @@ import {Pair} from "./Pair";
 import Big from "big.js";
 import {Fraction} from "./fraction/Fraction";
 import {
-  calcLpUnits,
+  calculatePoolUnits,
   calculatePriceImpact,
   calculateProviderFee,
   calculateReverseSwapResult,
@@ -15,8 +15,8 @@ export type Pool = ReturnType<typeof Pool>;
 export type IPool = Omit<Pool, "poolUnits" | "calculatePoolUnits">;
 
 export function Pool(
-  a: AssetAmount,
-  b: AssetAmount,
+  a: AssetAmount, // native asset
+  b: AssetAmount, // external asset
   poolUnits: Fraction = new Fraction("0")
 ) {
   const pair = Pair(a, b);
@@ -28,10 +28,12 @@ export function Pool(
     symbol: pair.symbol,
     contains: pair.contains,
     toString: pair.toString,
-    poolUnits: calcLpUnits(
-      [AssetAmount(a.asset, "0"), AssetAmount(b.asset, "0")],
+    poolUnits: calculatePoolUnits(
       a,
-      b
+      b,
+      new Fraction("0"),
+      new Fraction("0"),
+      poolUnits
     ),
 
     priceAsset(asset: Asset) {
@@ -108,10 +110,13 @@ export function Pool(
       nativeAssetAmount: AssetAmount,
       externalAssetAmount: AssetAmount
     ) {
-      const lpUnits = calcLpUnits(
-        amounts,
+      const [nativeBalanceBefore, externalBalanceBefore] = amounts;
+      const lpUnits = calculatePoolUnits(
         nativeAssetAmount,
-        externalAssetAmount
+        externalAssetAmount,
+        nativeBalanceBefore,
+        externalBalanceBefore,
+        this.poolUnits
       );
 
       const poolUnits = lpUnits.add(this.poolUnits);
@@ -127,18 +132,17 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
   // The combined asset is the
   const pair1Assets = pair1.amounts.map(a => a.asset.symbol);
   const pair2Assets = pair2.amounts.map(a => a.asset.symbol);
+  const nativeSymbol = pair1Assets.find(value => pair2Assets.includes(value));
 
-  const rowan = pair1Assets.find(value => pair2Assets.includes(value));
-
-  if (!rowan) {
+  if (!nativeSymbol) {
     throw new Error(
       "Cannot create composite pair because pairs do not share a common symbol"
     );
   }
 
   const amounts = [
-    ...pair1.amounts.filter(a => a.asset.symbol !== rowan),
-    ...pair2.amounts.filter(a => a.asset.symbol !== rowan),
+    ...pair1.amounts.filter(a => a.asset.symbol !== nativeSymbol),
+    ...pair2.amounts.filter(a => a.asset.symbol !== nativeSymbol),
   ];
 
   if (amounts.length !== 2) {
