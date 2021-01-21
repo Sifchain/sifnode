@@ -56,6 +56,7 @@ func init() {
 		"gas limit to set per-transaction; set to %q to calculate required gas automatically (default %d)",
 		flags.GasFlagAuto, flags.DefaultGasLimit,
 	))
+	rootCmd.PersistentFlags().String(flags.FlagGasPrices, "", "Gas prices to determine the transaction fee (e.g. 10uatom)")
 	rootCmd.PersistentFlags().Float64(flags.FlagGasAdjustment, flags.DefaultGasAdjustment, "gas adjustment")
 	rootCmd.PersistentPreRunE = func(_ *cobra.Command, _ []string) error {
 		return initConfig(rootCmd)
