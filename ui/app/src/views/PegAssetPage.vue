@@ -57,7 +57,9 @@ export default defineComponent({
       return Array.isArray(assetFrom) ? assetFrom[0] : assetFrom;
     });
     const amount = ref("0.0");
-    const address = toRefs(store.wallet.sif).address;
+    const address = computed(() =>
+      mode.value === "peg" ? store.wallet.sif.address : store.wallet.eth.address
+    );
 
     async function handlePeg() {
       try {
