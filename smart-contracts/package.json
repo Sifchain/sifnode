@@ -57,6 +57,8 @@
     "integrationtest:sendLockTx": "npx truffle exec scripts/test/sendLockTx.js",
     "integrationtest:waitForBlock": "npx truffle exec scripts/test/waitForBlock.js",
     "integrationtest:getTokenBalance": "npx truffle exec scripts/test/getTokenBalance.js",
+    "integrationtest:enableNewToken": "npx truffle exec scripts/test/enableNewToken.js",
+    "integrationtest:ganacheAccounts": "npx truffle exec scripts/test/ganacheAccounts.js",
     "peggy:abi": "node scripts/formatAbi.js",
     "peggy:address": "npx truffle exec scripts/getBridgeRegistryAddress.js",
     "peggy:validators": "npx truffle exec scripts/getValidators.js",
