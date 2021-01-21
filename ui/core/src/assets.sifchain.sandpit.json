@@ -8,10 +8,10 @@
       "network": "sifchain"
     },
     {
-      "symbol": "dtoken",
+      "symbol": "cdtoken",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
-      "name": "dtoken",
+      "name": "cdtoken",
       "network": "sifchain"
     },
     {
@@ -22,24 +22,24 @@
       "network": "sifchain"
     },
     {
-      "symbol": "ctoken",
+      "symbol": "cctoken",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png",
-      "name": "ctoken",
+      "name": "cctoken",
       "network": "sifchain"
     },
     {
-      "symbol": "btoken",
+      "symbol": "cbtoken",
       "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png",
       "decimals": 18,
-      "name": "btoken",
+      "name": "cbtoken",
       "network": "sifchain"
     },
     {
-      "symbol": "acoin",
+      "symbol": "cacoin",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png",
-      "name": "acoin",
+      "name": "cacoin",
       "network": "sifchain"
     }
   ]

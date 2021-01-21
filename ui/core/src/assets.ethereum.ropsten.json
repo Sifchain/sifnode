@@ -12,7 +12,7 @@
       "name": "Ethereum",
       "symbol": "eth",
       "imageUrl": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
-      "network": "ethereum",
+      "network": "ropsten",
       "decimals": 18
     },
     {
