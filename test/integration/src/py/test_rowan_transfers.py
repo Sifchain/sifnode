@@ -7,6 +7,7 @@ import burn_lock_functions
 from burn_lock_functions import EthereumToSifchainTransferRequest
 from test_utilities import get_required_env_var, SifchaincliCredentials
 
+bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
 
 # to test against ropsten, define:
 # ETHEREUM_ADDRESS
@@ -30,7 +31,7 @@ def test_transfer_rowan_to_erowan():
         ethereum_address=get_required_env_var("ETHEREUM_ADDRESS"),
         ethereum_private_key_env_var="ETHEREUM_PRIVATE_KEY",
         bridgebank_address=get_required_env_var("BRIDGE_BANK_ADDRESS"),
-        bridgetoken_address=get_required_env_var("BRIDGE_TOKEN_ADDRESS"),
+        bridgetoken_address=bridgetoken_address,
         ethereum_network=(os.environ.get("ETHEREUM_NETWORK") or ""),
         amount=10 ** 17,
         ceth_amount=2 * 10 ** 16
@@ -38,7 +39,7 @@ def test_transfer_rowan_to_erowan():
     logging.info(f"get initial ceth to cover fees: {request}")
     burn_lock_functions.transfer_ethereum_to_sifchain(request, 10)
 
-    request.ethereum_symbol = "erowan"
+    request.ethereum_symbol = bridgetoken_address
     request.sifchain_symbol = "rowan"
     request.amount = 12000
     logging.info(f"transfer rowan to erowan: {request}")
