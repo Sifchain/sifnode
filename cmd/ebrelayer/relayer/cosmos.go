@@ -147,6 +147,8 @@ func (sub CosmosSub) getAll(ethFromBlock int64, ethToBlock int64) error {
 	CosmosBridgeContractABI := contract.LoadABI(txs.CosmosBridge)
 	methodID := CosmosBridgeContractABI.Methods[types.NewProphecyClaim.String()].ID()
 
+	fmt.Printf(" argument is %s \n", CosmosBridgeContractABI.Methods[types.NewProphecyClaim.String()].String())
+
 	// method := types.NewProphecyClaim.String()
 	fmt.Printf("method ID is %v \n", methodID)
 
@@ -179,15 +181,13 @@ func (sub CosmosSub) getAll(ethFromBlock int64, ethToBlock int64) error {
 				continue
 			}
 
-			// nolint
 			type FunctionInputs struct {
 				ClaimType            ethbridge.ClaimType
-				CosmosSender         []byte
 				CosmosSenderSequence *big.Int
-
-				EthereumReceiver common.Address
-				Symbol           string
-				Amount           *big.Int
+				EthereumReceiver     common.Address
+				Amount               *big.Int
+				CosmosSender         []byte
+				Symbol               string
 			}
 
 			functionInputs := FunctionInputs{}
