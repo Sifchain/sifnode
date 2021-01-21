@@ -39,6 +39,7 @@ export default defineComponent({
       toAmount,
     } = useCurrencyFieldState();
     const transactionState = ref<ConfirmState>("selecting");
+    const transactionHash = ref<String | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
@@ -92,7 +93,8 @@ export default defineComponent({
         throw new Error("to field amount is not defined");
 
       transactionState.value = "signing";
-      await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset);
+      let tx = await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset);
+      transactionHash.value = tx.transactionHash;
       transactionState.value = "confirmed";
       clearAmounts();
     }
@@ -188,6 +190,7 @@ export default defineComponent({
         transactionState.value = "signing";
       },
       handleAskConfirmClicked,
+      transactionHash
     };
   },
 });
@@ -244,6 +247,7 @@ export default defineComponent({
         :isOpen="transactionModalOpen"
         ><ConfirmationDialog
           @confirmswap="handleAskConfirmClicked"
+          :transactionHash="transactionHash"
           :state="transactionState"
           :requestClose="requestTransactionModalClose"
           :priceMessage="priceMessage"

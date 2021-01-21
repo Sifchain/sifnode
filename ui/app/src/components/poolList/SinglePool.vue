@@ -174,7 +174,7 @@ export default defineComponent({
         </div>
       </div>
       <div class="text--small mt-6 mb-2">
-        <a :href="`https://blockexplorer-${chainId}.sifchain.finance/`"
+        <a target="_blank" :href="`https://blockexplorer-${chainId}.sifchain.finance/`"
           >Blockexplorer</a
         >
       </div>
