@@ -1,7 +1,7 @@
 import { provider } from "web3-core";
 import Web3 from "web3";
 import { getBridgeBankContract } from "./bridgebankContract";
-import { getBridgeTokenContract } from "./bridgeTokenContract";
+import { getTokenContract } from "./tokenContract";
 import { AssetAmount, Token } from "../../entities";
 import { createPegTxEventEmitter } from "./PegTxEventEmitter";
 import { confirmTx } from "./utils/confirmTx";
@@ -24,7 +24,6 @@ export default function createEthbridgeService({
   sifWsUrl,
   sifChainId,
   bridgebankContractAddress,
-  bridgetokenContractAddress,
   getWeb3Provider,
   sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl),
 }: EthbridgeServiceContext) {
@@ -37,23 +36,32 @@ export default function createEthbridgeService({
     return _web3;
   }
 
-  async function approveBridgeBank(account: string, amount: AssetAmount) {
+  async function approveBridgeBankSpend(account: string, amount: AssetAmount) {
+    // This will popup an approval request in metamask
     const web3 = await ensureWeb3();
-    const bridgeTokenContract = await getBridgeTokenContract(
+    const tokenContract = await getTokenContract(
       web3,
-      bridgetokenContractAddress
+      (amount.asset as Token).address
     );
 
     const sendArgs = {
       from: account,
       value: 0,
-      gas: 5000000,
     };
 
     // Hmm what happens when there is a signing failure but we have approved bridgebank
-    await bridgeTokenContract.methods
-      .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
-      .send(sendArgs);
+    return await new Promise((resolve, reject) => {
+      tokenContract.methods
+        .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
+        .send(sendArgs)
+        .on("transactionHash", (hash: string) => {
+          resolve(hash);
+        })
+        .on("error", (err: any) => {
+          console.log("lockToSifchain: bridgeBankContract.lock ERROR", err);
+          reject(err);
+        });
+    });
   }
 
   return {
@@ -112,13 +120,14 @@ export default function createEthbridgeService({
         const sendArgs = {
           from: fromAddress,
           value: coinDenom === ETH_ADDRESS ? amount : 0,
-          gas: 5000000,
         };
 
         console.log(
           "lockToSifchain: bridgeBankContract.lock",
           JSON.stringify({ cosmosRecipient, coinDenom, amount, sendArgs })
         );
+
+        await approveBridgeBankSpend(fromAddress, assetAmount);
 
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
@@ -145,7 +154,9 @@ export default function createEthbridgeService({
             },
           });
         });
-      })();
+      })().catch(err => {
+        handleError(err);
+      });
 
       return emitter;
     },
@@ -208,18 +219,9 @@ export default function createEthbridgeService({
         const sendArgs = {
           from: fromAddress,
           value: coinDenom === ETH_ADDRESS ? amount : 0,
-          gas: 5000000,
         };
-        console.log(
-          "burnToSifchain: approveBridgeBank",
-          JSON.stringify({ fromAddress, assetAmount })
-        );
-        await approveBridgeBank(fromAddress, assetAmount);
 
-        console.log(
-          "burnToSifchain: bridgeBankContract.burn",
-          JSON.stringify({ cosmosRecipient, coinDenom, amount, sendArgs })
-        );
+        await approveBridgeBankSpend(fromAddress, assetAmount);
 
         bridgeBankContract.methods
           .burn(cosmosRecipient, coinDenom, amount)
@@ -246,7 +248,9 @@ export default function createEthbridgeService({
             },
           });
         });
-      })();
+      })().catch(err => {
+        handleError(err);
+      });
 
       return emitter;
     },
