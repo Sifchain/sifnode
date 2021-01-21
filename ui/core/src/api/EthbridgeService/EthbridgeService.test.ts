@@ -39,7 +39,7 @@ describe("EthbridgeService", () => {
 
   // Values here are not working so skipping
   // Skipping as there is an issue with this test however works fine manually testing
-  test("eth -> ceth -> eth", async () => {
+  test("eth -> ceth -> eth then rowan -> erowan -> rowan ", async () => {
     // Setup services
     const sifService = await createTestSifService(juniper);
     const ethService = await createTestEthService();
@@ -137,20 +137,20 @@ describe("EthbridgeService", () => {
       expectedEthAmount,
       "expectedEthAmount"
     );
-  });
+    // });
 
-  test("rowan -> erowan -> rowan", async () => {
-    const sifService = await createTestSifService(juniper);
-    const ethService = await createTestEthService();
-    const web3 = new Web3(await getWeb3Provider());
+    // test("rowan -> erowan -> rowan", async () => {
+    //   const sifService = await createTestSifService(juniper);
+    //   const ethService = await createTestEthService();
+    // const web3 = new Web3(await getWeb3Provider());
 
-    function getEthAddress() {
-      return ethAccounts[2].public;
-    }
+    // function getEthAddress() {
+    //   return ethAccounts[2].public;
+    // }
 
-    function getSifAddress() {
-      return juniper.address;
-    }
+    // function getSifAddress() {
+    //   return juniper.address;
+    // }
 
     async function getERowanBalance() {
       const bals = await ethService.getBalance(getEthAddress(), EROWAN);
@@ -182,7 +182,7 @@ describe("EthbridgeService", () => {
       ),
     });
 
-    const ethereumChainId = await web3.eth.net.getId();
+    // const ethereumChainId = await web3.eth.net.getId();
     expect(msg.value.msg).toEqual([
       {
         type: "ethbridge/MsgLock",
