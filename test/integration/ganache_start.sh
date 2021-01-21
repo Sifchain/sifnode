@@ -17,7 +17,7 @@ while nc -z localhost 7545; do
   sleep 1
 done
 
-nohup tmux new-session -d -s my_session "ganache-cli --mnemonic 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --networkId '5777' --port '7545' --db ${GANACHE_DB_DIR} > $GANACHE_LOG 2>&1"
+nohup tmux new-session -d -s my_session "ganache-cli -h 0.0.0.0 --mnemonic 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat' --networkId '5777' --port '7545' --db ${GANACHE_DB_DIR} > $GANACHE_LOG 2>&1"
 
 sleep 5
 

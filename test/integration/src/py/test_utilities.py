@@ -4,6 +4,7 @@ import os
 import subprocess
 import time
 from dataclasses import dataclass
+from functools import lru_cache
 
 
 @dataclass
@@ -86,18 +87,16 @@ def get_required_env_var(name):
     return result
 
 
-bridge_bank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
-moniker = get_required_env_var("MONIKER")
-owner_addr = get_required_env_var("OWNER_ADDR")
-test_integration_dir = get_required_env_var("TEST_INTEGRATION_DIR")
-datadir = get_required_env_var("datadir")
+def get_optional_env_var(name: str, default_value: str):
+    result = os.environ.get(name)
+    return result if result else default_value
 
 
 def get_shell_output(command_line):
     sub = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     subprocess_return = sub.stdout.read().rstrip().decode("utf-8")
     error_return = sub.stderr.read().rstrip().decode("utf-8")
-    logging.debug(f"execute shell command: {command_line}\n\nresult:\n\n{subprocess_return}")
+    logging.debug(f"execute shell command:\n{command_line}\n\nresult:\n\n{subprocess_return}\n\n")
     if sub.returncode is not None:
         raise Exception(f"error running command: {sub.returncode} for command {command_line}\n{error_return}")
     if error_return:
@@ -343,16 +342,18 @@ def wait_for_ethereum_block_number(block_number: int, transfer_request: Ethereum
     get_shell_output(command_line)
 
 
-network_password = get_required_env_var("OWNER_PASSWORD")
-
-
 def amount_in_wei(amount):
     return amount * 10 ** 18
 
 
+@lru_cache(maxsize=1)
 def ganache_accounts(smart_contracts_dir: str):
     accounts = run_yarn_command(
         f"yarn --cwd {smart_contracts_dir} "
         f"integrationtest:ganacheAccounts"
     )
     return accounts
+
+
+def ganache_owner_account(smart_contracts_dir: str):
+    return ganache_accounts(smart_contracts_dir)["accounts"][0]

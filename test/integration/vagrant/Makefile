@@ -76,3 +76,10 @@ truffle:
 .PHONY: sifdocker
 sifdocker:
 	cd .. && docker build -t sifdocker -f Dockerfile.devenv .
+
+# start a docker container and keep it running
+sifdocker-start:
+	nohup docker run -p 7546:7545 --rm --name sifdocker -v $(shell pwd)/../../..:/sifnode sifdocker:latest bash -c "tail -f /dev/null" > /dev/null 2>&1 &
+
+sifdocker-sh:
+	docker exec -ti sifdocker bash
