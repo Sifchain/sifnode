@@ -244,7 +244,7 @@ func NewInitApp(
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
 
-	app.UpgradeKeeper.SetUpgradeHandler("sifUpdate1", func(ctx sdk.Context, plan upgrade.Plan) {
+	app.UpgradeKeeper.SetUpgradeHandler("release-test-10", func(ctx sdk.Context, plan upgrade.Plan) {
 		clp.InitGenesis(ctx, app.clpKeeper, clp.DefaultGenesisState())
 	})
 	app.SetStoreLoader(bam.StoreLoaderWithUpgrade(&types.StoreUpgrades{
