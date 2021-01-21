@@ -76,9 +76,9 @@ spec:
             - name: MIN_CLP_CREATE_POOL_THRESHOLD
               value: {{ .Values.sifnode.env.minPoolThreshold }}
             - name: GOV_DEPOSIT_PARAMS_MAX_DEPOSIT_PERIOD
-              value: {{ .Values.sifnode.env.govDepositParamsMaxDepositPeriod }}
+              value: "{{ .Values.sifnode.env.govDepositParamsMaxDepositPeriod }}"
             - name: GOV_VOTING_PARAMS_VOTING_PERIOD
-              value: {{ .Values.sifnode.env.govVotingParamsVotingPeriod }}
+              value: "{{ .Values.sifnode.env.govVotingParamsVotingPeriod }}"
           livenessProbe:
             tcpSocket:
               port: 26657
