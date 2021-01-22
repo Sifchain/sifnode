@@ -65,6 +65,8 @@ export default defineComponent({
       selectedField,
       toSymbol,
       poolFinder,
+      priceImpact,
+      providerFee
     });
 
     function clearAmounts() {
