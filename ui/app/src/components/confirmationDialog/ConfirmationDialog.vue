@@ -26,6 +26,7 @@ export default defineComponent({
     minimumReceived: String,
     providerFee: String,
     priceImpact: String,
+    transactionHash: String,
   },
   emits: ["confirmswap"],
   setup(props) {
@@ -62,6 +63,7 @@ export default defineComponent({
     :fromToken="fromToken"
     :toAmount="toAmount"
     :toToken="toToken"
+    :transactionHash="transactionHash"
     @closerequested="requestClose"
   />
 </template>

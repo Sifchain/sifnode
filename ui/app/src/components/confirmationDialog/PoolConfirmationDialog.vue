@@ -21,6 +21,7 @@ export default defineComponent({
     poolUnits: Fraction,
     fromToken: String,
     toToken: String,
+    transactionHash: String,
   },
   setup(props) {
     const confirmed = computed(() => {
@@ -54,6 +55,7 @@ export default defineComponent({
     :fromToken="fromToken"
     :toAmount="toAmount"
     :toToken="toToken"
+    :transactionHash="transactionHash"
     @closerequested="requestClose"
   />
 </template>
