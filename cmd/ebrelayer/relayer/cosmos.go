@@ -251,12 +251,6 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 
 	defer client.Stop() //nolint:errcheck
 
-	// TODO  junius
-	// read all txs and transform to message from eth block and end eth block
-	// match message to address compare with smart contract address
-	// parse the data to smart contract call, the method and the arguments.
-	// to check if match with msg burn, msg lock.
-
 	for blockNumber := fromBlock; blockNumber < toBlock; {
 		tmpBlockNumber := blockNumber
 		block, err := client.BlockResults(&tmpBlockNumber)
