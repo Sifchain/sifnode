@@ -110,16 +110,30 @@ export function usePoolCalculator(input: {
   const aPerBRatioMessage = computed(() => {
     const aAmount = fromField.fieldAmount.value;
     const bAmount = toField.fieldAmount.value;
-    if (!aAmount || !bAmount) return "";
-    if (bAmount.equalTo("0")) return "";
+    
+    if (!aAmount) return ""; // invalid, must supply external
+    if (!bAmount || bAmount.equalTo("0")) {
+      // if rowan is 0 or empty ...
+      // allow if the pool exists (BUT ratio is inapplicable - N/A),
+      // invalid if the pool doesn't exist - ""
+      return preExistingPool ? "N/A" : ""; 
+    }
+
     return aAmount.divide(bAmount).toFixed(8);
   });
 
   const bPerARatioMessage = computed(() => {
     const aAmount = fromField.fieldAmount.value;
     const bAmount = toField.fieldAmount.value;
-    if (!aAmount || !bAmount) return "";
-    if (aAmount.equalTo("0")) return "";
+
+    if (!aAmount) return ""; // invalid, must supply external
+
+    if (!bAmount || bAmount.equalTo("0")) {
+      // if rowan is 0 or empty ...
+      // allow if the pool exists (BUT ratio is inapplicable - N/A),
+      // invalid if the pool doesn't exist - ""
+      return preExistingPool ? "N/A" : ""; 
+    }
 
     return bAmount.divide(aAmount).toFixed(8);
   });

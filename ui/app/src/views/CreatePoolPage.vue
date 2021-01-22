@@ -239,7 +239,7 @@ export default defineComponent({
     <PriceCalculation>
       <div class="pool-share">
         <h4 class="pool-share-title text--left">Prices and pool share</h4>
-        <div class="pool-share-details" v-if="fromSymbol && aPerBRatioMessage">
+        <div class="pool-share-details" v-if="fromSymbol && fromAmount != '0'">
           <div>
             <span class="number">{{ aPerBRatioMessage }}</span
             ><br />
