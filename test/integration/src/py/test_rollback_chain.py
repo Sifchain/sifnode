@@ -36,8 +36,8 @@ def test_rollback_chain():
 
     new_addr = new_account["address"]
 
-    logging.info("created new account, taking ganache snapshot")
     snapshot = get_shell_output(f"{test_integration_dir}/snapshot_ganache_chain.sh")
+    logging.info(f"created new account, took ganache snapshot {snapshot}")
     initial_user_balance = get_sifchain_addr_balance(new_addr, "", request.sifchain_symbol)
     logging.info(f"initial_user_balance {initial_user_balance}")
 
@@ -52,7 +52,7 @@ def test_rollback_chain():
     # roll back ganache to the snapshot and try another transfer that
     # should succeed.
 
-    logging.info("apply snapshot - this should eliminate transfer_1")
+    logging.info(f"apply snapshot {snapshot} - this eliminates transfer_1")
     get_shell_output(f"{test_integration_dir}/apply_ganache_snapshot.sh {snapshot} 2>&1")
 
     logging.info("advance past block wait")
