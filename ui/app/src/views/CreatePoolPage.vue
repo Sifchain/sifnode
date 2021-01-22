@@ -29,10 +29,12 @@ export default defineComponent({
     ConfirmationDialog,
     ModalView,
   },
-  setup() {
+  props: ['title'],
+  setup(props) {
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
     const transactionState = ref<ConfirmState>("selecting");
+    const transactionHash = ref<String | null>(null);
     const router = useRouter();
     const route = useRoute();
 
@@ -96,10 +98,12 @@ export default defineComponent({
         throw new Error("Token B field amount is not defined");
 
       transactionState.value = "signing";
-      await actions.clp.addLiquidity(
+      let tx = await actions.clp.addLiquidity(
         toFieldAmount.value,
         fromFieldAmount.value
       );
+      console.log('POOL transaction hash: ', tx);
+      transactionHash.value = tx.transactionHash;
       transactionState.value = "confirmed";
 
       clearAmounts();
@@ -114,6 +118,7 @@ export default defineComponent({
     }
 
     return {
+      title: props.title,
       fromAmount,
       fromSymbol,
 
@@ -166,6 +171,8 @@ export default defineComponent({
 
       handleAskConfirmClicked,
 
+      transactionHash,
+
       requestTransactionModalClose,
 
       transactionState,
@@ -202,7 +209,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" backLink="/pool" title="Add Liquidity">
+  <Layout class="pool" backLink="/pool" :title="title">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel
@@ -276,6 +283,7 @@ export default defineComponent({
         :aPerB="aPerBRatioMessage"
         :bPerA="bPerARatioMessage"
         :shareOfPool="shareOfPoolPercent"
+        :transactionHash="transactionHash"
     /></ModalView>
   </Layout>
 </template>
