@@ -1,6 +1,14 @@
 {
   "assets": [
     {
+      "symbol": "erowan",
+      "decimals": 18,
+      "name": "Rowan",
+      "imageUrl": "https://sifchain.finance/wp-content/uploads/2020/10/Logo_Sifchain-1.png",
+      "address": "0x970e9cb3E05Bda8B448CEDeDd6DEf5c87b9C0D66",
+      "network": "ethereum"
+    },
+    {
       "address": "0x2d893f36d5dd233a9a8e2f6eebb807e6da331b7f",
       "name": "Tether",
       "symbol": "USDT",
