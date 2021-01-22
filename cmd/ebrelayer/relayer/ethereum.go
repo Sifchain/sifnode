@@ -232,6 +232,8 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 }
 
 func (sub EthereumSub) getAllClaims(fromBlock int64, toBlock int64) []types.EthereumBridgeClaim {
+	sub.Logger.Info(fmt.Sprintf("Replay get all ethereum bridge claim from block %d to block %d\n", fromBlock, toBlock))
+
 	var claimArray []types.EthereumBridgeClaim
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
@@ -260,7 +262,7 @@ func (sub EthereumSub) getAllClaims(fromBlock int64, toBlock int64) []types.Ethe
 
 		for _, log := range block.TxsResults {
 			for _, event := range log.Events {
-				sub.Logger.Info(fmt.Sprintf("Replay start to process block %s", event.GetType()))
+				sub.Logger.Info(fmt.Sprintf("Replay get an event %s", event.GetType()))
 				if event.GetType() == "create_claim" {
 					claim, err := txs.AttributesToEthereumBridgeClaim(event.GetAttributes())
 					if err != nil {
@@ -295,7 +297,7 @@ func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock in
 	sub.Logger.Info(fmt.Sprintf("ethereum replay for %d block to %d block\n", fromBlock, toBlock))
 
 	bridgeClaims := sub.getAllClaims(cosmosFromBlock, cosmosToBlock)
-	sub.Logger.Info(fmt.Sprintf("ethereum replay for %d block to %d block\n", fromBlock, toBlock))
+	sub.Logger.Info(fmt.Sprintf("found out %d bridgeClaims\n", len(bridgeClaims)))
 
 	client, err := SetupRPCEthClient(sub.EthProvider)
 	if err != nil {
@@ -332,13 +334,15 @@ func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock in
 	for _, log := range logs {
 		fmt.Printf("log is %v", log)
 		// Before deal with it, we need check in cosmos if it is already handled by myself bofore.
-		// TODO junius add validator address in claim log in cosmos side. then check it is already handled.
 		event, isBurnLock, err := sub.logToEvent(clientChainID, subContractAddress, bridgeBankContractABI, log)
 		if err != nil {
 			sub.Logger.Error("Failed to get event from ethereum log")
 		} else if isBurnLock {
+			sub.Logger.Info(fmt.Sprintf("found out a burn lock event\n"))
 			if !EventProcessed(bridgeClaims, event) {
 				sub.handleEthereumEvent(event)
+			} else {
+				sub.Logger.Info(fmt.Sprintf("event already processed by me\n"))
 			}
 		}
 	}

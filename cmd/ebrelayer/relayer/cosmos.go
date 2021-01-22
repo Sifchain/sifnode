@@ -275,14 +275,19 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
+					sub.Logger.Info(fmt.Sprintf("found out a lock burn message\n"))
+
 					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
 					if err != nil {
 						fmt.Println(err)
 						continue
 					}
+					sub.Logger.Info(fmt.Sprintf("found out a lock burn message%s\n", cosmosMsg.String()))
 
 					if !MessageProcessed(cosmosMsg, ProphecyClaims) {
 						sub.handleBurnLockMsg(cosmosMsg, claimType)
+					} else {
+						sub.Logger.Info(fmt.Sprintf("lock burn message already processed by me\n"))
 					}
 				}
 			}
