@@ -14,7 +14,7 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
     get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
 
 
-def decrease_log_level(new_level):
+def decrease_log_level(new_level=logging.WARNING):
     logger = logging.getLogger()
     existing_level = logger.level
     if new_level > existing_level:
@@ -35,7 +35,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     # it's possible that this is the first transfer to the address, so there's
     # no balance to retrieve.  Catch that exception.
 
-    original_log_level = decrease_log_level(logging.WARNING)
+    original_log_level = decrease_log_level()
 
     try:
         sifchain_starting_balance = get_sifchain_addr_balance(
@@ -56,8 +56,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
 
     force_log_level(original_log_level)
     send_tx = send_from_ethereum_to_sifchain(transfer_request)
-    original_log_level = decrease_log_level(logging.WARNING)
-
+    original_log_level = decrease_log_level()
 
     starting_block = current_ethereum_block_number(transfer_request.smart_contracts_dir)
     half_n_wait_blocks = n_wait_blocks / 2 + 1
@@ -128,10 +127,11 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
 def transfer_sifchain_to_ethereum(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials,
+        max_seconds: int = 30
 ):
     logging.debug(f"transfer_sifchain_to_ethereum_json: {transfer_request.as_json()}")
 
-    original_log_level = decrease_log_level(logging.WARNING)
+    original_log_level = decrease_log_level()
     ethereum_starting_balance = get_eth_balance(transfer_request)
 
     sifchain_starting_balance = get_sifchain_addr_balance(
@@ -149,14 +149,14 @@ def transfer_sifchain_to_ethereum(
 
     force_log_level(original_log_level)
     send_tx = send_from_sifchain_to_ethereum(transfer_request, credentials)
-    original_log_level = decrease_log_level(logging.WARNING)
+    original_log_level = decrease_log_level()
 
     target_balance = ethereum_starting_balance + transfer_request.amount
 
     wait_for_eth_balance(
         transfer_request=transfer_request,
         target_balance=ethereum_starting_balance + transfer_request.amount,
-        max_seconds=30
+        max_seconds=max_seconds
     )
 
     sifchain_ending_balance = get_sifchain_addr_balance(
@@ -165,15 +165,15 @@ def transfer_sifchain_to_ethereum(
         transfer_request.sifchain_symbol
     )
 
-    force_log_level(original_log_level)
-    logging.debug(f"transfer_sifchain_to_ethereum_complete_json: {json.dumps(send_tx)}")
-
-    return {
+    result = {
         **status,
         "sifchain_ending_balance": sifchain_ending_balance,
         "ethereum_ending_balance": target_balance,
         "send_tx": send_tx
     }
+    logging.debug(f"transfer_sifchain_to_ethereum_complete_json: {json.dumps(send_tx)}")
+    force_log_level(original_log_level)
+    return result
 
 
 def transfer_sifchain_to_sifchain(
