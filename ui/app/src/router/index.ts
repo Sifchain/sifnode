@@ -26,11 +26,17 @@ const routes: Array<RouteRecordRaw> = [
     path: "/pool/add-liquidity/:externalAsset?",
     name: "AddLiquidity",
     component: CreatePool,
+    props: {
+      title: 'Add Liquidity',
+    }
   },
   {
     path: "/pool/create-pool",
     name: "CreatePool",
     component: CreatePool,
+    props: {
+      title: 'Create Pair',
+    }
   },
   {
     path: "/pool/remove-liquidity/:externalAsset?",

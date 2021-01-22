@@ -27,7 +27,7 @@
               </p>
               <br />
               <p class="sub">
-                <a class="anchor" href="#"
+                <a class="anchor" target="_blank" :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
                   >View transaction on Block Explorer</a
                 >
               </p>
@@ -48,6 +48,8 @@
 import { defineComponent } from "vue";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
+import { useCore } from "@/hooks/useCore";
+
 export default defineComponent({
   components: { Loader, SifButton },
   props: {
@@ -57,14 +59,17 @@ export default defineComponent({
     nativeAssetSymbol: String,
     externalAssetAmount: String,
     nativeAssetAmount: String,
+    transactionHash: String,
   },
   setup(props) {
+    const { config } = useCore();
     // Need to cache amounts and disconnect reactivity
     return {
       cExternalAssetSymbol: props.externalAssetSymbol,
       cNativeAssetSymbol: props.nativeAssetSymbol,
       cExternalAssetAmount: props.externalAssetAmount,
       cNativeAssetAmount: props.nativeAssetAmount,
+      chainId: config.sifChainId,
     };
   },
 });

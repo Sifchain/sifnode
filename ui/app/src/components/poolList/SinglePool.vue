@@ -167,17 +167,19 @@ export default defineComponent({
             to their share of the pool. Fees are added to the pool, accrue in
             real time and can be claimed by withdrawing your liquidity. To learn
             more, reference of documentation
-            <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool"
+            <a target="_blank" href="https://docs.sifchain.finance/core-concepts/liquidity-pool"
               >here</a
             >
           </p>
         </div>
       </div>
+      <div class="text--small mt-6 mb-2">
+        <a target="_blank" :href="`https://blockexplorer-${chainId}.sifchain.finance/`"
+          >Blockexplorer</a
+        >
+      </div>
       <div class="section footer">
         <div class="mr-1">
-          <div class="text--small mb-6">
-            <a href="#">View pool info</a>
-          </div>
           <router-link :to="`/pool/remove-liquidity/${fromSymbol}`"
             ><SifButton primaryOutline nocase block
               >Remove Liquidity</SifButton
@@ -185,11 +187,6 @@ export default defineComponent({
           >
         </div>
         <div class="ml-1">
-          <div class="text--small mb-6">
-            <a :href="`https://blockexplorer-${chainId}.sifchain.finance/`"
-              >Blockexplorer</a
-            >
-          </div>
           <router-link :to="`/pool/add-liquidity/${fromSymbol}`"
             ><SifButton primary nocase block
               >Add Liquidity</SifButton
