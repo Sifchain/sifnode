@@ -163,13 +163,13 @@ describe("Pool", () => {
         AssetAmount(ATK, "10000"),
         AssetAmount(BTK, "14000")
       );
-      expect(units.toFixed(0)).toBe("1011996");
+      expect(units.toFixed(0)).toBe("1011954");
       expect(
         lpunits
           .divide(units)
           .multiply("100")
           .toFixed(2) + "%"
-      ).toBe("1.19%");
+      ).toBe("1.18%");
     });
   });
 

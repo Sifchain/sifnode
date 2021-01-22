@@ -94,14 +94,16 @@ datadir = get_required_env_var("datadir")
 
 
 def get_shell_output(command_line):
-    logging.debug(f"execute shell command: {command_line}")
     sub = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     subprocess_return = sub.stdout.read().rstrip().decode("utf-8")
     error_return = sub.stderr.read().rstrip().decode("utf-8")
-    if error_return and error_return != "incorrect passphrase":
-        print_error_message(f"error running command: {command_line}\n{error_return}")
-    logging.debug(f"shell command result: {subprocess_return}")
+    logging.debug(f"execute shell command: {command_line}\n\nresult:\n\n{subprocess_return}")
+    if sub.returncode is not None:
+        raise Exception(f"error running command: {sub.returncode} for command {command_line}\n{error_return}")
     if error_return:
+        # don't use error level logging here.  The problem is that
+        # lots of times we run a shell script in a loop until it succeeds,
+        # so failures often aren't very important
         logging.debug(f"shell command error: {error_return}")
     return subprocess_return
 
@@ -112,8 +114,6 @@ def get_shell_output_json(command_line):
         print_error_message(f"no result returned from {command_line}")
     try:
         result = json.loads(output)
-        logoutput = json.dumps({"command": command_line, "result": result})
-        logging.debug(f"shell_json: {logoutput}")
         return result
     except:
         logging.critical(f"failed to decode json.  cmd is: {command_line}, output is: {output}")
@@ -191,7 +191,7 @@ def wait_for_balance(balance_fn, target_balance, max_seconds=30, debug_prefix=""
                 logging.debug(
                     f"waiting for target balance {debug_prefix}: {target_balance}, current balance is {balance}"
                 )
-                time.sleep(5)
+                time.sleep(1)
 
 
 def wait_for_eth_balance(transfer_request: EthereumToSifchainTransferRequest, target_balance, max_seconds=30):
@@ -202,6 +202,10 @@ def wait_for_eth_balance(transfer_request: EthereumToSifchainTransferRequest, ta
     )
 
 
+def normalize_symbol(symbol: str):
+    return symbol.lower()
+
+
 def wait_for_sifchain_addr_balance(
         sifchain_address,
         symbol,
@@ -210,10 +214,12 @@ def wait_for_sifchain_addr_balance(
         max_seconds=30,
         debug_prefix=""
 ):
-    if not max_seconds: max_seconds = 30
-    logging.debug(f"wait_for_sifchain_addr_balance {sifchaincli_node} {symbol} {target_balance}")
+    normalized_symbol = normalize_symbol(symbol)
+    if not max_seconds:
+        max_seconds = 30
+    logging.debug(f"wait_for_sifchain_addr_balance {sifchaincli_node} {normalized_symbol} {target_balance}")
     return wait_for_balance(
-        lambda: int(get_sifchain_addr_balance(sifchain_address, sifchaincli_node, symbol)),
+        lambda: int(get_sifchain_addr_balance(sifchain_address, sifchaincli_node, normalized_symbol)),
         target_balance,
         max_seconds,
         debug_prefix
@@ -258,7 +264,6 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
                    f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
                    f""
     command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
-    logging.debug(f"send_ethereum_currency_to_sifchain_addr")
     return run_yarn_command(command_line)
 
 
@@ -343,3 +348,11 @@ network_password = get_required_env_var("OWNER_PASSWORD")
 
 def amount_in_wei(amount):
     return amount * 10 ** 18
+
+
+def ganache_accounts(smart_contracts_dir: str):
+    accounts = run_yarn_command(
+        f"yarn --cwd {smart_contracts_dir} "
+        f"integrationtest:ganacheAccounts"
+    )
+    return accounts
