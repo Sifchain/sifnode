@@ -45,6 +45,9 @@ contract BridgeBank is BankStorage,
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
         _initialized = true;
+
+        // hardcode since this is the first token
+        lowerToUpperTokens["erowan"] = "erowan";
     }
 
     /*
@@ -127,6 +130,7 @@ contract BridgeBank is BankStorage,
         address _contractAddress
     ) public onlyOwner returns (address) {
         setTokenInCosmosWhiteList(_contractAddress, true);
+
         return useExistingBridgeToken(_contractAddress);
     }
 
@@ -155,6 +159,7 @@ contract BridgeBank is BankStorage,
             // in fact stored in our locked token list before we set to false
             require(uint256(listAddress) > 0, "Token not whitelisted");
         }
+        lowerToUpperTokens[toLower(symbol)] = symbol;
         return setTokenInEthWhiteList(_token, _inList);
     }
 
@@ -162,7 +167,7 @@ contract BridgeBank is BankStorage,
     // private so that it is not inheritable or able to be called
     // by anyone other than this contract
     function _updateTokenLimits(address _token, uint256 _amount) private {
-        string memory symbol = _token == address(0) ? "ETH" : BridgeToken(_token).symbol();
+        string memory symbol = _token == address(0) ? "eth" : BridgeToken(_token).symbol();
         maxTokenAmount[symbol] = _amount;
     }
 
@@ -186,6 +191,8 @@ contract BridgeBank is BankStorage,
         for (uint256 i = 0; i < tokenAddresses.length; i++) {
             _updateTokenLimits(tokenAddresses[i], tokenLimit[i]);
             setTokenInEthWhiteList(tokenAddresses[i], true);
+            string memory symbol = BridgeToken(tokenAddresses[i]).symbol();
+            lowerToUpperTokens[toLower(symbol)] = symbol;
         }
         return true;
     }
@@ -260,7 +267,7 @@ contract BridgeBank is BankStorage,
                 msg.value == _amount,
                 "The transactions value must be equal the specified amount (in wei)"
             );
-            symbol = "ETH";
+            symbol = "eth";
             // ERC20 deposit
         } else {
             IERC20 tokenToTransfer = IERC20(_token);
@@ -300,8 +307,6 @@ contract BridgeBank is BankStorage,
         // Confirm that the bank holds sufficient balances to complete the unlock
         address tokenAddress = lockedTokenList[_symbol];
         if (tokenAddress == address(0)) {
-            // uint256 contractBalance = ;
-            // revert("no error before 299 for eth unlock");
             require(
                 ((address(this)).balance) >= _amount,
                 "Insufficient ethereum balance for delivery."
