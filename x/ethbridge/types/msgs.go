@@ -214,11 +214,7 @@ func (msg MsgCreateEthBridgeClaim) ValidateBasic() error {
 
 // GetSignBytes encodes the message for signing
 func (msg MsgCreateEthBridgeClaim) GetSignBytes() []byte {
-	b, err := json.Marshal(msg)
-	if err != nil {
-		panic(err)
-	}
-	return sdk.MustSortJSON(b)
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // GetSigners defines whose signature is required
@@ -263,12 +259,7 @@ func (msg MsgUpdateWhiteListValidator) ValidateBasic() error {
 
 // GetSignBytes encodes the message for signing
 func (msg MsgUpdateWhiteListValidator) GetSignBytes() []byte {
-	b, err := json.Marshal(msg)
-	if err != nil {
-		panic(err)
-	}
-
-	return sdk.MustSortJSON(b)
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // GetSigners defines whose signature is required
