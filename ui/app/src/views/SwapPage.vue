@@ -37,6 +37,8 @@ export default defineComponent({
       fromAmount,
       toSymbol,
       toAmount,
+      priceImpact,
+      providerFee,
     } = useCurrencyFieldState();
     const transactionState = ref<ConfirmState>("selecting");
     const transactionHash = ref<String | null>(null);
@@ -66,6 +68,8 @@ export default defineComponent({
       selectedField,
       toSymbol,
       poolFinder,
+      priceImpact,
+      providerFee
     });
 
     const minimumReceived = computed(() =>
@@ -165,6 +169,8 @@ export default defineComponent({
       minimumReceived,
       toSymbol,
       priceMessage,
+      priceImpact,
+      providerFee,
       handleFromMaxClicked() {
         selectedField.value = "from";
         const accountBalance = balances.value.find(
@@ -233,8 +239,8 @@ export default defineComponent({
         :toToken="toSymbol || ''"
         :priceMessage="priceMessage || ''"
         :minimumReceived="minimumReceived || ''"
-        :providerFee="''"
-        :priceImpact="''"
+        :providerFee="providerFee || ''"
+        :priceImpact="priceImpact || ''"
       />
       <ActionsPanel
         connectType="connectToSif"

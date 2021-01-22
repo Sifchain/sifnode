@@ -127,7 +127,8 @@ export default function createEthbridgeService({
           JSON.stringify({ cosmosRecipient, coinDenom, amount, sendArgs })
         );
 
-        await approveBridgeBankSpend(fromAddress, assetAmount);
+        if (coinDenom !== ETH_ADDRESS)
+          await approveBridgeBankSpend(fromAddress, assetAmount);
 
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
@@ -212,13 +213,13 @@ export default function createEthbridgeService({
           bridgebankContractAddress
         );
         const accounts = await web3.eth.getAccounts();
-        const coinDenom = (assetAmount.asset as Token).address ?? ETH_ADDRESS;
+        const coinDenom = (assetAmount.asset as Token).address;
         const amount = assetAmount.numerator.toString();
         const fromAddress = account || accounts[0];
 
         const sendArgs = {
           from: fromAddress,
-          value: coinDenom === ETH_ADDRESS ? amount : 0,
+          value: 0,
         };
 
         await approveBridgeBankSpend(fromAddress, assetAmount);
