@@ -38,6 +38,7 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
     const transactionState = ref<ConfirmState>("selecting");
+    const transactionHash = ref<String | null>(null);
     const asymmetry = ref("0");
     const wBasisPoints = ref("5000");
     const nativeAssetSymbol = ref("rowan");
@@ -126,11 +127,12 @@ export default defineComponent({
 
         transactionState.value = "signing";
         try {
-          await actions.clp.removeLiquidity(
+          let tx = await actions.clp.removeLiquidity(
             Asset.get(externalAssetSymbol.value),
             wBasisPoints.value,
             asymmetry.value
           );
+          transactionHash.value = tx.transactionHash;
           transactionState.value = "confirmed";
         } catch (err) {
           transactionState.value = "failed";
@@ -160,7 +162,8 @@ export default defineComponent({
       withdrawNativeAssetAmount,
       connectedText,
       externalAssetSymbol,
-      transactionState
+      transactionState,
+      transactionHash,
     };
   },
 });
@@ -252,6 +255,7 @@ export default defineComponent({
         :nativeAssetSymbol="nativeAssetSymbol"
         :externalAssetAmount="withdrawExternalAssetAmount"
         :nativeAssetAmount="withdrawNativeAssetAmount"
+        :transactionHash="transactionHash"
         :requestClose="requestTransactionModalClose"
     /></ModalView>
   </Layout>

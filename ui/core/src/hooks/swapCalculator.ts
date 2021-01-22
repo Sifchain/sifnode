@@ -17,6 +17,14 @@ export enum SwapState {
   VALID_INPUT,
 }
 
+function calculateFormattedPriceImpact(pair: IPool, amount: AssetAmount) {
+  return trimZeros(pair.calcPriceImpact(amount).toFixed(18));
+}
+
+function calculateFormattedProviderFee(pair: IPool, amount: AssetAmount) {
+  return trimZeros(pair.calcProviderFee(amount).toFixed());
+}
+
 function calculateFormattedSwapResult(pair: IPool, amount: AssetAmount) {
   return trimZeros(pair.calcSwapResult(amount).toFixed());
 }
@@ -30,6 +38,8 @@ export function useSwapCalculator(input: {
   fromSymbol: Ref<string | null>;
   toAmount: Ref<string>;
   toSymbol: Ref<string | null>;
+  priceImpact: Ref<string | null>;
+  providerFee: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
   poolFinder: (a: Asset | string, b: Asset | string) => Ref<IPool> | null;
@@ -90,6 +100,16 @@ export function useSwapCalculator(input: {
         pool.value as IPool,
         fromField.fieldAmount.value
       );
+
+      input.priceImpact.value = calculateFormattedPriceImpact(
+        pool.value as IPool,
+        fromField.fieldAmount.value
+      );
+
+      input.providerFee.value = calculateFormattedProviderFee(
+        pool.value as IPool,
+        fromField.fieldAmount.value
+      );
     }
   });
 
@@ -103,6 +123,16 @@ export function useSwapCalculator(input: {
     ) {
       input.fromAmount.value = calculateFormattedReverseSwapResult(
         pool.value,
+        toField.fieldAmount.value
+      );
+
+      input.priceImpact.value = calculateFormattedPriceImpact(
+        pool.value as IPool,
+        toField.fieldAmount.value
+      );
+
+      input.providerFee.value = calculateFormattedProviderFee(
+        pool.value as IPool,
         toField.fieldAmount.value
       );
     }
