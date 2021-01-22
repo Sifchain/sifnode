@@ -5,14 +5,14 @@
       "decimals": 18,
       "name": "Rowan",
       "imageUrl": "/images/siflogo.png",
-      "address": "0xec035305F7d0BFE43D4Ad686BDD4fE53CA1562AC",
-      "network": "ropsten"
+      "address": "0x970e9cb3E05Bda8B448CEDeDd6DEf5c87b9C0D66",
+      "network": "ethereum"
     },
     {
       "name": "Ethereum",
       "symbol": "eth",
       "imageUrl": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
-      "network": "ropsten",
+      "network": "ethereum",
       "decimals": 18
     },
     {
@@ -20,7 +20,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png?1598003707",
       "name": "dtoken",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "dtoken",
       "transferLimit": 5006563604
     },
@@ -29,7 +29,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png?1598003707",
       "name": "ctoken",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "ctoken",
       "transferLimit": 5006563604
     },
@@ -38,7 +38,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png?1598003707",
       "name": "btoken",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "btoken",
       "transferLimit": 5006563604
     },
@@ -47,7 +47,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png?1598003707",
       "name": "acoin",
-      "network": "ropsten",
+      "network": "ethereum",
       "symbol": "acoin",
       "transferLimit": 5006563604
     }
