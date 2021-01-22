@@ -7,9 +7,11 @@ from integration_env_credentials import sifchain_cli_credentials_for_test
 from test_utilities import get_shell_output, get_sifchain_addr_balance, \
     advance_n_ethereum_blocks, n_wait_blocks, \
     send_from_ethereum_to_sifchain
-from test_utilities import test_integration_dir, wait_for_sifchain_addr_balance, \
+from test_utilities import wait_for_sifchain_addr_balance, \
     get_required_env_var, \
     EthereumToSifchainTransferRequest
+
+test_integration_dir = get_required_env_var("TEST_INTEGRATION_DIR")
 
 
 def test_rollback_chain():
