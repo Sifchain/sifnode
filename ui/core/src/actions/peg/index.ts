@@ -1,5 +1,5 @@
 import { ActionContext } from "..";
-import { Asset, AssetAmount } from "../../entities";
+import { Asset, AssetAmount, Fraction } from "../../entities";
 import notify from "../../api/utils/Notifications";
 import JSBI from "jsbi";
 
@@ -22,25 +22,38 @@ export default ({
     getSifTokens() {
       return api.SifService.getSupportedTokens();
     },
+
     getEthTokens() {
       return api.EthereumService.getSupportedTokens();
     },
+
+    calculateUnpegFee(asset: Asset) {
+      const feeNumber = isOriginallySifchainNativeToken(asset)
+        ? "18332015000000000"
+        : "16164980000000000";
+
+      return AssetAmount(Asset.get("ceth"), JSBI.BigInt(feeNumber), {
+        inBaseUnit: true,
+      });
+    },
+
     async unpeg(assetAmount: AssetAmount) {
-      const [lockOrBurnFn, feeNumber] = isOriginallySifchainNativeToken(
-        assetAmount.asset
-      )
-        ? [api.EthbridgeService.lockToEthereum, "18332015000000000"]
-        : [api.EthbridgeService.burnToEthereum, "16164980000000000"];
+      const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
+        ? api.EthbridgeService.lockToEthereum
+        : api.EthbridgeService.burnToEthereum;
+
+      const feeAmount = this.calculateUnpegFee(assetAmount.asset);
 
       const tx = await lockOrBurnFn({
         assetAmount,
         ethereumRecipient: store.wallet.eth.address,
         fromAddress: store.wallet.sif.address,
-        feeAmount: AssetAmount(Asset.get("ceth"), JSBI.BigInt(feeNumber)),
+        feeAmount,
       });
 
       return await api.SifService.signAndBroadcast(tx.value.msg);
     },
+
     async peg(assetAmount: AssetAmount) {
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
         ? api.EthbridgeService.burnToSifchain
