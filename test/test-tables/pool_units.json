@@ -1,4 +1,12 @@
 {
+  "_info": {
+    "desc": "Inputs and expected results for calculating pool units.",
+    "r": "native asset added",
+    "a": "external asset added",
+    "R": "native Balance (before)",
+    "A": "external Balance (before)",
+    "P": "existing Pool Units"
+  },
   "PoolUnits": [
     {
       "r": "1000000000",
@@ -478,7 +486,7 @@
       "R": "800000000110",
       "A": "5064",
       "P": "201284316620",
-      "expected": "100641860331"
+      "expected": "100641860332"
     },
     {
       "r": "764",
