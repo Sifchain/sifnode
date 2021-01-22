@@ -200,6 +200,8 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 					events := sub.EventsBuffer.GetHeaderEvents()
 					for _, event := range events {
 						err := sub.handleEthereumEvent(event)
+						// Sleep 3 seconds before send next transaction to cosmos, guarantee correct sequence number
+						time.Sleep(3 * time.Second)
 
 						if err != nil {
 							sub.Logger.Error(err.Error())
