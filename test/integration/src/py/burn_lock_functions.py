@@ -14,6 +14,9 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
     get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
 
 
+default_timeout_for_ganache = 10
+
+
 def decrease_log_level(new_level=logging.WARNING):
     logger = logging.getLogger()
     existing_level = logger.level
@@ -29,7 +32,7 @@ def force_log_level(new_level):
     return existing_level
 
 
-def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest, max_seconds: int = 30):
+def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest, max_seconds: int = default_timeout_for_ganache):
     logging.debug(f"transfer_ethereum_to_sifchain {transfer_request.as_json()}")
 
     # it's possible that this is the first transfer to the address, so there's

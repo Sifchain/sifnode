@@ -72,6 +72,7 @@ SIF_ETH = "ceth"
 ETHEREUM_ETH = "eth"
 SIF_ROWAN = "rowan"
 ETHEREUM_ROWAN = "erowan"
+NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 n_wait_blocks = 50  # number of blocks to wait for the relayer to act
 
@@ -364,7 +365,11 @@ def ganache_owner_account(smart_contracts_dir: str):
     return ganache_accounts(smart_contracts_dir)["accounts"][0]
 
 
-def whitelist_token(token: str, smart_contracts_dir: str, setting:bool = True):
+def ganache_nonowner_account(smart_contracts_dir: str):
+    return ganache_accounts(smart_contracts_dir)["accounts"][1]
+
+
+def whitelist_token(token: str, smart_contracts_dir: str, setting: bool = True):
     setting = "true" if setting else "false"
     return get_shell_output(f"yarn --cwd {smart_contracts_dir} peggy:whiteList {token} {setting}")
 
@@ -377,3 +382,11 @@ def approve_token_amount(token_request: EthereumToSifchainTransferRequest):
           f"--spender_address {token_request.bridgebank_address} " \
           f"--symbol {token_request.ethereum_symbol} "
     return run_yarn_command(cmd)
+
+
+def set_lock_burn_limit(smart_contracts_dir: str, token: str, amount: int):
+    s = NULL_ADDRESS if token == "eth" else token
+    cmd = f"UPDATE_ADDRESS={s} " \
+          f"yarn --cwd {smart_contracts_dir} " \
+          f"integrationtest:setTokenLockBurnLimit {amount}"
+    return get_shell_output(cmd)
