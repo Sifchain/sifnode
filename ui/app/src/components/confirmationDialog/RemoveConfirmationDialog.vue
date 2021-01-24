@@ -21,6 +21,7 @@ export default defineComponent({
     nativeAssetSymbol: String,
     externalAssetAmount: String,
     nativeAssetAmount: String,
+    transactionHash: String,
   },
   setup(props) {
     const confirmed = computed(() => {
@@ -50,6 +51,7 @@ export default defineComponent({
     :nativeAssetSymbol="nativeAssetSymbol"
     :externalAssetAmount="externalAssetAmount"
     :nativeAssetAmount="nativeAssetAmount"
+    :transactionHash="transactionHash"
     @closerequested="requestClose"
   />
 </template>

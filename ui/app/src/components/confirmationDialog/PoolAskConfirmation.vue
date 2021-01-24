@@ -92,11 +92,6 @@ export default defineComponent({
     <div class="pool-token-label">
       {{ fromTokenLabel }}/{{ toTokenLabel }} Pool Tokens<br />
     </div>
-
-    <div class="estimate">
-      Output is estimated. If the price changes more than 0.5% your transaction
-      will revert.
-    </div>
     <DetailsPanelPool
       class="details"
       :fromTokenLabel="fromTokenLabel"
@@ -123,6 +118,7 @@ export default defineComponent({
 
 .details {
   margin-bottom: 20px;
+  margin-top: 40px;
 }
 
 .title {
@@ -139,16 +135,6 @@ export default defineComponent({
 .arrow {
   padding: 5px 4px;
   text-align: left;
-}
-
-.estimate {
-  margin: 25px 0;
-  font-weight: 400;
-  text-align: left;
-
-  strong {
-    font-weight: 700;
-  }
 }
 
 .pool-token {

@@ -57,5 +57,4 @@ def test_transfer_ceth_to_eth():
     assert credentials is not None, "run test_transfer_eth_to_ceth first"
     assert request is not None
     request.amount = 20000
-    return_result = burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
-    logging.info(f"transfer_sifchain_to_ethereum__result_json: {return_result}")
+    burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
