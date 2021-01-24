@@ -3,7 +3,6 @@ package app
 import (
 	"encoding/json"
 	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/tendermint/tendermint/libs/log"
 	"math/big"
@@ -243,13 +242,6 @@ func NewInitApp(
 	skipUpgradeHeights := make(map[int64]bool)
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
-
-	app.UpgradeKeeper.SetUpgradeHandler("release-test-11", func(ctx sdk.Context, plan upgrade.Plan) {
-		clp.InitGenesis(ctx, app.clpKeeper, clp.DefaultGenesisState())
-	})
-	app.SetStoreLoader(bam.StoreLoaderWithUpgrade(&types.StoreUpgrades{
-		Added: []string{clp.ModuleName},
-	}))
 
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).

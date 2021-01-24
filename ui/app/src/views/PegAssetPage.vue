@@ -26,10 +26,17 @@ import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import RaisedPanel from "@/components/shared/RaisedPanel.vue";
 import { useRouter } from "vue-router";
 import SifInput from "@/components/shared/SifInput.vue";
+import DetailsTable from "@/components/shared/DetailsTable.vue";
 import Label from "@/components/shared/Label.vue";
 import RaisedPanelColumn from "@/components/shared/RaisedPanelColumn.vue";
 import { trimZeros } from "ui-core/src/hooks/utils";
 import BigNumber from "bignumber.js";
+import { useAssetItem } from "../components/shared/utils";
+import B from "ui-core/src/entities/utils/B";
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
 
 export default defineComponent({
   components: {
@@ -38,6 +45,7 @@ export default defineComponent({
     RaisedPanel,
     Label,
     SifInput,
+    DetailsTable,
     ActionsPanel,
     RaisedPanelColumn,
   },
@@ -82,29 +90,47 @@ export default defineComponent({
         console.error(err);
       }
     }
+
+    const accountBalance = computed(() => {
+      const balances =
+        mode.value === "peg"
+          ? store.wallet.eth.balances
+          : store.wallet.sif.balances;
+      return balances.find((balance) => {
+        return (
+          balance.asset.symbol.toLowerCase() === symbol.value.toLowerCase()
+        );
+      });
+    });
+
+    const nextStepAllowed = computed(() => {
+      const amountNum = new BigNumber(amount.value);
+      const balance = accountBalance.value?.toFixed(0) ?? "0.0";
+      return (
+        amountNum.isGreaterThan("0.0") &&
+        address.value !== "" &&
+        amountNum.isLessThan(balance)
+      );
+    });
+
     return {
       mode,
+      modeLabel: computed(() => capitalize(mode.value)),
       symbol,
+      symbolLabel: useAssetItem(symbol).label,
       amount,
       address,
+      feeAmount: computed(() => {
+        return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
+      }),
       handleBlur: () => {
         amount.value = trimZeros(amount.value);
       },
       handleSelectSymbol: () => {},
       handleMaxClicked: () => {
-        const balances =
-          mode.value === "peg"
-            ? store.wallet.eth.balances
-            : store.wallet.sif.balances;
-        const accountBalance = balances.find((balance) => {
-          return (
-            balance.asset.symbol.toLowerCase() === symbol.value.toLowerCase()
-          );
-        });
+        if (!accountBalance.value) return;
 
-        if (!accountBalance) return;
-
-        amount.value = accountBalance.toFixed();
+        amount.value = accountBalance.value.toFixed();
       },
       handleAmountUpdated: (newAmount: string) => {
         amount.value = newAmount;
@@ -117,9 +143,9 @@ export default defineComponent({
         }
       },
 
-      nextStepAllowed: computed(() => {
-        const amountNum = new BigNumber(amount.value);
-        return amountNum.isGreaterThan("0.0") && address.value !== "";
+      nextStepAllowed,
+      nextStepMessage: computed(() => {
+        return mode.value === "peg" ? "Peg" : "Unpeg";
       }),
     };
   },
@@ -153,11 +179,26 @@ export default defineComponent({
           />
         </RaisedPanelColumn>
       </RaisedPanel>
+      <DetailsTable
+        v-if="mode === 'unpeg'"
+        :header="{
+          show: amount !== '0.0',
+          label: `${modeLabel} Amount`,
+          data: `${amount} ${symbolLabel}`,
+        }"
+        :rows="[
+          {
+            show: !!feeAmount,
+            label: 'Transaction Fee',
+            data: `${feeAmount.toFixed(8)} cETH`,
+          },
+        ]"
+      />
       <ActionsPanel
         connectType="connectToAll"
         @nextstepclick="handleActionClicked"
         :nextStepAllowed="nextStepAllowed"
-        :nextStepMessage="mode === 'peg' ? 'Peg' : 'Unpeg'"
+        :nextStepMessage="nextStepMessage"
       />
     </div>
   </Layout>
