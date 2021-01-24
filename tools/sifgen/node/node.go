@@ -357,7 +357,7 @@ func (n *Node) setupCosmovisor() error {
 		return err
 	}
 
-	if err := n.CLI.CreateDir(fmt.Sprintf("%v/cosmovisor/upgrade", app.DefaultNodeHome)); err != nil {
+	if err := n.CLI.CreateDir(fmt.Sprintf("%v/cosmovisor/upgrades", app.DefaultNodeHome)); err != nil {
 		return err
 	}
 
