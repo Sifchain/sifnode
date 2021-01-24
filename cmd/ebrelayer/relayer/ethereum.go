@@ -291,7 +291,7 @@ func (sub EthereumSub) getAllClaims(fromBlock int64, toBlock int64) []types.Ethe
 // EventProcessed check if the event processed by relayer
 func EventProcessed(bridgeClaims []types.EthereumBridgeClaim, event types.EthereumEvent) bool {
 	for _, claim := range bridgeClaims {
-		if event.From == claim.EthereumSender && event.Nonce == claim.Nonce.BigInt() {
+		if event.From == claim.EthereumSender && event.Nonce.Cmp(claim.Nonce.BigInt()) == 0 {
 			return true
 		}
 	}
@@ -338,7 +338,7 @@ func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock in
 		return
 	}
 	for _, log := range logs {
-		fmt.Printf("log is %v", log)
+		// fmt.Printf("log is %v", log)
 		// Before deal with it, we need check in cosmos if it is already handled by myself bofore.
 		event, isBurnLock, err := sub.logToEvent(clientChainID, subContractAddress, bridgeBankContractABI, log)
 		if err != nil {
@@ -346,7 +346,10 @@ func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock in
 		} else if isBurnLock {
 			sub.Logger.Info(fmt.Sprintf("found out a burn lock event\n"))
 			if !EventProcessed(bridgeClaims, event) {
-				sub.handleEthereumEvent(event)
+				err := sub.handleEthereumEvent(event)
+				if err != nil {
+					sub.Logger.Info(err.Error())
+				}
 			} else {
 				sub.Logger.Info(fmt.Sprintf("event already processed by me\n"))
 			}
