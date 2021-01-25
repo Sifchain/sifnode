@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, watch } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
@@ -14,7 +14,6 @@ import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
 import Caret from "@/components/shared/Caret.vue";
-import { Fraction } from "ui-core";
 import Slider from "@/components/shared/Slider.vue";
 import ConfirmationDialog, {
   ConfirmState,
@@ -48,10 +47,12 @@ export default defineComponent({
     });
 
     const liquidityProvider = ref(null) as Ref<LiquidityProvider | null>;
+    const withdrawExternalAssetAmount = ref<string | null>()
+    const withdrawNativeAssetAmount = ref<string | null>()
+    const state = ref<PoolState | null>()
 
     effect(() => {
       if (!externalAssetSymbol.value) return null;
-
       api.ClpService.getLiquidityProvider({
         symbol: externalAssetSymbol.value,
         lpAddress: store.wallet.sif.address,
@@ -60,19 +61,29 @@ export default defineComponent({
       });
     });
 
-    const {
-      withdrawExternalAssetAmount,
-      withdrawNativeAssetAmount,
-      state,
-    } = useRemoveLiquidityCalculator({
-      externalAssetSymbol,
-      nativeAssetSymbol,
-      wBasisPoints,
-      asymmetry,
-      liquidityProvider,
-      sifAddress: toRef(store.wallet.sif, "address"),
-      poolFinder,
-    });
+    // if these values change, recalculate state and asset amounts
+    watch([
+      wBasisPoints, 
+      asymmetry, 
+      liquidityProvider
+    ], () => {
+      if (!wBasisPoints || !asymmetry || !externalAssetSymbol || !nativeAssetSymbol || !poolFinder || !liquidityProvider ) return null
+
+      const data = useRemoveLiquidityCalculator({
+        externalAssetSymbol,
+        nativeAssetSymbol,
+        wBasisPoints,
+        asymmetry,
+        liquidityProvider,
+        sifAddress: toRef(store.wallet.sif, "address"),
+        poolFinder,
+      })
+
+      withdrawExternalAssetAmount.value = data.withdrawExternalAssetAmount
+      withdrawNativeAssetAmount.value = data.withdrawNativeAssetAmount
+      state.value = data.state
+    })
+   
     // input not updating for some reason?
     function clearFields() {
       asymmetry.value = "0";
@@ -204,35 +215,7 @@ export default defineComponent({
     />
     <div class="asset-row">
       <AssetItem :symbol="nativeAssetSymbol" />
-      <div class="select-asset">
-        <Modal @close="handleSelectClosed">
-          <template v-slot:activator="{ requestOpen }">
-            <SifButton
-              v-if="externalAssetSymbol !== null"
-              block
-              @click="requestOpen"
-            >
-              <span><AssetItem :symbol="externalAssetSymbol" /></span>
-              <span><Caret /></span>
-            </SifButton>
-            <SifButton
-              v-if="externalAssetSymbol === null"
-              primary
-              block
-              :disabled="!connected"
-              @click="requestOpen"
-            >
-              <span>Select</span>
-            </SifButton>
-          </template>
-          <template v-slot:default="{ requestClose }">
-            <SelectTokenDialogSif
-              :selectedTokens="[externalAssetSymbol].filter(Boolean)"
-              @tokenselected="requestClose"
-            />
-          </template>
-        </Modal>
-      </div>
+      <AssetItem :symbol="externalAssetSymbol" />
     </div>
     <div class="asset-row">
       <div>{{ withdrawNativeAssetAmount }}</div>
