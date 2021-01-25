@@ -100,12 +100,14 @@ func TestCalculatePoolUnits(t *testing.T) {
 }
 
 func GetInt(t *testing.T, x string) sdk.Uint {
+	// Precision based conversion as the Files contain values in scientific notation
 	flt, _, err := big.ParseFloat(x, 10, 0, big.ToNearestEven)
 	if err != nil {
 		fmt.Println("Error parsing float :", x)
 	}
 	var i = new(big.Int)
 	i, _ = flt.Int(i)
+	// Dec type from sdk
 	X := sdk.NewDecFromBigInt(i)
 	assert.NoError(t, err)
 	if err != nil {
