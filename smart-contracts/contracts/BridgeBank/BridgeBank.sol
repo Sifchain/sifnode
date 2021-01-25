@@ -7,6 +7,7 @@ import "./CosmosWhiteList.sol";
 import "../Oracle.sol";
 import "../CosmosBridge.sol";
 import "./BankStorage.sol";
+import "./Pausable.sol";
 
 /**
  * @title BridgeBank
@@ -22,7 +23,8 @@ contract BridgeBank is BankStorage,
     CosmosBank,
     EthereumBank,
     EthereumWhiteList,
-    CosmosWhiteList {
+    CosmosWhiteList,
+    Pausable {
 
     bool private _initialized;
 
@@ -102,6 +104,13 @@ contract BridgeBank is BankStorage,
         return true;
     }
 
+    function pause() external onlyOwner whenNotPaused {
+        togglePause();
+    }
+
+    function unpause() external onlyOwner whenPaused {
+        togglePause();
+    }
 
     /*
      * @dev: Creates a new BridgeToken
@@ -211,7 +220,7 @@ contract BridgeBank is BankStorage,
         address _bridgeTokenAddress,
         string memory _symbol,
         uint256 _amount
-    ) public onlyCosmosBridge {
+    ) public onlyCosmosBridge whenNotPaused {
         return
             mintNewBridgeTokens(
                 _intendedRecipient,
@@ -232,7 +241,7 @@ contract BridgeBank is BankStorage,
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) {
+    ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) whenNotPaused {
         string memory symbol = BridgeToken(_token).symbol();
 
         if (_amount > maxTokenAmount[symbol]) {
@@ -254,7 +263,7 @@ contract BridgeBank is BankStorage,
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public payable onlyEthTokenWhiteList(_token) validSifAddress(_recipient) {
+    ) public payable onlyEthTokenWhiteList(_token) validSifAddress(_recipient) whenNotPaused {
         string memory symbol;
 
         // Ethereum deposit
@@ -297,7 +306,7 @@ contract BridgeBank is BankStorage,
         address payable _recipient,
         string memory _symbol,
         uint256 _amount
-    ) public onlyCosmosBridge {
+    ) public onlyCosmosBridge whenNotPaused {
         // Confirm that the bank has sufficient locked balances of this token type
         require(
             getLockedFunds(_symbol) >= _amount,
