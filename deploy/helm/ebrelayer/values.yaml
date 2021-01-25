@@ -21,14 +21,16 @@ image:
   tag: "testnet"
 
 ebrelayer:
-  mnemonic: ""
-  env:
-    chainnet: ""
+  args:
     nodeHost: ""
     ethWebsocketAddress: ""
     ethBridgeRegistryAddress: ""
-    ethPrivateKey: ""
+    mnemonic: ""
+    gasPrices: "0.5rowan"
+  env:
+    chainnet: ""
     moniker: ""
+    ethPrivateKey: ""
 
 ingress:
   enabled: false

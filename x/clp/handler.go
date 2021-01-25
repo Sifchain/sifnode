@@ -294,28 +294,18 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	receivedAsset := msg.ReceivedAsset
 	// Get native asset
 	nativeAsset := types.GetSettlementAsset()
-	// If its one swap , this pool would be RWN:RWN ( Ex User sends RWN wants ETH)
-	// If its two swap . this pool would be RWN:EXTERNAL1 ( Ex User sends ETH wants XCT , ETH is EXTERNAL1)
-	//CASE 1 : RWN:ETH
-	//CASE 2 : RWN:ETH
-	inPool, err := keeper.GetPool(ctx, msg.SentAsset.Symbol)
-	if err != nil {
-		return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
-	}
-	// If its one swap , this pool would be RWN:EXTERNAL ( Ex User sends RWN wants ETH , ETH IS EXTERNAL )
-	// If its two swap . this pool would be RWN:EXTERNAL2 ( Ex User sends ETH wants XCT , XCT is EXTERNAL2)
-	//CASE 1 : RWN:ETH
-	//CASE 2 : RWN:XCT
-	outPool, err := keeper.GetPool(ctx, msg.ReceivedAsset.Symbol)
-	if err != nil {
-		return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.ReceivedAsset.String())
-	}
 
-	// Deducting Balance from the user , Sent Asset is the asset the user is sending to the Pool
-	// Case 1 . Deducting his RWN and adding to RWN:ETH pool
-	// Case 2 , Deduction his ETH and adding to RWN:ETH pool
+	inPool, outPool := types.Pool{}, types.Pool{}
+	err := errors.New("Swap Error")
+	// If sending rowan ,deduct directly from the Native balance  instead of fetching from rowan pool
+	if msg.SentAsset != types.GetSettlementAsset() {
+		inPool, err = keeper.GetPool(ctx, msg.SentAsset.Symbol)
+		if err != nil {
+			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
+		}
+	}
+	fmt.Println(err)
 	sentAmountInt, ok := keeper.ParseToInt(sentAmount.String())
-
 	if !ok {
 		return nil, types.ErrUnableToParseInt
 	}
@@ -341,6 +331,19 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		liquidityFee = liquidityFee.Add(lp)
 		tradeSlip = tradeSlip.Add(ts)
 	}
+	// If receiving  rowan , add directly to  Native balance  instead of fetching from rowan pool
+	if msg.ReceivedAsset == types.GetSettlementAsset() {
+		outPool, err = keeper.GetPool(ctx, msg.SentAsset.Symbol)
+		if err != nil {
+			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
+		}
+	} else {
+		outPool, err = keeper.GetPool(ctx, msg.ReceivedAsset.Symbol)
+		if err != nil {
+			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.ReceivedAsset.String())
+		}
+	}
+
 	// Calculating amount user receives
 	emitAmount, lp, ts, finalPool, err := clpkeeper.SwapOne(sentAsset, sentAmount, receivedAsset, outPool)
 	if err != nil {
@@ -364,6 +367,8 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 			sdk.NewAttribute(types.AttributeKeySwapAmount, emitAmount.String()),
 			sdk.NewAttribute(types.AttributeKeyLiquidityFee, liquidityFee.String()),
 			sdk.NewAttribute(types.AttributeKeyTradeSlip, tradeSlip.String()),
+			sdk.NewAttribute(types.AttributeKeyInPool, inPool.String()),
+			sdk.NewAttribute(types.AttributeKeyOutPool, outPool.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
 		),
 		sdk.NewEvent(

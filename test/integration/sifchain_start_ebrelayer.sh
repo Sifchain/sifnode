@@ -27,11 +27,18 @@ echo ETHEREUM_CONTRACT_ADDRESS $ETHEREUM_CONTRACT_ADDRESS
 echo MONIKER $MONIKER
 echo MNEMONIC $MNEMONIC
 
-ebrelayer init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" \
-                                           "$ETHEREUM_CONTRACT_ADDRESS" \
-                                           "$MONIKER" \
-                                           "$MNEMONIC" \
-                                           --chain-id "$CHAINNET" \
-                                           --gas 300000 \
-                                           --gas-adjustment 1.5 \
-                                            --home $CHAINDIR/.sifnodecli
+if [ -z "${EBDEBUG}" ]; then
+  runner=ebrelayer
+else
+  cd $BASEDIR/cmd/ebrelayer
+  runner="dlv exec $GOBIN/ebrelayer -- "
+fi
+
+$runner init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" \
+  "$ETHEREUM_CONTRACT_ADDRESS" \
+  "$MONIKER" \
+  "$MNEMONIC" \
+  --chain-id "$CHAINNET" \
+  --gas 300000 \
+  --gas-adjustment 1.5 \
+  --home $CHAINDIR/.sifnodecli

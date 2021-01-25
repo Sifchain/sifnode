@@ -37,8 +37,11 @@ export default defineComponent({
       fromAmount,
       toSymbol,
       toAmount,
+      priceImpact,
+      providerFee,
     } = useCurrencyFieldState();
     const transactionState = ref<ConfirmState>("selecting");
+    const transactionHash = ref<String | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
@@ -65,6 +68,8 @@ export default defineComponent({
       selectedField,
       toSymbol,
       poolFinder,
+      priceImpact,
+      providerFee
     });
 
     const minimumReceived = computed(() =>
@@ -92,7 +97,8 @@ export default defineComponent({
         throw new Error("to field amount is not defined");
 
       transactionState.value = "signing";
-      await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset);
+      let tx = await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset);
+      transactionHash.value = tx.transactionHash;
       transactionState.value = "confirmed";
       clearAmounts();
     }
@@ -163,6 +169,8 @@ export default defineComponent({
       minimumReceived,
       toSymbol,
       priceMessage,
+      priceImpact,
+      providerFee,
       handleFromMaxClicked() {
         selectedField.value = "from";
         const accountBalance = balances.value.find(
@@ -188,6 +196,7 @@ export default defineComponent({
         transactionState.value = "signing";
       },
       handleAskConfirmClicked,
+      transactionHash
     };
   },
 });
@@ -230,8 +239,8 @@ export default defineComponent({
         :toToken="toSymbol || ''"
         :priceMessage="priceMessage || ''"
         :minimumReceived="minimumReceived || ''"
-        :providerFee="''"
-        :priceImpact="''"
+        :providerFee="providerFee || ''"
+        :priceImpact="priceImpact || ''"
       />
       <ActionsPanel
         connectType="connectToSif"
@@ -244,6 +253,7 @@ export default defineComponent({
         :isOpen="transactionModalOpen"
         ><ConfirmationDialog
           @confirmswap="handleAskConfirmClicked"
+          :transactionHash="transactionHash"
           :state="transactionState"
           :requestClose="requestTransactionModalClose"
           :priceMessage="priceMessage"

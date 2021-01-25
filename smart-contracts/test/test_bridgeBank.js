@@ -136,7 +136,7 @@ contract("BridgeBank", function (accounts) {
           this.bridgeBank.updateEthWhiteList(this.token.address, false, {from: operator}),
           "Token not whitelisted"
       );
-
+      
       // Add the token into white list
       await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
@@ -166,7 +166,6 @@ contract("BridgeBank", function (accounts) {
           value: 0
         }
       ).should.be.fulfilled;
-
     });
 
     it("should return true if a sifchain address prefix is correct", async function () {
@@ -190,7 +189,7 @@ contract("BridgeBank", function (accounts) {
         this.sender,
         this.senderSequence,
         this.recipient,
-        this.symbol,
+        (this.symbol).toLowerCase(),
         this.amount, {
           from: userOne
         }
@@ -640,7 +639,7 @@ contract("BridgeBank", function (accounts) {
         this.sender,
         this.senderSequence,
         this.recipient,
-        this.symbol,
+        this.symbol.toLowerCase(),
         this.amount, {
           from: userOne
         }
@@ -787,7 +786,7 @@ contract("BridgeBank", function (accounts) {
         this.sender,
         this.senderSequence,
         this.recipient,
-        this.symbol,
+        this.symbol.toLowerCase(),
         OVERLIMIT_TOKEN_AMOUNT, {
           from: userOne
         }
@@ -904,7 +903,7 @@ contract("BridgeBank", function (accounts) {
         cosmosSender,
         senderSequence,
         operator,
-        symbol,
+        symbol.toLowerCase(),
         amount,
         {from: userOne}
       );  
@@ -913,7 +912,7 @@ contract("BridgeBank", function (accounts) {
         cosmosSender,
         senderSequence,
         operator,
-        symbol,
+        symbol.toLowerCase(),
         amount,
         {from: userTwo}
       );  
@@ -923,7 +922,7 @@ contract("BridgeBank", function (accounts) {
         cosmosSender,
         senderSequence,
         operator,
-        symbol,
+        symbol.toLowerCase(),
         amount,
       )).toString();
 
