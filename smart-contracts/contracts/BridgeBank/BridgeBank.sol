@@ -328,4 +328,10 @@ contract BridgeBank is BankStorage,
         }
         unlockFunds(_recipient, tokenAddress, _symbol, _amount);
     }
+
+    /*
+    * @dev fallback function for ERC223 tokens so that we can receive these tokens in our contract
+    * Don't need to do anything to handle these tokens
+    */
+    function tokenFallback(address _from, uint _value, bytes memory _data) public {}
 }
