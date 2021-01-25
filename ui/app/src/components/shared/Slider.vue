@@ -55,7 +55,7 @@ export default defineComponent({
     display: flex;
     justify-content: space-between;
     & > * {
-      width: 20%;
+      width: 32%;
     }
     & > *:first-child {
       text-align: left;
