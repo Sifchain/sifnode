@@ -19,7 +19,7 @@ export default defineComponent({
   },
 
   setup() {
-    const { actions, poolFinder, store } = useCore();
+    const { store } = useCore();
 
     const selectedPool = ref<AccountPool | null>(null);
     const refsStore = toRefs(store);
