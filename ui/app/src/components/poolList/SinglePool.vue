@@ -8,6 +8,8 @@ import { Fraction, LiquidityProvider, Pool, usePoolCalculator } from "ui-core";
 import { useWallet } from "@/hooks/useWallet";
 import { useCore } from "@/hooks/useCore";
 
+const DECIMALS = 18
+
 export default defineComponent({
   components: { Layout, SifButton },
   props: {
@@ -19,9 +21,8 @@ export default defineComponent({
 
   setup(props) {
     const { config } = useCore();
-    // TODO This needs tidying up poor componentization
-    // useAssetItem should not really be used outside of a display component
-    const thePool = computed(() => props.accountPool?.pool);
+
+const thePool = computed(() => props.accountPool?.pool);
     const fromSymbol = computed(() =>
       props.accountPool?.pool.amounts[1].asset
         ? getAssetLabel(props.accountPool?.pool.amounts[1].asset)
@@ -36,8 +37,8 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    const fromValue = computed(() => thePool.value?.amounts[1].toFixed(0));
-
+    const fromValue = computed(() => thePool.value?.amounts[1].toFixed(DECIMALS));
+  
     const toSymbol = computed(() =>
       props.accountPool?.pool.amounts[0].asset
         ? getAssetLabel(props.accountPool?.pool.amounts[0].asset)
@@ -51,7 +52,7 @@ export default defineComponent({
       const t = toToken.value;
       return t.imageUrl;
     });
-    const toValue = computed(() => thePool.value?.amounts[0].toFixed(0));
+    const toValue = computed(() => thePool.value?.amounts[0].toFixed(DECIMALS));
 
     const poolUnitsAsFraction = computed(
       () => props.accountPool?.lp.units || new Fraction("0")
@@ -65,9 +66,10 @@ export default defineComponent({
         .toFixed(2);
       return `${perc} %`;
     });
-    const myPoolUnits = computed(() => poolUnitsAsFraction.value.toFixed(0));
+    const myPoolUnits = computed(() => poolUnitsAsFraction.value.toFixed(DECIMALS));
 
     return {
+      fromToken,
       fromSymbol,
       fromBackgroundStyle,
       fromTokenImage,
@@ -180,14 +182,14 @@ export default defineComponent({
       </div>
       <div class="section footer">
         <div class="mr-1">
-          <router-link :to="`/pool/remove-liquidity/${fromSymbol}`"
+          <router-link :to="`/pool/remove-liquidity/${fromSymbol.toLowerCase()}`"
             ><SifButton primaryOutline nocase block
               >Remove Liquidity</SifButton
             ></router-link
           >
         </div>
         <div class="ml-1">
-          <router-link :to="`/pool/add-liquidity/${fromSymbol}`"
+          <router-link :to="`/pool/add-liquidity/${fromSymbol.toLowerCase()}`"
             ><SifButton primary nocase block
               >Add Liquidity</SifButton
             ></router-link
