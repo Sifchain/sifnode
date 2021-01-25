@@ -10,9 +10,6 @@ module.exports = async (cb) => {
     const argv = sifchainUtilities.processArgs(this, {
         ...sifchainUtilities.sharedYargOptions,
         ...sifchainUtilities.symbolYargOption,
-        'bridgetoken_address': {
-            type: "string",
-        },
         'ethereum_address': {
             type: "string",
             demandOption: true
@@ -23,16 +20,14 @@ module.exports = async (cb) => {
     const result = {};
     try {
         const web3instance = contractUtilites.buildWeb3(this, argv);
-        if (argv.symbol === 'eth') {
+        if (argv.symbol === sifchainUtilities.NULL_ADDRESS) {
             balanceWei = await web3instance.eth.getBalance(argv.ethereum_address);
             result.symbol = "eth";
         } else {
-            const addr = argv.bridgetoken_address;
-            if (!addr)
-                throw "must provide --bridgetoken_address for non-eth"
-            const bridgeTokenContract = await contractUtilites.buildContract(this, argv, "BridgeToken", argv.symbol.toString());
-            result["symbol"] = await bridgeTokenContract.symbol();
-            balanceWei = new BigNumber(await bridgeTokenContract.balanceOf(argv.ethereum_address))
+            const addr = argv.symbol;
+            const tokenContract = await contractUtilites.buildContract(this, argv, "BridgeToken", argv.symbol.toString());
+            result["symbol"] = await tokenContract.symbol();
+            balanceWei = new BigNumber(await tokenContract.balanceOf(argv.ethereum_address))
         }
         balanceEth = web3instance.utils.fromWei(balanceWei.toString());
         const finalResult = {
