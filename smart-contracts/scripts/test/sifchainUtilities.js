@@ -1,3 +1,5 @@
+const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 function getRequiredEnvironmentVariable(name) {
     const result = process.env[name];
     if (!result) {
@@ -16,6 +18,7 @@ const bridgeBankAddressYargOptions = {
 const symbolYargOption = {
     'symbol': {
         type: "string",
+        coerce: addr => addr === "eth" ? NULL_ADDRESS : addr,
         demandOption: true
     },
 };
@@ -46,9 +49,6 @@ const transactionYargOptions = {
     ...ethereumAddressYargOption,
     ...symbolYargOption,
     ...ethereumNetworkYargOption,
-    'gas': {
-        default: 300000
-    },
     'json_path': {
         describe: 'path to the json files',
         default: "../build/contracts",
@@ -68,6 +68,9 @@ const sharedYargOptions = {
     'ethereum_private_key_env_var': {
         describe: "an environment variable that holds a single private key for the sender\nnot used for localnet",
         demandOption: false
+    },
+    'gas': {
+        default: 300000
     },
 };
 
@@ -113,4 +116,5 @@ module.exports = {
     ethereumAddressYargOption,
     symbolYargOption,
     amountYargOption,
+    NULL_ADDRESS
 };
