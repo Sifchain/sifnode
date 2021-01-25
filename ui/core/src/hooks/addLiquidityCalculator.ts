@@ -38,11 +38,13 @@ export function usePoolCalculator(input: {
   });
 
   const fromBalanceOverdrawn = computed(
-    () => !fromBalance.value?.greaterThan(fromField.fieldAmount.value || "0")
+    // () => !fromBalance.value?.greaterThan(fromField.fieldAmount.value || "0")
+    () => fromBalance.value?.lessThan(fromField.fieldAmount.value || "0")
   );
 
   const toBalanceOverdrawn = computed(
-    () => !toBalance.value?.greaterThan(toField.fieldAmount.value || "0")
+    // () => !toBalance.value?.greaterThan(toField.fieldAmount.value || "0")
+    () => toBalance.value?.lessThan(toField.fieldAmount.value || "0")
   );
 
   const preExistingPool = computed(() => {
@@ -111,12 +113,12 @@ export function usePoolCalculator(input: {
     const aAmount = fromField.fieldAmount.value;
     const bAmount = toField.fieldAmount.value;
     
-    if (!aAmount) return ""; // invalid, must supply external
+    if (!aAmount || aAmount.equalTo("0")) return ""; // invalid, must supply external
     if (!bAmount || bAmount.equalTo("0")) {
       // if rowan is 0 or empty ...
       // allow if the pool exists (BUT ratio is inapplicable - N/A),
       // invalid if the pool doesn't exist - ""
-      return preExistingPool ? "N/A" : ""; 
+      return preExistingPool.value ? "N/A" : ""; 
     }
 
     return aAmount.divide(bAmount).toFixed(8);
@@ -126,36 +128,36 @@ export function usePoolCalculator(input: {
     const aAmount = fromField.fieldAmount.value;
     const bAmount = toField.fieldAmount.value;
 
-    if (!aAmount) return ""; // invalid, must supply external
+    if (!aAmount || aAmount.equalTo("0")) return ""; // invalid, must supply external
 
     if (!bAmount || bAmount.equalTo("0")) {
       // if rowan is 0 or empty ...
       // allow if the pool exists (BUT ratio is inapplicable - N/A),
       // invalid if the pool doesn't exist - ""
-      return preExistingPool ? "N/A" : ""; 
+      return preExistingPool.value ? "N/A" : ""; 
     }
 
     return bAmount.divide(aAmount).toFixed(8);
   });
 
   const state = computed(() => {
+    const aAmount = fromField.fieldAmount.value;
+    const bAmount = toField.fieldAmount.value;
+
     if (!input.fromSymbol.value || !input.toSymbol.value)
       return PoolState.SELECT_TOKENS;
-
+    
     if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value) 
       return PoolState.INSUFFICIENT_FUNDS;
 
-    if (
-      preExistingPool.value &&
-      fromField.fieldAmount.value?.equalTo("0") 
-    )
+    if (!aAmount || aAmount.equalTo("0"))
       return PoolState.ZERO_AMOUNTS;
 
-    if (
-      !preExistingPool.value && 
-      (fromField.fieldAmount.value?.equalTo("0") || toField.fieldAmount.value?.equalTo("0"))
-    )
-      return PoolState.ZERO_AMOUNTS;
+    if (!bAmount || bAmount.equalTo("0"))
+      // if rowan is 0 or empty ...
+      // allow if the pool exists
+      // invalid if the pool doesn't exist - ""
+      return preExistingPool.value ? PoolState.VALID_INPUT : PoolState.ZERO_AMOUNTS;
 
     return PoolState.VALID_INPUT;
   });

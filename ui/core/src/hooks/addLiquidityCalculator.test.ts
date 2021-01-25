@@ -86,11 +86,21 @@ describe("usePoolCalculator", () => {
     expect(shareOfPoolPercent.value).toBe("0.00%");
   });
 
+  test("Don't allow rowan === 0 when creating new pool", () => {
+    fromAmount.value = "1000";
+    toAmount.value = "0";
+    fromSymbol.value = "atk";
+    toSymbol.value = "rowan";
+    expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
+    expect(aPerBRatioMessage.value).toBe("N/A");
+    expect(bPerARatioMessage.value).toBe("N/A");
+  });
+
   test("Allow rowan === 0 when adding to preExistingPool", () => {
     poolFinder.mockImplementation(
       () =>
         ref(
-          Pool(AssetAmount(ATK, "1000"), AssetAmount(ROWAN, "1000"))
+          Pool(AssetAmount(ATK, "1000000"), AssetAmount(ROWAN, "1000000"))
         ) as Ref<Pool>
     );
     fromAmount.value = "1000";
@@ -101,14 +111,5 @@ describe("usePoolCalculator", () => {
     expect(aPerBRatioMessage.value).toBe("N/A");
     expect(bPerARatioMessage.value).toBe("N/A");
   });
-
-  test("Don't allow rowan === 0 when creating new pool", () => {
-    fromAmount.value = "1000";
-    toAmount.value = "0";
-    fromSymbol.value = "atk";
-    toSymbol.value = "rowan";
-    expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
-    expect(aPerBRatioMessage.value).toBe("N/A");
-    expect(bPerARatioMessage.value).toBe("N/A");
-  });
+  
 });
