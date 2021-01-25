@@ -15,88 +15,67 @@ export function useRemoveLiquidityCalculator(input: {
   liquidityProvider: Ref<LiquidityProvider | null>;
   sifAddress: Ref<string>;
 }) {
-  const externalAsset = computed(() => {
-    if (!input.externalAssetSymbol.value) return null;
-    return buildAsset(input.externalAssetSymbol.value);
-  });
 
-  const nativeAsset = computed(() => {
-    if (!input.nativeAssetSymbol.value) return null;
-    return buildAsset(input.nativeAssetSymbol.value);
-  });
+  if (!input.externalAssetSymbol.value) return null;
+  if (!input.nativeAssetSymbol.value) return null;
+  if (!input.wBasisPoints.value) return null;
+  if (!input.asymmetry.value) return null;
+  if (!input.liquidityProvider.value) return null;
 
-  const liquidityPool = computed(() => {
-    if (!nativeAsset.value || !externalAsset.value) return null;
+  const externalAsset = buildAsset(input.externalAssetSymbol.value);
+  const nativeAsset = buildAsset(input.nativeAssetSymbol.value);
 
-    // Find pool from poolFinder
-    const pool = input.poolFinder(nativeAsset.value, externalAsset.value);
-    return pool?.value ?? null;
-  });
+  if (!nativeAsset || !externalAsset) return null;
 
-  const poolUnits = computed(() => {
-    if (!liquidityPool.value) return null;
-    return liquidityPool.value.poolUnits;
-  });
+  // Find pool from poolFinder
+  const pool = input.poolFinder(externalAsset, nativeAsset);
+  const liquidityPool = pool?.value ?? null;
+  
+  if (!liquidityPool) return null;
 
-  const wBasisPoints = computed(() => {
-    if (!input.wBasisPoints.value) return null;
-    return new Fraction(input.wBasisPoints.value);
-  });
+  const poolUnits = liquidityPool.poolUnits;
+  const wBasisPoints = new Fraction(input.wBasisPoints.value);
+  const asymmetry = new Fraction(input.asymmetry.value);
 
-  const asymmetry = computed(() => {
-    if (!input.asymmetry.value) return null;
-    return new Fraction(input.asymmetry.value);
-  });
+  const nativeAssetBalance = (
+    liquidityPool.amounts.find(
+      (a) => a.asset.symbol === input.nativeAssetSymbol.value
+    ) ?? null
+  )
 
-  const nativeAssetBalance = computed(() => {
-    if (!liquidityPool.value) return null;
-    return (
-      liquidityPool.value.amounts.find(
-        (a) => a.asset.symbol === input.nativeAssetSymbol.value
-      ) ?? null
-    );
-  });
+  const externalAssetBalance = (
+    liquidityPool.amounts.find(
+      (a) => a.asset.symbol === input.externalAssetSymbol.value
+    ) ?? null
+  )
 
-  const externalAssetBalance = computed(() => {
-    if (!liquidityPool.value) return null;
-    return (
-      liquidityPool.value.amounts.find(
-        (a) => a.asset.symbol === input.externalAssetSymbol.value
-      ) ?? null
-    );
-  });
+  const lpUnits = input.liquidityProvider.value.units as IFraction;
+  if (!lpUnits) return null;
 
-  const lpUnits = computed(() => {
-    if (!input.liquidityProvider.value) return null;
+  const hasLiquidity = lpUnits.greaterThan("0");
 
-    return input.liquidityProvider.value.units as IFraction;
-  });
-
-  const hasLiquidity = computed(() => {
-    if (!lpUnits.value) return false;
-    return lpUnits.value.greaterThan("0");
-  });
-
-  const withdrawalAmounts = computed(() => {
+  const withdrawalAmounts = (() => {
     if (
-      !poolUnits.value ||
-      !nativeAssetBalance.value ||
-      !externalAssetBalance.value ||
-      !lpUnits.value ||
-      !wBasisPoints.value ||
-      !asymmetry.value ||
-      !externalAsset.value ||
-      !nativeAsset.value
-    )
-      return null;
+      !poolUnits ||
+      !nativeAssetBalance ||
+      !externalAssetBalance ||
+      !lpUnits ||
+      !wBasisPoints ||
+      !asymmetry ||
+      !externalAsset ||
+      !nativeAsset  || 
+      !hasLiquidity
+    ) {
+      return null
+    }
 
     const inputs = {
-      poolUnits: poolUnits.value,
-      nativeAssetBalance: nativeAssetBalance.value,
-      externalAssetBalance: externalAssetBalance.value,
-      lpUnits: lpUnits.value,
-      wBasisPoints: wBasisPoints.value,
-      asymmetry: asymmetry.value,
+      poolUnits: poolUnits,
+      nativeAssetBalance: nativeAssetBalance,
+      externalAssetBalance: externalAssetBalance,
+      lpUnits: lpUnits,
+      wBasisPoints: wBasisPoints,
+      asymmetry: asymmetry,
     };
     const {
       withdrawExternalAssetAmount,
@@ -106,45 +85,45 @@ export function useRemoveLiquidityCalculator(input: {
     return {
       hasLiquidity,
       withdrawExternalAssetAmount: AssetAmount(
-        externalAsset.value,
+        externalAsset,
         withdrawExternalAssetAmount
       ),
       withdrawNativeAssetAmount: AssetAmount(
-        nativeAsset.value,
+        nativeAsset,
         withdrawNativeAssetAmount
       ),
     };
-  });
+  })()
 
-  const state = computed(() => {
+  const state = (() => {
     if (!input.externalAssetSymbol.value || !input.nativeAssetSymbol.value)
       return PoolState.SELECT_TOKENS;
 
-    if (!wBasisPoints.value?.greaterThan("0")) return PoolState.ZERO_AMOUNTS;
+    if (!wBasisPoints?.greaterThan("0")) return PoolState.ZERO_AMOUNTS;
 
-    if (!hasLiquidity.value) return PoolState.NO_LIQUIDITY;
-    if (!lpUnits.value) {
+    if (!hasLiquidity) return PoolState.NO_LIQUIDITY;
+    if (!lpUnits) {
       return PoolState.INSUFFICIENT_FUNDS;
     }
 
     return PoolState.VALID_INPUT;
-  });
+  })()
 
-  const withdrawExternalAssetAmountMessage = computed(() => {
+  const withdrawExternalAssetAmountMessage = (() => {
     return (
-      withdrawalAmounts.value?.withdrawExternalAssetAmount.toFormatted({
-        decimals: 1,
+      withdrawalAmounts?.withdrawExternalAssetAmount.toFormatted({
+        decimals: 18,
       }) || ""
     );
-  });
+  })()
 
-  const withdrawNativeAssetAmountMessage = computed(() => {
+  const withdrawNativeAssetAmountMessage = (() => {
     return (
-      withdrawalAmounts.value?.withdrawNativeAssetAmount.toFormatted({
-        decimals: 1,
+      withdrawalAmounts?.withdrawNativeAssetAmount.toFormatted({
+        decimals: 18,
       }) || ""
     );
-  });
+  })()
 
   return {
     withdrawExternalAssetAmount: withdrawExternalAssetAmountMessage,
