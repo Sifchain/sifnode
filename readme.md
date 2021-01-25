@@ -171,7 +171,7 @@ sifnodecli tx staking create-validator \
     --moniker=<moniker> \
     --chain-id=merry-go-round \
     --min-self-delegation="1" \
-    ---gas-prices="0.5rowan" \
+    --gas-prices="0.5rowan" \
     --from=<moniker> \
     --keyring-backend=file
 ```
