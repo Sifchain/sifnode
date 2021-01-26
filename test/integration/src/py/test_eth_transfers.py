@@ -56,4 +56,4 @@ def test_transfer_eth_to_ceth_over_limit():
     invalid_request = copy(request)
     invalid_request.amount = test_utilities.amount_in_wei(35)
     with pytest.raises(JSONDecodeError):
-        burn_lock_functions.transfer_ethereum_to_sifchain(invalid_request, credentials)
+        burn_lock_functions.transfer_ethereum_to_sifchain(invalid_request)
