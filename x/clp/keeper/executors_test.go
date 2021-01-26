@@ -60,9 +60,9 @@ func TestLiquidityFee(t *testing.T) {
 		Expected string `json:"expected"`
 	}
 	type Test struct {
-		TestType []TestCase `json:"LiquidityFee"`
+		TestType []TestCase `json:"SingleSwapLiquidityFee"`
 	}
-	file, err := ioutil.ReadFile("../../../test/test-tables/sample_liquidity_fee.json")
+	file, err := ioutil.ReadFile("../../../test/test-tables/singleswap_liquidityfees.json")
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	assert.NoError(t, err)
 	var test Test
@@ -71,14 +71,14 @@ func TestLiquidityFee(t *testing.T) {
 	testcases := test.TestType
 	totalCount := 0
 	failedCount := 0
-	f, err := os.Create("discrepancies_sample_liquidity_fee")
+	f, err := os.Create("discrepancies_singleswap_liquidity_fee")
 	assert.NoError(t, err)
 
 	w := bufio.NewWriter(f)
 	for _, test := range testcases {
 		totalCount++
 		res := calcLiquidityFee(GetInt(t, test.X), GetInt(t, test.Sx), GetInt(t, test.Y))
-		//assert.Equal(t, res, GetInt(t, test.Expected))
+		assert.Equal(t, res, GetInt(t, test.Expected))
 		expected := GetInt(t, test.Expected)
 		if !res.Equal(expected) {
 			failedCount++
