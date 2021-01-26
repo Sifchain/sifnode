@@ -29,12 +29,12 @@ export default defineComponent({
     ConfirmationDialog,
     ModalView,
   },
-  props: ['title'],
+  props: ["title"],
   setup(props) {
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
     const transactionState = ref<ConfirmState>("selecting");
-    const transactionHash = ref<String | null>(null);
+    const transactionHash = ref<string | null>(null);
     const router = useRouter();
     const route = useRoute();
 
@@ -45,9 +45,10 @@ export default defineComponent({
       toAmount,
     } = useCurrencyFieldState();
 
-
     const toSymbol = ref("rowan");
-    fromSymbol.value = route.params.externalAsset ? route.params.externalAsset.toString() : null;
+    fromSymbol.value = route.params.externalAsset
+      ? route.params.externalAsset.toString()
+      : null;
 
     const priceMessage = ref("");
 
@@ -103,7 +104,9 @@ export default defineComponent({
         toFieldAmount.value,
         fromFieldAmount.value
       );
-      transactionHash.value = tx.transactionHash;
+      
+      console.log("POOL transaction hash: ", tx);
+      transactionHash.value = tx?.transactionHash ?? "";
       transactionState.value = "confirmed";
 
       clearAmounts();
@@ -118,7 +121,6 @@ export default defineComponent({
     }
 
     return {
-      title: props.title,
       fromAmount,
       fromSymbol,
 
