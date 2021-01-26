@@ -36,8 +36,6 @@ module.exports = function(deployer, network, accounts) {
   let initialPowers = process.env.INITIAL_VALIDATOR_POWERS.split(",");
   const tokenAmount = web3.utils.toWei("120000000");
 
-  console.log("~~~Pauser0~~~", process.env.PAUSER);
-  console.log("~~~Pauser1~~~", pauser);
   if (!initialPowers.length || !initialValidators.length) {
     return console.error(
       "Must provide validator and power."
@@ -92,14 +90,13 @@ module.exports = function(deployer, network, accounts) {
     // 2. Deploy BridgeBank contract:
     //    Gas used:        4,823,348 Gwei
     //    Total cost:    0.09646696 Ether
-    console.log("Before deploying bridgebank: process.env.PAUSER", process.env.PAUSER);
     const bridgeBank = await deployProxy(
       BridgeBank,
       [
         operator,
         CosmosBridge.address,
         owner,
-        process.env.PAUSER
+        pauser
       ],
       setTxSpecifications(6721975, operator, deployer)
     );
