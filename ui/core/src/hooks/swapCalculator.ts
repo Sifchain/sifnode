@@ -160,7 +160,7 @@ export function useSwapCalculator(input: {
       toField.fieldAmount.value?.equalTo("0")
     )
       return SwapState.ZERO_AMOUNTS;
-    if (!balance.value?.greaterThan(fromField.fieldAmount.value || "0"))
+    if (!balance.value?.greaterThanOrEqual(fromField.fieldAmount.value || "0"))
       return SwapState.INSUFFICIENT_FUNDS;
 
     return SwapState.VALID_INPUT;

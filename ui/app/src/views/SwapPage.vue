@@ -101,6 +101,7 @@ export default defineComponent({
         fromFieldAmount.value,
         toFieldAmount.value.asset
       );
+
       transactionHash.value = tx?.transactionHash ?? "";
       transactionState.value = "confirmed";
       clearAmounts();
@@ -180,7 +181,7 @@ export default defineComponent({
           (balance) => balance.asset.symbol === fromSymbol.value
         );
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.subtract("1").toFixed(1);
+        fromAmount.value = accountBalance.toFixed(18);
       },
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;

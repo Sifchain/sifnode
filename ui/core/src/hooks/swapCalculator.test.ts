@@ -52,7 +52,7 @@ describe("swapCalculator", () => {
       toSymbol,
       poolFinder,
       priceImpact,
-      providerFee
+      providerFee,
     }));
     selectedField.value = "from";
     expect(state.value).toBe(SwapState.SELECT_TOKENS);
@@ -142,7 +142,7 @@ describe("swapCalculator", () => {
       toSymbol,
       poolFinder,
       priceImpact,
-      providerFee
+      providerFee,
     }));
 
     selectedField.value = "from";
@@ -151,5 +151,44 @@ describe("swapCalculator", () => {
     fromSymbol.value = "atk";
     toSymbol.value = "btk";
     expect(priceMessage.value).toBe("");
+  });
+
+  test("insufficient funds", () => {
+    balances.value = [AssetAmount(ATK, "100"), AssetAmount(ROWAN, "100")];
+    fromAmount.value = "1000";
+    toAmount.value = "500";
+    fromSymbol.value = "atk";
+    toSymbol.value = "rowan";
+
+    expect(state.value).toBe(SwapState.INSUFFICIENT_FUNDS);
+  });
+
+  test("valid funds below limit", () => {
+    balances.value = [AssetAmount(ATK, "1000"), AssetAmount(ROWAN, "500")];
+    fromAmount.value = "999";
+    toAmount.value = "499";
+    fromSymbol.value = "atk";
+    toSymbol.value = "rowan";
+    expect(state.value).toBe(SwapState.VALID_INPUT);
+  });
+
+  test("valid funds at limit", () => {
+    balances.value = [AssetAmount(ATK, "1000"), AssetAmount(ROWAN, "500")];
+    fromAmount.value = "1000";
+    toAmount.value = "500";
+    fromSymbol.value = "atk";
+    toSymbol.value = "rowan";
+
+    expect(state.value).toBe(SwapState.VALID_INPUT);
+  });
+
+  test("invalid funds above limit", () => {
+    balances.value = [AssetAmount(ATK, "1000"), AssetAmount(ROWAN, "500")];
+    fromAmount.value = "1001";
+    toAmount.value = "501";
+    fromSymbol.value = "atk";
+    toSymbol.value = "rowan";
+
+    expect(state.value).toBe(SwapState.INSUFFICIENT_FUNDS);
   });
 });
