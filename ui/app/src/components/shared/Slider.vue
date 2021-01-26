@@ -1,6 +1,6 @@
 <template>
   <div class="slider">
-    <p v-if="message">{{ message }}</p>
+    <p class="text--left" v-if="message">{{ message }}</p>
     <input
       :disabled="disabled"
       v-model="localValue"
@@ -50,6 +50,7 @@ export default defineComponent({
   width: 100%;
   .input {
     width: 100%;
+    cursor: pointer;
   }
   .row {
     display: flex;
