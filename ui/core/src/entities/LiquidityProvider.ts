@@ -8,4 +8,8 @@ export function LiquidityProvider(
 ) {
   return { asset, units, address };
 }
-export type LiquidityProvider = ReturnType<typeof LiquidityProvider>;
+export type LiquidityProvider = {
+  asset: Asset;
+  units: IFraction;
+  address: string;
+};
