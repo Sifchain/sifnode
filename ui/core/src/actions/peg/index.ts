@@ -53,7 +53,15 @@ export default ({
       try {
         return await api.SifService.signAndBroadcast(tx.value.msg);
       } catch (err) {
-        alert(JSON.stringify({ err }));
+        // TODO: coordinate with blockchain to get more standardised errors
+        if (err.message?.indexOf("insufficient funds") > -1) {
+          notify({
+            type: "error",
+            message:
+              "Please check you have the available tokens and fee amount in " +
+              feeAmount.asset.symbol,
+          });
+        }
       }
     },
 

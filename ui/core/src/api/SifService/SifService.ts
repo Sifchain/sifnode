@@ -275,27 +275,23 @@ export default function createSifService({
 
     async signAndBroadcast(msg: Msg | Msg[], memo?: string) {
       if (!client) throw "No client. Please sign in.";
-      try {
-        const fee = {
-          amount: coins(0, "rowan"),
-          gas: "200000", // need gas fee for tx to work - see genesis file
-        };
 
-        const msgArr = Array.isArray(msg) ? msg : [msg];
-        console.log("msgArr", msgArr);
+      const fee = {
+        amount: coins(0, "rowan"),
+        gas: "200000", // need gas fee for tx to work - see genesis file
+      };
 
-        const txHash = await client.signAndBroadcast(msgArr, fee, memo);
+      const msgArr = Array.isArray(msg) ? msg : [msg];
 
-        if (isBroadcastTxFailure(txHash)) {
-          throw new Error(txHash.rawLog);
-        }
+      const txHash = await client.signAndBroadcast(msgArr, fee, memo);
 
-        triggerUpdate();
-
-        return txHash;
-      } catch (err) {
-        console.error(err);
+      if (isBroadcastTxFailure(txHash)) {
+        throw new Error(txHash.rawLog);
       }
+
+      triggerUpdate();
+
+      return txHash;
     },
   };
   return instance;
