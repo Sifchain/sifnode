@@ -210,7 +210,7 @@ export default defineComponent({
           (balance) => balance.asset.symbol === fromSymbol.value
         );
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.toFixed(18);
+        fromAmount.value = accountBalance.toFixed(8);
       },
       shareOfPoolPercent,
       connectedText,
