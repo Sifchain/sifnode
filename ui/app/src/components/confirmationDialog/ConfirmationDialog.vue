@@ -34,8 +34,13 @@ export default defineComponent({
       return props.state === "confirmed";
     });
 
+    const failed = computed(() => {
+      return props.state === "failed";
+    });
+
     return {
       confirmed,
+      failed
     };
   },
 });
@@ -58,6 +63,7 @@ export default defineComponent({
   <AnimatedConfirmation
     v-else
     :confirmed="confirmed"
+    :failed="failed"
     :state="state"
     :fromAmount="fromAmount"
     :fromToken="fromToken"

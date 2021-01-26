@@ -97,10 +97,14 @@ export default defineComponent({
         throw new Error("to field amount is not defined");
 
       transactionState.value = "signing";
-      let tx = await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset);
-      transactionHash.value = tx.transactionHash;
-      transactionState.value = "confirmed";
-      clearAmounts();
+      try {
+        let tx = await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset);
+        transactionHash.value = tx.transactionHash;
+        transactionState.value = "confirmed";
+        clearAmounts();
+      } catch (e) {
+        transactionState.value = "failed";
+      }
     }
 
     function swapInputs() {
@@ -184,7 +188,7 @@ export default defineComponent({
       }),
       transactionState,
       transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "confirmed"].includes(
+        return ["confirming", "signing", "failed", "confirmed"].includes(
           transactionState.value
         );
       }),
@@ -261,6 +265,9 @@ export default defineComponent({
           :fromAmount="fromAmount"
           :toAmount="toAmount"
           :toToken="toSymbol"
+          :minimumReceived="minimumReceived || ''"
+          :providerFee="providerFee || ''"
+          :priceImpact="priceImpact || ''"
       /></ModalView>
     </div>
   </Layout>
