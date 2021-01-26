@@ -63,12 +63,21 @@ export default defineComponent({
 
     const { balances } = useWallet(store);
 
+    const liquidityProvider = computed(() => {
+      if (!fromSymbol) return null;
+      return (
+        store.accountpools.find((pool) => {
+          pool.lp.asset.symbol === fromSymbol.value;
+        })?.lp ?? null
+      );
+    });
+
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
       shareOfPool,
       shareOfPoolPercent,
-      poolUnits,
+      totalLiquidityProviderUnits,
       fromFieldAmount,
       toFieldAmount,
       preExistingPool,
@@ -81,6 +90,7 @@ export default defineComponent({
       selectedField,
       toSymbol,
       poolFinder,
+      liquidityProvider,
     });
 
     function handleNextStepClicked() {
@@ -104,7 +114,7 @@ export default defineComponent({
         toFieldAmount.value,
         fromFieldAmount.value
       );
-      
+
       console.log("POOL transaction hash: ", tx);
       transactionHash.value = tx?.transactionHash ?? "";
       transactionState.value = "confirmed";
@@ -204,7 +214,7 @@ export default defineComponent({
       },
       shareOfPoolPercent,
       connectedText,
-      poolUnits,
+      poolUnits: totalLiquidityProviderUnits,
     };
   },
 });
