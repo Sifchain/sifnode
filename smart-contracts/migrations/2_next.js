@@ -1,6 +1,4 @@
-require("dotenv").config();
-
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 
 const CosmosBridge = artifacts.require("CosmosBridge");
 const Oracle = artifacts.require("Oracle");
@@ -8,7 +6,7 @@ const BridgeBank = artifacts.require("BridgeBank");
 const BridgeRegistry = artifacts.require("BridgeRegistry");
 const eRowan = artifacts.require("BridgeToken");
 
-module.exports = function(deployer, network, accounts) {
+module.exports = function (deployer, network, accounts) {
   /*******************************************
    *** Input validation of contract params
    ******************************************/
@@ -23,9 +21,7 @@ module.exports = function(deployer, network, accounts) {
     );
   }
   if (process.env.OWNER.length === 0) {
-    return console.error(
-      "Must provide owner address as environment variable."
-    );
+    return console.error("Must provide owner address as environment variable.");
   }
 
   let consensusThreshold = process.env.CONSENSUS_THRESHOLD;
@@ -39,9 +35,7 @@ module.exports = function(deployer, network, accounts) {
   console.log("~~~Pauser0~~~", process.env.PAUSER);
   console.log("~~~Pauser1~~~", pauser);
   if (!initialPowers.length || !initialValidators.length) {
-    return console.error(
-      "Must provide validator and power."
-    );
+    return console.error("Must provide validator and power.");
   }
   if (initialPowers.length !== initialValidators.length) {
     return console.error(
@@ -57,17 +51,16 @@ module.exports = function(deployer, network, accounts) {
    *** Final cost:                         0.25369878 Ether
    *******************************************************/
   deployer.then(async () => {
-
     function setTxSpecifications(gasAmount, from, deployObject) {
       const txObj = {
         gas: gasAmount,
         from: from,
         unsafeAllowCustomTypes: true,
-        deployer: deployObject
-      }
+        deployer: deployObject,
+      };
 
       if (process.env.MAINNET_GAS_PRICE) {
-        txObj.gasPrice = process.env.MAINNET_GAS_PRICE
+        txObj.gasPrice = process.env.MAINNET_GAS_PRICE;
       }
 
       return txObj;
@@ -78,70 +71,80 @@ module.exports = function(deployer, network, accounts) {
     //    Total cost:     0.052986 Ether
     const cosmosBridge = await deployProxy(
       CosmosBridge,
-      [
-        operator,
-        consensusThreshold,
-        initialValidators,
-        initialPowers
-      ],
+      [operator, consensusThreshold, initialValidators, initialPowers],
       setTxSpecifications(6721975, operator, deployer)
     );
 
-    console.log("cosmosBridge address: ", cosmosBridge.address)
+    console.log("cosmosBridge address: ", cosmosBridge.address);
 
     // 2. Deploy BridgeBank contract:
     //    Gas used:        4,823,348 Gwei
     //    Total cost:    0.09646696 Ether
     const bridgeBank = await deployProxy(
       BridgeBank,
-      [
-        operator,
-        CosmosBridge.address,
-        owner,
-        pauser
-      ],
+      [operator, CosmosBridge.address, owner, pauser],
       setTxSpecifications(6721975, operator, deployer)
     );
-    console.log("bridgeBank address: ", bridgeBank.address)
+    console.log("bridgeBank address: ", bridgeBank.address);
 
     // 3. Deploy BridgeRegistry contract:
     //    Gas used:          363,370 Gwei
     //    Total cost:     0.0072674 Ether
     await deployProxy(
       BridgeRegistry,
-      [
-        CosmosBridge.address,
-        BridgeBank.address
-      ],
+      [CosmosBridge.address, BridgeBank.address],
       setTxSpecifications(6721975, operator, deployer)
     );
 
-    await cosmosBridge.setBridgeBank(bridgeBank.address, 
+    await cosmosBridge.setBridgeBank(
+      bridgeBank.address,
       setTxSpecifications(600000, operator)
     );
 
-    if (network === 'mainnet') {
+    if (network === "mainnet") {
       return console.log("Network is mainnet, not going to deploy token");
     }
 
-    const erowan = await deployer.deploy(eRowan, "erowan", setTxSpecifications(4612388, operator));
+    const erowan = await deployer.deploy(
+      eRowan,
+      "erowan",
+      setTxSpecifications(4612388, operator)
+    );
 
-    await erowan.addMinter(BridgeBank.address, setTxSpecifications(4612388, operator));
+    await erowan.addMinter(
+      BridgeBank.address,
+      setTxSpecifications(4612388, operator)
+    );
 
-    await bridgeBank.addExistingBridgeToken(erowan.address, setTxSpecifications(4612388, operator));
+    await bridgeBank.addExistingBridgeToken(
+      erowan.address,
+      setTxSpecifications(4612388, operator)
+    );
 
     const tokenAddress = "0x0000000000000000000000000000000000000000";
 
     // allow 10 eth to be sent at once
-    await bridgeBank.updateTokenLockBurnLimit(tokenAddress, '10000000000000000000', setTxSpecifications(4612388, operator));
+    await bridgeBank.updateTokenLockBurnLimit(
+      tokenAddress,
+      "10000000000000000000",
+      setTxSpecifications(4612388, operator)
+    );
     console.log("erowan token address: ", erowan.address);
 
     const bnAmount = web3.utils.toWei("100", "ether");
 
-    await erowan.mint(operator, bnAmount, setTxSpecifications(4612388, operator));
+    await erowan.mint(
+      operator,
+      bnAmount,
+      setTxSpecifications(4612388, operator)
+    );
 
     if (network === "develop") {
-      await erowan.mint(accounts[1], bnAmount, setTxSpecifications(4612388, operator));
+      await erowan.mint(
+        accounts[1],
+        bnAmount,
+        setTxSpecifications(4612388, operator)
+      );
     }
 
     return;
