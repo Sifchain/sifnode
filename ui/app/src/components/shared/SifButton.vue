@@ -1,5 +1,4 @@
 <template>
-  <span>
     <button v-if="!to" class="btn" :class="classes" :disabled="disabled">
       <span class="content">
         <slot></slot>
@@ -7,7 +6,7 @@
     </button>
 
     <router-link
-      v-if="to"
+      v-else
       :to="to"
       class="btn"
       :class="classes"
@@ -17,7 +16,6 @@
         <slot></slot>
       </span>
     </router-link>
-  </span>
 </template>
 
 <script>
