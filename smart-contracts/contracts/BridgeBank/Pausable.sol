@@ -24,6 +24,12 @@ contract Pausable is PauserRole {
 
     bool private _paused;
 
+
+    function initialize (address _user) internal {
+        _addPauser(_user);
+        _paused = false;
+    }
+
     /**
      * @dev Returns true if the contract is paused, and false otherwise.
      */

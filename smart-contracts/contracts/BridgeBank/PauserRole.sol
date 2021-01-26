@@ -4,10 +4,6 @@ contract PauserRole {
 
     mapping (address => bool) public pausers;
 
-    function initialize (address _user) internal {
-        _addPauser(_user);
-    }
-
     modifier onlyPauser() {
         require(pausers[msg.sender], "PauserRole: caller does not have the Pauser role");
         _;
