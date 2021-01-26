@@ -14,14 +14,14 @@ import (
 
 func TestTradeSlip(t *testing.T) {
 	type TestCase struct {
-		X        string `json:"x"`
-		Y        string `json:"X"`
+		Sx       string `json:"x"`
+		X        string `json:"X"`
 		Expected string `json:"expected"`
 	}
 	type Test struct {
-		TestType []TestCase `json:"TradeSlip"`
+		TestType []TestCase `json:"SingleSwapStandardSlip"`
 	}
-	file, err := ioutil.ReadFile("../../../test/test-tables/sample_trade_slip.json")
+	file, err := ioutil.ReadFile("../../../test/test-tables/singleswap_standardslip.json")
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	assert.NoError(t, err)
 	var test Test
@@ -30,17 +30,18 @@ func TestTradeSlip(t *testing.T) {
 	testcases := test.TestType
 	totalCount := 0
 	failedCount := 0
-	f, err := os.Create("discrepancies_sample_trade_slip")
+	f, err := os.Create("discrepancies_singleswap_standard_slip")
 	assert.NoError(t, err)
 	w := bufio.NewWriter(f)
 	for _, test := range testcases {
 		totalCount++
-		e := calcTradeSlip(GetInt(t, test.Y), GetInt(t, test.X))
-		//assert.Equal(t, e, GetInt(t, test.Expected))
 		expected := GetInt(t, test.Expected)
+		e := calcTradeSlip(GetInt(t, test.X), GetInt(t, test.Sx))
+		assert.Equal(t, e, expected)
+
 		if !e.Equal(expected) {
 			failedCount++
-			_, err := fmt.Fprintf(w, "Expected : %s  Actuall : %s \n", test.Expected, e.String())
+			_, err := fmt.Fprintf(w, "Expected : %s  Actual : %s \n", expected.String(), e.String())
 			assert.NoError(t, err)
 		}
 	}
@@ -81,7 +82,7 @@ func TestLiquidityFee(t *testing.T) {
 		expected := GetInt(t, test.Expected)
 		if !res.Equal(expected) {
 			failedCount++
-			_, err := fmt.Fprintf(w, "Expected : %s  Actuall : %s \n", expected.String(), res.String())
+			_, err := fmt.Fprintf(w, "Expected : %s  Actual : %s \n", expected.String(), res.String())
 			assert.NoError(t, err)
 		}
 	}
