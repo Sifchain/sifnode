@@ -29,12 +29,12 @@ export default defineComponent({
     ConfirmationDialog,
     ModalView,
   },
-  props: ['title'],
+  props: ["title"],
   setup(props) {
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
     const transactionState = ref<ConfirmState>("selecting");
-    const transactionHash = ref<String | null>(null);
+    const transactionHash = ref<string | null>(null);
     const router = useRouter();
     const route = useRoute();
 
@@ -45,9 +45,10 @@ export default defineComponent({
       toAmount,
     } = useCurrencyFieldState();
 
-
     const toSymbol = ref("rowan");
-    fromSymbol.value = route.params.externalAsset ? route.params.externalAsset.toString() : null;
+    fromSymbol.value = route.params.externalAsset
+      ? route.params.externalAsset.toString()
+      : null;
 
     const priceMessage = ref("");
 
@@ -62,12 +63,21 @@ export default defineComponent({
 
     const { balances } = useWallet(store);
 
+    const liquidityProvider = computed(() => {
+      if (!fromSymbol) return null;
+      return (
+        store.accountpools.find((pool) => {
+          pool.lp.asset.symbol === fromSymbol.value;
+        })?.lp ?? null
+      );
+    });
+
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
       shareOfPool,
       shareOfPoolPercent,
-      poolUnits,
+      totalLiquidityProviderUnits,
       fromFieldAmount,
       toFieldAmount,
       preExistingPool,
@@ -80,6 +90,7 @@ export default defineComponent({
       selectedField,
       toSymbol,
       poolFinder,
+      liquidityProvider,
     });
 
     function handleNextStepClicked() {
@@ -87,6 +98,7 @@ export default defineComponent({
         throw new Error("from field amount is not defined");
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
+      if (state.value !== PoolState.VALID_INPUT) return;
 
       transactionState.value = "confirming";
     }
@@ -102,8 +114,9 @@ export default defineComponent({
         toFieldAmount.value,
         fromFieldAmount.value
       );
-      console.log('POOL transaction hash: ', tx);
-      transactionHash.value = tx.transactionHash;
+
+      console.log("POOL transaction hash: ", tx);
+      transactionHash.value = tx?.transactionHash ?? "";
       transactionState.value = "confirmed";
 
       clearAmounts();
@@ -118,7 +131,6 @@ export default defineComponent({
     }
 
     return {
-      title: props.title,
       fromAmount,
       fromSymbol,
 
@@ -198,11 +210,11 @@ export default defineComponent({
           (balance) => balance.asset.symbol === fromSymbol.value
         );
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.subtract("1").toFixed(1);
+        fromAmount.value = accountBalance.toFixed(8);
       },
       shareOfPoolPercent,
       connectedText,
-      poolUnits,
+      poolUnits: totalLiquidityProviderUnits,
     };
   },
 });
@@ -239,7 +251,7 @@ export default defineComponent({
     <PriceCalculation>
       <div class="pool-share">
         <h4 class="pool-share-title text--left">Prices and pool share</h4>
-        <div class="pool-share-details" v-if="fromSymbol && aPerBRatioMessage">
+        <div class="pool-share-details" v-if="nextStepAllowed">
           <div>
             <span class="number">{{ aPerBRatioMessage }}</span
             ><br />
