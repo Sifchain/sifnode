@@ -25,8 +25,7 @@ def test_transfer_eth_to_ceth_in_parallel():
     logging.info("restart ganache with timed blocks")
     integration_dir = os.environ.get("TEST_INTEGRATION_DIR")
     get_shell_output(f"{integration_dir}/ganache_start.sh 5")
-    n_parallel_tasks = int(math.sqrt(multiprocessing.cpu_count()))
-    n_parallel_tasks = 6
+    n_parallel_tasks = multiprocessing.cpu_count() - 2
     with concurrent.futures.ThreadPoolExecutor(n_parallel_tasks) as executor:
         futures = {executor.submit(execute_one_transfer, x) for x in range(0, n_parallel_tasks)}
         for f in concurrent.futures.as_completed(futures):
