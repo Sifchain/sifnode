@@ -11,6 +11,7 @@ from integration_env_credentials import sifchain_cli_credentials_for_test
 from test_utilities import get_required_env_var, get_shell_output, get_optional_env_var, ganache_owner_account
 
 smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
+integration_dir = get_required_env_var("TEST_INTEGRATION_DIR")
 
 ethereum_address = get_optional_env_var(
     "ETHEREUM_ADDRESS",
@@ -19,11 +20,18 @@ ethereum_address = get_optional_env_var(
 test_amount = 20000
 
 
-def test_transfer_eth_to_ceth_in_parallel():
+def setup_module(module):
+    logging.info("restart ganache with timed blocks (keep database)")
     test_utilities.set_lock_burn_limit(smart_contracts_dir, "eth", test_amount)
-    logging.info("restart ganache with timed blocks")
-    integration_dir = os.environ.get("TEST_INTEGRATION_DIR")
     get_shell_output(f"{integration_dir}/ganache_start.sh 2")
+
+
+def teardown_module(module):
+    logging.info("restart ganache with instant mining (keep database)")
+    get_shell_output(f"{integration_dir}/ganache_start.sh")
+
+
+def test_transfer_eth_to_ceth_in_parallel():
     # it's not clear how many simultaneous tasks we should try.
     n_parallel_tasks = max(1, int(multiprocessing.cpu_count() * .75))
     n_parallel_tasks = 4
@@ -33,7 +41,6 @@ def test_transfer_eth_to_ceth_in_parallel():
             # As a side effect, this will raise any exception that happened in the future
             logging.info(f"Parallel result: {f.result()}")
     logging.info("restart ganache without timed blocks")
-    get_shell_output(f"{integration_dir}/ganache_start.sh")
 
 
 def execute_one_transfer(id_number: int):
