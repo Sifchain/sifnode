@@ -128,7 +128,10 @@ def run_yarn_command(command_line):
     # so we want the one before that
     lines = output.split('\n')
     json_line = lines[-2] if lines[-1].startswith("Done in") else lines[-1]
-    return json.loads(json_line)
+    try:
+        return json.loads(json_line)
+    except Exception as e:
+        raise Exception(f"json error from command:\n{command_line}\noutput:\n{lines}\noriginal exception: {e}")
 
 
 # converts a key to a sif address.
@@ -260,8 +263,6 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
 # this does not wait for the transaction to complete
 def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest):
     direction = "sendBurnTx" if transfer_request.sifchain_symbol == "rowan" else "sendLockTx"
-    # 60000 as the gas number lets us get multiple transactions into a single block
-    # for test/integration/src/py/test_parallel_eth_transfers_with_timed_ganache_block.py
     command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} integrationtest:{direction} " \
                    f"--sifchain_address {transfer_request.sifchain_address} " \
                    f"--symbol {transfer_request.ethereum_symbol} " \
@@ -269,7 +270,7 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
                    f"--bridgebank_address {transfer_request.bridgebank_address} " \
                    f"--ethereum_address {transfer_request.ethereum_address} " \
                    f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
-                   f"--gas 60000"
+                   f"--gas estimate"
     command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     return run_yarn_command(command_line)
 

@@ -1,6 +1,5 @@
 import concurrent
 import logging
-import math
 import multiprocessing
 import os
 from concurrent.futures.thread import ThreadPoolExecutor
@@ -24,8 +23,10 @@ def test_transfer_eth_to_ceth_in_parallel():
     test_utilities.set_lock_burn_limit(smart_contracts_dir, "eth", test_amount)
     logging.info("restart ganache with timed blocks")
     integration_dir = os.environ.get("TEST_INTEGRATION_DIR")
-    get_shell_output(f"{integration_dir}/ganache_start.sh 5")
-    n_parallel_tasks = multiprocessing.cpu_count() - 2
+    get_shell_output(f"{integration_dir}/ganache_start.sh 2")
+    # it's not clear how many simultaneous tasks we should try.
+    n_parallel_tasks = max(1, int(multiprocessing.cpu_count() * .75))
+    n_parallel_tasks = 4
     with concurrent.futures.ThreadPoolExecutor(n_parallel_tasks) as executor:
         futures = {executor.submit(execute_one_transfer, x) for x in range(0, n_parallel_tasks)}
         for f in concurrent.futures.as_completed(futures):
