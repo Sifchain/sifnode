@@ -8,7 +8,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
-	"math/big"
 	"os"
 	"testing"
 )
@@ -82,7 +81,7 @@ func TestLiquidityFee(t *testing.T) {
 		expected := GetInt(t, test.Expected)
 		if !res.Equal(expected) {
 			failedCount++
-			_, err := fmt.Fprintf(w, "Expected : %s  Actuall : %s \n", test.Expected, res.String())
+			_, err := fmt.Fprintf(w, "Expected : %s  Actuall : %s \n", expected.String(), res.String())
 			assert.NoError(t, err)
 		}
 	}
@@ -129,14 +128,15 @@ func TestCalculatePoolUnits(t *testing.T) {
 
 func GetInt(t *testing.T, x string) sdk.Uint {
 	// Precision based conversion as the Files contain values in scientific notation
-	flt, _, err := big.ParseFloat(x, 10, 0, big.ToNearestEven)
-	if err != nil {
-		fmt.Println("Error parsing float :", x)
-	}
-	var i = new(big.Int)
-	i, _ = flt.Int(i)
+	//flt, _, err := big.ParseFloat(x, 10, 0, big.ToNearestEven)
+	//if err != nil {
+	//	fmt.Println("Error parsing float :", x)
+	//}
+	//var i = new(big.Int)
+	//i, _ = flt.Int(i)
 	// Dec type from sdk
-	X := sdk.NewDecFromBigInt(i)
+	//X := sdk.NewDecFromBigInt(i)
+	X, err := sdk.NewDecFromStr(x)
 	assert.NoError(t, err)
 	if err != nil {
 		return sdk.ZeroUint()
