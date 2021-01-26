@@ -1,5 +1,13 @@
+// TODO remove refs dependency and move to `actions/clp/calculateAddLiquidity`
+
 import { computed, Ref } from "@vue/reactivity";
-import { Asset, AssetAmount, IAssetAmount, Pool } from "../entities";
+import {
+  Asset,
+  AssetAmount,
+  IAssetAmount,
+  LiquidityProvider,
+  Pool,
+} from "../entities";
 import { Fraction } from "../entities/fraction/Fraction";
 import { useField } from "./useField";
 import { useBalances } from "./utils";
@@ -19,6 +27,7 @@ export function usePoolCalculator(input: {
   toSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
+  liquidityProvider: Ref<LiquidityProvider | null>;
   poolFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
 }) {
   const fromField = useField(input.fromAmount, input.fromSymbol);
@@ -79,7 +88,9 @@ export function usePoolCalculator(input: {
       )
     );
   });
-  const poolUnitsArray = computed(() => {
+
+  // pool units for this prospective transaction [total, newUnits]
+  const provisionedPoolUnitsArray = computed(() => {
     if (
       !liquidityPool.value ||
       !toField.fieldAmount.value ||
@@ -93,13 +104,34 @@ export function usePoolCalculator(input: {
     );
   });
 
-  const poolUnits = computed(() => poolUnitsArray.value[1].toFixed(0));
-  const totalPoolUnits = computed(() => poolUnitsArray.value[1].toFixed(0));
+  // pool units from the perspective of the liquidity provider
+  const liquidityProviderPoolUnitsArray = computed(() => {
+    if (!provisionedPoolUnitsArray.value)
+      return [new Fraction("0"), new Fraction("0")];
+
+    const [totalPoolUnits, newUnits] = provisionedPoolUnitsArray.value;
+
+    // if this user already has pool units include those in the newUnits
+    const totalLiquidityProviderUnits = input.liquidityProvider.value
+      ? input.liquidityProvider.value.units.add(newUnits)
+      : newUnits;
+
+    return [totalPoolUnits, totalLiquidityProviderUnits];
+  });
+
+  const totalLiquidityProviderUnits = computed(() =>
+    liquidityProviderPoolUnitsArray.value[1].toFixed(0)
+  );
+
+  const totalPoolUnits = computed(() =>
+    liquidityProviderPoolUnitsArray.value[0].toFixed(0)
+  );
 
   const shareOfPool = computed(() => {
-    if (!poolUnitsArray.value) return new Fraction("0");
+    if (!liquidityProviderPoolUnitsArray.value) return new Fraction("0");
+    if (!input.liquidityProvider.value) return new Fraction("0");
 
-    const [units, lpUnits] = poolUnitsArray.value;
+    const [units, lpUnits] = liquidityProviderPoolUnitsArray.value;
 
     // shareOfPool should be 0 if units and lpUnits are zero
     if (units.equalTo("0") && lpUnits.equalTo("0")) return new Fraction("0");
@@ -164,6 +196,7 @@ export function usePoolCalculator(input: {
 
     return PoolState.VALID_INPUT;
   });
+
   return {
     state,
     aPerBRatioMessage,
@@ -171,7 +204,7 @@ export function usePoolCalculator(input: {
     shareOfPool,
     shareOfPoolPercent,
     preExistingPool,
-    poolUnits,
+    totalLiquidityProviderUnits,
     totalPoolUnits,
     fromFieldAmount: fromField.fieldAmount,
     toFieldAmount: toField.fieldAmount,
