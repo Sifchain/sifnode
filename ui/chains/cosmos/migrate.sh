@@ -56,13 +56,13 @@ sifnodecli tx clp create-pool \
  --externalAmount 10000000000000000000000000 \
  --yes
 
-# sleep 5
+sleep 5
 
-# echo "create liquidity pool from clink:rowan"
-# sifnodecli tx clp create-pool \
-#  --from akasha \
-#  --symbol clink \
-#  --nativeAmount   10000000000000000000000000 \
-#  --externalAmount 588235000000000000000000 \
-#  --yes
+echo "create liquidity pool from clink:rowan"
+sifnodecli tx clp create-pool \
+ --from akasha \
+ --symbol clink \
+ --nativeAmount   10000000000000000000000000 \
+ --externalAmount 588235000000000000000000 \
+ --yes
 
