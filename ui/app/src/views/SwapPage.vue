@@ -41,7 +41,7 @@ export default defineComponent({
       providerFee,
     } = useCurrencyFieldState();
     const transactionState = ref<ConfirmState>("selecting");
-    const transactionHash = ref<String | null>(null);
+    const transactionHash = ref<string | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
@@ -69,7 +69,7 @@ export default defineComponent({
       toSymbol,
       poolFinder,
       priceImpact,
-      providerFee
+      providerFee,
     });
 
     const minimumReceived = computed(() =>
@@ -86,6 +86,7 @@ export default defineComponent({
         throw new Error("from field amount is not defined");
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
+      if (state.value !== SwapState.VALID_INPUT) return
 
       transactionState.value = "confirming";
     }
@@ -97,8 +98,11 @@ export default defineComponent({
         throw new Error("to field amount is not defined");
 
       transactionState.value = "signing";
-      let tx = await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset);
-      transactionHash.value = tx.transactionHash;
+      let tx = await actions.clp.swap(
+        fromFieldAmount.value,
+        toFieldAmount.value.asset
+      );
+      transactionHash.value = tx?.transactionHash ?? "";
       transactionState.value = "confirmed";
       clearAmounts();
     }
@@ -196,7 +200,7 @@ export default defineComponent({
         transactionState.value = "signing";
       },
       handleAskConfirmClicked,
-      transactionHash
+      transactionHash,
     };
   },
 });
