@@ -112,7 +112,8 @@ export function useRemoveLiquidityCalculator(input: {
   const withdrawExternalAssetAmountMessage = (() => {
     return (
       withdrawalAmounts?.withdrawExternalAssetAmount.toFormatted({
-        decimals: 18,
+        decimals: 5,
+        symbol: false
       }) || ""
     );
   })()
@@ -120,7 +121,8 @@ export function useRemoveLiquidityCalculator(input: {
   const withdrawNativeAssetAmountMessage = (() => {
     return (
       withdrawalAmounts?.withdrawNativeAssetAmount.toFormatted({
-        decimals: 18,
+        decimals: 5,
+        symbol: false
       }) || ""
     );
   })()
