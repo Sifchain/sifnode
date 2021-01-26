@@ -39,7 +39,7 @@ export default defineComponent({
     const transactionState = ref<ConfirmState>("selecting");
     const transactionHash = ref<String | null>(null);
     const asymmetry = ref("0");
-    const wBasisPoints = ref("5000");
+    const wBasisPoints = ref("0");
     const nativeAssetSymbol = ref("rowan");
     const externalAssetSymbol = ref<string | null>(route.params.externalAsset ? route.params.externalAsset.toString() : null);
     const { connected, connectedText } = useWalletButton({
@@ -47,9 +47,9 @@ export default defineComponent({
     });
 
     const liquidityProvider = ref(null) as Ref<LiquidityProvider | null>;
-    const withdrawExternalAssetAmount = ref<string | null>()
-    const withdrawNativeAssetAmount = ref<string | null>()
-    const state = ref<PoolState | null>()
+    const withdrawExternalAssetAmount = ref()
+    const withdrawNativeAssetAmount = ref()
+    const state = ref()
 
     effect(() => {
       if (!externalAssetSymbol.value) return null;
@@ -61,7 +61,7 @@ export default defineComponent({
       });
     });
 
-    // if these values change, recalculate state and asset amounts
+    // if these values change, recalculate state and asset amounts. could maybe be more elegant
     watch([
       wBasisPoints, 
       asymmetry, 
@@ -78,19 +78,12 @@ export default defineComponent({
         sifAddress: toRef(store.wallet.sif, "address"),
         poolFinder,
       })
-
+      if (!data) return null
       withdrawExternalAssetAmount.value = data.withdrawExternalAssetAmount
       withdrawNativeAssetAmount.value = data.withdrawNativeAssetAmount
       state.value = data.state
     })
    
-    // input not updating for some reason?
-    function clearFields() {
-      asymmetry.value = "0";
-      wBasisPoints.value = "0";
-      nativeAssetSymbol.value = "rowan";
-      externalAssetSymbol.value = null;
-    }
     return {
       connected,
       state,
@@ -133,23 +126,21 @@ export default defineComponent({
           !externalAssetSymbol.value ||
           !wBasisPoints.value ||
           !asymmetry.value
-        )
-          return;
-
+        ) 
+          return
+          
         transactionState.value = "signing";
         try {
           let tx = await actions.clp.removeLiquidity(
             Asset.get(externalAssetSymbol.value),
             wBasisPoints.value,
             asymmetry.value
-          );
+          )
           transactionHash.value = tx.transactionHash;
           transactionState.value = "confirmed";
         } catch (err) {
           transactionState.value = "failed";
         }
-
-        clearFields();
       },
 
       transactionModalOpen: computed(() => {
@@ -181,9 +172,16 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" backLink="/pool">
+  <Layout class="pool" :backLink='`/pool/${externalAssetSymbol}`' title="Remove Liquidity"  >
+  <div :class="!withdrawNativeAssetAmount ? 'disabled' : 'active' ">
+
+    <div class="panel-header text--left">
+      <div class="mb-10">Amount:</div>
+      <h1>{{wBasisPoints/100}}%</h1>
+    </div>
+
     <Slider
-      message="Choose from 0 to 100% of how much to withdraw"
+      message=""
       :disabled="!connected || state === PoolState.NO_LIQUIDITY"
       v-model="wBasisPoints"
       min="0"
@@ -199,7 +197,8 @@ export default defineComponent({
     />
 
     <Slider
-      message="Choose how much to withdraw from each asset"
+      class="pt-4"
+      message="Choose which ratio to withdraw from each asset"
       :disabled="!connected || state === PoolState.NO_LIQUIDITY"
       v-model="asymmetry"
       min="-10000"
@@ -211,15 +210,19 @@ export default defineComponent({
       @rightclicked="asymmetry = '10000'"
       leftLabel="All Rowan"
       middleLabel="Equal"
-      rightLabel="All Asset"
+      rightLabel="All External Asset"
     />
     <div class="asset-row">
-      <AssetItem :symbol="nativeAssetSymbol" />
-      <AssetItem :symbol="externalAssetSymbol" />
+      <h4 class="text--left">Total Deposited After Transaction</h4>
+      <div>
+        <AssetItem :symbol="nativeAssetSymbol" />
+        <AssetItem :symbol="externalAssetSymbol" />
+      </div>
+      <div>
+        <div>{{ withdrawNativeAssetAmount }}</div>
+        <div>{{ withdrawExternalAssetAmount }}</div>
+      </div>
     </div>
-    <div class="asset-row">
-      <div>{{ withdrawNativeAssetAmount }}</div>
-      <div>{{ withdrawExternalAssetAmount }}</div>
     </div>
 
     <ActionsPanel
@@ -245,9 +248,23 @@ export default defineComponent({
 </template>
 
 <style lang="scss" scoped>
+h1 { font-size: 42px; color: $c_gray_900}
+.disabled {
+    opacity: .3
+  }
+.panel-header {margin-bottom: 1.5rem}
 .asset-row {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  background: $c_white;
+  padding: 8px 8px 16px 8px;
+  border-radius: 4px;
   display: flex;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  flex-direction: column;
+  div {
+    display: flex;
+    justify-content: space-between;
+  }
 }
 </style>
