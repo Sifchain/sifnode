@@ -58,6 +58,7 @@ contract("End To End", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -103,6 +104,7 @@ contract("End To End", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}

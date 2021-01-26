@@ -60,6 +60,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -111,6 +112,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -134,7 +136,7 @@ contract("BridgeBank", function (accounts) {
       // Fail to remove the token from the white list if not there yet.
       await expectRevert(
           this.bridgeBank.updateEthWhiteList(this.token.address, false, {from: operator}),
-          "Token not whitelisted"
+          "!whitelisted"
       );
       
       // Add the token into white list
@@ -210,7 +212,7 @@ contract("BridgeBank", function (accounts) {
       // Fail to add token already there
       await expectRevert(
         this.bridgeBank.updateEthWhiteList(newToken.address, true, {from: operator}),
-        "Token already whitelisted"
+        "whitelisted"
       );
 
       (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
@@ -248,6 +250,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -336,6 +339,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -413,7 +417,7 @@ contract("BridgeBank", function (accounts) {
           value: 0
         }
       ),
-        "Invalid sif address length"
+        "Invalid len"
       );
     });
 
@@ -430,7 +434,7 @@ contract("BridgeBank", function (accounts) {
           value: 0
         }
       ),
-        "Invalid sif address prefix"
+        "Invalid sif address"
       );
     });
 
@@ -499,6 +503,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -824,6 +829,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -842,7 +848,7 @@ contract("BridgeBank", function (accounts) {
       // Fail to addExistingBridgeToken unless operator
       await expectRevert(
           this.bridgeBank.addExistingBridgeToken(this.token.address, {from: userOne}),
-          "Must be Owner."
+          "!owner"
       );
       // Attempt to lock tokens
       await this.bridgeBank.addExistingBridgeToken(this.token.address, {from: operator}).should.be.fulfilled;
