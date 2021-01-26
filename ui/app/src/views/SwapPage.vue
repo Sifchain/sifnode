@@ -1,14 +1,13 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
-import { computed, ref, toRefs } from "@vue/reactivity";
+import { computed, ref } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import { Asset, SwapState, useSwapCalculator } from "ui-core";
+import {  SwapState, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/shared/Modal.vue";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
-import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
 import ConfirmationDialog, {
@@ -16,6 +15,7 @@ import ConfirmationDialog, {
 } from "@/components/confirmationDialog/ConfirmationDialog.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
+import SlippagePanel from "@/components/slippagePanel/Index.vue";
 
 export default defineComponent({
   components: {
@@ -27,6 +27,7 @@ export default defineComponent({
     SelectTokenDialogSif,
     ModalView,
     ConfirmationDialog,
+    SlippagePanel
   },
 
   setup() {
@@ -39,6 +40,7 @@ export default defineComponent({
       toAmount,
       priceImpact,
       providerFee,
+      slippage
     } = useCurrencyFieldState();
     const transactionState = ref<ConfirmState>("selecting");
     const transactionHash = ref<String | null>(null);
@@ -73,7 +75,7 @@ export default defineComponent({
     });
 
     const minimumReceived = computed(() =>
-      parseFloat(toAmount.value).toPrecision(10)
+      ((1 - parseFloat(slippage.value) / 100) * parseFloat(toAmount.value)).toPrecision(10)
     );
 
     function clearAmounts() {
@@ -98,7 +100,7 @@ export default defineComponent({
 
       transactionState.value = "signing";
       try {
-        let tx = await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset);
+        let tx = await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value);
         transactionHash.value = tx.transactionHash;
         transactionState.value = "confirmed";
         clearAmounts();
@@ -166,7 +168,7 @@ export default defineComponent({
       handleBlur() {
         selectedField.value = null;
       },
-
+      slippage,
       fromAmount,
       toAmount,
       fromSymbol,
@@ -239,6 +241,10 @@ export default defineComponent({
           />
         </template>
       </Modal>
+      <SlippagePanel
+        v-if="nextStepAllowed"
+        v-model:slippage="slippage"
+      />
       <DetailsPanel
         :toToken="toSymbol || ''"
         :priceMessage="priceMessage || ''"
