@@ -34,12 +34,13 @@ export default defineComponent({
 </script>
 
 <template>
-  <SinglePool
+  <!-- <SinglePool
     v-if="selectedPool"
     @back="selectedPool = null"
     :accountPool="selectedPool"
-  />
-  <Layout v-else>
+  /> -->
+  {{selectedPool}}
+  <Layout>
     <div>
       <div class="heading mb-8">
         <h3>Your Liquidity</h3>
