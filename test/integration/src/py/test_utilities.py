@@ -94,18 +94,14 @@ def get_optional_env_var(name: str, default_value: str):
 
 
 def get_shell_output(command_line):
-    sub = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    subprocess_return = sub.stdout.read().rstrip().decode("utf-8")
-    error_return = sub.stderr.read().rstrip().decode("utf-8")
-    logging.debug(f"execute shell command:\n{command_line}\n\nresult:\n\n{subprocess_return}\n\n")
-    if sub.returncode is not None:
-        raise Exception(f"error running command: {sub.returncode} for command {command_line}\n{error_return}")
-    if error_return:
-        # don't use error level logging here.  The problem is that
-        # lots of times we run a shell script in a loop until it succeeds,
-        # so failures often aren't very important
-        logging.debug(f"shell command error: {error_return}")
-    return subprocess_return
+    logging.debug(f"execute shell command:\n{command_line}")
+    sub = subprocess.run(command_line, shell=True, check=True, capture_output=True)
+    stdout_string = sub.stdout.decode("utf-8").rstrip()
+    stderr_string = sub.stderr.decode("utf-8").rstrip()
+    logging.debug(f"execute shell command stdout:\n{stdout_string}\n\nstderr:\n\n{stderr_string}\n\n")
+    if sub.returncode != 0:
+        raise Exception(f"error running command: {sub.returncode} for command {command_line}\n{stderr_string}")
+    return stdout_string
 
 
 def get_shell_output_json(command_line):
