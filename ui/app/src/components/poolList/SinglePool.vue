@@ -1,14 +1,21 @@
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
-import { computed } from "@vue/reactivity";
+import { defineComponent, onMounted, PropType, ComputedRef, ref, watch } from "vue";
+import { computed, reactive, Ref, toRefs } from "@vue/reactivity";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { getAssetLabel, useAssetItem } from "@/components/shared/utils";
 import { Fraction, LiquidityProvider, Pool, usePoolCalculator } from "ui-core";
-import { useWallet } from "@/hooks/useWallet";
+// import { useWallet } from "@/hooks/useWallet";
 import { useCore } from "@/hooks/useCore";
+import { useRoute, useRouter } from 'vue-router';
 
-const DECIMALS = 18
+const DECIMALS = 5
+
+type SelectedPool = {
+      lp: LiquidityProvider;
+      pool: Pool;
+    }
+
 
 export default defineComponent({
   components: { Layout, SifButton },
@@ -20,12 +27,23 @@ export default defineComponent({
   },
 
   setup(props) {
-    const { config } = useCore();
+    // const liquidityProvider = ref(null) as Ref<LiquidityProvider | null>;
 
-const thePool = computed(() => props.accountPool?.pool);
+    const { config, store } = useCore();
+    const route = useRoute().params.externalAsset
+    // const accountPools = computed(() => store.accountpools)
+    // const walletAddress = ref(store.wallet.sif.address)
+    const refsStore = toRefs(store);
+    const accountPool = computed(() => refsStore.accountpools.value.find(x =>
+      x.lp.asset.symbol === route))
+
+    const thePool = computed(() => {
+    // if (!accountPool?.value) throw "no Pool"
+    accountPool?.value?.pool 
+    });
     const fromSymbol = computed(() =>
-      props.accountPool?.pool.amounts[1].asset
-        ? getAssetLabel(props.accountPool?.pool.amounts[1].asset)
+      accountPool?.value?.pool.amounts[1].asset
+        ? getAssetLabel(accountPool?.value.pool.amounts[1].asset)
         : ""
     );
     const fromAsset = useAssetItem(fromSymbol);
@@ -40,8 +58,8 @@ const thePool = computed(() => props.accountPool?.pool);
     const fromValue = computed(() => thePool.value?.amounts[1].toFixed(DECIMALS));
   
     const toSymbol = computed(() =>
-      props.accountPool?.pool.amounts[0].asset
-        ? getAssetLabel(props.accountPool?.pool.amounts[0].asset)
+      accountPool?.value.pool.amounts[0].asset
+        ? getAssetLabel(accountPool?.value.pool.amounts[0].asset)
         : ""
     );
     const toAsset = useAssetItem(toSymbol);
@@ -55,7 +73,7 @@ const thePool = computed(() => props.accountPool?.pool);
     const toValue = computed(() => thePool.value?.amounts[0].toFixed(DECIMALS));
 
     const poolUnitsAsFraction = computed(
-      () => props.accountPool?.lp.units || new Fraction("0")
+      () => accountPool?.value.lp.units || new Fraction("0")
     );
 
     const myPoolShare = computed(() => {
@@ -69,6 +87,7 @@ const thePool = computed(() => props.accountPool?.pool);
     const myPoolUnits = computed(() => poolUnitsAsFraction.value.toFixed(DECIMALS));
 
     return {
+      accountPool,
       fromToken,
       fromSymbol,
       fromBackgroundStyle,
@@ -87,6 +106,7 @@ const thePool = computed(() => props.accountPool?.pool);
 </script>
 
 <template>
+{{accountPools}}
   <Layout class="pool" @back="$emit('back')" emitBack title="Your Pair">
     <div class="sheet">
       <div class="section">
