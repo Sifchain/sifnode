@@ -120,7 +120,7 @@ test("createPool()", async () => {
 test("swap()", async () => {
   const message = await service.swap({
     fromAddress: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
-    receivedAsset: CATK,
+    receivedAsset: AssetAmount(CBTK, "0"),
     sentAmount: AssetAmount(CBTK, "1000"),
   });
 
