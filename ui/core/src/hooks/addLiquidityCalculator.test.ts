@@ -96,8 +96,8 @@ describe("usePoolCalculator", () => {
     fromSymbol.value = "atk";
     toSymbol.value = "rowan";
     expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
-    expect(aPerBRatioMessage.value).toBe("N/A");
-    expect(bPerARatioMessage.value).toBe("N/A");
+    expect(aPerBRatioMessage.value).toBe("");
+    expect(bPerARatioMessage.value).toBe("");
   });
 
   test("Allow rowan === 0 when adding to preExistingPool", () => {
