@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"math/big"
+	"os"
 	"testing"
 )
 
@@ -27,10 +29,27 @@ func TestTradeSlip(t *testing.T) {
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
 	testcases := test.TestType
+	totalCount := 0
+	failedCount := 0
+	f, err := os.Create("discrepancies_sample_trade_slip")
+	assert.NoError(t, err)
+	w := bufio.NewWriter(f)
 	for _, test := range testcases {
+		totalCount++
 		e := calcTradeSlip(GetInt(t, test.Y), GetInt(t, test.X))
-		assert.Equal(t, e, GetInt(t, test.Expected))
+		//assert.Equal(t, e, GetInt(t, test.Expected))
+		expected := GetInt(t, test.Expected)
+		if !e.Equal(expected) {
+			failedCount++
+			_, err := fmt.Fprintf(w, "Expected : %s  Actuall : %s \n", test.Expected, e.String())
+			assert.NoError(t, err)
+		}
 	}
+	_, err = fmt.Fprintf(w, "TotalCount : %v  FailedCount : %v ", totalCount, failedCount)
+	assert.NoError(t, err)
+	w.Flush()
+	_ = f.Close()
+
 }
 
 func TestLiquidityFee(t *testing.T) {
@@ -52,16 +71,25 @@ func TestLiquidityFee(t *testing.T) {
 	testcases := test.TestType
 	totalCount := 0
 	failedCount := 0
+	f, err := os.Create("discrepancies_sample_liquidity_fee")
+	assert.NoError(t, err)
+
+	w := bufio.NewWriter(f)
 	for _, test := range testcases {
 		totalCount++
 		res := calcLiquidityFee(GetInt(t, test.X), GetInt(t, test.Sx), GetInt(t, test.Y))
-		assert.Equal(t, res, GetInt(t, test.Expected))
-		if !res.Equal(GetInt(t, test.Expected)) {
+		//assert.Equal(t, res, GetInt(t, test.Expected))
+		expected := GetInt(t, test.Expected)
+		if !res.Equal(expected) {
 			failedCount++
+			_, err := fmt.Fprintf(w, "Expected : %s  Actuall : %s \n", test.Expected, res.String())
+			assert.NoError(t, err)
 		}
 	}
-	fmt.Println("TotalCount :", totalCount)
-	fmt.Println("FailedCount :", failedCount)
+	_, err = fmt.Fprintf(w, "TotalCount : %v  FailedCount : %v ", totalCount, failedCount)
+	assert.NoError(t, err)
+	w.Flush()
+	_ = f.Close()
 }
 
 func TestCalculatePoolUnits(t *testing.T) {

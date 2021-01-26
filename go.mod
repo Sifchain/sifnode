@@ -31,7 +31,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/miguelmota/go-solidity-sha3 v0.1.0
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
-	github.com/mossid/sdk-nameservice-example v0.0.0-20181003181416-88f91e053619
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.4
@@ -56,7 +55,6 @@ require (
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/wsddn/go-ecdh v0.0.0-20161211032359-48726bab9208 // indirect
 	github.com/yelinaung/go-haikunator v0.0.0-20150320004105-1249cae259af
-	golang.org/dl v0.0.0-20201203213101-c6ce50f27f15 // indirect
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/sys v0.0.0-20201126233918-771906719818 // indirect
 	golang.org/x/text v0.3.4 // indirect
