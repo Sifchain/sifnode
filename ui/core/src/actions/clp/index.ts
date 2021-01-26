@@ -77,7 +77,7 @@ export default ({
   }
 
   const actions = {
-    async swap(sentAmount: AssetAmount, receivedAsset: Asset) {
+    async swap(sentAmount: AssetAmount, receivedAsset: AssetAmount) {
       if (!state.address) throw "No from address provided for swap";
 
       const tx = await api.ClpService.swap({

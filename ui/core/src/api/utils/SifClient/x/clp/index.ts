@@ -18,6 +18,7 @@ export type SwapParams = {
   };
   signer: string;
   sent_amount: string;
+  min_receiving_amount: string;
 };
 
 export type LiquidityParams = {

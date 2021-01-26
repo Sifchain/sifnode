@@ -10,6 +10,7 @@ import { Fraction } from "../../entities/fraction/Fraction";
 
 import { SifUnSignedClient } from "../utils/SifClient";
 import { toPool } from "../utils/SifClient/toPool";
+import JSBI from "jsbi";
 
 export type ClpServiceContext = {
   nativeAsset: Asset;
@@ -24,7 +25,7 @@ type IClpService = {
   getPoolSymbolsByLiquidityProvider: (address: string) => Promise<string[]>;
   swap: (params: {
     fromAddress: string;
-    receivedAsset: Asset;
+    receivedAsset: AssetAmount;
     sentAmount: AssetAmount;
   }) => any;
   addLiquidity: (params: {
@@ -116,9 +117,9 @@ export default function createClpService({
       return await client.swap({
         base_req: { chain_id: sifChainId, from: params.fromAddress },
         received_asset: {
-          source_chain: params.receivedAsset.network as string,
-          symbol: params.receivedAsset.symbol,
-          ticker: params.receivedAsset.symbol,
+          source_chain: params.receivedAsset.asset.network as string,
+          symbol: params.receivedAsset.asset.symbol,
+          ticker: params.receivedAsset.asset.symbol,
         },
         sent_amount: params.sentAmount.toBaseUnits().toString(),
         sent_asset: {
@@ -126,6 +127,7 @@ export default function createClpService({
           symbol: params.sentAmount.asset.symbol,
           ticker: params.sentAmount.asset.symbol,
         },
+        min_receiving_amount: test.toString(),
         signer: params.fromAddress,
       });
     },
