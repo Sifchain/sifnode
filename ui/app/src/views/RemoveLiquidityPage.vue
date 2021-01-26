@@ -111,7 +111,8 @@ export default defineComponent({
         if (
           !externalAssetSymbol.value ||
           !wBasisPoints.value ||
-          !asymmetry.value
+          !asymmetry.value ||
+          state.value !== PoolState.VALID_INPUT
         )
           return;
 
