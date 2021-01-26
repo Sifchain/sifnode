@@ -87,6 +87,7 @@ export default defineComponent({
         throw new Error("from field amount is not defined");
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
+      if (state.value !== PoolState.VALID_INPUT) return
 
       transactionState.value = "confirming";
     }
@@ -102,7 +103,6 @@ export default defineComponent({
         toFieldAmount.value,
         fromFieldAmount.value
       );
-      console.log('POOL transaction hash: ', tx);
       transactionHash.value = tx.transactionHash;
       transactionState.value = "confirmed";
 
@@ -239,7 +239,7 @@ export default defineComponent({
     <PriceCalculation>
       <div class="pool-share">
         <h4 class="pool-share-title text--left">Prices and pool share</h4>
-        <div class="pool-share-details" v-if="fromSymbol && aPerBRatioMessage">
+        <div class="pool-share-details" v-if="nextStepAllowed">
           <div>
             <span class="number">{{ aPerBRatioMessage }}</span
             ><br />
