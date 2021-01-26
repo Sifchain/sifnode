@@ -298,7 +298,10 @@ export default function createSifService({
 
         return txHash;
       } catch (err) {
-        console.error(err);
+        if (err.toString().includes("Request rejected")) {
+          // User rejected request in Kepler wallet
+          throw new Error("Request rejected");
+        }
       }
     },
   };
