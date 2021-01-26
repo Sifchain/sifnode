@@ -36,7 +36,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	// Create test ethereum event
 	ethereumEvent := CreateTestLogEthereumEvent(t)
 
-	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address, &ethereumEvent)
+	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address, ethereumEvent)
 	require.NoError(t, err)
 
 	require.Equal(t, expectedEthBridgeClaim, ethBridgeClaim)

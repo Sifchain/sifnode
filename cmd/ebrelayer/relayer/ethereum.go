@@ -30,6 +30,7 @@ import (
 	"github.com/sethvargo/go-password/password"
 	"github.com/tendermint/go-amino"
 	tmLog "github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/libs/math"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
@@ -38,7 +39,8 @@ import (
 )
 
 const (
-	transactionInterval = 10 * time.Second
+	transactionInterval      = 10 * time.Second
+	maxMessagesInTransaction = 20
 )
 
 // TODO: Move relay functionality out of EthereumSub into a new Relayer parent struct
@@ -196,28 +198,23 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 
 			// Add new header info to buffer
 			sub.EventsBuffer.AddHeader(newHead.Number, newHead.Hash(), newHead.ParentHash)
-
+			var events []types.EthereumEvent
 			for {
 				fifty := big.NewInt(50)
 				fifty.Add(fifty, sub.EventsBuffer.MinHeight)
 				if fifty.Cmp(newHead.Number) <= 0 {
-					events := sub.EventsBuffer.GetHeaderEvents()
-					for _, event := range events {
-						err := sub.handleEthereumEvent(event)
-						// Sleep 10 seconds before send next transaction to cosmos, guarantee correct sequence number
-						time.Sleep(transactionInterval)
-
-						if err != nil {
-							sub.Logger.Error(err.Error())
-							completionEvent.Add(1)
-						}
-					}
-
+					events = append(events, sub.EventsBuffer.GetHeaderEvents()...)
 					sub.EventsBuffer.RemoveHeight()
 
 				} else {
 					break
 				}
+			}
+			eventsLength := len(events)
+			for index := 0; index < eventsLength; {
+				sub.handleEthereumEvent(events[index:math.MinInt(index+maxMessagesInTransaction, eventsLength)])
+				index = index + maxMessagesInTransaction
+				time.Sleep(transactionInterval)
 			}
 
 		// vLog is raw event data
@@ -298,10 +295,16 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 }
 
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
-func (sub EthereumSub) handleEthereumEvent(event types.EthereumEvent) error {
-	prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.ValidatorAddress, &event)
-	if err != nil {
-		return err
+func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
+	var prophecyClaims []ethbridge.EthBridgeClaim
+	for _, event := range events {
+		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.ValidatorAddress, event)
+		if err != nil {
+			sub.Logger.Info(err.Error())
+		} else {
+			prophecyClaims = append(prophecyClaims, prophecyClaim)
+		}
 	}
-	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, &prophecyClaim, sub.CliCtx, sub.TxBldr)
+
+	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr)
 }
