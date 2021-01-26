@@ -52,6 +52,7 @@ contract BridgeBank is BankStorage,
 
         // hardcode since this is the first token
         lowerToUpperTokens["erowan"] = "erowan";
+        lowerToUpperTokens["eth"] = "eth";
     }
 
     /*
