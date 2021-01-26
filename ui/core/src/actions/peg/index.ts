@@ -50,8 +50,11 @@ export default ({
         fromAddress: store.wallet.sif.address,
         feeAmount,
       });
-
-      return await api.SifService.signAndBroadcast(tx.value.msg);
+      try {
+        return await api.SifService.signAndBroadcast(tx.value.msg);
+      } catch (err) {
+        alert(JSON.stringify({ err }));
+      }
     },
 
     async peg(assetAmount: AssetAmount) {
