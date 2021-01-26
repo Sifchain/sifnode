@@ -47,6 +47,10 @@ describe("usePoolCalculator", () => {
     toSymbol.value = null;
   });
 
+  afterEach(() => {
+    poolFinder.mockReset();
+  });
+
   test("poolCalculator ratio messages", () => {
     fromAmount.value = "1000";
     toAmount.value = "500";
