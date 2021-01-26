@@ -1,5 +1,13 @@
+// TODO remove refs dependency and move to `actions/clp/calculateAddLiquidity`
+
 import { computed, Ref } from "@vue/reactivity";
-import { Asset, AssetAmount, IAssetAmount, Pool } from "../entities";
+import {
+  Asset,
+  AssetAmount,
+  IAssetAmount,
+  LiquidityProvider,
+  Pool,
+} from "../entities";
 import { Fraction } from "../entities/fraction/Fraction";
 import { useField } from "./useField";
 import { useBalances } from "./utils";
@@ -19,6 +27,7 @@ export function usePoolCalculator(input: {
   toSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
+  liquidityProvider: Ref<LiquidityProvider | null>;
   poolFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
 }) {
   const fromField = useField(input.fromAmount, input.fromSymbol);
@@ -38,17 +47,17 @@ export function usePoolCalculator(input: {
   });
 
   const fromBalanceOverdrawn = computed(
-    () => !fromBalance.value?.greaterThan(fromField.fieldAmount.value || "0")
+    // () => !fromBalance.value?.greaterThan(fromField.fieldAmount.value || "0")
+    () => fromBalance.value?.lessThan(fromField.fieldAmount.value || "0")
   );
 
   const toBalanceOverdrawn = computed(
-    () => !toBalance.value?.greaterThan(toField.fieldAmount.value || "0")
+    // () => !toBalance.value?.greaterThan(toField.fieldAmount.value || "0")
+    () => toBalance.value?.lessThan(toField.fieldAmount.value || "0")
   );
 
   const preExistingPool = computed(() => {
     if (
-      !fromField.fieldAmount.value ||
-      !toField.fieldAmount.value ||
       !fromField.asset.value ||
       !toField.asset.value
     )
@@ -79,7 +88,9 @@ export function usePoolCalculator(input: {
       )
     );
   });
-  const poolUnitsArray = computed(() => {
+
+  // pool units for this prospective transaction [total, newUnits]
+  const provisionedPoolUnitsArray = computed(() => {
     if (
       !liquidityPool.value ||
       !toField.fieldAmount.value ||
@@ -93,13 +104,37 @@ export function usePoolCalculator(input: {
     );
   });
 
-  const poolUnits = computed(() => poolUnitsArray.value[1].toFixed(0));
-  const totalPoolUnits = computed(() => poolUnitsArray.value[1].toFixed(0));
+  // pool units from the perspective of the liquidity provider
+  const liquidityProviderPoolUnitsArray = computed(() => {
+    if (!provisionedPoolUnitsArray.value)
+      return [new Fraction("0"), new Fraction("0")];
+
+    const [totalPoolUnits, newUnits] = provisionedPoolUnitsArray.value;
+
+    // if this user already has pool units include those in the newUnits
+    const totalLiquidityProviderUnits = input.liquidityProvider.value
+      ? input.liquidityProvider.value.units.add(newUnits)
+      : newUnits;
+
+    return [totalPoolUnits, totalLiquidityProviderUnits];
+  });
+
+  const totalLiquidityProviderUnits = computed(() =>
+    liquidityProviderPoolUnitsArray.value[1].toFixed(0)
+  );
+
+  const totalPoolUnits = computed(() =>
+    liquidityProviderPoolUnitsArray.value[0].toFixed(0)
+  );
 
   const shareOfPool = computed(() => {
-    if (!poolUnitsArray.value) return new Fraction("0");
+    if (!liquidityProviderPoolUnitsArray.value) return new Fraction("0");
+    if (!input.liquidityProvider.value) return new Fraction("0");
 
-    const [units, lpUnits] = poolUnitsArray.value;
+    const [units, lpUnits] = liquidityProviderPoolUnitsArray.value;
+
+    // shareOfPool should be 0 if units and lpUnits are zero
+    if (units.equalTo("0") && lpUnits.equalTo("0")) return new Fraction("0");
 
     // if no units lp owns 100% of pool
     return units.equalTo("0") ? new Fraction("1") : lpUnits.divide(units);
@@ -112,34 +147,56 @@ export function usePoolCalculator(input: {
   const aPerBRatioMessage = computed(() => {
     const aAmount = fromField.fieldAmount.value;
     const bAmount = toField.fieldAmount.value;
-    if (!aAmount || !bAmount) return "";
-    if (bAmount.equalTo("0")) return "";
+    
+    if (!aAmount || aAmount.equalTo("0")) return ""; // invalid, must supply external
+    if (!bAmount || bAmount.equalTo("0")) {
+      // if rowan is 0 or empty ...
+      // allow if the pool exists (BUT ratio is inapplicable - N/A),
+      // invalid if the pool doesn't exist - ""
+      return preExistingPool.value ? "N/A" : ""; 
+    }
+
     return aAmount.divide(bAmount).toFixed(8);
   });
 
   const bPerARatioMessage = computed(() => {
     const aAmount = fromField.fieldAmount.value;
     const bAmount = toField.fieldAmount.value;
-    if (!aAmount || !bAmount) return "";
-    if (aAmount.equalTo("0")) return "";
+
+    if (!aAmount || aAmount.equalTo("0")) return ""; // invalid, must supply external
+
+    if (!bAmount || bAmount.equalTo("0")) {
+      // if rowan is 0 or empty ...
+      // allow if the pool exists (BUT ratio is inapplicable - N/A),
+      // invalid if the pool doesn't exist - ""
+      return preExistingPool.value ? "N/A" : ""; 
+    }
 
     return bAmount.divide(aAmount).toFixed(8);
   });
 
   const state = computed(() => {
+    const aAmount = fromField.fieldAmount.value;
+    const bAmount = toField.fieldAmount.value;
+
     if (!input.fromSymbol.value || !input.toSymbol.value)
       return PoolState.SELECT_TOKENS;
-    if (
-      fromField.fieldAmount.value?.equalTo("0") ||
-      toField.fieldAmount.value?.equalTo("0")
-    )
-      return PoolState.ZERO_AMOUNTS;
-    if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value) {
+    
+    if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value) 
       return PoolState.INSUFFICIENT_FUNDS;
-    }
+
+    if (!aAmount || aAmount.equalTo("0"))
+      return PoolState.ZERO_AMOUNTS;
+
+    if (!bAmount || bAmount.equalTo("0"))
+      // if rowan is 0 or empty ...
+      // allow if the pool exists
+      // invalid if the pool doesn't exist - ""
+      return preExistingPool.value ? PoolState.VALID_INPUT : PoolState.ZERO_AMOUNTS;
 
     return PoolState.VALID_INPUT;
   });
+
   return {
     state,
     aPerBRatioMessage,
@@ -147,7 +204,7 @@ export function usePoolCalculator(input: {
     shareOfPool,
     shareOfPoolPercent,
     preExistingPool,
-    poolUnits,
+    totalLiquidityProviderUnits,
     totalPoolUnits,
     fromFieldAmount: fromField.fieldAmount,
     toFieldAmount: toField.fieldAmount,
