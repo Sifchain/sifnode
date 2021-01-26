@@ -115,7 +115,8 @@ export default defineComponent({
         fromFieldAmount.value
       );
 
-      transactionHash.value = tx.transactionHash;
+      console.log("POOL transaction hash: ", tx);
+      transactionHash.value = tx?.transactionHash ?? "";
       transactionState.value = "confirmed";
 
       clearAmounts();
