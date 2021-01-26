@@ -98,7 +98,7 @@ module.exports = function(deployer, network, accounts) {
         operator,
         CosmosBridge.address,
         owner,
-        pauser
+        process.env.PAUSER
       ],
       setTxSpecifications(6721975, operator, deployer)
     );
