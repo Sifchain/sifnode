@@ -22,7 +22,9 @@ export default defineComponent({
   setup(_, { emit }) {
     return {
       handleNextStepClicked() {
-        emit("nextstepclick");
+        if (_.nextStepAllowed) {
+          emit("nextstepclick");
+        }
       },
     };
   },
