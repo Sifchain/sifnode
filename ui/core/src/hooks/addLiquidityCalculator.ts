@@ -101,6 +101,9 @@ export function usePoolCalculator(input: {
 
     const [units, lpUnits] = poolUnitsArray.value;
 
+    // shareOfPool should be 0 if units and lpUnits are zero
+    if (units.equalTo("0") && lpUnits.equalTo("0")) return new Fraction("0");
+
     // if no units lp owns 100% of pool
     return units.equalTo("0") ? new Fraction("1") : lpUnits.divide(units);
   });
