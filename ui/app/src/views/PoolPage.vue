@@ -34,12 +34,6 @@ export default defineComponent({
 </script>
 
 <template>
-  <!-- <SinglePool
-    v-if="selectedPool"
-    @back="selectedPool = null"
-    :accountPool="selectedPool"
-  /> -->
-  {{selectedPool}}
   <Layout>
     <div>
       <div class="heading mb-8">
@@ -59,7 +53,6 @@ export default defineComponent({
                     v-for="(accountPool, index) in accountPools"
                     :key="index"
                     :accountPool="accountPool"
-                    @click="selectedPool = accountPool"
             />
       </PoolList>
     </div>
