@@ -11,7 +11,7 @@ module.exports = async (cb) => {
         ...sifchainUtilities.transactionYargOptions
     });
 
-    logging.info(`starting sendLockTx, arguments are ${JSON.stringify(argv)}`);
+    logging.info(`sendLockTx: ${JSON.stringify(argv, undefined, 2)}`);
 
     const bridgeBankContract = contractUtilites.buildContract(this, argv, "BridgeBank", argv.bridgebank_address);
 
@@ -36,17 +36,8 @@ module.exports = async (cb) => {
                 value: coinDenom === NULL_ADDRESS ? amount : 0,
                 gas: argv.gas
             };
-            let debugOutput = {
-                cosmosRecipient,
-                coinDenom,
-                amount,
-                request
-            }
-            logging.debug(`sending lock ${JSON.stringify(debugOutput, undefined, 0)}`);
             return instance.lock(cosmosRecipient, coinDenom, amount, request);
         });
-
-        logging.debug(`logs are ${JSON.stringify(logs)}`);
 
         // Get event logs
         const event = logs.find(e => e.event === "LogLock");
@@ -59,6 +50,7 @@ module.exports = async (cb) => {
             token: event.args._token,
             value: Number(event.args._value),
             nonce: Number(event.args._nonce),
+            logs: logs,
         };
 
         logging.debug(`lockEvent is ${JSON.stringify(lockEvent, undefined, 2)}`);
