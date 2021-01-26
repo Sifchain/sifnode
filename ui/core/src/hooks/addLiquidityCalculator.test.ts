@@ -128,4 +128,31 @@ describe("addLiquidityCalculator", () => {
     expect(bPerARatioMessage.value).toBe("");
     expect(shareOfPoolPercent.value).toBe("0.00%");
   });
+
+  test("Don't allow rowan === 0 when creating new pool", () => {
+    fromAmount.value = "1000";
+    toAmount.value = "0";
+    fromSymbol.value = "atk";
+    toSymbol.value = "rowan";
+    expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
+    expect(aPerBRatioMessage.value).toBe("");
+    expect(bPerARatioMessage.value).toBe("");
+  });
+
+  test("Allow rowan === 0 when adding to preExistingPool", () => {
+    poolFinder.mockImplementation(
+      () =>
+        ref(
+          Pool(AssetAmount(ATK, "1000000"), AssetAmount(ROWAN, "1000000"))
+        ) as Ref<Pool>
+    );
+    fromAmount.value = "1000";
+    toAmount.value = "0";
+    fromSymbol.value = "atk";
+    toSymbol.value = "rowan";
+    expect(state.value).toBe(PoolState.VALID_INPUT);
+    expect(aPerBRatioMessage.value).toBe("N/A");
+    expect(bPerARatioMessage.value).toBe("N/A");
+  });
+  
 });
