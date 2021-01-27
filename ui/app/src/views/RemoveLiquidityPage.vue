@@ -69,8 +69,6 @@ export default defineComponent({
       asymmetry, 
       liquidityProvider
     ], () => {
-      // if (!wBasisPoints || !asymmetry || !externalAssetSymbol || !nativeAssetSymbol || !poolFinder || !liquidityProvider ) return null
-
       const calcData = useRemoveLiquidityCalculator({
         externalAssetSymbol,
         nativeAssetSymbol,
@@ -79,13 +77,11 @@ export default defineComponent({
         liquidityProvider,
         sifAddress: toRef(store.wallet.sif, "address"),
         poolFinder,
-      })
-      console.log(calcData)
-      if (!calcData) return null
-      withdrawExternalAssetAmount.value = calcData.withdrawExternalAssetAmount
-      withdrawNativeAssetAmount.value = calcData.withdrawNativeAssetAmount
-      state.value = calcData.state
-    })
+      });
+      state.value = calcData.state;
+      withdrawExternalAssetAmount.value = calcData.withdrawExternalAssetAmount;
+      withdrawNativeAssetAmount.value = calcData.withdrawNativeAssetAmount;
+    });
    
     return {
       connected,
