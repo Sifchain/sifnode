@@ -58,7 +58,6 @@ contract Pausable is PauserRole {
      */
     function togglePause() private {
         _paused = !_paused;
-        emit Paused(msg.sender);
     }
 
     /**
@@ -66,6 +65,7 @@ contract Pausable is PauserRole {
      */
     function pause() external onlyPauser whenNotPaused {
         togglePause();
+        emit Paused(msg.sender);
     }
 
     /**
@@ -73,5 +73,6 @@ contract Pausable is PauserRole {
      */
     function unpause() external onlyPauser whenPaused {
         togglePause();
+        emit Unpaused(msg.sender);
     }
 }
