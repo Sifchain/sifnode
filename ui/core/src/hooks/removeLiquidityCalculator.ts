@@ -17,7 +17,6 @@ export function useRemoveLiquidityCalculator(input: {
 }) {
 
   // this function needs to be refactored so 
-  // console.log(input)
   const externalAsset = (() => {
     if (!input.externalAssetSymbol.value) return null;
     return buildAsset(input.externalAssetSymbol.value);
@@ -27,17 +26,15 @@ export function useRemoveLiquidityCalculator(input: {
     if (!input.nativeAssetSymbol.value) return null;
     return buildAsset(input.nativeAssetSymbol.value);
   })();
-  console.log(externalAsset, nativeAsset)
+ 
   const liquidityPool = (() => {
     if (!nativeAsset || !externalAsset) return null;
 
     // Find pool from poolFinder
-    const pool = input.poolFinder(nativeAsset, externalAsset);
-    console.log(pool)
+    const pool = input.poolFinder(externalAsset, nativeAsset);
     return pool?.value ?? null;
   })();
 
-  console.log(liquidityPool)
   const poolUnits = (() => {
     if (!liquidityPool) return null;
     return liquidityPool.poolUnits;

@@ -35,8 +35,6 @@ describe("useRemoveLiquidityCalculator", () => {
       wBasisPoints,
     });
     state.value = calcData.state;
-
-    // if (!calcData.withdrawExternalAssetAmount || !calcData.withdrawNativeAssetAmount ) { return null }
     withdrawExternalAssetAmount.value = calcData.withdrawExternalAssetAmount
     withdrawNativeAssetAmount.value = calcData.withdrawNativeAssetAmount
   }
