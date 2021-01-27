@@ -60,7 +60,7 @@ export default defineComponent({
       :nativeAssetAmount="nativeAssetAmount"
     />
     <SifButton block primary class="confirm-btn" @click="$emit('confirmswap')"
-      >Confirm Supply</SifButton
+      >Confirm Removal</SifButton
     >
   </div>
 </template>

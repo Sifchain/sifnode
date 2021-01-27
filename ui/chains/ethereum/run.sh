@@ -2,7 +2,7 @@
 
 . ../credentials.sh
 
-yarn ganache-cli \
+yarn && yarn ganache-cli \
   -m "$ETHEREUM_ROOT_MNEMONIC" \
   -p 7545 \
   --networkId 5777 \
