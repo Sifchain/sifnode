@@ -370,10 +370,10 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	}
 
 	err = keeper.FinalizeSwap(ctx, emitAmount.String(), finalPool, msg)
-
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 	}
+
 	liquidityFee = liquidityFee.Add(lp)
 	tradeSlip = tradeSlip.Add(ts)
 	ctx.EventManager().EmitEvents(sdk.Events{

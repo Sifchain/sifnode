@@ -8,7 +8,7 @@ const (
 	EventTypeCreateLiquidityProvider = "created_new_liquidity_provider"
 	EventTypeAddLiquidity            = "added_liquidity"
 	EventTypeRemoveLiquidity         = "removed_liquidity"
-	EventTypeSwap                    = "swap"
+	EventTypeSwap                    = "swap_successful"
 	EventTypeSwapFailed              = "swap_failed"
 	AttributeKeyThreshold            = "min_threshold"
 	AttributeKeySwapAmount           = "swap_amount"
