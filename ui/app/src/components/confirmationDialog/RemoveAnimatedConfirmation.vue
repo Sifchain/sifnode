@@ -18,7 +18,7 @@
             </div>
           </transition>
           <transition name="swipe">
-            <div class="text" v-if="confirmed">
+            <div class="text" v-if="state === 'confirmed'">
               <p>Liquidity Removed</p>
               <p class="thin">
                 <span class="thick">{{ cNativeAssetAmount }} {{ cNativeAssetSymbol }}</span>
@@ -65,6 +65,7 @@ export default defineComponent({
     const { config } = useCore();
     // Need to cache amounts and disconnect reactivity
     return {
+      state: props.state,
       cExternalAssetSymbol: props.externalAssetSymbol,
       cNativeAssetSymbol: props.nativeAssetSymbol,
       cExternalAssetAmount: props.externalAssetAmount,

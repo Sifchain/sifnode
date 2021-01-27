@@ -16,12 +16,17 @@ const {
 } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
+const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
+const sifRecipient = web3.utils.utf8ToHex(
+  "sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace"
+);
+
 require("chai")
   .use(require("chai-as-promised"))
   .use(require("chai-bignumber")(BigNumber))
   .should();
 
-contract("BridgeBank", function (accounts) {
+contract("Security Test", function (accounts) {
   // System operator
   const operator = accounts[0];
 
@@ -55,10 +60,15 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
       );
+
+      this.token = await BridgeToken.new("erowan");
+
+      await this.bridgeBank.addExistingBridgeToken(this.token.address, { from: operator });
     });
 
     it("should deploy the BridgeBank, correctly setting the operator and valset", async function () {
@@ -68,10 +78,107 @@ contract("BridgeBank", function (accounts) {
       bridgeBankOperator.should.be.equal(operator);
     });
 
+    it("should be able to change the owner", async function () {
+      expect(await this.bridgeBank.owner()).to.be.equal(operator);
+      await this.bridgeBank.changeOwner(userTwo, { from: operator });
+      expect(await this.bridgeBank.owner()).to.be.equal(userTwo);
+    });
+
+    it("should not be able to change the owner if the caller is not the owner", async function () {
+      expect(await this.bridgeBank.owner()).to.be.equal(operator);
+      await expectRevert(
+        this.bridgeBank.changeOwner(userTwo, { from: userThree }),
+        "!owner"
+      );
+      expect((await this.bridgeBank.owner())).to.be.equal(operator);
+    });
+
+    it("should be able to change the operator", async function () {
+      expect((await this.bridgeBank.operator())).to.be.equal(operator);
+      await this.bridgeBank.changeOperator(userTwo, { from: operator });
+      expect((await this.bridgeBank.operator())).to.be.equal(userTwo);
+    });
+
+    it("should not be able to change the operator if the caller is not the operator", async function () {
+      expect((await this.bridgeBank.operator())).to.be.equal(operator);
+      await expectRevert(
+        this.bridgeBank.changeOperator(userTwo, { from: userThree }),
+        "!operator"
+      );
+      expect((await this.bridgeBank.operator())).to.be.equal(operator);
+    });
+
     it("should correctly set initial values", async function () {
       // CosmosBank initial values
       const bridgeTokenCount = Number(await this.bridgeBank.bridgeTokenCount());
-      bridgeTokenCount.should.be.bignumber.equal(0);
+      bridgeTokenCount.should.be.bignumber.equal(1);
+    });
+
+    it("should be able to pause the contract", async function () {
+      await this.bridgeBank.pause();
+      expect(await this.bridgeBank.paused()).to.be.true;
+    });
+
+    it("should not be able to pause the contract if you are not the owner", async function () {
+      await expectRevert(
+        this.bridgeBank.pause({ from: userOne }),
+        "PauserRole: caller does not have the Pauser role"
+      );
+      expect(await this.bridgeBank.paused()).to.be.false;
+    });
+
+    it("should be able to add a new pauser if you are a pauser", async function () {
+      expect(await this.bridgeBank.pausers(operator)).to.be.true;
+      expect(await this.bridgeBank.pausers(userOne)).to.be.false;
+      await this.bridgeBank.addPauser(userOne, { from: operator })
+      expect(await this.bridgeBank.pausers(operator)).to.be.true;
+      expect(await this.bridgeBank.pausers(userOne)).to.be.true;
+    });
+
+    it("should be able to renounce yourself as pauser", async function () {
+      expect(await this.bridgeBank.pausers(operator)).to.be.true;
+      expect(await this.bridgeBank.pausers(userOne)).to.be.false;
+      await this.bridgeBank.addPauser(userOne, { from: operator })
+      expect(await this.bridgeBank.pausers(operator)).to.be.true;
+      expect(await this.bridgeBank.pausers(userOne)).to.be.true;
+      await this.bridgeBank.renouncePauser({ from: userOne });
+      expect(await this.bridgeBank.pausers(userOne)).to.be.false;
+    });
+
+    it("should be able to pause and then unpause the contract", async function () {
+      // CosmosBank initial values
+      await expectRevert(
+        this.bridgeBank.unpause(),
+        "Pausable: not paused"
+      );
+      await this.bridgeBank.pause();
+      await expectRevert(
+        this.bridgeBank.pause(),
+        "Pausable: paused"
+      );
+      expect(await this.bridgeBank.paused()).to.be.true;
+      await this.bridgeBank.unpause();
+      expect(await this.bridgeBank.paused()).to.be.false;
+    });
+    
+    it("should not be able to lock when contract is paused", async function () {
+      await this.bridgeBank.pause();
+      expect(await this.bridgeBank.paused()).to.be.true;
+
+      await expectRevert(
+        this.bridgeBank.lock(sifRecipient, NULL_ADDRESS, 100),
+        "Pausable: paused"
+      );
+    });
+    
+    it("should not be able to burn when contract is paused", async function () {
+      await this.bridgeBank.pause();
+      expect(await this.bridgeBank.paused()).to.be.true;
+
+      await expectRevert(
+        this.bridgeBank.burn(sifRecipient, this.token.address, 100),
+        "Pausable: paused"
+      );
     });
 
     it("should not allow a user to send ethereum directly to the contract", async function () {
@@ -113,6 +220,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -206,6 +314,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -217,7 +326,7 @@ contract("BridgeBank", function (accounts) {
     it("should not allow a non operator to call the function", async function () {
       await expectRevert(
         this.bridgeBank.bulkWhitelistUpdateLimits([], [], {from: userOne}),
-        "Must be BridgeBank operator."
+        "!operator"
       );
     });
 

@@ -152,7 +152,7 @@ export default function createClpService({
 
       return LiquidityProvider(
         asset,
-        new Fraction(liquidity_provider_units).divide("1000000000000000000"),
+        new Fraction(liquidity_provider_units),
         liquidity_provider_address
       );
     },
