@@ -8,13 +8,11 @@ module.exports = async (cb) => {
 
   // Contract abstraction
   const truffleContract = require("truffle-contract");
-  const contract = truffleContract(
-    require("../build/contracts/BridgeBank.json")
-  );
+  const BridgeBank = artifacts.require("BridgeBank");
 
   const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-  console.log("Expected usage: \ntruffle exec scripts/sendLockTx.js --network ropsten sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace eth 100\n");
+  console.log("Expected usage: \nBRIDGEBANK_ADDRESS='0x9e8bd20374898f61b4e5bd32b880b7fe198e44a1' truffle exec scripts/sendLockTx.js --network ropsten sif1nx650s8q9w28f2g3t9ztxyg48ugldptuwzpace eth 100\n");
   /*******************************************
    *** Constants
    ******************************************/
@@ -91,65 +89,25 @@ module.exports = async (cb) => {
   if (coinDenom == "eth") {
     coinDenom = NULL_ADDRESS;
   }
-  
-  /*******************************************
-   *** Web3 provider
-   *** Set contract provider based on --network flag
-   ******************************************/
-  let provider;
-  if (NETWORK_ROPSTEN) {
-    provider = new HDWalletProvider(
-      process.env.ETHEREUM_PRIVATE_KEY,
-      "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
-      );
-      console.log("~~~~~~~ Provider set to ropsten and connected ~~~~~~~")
-    } else if (NETWORK_MAINNET) {
-    provider = new HDWalletProvider(
-      process.env.ETHEREUM_PRIVATE_KEY,
-      "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
-      );
-    console.log("~~~~~~~ Provider set to mainnet and connected ~~~~~~~")
-  } else {
-    provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
-  }
 
-  const web3 = new Web3(provider);
-  contract.setProvider(web3.currentProvider);
   try {
     /*******************************************
      *** Contract interaction
      ******************************************/
     // Get current accounts
     const accounts = await web3.eth.getAccounts();
+    const bank = await BridgeBank.at(process.env.BRIDGEBANK_ADDRESS);
 
     // Send lock transaction
-    console.log("Connecting to contract....");
-    const { logs } = await contract.deployed().then(function (instance) {
-      console.log("Connected to contract, sending lock...");
-      return instance.lock(cosmosRecipient, coinDenom, amount, {
-        from: accounts[0],
-        value: coinDenom === NULL_ADDRESS ? amount : 0,
-        gas: 300000 // 300,000 Gwei
-      });
+    console.log("Connected to contract, sending lock...");
+
+    const tx = await bank.lock(cosmosRecipient, coinDenom, amount, {
+      from: accounts[0],
+      value: coinDenom === NULL_ADDRESS ? amount : 0,
+      gas: 300000 // 300,000 Gwei
     });
-
-    console.log("Sent lock...");
-
-    // Get event logs
-    const event = logs.find(e => e.event === "LogLock");
-
-    // Parse event fields
-    const lockEvent = {
-      to: event.args._to,
-      from: event.args._from,
-      symbol: event.args._symbol,
-      token: event.args._token,
-      value: Number(event.args._value),
-      nonce: Number(event.args._nonce)
-    };
-
-    console.log(lockEvent);
-    console.log(JSON.stringify(lockEvent, undefined, 0))
+  
+    console.log("Sent lock...", tx);
   } catch (error) {
     console.error({ error });
   }

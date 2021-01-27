@@ -31,6 +31,7 @@ module.exports = function(deployer, network, accounts) {
   let consensusThreshold = process.env.CONSENSUS_THRESHOLD;
   let operator = process.env.OPERATOR;
   let owner = process.env.OWNER;
+  let pauser = process.env.PAUSER;
   let initialValidators = process.env.INITIAL_VALIDATOR_ADDRESSES.split(",");
   let initialPowers = process.env.INITIAL_VALIDATOR_POWERS.split(",");
   const tokenAmount = web3.utils.toWei("120000000");
@@ -94,7 +95,8 @@ module.exports = function(deployer, network, accounts) {
       [
         operator,
         CosmosBridge.address,
-        owner
+        owner,
+        pauser
       ],
       setTxSpecifications(6721975, operator, deployer)
     );
