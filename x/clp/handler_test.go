@@ -266,9 +266,8 @@ func TestSwap(t *testing.T) {
 	assert.True(t, ok, "")
 
 	msg = clp.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, swapSentAssetETH)
-	res, err = handler(ctx, msg)
+	_, err = handler(ctx, msg)
 	require.Error(t, err)
-	require.Nil(t, res)
 
 }
 
