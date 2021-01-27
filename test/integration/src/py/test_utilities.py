@@ -95,10 +95,12 @@ def get_optional_env_var(name: str, default_value: str):
 
 def get_shell_output(command_line):
     logging.debug(f"execute shell command:\n{command_line}")
-    sub = subprocess.run(command_line, shell=True, check=True, capture_output=True)
+    sub = subprocess.run(command_line, shell=True, capture_output=True)
     stdout_string = sub.stdout.decode("utf-8").rstrip()
     stderr_string = sub.stderr.decode("utf-8").rstrip()
-    logging.debug(f"execute shell command stdout:\n{stdout_string}\n\nstderr:\n\n{stderr_string}\n\n")
+    logging.debug(f"execute shell command stdout:\n{stdout_string}\n")
+    if stderr_string:
+        logging.debug(f"\nexecute shell command stderr:\n{stderr_string}")
     if sub.returncode != 0:
         raise Exception(f"error running command: {sub.returncode} for command {command_line}\n{stderr_string}")
     return stdout_string
