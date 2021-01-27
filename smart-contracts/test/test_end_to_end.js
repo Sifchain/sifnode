@@ -58,6 +58,7 @@ contract("End To End", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -74,7 +75,7 @@ contract("End To End", function (accounts) {
       this.cosmosSenderSequence = 1;
       this.ethereumReceiver = userSeven;
       this.ethTokenAddress = "0x0000000000000000000000000000000000000000";
-      this.symbol = "ETH";
+      this.symbol = "eth";
       this.nativeCosmosAssetDenom = "ATOM";
       this.prefixedNativeCosmosAssetDenom = "eATOM";
       this.amountWei = 100;
@@ -103,6 +104,7 @@ contract("End To End", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}

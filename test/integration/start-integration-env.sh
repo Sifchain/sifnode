@@ -15,6 +15,9 @@ export envexportfile=$BASEDIR/test/integration/vagrantenv.sh
 rm -f $envexportfile
 
 set_persistant_env_var ETHEREUM_PRIVATE_KEY c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 $envexportfile
+set_persistant_env_var OWNER 0x627306090abaB3A6e1400e9345bC60c78a8BEf57 $envexportfile
+# we may eventually switch things so PAUSER and OWNER aren't the same account, but for now they're the same
+set_persistant_env_var PAUSER $OWNER $envexportfile
 set_persistant_env_var BASEDIR $(fullpath $BASEDIR) $envexportfile
 set_persistant_env_var SIFCHAIN_BIN $BASEDIR/cmd $envexportfile
 set_persistant_env_var envexportfile $(fullpath $envexportfile) $envexportfile
