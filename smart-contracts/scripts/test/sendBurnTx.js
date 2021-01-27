@@ -22,12 +22,12 @@ module.exports = async (cb) => {
 
     const result = {};
 
-    // see if the user asked to approve the amount first
     let gasLimit = argv.gas;
     if (gasLimit === 'estimate') {
         gasLimit = 6000000; // we don't do an actual estimate for burns, just locks
     }
 
+    // see if the user asked to approve the amount first
     if (argv.approve) {
         const tokenContract = await contractUtilites.buildContract(this, argv, "BridgeToken", argv.symbol);
 

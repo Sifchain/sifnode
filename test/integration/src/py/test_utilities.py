@@ -366,7 +366,14 @@ def ganache_owner_account(smart_contracts_dir: str):
     return ganache_accounts(smart_contracts_dir)["accounts"][0]
 
 
-def ganache_nonowner_account(smart_contracts_dir: str):
+def ganache_second_account(smart_contracts_dir: str):
+    """
+    Returns the second ganache account.
+
+    Useful for doing transfers so you can transfer to an
+    ethereum address that doesn't have anything to do with
+    paying gas fees.
+    """
     return ganache_accounts(smart_contracts_dir)["accounts"][1]
 
 

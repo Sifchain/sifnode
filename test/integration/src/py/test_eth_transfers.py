@@ -46,7 +46,7 @@ def test_transfer_eth_to_ceth_and_back():
     return_request = deepcopy(request)
     # don't transfer ceth => eth to the BridgeBank address since BridgeBank is responsible for paying gas.
     # That means you can't just see if the exact transfer went through.
-    return_request.ethereum_address = test_utilities.ganache_nonowner_account(smart_contracts_dir)
+    return_request.ethereum_address = test_utilities.ganache_second_account(smart_contracts_dir)
     return_request.amount = 20000
     burn_lock_functions.transfer_sifchain_to_ethereum(return_request, credentials)
 
