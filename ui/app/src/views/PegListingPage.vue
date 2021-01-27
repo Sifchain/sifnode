@@ -9,7 +9,7 @@
       />
     </div>
     <Tabs @tabselected="onTabSelected">
-      <Tab title="Standard">
+      <Tab title="External Tokens">
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
             :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
@@ -20,7 +20,7 @@
           >
         </AssetList>
       </Tab>
-      <Tab title="Pegged">
+      <Tab title="Sifchain Native">
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
             :to="`/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
@@ -66,14 +66,14 @@ export default defineComponent({
     const { store, actions } = useCore();
 
     const searchText = ref("");
-    const selectedTab = ref("Standard");
+    const selectedTab = ref("External Tokens");
 
     const allTokens = computed(() => {
-      if (selectedTab.value === "Standard") {
+      if (selectedTab.value === "External Tokens") {
         return actions.peg.getEthTokens();
       }
 
-      if (selectedTab.value === "Pegged") {
+      if (selectedTab.value === "Sifchain Native") {
         return actions.peg.getSifTokens();
       }
       return [];
@@ -81,7 +81,7 @@ export default defineComponent({
 
     const assetList = computed(() => {
       const balances =
-        selectedTab.value === "Standard"
+        selectedTab.value === "External Tokens"
           ? store.wallet.eth.balances
           : store.wallet.sif.balances;
 

@@ -28,6 +28,10 @@ all:
 	vagrant ssh -c "cd ${BASEDIR} && bash test/integration/setup-linux-environment.sh"
 	touch $@
 
+.depend/ganache: .depend/setup | data
+	vagrant ssh -c "cd ${BASEDIR} && bash -x test/integration/ganache_start.sh" 2>&1 | tee data/start-ganache
+	touch $@
+
 .depend/integrationenv: .depend/setup | data
 	vagrant ssh -c "cd ${BASEDIR} && bash -x test/integration/start-integration-env.sh" 2>&1 | tee data/start-integration-env.txt
 	touch $@
@@ -58,9 +62,6 @@ clean:
 	vagrant destroy -f
 	rm -rf .depend
 
-manytests::
-	while $(MAKE); do true; done
-
 pulldata: data
 	vagrant ssh -c "bash /sifnode/test/integration/assemble_data.sh"
 	tar cfz datafiles.tar.gz data/*
@@ -71,3 +72,14 @@ ssh:
 
 truffle:
 	vagrant ssh -c "cd /sifnode && . test/integration/vagrantenv.sh && cd /sifnode/smart-contracts && truffle console --network develop --verbose-rpc"
+
+.PHONY: sifdocker
+sifdocker:
+	cd .. && docker build -t sifdocker -f Dockerfile.devenv .
+
+# start a docker container and keep it running
+sifdocker-start:
+	nohup docker run -p 7546:7545 --rm --name sifdocker -v $(shell pwd)/../../..:/sifnode sifdocker:latest bash -c "tail -f /dev/null" > /dev/null 2>&1 &
+
+sifdocker-sh:
+	docker exec -ti sifdocker bash

@@ -3,6 +3,8 @@ package txs
 // DONTCOVER
 
 import (
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -15,24 +17,31 @@ import (
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
-func RelayToCosmos(cdc *codec.Codec, moniker, password string, claim *types.EthBridgeClaim, cliCtx context.CLIContext,
+func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.EthBridgeClaim, cliCtx context.CLIContext,
 	txBldr authtypes.TxBuilder) error {
-	// Packages the claim as a Tendermint message
-	msg := ethbridge.NewMsgCreateEthBridgeClaim(*claim)
+	var messages []sdk.Msg
 
-	err := msg.ValidateBasic()
-	if err != nil {
-		return err
+	for _, claim := range claims {
+		// Packages the claim as a Tendermint message
+		msg := ethbridge.NewMsgCreateEthBridgeClaim(claim)
+
+		err := msg.ValidateBasic()
+		if err != nil {
+			fmt.Println("failed to get message from claim with:", err.Error())
+			continue
+		} else {
+			messages = append(messages, msg)
+		}
 	}
 
 	// Prepare tx
-	txBldr, err = utils.PrepareTxBuilder(txBldr, cliCtx)
+	txBldr, err := utils.PrepareTxBuilder(txBldr, cliCtx)
 	if err != nil {
 		return err
 	}
 
 	// Build and sign the transaction
-	txBytes, err := txBldr.BuildAndSign(moniker, password, []sdk.Msg{msg})
+	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)
 	if err != nil {
 		return err
 	}

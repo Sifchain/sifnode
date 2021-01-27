@@ -6,15 +6,12 @@ module.exports = async (cb) => {
 
     const logging = sifchainUtilities.configureLogging(this);
 
-    const blockNumber = await web3.eth.getBlockNumber();
-    logging.debug(`blockNumber: ${blockNumber}`);
-
     const argv = sifchainUtilities.processArgs(this, {
         ...sifchainUtilities.sharedYargOptions,
         ...sifchainUtilities.transactionYargOptions
     });
 
-    logging.info(`starting sendLockTx, arguments are ${JSON.stringify(argv)}`);
+    logging.info(`sendLockTx: ${JSON.stringify(argv, undefined, 2)}`);
 
     const bridgeBankContract = contractUtilites.buildContract(this, argv, "BridgeBank", argv.bridgebank_address);
 
@@ -39,11 +36,8 @@ module.exports = async (cb) => {
                 value: coinDenom === NULL_ADDRESS ? amount : 0,
                 gas: argv.gas
             };
-            logging.debug(`Connected to contract, sending lock, request is ${JSON.stringify(request)}`)
             return instance.lock(cosmosRecipient, coinDenom, amount, request);
         });
-
-        logging.debug(`logs are ${JSON.stringify(logs)}`);
 
         // Get event logs
         const event = logs.find(e => e.event === "LogLock");
@@ -56,7 +50,7 @@ module.exports = async (cb) => {
             token: event.args._token,
             value: Number(event.args._value),
             nonce: Number(event.args._nonce),
-            argv: argv,
+            logs: logs,
         };
 
         logging.debug(`lockEvent is ${JSON.stringify(lockEvent, undefined, 2)}`);

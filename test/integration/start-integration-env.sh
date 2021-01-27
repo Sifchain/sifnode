@@ -39,7 +39,7 @@ yarn --cwd $BASEDIR/smart-contracts install
 
 # Startup ganache-cli (https://github.com/trufflesuite/ganache)
 #   Uses GANACHE_DB_DIR for the --db argument to the chain
-docker-compose --project-name genesis -f ${TEST_INTEGRATION_DIR}/docker-compose-ganache.yml up -d --force-recreate
+bash ${TEST_INTEGRATION_DIR}/ganache_start.sh
 
 # https://www.trufflesuite.com/docs/truffle/overview
 # and note that truffle migrate and truffle deploy are the same command
