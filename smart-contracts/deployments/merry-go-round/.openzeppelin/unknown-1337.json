@@ -1,9 +1,9 @@
 {
   "manifestVersion": "3.1",
   "impls": {
-    "dde607bca939855e6c44b687e2c4e198d43a4b266737c5a19487357f6592e22c": {
-      "address": "0xee7D52eddaa1da3080cF2424F742b85Ac7E49A06",
-      "txHash": "0x499f076ca534ce1b2831589c65df7ff18fdc5bd1e0ba75236ee93776c39c68de",
+    "533f427b54e517f42c95facf660cceeae9f30d743cad3232cb1ad28fd5d02f94": {
+      "address": "0xC7e71B6a702E53Ce5bef5a1155d8D9270ADcaa48",
+      "txHash": "0x1b71800570f114b5c0e747ade28cdd11ac9fafdba3c0727bf91ff8a3b911461e",
       "layout": {
         "storage": [
           {
@@ -45,7 +45,7 @@
           {
             "contract": "CosmosBridgeStorage",
             "label": "prophecyClaims",
-            "type": "t_mapping(t_uint256,t_struct(ProphecyClaim)1806_storage)",
+            "type": "t_mapping(t_uint256,t_struct(ProphecyClaim)2009_storage)",
             "src": "CosmosBridgeStorage.sol:40"
           },
           {
@@ -188,15 +188,15 @@
           "t_address_payable": {
             "label": "address payable"
           },
-          "t_mapping(t_uint256,t_struct(ProphecyClaim)1806_storage)": {
+          "t_mapping(t_uint256,t_struct(ProphecyClaim)2009_storage)": {
             "label": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
           }
         }
       }
     },
-    "0964c5c4817f1f0ab0e9fbdd236a1e4205885a1618b461b25e0e0fe6655266c9": {
-      "address": "0xc2A0829Abfb8d5370FB4Fe9204022eBb4643557A",
-      "txHash": "0x5b9c0c13668590f5297b695eeed8231e586b0664b7d594028669f44fa28bbea2",
+    "9011b153758e7fe1b50ff42727c651795d4bd5cfeb2f981d71fbcf73d05bbb59": {
+      "address": "0x42DaaC6AAb12F8668C3b2Fa7aC78e7FFF28929B0",
+      "txHash": "0x1b1ba2d1a332983d134fd3c4eaa9e29ad1e931fd273b77eeb2c1e53ac4990100",
       "layout": {
         "storage": [
           {
@@ -219,9 +219,15 @@
           },
           {
             "contract": "CosmosBankStorage",
+            "label": "lowerToUpperTokens",
+            "type": "t_mapping(t_string_memory,t_string_storage)",
+            "src": "BridgeBank/CosmosBankStorage.sol:34"
+          },
+          {
+            "contract": "CosmosBankStorage",
             "label": "____gap",
             "type": "t_array(t_uint256)100_storage",
-            "src": "BridgeBank/CosmosBankStorage.sol:34"
+            "src": "BridgeBank/CosmosBankStorage.sol:39"
           },
           {
             "contract": "EthereumBankStorage",
@@ -350,13 +356,16 @@
           },
           "t_mapping(t_string_memory,t_address)": {
             "label": "mapping(string => address)"
+          },
+          "t_mapping(t_string_memory,t_string_storage)": {
+            "label": "mapping(string => string)"
           }
         }
       }
     },
     "e2784dab76fe23e6bc87a6ad174be3fc3158ac557335ed5d38b4cc2c08d38038": {
-      "address": "0x835b9D1E0a708F706eF3d09468769cBdc05bdC89",
-      "txHash": "0xd2d3e4b2ce73da6b3f4fd48a6f25e03770f34ea4f750cd298cf5b6a46f9a27d2",
+      "address": "0x3bABA8E32e5212a53BB79e9E624F8Cc7B7348dC0",
+      "txHash": "0x4460cca0c2ba3fcd9142bc7d8926fbe8998220f2d1b856cad59b5e2a7b0b9254",
       "layout": {
         "storage": [
           {
@@ -411,7 +420,7 @@
     }
   },
   "admin": {
-    "address": "0x8fe2E734196870c2cE23256C1F570614abe49461",
-    "txHash": "0x0eb23e0b51850e475982d4e617542f285a756951b10e7c2569fc91a1197bd181"
+    "address": "0x58C04d04b13C53dE087f0498A09464f754Ee34CB",
+    "txHash": "0x65bc3fe3d342e09fd6e445b4928c1445f92f20f4e0a6a2f97a93f3b2bc913bf1"
   }
 }

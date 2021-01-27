@@ -33,7 +33,7 @@ def build_request():
         amount=2 * (10 ** 17),
         ceth_amount=2 * 10 ** 16 - 37
     )
-    return (request, credentials)
+    return request, credentials
 
 
 def test_charge_a_fee_on_a_sifchain_burn():
