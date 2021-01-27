@@ -153,5 +153,5 @@ test("getLiquidityProvider()", async () => {
 
   expect(lp?.asset.symbol).toEqual("catk");
   expect(lp?.address).toEqual("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5");
-  expect(lp?.units.toFixed(0)).toEqual("10000000");
+  expect(lp?.units.toFixed(0)).toEqual("10000000000000000000000000");
 });
