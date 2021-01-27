@@ -11,7 +11,7 @@ require("chai")
   .use(require("chai-bignumber")(BigNumber))
   .should();
 
-contract("CosmosBridge", function (accounts) {
+contract("Gas Cost Test", function (accounts) {
   // System operator
   const operator = accounts[0];
 
@@ -60,6 +60,7 @@ contract("CosmosBridge", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank,[
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -99,7 +100,7 @@ contract("CosmosBridge", function (accounts) {
           this.cosmosSender,
           this.cosmosSenderSequence,
           this.ethereumReceiver,
-          this.symbol,
+          this.symbol.toLowerCase(),
           this.amount,
           {
               from: userOne
@@ -112,7 +113,7 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.symbol,
+        this.symbol.toLowerCase(),
         this.amount,
         {
           from: userOne,
@@ -134,7 +135,7 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.symbol,
+        this.symbol.toLowerCase(),
         this.amount,
         {
           from: userTwo,
@@ -149,7 +150,7 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.symbol,
+        this.symbol.toLowerCase(),
         this.amount,
         {
           from: userThree,
@@ -235,6 +236,7 @@ contract("CosmosBridge", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank,[
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
