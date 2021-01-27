@@ -120,19 +120,21 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         if (oracleClaimValidators[_prophecyID] == 0) {
             string memory symbol;
             if (_claimType == ClaimType.Burn) {
-                symbol = BridgeBank(bridgeBank).lowerToUpperTokens(_symbol);
+                symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
                 require(
                     BridgeBank(bridgeBank).getLockedFunds(symbol) >= _amount,
                     "Not enough locked assets to complete the proposed prophecy"
                 );
+                address tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(symbol);
+                if (tokenAddress == address(0) && uint256(keccak256(abi.encodePacked(symbol))) != uint256(keccak256("eth"))) {
+                    revert("Invalid token address");
+                }
             } else if (_claimType == ClaimType.Lock) {
                 symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol); // Add 'e' symbol prefix
                 symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(symbol);
                 address bridgeTokenAddress = BridgeBank(bridgeBank).getBridgeToken(symbol);
-                // revert(string(abi.encodePacked(concat("symbol: ", symbol), bridgeTokenAddress)));
                 if (bridgeTokenAddress == address(0)) {
                     // First lock of this asset, deploy new contract and get new symbol/token address
-                    // revert("Should not create new breidge token");
                     BridgeBank(bridgeBank).createNewBridgeToken(symbol);
                 }
             } else {
@@ -154,10 +156,10 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             address tokenAddress;
             if (_claimType == ClaimType.Lock) {
                 _symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol);
-                _symbol = BridgeBank(bridgeBank).lowerToUpperTokens(_symbol);
+                _symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
                 tokenAddress = BridgeBank(bridgeBank).getBridgeToken(_symbol);
             } else {
-                _symbol = BridgeBank(bridgeBank).lowerToUpperTokens(_symbol);
+                _symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
                 tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(_symbol);
             }
             completeProphecyClaim(
