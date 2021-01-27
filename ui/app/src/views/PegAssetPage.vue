@@ -164,7 +164,7 @@ export default defineComponent({
         @blur="handleBlur"
         @maxclicked="handleMaxClicked"
         @update:amount="handleAmountUpdated"
-        label="From"
+        label="Amount"
       />
       <RaisedPanel>
         <RaisedPanelColumn v-if="mode === 'peg'">
