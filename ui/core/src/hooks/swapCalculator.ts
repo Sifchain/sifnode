@@ -94,6 +94,7 @@ export function useSwapCalculator(input: {
       pool.value &&
       fromField.asset.value &&
       fromField.fieldAmount.value &&
+      pool.value.contains(fromField.asset.value) &&
       selectedField === "from"
     ) {
       input.toAmount.value = calculateFormattedSwapResult(
@@ -119,6 +120,7 @@ export function useSwapCalculator(input: {
       pool.value &&
       toField.asset.value &&
       toField.fieldAmount.value &&
+      pool.value.contains(toField.asset.value) &&
       selectedField === "to"
     ) {
       input.fromAmount.value = calculateFormattedReverseSwapResult(
