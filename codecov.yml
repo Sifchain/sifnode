@@ -13,14 +13,12 @@ coverage:
     project:
       default:
         threshold: 1% # allow this much decrease on project
-      app:
+      server:
         target: 70%
-        flags: app
-      modules:
+        flags: server
+      ui:
         target: 70%
-        flags: modules
-      client:
-        flags: client
+        flags: ui
     changes: false
 
 comment:
@@ -29,25 +27,20 @@ comment:
   require_changes: true
 
 flags:
-  app:
-    paths:
-      - "app/"
-      - "baseapp/"
-  modules:
+  server:
     paths:
       - "x/"
       - "!x/**/client/" # ignore client package
-  client:
+      - "!cmd/ebrelayer" # ignore ebrelayer, can only do integration tests
+  ui:
     paths:
-      - "client/"
-      - "x/**/client/"
+      - "ui/core/src"
 
 ignore:
   - "docs"
   - "*.md"
   - "*.rst"
   - "**/test_common.go"
-  - "cmd/ebrelayer"
   - "**/test_helpers.go"
   - "**/module.go"
   - "**/genesis.go"
