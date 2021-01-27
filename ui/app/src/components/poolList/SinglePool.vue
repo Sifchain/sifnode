@@ -91,7 +91,7 @@ export default defineComponent({
 
 <template>
   <Layout class="pool" backLink='/pool' title="Your Pair">
-    <div class="sheet">
+    <div class="sheet" :class="!accountPool ? 'disabled' : 'active' ">
       <div class="section">
         <div class="header" @click="$emit('poolselected')">
           <div class="image">
@@ -208,7 +208,7 @@ export default defineComponent({
   background: $c_white;
   border-radius: $br_sm;
   border: $divider;
-
+  &.disabled { opacity: .3 }
   .section {
     padding: 8px 12px;
   }
