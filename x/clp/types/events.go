@@ -11,7 +11,7 @@ const (
 	EventTypeSwap                    = "swap"
 	AttributeKeySwapAmount           = "swap_amount"
 	AttributeKeyLiquidityFee         = "liquidity_fee"
-	AttributeKeyTradeSlip            = "trade_slip"
+	AttributeKeyPriceImpact          = "price_impact"
 	AttributeKeyInPool               = "in_pool"
 	AttributeKeyOutPool              = "out_pool"
 	AttributeKeyPool                 = "pool"

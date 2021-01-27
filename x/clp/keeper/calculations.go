@@ -24,7 +24,7 @@ func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.P
 	}
 	x := sentAmount
 	liquidityFee := calcLiquidityFee(X, x, Y)
-	tradeSlip := calcPriceImpact(X, x)
+	priceImpact := calcPriceImpact(X, x)
 	swapResult := calcSwapResult(X, x, Y)
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrNotEnoughAssetTokens
@@ -37,7 +37,7 @@ func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.P
 		pool.NativeAssetBalance = Y.Sub(swapResult)
 	}
 
-	return swapResult, liquidityFee, tradeSlip, pool, nil
+	return swapResult, liquidityFee, priceImpact, pool, nil
 }
 
 // More details on the formula
