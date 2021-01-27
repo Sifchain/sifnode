@@ -17,18 +17,13 @@ module.exports = async (cb) => {
 
     const bridgeBankContract = await contractUtilites.buildContract(this, argv, "BridgeBank", argv.bridgebank_address);
 
-    const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
-
-    /*******************************************
-     *** Lock transaction parameters
-     ******************************************/
     let cosmosRecipient = Web3.utils.utf8ToHex(argv.sifchain_address);
     let coinDenom = argv.symbol;
     let amount = argv.amount;
 
     let request = {
         from: argv.ethereum_address,
-        value: coinDenom === NULL_ADDRESS ? amount : 0,
+        value: coinDenom === sifchainUtilities.NULL_ADDRESS ? amount : 0,
         gas: argv.gas,
     };
 
