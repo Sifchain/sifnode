@@ -1,15 +1,16 @@
-import {Asset} from "./Asset";
-import {AssetAmount, IAssetAmount} from "./AssetAmount";
-import {Pair} from "./Pair";
+import { Asset } from "./Asset";
+import { AssetAmount, IAssetAmount } from "./AssetAmount";
+import { Pair } from "./Pair";
 import Big from "big.js";
-import {Fraction} from "./fraction/Fraction";
+import { Fraction } from "./fraction/Fraction";
 import {
   calculatePoolUnits,
   calculatePriceImpact,
   calculateProviderFee,
   calculateReverseSwapResult,
-  calculateSwapResult
+  calculateSwapResult,
 } from "./formulae";
+import { LiquidityProvider } from "./LiquidityProvider";
 
 export type Pool = ReturnType<typeof Pool>;
 export type IPool = Omit<Pool, "poolUnits" | "calculatePoolUnits">;
@@ -17,7 +18,7 @@ export type IPool = Omit<Pool, "poolUnits" | "calculatePoolUnits">;
 export function Pool(
   a: AssetAmount, // native asset
   b: AssetAmount, // external asset
-  poolUnits: Fraction = new Fraction("0")
+  poolUnits?: Fraction
 ) {
   const pair = Pair(a, b);
   const amounts: [IAssetAmount, IAssetAmount] = pair.amounts;
@@ -28,14 +29,15 @@ export function Pool(
     symbol: pair.symbol,
     contains: pair.contains,
     toString: pair.toString,
-    poolUnits: calculatePoolUnits(
-      a,
-      b,
-      new Fraction("0"),
-      new Fraction("0"),
-      poolUnits
-    ),
-
+    poolUnits:
+      poolUnits ||
+      calculatePoolUnits(
+        a,
+        b,
+        new Fraction("0"),
+        new Fraction("0"),
+        new Fraction("0")
+      ),
     priceAsset(asset: Asset) {
       return this.calcSwapResult(AssetAmount(asset, "1"));
     },
@@ -111,6 +113,8 @@ export function Pool(
       externalAssetAmount: AssetAmount
     ) {
       const [nativeBalanceBefore, externalBalanceBefore] = amounts;
+
+      // Calculate current units created by this potential liquidity provision
       const lpUnits = calculatePoolUnits(
         nativeAssetAmount,
         externalAssetAmount,
@@ -119,9 +123,9 @@ export function Pool(
         this.poolUnits
       );
 
-      const poolUnits = lpUnits.add(this.poolUnits);
+      const newTotalPoolUnits = lpUnits.add(this.poolUnits);
 
-      return [poolUnits, lpUnits];
+      return [newTotalPoolUnits, lpUnits];
     },
   };
 
@@ -188,16 +192,23 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
     },
 
     calcProviderFee(x: AssetAmount) {
-      const [first, second] = pair1.contains(x.asset) ? [pair1, pair2] : [pair2, pair1];
+      const [first, second] = pair1.contains(x.asset)
+        ? [pair1, pair2]
+        : [pair2, pair1];
       const firstSwapFee = first.calcProviderFee(x);
       const firstSwapOutput = first.calcSwapResult(x);
       const secondSwapFee = second.calcProviderFee(firstSwapOutput);
       const firstSwapFeeInOutputAsset = second.calcSwapResult(firstSwapFee);
-      return AssetAmount(second.otherAsset(firstSwapFee.asset), firstSwapFeeInOutputAsset.add(secondSwapFee));
+      return AssetAmount(
+        second.otherAsset(firstSwapFee.asset),
+        firstSwapFeeInOutputAsset.add(secondSwapFee)
+      );
     },
 
     calcPriceImpact(x: AssetAmount) {
-      const [first, second] = pair1.contains(x.asset) ? [pair1, pair2] : [pair2, pair1];
+      const [first, second] = pair1.contains(x.asset)
+        ? [pair1, pair2]
+        : [pair2, pair1];
       const firstPoolImpact = first.calcPriceImpact(x);
       const r = first.calcSwapResult(x);
       const secondPoolImpact = second.calcPriceImpact(r);
