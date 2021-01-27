@@ -40,7 +40,9 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    const fromValue = computed(() => accountPool?.value?.pool.amounts[1].toFixed(DECIMALS));
+    const fromValue = computed(() => accountPool?.value?.lp.externalAmount.divide("1000000000000000000").toFixed(0));
+    const fromTotalValue = computed(() => accountPool?.value?.pool.amounts[1].toFixed(DECIMALS));
+
     const toSymbol = computed(() =>
       accountPool?.value?.pool.amounts[0].asset
         ? getAssetLabel(accountPool.value.pool.amounts[0].asset)
@@ -54,7 +56,9 @@ export default defineComponent({
       const t = toToken.value;
       return t.imageUrl;
     });
-    const toValue = computed(() => accountPool?.value?.pool.amounts[0].toFixed(DECIMALS));
+
+    const toTotalValue = computed(() => accountPool?.value?.pool.amounts[0].toFixed(DECIMALS));
+    const toValue = computed(() => accountPool?.value?.lp.nativeAmount.divide("1000000000000000000").toFixed(0));
 
     const poolUnitsAsFraction = computed(
       () => accountPool?.value?.lp.units || new Fraction("0")
@@ -62,6 +66,9 @@ export default defineComponent({
 
     const myPoolShare = computed(() => {
       if (!accountPool?.value?.pool?.poolUnits) return null;
+
+
+      console.log("pool share4", props.accountPool)
       const perc = poolUnitsAsFraction.value
         .divide(accountPool?.value?.pool?.poolUnits)
         .multiply("100")
@@ -69,7 +76,7 @@ export default defineComponent({
       return `${perc} %`;
     });
     const myPoolUnits = computed(() => poolUnitsAsFraction.value.toFixed(DECIMALS));
-
+    console.log("pool", accountPool)
     return {
       accountPool,
       fromToken,
@@ -77,10 +84,12 @@ export default defineComponent({
       fromBackgroundStyle,
       fromTokenImage,
       fromValue,
+      fromTotalValue,
       toSymbol,
       toBackgroundStyle,
       toTokenImage,
       toValue,
+      toTotalValue,
       myPoolUnits,
       myPoolShare,
       chainId: config.sifChainId,
@@ -122,7 +131,7 @@ export default defineComponent({
       <div class="section">
         <div class="details">
           <div class="row">
-            <span>Pooled {{ fromSymbol }}:</span>
+            <span>Your Pooled {{ fromSymbol }}:</span>
             <span class="value">
               <span>{{ fromValue }}</span>
               <img
@@ -140,7 +149,7 @@ export default defineComponent({
             </span>
           </div>
           <div class="row">
-            <span>Pooled {{ toSymbol.toUpperCase() }}:</span>
+            <span>Your Pooled {{ toSymbol.toUpperCase() }}:</span>
             <span class="value">
               <span>{{ toValue }}</span>
               <img
@@ -153,10 +162,37 @@ export default defineComponent({
               <div class="placeholder" :style="toBackgroundStyle" v-else></div>
             </span>
           </div>
-
           <div class="row">
-            <span>Your pool tokens:</span>
-            <span class="value">{{ myPoolUnits }}</span>
+            <span>Total Pooled {{ fromSymbol }}:</span>
+            <span class="value">
+              <span>{{ fromTotalValue }}</span>
+              <img
+                v-if="fromTokenImage"
+                width="22"
+                height="22"
+                :src="fromTokenImage"
+                class="info-img"
+              />
+              <div
+                class="placeholder"
+                :style="fromBackgroundStyle"
+                v-else
+              ></div>
+            </span>
+          </div>
+          <div class="row">
+            <span>Total Pooled {{ toSymbol.toUpperCase() }}:</span>
+            <span class="value">
+              <span>{{ toTotalValue }}</span>
+              <img
+                v-if="toTokenImage"
+                width="22"
+                height="22"
+                :src="toTokenImage"
+                class="info-img"
+              />
+              <div class="placeholder" :style="toBackgroundStyle" v-else></div>
+            </span>
           </div>
           <div class="row">
             <span>Your pool share:</span>
