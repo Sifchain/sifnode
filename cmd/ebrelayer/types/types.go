@@ -177,17 +177,6 @@ type EthereumBridgeClaim struct {
 	Nonce          sdk.Int
 }
 
-// ProphecyClaimTransactionData for data part of ProphecyClaim transaction in Ethereum
-// TODO It should be used to decode data from transaction, but abi failed with wrong format. need furthur investigation.
-// type ProphecyClaimTransactionData struct {
-// 	ClaimType            ethbridge.ClaimType
-// 	CosmosSenderSequence *big.Int
-// 	EthereumReceiver     common.Address
-// 	Amount               *big.Int
-// 	CosmosSender         []byte
-// 	Symbol               string
-// }
-
 // ProphecyClaimUnique for data part of ProphecyClaim transaction in Ethereum
 type ProphecyClaimUnique struct {
 	CosmosSenderSequence *big.Int
