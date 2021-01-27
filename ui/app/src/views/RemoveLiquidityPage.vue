@@ -49,9 +49,9 @@ export default defineComponent({
     });
 
     const liquidityProvider = ref(null) as Ref<LiquidityProvider | null>;
-    const withdrawExternalAssetAmount = ref()
-    const withdrawNativeAssetAmount = ref()
-    const state = ref()
+    let withdrawExternalAssetAmount: Ref<string | null> = ref(null)
+    let withdrawNativeAssetAmount: Ref<string | null> = ref(null)
+    let state = ref(0)
 
     effect(() => {
       if (!externalAssetSymbol.value) return null;
@@ -63,15 +63,15 @@ export default defineComponent({
       });
     });
 
-    // if these values change, recalculate state and asset amounts. could maybe be more elegant
+    // if these values change, recalculate state and asset amounts
     watch([
       wBasisPoints, 
       asymmetry, 
       liquidityProvider
     ], () => {
-      if (!wBasisPoints || !asymmetry || !externalAssetSymbol || !nativeAssetSymbol || !poolFinder || !liquidityProvider ) return null
+      // if (!wBasisPoints || !asymmetry || !externalAssetSymbol || !nativeAssetSymbol || !poolFinder || !liquidityProvider ) return null
 
-      const data = useRemoveLiquidityCalculator({
+      const calcData = useRemoveLiquidityCalculator({
         externalAssetSymbol,
         nativeAssetSymbol,
         wBasisPoints,
@@ -80,10 +80,11 @@ export default defineComponent({
         sifAddress: toRef(store.wallet.sif, "address"),
         poolFinder,
       })
-      if (!data) return null
-      withdrawExternalAssetAmount.value = data.withdrawExternalAssetAmount
-      withdrawNativeAssetAmount.value = data.withdrawNativeAssetAmount
-      state.value = data.state
+      console.log(calcData)
+      if (!calcData) return null
+      withdrawExternalAssetAmount.value = calcData.withdrawExternalAssetAmount
+      withdrawNativeAssetAmount.value = calcData.withdrawNativeAssetAmount
+      state.value = calcData.state
     })
    
     return {
