@@ -38,8 +38,6 @@ export function useSwapCalculator(input: {
   fromSymbol: Ref<string | null>;
   toAmount: Ref<string>;
   toSymbol: Ref<string | null>;
-  priceImpact: Ref<string | null>;
-  providerFee: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
   poolFinder: (a: Asset | string, b: Asset | string) => Ref<IPool> | null;
@@ -101,16 +99,6 @@ export function useSwapCalculator(input: {
         pool.value as IPool,
         fromField.fieldAmount.value
       );
-
-      input.priceImpact.value = calculateFormattedPriceImpact(
-        pool.value as IPool,
-        fromField.fieldAmount.value
-      );
-
-      input.providerFee.value = calculateFormattedProviderFee(
-        pool.value as IPool,
-        fromField.fieldAmount.value
-      );
     }
   });
 
@@ -125,16 +113,6 @@ export function useSwapCalculator(input: {
     ) {
       input.fromAmount.value = calculateFormattedReverseSwapResult(
         pool.value,
-        toField.fieldAmount.value
-      );
-
-      input.priceImpact.value = calculateFormattedPriceImpact(
-        pool.value as IPool,
-        toField.fieldAmount.value
-      );
-
-      input.providerFee.value = calculateFormattedProviderFee(
-        pool.value as IPool,
         toField.fieldAmount.value
       );
     }
@@ -152,6 +130,41 @@ export function useSwapCalculator(input: {
     if (input.selectedField.value === null && input.fromAmount.value) {
       input.fromAmount.value = trimZeros(input.fromAmount.value);
     }
+  });
+
+  const poolContainsFromAsset = computed(() => {
+    if (!fromField.asset.value || !pool.value) return false;
+    return pool.value.contains(fromField.asset.value);
+  });
+
+  const priceImpact = computed(() => {
+    if (
+      !pool.value ||
+      !fromField.asset.value ||
+      !fromField.fieldAmount.value ||
+      !poolContainsFromAsset.value
+    )
+      return null;
+
+    return calculateFormattedPriceImpact(
+      pool.value as IPool,
+      fromField.fieldAmount.value
+    );
+  });
+
+  const providerFee = computed(() => {
+    if (
+      !pool.value ||
+      !fromField.asset.value ||
+      !fromField.fieldAmount.value ||
+      !poolContainsFromAsset.value
+    )
+      return null;
+
+    return calculateFormattedProviderFee(
+      pool.value as IPool,
+      fromField.fieldAmount.value
+    );
   });
 
   // Derive state
@@ -175,5 +188,7 @@ export function useSwapCalculator(input: {
     toFieldAmount: toField.fieldAmount,
     toAmount: input.toAmount,
     fromAmount: input.fromAmount,
+    priceImpact,
+    providerFee,
   };
 }

@@ -37,8 +37,6 @@ export default defineComponent({
       fromAmount,
       toSymbol,
       toAmount,
-      priceImpact,
-      providerFee,
     } = useCurrencyFieldState();
     const transactionState = ref<ConfirmState>("selecting");
     const transactionHash = ref<string | null>(null);
@@ -60,6 +58,8 @@ export default defineComponent({
       fromFieldAmount,
       toFieldAmount,
       priceMessage,
+      priceImpact,
+      providerFee,
     } = useSwapCalculator({
       balances,
       fromAmount,
@@ -68,8 +68,6 @@ export default defineComponent({
       selectedField,
       toSymbol,
       poolFinder,
-      priceImpact,
-      providerFee,
     });
 
     const minimumReceived = computed(() =>
