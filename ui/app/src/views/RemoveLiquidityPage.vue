@@ -8,7 +8,7 @@ import ModalView from "@/components/shared/ModalView.vue";
 import { Asset, PoolState, useRemoveLiquidityCalculator } from "ui-core";
 import { LiquidityProvider } from "ui-core";
 import { useCore } from "@/hooks/useCore";
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from "vue-router";
 import { computed, effect, Ref, toRef } from "@vue/reactivity";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
@@ -38,10 +38,13 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
     const transactionState = ref<ConfirmState>("selecting");
+    const transactionHash = ref<string | null>(null);
     const asymmetry = ref("0");
     const wBasisPoints = ref("5000");
     const nativeAssetSymbol = ref("rowan");
-    const externalAssetSymbol = ref<string | null>(route.params.externalAsset ? route.params.externalAsset.toString() : null);
+    const externalAssetSymbol = ref<string | null>(
+      route.params.externalAsset ? route.params.externalAsset.toString() : null
+    );
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
     });
@@ -110,7 +113,8 @@ export default defineComponent({
         if (
           !externalAssetSymbol.value ||
           !wBasisPoints.value ||
-          !asymmetry.value
+          !asymmetry.value ||
+          state.value !== PoolState.VALID_INPUT
         )
           return;
 
@@ -126,11 +130,12 @@ export default defineComponent({
 
         transactionState.value = "signing";
         try {
-          await actions.clp.removeLiquidity(
+          let tx = await actions.clp.removeLiquidity(
             Asset.get(externalAssetSymbol.value),
             wBasisPoints.value,
             asymmetry.value
           );
+          transactionHash.value = tx?.transactionHash ?? "";
           transactionState.value = "confirmed";
         } catch (err) {
           transactionState.value = "failed";
@@ -160,7 +165,8 @@ export default defineComponent({
       withdrawNativeAssetAmount,
       connectedText,
       externalAssetSymbol,
-      transactionState
+      transactionState,
+      transactionHash,
     };
   },
 });
@@ -252,6 +258,7 @@ export default defineComponent({
         :nativeAssetSymbol="nativeAssetSymbol"
         :externalAssetAmount="withdrawExternalAssetAmount"
         :nativeAssetAmount="withdrawNativeAssetAmount"
+        :transactionHash="transactionHash"
         :requestClose="requestTransactionModalClose"
     /></ModalView>
   </Layout>

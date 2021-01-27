@@ -102,12 +102,20 @@ export class _AssetAmount implements IAssetAmount {
     return this.fraction.lessThan(other);
   }
 
+  public lessThanOrEqual(other: IFraction | BigintIsh) {
+    return this.fraction.greaterThanOrEqual(other);
+  }
+
   public equalTo(other: IFraction | BigintIsh) {
     return this.fraction.equalTo(other);
   }
 
   public greaterThan(other: IFraction | BigintIsh) {
     return this.fraction.greaterThan(other);
+  }
+
+  public greaterThanOrEqual(other: IFraction | BigintIsh) {
+    return this.fraction.greaterThanOrEqual(other);
   }
 
   public multiply(other: IFraction | BigintIsh) {
@@ -155,6 +163,7 @@ export type AssetAmount = IAssetAmount;
  *
  * @param asset The Asset for the denomination
  * @param amount If amount is in JSBI then the amount this creates will be in base units (eg. Wei) otherwise the amount will be in natural units
+ * @param options inBaseUnit boolean - if the asset amount given as string is in base units or not eg. 1000000000000000000 = 1 ether
  */
 export function AssetAmount(
   asset: Asset,

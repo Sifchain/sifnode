@@ -1,5 +1,7 @@
 pragma solidity 0.5.16;
 
+import "./PauserRole.sol";
+
 /**
  * @dev Contract module which allows children to implement an emergency stop
  * mechanism that can be triggered by an authorized account.
@@ -9,7 +11,8 @@ pragma solidity 0.5.16;
  * the functions of your contract. Note that they will not be pausable by
  * simply including this module, only once the modifiers are put in place.
  */
-contract Pausable {
+
+contract Pausable is PauserRole {
     /**
      * @dev Emitted when the pause is triggered by a pauser (`account`).
      */
@@ -21,6 +24,11 @@ contract Pausable {
     event Unpaused(address account);
 
     bool private _paused;
+
+    function initialize (address _user) internal {
+        _addPauser(_user);
+        _paused = false;
+    }
 
     /**
      * @dev Returns true if the contract is paused, and false otherwise.
@@ -48,8 +56,23 @@ contract Pausable {
     /**
      * @dev Called by a owner to toggle pause
      */
-    function togglePause() internal {
+    function togglePause() private {
         _paused = !_paused;
+    }
+
+    /**
+     * @dev Called by a pauser to pause contract
+     */
+    function pause() external onlyPauser whenNotPaused {
+        togglePause();
         emit Paused(msg.sender);
+    }
+
+    /**
+     * @dev Called by a pauser to unpause contract
+     */
+    function unpause() external onlyPauser whenPaused {
+        togglePause();
+        emit Unpaused(msg.sender);
     }
 }
