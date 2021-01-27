@@ -47,6 +47,8 @@ ignore:
   - "*.md"
   - "*.rst"
   - "**/test_common.go"
+  - "cmd/ebrelayer"
+  - "**/test_helpers.go"
   - "**/module.go"
   - "**/genesis.go"
   - "scripts/"
