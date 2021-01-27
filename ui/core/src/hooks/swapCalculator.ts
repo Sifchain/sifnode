@@ -132,6 +132,7 @@ export function useSwapCalculator(input: {
     }
   });
 
+  // Cache pool contains asset for reuse as is a little
   const poolContainsFromAsset = computed(() => {
     if (!fromField.asset.value || !pool.value) return false;
     return pool.value.contains(fromField.asset.value);
