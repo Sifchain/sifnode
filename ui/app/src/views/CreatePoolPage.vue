@@ -97,7 +97,6 @@ export default defineComponent({
         throw new Error("from field amount is not defined");
       if (!tokenBFieldAmount.value)
         throw new Error("to field amount is not defined");
-      if (state.value !== PoolState.VALID_INPUT) return;
 
       transactionState.value = "confirming";
     }
