@@ -27,7 +27,6 @@ export default defineComponent({
   setup(props) {
     const fromSymbol = computed(() => props.fromToken);
     const fromAsset = useAssetItem(fromSymbol);
-
     const fromToken = fromAsset.token;
     const fromTokenLabel = fromAsset.label;
     const fromBackgroundStyle = fromAsset.background;
@@ -67,7 +66,7 @@ export default defineComponent({
 
 <template>
   <div class="confirm-swap">
-    <h3 class="title mb-10">You will receive</h3>
+    <h3 class="title mb-10">You are depositing</h3>
     <div class="pool-token">
       <div class="pool-token-value">
         {{ poolUnits }}
@@ -97,7 +96,9 @@ export default defineComponent({
       :fromTokenLabel="fromTokenLabel"
       :toTokenLabel="toTokenLabel"
       :fromAmount="fromAmount"
+      :fromTokenImage="fromTokenImage"
       :toAmount="toAmount"
+      :toTokenImage="toTokenImage"
       :aPerB="aPerB"
       :bPerA="bPerA"
       :shareOfPool="shareOfPool"
@@ -172,4 +173,3 @@ export default defineComponent({
   }
 }
 </style>
-
