@@ -47,11 +47,6 @@ export default defineComponent({
       const t = toAsset.token.value;
       return t.imageUrl;
     });
-    console.log("thomas")
-    console.log("thomas")
-    console.log("thomas")
-    console.log({fromToken, toToken})
-    console.log({fromToken, toToken})
 
     return {
       fromAsset,

@@ -79,7 +79,6 @@ export default defineComponent({
       if (!accountPool?.value?.pool?.poolUnits) return null;
 
 
-      console.log("pool share4", props.accountPool)
       const perc = poolUnitsAsFraction.value
         .divide(accountPool?.value?.pool?.poolUnits)
         .multiply("100")
@@ -87,7 +86,6 @@ export default defineComponent({
       return `${perc} %`;
     });
     const myPoolUnits = computed(() => poolUnitsAsFraction.value.toFixed(DECIMALS));
-    console.log("pool", accountPool)
     return {
       accountPool,
       fromToken,
