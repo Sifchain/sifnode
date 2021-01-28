@@ -189,7 +189,7 @@ export default defineComponent({
       transactionState,
 
       transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "confirmed"].includes(
+        return ["confirming", "signing", "failed", "rejected", "confirmed"].includes(
           transactionState.value
         );
       }),
