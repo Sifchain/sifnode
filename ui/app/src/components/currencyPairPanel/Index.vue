@@ -3,7 +3,7 @@
 <template>
   <div class="field-wrappers">
     <CurrencyField
-      label="Input"
+      label="To"
       tabindex="1"
       :max="fromMax"
       @focus="handleFromFocused"
@@ -25,7 +25,7 @@
     />
     <Icon icon="plus" v-if="canSwapIcon === 'plus'" />
     <CurrencyField
-      label="Input"
+      label="From"
       tabindex="2"
       @focus="handleToFocused"
       @blur="handleToBlur"
