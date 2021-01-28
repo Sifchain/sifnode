@@ -21,66 +21,68 @@ export enum PoolState {
 }
 
 export function usePoolCalculator(input: {
-  fromAmount: Ref<string>;
-  fromSymbol: Ref<string | null>;
-  toAmount: Ref<string>;
-  toSymbol: Ref<string | null>;
+  tokenAAmount: Ref<string>;
+  tokenASymbol: Ref<string | null>;
+  tokenBAmount: Ref<string>;
+  tokenBSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
-  selectedField: Ref<"from" | "to" | null>;
   liquidityProvider: Ref<LiquidityProvider | null>;
   poolFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
 }) {
-  const fromField = useField(input.fromAmount, input.fromSymbol);
-  const toField = useField(input.toAmount, input.toSymbol);
+  const tokenAField = useField(input.tokenAAmount, input.tokenASymbol);
+  const tokenBField = useField(input.tokenBAmount, input.tokenBSymbol);
   const balanceMap = useBalances(input.balances);
 
-  const fromBalance = computed(() => {
-    return input.fromSymbol.value
-      ? balanceMap.value.get(input.fromSymbol.value) ?? null
+  const tokenABalance = computed(() => {
+    return input.tokenASymbol.value
+      ? balanceMap.value.get(input.tokenASymbol.value) ?? null
       : null;
   });
 
-  const toBalance = computed(() => {
-    return input.toSymbol.value
-      ? balanceMap.value.get(input.toSymbol.value) ?? null
+  const tokenBBalance = computed(() => {
+    return input.tokenBSymbol.value
+      ? balanceMap.value.get(input.tokenBSymbol.value) ?? null
       : null;
   });
 
   const fromBalanceOverdrawn = computed(() => {
-    return !fromBalance.value?.greaterThanOrEqual(
-      fromField.fieldAmount.value || "0"
+    return !tokenABalance.value?.greaterThanOrEqual(
+      tokenAField.fieldAmount.value || "0"
     );
   });
 
   const toBalanceOverdrawn = computed(
-    () => !toBalance.value?.greaterThanOrEqual(toField.fieldAmount.value || "0")
+    () =>
+      !tokenBBalance.value?.greaterThanOrEqual(
+        tokenBField.fieldAmount.value || "0"
+      )
   );
 
   const preExistingPool = computed(() => {
-    if (!fromField.asset.value || !toField.asset.value) return null;
+    if (!tokenAField.asset.value || !tokenBField.asset.value) return null;
 
     // Find pool from poolFinder
     const pool = input.poolFinder(
-      fromField.asset.value.symbol,
-      toField.asset.value.symbol
+      tokenAField.asset.value.symbol,
+      tokenBField.asset.value.symbol
     );
     return pool?.value ?? null;
   });
 
   const liquidityPool = computed(() => {
     if (
-      !fromField.fieldAmount.value ||
-      !toField.fieldAmount.value ||
-      !fromField.asset.value ||
-      !toField.asset.value
+      !tokenAField.fieldAmount.value ||
+      !tokenBField.fieldAmount.value ||
+      !tokenAField.asset.value ||
+      !tokenBField.asset.value
     )
       return null;
 
     return (
       preExistingPool.value ||
       Pool(
-        AssetAmount(fromField.asset.value, "0"),
-        AssetAmount(toField.asset.value, "0")
+        AssetAmount(tokenAField.asset.value, "0"),
+        AssetAmount(tokenBField.asset.value, "0")
       )
     );
   });
@@ -89,14 +91,14 @@ export function usePoolCalculator(input: {
   const provisionedPoolUnitsArray = computed(() => {
     if (
       !liquidityPool.value ||
-      !toField.fieldAmount.value ||
-      !fromField.fieldAmount.value
-    )
+      !tokenBField.fieldAmount.value ||
+      !tokenAField.fieldAmount.value
+    ) {
       return [new Fraction("0"), new Fraction("0")];
-
+    }
     return liquidityPool.value.calculatePoolUnits(
-      toField.fieldAmount.value,
-      fromField.fieldAmount.value
+      tokenBField.fieldAmount.value,
+      tokenAField.fieldAmount.value
     );
   });
 
@@ -115,17 +117,16 @@ export function usePoolCalculator(input: {
     return [totalPoolUnits, totalLiquidityProviderUnits];
   });
 
-  const totalLiquidityProviderUnits = computed(() =>
-    liquidityProviderPoolUnitsArray.value[1].toFixed(0)
-  );
-
   const totalPoolUnits = computed(() =>
     liquidityProviderPoolUnitsArray.value[0].toFixed(0)
   );
 
+  const totalLiquidityProviderUnits = computed(() =>
+    liquidityProviderPoolUnitsArray.value[1].toFixed(0)
+  );
+
   const shareOfPool = computed(() => {
     if (!liquidityProviderPoolUnitsArray.value) return new Fraction("0");
-    if (!input.liquidityProvider.value) return new Fraction("0");
 
     const [units, lpUnits] = liquidityProviderPoolUnitsArray.value;
 
@@ -141,8 +142,8 @@ export function usePoolCalculator(input: {
   });
 
   const aPerBRatioMessage = computed(() => {
-    const aAmount = fromField.fieldAmount.value;
-    const bAmount = toField.fieldAmount.value;
+    const aAmount = tokenAField.fieldAmount.value;
+    const bAmount = tokenBField.fieldAmount.value;
 
     if (!aAmount || aAmount.equalTo("0")) return ""; // invalid, must supply external
     if (!bAmount || bAmount.equalTo("0")) {
@@ -156,8 +157,8 @@ export function usePoolCalculator(input: {
   });
 
   const bPerARatioMessage = computed(() => {
-    const aAmount = fromField.fieldAmount.value;
-    const bAmount = toField.fieldAmount.value;
+    const aAmount = tokenAField.fieldAmount.value;
+    const bAmount = tokenBField.fieldAmount.value;
 
     if (!aAmount || aAmount.equalTo("0")) return ""; // invalid, must supply external
 
@@ -172,10 +173,10 @@ export function usePoolCalculator(input: {
   });
 
   const state = computed(() => {
-    const aAmount = fromField.fieldAmount.value;
-    const bAmount = toField.fieldAmount.value;
+    const aAmount = tokenAField.fieldAmount.value;
+    const bAmount = tokenBField.fieldAmount.value;
 
-    if (!input.fromSymbol.value || !input.toSymbol.value)
+    if (!input.tokenASymbol.value || !input.tokenBSymbol.value)
       return PoolState.SELECT_TOKENS;
 
     if (!aAmount || aAmount.equalTo("0")) return PoolState.ZERO_AMOUNTS;
@@ -203,7 +204,7 @@ export function usePoolCalculator(input: {
     preExistingPool,
     totalLiquidityProviderUnits,
     totalPoolUnits,
-    fromFieldAmount: fromField.fieldAmount,
-    toFieldAmount: toField.fieldAmount,
+    tokenAFieldAmount: tokenAField.fieldAmount,
+    tokenBFieldAmount: tokenBField.fieldAmount,
   };
 }

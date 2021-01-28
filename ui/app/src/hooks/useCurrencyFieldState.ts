@@ -6,9 +6,6 @@ const globalState = {
   fromAmount: ref<string>("0"),
   toSymbol: ref<string | null>(null),
   toAmount: ref<string>("0"),
-  priceImpact: ref<string | null>(null),
-  providerFee: ref<string | null>(null),
-  slippage: ref<string>("0"),
 };
 
 type CurrencyFieldState = {
@@ -16,9 +13,6 @@ type CurrencyFieldState = {
   fromAmount: Ref<string>;
   toSymbol: Ref<string | null>;
   toAmount: Ref<string>;
-  priceImpact: Ref<string | null>;
-  providerFee: Ref<string | null>;
-  slippage: Ref<string>;
 };
 
 export function useCurrencyFieldState(): CurrencyFieldState {
@@ -27,26 +21,17 @@ export function useCurrencyFieldState(): CurrencyFieldState {
   const fromAmount = ref<string>(globalState.fromAmount.value);
   const toSymbol = ref<string | null>(globalState.toSymbol.value);
   const toAmount = ref<string>(globalState.toAmount.value);
-  const priceImpact = ref<string | null>(globalState.priceImpact.value);
-  const providerFee = ref<string | null>(globalState.providerFee.value);
-  const slippage = ref<string>(globalState.slippage.value);
 
   // Update global state whenchanges occur as sideeffects
   effect(() => (globalState.fromSymbol.value = fromSymbol.value));
   effect(() => (globalState.fromAmount.value = fromAmount.value));
   effect(() => (globalState.toSymbol.value = toSymbol.value));
   effect(() => (globalState.toAmount.value = toAmount.value));
-  effect(() => (globalState.priceImpact.value = priceImpact.value));
-  effect(() => (globalState.providerFee.value = providerFee.value));
-  effect(() => (globalState.slippage.value = slippage.value));
 
   return {
     fromSymbol,
     fromAmount,
     toSymbol,
     toAmount,
-    providerFee,
-    priceImpact,
-    slippage
   };
 }
