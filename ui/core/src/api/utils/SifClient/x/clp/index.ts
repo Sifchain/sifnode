@@ -63,6 +63,8 @@ export type RawPool = {
 
 type LiquidityDetailsResponse = {
   result: {
+    external_asset_balance: string;
+    native_asset_balance: string;
     LiquidityProvider: {
       liquidity_provider_units: string;
       liquidity_provider_address: string;
