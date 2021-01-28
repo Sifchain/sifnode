@@ -3,7 +3,7 @@ import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { computed, ref } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import {  SwapState, useSwapCalculator } from "ui-core";
+import { SwapState, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/shared/Modal.vue";
@@ -27,7 +27,7 @@ export default defineComponent({
     SelectTokenDialogSif,
     ModalView,
     ConfirmationDialog,
-    SlippagePanel
+    SlippagePanel,
   },
 
   setup() {
@@ -40,7 +40,7 @@ export default defineComponent({
       toAmount,
       priceImpact,
       providerFee,
-      slippage
+      slippage,
     } = useCurrencyFieldState();
     const transactionState = ref<ConfirmState>("selecting");
     const transactionHash = ref<string | null>(null);
@@ -75,7 +75,10 @@ export default defineComponent({
     });
 
     const minimumReceived = computed(() =>
-      ((1 - parseFloat(slippage.value) / 100) * parseFloat(toAmount.value)).toPrecision(18)
+      (
+        (1 - parseFloat(slippage.value) / 100) *
+        parseFloat(toAmount.value)
+      ).toPrecision(18)
     );
 
     function clearAmounts() {
@@ -101,6 +104,7 @@ export default defineComponent({
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
       transactionState.value = "signing";
+
       try {
         let tx = await actions.clp.swap(
           fromFieldAmount.value,
@@ -108,14 +112,14 @@ export default defineComponent({
           parseFloat(minimumReceived.value).toFixed(18).replace(".", "")
         );
         transactionHash.value = tx?.transactionHash ?? "";
-        if (tx && tx.rawLog && tx.rawLog.includes("\"type\":\"swap_failed\"")) {
+        if (tx && tx.rawLog && tx.rawLog.includes('"type":"swap_failed"')) {
           transactionState.value = "failed";
         } else {
           transactionState.value = "confirmed";
         }
         clearAmounts();
       } catch (e) {
-        // TODO: Implement better error checks and status updates
+        // TODO: Implement better error checks and status updates.
         if (e.toString().includes("Request rejected")) {
           transactionState.value = "rejected";
         } else {
@@ -206,9 +210,13 @@ export default defineComponent({
       }),
       transactionState,
       transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "failed", "rejected", "confirmed"].includes(
-          transactionState.value
-        );
+        return [
+          "confirming",
+          "signing",
+          "failed",
+          "rejected",
+          "confirmed",
+        ].includes(transactionState.value);
       }),
       requestTransactionModalClose,
       handleArrowClicked() {
@@ -257,10 +265,7 @@ export default defineComponent({
           />
         </template>
       </Modal>
-      <SlippagePanel
-        v-if="nextStepAllowed"
-        v-model:slippage="slippage"
-      />
+      <SlippagePanel v-if="nextStepAllowed" v-model:slippage="slippage" />
       <DetailsPanel
         :toToken="toSymbol || ''"
         :priceMessage="priceMessage || ''"
