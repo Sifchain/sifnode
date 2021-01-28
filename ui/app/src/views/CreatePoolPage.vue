@@ -7,9 +7,8 @@ import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
 import ModalView from "@/components/shared/ModalView.vue";
-import ConfirmationDialog, {
-  ConfirmState,
-} from "@/components/confirmationDialog/PoolConfirmationDialog.vue";
+import CreatePoolConfirmationDialog from "@/components/confirmationDialog/CreatePoolConfirmationDialog.vue";
+import { ConfirmState } from "@/components/shared/ConfirmationModal.vue";
 import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
@@ -26,14 +25,15 @@ export default defineComponent({
     CurrencyPairPanel,
     SelectTokenDialogSif,
     PriceCalculation,
-    ConfirmationDialog,
+    CreatePoolConfirmationDialog,
     ModalView,
   },
   props: ["title"],
-  setup(props) {
+  setup() {
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
     const transactionState = ref<ConfirmState>("selecting");
+    const transactionStateMsg = ref<string | null>(null);
     const transactionHash = ref<string | null>(null);
     const router = useRouter();
     const route = useRoute();
@@ -46,6 +46,7 @@ export default defineComponent({
     } = useCurrencyFieldState();
 
     const toSymbol = ref("rowan");
+    
     fromSymbol.value = route.params.externalAsset
       ? route.params.externalAsset.toString()
       : null;
@@ -108,16 +109,33 @@ export default defineComponent({
         throw new Error("Token B field amount is not defined");
 
       transactionState.value = "signing";
-      let tx = await actions.clp.addLiquidity(
-        tokenBFieldAmount.value,
-        tokenAFieldAmount.value
-      );
 
-      console.log("POOL transaction hash: ", tx);
-      transactionHash.value = tx?.transactionHash ?? "";
-      transactionState.value = "confirmed";
+      try {
+        let tx = await actions.clp.addLiquidity(
+          tokenBFieldAmount.value,
+          tokenAFieldAmount.value
+        );
 
-      clearAmounts();
+        console.log("POOL transaction hash: ", tx);
+        transactionHash.value = tx?.transactionHash ?? "";
+        if (tx && tx.rawLog && tx.rawLog.includes('"type":"added_liquidity"')) {
+          transactionState.value = "confirmed";
+        } else {
+          transactionState.value = "failed";
+          transactionStateMsg.value = "Oops... Something went wrong. Please try again!";
+        }
+
+        clearAmounts();
+      } catch (e) {
+        // TODO: Implement better error checks and status updates. -> check swap also
+        if (e.toString().includes("Request rejected")) {
+          transactionState.value = "rejected";
+          transactionStateMsg.value = "Please confirm the transaction in your wallet.";
+        } else {
+          transactionState.value = "failed";
+          transactionStateMsg.value = "Oops... Something went wrong. Please try again!";
+        }
+      }
     }
 
     function requestTransactionModalClose() {
@@ -186,6 +204,7 @@ export default defineComponent({
       requestTransactionModalClose,
 
       transactionState,
+      transactionStateMsg,
 
       transactionModalOpen: computed(() => {
         return ["confirming", "signing", "failed", "rejected", "confirmed"].includes(
@@ -278,23 +297,23 @@ export default defineComponent({
       :nextStepAllowed="nextStepAllowed"
       :nextStepMessage="nextStepMessage"
     />
-    <ModalView
+    <CreatePoolConfirmationDialog 
       :requestClose="requestTransactionModalClose"
       :isOpen="transactionModalOpen"
-      ><ConfirmationDialog
-        @confirmswap="handleAskConfirmClicked"
-        :state="transactionState"
-        :requestClose="requestTransactionModalClose"
-        :fromToken="fromSymbol"
-        :fromAmount="fromAmount"
-        :poolUnits="poolUnits"
-        :toAmount="toAmount"
-        :toToken="toSymbol"
-        :aPerB="aPerBRatioMessage"
-        :bPerA="bPerARatioMessage"
-        :shareOfPool="shareOfPoolPercent"
-        :transactionHash="transactionHash"
-    /></ModalView>
+      @confirmed="handleAskConfirmClicked"
+      :state="transactionState"
+      :transactionHash="transactionHash"
+      :transactionStateMsg="transactionStateMsg"
+      
+      :fromToken="fromSymbol"
+      :fromAmount="fromAmount"
+      :poolUnits="poolUnits"
+      :toAmount="toAmount"
+      :toToken="toSymbol"
+      :aPerB="aPerBRatioMessage"
+      :bPerA="bPerARatioMessage"
+      :shareOfPool="shareOfPoolPercent"
+    />
   </Layout>
 </template>
 
