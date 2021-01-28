@@ -91,14 +91,14 @@ import { defineComponent } from "vue";
 export default defineComponent({
   props: {
     fromTokenLabel: { type: String, default: ""},
-    fromAmount: { type: Number, default: ""},
+    fromAmount: { type: String, default: ""},
     fromTokenImage: { type: String, default: ""},
     toTokenLabel: { type: String, default: ""},
-    toAmount: { type: Number, default: ""},
+    toAmount: { type: String, default: ""},
     toTokenImage: { type: String, default: ""},
-    aPerB: { type: Number, default: ""},
-    bPerA: { type: Number, default: ""},
-    shareOfPool: Number,
+    aPerB: { type: String, default: ""},
+    bPerA: { type: String, default: ""},
+    shareOfPool: String,
   },
 });
 </script>
