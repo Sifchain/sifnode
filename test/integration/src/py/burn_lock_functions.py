@@ -59,10 +59,11 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
 
     force_log_level(original_log_level)
     send_tx = send_from_ethereum_to_sifchain(transfer_request)
+    logging.info(f"send_from_ethereum_to_sifchain result: {send_tx}")
+    starting_block = int(send_tx["receipt"]["blockNumber"])
     original_log_level = decrease_log_level()
 
-    starting_block = current_ethereum_block_number(transfer_request.smart_contracts_dir)
-    half_n_wait_blocks = n_wait_blocks / 2 + 1
+    half_n_wait_blocks = n_wait_blocks / 2
     logging.debug("wait half the blocks, transfer should not complete")
     if transfer_request.manual_block_advance:
         advance_n_ethereum_blocks(half_n_wait_blocks, transfer_request.smart_contracts_dir)

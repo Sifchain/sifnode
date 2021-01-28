@@ -18,6 +18,7 @@ class EthereumToSifchainTransferRequest:
     ethereum_network: str = ""  # mainnet, ropsten, http:// for localnet
     amount: int = 0
     ceth_amount: int = 0
+    sifchain_fees: str = ""
     smart_contracts_dir: str = ""
     ethereum_chain_id: str = "5777"
     chain_id: str = "localnet"
@@ -146,14 +147,15 @@ def get_password(network_definition_file_json):
 
 
 def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
-    network_element = "--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
-    bridgetoken_element = f"--bridgetoken_address {transfer_request.bridgetoken_address} " if transfer_request.bridgetoken_address else ""
-    command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} " \
-                   f"integrationtest:getTokenBalance " \
-                   f"--ethereum_address {transfer_request.ethereum_address} " \
-                   f"{symbol_element} " \
-                   f"{network_element}"
+    command_line = " ".join(
+        [f"yarn -s --cwd {transfer_request.smart_contracts_dir}",
+         f"integrationtest:getTokenBalance",
+         f"--ethereum_address {transfer_request.ethereum_address}",
+         symbol_element,
+         network_element]
+    )
     result = run_yarn_command(command_line)
     return int(result["balanceWei"])
 
@@ -231,8 +233,28 @@ def wait_for_sifchain_addr_balance(
     )
 
 
-def send_from_sifchain_to_sifchain(from_address, to_address, amount, currency, yes_password):
-    cmd = f"yes {yes_password} | sifnodecli tx send {from_address} {to_address} {amount}{currency} -y"
+def send_from_sifchain_to_sifchain(
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials
+):
+    logging.info(f"send_from_sifchain_to_sifchain {transfer_request}")
+    yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
+    keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
+    chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
+    node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    cmd = " ".join([
+        yes_entry,
+        "sifnodecli tx send",
+        transfer_request.sifchain_address,
+        transfer_request.sifchain_destination_address,
+        keyring_backend_entry,
+        chain_id_entry,
+        node,
+        f"{transfer_request.amount}{transfer_request.sifchain_symbol}",
+        sifchain_fees_entry,
+        "-y"
+    ])
     return get_shell_output(cmd)
 
 
@@ -241,6 +263,7 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
     command_line = f"{yes_entry} " \
                    f"sifnodecli tx ethbridge {direction} {node} " \
@@ -250,10 +273,12 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
                    f"{transfer_request.sifchain_symbol} " \
                    f"{transfer_request.ceth_amount} " \
                    f"{keyring_backend_entry} " \
+                   f"{sifchain_fees_entry} " \
                    f"--ethereum-chain-id={transfer_request.ethereum_chain_id} " \
                    f"--chain-id={transfer_request.chain_id} " \
                    f"--home {credentials.sifnodecli_homedir} " \
                    f"--from {credentials.from_key} " \
+                   f"--fees 100000rowan " \
                    f"--yes "
     return get_shell_output(command_line)
 
@@ -268,7 +293,7 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
                    f"--bridgebank_address {transfer_request.bridgebank_address} " \
                    f"--ethereum_address {transfer_request.ethereum_address} " \
                    f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
-                   f"--gas estimate"
+                   f"--gas estimate "
     command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     return run_yarn_command(command_line)
 
@@ -345,6 +370,7 @@ def current_ethereum_block_number(smart_contracts_dir: str):
 def wait_for_ethereum_block_number(block_number: int, transfer_request: EthereumToSifchainTransferRequest):
     command_line = f"yarn --cwd {transfer_request.smart_contracts_dir} " \
                    f"integrationtest:waitForBlock " \
+                   f"--ethereum_network {transfer_request.ethereum_network} " \
                    f"--block_number {block_number} "
     get_shell_output(command_line)
 
@@ -398,3 +424,10 @@ def set_lock_burn_limit(smart_contracts_dir: str, token: str, amount: int):
           f"yarn --cwd {smart_contracts_dir} " \
           f"integrationtest:setTokenLockBurnLimit {amount}"
     return get_shell_output(cmd)
+
+
+def create_ethereum_address(smart_contracts_dir: str, ethereum_network: str):
+    cmd = f"yarn -s --cwd {smart_contracts_dir} " \
+          "integrationtest:createEthereumAddress " \
+          f"--ethereum_network {ethereum_network} "
+    return run_yarn_command(cmd)

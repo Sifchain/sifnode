@@ -15,7 +15,7 @@ module.exports = async (cb) => {
 
     logging.info(`sendLockTx: ${JSON.stringify(argv, undefined, 2)}`);
 
-    const bridgeBankContract = await contractUtilites.buildContract(this, argv, "BridgeBank", argv.bridgebank_address);
+    const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging,"BridgeBank", argv.bridgebank_address);
 
     let cosmosRecipient = Web3.utils.utf8ToHex(argv.sifchain_address);
     let coinDenom = argv.symbol;
