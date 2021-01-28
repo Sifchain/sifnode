@@ -351,7 +351,22 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	}
 
 	if emitAmount.LT(msg.MinReceivingAmount) {
-		return nil, types.ErrReceivedAmountBelowExpected
+		ctx.EventManager().EmitEvents(sdk.Events{
+			sdk.NewEvent(
+				types.EventTypeSwapFailed,
+				sdk.NewAttribute(types.AttributeKeySwapAmount, emitAmount.String()),
+				sdk.NewAttribute(types.AttributeKeyThreshold, msg.MinReceivingAmount.String()),
+				sdk.NewAttribute(types.AttributeKeyInPool, inPool.String()),
+				sdk.NewAttribute(types.AttributeKeyOutPool, outPool.String()),
+				sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+			),
+			sdk.NewEvent(
+				sdk.EventTypeMessage,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+				sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer.String()),
+			),
+		})
+		return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 	}
 
 	err = keeper.FinalizeSwap(ctx, emitAmount.String(), finalPool, msg)
