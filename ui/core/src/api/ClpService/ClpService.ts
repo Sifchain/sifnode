@@ -2,7 +2,7 @@ import {
   Asset,
   AssetAmount,
   Coin,
-  LiquidityProvider as LiquidityProviderEntity,
+  LiquidityProvider,
   Network,
   Pool,
 } from "../../entities";
@@ -132,13 +132,13 @@ export default function createClpService({
     async getLiquidityProvider(params) {
       const response = await client.getLiquidityProvider(params);
       let asset: Asset;
-      const { LiquidityProvider, native_asset_balance,
+      const { LiquidityProvider: liquidityProvider, native_asset_balance,
         external_asset_balance } = response.result;
       const {
         asset: { symbol },
         liquidity_provider_units,
         liquidity_provider_address
-      } = LiquidityProvider;
+      } = liquidityProvider;
 
       try {
         asset = Asset.get(symbol);
@@ -151,7 +151,7 @@ export default function createClpService({
         });
       }
 
-      return LiquidityProviderEntity(
+      return LiquidityProvider(
         asset,
         new Fraction(liquidity_provider_units),
         liquidity_provider_address,
