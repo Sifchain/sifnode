@@ -61,6 +61,8 @@ export default defineComponent({
     function validateSlippage() {
       if (parseFloat(localSlippage.value) >= 99.99) {
         localSlippage.value = "99.99";
+      } else if (parseFloat(localSlippage.value) < 0) {
+        localSlippage.value = "0"
       }
     }
     return {

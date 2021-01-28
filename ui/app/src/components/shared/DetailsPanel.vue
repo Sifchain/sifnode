@@ -13,7 +13,7 @@
       class="details-body"
     >
       <div v-if="minimumReceived && toToken" class="details-row">
-        <span>Expected Amount Received</span>
+        <span>Minimum Amount Received</span>
         <span>{{ minimumReceived }} <span>{{ toToken.toUpperCase().replace("C", "c")  }}</span></span>
       </div>
       <div v-if="priceImpact" class="details-row">
