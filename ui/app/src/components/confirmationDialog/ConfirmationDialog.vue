@@ -10,6 +10,7 @@ export type ConfirmState =
   | "confirming"
   | "signing"
   | "confirmed"
+  | "rejected"
   | "failed";
 
 export default defineComponent({
@@ -35,7 +36,7 @@ export default defineComponent({
     });
 
     const failed = computed(() => {
-      return props.state === "failed";
+      return props.state === "failed" || props.state === "rejected";
     });
 
     return {

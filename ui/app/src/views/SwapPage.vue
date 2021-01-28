@@ -75,7 +75,7 @@ export default defineComponent({
     });
 
     const minimumReceived = computed(() =>
-      ((1 - parseFloat(slippage.value) / 100) * parseFloat(toAmount.value)).toPrecision(10)
+      ((1 - parseFloat(slippage.value) / 100) * parseFloat(toAmount.value)).toPrecision(18)
     );
 
     function clearAmounts() {
@@ -88,7 +88,9 @@ export default defineComponent({
         throw new Error("from field amount is not defined");
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
-      if (state.value !== SwapState.VALID_INPUT) return
+      if (state.value !== SwapState.VALID_INPUT) {
+        return;
+      }
 
       transactionState.value = "confirming";
     }
@@ -98,15 +100,22 @@ export default defineComponent({
         throw new Error("from field amount is not defined");
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
-
       transactionState.value = "signing";
       try {
-        let tx = await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value);
+        let tx = await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset, parseFloat(minimumReceived.value).toFixed(18).replace(".", ""));
         transactionHash.value = tx.transactionHash;
-        transactionState.value = "confirmed";
+        if (tx && tx.rawLog && tx.rawLog.includes("\"type\":\"swap_failed\"")) {
+          transactionState.value = "failed";
+        } else {
+          transactionState.value = "confirmed";
+        }
         clearAmounts();
       } catch (e) {
-        transactionState.value = "failed";
+        if (e.toString().includes("Request rejected")) {
+          transactionState.value = "rejected";
+        } else {
+          transactionState.value = "failed";
+        }
       }
     }
 
@@ -130,6 +139,7 @@ export default defineComponent({
             return "Please enter an amount";
           case SwapState.INSUFFICIENT_FUNDS:
             return "Insufficient Funds";
+          case SwapState.INSUFFICIENT_LIQUIDITY:
           case SwapState.VALID_INPUT:
             return "Swap";
         }
@@ -191,7 +201,7 @@ export default defineComponent({
       }),
       transactionState,
       transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "failed", "confirmed"].includes(
+        return ["confirming", "signing", "failed", "rejected", "confirmed"].includes(
           transactionState.value
         );
       }),

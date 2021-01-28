@@ -118,9 +118,9 @@ export default function createClpService({
       return await client.swap({
         base_req: { chain_id: sifChainId, from: params.fromAddress },
         received_asset: {
-          source_chain: params.receivedAsset.asset.network as string,
-          symbol: params.receivedAsset.asset.symbol,
-          ticker: params.receivedAsset.asset.symbol,
+          source_chain: params.receivedAsset.network as string,
+          symbol: params.receivedAsset.symbol,
+          ticker: params.receivedAsset.symbol,
         },
         sent_amount: params.sentAmount.toBaseUnits().toString(),
         sent_asset: {

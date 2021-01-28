@@ -163,7 +163,7 @@ export function useSwapCalculator(input: {
     );
     if (
       !fromTokenLiquidity || !toTokenLiquidity ||
-      !fromField.asset.value || !toField.asset.value ||
+      !fromField.fieldAmount.value || !toField.fieldAmount.value ||
       (fromField.fieldAmount.value?.equalTo("0") &&
       toField.fieldAmount.value?.equalTo("0"))
     ) {

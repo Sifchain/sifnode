@@ -18,7 +18,7 @@
             </div>
           </transition>
           <transition name="swipe">
-            <div class="text" v-if="state === 'failed'">
+            <div class="text" v-if="state === 'rejected'">
               <p>Transaction Rejected</p>
               <p class="thin">
                 Failed to swap
@@ -27,7 +27,20 @@
                 <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
               </p>
               <br />
-              <p class="sub">Please try again.</p>
+              <p class="sub">Please confirm the transaction in your wallet.</p>
+            </div>
+          </transition>
+          <transition name="swipe">
+            <div class="text" v-if="state === 'failed'">
+              <p>Transaction Failed</p>
+              <p class="thin">
+                Failed to swap
+                <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
+                for
+                <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
+              </p>
+              <br />
+              <p class="sub">Please try to increase slippage tolerance.</p>
             </div>
           </transition>
           <transition name="swipe">
