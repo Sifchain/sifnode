@@ -115,6 +115,7 @@ export default defineComponent({
         }
         clearAmounts();
       } catch (e) {
+        // TODO: Implement better error checks and status updates
         if (e.toString().includes("Request rejected")) {
           transactionState.value = "rejected";
         } else {
