@@ -178,17 +178,9 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
     },
 
     contains(...assets: Asset[]) {
-      const local = amounts
-        .map(a => a.asset.symbol)
-        .sort()
-        .join(",");
-
-      const other = assets
-        .map(a => a.symbol)
-        .sort()
-        .join(",");
-
-      return local === other;
+      const local = amounts.map(a => a.asset.symbol).sort();
+      const other = assets.map(a => a.symbol).sort();
+      return !!local.find(s => other.includes(s));
     },
 
     calcProviderFee(x: AssetAmount) {
