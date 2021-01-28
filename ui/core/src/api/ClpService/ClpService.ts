@@ -25,8 +25,9 @@ type IClpService = {
   getPoolSymbolsByLiquidityProvider: (address: string) => Promise<string[]>;
   swap: (params: {
     fromAddress: string;
-    receivedAsset: AssetAmount;
     sentAmount: AssetAmount;
+    receivedAsset: Asset;
+    minimumReceived: string;
   }) => any;
   addLiquidity: (params: {
     fromAddress: string;
@@ -127,7 +128,7 @@ export default function createClpService({
           symbol: params.sentAmount.asset.symbol,
           ticker: params.sentAmount.asset.symbol,
         },
-        min_receiving_amount: test.toString(),
+        min_receiving_amount: params.minimumReceived as string,
         signer: params.fromAddress,
       });
     },

@@ -77,13 +77,14 @@ export default ({
   }
 
   const actions = {
-    async swap(sentAmount: AssetAmount, receivedAsset: AssetAmount) {
+    async swap(sentAmount: AssetAmount, receivedAsset: Asset, minimumReceived: string) {
       if (!state.address) throw "No from address provided for swap";
 
       const tx = await api.ClpService.swap({
         fromAddress: state.address,
         sentAmount,
         receivedAsset,
+        minimumReceived
       });
 
       return await api.SifService.signAndBroadcast(tx.value.msg);
