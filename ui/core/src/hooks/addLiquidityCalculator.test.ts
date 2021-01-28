@@ -14,6 +14,8 @@ import { PoolState, usePoolCalculator } from "./addLiquidityCalculator";
 
 const [ATK, ROWAN] = getTestingTokens(["ATK", "ROWAN"]);
 
+const ZERO = new Fraction("0");
+
 describe("addLiquidityCalculator", () => {
   // input
   const fromAmount: Ref<string> = ref("0");
@@ -33,7 +35,7 @@ describe("addLiquidityCalculator", () => {
   let shareOfPoolPercent: Ref<string>;
   let state: Ref<PoolState>;
   let liquidityProvider = ref(
-    LiquidityProvider(ATK, new Fraction("0"), akasha.address)
+    LiquidityProvider(ATK, ZERO, akasha.address, ZERO, ZERO)
   ) as Ref<LiquidityProvider>; // ? not sure why we need to cast
 
   beforeEach(() => {
@@ -95,7 +97,9 @@ describe("addLiquidityCalculator", () => {
     liquidityProvider.value = LiquidityProvider(
       ATK,
       new Fraction("1000"),
-      akasha.address
+      akasha.address,
+      ZERO,
+      ZERO
     );
 
     // Add 1000 of both tokens
@@ -118,7 +122,7 @@ describe("addLiquidityCalculator", () => {
   });
 
   test("Can handle division by zero", () => {
-    liquidityProvider.value = LiquidityProvider(ATK, new Fraction("0"), "");
+    liquidityProvider.value = LiquidityProvider(ATK, ZERO, "", ZERO, ZERO);
     fromAmount.value = "0";
     toAmount.value = "0";
     fromSymbol.value = "atk";
