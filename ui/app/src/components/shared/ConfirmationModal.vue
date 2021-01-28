@@ -4,51 +4,44 @@
     :isOpen="isOpen"
   > 
     <div class="modal-inner">
+
       <ConfirmationModalAsk 
         v-if="state === 'confirming'"
         @confirmed="$emit('confirmed')"
-        title="Asking Confirmation"
+        :title="title"
+        :confirmButtonText="confirmButtonText"
       > 
         <template v-slot:body>
           <slot name="askbody"></slot>
         </template>
       </ConfirmationModalAsk>
 
-
       <ConfirmationModalSigning
         v-else
-        :confirmed="confirmed"
-        :failed="failed"
         :state="state"
         @closerequested="requestClose"
+        :transactionHash="transactionHash"
+        :transactionStateMsg="transactionStateMsg"
       >
         <template v-slot:signing>
           <slot name="signing"></slot>
         </template>
 
-        <template v-slot:success>
-          <slot name="success"></slot>
+        <template v-slot:confirmed>
+          <slot name="confirmed"></slot>
         </template>
 
-        <template v-slot:error>
-          <slot name="error"></slot>
+        <template v-slot:rejected>
+          <slot name="rejected"></slot>
+        </template>
+
+        <template v-slot:failed>
+          <slot name="failed"></slot>
         </template>
       </ConfirmationModalSigning>
 
     </div>
 
-
-  <!-- <ConfirmationDialog
-      @confirmswap="handleAskConfirmClicked"
-      :transactionHash="transactionHash"
-      :state="transactionState"
-      :requestClose="requestTransactionModalClose"
-      :priceMessage="priceMessage"
-      :fromToken="fromSymbol"
-      :fromAmount="fromAmount"
-      :toAmount="toAmount"
-      :toToken="toSymbol"
-  /> -->
   </ModalView>
 </template>
 
@@ -65,37 +58,24 @@ export type ConfirmState =
   | "confirming"
   | "signing"
   | "confirmed"
+  | "rejected"
   | "failed";
 
 export default defineComponent({
   props: { 
     isOpen: { type: Boolean, default: false }, 
     requestClose: Function,
-
     state: { type: String as PropType<ConfirmState>, default: "confirming" },
+    confirmButtonText: String,
+    title: String,
+    transactionHash: String,
+    transactionStateMsg: String,
   },
 
   components: {
     ModalView,
     ConfirmationModalAsk,
     ConfirmationModalSigning,
-
-    // ConfirmationDialog,
-  },
-
-  setup(props) {
-    const confirmed = computed(() => {
-      return props.state === "confirmed";
-    });
-
-    const failed = computed(() => {
-      return props.state === "failed";
-    });
-
-    return {
-      confirmed,
-      failed
-    };
   },
 })
 </script>
