@@ -47,9 +47,9 @@ export default defineComponent({
       :providerFee="providerFee"
       :priceImpact="priceImpact"
     />
-    <SifButton block primary class="confirm-btn" @click="$emit('confirmswap')"
-      >Confirm Swap</SifButton
-    >
+    <SifButton block primary class="confirm-btn" @click="$emit('confirmswap')">
+      Confirm Swap
+    </SifButton>
   </div>
 </template>
 

@@ -5,7 +5,6 @@ import {
   IPool,
   CompositePool,
   IAssetAmount,
-  Pool,
 } from "../entities";
 import { useField } from "./useField";
 import { assetPriceMessage, trimZeros, useBalances } from "./utils";
@@ -15,6 +14,7 @@ export enum SwapState {
   ZERO_AMOUNTS,
   INSUFFICIENT_FUNDS,
   VALID_INPUT,
+  INSUFFICIENT_LIQUIDITY,
 }
 
 function calculateFormattedPriceImpact(pair: IPool, amount: AssetAmount) {
@@ -33,6 +33,7 @@ function calculateFormattedReverseSwapResult(pair: IPool, amount: AssetAmount) {
   return trimZeros(pair.calcReverseSwapResult(amount).toFixed());
 }
 
+// TODO: make swap calculator only generate Fractions/Amounts that get stringified in the view
 export function useSwapCalculator(input: {
   fromAmount: Ref<string>;
   fromSymbol: Ref<string | null>;
@@ -155,14 +156,33 @@ export function useSwapCalculator(input: {
   // Derive state
   const state = computed(() => {
     if (!pool.value) return SwapState.SELECT_TOKENS;
+    const fromTokenLiquidity = (pool.value as IPool).amounts.find(
+      amount => amount.asset.symbol === fromField.asset.value?.symbol
+    );
+    const toTokenLiquidity = (pool.value as IPool).amounts.find(
+      amount => amount.asset.symbol === toField.asset.value?.symbol
+    );
+
     if (
-      fromField.fieldAmount.value?.equalTo("0") &&
-      toField.fieldAmount.value?.equalTo("0")
-    )
+      !fromTokenLiquidity ||
+      !toTokenLiquidity ||
+      !fromField.fieldAmount.value ||
+      !toField.fieldAmount.value ||
+      (fromField.fieldAmount.value?.equalTo("0") &&
+        toField.fieldAmount.value?.equalTo("0"))
+    ) {
       return SwapState.ZERO_AMOUNTS;
+    }
+
     if (!balance.value?.greaterThanOrEqual(fromField.fieldAmount.value || "0"))
       return SwapState.INSUFFICIENT_FUNDS;
 
+    if (
+      fromTokenLiquidity.lessThan(fromField.fieldAmount.value) ||
+      toTokenLiquidity.lessThan(toField.fieldAmount.value)
+    ) {
+      return SwapState.INSUFFICIENT_LIQUIDITY;
+    }
     return SwapState.VALID_INPUT;
   });
 
