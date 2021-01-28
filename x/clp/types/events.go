@@ -10,7 +10,7 @@ const (
 	EventTypeRemoveLiquidity         = "removed_liquidity"
 	EventTypeSwap                    = "swap_successful"
 	EventTypeSwapFailed              = "swap_failed"
-    AttributeKeyThreshold            = "min_threshold"
+	AttributeKeyThreshold            = "min_threshold"
 	AttributeKeySwapAmount           = "swap_amount"
 	AttributeKeyLiquidityFee         = "liquidity_fee"
 	AttributeKeyTradeSlip            = "trade_slip"
