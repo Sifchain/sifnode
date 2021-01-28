@@ -101,16 +101,22 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	if claim.Content == "" {
 		return types.Status{}, types.ErrInvalidClaim
 	}
+	fmt.Println("claim.Content: ", claim.Content)
+	fmt.Println("claim.ID: ", claim.ID)
 
 	prophecy, found := k.GetProphecy(ctx, claim.ID)
 	if !found {
+		fmt.Println("did not find prophecy with this claim.ID: ", claim.ID)
 		prophecy = types.NewProphecy(claim.ID)
 	}
 
+	fmt.Println("prophecy.Status.Text before switch statement: ", prophecy.Status.Text)
 	switch prophecy.Status.Text {
 	case types.PendingStatusText:
+		fmt.Println("no problem with this status: ", prophecy.Status.Text)
 		// continue processing
 	default:
+		fmt.Println("prophecy.Status.Text: ", prophecy.Status.Text)
 		return types.Status{}, types.ErrProphecyFinalized
 	}
 
