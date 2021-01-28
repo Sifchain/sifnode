@@ -6,6 +6,7 @@
   "module": "lib/index.js",
   "types": "src/index.ts",
   "scripts": {
+    "compile": "tsc --noEmit",
     "build": "tsc --noEmit && tsc -p ./tsconfig.compile.json",
     "watch": "tsc -p ./tsconfig.compile.json -w",
     "test": "jest --coverage --runInBand",
