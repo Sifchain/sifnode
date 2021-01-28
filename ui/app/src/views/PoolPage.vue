@@ -19,7 +19,7 @@ export default defineComponent({
   },
 
   setup() {
-    const { actions, poolFinder, store } = useCore();
+    const { store } = useCore();
 
     const selectedPool = ref<AccountPool | null>(null);
     const refsStore = toRefs(store);
@@ -34,12 +34,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <SinglePool
-    v-if="selectedPool"
-    @back="selectedPool = null"
-    :accountPool="selectedPool"
-  />
-  <Layout v-else>
+  <Layout>
     <div>
       <div class="heading mb-8">
         <h3>Your Liquidity</h3>
@@ -58,7 +53,6 @@ export default defineComponent({
                     v-for="(accountPool, index) in accountPools"
                     :key="index"
                     :accountPool="accountPool"
-                    @click="selectedPool = accountPool"
             />
       </PoolList>
     </div>
