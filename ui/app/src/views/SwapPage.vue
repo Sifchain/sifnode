@@ -43,7 +43,7 @@ export default defineComponent({
       slippage
     } = useCurrencyFieldState();
     const transactionState = ref<ConfirmState>("selecting");
-    const transactionHash = ref<String | null>(null);
+    const transactionHash = ref<string | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
@@ -71,7 +71,7 @@ export default defineComponent({
       toSymbol,
       poolFinder,
       priceImpact,
-      providerFee
+      providerFee,
     });
 
     const minimumReceived = computed(() =>
@@ -102,8 +102,12 @@ export default defineComponent({
         throw new Error("to field amount is not defined");
       transactionState.value = "signing";
       try {
-        let tx = await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset, parseFloat(minimumReceived.value).toFixed(18).replace(".", ""));
-        transactionHash.value = tx.transactionHash;
+        let tx = await actions.clp.swap(
+          fromFieldAmount.value,
+          toFieldAmount.value.asset,
+          parseFloat(minimumReceived.value).toFixed(18).replace(".", "")
+        );
+        transactionHash.value = tx?.transactionHash ?? "";
         if (tx && tx.rawLog && tx.rawLog.includes("\"type\":\"swap_failed\"")) {
           transactionState.value = "failed";
         } else {
@@ -194,7 +198,7 @@ export default defineComponent({
           (balance) => balance.asset.symbol === fromSymbol.value
         );
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.subtract("1").toFixed(1);
+        fromAmount.value = accountBalance.toFixed(18);
       },
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;
@@ -213,7 +217,7 @@ export default defineComponent({
         transactionState.value = "signing";
       },
       handleAskConfirmClicked,
-      transactionHash
+      transactionHash,
     };
   },
 });

@@ -102,12 +102,20 @@ export class _AssetAmount implements IAssetAmount {
     return this.fraction.lessThan(other);
   }
 
+  public lessThanOrEqual(other: IFraction | BigintIsh) {
+    return this.fraction.greaterThanOrEqual(other);
+  }
+
   public equalTo(other: IFraction | BigintIsh) {
     return this.fraction.equalTo(other);
   }
 
   public greaterThan(other: IFraction | BigintIsh) {
     return this.fraction.greaterThan(other);
+  }
+
+  public greaterThanOrEqual(other: IFraction | BigintIsh) {
+    return this.fraction.greaterThanOrEqual(other);
   }
 
   public multiply(other: IFraction | BigintIsh) {

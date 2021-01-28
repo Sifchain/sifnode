@@ -39,7 +39,9 @@ export default defineComponent({
       class="details"
       :priceMessage="priceMessage"
       :fromToken="fromToken"
+      :fromTokenImage="fromTokenImage"
       :toToken="toToken"
+      :toTokenImage="toTokenImage"
       :swapRate="swapRate"
       :minimumReceived="minimumReceived"
       :providerFee="providerFee"
@@ -93,4 +95,3 @@ export default defineComponent({
   }
 }
 </style>
-

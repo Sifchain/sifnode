@@ -1,9 +1,9 @@
 {
   "manifestVersion": "3.1",
   "impls": {
-    "533f427b54e517f42c95facf660cceeae9f30d743cad3232cb1ad28fd5d02f94": {
-      "address": "0xBd44ecb8562fbF0d123dF3bF2C6Aa97fb1a79D8F",
-      "txHash": "0x58220e4181123426b5f114455150cafb97613bd01b6498fcb9b21090a97109e8",
+    "ac019ffc9f9510872af9ff178c3a7bda59a3253edb88d3ed88540b29f163e060": {
+      "address": "0xCb8884b72c24584Fd4392a1DC7a60daBa1a3809c",
+      "txHash": "0x2b9bb42803f10fa435e19edaf94052997d6e8134ea35ec9404593760647520c3",
       "layout": {
         "storage": [
           {
@@ -45,7 +45,7 @@
           {
             "contract": "CosmosBridgeStorage",
             "label": "prophecyClaims",
-            "type": "t_mapping(t_uint256,t_struct(ProphecyClaim)2009_storage)",
+            "type": "t_mapping(t_uint256,t_struct(ProphecyClaim)2283_storage)",
             "src": "CosmosBridgeStorage.sol:40"
           },
           {
@@ -188,15 +188,15 @@
           "t_address_payable": {
             "label": "address payable"
           },
-          "t_mapping(t_uint256,t_struct(ProphecyClaim)2009_storage)": {
+          "t_mapping(t_uint256,t_struct(ProphecyClaim)2283_storage)": {
             "label": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
           }
         }
       }
     },
-    "9011b153758e7fe1b50ff42727c651795d4bd5cfeb2f981d71fbcf73d05bbb59": {
-      "address": "0x4b4E676417CCFD91d27eF605a621c8dE0110B3de",
-      "txHash": "0xc0061ee9a1d13b69f8b400e1d4ea343ff6de0bd61c636f6bef83e3624d1c78d3",
+    "49930df925c5c64c2e2f820cf2b692094bcd3259f9aff0096e056a0f219d6ab5": {
+      "address": "0x3BdF7cfD53953B0740c79d2B4A581fcd6E670745",
+      "txHash": "0xb7e887de1079b8de53244f46382a1ac35fe65d6efeaf632770b384eb4ff2da47",
       "layout": {
         "storage": [
           {
@@ -326,10 +326,22 @@
             "src": "BridgeBank/CosmosWhiteList.sol:11"
           },
           {
+            "contract": "PauserRole",
+            "label": "pausers",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "BridgeBank/PauserRole.sol:5"
+          },
+          {
+            "contract": "Pausable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "BridgeBank/Pausable.sol:25"
+          },
+          {
             "contract": "BridgeBank",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "BridgeBank/BridgeBank.sol:27"
+            "src": "BridgeBank/BridgeBank.sol:29"
           }
         ],
         "types": {
@@ -364,8 +376,8 @@
       }
     },
     "e2784dab76fe23e6bc87a6ad174be3fc3158ac557335ed5d38b4cc2c08d38038": {
-      "address": "0x5f205F495143DeCf00016485af8a0Ce2988e663A",
-      "txHash": "0xc3ab9036687b2162d6dc39276edfd831a7463e1af2560eecaf3f135822be2299",
+      "address": "0x19B997102D2d34c67F28814C9EE1f1d6c92d7cc6",
+      "txHash": "0xbc8598c465cc80b5750c6ccbee028fec5a8d38d1061d8918aaec4ab38246912c",
       "layout": {
         "storage": [
           {
@@ -420,7 +432,7 @@
     }
   },
   "admin": {
-    "address": "0x96d94C4Bf95Dbe8e0e67A26742c1675dA761d3C8",
-    "txHash": "0xa026b3951ed2adb91ab636b861ad12866ad8be4684e368f911a5260afc283fbb"
+    "address": "0x129DFF14A89DBd130504dd547c37044D5Bae2A74",
+    "txHash": "0xd16391899b171d79f3d54caf72af20b178c13baf148ab6c135c2cc1502f6e091"
   }
 }

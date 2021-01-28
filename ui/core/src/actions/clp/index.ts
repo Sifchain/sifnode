@@ -94,24 +94,34 @@ export default ({
       nativeAssetAmount: AssetAmount,
       externalAssetAmount: AssetAmount
     ) {
-      if (!state.address) throw "No from address provided for swap";
-      const hasPool = !!findPool(
-        store.pools,
-        nativeAssetAmount.asset.symbol,
-        externalAssetAmount.asset.symbol
-      );
+      try {
+        if (!state.address) throw "No from address provided for swap";
+        const hasPool = !!findPool(
+          store.pools,
+          nativeAssetAmount.asset.symbol,
+          externalAssetAmount.asset.symbol
+        );
 
-      const provideLiquidity = hasPool
-        ? api.ClpService.addLiquidity
-        : api.ClpService.createPool;
+        const provideLiquidity = hasPool
+          ? api.ClpService.addLiquidity
+          : api.ClpService.createPool;
 
-      const tx = await provideLiquidity({
-        fromAddress: state.address,
-        nativeAssetAmount,
-        externalAssetAmount,
-      });
+        const tx = await provideLiquidity({
+          fromAddress: state.address,
+          nativeAssetAmount,
+          externalAssetAmount,
+        });
 
-      return await api.SifService.signAndBroadcast(tx.value.msg);
+        return await api.SifService.signAndBroadcast(tx.value.msg);
+      } catch (err) {
+        // TODO: coordinate with blockchain to get more standardised errors
+        if (err.message) {
+          notify({
+            type: "error",
+            message: err.message,
+          });
+        }
+      }
     },
 
     async removeLiquidity(
@@ -119,14 +129,24 @@ export default ({
       wBasisPoints: string,
       asymmetry: string
     ) {
-      const tx = await api.ClpService.removeLiquidity({
-        fromAddress: state.address,
-        asset,
-        asymmetry,
-        wBasisPoints,
-      });
+      try {
+        const tx = await api.ClpService.removeLiquidity({
+          fromAddress: state.address,
+          asset,
+          asymmetry,
+          wBasisPoints,
+        });
 
-      return await api.SifService.signAndBroadcast(tx.value.msg);
+        return await api.SifService.signAndBroadcast(tx.value.msg);
+      } catch (err) {
+        // TODO: coordinate with blockchain to get more standardised errors
+        if (err.message) {
+          notify({
+            type: "error",
+            message: err.message,
+          });
+        }
+      }
     },
 
     async disconnect() {

@@ -24,12 +24,8 @@ export type SifServiceContext = {
   assets: Asset[];
 };
 type HandlerFn<T> = (a: T) => void;
-export type ISifService = IWalletService & {
-  getSupportedTokens: () => Asset[];
-  onSocketError: (handler: HandlerFn<any>) => void;
-  onTx: (handler: HandlerFn<any>) => void;
-  onNewBlock: (handler: HandlerFn<any>) => void;
-};
+
+export type ISifService = ReturnType<typeof createSifService>;
 
 /**
  * Constructor for SifService
@@ -42,7 +38,7 @@ export default function createSifService({
   sifWsUrl,
   keplrChainConfig,
   assets,
-}: SifServiceContext): ISifService {
+}: SifServiceContext) {
   const {} = sifAddrPrefix;
 
   // Reactive state for communicating state changes
