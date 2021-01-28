@@ -1,23 +1,21 @@
 <template>
-  <span>
-    <button v-if="!to" class="btn" :class="classes" :disabled="disabled">
-      <span class="content">
-        <slot></slot>
-      </span>
-    </button>
+  <button v-if="!to" class="btn" :class="classes" :disabled="disabled">
+    <span class="content">
+      <slot></slot>
+    </span>
+  </button>
 
-    <router-link
-      v-if="to"
-      :to="to"
-      class="btn"
-      :class="classes"
-      :disabled="disabled"
-    >
-      <span class="content">
-        <slot></slot>
-      </span>
-    </router-link>
-  </span>
+  <router-link
+    v-else
+    :to="to"
+    class="btn"
+    :class="classes"
+    :disabled="disabled"
+  >
+    <span class="content">
+      <slot></slot>
+    </span>
+  </router-link>
 </template>
 
 <script>
