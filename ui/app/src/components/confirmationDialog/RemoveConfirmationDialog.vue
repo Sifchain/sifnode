@@ -10,6 +10,7 @@ export type ConfirmState =
   | "confirming"
   | "signing"
   | "confirmed"
+  | "rejected"
   | "failed";
 
 export default defineComponent({
