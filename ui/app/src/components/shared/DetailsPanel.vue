@@ -14,7 +14,7 @@
     >
       <div v-if="minimumReceived && toToken" class="details-row">
         <span>Minimum Amount Received</span>
-        <span>{{ minimumReceived }} <span>{{ toToken.toUpperCase().replace("C", "c")  }}</span></span>
+        <span>{{ showMinReceived(minimumReceived) }} <span>{{ toToken.toUpperCase().replace("C", "c")  }}</span></span>
       </div>
       <div v-if="priceImpact" class="details-row">
         <span>Price Impact</span>
@@ -91,8 +91,18 @@ export default defineComponent({
       }
     }
 
+    function showMinReceived(minReceived: string) {
+      const minimumReceived = parseFloat(minReceived);
+      if (minimumReceived < 100000) {
+        return minimumReceived.toFixed(5);
+      } else {
+        return minimumReceived.toFixed(2)
+      }
+    }
+
     return {
-      showProviderFee
+      showProviderFee,
+      showMinReceived
     }
   }
 });
