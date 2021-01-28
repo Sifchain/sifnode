@@ -77,24 +77,17 @@ export default ({
   }
 
   const actions = {
-    async swap(sentAmount: AssetAmount, receivedAsset: Asset) {
+    async swap(sentAmount: AssetAmount, receivedAsset: Asset, minimumReceived: string) {
       if (!state.address) throw "No from address provided for swap";
-      try {
-        const tx = await api.ClpService.swap({
-          fromAddress: state.address,
-          sentAmount,
-          receivedAsset,
-        });
 
-        return await api.SifService.signAndBroadcast(tx.value.msg);
-      } catch (err) {
-        if (err.message) {
-          notify({
-            type: "error",
-            message: err.message,
-          });
-        }
-      }
+      const tx = await api.ClpService.swap({
+        fromAddress: state.address,
+        sentAmount,
+        receivedAsset,
+        minimumReceived
+      });
+
+      return await api.SifService.signAndBroadcast(tx.value.msg);
     },
 
     async addLiquidity(

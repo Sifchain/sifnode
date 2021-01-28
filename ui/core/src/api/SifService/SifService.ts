@@ -275,23 +275,30 @@ export default function createSifService({
 
     async signAndBroadcast(msg: Msg | Msg[], memo?: string) {
       if (!client) throw "No client. Please sign in.";
+      try {
+        const fee = {
+          amount: coins(0, "rowan"),
+          gas: "200000", // need gas fee for tx to work - see genesis file
+        };
 
-      const fee = {
-        amount: coins(0, "rowan"),
-        gas: "200000", // need gas fee for tx to work - see genesis file
-      };
+        const msgArr = Array.isArray(msg) ? msg : [msg];
+        console.log("msgArr", msgArr);
 
-      const msgArr = Array.isArray(msg) ? msg : [msg];
+        const txHash = await client.signAndBroadcast(msgArr, fee, memo);
 
-      const txHash = await client.signAndBroadcast(msgArr, fee, memo);
+        if (isBroadcastTxFailure(txHash)) {
+          throw new Error(txHash.rawLog);
+        }
 
-      if (isBroadcastTxFailure(txHash)) {
-        throw new Error(txHash.rawLog);
+        triggerUpdate();
+
+        return txHash;
+      } catch (err) {
+        if (err.toString().includes("Request rejected")) {
+          // User rejected request in Kepler wallet
+          throw new Error("Request rejected");
+        }
       }
-
-      triggerUpdate();
-
-      return txHash;
     },
   };
   return instance;
