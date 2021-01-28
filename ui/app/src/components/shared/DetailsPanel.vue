@@ -13,16 +13,16 @@
       class="details-body"
     >
       <div v-if="minimumReceived && toToken" class="details-row">
-        <span>Expected Amount Received</span>
-        <span>{{ minimumReceived }} {{ toToken }}</span>
+        <span>Minimum Amount Received</span>
+        <span>{{ minimumReceived }} <span>{{ toToken.toUpperCase().replace("C", "c")  }}</span></span>
       </div>
       <div v-if="priceImpact" class="details-row">
         <span>Price Impact</span>
-        <span>{{ priceImpact }}%</span>
+        <span>{{ parseFloat(priceImpact) < 0.01 ? "< 0.01" : parseFloat(priceImpact).toFixed(2) }} %</span>
       </div>
       <div v-if="providerFee && toToken" class="details-row">
         <span>Liquidity Provider Fee</span>
-        <span>{{ providerFee }} {{ toToken }}</span>
+        <span>{{ showProviderFee(providerFee) }} <span>{{ toToken.toUpperCase().replace("C", "c") }}</span></span>
       </div>
     </div>
   </div>
@@ -49,6 +49,11 @@
     span:last-child {
       text-align: right;
       color: $c_gray_900;
+
+      span {
+        color: $c_gold_dark;
+        font-weight: 700;
+      }
     }
 
     span:first-child {
@@ -61,7 +66,6 @@
 </style>
 <script lang="ts">
 import { defineComponent } from "vue";
-import { computed } from "@vue/reactivity";
 
 export default defineComponent({
   props: {
@@ -71,5 +75,25 @@ export default defineComponent({
     providerFee: { type: String, default: "" },
     priceImpact: { type: String, default: "" },
   },
+  setup() {
+    function showProviderFee(providerFee: string) {
+      const floatFee = parseFloat(providerFee);
+      if (floatFee < 0.001) {
+        return providerFee;
+      } else if (floatFee < 10) {
+        return floatFee.toFixed(4)
+      } else if (floatFee < 100) {
+        return floatFee.toFixed(3)
+      } else if (floatFee < 1000) {
+        return floatFee.toFixed(2)
+      } else {
+        return floatFee.toFixed(1)
+      }
+    }
+
+    return {
+      showProviderFee
+    }
+  }
 });
 </script>
