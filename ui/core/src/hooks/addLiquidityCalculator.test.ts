@@ -35,9 +35,8 @@ describe("addLiquidityCalculator", () => {
   let shareOfPoolPercent: Ref<string>;
   let state: Ref<PoolState>;
   let liquidityProvider = ref(
-
     LiquidityProvider(ATK, ZERO, akasha.address, ZERO, ZERO)
-  ) as Ref<LiquidityProvider>; // ? not sure why we need to cast
+  ) as Ref<LiquidityProvider | null>; // ? not sure why we need to cast
 
   beforeEach(() => {
     ({
