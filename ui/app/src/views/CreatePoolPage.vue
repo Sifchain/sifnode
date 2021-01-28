@@ -78,40 +78,39 @@ export default defineComponent({
       shareOfPool,
       shareOfPoolPercent,
       totalLiquidityProviderUnits,
-      fromFieldAmount,
-      toFieldAmount,
+      tokenAFieldAmount,
+      tokenBFieldAmount,
       preExistingPool,
       state,
     } = usePoolCalculator({
       balances,
-      fromAmount,
-      toAmount,
-      fromSymbol,
-      selectedField,
-      toSymbol,
+      tokenAAmount: fromAmount,
+      tokenBAmount: toAmount,
+      tokenASymbol: fromSymbol,
+      tokenBSymbol: toSymbol,
       poolFinder,
       liquidityProvider,
     });
 
     function handleNextStepClicked() {
-      if (!fromFieldAmount.value)
+      if (!tokenAFieldAmount.value)
         throw new Error("from field amount is not defined");
-      if (!toFieldAmount.value)
+      if (!tokenBFieldAmount.value)
         throw new Error("to field amount is not defined");
 
       transactionState.value = "confirming";
     }
 
     async function handleAskConfirmClicked() {
-      if (!fromFieldAmount.value)
+      if (!tokenAFieldAmount.value)
         throw new Error("Token A field amount is not defined");
-      if (!toFieldAmount.value)
+      if (!tokenBFieldAmount.value)
         throw new Error("Token B field amount is not defined");
 
       transactionState.value = "signing";
       let tx = await actions.clp.addLiquidity(
-        toFieldAmount.value,
-        fromFieldAmount.value
+        tokenBFieldAmount.value,
+        tokenAFieldAmount.value
       );
 
       console.log("POOL transaction hash: ", tx);
