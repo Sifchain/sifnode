@@ -6,7 +6,6 @@ import ConfirmationModal, {
 } from "@/components/shared/ConfirmationModal.vue";
 import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
 import AssetItemLarge from "@/components/shared/AssetItemLarge.vue";
-import AssetItemPool from "@/components/shared/AssetItemPool.vue";
 import { useAssetItem } from "@/components/shared/utils";
 
 export default defineComponent({
@@ -14,7 +13,6 @@ export default defineComponent({
     ConfirmationModal,
     DetailsPanelPool,
     AssetItemLarge,
-    AssetItemPool,
   },
 
   props: {
