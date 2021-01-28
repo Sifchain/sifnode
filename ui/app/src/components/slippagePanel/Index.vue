@@ -63,6 +63,8 @@ export default defineComponent({
         localSlippage.value = "99.99";
       } else if (parseFloat(localSlippage.value) < 0) {
         localSlippage.value = "0"
+      } else if (localSlippage.value === "") {
+        localSlippage.value = "0"
       }
     }
     return {
