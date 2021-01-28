@@ -162,6 +162,7 @@ export function useSwapCalculator(input: {
     const toTokenLiquidity = (pool.value as IPool).amounts.find(
       amount => amount.asset.symbol === toField.asset.value?.symbol
     );
+
     if (
       !fromTokenLiquidity ||
       !toTokenLiquidity ||
@@ -171,11 +172,10 @@ export function useSwapCalculator(input: {
         toField.fieldAmount.value?.equalTo("0"))
     ) {
       return SwapState.ZERO_AMOUNTS;
-      if (
-        !balance.value?.greaterThanOrEqual(fromField.fieldAmount.value || "0")
-      )
-        return SwapState.INSUFFICIENT_FUNDS;
     }
+
+    if (!balance.value?.greaterThanOrEqual(fromField.fieldAmount.value || "0"))
+      return SwapState.INSUFFICIENT_FUNDS;
 
     if (
       fromTokenLiquidity.lessThan(fromField.fieldAmount.value) ||
