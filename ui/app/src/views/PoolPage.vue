@@ -63,7 +63,7 @@ return {
       </div>
 
       <PoolList class="mb-2">
-        <Loader v-if="!accountPools.length === 0 && isConnected" class="mt-10"/>
+        <Loader v-if="accountPools.length === 0 && isConnected" class="mt-10"/>
         <PoolListItem
           v-for="(accountPool, index) in accountPools"
           :key="index"

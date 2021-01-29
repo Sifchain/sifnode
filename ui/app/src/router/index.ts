@@ -4,7 +4,7 @@ import Swap from "@/views/SwapPage.vue";
 import Pool from "@/views/PoolPage.vue";
 import CreatePool from "@/views/CreatePoolPage.vue";
 import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
-import SinglePool from "@/components/poolList/SinglePool.vue";
+import SinglePool from "@/views/SinglePool.vue";
 import PegListingPage from "@/views/PegListingPage.vue";
 import PegAssetPage from "@/views/PegAssetPage.vue";
 
