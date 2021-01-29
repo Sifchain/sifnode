@@ -5,7 +5,6 @@ import {
   IPool,
   CompositePool,
   IAssetAmount,
-  Pool,
 } from "../entities";
 import { useField } from "./useField";
 import { assetPriceMessage, trimZeros, useBalances } from "./utils";
@@ -15,6 +14,7 @@ export enum SwapState {
   ZERO_AMOUNTS,
   INSUFFICIENT_FUNDS,
   VALID_INPUT,
+  INSUFFICIENT_LIQUIDITY,
 }
 
 function calculateFormattedPriceImpact(pair: IPool, amount: AssetAmount) {
@@ -33,13 +33,12 @@ function calculateFormattedReverseSwapResult(pair: IPool, amount: AssetAmount) {
   return trimZeros(pair.calcReverseSwapResult(amount).toFixed());
 }
 
+// TODO: make swap calculator only generate Fractions/Amounts that get stringified in the view
 export function useSwapCalculator(input: {
   fromAmount: Ref<string>;
   fromSymbol: Ref<string | null>;
   toAmount: Ref<string>;
   toSymbol: Ref<string | null>;
-  priceImpact: Ref<string | null>;
-  providerFee: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
   poolFinder: (a: Asset | string, b: Asset | string) => Ref<IPool> | null;
@@ -94,19 +93,10 @@ export function useSwapCalculator(input: {
       pool.value &&
       fromField.asset.value &&
       fromField.fieldAmount.value &&
+      pool.value.contains(fromField.asset.value) &&
       selectedField === "from"
     ) {
       input.toAmount.value = calculateFormattedSwapResult(
-        pool.value as IPool,
-        fromField.fieldAmount.value
-      );
-
-      input.priceImpact.value = calculateFormattedPriceImpact(
-        pool.value as IPool,
-        fromField.fieldAmount.value
-      );
-
-      input.providerFee.value = calculateFormattedProviderFee(
         pool.value as IPool,
         fromField.fieldAmount.value
       );
@@ -119,20 +109,11 @@ export function useSwapCalculator(input: {
       pool.value &&
       toField.asset.value &&
       toField.fieldAmount.value &&
+      pool.value.contains(toField.asset.value) &&
       selectedField === "to"
     ) {
       input.fromAmount.value = calculateFormattedReverseSwapResult(
         pool.value,
-        toField.fieldAmount.value
-      );
-
-      input.priceImpact.value = calculateFormattedPriceImpact(
-        pool.value as IPool,
-        toField.fieldAmount.value
-      );
-
-      input.providerFee.value = calculateFormattedProviderFee(
-        pool.value as IPool,
         toField.fieldAmount.value
       );
     }
@@ -152,17 +133,72 @@ export function useSwapCalculator(input: {
     }
   });
 
+  // Cache pool contains asset for reuse as is a little
+  const poolContainsFromAsset = computed(() => {
+    if (!fromField.asset.value || !pool.value) return false;
+    return pool.value.contains(fromField.asset.value);
+  });
+
+  const priceImpact = computed(() => {
+    if (
+      !pool.value ||
+      !fromField.asset.value ||
+      !fromField.fieldAmount.value ||
+      !poolContainsFromAsset.value
+    )
+      return null;
+
+    return calculateFormattedPriceImpact(
+      pool.value as IPool,
+      fromField.fieldAmount.value
+    );
+  });
+
+  const providerFee = computed(() => {
+    if (
+      !pool.value ||
+      !fromField.asset.value ||
+      !fromField.fieldAmount.value ||
+      !poolContainsFromAsset.value
+    )
+      return null;
+
+    return calculateFormattedProviderFee(
+      pool.value as IPool,
+      fromField.fieldAmount.value
+    );
+  });
+
   // Derive state
   const state = computed(() => {
     if (!pool.value) return SwapState.SELECT_TOKENS;
+    const fromTokenLiquidity = (pool.value as IPool).amounts.find(
+      amount => amount.asset.symbol === fromField.asset.value?.symbol
+    );
+    const toTokenLiquidity = (pool.value as IPool).amounts.find(
+      amount => amount.asset.symbol === toField.asset.value?.symbol
+    );
+
     if (
-      fromField.fieldAmount.value?.equalTo("0") &&
-      toField.fieldAmount.value?.equalTo("0")
-    )
+      !fromTokenLiquidity ||
+      !toTokenLiquidity ||
+      !fromField.fieldAmount.value ||
+      !toField.fieldAmount.value ||
+      (fromField.fieldAmount.value?.equalTo("0") &&
+        toField.fieldAmount.value?.equalTo("0"))
+    ) {
       return SwapState.ZERO_AMOUNTS;
+    }
+
     if (!balance.value?.greaterThanOrEqual(fromField.fieldAmount.value || "0"))
       return SwapState.INSUFFICIENT_FUNDS;
 
+    if (
+      fromTokenLiquidity.lessThan(fromField.fieldAmount.value) ||
+      toTokenLiquidity.lessThan(toField.fieldAmount.value)
+    ) {
+      return SwapState.INSUFFICIENT_LIQUIDITY;
+    }
     return SwapState.VALID_INPUT;
   });
 
@@ -173,5 +209,7 @@ export function useSwapCalculator(input: {
     toFieldAmount: toField.fieldAmount,
     toAmount: input.toAmount,
     fromAmount: input.fromAmount,
+    priceImpact,
+    providerFee,
   };
 }

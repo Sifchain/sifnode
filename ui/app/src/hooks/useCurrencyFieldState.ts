@@ -13,8 +13,6 @@ type CurrencyFieldState = {
   fromAmount: Ref<string>;
   toSymbol: Ref<string | null>;
   toAmount: Ref<string>;
-  priceImpact: Ref<string | null>;
-  providerFee: Ref<string | null>;
 };
 
 export function useCurrencyFieldState(): CurrencyFieldState {
@@ -40,7 +38,5 @@ export function useCurrencyFieldState(): CurrencyFieldState {
     fromAmount,
     toSymbol,
     toAmount,
-    providerFee,
-    priceImpact,
   };
 }
