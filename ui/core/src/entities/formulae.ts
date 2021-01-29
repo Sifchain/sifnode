@@ -1,6 +1,6 @@
 import Big from "big.js";
-import {AssetAmount, IAssetAmount} from "./AssetAmount";
-import {Fraction, IFraction} from "./fraction/Fraction";
+import { AssetAmount, IAssetAmount } from "./AssetAmount";
+import { Fraction, IFraction } from "./fraction/Fraction";
 
 /**
  *
@@ -137,7 +137,13 @@ export function calculateWithdrawal({
   };
 }
 
-// ( x * X * Y ) / ( x + X ) ^ 2
+/**
+ * Calculate Swap Result based on formula ( x * X * Y ) / ( x + X ) ^ 2
+ * @param X  External Balance
+ * @param x Swap Amount
+ * @param Y Native Balance
+ * @returns swapAmount
+ */
 export function calculateSwapResult(X: IFraction, x: IFraction, Y: IFraction) {
   if (x.equalTo("0") || Y.equalTo("0")) return new Fraction("0");
   return x
@@ -184,7 +190,13 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
   return x;
 }
 
-// Formula: ( x^2 * Y ) / ( x + X )^2
+/**
+ * Calculate Provider Fee according to the formula: ( x^2 * Y ) / ( x + X )^2
+ * @param x Swap Amount
+ * @param X External Balance
+ * @param Y Native Balance
+ * @returns providerFee
+ */
 export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
   if (x.equalTo("0") || Y.equalTo("0")) return new Fraction("0");
   const xPlusX = x.add(X);
@@ -194,7 +206,12 @@ export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
     .divide(xPlusX.multiply(xPlusX));
 }
 
-// (x) / (x + X)
+/**
+ * Calculate price impact according to the formula (x) / (x + X)
+ * @param x Swap Amount
+ * @param X External Balance
+ * @returns
+ */
 export function calculatePriceImpact(x: IFraction, X: IFraction) {
   if (x.equalTo("0")) return new Fraction("0");
   const denominator = x.add(X);

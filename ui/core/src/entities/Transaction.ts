@@ -5,9 +5,11 @@ import JSBI from "jsbi";
 import { Address } from "./Address";
 import { Asset } from "./Asset";
 
-export type Transaction = any;
-export type EncodedTransaction = { tx: string };
-export type BroadcastingResult = any;
+export type TransactionStatus = {
+  hash: string;
+  state: "requested" | "accepted" | "failed" | "rejected";
+  memo?: string;
+};
 
 export type TxParams = {
   asset?: Asset;

@@ -10,12 +10,12 @@ import Modal from "@/components/shared/Modal.vue";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
-import ConfirmationDialog, {
-  ConfirmState,
-} from "@/components/confirmationDialog/ConfirmationDialog.vue";
+import ConfirmationDialog from "@/components/confirmationDialog/ConfirmationDialog.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import SlippagePanel from "@/components/slippagePanel/Index.vue";
+import { ConfirmState } from "../types";
+import { toConfirmState } from "./utils/toConfirmState";
 
 export default defineComponent({
   components: {
@@ -101,27 +101,14 @@ export default defineComponent({
         throw new Error("to field amount is not defined");
       transactionState.value = "signing";
 
-      try {
-        let tx = await actions.clp.swap(
-          fromFieldAmount.value,
-          toFieldAmount.value.asset,
-          parseFloat(minimumReceived.value).toFixed(18).replace(".", "")
-        );
-        transactionHash.value = tx?.transactionHash ?? "";
-        if (tx && tx.rawLog && tx.rawLog.includes('"type":"swap_failed"')) {
-          transactionState.value = "failed";
-        } else {
-          transactionState.value = "confirmed";
-        }
-        clearAmounts();
-      } catch (e) {
-        // TODO: Implement better error checks and status updates.
-        if (e.toString().includes("Request rejected")) {
-          transactionState.value = "rejected";
-        } else {
-          transactionState.value = "failed";
-        }
-      }
+      const tx = await actions.clp.swap(
+        fromFieldAmount.value,
+        toFieldAmount.value.asset,
+        parseFloat(minimumReceived.value).toFixed(18).replace(".", "")
+      );
+      transactionHash.value = tx.hash;
+      transactionState.value = toConfirmState(tx.state); // TODO: align states
+      clearAmounts();
     }
 
     function swapInputs() {
