@@ -292,7 +292,7 @@ describe("addLiquidityCalculator", () => {
     expect(bPerARatioMessage.value).toBe("N/A");
     expect(aPerBRatioProjectedMessage.value).toBe("N/A");
     expect(bPerARatioProjectedMessage.value).toBe("N/A");
-    expect(shareOfPoolPercent.value).toBe("0.00%");
+    expect(shareOfPoolPercent.value).toBe("0%");
   });
 
   test("Don't allow rowan === 0 when creating new pool", () => {
