@@ -11,14 +11,14 @@ describe("swapCalculator", () => {
   const fromSymbol: Ref<string | null> = ref(null);
   const toAmount: Ref<string> = ref("0");
   const toSymbol: Ref<string | null> = ref(null);
-  const priceImpact: Ref<string | null> = ref(null);
-  const providerFee: Ref<string | null> = ref(null);
   const balances = ref([]) as Ref<IAssetAmount[]>;
   const selectedField: Ref<"from" | "to" | null> = ref("from");
 
   // output
   let state: Ref<SwapState>;
   let priceMessage: Ref<string | null>;
+  let priceImpact: Ref<string | null>;
+  let providerFee: Ref<string | null>;
 
   test("calculate swap usecase", () => {
     const pool1 = ref(
@@ -43,7 +43,7 @@ describe("swapCalculator", () => {
       }
     });
 
-    ({ state, priceMessage } = useSwapCalculator({
+    ({ state, priceMessage, priceImpact, providerFee } = useSwapCalculator({
       balances,
       fromAmount,
       toAmount,
@@ -51,8 +51,6 @@ describe("swapCalculator", () => {
       selectedField,
       toSymbol,
       poolFinder,
-      priceImpact,
-      providerFee,
     }));
     selectedField.value = "from";
     expect(state.value).toBe(SwapState.SELECT_TOKENS);
@@ -114,6 +112,8 @@ describe("swapCalculator", () => {
     expect(state.value).toBe(SwapState.INSUFFICIENT_FUNDS);
 
     expect(priceMessage.value).toBe("0.500000 BTK per ATK");
+    expect(priceImpact.value).toBe("0.000001");
+    expect(providerFee.value).toBe("0.00005");
   });
 
   test("Avoid division by zero", () => {
@@ -133,7 +133,7 @@ describe("swapCalculator", () => {
       }
     });
 
-    ({ state, priceMessage } = useSwapCalculator({
+    ({ state, priceMessage, priceImpact, providerFee } = useSwapCalculator({
       balances,
       fromAmount,
       toAmount,
@@ -141,8 +141,6 @@ describe("swapCalculator", () => {
       selectedField,
       toSymbol,
       poolFinder,
-      priceImpact,
-      providerFee,
     }));
 
     selectedField.value = "from";
@@ -151,6 +149,8 @@ describe("swapCalculator", () => {
     fromSymbol.value = "atk";
     toSymbol.value = "btk";
     expect(priceMessage.value).toBe("");
+    expect(priceImpact.value).toBe("0.0");
+    expect(providerFee.value).toBe("0.0");
   });
 
   test("insufficient funds", () => {

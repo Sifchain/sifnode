@@ -189,6 +189,24 @@ describe("Pool", () => {
       }).toThrow();
     });
 
+    test("CompositePool contains", () => {
+      const pair1 = Pool(
+        AssetAmount(ATK, "1000000000000"),
+        AssetAmount(ROWAN, "1000000000000")
+      );
+
+      const pair2 = Pool(
+        AssetAmount(ROWAN, "1000000000000"),
+        AssetAmount(BTK, "1000000000000")
+      );
+
+      const compositePool = CompositePool(pair1, pair2);
+
+      expect(compositePool.contains(BTK)).toBe(true);
+      expect(compositePool.contains(ATK)).toBe(true);
+      expect(compositePool.contains(ETH)).toBe(false);
+    });
+
     test("CompositePool does two swaps", () => {
       const pair1 = Pool(
         AssetAmount(ATK, "1000000000000"),
