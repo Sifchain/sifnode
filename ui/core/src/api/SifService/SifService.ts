@@ -1,5 +1,4 @@
 import {
-  BroadcastTxFailure,
   coins,
   isBroadcastTxFailure,
   makeCosmoshubPath,
@@ -18,11 +17,12 @@ import {
 } from "../../entities";
 
 import { Mnemonic } from "../../entities/Wallet";
-import { IWalletService } from "../IWalletService";
+
 import { SifClient, SifUnSignedClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 import getKeplrProvider from "./getKeplrProvider";
 import { KeplrChainConfig } from "../../utils/parseConfig";
+import { parseTxFailure } from "./parseTxFailure";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
@@ -34,30 +34,6 @@ export type SifServiceContext = {
 type HandlerFn<T> = (a: T) => void;
 
 export type ISifService = ReturnType<typeof createSifService>;
-
-function parseTxFailure(txFailure: BroadcastTxFailure): TransactionStatus {
-  if (txFailure.rawLog.toString().includes("swap_failed")) {
-    return {
-      hash: txFailure.transactionHash,
-      memo: "Swap failed",
-      state: "failed",
-    };
-  }
-
-  if (txFailure.rawLog.toString().includes("Request rejected")) {
-    return {
-      hash: txFailure.transactionHash,
-      memo: "Request Rejected",
-      state: "rejected",
-    };
-  }
-
-  return {
-    hash: txFailure.transactionHash,
-    memo: "Unknown failure",
-    state: "failed",
-  };
-}
 
 /**
  * Constructor for SifService

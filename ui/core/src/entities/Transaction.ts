@@ -10,8 +10,6 @@ export type TransactionStatus = {
   state: "requested" | "accepted" | "failed" | "rejected";
   memo?: string;
 };
-export type EncodedTransaction = { tx: string };
-export type BroadcastingResult = any;
 
 export type TxParams = {
   asset?: Asset;
