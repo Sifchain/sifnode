@@ -114,7 +114,7 @@ func TestCalculatePoolUnits(t *testing.T) {
 	assert.NoError(t, err)
 	testcases := test.TestType
 	for _, test := range testcases {
-		_, newPoolUnit, err := CalculatePoolUnits(
+		_, _, err := CalculatePoolUnits(
 			sdk.NewUintFromString(test.PoolUnitsBalance),
 			sdk.NewUintFromString(test.NativeBalance),
 			sdk.NewUintFromString(test.ExternalBalance),
@@ -123,9 +123,9 @@ func TestCalculatePoolUnits(t *testing.T) {
 		)
 		assert.NoError(t, err)
 		//assert.Equal(t, newPoolUnit, sdk.NewUintFromString(test.Expected))
-		if !newPoolUnit.Equal(sdk.NewUintFromString(test.Expected)) {
-			//fmt.Printf("%s", test)
-		}
+		//if !newPoolUnit.Equal(sdk.NewUintFromString(test.Expected)) {
+		//	//fmt.Printf("%s", test)
+		//}
 	}
 }
 
