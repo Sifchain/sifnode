@@ -1,44 +1,52 @@
 #!/bin/bash
 
+set -x
+set -e
+
+. $(dirname $0)/vagrantenv.sh
+. ${TEST_INTEGRATION_DIR}/shell_utilities.sh
+
+pkill sifnodecli || true
+pkill sifnoded || true
+pkill ebrelayer || true
+
 #
-# Sifnode entrypoint.
+# Remove prior generations Config
 #
-
-set -xe
-
-. $TEST_INTEGRATION_DIR/vagrantenv.sh
-
-#
-# Wait for the RPC port to be active.
-#
-wait_for_rpc() {
-  while ! nc -z localhost 26657; do
-    sleep 1
-  done
-}
-
-wait_for_rpc
-
-echo TEST_INTEGRATION_DIR is $TEST_INTEGRATION_DIR
-USER1ADDR=nothing python3 $TEST_INTEGRATION_PY_DIR/wait_for_sif_account.py $NETDEF_JSON $OWNER_ADDR
-
-echo ETHEREUM_WEBSOCKET_ADDRESS $ETHEREUM_WEBSOCKET_ADDRESS
-echo ETHEREUM_CONTRACT_ADDRESS $ETHEREUM_CONTRACT_ADDRESS
-echo MONIKER $MONIKER
-echo MNEMONIC $MNEMONIC
-
-if [ -z "${EBDEBUG}" ]; then
-  runner=ebrelayer
-else
-  cd $BASEDIR/cmd/ebrelayer
-  runner="dlv exec $GOBIN/ebrelayer -- "
+if [ -d $NETWORKDIR ]
+then
+  # $NETWORKDIR has many directories without write permission, so change those
+  # before deleting it.
+  find $NETWORKDIR -type d | xargs chmod +w
+  rm -rf $NETWORKDIR && mkdir $NETWORKDIR
 fi
 
-$runner init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" \
-  "$ETHEREUM_CONTRACT_ADDRESS" \
-  "$MONIKER" \
-  "$MNEMONIC" \
-  --chain-id "$CHAINNET" \
-  --gas 300000 \
-  --gas-adjustment 1.5 \
-  --home $CHAINDIR/.sifnodecli
+BASEDIR=${BASEDIR} rake genesis:network:scaffold['localnet']
+
+set_persistant_env_var NETDEF $NETWORKDIR/network-definition.yml $envexportfile
+set_persistant_env_var NETDEF_JSON $datadir/netdef.json $envexportfile
+cat $NETDEF | to_json > $NETDEF_JSON
+
+set_persistant_env_var MONIKER $(cat $NETDEF_JSON | jq -r '.[0].moniker') $envexportfile
+set_persistant_env_var OWNER_PASSWORD $(cat $NETDEF_JSON | jq -r '.[0].password') $envexportfile
+set_persistant_env_var OWNER_ADDR $(cat $NETDEF_JSON | jq -r '.[0].address') $envexportfile
+set_persistant_env_var MNEMONIC "$(cat $NETDEF_JSON | jq -r '.[0].mnemonic')" $envexportfile
+set_persistant_env_var CHAINDIR $NETWORKDIR/validators/$CHAINNET/$MONIKER $envexportfile
+set_persistant_env_var SIFNODED_LOG $datadir/logs/sifnoded.log $envexportfile
+set_persistant_env_var EBRELAYER_LOG $datadir/logs/ebrelayer.log $envexportfile
+
+rm -f $EBRELAYER_LOG
+mkdir -p $datadir/logs
+nohup $TEST_INTEGRATION_DIR/sifchain_start_daemon.sh < /dev/null > $SIFNODED_LOG 2>&1 &
+set_persistant_env_var SIFNODED_PID $! $envexportfile
+nohup sifnodecli rest-server --laddr tcp://0.0.0.0:1317 < /dev/null > $datadir/logs/restserver.log 2>&1 &
+set_persistant_env_var REST_SERVER_PID $! $envexportfile
+nohup $TEST_INTEGRATION_DIR/sifchain_start_ebrelayer.sh < /dev/null > $EBRELAYER_LOG 2>&1 &
+set_persistant_env_var EBRELAYER_PID $! $envexportfile
+
+# Wait for ebrelayer to subscribe
+
+# Note that we're putting the tail in the background so we can exit immediately;
+# if you don't put it in the background, it can linger forever and the entire line
+# will never complete
+( tail -n +1 -F $EBRELAYER_LOG & ) | grep -m 1 "Subscribed to bridgebank contract at address"
