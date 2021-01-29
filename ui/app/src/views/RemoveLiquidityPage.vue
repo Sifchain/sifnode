@@ -2,8 +2,6 @@
 import { defineComponent, ref, watch } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
-// import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
-// import Modal from "@/components/shared/Modal.vue";
 import ModalView from "@/components/shared/ModalView.vue";
 import { Asset, PoolState, useRemoveLiquidityCalculator } from "ui-core";
 import { LiquidityProvider } from "ui-core";
@@ -11,9 +9,7 @@ import { useCore } from "@/hooks/useCore";
 import { useRoute, useRouter } from "vue-router";
 import { computed, effect, readonly, Ref, toRef } from "@vue/reactivity";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
-// import SifButton from "@/components/shared/SifButton.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
-// import Caret from "@/components/shared/Caret.vue";
 import Slider from "@/components/shared/Slider.vue";
 import ConfirmationDialog from "@/components/confirmationDialog/RemoveConfirmationDialog.vue";
 import { toConfirmState } from "./utils/toConfirmState";
@@ -23,12 +19,8 @@ export default defineComponent({
   components: {
     AssetItem,
     Layout,
-    // Modal,
     ModalView,
-    // SelectTokenDialogSif,
     ActionsPanel,
-    // SifButton,
-    // Caret,
     Slider,
     ConfirmationDialog,
   },
