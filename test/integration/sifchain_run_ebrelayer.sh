@@ -1,10 +1,12 @@
 #!/bin/bash
 
 #
-# Sifnode entrypoint.
+# Runs ebrelayer.  Normally, this is run by sifchain_start_ebrelayer.sh;
+# that file sets up the logs and runs sifchain_run_ebrelayer in the background.
+# Normally, you don't run this script directly.
 #
 
-set -xe
+set -e
 
 . $TEST_INTEGRATION_DIR/vagrantenv.sh
 
@@ -16,6 +18,8 @@ wait_for_rpc() {
     sleep 1
   done
 }
+
+set -x
 
 wait_for_rpc
 

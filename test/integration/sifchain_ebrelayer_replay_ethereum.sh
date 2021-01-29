@@ -28,5 +28,5 @@ fi
 tendermintNode=tcp://0.0.0.0:26657
 web3Provider="$ETHEREUM_WEBSOCKET_ADDRESS"
 
-$runner replayEthereum $tendermintNode $web3Provider $BRIDGE_REGISTRY_ADDRESS $MONIKER "$MNEMONIC" $fromBlock $toBlock $fromBlock $toBlock --home $CHAINDIR/.sifnodecli
+$runner replayEthereum $tendermintNode $web3Provider $BRIDGE_REGISTRY_ADDRESS $MONIKER "$MNEMONIC" $fromBlock $toBlock $fromBlock $toBlock
 #  ebrelayer replayEthereum [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [validatorMnemonic] [fromBlock] [toBlock] [flags]

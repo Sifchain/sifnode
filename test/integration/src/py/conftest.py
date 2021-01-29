@@ -59,3 +59,12 @@ def ganache_timed_blocks(integration_dir):
     yield test_utilities.get_shell_output(f"{integration_dir}/ganache_start.sh 2")
     logging.info("restart ganache with instant mining (keeps existing database)")
     test_utilities.get_shell_output(f"{integration_dir}/ganache_start.sh")
+
+
+@pytest.fixture(scope="function")
+def ensure_relayer_restart(integration_dir):
+    yield None
+    logging.info("restart ebrelayer")
+    test_utilities.get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
+
+
