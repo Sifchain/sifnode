@@ -197,7 +197,7 @@ func initConfig(cmd *cobra.Command) error {
 func replayEthereumCmd() *cobra.Command {
 	//nolint:lll
 	replayEthereumCmd := &cobra.Command{
-		Use:     "replayEthereum [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [validatorMnemonic] [fromBlock] [toBlock]",
+		Use:     "replayEthereum [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [validatorMnemonic] [fromBlock] [toBlock] [sifFromBlock] [sifEndBlock]",
 		Short:   "replay missed ethereum events",
 		Args:    cobra.ExactArgs(9),
 		Example: "replayEthereum tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic --chain-id=peggy",
