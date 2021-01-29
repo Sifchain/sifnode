@@ -37,15 +37,17 @@ jobs:
       
       - name: Write Code Comment
         uses: actions/github-script@v3
+        env:
+          PINATA_HASH: ${{ steps.pinata.outputs }}
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             console.log(context)
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: ${{ steps.pinata.outputs }}
+              body: JSON.stringify(process.env.PINATA_HASH)
             })
 
 
