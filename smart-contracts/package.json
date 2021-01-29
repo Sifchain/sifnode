@@ -54,6 +54,8 @@
     "develop": "ganache-cli -q -i 5777 -p 7545 -m 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat'",
     "migrate": "npx truffle migrate --reset",
     "advance": "npx truffle exec scripts/advanceBlock.js",
+    "integrationtest:approve": "npx truffle exec scripts/test/approve.js",
+    "integrationtest:sendBurnTx": "npx truffle exec scripts/test/sendBurnTx.js",
     "integrationtest:sendLockTx": "npx truffle exec scripts/test/sendLockTx.js",
     "integrationtest:waitForBlock": "npx truffle exec scripts/test/waitForBlock.js",
     "integrationtest:getTokenBalance": "npx truffle exec scripts/test/getTokenBalance.js",

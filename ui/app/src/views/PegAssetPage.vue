@@ -109,7 +109,7 @@ export default defineComponent({
       return (
         amountNum.isGreaterThan("0.0") &&
         address.value !== "" &&
-        amountNum.isLessThan(balance)
+        amountNum.isLessThanOrEqualTo(balance)
       );
     });
 
@@ -164,7 +164,7 @@ export default defineComponent({
         @blur="handleBlur"
         @maxclicked="handleMaxClicked"
         @update:amount="handleAmountUpdated"
-        label="From"
+        label="Amount"
       />
       <RaisedPanel>
         <RaisedPanelColumn v-if="mode === 'peg'">

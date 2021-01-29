@@ -1,12 +1,14 @@
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
-import { computed } from "@vue/reactivity";
+import { defineComponent, PropType, ComputedRef, ref, watch } from "vue";
+import { computed, toRefs } from "@vue/reactivity";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { getAssetLabel, useAssetItem } from "@/components/shared/utils";
-import { Fraction, LiquidityProvider, Pool, usePoolCalculator } from "ui-core";
-import { useWallet } from "@/hooks/useWallet";
+import { Fraction, LiquidityProvider, Pool, usePoolCalculator, AssetAmount, Asset } from "ui-core";
 import { useCore } from "@/hooks/useCore";
+import { useRoute } from 'vue-router';
+
+const DECIMALS = 5
 
 export default defineComponent({
   components: { Layout, SifButton },
@@ -16,15 +18,17 @@ export default defineComponent({
       pool: Pool;
     } | null>,
   },
-
   setup(props) {
-    const { config } = useCore();
-    // TODO This needs tidying up poor componentization
-    // useAssetItem should not really be used outside of a display component
-    const thePool = computed(() => props.accountPool?.pool);
+    const { config, store } = useCore();
+    const route = useRoute().params.externalAsset;
+    const refsStore = toRefs(store);
+    const accountPool = computed(
+      () => refsStore.accountpools.value.find(x => x.lp.asset.symbol === route)
+    );
+
     const fromSymbol = computed(() =>
-      props.accountPool?.pool.amounts[1].asset
-        ? getAssetLabel(props.accountPool?.pool.amounts[1].asset)
+      accountPool?.value?.pool.amounts[1].asset
+        ? getAssetLabel(accountPool?.value.pool.amounts[1].asset)
         : ""
     );
     const fromAsset = useAssetItem(fromSymbol);
@@ -36,11 +40,17 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    const fromValue = computed(() => thePool.value?.amounts[1].toFixed(0));
+    const fromValue = computed(() => {
+      return AssetAmount(Asset.get(fromSymbol.value || 'eth'),
+        accountPool?.value?.lp.externalAmount?.toFixed(0) || 0,
+        { inBaseUnit:true }).toFixed(DECIMALS);
+    })
+
+    const fromTotalValue = computed(() => accountPool?.value?.pool.amounts[1].toFixed(DECIMALS));
 
     const toSymbol = computed(() =>
-      props.accountPool?.pool.amounts[0].asset
-        ? getAssetLabel(props.accountPool?.pool.amounts[0].asset)
+      accountPool?.value?.pool.amounts[0].asset
+        ? getAssetLabel(accountPool.value.pool.amounts[0].asset)
         : ""
     );
     const toAsset = useAssetItem(toSymbol);
@@ -51,31 +61,44 @@ export default defineComponent({
       const t = toToken.value;
       return t.imageUrl;
     });
-    const toValue = computed(() => thePool.value?.amounts[0].toFixed(0));
+
+    const toTotalValue = computed(() => accountPool?.value?.pool.amounts[0].toFixed(DECIMALS));
+
+    const toValue = computed(() => {
+      // TD - Just using ETH asset because TO is always ROWAN at the moment
+      return AssetAmount(Asset.get('eth'),
+        accountPool?.value?.lp?.nativeAmount?.toFixed(0) || 0,
+        { inBaseUnit:true }).toFixed(DECIMALS);
+    })
 
     const poolUnitsAsFraction = computed(
-      () => props.accountPool?.lp.units || new Fraction("0")
+      () => accountPool?.value?.lp.units || new Fraction("0")
     );
 
     const myPoolShare = computed(() => {
-      if (!thePool.value?.poolUnits) return null;
+      if (!accountPool?.value?.pool?.poolUnits) return null;
+
+
       const perc = poolUnitsAsFraction.value
-        .divide(thePool.value?.poolUnits)
+        .divide(accountPool?.value?.pool?.poolUnits)
         .multiply("100")
         .toFixed(2);
       return `${perc} %`;
     });
-    const myPoolUnits = computed(() => poolUnitsAsFraction.value.toFixed(0));
-
+    const myPoolUnits = computed(() => poolUnitsAsFraction.value.toFixed(DECIMALS));
     return {
+      accountPool,
+      fromToken,
       fromSymbol,
       fromBackgroundStyle,
       fromTokenImage,
       fromValue,
+      fromTotalValue,
       toSymbol,
       toBackgroundStyle,
       toTokenImage,
       toValue,
+      toTotalValue,
       myPoolUnits,
       myPoolShare,
       chainId: config.sifChainId,
@@ -85,8 +108,8 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" @back="$emit('back')" emitBack title="Your Pair">
-    <div class="sheet">
+  <Layout class="pool" backLink='/pool' title="Your Pair">
+    <div class="sheet" :class="!accountPool ? 'disabled' : 'active' ">
       <div class="section">
         <div class="header" @click="$emit('poolselected')">
           <div class="image">
@@ -117,7 +140,7 @@ export default defineComponent({
       <div class="section">
         <div class="details">
           <div class="row">
-            <span>Pooled {{ fromSymbol }}:</span>
+            <span>Your Pooled {{ fromSymbol }}:</span>
             <span class="value">
               <span>{{ fromValue }}</span>
               <img
@@ -135,7 +158,7 @@ export default defineComponent({
             </span>
           </div>
           <div class="row">
-            <span>Pooled {{ toSymbol.toUpperCase() }}:</span>
+            <span>Your Pooled {{ toSymbol.toUpperCase() }}:</span>
             <span class="value">
               <span>{{ toValue }}</span>
               <img
@@ -148,10 +171,37 @@ export default defineComponent({
               <div class="placeholder" :style="toBackgroundStyle" v-else></div>
             </span>
           </div>
-
           <div class="row">
-            <span>Your pool tokens:</span>
-            <span class="value">{{ myPoolUnits }}</span>
+            <span>Total Pooled {{ fromSymbol }}:</span>
+            <span class="value">
+              <span>{{ fromTotalValue }}</span>
+              <img
+                v-if="fromTokenImage"
+                width="22"
+                height="22"
+                :src="fromTokenImage"
+                class="info-img"
+              />
+              <div
+                class="placeholder"
+                :style="fromBackgroundStyle"
+                v-else
+              ></div>
+            </span>
+          </div>
+          <div class="row">
+            <span>Total Pooled {{ toSymbol.toUpperCase() }}:</span>
+            <span class="value">
+              <span>{{ toTotalValue }}</span>
+              <img
+                v-if="toTokenImage"
+                width="22"
+                height="22"
+                :src="toTokenImage"
+                class="info-img"
+              />
+              <div class="placeholder" :style="toBackgroundStyle" v-else></div>
+            </span>
           </div>
           <div class="row">
             <span>Your pool share:</span>
@@ -180,14 +230,14 @@ export default defineComponent({
       </div>
       <div class="section footer">
         <div class="mr-1">
-          <router-link :to="`/pool/remove-liquidity/${fromSymbol}`"
+          <router-link :to="`/pool/remove-liquidity/${fromSymbol.toLowerCase()}`"
             ><SifButton primaryOutline nocase block
               >Remove Liquidity</SifButton
             ></router-link
           >
         </div>
         <div class="ml-1">
-          <router-link :to="`/pool/add-liquidity/${fromSymbol}`"
+          <router-link :to="`/pool/add-liquidity/${fromSymbol.toLowerCase()}`"
             ><SifButton primary nocase block
               >Add Liquidity</SifButton
             ></router-link
@@ -203,7 +253,7 @@ export default defineComponent({
   background: $c_white;
   border-radius: $br_sm;
   border: $divider;
-
+  &.disabled { opacity: .3 }
   .section {
     padding: 8px 12px;
   }

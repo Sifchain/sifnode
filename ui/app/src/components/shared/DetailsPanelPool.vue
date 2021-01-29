@@ -3,11 +3,29 @@
     <div class="details-header">
       <div class="details-row">
         <span>{{ fromTokenLabel }} Deposited</span>
-        <span>{{ fromAmount }}</span>
+        <div class="details-row-value">
+          <span>{{ fromAmount }}</span>
+          <img
+            v-if="fromTokenImage"
+            width="22"
+            height="22"
+            :src="fromTokenImage"
+            class="info-img"
+          />
+        </div>
       </div>
       <div class="details-row">
         <span>RWN Deposited</span>
-        <span>{{ toAmount }}</span>
+        <div class="details-row-value">
+          <span>{{ toAmount }}</span>
+          <img
+            v-if="toTokenImage"
+            width="22"
+            height="22"
+            :src="toTokenImage"
+            class="info-img"
+          />
+        </div>
       </div>
     </div>
     <div class="details-body">
@@ -50,11 +68,20 @@
       color: $c_gray_900;
     }
 
-    span:first-child {
+    > span:first-child {
       color: $c_gray_700;
       font-weight: 400;
       text-align: left;
     }
+
+    &-value {
+      display: flex;
+      color: $c_black;
+      img {
+        margin-left: 5px;
+      }
+    }
+
   }
 }
 </style>
@@ -65,8 +92,10 @@ export default defineComponent({
   props: {
     fromTokenLabel: { type: String, default: ""},
     fromAmount: { type: Number, default: ""},
+    fromTokenImage: { type: String, default: ""},
     toTokenLabel: { type: String, default: ""},
     toAmount: { type: Number, default: ""},
+    toTokenImage: { type: String, default: ""},
     aPerB: { type: Number, default: ""},
     bPerA: { type: Number, default: ""},
     shareOfPool: Number,

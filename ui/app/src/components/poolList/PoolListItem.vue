@@ -3,6 +3,7 @@ import { computed, ref } from "@vue/reactivity";
 import { defineComponent, PropType } from "vue";
 import { getAssetLabel, useAssetItem } from "@/components/shared/utils";
 import { LiquidityProvider, Pool } from "ui-core";
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   props: {
@@ -12,6 +13,7 @@ export default defineComponent({
   },
 
   setup(props) {
+    const router = useRouter();
     const fromSymbol = computed(() =>
       props.accountPool?.pool.amounts[1].asset
         ? getAssetLabel(props.accountPool?.pool.amounts[1].asset)
@@ -40,7 +42,12 @@ export default defineComponent({
       return t.imageUrl;
     });
 
+    const handleClick = () => {
+      router.push(`/pool/${fromSymbol.value.toLowerCase()}`)
+    }
+
     return {
+      handleClick,
       fromSymbol,
       fromBackgroundStyle,
       fromTokenImage,
@@ -53,7 +60,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="pool-list-item">
+  <div class="pool-list-item" @click="handleClick">
     <div class="image">
       <img
         v-if="fromTokenImage"

@@ -10,9 +10,9 @@
         <span>{{ externalAssetAmount }}</span>
       </div>
     </div>
-    <div class="details-body">
+    <!-- <div class="details-body">
       
-    </div>
+    </div> -->
   </div>
 </template>
 
