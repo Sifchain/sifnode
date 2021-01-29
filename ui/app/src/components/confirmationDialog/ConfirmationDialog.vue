@@ -4,14 +4,7 @@ import { defineComponent, PropType } from "vue";
 import { computed } from "@vue/reactivity";
 import AskConfirmation from "./AskConfirmation.vue";
 import AnimatedConfirmation from "./AnimatedConfirmation.vue";
-
-export type ConfirmState =
-  | "selecting"
-  | "confirming"
-  | "signing"
-  | "confirmed"
-  | "rejected"
-  | "failed";
+import { ConfirmState } from "../../types";
 
 export default defineComponent({
   components: { AskConfirmation, AnimatedConfirmation },
