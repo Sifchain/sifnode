@@ -37,13 +37,10 @@ jobs:
 
       - name: Write Code Comment
         uses: mshick/add-pr-comment@v1
-        env:
-          DATA: ${{ steps.pinata.outputs.hash }}
         with:
           message: |
-            **Hello**
-            <https://gateway.pinata.cloud/ipfs/${{ steps.pinata.outputs.hash }}>
-
+            IPFS Hash: ${{ steps.pinata.outputs.hash }}\
+            URL: <https://gateway.pinata.cloud/ipfs/${{ steps.pinata.outputs.hash }}>
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           repo-token-user-login: 'github-actions[bot]'
           allow-repeats: false
