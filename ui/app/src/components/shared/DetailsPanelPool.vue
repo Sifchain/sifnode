@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="details-row">
-        <span>RWN Deposited</span>
+        <span>ROWAN Deposited</span>
         <div class="details-row-value">
           <span>{{ toAmount }}</span>
           <img
