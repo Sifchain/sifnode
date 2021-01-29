@@ -138,7 +138,7 @@ export function usePoolCalculator(input: {
   });
 
   const shareOfPoolPercent = computed(() => {
-    return `${shareOfPool.value.multiply("100").toFixed(2)}%`;
+    return `${shareOfPool.value.multiply("100").toSignificant(1)}%`;
   });
 
   const aPerBRatioMessage = computed(() => {
