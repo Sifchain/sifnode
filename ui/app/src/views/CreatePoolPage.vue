@@ -75,6 +75,8 @@ export default defineComponent({
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
+      aPerBRatioProjectedMessage,
+      bPerARatioProjectedMessage,
       shareOfPool,
       shareOfPoolPercent,
       totalLiquidityProviderUnits,
@@ -138,7 +140,8 @@ export default defineComponent({
       connected,
       aPerBRatioMessage,
       bPerARatioMessage,
-
+      aPerBRatioProjectedMessage,
+      bPerARatioProjectedMessage,
       nextStepMessage: computed(() => {
         switch (state.value) {
           case PoolState.SELECT_TOKENS:
@@ -188,9 +191,13 @@ export default defineComponent({
       transactionState,
 
       transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "failed", "rejected", "confirmed"].includes(
-          transactionState.value
-        );
+        return [
+          "confirming",
+          "signing",
+          "failed",
+          "rejected",
+          "confirmed",
+        ].includes(transactionState.value);
       }),
 
       handleBlur() {
@@ -209,6 +216,14 @@ export default defineComponent({
         );
         if (!accountBalance) return;
         fromAmount.value = accountBalance.toFixed(8);
+      },
+      handleToMaxClicked() {
+        selectedField.value = "to";
+        const accountBalance = balances.value.find(
+          (balance) => balance.asset.symbol === toSymbol.value
+        );
+        if (!accountBalance) return;
+        toAmount.value = accountBalance.toFixed(8);
       },
       shareOfPoolPercent,
       connectedText,
@@ -235,6 +250,8 @@ export default defineComponent({
           v-model:toSymbol="toSymbol"
           @tofocus="handleToFocused"
           @toblur="handleBlur"
+          :toMax="true"
+          @tomaxclicked="handleToMaxClicked"
           toSymbolFixed
           canSwapIcon="plus"
       /></template>
@@ -260,6 +277,25 @@ export default defineComponent({
           </div>
           <div>
             <span class="number">{{ bPerARatioMessage }}</span
+            ><br />
+            <span
+              >{{ toSymbol.toUpperCase() }} per
+              {{ fromSymbol.toUpperCase() }}</span
+            >
+          </div>
+          <div></div>
+        </div>
+        <div class="pool-share-details" v-if="nextStepAllowed">
+          <div>
+            <span class="number">{{ aPerBRatioProjectedMessage }}</span
+            ><br />
+            <span
+              >{{ fromSymbol.toUpperCase() }} per
+              {{ toSymbol.toUpperCase() }}</span
+            >
+          </div>
+          <div>
+            <span class="number">{{ bPerARatioProjectedMessage }}</span
             ><br />
             <span
               >{{ toSymbol.toUpperCase() }} per

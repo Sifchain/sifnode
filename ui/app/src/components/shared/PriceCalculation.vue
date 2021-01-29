@@ -5,13 +5,12 @@
 </template>
 
 <script>
-export default {
-}
+export default {};
 </script>
 
 <style lang="scss">
 .price-calculation {
-  height: 120px;
+  min-height: 120px;
   margin-bottom: 10px;
   border-radius: $br_sm;
   background: $c_white;
