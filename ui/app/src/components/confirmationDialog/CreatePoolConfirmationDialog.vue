@@ -53,7 +53,7 @@ export default defineComponent({
     const onConfirmed = () => {
       _fromAmount.value = fromAmount.value;
       _fromToken.value = fromLabel.value;
-      _toAmount.value = fromAmount.value;
+      _toAmount.value = toAmount.value;
       _toToken.value = toLabel.value;
       emit('confirmed');
     }
