@@ -36,7 +36,7 @@ export default defineComponent({
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
     const transactionState = ref<ConfirmState | string>("selecting");
-    const transactionStateMsg = ref<string | null>(null);
+    const transactionStateMsg = ref<string>('');
     const transactionHash = ref<string | null>(null);
     const router = useRouter();
     const route = useRoute();
@@ -119,8 +119,7 @@ export default defineComponent({
 
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
-
-      
+      transactionStateMsg.value = tx.memo?? '';
     }
 
     function requestTransactionModalClose() {
@@ -308,12 +307,10 @@ export default defineComponent({
             class="details"
             :fromTokenLabel="fromSymbol"
             :fromAmount="fromAmount"
-            :fromTokenImage="fromImage"
             :toTokenLabel="toSymbol"
             :toAmount="toAmount"
-            :toTokenImage="toImage"
-            :aPerB="aPerB"
-            :bPerA="bPerA"
+            :aPerB="aPerBRatioMessage"
+            :bPerA="bPerARatioMessage"
             :shareOfPool="shareOfPoolPercent"
           />
         </div>
