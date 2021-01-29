@@ -20,6 +20,10 @@ const (
 	senderString = "sender"
 )
 
+var (
+	UnregisteredValidatorAddress = sdk.ValAddress("cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq")
+)
+
 func TestBasicMsgs(t *testing.T) {
 	//Setup
 	ctx, _, _, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.7, []int64{3, 7})
@@ -208,6 +212,32 @@ func TestNoMintFail(t *testing.T) {
 	require.NoError(t, err)
 	receiver1Coins := bankKeeper.GetCoins(ctx, receiverAddress)
 	require.True(t, receiver1Coins.IsZero())
+}
+
+func TestLockFail(t *testing.T) {
+	//Setup
+	ctx, _, _, _, _, _, handler := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+
+	//Initial message
+	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.LockText)
+	res, err := handler(ctx, normalCreateMsg)
+
+	require.Error(t, err)
+	require.Nil(t, res)
+	require.Equal(t, err.Error(), "validator must be in whitelist")
+}
+
+func TestBurnFail(t *testing.T) {
+	//Setup
+	ctx, _, _, _, _, _, handler := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+
+	//Initial message
+	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.BurnText)
+	res, err := handler(ctx, normalCreateMsg)
+
+	require.Error(t, err)
+	require.Nil(t, res)
+	require.Equal(t, err.Error(), "validator must be in whitelist")
 }
 
 func TestBurnEthFail(t *testing.T) {

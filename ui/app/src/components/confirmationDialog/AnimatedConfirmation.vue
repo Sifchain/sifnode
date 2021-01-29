@@ -2,7 +2,7 @@
   <div>
     <div class="confirmation">
       <div class="message">
-        <Loader black :success="confirmed" /><br />
+        <Loader black :success="confirmed" :failed="failed" /><br />
         <div class="text-wrapper">
           <transition name="swipe">
             <div class="text" v-if="state === 'signing'">
@@ -18,10 +18,36 @@
             </div>
           </transition>
           <transition name="swipe">
+            <div class="text" v-if="state === 'rejected'">
+              <p>Transaction Rejected</p>
+              <p class="thin">
+                Failed to swap
+                <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
+                for
+                <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
+              </p>
+              <br />
+              <p class="sub">Please confirm the transaction in your wallet.</p>
+            </div>
+          </transition>
+          <transition name="swipe">
+            <div class="text" v-if="state === 'failed'">
+              <p>Transaction Failed</p>
+              <p class="thin">
+                Failed to swap
+                <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
+                for
+                <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
+              </p>
+              <br />
+              <p class="sub">Please try to increase slippage tolerance.</p>
+            </div>
+          </transition>
+          <transition name="swipe">
             <div class="text" v-if="confirmed">
               <p>Transaction Submitted</p>
               <p class="thin">
-                Swapping
+                Swapped
                 <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
                 for
                 <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
@@ -55,6 +81,7 @@ export default defineComponent({
   components: { Loader, SifButton },
   props: {
     confirmed: Boolean,
+    failed: Boolean,
     state: String,
     fromAmount: String,
     fromToken: String,
@@ -64,7 +91,7 @@ export default defineComponent({
   },
   setup(props) {
     const { config } = useCore();
-    
+
     // Need to cache amounts and disconnect reactivity
     return {
       _fromAmount: props.fromAmount,

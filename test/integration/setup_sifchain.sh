@@ -49,4 +49,4 @@ set_persistant_env_var EBRELAYER_PID $! $envexportfile
 # Note that we're putting the tail in the background so we can exit immediately;
 # if you don't put it in the background, it can linger forever and the entire line
 # will never complete
-( tail -n +1 --retry --follow=name $EBRELAYER_LOG & ) | grep -m 1 "Subscribed to bridgebank contract at address"
+( tail -n +1 -F $EBRELAYER_LOG & ) | grep -m 1 "Subscribed to bridgebank contract at address"
