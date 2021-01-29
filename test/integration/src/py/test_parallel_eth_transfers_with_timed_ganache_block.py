@@ -23,7 +23,7 @@ test_amount = 20000
 def test_transfer_eth_to_ceth_in_parallel(ganache_timed_blocks):
     # it's not clear how many simultaneous tasks we should try.
     n_parallel_tasks = max(1, int(multiprocessing.cpu_count() * .75))
-    n_parallel_tasks = 4
+    n_parallel_tasks = 2
     with concurrent.futures.ThreadPoolExecutor(n_parallel_tasks) as executor:
         futures = {executor.submit(execute_one_transfer, x) for x in range(0, n_parallel_tasks)}
         for f in concurrent.futures.as_completed(futures):

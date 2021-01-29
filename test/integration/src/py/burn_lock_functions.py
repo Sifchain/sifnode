@@ -59,7 +59,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
 
     force_log_level(original_log_level)
     starting_block = send_from_ethereum_to_sifchain(transfer_request)
-    logging.info(f"send_from_ethereum_to_sifchain result: {starting_block}")
+    logging.info(f"send_from_ethereum_to_sifchain block number: {starting_block}")
     original_log_level = decrease_log_level()
 
     half_n_wait_blocks = n_wait_blocks / 2

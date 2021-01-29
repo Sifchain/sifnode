@@ -20,6 +20,7 @@ ethereum_address = get_optional_env_var(
 
 def test_transfer_eth_to_ceth_in_parallel():
     n_parallel_tasks = int(math.sqrt(multiprocessing.cpu_count()))
+    n_parallel_tasks = 2
     with concurrent.futures.ThreadPoolExecutor(n_parallel_tasks) as executor:
         futures = {executor.submit(execute_one_transfer, x) for x in range(0, n_parallel_tasks)}
         for f in concurrent.futures.as_completed(futures):

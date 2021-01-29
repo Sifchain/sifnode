@@ -44,7 +44,7 @@ def is_ropsten_testnet(sifnodecli_node):
 
 
 @pytest.fixture
-def source_ethereum_address(is_ropsten_testnet):
+def source_ethereum_address(is_ropsten_testnet, smart_contracts_dir):
     # account with some starting eth that can be transferred out
     if is_ropsten_testnet:
         return test_utilities.get_required_env_var("ETHEREUM_ADDRESS")
