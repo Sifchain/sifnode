@@ -69,7 +69,7 @@ export default defineComponent({
       const perc = poolUnitsAsFraction.value
         .divide(accountPool?.value?.pool?.poolUnits)
         .multiply("100")
-        .toSignificant(1)
+        .toSignificant(3)
       return `${perc} %`;
     });
     const myPoolUnits = computed(() => poolUnitsAsFraction.value.toFixed(DECIMALS));
