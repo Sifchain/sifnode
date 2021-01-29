@@ -272,7 +272,7 @@ func (sub EthereumSub) getAllClaims(fromBlock int64, toBlock int64) []types.Ethe
 
 					// Check if sender is me
 					if claim.CosmosSender.Equals(sub.ValidatorAddress) {
-						sub.Logger.Info("We got a eth bridge claim message %s", claim.EthereumSender.String())
+						sub.Logger.Info(fmt.Sprintf("We got an eth bridge claim message %s", claim.EthereumSender.String()))
 						claimArray = append(claimArray, claim)
 					}
 				}
