@@ -38,7 +38,7 @@ export default defineComponent({
       toAmount,
     } = useCurrencyFieldState();
     const transactionState = ref<
-      "selecting" | "confirming" | "confirmed" | "failed"
+      "selecting" | "confirming" | "confirmed" | "failed" | "rejected"
     >("selecting");
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected, connectedText } = useWalletButton({
@@ -152,7 +152,7 @@ export default defineComponent({
       }),
       transactionState,
       transactionModalOpen: computed(() => {
-        return ["confirming", "confirmed"].includes(transactionState.value);
+        return ["confirming", "confirming", "failed", "rejected", "confirmed"].includes(transactionState.value);
       }),
       transactionModalIsConfirmed: computed(() => {
         return transactionState.value === "confirmed";

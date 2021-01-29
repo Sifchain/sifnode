@@ -1,0 +1,2174 @@
+{
+  "contractName": "CosmosWhiteList",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "_value",
+          "type": "bool"
+        }
+      ],
+      "name": "LogWhiteListUpdate",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "name": "getCosmosTokenInWhiteList",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"_value\",\"type\":\"bool\"}],\"name\":\"LogWhiteListUpdate\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"}],\"name\":\"getCosmosTokenInWhiteList\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"initialize\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"WhiteList contract records the ERC 20 list that can be locked in BridgeBank.*\",\"methods\":{},\"title\":\"WhiteList\"},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteList.sol\":\"CosmosWhiteList\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":1000},\"remappings\":[]},\"sources\":{\"/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteList.sol\":{\"keccak256\":\"0x03aa7befc88ef0f340de029ed63705c40351687def4f308d76262c0ae6f19073\",\"urls\":[\"bzz-raw://bb80ddfd10e73e9cad7946c25b859e06bc4f42e28863d9e49b98dd4ae1c8e83c\",\"dweb:/ipfs/QmZLf24UWePp7A6DpTivYPcDeYWb3vKhUmDcEpk1rkYV6V\"]},\"/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol\":{\"keccak256\":\"0x700a5bdce4350d8a4dfb93f5d6a3d20ec394d61ddedb6e8c067d9cc7853a7c0c\",\"urls\":[\"bzz-raw://e817912f024643c580de79e1ae31bcb89d522759488be201a91ed14e65c15e82\",\"dweb:/ipfs/QmTNnxzCsrBDE9ANahhbkPpvrwYfntXfm9raoUm6MAk46u\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506101a4806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80638129fc1c1461003b57806396e5c35614610045575b600080fd5b61004361008c565b005b6100786004803603602081101561005b57600080fd5b503573ffffffffffffffffffffffffffffffffffffffff16610144565b604080519115158252519081900360200190f35b60655460ff16156100fe57604080517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152600b60248201527f496e697469616c697a6564000000000000000000000000000000000000000000604482015290519081900360640190fd5b60008080526020527fad3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb58054600160ff199182168117909255606580549091169091179055565b73ffffffffffffffffffffffffffffffffffffffff1660009081526020819052604090205460ff169056fea265627a7a7231582031df1e8e258b8e6fceab3a1b8bff7cae5a05c76c260ee9d3eb7f32ec1073030c64736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c80638129fc1c1461003b57806396e5c35614610045575b600080fd5b61004361008c565b005b6100786004803603602081101561005b57600080fd5b503573ffffffffffffffffffffffffffffffffffffffff16610144565b604080519115158252519081900360200190f35b60655460ff16156100fe57604080517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152600b60248201527f496e697469616c697a6564000000000000000000000000000000000000000000604482015290519081900360640190fd5b60008080526020527fad3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb58054600160ff199182168117909255606580549091169091179055565b73ffffffffffffffffffffffffffffffffffffffff1660009081526020819052604090205460ff169056fea265627a7a7231582031df1e8e258b8e6fceab3a1b8bff7cae5a05c76c260ee9d3eb7f32ec1073030c64736f6c63430005100032",
+  "sourceMap": "180:1384:5:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;180:1384:5;;;;;;;",
+  "deployedSourceMap": "180:1384:5:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;180:1384:5;;;;;;;;;;;;;;;;;;;;;;;;376:162;;;:::i;:::-;;1431:131;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;1431:131:5;;;;:::i;:::-;;;;;;;;;;;;;;;;;;376:162;424:12;;;;423:13;415:37;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;462:21;:33;;;;;;:40;;498:4;-1:-1:-1;;462:40:5;;;;;;;;512:12;:19;;;;;;;;;;376:162::o;1431:131::-;1526:29;;1503:4;1526:29;;;;;;;;;;;;;;1431:131::o",
+  "source": "pragma solidity 0.5.16;\n\nimport \"./CosmosWhiteListStorage.sol\";\n\n/**\n * @title WhiteList\n * @dev WhiteList contract records the ERC 20 list that can be locked in BridgeBank.\n **/\n\ncontract CosmosWhiteList is CosmosWhiteListStorage {\n    bool private _initialized;\n\n    /*\n     * @dev: Event declarations\n     */\n    event LogWhiteListUpdate(address _token, bool _value);\n\n    function initialize() public {\n        require(!_initialized, \"Initialized\");\n        _cosmosTokenWhiteList[address(0)] = true;\n        _initialized = true;\n    }\n\n    /*\n     * @dev: Modifier to restrict erc20 can be locked\n     */\n    modifier onlyCosmosTokenWhiteList(address _token) {\n        require(\n            getCosmosTokenInWhiteList(_token),\n            \"Only token in whitelist can be transferred to cosmos\"\n        );\n        _;\n    }\n\n    /*\n     * @dev: Set the token address in whitelist\n     *\n     * @param _token: ERC 20's address\n     * @param _inList: set the _token in list or not\n     * @return: new value of if _token in whitelist\n     */\n    function setTokenInCosmosWhiteList(address _token, bool _inList)\n        internal\n        returns (bool)\n    {\n        _cosmosTokenWhiteList[_token] = _inList;\n        emit LogWhiteListUpdate(_token, _inList);\n        return _inList;\n    }\n\n    /*\n     * @dev: Get if the token in whitelist\n     *\n     * @param _token: ERC 20's address\n     * @return: if _token in whitelist\n     */\n    function getCosmosTokenInWhiteList(address _token) public view returns (bool) {\n        return _cosmosTokenWhiteList[_token];\n    }\n}",
+  "sourcePath": "/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteList.sol",
+  "ast": {
+    "absolutePath": "/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteList.sol",
+    "exportedSymbols": {
+      "CosmosWhiteList": [
+        1076
+      ]
+    },
+    "id": 1077,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 994,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".16"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:5"
+      },
+      {
+        "absolutePath": "/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
+        "file": "./CosmosWhiteListStorage.sol",
+        "id": 995,
+        "nodeType": "ImportDirective",
+        "scope": 1077,
+        "sourceUnit": 1088,
+        "src": "25:38:5",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 996,
+              "name": "CosmosWhiteListStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1087,
+              "src": "208:22:5",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_CosmosWhiteListStorage_$1087",
+                "typeString": "contract CosmosWhiteListStorage"
+              }
+            },
+            "id": 997,
+            "nodeType": "InheritanceSpecifier",
+            "src": "208:22:5"
+          }
+        ],
+        "contractDependencies": [
+          1087
+        ],
+        "contractKind": "contract",
+        "documentation": "@title WhiteList\n@dev WhiteList contract records the ERC 20 list that can be locked in BridgeBank.*",
+        "fullyImplemented": true,
+        "id": 1076,
+        "linearizedBaseContracts": [
+          1076,
+          1087
+        ],
+        "name": "CosmosWhiteList",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 999,
+            "name": "_initialized",
+            "nodeType": "VariableDeclaration",
+            "scope": 1076,
+            "src": "237:25:5",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bool",
+              "typeString": "bool"
+            },
+            "typeName": {
+              "id": 998,
+              "name": "bool",
+              "nodeType": "ElementaryTypeName",
+              "src": "237:4:5",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bool",
+                "typeString": "bool"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 1005,
+            "name": "LogWhiteListUpdate",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 1004,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1001,
+                  "indexed": false,
+                  "name": "_token",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1005,
+                  "src": "341:14:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1000,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "341:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1003,
+                  "indexed": false,
+                  "name": "_value",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1005,
+                  "src": "357:11:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1002,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "357:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "340:29:5"
+            },
+            "src": "316:54:5"
+          },
+          {
+            "body": {
+              "id": 1026,
+              "nodeType": "Block",
+              "src": "405:133:5",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 1010,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "UnaryOperation",
+                        "operator": "!",
+                        "prefix": true,
+                        "src": "423:13:5",
+                        "subExpression": {
+                          "argumentTypes": null,
+                          "id": 1009,
+                          "name": "_initialized",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 999,
+                          "src": "424:12:5",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "496e697469616c697a6564",
+                        "id": 1011,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "438:13:5",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_d2a9b5158cff4d129f58e3e9cb6a13e2414f0ef74f94537777267284c43bba3b",
+                          "typeString": "literal_string \"Initialized\""
+                        },
+                        "value": "Initialized"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_d2a9b5158cff4d129f58e3e9cb6a13e2414f0ef74f94537777267284c43bba3b",
+                          "typeString": "literal_string \"Initialized\""
+                        }
+                      ],
+                      "id": 1008,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4473,
+                        4474
+                      ],
+                      "referencedDeclaration": 4474,
+                      "src": "415:7:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 1012,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "415:37:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1013,
+                  "nodeType": "ExpressionStatement",
+                  "src": "415:37:5"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1020,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 1014,
+                        "name": "_cosmosTokenWhiteList",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1082,
+                        "src": "462:21:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                          "typeString": "mapping(address => bool)"
+                        }
+                      },
+                      "id": 1018,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "arguments": [
+                          {
+                            "argumentTypes": null,
+                            "hexValue": "30",
+                            "id": 1016,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "number",
+                            "lValueRequested": false,
+                            "nodeType": "Literal",
+                            "src": "492:1:5",
+                            "subdenomination": null,
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_rational_0_by_1",
+                              "typeString": "int_const 0"
+                            },
+                            "value": "0"
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_rational_0_by_1",
+                              "typeString": "int_const 0"
+                            }
+                          ],
+                          "id": 1015,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "nodeType": "ElementaryTypeNameExpression",
+                          "src": "484:7:5",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_address_$",
+                            "typeString": "type(address)"
+                          },
+                          "typeName": "address"
+                        },
+                        "id": 1017,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "484:10:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "462:33:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "hexValue": "74727565",
+                      "id": 1019,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "bool",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "498:4:5",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "value": "true"
+                    },
+                    "src": "462:40:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 1021,
+                  "nodeType": "ExpressionStatement",
+                  "src": "462:40:5"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1024,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 1022,
+                      "name": "_initialized",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 999,
+                      "src": "512:12:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "hexValue": "74727565",
+                      "id": 1023,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "bool",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "527:4:5",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "value": "true"
+                    },
+                    "src": "512:19:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 1025,
+                  "nodeType": "ExpressionStatement",
+                  "src": "512:19:5"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 1027,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "initialize",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1006,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "395:2:5"
+            },
+            "returnParameters": {
+              "id": 1007,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "405:0:5"
+            },
+            "scope": 1076,
+            "src": "376:162:5",
+            "stateMutability": "nonpayable",
+            "superFunction": 1365,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 1039,
+              "nodeType": "Block",
+              "src": "663:160:5",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "arguments": [
+                          {
+                            "argumentTypes": null,
+                            "id": 1033,
+                            "name": "_token",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 1029,
+                            "src": "720:6:5",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          ],
+                          "id": 1032,
+                          "name": "getCosmosTokenInWhiteList",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 1075,
+                          "src": "694:25:5",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$_t_address_$returns$_t_bool_$",
+                            "typeString": "function (address) view returns (bool)"
+                          }
+                        },
+                        "id": 1034,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "694:33:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "4f6e6c7920746f6b656e20696e2077686974656c6973742063616e206265207472616e7366657272656420746f20636f736d6f73",
+                        "id": 1035,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "741:54:5",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_d2891a2e899386008acb5d2ec61b8f463358fc53f45b7545bbd5729af45c3164",
+                          "typeString": "literal_string \"Only token in whitelist can be transferred to cosmos\""
+                        },
+                        "value": "Only token in whitelist can be transferred to cosmos"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_d2891a2e899386008acb5d2ec61b8f463358fc53f45b7545bbd5729af45c3164",
+                          "typeString": "literal_string \"Only token in whitelist can be transferred to cosmos\""
+                        }
+                      ],
+                      "id": 1031,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4473,
+                        4474
+                      ],
+                      "referencedDeclaration": 4474,
+                      "src": "673:7:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 1036,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "673:132:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1037,
+                  "nodeType": "ExpressionStatement",
+                  "src": "673:132:5"
+                },
+                {
+                  "id": 1038,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "815:1:5"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 1040,
+            "name": "onlyCosmosTokenWhiteList",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 1030,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1029,
+                  "name": "_token",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1040,
+                  "src": "647:14:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1028,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "647:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "646:16:5"
+            },
+            "src": "613:210:5",
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 1062,
+              "nodeType": "Block",
+              "src": "1152:130:5",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1053,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 1049,
+                        "name": "_cosmosTokenWhiteList",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1082,
+                        "src": "1162:21:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                          "typeString": "mapping(address => bool)"
+                        }
+                      },
+                      "id": 1051,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "id": 1050,
+                        "name": "_token",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1042,
+                        "src": "1184:6:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "1162:29:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 1052,
+                      "name": "_inList",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1044,
+                      "src": "1194:7:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "src": "1162:39:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 1054,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1162:39:5"
+                },
+                {
+                  "eventCall": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 1056,
+                        "name": "_token",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1042,
+                        "src": "1235:6:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 1057,
+                        "name": "_inList",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1044,
+                        "src": "1243:7:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 1055,
+                      "name": "LogWhiteListUpdate",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1005,
+                      "src": "1216:18:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_address_$_t_bool_$returns$__$",
+                        "typeString": "function (address,bool)"
+                      }
+                    },
+                    "id": 1058,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1216:35:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1059,
+                  "nodeType": "EmitStatement",
+                  "src": "1211:40:5"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1060,
+                    "name": "_inList",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 1044,
+                    "src": "1268:7:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 1048,
+                  "id": 1061,
+                  "nodeType": "Return",
+                  "src": "1261:14:5"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 1063,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setTokenInCosmosWhiteList",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1045,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1042,
+                  "name": "_token",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1063,
+                  "src": "1078:14:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1041,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1078:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1044,
+                  "name": "_inList",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1063,
+                  "src": "1094:12:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1043,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1094:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1077:30:5"
+            },
+            "returnParameters": {
+              "id": 1048,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1047,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1063,
+                  "src": "1142:4:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1046,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1142:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1141:6:5"
+            },
+            "scope": 1076,
+            "src": "1043:239:5",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 1074,
+              "nodeType": "Block",
+              "src": "1509:53:5",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "baseExpression": {
+                      "argumentTypes": null,
+                      "id": 1070,
+                      "name": "_cosmosTokenWhiteList",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1082,
+                      "src": "1526:21:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                        "typeString": "mapping(address => bool)"
+                      }
+                    },
+                    "id": 1072,
+                    "indexExpression": {
+                      "argumentTypes": null,
+                      "id": 1071,
+                      "name": "_token",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1065,
+                      "src": "1548:6:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "1526:29:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 1069,
+                  "id": 1073,
+                  "nodeType": "Return",
+                  "src": "1519:36:5"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 1075,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getCosmosTokenInWhiteList",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1066,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1065,
+                  "name": "_token",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1075,
+                  "src": "1466:14:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1064,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1466:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1465:16:5"
+            },
+            "returnParameters": {
+              "id": 1069,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1068,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1075,
+                  "src": "1503:4:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1067,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1503:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1502:6:5"
+            },
+            "scope": 1076,
+            "src": "1431:131:5",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 1077,
+        "src": "180:1384:5"
+      }
+    ],
+    "src": "0:1564:5"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteList.sol",
+    "exportedSymbols": {
+      "CosmosWhiteList": [
+        1076
+      ]
+    },
+    "id": 1077,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 994,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".16"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:5"
+      },
+      {
+        "absolutePath": "/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/CosmosWhiteListStorage.sol",
+        "file": "./CosmosWhiteListStorage.sol",
+        "id": 995,
+        "nodeType": "ImportDirective",
+        "scope": 1077,
+        "sourceUnit": 1088,
+        "src": "25:38:5",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 996,
+              "name": "CosmosWhiteListStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1087,
+              "src": "208:22:5",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_CosmosWhiteListStorage_$1087",
+                "typeString": "contract CosmosWhiteListStorage"
+              }
+            },
+            "id": 997,
+            "nodeType": "InheritanceSpecifier",
+            "src": "208:22:5"
+          }
+        ],
+        "contractDependencies": [
+          1087
+        ],
+        "contractKind": "contract",
+        "documentation": "@title WhiteList\n@dev WhiteList contract records the ERC 20 list that can be locked in BridgeBank.*",
+        "fullyImplemented": true,
+        "id": 1076,
+        "linearizedBaseContracts": [
+          1076,
+          1087
+        ],
+        "name": "CosmosWhiteList",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 999,
+            "name": "_initialized",
+            "nodeType": "VariableDeclaration",
+            "scope": 1076,
+            "src": "237:25:5",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bool",
+              "typeString": "bool"
+            },
+            "typeName": {
+              "id": 998,
+              "name": "bool",
+              "nodeType": "ElementaryTypeName",
+              "src": "237:4:5",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bool",
+                "typeString": "bool"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 1005,
+            "name": "LogWhiteListUpdate",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 1004,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1001,
+                  "indexed": false,
+                  "name": "_token",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1005,
+                  "src": "341:14:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1000,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "341:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1003,
+                  "indexed": false,
+                  "name": "_value",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1005,
+                  "src": "357:11:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1002,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "357:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "340:29:5"
+            },
+            "src": "316:54:5"
+          },
+          {
+            "body": {
+              "id": 1026,
+              "nodeType": "Block",
+              "src": "405:133:5",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 1010,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "UnaryOperation",
+                        "operator": "!",
+                        "prefix": true,
+                        "src": "423:13:5",
+                        "subExpression": {
+                          "argumentTypes": null,
+                          "id": 1009,
+                          "name": "_initialized",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 999,
+                          "src": "424:12:5",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "496e697469616c697a6564",
+                        "id": 1011,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "438:13:5",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_d2a9b5158cff4d129f58e3e9cb6a13e2414f0ef74f94537777267284c43bba3b",
+                          "typeString": "literal_string \"Initialized\""
+                        },
+                        "value": "Initialized"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_d2a9b5158cff4d129f58e3e9cb6a13e2414f0ef74f94537777267284c43bba3b",
+                          "typeString": "literal_string \"Initialized\""
+                        }
+                      ],
+                      "id": 1008,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4473,
+                        4474
+                      ],
+                      "referencedDeclaration": 4474,
+                      "src": "415:7:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 1012,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "415:37:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1013,
+                  "nodeType": "ExpressionStatement",
+                  "src": "415:37:5"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1020,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 1014,
+                        "name": "_cosmosTokenWhiteList",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1082,
+                        "src": "462:21:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                          "typeString": "mapping(address => bool)"
+                        }
+                      },
+                      "id": 1018,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "arguments": [
+                          {
+                            "argumentTypes": null,
+                            "hexValue": "30",
+                            "id": 1016,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "number",
+                            "lValueRequested": false,
+                            "nodeType": "Literal",
+                            "src": "492:1:5",
+                            "subdenomination": null,
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_rational_0_by_1",
+                              "typeString": "int_const 0"
+                            },
+                            "value": "0"
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_rational_0_by_1",
+                              "typeString": "int_const 0"
+                            }
+                          ],
+                          "id": 1015,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "nodeType": "ElementaryTypeNameExpression",
+                          "src": "484:7:5",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_address_$",
+                            "typeString": "type(address)"
+                          },
+                          "typeName": "address"
+                        },
+                        "id": 1017,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "484:10:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "462:33:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "hexValue": "74727565",
+                      "id": 1019,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "bool",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "498:4:5",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "value": "true"
+                    },
+                    "src": "462:40:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 1021,
+                  "nodeType": "ExpressionStatement",
+                  "src": "462:40:5"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1024,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 1022,
+                      "name": "_initialized",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 999,
+                      "src": "512:12:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "hexValue": "74727565",
+                      "id": 1023,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "bool",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "527:4:5",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "value": "true"
+                    },
+                    "src": "512:19:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 1025,
+                  "nodeType": "ExpressionStatement",
+                  "src": "512:19:5"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 1027,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "initialize",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1006,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "395:2:5"
+            },
+            "returnParameters": {
+              "id": 1007,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "405:0:5"
+            },
+            "scope": 1076,
+            "src": "376:162:5",
+            "stateMutability": "nonpayable",
+            "superFunction": 1365,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 1039,
+              "nodeType": "Block",
+              "src": "663:160:5",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "arguments": [
+                          {
+                            "argumentTypes": null,
+                            "id": 1033,
+                            "name": "_token",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 1029,
+                            "src": "720:6:5",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          ],
+                          "id": 1032,
+                          "name": "getCosmosTokenInWhiteList",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 1075,
+                          "src": "694:25:5",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_internal_view$_t_address_$returns$_t_bool_$",
+                            "typeString": "function (address) view returns (bool)"
+                          }
+                        },
+                        "id": 1034,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "694:33:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "4f6e6c7920746f6b656e20696e2077686974656c6973742063616e206265207472616e7366657272656420746f20636f736d6f73",
+                        "id": 1035,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "741:54:5",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_d2891a2e899386008acb5d2ec61b8f463358fc53f45b7545bbd5729af45c3164",
+                          "typeString": "literal_string \"Only token in whitelist can be transferred to cosmos\""
+                        },
+                        "value": "Only token in whitelist can be transferred to cosmos"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_d2891a2e899386008acb5d2ec61b8f463358fc53f45b7545bbd5729af45c3164",
+                          "typeString": "literal_string \"Only token in whitelist can be transferred to cosmos\""
+                        }
+                      ],
+                      "id": 1031,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        4473,
+                        4474
+                      ],
+                      "referencedDeclaration": 4474,
+                      "src": "673:7:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 1036,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "673:132:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1037,
+                  "nodeType": "ExpressionStatement",
+                  "src": "673:132:5"
+                },
+                {
+                  "id": 1038,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "815:1:5"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 1040,
+            "name": "onlyCosmosTokenWhiteList",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 1030,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1029,
+                  "name": "_token",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1040,
+                  "src": "647:14:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1028,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "647:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "646:16:5"
+            },
+            "src": "613:210:5",
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 1062,
+              "nodeType": "Block",
+              "src": "1152:130:5",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1053,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 1049,
+                        "name": "_cosmosTokenWhiteList",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1082,
+                        "src": "1162:21:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                          "typeString": "mapping(address => bool)"
+                        }
+                      },
+                      "id": 1051,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "id": 1050,
+                        "name": "_token",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1042,
+                        "src": "1184:6:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "1162:29:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 1052,
+                      "name": "_inList",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1044,
+                      "src": "1194:7:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "src": "1162:39:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 1054,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1162:39:5"
+                },
+                {
+                  "eventCall": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 1056,
+                        "name": "_token",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1042,
+                        "src": "1235:6:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 1057,
+                        "name": "_inList",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1044,
+                        "src": "1243:7:5",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 1055,
+                      "name": "LogWhiteListUpdate",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1005,
+                      "src": "1216:18:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_address_$_t_bool_$returns$__$",
+                        "typeString": "function (address,bool)"
+                      }
+                    },
+                    "id": 1058,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1216:35:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1059,
+                  "nodeType": "EmitStatement",
+                  "src": "1211:40:5"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1060,
+                    "name": "_inList",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 1044,
+                    "src": "1268:7:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 1048,
+                  "id": 1061,
+                  "nodeType": "Return",
+                  "src": "1261:14:5"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 1063,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setTokenInCosmosWhiteList",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1045,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1042,
+                  "name": "_token",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1063,
+                  "src": "1078:14:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1041,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1078:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1044,
+                  "name": "_inList",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1063,
+                  "src": "1094:12:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1043,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1094:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1077:30:5"
+            },
+            "returnParameters": {
+              "id": 1048,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1047,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1063,
+                  "src": "1142:4:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1046,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1142:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1141:6:5"
+            },
+            "scope": 1076,
+            "src": "1043:239:5",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 1074,
+              "nodeType": "Block",
+              "src": "1509:53:5",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "baseExpression": {
+                      "argumentTypes": null,
+                      "id": 1070,
+                      "name": "_cosmosTokenWhiteList",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1082,
+                      "src": "1526:21:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                        "typeString": "mapping(address => bool)"
+                      }
+                    },
+                    "id": 1072,
+                    "indexExpression": {
+                      "argumentTypes": null,
+                      "id": 1071,
+                      "name": "_token",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1065,
+                      "src": "1548:6:5",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "1526:29:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 1069,
+                  "id": 1073,
+                  "nodeType": "Return",
+                  "src": "1519:36:5"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 1075,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getCosmosTokenInWhiteList",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1066,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1065,
+                  "name": "_token",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1075,
+                  "src": "1466:14:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1064,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1466:7:5",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1465:16:5"
+            },
+            "returnParameters": {
+              "id": 1069,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1068,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1075,
+                  "src": "1503:4:5",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1067,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1503:4:5",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1502:6:5"
+            },
+            "scope": 1076,
+            "src": "1431:131:5",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 1077,
+        "src": "180:1384:5"
+      }
+    ],
+    "src": "0:1564:5"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.3.2",
+  "updatedAt": "2021-01-27T03:06:32.588Z",
+  "devdoc": {
+    "details": "WhiteList contract records the ERC 20 list that can be locked in BridgeBank.*",
+    "methods": {},
+    "title": "WhiteList"
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}

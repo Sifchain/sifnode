@@ -1,14 +1,13 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
-import { computed, ref, toRefs } from "@vue/reactivity";
+import { computed, ref } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import { Asset, SwapState, useSwapCalculator } from "ui-core";
+import { SwapState, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/shared/Modal.vue";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
-import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
 import ConfirmationDialog, {
@@ -16,6 +15,7 @@ import ConfirmationDialog, {
 } from "@/components/confirmationDialog/ConfirmationDialog.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
+import SlippagePanel from "@/components/slippagePanel/Index.vue";
 
 export default defineComponent({
   components: {
@@ -27,6 +27,7 @@ export default defineComponent({
     SelectTokenDialogSif,
     ModalView,
     ConfirmationDialog,
+    SlippagePanel,
   },
 
   setup() {
@@ -37,11 +38,11 @@ export default defineComponent({
       fromAmount,
       toSymbol,
       toAmount,
-      priceImpact,
-      providerFee,
     } = useCurrencyFieldState();
+
+    const slippage = ref<string>("0");
     const transactionState = ref<ConfirmState>("selecting");
-    const transactionHash = ref<String | null>(null);
+    const transactionHash = ref<string | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
@@ -60,6 +61,8 @@ export default defineComponent({
       fromFieldAmount,
       toFieldAmount,
       priceMessage,
+      priceImpact,
+      providerFee,
     } = useSwapCalculator({
       balances,
       fromAmount,
@@ -68,12 +71,13 @@ export default defineComponent({
       selectedField,
       toSymbol,
       poolFinder,
-      priceImpact,
-      providerFee
     });
 
     const minimumReceived = computed(() =>
-      parseFloat(toAmount.value).toPrecision(10)
+      (
+        (1 - parseFloat(slippage.value) / 100) *
+        parseFloat(toAmount.value)
+      ).toPrecision(18)
     );
 
     function clearAmounts() {
@@ -95,12 +99,29 @@ export default defineComponent({
         throw new Error("from field amount is not defined");
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
-
       transactionState.value = "signing";
-      let tx = await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset);
-      transactionHash.value = tx.transactionHash;
-      transactionState.value = "confirmed";
-      clearAmounts();
+
+      try {
+        let tx = await actions.clp.swap(
+          fromFieldAmount.value,
+          toFieldAmount.value.asset,
+          parseFloat(minimumReceived.value).toFixed(18).replace(".", "")
+        );
+        transactionHash.value = tx?.transactionHash ?? "";
+        if (tx && tx.rawLog && tx.rawLog.includes('"type":"swap_failed"')) {
+          transactionState.value = "failed";
+        } else {
+          transactionState.value = "confirmed";
+        }
+        clearAmounts();
+      } catch (e) {
+        // TODO: Implement better error checks and status updates.
+        if (e.toString().includes("Request rejected")) {
+          transactionState.value = "rejected";
+        } else {
+          transactionState.value = "failed";
+        }
+      }
     }
 
     function swapInputs() {
@@ -123,6 +144,8 @@ export default defineComponent({
             return "Please enter an amount";
           case SwapState.INSUFFICIENT_FUNDS:
             return "Insufficient Funds";
+          case SwapState.INSUFFICIENT_LIQUIDITY:
+            return "Insufficient Liquidity";
           case SwapState.VALID_INPUT:
             return "Swap";
         }
@@ -162,7 +185,7 @@ export default defineComponent({
       handleBlur() {
         selectedField.value = null;
       },
-
+      slippage,
       fromAmount,
       toAmount,
       fromSymbol,
@@ -177,16 +200,20 @@ export default defineComponent({
           (balance) => balance.asset.symbol === fromSymbol.value
         );
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.subtract("1").toFixed(1);
+        fromAmount.value = accountBalance.toFixed(18);
       },
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;
       }),
       transactionState,
       transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "confirmed"].includes(
-          transactionState.value
-        );
+        return [
+          "confirming",
+          "signing",
+          "failed",
+          "rejected",
+          "confirmed",
+        ].includes(transactionState.value);
       }),
       requestTransactionModalClose,
       handleArrowClicked() {
@@ -196,7 +223,7 @@ export default defineComponent({
         transactionState.value = "signing";
       },
       handleAskConfirmClicked,
-      transactionHash
+      transactionHash,
     };
   },
 });
@@ -226,6 +253,8 @@ export default defineComponent({
             @toblur="handleBlur"
             @tosymbolclicked="handleToSymbolClicked(requestOpen)"
             :toSymbolSelectable="connected"
+            tokenALabel="From"
+            tokenBLabel="To"
           />
         </template>
         <template v-slot:default="{ requestClose }">
@@ -235,6 +264,7 @@ export default defineComponent({
           />
         </template>
       </Modal>
+      <SlippagePanel v-if="nextStepAllowed" v-model:slippage="slippage" />
       <DetailsPanel
         :toToken="toSymbol || ''"
         :priceMessage="priceMessage || ''"
@@ -261,6 +291,9 @@ export default defineComponent({
           :fromAmount="fromAmount"
           :toAmount="toAmount"
           :toToken="toSymbol"
+          :minimumReceived="minimumReceived || ''"
+          :providerFee="providerFee || ''"
+          :priceImpact="priceImpact || ''"
       /></ModalView>
     </div>
   </Layout>

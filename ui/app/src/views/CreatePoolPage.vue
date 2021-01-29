@@ -29,12 +29,12 @@ export default defineComponent({
     ConfirmationDialog,
     ModalView,
   },
-  props: ['title'],
+  props: ["title"],
   setup(props) {
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
     const transactionState = ref<ConfirmState>("selecting");
-    const transactionHash = ref<String | null>(null);
+    const transactionHash = ref<string | null>(null);
     const router = useRouter();
     const route = useRoute();
 
@@ -45,9 +45,10 @@ export default defineComponent({
       toAmount,
     } = useCurrencyFieldState();
 
-
     const toSymbol = ref("rowan");
-    fromSymbol.value = route.params.externalAsset ? route.params.externalAsset.toString() : null;
+    fromSymbol.value = route.params.externalAsset
+      ? route.params.externalAsset.toString()
+      : null;
 
     const priceMessage = ref("");
 
@@ -62,48 +63,58 @@ export default defineComponent({
 
     const { balances } = useWallet(store);
 
+    const liquidityProvider = computed(() => {
+      if (!fromSymbol) return null;
+      return (
+        store.accountpools.find((pool) => {
+          pool.lp.asset.symbol === fromSymbol.value;
+        })?.lp ?? null
+      );
+    });
+
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
       shareOfPool,
       shareOfPoolPercent,
-      poolUnits,
-      fromFieldAmount,
-      toFieldAmount,
+      totalLiquidityProviderUnits,
+      tokenAFieldAmount,
+      tokenBFieldAmount,
       preExistingPool,
       state,
     } = usePoolCalculator({
       balances,
-      fromAmount,
-      toAmount,
-      fromSymbol,
-      selectedField,
-      toSymbol,
+      tokenAAmount: fromAmount,
+      tokenBAmount: toAmount,
+      tokenASymbol: fromSymbol,
+      tokenBSymbol: toSymbol,
       poolFinder,
+      liquidityProvider,
     });
 
     function handleNextStepClicked() {
-      if (!fromFieldAmount.value)
+      if (!tokenAFieldAmount.value)
         throw new Error("from field amount is not defined");
-      if (!toFieldAmount.value)
+      if (!tokenBFieldAmount.value)
         throw new Error("to field amount is not defined");
 
       transactionState.value = "confirming";
     }
 
     async function handleAskConfirmClicked() {
-      if (!fromFieldAmount.value)
+      if (!tokenAFieldAmount.value)
         throw new Error("Token A field amount is not defined");
-      if (!toFieldAmount.value)
+      if (!tokenBFieldAmount.value)
         throw new Error("Token B field amount is not defined");
 
       transactionState.value = "signing";
       let tx = await actions.clp.addLiquidity(
-        toFieldAmount.value,
-        fromFieldAmount.value
+        tokenBFieldAmount.value,
+        tokenAFieldAmount.value
       );
-      console.log('POOL transaction hash: ', tx);
-      transactionHash.value = tx.transactionHash;
+
+      console.log("POOL transaction hash: ", tx);
+      transactionHash.value = tx?.transactionHash ?? "";
       transactionState.value = "confirmed";
 
       clearAmounts();
@@ -118,7 +129,6 @@ export default defineComponent({
     }
 
     return {
-      title: props.title,
       fromAmount,
       fromSymbol,
 
@@ -178,7 +188,7 @@ export default defineComponent({
       transactionState,
 
       transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "confirmed"].includes(
+        return ["confirming", "signing", "failed", "rejected", "confirmed"].includes(
           transactionState.value
         );
       }),
@@ -198,11 +208,11 @@ export default defineComponent({
           (balance) => balance.asset.symbol === fromSymbol.value
         );
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.subtract("1").toFixed(1);
+        fromAmount.value = accountBalance.toFixed(8);
       },
       shareOfPoolPercent,
       connectedText,
-      poolUnits,
+      poolUnits: totalLiquidityProviderUnits,
     };
   },
 });
@@ -239,7 +249,7 @@ export default defineComponent({
     <PriceCalculation>
       <div class="pool-share">
         <h4 class="pool-share-title text--left">Prices and pool share</h4>
-        <div class="pool-share-details" v-if="fromSymbol && aPerBRatioMessage">
+        <div class="pool-share-details" v-if="nextStepAllowed">
           <div>
             <span class="number">{{ aPerBRatioMessage }}</span
             ><br />

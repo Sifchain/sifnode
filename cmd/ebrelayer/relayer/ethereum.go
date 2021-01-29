@@ -196,7 +196,6 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 
 			// Add new header info to buffer
 			sub.EventsBuffer.AddHeader(newHead.Number, newHead.Hash(), newHead.ParentHash)
-
 			for {
 				fifty := big.NewInt(50)
 				fifty.Add(fifty, sub.EventsBuffer.MinHeight)
@@ -204,17 +203,13 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 					events := sub.EventsBuffer.GetHeaderEvents()
 					for _, event := range events {
 						err := sub.handleEthereumEvent(event)
-						// Sleep 10 seconds before send next transaction to cosmos, guarantee correct sequence number
 						time.Sleep(transactionInterval)
-
 						if err != nil {
 							sub.Logger.Error(err.Error())
 							completionEvent.Add(1)
 						}
 					}
-
 					sub.EventsBuffer.RemoveHeight()
-
 				} else {
 					break
 				}
@@ -299,9 +294,11 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
 func (sub EthereumSub) handleEthereumEvent(event types.EthereumEvent) error {
-	prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.ValidatorAddress, &event)
+	prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.ValidatorAddress, event)
 	if err != nil {
+		sub.Logger.Info(err.Error())
 		return err
 	}
+
 	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, &prophecyClaim, sub.CliCtx, sub.TxBldr)
 }
