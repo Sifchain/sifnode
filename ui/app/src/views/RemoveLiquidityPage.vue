@@ -7,13 +7,13 @@ import { Asset, PoolState, useRemoveLiquidityCalculator } from "ui-core";
 import { LiquidityProvider } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useRoute, useRouter } from "vue-router";
-import { computed, effect, Ref, toRef } from "@vue/reactivity";
+import { computed, effect, readonly, Ref, toRef } from "@vue/reactivity";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
 import Slider from "@/components/shared/Slider.vue";
-import ConfirmationDialog, {
-  ConfirmState,
-} from "@/components/confirmationDialog/RemoveConfirmationDialog.vue";
+import ConfirmationDialog from "@/components/confirmationDialog/RemoveConfirmationDialog.vue";
+import { toConfirmState } from "./utils/toConfirmState";
+import { ConfirmState } from "../types";
 
 export default defineComponent({
   components: {
@@ -41,9 +41,9 @@ export default defineComponent({
     });
 
     const liquidityProvider = ref(null) as Ref<LiquidityProvider | null>;
-    let withdrawExternalAssetAmount: Ref<string | null> = ref(null);
-    let withdrawNativeAssetAmount: Ref<string | null> = ref(null);
-    let state = ref(0);
+    const withdrawExternalAssetAmount: Ref<string | null> = ref(null);
+    const withdrawNativeAssetAmount: Ref<string | null> = ref(null);
+    const state = ref(0);
 
     effect(() => {
       if (!externalAssetSymbol.value) return null;
@@ -117,17 +117,13 @@ export default defineComponent({
           return;
 
         transactionState.value = "signing";
-        try {
-          let tx = await actions.clp.removeLiquidity(
-            Asset.get(externalAssetSymbol.value),
-            wBasisPoints.value,
-            asymmetry.value
-          );
-          transactionHash.value = tx?.transactionHash ?? "";
-          transactionState.value = "confirmed";
-        } catch (err) {
-          transactionState.value = "failed";
-        }
+        const tx = await actions.clp.removeLiquidity(
+          Asset.get(externalAssetSymbol.value),
+          wBasisPoints.value,
+          asymmetry.value
+        );
+        transactionHash.value = tx.hash;
+        transactionState.value = toConfirmState(tx.state); // TODO: align states
       },
 
       transactionModalOpen: computed(() => {
