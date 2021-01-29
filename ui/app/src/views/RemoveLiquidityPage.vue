@@ -2,33 +2,33 @@
 import { defineComponent, ref, watch } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
-import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
-import Modal from "@/components/shared/Modal.vue";
+// import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
+// import Modal from "@/components/shared/Modal.vue";
 import ModalView from "@/components/shared/ModalView.vue";
 import { Asset, PoolState, useRemoveLiquidityCalculator } from "ui-core";
 import { LiquidityProvider } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useRoute, useRouter } from "vue-router";
-import { computed, effect, Ref, toRef } from "@vue/reactivity";
+import { computed, effect, readonly, Ref, toRef } from "@vue/reactivity";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
-import SifButton from "@/components/shared/SifButton.vue";
+// import SifButton from "@/components/shared/SifButton.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
-import Caret from "@/components/shared/Caret.vue";
+// import Caret from "@/components/shared/Caret.vue";
 import Slider from "@/components/shared/Slider.vue";
-import ConfirmationDialog, {
-  ConfirmState,
-} from "@/components/confirmationDialog/RemoveConfirmationDialog.vue";
+import ConfirmationDialog from "@/components/confirmationDialog/RemoveConfirmationDialog.vue";
+import { toConfirmState } from "./utils/toConfirmState";
+import { ConfirmState } from "../types";
 
 export default defineComponent({
   components: {
     AssetItem,
     Layout,
-    Modal,
+    // Modal,
     ModalView,
-    SelectTokenDialogSif,
+    // SelectTokenDialogSif,
     ActionsPanel,
-    SifButton,
-    Caret,
+    // SifButton,
+    // Caret,
     Slider,
     ConfirmationDialog,
   },
@@ -49,9 +49,9 @@ export default defineComponent({
     });
 
     const liquidityProvider = ref(null) as Ref<LiquidityProvider | null>;
-    let withdrawExternalAssetAmount: Ref<string | null> = ref(null)
-    let withdrawNativeAssetAmount: Ref<string | null> = ref(null)
-    let state = ref(0)
+    const withdrawExternalAssetAmount: Ref<string | null> = ref(null);
+    const withdrawNativeAssetAmount: Ref<string | null> = ref(null);
+    const state = ref(0);
 
     effect(() => {
       if (!externalAssetSymbol.value) return null;
@@ -64,11 +64,7 @@ export default defineComponent({
     });
 
     // if these values change, recalculate state and asset amounts
-    watch([
-      wBasisPoints, 
-      asymmetry, 
-      liquidityProvider
-    ], () => {
+    watch([wBasisPoints, asymmetry, liquidityProvider], () => {
       const calcData = useRemoveLiquidityCalculator({
         externalAssetSymbol,
         nativeAssetSymbol,
@@ -82,7 +78,7 @@ export default defineComponent({
       withdrawExternalAssetAmount.value = calcData.withdrawExternalAssetAmount;
       withdrawNativeAssetAmount.value = calcData.withdrawNativeAssetAmount;
     });
-   
+
     return {
       connected,
       state,
@@ -114,7 +110,7 @@ export default defineComponent({
         if (
           !externalAssetSymbol.value ||
           !wBasisPoints.value ||
-          !asymmetry.value 
+          !asymmetry.value
         )
           return;
 
@@ -125,27 +121,27 @@ export default defineComponent({
           !externalAssetSymbol.value ||
           !wBasisPoints.value ||
           !asymmetry.value
-        ) 
-          return
-          
+        )
+          return;
+
         transactionState.value = "signing";
-        try {
-          let tx = await actions.clp.removeLiquidity(
-            Asset.get(externalAssetSymbol.value),
-            wBasisPoints.value,
-            asymmetry.value
-          );
-          transactionHash.value = tx?.transactionHash ?? "";
-          transactionState.value = "confirmed";
-        } catch (err) {
-          transactionState.value = "failed";
-        }
+        const tx = await actions.clp.removeLiquidity(
+          Asset.get(externalAssetSymbol.value),
+          wBasisPoints.value,
+          asymmetry.value
+        );
+        transactionHash.value = tx.hash;
+        transactionState.value = toConfirmState(tx.state); // TODO: align states
       },
 
       transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "failed", "rejected", "confirmed"].includes(
-          transactionState.value
-        );
+        return [
+          "confirming",
+          "signing",
+          "failed",
+          "rejected",
+          "confirmed",
+        ].includes(transactionState.value);
       }),
 
       requestTransactionModalClose() {
@@ -171,57 +167,60 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" :backLink='`/pool/${externalAssetSymbol}`' title="Remove Liquidity"  >
-  <div :class="!withdrawNativeAssetAmount ? 'disabled' : 'active' ">
-
-    <div class="panel-header text--left">
-      <div class="mb-10">Amount:</div>
-      <h1>{{wBasisPoints/100}}%</h1>
-    </div>
-
-    <Slider
-      message=""
-      :disabled="!connected || state === PoolState.NO_LIQUIDITY"
-      v-model="wBasisPoints"
-      min="0"
-      max="10000"
-      type="range"
-      step="1"
-      @leftclicked="wBasisPoints = '0'"
-      @middleclicked="wBasisPoints = '5000'"
-      @rightclicked="wBasisPoints = '10000'"
-      leftLabel="0%"
-      middleLabel="50%"
-      rightLabel="100%"
-    />
-
-    <Slider
-      class="pt-4"
-      message="Choose which ratio to withdraw from each asset"
-      :disabled="!connected || state === PoolState.NO_LIQUIDITY"
-      v-model="asymmetry"
-      min="-10000"
-      max="10000"
-      type="range"
-      step="1"
-      @leftclicked="asymmetry = '-10000'"
-      @middleclicked="asymmetry = '0'"
-      @rightclicked="asymmetry = '10000'"
-      leftLabel="All Rowan"
-      middleLabel="Equal"
-      rightLabel="All External Asset"
-    />
-    <div class="asset-row">
-      <h4 class="text--left">Total Deposited After Transaction</h4>
-      <div>
-        <AssetItem :symbol="nativeAssetSymbol" />
-        <AssetItem :symbol="externalAssetSymbol" />
+  <Layout
+    class="pool"
+    :backLink="`/pool/${externalAssetSymbol}`"
+    title="Remove Liquidity"
+  >
+    <div :class="!withdrawNativeAssetAmount ? 'disabled' : 'active'">
+      <div class="panel-header text--left">
+        <div class="mb-10">Amount:</div>
+        <h1>{{ wBasisPoints / 100 }}%</h1>
       </div>
-      <div>
-        <div>{{ withdrawNativeAssetAmount }}</div>
-        <div>{{ withdrawExternalAssetAmount }}</div>
+
+      <Slider
+        message=""
+        :disabled="!connected || state === PoolState.NO_LIQUIDITY"
+        v-model="wBasisPoints"
+        min="0"
+        max="10000"
+        type="range"
+        step="1"
+        @leftclicked="wBasisPoints = '0'"
+        @middleclicked="wBasisPoints = '5000'"
+        @rightclicked="wBasisPoints = '10000'"
+        leftLabel="0%"
+        middleLabel="50%"
+        rightLabel="100%"
+      />
+
+      <Slider
+        class="pt-4"
+        message="Choose which ratio to withdraw from each asset"
+        :disabled="!connected || state === PoolState.NO_LIQUIDITY"
+        v-model="asymmetry"
+        min="-10000"
+        max="10000"
+        type="range"
+        step="1"
+        @leftclicked="asymmetry = '-10000'"
+        @middleclicked="asymmetry = '0'"
+        @rightclicked="asymmetry = '10000'"
+        leftLabel="All Rowan"
+        middleLabel="Equal"
+        rightLabel="All External Asset"
+      />
+      <div class="asset-row">
+        <h4 class="text--left">Total Deposited After Transaction</h4>
+        <div>
+          <AssetItem :symbol="nativeAssetSymbol" />
+          <AssetItem :symbol="externalAssetSymbol" />
+        </div>
+        <div>
+          <div>{{ withdrawNativeAssetAmount }}</div>
+          <div>{{ withdrawExternalAssetAmount }}</div>
+        </div>
       </div>
-    </div>
     </div>
 
     <ActionsPanel
@@ -247,11 +246,16 @@ export default defineComponent({
 </template>
 
 <style lang="scss" scoped>
-h1 { font-size: 42px; color: $c_gray_900}
+h1 {
+  font-size: 42px;
+  color: $c_gray_900;
+}
 .disabled {
-    opacity: .3
-  }
-.panel-header {margin-bottom: 1.5rem}
+  opacity: 0.3;
+}
+.panel-header {
+  margin-bottom: 1.5rem;
+}
 .asset-row {
   margin-top: 1rem;
   margin-bottom: 1rem;

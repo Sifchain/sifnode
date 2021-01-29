@@ -18,9 +18,7 @@ import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSi
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
-import ConfirmationDialog, {
-  ConfirmState,
-} from "@/components/confirmationDialog/ConfirmationDialog.vue";
+import ConfirmationDialog from "@/components/confirmationDialog/ConfirmationDialog.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import RaisedPanel from "@/components/shared/RaisedPanel.vue";

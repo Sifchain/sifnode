@@ -7,9 +7,7 @@ import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
 import ModalView from "@/components/shared/ModalView.vue";
-import ConfirmationDialog, {
-  ConfirmState,
-} from "@/components/confirmationDialog/PoolConfirmationDialog.vue";
+import ConfirmationDialog from "@/components/confirmationDialog/PoolConfirmationDialog.vue";
 import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
@@ -17,6 +15,8 @@ import { computed } from "@vue/reactivity";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
+import { toConfirmState } from "./utils/toConfirmState";
+import { ConfirmState } from "../types";
 
 export default defineComponent({
   components: {
@@ -108,14 +108,13 @@ export default defineComponent({
         throw new Error("Token B field amount is not defined");
 
       transactionState.value = "signing";
-      let tx = await actions.clp.addLiquidity(
+      const tx = await actions.clp.addLiquidity(
         tokenBFieldAmount.value,
         tokenAFieldAmount.value
       );
 
-      console.log("POOL transaction hash: ", tx);
-      transactionHash.value = tx?.transactionHash ?? "";
-      transactionState.value = "confirmed";
+      transactionHash.value = tx.hash;
+      transactionState.value = toConfirmState(tx.state); // TODO: align states
 
       clearAmounts();
     }
@@ -188,9 +187,13 @@ export default defineComponent({
       transactionState,
 
       transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "failed", "rejected", "confirmed"].includes(
-          transactionState.value
-        );
+        return [
+          "confirming",
+          "signing",
+          "failed",
+          "rejected",
+          "confirmed",
+        ].includes(transactionState.value);
       }),
 
       handleBlur() {
