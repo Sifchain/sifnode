@@ -278,7 +278,6 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
                    f"--chain-id={transfer_request.chain_id} " \
                    f"--home {credentials.sifnodecli_homedir} " \
                    f"--from {credentials.from_key} " \
-                   f"--fees 100000rowan " \
                    f"--yes "
     return get_shell_output(command_line)
 
