@@ -28,7 +28,7 @@ Run the backing services using tmux. (Requires [tmux](https://github.com/tmux/tm
 yarn stack
 ```
 
-<img src="docs/tmux-example.png" /> 
+<img src="docs/tmux-example.png" />
 
 #### Run tests in core
 
