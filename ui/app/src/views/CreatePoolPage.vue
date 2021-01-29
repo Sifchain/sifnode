@@ -14,8 +14,8 @@ import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
-import PriceCalculation from "@/components/shared/PriceCalculation.vue";
-import PriceCalculationCell from "@/components/shared/PriceCalculationCell.vue";
+import FatInfoTable from "@/components/shared/FatInfoTable.vue";
+import FatInfoTableCell from "@/components/shared/FatInfoTableCell.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 
@@ -26,9 +26,9 @@ export default defineComponent({
     Modal,
     CurrencyPairPanel,
     SelectTokenDialogSif,
-    PriceCalculation,
+    FatInfoTable,
     ConfirmationDialog,
-    PriceCalculationCell,
+    FatInfoTableCell,
     ModalView,
   },
   props: ["title"],
@@ -257,53 +257,53 @@ export default defineComponent({
       </template>
     </Modal>
 
-    <PriceCalculation :show="nextStepAllowed">
+    <FatInfoTable :show="nextStepAllowed">
       <template #header>Pool Token Prices</template>
       <template #body>
-        <PriceCalculationCell>
+        <FatInfoTableCell>
           <span class="number">{{ aPerBRatioMessage }}</span
           ><br />
           <span
             >{{ fromSymbol.toUpperCase() }} per
             {{ toSymbol.toUpperCase() }}</span
           >
-        </PriceCalculationCell>
-        <PriceCalculationCell>
+        </FatInfoTableCell>
+        <FatInfoTableCell>
           <span class="number">{{ bPerARatioMessage }}</span
           ><br />
           <span
             >{{ toSymbol.toUpperCase() }} per
             {{ fromSymbol.toUpperCase() }}</span
           >
-        </PriceCalculationCell>
+        </FatInfoTableCell>
       </template>
-    </PriceCalculation>
+    </FatInfoTable>
 
-    <PriceCalculation :show="nextStepAllowed">
+    <FatInfoTable :show="nextStepAllowed">
       <template #header>Price Impact and Pool Share</template>
       <template #body>
-        <PriceCalculationCell>
+        <FatInfoTableCell>
           <span class="number">{{ aPerBRatioProjectedMessage }}</span
           ><br />
           <span
             >{{ fromSymbol.toUpperCase() }} per
             {{ toSymbol.toUpperCase() }}</span
           >
-        </PriceCalculationCell>
-        <PriceCalculationCell>
+        </FatInfoTableCell>
+        <FatInfoTableCell>
           <span class="number">{{ bPerARatioProjectedMessage }}</span
           ><br />
           <span
             >{{ toSymbol.toUpperCase() }} per
             {{ fromSymbol.toUpperCase() }}</span
           >
-        </PriceCalculationCell>
-        <PriceCalculationCell>
+        </FatInfoTableCell>
+        <FatInfoTableCell>
           <span class="number">{{ shareOfPoolPercent }}</span
           ><br />Share of Pool
-        </PriceCalculationCell></template
+        </FatInfoTableCell></template
       >
-    </PriceCalculation>
+    </FatInfoTable>
 
     <ActionsPanel
       @nextstepclick="handleNextStepClicked"
