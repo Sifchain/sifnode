@@ -206,6 +206,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 						time.Sleep(transactionInterval)
 						if err != nil {
 							sub.Logger.Error(err.Error())
+							completionEvent.Add(1)
 						}
 					}
 					sub.EventsBuffer.RemoveHeight()
