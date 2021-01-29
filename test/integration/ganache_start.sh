@@ -12,7 +12,7 @@ set -x
 set_persistant_env_var GANACHE_LOG $datadir/logs/ganache.$(filenamedate).txt $envexportfile
 mkdir -p $(dirname $GANACHE_LOG)
 
-pkill -f -9 ganache-cli || true
+pkill -9 -f ganache-cli || true
 while nc -z localhost 7545; do
   sleep 1
 done

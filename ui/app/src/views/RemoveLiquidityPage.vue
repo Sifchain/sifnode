@@ -114,8 +114,7 @@ export default defineComponent({
         if (
           !externalAssetSymbol.value ||
           !wBasisPoints.value ||
-          !asymmetry.value ||
-          state.value !== PoolState.VALID_INPUT
+          !asymmetry.value 
         )
           return;
 
@@ -144,7 +143,7 @@ export default defineComponent({
       },
 
       transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "confirmed"].includes(
+        return ["confirming", "signing", "failed", "rejected", "confirmed"].includes(
           transactionState.value
         );
       }),

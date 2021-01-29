@@ -366,7 +366,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 				sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer.String()),
 			),
 		})
-		return &sdk.Result{Events: ctx.EventManager().Events()}, types.ErrReceivedAmountBelowExpected
+		return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 	}
 
 	err = keeper.FinalizeSwap(ctx, emitAmount.String(), finalPool, msg)

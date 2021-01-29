@@ -34,5 +34,5 @@ var (
 	ErrUnableToRemoveLiquidityProvider = sdkerrors.Register(ModuleName, 28, "Unable to add liquidity provider")
 	ErrUnableToDecommissionPool        = sdkerrors.Register(ModuleName, 29, "Unable to decommission pool")
 	ErrUnableToParseInt                = sdkerrors.Register(ModuleName, 30, "Unable to parse to Int")
-	ErrReceivedAmountBelowExpected     = sdkerrors.Register(ModuleName, 31, "Unable to swap , received amount is below expected")
+	ErrReceivedAmountBelowExpected     = sdkerrors.Register(ModuleName, 31, "Unable to swap, received amount is below expected")
 )
