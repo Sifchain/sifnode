@@ -66,10 +66,12 @@ export function usePoolCalculator(input: {
       tokenAField.asset.value.symbol,
       tokenBField.asset.value.symbol
     );
-    return pool?.value ?? null;
+
+    return pool?.value || null;
   });
 
   const liquidityPool = computed(() => {
+    if (preExistingPool.value) return preExistingPool.value;
     if (
       !tokenAField.fieldAmount.value ||
       !tokenBField.fieldAmount.value ||
@@ -78,12 +80,9 @@ export function usePoolCalculator(input: {
     )
       return null;
 
-    return (
-      preExistingPool.value ||
-      Pool(
-        AssetAmount(tokenAField.asset.value, "0"),
-        AssetAmount(tokenBField.asset.value, "0")
-      )
+    return Pool(
+      AssetAmount(tokenAField.asset.value, "0"),
+      AssetAmount(tokenBField.asset.value, "0")
     );
   });
 
@@ -96,6 +95,7 @@ export function usePoolCalculator(input: {
     ) {
       return [new Fraction("0"), new Fraction("0")];
     }
+
     return liquidityPool.value.calculatePoolUnits(
       tokenBField.fieldAmount.value,
       tokenAField.fieldAmount.value
@@ -141,35 +141,95 @@ export function usePoolCalculator(input: {
     return `${shareOfPool.value.multiply("100").toFixed(2)}%`;
   });
 
-  const aPerBRatioMessage = computed(() => {
-    const aAmount = tokenAField.fieldAmount.value;
-    const bAmount = tokenBField.fieldAmount.value;
+  const poolAmounts = computed(() => {
+    if (!preExistingPool.value || !tokenAField.asset.value) {
+      return null;
+    }
+    if (!preExistingPool.value.contains(tokenAField.asset.value)) return null;
+    const externalBalance = preExistingPool.value.getAmount(
+      tokenAField.asset.value
+    );
+    const nativeBalance = preExistingPool.value.getAmount("rowan");
+    return [nativeBalance, externalBalance];
+  });
 
-    if (!aAmount || aAmount.equalTo("0")) return ""; // invalid, must supply external
-    if (!bAmount || bAmount.equalTo("0")) {
-      // if rowan is 0 or empty ...
-      // allow if the pool exists (BUT ratio is inapplicable - N/A),
-      // invalid if the pool doesn't exist - ""
-      return preExistingPool.value ? "N/A" : "";
+  // external_balance / native_balance
+  const aPerBRatio = computed(() => {
+    if (!poolAmounts.value) return null;
+    const [native, external] = poolAmounts.value;
+    return external.divide(native);
+  });
+
+  const aPerBRatioMessage = computed(() => {
+    if (!aPerBRatio.value) {
+      return "N/A";
     }
 
-    return aAmount.divide(bAmount).toFixed(8);
+    return aPerBRatio.value.toFixed(8);
+  });
+
+  // native_balance / external_balance
+  const bPerARatio = computed(() => {
+    if (!poolAmounts.value) return null;
+    const [native, external] = poolAmounts.value;
+    return native.divide(external);
   });
 
   const bPerARatioMessage = computed(() => {
-    const aAmount = tokenAField.fieldAmount.value;
-    const bAmount = tokenBField.fieldAmount.value;
-
-    if (!aAmount || aAmount.equalTo("0")) return ""; // invalid, must supply external
-
-    if (!bAmount || bAmount.equalTo("0")) {
-      // if rowan is 0 or empty ...
-      // allow if the pool exists (BUT ratio is inapplicable - N/A),
-      // invalid if the pool doesn't exist - ""
-      return preExistingPool.value ? "N/A" : "";
+    if (!bPerARatio.value) {
+      return "N/A";
     }
 
-    return bAmount.divide(aAmount).toFixed(8);
+    return bPerARatio.value.toFixed(8);
+  });
+
+  // Price Impact and Pool Share:
+  // (external_balance + external_added) / (native_balance + native_added)
+  const aPerBRatioProjected = computed(() => {
+    if (
+      !poolAmounts.value ||
+      !tokenAField.fieldAmount.value ||
+      !tokenBField.fieldAmount.value
+    )
+      return null;
+
+    const [native, external] = poolAmounts.value;
+    const externalAdded = tokenAField.fieldAmount.value;
+    const nativeAdded = tokenBField.fieldAmount.value;
+
+    return external.add(externalAdded).divide(native.add(nativeAdded));
+  });
+
+  const aPerBRatioProjectedMessage = computed(() => {
+    if (!aPerBRatioProjected.value) {
+      return "N/A";
+    }
+
+    return aPerBRatioProjected.value.toFixed(8);
+  });
+
+  // Price Impact and Pool Share:
+  // (native_balance + native_added)/(external_balance + external_added)
+  const bPerARatioProjected = computed(() => {
+    if (
+      !poolAmounts.value ||
+      !tokenAField.fieldAmount.value ||
+      !tokenBField.fieldAmount.value
+    )
+      return null;
+
+    const [native, external] = poolAmounts.value;
+    const externalAdded = tokenAField.fieldAmount.value;
+    const nativeAdded = tokenBField.fieldAmount.value;
+    return native.add(nativeAdded).divide(external.add(externalAdded));
+  });
+
+  const bPerARatioProjectedMessage = computed(() => {
+    if (!bPerARatioProjected.value) {
+      return "N/A";
+    }
+
+    return bPerARatioProjected.value.toFixed(8);
   });
 
   const state = computed(() => {
@@ -199,6 +259,8 @@ export function usePoolCalculator(input: {
     state,
     aPerBRatioMessage,
     bPerARatioMessage,
+    aPerBRatioProjectedMessage,
+    bPerARatioProjectedMessage,
     shareOfPool,
     shareOfPoolPercent,
     preExistingPool,

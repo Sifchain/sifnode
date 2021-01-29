@@ -29,6 +29,7 @@ export function Pool(
     symbol: pair.symbol,
     contains: pair.contains,
     toString: pair.toString,
+    getAmount: pair.getAmount,
     poolUnits:
       poolUnits ||
       calculatePoolUnits(
@@ -122,7 +123,6 @@ export function Pool(
         externalBalanceBefore,
         this.poolUnits
       );
-
       const newTotalPoolUnits = lpUnits.add(this.poolUnits);
 
       return [newTotalPoolUnits, lpUnits];
@@ -157,6 +157,19 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
 
   return {
     amounts: amounts as [IAssetAmount, IAssetAmount],
+
+    getAmount: (asset: Asset | string) => {
+      if (Asset.get(asset).symbol === nativeSymbol) {
+        throw new Error(`Asset ${nativeSymbol} doesnt exist in pair`);
+      }
+
+      // quicker to try catch than contains
+      try {
+        return pair1.getAmount(asset);
+      } catch (err) {}
+
+      return pair2.getAmount(asset);
+    },
 
     priceAsset(asset: Asset) {
       return this.calcSwapResult(AssetAmount(asset, "1"));
