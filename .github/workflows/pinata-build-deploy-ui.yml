@@ -36,9 +36,16 @@ jobs:
           remove-old: true
       
       - name: Write Code Comment
-        uses: thollander/actions-comment-pull-request@master
+        uses: actions/github-script@v3
         with:
-          message: ${{steps.pinata.outputs.hash}}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: steps.pinata.outputs.hash
+            })
+
 
 # https://github.com/marketplace/actions/cloudflare-dns
