@@ -38,10 +38,9 @@ export default defineComponent({
       fromAmount,
       toSymbol,
       toAmount,
-      priceImpact,
-      providerFee,
-      slippage,
     } = useCurrencyFieldState();
+
+    const slippage = ref<string>("0");
     const transactionState = ref<ConfirmState>("selecting");
     const transactionHash = ref<string | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
@@ -62,6 +61,8 @@ export default defineComponent({
       fromFieldAmount,
       toFieldAmount,
       priceMessage,
+      priceImpact,
+      providerFee,
     } = useSwapCalculator({
       balances,
       fromAmount,
@@ -70,8 +71,6 @@ export default defineComponent({
       selectedField,
       toSymbol,
       poolFinder,
-      priceImpact,
-      providerFee,
     });
 
     const minimumReceived = computed(() =>
@@ -146,6 +145,7 @@ export default defineComponent({
           case SwapState.INSUFFICIENT_FUNDS:
             return "Insufficient Funds";
           case SwapState.INSUFFICIENT_LIQUIDITY:
+            return "Insufficient Liquidity";
           case SwapState.VALID_INPUT:
             return "Swap";
         }
