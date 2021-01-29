@@ -14,7 +14,8 @@ import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
-import PriceCalculation from "@/components/shared/PriceCalculation.vue";
+import FatInfoTable from "@/components/shared/FatInfoTable.vue";
+import FatInfoTableCell from "@/components/shared/FatInfoTableCell.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 
@@ -25,8 +26,9 @@ export default defineComponent({
     Modal,
     CurrencyPairPanel,
     SelectTokenDialogSif,
-    PriceCalculation,
+    FatInfoTable,
     ConfirmationDialog,
+    FatInfoTableCell,
     ModalView,
   },
   props: ["title"],
@@ -38,19 +40,12 @@ export default defineComponent({
     const router = useRouter();
     const route = useRoute();
 
-    const {
-      fromSymbol,
-      fromAmount,
-
-      toAmount,
-    } = useCurrencyFieldState();
+    const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
 
     const toSymbol = ref("rowan");
     fromSymbol.value = route.params.externalAsset
       ? route.params.externalAsset.toString()
       : null;
-
-    const priceMessage = ref("");
 
     function clearAmounts() {
       fromAmount.value = "0.0";
@@ -75,7 +70,8 @@ export default defineComponent({
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
-      shareOfPool,
+      aPerBRatioProjectedMessage,
+      bPerARatioProjectedMessage,
       shareOfPoolPercent,
       totalLiquidityProviderUnits,
       tokenAFieldAmount,
@@ -138,7 +134,8 @@ export default defineComponent({
       connected,
       aPerBRatioMessage,
       bPerARatioMessage,
-
+      aPerBRatioProjectedMessage,
+      bPerARatioProjectedMessage,
       nextStepMessage: computed(() => {
         switch (state.value) {
           case PoolState.SELECT_TOKENS:
@@ -188,9 +185,13 @@ export default defineComponent({
       transactionState,
 
       transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "failed", "rejected", "confirmed"].includes(
-          transactionState.value
-        );
+        return [
+          "confirming",
+          "signing",
+          "failed",
+          "rejected",
+          "confirmed",
+        ].includes(transactionState.value);
       }),
 
       handleBlur() {
@@ -209,6 +210,14 @@ export default defineComponent({
         );
         if (!accountBalance) return;
         fromAmount.value = accountBalance.toFixed(8);
+      },
+      handleToMaxClicked() {
+        selectedField.value = "to";
+        const accountBalance = balances.value.find(
+          (balance) => balance.asset.symbol === toSymbol.value
+        );
+        if (!accountBalance) return;
+        toAmount.value = accountBalance.toFixed(8);
       },
       shareOfPoolPercent,
       connectedText,
@@ -235,6 +244,8 @@ export default defineComponent({
           v-model:toSymbol="toSymbol"
           @tofocus="handleToFocused"
           @toblur="handleBlur"
+          :toMax="true"
+          @tomaxclicked="handleToMaxClicked"
           toSymbolFixed
           canSwapIcon="plus"
       /></template>
@@ -246,33 +257,54 @@ export default defineComponent({
       </template>
     </Modal>
 
-    <PriceCalculation>
-      <div class="pool-share">
-        <h4 class="pool-share-title text--left">Prices and pool share</h4>
-        <div class="pool-share-details" v-if="nextStepAllowed">
-          <div>
-            <span class="number">{{ aPerBRatioMessage }}</span
-            ><br />
-            <span
-              >{{ fromSymbol.toUpperCase() }} per
-              {{ toSymbol.toUpperCase() }}</span
-            >
-          </div>
-          <div>
-            <span class="number">{{ bPerARatioMessage }}</span
-            ><br />
-            <span
-              >{{ toSymbol.toUpperCase() }} per
-              {{ fromSymbol.toUpperCase() }}</span
-            >
-          </div>
-          <div>
-            <span class="number">{{ shareOfPoolPercent }}</span
-            ><br />Share of Pool
-          </div>
-        </div>
-      </div>
-    </PriceCalculation>
+    <FatInfoTable :show="nextStepAllowed">
+      <template #header>Pool Token Prices</template>
+      <template #body>
+        <FatInfoTableCell>
+          <span class="number">{{ aPerBRatioMessage }}</span
+          ><br />
+          <span
+            >{{ fromSymbol.toUpperCase() }} per
+            {{ toSymbol.toUpperCase() }}</span
+          >
+        </FatInfoTableCell>
+        <FatInfoTableCell>
+          <span class="number">{{ bPerARatioMessage }}</span
+          ><br />
+          <span
+            >{{ toSymbol.toUpperCase() }} per
+            {{ fromSymbol.toUpperCase() }}</span
+          >
+        </FatInfoTableCell>
+      </template>
+    </FatInfoTable>
+
+    <FatInfoTable :show="nextStepAllowed">
+      <template #header>Price Impact and Pool Share</template>
+      <template #body>
+        <FatInfoTableCell>
+          <span class="number">{{ aPerBRatioProjectedMessage }}</span
+          ><br />
+          <span
+            >{{ fromSymbol.toUpperCase() }} per
+            {{ toSymbol.toUpperCase() }}</span
+          >
+        </FatInfoTableCell>
+        <FatInfoTableCell>
+          <span class="number">{{ bPerARatioProjectedMessage }}</span
+          ><br />
+          <span
+            >{{ toSymbol.toUpperCase() }} per
+            {{ fromSymbol.toUpperCase() }}</span
+          >
+        </FatInfoTableCell>
+        <FatInfoTableCell>
+          <span class="number">{{ shareOfPoolPercent }}</span
+          ><br />Share of Pool
+        </FatInfoTableCell></template
+      >
+    </FatInfoTable>
+
     <ActionsPanel
       @nextstepclick="handleNextStepClicked"
       :nextStepAllowed="nextStepAllowed"
@@ -298,34 +330,9 @@ export default defineComponent({
   </Layout>
 </template>
 
-<style lang="scss">
-.pool-share {
-  font-size: 12px;
-  font-weight: 400;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-
-  &-title {
-    text-align: left;
-    padding: 4px 16px;
-    border-bottom: $divider;
-  }
-
-  &-details {
-    display: flex;
-    padding: 4px 16px;
-    flex-grow: 1;
-    justify-content: space-between;
-    align-items: center;
-
-    div {
-      flex: 33%;
-    }
-  }
-  .number {
-    font-size: 16px;
-    font-weight: bold;
-  }
+<style lang="scss" scoped>
+.number {
+  font-size: 16px;
+  font-weight: bold;
 }
 </style>
