@@ -7,12 +7,14 @@ import Layout from "@/components/layout/Layout.vue";
 import PoolList from "@/components/poolList/PoolList.vue";
 import PoolListItem from "@/components/poolList/PoolListItem.vue";
 import SifButton from "@/components/shared/SifButton.vue";
+import Loader from "@/components/shared/Loader.vue";
 
 type AccountPool = { lp: LiquidityProvider; pool: Pool };
 
 export default defineComponent({
   components: {
     Layout,
+    Loader,
     SifButton,
     PoolList,
     PoolListItem,
@@ -23,9 +25,11 @@ export default defineComponent({
 
     const selectedPool = ref<AccountPool | null>(null);
     const refsStore = toRefs(store);
+    const isConnected = computed(() => refsStore.wallet.value.sif.address)
     const accountPools = computed(() => refsStore.accountpools.value);
 
-    return {
+return {
+      isConnected,
       accountPools,
       selectedPool,
     };
@@ -59,6 +63,7 @@ export default defineComponent({
       </div>
 
       <PoolList class="mb-2">
+        <Loader v-if="!accountPools.length === 0 && isConnected" class="mt-10"/>
         <PoolListItem
           v-for="(accountPool, index) in accountPools"
           :key="index"
