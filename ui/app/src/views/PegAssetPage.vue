@@ -3,26 +3,9 @@ import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { computed, ref, toRefs } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import {
-  Asset,
-  AssetAmount,
-  Fraction,
-  SwapState,
-  useSwapCalculator,
-} from "ui-core";
-import { useWalletButton } from "@/components/wallet/useWalletButton";
+import { Asset, AssetAmount } from "ui-core";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
-import Modal from "@/components/shared/Modal.vue";
-import SelectTokenDialogEth from "@/components/tokenSelector/SelectTokenDialogEth.vue";
-import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
-import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
-import ModalView from "@/components/shared/ModalView.vue";
-import ConfirmationDialog, {
-  ConfirmState,
-} from "@/components/confirmationDialog/ConfirmationDialog.vue";
-import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
-import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import RaisedPanel from "@/components/shared/RaisedPanel.vue";
 import { useRouter } from "vue-router";
 import SifInput from "@/components/shared/SifInput.vue";
@@ -32,7 +15,6 @@ import RaisedPanelColumn from "@/components/shared/RaisedPanelColumn.vue";
 import { trimZeros } from "ui-core/src/hooks/utils";
 import BigNumber from "bignumber.js";
 import { useAssetItem } from "../components/shared/utils";
-import B from "ui-core/src/entities/utils/B";
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
