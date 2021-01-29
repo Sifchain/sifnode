@@ -3,7 +3,7 @@
 <template>
   <div class="field-wrappers">
     <CurrencyField
-      :label="labelFirst"
+      :label="tokenALabel"
       tabindex="1"
       :max="fromMax"
       @focus="handleFromFocused"
@@ -25,7 +25,7 @@
     />
     <Icon icon="plus" v-if="canSwapIcon === 'plus'" />
     <CurrencyField
-      :label="labelSecond"
+      :label="tokenBLabel"
       tabindex="2"
       @focus="handleToFocused"
       @blur="handleToBlur"
@@ -56,8 +56,8 @@ export default defineComponent({
     toAmount: String,
     toSymbol: String,
     connected: Boolean,
-    labelFirst: { type: String, default: "Input" },
-    labelSecond: { type: String, default: "Input" },
+    tokenALabel: { type: String, default: "Input" },
+    tokenBLabel: { type: String, default: "Input" },
     nextStepMessage: String,
     canSwap: { type: Boolean, default: false },
     fromDisabled: { type: Boolean, default: false },
