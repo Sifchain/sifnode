@@ -87,7 +87,7 @@ describe("addLiquidityCalculator", () => {
         bPerARatioMessage: "1.00000000",
         aPerBRatioProjectedMessage: "1.00000000",
         bPerARatioProjectedMessage: "1.00000000",
-        shareOfPool: "0.99%",
+        shareOfPool: "0.9901%",
       },
     },
     {
@@ -119,7 +119,7 @@ describe("addLiquidityCalculator", () => {
         bPerARatioMessage: "0.25000000",
         aPerBRatioProjectedMessage: "1.00000000",
         bPerARatioProjectedMessage: "1.00000000",
-        shareOfPool: "50.00%",
+        shareOfPool: "50%",
       },
     },
 

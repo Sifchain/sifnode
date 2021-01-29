@@ -138,6 +138,9 @@ export function usePoolCalculator(input: {
   });
 
   const shareOfPoolPercent = computed(() => {
+    // TD - Adding a note for future proofing.
+    // This file implies that it works with absolute numbers
+    // But it also handles display of which maybe it shouldn't
     return `${shareOfPool.value.multiply("100").toSignificant(4)}%`;
   });
 
