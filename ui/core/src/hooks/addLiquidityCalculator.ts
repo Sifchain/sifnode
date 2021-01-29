@@ -195,7 +195,8 @@ export function usePoolCalculator(input: {
 
     const [native, external] = poolAmounts.value;
     const externalAdded = tokenAField.fieldAmount.value;
-    const nativeAdded = tokenAField.fieldAmount.value;
+    const nativeAdded = tokenBField.fieldAmount.value;
+
     return external.add(externalAdded).divide(native.add(nativeAdded));
   });
 
@@ -219,7 +220,7 @@ export function usePoolCalculator(input: {
 
     const [native, external] = poolAmounts.value;
     const externalAdded = tokenAField.fieldAmount.value;
-    const nativeAdded = tokenAField.fieldAmount.value;
+    const nativeAdded = tokenBField.fieldAmount.value;
     return native.add(nativeAdded).divide(external.add(externalAdded));
   });
 

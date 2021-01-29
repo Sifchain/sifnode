@@ -101,8 +101,8 @@ describe("addLiquidityCalculator", () => {
       expected: {
         aPerBRatioMessage: "2.00000000",
         bPerARatioMessage: "0.50000000",
-        aPerBRatioProjectedMessage: "1.50000000",
-        bPerARatioProjectedMessage: "0.66666667",
+        aPerBRatioProjectedMessage: "0.60000000",
+        bPerARatioProjectedMessage: "1.66666667",
         shareOfPool: "57.45%",
       },
     },
@@ -117,9 +117,26 @@ describe("addLiquidityCalculator", () => {
       expected: {
         aPerBRatioMessage: "4.00000000",
         bPerARatioMessage: "0.25000000",
-        aPerBRatioProjectedMessage: "2.50000000",
-        bPerARatioProjectedMessage: "0.40000000",
+        aPerBRatioProjectedMessage: "1.00000000",
+        bPerARatioProjectedMessage: "1.00000000",
         shareOfPool: "50.00%",
+      },
+    },
+
+    {
+      poolExternal: "100000000",
+      poolNative: "100000000",
+      poolUnits: "10000000000000000000000000",
+      addedExternal: "100000000000",
+      addedNative: "1",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      expected: {
+        aPerBRatioMessage: "1.00000000", // 100000000 / 100000000
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1000.99998999", // 100100000000/100000001
+        bPerARatioProjectedMessage: "0.00099900",
+        shareOfPool: "33.31%",
       },
     },
   ];
@@ -180,8 +197,8 @@ describe("addLiquidityCalculator", () => {
 
     expect(aPerBRatioMessage.value).toBe("2.00000000");
     expect(bPerARatioMessage.value).toBe("0.50000000");
-    expect(aPerBRatioProjectedMessage.value).toBe("1.90909091");
-    expect(bPerARatioProjectedMessage.value).toBe("0.52380952");
+    expect(aPerBRatioProjectedMessage.value).toBe("1.40000000");
+    expect(bPerARatioProjectedMessage.value).toBe("0.71428571");
     expect(shareOfPoolPercent.value).toBe("13.73%");
   });
 
@@ -304,8 +321,8 @@ describe("addLiquidityCalculator", () => {
     expect(state.value).toBe(PoolState.VALID_INPUT);
     expect(aPerBRatioMessage.value).toBe("1.00000000");
     expect(bPerARatioMessage.value).toBe("1.00000000");
-    expect(aPerBRatioProjectedMessage.value).toBe("1.00000000");
-    expect(bPerARatioProjectedMessage.value).toBe("1.00000000");
+    expect(aPerBRatioProjectedMessage.value).toBe("1.00100000");
+    expect(bPerARatioProjectedMessage.value).toBe("0.99900100");
   });
 
   test("insufficient funds", () => {

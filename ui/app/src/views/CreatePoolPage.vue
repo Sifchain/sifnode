@@ -15,6 +15,7 @@ import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
 import PriceCalculation from "@/components/shared/PriceCalculation.vue";
+import PriceCalculationCell from "@/components/shared/PriceCalculationCell.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 
@@ -27,6 +28,7 @@ export default defineComponent({
     SelectTokenDialogSif,
     PriceCalculation,
     ConfirmationDialog,
+    PriceCalculationCell,
     ModalView,
   },
   props: ["title"],
@@ -38,19 +40,12 @@ export default defineComponent({
     const router = useRouter();
     const route = useRoute();
 
-    const {
-      fromSymbol,
-      fromAmount,
-
-      toAmount,
-    } = useCurrencyFieldState();
+    const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
 
     const toSymbol = ref("rowan");
     fromSymbol.value = route.params.externalAsset
       ? route.params.externalAsset.toString()
       : null;
-
-    const priceMessage = ref("");
 
     function clearAmounts() {
       fromAmount.value = "0.0";
@@ -77,7 +72,6 @@ export default defineComponent({
       bPerARatioMessage,
       aPerBRatioProjectedMessage,
       bPerARatioProjectedMessage,
-      shareOfPool,
       shareOfPoolPercent,
       totalLiquidityProviderUnits,
       tokenAFieldAmount,
@@ -263,52 +257,54 @@ export default defineComponent({
       </template>
     </Modal>
 
-    <PriceCalculation>
-      <div class="pool-share">
-        <h4 class="pool-share-title text--left">Prices and pool share</h4>
-        <div class="pool-share-details" v-if="nextStepAllowed">
-          <div>
-            <span class="number">{{ aPerBRatioMessage }}</span
-            ><br />
-            <span
-              >{{ fromSymbol.toUpperCase() }} per
-              {{ toSymbol.toUpperCase() }}</span
-            >
-          </div>
-          <div>
-            <span class="number">{{ bPerARatioMessage }}</span
-            ><br />
-            <span
-              >{{ toSymbol.toUpperCase() }} per
-              {{ fromSymbol.toUpperCase() }}</span
-            >
-          </div>
-          <div></div>
-        </div>
-        <div class="pool-share-details" v-if="nextStepAllowed">
-          <div>
-            <span class="number">{{ aPerBRatioProjectedMessage }}</span
-            ><br />
-            <span
-              >{{ fromSymbol.toUpperCase() }} per
-              {{ toSymbol.toUpperCase() }}</span
-            >
-          </div>
-          <div>
-            <span class="number">{{ bPerARatioProjectedMessage }}</span
-            ><br />
-            <span
-              >{{ toSymbol.toUpperCase() }} per
-              {{ fromSymbol.toUpperCase() }}</span
-            >
-          </div>
-          <div>
-            <span class="number">{{ shareOfPoolPercent }}</span
-            ><br />Share of Pool
-          </div>
-        </div>
-      </div>
+    <PriceCalculation :show="nextStepAllowed">
+      <template #header>Pool Token Prices</template>
+      <template #body>
+        <PriceCalculationCell>
+          <span class="number">{{ aPerBRatioMessage }}</span
+          ><br />
+          <span
+            >{{ fromSymbol.toUpperCase() }} per
+            {{ toSymbol.toUpperCase() }}</span
+          >
+        </PriceCalculationCell>
+        <PriceCalculationCell>
+          <span class="number">{{ bPerARatioMessage }}</span
+          ><br />
+          <span
+            >{{ toSymbol.toUpperCase() }} per
+            {{ fromSymbol.toUpperCase() }}</span
+          >
+        </PriceCalculationCell>
+      </template>
     </PriceCalculation>
+
+    <PriceCalculation :show="nextStepAllowed">
+      <template #header>Price Impact and Pool Share</template>
+      <template #body>
+        <PriceCalculationCell>
+          <span class="number">{{ aPerBRatioProjectedMessage }}</span
+          ><br />
+          <span
+            >{{ fromSymbol.toUpperCase() }} per
+            {{ toSymbol.toUpperCase() }}</span
+          >
+        </PriceCalculationCell>
+        <PriceCalculationCell>
+          <span class="number">{{ bPerARatioProjectedMessage }}</span
+          ><br />
+          <span
+            >{{ toSymbol.toUpperCase() }} per
+            {{ fromSymbol.toUpperCase() }}</span
+          >
+        </PriceCalculationCell>
+        <PriceCalculationCell>
+          <span class="number">{{ shareOfPoolPercent }}</span
+          ><br />Share of Pool
+        </PriceCalculationCell></template
+      >
+    </PriceCalculation>
+
     <ActionsPanel
       @nextstepclick="handleNextStepClicked"
       :nextStepAllowed="nextStepAllowed"
@@ -334,34 +330,9 @@ export default defineComponent({
   </Layout>
 </template>
 
-<style lang="scss">
-.pool-share {
-  font-size: 12px;
-  font-weight: 400;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-
-  &-title {
-    text-align: left;
-    padding: 4px 16px;
-    border-bottom: $divider;
-  }
-
-  &-details {
-    display: flex;
-    padding: 4px 16px;
-    flex-grow: 1;
-    justify-content: space-between;
-    align-items: center;
-
-    div {
-      flex: 33%;
-    }
-  }
-  .number {
-    font-size: 16px;
-    font-weight: bold;
-  }
+<style lang="scss" scoped>
+.number {
+  font-size: 16px;
+  font-weight: bold;
 }
 </style>
