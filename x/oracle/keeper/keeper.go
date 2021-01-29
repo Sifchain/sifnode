@@ -101,22 +101,16 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	if claim.Content == "" {
 		return types.Status{}, types.ErrInvalidClaim
 	}
-	fmt.Println("claim.Content: ", claim.Content)
-	fmt.Println("claim.ID: ", claim.ID)
 
 	prophecy, found := k.GetProphecy(ctx, claim.ID)
 	if !found {
-		fmt.Println("did not find prophecy with this claim.ID: ", claim.ID)
 		prophecy = types.NewProphecy(claim.ID)
 	}
 
-	fmt.Println("prophecy.Status.Text before switch statement: ", prophecy.Status.Text)
 	switch prophecy.Status.Text {
 	case types.PendingStatusText:
-		fmt.Println("no problem with this status: ", prophecy.Status.Text)
 		// continue processing
 	default:
-		fmt.Println("prophecy.Status.Text: ", prophecy.Status.Text)
 		return types.Status{}, types.ErrProphecyFinalized
 	}
 
@@ -170,14 +164,9 @@ func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) type
 	highestPossibleClaimPower := highestClaimPower + remainingPossibleClaimPower
 	highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower)
 	if highestConsensusRatio >= k.consensusNeeded {
-		fmt.Println("correctly set the claim for prophecy: ", prophecy.ID)
 		prophecy.Status.Text = types.SuccessStatusText
 		prophecy.Status.FinalClaim = highestClaim
 	} else if highestPossibleConsensusRatio < k.consensusNeeded {
-		fmt.Println("\n\nincorrectly set the claim for prophecy:: ", prophecy.ID)
-		fmt.Println("\n\n\n~~~~~~Issue found, setting the prophecy to a failed status state~~~~~~\n\n\n")
-		fmt.Println("highestPossibleConsensusRatio:: ", highestPossibleConsensusRatio)
-		fmt.Println("k.consensusNeeded:: ", k.consensusNeeded)
 		prophecy.Status.Text = types.FailedStatusText
 	}
 	return prophecy
