@@ -14,6 +14,9 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
     get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
 
 
+default_timeout_for_ganache = 10
+
+
 def decrease_log_level(new_level=logging.WARNING):
     logger = logging.getLogger()
     existing_level = logger.level
@@ -29,7 +32,7 @@ def force_log_level(new_level):
     return existing_level
 
 
-def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest, max_seconds: int = 30):
+def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest, max_seconds: int = default_timeout_for_ganache):
     logging.debug(f"transfer_ethereum_to_sifchain {transfer_request.as_json()}")
 
     # it's possible that this is the first transfer to the address, so there's
@@ -55,11 +58,11 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     logging.debug(f"transfer_ethereum_to_sifchain_json: {json.dumps(status)}", )
 
     force_log_level(original_log_level)
-    send_tx = send_from_ethereum_to_sifchain(transfer_request)
+    starting_block = send_from_ethereum_to_sifchain(transfer_request)
+    logging.info(f"send_from_ethereum_to_sifchain block number: {starting_block}")
     original_log_level = decrease_log_level()
 
-    starting_block = current_ethereum_block_number(transfer_request.smart_contracts_dir)
-    half_n_wait_blocks = n_wait_blocks / 2 + 1
+    half_n_wait_blocks = n_wait_blocks / 2
     logging.debug("wait half the blocks, transfer should not complete")
     if transfer_request.manual_block_advance:
         advance_n_ethereum_blocks(half_n_wait_blocks, transfer_request.smart_contracts_dir)
@@ -118,7 +121,6 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     result = {
         **status,
         "sifchain_ending_balance": target_balance,
-        "send_tx": send_tx
     }
     logging.debug(f"transfer_ethereum_to_sifchain completed {result}")
     return result
@@ -148,7 +150,7 @@ def transfer_sifchain_to_ethereum(
     logging.debug(status)
 
     force_log_level(original_log_level)
-    send_tx = send_from_sifchain_to_ethereum(transfer_request, credentials)
+    block_number = send_from_sifchain_to_ethereum(transfer_request, credentials)
     original_log_level = decrease_log_level()
 
     target_balance = ethereum_starting_balance + transfer_request.amount
@@ -169,9 +171,8 @@ def transfer_sifchain_to_ethereum(
         **status,
         "sifchain_ending_balance": sifchain_ending_balance,
         "ethereum_ending_balance": target_balance,
-        "send_tx": send_tx
     }
-    logging.debug(f"transfer_sifchain_to_ethereum_complete_json: {json.dumps(send_tx)}")
+    logging.debug(f"transfer_sifchain_to_ethereum_complete_json: {json.dumps(result)}")
     force_log_level(original_log_level)
     return result
 
@@ -194,7 +195,7 @@ def transfer_sifchain_to_sifchain(
     }
     logging.info(status)
 
-    send_tx = send_from_sifchain_to_sifchain(
+    send_from_sifchain_to_sifchain(
         from_address=transfer_request.sifchain_address,
         to_address=transfer_request.sifchain_destination_address,
         amount=transfer_request.amount,
@@ -214,7 +215,6 @@ def transfer_sifchain_to_sifchain(
     return {
         **status,
         "sifchain_ending_balance": target_balance,
-        "send_tx": send_tx
     }
 
 

@@ -18,17 +18,23 @@ module.exports = async (cb) => {
 
     logging.info(`sendBurnTx: ${JSON.stringify(argv, undefined, 2)}`);
 
-    const bridgeBankContract = await contractUtilites.buildContract(this, argv, "BridgeBank", argv.bridgebank_address);
+    const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging, "BridgeBank", argv.bridgebank_address);
 
     const result = {};
 
+    let gasLimit = argv.gas;
+    if (gasLimit === 'estimate') {
+        gasLimit = 6000000; // we don't do an actual estimate for burns, just locks
+    }
+
+    // see if the user asked to approve the amount first
     if (argv.approve) {
-        const tokenContract = await contractUtilites.buildContract(this, argv, "BridgeToken", argv.symbol);
+        const tokenContract = await contractUtilites.buildContract(this, argv, logging,"BridgeToken", argv.symbol);
 
         result.approve = await tokenContract.approve(argv.bridgebank_address, argv.amount, {
             from: argv.ethereum_address,
             value: 0,
-            gas: argv.gas
+            gas: gasLimit
         });
     }
 
@@ -39,7 +45,7 @@ module.exports = async (cb) => {
         {
             from: argv.ethereum_address,
             value: 0,
-            gas: argv.gas
+            gas: gasLimit
         }
     );
 
