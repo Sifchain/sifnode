@@ -283,7 +283,7 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
 
 
 # this does not wait for the transaction to complete
-def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest):
+def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest) -> int:
     direction = "sendBurnTx" if transfer_request.sifchain_symbol == "rowan" else "sendLockTx"
     command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} integrationtest:{direction} " \
                    f"--sifchain_address {transfer_request.sifchain_address} " \
@@ -294,8 +294,12 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
                    f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
                    f"--gas estimate "
     command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
-    return run_yarn_command(command_line)
-
+    transaction_result = run_yarn_command(command_line)
+    if "burn" in transaction_result:
+        result = transaction_result["burn"]["receipt"]["blockNumber"]
+    else:
+        result = transaction_result["receipt"]["blockNumber"]
+    return result
 
 def lock_rowan(user, amount):
     command_line = """yes {} |sifnodecli tx ethbridge lock {} \

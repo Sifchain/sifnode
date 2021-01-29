@@ -58,9 +58,8 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     logging.debug(f"transfer_ethereum_to_sifchain_json: {json.dumps(status)}", )
 
     force_log_level(original_log_level)
-    send_tx = send_from_ethereum_to_sifchain(transfer_request)
-    logging.info(f"send_from_ethereum_to_sifchain result: {send_tx}")
-    starting_block = int(send_tx["receipt"]["blockNumber"])
+    starting_block = send_from_ethereum_to_sifchain(transfer_request)
+    logging.info(f"send_from_ethereum_to_sifchain result: {starting_block}")
     original_log_level = decrease_log_level()
 
     half_n_wait_blocks = n_wait_blocks / 2
@@ -122,7 +121,6 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     result = {
         **status,
         "sifchain_ending_balance": target_balance,
-        "send_tx": send_tx
     }
     logging.debug(f"transfer_ethereum_to_sifchain completed {result}")
     return result
@@ -152,7 +150,7 @@ def transfer_sifchain_to_ethereum(
     logging.debug(status)
 
     force_log_level(original_log_level)
-    send_tx = send_from_sifchain_to_ethereum(transfer_request, credentials)
+    block_number = send_from_sifchain_to_ethereum(transfer_request, credentials)
     original_log_level = decrease_log_level()
 
     target_balance = ethereum_starting_balance + transfer_request.amount
@@ -173,9 +171,8 @@ def transfer_sifchain_to_ethereum(
         **status,
         "sifchain_ending_balance": sifchain_ending_balance,
         "ethereum_ending_balance": target_balance,
-        "send_tx": send_tx
     }
-    logging.debug(f"transfer_sifchain_to_ethereum_complete_json: {json.dumps(send_tx)}")
+    logging.debug(f"transfer_sifchain_to_ethereum_complete_json: {json.dumps(result)}")
     force_log_level(original_log_level)
     return result
 
@@ -198,7 +195,7 @@ def transfer_sifchain_to_sifchain(
     }
     logging.info(status)
 
-    send_tx = send_from_sifchain_to_sifchain(
+    send_from_sifchain_to_sifchain(
         from_address=transfer_request.sifchain_address,
         to_address=transfer_request.sifchain_destination_address,
         amount=transfer_request.amount,
@@ -218,7 +215,6 @@ def transfer_sifchain_to_sifchain(
     return {
         **status,
         "sifchain_ending_balance": target_balance,
-        "send_tx": send_tx
     }
 
 
