@@ -253,6 +253,8 @@ export default defineComponent({
             @toblur="handleBlur"
             @tosymbolclicked="handleToSymbolClicked(requestOpen)"
             :toSymbolSelectable="connected"
+            labelFirst="From"
+            labelSecond="To"
           />
         </template>
         <template v-slot:default="{ requestClose }">
