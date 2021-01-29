@@ -156,3 +156,33 @@ func CreateCosmosMsgAttributes(t *testing.T, claimType types.Event) []tmKv.Pair 
 
 	return attributes[:]
 }
+
+// CreateCosmosMsgIncompleteAttributes creates a MsgBurn/MsgLock for testing purposes missing some attributes
+func CreateCosmosMsgIncompleteAttributes(t *testing.T, claimType types.Event) []tmKv.Pair {
+	attributes := [3]tmKv.Pair{}
+
+	// (key, value) pairing for "cosmos_sender" key
+	pairCosmosSender := tmKv.Pair{
+		Key:   []byte("cosmos_sender"),
+		Value: []byte(TestCosmosAddress1),
+	}
+
+	// (key, value) pairing for "cosmos_sender_sequence" key
+	pairCosmosSenderSequence := tmKv.Pair{
+		Key:   []byte("cosmos_sender_sequence"),
+		Value: []byte(strconv.Itoa(TestCosmosAddressSequence)),
+	}
+
+	// (key, value) pairing for "ethereum_receiver" key
+	pairEthereumReceiver := tmKv.Pair{
+		Key:   []byte("ethereum_receiver"),
+		Value: []byte(common.HexToAddress(TestEthereumAddress1).Hex()), // .Bytes() doesn't seem to work here
+	}
+
+	// Assign pairs to attributes array
+	attributes[0] = pairCosmosSender
+	attributes[1] = pairCosmosSenderSequence
+	attributes[2] = pairEthereumReceiver
+
+	return attributes[:]
+}

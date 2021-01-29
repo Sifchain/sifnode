@@ -102,6 +102,22 @@ func TestLockEventToCosmosMsg(t *testing.T) {
 	require.Equal(t, expectedMsgLock, msgLock)
 }
 
+func TestFailedBurnEventToCosmosMsg(t *testing.T) {
+	// Create MsgBurn attributes as input parameter
+	cosmosMsgAttributes := CreateCosmosMsgIncompleteAttributes(t, types.MsgBurn)
+	_, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes)
+
+	require.Error(t, err)
+}
+
+func TestFailedLockEventToCosmosMsg(t *testing.T) {
+	// Create MsgLock attributes as input parameter
+	cosmosMsgAttributes := CreateCosmosMsgIncompleteAttributes(t, types.MsgLock)
+	_, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes)
+
+	require.Error(t, err)
+}
+
 func TestMsgBurnToProphecyClaim(t *testing.T) {
 	// Parse expected symbol
 	res := strings.SplitAfter(strings.ToLower(TestSymbol), defaultSifchainPrefix)
