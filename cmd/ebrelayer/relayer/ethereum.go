@@ -30,7 +30,6 @@ import (
 	"github.com/sethvargo/go-password/password"
 	"github.com/tendermint/go-amino"
 	tmLog "github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tendermint/libs/math"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
@@ -40,8 +39,7 @@ import (
 )
 
 const (
-	transactionInterval      = 10 * time.Second
-	maxMessagesInTransaction = 20
+	transactionInterval = 10 * time.Second
 )
 
 // TODO: Move relay functionality out of EthereumSub into a new Relayer parent struct
@@ -201,19 +199,24 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 
 			// Add new header info to buffer
 			sub.EventsBuffer.AddHeader(newHead.Number, newHead.Hash(), newHead.ParentHash)
-			var events []types.EthereumEvent
 			for {
 				fifty := big.NewInt(50)
 				fifty.Add(fifty, sub.EventsBuffer.MinHeight)
 				if fifty.Cmp(newHead.Number) <= 0 {
-					events = append(events, sub.EventsBuffer.GetHeaderEvents()...)
+					events := sub.EventsBuffer.GetHeaderEvents()
+					for _, event := range events {
+						err := sub.handleEthereumEvent(event)
+						time.Sleep(transactionInterval)
+						if err != nil {
+							sub.Logger.Error(err.Error())
+							completionEvent.Add(1)
+						}
+					}
 					sub.EventsBuffer.RemoveHeight()
-
 				} else {
 					break
 				}
 			}
-			sub.handleEthereumEventByBatch(events)
 
 		// vLog is raw event data
 		case vLog := <-logs:
@@ -329,7 +332,7 @@ func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock in
 		sub.Logger.Error(err.Error())
 		return
 	}
-	var events []types.EthereumEvent
+
 	for _, log := range logs {
 		// fmt.Printf("log is %v", log)
 		// Before deal with it, we need check in cosmos if it is already handled by myself bofore.
@@ -339,14 +342,17 @@ func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock in
 		} else if isBurnLock {
 			sub.Logger.Info(fmt.Sprintf("found out a burn lock event\n"))
 			if !EventProcessed(bridgeClaims, event) {
-				events = append(events, event)
+				err := sub.handleEthereumEvent(event)
+				time.Sleep(transactionInterval)
+				if err != nil {
+					sub.Logger.Error(err.Error())
+				}
 			} else {
 				sub.Logger.Info(fmt.Sprintf("event already processed by me\n"))
 			}
 		}
 	}
 
-	sub.handleEthereumEventByBatch(events)
 }
 
 // startContractEventSub : starts an event subscription on the specified Peggy contract
@@ -412,27 +418,13 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 	return event, true, nil
 }
 
-// handleEthereumEventByBatch process events with limited message number
-func (sub EthereumSub) handleEthereumEventByBatch(events []types.EthereumEvent) {
-	eventsLength := len(events)
-	for index := 0; index < eventsLength; {
-		sub.handleEthereumEvent(events[index:math.MinInt(index+maxMessagesInTransaction, eventsLength)])
-		index = index + maxMessagesInTransaction
-		time.Sleep(transactionInterval)
-	}
-}
-
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
-func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
-	var prophecyClaims []ethbridge.EthBridgeClaim
-	for _, event := range events {
-		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.ValidatorAddress, event)
-		if err != nil {
-			sub.Logger.Info(err.Error())
-		} else {
-			prophecyClaims = append(prophecyClaims, prophecyClaim)
-		}
+func (sub EthereumSub) handleEthereumEvent(event types.EthereumEvent) error {
+	prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.ValidatorAddress, event)
+	if err != nil {
+		sub.Logger.Info(err.Error())
+		return err
 	}
 
-	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr)
+	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, &prophecyClaim, sub.CliCtx, sub.TxBldr)
 }

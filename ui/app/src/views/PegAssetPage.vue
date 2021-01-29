@@ -109,7 +109,7 @@ export default defineComponent({
       return (
         amountNum.isGreaterThan("0.0") &&
         address.value !== "" &&
-        amountNum.isLessThan(balance)
+        amountNum.isLessThanOrEqualTo(balance)
       );
     });
 

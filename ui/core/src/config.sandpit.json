@@ -6,7 +6,7 @@
   "sifChainId": "sandpit",
   "web3Provider": "metamask",
   "nativeAsset": "rowan",
-  "bridgebankContractAddress": "0x32Fb82D481DFE067Cb5Ed3591f91237ba22C85C8",
+  "bridgebankContractAddress": "0x979F0880de42A7aE510829f13E66307aBb957f13",
   "keplrChainConfig": {
     "chainName": "Sifchain",
     "chainId": "",
