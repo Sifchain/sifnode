@@ -2,17 +2,26 @@
   <div class="details">
     <div class="details-header">
       <div class="details-row">
-        <span>Withdraw Rowan</span>
+        <img
+          v-if="nativeAssetImage"
+          width="24"
+          :src="nativeAssetImage"
+          class="info-img"
+        />
+        <span>Withdraw {{ nativeAssetSymbol }}</span>
         <span>{{ nativeAssetAmount }}</span>
       </div>
       <div class="details-row">
+        <img
+          v-if="externalAssetImage"
+          width="24"
+          :src="externalAssetImage"
+          class="info-img"
+        />
         <span>Withdraw {{ externalAssetSymbol }}</span>
         <span>{{ externalAssetAmount }}</span>
       </div>
     </div>
-    <!-- <div class="details-body">
-      
-    </div> -->
   </div>
 </template>
 
@@ -32,17 +41,26 @@
 
   &-row {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    
+    &:first-of-type {
+      margin-bottom: 8px;
+    }
 
     span:last-child {
       text-align: right;
       color: $c_gray_900;
+      margin-left: auto;
     }
 
     span:first-child {
       color: $c_gray_700;
       font-weight: 400;
       text-align: left;
+    }
+
+    img {
+      margin-right: 8px;
     }
   }
 }
@@ -53,9 +71,11 @@ import { defineComponent } from "vue";
 export default defineComponent({
   props: {
     nativeAssetSymbol: { type: String, default: ""},
+    nativeAssetAmount: { type: String, default: ""},
+    nativeAssetImage: { type: String, default: ""},
     externalAssetAmount: { type: String, default: ""},
     externalAssetSymbol: { type: String, default: ""},
-    nativeAssetAmount: { type: String, default: ""},
+    externalAssetImage: { type: String, default: ""},
   },
 });
 </script>

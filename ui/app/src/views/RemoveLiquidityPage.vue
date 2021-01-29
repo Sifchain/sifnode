@@ -4,7 +4,6 @@ import Layout from "@/components/layout/Layout.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
-import ModalView from "@/components/shared/ModalView.vue";
 import { Asset, PoolState, useRemoveLiquidityCalculator } from "ui-core";
 import { LiquidityProvider } from "ui-core";
 import { useCore } from "@/hooks/useCore";
@@ -15,22 +14,20 @@ import SifButton from "@/components/shared/SifButton.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
 import Caret from "@/components/shared/Caret.vue";
 import Slider from "@/components/shared/Slider.vue";
-import ConfirmationDialog, {
-  ConfirmState,
-} from "@/components/confirmationDialog/RemoveConfirmationDialog.vue";
+import RemoveLiquidityConfirmationDialog from "@/components/confirmationDialog/RemoveLiquidityConfirmationDialog.vue";
+import { ConfirmState } from "@/components/shared/ConfirmationModal.vue";
 
 export default defineComponent({
   components: {
     AssetItem,
     Layout,
     Modal,
-    ModalView,
     SelectTokenDialogSif,
     ActionsPanel,
     SifButton,
     Caret,
     Slider,
-    ConfirmationDialog,
+    RemoveLiquidityConfirmationDialog,
   },
   setup() {
     const { store, actions, poolFinder, api } = useCore();
@@ -230,19 +227,18 @@ export default defineComponent({
       :nextStepMessage="nextStepMessage"
     />
 
-    <ModalView
+    <RemoveLiquidityConfirmationDialog
       :requestClose="requestTransactionModalClose"
       :isOpen="transactionModalOpen"
-      ><ConfirmationDialog
-        @confirmswap="handleAskConfirmClicked"
-        :state="transactionState"
-        :externalAssetSymbol="externalAssetSymbol"
-        :nativeAssetSymbol="nativeAssetSymbol"
-        :externalAssetAmount="withdrawExternalAssetAmount"
-        :nativeAssetAmount="withdrawNativeAssetAmount"
-        :transactionHash="transactionHash"
-        :requestClose="requestTransactionModalClose"
-    /></ModalView>
+      @confirmed="handleAskConfirmClicked"
+      :state="transactionState"
+      :transactionHash="transactionHash"
+
+      :externalAssetSymbol="externalAssetSymbol"
+      :nativeAssetSymbol="nativeAssetSymbol"
+      :externalAssetAmount="withdrawExternalAssetAmount"
+      :nativeAssetAmount="withdrawNativeAssetAmount"
+    />
   </Layout>
 </template>
 
