@@ -165,3 +165,16 @@ func TestIsZeroAddress(t *testing.T) {
 	trueRes := isZeroAddress(common.HexToAddress(TestNullAddress))
 	require.True(t, trueRes)
 }
+
+func TestAttributesToEthereumBridgeClaim(t *testing.T) {
+	attributes := CreateEthereumBridgeClaimAttributes(t)
+	claim, err := AttributesToEthereumBridgeClaim(attributes)
+	require.NotEqual(t, claim, nil)
+	require.Equal(t, err, nil)
+}
+
+func TestFailedAttributesToEthereumBridgeClaim(t *testing.T) {
+	attributes := CreateInvalidEthereumBridgeClaimAttributes(t)
+	_, err := AttributesToEthereumBridgeClaim(attributes)
+	require.Error(t, err)
+}
