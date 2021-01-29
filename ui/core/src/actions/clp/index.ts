@@ -94,6 +94,11 @@ export default ({
       nativeAssetAmount: AssetAmount,
       externalAssetAmount: AssetAmount
     ) {
+      const response = {
+        hash: <string>"",
+        state: <string>"",
+        stateMsg: <string>""
+      }
       try {
         if (!state.address) throw "No from address provided for swap";
         const hasPool = !!findPool(
@@ -112,7 +117,18 @@ export default ({
           externalAssetAmount,
         });
 
-        return await api.SifService.signAndBroadcast(tx.value.msg);
+        const txHash = await api.SifService.signAndBroadcast(tx.value.msg);
+          
+        if (txHash && txHash.rawLog && txHash.rawLog.includes('"type":"added_liquidity"')) {
+          response.state = "confirmed";
+          response.hash = txHash?.transactionHash ?? "";
+        } else {
+          response.state = "failed";
+          response.stateMsg = "Oops... Something went wrong. Please try again!";
+        }
+
+        return response;
+
       } catch (err) {
         // TODO: coordinate with blockchain to get more standardised errors
         if (err.message) {
@@ -121,6 +137,12 @@ export default ({
             message: err.message,
           });
         }
+
+        // TODO: check the type of error, and notify frontend accordingly
+        response.state = "failed";
+        response.stateMsg = "Oops... Something went wrong. Please try again!";
+
+        return response;
       }
     },
 

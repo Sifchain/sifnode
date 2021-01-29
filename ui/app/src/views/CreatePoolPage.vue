@@ -32,7 +32,7 @@ export default defineComponent({
   setup() {
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
-    const transactionState = ref<ConfirmState>("selecting");
+    const transactionState = ref<ConfirmState | string>("selecting");
     const transactionStateMsg = ref<string | null>(null);
     const transactionHash = ref<string | null>(null);
     const router = useRouter();
@@ -109,33 +109,15 @@ export default defineComponent({
         throw new Error("Token B field amount is not defined");
 
       transactionState.value = "signing";
-
-      try {
-        let tx = await actions.clp.addLiquidity(
-          tokenBFieldAmount.value,
-          tokenAFieldAmount.value
-        );
-
-        console.log("POOL transaction hash: ", tx);
-        transactionHash.value = tx?.transactionHash ?? "";
-        if (tx && tx.rawLog && tx.rawLog.includes('"type":"added_liquidity"')) {
-          transactionState.value = "confirmed";
-        } else {
-          transactionState.value = "failed";
-          transactionStateMsg.value = "Oops... Something went wrong. Please try again!";
-        }
-
-        clearAmounts();
-      } catch (e) {
-        // TODO: Implement better error checks and status updates. -> check swap also
-        if (e.toString().includes("Request rejected")) {
-          transactionState.value = "rejected";
-          transactionStateMsg.value = "Please confirm the transaction in your wallet.";
-        } else {
-          transactionState.value = "failed";
-          transactionStateMsg.value = "Oops... Something went wrong. Please try again!";
-        }
-      }
+      
+      const tx = await actions.clp.addLiquidity(
+        tokenBFieldAmount.value,
+        tokenAFieldAmount.value
+      );
+      
+      transactionHash.value = tx?.hash?? ""
+      transactionState.value = tx?.state?? "" 
+      clearAmounts();
     }
 
     function requestTransactionModalClose() {
