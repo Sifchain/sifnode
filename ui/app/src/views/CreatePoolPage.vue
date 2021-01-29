@@ -6,8 +6,6 @@ import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
-import ModalView from "@/components/shared/ModalView.vue";
-import ConfirmationDialog from "@/components/confirmationDialog/PoolConfirmationDialog.vue";
 import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
@@ -17,6 +15,9 @@ import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import { toConfirmState } from "./utils/toConfirmState";
 import { ConfirmState } from "../types";
+import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
+import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
+import DetailsPoolUnits from "@/components/shared/DetailsPoolUnits.vue";
 
 export default defineComponent({
   components: {
@@ -26,8 +27,9 @@ export default defineComponent({
     CurrencyPairPanel,
     SelectTokenDialogSif,
     PriceCalculation,
-    CreatePoolConfirmationDialog,
-    ModalView,
+    ConfirmationModal,
+    DetailsPanelPool,
+    DetailsPoolUnits,
   },
   props: ["title"],
   setup() {
@@ -118,12 +120,13 @@ export default defineComponent({
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
 
-      clearAmounts();
+      
     }
 
     function requestTransactionModalClose() {
       if (transactionState.value === "confirmed") {
         router.push("/pool");
+        clearAmounts();
       } else {
         transactionState.value = "selecting";
       }
@@ -284,23 +287,47 @@ export default defineComponent({
       :nextStepAllowed="nextStepAllowed"
       :nextStepMessage="nextStepMessage"
     />
-    <CreatePoolConfirmationDialog 
+    <ConfirmationModal 
       :requestClose="requestTransactionModalClose"
       :isOpen="transactionModalOpen"
       @confirmed="handleAskConfirmClicked"
       :state="transactionState"
       :transactionHash="transactionHash"
       :transactionStateMsg="transactionStateMsg"
-      
-      :fromToken="fromSymbol"
-      :fromAmount="fromAmount"
-      :poolUnits="poolUnits"
-      :toAmount="toAmount"
-      :toToken="toSymbol"
-      :aPerB="aPerBRatioMessage"
-      :bPerA="bPerARatioMessage"
-      :shareOfPool="shareOfPoolPercent"
-    />
+      confirmButtonText="Confirm Supply"
+      title="You are depositing"
+    >
+      <template v-slot:selecting>
+        <div>
+          <DetailsPoolUnits 
+            :fromSymbol="fromSymbol"
+            :toSymbol="toSymbol"
+            :poolUnits="poolUnits"
+          />
+          <DetailsPanelPool
+            class="details"
+            :fromTokenLabel="fromSymbol"
+            :fromAmount="fromAmount"
+            :fromTokenImage="fromImage"
+            :toTokenLabel="toSymbol"
+            :toAmount="toAmount"
+            :toTokenImage="toImage"
+            :aPerB="aPerB"
+            :bPerA="bPerA"
+            :shareOfPool="shareOfPoolPercent"
+          />
+        </div>
+      </template>
+
+      <template v-slot:common>
+        <p class="text--normal">
+          Supplying
+          <span class="text--bold">{{ fromAmount }} {{ fromSymbol }}</span>
+          and
+          <span class="text--bold">{{ toAmount }} {{ toSymbol }}</span>
+        </p>
+      </template>
+    </ConfirmationModal>
   </Layout>
 </template>
 

@@ -12,7 +12,7 @@
         :confirmButtonText="confirmButtonText"
       > 
         <template v-slot:body>
-          <slot name="askbody"></slot>
+          <slot name="selecting"></slot>
         </template>
       </ConfirmationModalAsk>
 
@@ -23,20 +23,21 @@
         :transactionHash="transactionHash"
         :transactionStateMsg="transactionStateMsg"
       >
+
         <template v-slot:signing>
-          <slot name="signing"></slot>
+            <slot :name="!!this.$slots.signing ? 'signing' : 'common'"></slot> 
         </template>
 
         <template v-slot:confirmed>
-          <slot name="confirmed"></slot>
+          <slot :name="!!this.$slots.signing ? 'confirmed' : 'common'"></slot>
         </template>
 
         <template v-slot:rejected>
-          <slot name="rejected"></slot>
+          <slot :name="!!this.$slots.signing ? 'rejected' : 'common'"></slot>
         </template>
 
         <template v-slot:failed>
-          <slot name="failed"></slot>
+          <slot :name="!!this.$slots.signing ? 'failed' : 'common'"></slot>
         </template>
       </ConfirmationModalSigning>
 
@@ -47,8 +48,6 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
-import { computed } from "@vue/reactivity";
-
 import ModalView from "@/components/shared/ModalView.vue";
 import ConfirmationModalAsk from "@/components/shared/ConfirmationModalAsk.vue";
 import ConfirmationModalSigning from "@/components/shared/ConfirmationModalSigning.vue";

@@ -2,11 +2,11 @@
   <div>
     <div class="confirmation">
       <div class="message">
-        <Loader black :success="confirmed" :failed="rejected || failed" /><br />
+        <Loader black :success="state === 'confirmed'" :failed="state === 'rejected' || state === 'failed'" /><br />
         <div class="text-wrapper">
 
           <transition name="swipe">
-            <div class="text" v-if="signing">
+            <div class="text" v-if="state === 'signing'">
               <p>Waiting for confirmation</p>
               <slot name="signing"></slot> 
               <br />
@@ -15,7 +15,7 @@
           </transition>
           
           <transition name="swipe">
-            <div class="text" v-if="rejected">
+            <div class="text" v-if="state === 'rejected'">
               <p>Transaction Rejected</p>
               <slot name="rejected"></slot>
               <br />
@@ -24,7 +24,7 @@
           </transition>
 
           <transition name="swipe">
-            <div class="text" v-if="failed">
+            <div class="text" v-if="state === 'failed'">
               <p>Transaction Failed</p>
               <slot name="failed"></slot>
               <br />
@@ -33,7 +33,7 @@
           </transition>
 
           <transition name="swipe">
-            <div class="text" v-if="confirmed">
+            <div class="text" v-if="state === 'confirmed'">
               <p>Transaction Submitted</p>
               <slot name="confirmed"></slot>
               <br />
@@ -58,7 +58,6 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { computed } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
@@ -71,20 +70,11 @@ export default defineComponent({
     transactionStateMsg: String,
   },
 
-  setup(props) {
+  setup() {
     const { config } = useCore();
-
-    const signing = computed(() => props.state === 'signing')
-    const rejected = computed(() => props.state === 'rejected')
-    const failed = computed(() => props.state === 'failed')
-    const confirmed = computed(() => props.state === 'confirmed')
 
     return {
       chainId: config.sifChainId,
-      signing,
-      rejected,
-      failed,
-      confirmed,
     }
   }
 });

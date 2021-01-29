@@ -1,21 +1,19 @@
 <template>
   <div class="details">
+    
     <div class="details-header">
       <div class="details-row">
-        <span>{{ fromTokenLabel }} Deposited</span>
+        <span class="details-row-asset">
+          <AssetItem :symbol="fromTokenLabel" inline />&nbsp;Deposited
+        </span>
         <div class="details-row-value">
           <span>{{ fromAmount }}</span>
-          <img
-            v-if="fromTokenImage"
-            width="22"
-            height="22"
-            :src="fromTokenImage"
-            class="info-img"
-          />
         </div>
       </div>
       <div class="details-row">
-        <span>ROWAN Deposited</span>
+        <span class="details-row-asset">
+          <AssetItem :symbol="toTokenLabel" inline />&nbsp;Deposited
+        </span>
         <div class="details-row-value">
           <span>{{ toAmount }}</span>
           <img
@@ -29,11 +27,11 @@
       </div>
     </div>
     <div class="details-body">
-      <div class="details-row">
+      <div class="details-row" v-if="aPerB">
         <span>Rates</span>
         <span>1 {{ fromTokenLabel }} = {{ aPerB }} {{ toTokenLabel }}</span>
       </div>
-      <div class="details-row">
+      <div class="details-row" v-if="bPerA">
         <span>&nbsp;</span>
         <span>1 {{ toTokenLabel }} = {{ bPerA }} {{ fromTokenLabel }}</span>
       </div>
@@ -74,6 +72,11 @@
       text-align: left;
     }
 
+    &-asset {
+      display: flex;
+      align-items: center;
+    }
+
     &-value {
       display: flex;
       color: $c_black;
@@ -87,8 +90,12 @@
 </style>
 <script lang="ts">
 import { defineComponent } from "vue";
+import AssetItem from "@/components/shared/AssetItem.vue";
 
 export default defineComponent({
+  components: {
+    AssetItem,
+  },
   props: {
     fromTokenLabel: { type: String, default: ""},
     fromAmount: { type: String, default: ""},
