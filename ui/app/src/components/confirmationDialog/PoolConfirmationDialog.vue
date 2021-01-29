@@ -16,6 +16,7 @@ export type ConfirmState =
 
 export default defineComponent({
   components: { AskConfirmation, AnimatedConfirmation },
+  inheritAttrs: false,
   props: {
     state: { type: String as PropType<ConfirmState>, default: "confirming" },
     requestClose: Function,
