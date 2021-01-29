@@ -47,10 +47,10 @@ def test_transfer_eth_to_ceth(integration_dir, ensure_relayer_restart):
     logging.info("(no transactions should happen without a relayer)")
     # test_utilities.whitelist_token(request.ethereum_symbol, request.smart_contracts_dir, True)
     logging.info(f"send {request.amount / 10**18} eth ({request.amount} wei) to {request.sifchain_address}")
-    with pytest.raises(Exception):
-        burn_lock_functions.transfer_ethereum_to_sifchain(request, 3)
+    test_utilities.send_from_ethereum_to_sifchain(request)
     # test_utilities.get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
 
+    logging.info("replay blocks using ebrelayer replayEthereum")
     ews=test_utilities.get_required_env_var("ETHEREUM_WEBSOCKET_ADDRESS")
     bra=test_utilities.get_required_env_var("BRIDGE_REGISTRY_ADDRESS")
     mon=test_utilities.get_required_env_var("MONIKER")
