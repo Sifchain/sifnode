@@ -141,35 +141,39 @@ export function usePoolCalculator(input: {
     return `${shareOfPool.value.multiply("100").toFixed(2)}%`;
   });
 
-  const aPerBRatioMessage = computed(() => {
-    const aAmount = tokenAField.fieldAmount.value;
-    const bAmount = tokenBField.fieldAmount.value;
+  const aPerBRatio = computed(() => {
+    if (!liquidityPool.value || !tokenAField.asset.value) {
+      return null;
+    }
+    const amount = AssetAmount(tokenAField.asset.value, "1");
+    const swapVal = liquidityPool.value.calcSwapResult(amount);
+    const providerFee = liquidityPool.value.calcProviderFee(amount);
+    const swapAmountNoFee = swapVal.add(providerFee);
+    return amount.divide(swapAmountNoFee);
+  });
 
-    if (!aAmount || aAmount.equalTo("0")) return ""; // invalid, must supply external
-    if (!bAmount || bAmount.equalTo("0")) {
-      // if rowan is 0 or empty ...
-      // allow if the pool exists (BUT ratio is inapplicable - N/A),
-      // invalid if the pool doesn't exist - ""
-      return preExistingPool.value ? "N/A" : "";
+  const bPerARatio = computed(() => {
+    if (!aPerBRatio.value || !tokenBField.asset.value) {
+      return null;
+    }
+    const amount = AssetAmount(tokenBField.asset.value, "1");
+    return amount.divide(aPerBRatio.value);
+  });
+
+  const aPerBRatioMessage = computed(() => {
+    if (!preExistingPool.value || !aPerBRatio.value) {
+      return "N/A";
     }
 
-    return aAmount.divide(bAmount).toFixed(8);
+    return aPerBRatio.value.toFixed(8);
   });
 
   const bPerARatioMessage = computed(() => {
-    const aAmount = tokenAField.fieldAmount.value;
-    const bAmount = tokenBField.fieldAmount.value;
-
-    if (!aAmount || aAmount.equalTo("0")) return ""; // invalid, must supply external
-
-    if (!bAmount || bAmount.equalTo("0")) {
-      // if rowan is 0 or empty ...
-      // allow if the pool exists (BUT ratio is inapplicable - N/A),
-      // invalid if the pool doesn't exist - ""
-      return preExistingPool.value ? "N/A" : "";
+    if (!preExistingPool.value || !bPerARatio.value) {
+      return "N/A";
     }
 
-    return bAmount.divide(aAmount).toFixed(8);
+    return bPerARatio.value.toFixed(8);
   });
 
   const state = computed(() => {
