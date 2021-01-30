@@ -22,13 +22,14 @@ Object.defineProperty(window, "store", {
   get: function() {
     return JSON.parse(
       JSON.stringify(store, function replacer(_, value) {
+        // TODO give all entities a toString
         // if AssetAmount
-        if (value.asset && value.quotient) {
+        if (value?.asset && value?.quotient) {
           return value.toString();
         }
 
         // If Fraction
-        if (value.amount && value.quotient) {
+        if (value?.amount && value?.quotient) {
           return value.toFixed(18);
         }
 
