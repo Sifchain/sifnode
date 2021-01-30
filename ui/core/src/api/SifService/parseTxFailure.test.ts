@@ -5,8 +5,6 @@ test("parseTxFailure", () => {
   expect(
     parseTxFailure({
       transactionHash: "123",
-      code: 123,
-      height: 123,
       rawLog: "",
     })
   ).toEqual({
@@ -18,8 +16,6 @@ test("parseTxFailure", () => {
   expect(
     parseTxFailure({
       transactionHash: "123",
-      code: 123,
-      height: 123,
       rawLog: "something was below expected",
     })
   ).toEqual({
@@ -31,8 +27,6 @@ test("parseTxFailure", () => {
   expect(
     parseTxFailure({
       transactionHash: "123",
-      code: 123,
-      height: 123,
       rawLog: "yegads swap_failed!",
     })
   ).toEqual({
@@ -44,8 +38,6 @@ test("parseTxFailure", () => {
   expect(
     parseTxFailure({
       transactionHash: "123",
-      code: 123,
-      height: 123,
       rawLog: "your Request rejected!",
     })
   ).toEqual({
