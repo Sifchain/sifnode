@@ -18,7 +18,7 @@ import { toConfirmState } from "./utils/toConfirmState";
 import { ConfirmState } from "../types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
-import DetailsPoolUnits from "@/components/shared/DetailsPoolUnits.vue";
+import { formatNumber, formatPercentage } from "@/components/shared/utils";
 
 export default defineComponent({
   components: {
@@ -29,7 +29,6 @@ export default defineComponent({
     SelectTokenDialogSif,
     ConfirmationModal,
     DetailsPanelPool,
-    DetailsPoolUnits,
     FatInfoTable,
     FatInfoTableCell,
   },
@@ -38,7 +37,7 @@ export default defineComponent({
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
     const transactionState = ref<ConfirmState | string>("selecting");
-    const transactionStateMsg = ref<string>('');
+    const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
     const router = useRouter();
     const route = useRoute();
@@ -46,7 +45,7 @@ export default defineComponent({
     const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
 
     const toSymbol = ref("rowan");
-    
+
     fromSymbol.value = route.params.externalAsset
       ? route.params.externalAsset.toString()
       : null;
@@ -115,7 +114,7 @@ export default defineComponent({
 
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
-      transactionStateMsg.value = tx.memo?? '';
+      transactionStateMsg.value = tx.memo ?? "";
     }
 
     function requestTransactionModalClose() {
@@ -215,6 +214,8 @@ export default defineComponent({
       },
       shareOfPoolPercent,
       connectedText,
+      formatNumber,
+
       poolUnits: totalLiquidityProviderUnits,
     };
   },
@@ -255,7 +256,7 @@ export default defineComponent({
       <template #header>Pool Token Prices</template>
       <template #body>
         <FatInfoTableCell>
-          <span class="number">{{ aPerBRatioMessage }}</span
+          <span class="number">{{ formatNumber(aPerBRatioMessage) }}</span
           ><br />
           <span
             >{{ fromSymbol.toUpperCase() }} per
@@ -263,13 +264,13 @@ export default defineComponent({
           >
         </FatInfoTableCell>
         <FatInfoTableCell>
-          <span class="number">{{ bPerARatioMessage }}</span
+          <span class="number">{{ formatNumber(bPerARatioMessage) }}</span
           ><br />
           <span
             >{{ toSymbol.toUpperCase() }} per
             {{ fromSymbol.toUpperCase() }}</span
-          >
-        </FatInfoTableCell>
+          > </FatInfoTableCell
+        ><FatInfoTableCell />
       </template>
     </FatInfoTable>
 
@@ -277,7 +278,9 @@ export default defineComponent({
       <template #header>Price Impact and Pool Share</template>
       <template #body>
         <FatInfoTableCell>
-          <span class="number">{{ aPerBRatioProjectedMessage }}</span
+          <span class="number">{{
+            formatNumber(aPerBRatioProjectedMessage)
+          }}</span
           ><br />
           <span
             >{{ fromSymbol.toUpperCase() }} per
@@ -285,7 +288,9 @@ export default defineComponent({
           >
         </FatInfoTableCell>
         <FatInfoTableCell>
-          <span class="number">{{ bPerARatioProjectedMessage }}</span
+          <span class="number">{{
+            formatNumber(bPerARatioProjectedMessage)
+          }}</span
           ><br />
           <span
             >{{ toSymbol.toUpperCase() }} per
@@ -304,7 +309,7 @@ export default defineComponent({
       :nextStepAllowed="nextStepAllowed"
       :nextStepMessage="nextStepMessage"
     />
-    <ConfirmationModal 
+    <ConfirmationModal
       :requestClose="requestTransactionModalClose"
       @confirmed="handleAskConfirmClicked"
       :state="transactionState"
@@ -315,11 +320,6 @@ export default defineComponent({
     >
       <template v-slot:selecting>
         <div>
-          <DetailsPoolUnits 
-            :fromSymbol="fromSymbol"
-            :toSymbol="toSymbol"
-            :poolUnits="poolUnits"
-          />
           <DetailsPanelPool
             class="details"
             :fromTokenLabel="fromSymbol"

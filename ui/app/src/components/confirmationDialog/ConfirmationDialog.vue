@@ -14,6 +14,7 @@ export default defineComponent({
     requestClose: Function,
     priceMessage: { type: String, default: "" },
     fromAmount: String,
+    fromToken: String,
     toAmount: String,
     toToken: String,
     leastAmount: String,
