@@ -39,6 +39,6 @@ $runner init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" \
   "$MONIKER" \
   "$MNEMONIC" \
   --chain-id "$CHAINNET" \
-  --gas 300000 \
   --gas-adjustment 1.5 \
-  --home $CHAINDIR/.sifnodecli
+  --home $CHAINDIR/.sifnodecli \
+  --gas-prices 0.5rowan
