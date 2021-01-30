@@ -18,6 +18,7 @@ class EthereumToSifchainTransferRequest:
     ethereum_network: str = ""  # mainnet, ropsten, http:// for localnet
     amount: int = 0
     ceth_amount: int = 0
+    sifchain_fees: str = ""
     smart_contracts_dir: str = ""
     ethereum_chain_id: str = "5777"
     chain_id: str = "localnet"
@@ -72,6 +73,7 @@ SIF_ETH = "ceth"
 ETHEREUM_ETH = "eth"
 SIF_ROWAN = "rowan"
 ETHEREUM_ROWAN = "erowan"
+NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 n_wait_blocks = 50  # number of blocks to wait for the relayer to act
 
@@ -93,18 +95,16 @@ def get_optional_env_var(name: str, default_value: str):
 
 
 def get_shell_output(command_line):
-    sub = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    subprocess_return = sub.stdout.read().rstrip().decode("utf-8")
-    error_return = sub.stderr.read().rstrip().decode("utf-8")
-    logging.debug(f"execute shell command:\n{command_line}\n\nresult:\n\n{subprocess_return}\n\n")
-    if sub.returncode is not None:
-        raise Exception(f"error running command: {sub.returncode} for command {command_line}\n{error_return}")
-    if error_return:
-        # don't use error level logging here.  The problem is that
-        # lots of times we run a shell script in a loop until it succeeds,
-        # so failures often aren't very important
-        logging.debug(f"shell command error: {error_return}")
-    return subprocess_return
+    logging.debug(f"execute shell command:\n{command_line}")
+    sub = subprocess.run(command_line, shell=True, capture_output=True)
+    stdout_string = sub.stdout.decode("utf-8").rstrip()
+    stderr_string = sub.stderr.decode("utf-8").rstrip()
+    logging.debug(f"execute shell command stdout:\n{stdout_string}\n")
+    if stderr_string:
+        logging.debug(f"\nexecute shell command stderr:\n{stderr_string}")
+    if sub.returncode != 0:
+        raise Exception(f"error running command: {sub.returncode} for command {command_line}\n{stderr_string}")
+    return stdout_string
 
 
 def get_shell_output_json(command_line):
@@ -127,7 +127,10 @@ def run_yarn_command(command_line):
     # so we want the one before that
     lines = output.split('\n')
     json_line = lines[-2] if lines[-1].startswith("Done in") else lines[-1]
-    return json.loads(json_line)
+    try:
+        return json.loads(json_line)
+    except Exception as e:
+        raise Exception(f"json error from command:\n{command_line}\noutput:\n{lines}\noriginal exception: {e}")
 
 
 # converts a key to a sif address.
@@ -144,14 +147,15 @@ def get_password(network_definition_file_json):
 
 
 def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
-    network_element = "--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
-    bridgetoken_element = f"--bridgetoken_address {transfer_request.bridgetoken_address} " if transfer_request.bridgetoken_address else ""
-    command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} " \
-                   f"integrationtest:getTokenBalance " \
-                   f"--ethereum_address {transfer_request.ethereum_address} " \
-                   f"{symbol_element} " \
-                   f"{network_element}"
+    command_line = " ".join(
+        [f"yarn -s --cwd {transfer_request.smart_contracts_dir}",
+         f"integrationtest:getTokenBalance",
+         f"--ethereum_address {transfer_request.ethereum_address}",
+         symbol_element,
+         network_element]
+    )
     result = run_yarn_command(command_line)
     return int(result["balanceWei"])
 
@@ -229,8 +233,28 @@ def wait_for_sifchain_addr_balance(
     )
 
 
-def send_from_sifchain_to_sifchain(from_address, to_address, amount, currency, yes_password):
-    cmd = f"yes {yes_password} | sifnodecli tx send {from_address} {to_address} {amount}{currency} -y"
+def send_from_sifchain_to_sifchain(
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials
+):
+    logging.info(f"send_from_sifchain_to_sifchain {transfer_request}")
+    yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
+    keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
+    chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
+    node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    cmd = " ".join([
+        yes_entry,
+        "sifnodecli tx send",
+        transfer_request.sifchain_address,
+        transfer_request.sifchain_destination_address,
+        keyring_backend_entry,
+        chain_id_entry,
+        node,
+        f"{transfer_request.amount}{transfer_request.sifchain_symbol}",
+        sifchain_fees_entry,
+        "-y"
+    ])
     return get_shell_output(cmd)
 
 
@@ -239,6 +263,7 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
     command_line = f"{yes_entry} " \
                    f"sifnodecli tx ethbridge {direction} {node} " \
@@ -248,6 +273,7 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
                    f"{transfer_request.sifchain_symbol} " \
                    f"{transfer_request.ceth_amount} " \
                    f"{keyring_backend_entry} " \
+                   f"{sifchain_fees_entry} " \
                    f"--ethereum-chain-id={transfer_request.ethereum_chain_id} " \
                    f"--chain-id={transfer_request.chain_id} " \
                    f"--home {credentials.sifnodecli_homedir} " \
@@ -257,7 +283,7 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
 
 
 # this does not wait for the transaction to complete
-def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest):
+def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest) -> int:
     direction = "sendBurnTx" if transfer_request.sifchain_symbol == "rowan" else "sendLockTx"
     command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} integrationtest:{direction} " \
                    f"--sifchain_address {transfer_request.sifchain_address} " \
@@ -266,10 +292,14 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
                    f"--bridgebank_address {transfer_request.bridgebank_address} " \
                    f"--ethereum_address {transfer_request.ethereum_address} " \
                    f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
-                   f""
+                   f"--gas estimate "
     command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
-    return run_yarn_command(command_line)
-
+    transaction_result = run_yarn_command(command_line)
+    if "burn" in transaction_result:
+        result = transaction_result["burn"]["receipt"]["blockNumber"]
+    else:
+        result = transaction_result["receipt"]["blockNumber"]
+    return result
 
 def lock_rowan(user, amount):
     command_line = """yes {} |sifnodecli tx ethbridge lock {} \
@@ -343,6 +373,7 @@ def current_ethereum_block_number(smart_contracts_dir: str):
 def wait_for_ethereum_block_number(block_number: int, transfer_request: EthereumToSifchainTransferRequest):
     command_line = f"yarn --cwd {transfer_request.smart_contracts_dir} " \
                    f"integrationtest:waitForBlock " \
+                   f"--ethereum_network {transfer_request.ethereum_network} " \
                    f"--block_number {block_number} "
     get_shell_output(command_line)
 
@@ -364,7 +395,18 @@ def ganache_owner_account(smart_contracts_dir: str):
     return ganache_accounts(smart_contracts_dir)["accounts"][0]
 
 
-def whitelist_token(token: str, smart_contracts_dir: str, setting:bool = True):
+def ganache_second_account(smart_contracts_dir: str):
+    """
+    Returns the second ganache account.
+
+    Useful for doing transfers so you can transfer to an
+    ethereum address that doesn't have anything to do with
+    paying gas fees.
+    """
+    return ganache_accounts(smart_contracts_dir)["accounts"][1]
+
+
+def whitelist_token(token: str, smart_contracts_dir: str, setting: bool = True):
     setting = "true" if setting else "false"
     return get_shell_output(f"yarn --cwd {smart_contracts_dir} peggy:whiteList {token} {setting}")
 
@@ -376,4 +418,19 @@ def approve_token_amount(token_request: EthereumToSifchainTransferRequest):
           f"--ethereum_address {token_request.ethereum_address} " \
           f"--spender_address {token_request.bridgebank_address} " \
           f"--symbol {token_request.ethereum_symbol} "
+    return run_yarn_command(cmd)
+
+
+def set_lock_burn_limit(smart_contracts_dir: str, token: str, amount: int):
+    s = NULL_ADDRESS if token == "eth" else token
+    cmd = f"UPDATE_ADDRESS={s} " \
+          f"yarn --cwd {smart_contracts_dir} " \
+          f"integrationtest:setTokenLockBurnLimit {amount}"
+    return get_shell_output(cmd)
+
+
+def create_ethereum_address(smart_contracts_dir: str, ethereum_network: str):
+    cmd = f"yarn -s --cwd {smart_contracts_dir} " \
+          "integrationtest:createEthereumAddress " \
+          f"--ethereum_network {ethereum_network} "
     return run_yarn_command(cmd)

@@ -17,14 +17,25 @@ Run `make` in test/integration/vagrant.  That uses [vagrant](https://www.vagrant
 
 Running `make` again will run the tests again in the existing environment.
 
+## Docker
+
+To build the docker container, run:
+
+```
+make sifdocker  # builds the docker image
+make sifdocker-start  # starts the docker container and leaves it running
+make sifdocker-sh     # gives you a shell in the running container
+```
 ## Execute
 
 [start-integration-env.sh](./start-integration-env.sh) starts 
 sifnoded and ganache.
 
-Run the tests with:
+Run the tests in a container with:
 
 ```
+cd /sifnode/test/integration
+./start-integration-env.sh && . vagrantenv.sh
 python3 -m pytest -v src/py/test_*
 ```
 
