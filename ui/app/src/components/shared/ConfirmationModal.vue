@@ -63,7 +63,7 @@ export default defineComponent({
     // The title of the ask modal
     title: String,
 
-    //
+    // TODO: Revisit if we need these here or can make them part of the content
     transactionHash: String,
     transactionStateMsg: String,
   },
