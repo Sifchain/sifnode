@@ -84,3 +84,12 @@ def test_transfer_tokens_with_a_capital_letter_in_the_name():
     return_request: EthereumToSifchainTransferRequest = copy.deepcopy(foo_request)
     return_request.sifchain_symbol = return_request.sifchain_symbol.lower()
     burn_lock_functions.transfer_sifchain_to_ethereum(return_request, credentials)
+
+
+def test_transfer_tokens_with_some_currency():
+    new_account_key = ("a" + get_shell_output("uuidgen").replace("-", ""))[:4]
+    amount = amount_in_wei(9)
+    new_currency = create_new_currency(amount, new_account_key)
+    logging.info(f"new_currency is {new_currency}")
+    (foo_request, credentials) = build_request(new_currency, amount)
+    burn_lock_functions.transfer_ethereum_to_sifchain(foo_request)
