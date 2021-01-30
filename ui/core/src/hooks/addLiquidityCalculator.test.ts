@@ -71,9 +71,76 @@ describe("addLiquidityCalculator", () => {
 
   afterEach(() => {
     poolFinder.mockReset();
+    liquidityProvider.value = null;
   });
 
   const ratios = [
+    {
+      poolExternal: "1000000000",
+      poolNative: "1000000000",
+      poolUnits: "1000000000",
+      addedExternal: "10000000",
+      addedNative: "10000000",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      preexistingLiquidity: {
+        native: "0",
+        external: "0",
+        units: "0",
+      },
+      expected: {
+        aPerBRatioMessage: "1.00000000",
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1.00000000",
+        bPerARatioProjectedMessage: "1.00000000",
+        shareOfPool: "0.99%",
+        state: PoolState.VALID_INPUT,
+      },
+    },
+    {
+      poolExternal: "1000000000",
+      poolNative: "1000000000",
+      poolUnits: "1000000000",
+      addedExternal: "10000000",
+      addedNative: "10000000",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      preexistingLiquidity: {
+        native: "500000000",
+        external: "500000000",
+        units: "500000000",
+      },
+      expected: {
+        aPerBRatioMessage: "1.00000000",
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1.00000000",
+        bPerARatioProjectedMessage: "1.00000000",
+        shareOfPool: "50.50%",
+        state: PoolState.VALID_INPUT,
+      },
+    },
+    {
+      poolExternal: "1000000000",
+      poolNative: "1000000000",
+      poolUnits: "1000000000",
+      addedExternal: "10000000",
+      addedNative: "10000000",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      preexistingLiquidity: {
+        native: "1000000000",
+        external: "1000000000",
+        units: "1000000000",
+      },
+      expected: {
+        aPerBRatioMessage: "1.00000000",
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1.00000000",
+        bPerARatioProjectedMessage: "1.00000000",
+        shareOfPool: "100.00%",
+        state: PoolState.VALID_INPUT,
+      },
+    },
     {
       poolExternal: "1000000000",
       poolNative: "1000000000",
@@ -88,6 +155,7 @@ describe("addLiquidityCalculator", () => {
         aPerBRatioProjectedMessage: "1.00000000",
         bPerARatioProjectedMessage: "1.00000000",
         shareOfPool: "0.99%",
+        state: PoolState.VALID_INPUT,
       },
     },
     {
@@ -104,6 +172,7 @@ describe("addLiquidityCalculator", () => {
         aPerBRatioProjectedMessage: "0.60000000",
         bPerARatioProjectedMessage: "1.66666667",
         shareOfPool: "57.45%",
+        state: PoolState.VALID_INPUT,
       },
     },
     {
@@ -120,6 +189,7 @@ describe("addLiquidityCalculator", () => {
         aPerBRatioProjectedMessage: "1.00000000",
         bPerARatioProjectedMessage: "1.00000000",
         shareOfPool: "50.00%",
+        state: PoolState.VALID_INPUT,
       },
     },
 
@@ -137,6 +207,24 @@ describe("addLiquidityCalculator", () => {
         aPerBRatioProjectedMessage: "1000.99998999", // 100100000000/100000001
         bPerARatioProjectedMessage: "0.00099900",
         shareOfPool: "33.31%",
+        state: PoolState.VALID_INPUT,
+      },
+    },
+    {
+      poolExternal: "100000000",
+      poolNative: "100000000",
+      poolUnits: "10000000000000000000000000",
+      addedExternal: "100000000000000", // more than balance
+      addedNative: "1",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      expected: {
+        aPerBRatioMessage: "1.00000000", // 100000000 / 100000000
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1000000.98999999", // 100100000000/100000001
+        bPerARatioProjectedMessage: "0.00000100",
+        shareOfPool: "33.77%",
+        state: PoolState.INSUFFICIENT_FUNDS,
       },
     },
   ];
@@ -150,11 +238,26 @@ describe("addLiquidityCalculator", () => {
         addedNative,
         externalSymbol,
         nativeSymbol,
+        preexistingLiquidity,
         expected,
       },
       index
     ) => {
       test(`Ratios #${index + 1}`, () => {
+        balances.value = [
+          AssetAmount(ATK, "100000000000"),
+          AssetAmount(ROWAN, "100000000000"),
+        ];
+        liquidityProvider.value = !preexistingLiquidity
+          ? null
+          : LiquidityProvider(
+              ATK,
+              new Fraction(preexistingLiquidity.units),
+              akasha.address,
+              new Fraction(preexistingLiquidity.native),
+              new Fraction(preexistingLiquidity.external)
+            );
+
         poolFinder.mockImplementation(() => {
           const pool = Pool(
             AssetAmount(Asset.get(externalSymbol), poolExternal),
@@ -178,6 +281,7 @@ describe("addLiquidityCalculator", () => {
           expected.bPerARatioProjectedMessage
         );
         expect(shareOfPoolPercent.value).toBe(expected.shareOfPool);
+        expect(state.value).toBe(expected.state);
       });
     }
   );
@@ -308,6 +412,7 @@ describe("addLiquidityCalculator", () => {
   });
 
   test("Allow rowan === 0 when adding to preExistingPool", () => {
+    balances.value = [AssetAmount(ATK, "1000"), AssetAmount(ROWAN, "1000")];
     poolFinder.mockImplementation(
       () =>
         ref(
