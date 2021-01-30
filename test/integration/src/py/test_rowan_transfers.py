@@ -42,14 +42,18 @@ def test_transfer_rowan_to_erowan_and_back():
         ceth_amount=2 * 10 ** 16
     )
     logging.info(f"get initial ceth to cover fees: {request}")
-    burn_lock_functions.transfer_ethereum_to_sifchain(request, 10)
+    burn_lock_functions.transfer_ethereum_to_sifchain(request, 30)
 
     request.ethereum_symbol = bridgetoken_address
     request.sifchain_symbol = "rowan"
     request.amount = 12000
-    logging.info(f"transfer rowan to erowan: {request}")
+    request.ethereum_address = test_utilities.ganache_second_account(smart_contracts_dir)
+
     starting_balance = burn_lock_functions.get_eth_balance(request)
+
+    logging.info(f"transfer rowan to erowan: {request}")
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
+
     ending_balance = burn_lock_functions.get_eth_balance(request)
     assert(ending_balance == starting_balance + request.amount)
 
