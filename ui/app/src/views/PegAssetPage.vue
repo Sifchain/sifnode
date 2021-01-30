@@ -6,6 +6,7 @@ import { useCore } from "@/hooks/useCore";
 import { Asset, AssetAmount } from "ui-core";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
+
 import RaisedPanel from "@/components/shared/RaisedPanel.vue";
 import { useRouter } from "vue-router";
 import SifInput from "@/components/shared/SifInput.vue";
@@ -15,6 +16,9 @@ import RaisedPanelColumn from "@/components/shared/RaisedPanelColumn.vue";
 import { trimZeros } from "ui-core/src/hooks/utils";
 import BigNumber from "bignumber.js";
 import { useAssetItem } from "../components/shared/utils";
+import { toConfirmState } from "./utils/toConfirmState";
+import { ConfirmState } from "../types";
+import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -30,6 +34,7 @@ export default defineComponent({
     DetailsTable,
     ActionsPanel,
     RaisedPanelColumn,
+    ConfirmationModal,
   },
 
   setup(props, context) {
@@ -40,6 +45,10 @@ export default defineComponent({
         ? "unpeg"
         : "peg";
     });
+
+    const transactionState = ref<ConfirmState | string>("selecting");
+    const transactionStateMsg = ref<string>('');
+    const transactionHash = ref<string | null>(null);
 
     // const symbol = ref<string | null>(null);
     const symbol = computed(() => {
@@ -63,14 +72,15 @@ export default defineComponent({
     }
 
     async function handleUnpeg() {
-      try {
-        await actions.peg.unpeg(
-          AssetAmount(Asset.get(symbol.value), amount.value)
-        );
-        router.push("/peg");
-      } catch (err) {
-        console.error(err);
-      }
+      transactionState.value = "signing";
+
+      const tx = await actions.peg.unpeg(
+        AssetAmount(Asset.get(symbol.value), amount.value)
+      );
+
+      transactionHash.value = tx.hash;
+      transactionState.value = toConfirmState(tx.state); // TODO: align states
+      transactionStateMsg.value = tx.memo?? '';
     }
 
     const accountBalance = computed(() => {
@@ -94,6 +104,16 @@ export default defineComponent({
         amountNum.isLessThanOrEqualTo(balance)
       );
     });
+
+    function requestTransactionModalClose() {
+      if (transactionState.value === "confirmed") {
+        if (mode.value === "peg") {
+          router.push("/peg"); // TODO push back to peg, but load unpeg tab -> dynamic routing?
+        }
+      } else {
+        transactionState.value = "selecting";
+      }
+    }
 
     return {
       mode,
@@ -124,7 +144,10 @@ export default defineComponent({
           handleUnpeg();
         }
       },
-
+      requestTransactionModalClose,
+      transactionState,
+      transactionStateMsg,
+      transactionHash,
       nextStepAllowed,
       nextStepMessage: computed(() => {
         return mode.value === "peg" ? "Peg" : "Unpeg";
@@ -182,6 +205,20 @@ export default defineComponent({
         :nextStepAllowed="nextStepAllowed"
         :nextStepMessage="nextStepMessage"
       />
+      <ConfirmationModal 
+        :requestClose="requestTransactionModalClose"
+        :state="transactionState"
+        :transactionHash="transactionHash"
+        :transactionStateMsg="transactionStateMsg"
+        :confirmButtonText="mode === 'peg' ? 'Confirm Pegging' : 'Confirm Unpegging'"
+        :title="mode === 'peg' ? 'You\'re pegging' : 'You\'re unpegging'"
+      >
+        <template v-slot:common>
+          <p class="text--normal">
+            Unpegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
+          </p>
+        </template>
+      </ConfirmationModal>
     </div>
   </Layout>
 </template>

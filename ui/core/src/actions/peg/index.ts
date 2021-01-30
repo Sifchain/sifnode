@@ -50,19 +50,16 @@ export default ({
         fromAddress: store.wallet.sif.address,
         feeAmount,
       });
-      try {
-        return await api.SifService.signAndBroadcast(tx.value.msg);
-      } catch (err) {
-        // TODO: coordinate with blockchain to get more standardised errors
-        if (err.message?.indexOf("insufficient funds") > -1) {
-          notify({
-            type: "error",
-            message:
-              "Please check you have the available tokens and fee amount in " +
-              feeAmount.asset.symbol,
-          });
-        }
+
+      const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
+
+      if (txStatus.state !== "accepted") {
+        notify({
+          type: "error",
+          message: txStatus.memo || "There was an error while unpegging",
+        });
       }
+      return txStatus;
     },
 
     async peg(assetAmount: AssetAmount) {
