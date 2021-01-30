@@ -233,25 +233,26 @@ export function usePoolCalculator(input: {
   });
 
   const state = computed(() => {
-    const aAmount = tokenAField.fieldAmount.value;
-    const bAmount = tokenBField.fieldAmount.value;
-
-    if (!input.tokenASymbol.value || !input.tokenBSymbol.value)
+    // Select Tokens
+    const aSymbolNotSelected = !input.tokenASymbol.value;
+    const bSymbolNotSelected = !input.tokenBSymbol.value;
+    if (aSymbolNotSelected || bSymbolNotSelected)
       return PoolState.SELECT_TOKENS;
 
-    if (!aAmount || aAmount.equalTo("0")) return PoolState.ZERO_AMOUNTS;
+    // Zero amounts
+    const aAmount = tokenAField.fieldAmount.value;
+    const bAmount = tokenBField.fieldAmount.value;
+    const aAmountIsZeroOrFalsy = !aAmount || aAmount.equalTo("0");
+    const bAmountIsZeroOrFalsy = !bAmount || bAmount.equalTo("0");
+    const noPreexistingPool = !preExistingPool.value;
+    if ((noPreexistingPool && bAmountIsZeroOrFalsy) || aAmountIsZeroOrFalsy)
+      return PoolState.ZERO_AMOUNTS;
 
-    if (!bAmount || bAmount.equalTo("0"))
-      // if rowan is 0 or empty ...
-      // allow if the pool exists
-      // invalid if the pool doesn't exist - ""
-      return preExistingPool.value
-        ? PoolState.VALID_INPUT
-        : PoolState.ZERO_AMOUNTS;
-
+    // Insufficient Funds
     if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value)
       return PoolState.INSUFFICIENT_FUNDS;
 
+    // Valid yay!
     return PoolState.VALID_INPUT;
   });
 
