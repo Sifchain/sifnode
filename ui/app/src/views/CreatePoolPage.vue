@@ -62,7 +62,7 @@ export default defineComponent({
       if (!fromSymbol) return null;
       return (
         store.accountpools.find((pool) => {
-          pool.lp.asset.symbol === fromSymbol.value;
+          return pool.lp.asset.symbol === fromSymbol.value;
         })?.lp ?? null
       );
     });
