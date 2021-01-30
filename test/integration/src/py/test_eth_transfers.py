@@ -1,17 +1,16 @@
 import logging
 import os
-from copy import copy, deepcopy
-from functools import lru_cache
+from copy import deepcopy, copy
 from json import JSONDecodeError
 
 import pytest
 
 import burn_lock_functions
+import test_utilities
 from burn_lock_functions import EthereumToSifchainTransferRequest
 from integration_env_credentials import sifchain_cli_credentials_for_test
-import test_utilities
-from test_utilities import get_required_env_var, get_shell_output, SifchaincliCredentials, amount_in_wei, \
-    get_optional_env_var, ganache_owner_account
+from test_utilities import get_required_env_var, get_shell_output, SifchaincliCredentials, get_optional_env_var, \
+    ganache_owner_account
 
 smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
 
@@ -40,12 +39,15 @@ def build_request() -> (EthereumToSifchainTransferRequest, SifchaincliCredential
 
 
 def test_transfer_eth_to_ceth_and_back():
-    # def whitelist_token(token: str, smart_contracts_dir: str, setting:bool = True):
     request, credentials = build_request()
-    test_utilities.whitelist_token(request.ethereum_symbol, request.smart_contracts_dir, True)
-    burn_lock_functions.transfer_ethereum_to_sifchain(request, 15)
+    logging.info(f"set_lock_burn_limit set to {[smart_contracts_dir, request.ethereum_symbol, request.amount]}")
+    test_utilities.set_lock_burn_limit(smart_contracts_dir, request.ethereum_symbol, request.amount)
+    burn_lock_functions.transfer_ethereum_to_sifchain(request)
     logging.info(f"send ceth back to {request.ethereum_address}")
     return_request = deepcopy(request)
+    # don't transfer ceth => eth to the BridgeBank address since BridgeBank is responsible for paying gas.
+    # That means you can't just see if the exact transfer went through.
+    return_request.ethereum_address = test_utilities.ganache_second_account(smart_contracts_dir)
     return_request.amount = 20000
     burn_lock_functions.transfer_sifchain_to_ethereum(return_request, credentials)
 
@@ -53,6 +55,6 @@ def test_transfer_eth_to_ceth_and_back():
 def test_transfer_eth_to_ceth_over_limit():
     request, credentials = build_request()
     invalid_request = copy(request)
-    invalid_request.amount = amount_in_wei(35)
-    with pytest.raises(JSONDecodeError):
-        burn_lock_functions.transfer_ethereum_to_sifchain(invalid_request, credentials)
+    invalid_request.amount = test_utilities.amount_in_wei(35)
+    with pytest.raises(Exception):
+        burn_lock_functions.transfer_ethereum_to_sifchain(invalid_request)
