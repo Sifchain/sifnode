@@ -9,6 +9,21 @@ export function formatSymbol(symbol: string) {
   return symbol.toUpperCase();
 }
 
+export function formatPercentage(amount: string) {
+  return parseFloat(amount) < 0.01
+    ? "< 0.01%"
+    : `${parseFloat(amount).toFixed(2)}%`;
+}
+// TODO: make this work for AssetAmounts and Fractions / Amounts
+export function formatNumber(displayNumber: string) {
+  const amount = parseFloat(displayNumber);
+  if (amount < 100000) {
+    return amount.toFixed(5);
+  } else {
+    return amount.toFixed(2);
+  }
+}
+
 // TODO: These could be replaced with a look up table
 export function getPeggedSymbol(symbol: string) {
   if (symbol === "erowan") return "rowan";

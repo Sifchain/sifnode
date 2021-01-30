@@ -18,6 +18,7 @@ import { toConfirmState } from "./utils/toConfirmState";
 import { ConfirmState } from "../types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
+import { formatNumber, formatPercentage } from "@/components/shared/utils";
 
 export default defineComponent({
   components: {
@@ -213,6 +214,8 @@ export default defineComponent({
       },
       shareOfPoolPercent,
       connectedText,
+      formatNumber,
+
       poolUnits: totalLiquidityProviderUnits,
     };
   },
@@ -266,8 +269,8 @@ export default defineComponent({
           <span
             >{{ toSymbol.toUpperCase() }} per
             {{ fromSymbol.toUpperCase() }}</span
-          >
-        </FatInfoTableCell>
+          > </FatInfoTableCell
+        ><FatInfoTableCell />
       </template>
     </FatInfoTable>
 
