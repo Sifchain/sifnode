@@ -11,9 +11,10 @@ import { computed, effect, readonly, Ref, toRef } from "@vue/reactivity";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
 import Slider from "@/components/shared/Slider.vue";
-import ConfirmationDialog from "@/components/confirmationDialog/RemoveConfirmationDialog.vue";
 import { toConfirmState } from "./utils/toConfirmState";
 import { ConfirmState } from "../types";
+import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
+import DetailsPanelRemove from "@/components/shared/DetailsPanelRemove.vue";
 
 export default defineComponent({
   components: {
@@ -22,6 +23,8 @@ export default defineComponent({
     ModalView,
     ActionsPanel,
     Slider,
+    ConfirmationModal,
+    DetailsPanelRemove,
   },
   setup() {
     const { store, actions, poolFinder, api } = useCore();
@@ -29,6 +32,7 @@ export default defineComponent({
     const router = useRouter();
     const transactionState = ref<ConfirmState>("selecting");
     const transactionHash = ref<string | null>(null);
+    const transactionStateMsg = ref<string>('');
     const asymmetry = ref("0");
     const wBasisPoints = ref("0");
     const nativeAssetSymbol = ref("rowan");
@@ -123,6 +127,7 @@ export default defineComponent({
         );
         transactionHash.value = tx.hash;
         transactionState.value = toConfirmState(tx.state); // TODO: align states
+        transactionStateMsg.value = tx.memo?? '';
       },
 
       transactionModalOpen: computed(() => {
@@ -220,18 +225,37 @@ export default defineComponent({
       :nextStepMessage="nextStepMessage"
     />
 
-    <RemoveLiquidityConfirmationDialog
+    <ConfirmationModal 
       :requestClose="requestTransactionModalClose"
       :isOpen="transactionModalOpen"
       @confirmed="handleAskConfirmClicked"
       :state="transactionState"
       :transactionHash="transactionHash"
+      :transactionStateMsg="transactionStateMsg"
+      confirmButtonText="Confirm Withdrawal"
+      title="You are withdrawing"
+    >
+      <template v-slot:selecting>
+        <div>
+          <DetailsPanelRemove
+            class="details"
+            :externalAssetSymbol="externalAssetSymbol"
+            :externalAssetAmount="withdrawExternalAssetAmount"
+            :nativeAssetSymbol="nativeAssetSymbol"
+            :nativeAssetAmount="withdrawNativeAssetAmount"
+          />
+        </div>
+      </template>
 
-      :externalAssetSymbol="externalAssetSymbol"
-      :nativeAssetSymbol="nativeAssetSymbol"
-      :externalAssetAmount="withdrawExternalAssetAmount"
-      :nativeAssetAmount="withdrawNativeAssetAmount"
-    />
+      <template v-slot:common>
+        <p class="text--normal">
+          Withdrawing
+          <span class="text--bold">{{ withdrawExternalAssetAmount }} {{ externalAssetSymbol }}</span>
+          and
+          <span class="text--bold">{{ withdrawNativeAssetAmount }} {{ nativeAssetSymbol }}</span>
+        </p>
+      </template>
+    </ConfirmationModal>
   </Layout>
 </template>
 

@@ -38,7 +38,6 @@ export default defineComponent({
   font-family: $f_default;
   display: flex;
   align-items: center;
-  /* cursor: pointer; */
 
   & > * {
     margin-right: 0.5rem;

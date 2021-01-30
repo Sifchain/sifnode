@@ -2,22 +2,10 @@
   <div class="details">
     <div class="details-header">
       <div class="details-row">
-        <img
-          v-if="nativeAssetImage"
-          width="24"
-          :src="nativeAssetImage"
-          class="info-img"
-        />
         <span>Withdraw {{ nativeAssetSymbol }}</span>
         <span>{{ nativeAssetAmount }}</span>
       </div>
       <div class="details-row">
-        <img
-          v-if="externalAssetImage"
-          width="24"
-          :src="externalAssetImage"
-          class="info-img"
-        />
         <span>Withdraw {{ externalAssetSymbol }}</span>
         <span>{{ externalAssetAmount }}</span>
       </div>
@@ -72,10 +60,8 @@ export default defineComponent({
   props: {
     nativeAssetSymbol: { type: String, default: ""},
     nativeAssetAmount: { type: String, default: ""},
-    nativeAssetImage: { type: String, default: ""},
     externalAssetAmount: { type: String, default: ""},
     externalAssetSymbol: { type: String, default: ""},
-    externalAssetImage: { type: String, default: ""},
   },
 });
 </script>
