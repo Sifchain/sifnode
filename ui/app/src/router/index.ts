@@ -7,6 +7,7 @@ import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
 import SinglePool from "@/components/poolList/SinglePool.vue";
 import PegListingPage from "@/views/PegListingPage.vue";
 import PegAssetPage from "@/views/PegAssetPage.vue";
+import ConfirmationModalTest from "@/views/ConfirmationModalTest.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -33,16 +34,16 @@ const routes: Array<RouteRecordRaw> = [
     name: "AddLiquidity",
     component: CreatePool,
     props: {
-      title: 'Add Liquidity',
-    }
+      title: "Add Liquidity",
+    },
   },
   {
     path: "/pool/create-pool",
     name: "CreatePool",
     component: CreatePool,
     props: {
-      title: 'Create Pair',
-    }
+      title: "Create Pair",
+    },
   },
   {
     path: "/pool/remove-liquidity/:externalAsset?",
@@ -63,6 +64,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/peg/reverse/:assetFrom/:assetTo",
     name: "UnpegAssetPage",
     component: PegAssetPage,
+  },
+  {
+    path: "/test",
+    name: "ConfirmationModalTest",
+    component: ConfirmationModalTest,
   },
 ];
 

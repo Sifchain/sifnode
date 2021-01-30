@@ -1,4 +1,5 @@
 import {
+  BroadcastTxResult,
   coins,
   isBroadcastTxFailure,
   makeCosmoshubPath,
@@ -7,14 +8,22 @@ import {
 } from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
 import { debounce, filter } from "lodash";
-import { Address, Asset, AssetAmount, Network, TxParams } from "../../entities";
+import {
+  Address,
+  Asset,
+  AssetAmount,
+  Network,
+  TransactionStatus,
+  TxParams,
+} from "../../entities";
 
 import { Mnemonic } from "../../entities/Wallet";
-import { IWalletService } from "../IWalletService";
+
 import { SifClient, SifUnSignedClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 import getKeplrProvider from "./getKeplrProvider";
 import { KeplrChainConfig } from "../../utils/parseConfig";
+import { parseTxFailure } from "./parseTxFailure";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
@@ -273,7 +282,10 @@ export default function createSifService({
       }
     },
 
-    async signAndBroadcast(msg: Msg | Msg[], memo?: string) {
+    async signAndBroadcast(
+      msg: Msg | Msg[],
+      memo?: string
+    ): Promise<TransactionStatus> {
       if (!client) throw "No client. Please sign in.";
       try {
         const fee = {
@@ -282,22 +294,23 @@ export default function createSifService({
         };
 
         const msgArr = Array.isArray(msg) ? msg : [msg];
-        console.log("msgArr", msgArr);
 
-        const txHash = await client.signAndBroadcast(msgArr, fee, memo);
+        const result = await client.signAndBroadcast(msgArr, fee, memo);
 
-        if (isBroadcastTxFailure(txHash)) {
-          throw new Error(txHash.rawLog);
+        if (isBroadcastTxFailure(result)) {
+          /* istanbul ignore next */ // TODO: fix converage
+          return parseTxFailure(result);
         }
 
         triggerUpdate();
 
-        return txHash;
+        return {
+          hash: result.transactionHash,
+          memo,
+          state: "accepted",
+        };
       } catch (err) {
-        if (err.toString().includes("Request rejected")) {
-          // User rejected request in Kepler wallet
-          throw new Error("Request rejected");
-        }
+        return parseTxFailure({ transactionHash: "", rawLog: err.message });
       }
     },
   };
