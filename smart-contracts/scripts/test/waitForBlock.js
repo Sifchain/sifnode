@@ -2,40 +2,39 @@ module.exports = async (cb) => {
     const sifchainUtilities = require('./sifchainUtilities')
     const contractUtilites = require('./contractUtilities');
 
-    const waitForBlocksArgs = {
+    const argv = sifchainUtilities.processArgs(this, {
+        ...sifchainUtilities.sharedYargOptions,
         'block_number': {
             type: "number",
             demandOption: true
         },
-    };
-    const argv = sifchainUtilities.processArgs(this, {
-        ...sifchainUtilities.sharedYargOptions,
-        ...waitForBlocksArgs
+        'delay': {
+            type: "number",
+            // ropsten's average block time right now is 14 seconds, that's a fine default
+            default: 14 * 1000,
+            describe: "how long to wait between queries for the current block number"
+        },
     });
-
-    const web3 = contractUtilites.buildWeb3(this, argv);
 
     const logging = sifchainUtilities.configureLogging(this);
 
+    const web3 = contractUtilites.buildWeb3(this, argv, logging);
+
     let waitTime = 2000;
-    switch(argv.ethereum_network) {
+    switch (argv.ethereum_network) {
         case "ropsten":
         case "mainnet":
             waitTime = 60000;
             break;
     }
-    try {
+    for (
         let blockNumber = await web3.eth.getBlockNumber();
-        do {
-            blockNumber = await web3.eth.getBlockNumber();
-            logging.debug(`waiting for block ${argv.block_number}, current block is ${blockNumber}`)
-            await new Promise(resolve => setTimeout(resolve, 2000));
-        } while (blockNumber < argv.block_number);
-    } catch (error) {
-        console.log(error);
-        // stall so logger has time to write out errors
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        blockNumber < argv.block_number;
+        blockNumber = await web3.eth.getBlockNumber()
+    ) {
+        const remaining = argv.block_number - blockNumber
+        logging.debug(`wait for block ${argv.block_number}, current block ${blockNumber}, remaining blocks ${remaining}`);
+        await new Promise(resolve => setTimeout(resolve, 14 * 1000));
     }
-
     return cb();
 };

@@ -1,25 +1,28 @@
 import concurrent
 import logging
-import math
 import multiprocessing
 import os
 from concurrent.futures.thread import ThreadPoolExecutor
 
 import burn_lock_functions
+import test_utilities
 from burn_lock_functions import EthereumToSifchainTransferRequest
 from integration_env_credentials import sifchain_cli_credentials_for_test
 from test_utilities import get_required_env_var, get_shell_output, get_optional_env_var, ganache_owner_account
 
 smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
+integration_dir = get_required_env_var("TEST_INTEGRATION_DIR")
 
 ethereum_address = get_optional_env_var(
     "ETHEREUM_ADDRESS",
     ganache_owner_account(smart_contracts_dir)
 )
+test_amount = 20000
 
 
-def test_transfer_eth_to_ceth_in_parallel():
-    n_parallel_tasks = int(math.sqrt(multiprocessing.cpu_count()))
+def test_transfer_eth_to_ceth_in_parallel(ganache_timed_blocks):
+    # it's not clear how many simultaneous tasks we should try.
+    n_parallel_tasks = max(1, int(multiprocessing.cpu_count() * .75))
     n_parallel_tasks = 2
     with concurrent.futures.ThreadPoolExecutor(n_parallel_tasks) as executor:
         futures = {executor.submit(execute_one_transfer, x) for x in range(0, n_parallel_tasks)}
@@ -41,8 +44,9 @@ def execute_one_transfer(id_number: int):
         ethereum_private_key_env_var="ETHEREUM_PRIVATE_KEY",
         bridgebank_address=get_required_env_var("BRIDGE_BANK_ADDRESS"),
         ethereum_network=(os.environ.get("ETHEREUM_NETWORK") or ""),
-        amount=2000,
-        ceth_amount=2 * (10 ** 16)
+        amount=test_amount,
+        ceth_amount=2 * (10 ** 16),
+        manual_block_advance=False,
     )
     logging.info(f"execute request #{id_number}")
     burn_lock_functions.transfer_ethereum_to_sifchain(request, 90)
