@@ -71,9 +71,73 @@ describe("addLiquidityCalculator", () => {
 
   afterEach(() => {
     poolFinder.mockReset();
+    liquidityProvider.value = null;
   });
 
   const ratios = [
+    {
+      poolExternal: "1000000000",
+      poolNative: "1000000000",
+      poolUnits: "1000000000",
+      addedExternal: "10000000",
+      addedNative: "10000000",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      preexistingLiquidity: {
+        native: "0",
+        external: "0",
+        units: "0",
+      },
+      expected: {
+        aPerBRatioMessage: "1.00000000",
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1.00000000",
+        bPerARatioProjectedMessage: "1.00000000",
+        shareOfPool: "0.99%",
+      },
+    },
+    {
+      poolExternal: "1000000000",
+      poolNative: "1000000000",
+      poolUnits: "1000000000",
+      addedExternal: "10000000",
+      addedNative: "10000000",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      preexistingLiquidity: {
+        native: "500000000",
+        external: "500000000",
+        units: "500000000",
+      },
+      expected: {
+        aPerBRatioMessage: "1.00000000",
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1.00000000",
+        bPerARatioProjectedMessage: "1.00000000",
+        shareOfPool: "50.50%",
+      },
+    },
+    {
+      poolExternal: "1000000000",
+      poolNative: "1000000000",
+      poolUnits: "1000000000",
+      addedExternal: "10000000",
+      addedNative: "10000000",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      preexistingLiquidity: {
+        native: "1000000000",
+        external: "1000000000",
+        units: "1000000000",
+      },
+      expected: {
+        aPerBRatioMessage: "1.00000000",
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1.00000000",
+        bPerARatioProjectedMessage: "1.00000000",
+        shareOfPool: "100.00%",
+      },
+    },
     {
       poolExternal: "1000000000",
       poolNative: "1000000000",
@@ -150,11 +214,22 @@ describe("addLiquidityCalculator", () => {
         addedNative,
         externalSymbol,
         nativeSymbol,
+        preexistingLiquidity,
         expected,
       },
       index
     ) => {
       test(`Ratios #${index + 1}`, () => {
+        liquidityProvider.value = !preexistingLiquidity
+          ? null
+          : LiquidityProvider(
+              ATK,
+              new Fraction(preexistingLiquidity.units),
+              akasha.address,
+              new Fraction(preexistingLiquidity.native),
+              new Fraction(preexistingLiquidity.external)
+            );
+
         poolFinder.mockImplementation(() => {
           const pool = Pool(
             AssetAmount(Asset.get(externalSymbol), poolExternal),
