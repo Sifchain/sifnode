@@ -7,7 +7,6 @@ import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
 import SinglePool from "@/components/poolList/SinglePool.vue";
 import PegListingPage from "@/views/PegListingPage.vue";
 import PegAssetPage from "@/views/PegAssetPage.vue";
-import ConfirmationModalTest from "@/views/ConfirmationModalTest.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -64,11 +63,6 @@ const routes: Array<RouteRecordRaw> = [
     path: "/peg/reverse/:assetFrom/:assetTo",
     name: "UnpegAssetPage",
     component: PegAssetPage,
-  },
-  {
-    path: "/test",
-    name: "ConfirmationModalTest",
-    component: ConfirmationModalTest,
   },
 ];
 
