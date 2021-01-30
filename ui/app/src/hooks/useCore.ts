@@ -21,10 +21,17 @@ const poolFinder = createPoolFinder(store);
 Object.defineProperty(window, "store", {
   get: function() {
     return JSON.parse(
-      JSON.stringify(store, function replacer(key, value) {
-        if (value.amount && value.quotient) {
+      JSON.stringify(store, function replacer(_, value) {
+        // if fraction
+        if (value.asset && value.quotient) {
           return value.toString();
         }
+
+        // If amount
+        if (value.amount && value.quotient) {
+          return value.toFixed(18);
+        }
+
         return value;
       })
     );
