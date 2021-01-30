@@ -48,6 +48,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
+import { computed } from "@vue/reactivity";
 import ModalView from "@/components/shared/ModalView.vue";
 import ConfirmationModalAsk from "@/components/shared/ConfirmationModalAsk.vue";
 import ConfirmationModalSigning from "@/components/shared/ConfirmationModalSigning.vue";
@@ -62,13 +63,28 @@ export type ConfirmState =
 
 export default defineComponent({
   props: { 
-    isOpen: { type: Boolean, default: false }, 
     requestClose: Function,
     state: { type: String as PropType<ConfirmState>, default: "confirming" },
     confirmButtonText: String,
     title: String,
     transactionHash: String,
     transactionStateMsg: String,
+  },
+
+  setup(props) {
+    const isOpen = computed(() => {
+      return [
+        "confirming",
+        "signing",
+        "failed",
+        "rejected",
+        "confirmed",
+      ].includes(props.state);
+    })
+
+    return {
+      isOpen
+    }
   },
 
   components: {

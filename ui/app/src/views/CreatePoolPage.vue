@@ -188,16 +188,6 @@ export default defineComponent({
       transactionState,
       transactionStateMsg,
 
-      transactionModalOpen: computed(() => {
-        return [
-          "confirming",
-          "signing",
-          "failed",
-          "rejected",
-          "confirmed",
-        ].includes(transactionState.value);
-      }),
-
       handleBlur() {
         selectedField.value = null;
       },
@@ -316,7 +306,6 @@ export default defineComponent({
     />
     <ConfirmationModal 
       :requestClose="requestTransactionModalClose"
-      :isOpen="transactionModalOpen"
       @confirmed="handleAskConfirmClicked"
       :state="transactionState"
       :transactionHash="transactionHash"

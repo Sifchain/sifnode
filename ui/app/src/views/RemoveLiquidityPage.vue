@@ -130,16 +130,6 @@ export default defineComponent({
         transactionStateMsg.value = tx.memo?? '';
       },
 
-      transactionModalOpen: computed(() => {
-        return [
-          "confirming",
-          "signing",
-          "failed",
-          "rejected",
-          "confirmed",
-        ].includes(transactionState.value);
-      }),
-
       requestTransactionModalClose() {
         if (transactionState.value === "confirmed") {
           router.push("/pool");
@@ -227,7 +217,6 @@ export default defineComponent({
 
     <ConfirmationModal 
       :requestClose="requestTransactionModalClose"
-      :isOpen="transactionModalOpen"
       @confirmed="handleAskConfirmClicked"
       :state="transactionState"
       :transactionHash="transactionHash"
