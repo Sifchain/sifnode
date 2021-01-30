@@ -200,7 +200,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			sub.EventsBuffer.AddHeader(newHead.Number, newHead.Hash(), newHead.ParentHash)
 			var events []types.EthereumEvent
 			for {
-				fifty := big.NewInt(50)
+				fifty := big.NewInt(4)
 				fifty.Add(fifty, sub.EventsBuffer.MinHeight)
 				if fifty.Cmp(newHead.Number) <= 0 {
 					events = append(events, sub.EventsBuffer.GetHeaderEvents()...)
