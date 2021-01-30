@@ -256,7 +256,7 @@ export default defineComponent({
       <template #header>Pool Token Prices</template>
       <template #body>
         <FatInfoTableCell>
-          <span class="number">{{ aPerBRatioMessage }}</span
+          <span class="number">{{ formatNumber(aPerBRatioMessage) }}</span
           ><br />
           <span
             >{{ fromSymbol.toUpperCase() }} per
@@ -264,7 +264,7 @@ export default defineComponent({
           >
         </FatInfoTableCell>
         <FatInfoTableCell>
-          <span class="number">{{ bPerARatioMessage }}</span
+          <span class="number">{{ formatNumber(bPerARatioMessage) }}</span
           ><br />
           <span
             >{{ toSymbol.toUpperCase() }} per
@@ -278,7 +278,9 @@ export default defineComponent({
       <template #header>Price Impact and Pool Share</template>
       <template #body>
         <FatInfoTableCell>
-          <span class="number">{{ aPerBRatioProjectedMessage }}</span
+          <span class="number">{{
+            formatNumber(aPerBRatioProjectedMessage)
+          }}</span
           ><br />
           <span
             >{{ fromSymbol.toUpperCase() }} per
@@ -286,7 +288,9 @@ export default defineComponent({
           >
         </FatInfoTableCell>
         <FatInfoTableCell>
-          <span class="number">{{ bPerARatioProjectedMessage }}</span
+          <span class="number">{{
+            formatNumber(bPerARatioProjectedMessage)
+          }}</span
           ><br />
           <span
             >{{ toSymbol.toUpperCase() }} per
