@@ -6,6 +6,9 @@ import { AssetAmount, Token } from "../../entities";
 import { createPegTxEventEmitter } from "./PegTxEventEmitter";
 import { confirmTx } from "./utils/confirmTx";
 import { SifUnSignedClient } from "../utils/SifClient";
+import { parseTxFailure } from "./parseTxFailure";
+
+// TODO: Do we break this service out to ethbridge and cosmos?
 
 export type EthbridgeServiceContext = {
   sifApiUrl: string;
@@ -101,7 +104,10 @@ export default function createEthbridgeService({
       const emitter = createPegTxEventEmitter();
 
       function handleError(err: any) {
-        emitter.emit({ type: "Error", payload: err });
+        emitter.emit({
+          type: "Error",
+          payload: parseTxFailure({ hash: "", log: err.message.toString() }),
+        });
       }
 
       (async function() {
@@ -201,7 +207,10 @@ export default function createEthbridgeService({
       const emitter = createPegTxEventEmitter();
 
       function handleError(err: any) {
-        emitter.emit({ type: "Error", payload: err });
+        emitter.emit({
+          type: "Error",
+          payload: parseTxFailure({ hash: "", log: err }),
+        });
       }
 
       (async function() {
