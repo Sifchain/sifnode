@@ -77,16 +77,30 @@ export default ({
   }
 
   const actions = {
-    async swap(sentAmount: AssetAmount, receivedAsset: Asset) {
+    async swap(
+      sentAmount: AssetAmount,
+      receivedAsset: Asset,
+      minimumReceived: string
+    ) {
       if (!state.address) throw "No from address provided for swap";
 
       const tx = await api.ClpService.swap({
         fromAddress: state.address,
         sentAmount,
         receivedAsset,
+        minimumReceived,
       });
 
-      return await api.SifService.signAndBroadcast(tx.value.msg);
+      const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
+
+      if (txStatus.state !== "accepted") {
+        notify({
+          type: "error",
+          message: txStatus.memo || "There was an error with your swap",
+        });
+      }
+
+      return txStatus;
     },
 
     async addLiquidity(
@@ -110,7 +124,14 @@ export default ({
         externalAssetAmount,
       });
 
-      return await api.SifService.signAndBroadcast(tx.value.msg);
+      const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
+      if (txStatus.state !== "accepted") {
+        notify({
+          type: "error",
+          message: txStatus.memo || "There was an error adding liquidity",
+        });
+      }
+      return txStatus;
     },
 
     async removeLiquidity(
@@ -125,7 +146,16 @@ export default ({
         wBasisPoints,
       });
 
-      return await api.SifService.signAndBroadcast(tx.value.msg);
+      const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
+
+      if (txStatus.state !== "accepted") {
+        notify({
+          type: "error",
+          message: txStatus.memo || "There was an error removing liquidity",
+        });
+      }
+
+      return txStatus;
     },
 
     async disconnect() {

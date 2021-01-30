@@ -205,7 +205,6 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				if fifty.Cmp(newHead.Number) <= 0 {
 					events = append(events, sub.EventsBuffer.GetHeaderEvents()...)
 					sub.EventsBuffer.RemoveHeight()
-
 				} else {
 					break
 				}

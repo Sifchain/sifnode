@@ -27,7 +27,6 @@ export default defineComponent({
   setup(props) {
     const fromSymbol = computed(() => props.fromToken);
     const fromAsset = useAssetItem(fromSymbol);
-
     const fromToken = fromAsset.token;
     const fromTokenLabel = fromAsset.label;
     const fromBackgroundStyle = fromAsset.background;
@@ -67,37 +66,15 @@ export default defineComponent({
 
 <template>
   <div class="confirm-swap">
-    <h3 class="title mb-10">You will receive</h3>
-    <div class="pool-token">
-      <div class="pool-token-value">
-        {{ poolUnits }}
-      </div>
-      <div class="pool-token-image">
-        <img
-          v-if="fromTokenImage"
-          width="24"
-          :src="fromTokenImage"
-          class="info-img"
-        />
-        <div class="placeholder" :style="fromBackgroundStyle" v-else></div>
-        <img
-          v-if="toTokenImage"
-          width="24"
-          :src="toTokenImage"
-          class="info-img"
-        />
-        <div class="placeholder" :style="toBackgroundStyle" v-else></div>
-      </div>
-    </div>
-    <div class="pool-token-label">
-      {{ fromTokenLabel }}/{{ toTokenLabel }} Pool Tokens<br />
-    </div>
+    <h3 class="title mb-10">Your deposit details</h3>
     <DetailsPanelPool
       class="details"
       :fromTokenLabel="fromTokenLabel"
       :toTokenLabel="toTokenLabel"
       :fromAmount="fromAmount"
+      :fromTokenImage="fromTokenImage"
       :toAmount="toAmount"
+      :toTokenImage="toTokenImage"
       :aPerB="aPerB"
       :bPerA="bPerA"
       :shareOfPool="shareOfPool"
@@ -124,7 +101,7 @@ export default defineComponent({
 .title {
   font-size: $fs_lg;
   color: $c_text;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
   text-align: left;
   font-weight: 400;
 }
@@ -172,4 +149,3 @@ export default defineComponent({
   }
 }
 </style>
-
