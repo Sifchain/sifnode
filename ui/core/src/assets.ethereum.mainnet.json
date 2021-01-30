@@ -438,7 +438,17 @@
       "network": "ethereum",
       "priceUsd": 0.0109,
       "symbol": "IOTX",
-      "transferLimit": "10900000000000000"
+      "transferLimit": "458715596330000000000000"
+    },
+    {
+      "address": "0xfe3e6a25e6b192a42a44ecddcd13796471735acf",
+      "name": "Reef Finance",
+      "symbol": "REEF",
+      "decimals": 18,
+      "priceUsd": 0.01802738,
+      "transferLimit": "277355888654000000000000",
+      "network": "ethereum",
+      "imageUrl": "https://assets.coingecko.com/coins/images/13504/small/Group_10572.png?1610534130"
     }
   ]
 }
