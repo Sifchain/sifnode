@@ -1,5 +1,6 @@
 import { ref, Ref } from "@vue/reactivity";
 import {
+  Asset,
   AssetAmount,
   Coin,
   IAssetAmount,
@@ -30,6 +31,8 @@ describe("addLiquidityCalculator", () => {
   let aPerBRatioMessage: Ref<string>;
   let bPerARatioMessage: Ref<string>;
   let shareOfPool: Ref<Fraction>;
+  let aPerBRatioProjectedMessage: Ref<string>;
+  let bPerARatioProjectedMessage: Ref<string>;
   let totalLiquidityProviderUnits: Ref<string>;
   let totalPoolUnits: Ref<string>;
   let shareOfPoolPercent: Ref<string>;
@@ -47,6 +50,8 @@ describe("addLiquidityCalculator", () => {
       shareOfPoolPercent,
       totalLiquidityProviderUnits,
       totalPoolUnits,
+      aPerBRatioProjectedMessage,
+      bPerARatioProjectedMessage,
     } = usePoolCalculator({
       balances,
       tokenAAmount,
@@ -68,15 +73,133 @@ describe("addLiquidityCalculator", () => {
     poolFinder.mockReset();
   });
 
+  const ratios = [
+    {
+      poolExternal: "1000000000",
+      poolNative: "1000000000",
+      poolUnits: "1000000000",
+      addedExternal: "10000000",
+      addedNative: "10000000",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      expected: {
+        aPerBRatioMessage: "1.00000000",
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1.00000000",
+        bPerARatioProjectedMessage: "1.00000000",
+        shareOfPool: "0.99%",
+      },
+    },
+    {
+      poolExternal: "20000000",
+      poolNative: "10000000",
+      poolUnits: "20000000",
+      addedExternal: "10000000",
+      addedNative: "40000000",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      expected: {
+        aPerBRatioMessage: "2.00000000",
+        bPerARatioMessage: "0.50000000",
+        aPerBRatioProjectedMessage: "0.60000000",
+        bPerARatioProjectedMessage: "1.66666667",
+        shareOfPool: "57.45%",
+      },
+    },
+    {
+      poolExternal: "40000000",
+      poolNative: "10000000",
+      poolUnits: "40000000",
+      addedExternal: "10000000",
+      addedNative: "40000000",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      expected: {
+        aPerBRatioMessage: "4.00000000",
+        bPerARatioMessage: "0.25000000",
+        aPerBRatioProjectedMessage: "1.00000000",
+        bPerARatioProjectedMessage: "1.00000000",
+        shareOfPool: "50.00%",
+      },
+    },
+
+    {
+      poolExternal: "100000000",
+      poolNative: "100000000",
+      poolUnits: "10000000000000000000000000",
+      addedExternal: "100000000000",
+      addedNative: "1",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      expected: {
+        aPerBRatioMessage: "1.00000000", // 100000000 / 100000000
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1000.99998999", // 100100000000/100000001
+        bPerARatioProjectedMessage: "0.00099900",
+        shareOfPool: "33.31%",
+      },
+    },
+  ];
+  ratios.forEach(
+    (
+      {
+        poolExternal,
+        poolNative,
+        poolUnits,
+        addedExternal,
+        addedNative,
+        externalSymbol,
+        nativeSymbol,
+        expected,
+      },
+      index
+    ) => {
+      test(`Ratios #${index + 1}`, () => {
+        poolFinder.mockImplementation(() => {
+          const pool = Pool(
+            AssetAmount(Asset.get(externalSymbol), poolExternal),
+            AssetAmount(ROWAN, poolNative),
+            new Fraction(poolUnits)
+          );
+
+          return ref(pool) as Ref<Pool>;
+        });
+
+        tokenAAmount.value = addedExternal;
+        tokenBAmount.value = addedNative;
+        tokenASymbol.value = externalSymbol;
+        tokenBSymbol.value = nativeSymbol;
+        expect(aPerBRatioMessage.value).toBe(expected.aPerBRatioMessage);
+        expect(bPerARatioMessage.value).toBe(expected.bPerARatioMessage);
+        expect(aPerBRatioProjectedMessage.value).toBe(
+          expected.aPerBRatioProjectedMessage
+        );
+        expect(bPerARatioProjectedMessage.value).toBe(
+          expected.bPerARatioProjectedMessage
+        );
+        expect(shareOfPoolPercent.value).toBe(expected.shareOfPool);
+      });
+    }
+  );
+
   test("poolCalculator ratio messages", () => {
-    tokenAAmount.value = "1000";
-    tokenBAmount.value = "500";
+    poolFinder.mockImplementation(
+      () =>
+        ref(
+          Pool(AssetAmount(ATK, "2000000"), AssetAmount(ROWAN, "1000000"))
+        ) as Ref<Pool>
+    );
+
+    tokenAAmount.value = "100000";
+    tokenBAmount.value = "500000";
     tokenASymbol.value = "atk";
     tokenBSymbol.value = "rowan";
 
     expect(aPerBRatioMessage.value).toBe("2.00000000");
     expect(bPerARatioMessage.value).toBe("0.50000000");
-    expect(shareOfPoolPercent.value).toBe("100.00%");
+    expect(aPerBRatioProjectedMessage.value).toBe("1.40000000");
+    expect(bPerARatioProjectedMessage.value).toBe("0.71428571");
+    expect(shareOfPoolPercent.value).toBe("13.73%");
   });
 
   test("poolCalculator with preexisting pool", () => {
@@ -109,7 +232,8 @@ describe("addLiquidityCalculator", () => {
 
     expect(aPerBRatioMessage.value).toBe("1.00000000");
     expect(bPerARatioMessage.value).toBe("1.00000000");
-
+    expect(aPerBRatioProjectedMessage.value).toBe("1.00000000");
+    expect(bPerARatioProjectedMessage.value).toBe("1.00000000");
     // New shareOfPoolPercent for liquidity provider (inc prev liquidity)
     //2000/1002000 = 0.001996007984031936 so roughtly 0.2%
     expect(shareOfPoolPercent.value).toBe("66.67%");
@@ -144,6 +268,8 @@ describe("addLiquidityCalculator", () => {
 
     expect(aPerBRatioMessage.value).toBe("1.00000000");
     expect(bPerARatioMessage.value).toBe("1.00000000");
+    expect(aPerBRatioProjectedMessage.value).toBe("1.00000000");
+    expect(bPerARatioProjectedMessage.value).toBe("1.00000000");
 
     // New shareOfPoolPercent for liquidity provider (inc prev liquidity)
     //2000/1002000 = 0.001996007984031936 so roughtly 0.2%
@@ -162,8 +288,10 @@ describe("addLiquidityCalculator", () => {
     tokenASymbol.value = "atk";
     tokenBSymbol.value = "rowan";
     expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
-    expect(aPerBRatioMessage.value).toBe("");
-    expect(bPerARatioMessage.value).toBe("");
+    expect(aPerBRatioMessage.value).toBe("N/A");
+    expect(bPerARatioMessage.value).toBe("N/A");
+    expect(aPerBRatioProjectedMessage.value).toBe("N/A");
+    expect(bPerARatioProjectedMessage.value).toBe("N/A");
     expect(shareOfPoolPercent.value).toBe("0.00%");
   });
 
@@ -173,8 +301,10 @@ describe("addLiquidityCalculator", () => {
     tokenASymbol.value = "atk";
     tokenBSymbol.value = "rowan";
     expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
-    expect(aPerBRatioMessage.value).toBe("");
-    expect(bPerARatioMessage.value).toBe("");
+    expect(aPerBRatioMessage.value).toBe("N/A");
+    expect(bPerARatioMessage.value).toBe("N/A");
+    expect(aPerBRatioProjectedMessage.value).toBe("N/A");
+    expect(bPerARatioProjectedMessage.value).toBe("N/A");
   });
 
   test("Allow rowan === 0 when adding to preExistingPool", () => {
@@ -189,8 +319,10 @@ describe("addLiquidityCalculator", () => {
     tokenASymbol.value = "atk";
     tokenBSymbol.value = "rowan";
     expect(state.value).toBe(PoolState.VALID_INPUT);
-    expect(aPerBRatioMessage.value).toBe("N/A");
-    expect(bPerARatioMessage.value).toBe("N/A");
+    expect(aPerBRatioMessage.value).toBe("1.00000000");
+    expect(bPerARatioMessage.value).toBe("1.00000000");
+    expect(aPerBRatioProjectedMessage.value).toBe("1.00100000");
+    expect(bPerARatioProjectedMessage.value).toBe("0.99900100");
   });
 
   test("insufficient funds", () => {
