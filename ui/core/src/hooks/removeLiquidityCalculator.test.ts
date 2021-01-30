@@ -8,6 +8,8 @@ import { useRemoveLiquidityCalculator } from "./removeLiquidityCalculator";
 
 const [CATK, ROWAN] = getTestingTokens(["CATK", "ROWAN"]);
 
+const ZERO = new Fraction("0");
+
 describe("useRemoveLiquidityCalculator", () => {
   // input
   const asymmetry: Ref<string> = ref("0");
@@ -19,8 +21,8 @@ describe("useRemoveLiquidityCalculator", () => {
   const poolFinder = jest.fn<Ref<Pool> | null, any>(() => null);
 
   // output
-  let withdrawExternalAssetAmount: Ref<string | null> = ref(null)
-  let withdrawNativeAssetAmount: Ref<string | null> = ref(null)
+  let withdrawExternalAssetAmount: Ref<string | null> = ref(null);
+  let withdrawNativeAssetAmount: Ref<string | null> = ref(null);
   let state: Ref<PoolState> = ref(0);
 
   // watch fires when certain wBasisPoints, asymmetry, or liquidityProvider changes
@@ -35,19 +37,21 @@ describe("useRemoveLiquidityCalculator", () => {
       wBasisPoints,
     });
     state.value = calcData.state;
-    withdrawExternalAssetAmount.value = calcData.withdrawExternalAssetAmount
-    withdrawNativeAssetAmount.value = calcData.withdrawNativeAssetAmount
+    withdrawExternalAssetAmount.value = calcData.withdrawExternalAssetAmount;
+    withdrawNativeAssetAmount.value = calcData.withdrawNativeAssetAmount;
   }
 
   beforeEach(() => {
-    simulateWatch()    
+    simulateWatch();
   });
 
   test("displays the correct withdrawal amounts", async () => {
     liquidityProvider.value = LiquidityProvider(
       CATK,
       new Fraction("100000") as IFraction,
-      "sif123456876512341234"
+      "sif123456876512341234",
+      ZERO,
+      ZERO
     );
 
     poolFinder.mockImplementation(
@@ -61,30 +65,29 @@ describe("useRemoveLiquidityCalculator", () => {
         ) as Ref<Pool>
     );
 
-
     expect(state.value).toBe(PoolState.SELECT_TOKENS);
     asymmetry.value = "0";
     externalAssetSymbol.value = "catk";
     nativeAssetSymbol.value = "rowan";
     sifAddress.value = "sif123456876512341234";
     wBasisPoints.value = "0";
-    simulateWatch()    
-    
+    simulateWatch();
+
     expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
     wBasisPoints.value = "10000";
-    simulateWatch()    
+    simulateWatch();
 
     expect(state.value).toBe(PoolState.VALID_INPUT);
 
     expect(withdrawExternalAssetAmount.value).toEqual("100000.00000");
     expect(withdrawNativeAssetAmount.value).toEqual("100000.00000");
     asymmetry.value = "10000";
-    simulateWatch()    
+    simulateWatch();
 
     expect(withdrawExternalAssetAmount.value).toEqual("181000.00000");
     expect(withdrawNativeAssetAmount.value).toEqual("0.00000");
     wBasisPoints.value = "5000";
-    simulateWatch()    
+    simulateWatch();
 
     expect(withdrawExternalAssetAmount.value).toEqual("95125.00000");
     expect(withdrawNativeAssetAmount.value).toEqual("0.00000");

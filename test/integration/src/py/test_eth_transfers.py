@@ -40,6 +40,7 @@ def build_request() -> (EthereumToSifchainTransferRequest, SifchaincliCredential
 
 def test_transfer_eth_to_ceth_and_back():
     request, credentials = build_request()
+    logging.info(f"set_lock_burn_limit set to {[smart_contracts_dir, request.ethereum_symbol, request.amount]}")
     test_utilities.set_lock_burn_limit(smart_contracts_dir, request.ethereum_symbol, request.amount)
     burn_lock_functions.transfer_ethereum_to_sifchain(request)
     logging.info(f"send ceth back to {request.ethereum_address}")

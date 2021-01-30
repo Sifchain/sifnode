@@ -18,6 +18,7 @@ export type SwapParams = {
   };
   signer: string;
   sent_amount: string;
+  min_receiving_amount: string;
 };
 
 export type LiquidityParams = {
@@ -63,6 +64,8 @@ export type RawPool = {
 
 type LiquidityDetailsResponse = {
   result: {
+    external_asset_balance: string;
+    native_asset_balance: string;
     LiquidityProvider: {
       liquidity_provider_units: string;
       liquidity_provider_address: string;

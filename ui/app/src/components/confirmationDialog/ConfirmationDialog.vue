@@ -4,16 +4,11 @@ import { defineComponent, PropType } from "vue";
 import { computed } from "@vue/reactivity";
 import AskConfirmation from "./AskConfirmation.vue";
 import AnimatedConfirmation from "./AnimatedConfirmation.vue";
-
-export type ConfirmState =
-  | "selecting"
-  | "confirming"
-  | "signing"
-  | "confirmed"
-  | "failed";
+import { ConfirmState } from "../../types";
 
 export default defineComponent({
   components: { AskConfirmation, AnimatedConfirmation },
+  inheritAttrs: false,
   props: {
     state: { type: String as PropType<ConfirmState>, default: "confirming" },
     requestClose: Function,
@@ -34,8 +29,13 @@ export default defineComponent({
       return props.state === "confirmed";
     });
 
+    const failed = computed(() => {
+      return props.state === "failed" || props.state === "rejected";
+    });
+
     return {
       confirmed,
+      failed,
     };
   },
 });
@@ -58,6 +58,7 @@ export default defineComponent({
   <AnimatedConfirmation
     v-else
     :confirmed="confirmed"
+    :failed="failed"
     :state="state"
     :fromAmount="fromAmount"
     :fromToken="fromToken"

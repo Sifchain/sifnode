@@ -2,9 +2,26 @@ import { computed, Ref } from "@vue/reactivity";
 import ColorHash from "color-hash";
 import { Asset, Network } from "ui-core";
 
+export function formatSymbol(symbol: string) {
+  if (symbol.indexOf("c") === 0) {
+    return ["c", symbol.slice(1).toUpperCase()].join("");
+  }
+  return symbol.toUpperCase();
+}
+
+// TODO: These could be replaced with a look up table
+export function getPeggedSymbol(symbol: string) {
+  if (symbol === "erowan") return "rowan";
+  return "c" + symbol;
+}
+export function getUnpeggedSymbol(symbol: string) {
+  if (symbol === "rowan") return "erowan";
+  return symbol.indexOf("c") === 0 ? symbol.slice(1) : symbol;
+}
+
 export function getAssetLabel(t: Asset) {
-  if (t.network === Network.SIFCHAIN && t.symbol.indexOf("c") === 0) {
-    return ["c", t.symbol.slice(1).toUpperCase()].join("");
+  if (t.network === Network.SIFCHAIN) {
+    return formatSymbol(t.symbol);
   }
 
   if (t.network === Network.ETHEREUM && t.symbol.toLowerCase() === "erowan") {

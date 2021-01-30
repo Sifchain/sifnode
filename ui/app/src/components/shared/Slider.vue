@@ -11,9 +11,15 @@
       :step="step"
     />
     <div class="row">
-      <div @click="$emit('leftclicked')">{{ leftLabel }}</div>
-      <div @click="$emit('middleclicked')">{{ middleLabel }}</div>
-      <div @click="$emit('rightclicked')">{{ rightLabel }}</div>
+      <div>
+        <label class="label" @click="$emit('leftclicked')">{{ leftLabel }}</label>
+      </div>
+      <div>
+        <label class="label" @click="$emit('middleclicked')">{{ middleLabel }}</label>
+      </div>
+      <div>
+        <label class="label" @click="$emit('rightclicked')">{{ rightLabel }}</label>
+      </div>
     </div>
   </div>
 </template>
@@ -63,6 +69,14 @@ export default defineComponent({
     }
     & > *:last-child {
       text-align: right;
+    }
+
+    .label {
+      transition: opacity $trans_fast;
+      &:hover {
+        cursor: pointer;
+        color: $c_black;
+      }
     }
   }
 }
