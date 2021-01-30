@@ -3,14 +3,28 @@
     <div class="pool-units-value mb-10">
       {{ poolUnits }}
     </div>
-    <div class="pool-units-label">
-      {{ fromSymbol }}/{{ toSymbol }} Pool Tokens<br />
+    <div class="pool-asset">
+      <AssetItemPool 
+        :tokenASymbol="fromSymbol"
+        :tokenBSymbol="toSymbol"
+        inline
+      />
+      <span>&nbsp;Pool Tokens</span>
     </div>
+    <!-- <div class="pool-units-label">
+      {{ fromSymbol }}/{{ toSymbol }} Pool Tokens<br />
+    </div> -->
   </div>
 </template>
 
 <script>
+import AssetItemPool from "@/components/shared/AssetItemPool.vue";
+
 export default {
+  components: {
+    AssetItemPool,
+  },
+
   props: {
     poolUnits: String,
     fromSymbol: String,
@@ -33,5 +47,9 @@ export default {
     text-align: left;
     font-weight: 400;
   }
+}
+.pool-asset {
+  display: flex;
+  align-items: center;
 }
 </style>
