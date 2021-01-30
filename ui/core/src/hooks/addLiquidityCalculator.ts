@@ -138,6 +138,7 @@ export function usePoolCalculator(input: {
   });
 
   const shareOfPoolPercent = computed(() => {
+    if (shareOfPool.value.multiply("10000").lessThan("1")) return "< 0.01%";
     return `${shareOfPool.value.multiply("100").toFixed(2)}%`;
   });
 
