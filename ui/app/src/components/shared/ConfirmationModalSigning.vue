@@ -2,33 +2,58 @@
   <div>
     <div class="confirmation">
       <div class="message">
-        <Loader black :success="confirmed" /><br />
+        <Loader
+          black
+          :success="state === 'confirmed'"
+          :failed="state === 'rejected' || state === 'failed'"
+        /><br />
         <div class="text-wrapper">
+          <!-- 
+            TODO: This could be abstracted to AnimatedLoaderStateModal 
+            that takes screens and switches them based on arbitrary state
+            with arbitrary content that can be specified in page.
+            The content below isn't really flexible enough and can be 
+            templed into components
+
+            Perhaps we could use render functions to accomplish this?
+          -->
           <transition name="swipe">
             <div class="text" v-if="state === 'signing'">
               <p>Waiting for confirmation</p>
-              <p class="thin">
-                Supplying
-                <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
-                and
-                <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
-              </p>
+              <slot name="signing"></slot>
               <br />
               <p class="sub">Confirm this transaction in your wallet</p>
             </div>
           </transition>
+
           <transition name="swipe">
-            <div class="text" v-if="confirmed">
+            <div class="text" v-if="state === 'rejected'">
+              <p>Transaction Rejected</p>
+              <slot name="rejected"></slot>
+              <br />
+              <p class="sub">{{ transactionStateMsg }}</p>
+            </div>
+          </transition>
+
+          <transition name="swipe">
+            <div class="text" v-if="state === 'failed'">
+              <p>Transaction Failed</p>
+              <slot name="failed"></slot>
+              <br />
+              <p class="sub">{{ transactionStateMsg }}</p>
+            </div>
+          </transition>
+
+          <transition name="swipe">
+            <div class="text" v-if="state === 'confirmed'">
               <p>Transaction Submitted</p>
-              <p class="thin">
-                Supplying
-                <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
-                and
-                <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
-              </p>
+              <slot name="confirmed"></slot>
               <br />
               <p class="sub">
-                <a class="anchor" target="_blank" :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
+                <a
+                  class="anchor"
+                  target="_blank"
+                  :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
                   >View transaction on Block Explorer</a
                 >
               </p>
@@ -47,29 +72,23 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { useCore } from "@/hooks/useCore";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
-import { useCore } from "@/hooks/useCore";
 
 export default defineComponent({
+  inheritAttrs: false,
   components: { Loader, SifButton },
   props: {
-    confirmed: Boolean,
     state: String,
-    fromAmount: String,
-    fromToken: String,
-    toAmount: String,
-    toToken: String,
     transactionHash: String,
+    transactionStateMsg: String,
   },
-  setup(props) {
+
+  setup() {
     const { config } = useCore();
-    // Need to cache amounts and disconnect reactivity
+
     return {
-      _fromAmount: props.fromAmount,
-      _fromToken: props.fromToken,
-      _toAmount: props.toAmount,
-      _toToken: props.toToken,
       chainId: config.sifChainId,
     };
   },
@@ -101,18 +120,11 @@ export default defineComponent({
 .anchor {
   color: $c_black;
 }
-.thin {
-  font-weight: normal;
-}
-.thick {
-  font-weight: bold;
-}
 .sub {
   font-weight: normal;
   font-size: $fs_sm;
 }
 .footer {
-  padding: 16px;
   visibility: hidden;
   transition: opacity 0.5s ease-out;
   opacity: 0;
