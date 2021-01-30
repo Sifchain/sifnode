@@ -2,12 +2,11 @@
 import { defineComponent, ref, watch } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
-import ModalView from "@/components/shared/ModalView.vue";
 import { Asset, PoolState, useRemoveLiquidityCalculator } from "ui-core";
 import { LiquidityProvider } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useRoute, useRouter } from "vue-router";
-import { computed, effect, readonly, Ref, toRef } from "@vue/reactivity";
+import { computed, effect, Ref, toRef } from "@vue/reactivity";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
 import Slider from "@/components/shared/Slider.vue";
@@ -20,7 +19,6 @@ export default defineComponent({
   components: {
     AssetItem,
     Layout,
-    ModalView,
     ActionsPanel,
     Slider,
     ConfirmationModal,
@@ -32,7 +30,7 @@ export default defineComponent({
     const router = useRouter();
     const transactionState = ref<ConfirmState>("selecting");
     const transactionHash = ref<string | null>(null);
-    const transactionStateMsg = ref<string>('');
+    const transactionStateMsg = ref<string>("");
     const asymmetry = ref("0");
     const wBasisPoints = ref("0");
     const nativeAssetSymbol = ref("rowan");
@@ -127,7 +125,7 @@ export default defineComponent({
         );
         transactionHash.value = tx.hash;
         transactionState.value = toConfirmState(tx.state); // TODO: align states
-        transactionStateMsg.value = tx.memo?? '';
+        transactionStateMsg.value = tx.memo ?? "";
       },
 
       requestTransactionModalClose() {
@@ -215,7 +213,7 @@ export default defineComponent({
       :nextStepMessage="nextStepMessage"
     />
 
-    <ConfirmationModal 
+    <ConfirmationModal
       :requestClose="requestTransactionModalClose"
       @confirmed="handleAskConfirmClicked"
       :state="transactionState"
@@ -239,9 +237,13 @@ export default defineComponent({
       <template v-slot:common>
         <p class="text--normal">
           Withdrawing
-          <span class="text--bold">{{ withdrawExternalAssetAmount }} {{ externalAssetSymbol }}</span>
+          <span class="text--bold"
+            >{{ withdrawExternalAssetAmount }} {{ externalAssetSymbol }}</span
+          >
           and
-          <span class="text--bold">{{ withdrawNativeAssetAmount }} {{ nativeAssetSymbol }}</span>
+          <span class="text--bold"
+            >{{ withdrawNativeAssetAmount }} {{ nativeAssetSymbol }}</span
+          >
         </p>
       </template>
     </ConfirmationModal>

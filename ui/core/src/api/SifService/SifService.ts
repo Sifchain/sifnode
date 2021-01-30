@@ -1,4 +1,5 @@
 import {
+  BroadcastTxResult,
   coins,
   isBroadcastTxFailure,
   makeCosmoshubPath,
@@ -309,12 +310,7 @@ export default function createSifService({
           state: "accepted",
         };
       } catch (err) {
-        /* istanbul ignore next */ // TODO: fix converage
-        return {
-          hash: "",
-          memo: "An unknown error occured while signing and broadcasting",
-          state: "failed",
-        };
+        return parseTxFailure({ transactionHash: "", rawLog: err.message });
       }
     },
   };

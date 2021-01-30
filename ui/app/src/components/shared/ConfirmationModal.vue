@@ -1,16 +1,12 @@
 <template>
-  <ModalView
-    :requestClose="requestClose"
-    :isOpen="isOpen"
-  > 
+  <ModalView :requestClose="requestClose" :isOpen="isOpen">
     <div class="modal-inner">
-
-      <ConfirmationModalAsk 
+      <ConfirmationModalAsk
         v-if="state === 'confirming'"
         @confirmed="$emit('confirmed')"
         :title="title"
         :confirmButtonText="confirmButtonText"
-      > 
+      >
         <template v-slot:body>
           <slot name="selecting"></slot>
         </template>
@@ -23,9 +19,8 @@
         :transactionHash="transactionHash"
         :transactionStateMsg="transactionStateMsg"
       >
-
         <template v-slot:signing>
-            <slot :name="!!this.$slots.signing ? 'signing' : 'common'"></slot> 
+          <slot :name="!!this.$slots.signing ? 'signing' : 'common'"></slot>
         </template>
 
         <template v-slot:confirmed>
@@ -40,9 +35,7 @@
           <slot :name="!!this.$slots.signing ? 'failed' : 'common'"></slot>
         </template>
       </ConfirmationModalSigning>
-
     </div>
-
   </ModalView>
 </template>
 
@@ -52,21 +45,25 @@ import { computed } from "@vue/reactivity";
 import ModalView from "@/components/shared/ModalView.vue";
 import ConfirmationModalAsk from "@/components/shared/ConfirmationModalAsk.vue";
 import ConfirmationModalSigning from "@/components/shared/ConfirmationModalSigning.vue";
-
-export type ConfirmState =
-  | "selecting"
-  | "confirming"
-  | "signing"
-  | "confirmed"
-  | "rejected"
-  | "failed";
+import { ConfirmState } from "../../types";
 
 export default defineComponent({
-  props: { 
+  inheritAttrs: false,
+  props: {
+    // Function to request the window is closed this function must reset the confirmation state to selecting
     requestClose: Function,
+
+    // Confirmation state: "selecting" | "confirming" | "signing" | "confirmed" | "rejected" | "failed";
+    // This component acts on this state to determine which panel to show
     state: { type: String as PropType<ConfirmState>, default: "confirming" },
+
+    // The text on the 'confirm' button
     confirmButtonText: String,
+
+    // The title of the ask modal
     title: String,
+
+    //
     transactionHash: String,
     transactionStateMsg: String,
   },
@@ -80,11 +77,11 @@ export default defineComponent({
         "rejected",
         "confirmed",
       ].includes(props.state);
-    })
+    });
 
     return {
-      isOpen
-    }
+      isOpen,
+    };
   },
 
   components: {
@@ -92,14 +89,14 @@ export default defineComponent({
     ConfirmationModalAsk,
     ConfirmationModalSigning,
   },
-})
+});
 </script>
 
 <style scoped lang="scss">
-  .modal-inner {
-    display: flex;
-    flex-direction: column;
-    padding: 30px 20px 20px 20px;
-    min-height: 50vh;
-  }
+.modal-inner {
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px 20px 20px;
+  min-height: 50vh;
+}
 </style>

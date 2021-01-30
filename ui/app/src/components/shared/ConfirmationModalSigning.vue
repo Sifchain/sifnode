@@ -2,18 +2,30 @@
   <div>
     <div class="confirmation">
       <div class="message">
-        <Loader black :success="state === 'confirmed'" :failed="state === 'rejected' || state === 'failed'" /><br />
+        <Loader
+          black
+          :success="state === 'confirmed'"
+          :failed="state === 'rejected' || state === 'failed'"
+        /><br />
         <div class="text-wrapper">
+          <!-- 
+            TODO: This could be abstracted to AnimatedLoaderStateModal 
+            that takes screens and switches them based on arbitrary state
+            with arbitrary content that can be specified in page.
+            The content below isn't really flexible enough and can be 
+            templed into components
 
+            Perhaps we could use render functions to accomplish this?
+          -->
           <transition name="swipe">
             <div class="text" v-if="state === 'signing'">
               <p>Waiting for confirmation</p>
-              <slot name="signing"></slot> 
+              <slot name="signing"></slot>
               <br />
               <p class="sub">Confirm this transaction in your wallet</p>
             </div>
           </transition>
-          
+
           <transition name="swipe">
             <div class="text" v-if="state === 'rejected'">
               <p>Transaction Rejected</p>
@@ -38,13 +50,15 @@
               <slot name="confirmed"></slot>
               <br />
               <p class="sub">
-                <a class="anchor" target="_blank" :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
+                <a
+                  class="anchor"
+                  target="_blank"
+                  :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
                   >View transaction on Block Explorer</a
                 >
               </p>
             </div>
           </transition>
-
         </div>
       </div>
     </div>
@@ -63,6 +77,7 @@ import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 
 export default defineComponent({
+  inheritAttrs: false,
   components: { Loader, SifButton },
   props: {
     state: String,
@@ -75,8 +90,8 @@ export default defineComponent({
 
     return {
       chainId: config.sifChainId,
-    }
-  }
+    };
+  },
 });
 </script>
 

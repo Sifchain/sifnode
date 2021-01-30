@@ -1,5 +1,10 @@
 import { ActionContext } from "..";
-import { Asset, AssetAmount, Fraction } from "../../entities";
+import {
+  Asset,
+  AssetAmount,
+  Fraction,
+  TransactionStatus,
+} from "../../entities";
 import notify from "../../api/utils/Notifications";
 import JSBI from "jsbi";
 
@@ -67,12 +72,18 @@ export default ({
         ? api.EthbridgeService.burnToSifchain
         : api.EthbridgeService.lockToSifchain;
 
-      return await new Promise<any>(done => {
+      return await new Promise<TransactionStatus>(done => {
         lockOrBurnFn(store.wallet.sif.address, assetAmount, ETH_CONFIRMATIONS)
-          .onTxHash(done)
+          .onTxHash(hash =>
+            done({
+              hash: hash.txHash,
+              memo: "Transaction Accepted",
+              state: "accepted",
+            })
+          )
           .onError(err => {
-            const payload: any = err.payload;
-            notify({ type: "error", message: payload.message ?? err });
+            notify({ type: "error", message: err.payload.memo! });
+            done(err.payload);
           })
           .onComplete(({ txHash }) => {
             notify({
