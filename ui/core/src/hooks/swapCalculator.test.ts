@@ -13,12 +13,14 @@ describe("swapCalculator", () => {
   const toSymbol: Ref<string | null> = ref(null);
   const balances = ref([]) as Ref<IAssetAmount[]>;
   const selectedField: Ref<"from" | "to" | null> = ref("from");
+  const slippage = ref("0.5");
 
   // output
   let state: Ref<SwapState>;
   let priceMessage: Ref<string | null>;
   let priceImpact: Ref<string | null>;
   let providerFee: Ref<string | null>;
+  let minimumReceived: Ref<IAssetAmount | null>;
 
   test("calculate swap usecase", () => {
     const pool1 = ref(
@@ -43,7 +45,13 @@ describe("swapCalculator", () => {
       }
     });
 
-    ({ state, priceMessage, priceImpact, providerFee } = useSwapCalculator({
+    ({
+      state,
+      priceMessage,
+      priceImpact,
+      providerFee,
+      minimumReceived,
+    } = useSwapCalculator({
       balances,
       fromAmount,
       toAmount,
@@ -51,7 +59,9 @@ describe("swapCalculator", () => {
       selectedField,
       toSymbol,
       poolFinder,
+      slippage,
     }));
+
     selectedField.value = "from";
     expect(state.value).toBe(SwapState.SELECT_TOKENS);
 
@@ -70,6 +80,7 @@ describe("swapCalculator", () => {
 
     expect(toAmount.value).toBe("49.99999999"); // 1 ATK ~= 0.5 BTK
     expect(state.value).toBe(SwapState.VALID_INPUT);
+    expect(minimumReceived.value?.toString()).toBe("49.749999990050000000 BTK");
 
     selectedField.value = null; // deselect
 
@@ -110,7 +121,7 @@ describe("swapCalculator", () => {
     fromAmount.value = "10000";
 
     expect(state.value).toBe(SwapState.INSUFFICIENT_FUNDS);
-
+    expect(toAmount.value).toBe("4999.9999");
     expect(priceMessage.value).toBe("0.500000 BTK per ATK");
     expect(priceImpact.value).toBe("0.000001");
     expect(providerFee.value).toBe("0.00005");
@@ -141,6 +152,7 @@ describe("swapCalculator", () => {
       selectedField,
       toSymbol,
       poolFinder,
+      slippage,
     }));
 
     selectedField.value = "from";
