@@ -18,6 +18,6 @@ operator_address=0xf17f52151EbEF6C7334FAD080c5704D77216b732
 ETHEREUM_ADDRESS=$operator_address python3 -m pytest -olog_level=$loglevel -v -olog_file=/tmp/log.txt -v \
   ${TEST_INTEGRATION_PY_DIR}/test_parallel_eth_transfers.py \
   ${TEST_INTEGRATION_PY_DIR}/test_rowan_transfers.py \
-  ${TEST_INTEGRATION_PY_DIR}/test_foo.py \
+  ${TEST_INTEGRATION_PY_DIR}/test_three_letter_currency_with_capitals_in_name.py \
   ${TEST_INTEGRATION_PY_DIR}/test_new_currency_transfers.py \
   ${TEST_INTEGRATION_PY_DIR}/test_rollback_chain.py
