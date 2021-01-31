@@ -2,7 +2,6 @@ import { Asset, AssetAmount, LiquidityProvider, Pool } from "../../entities";
 import { ActionContext } from "..";
 import { PoolStore } from "../../store/pools";
 import notify from "../../api/utils/Notifications";
-import { toPool } from "../../api/utils/SifClient/toPool";
 import { effect } from "@vue/reactivity";
 
 export default ({
@@ -80,7 +79,7 @@ export default ({
     async swap(
       sentAmount: AssetAmount,
       receivedAsset: Asset,
-      minimumReceived: string
+      minimumReceived: AssetAmount
     ) {
       if (!state.address) throw "No from address provided for swap";
 
