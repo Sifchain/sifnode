@@ -55,11 +55,16 @@ export class EthereumService implements IWalletService {
     this.web3 = new Web3(Web3.givenProvider || "ws://localhost:7545");
 
     if (this.web3 && this.web3.givenProvider) {
-      this.web3.givenProvider.on('accountsChanged',  () => {
+      this.web3.givenProvider.on('accountsChanged', () => {
         this.updateData();
       });
 
       this.web3.givenProvider.on('chainChanged', () => {
+        window.location.reload();
+      });
+
+      this.web3.givenProvider.on('message', () => {
+        console.log("on", "message");
         this.updateData();
       });
     }
