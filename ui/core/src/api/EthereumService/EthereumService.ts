@@ -49,7 +49,6 @@ export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
   private supportedTokens: Asset[] = [];
   private provider: provider | undefined;
-  private providerPromise: Promise<provider>;
 
   // This is shared reactive state
   private state: {
@@ -64,32 +63,30 @@ export class EthereumService implements IWalletService {
     // init state
     this.state = reactive({ ...initState });
     this.supportedTokens = assets.filter(t => t.network === Network.ETHEREUM);
-
-    this.providerPromise = getWeb3Provider();
-    this.providerPromise
-      .then(provider => {
-        if (!provider) {
-          return (this.provider = null);
-        }
+    if (Web3.givenProvider) {
+      this.provider = Web3.givenProvider;
+      this.web3 = new Web3(Web3.givenProvider || "ws://localhost:7545");
+    } else {
+      getWeb3Provider().then((provider) => {
         this.provider = provider;
         this.web3 = new Web3(provider);
-
-        if (isEventEmittingProvider(provider)) {
-          this.updateData();
-          provider.on("accountsChanged", () => {
-            this.updateData();
-          });
-          provider.on("chainChanged", () => {
-            window.location.reload();
-          });
-        }
-        this.web3.eth.subscribe("newBlockHeaders", (error, blockHeader) => {
-          this.updateData();
-        });
       })
-      .catch(error => {
-        console.log("er", error);
+    }
+    this.addListeners()
+  }
+
+  addListeners() {
+    if (isEventEmittingProvider(this.provider)) {
+      this.provider.on('accountsChanged', () => {
+        this.updateData();
       });
+      this.provider.on('chainChanged', () => {
+        window.location.reload();
+      });
+    }
+    this.web3?.eth.subscribe("newBlockHeaders", (error, blockHeader) => {
+      this.updateData();
+    });
   }
 
   getState() {
@@ -131,10 +128,11 @@ export class EthereumService implements IWalletService {
 
   async connect() {
     try {
-      if (isMetaMaskProvider(this.provider)) {
-        if (this.provider.request) {
-          await this.provider.request({ method: "eth_requestAccounts" });
-        }
+      if (!this.web3 || !this.provider) {
+        throw new Error("There is no yet a connection to Ethereum.");
+      }
+      if (isMetaMaskProvider(this.provider) && this.provider.request) {
+        await this.provider.request({ method: "eth_requestAccounts" });
       }
       notify({ type: "success", message: "Connected to Metamask" });
       await this.updateData();
