@@ -158,7 +158,7 @@ export default defineComponent({
   >
     <div :class="!withdrawNativeAssetAmount ? 'disabled' : 'active'">
       <div class="panel-header text--left">
-        <div class="mb-10">Amount:</div>
+        <div class="mb-10">Amount to Withdraw:</div>
         <h1>{{ wBasisPoints / 100 }}%</h1>
       </div>
 
@@ -195,7 +195,7 @@ export default defineComponent({
         rightLabel="All External Asset"
       />
       <div class="asset-row">
-        <h4 class="text--left">Total Deposited After Transaction</h4>
+        <h4 class="text--left">You Should Receive:</h4>
         <div>
           <AssetItem :symbol="nativeAssetSymbol" />
           <AssetItem :symbol="externalAssetSymbol" />
@@ -236,13 +236,13 @@ export default defineComponent({
 
       <template v-slot:common>
         <p class="text--normal">
-          Withdrawing
+          You should receive
           <span class="text--bold"
-            >{{ withdrawExternalAssetAmount }} {{ externalAssetSymbol }}</span
+            >{{ withdrawExternalAssetAmount }} {{ externalAssetSymbol.toUpperCase().replace("C", "c") }}</span
           >
           and
           <span class="text--bold"
-            >{{ withdrawNativeAssetAmount }} {{ nativeAssetSymbol }}</span
+            >{{ withdrawNativeAssetAmount }} {{ nativeAssetSymbol.toUpperCase() }}</span
           >
         </p>
       </template>
