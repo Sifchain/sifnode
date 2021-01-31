@@ -139,6 +139,11 @@ export default ({
       wBasisPoints: string,
       asymmetry: string
     ) {
+
+      // Note: Chain needs -1 - 1, 
+      // UI needs to do -10000 - 10000 bc current Fraction floating point limitation
+      asymmetry =  (+asymmetry/10000).toString()
+
       const tx = await api.ClpService.removeLiquidity({
         fromAddress: state.address,
         asset,
