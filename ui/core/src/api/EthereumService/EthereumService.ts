@@ -73,6 +73,13 @@ export class EthereumService implements IWalletService {
       .then(provider => {
         if (!provider) return (this.provider = null);
         if (isEventEmittingProvider(provider)) {
+          // Reload the page when chain has changed see https://docs.metamask.io/guide/ethereum-provider.html#events
+          provider.on("chainChanged", () => window.location.reload());
+
+          provider.on("accountsChanged", () => {
+            this.updateData();
+          });
+
           provider.on("connect", () => {
             this.state.connected = true;
           });

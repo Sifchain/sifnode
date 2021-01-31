@@ -5,52 +5,44 @@ test("parseTxFailure", () => {
   expect(
     parseTxFailure({
       transactionHash: "123",
-      code: 123,
-      height: 123,
       rawLog: "",
     })
-  ).toEqual({
+  ).toMatchObject({
     hash: "123",
-    memo: "Unknown failure",
+    memo: "There was an unknown failiure",
     state: "failed",
   });
 
   expect(
     parseTxFailure({
       transactionHash: "123",
-      code: 123,
-      height: 123,
       rawLog: "something was below expected",
     })
-  ).toEqual({
+  ).toMatchObject({
     hash: "123",
-    memo: "Swap failed - Received amount is below expected",
+    memo: "Your transaction has failed - Received amount is below expected",
     state: "failed",
   });
 
   expect(
     parseTxFailure({
       transactionHash: "123",
-      code: 123,
-      height: 123,
       rawLog: "yegads swap_failed!",
     })
-  ).toEqual({
+  ).toMatchObject({
     hash: "123",
-    memo: "Swap failed",
+    memo: "Your transaction has failed",
     state: "failed",
   });
 
   expect(
     parseTxFailure({
       transactionHash: "123",
-      code: 123,
-      height: 123,
       rawLog: "your Request rejected!",
     })
-  ).toEqual({
+  ).toMatchObject({
     hash: "123",
-    memo: "Request Rejected",
+    memo: "You have rejected the transaction",
     state: "rejected",
   });
 });

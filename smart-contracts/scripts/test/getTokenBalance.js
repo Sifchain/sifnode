@@ -19,13 +19,13 @@ module.exports = async (cb) => {
     let balanceWei, balanceEth;
     const result = {};
     try {
-        const web3instance = contractUtilites.buildWeb3(this, argv);
+        const web3instance = contractUtilites.buildWeb3(this, argv, logging);
         if (argv.symbol === sifchainUtilities.NULL_ADDRESS) {
             balanceWei = await web3instance.eth.getBalance(argv.ethereum_address);
             result.symbol = "eth";
         } else {
             const addr = argv.symbol;
-            const tokenContract = await contractUtilites.buildContract(this, argv, "BridgeToken", argv.symbol.toString());
+            const tokenContract = await contractUtilites.buildContract(this, argv, logging, "BridgeToken", argv.symbol.toString());
             result["symbol"] = await tokenContract.symbol();
             balanceWei = new BigNumber(await tokenContract.balanceOf(argv.ethereum_address))
         }
