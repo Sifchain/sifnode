@@ -40,12 +40,6 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    const fromValue = computed(() => {
-      return AssetAmount(Asset.get(fromSymbol.value || 'eth'),
-        accountPool?.value?.lp.externalAmount?.toFixed(0) || 0,
-        { inBaseUnit:true }).toFixed(DECIMALS);
-    })
-
     const fromTotalValue = computed(() => accountPool?.value?.pool.amounts[1].toFixed(DECIMALS));
 
     const toSymbol = computed(() =>
@@ -64,13 +58,6 @@ export default defineComponent({
 
     const toTotalValue = computed(() => accountPool?.value?.pool.amounts[0].toFixed(DECIMALS));
 
-    const toValue = computed(() => {
-      // TD - Just using ETH asset because TO is always ROWAN at the moment
-      return AssetAmount(Asset.get('eth'),
-        accountPool?.value?.lp?.nativeAmount?.toFixed(0) || 0,
-        { inBaseUnit:true }).toFixed(DECIMALS);
-    })
-
     const poolUnitsAsFraction = computed(
       () => accountPool?.value?.lp.units || new Fraction("0")
     );
@@ -82,7 +69,7 @@ export default defineComponent({
       const perc = poolUnitsAsFraction.value
         .divide(accountPool?.value?.pool?.poolUnits)
         .multiply("100")
-        .toFixed(2);
+        .toSignificant(3)
       return `${perc} %`;
     });
     const myPoolUnits = computed(() => poolUnitsAsFraction.value.toFixed(DECIMALS));
@@ -92,12 +79,10 @@ export default defineComponent({
       fromSymbol,
       fromBackgroundStyle,
       fromTokenImage,
-      fromValue,
       fromTotalValue,
       toSymbol,
       toBackgroundStyle,
       toTokenImage,
-      toValue,
       toTotalValue,
       myPoolUnits,
       myPoolShare,
@@ -139,38 +124,6 @@ export default defineComponent({
       </div>
       <div class="section">
         <div class="details">
-          <div class="row">
-            <span>Your Pooled {{ fromSymbol }}:</span>
-            <span class="value">
-              <span>{{ fromValue }}</span>
-              <img
-                v-if="fromTokenImage"
-                width="22"
-                height="22"
-                :src="fromTokenImage"
-                class="info-img"
-              />
-              <div
-                class="placeholder"
-                :style="fromBackgroundStyle"
-                v-else
-              ></div>
-            </span>
-          </div>
-          <div class="row">
-            <span>Your Pooled {{ toSymbol.toUpperCase() }}:</span>
-            <span class="value">
-              <span>{{ toValue }}</span>
-              <img
-                v-if="toTokenImage"
-                width="22"
-                height="22"
-                :src="toTokenImage"
-                class="info-img"
-              />
-              <div class="placeholder" :style="toBackgroundStyle" v-else></div>
-            </span>
-          </div>
           <div class="row">
             <span>Total Pooled {{ fromSymbol }}:</span>
             <span class="value">
