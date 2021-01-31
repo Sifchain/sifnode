@@ -40,7 +40,7 @@ export default defineComponent({
       toAmount,
     } = useCurrencyFieldState();
 
-    const slippage = ref<string>("0");
+    const slippage = ref<string>("0.5");
     const transactionState = ref<ConfirmState>("selecting");
     const transactionHash = ref<string | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
@@ -63,6 +63,7 @@ export default defineComponent({
       priceMessage,
       priceImpact,
       providerFee,
+      minimumReceived,
     } = useSwapCalculator({
       balances,
       fromAmount,
@@ -70,15 +71,9 @@ export default defineComponent({
       fromSymbol,
       selectedField,
       toSymbol,
+      slippage,
       poolFinder,
     });
-
-    const minimumReceived = computed(() =>
-      (
-        (1 - parseFloat(slippage.value) / 100) *
-        parseFloat(toAmount.value)
-      ).toPrecision(18)
-    );
 
     function clearAmounts() {
       fromAmount.value = "0.0";
@@ -99,12 +94,15 @@ export default defineComponent({
         throw new Error("from field amount is not defined");
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
+      if (!minimumReceived.value)
+        throw new Error("minimumReceived amount is not defined");
+
       transactionState.value = "signing";
 
       const tx = await actions.clp.swap(
         fromFieldAmount.value,
         toFieldAmount.value.asset,
-        parseFloat(minimumReceived.value).toFixed(18).replace(".", "")
+        minimumReceived.value
       );
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
