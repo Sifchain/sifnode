@@ -145,6 +145,7 @@ func getAssetsHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
+//http://localhost:1317/clp/getLpList?symbol=catk
 func getLpListHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)

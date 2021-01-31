@@ -17,5 +17,9 @@ yes Y | sifnodecli tx clp create-pool --from akasha --symbol catk --nativeAmount
 sleep 8
 yes Y | sifnodecli tx clp add-liquidity --from sif --symbol catk --nativeAmount 5000000000000000000000 --externalAmount 5000000000000000000
 sleep 8
+echo "Getting from CLI"
 sifnodecli query clp lplist catk
-pkill sifnoded
+
+echo "Getting from REST"
+curl --request GET -sL \
+     --url 'http://localhost:1317/clp/getLpList?symbol=catk'\
