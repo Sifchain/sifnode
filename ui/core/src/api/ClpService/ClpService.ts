@@ -27,7 +27,7 @@ type IClpService = {
     fromAddress: string;
     sentAmount: AssetAmount;
     receivedAsset: Asset;
-    minimumReceived: string;
+    minimumReceived: AssetAmount;
   }) => any;
   addLiquidity: (params: {
     fromAddress: string;
@@ -128,19 +128,22 @@ export default function createClpService({
           symbol: params.sentAmount.asset.symbol,
           ticker: params.sentAmount.asset.symbol,
         },
-        min_receiving_amount: params.minimumReceived as string,
+        min_receiving_amount: params.minimumReceived.toBaseUnits().toString(),
         signer: params.fromAddress,
       });
     },
     async getLiquidityProvider(params) {
       const response = await client.getLiquidityProvider(params);
       let asset: Asset;
-      const { LiquidityProvider: liquidityProvider, native_asset_balance,
-        external_asset_balance } = response.result;
+      const {
+        LiquidityProvider: liquidityProvider,
+        native_asset_balance,
+        external_asset_balance,
+      } = response.result;
       const {
         asset: { symbol },
         liquidity_provider_units,
-        liquidity_provider_address
+        liquidity_provider_address,
       } = liquidityProvider;
 
       try {

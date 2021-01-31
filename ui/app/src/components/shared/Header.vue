@@ -1,6 +1,6 @@
 <template>
   <header class="header">
-    <div class="secondary-header-container">Welcome to our BetaNet! Please use with caution as we iterate based on end-user feedback. <a target="_blank" href="https://docs.sifchain.finance/resources/betanet-launch">Refer here for more information & security measures taken</a></div>
+    <div class="secondary-header-container">Welcome to our BetaNet! Please be aware that while this has passed several public security audits, it is still in Beta. We encourage you to first understand how it works before transacting on it and exercise caution at all times. <a target="_blank" href="https://docs.sifchain.finance/resources/betanet-launch">Here's a list of security measures taken</a>, but please note that all transactions conducted are at your own risk.</div>
     <div class="primary-header-container">
       <div>
         <Menu />
@@ -38,6 +38,8 @@ export default defineComponent({
   position: fixed;
   top: 0;
   left: 0;
+  background: $c_white;
+  border-bottom: $divider;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -45,7 +47,6 @@ export default defineComponent({
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    color: $c_white;
     padding: 1rem 2rem
   }
   .secondary-header-container {
