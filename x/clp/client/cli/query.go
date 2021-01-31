@@ -29,7 +29,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdPools(queryRoute, cdc),
 		GetCmdAssets(queryRoute, cdc),
 		GetCmdLiquidityProvider(queryRoute, cdc),
-		GetCmdLiquidityProviders(queryRoute, cdc),
+		GetCmdLpList(queryRoute, cdc),
 	)...)
 	return clpQueryCmd
 }
@@ -156,7 +156,7 @@ $ %s pool ETH sif1h2zjknvr3xlpk22q4dnv396ahftzqhyeth7egd`,
 	}
 }
 
-func GetCmdLiquidityProviders(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdLpList(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "lplist [symbol]",
 		Short: "Get all liquidity providers for the asset ",
