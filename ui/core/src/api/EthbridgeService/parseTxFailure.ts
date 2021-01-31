@@ -4,7 +4,7 @@ import { ErrorCode, getErrorMessage } from "../../entities/Errors";
 // TODO: Should this go in a shared ethereum client mimicking sifchain?
 export function parseTxFailure({
   hash = "",
-  log,
+  log = "",
 }: {
   hash: string;
   log: string;

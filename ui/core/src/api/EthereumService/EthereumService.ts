@@ -63,8 +63,8 @@ export class EthereumService implements IWalletService {
         window.location.reload();
       });
 
-      this.web3.givenProvider.on('message', () => {
-        console.log("on", "message");
+      this.web3.givenProvider.on('message', (message: any) => {
+        console.log("onMessage", message);
         this.updateData();
       });
     }
