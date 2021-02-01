@@ -68,6 +68,8 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
 
+strategyType: Recreate
+
 nodeSelector: {}
 
 tolerations: []
