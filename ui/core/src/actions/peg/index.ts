@@ -1,5 +1,10 @@
 import { ActionContext } from "..";
-import { Asset, AssetAmount, Fraction } from "../../entities";
+import {
+  Asset,
+  AssetAmount,
+  Fraction,
+  TransactionStatus,
+} from "../../entities";
 import notify from "../../api/utils/Notifications";
 import JSBI from "jsbi";
 
@@ -50,19 +55,16 @@ export default ({
         fromAddress: store.wallet.sif.address,
         feeAmount,
       });
-      try {
-        return await api.SifService.signAndBroadcast(tx.value.msg);
-      } catch (err) {
-        // TODO: coordinate with blockchain to get more standardised errors
-        if (err.message?.indexOf("insufficient funds") > -1) {
-          notify({
-            type: "error",
-            message:
-              "Please check you have the available tokens and fee amount in " +
-              feeAmount.asset.symbol,
-          });
-        }
+
+      const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
+
+      if (txStatus.state !== "accepted") {
+        notify({
+          type: "error",
+          message: txStatus.memo || "There was an error while unpegging",
+        });
       }
+      return txStatus;
     },
 
     async peg(assetAmount: AssetAmount) {
@@ -70,12 +72,18 @@ export default ({
         ? api.EthbridgeService.burnToSifchain
         : api.EthbridgeService.lockToSifchain;
 
-      return await new Promise<any>(done => {
+      return await new Promise<TransactionStatus>(done => {
         lockOrBurnFn(store.wallet.sif.address, assetAmount, ETH_CONFIRMATIONS)
-          .onTxHash(done)
+          .onTxHash(hash =>
+            done({
+              hash: hash.txHash,
+              memo: "Transaction Accepted",
+              state: "accepted",
+            })
+          )
           .onError(err => {
-            const payload: any = err.payload;
-            notify({ type: "error", message: payload.message ?? err });
+            notify({ type: "error", message: err.payload.memo! });
+            done(err.payload);
           })
           .onComplete(({ txHash }) => {
             notify({

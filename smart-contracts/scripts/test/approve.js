@@ -21,8 +21,8 @@ module.exports = async (cb) => {
 
     const amount = new BN(argv.amount, 10);
 
-    const web3instance = contractUtilites.buildWeb3(this, argv);
-    const tokenContract = await contractUtilites.buildContract(this, argv, "BridgeToken", argv.symbol.toString());
+    const web3instance = contractUtilites.buildWeb3(this, argv, logging);
+    const tokenContract = await contractUtilites.buildContract(this, argv, logging,"BridgeToken", argv.symbol.toString());
 
     const result = await tokenContract.approve(argv.spender_address, argv.amount, {
         from: argv.ethereum_address,
