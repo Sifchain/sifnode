@@ -4,6 +4,7 @@ package txs
 
 import (
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -38,6 +39,11 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	if err != nil {
 		return err
 	}
+
+	spew.Dump("---------------- messages ----------------------")
+	spew.Dump(moniker)
+	spew.Dump(messages)
+	spew.Dump("--------------------------------------")
 
 	// Build and sign the transaction
 	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)

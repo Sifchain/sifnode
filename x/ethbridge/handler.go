@@ -3,6 +3,7 @@ package ethbridge
 
 import (
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -41,6 +42,11 @@ func handleMsgCreateEthBridgeClaim(
 	ctx sdk.Context, cdc *codec.Codec, bridgeKeeper Keeper, msg MsgCreateEthBridgeClaim,
 ) (*sdk.Result, error) {
 	fmt.Println("Sifnode handleMsgCreateEthBridgeClaim 43")
+
+	spew.Dump("---------------- handleMsgCreateEthBridgeClaim ----------------------")
+	spew.Dump(msg)
+	spew.Dump("--------------------------------------")
+
 	status, err := bridgeKeeper.ProcessClaim(ctx, types.EthBridgeClaim(msg))
 	if err != nil {
 		fmt.Printf("Sifnode handleMsgCreateEthBridgeClaim 46 %s\n", err.Error())
