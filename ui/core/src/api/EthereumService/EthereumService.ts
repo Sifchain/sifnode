@@ -66,13 +66,13 @@ export class EthereumService implements IWalletService {
     if (Web3.givenProvider) {
       this.provider = Web3.givenProvider;
       this.web3 = new Web3(Web3.givenProvider || "ws://localhost:7545");
+      this.updateData();
     } else {
       getWeb3Provider().then((provider) => {
         this.provider = provider;
         this.web3 = new Web3(provider);
       })
     }
-    this.updateData();
     this.addListeners()
   }
 
