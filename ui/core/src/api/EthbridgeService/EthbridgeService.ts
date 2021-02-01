@@ -1,12 +1,12 @@
-import { provider } from "web3-core";
+import {provider} from "web3-core";
 import Web3 from "web3";
-import { getBridgeBankContract } from "./bridgebankContract";
-import { getTokenContract } from "./tokenContract";
-import { AssetAmount, Token } from "../../entities";
-import { createPegTxEventEmitter } from "./PegTxEventEmitter";
-import { confirmTx } from "./utils/confirmTx";
-import { SifUnSignedClient } from "../utils/SifClient";
-import { parseTxFailure } from "./parseTxFailure";
+import {getBridgeBankContract} from "./bridgebankContract";
+import {getTokenContract} from "./tokenContract";
+import {AssetAmount, Token} from "../../entities";
+import {createPegTxEventEmitter} from "./PegTxEventEmitter";
+import {confirmTx} from "./utils/confirmTx";
+import {SifUnSignedClient} from "../utils/SifClient";
+import {parseTxFailure} from "./parseTxFailure";
 
 // TODO: Do we break this service out to ethbridge and cosmos?
 
@@ -79,7 +79,7 @@ export default function createEthbridgeService({
       const tokenAddress =
         (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
 
-      const txReceipt = await sifUnsignedClient.burn({
+      return await sifUnsignedClient.burn({
         ethereum_receiver: params.ethereumRecipient,
         base_req: {
           chain_id: sifChainId,
@@ -92,10 +92,6 @@ export default function createEthbridgeService({
         token_contract_address: tokenAddress,
         ceth_amount: params.feeAmount.toBaseUnits().toString(),
       });
-
-      console.log("VVVVV12", txReceipt, tokenAddress);
-
-      return txReceipt;
     },
 
     lockToSifchain(
@@ -106,7 +102,6 @@ export default function createEthbridgeService({
       const emitter = createPegTxEventEmitter();
 
       function handleError(err: any) {
-        console.log("VVVVV13", err, "OOPS");
         emitter.emit({
           type: "Error",
           payload: parseTxFailure({ hash: "", log: err.message.toString() }),
@@ -125,7 +120,6 @@ export default function createEthbridgeService({
         const coinDenom = (assetAmount.asset as Token).address ?? ETH_ADDRESS;
         const amount = assetAmount.numerator.toString();
         const fromAddress = accounts[0];
-        console.log("VVVVV14", fromAddress, coinDenom);
 
         const sendArgs = {
           from: fromAddress,
@@ -138,7 +132,6 @@ export default function createEthbridgeService({
         );
 
         if (coinDenom !== ETH_ADDRESS) {
-          console.log("VVVVV1", coinDenom, ETH_ADDRESS);
           await approveBridgeBankSpend(fromAddress, assetAmount);
         }
 
@@ -160,17 +153,14 @@ export default function createEthbridgeService({
             confirmations,
             onSuccess() {
               console.log("lockToSifchain: bridgeBankContract.lock complete");
-              console.log("VVVVV2", "PEG", "COMPLETE");
               emitter.emit({ type: "Complete", payload: null });
             },
             onCheckConfirmation(count) {
-              console.log("VVVVV3", count, "COMFIRMATIONS");
               emitter.emit({ type: "EthConfCountChanged", payload: count });
             },
           });
         });
       })().catch(err => {
-        console.log("VVVVV4", err, "SHOOT");
         handleError(err);
       });
 
@@ -202,10 +192,7 @@ export default function createEthbridgeService({
         ceth_amount: params.feeAmount.toBaseUnits().toString(),
       };
 
-      const lockReceipt = await sifUnsignedClient.lock(lockParams);
-      console.log("VVVVV5", lockReceipt, "LOCK");
-
-      return lockReceipt;
+      return await sifUnsignedClient.lock(lockParams);
     },
 
     burnToSifchain(
@@ -217,7 +204,6 @@ export default function createEthbridgeService({
       const emitter = createPegTxEventEmitter();
 
       function handleError(err: any) {
-        console.log("VVVVV6", err, "SHOOT");
         emitter.emit({
           type: "Error",
           payload: parseTxFailure({ hash: "", log: err }),
@@ -241,7 +227,6 @@ export default function createEthbridgeService({
           from: fromAddress,
           value: 0,
         };
-        console.log("VVVVV7", fromAddress, assetAmount);
 
         await approveBridgeBankSpend(fromAddress, assetAmount);
 
@@ -252,7 +237,6 @@ export default function createEthbridgeService({
             emitter.setTxHash(hash);
           })
           .on("error", (err: any) => {
-            console.log("VVVVV8", err, "OGHHH");
             console.log("lockToSifchain: bridgeBankContract.burn ERROR", err);
             handleError(err);
           });
@@ -264,17 +248,14 @@ export default function createEthbridgeService({
             txHash,
             confirmations,
             onSuccess() {
-              console.log("VVVVV9", "UNPEG", "COMPLETE");
               emitter.emit({ type: "Complete", payload: null });
             },
             onCheckConfirmation(count) {
-              console.log("VVVVV10", count, "CONFIRMATIONS");
               emitter.emit({ type: "EthConfCountChanged", payload: count });
             },
           });
         });
       })().catch(err => {
-        console.log("VVVVV11", err, "OUCH");
         handleError(err);
       });
 

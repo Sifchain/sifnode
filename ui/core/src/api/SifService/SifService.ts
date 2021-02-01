@@ -310,7 +310,6 @@ export default function createSifService({
           state: "accepted",
         };
       } catch (err) {
-        console.log("VVVVV VVVVV VVVVV", err);
         return parseTxFailure({ transactionHash: "", rawLog: err.message });
       }
     },
