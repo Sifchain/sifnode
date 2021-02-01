@@ -48,9 +48,7 @@ const initState = {
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
   private supportedTokens: Asset[] = [];
-  private blockSubscription: any;
   private provider: provider | undefined;
-  private providerPromise: Promise<provider>;
 
   // This is shared reactive state
   private state: {
@@ -65,33 +63,30 @@ export class EthereumService implements IWalletService {
     // init state
     this.state = reactive({ ...initState });
     this.supportedTokens = assets.filter(t => t.network === Network.ETHEREUM);
-
-    // TODO refactor to similar pattern in TendermintSocketSubscriber
-    // around waiting for provider
-    this.providerPromise = getWeb3Provider();
-    this.providerPromise
-      .then(provider => {
-        if (!provider) return (this.provider = null);
-        if (isEventEmittingProvider(provider)) {
-          // Reload the page when chain has changed see https://docs.metamask.io/guide/ethereum-provider.html#events
-          provider.on("chainChanged", () => window.location.reload());
-
-          provider.on("accountsChanged", () => {
-            this.updateData();
-          });
-
-          provider.on("connect", () => {
-            this.state.connected = true;
-          });
-          provider.on("disconnect", () => {
-            this.state.connected = false;
-          });
-        }
+    if (Web3.givenProvider) {
+      this.provider = Web3.givenProvider;
+      this.web3 = new Web3(Web3.givenProvider || "ws://localhost:7545");
+    } else {
+      getWeb3Provider().then((provider) => {
         this.provider = provider;
+        this.web3 = new Web3(provider);
       })
-      .catch(error => {
-        console.log("er", error);
+    }
+    this.addListeners()
+  }
+
+  addListeners() {
+    if (isEventEmittingProvider(this.provider)) {
+      this.provider.on('accountsChanged', () => {
+        this.updateData();
       });
+      this.provider.on('chainChanged', () => {
+        window.location.reload();
+      });
+    }
+    this.web3?.eth.subscribe("newBlockHeaders", (error, blockHeader) => {
+      this.updateData();
+    });
   }
 
   getState() {
@@ -101,16 +96,19 @@ export class EthereumService implements IWalletService {
   private updateData = debounce(
     async () => {
       if (!this.web3) {
-        this.state.connected = false;
-        this.state.accounts = [];
-        this.state.address = "";
-        this.state.balances = [];
+        this.state = reactive({ ...initState });
         return;
       }
-      this.state.connected = !!this.web3;
       this.state.accounts = (await this.web3.eth.getAccounts()) ?? [];
-      this.state.address = this.state.accounts[0];
-      this.state.balances = await this.getBalance();
+      this.state.connected = this.state.accounts.length > 0;
+      if (this.state.connected) {
+        this.state.address = this.state.accounts[0];
+        this.state.balances = await this.getBalance();
+      } else {
+        this.state.address = "";
+        this.state.balances = [];
+        this.state.log = "unset";
+      }
     },
     100,
     { leading: true }
@@ -129,82 +127,40 @@ export class EthereumService implements IWalletService {
   }
 
   async connect() {
-    const provider = await this.providerPromise;
     try {
-      if (!provider)
-        throw new Error("Cannot connect because provider is not yet loaded!");
-
-      this.web3 = new Web3(provider);
-
-      // Let's test for Metamask
-      if (isMetaMaskProvider(provider)) {
-        if (provider.request) {
-          // If metamask lets try and connect
-          await provider.request({ method: "eth_requestAccounts" });
-        }
+      if (!this.web3 || !this.provider) {
+        throw new Error("There is no yet a connection to Ethereum.");
       }
-
-      this.addWeb3Subscription();
+      if (isMetaMaskProvider(this.provider) && this.provider.request) {
+        await this.provider.request({ method: "eth_requestAccounts" });
+      }
       notify({ type: "success", message: "Connected to Metamask" });
       await this.updateData();
     } catch (err) {
       console.log(err);
-      this.web3 = null;
+      this.state = reactive({ ...initState });
     }
-  }
-
-  addWeb3Subscription() {
-    // TODO: Work out why we cannot subscribe to events when using metamask
-    //       provider and reinstate the following
-    //       Commenting out for now
-    //
-    // this.blockSubscription = this.web3?.eth.subscribe("newBlockHeaders");
-    // this.blockSubscription.on("data", (result: any) => {
-    //   console.log("Ethereum new block header");
-    //   this.updateData();
-    //   this.state.log = result?.hash ?? "null";
-    // });
-
-    // So the above is not working for Metamask instead we setup an interval and do a simple poll
-    let count = 0;
-    let interval = setInterval(() => {
-      this.updateData();
-      this.state.log = `${++count}`;
-    }, 2000);
-    this.blockSubscription = {
-      unsubscribe() {
-        clearInterval(interval);
-      },
-    };
-  }
-
-  removeWeb3Subscription() {
-    this.blockSubscription?.unsubscribe();
   }
 
   async disconnect() {
     if (isMetaMaskProvider(this.provider)) {
       this.provider.disconnect &&
-        this.provider.disconnect(0, "Website disconnected wallet");
+      this.provider.disconnect(0, "Website disconnected wallet");
     }
-    this.removeWeb3Subscription();
     this.web3 = null;
-    await this.updateData();
+    this.state = reactive({ ...initState });
   }
 
   async getBalance(
     address?: Address,
     asset?: Asset | Token
   ): Promise<Balances> {
-    const supportedTokens = this.getSupportedTokens();
-
+    let balances: any[] = [];
     const addr = address || this.state.address;
-
-    if (!this.web3 || !addr) return [];
-
     const web3 = this.web3;
-
-    let balances = [];
+    if (!web3 || !addr) {
+      return balances;
+    }
 
     if (asset) {
       if (!isToken(asset)) {
@@ -217,6 +173,7 @@ export class EthereumService implements IWalletService {
         balances = [tokenBalance];
       }
     } else {
+      const supportedTokens = this.getSupportedTokens();
       // No address no asset get everything
       balances = await Promise.all([
         getEtheriumBalance(web3, addr),
