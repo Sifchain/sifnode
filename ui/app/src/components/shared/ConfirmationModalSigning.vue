@@ -50,10 +50,19 @@
               <slot name="confirmed"></slot>
               <br />
               <p class="sub">
+                <!-- To the todo point above, we need to be able to control this better, hence isSifTxHash() -->
                 <a
+                  v-if="transactionHash?.substring(0,2) !== '0x'"
                   class="anchor"
                   target="_blank"
                   :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
+                  >View transaction on Block Explorer</a
+                >
+                <a
+                  v-else
+                  class="anchor"
+                  target="_blank"
+                  :href="`https://etherscan.io/tx/${transactionHash}`"
                   >View transaction on Block Explorer</a
                 >
               </p>
