@@ -217,8 +217,8 @@ func CreateEthereumBridgeClaimAttributes(t *testing.T) []tmKv.Pair {
 	return attributes[:]
 }
 
-// CreateInvalidEthereumBridgeClaimAttributes creates some invalide attributes for ethereum bridge claim
-func CreateInvalidEthereumBridgeClaimAttributes(t *testing.T) []tmKv.Pair {
+// CreateInvalidCosmosSenderEthereumBridgeClaimAttributes creates some invalide attributes for ethereum bridge claim
+func CreateInvalidCosmosSenderEthereumBridgeClaimAttributes(t *testing.T) []tmKv.Pair {
 	attributes := [3]tmKv.Pair{}
 
 	// (key, value) pairing for "cosmos_sender" key
@@ -237,6 +237,66 @@ func CreateInvalidEthereumBridgeClaimAttributes(t *testing.T) []tmKv.Pair {
 	pairEthereumReceiver := tmKv.Pair{
 		Key:   []byte("ethereum_sender"),
 		Value: []byte(common.HexToAddress(TestEthereumAddress1).Hex()), // .Bytes() doesn't seem to work here
+	}
+
+	// Assign pairs to attributes array
+	attributes[0] = pairCosmosSender
+	attributes[1] = pairCosmosSenderSequence
+	attributes[2] = pairEthereumReceiver
+
+	return attributes[:]
+}
+
+// CreateInvalidEthereumSenderEthereumBridgeClaimAttributes creates some attributes for ethereum bridge claim
+func CreateInvalidEthereumSenderEthereumBridgeClaimAttributes(t *testing.T) []tmKv.Pair {
+	attributes := [3]tmKv.Pair{}
+
+	// (key, value) pairing for "cosmos_sender" key
+	pairCosmosSender := tmKv.Pair{
+		Key:   []byte("cosmos_sender"),
+		Value: []byte(TestCosmosValAddress),
+	}
+
+	// (key, value) pairing for "cosmos_sender_sequence" key
+	pairCosmosSenderSequence := tmKv.Pair{
+		Key:   []byte("cosmos_sender_sequence"),
+		Value: []byte(strconv.Itoa(TestCosmosAddressSequence)),
+	}
+
+	// (key, value) pairing for "ethereum_receiver" key
+	pairEthereumReceiver := tmKv.Pair{
+		Key:   []byte("ethereum_sender"),
+		Value: []byte(TestCosmosValAddress), // .Bytes() doesn't seem to work here
+	}
+
+	// Assign pairs to attributes array
+	attributes[0] = pairCosmosSender
+	attributes[1] = pairCosmosSenderSequence
+	attributes[2] = pairEthereumReceiver
+
+	return attributes[:]
+}
+
+// CreateInvalidSequenceEthereumBridgeClaimAttributes creates some attributes for ethereum bridge claim
+func CreateInvalidSequenceEthereumBridgeClaimAttributes(t *testing.T) []tmKv.Pair {
+	attributes := [3]tmKv.Pair{}
+
+	// (key, value) pairing for "cosmos_sender" key
+	pairCosmosSender := tmKv.Pair{
+		Key:   []byte("cosmos_sender"),
+		Value: []byte(TestCosmosValAddress),
+	}
+
+	// (key, value) pairing for "cosmos_sender_sequence" key
+	pairCosmosSenderSequence := tmKv.Pair{
+		Key:   []byte("cosmos_sender_sequence"),
+		Value: []byte(TestCosmosValAddress),
+	}
+
+	// (key, value) pairing for "ethereum_receiver" key
+	pairEthereumReceiver := tmKv.Pair{
+		Key:   []byte("ethereum_sender"),
+		Value: []byte("wrong sequence"), // .Bytes() doesn't seem to work here
 	}
 
 	// Assign pairs to attributes array

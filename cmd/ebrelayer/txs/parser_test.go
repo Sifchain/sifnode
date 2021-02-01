@@ -173,8 +173,20 @@ func TestAttributesToEthereumBridgeClaim(t *testing.T) {
 	require.Equal(t, err, nil)
 }
 
-func TestFailedAttributesToEthereumBridgeClaim(t *testing.T) {
-	attributes := CreateInvalidEthereumBridgeClaimAttributes(t)
+func TestInvalidCosmosSenderAttributesToEthereumBridgeClaim(t *testing.T) {
+	attributes := CreateInvalidCosmosSenderEthereumBridgeClaimAttributes(t)
+	_, err := AttributesToEthereumBridgeClaim(attributes)
+	require.Error(t, err)
+}
+
+func TestInvalidEthereumSenderAttributesToEthereumBridgeClaim(t *testing.T) {
+	attributes := CreateInvalidEthereumSenderEthereumBridgeClaimAttributes(t)
+	_, err := AttributesToEthereumBridgeClaim(attributes)
+	require.Error(t, err)
+}
+
+func TestInvalidSequenceAttributesToEthereumBridgeClaim(t *testing.T) {
+	attributes := CreateInvalidSequenceEthereumBridgeClaimAttributes(t)
 	_, err := AttributesToEthereumBridgeClaim(attributes)
 	require.Error(t, err)
 }
