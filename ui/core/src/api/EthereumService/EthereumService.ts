@@ -72,6 +72,7 @@ export class EthereumService implements IWalletService {
         this.web3 = new Web3(provider);
       })
     }
+    this.updateData();
     this.addListeners()
   }
 
