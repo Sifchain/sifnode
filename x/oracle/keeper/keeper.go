@@ -186,7 +186,10 @@ func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) type
 	if highestConsensusRatio >= k.consensusNeeded {
 		prophecy.Status.Text = types.SuccessStatusText
 		prophecy.Status.FinalClaim = highestClaim
+		fmt.Printf("sifnode oracle keeper processCompletion success FinalClaim is %s\n", highestClaim)
+
 	} else if highestPossibleConsensusRatio < k.consensusNeeded {
+		fmt.Printf("sifnode oracle keeper processCompletion failed with %s\n", types.FailedStatusText)
 		prophecy.Status.Text = types.FailedStatusText
 	}
 	fmt.Printf("sifnode oracle keeper processCompletion end with %s\n", prophecy.Status.Text)
