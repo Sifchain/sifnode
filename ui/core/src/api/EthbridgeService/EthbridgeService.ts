@@ -52,7 +52,7 @@ export default function createEthbridgeService({
       value: 0,
     };
     console.log("approveBridgeBankSpend: sendArgs", sendArgs);
-    const res = await tokenContract.methods.approve(bridgebankContractAddress, amount.toBaseUnits().toString(), sendArgs);
+    const res = await tokenContract.methods.approve(bridgebankContractAddress, amount.toBaseUnits().toString()).send(sendArgs);
     console.log("approveBridgeBankSpend: res", res);
     return res;
     // Hmm what happens when there is a signing failure but we have approved bridgebank
