@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"sync/atomic"
 
-	"github.com/davecgh/go-spew/spew"
-
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -50,11 +48,6 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	if nextSequenceNumber > 0 {
 		txBldr.WithSequence(nextSequenceNumber)
 	}
-
-	spew.Dump("messages len in relayToCosmos: ", len(messages))
-	// spew.Dump(moniker)
-	// spew.Dump(messages)
-	// spew.Dump("--------------------------------------")
 
 	// Build and sign the transaction
 	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)
