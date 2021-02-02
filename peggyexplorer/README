@@ -14,3 +14,4 @@ next steps/roadmaps/idea:
  - data cleaning/transformation happening on frontend, could all be done on backend
  - frontend currently only shows ethereum locks and corresponding claims on cosmos. could be extended to show mints, burns, unlocks, etc as all the data is there and available
  - frontend/backend api is just a big json dump, could be improved for performance reasons if needed
+ - ideally could integrate it all into big dipper
