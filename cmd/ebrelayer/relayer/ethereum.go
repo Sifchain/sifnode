@@ -209,12 +209,12 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 					events = append(events, sub.EventsBuffer.GetHeaderEvents()...)
 					lock.Lock()
 					sub.EventsBuffer.RemoveHeight()
-					lock.Unlock()
 					eventsLength := len(events)
-		
+					
 					if eventsLength > 0 {
 						sub.handleEthereumEvent(events)
 					}
+					lock.Unlock()
 				} else {
 					break
 				}
