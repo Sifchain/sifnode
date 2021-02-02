@@ -64,6 +64,7 @@ export default ({
           message: txStatus.memo || "There was an error while unpegging",
         });
       }
+
       return txStatus;
     },
 
