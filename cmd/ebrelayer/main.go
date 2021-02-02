@@ -43,6 +43,9 @@ func init() {
 	// config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
 	// config.Seal()
 
+	// TODO Only for debugging. Remove me laterz
+	log.SetFlags(log.Lshortfile)
+
 	app.SetConfig()
 
 	cdc = app.MakeCodec()
