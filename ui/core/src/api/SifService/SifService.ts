@@ -310,6 +310,7 @@ export default function createSifService({
           state: "accepted",
         };
       } catch (err) {
+        console.log("signAndBroadcast ERROR", err);
         return parseTxFailure({ transactionHash: "", rawLog: err.message });
       }
     },

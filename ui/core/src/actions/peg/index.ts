@@ -56,6 +56,8 @@ export default ({
         feeAmount,
       });
 
+      console.log("unpeg", tx, assetAmount, store.wallet.eth.address, store.wallet.sif.address, feeAmount);
+
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
@@ -64,6 +66,7 @@ export default ({
           message: txStatus.memo || "There was an error while unpegging",
         });
       }
+      console.log("unpeg txStatus.state", txStatus.state, txStatus.memo, txStatus.code, tx.value.msg);
 
       return txStatus;
     },
