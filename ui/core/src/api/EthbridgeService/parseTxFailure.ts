@@ -10,7 +10,10 @@ export function parseTxFailure({
   log: string;
 }): TransactionStatus {
   // Ethereum events
-  if (log.toLowerCase().includes("request rejected") || log.toLowerCase().includes("user denied transaction")) {
+  if (
+    log.toString().toLowerCase().includes("request rejected") ||
+    log.toString().toLowerCase().includes("user denied transaction")
+  ) {
     return {
       code: ErrorCode.USER_REJECTED,
       memo: getErrorMessage(ErrorCode.USER_REJECTED),
