@@ -1,12 +1,17 @@
 const { _ } = require('lodash');
+const { LcdClient } = require('@cosmjs/launchpad');
+const cosmosClient = require('./cosmosClient');
+
 const BRIDGE_REGISTRY_CONTRACT_ABI = require('../smart-contracts/build/contracts/BridgeRegistry').abi;
 const BANK_STORAGE_CONTRACT_ABI = require('../smart-contracts/build/contracts/BankStorage').abi;
 const BRIDGE_BANK_CONTRACT_ABI = require('../smart-contracts/build/contracts/BridgeBank').abi;
 const Web3 = require('web3');
 const Contract = require('web3-eth-contract');
 
-const ETHEREUM_PROVIDER_URL = 'wss://ropsten.infura.io/ws/v3/f1f4e06cebc8462b846a67328cb67e90';
-const SIFNODE_RPC_URL = 'http://rpc-sandpit.sifchain.finance:26657';
+const ROPSTEN_ETHEREUM_PROVIDER_URL = 'wss://ropsten.infura.io/ws/v3/f1f4e06cebc8462b846a67328cb67e90';
+const LOCAL_ETHEREUM_PROVIDER_URL = 'ws://0.0.0.0:7545';
+const ETHEREUM_PROVIDER_URL = LOCAL_ETHEREUM_PROVIDER_URL;
+
 const BRIDGE_BANK_CONTRACT_ADDRESS = '0x979F0880de42A7aE510829f13E66307aBb957f13';
 const STARTING_ETHEREUM_BLOCK = 0;
 
@@ -17,12 +22,32 @@ const bridgeBankContract = new web3.eth.Contract(BRIDGE_BANK_CONTRACT_ABI, BRIDG
 
 const allEthereumEvents = [];
 const allEthereumBlocksChecked = [];
+const allCosmosTxs = cosmosClient.allCosmosTxs;
+
+const express = require('express')
+var cors = require('cors')
+
+const app = express()
+app.use(cors())
+
+const port = 5000
+
+app.get('/dump', (req, res) => {
+  res.json({
+    allEthereumEvents, allEthereumBlocksChecked, allCosmosTxs
+  })
+})
+
+app.listen(port, () => {
+  console.log(`Listening at http://localhost:${port}`)
+})
 
 start();
 
 async function start() {
   console.log(`Loaded bridge bank contract at ${bridgeBankContract._address}`);
   startWatchingBlocks();
+  startWatchingCosmos();
 }
 
 async function startWatchingBlocks(blockNumber) {
@@ -67,9 +92,15 @@ async function populatePastEventsFrom(startingBlock, endingBlock) {
 }
 
 pushEthereumEvents = events => {
-  allEthereumEvents.push(allEvents);
+  allEthereumEvents.push(...allEvents);
 }
 
 pushEthereumBlock = block => {
   allEthereumBlocksChecked.push(block);
+}
+
+async function startWatchingCosmos() {
+  console.log("Starting to watch cosmos:");
+  const info = await cosmosClient.kickoff();
+  console.log({ info });
 }
