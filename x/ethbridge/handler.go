@@ -70,9 +70,11 @@ func handleMsgCreateEthBridgeClaim(
 			types.EventTypeCreateClaim,
 			sdk.NewAttribute(types.AttributeKeyEthereumSender, msg.EthereumSender.String()),
 			sdk.NewAttribute(types.AttributeKeyCosmosReceiver, msg.CosmosReceiver.String()),
+			sdk.NewAttribute(types.AttributeKeyNonce, strconv.Itoa(msg.Nonce)),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
 			sdk.NewAttribute(types.AttributeKeyTokenContract, msg.TokenContractAddress.String()),
+			sdk.NewAttribute(types.AttributeKeyValidatorAddress, msg.ValidatorAddress.String()),
 			sdk.NewAttribute(types.AttributeKeyClaimType, msg.ClaimType.String()),
 		),
 		sdk.NewEvent(

@@ -10,6 +10,7 @@ var (
 
 	AttributeKeyEthereumSender = "ethereum_sender"
 	AttributeKeyCosmosReceiver = "cosmos_receiver"
+	AttributeKeyNonce          = "nonce"
 	AttributeKeyAmount         = "amount"
 	AttributeKeySymbol         = "symbol"
 	AttributeKeyCoins          = "coins"
@@ -20,6 +21,7 @@ var (
 
 	AttributeKeyEthereumChainID      = "ethereum_chain_id"
 	AttributeKeyTokenContract        = "token_contract_address"
+	AttributeKeyValidatorAddress     = "validator_address"
 	AttributeKeyCosmosSender         = "cosmos_sender"
 	AttributeKeyCosmosSenderSequence = "cosmos_sender_sequence"
 	AttributeKeyEthereumReceiver     = "ethereum_receiver"
