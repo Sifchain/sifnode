@@ -4,15 +4,19 @@ package txs
 
 import (
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
+	"sync/atomic"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+)
+
+var (
+	nextSequenceNumber uint64 = 0
 )
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
@@ -40,10 +44,10 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 		return err
 	}
 
-	spew.Dump("messages len in relayToCosmos: ", len(messages))
-	// spew.Dump(moniker)
-	// spew.Dump(messages)
-	// spew.Dump("--------------------------------------")
+	// If we start to control sequence
+	if nextSequenceNumber > 0 {
+		txBldr.WithSequence(nextSequenceNumber)
+	}
 
 	// Build and sign the transaction
 	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)
@@ -60,5 +64,19 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	if err = cliCtx.PrintOutput(res); err != nil {
 		return err
 	}
+	// start to control sequence number after first successful tx
+	if nextSequenceNumber == 0 {
+		setNextSequenceNumber(txBldr.Sequence() + 1)
+	} else {
+		incrementNextSequenceNumber()
+	}
 	return nil
+}
+
+func incrementNextSequenceNumber() {
+	atomic.AddUint64(&nextSequenceNumber, 1)
+}
+
+func setNextSequenceNumber(sequenceNumber uint64) {
+	atomic.StoreUint64(&nextSequenceNumber, sequenceNumber)
 }
