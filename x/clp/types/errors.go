@@ -13,7 +13,7 @@ var (
 	ErrPoolListIsEmpty                 = sdkerrors.Register(ModuleName, 6, "poolList Is Empty")
 	ErrTotalAmountTooLow               = sdkerrors.Register(ModuleName, 7, "total amount is less than minimum threshold")
 	ErrNotEnoughAssetTokens            = sdkerrors.Register(ModuleName, 8, "not enough received asset tokens to swap")
-	ErrInvalidAsymmetry                = sdkerrors.Register(ModuleName, 9, "Asymmetry has to be 1,-1 or 0")
+	ErrInvalidAsymmetry                = sdkerrors.Register(ModuleName, 9, "Asymmetry has to be between -10000 and 10000")
 	ErrInvalidWBasis                   = sdkerrors.Register(ModuleName, 10, "WBasisPoints has to be positive")
 	ErrBalanceTooHigh                  = sdkerrors.Register(ModuleName, 11, "Pool Balance too high to be decommissioned")
 	ErrUnableToSetPool                 = sdkerrors.Register(ModuleName, 12, "Unable to set pool")
