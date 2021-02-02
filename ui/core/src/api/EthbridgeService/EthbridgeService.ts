@@ -1,12 +1,12 @@
-import {provider} from "web3-core";
+import { provider } from "web3-core";
 import Web3 from "web3";
-import {getBridgeBankContract} from "./bridgebankContract";
-import {getTokenContract} from "./tokenContract";
-import {AssetAmount, Token} from "../../entities";
-import {createPegTxEventEmitter} from "./PegTxEventEmitter";
-import {confirmTx} from "./utils/confirmTx";
-import {SifUnSignedClient} from "../utils/SifClient";
-import {parseTxFailure} from "./parseTxFailure";
+import { getBridgeBankContract } from "./bridgebankContract";
+import { getTokenContract } from "./tokenContract";
+import { AssetAmount, Token } from "../../entities";
+import { createPegTxEventEmitter } from "./PegTxEventEmitter";
+import { confirmTx } from "./utils/confirmTx";
+import { SifUnSignedClient } from "../utils/SifClient";
+import { parseTxFailure } from "./parseTxFailure";
 
 // TODO: Do we break this service out to ethbridge and cosmos?
 
@@ -51,20 +51,23 @@ export default function createEthbridgeService({
       from: account,
       value: 0,
     };
-
+    console.log("approveBridgeBankSpend: sendArgs", sendArgs);
+    const res = await tokenContract.methods.approve(bridgebankContractAddress, amount.toBaseUnits().toString(), sendArgs);
+    console.log("approveBridgeBankSpend: res", res);
+    return res;
     // Hmm what happens when there is a signing failure but we have approved bridgebank
-    return await new Promise((resolve, reject) => {
-      tokenContract.methods
-        .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
-        .send(sendArgs)
-        .on("transactionHash", (hash: string) => {
-          resolve(hash);
-        })
-        .on("error", (err: any) => {
-          console.log("lockToSifchain: bridgeBankContract.lock ERROR", err);
-          reject(err);
-        });
-    });
+    // return await new Promise((resolve, reject) => {
+    //   tokenContract.methods
+    //     .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
+    //     .send(sendArgs)
+    //     .on("transactionHash", (hash: string) => {
+    //       resolve(hash);
+    //     })
+    //     .on("error", (err: any) => {
+    //       console.log("lockToSifchain: bridgeBankContract.lock ERROR", err);
+    //       reject(err);
+    //     });
+    // });
   }
 
   return {
@@ -78,8 +81,9 @@ export default function createEthbridgeService({
       const ethereumChainId = await web3.eth.net.getId();
       const tokenAddress =
         (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
+      console.log("burnToEthereum: start: ", tokenAddress);
 
-      return await sifUnsignedClient.burn({
+      const txReceipt = await sifUnsignedClient.burn({
         ethereum_receiver: params.ethereumRecipient,
         base_req: {
           chain_id: sifChainId,
@@ -92,6 +96,9 @@ export default function createEthbridgeService({
         token_contract_address: tokenAddress,
         ceth_amount: params.feeAmount.toBaseUnits().toString(),
       });
+
+      console.log("burnToEthereum: txReceipt: ", txReceipt, tokenAddress);
+      return txReceipt;
     },
 
     lockToSifchain(
@@ -102,6 +109,7 @@ export default function createEthbridgeService({
       const emitter = createPegTxEventEmitter();
 
       function handleError(err: any) {
+        console.log("lockToSifchain: handleError: ", err);
         emitter.emit({
           type: "Error",
           payload: parseTxFailure({ hash: "", log: err.message.toString() }),
@@ -139,6 +147,7 @@ export default function createEthbridgeService({
           .lock(cosmosRecipient, coinDenom, amount)
           .send(sendArgs)
           .on("transactionHash", (hash: string) => {
+            console.log("lockToSifchain: bridgeBankContract.lock TX", hash);
             emitter.setTxHash(hash);
           })
           .on("error", (err: any) => {
@@ -152,15 +161,17 @@ export default function createEthbridgeService({
             txHash,
             confirmations,
             onSuccess() {
-              console.log("lockToSifchain: bridgeBankContract.lock complete");
+              console.log("lockToSifchain: confirmTx SUCCESS", txHash, confirmations);
               emitter.emit({ type: "Complete", payload: null });
             },
             onCheckConfirmation(count) {
+              console.log("lockToSifchain: onCheckConfirmation PENDING", confirmations);
               emitter.emit({ type: "EthConfCountChanged", payload: count });
             },
           });
         });
       })().catch(err => {
+        console.log("lockToSifchain: bridgeBankContract.lock ERROR", err);
         handleError(err);
       });
 
@@ -175,8 +186,7 @@ export default function createEthbridgeService({
     }) {
       const web3 = await ensureWeb3();
       const ethereumChainId = await web3.eth.net.getId();
-      const tokenAddress =
-        (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
+      const tokenAddress = (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
 
       const lockParams = {
         ethereum_receiver: params.ethereumRecipient,
@@ -192,7 +202,11 @@ export default function createEthbridgeService({
         ceth_amount: params.feeAmount.toBaseUnits().toString(),
       };
 
-      return await sifUnsignedClient.lock(lockParams);
+      console.log("lockToEthereum: TRY LOCK", tokenAddress);
+      const lockReceipt = await sifUnsignedClient.lock(lockParams);
+      console.log("lockToEthereum: LOCKED", lockReceipt);
+
+      return lockReceipt;
     },
 
     burnToSifchain(
@@ -204,6 +218,7 @@ export default function createEthbridgeService({
       const emitter = createPegTxEventEmitter();
 
       function handleError(err: any) {
+        console.log("burnToSifchain: handleError ERROR", err);
         emitter.emit({
           type: "Error",
           payload: parseTxFailure({ hash: "", log: err }),
@@ -234,10 +249,11 @@ export default function createEthbridgeService({
           .burn(cosmosRecipient, coinDenom, amount)
           .send(sendArgs)
           .on("transactionHash", (hash: string) => {
+            console.log("burnToSifchain: bridgeBankContract.burn TX", hash);
             emitter.setTxHash(hash);
           })
           .on("error", (err: any) => {
-            console.log("lockToSifchain: bridgeBankContract.burn ERROR", err);
+            console.log("burnToSifchain: bridgeBankContract.burn ERROR", err);
             handleError(err);
           });
 
@@ -248,14 +264,17 @@ export default function createEthbridgeService({
             txHash,
             confirmations,
             onSuccess() {
+              console.log("burnToSifchain: commitTx SUCCESS", txHash, confirmations);
               emitter.emit({ type: "Complete", payload: null });
             },
             onCheckConfirmation(count) {
+              console.log("burnToSifchain: commitTx.checkConfirmation PENDING", confirmations);
               emitter.emit({ type: "EthConfCountChanged", payload: count });
             },
           });
         });
       })().catch(err => {
+        console.log("burnToSifchain: ERROR OUTER", err);
         handleError(err);
       });
 
