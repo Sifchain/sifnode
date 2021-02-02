@@ -93,5 +93,5 @@ func decrementSequenceNumber() {
 }
 
 func setSequenceNumber(sequenceNumber uint64) {
-	atomic.StoreUint64(&nextSequenceNumber, nextSequenceNumber-1)
+	atomic.StoreUint64(&nextSequenceNumber, sequenceNumber)
 }
