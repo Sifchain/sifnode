@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
 import './App.css';
-import { TransactionDescription } from 'ethers/lib/utils';
+const _ = require('lodash');
 
 const SERVER_URL = "http://localhost:5000/dump";
 
@@ -27,19 +26,38 @@ function App() {
   }, []);
 
   const locksOnly = ethereumEvents.filter(e => e.event == "LogLock");
-  const createClaims = cosmosTxs.map(tx => {
-    let log;
+  const createClaimTxs = cosmosTxs.map(tx => {
+    let fullLog;
     try {
-      log = JSON.parse(tx && tx.tx_result && tx.tx_result.log);
+      fullLog = JSON.parse(tx && tx.tx_result && tx.tx_result.log);
     } catch (e) {
     }
-    return { tx, log };
-  }).filter(({ log }) => {
-    if (log !== undefined) {
-      return log[0].events && log[0].events[0].type === 'create_claim';
+    return { tx, fullLog };
+  }).map(({ tx, fullLog }) => {
+    if (fullLog !== undefined) {
+      const claimEvents = fullLog.reduce((accum, singleLog) => {
+        accum.push(...singleLog.events.filter(event => event.type === 'create_claim'));
+        return accum;
+      }, []);
+      return { tx, claimEvents };
     }
-    return false;
   });
+  let createClaimEvents = createClaimTxs.reduce((accum, { claimEvents, tx }) => {
+    const events = claimEvents.map(event => ({ event, tx }));
+    accum.push(...events);
+    return accum;
+  }, []);
+  createClaimEvents = createClaimEvents.map(claimEvent => {
+    const { event, tx } = claimEvent;
+    const { type, attributes } = event;
+    const betterAttributes = attributes.reduce((accum, attribute) => {
+      accum[attribute.key] = attribute.value;
+      return accum;
+    }, {});
+    const betterEvent = Object.assign({}, { type, attributes: betterAttributes })
+    return Object.assign({}, { event: betterEvent, tx });
+  });
+  const createClaimEventsByNonce = _.groupBy(createClaimEvents, claimEvent => claimEvent.event.attributes.nonce);
   return (
     <div className="App">
       <header className="App-header">
@@ -50,7 +68,7 @@ function App() {
           Ethereum Events: {ethereumEventsChecked}
         </span>
         <span>
-          Cosmos Events: {cosmosTxsChecked}
+          Cosmos Txs: {cosmosTxsChecked}
         </span>
         <button onClick={loadStateDump}>Refresh</button>
       </header>
@@ -61,20 +79,26 @@ function App() {
             <tr>
               <th>
                 etherum tx hash
-            </th>
+              </th>
               <th>
                 event
-            </th>
+              </th>
               <th>
                 bridge nonce
-            </th>
+              </th>
+              <th>
+                msgs relayed to cosmos
+              </th>
             </tr>
           </thead>
           <tbody>
             {locksOnly.map(e => {
               const ropstenURL = `https://ropsten.etherscan.io/address/${e.transactionHash}`;
-              window.txtest = e;
-              window.createClaims = createClaims;
+              const claimEvents = createClaimEventsByNonce[e.returnValues._nonce];
+              const eventDetails = claimEvents && claimEvents.map(claimEvent => {
+                return { txHash: claimEvent.tx.hash, validator: claimEvent.event.attributes.validator_address }
+              });
+              window.createClaimEventsByNonce = createClaimEventsByNonce;
               return <tr key={e.returnValues._nonce}>
                 <td>
                   <a href={ropstenURL}>{e.transactionHash.slice(0, 10)}</a>
@@ -84,6 +108,12 @@ function App() {
                 </td>
                 <td>
                   {e.returnValues._nonce}
+                </td>
+                <td>
+                  {eventDetails.map(detail => <div key={detail.validator}>
+                    txHash: {detail.txHash} <br />
+                    validator: {detail.validator}
+                  </div>)}
                 </td>
               </tr>
             })}
