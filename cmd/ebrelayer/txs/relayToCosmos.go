@@ -49,7 +49,6 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	// If we start to control sequence
 	if nextSequenceNumber > 0 {
 		txBldr.WithSequence(nextSequenceNumber)
-		incrementSequenceNumber()
 	}
 
 	spew.Dump("messages len in relayToCosmos: ", len(messages))
@@ -60,38 +59,31 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	// Build and sign the transaction
 	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)
 	if err != nil {
-		decrementSequenceNumber()
 		return err
 	}
 
 	// Broadcast to a Tendermint node
 	res, err := cliCtx.BroadcastTxSync(txBytes)
 	if err != nil {
-		decrementSequenceNumber()
 		return err
 	}
 
 	if err = cliCtx.PrintOutput(res); err != nil {
-		decrementSequenceNumber()
 		return err
 	}
 	// start to control sequence number after first successful tx
 	if nextSequenceNumber == 0 {
-		setSequenceNumber(txBldr.Sequence() + 1)
+		setNextSequenceNumber(txBldr.Sequence() + 1)
+	} else {
+		incrementNextSequenceNumber()
 	}
 	return nil
 }
 
-func incrementSequenceNumber() {
+func incrementNextSequenceNumber() {
 	atomic.AddUint64(&nextSequenceNumber, 1)
 }
 
-func decrementSequenceNumber() {
-	if nextSequenceNumber > 0 {
-		atomic.StoreUint64(&nextSequenceNumber, nextSequenceNumber-1)
-	}
-}
-
-func setSequenceNumber(sequenceNumber uint64) {
+func setNextSequenceNumber(sequenceNumber uint64) {
 	atomic.StoreUint64(&nextSequenceNumber, sequenceNumber)
 }
