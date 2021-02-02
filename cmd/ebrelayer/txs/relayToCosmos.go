@@ -24,6 +24,8 @@ var (
 func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.EthBridgeClaim, cliCtx context.CLIContext,
 	txBldr authtypes.TxBuilder) error {
 	var messages []sdk.Msg
+	fmt.Printf("ebrelayer RelayToCosmos with %d claims\n", len(claims))
+	fmt.Printf("ebrelayer RelayToCosmos nextSequenceNumber is %d\n", nextSequenceNumber)
 
 	for _, claim := range claims {
 		// Packages the claim as a Tendermint message
@@ -44,6 +46,8 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 		return err
 	}
 
+	fmt.Printf("ebrelayer RelayToCosmos sequenceNumber is %d from tx builder\n", txBldr.Sequence())
+
 	// If we start to control sequence
 	if nextSequenceNumber > 0 {
 		txBldr.WithSequence(nextSequenceNumber)
@@ -52,16 +56,19 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	// Build and sign the transaction
 	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)
 	if err != nil {
+		fmt.Printf("ebrelayer RelayToCosmos error 1 is %s\n", err.Error())
 		return err
 	}
 
 	// Broadcast to a Tendermint node
 	res, err := cliCtx.BroadcastTxSync(txBytes)
 	if err != nil {
+		fmt.Printf("ebrelayer RelayToCosmos error 2 is %s\n", err.Error())
 		return err
 	}
 
 	if err = cliCtx.PrintOutput(res); err != nil {
+		fmt.Printf("ebrelayer RelayToCosmos error 3 is %s\n", err.Error())
 		return err
 	}
 	// start to control sequence number after first successful tx
@@ -70,6 +77,7 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	} else {
 		incrementNextSequenceNumber()
 	}
+	fmt.Printf("ebrelayer RelayToCosmos nextSequenceNumber is %d after tx\n", nextSequenceNumber)
 	return nil
 }
 
