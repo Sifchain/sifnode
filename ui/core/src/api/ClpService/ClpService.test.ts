@@ -122,7 +122,7 @@ test("swap()", async () => {
     fromAddress: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
     receivedAsset: CATK,
     sentAmount: AssetAmount(CBTK, "1000"),
-    minimumReceived: "1000",
+    minimumReceived: AssetAmount(CATK, "1000", { inBaseUnit: true }),
   });
 
   expect(message).toEqual({
