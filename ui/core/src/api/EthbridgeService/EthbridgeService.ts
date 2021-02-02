@@ -46,28 +46,15 @@ export default function createEthbridgeService({
       web3,
       (amount.asset as Token).address
     );
-
     const sendArgs = {
       from: account,
       value: 0,
     };
-    console.log("approveBridgeBankSpend: sendArgs", sendArgs);
-    const res = await tokenContract.methods.approve(bridgebankContractAddress, amount.toBaseUnits().toString()).send(sendArgs);
-    console.log("approveBridgeBankSpend: res", res);
+    const res = await tokenContract.methods
+      .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
+      .send(sendArgs);
+    console.log("approveBridgeBankSpend:", res);
     return res;
-    // Hmm what happens when there is a signing failure but we have approved bridgebank
-    // return await new Promise((resolve, reject) => {
-    //   tokenContract.methods
-    //     .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
-    //     .send(sendArgs)
-    //     .on("transactionHash", (hash: string) => {
-    //       resolve(hash);
-    //     })
-    //     .on("error", (err: any) => {
-    //       console.log("lockToSifchain: bridgeBankContract.lock ERROR", err);
-    //       reject(err);
-    //     });
-    // });
   }
 
   return {
@@ -116,7 +103,7 @@ export default function createEthbridgeService({
         });
       }
 
-      (async function() {
+      (async function () {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
 
@@ -170,8 +157,7 @@ export default function createEthbridgeService({
             },
           });
         });
-      })().catch(err => {
-        console.log("lockToSifchain: bridgeBankContract.lock ERROR", err);
+      })().catch((err) => {
         handleError(err);
       });
 
@@ -225,7 +211,7 @@ export default function createEthbridgeService({
         });
       }
 
-      (async function() {
+      (async function () {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
 
@@ -273,8 +259,7 @@ export default function createEthbridgeService({
             },
           });
         });
-      })().catch(err => {
-        console.log("burnToSifchain: ERROR OUTER", err);
+      })().catch((err) => {
         handleError(err);
       });
 
