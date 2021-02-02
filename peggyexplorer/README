@@ -1,0 +1,16 @@
+proof of concept explorer for peggy.
+
+to use:
+ - in main.js, update BRIDGE_BANK_CONTRACT_ADDRESS and ETHEREUM_PROVIDER_URL
+ - in cosmosClient.js, update SIFNODE_RPC_URL
+ - start backend with yarn start
+ - go to frontend folder in another tab
+ - in frontend/src/App.js, update SERVER_URL
+ - start frontend with yarn start
+
+next steps/roadmaps/idea:
+ - currently works to sync both eth and cosmos chains, and continue watching indefinitely, but is not tested well. eg: not sure if multiple cosmos txs in 1 block with multiple relayers will still work
+ - code is very scrappy, needs refactor/abstraction
+ - data cleaning/transformation happening on frontend, could all be done on backend
+ - frontend currently only shows ethereum locks and corresponding claims on cosmos. could be extended to show mints, burns, unlocks, etc as all the data is there and available
+ - frontend/backend api is just a big json dump, could be improved for performance reasons if needed
