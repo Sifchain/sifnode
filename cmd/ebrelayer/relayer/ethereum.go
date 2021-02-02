@@ -30,13 +30,14 @@ import (
 	"github.com/sethvargo/go-password/password"
 	"github.com/tendermint/go-amino"
 	tmLog "github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tendermint/libs/math"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
+
+var lock = sync.RWMutex{}
 
 const (
 	transactionInterval      = 10 * time.Second
@@ -197,23 +198,26 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			sub.Logger.Info(fmt.Sprintf("New header %d with hash %v", newHead.Number, newHead.Hash()))
 
 			// Add new header info to buffer
+			lock.Lock()
 			sub.EventsBuffer.AddHeader(newHead.Number, newHead.Hash(), newHead.ParentHash)
+			lock.Unlock()
 			var events []types.EthereumEvent
 			for {
 				fifty := big.NewInt(4)
 				fifty.Add(fifty, sub.EventsBuffer.MinHeight)
 				if fifty.Cmp(newHead.Number) <= 0 {
 					events = append(events, sub.EventsBuffer.GetHeaderEvents()...)
+					lock.Lock()
 					sub.EventsBuffer.RemoveHeight()
+					lock.Unlock()
+					eventsLength := len(events)
+		
+					if eventsLength > 0 {
+						sub.handleEthereumEvent(events)
+					}
 				} else {
 					break
 				}
-			}
-			eventsLength := len(events)
-			for index := 0; index < eventsLength; {
-				sub.handleEthereumEvent(events[index:math.MinInt(index+maxMessagesInTransaction, eventsLength)])
-				index = index + maxMessagesInTransaction
-				time.Sleep(transactionInterval)
 			}
 
 		// vLog is raw event data
@@ -224,7 +228,9 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				sub.Logger.Error("Failed to get event from ethereum log")
 			} else if isBurnLock {
 				sub.Logger.Info("Add event into buffer")
+				lock.Lock()
 				sub.EventsBuffer.AddEvent(big.NewInt(int64(vLog.BlockNumber)), vLog.BlockHash, event)
+				lock.Unlock()
 			}
 		}
 	}
@@ -304,6 +310,7 @@ func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
 			prophecyClaims = append(prophecyClaims, prophecyClaim)
 		}
 	}
+	fmt.Println("prophecyClaims length: ", len(prophecyClaims))
 
 	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr)
 }

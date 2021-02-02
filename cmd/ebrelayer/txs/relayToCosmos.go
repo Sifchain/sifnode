@@ -40,10 +40,10 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 		return err
 	}
 
-	spew.Dump("---------------- messages ----------------------")
-	spew.Dump(moniker)
-	spew.Dump(messages)
-	spew.Dump("--------------------------------------")
+	spew.Dump("messages len in relayToCosmos: ", len(messages))
+	// spew.Dump(moniker)
+	// spew.Dump(messages)
+	// spew.Dump("--------------------------------------")
 
 	// Build and sign the transaction
 	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)
