@@ -208,13 +208,14 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				if fifty.Cmp(newHead.Number) <= 0 {
 					events = append(events, sub.EventsBuffer.GetHeaderEvents()...)
 					lock.Lock()
-
+					fmt.Println("~~~Locked~~~")
 					sub.EventsBuffer.RemoveHeight()
 					eventsLength := len(events)
-
+					
 					if eventsLength > 0 {
 						sub.handleEthereumEvent(events)
 					}
+					fmt.Println("~~~Locked lifted~~~")
 					lock.Unlock()
 				} else {
 					break
