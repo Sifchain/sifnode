@@ -4,7 +4,7 @@
       "symbol": "erowan",
       "decimals": 18,
       "name": "Rowan",
-      "imageUrl": "/images/siflogo.png",
+      "imageUrl": "./images/siflogo.png",
       "address": "0xf204a4Ef082f5c04bB89F7D5E6568B796096735a",
       "network": "ethereum"
     },
