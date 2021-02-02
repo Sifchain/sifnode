@@ -1,12 +1,12 @@
-import { provider } from "web3-core";
+import {provider} from "web3-core";
 import Web3 from "web3";
-import { getBridgeBankContract } from "./bridgebankContract";
-import { getTokenContract } from "./tokenContract";
-import { AssetAmount, Token } from "../../entities";
-import { createPegTxEventEmitter } from "./PegTxEventEmitter";
-import { confirmTx } from "./utils/confirmTx";
-import { SifUnSignedClient } from "../utils/SifClient";
-import { parseTxFailure } from "./parseTxFailure";
+import {getBridgeBankContract} from "./bridgebankContract";
+import {getTokenContract} from "./tokenContract";
+import {AssetAmount, Token} from "../../entities";
+import {createPegTxEventEmitter} from "./PegTxEventEmitter";
+import {confirmTx} from "./utils/confirmTx";
+import {SifUnSignedClient} from "../utils/SifClient";
+import {parseTxFailure} from "./parseTxFailure";
 
 // TODO: Do we break this service out to ethbridge and cosmos?
 
@@ -79,7 +79,7 @@ export default function createEthbridgeService({
       const tokenAddress =
         (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
 
-      const txReceipt = await sifUnsignedClient.burn({
+      return await sifUnsignedClient.burn({
         ethereum_receiver: params.ethereumRecipient,
         base_req: {
           chain_id: sifChainId,
@@ -92,8 +92,6 @@ export default function createEthbridgeService({
         token_contract_address: tokenAddress,
         ceth_amount: params.feeAmount.toBaseUnits().toString(),
       });
-
-      return txReceipt;
     },
 
     lockToSifchain(
@@ -133,8 +131,9 @@ export default function createEthbridgeService({
           JSON.stringify({ cosmosRecipient, coinDenom, amount, sendArgs })
         );
 
-        if (coinDenom !== ETH_ADDRESS)
+        if (coinDenom !== ETH_ADDRESS) {
           await approveBridgeBankSpend(fromAddress, assetAmount);
+        }
 
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
@@ -193,9 +192,7 @@ export default function createEthbridgeService({
         ceth_amount: params.feeAmount.toBaseUnits().toString(),
       };
 
-      const lockReceipt = await sifUnsignedClient.lock(lockParams);
-
-      return lockReceipt;
+      return await sifUnsignedClient.lock(lockParams);
     },
 
     burnToSifchain(

@@ -16,7 +16,7 @@ export function useRemoveLiquidityCalculator(input: {
   sifAddress: Ref<string>;
 }) {
 
-  // this function needs to be refactored so 
+  // this function needs to be refactored so
   const externalAsset = (() => {
     if (!input.externalAssetSymbol.value) return null;
     return buildAsset(input.externalAssetSymbol.value);
@@ -26,7 +26,7 @@ export function useRemoveLiquidityCalculator(input: {
     if (!input.nativeAssetSymbol.value) return null;
     return buildAsset(input.nativeAssetSymbol.value);
   })();
- 
+
   const liquidityPool = (() => {
     if (!nativeAsset || !externalAsset) return null;
 
