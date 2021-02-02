@@ -39,10 +39,10 @@ import (
 
 var lock = sync.RWMutex{}
 
-const (
-	transactionInterval      = 10 * time.Second
-	maxMessagesInTransaction = 20
-)
+// const (
+// 	transactionInterval      = 10 * time.Second
+// 	maxMessagesInTransaction = 20
+// )
 
 // TODO: Move relay functionality out of EthereumSub into a new Relayer parent struct
 
@@ -211,7 +211,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 					sub.EventsBuffer.RemoveHeight()
 					lock.Unlock()
 					eventsLength := len(events)
-		
+
 					if eventsLength > 0 {
 						sub.handleEthereumEvent(events)
 					}
