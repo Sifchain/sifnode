@@ -40,7 +40,7 @@ export default defineComponent({
       toAmount,
     } = useCurrencyFieldState();
 
-    const slippage = ref<string>("0.5");
+    const slippage = ref<string>("1.0");
     const transactionState = ref<ConfirmState>("selecting");
     const transactionHash = ref<string | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
