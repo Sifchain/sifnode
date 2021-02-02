@@ -29,7 +29,13 @@ export default defineComponent({
 </script>
 
 <template>
-  <div v-on:click="open()" class="tooltip"><div class="tooltip-container" v-if="opened">{{message}}</div><slot></slot></div>
+  <div v-on:click="open()" class="tooltip">
+    <div class="tooltip-container" v-if="opened">
+      <div class="tooltip-container-inner">
+        {{message}}
+      </div>
+    </div>
+    <slot></slot></div>
 </template>
 
 <style lang="scss" scoped>
@@ -38,17 +44,25 @@ export default defineComponent({
   position: relative;
   &-container {
     position: absolute;
-    bottom: 25px;
-    left: -10px;
+    bottom: 21px;
+    left: 15px;
     background: #fff;
     border: 1px solid #ccc;
-    padding: 15px;
-    border-radius: 6px;
+    padding: 1px;
+    border-radius: 10px;
     line-height: 13px;
     font-size: 11px;
     z-index: 10000;
-    box-shadow: 0.1px 0.1px #999;
-    width: 240px;
+    box-shadow: 0px 3px 10px #00000033;
+    width: 210px;
+    border-bottom-left-radius: 0;
+    &-inner {
+     border-radius: 10px;
+     border-bottom-left-radius: 0;
+     border: 1px solid #DEDEDE;
+     border-bottom-left-radius: 0;
+     padding: 1rem;
+   }
   }
 }
 </style>
