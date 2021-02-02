@@ -79,17 +79,17 @@ describe("useRemoveLiquidityCalculator", () => {
 
     expect(state.value).toBe(PoolState.VALID_INPUT);
 
-    expect(withdrawExternalAssetAmount.value).toEqual("100000.00000");
-    expect(withdrawNativeAssetAmount.value).toEqual("100000.00000");
+    expect(withdrawExternalAssetAmount.value).toEqual("100000.000000");
+    expect(withdrawNativeAssetAmount.value).toEqual("100000.000000");
     asymmetry.value = "10000";
     simulateWatch();
 
-    expect(withdrawExternalAssetAmount.value).toEqual("181000.00000");
-    expect(withdrawNativeAssetAmount.value).toEqual("0.00000");
+    expect(withdrawExternalAssetAmount.value).toEqual("181000.000000");
+    expect(withdrawNativeAssetAmount.value).toEqual("0.000000");
     wBasisPoints.value = "5000";
     simulateWatch();
 
-    expect(withdrawExternalAssetAmount.value).toEqual("95125.00000");
-    expect(withdrawNativeAssetAmount.value).toEqual("0.00000");
+    expect(withdrawExternalAssetAmount.value).toEqual("95125.000000");
+    expect(withdrawNativeAssetAmount.value).toEqual("0.000000");
   });
 });
