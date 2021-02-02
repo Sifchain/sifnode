@@ -1,17 +1,20 @@
 <script lang="ts">
 import { defineComponent, PropType, ComputedRef, ref, watch } from "vue";
+import { useRoute } from 'vue-router';
 import { computed, toRefs } from "@vue/reactivity";
+import ArrowIconButton from "@/components/shared/ArrowIconButton.vue";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { getAssetLabel, useAssetItem } from "@/components/shared/utils";
 import { Fraction, LiquidityProvider, Pool, usePoolCalculator, AssetAmount, Asset } from "ui-core";
 import { useCore } from "@/hooks/useCore";
-import { useRoute } from 'vue-router';
+import Tooltip from "@/components/shared/Tooltip.vue";
+import Icon from "@/components/shared/Icon.vue";
 
 const DECIMALS = 5
 
 export default defineComponent({
-  components: { Layout, SifButton },
+  components: { Layout, SifButton, Icon, Tooltip },
   props: {
     accountPool: Object as PropType<{
       lp: LiquidityProvider;
@@ -164,6 +167,7 @@ export default defineComponent({
       </div>
       <div class="section">
         <div class="info">
+          <Tooltip icon="tick"><Icon icon="info-box-grey" /></Tooltip>
           <h3 class="mb-2">Liquidity provider rewards</h3>
           <p class="text--small mb-2">
             Liquidity providers earn a percentage fee on all trades proportional
