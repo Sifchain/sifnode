@@ -84,7 +84,7 @@ module.exports = async (cb) => {
       amount = new BigNumber(process.argv[6]);
     }
   }
-  
+
   // Convert default 'eth' coin denom into null address
   if (coinDenom == "eth") {
     coinDenom = NULL_ADDRESS;
@@ -103,17 +103,22 @@ module.exports = async (cb) => {
     let str = (await this.web3.eth.getTransactionCount(accounts[0])).toString()
     let nonceVal = Number(str);
     console.log("starting nonce: ", nonceVal)
+    const promises = [];
     for (let i = 0; i < 10; i++) {
-      await bank.lock(cosmosRecipient, coinDenom, amount, {
+      txResultPromise = bank.lock(cosmosRecipient, coinDenom, amount, {
         from: accounts[0],
         value: coinDenom === NULL_ADDRESS ? amount : 0,
         gas: 300000, // 300,000 Gwei,
         nonce: nonceVal
       });
+      promises.push(txResultPromise);
       nonceVal++;
       console.log(`Sent lock... ${i}`);
     }
-  
+    allPromise = Promise.all(promises);
+    doneAllPromise = await allPromise;
+    console.log("Done all:");
+    console.log(doneAllPromise.map(tx => ({ lockBurnNonce: tx.logs[0].args._nonce.toNumber(), tx_id: tx.tx, status: tx.receipt.status,  })));
   } catch (error) {
     console.error({ error });
   }
