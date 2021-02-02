@@ -298,7 +298,7 @@ export default function createSifService({
         const result = await client.signAndBroadcast(msgArr, fee, memo);
 
         if (isBroadcastTxFailure(result)) {
-          /* istanbul ignore next */ // TODO: fix converage
+          /* istanbul ignore next */ // TODO: fix coverage
           return parseTxFailure(result);
         }
 
@@ -310,6 +310,7 @@ export default function createSifService({
           state: "accepted",
         };
       } catch (err) {
+        console.log("signAndBroadcast ERROR", err);
         return parseTxFailure({ transactionHash: "", rawLog: err.message });
       }
     },
