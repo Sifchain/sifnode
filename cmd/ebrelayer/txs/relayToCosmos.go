@@ -51,26 +51,32 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	// If we start to control sequence
 	if nextSequenceNumber > 0 {
 		txBldr.WithSequence(nextSequenceNumber)
+		fmt.Println("txBldr.WithSequence(nextSequenceNumber) passed")
 	}
-
+	
+	fmt.Println("building and signing")
 	// Build and sign the transaction
 	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)
 	if err != nil {
 		fmt.Printf("ebrelayer RelayToCosmos error 1 is %s\n", err.Error())
 		return err
 	}
-
+	
+	fmt.Println("built tx, now broadcasting")
 	// Broadcast to a Tendermint node
-	res, err := cliCtx.BroadcastTxSync(txBytes)
+	res, err := cliCtx.BroadcastTxAsync(txBytes)
 	if err != nil {
 		fmt.Printf("ebrelayer RelayToCosmos error 2 is %s\n", err.Error())
 		return err
 	}
+	fmt.Println("Broadcasted tx without error")
 
 	if err = cliCtx.PrintOutput(res); err != nil {
 		fmt.Printf("ebrelayer RelayToCosmos error 3 is %s\n", err.Error())
 		return err
 	}
+	fmt.Println("printed tx output")
+
 	// start to control sequence number after first successful tx
 	if nextSequenceNumber == 0 {
 		setNextSequenceNumber(txBldr.Sequence() + 1)

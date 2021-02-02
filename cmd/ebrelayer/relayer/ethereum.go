@@ -203,7 +203,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			lock.Unlock()
 			var events []types.EthereumEvent
 			for {
-				fifty := big.NewInt(4)
+				fifty := big.NewInt(50)
 				fifty.Add(fifty, sub.EventsBuffer.MinHeight)
 				if fifty.Cmp(newHead.Number) <= 0 {
 					events = append(events, sub.EventsBuffer.GetHeaderEvents()...)
@@ -214,8 +214,9 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 					
 					if eventsLength > 0 {
 						sub.handleEthereumEvent(events)
+						time.Sleep(time.Second * 10)
 					}
-					fmt.Println("~~~Locked lifted~~~")
+					fmt.Println("~~~Lock lifted~~~")
 					lock.Unlock()
 				} else {
 					break
