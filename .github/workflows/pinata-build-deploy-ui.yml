@@ -1,10 +1,9 @@
 name: Build then Deploy to Pinata
 # run run on merge
 on: 
-  push:
+  pull_request:
     branches:
       - master
-      - develop
 
 jobs:
   build:
