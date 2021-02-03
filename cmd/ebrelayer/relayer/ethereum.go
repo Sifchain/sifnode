@@ -141,7 +141,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	time.Sleep(time.Second)
 	client, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
-		sub.Logger.Error(err.Error())
+		sub.Logger.Error("SetupWebsocketEthClient failed: ", err.Error())
 		completionEvent.Add(1)
 		go sub.Start(completionEvent)
 		return
@@ -185,14 +185,14 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 		case <-quit:
 			return
 		case err := <-subBridgeBank.Err():
-			sub.Logger.Error(err.Error())
+			sub.Logger.Error("subBridgeBank failed: ", err.Error())
 			completionEvent.Add(1)
-			go sub.Start(completionEvent)
+			//go sub.Start(completionEvent)
 			return
 		case err := <-subHead.Err():
-			sub.Logger.Error(err.Error())
+			sub.Logger.Error("subHead failed: " , err.Error())
 			completionEvent.Add(1)
-			go sub.Start(completionEvent)
+			//go sub.Start(completionEvent)
 			return
 		case newHead := <-heads:
 			sub.Logger.Info(fmt.Sprintf("New header %d with hash %v", newHead.Number, newHead.Hash()))
@@ -213,7 +213,9 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 					eventsLength := len(events)
 					
 					if eventsLength > 0 {
-						sub.handleEthereumEvent(events)
+						if err := sub.handleEthereumEvent(events); err != nil {
+							log.Println("handleEthereumEvent failed: ", err.Error())
+						}
 						time.Sleep(time.Second * 10)
 					}
 					fmt.Println("~~~Lock lifted~~~")
