@@ -74,26 +74,26 @@ export default defineComponent({
     );
 
     async function handlePegRequested() {
-      transactionState.value = "signing";
+      // transactionState.value = "signing";
       const tx = await actions.peg.peg(
         AssetAmount(Asset.get(symbol.value), amount.value)
       );
 
       transactionHash.value = tx.hash;
-      transactionState.value = toConfirmState(tx.state); // TODO: align states
-      transactionStateMsg.value = tx.memo ?? "";
+      // transactionState.value = toConfirmState(tx.state); // TODO: align states
+      // transactionStateMsg.value = tx.memo ?? "";
     }
 
     async function handleUnpegRequested() {
-      transactionState.value = "signing";
+      // transactionState.value = "signing";
 
       const tx = await actions.peg.unpeg(
         AssetAmount(Asset.get(symbol.value), amount.value)
       );
 
       transactionHash.value = tx.hash;
-      transactionState.value = toConfirmState(tx.state); // TODO: align states
-      transactionStateMsg.value = tx.memo ?? "";
+      // transactionState.value = toConfirmState(tx.state); // TODO: align states
+      // transactionStateMsg.value = tx.memo ?? "";
     }
 
     const accountBalance = computed(() => {
@@ -118,16 +118,28 @@ export default defineComponent({
       );
     });
 
+    const currentTxStatus = computed(() => {
+      if (!transactionHash.value) return null;
+      return store.tx.hash[transactionHash.value] ?? null;
+    });
+
     function requestTransactionModalClose() {
-      if (transactionState.value === "confirmed") {
-        transactionState.value = "selecting";
+      if (
+        currentTxStatus.value &&
+        toConfirmState(currentTxStatus.value?.state) === "confirmed"
+      ) {
+        confirmationModalOpen.value = false;
         router.push("/peg"); // TODO push back to peg, but load unpeg tab when unpegging -> dynamic routing?
       } else {
-        transactionState.value = "selecting";
+        confirmationModalOpen.value = false;
       }
     }
 
+    const confirmationModalOpen = ref(false);
+
     const pageState = {
+      currentTxStatus,
+      confirmationModalOpen,
       mode,
       modeLabel: computed(() => capitalize(mode.value)),
       symbol,
@@ -151,6 +163,7 @@ export default defineComponent({
       },
       handleActionClicked: () => {
         transactionState.value = "confirming";
+        confirmationModalOpen.value = true;
       },
       handlePegRequested,
       handleUnpegRequested,
@@ -158,8 +171,8 @@ export default defineComponent({
       formatSymbol,
       requestTransactionModalClose,
       transactionState,
-      transactionStateMsg,
-      transactionHash,
+      // transactionStateMsg,
+      // transactionHash,
       nextStepAllowed,
       nextStepMessage: computed(() => {
         return mode.value === "peg" ? "Peg" : "Unpeg";
@@ -222,11 +235,10 @@ export default defineComponent({
     </div>
     <ConfirmationModal
       v-if="mode === 'peg'"
+      :isOpen="confirmationModalOpen"
       @confirmed="handlePegRequested"
       :requestClose="requestTransactionModalClose"
-      :state="transactionState"
-      :transactionHash="transactionHash"
-      :transactionStateMsg="transactionStateMsg"
+      :txStatus="currentTxStatus"
       confirmButtonText="Confirm Peg"
       :title="`Peg token to Sifchain`"
     >
@@ -260,11 +272,9 @@ export default defineComponent({
     </ConfirmationModal>
     <ConfirmationModal
       v-if="mode === 'unpeg'"
+      :isOpen="confirmationModalOpen"
       @confirmed="handleUnpegRequested"
       :requestClose="requestTransactionModalClose"
-      :state="transactionState"
-      :transactionHash="transactionHash"
-      :transactionStateMsg="transactionStateMsg"
       confirmButtonText="Confirm Unpeg"
       title="Unpeg token from Sifchain"
     >

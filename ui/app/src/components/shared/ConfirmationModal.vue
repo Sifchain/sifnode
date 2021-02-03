@@ -49,7 +49,17 @@ import { computed } from "@vue/reactivity";
 import ModalView from "@/components/shared/ModalView.vue";
 import ConfirmationModalAsk from "@/components/shared/ConfirmationModalAsk.vue";
 import ConfirmationModalSigning from "@/components/shared/ConfirmationModalSigning.vue";
-import { ConfirmState } from "../../types";
+import { TransactionStatus } from "ui-core";
+
+export type ConfirmState =
+  // selecting values?
+  | "selecting"
+  | "approving"
+  | "confirming"
+  | "signing"
+  | "confirmed"
+  | "rejected"
+  | "failed";
 
 export default defineComponent({
   inheritAttrs: false,
@@ -57,9 +67,11 @@ export default defineComponent({
     // Function to request the window is closed this function must reset the confirmation state to selecting
     requestClose: Function,
 
-    // Confirmation state: "selecting" | "confirming" | "signing" | "confirmed" | "rejected" | "failed";
-    // This component acts on this state to determine which panel to show
-    state: { type: String as PropType<ConfirmState>, default: "confirming" },
+    // TxStatus
+    txStatus: {
+      type: Object as PropType<TransactionStatus>,
+      default: "confirming",
+    },
 
     // The text on the 'confirm' button
     confirmButtonText: String,
@@ -67,24 +79,32 @@ export default defineComponent({
     // The title of the ask modal
     title: String,
 
-    // TODO: Revisit if we need these here or can make them part of the content
-    transactionHash: String,
-    transactionStateMsg: String,
+    // is the dialog open
+    isOpen: Boolean,
   },
 
   setup(props) {
-    const isOpen = computed(() => {
-      return [
-        "confirming",
-        "signing",
-        "failed",
-        "rejected",
-        "confirmed",
-      ].includes(props.state);
-    });
+    //   const isOpen = computed(() => {
+    //     return [
+    //       "confirming",
+    //       "signing",
+    //       "failed",
+    //       "rejected",
+    //       "confirmed",
+    //     ].includes(props.state);
+    //   });
 
+    //   return {
+    //     isOpen,
+    //   };
     return {
-      isOpen,
+      state: computed<ConfirmState>(() => {
+        if (!props.txStatus) {
+          return "selecting";
+        }
+
+        if (props.txStatus.state === "failed") return "failed";
+      }),
     };
   },
 
