@@ -3,6 +3,7 @@ package ethbridge
 
 import (
 	"fmt"
+	"sync"
 	"github.com/davecgh/go-spew/spew"
 	"strconv"
 
@@ -41,6 +42,11 @@ func NewHandler(
 func handleMsgCreateEthBridgeClaim(
 	ctx sdk.Context, cdc *codec.Codec, bridgeKeeper Keeper, msg MsgCreateEthBridgeClaim,
 ) (*sdk.Result, error) {
+	var mutex = &sync.RWMutex{}
+	mutex.Lock()
+	defer mutex.Unlock()
+	// require tx lock to be false
+	// set mutex lock to true
 	fmt.Println("Sifnode handleMsgCreateEthBridgeClaim 43")
 
 	spew.Dump("---------------- handleMsgCreateEthBridgeClaim ----------------------")
@@ -58,6 +64,7 @@ func handleMsgCreateEthBridgeClaim(
 			return nil, err
 		}
 	}
+	// set mutex lock to false
 
 	fmt.Printf("Sifnode handleMsgCreateEthBridgeClaim 56 all done, emit events statue is %s\n", status.Text.String())
 	ctx.EventManager().EmitEvents(sdk.Events{

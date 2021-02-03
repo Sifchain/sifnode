@@ -9,13 +9,12 @@ import (
 	"io"
 	"log"
 	"math/big"
+	"time"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
@@ -38,12 +37,9 @@ import (
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
-var lock = sync.RWMutex{}
-
-// const (
-// 	transactionInterval      = 10 * time.Second
-// 	maxMessagesInTransaction = 20
-// )
+const (
+	transactionInterval      = 10 * time.Second
+)
 
 // TODO: Move relay functionality out of EthereumSub into a new Relayer parent struct
 
@@ -165,9 +161,12 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	defer close(quit)
 
-	// Start BridgeBank subscription, prepare contract ABI and LockLog event signature
-	bridgeBankAddress, subBridgeBank := sub.startContractEventSub(logs, client, txs.BridgeBank)
-	defer subBridgeBank.Unsubscribe()
+	// get the bridgebank address from the registry contract
+	bridgeBankAddress, err := txs.GetAddressFromBridgeRegistry(client, sub.RegistryContractAddress, txs.BridgeBank)
+	if err != nil {
+		sub.Logger.Error(err.Error())
+	}
+
 	bridgeBankContractABI := contract.LoadABI(txs.BridgeBank)
 
 	// Listen the new header
@@ -180,15 +179,12 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	}
 	defer subHead.Unsubscribe()
 
+	lastProcessedBlock := big.NewInt(0)
+
 	for {
 		select {
 		// Handle any errors
 		case <-quit:
-			return
-		case err := <-subBridgeBank.Err():
-			sub.Logger.Error("subBridgeBank failed: ", err.Error())
-			completionEvent.Add(1)
-			go sub.Start(completionEvent)
 			return
 		case err := <-subHead.Err():
 			sub.Logger.Error("subHead failed: " , err.Error())
@@ -197,50 +193,61 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			return
 		case newHead := <-heads:
 			sub.Logger.Info(fmt.Sprintf("New header %d with hash %v", newHead.Number, newHead.Hash()))
+			
+			trailingBlocks := big.NewInt(4)
+			startingBigInt := newHead.Number
+			endingBlock := startingBigInt.Sub(startingBigInt, trailingBlocks)
+			
+			if endingBlock.Cmp(big.NewInt(0)) == -1 {
+				log.Println("Ending block index negative. Cancelling run")
+				return
+			}
+			
+			if lastProcessedBlock.Cmp(big.NewInt(0)) == 0 {
+				lastProcessedBlock.Sub(endingBlock, big.NewInt(1))
+			}
+			
+			sub.Logger.Info(fmt.Sprintf("Processing events from block %d to %d", lastProcessedBlock, endingBlock))
 
-			// Add new header info to buffer
-			lock.Lock()
-			spew.Dump("+++++++dumping eth buffer 0+++++++", sub.EventsBuffer.Buffer)
-			sub.EventsBuffer.AddHeader(newHead.Number, newHead.Hash(), newHead.ParentHash)
-			spew.Dump("+++++++dumping eth buffer 1+++++++", sub.EventsBuffer.Buffer)
-			lock.Unlock()
-			var events []types.EthereumEvent
-			for {
-				fifty := big.NewInt(4)
-				fifty.Add(fifty, sub.EventsBuffer.MinHeight)
-				if fifty.Cmp(newHead.Number) <= 0 {
-					lock.Lock()
-					events = append(events, sub.EventsBuffer.GetHeaderEvents()...)
-					fmt.Println("~~~Locked~~~")
-					spew.Dump("+++++++dumping eth buffer 2+++++++", sub.EventsBuffer.Buffer)
-					sub.EventsBuffer.RemoveHeight()
-					spew.Dump("+++++++dumping eth buffer 3+++++++", sub.EventsBuffer.Buffer)
-					eventsLength := len(events)
-					fmt.Println("~~~Lock lifted~~~")
-					lock.Unlock()
-					
-					if eventsLength > 0 {
-						if err := sub.handleEthereumEvent(events); err != nil {
-							log.Println("handleEthereumEvent failed: ", err.Error())
-						}
-						time.Sleep(time.Second * 10)
-					}
-				} else {
-					break
-				}
+			// query event data from this specific block
+			ethLogs, err := client.FilterLogs(context.Background(), ethereum.FilterQuery{
+				FromBlock: lastProcessedBlock,
+				ToBlock:   endingBlock,
+				Addresses: []common.Address{bridgeBankAddress},
+			})
+
+			if err != nil {
+				log.Printf("Error getting events on block %d from bridgebank: %v", newHead.Number, err)
+				return
 			}
 
-		// vLog is raw event data
-		case vLog := <-logs:
-			sub.Logger.Info(fmt.Sprintf("Witnessed tx %s on block %d\n", vLog.TxHash.Hex(), vLog.BlockNumber))
-			event, isBurnLock, err := sub.logToEvent(clientChainID, bridgeBankAddress, bridgeBankContractABI, vLog)
-			if err != nil {
-				sub.Logger.Error("Failed to get event from ethereum log")
-			} else if isBurnLock {
-				sub.Logger.Info("Add event into buffer")
-				lock.Lock()
-				sub.EventsBuffer.AddEvent(big.NewInt(int64(vLog.BlockNumber)), vLog.BlockHash, event)
-				lock.Unlock()
+			// Assumption here is that we will repeat a failing block becaus we return if there is an error retrieving logs
+			lastProcessedBlock = endingBlock
+			
+			log.Printf("Successfully received bridgebank events from block %d to %d ", lastProcessedBlock, endingBlock)
+
+			var events []types.EthereumEvent
+
+			// loop over ethlogs, and build an array of burn/lock events
+			for _, ethLog := range ethLogs {
+				log.Printf("Processed events from block %v", ethLog.BlockNumber)
+				event, isBurnLock, err := sub.logToEvent(clientChainID, bridgeBankAddress, bridgeBankContractABI, ethLog)
+				if err != nil {
+					log.Println("Continuing processing events: ", err)
+					continue
+				}
+				if !isBurnLock {
+					log.Println("not burn or lock event, continue events: ", err)
+					continue
+				}
+				events = append(events, event)
+			}
+
+			if len(events) > 0 {
+				if err := sub.handleEthereumEvent(events); err != nil {
+					log.Println("handleEthereumEvent failed: ", err.Error())
+				}
+				time.Sleep(transactionInterval)
 			}
 		}
 	}
@@ -312,6 +319,7 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 // handleEthereumEvent unpacks an Ethereum event, converts it to a ProphecyClaim, and relays a tx to Cosmos
 func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
 	var prophecyClaims []ethbridge.EthBridgeClaim
+
 	for _, event := range events {
 		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.ValidatorAddress, event)
 		if err != nil {
@@ -321,6 +329,10 @@ func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
 		}
 	}
 	fmt.Println("prophecyClaims length: ", len(prophecyClaims))
+
+	if len(events) == 0 {
+		return nil
+	}
 
 	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr)
 }
