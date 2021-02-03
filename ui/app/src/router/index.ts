@@ -4,6 +4,7 @@ import Swap from "@/views/SwapPage.vue";
 import Pool from "@/views/PoolPage.vue";
 import CreatePool from "@/views/CreatePoolPage.vue";
 import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
+import SinglePool from "@/views/SinglePool.vue";
 import PegListingPage from "@/views/PegListingPage.vue";
 import PegAssetPage from "@/views/PegAssetPage.vue";
 
@@ -23,14 +24,25 @@ const routes: Array<RouteRecordRaw> = [
     component: Pool,
   },
   {
+    path: "/pool/:externalAsset",
+    name: "SinglePool",
+    component: SinglePool,
+  },
+  {
     path: "/pool/add-liquidity/:externalAsset?",
     name: "AddLiquidity",
     component: CreatePool,
+    props: {
+      title: "Add Liquidity",
+    },
   },
   {
     path: "/pool/create-pool",
     name: "CreatePool",
     component: CreatePool,
+    props: {
+      title: "Create Pair",
+    },
   },
   {
     path: "/pool/remove-liquidity/:externalAsset?",

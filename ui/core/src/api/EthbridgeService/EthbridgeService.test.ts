@@ -37,9 +37,11 @@ describe("EthbridgeService", () => {
     });
   });
 
-  // Values here are not working so skipping
-  // Skipping as there is an issue with this test however works fine manually testing
-  test.skip("lock and burn eth <-> ceth", async () => {
+  // We need to only run one test on ebrelayer as we have not got the
+  // infrastructure setup to retart it between tests
+  // To fix this we would need to deterministically reset the state of both
+  // blockchains as well as restart ebrelayer
+  test("eth -> ceth -> eth then rowan -> erowan -> rowan ", async () => {
     // Setup services
     const sifService = await createTestSifService(juniper);
     const ethService = await createTestEthService();
@@ -63,6 +65,10 @@ describe("EthbridgeService", () => {
     }
 
     const web3 = new Web3(await getWeb3Provider());
+
+    ////////////////////////
+    // ETH -> cETH
+    ////////////////////////
 
     // Check the balance
     const cethBalance = await getCethBalance();
@@ -93,6 +99,10 @@ describe("EthbridgeService", () => {
       expectedCethAmount,
       "expectedCethAmount"
     );
+
+    ////////////////////////
+    // cETH -> ETH
+    ////////////////////////
 
     const recipientBalanceBefore = await getEthBalance();
 
@@ -137,20 +147,10 @@ describe("EthbridgeService", () => {
       expectedEthAmount,
       "expectedEthAmount"
     );
-  });
 
-  test("rowan -> erowan -> rowan", async () => {
-    const sifService = await createTestSifService(juniper);
-    const ethService = await createTestEthService();
-    const web3 = new Web3(await getWeb3Provider());
-
-    function getEthAddress() {
-      return ethAccounts[2].public;
-    }
-
-    function getSifAddress() {
-      return juniper.address;
-    }
+    ////////////////////////
+    // Rowan -> eRowan
+    ////////////////////////
 
     async function getERowanBalance() {
       const bals = await ethService.getBalance(getEthAddress(), EROWAN);
@@ -161,10 +161,6 @@ describe("EthbridgeService", () => {
       const bals = await sifService.getBalance(getSifAddress(), ROWAN);
       return bals[0].toBaseUnits();
     }
-
-    ////////////////////////
-    // Rowan -> eRowan
-    ////////////////////////
 
     // First get balance in ethereum
     const startingERowanBalance = await getERowanBalance();
@@ -182,7 +178,6 @@ describe("EthbridgeService", () => {
       ),
     });
 
-    const ethereumChainId = await web3.eth.net.getId();
     expect(msg.value.msg).toEqual([
       {
         type: "ethbridge/MsgLock",

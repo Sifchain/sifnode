@@ -7,12 +7,14 @@ from integration_env_credentials import sifchain_cli_credentials_for_test
 from test_utilities import get_shell_output, get_sifchain_addr_balance, \
     advance_n_ethereum_blocks, n_wait_blocks, \
     send_from_ethereum_to_sifchain
-from test_utilities import test_integration_dir, wait_for_sifchain_addr_balance, \
+from test_utilities import wait_for_sifchain_addr_balance, \
     get_required_env_var, \
     EthereumToSifchainTransferRequest
 
+test_integration_dir = get_required_env_var("TEST_INTEGRATION_DIR")
 
-def test_rollback_chain():
+
+def test_rollback_chain(source_ethereum_address):
     new_account_key = get_shell_output("uuidgen")
     credentials = sifchain_cli_credentials_for_test(new_account_key)
     new_account = burn_lock_functions.create_new_sifaddr(credentials=credentials, keyname=new_account_key)
@@ -24,7 +26,7 @@ def test_rollback_chain():
     request = EthereumToSifchainTransferRequest(
         sifchain_address=new_account["address"],
         smart_contracts_dir=get_required_env_var("SMART_CONTRACTS_DIR"),
-        ethereum_address=get_required_env_var("ETHEREUM_ADDRESS"),
+        ethereum_address=source_ethereum_address,
         ethereum_private_key_env_var="ETHEREUM_PRIVATE_KEY",
         bridgebank_address=get_required_env_var("BRIDGE_BANK_ADDRESS"),
         ethereum_network=(os.environ.get("ETHEREUM_NETWORK") or ""),
@@ -36,13 +38,13 @@ def test_rollback_chain():
 
     new_addr = new_account["address"]
 
-    logging.info("created new account, taking ganache snapshot")
     snapshot = get_shell_output(f"{test_integration_dir}/snapshot_ganache_chain.sh")
+    logging.info(f"created new account, took ganache snapshot {snapshot}")
     initial_user_balance = get_sifchain_addr_balance(new_addr, "", request.sifchain_symbol)
     logging.info(f"initial_user_balance {initial_user_balance}")
 
     transfer_1 = send_from_ethereum_to_sifchain(transfer_request=request)
-    logging.info(f"transfer started but it will never complete (by design): {transfer_1} ")
+    logging.info(f"transfer started but it will never complete (by design)")
 
     logging.info("advance less than wait blocks")
     advance_n_ethereum_blocks(n_wait_blocks / 2, request.smart_contracts_dir)
@@ -52,7 +54,7 @@ def test_rollback_chain():
     # roll back ganache to the snapshot and try another transfer that
     # should succeed.
 
-    logging.info("apply snapshot - this should eliminate transfer_1")
+    logging.info(f"apply snapshot {snapshot} - this eliminates transfer_1 (block {transfer_1})")
     get_shell_output(f"{test_integration_dir}/apply_ganache_snapshot.sh {snapshot} 2>&1")
 
     logging.info("advance past block wait")

@@ -39,15 +39,17 @@ export default defineComponent({
       class="details"
       :priceMessage="priceMessage"
       :fromToken="fromToken"
+      :fromTokenImage="fromTokenImage"
       :toToken="toToken"
+      :toTokenImage="toTokenImage"
       :swapRate="swapRate"
       :minimumReceived="minimumReceived"
       :providerFee="providerFee"
       :priceImpact="priceImpact"
     />
-    <SifButton block primary class="confirm-btn" @click="$emit('confirmswap')"
-      >Confirm Swap</SifButton
-    >
+    <SifButton block primary class="confirm-btn" @click="$emit('confirmswap')">
+      Confirm Swap
+    </SifButton>
   </div>
 </template>
 
@@ -93,4 +95,3 @@ export default defineComponent({
   }
 }
 </style>
-

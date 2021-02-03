@@ -1,6 +1,6 @@
 <template>
   <div class="slider">
-    <p v-if="message">{{ message }}</p>
+    <p class="text--left" v-if="message">{{ message }}</p>
     <input
       :disabled="disabled"
       v-model="localValue"
@@ -11,9 +11,15 @@
       :step="step"
     />
     <div class="row">
-      <div @click="$emit('leftclicked')">{{ leftLabel }}</div>
-      <div @click="$emit('middleclicked')">{{ middleLabel }}</div>
-      <div @click="$emit('rightclicked')">{{ rightLabel }}</div>
+      <div>
+        <label class="label" @click="$emit('leftclicked')">{{ leftLabel }}</label>
+      </div>
+      <div>
+        <label class="label" @click="$emit('middleclicked')">{{ middleLabel }}</label>
+      </div>
+      <div>
+        <label class="label" @click="$emit('rightclicked')">{{ rightLabel }}</label>
+      </div>
     </div>
   </div>
 </template>
@@ -50,18 +56,27 @@ export default defineComponent({
   width: 100%;
   .input {
     width: 100%;
+    cursor: pointer;
   }
   .row {
     display: flex;
     justify-content: space-between;
     & > * {
-      width: 20%;
+      width: 32%;
     }
     & > *:first-child {
       text-align: left;
     }
     & > *:last-child {
       text-align: right;
+    }
+
+    .label {
+      transition: opacity $trans_fast;
+      &:hover {
+        cursor: pointer;
+        color: $c_black;
+      }
     }
   }
 }

@@ -1,5 +1,10 @@
 import { ActionContext } from "..";
-import { Asset, AssetAmount } from "../../entities";
+import {
+  Asset,
+  AssetAmount,
+  Fraction,
+  TransactionStatus,
+} from "../../entities";
 import notify from "../../api/utils/Notifications";
 import JSBI from "jsbi";
 
@@ -22,36 +27,67 @@ export default ({
     getSifTokens() {
       return api.SifService.getSupportedTokens();
     },
+
     getEthTokens() {
       return api.EthereumService.getSupportedTokens();
     },
+
+    calculateUnpegFee(asset: Asset) {
+      const feeNumber = isOriginallySifchainNativeToken(asset)
+        ? "18332015000000000"
+        : "16164980000000000";
+
+      return AssetAmount(Asset.get("ceth"), JSBI.BigInt(feeNumber), {
+        inBaseUnit: true,
+      });
+    },
+
     async unpeg(assetAmount: AssetAmount) {
-      const [lockOrBurnFn, feeNumber] = isOriginallySifchainNativeToken(
-        assetAmount.asset
-      )
-        ? [api.EthbridgeService.lockToEthereum, "18332015000000000"]
-        : [api.EthbridgeService.burnToEthereum, "16164980000000000"];
+      const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
+        ? api.EthbridgeService.lockToEthereum
+        : api.EthbridgeService.burnToEthereum;
+
+      const feeAmount = this.calculateUnpegFee(assetAmount.asset);
 
       const tx = await lockOrBurnFn({
         assetAmount,
         ethereumRecipient: store.wallet.eth.address,
         fromAddress: store.wallet.sif.address,
-        feeAmount: AssetAmount(Asset.get("ceth"), JSBI.BigInt(feeNumber)),
+        feeAmount,
       });
 
-      return await api.SifService.signAndBroadcast(tx.value.msg);
+      console.log("unpeg", tx, assetAmount, store.wallet.eth.address, store.wallet.sif.address, feeAmount);
+
+      const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
+
+      if (txStatus.state !== "accepted") {
+        notify({
+          type: "error",
+          message: txStatus.memo || "There was an error while unpegging",
+        });
+      }
+      console.log("unpeg txStatus.state", txStatus.state, txStatus.memo, txStatus.code, tx.value.msg);
+
+      return txStatus;
     },
+
     async peg(assetAmount: AssetAmount) {
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
         ? api.EthbridgeService.burnToSifchain
         : api.EthbridgeService.lockToSifchain;
 
-      return await new Promise<any>(done => {
+      return await new Promise<TransactionStatus>(done => {
         lockOrBurnFn(store.wallet.sif.address, assetAmount, ETH_CONFIRMATIONS)
-          .onTxHash(done)
+          .onTxHash(hash =>
+            done({
+              hash: hash.txHash,
+              memo: "Transaction Accepted",
+              state: "accepted",
+            })
+          )
           .onError(err => {
-            const payload: any = err.payload;
-            notify({ type: "error", message: payload.message ?? err });
+            notify({ type: "error", message: err.payload.memo! });
+            done(err.payload);
           })
           .onComplete(({ txHash }) => {
             notify({

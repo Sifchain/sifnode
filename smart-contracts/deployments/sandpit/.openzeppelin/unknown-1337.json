@@ -1,9 +1,9 @@
 {
   "manifestVersion": "3.1",
   "impls": {
-    "dde607bca939855e6c44b687e2c4e198d43a4b266737c5a19487357f6592e22c": {
-      "address": "0xe55437168a079e5B2529a4471A0F27F1edFD610A",
-      "txHash": "0x52324ce599f49c1d7fc8fb0cb2bc28808fb49d1a9aa3ebff6323658412d1dd23",
+    "ac019ffc9f9510872af9ff178c3a7bda59a3253edb88d3ed88540b29f163e060": {
+      "address": "0xCb8884b72c24584Fd4392a1DC7a60daBa1a3809c",
+      "txHash": "0xaa0411c3a8b35dce0da7fcab61012b041333e79ac8aa6f3888175472d90936f2",
       "layout": {
         "storage": [
           {
@@ -45,7 +45,7 @@
           {
             "contract": "CosmosBridgeStorage",
             "label": "prophecyClaims",
-            "type": "t_mapping(t_uint256,t_struct(ProphecyClaim)1806_storage)",
+            "type": "t_mapping(t_uint256,t_struct(ProphecyClaim)2283_storage)",
             "src": "CosmosBridgeStorage.sol:40"
           },
           {
@@ -188,15 +188,15 @@
           "t_address_payable": {
             "label": "address payable"
           },
-          "t_mapping(t_uint256,t_struct(ProphecyClaim)1806_storage)": {
+          "t_mapping(t_uint256,t_struct(ProphecyClaim)2283_storage)": {
             "label": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
           }
         }
       }
     },
-    "0964c5c4817f1f0ab0e9fbdd236a1e4205885a1618b461b25e0e0fe6655266c9": {
-      "address": "0x062eb23aCF36a953937A0A28C946d7281BBa6C9d",
-      "txHash": "0x477578a2fdf26f3d6cfc89751df607c800af3d49da29a849ae71fe0cec90fd0b",
+    "49930df925c5c64c2e2f820cf2b692094bcd3259f9aff0096e056a0f219d6ab5": {
+      "address": "0x3BdF7cfD53953B0740c79d2B4A581fcd6E670745",
+      "txHash": "0x98f2a6e1eb0639b950fd0e403ced3d2b3ca467a3b2115469b5ff58fb212176e8",
       "layout": {
         "storage": [
           {
@@ -219,9 +219,15 @@
           },
           {
             "contract": "CosmosBankStorage",
+            "label": "lowerToUpperTokens",
+            "type": "t_mapping(t_string_memory,t_string_storage)",
+            "src": "BridgeBank/CosmosBankStorage.sol:34"
+          },
+          {
+            "contract": "CosmosBankStorage",
             "label": "____gap",
             "type": "t_array(t_uint256)100_storage",
-            "src": "BridgeBank/CosmosBankStorage.sol:34"
+            "src": "BridgeBank/CosmosBankStorage.sol:39"
           },
           {
             "contract": "EthereumBankStorage",
@@ -320,10 +326,22 @@
             "src": "BridgeBank/CosmosWhiteList.sol:11"
           },
           {
+            "contract": "PauserRole",
+            "label": "pausers",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "BridgeBank/PauserRole.sol:5"
+          },
+          {
+            "contract": "Pausable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "BridgeBank/Pausable.sol:25"
+          },
+          {
             "contract": "BridgeBank",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "BridgeBank/BridgeBank.sol:27"
+            "src": "BridgeBank/BridgeBank.sol:29"
           }
         ],
         "types": {
@@ -350,13 +368,16 @@
           },
           "t_mapping(t_string_memory,t_address)": {
             "label": "mapping(string => address)"
+          },
+          "t_mapping(t_string_memory,t_string_storage)": {
+            "label": "mapping(string => string)"
           }
         }
       }
     },
     "e2784dab76fe23e6bc87a6ad174be3fc3158ac557335ed5d38b4cc2c08d38038": {
-      "address": "0x9BCF23621968e911080527ab084e4F5F03C72111",
-      "txHash": "0x1d3a4ff0187724ea9647c8965306817f1cde118c7387a39beee629e26e4cb3e2",
+      "address": "0x19B997102D2d34c67F28814C9EE1f1d6c92d7cc6",
+      "txHash": "0x8a4df0e8d54fe2232120768a4603f2d5f24d821cd224b15da8b7ec0095a48641",
       "layout": {
         "storage": [
           {
@@ -411,7 +432,7 @@
     }
   },
   "admin": {
-    "address": "0x319416593D77AEa67F203EBa44033df2278e3d97",
-    "txHash": "0x74b84abea164b4727f5051c2e938719fa1d12f50e4a2f5b08036d289b50924e9"
+    "address": "0x129DFF14A89DBd130504dd547c37044D5Bae2A74",
+    "txHash": "0xfd8a0b9f0438105660c81d38d0291cfb38a3313f4b816852456ac6930a1a4f2b"
   }
 }
