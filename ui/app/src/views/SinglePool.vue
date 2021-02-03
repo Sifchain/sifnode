@@ -4,11 +4,19 @@ import { computed, toRefs } from "@vue/reactivity";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { getAssetLabel, useAssetItem } from "@/components/shared/utils";
-import { Fraction, LiquidityProvider, Pool, usePoolCalculator, AssetAmount, Asset } from "ui-core";
+import {
+  Fraction,
+  LiquidityProvider,
+  Pool,
+  usePoolCalculator,
+  AssetAmount,
+  Asset,
+  IFraction,
+} from "ui-core";
 import { useCore } from "@/hooks/useCore";
-import { useRoute } from 'vue-router';
+import { useRoute } from "vue-router";
 
-const DECIMALS = 5
+const DECIMALS = 5;
 
 export default defineComponent({
   components: { Layout, SifButton },
@@ -22,8 +30,8 @@ export default defineComponent({
     const { config, store } = useCore();
     const route = useRoute().params.externalAsset;
     const refsStore = toRefs(store);
-    const accountPool = computed(
-      () => refsStore.accountpools.value.find(x => x.lp.asset.symbol === route)
+    const accountPool = computed(() =>
+      refsStore.accountpools.value.find((x) => x.lp.asset.symbol === route)
     );
 
     const fromSymbol = computed(() =>
@@ -40,7 +48,9 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    const fromTotalValue = computed(() => accountPool?.value?.pool.amounts[1].toFixed(DECIMALS));
+    const fromTotalValue = computed(() =>
+      accountPool?.value?.pool.amounts[1].toFixed(DECIMALS)
+    );
 
     const toSymbol = computed(() =>
       accountPool?.value?.pool.amounts[0].asset
@@ -56,7 +66,9 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    const toTotalValue = computed(() => accountPool?.value?.pool.amounts[0].toFixed(DECIMALS));
+    const toTotalValue = computed(() =>
+      accountPool?.value?.pool.amounts[0].toFixed(DECIMALS)
+    );
 
     const poolUnitsAsFraction = computed(
       () => accountPool?.value?.lp.units || new Fraction("0")
@@ -65,14 +77,17 @@ export default defineComponent({
     const myPoolShare = computed(() => {
       if (!accountPool?.value?.pool?.poolUnits) return null;
 
+      const poolUnits = accountPool.value.pool.poolUnits as IFraction;
 
       const perc = poolUnitsAsFraction.value
-        .divide(accountPool?.value?.pool?.poolUnits)
+        .divide(poolUnits)
         .multiply("100")
-        .toSignificant(3)
+        .toSignificant(3);
       return `${perc} %`;
     });
-    const myPoolUnits = computed(() => poolUnitsAsFraction.value.toFixed(DECIMALS));
+    const myPoolUnits = computed(() =>
+      poolUnitsAsFraction.value.toFixed(DECIMALS)
+    );
     return {
       accountPool,
       fromToken,
@@ -93,8 +108,8 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" backLink='/pool' title="Your Pair">
-    <div class="sheet" :class="!accountPool ? 'disabled' : 'active' ">
+  <Layout class="pool" backLink="/pool" title="Your Pair">
+    <div class="sheet" :class="!accountPool ? 'disabled' : 'active'">
       <div class="section">
         <div class="header" @click="$emit('poolselected')">
           <div class="image">
@@ -170,20 +185,25 @@ export default defineComponent({
             to their share of the pool. Fees are added to the pool, accrue in
             real time and can be claimed by withdrawing your liquidity. To learn
             more, reference of documentation
-            <a target="_blank" href="https://docs.sifchain.finance/core-concepts/liquidity-pool"
+            <a
+              target="_blank"
+              href="https://docs.sifchain.finance/core-concepts/liquidity-pool"
               >here</a
             >
           </p>
         </div>
       </div>
       <div class="text--small mt-6 mb-2">
-        <a target="_blank" :href="`https://blockexplorer-${chainId}.sifchain.finance/`"
+        <a
+          target="_blank"
+          :href="`https://blockexplorer-${chainId}.sifchain.finance/`"
           >Blockexplorer</a
         >
       </div>
       <div class="section footer">
         <div class="mr-1">
-          <router-link :to="`/pool/remove-liquidity/${fromSymbol.toLowerCase()}`"
+          <router-link
+            :to="`/pool/remove-liquidity/${fromSymbol.toLowerCase()}`"
             ><SifButton primaryOutline nocase block
               >Remove Liquidity</SifButton
             ></router-link
@@ -206,7 +226,9 @@ export default defineComponent({
   background: $c_white;
   border-radius: $br_sm;
   border: $divider;
-  &.disabled { opacity: .3 }
+  &.disabled {
+    opacity: 0.3;
+  }
   .section {
     padding: 8px 12px;
   }
