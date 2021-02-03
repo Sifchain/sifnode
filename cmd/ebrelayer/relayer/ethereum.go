@@ -26,7 +26,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/sethvargo/go-password/password"
 	"github.com/tendermint/go-amino"
 	tmLog "github.com/tendermint/tendermint/libs/log"
@@ -251,29 +250,6 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			}
 		}
 	}
-}
-
-// startContractEventSub : starts an event subscription on the specified Peggy contract
-func (sub EthereumSub) startContractEventSub(logs chan ctypes.Log, client *ethclient.Client,
-	contractName txs.ContractRegistry) (common.Address, ethereum.Subscription) {
-	// Get the contract address for this subscription
-	subContractAddress, err := txs.GetAddressFromBridgeRegistry(client, sub.RegistryContractAddress, contractName)
-	if err != nil {
-		sub.Logger.Error(err.Error())
-	}
-
-	// We need the address in []bytes for the query
-	subQuery := ethereum.FilterQuery{
-		Addresses: []common.Address{subContractAddress},
-	}
-
-	// Start the contract subscription
-	contractSub, err := client.SubscribeFilterLogs(context.Background(), subQuery, logs)
-	if err != nil {
-		sub.Logger.Error(err.Error())
-	}
-	sub.Logger.Info(fmt.Sprintf("Subscribed to %v contract at address: %s", contractName, subContractAddress.Hex()))
-	return subContractAddress, contractSub
 }
 
 // logToEvent unpacks an Ethereum event
