@@ -62,7 +62,7 @@ export class EthereumService implements IWalletService {
   constructor(getWeb3Provider: () => Promise<provider>, assets: Asset[]) {
     // init state
     this.state = reactive({ ...initState });
-    this.supportedTokens = assets.filter(t => t.network === Network.ETHEREUM);
+    this.supportedTokens = assets.filter((t) => t.network === Network.ETHEREUM);
     if (Web3.givenProvider) {
       this.provider = Web3.givenProvider;
       this.web3 = new Web3(Web3.givenProvider || "ws://localhost:7545");
@@ -71,17 +71,17 @@ export class EthereumService implements IWalletService {
       getWeb3Provider().then((provider) => {
         this.provider = provider;
         this.web3 = new Web3(provider);
-      })
+      });
     }
-    this.addListeners()
+    this.addListeners();
   }
 
   addListeners() {
     if (isEventEmittingProvider(this.provider)) {
-      this.provider.on('accountsChanged', () => {
+      this.provider.on("accountsChanged", () => {
         this.updateData();
       });
-      this.provider.on('chainChanged', () => {
+      this.provider.on("chainChanged", () => {
         window.location.reload();
       });
     }
@@ -146,10 +146,10 @@ export class EthereumService implements IWalletService {
   async disconnect() {
     if (isMetaMaskProvider(this.provider)) {
       this.provider.disconnect &&
-      this.provider.disconnect(0, "Website disconnected wallet");
+        this.provider.disconnect(0, "Website disconnected wallet");
     }
     this.web3 = null;
-    this.state = reactive({ ...initState });
+    await this.updateData();
   }
 
   async getBalance(
@@ -180,7 +180,7 @@ export class EthereumService implements IWalletService {
         getEtheriumBalance(web3, addr),
         ...supportedTokens
           .slice(0, 10)
-          .filter(t => t.symbol !== "eth")
+          .filter((t) => t.symbol !== "eth")
           .map((token: Asset) => {
             if (isToken(token)) return getTokenBalance(web3, addr, token);
             return AssetAmount(token, "0");
