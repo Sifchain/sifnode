@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
@@ -199,25 +200,32 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 
 			// Add new header info to buffer
 			lock.Lock()
+			spew.Dump("+++++++dumping eth buffer 0+++++++", sub.EventsBuffer.Buffer)
 			sub.EventsBuffer.AddHeader(newHead.Number, newHead.Hash(), newHead.ParentHash)
+			spew.Dump("+++++++dumping eth buffer 1+++++++", sub.EventsBuffer.Buffer)
 			lock.Unlock()
 			var events []types.EthereumEvent
 			for {
-				fifty := big.NewInt(50)
+				fifty := big.NewInt(4)
 				fifty.Add(fifty, sub.EventsBuffer.MinHeight)
 				if fifty.Cmp(newHead.Number) <= 0 {
-					events = append(events, sub.EventsBuffer.GetHeaderEvents()...)
 					lock.Lock()
+					events = append(events, sub.EventsBuffer.GetHeaderEvents()...)
 					fmt.Println("~~~Locked~~~")
+					spew.Dump("+++++++dumping eth buffer 2+++++++", sub.EventsBuffer.Buffer)
 					sub.EventsBuffer.RemoveHeight()
+					spew.Dump("+++++++dumping eth buffer 3+++++++", sub.EventsBuffer.Buffer)
 					eventsLength := len(events)
-					
-					if eventsLength > 0 {
-						sub.handleEthereumEvent(events)
-						time.Sleep(time.Second * 10)
-					}
 					fmt.Println("~~~Lock lifted~~~")
 					lock.Unlock()
+					
+					if eventsLength > 0 {
+						errorMessage := sub.handleEthereumEvent(events)
+						if errorMessage != nil {
+							fmt.Println("errorMessage from handleEthereumEvent: ", errorMessage)
+						}
+						time.Sleep(time.Second * 10)
+					}
 				} else {
 					break
 				}
