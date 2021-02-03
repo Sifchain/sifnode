@@ -142,7 +142,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	time.Sleep(time.Second)
 	client, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
-		sub.Logger.Error(err.Error())
+		sub.Logger.Error("SetupWebsocketEthClient failed: ", err.Error())
 		completionEvent.Add(1)
 		go sub.Start(completionEvent)
 		return
@@ -186,12 +186,12 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 		case <-quit:
 			return
 		case err := <-subBridgeBank.Err():
-			sub.Logger.Error(err.Error())
+			sub.Logger.Error("subBridgeBank failed: ", err.Error())
 			completionEvent.Add(1)
 			go sub.Start(completionEvent)
 			return
 		case err := <-subHead.Err():
-			sub.Logger.Error(err.Error())
+			sub.Logger.Error("subHead failed: " , err.Error())
 			completionEvent.Add(1)
 			go sub.Start(completionEvent)
 			return
@@ -220,9 +220,8 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 					lock.Unlock()
 					
 					if eventsLength > 0 {
-						errorMessage := sub.handleEthereumEvent(events)
-						if errorMessage != nil {
-							fmt.Println("errorMessage from handleEthereumEvent: ", errorMessage)
+						if err := sub.handleEthereumEvent(events); err != nil {
+							log.Println("handleEthereumEvent failed: ", err.Error())
 						}
 						time.Sleep(time.Second * 10)
 					}
