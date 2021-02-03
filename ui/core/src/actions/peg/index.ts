@@ -56,7 +56,14 @@ export default ({
         feeAmount,
       });
 
-      console.log("unpeg", tx, assetAmount, store.wallet.eth.address, store.wallet.sif.address, feeAmount);
+      console.log(
+        "unpeg",
+        tx,
+        assetAmount,
+        store.wallet.eth.address,
+        store.wallet.sif.address,
+        feeAmount
+      );
 
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 

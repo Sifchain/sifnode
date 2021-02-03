@@ -39,25 +39,32 @@ export default function createEthbridgeService({
     return _web3;
   }
 
-  async function approveBridgeBankSpend(account: string, amount: AssetAmount) {
-    // This will popup an approval request in metamask
-    const web3 = await ensureWeb3();
-    const tokenContract = await getTokenContract(
-      web3,
-      (amount.asset as Token).address
-    );
-    const sendArgs = {
-      from: account,
-      value: 0,
-    };
-    const res = await tokenContract.methods
-      .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
-      .send(sendArgs);
-    console.log("approveBridgeBankSpend:", res);
-    return res;
-  }
-
   return {
+    async approveSpend(assetAmount: AssetAmount) {
+      const web3 = await ensureWeb3();
+      const accounts = await web3.eth.getAccounts();
+      const fromAddress = accounts[0];
+      const coinDenom = (assetAmount.asset as Token).address ?? ETH_ADDRESS;
+      if (coinDenom === ETH_ADDRESS) return;
+
+      const tokenContract = await getTokenContract(
+        web3,
+        (assetAmount.asset as Token).address
+      );
+      const sendArgs = {
+        from: fromAddress,
+        value: 0,
+      };
+      const res = await tokenContract.methods
+        .approve(
+          bridgebankContractAddress,
+          assetAmount.toBaseUnits().toString()
+        )
+        .send(sendArgs);
+      console.log("approveBridgeBankSpend:", res);
+      return res;
+    },
+
     async burnToEthereum(params: {
       fromAddress: string;
       ethereumRecipient: string;
@@ -103,7 +110,7 @@ export default function createEthbridgeService({
         });
       }
 
-      (async function () {
+      (async function() {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
 
@@ -126,9 +133,9 @@ export default function createEthbridgeService({
           JSON.stringify({ cosmosRecipient, coinDenom, amount, sendArgs })
         );
 
-        if (coinDenom !== ETH_ADDRESS) {
-          await approveBridgeBankSpend(fromAddress, assetAmount);
-        }
+        // if (coinDenom !== ETH_ADDRESS) {
+        //   await approveBridgeBankSpend(fromAddress, assetAmount);
+        // }
 
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
@@ -148,16 +155,23 @@ export default function createEthbridgeService({
             txHash,
             confirmations,
             onSuccess() {
-              console.log("lockToSifchain: confirmTx SUCCESS", txHash, confirmations);
+              console.log(
+                "lockToSifchain: confirmTx SUCCESS",
+                txHash,
+                confirmations
+              );
               emitter.emit({ type: "Complete", payload: null });
             },
             onCheckConfirmation(count) {
-              console.log("lockToSifchain: onCheckConfirmation PENDING", confirmations);
+              console.log(
+                "lockToSifchain: onCheckConfirmation PENDING",
+                confirmations
+              );
               emitter.emit({ type: "EthConfCountChanged", payload: count });
             },
           });
         });
-      })().catch((err) => {
+      })().catch(err => {
         handleError(err);
       });
 
@@ -172,7 +186,8 @@ export default function createEthbridgeService({
     }) {
       const web3 = await ensureWeb3();
       const ethereumChainId = await web3.eth.net.getId();
-      const tokenAddress = (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
+      const tokenAddress =
+        (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
 
       const lockParams = {
         ethereum_receiver: params.ethereumRecipient,
@@ -211,7 +226,7 @@ export default function createEthbridgeService({
         });
       }
 
-      (async function () {
+      (async function() {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
 
@@ -229,7 +244,7 @@ export default function createEthbridgeService({
           value: 0,
         };
 
-        await approveBridgeBankSpend(fromAddress, assetAmount);
+        // await approveBridgeBankSpend(fromAddress, assetAmount);
 
         bridgeBankContract.methods
           .burn(cosmosRecipient, coinDenom, amount)
@@ -250,16 +265,23 @@ export default function createEthbridgeService({
             txHash,
             confirmations,
             onSuccess() {
-              console.log("burnToSifchain: commitTx SUCCESS", txHash, confirmations);
+              console.log(
+                "burnToSifchain: commitTx SUCCESS",
+                txHash,
+                confirmations
+              );
               emitter.emit({ type: "Complete", payload: null });
             },
             onCheckConfirmation(count) {
-              console.log("burnToSifchain: commitTx.checkConfirmation PENDING", confirmations);
+              console.log(
+                "burnToSifchain: commitTx.checkConfirmation PENDING",
+                confirmations
+              );
               emitter.emit({ type: "EthConfCountChanged", payload: count });
             },
           });
         });
-      })().catch((err) => {
+      })().catch(err => {
         handleError(err);
       });
 

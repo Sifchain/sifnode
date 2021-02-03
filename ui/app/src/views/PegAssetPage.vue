@@ -247,7 +247,9 @@ export default defineComponent({
         />
         <br />
         <p class="text--normal">
-          *Please note your funds will be available for use on Sifchain only after 50 Ethereum block confirmations. This can take upwards of 20 minutes.
+          *Please note your funds will be available for use on Sifchain only
+          after 50 Ethereum block confirmations. This can take upwards of 20
+          minutes.
         </p>
       </template>
       <template v-slot:common>

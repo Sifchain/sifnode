@@ -19,6 +19,10 @@
         :transactionHash="transactionHash"
         :transactionStateMsg="transactionStateMsg"
       >
+        <template v-slot:approving>
+          <slot :name="!!this.$slots.signing ? 'confirmed' : 'common'"></slot>
+        </template>
+
         <template v-slot:signing>
           <slot :name="!!this.$slots.signing ? 'signing' : 'common'"></slot>
         </template>
