@@ -7,6 +7,7 @@ import {
 } from "../../entities";
 import notify from "../../api/utils/Notifications";
 import JSBI from "jsbi";
+import EthbridgeService from "../../api/EthbridgeService";
 
 function isOriginallySifchainNativeToken(asset: Asset) {
   return ["erowan", "rowan"].includes(asset.symbol);
@@ -21,7 +22,7 @@ export default ({
   store,
 }: ActionContext<
   "SifService" | "EthbridgeService" | "EthereumService",
-  "wallet"
+  "wallet" | "tx"
 >) => {
   const actions = {
     getSifTokens() {
@@ -73,30 +74,75 @@ export default ({
           message: txStatus.memo || "There was an error while unpegging",
         });
       }
-      console.log("unpeg txStatus.state", txStatus.state, txStatus.memo, txStatus.code, tx.value.msg);
+      console.log(
+        "unpeg txStatus.state",
+        txStatus.state,
+        txStatus.memo,
+        txStatus.code,
+        tx.value.msg
+      );
 
       return txStatus;
     },
 
-    async peg(assetAmount: AssetAmount) {
+    async peg(assetAmount: AssetAmount): Promise<TransactionStatus> {
+      try {
+        await api.EthbridgeService.approveSpend(assetAmount);
+      } catch (err) {
+        // user cancelled approve
+        return {
+          hash: "",
+          memo: "Transaction spend was not approved",
+          state: "rejected",
+        };
+      }
+
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
         ? api.EthbridgeService.burnToSifchain
         : api.EthbridgeService.lockToSifchain;
 
       return await new Promise<TransactionStatus>(done => {
+        let txHash: string;
         lockOrBurnFn(store.wallet.sif.address, assetAmount, ETH_CONFIRMATIONS)
-          .onTxHash(hash =>
-            done({
+          .onTxHash(hash => {
+            // Cache txHash incase error later
+            txHash = hash.txHash;
+
+            const status: TransactionStatus = {
               hash: hash.txHash,
               memo: "Transaction Accepted",
               state: "accepted",
-            })
-          )
+            };
+
+            // save to store
+            store.tx.hash[hash.txHash] = status;
+
+            done(status);
+          })
           .onError(err => {
+            const status: TransactionStatus = {
+              hash: txHash,
+              memo: "Transaction Error: " + err.payload,
+              state: "failed",
+            };
+
+            // save to store
+            store.tx.hash[txHash] = status;
+
             notify({ type: "error", message: err.payload.memo! });
+
             done(err.payload);
           })
           .onComplete(({ txHash }) => {
+            const status: TransactionStatus = {
+              hash: txHash,
+              memo: `Transfer ${txHash} has succeded.`,
+              state: "complete",
+            };
+
+            // save to store
+            store.tx.hash[txHash] = status;
+
             notify({
               type: "success",
               message: `Transfer ${txHash} has succeded.`,
