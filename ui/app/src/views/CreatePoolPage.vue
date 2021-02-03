@@ -36,14 +36,19 @@ export default defineComponent({
   setup() {
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
+    const lastFocusedTokenField = ref<"A" | "B" | null>(null);
+
     const transactionState = ref<ConfirmState | string>("selecting");
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
+    const asyncPooling = ref<boolean>(true);
     const router = useRouter();
     const route = useRoute();
 
     const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
-
+    console.log({asyncPooling})
+    console.log({asyncPooling})
+    console.log({asyncPooling})
     const toSymbol = ref("rowan");
 
     fromSymbol.value = route.params.externalAsset
@@ -70,6 +75,8 @@ export default defineComponent({
       );
     });
 
+    asyncPooling.value = true;
+
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
@@ -89,7 +96,11 @@ export default defineComponent({
       tokenBSymbol: toSymbol,
       poolFinder,
       liquidityProvider,
+      asyncPooling,
+      lastFocusedTokenField,
     });
+
+    console.log({shareOfPoolPercent})
 
     function handleNextStepClicked() {
       if (!tokenAFieldAmount.value)
@@ -176,6 +187,17 @@ export default defineComponent({
         selectedField.value = null;
       },
 
+      // TODO - The other selectedField variable does a few things
+      // And trying to remove the idea of to/from so slightly reinventing here
+      handleTokenAFocused() {
+        selectedField.value = "from";
+        lastFocusedTokenField.value = "A";
+      },
+      handleTokenBFocused() {
+        selectedField.value = "to";
+        lastFocusedTokenField.value = "B";
+      },
+
       handleNextStepClicked,
 
       handleAskConfirmClicked,
@@ -189,12 +211,6 @@ export default defineComponent({
 
       handleBlur() {
         selectedField.value = null;
-      },
-      handleFromFocused() {
-        selectedField.value = "from";
-      },
-      handleToFocused() {
-        selectedField.value = "to";
       },
       handleFromMaxClicked() {
         selectedField.value = "from";
@@ -226,10 +242,12 @@ export default defineComponent({
   <Layout class="pool" :backLink="`${fromSymbol ? '/pool/' + fromSymbol : '/pool' }`" :title="title">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
+        <div>Asymmetrical Pooling (turned on)</div>
+        <br />
         <CurrencyPairPanel
           v-model:fromAmount="fromAmount"
           v-model:fromSymbol="fromSymbol"
-          @fromfocus="handleFromFocused"
+          @fromfocus="handleTokenAFocused"
           @fromblur="handleBlur"
           @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
           :fromSymbolSelectable="connected"
@@ -237,7 +255,7 @@ export default defineComponent({
           @frommaxclicked="handleFromMaxClicked"
           v-model:toAmount="toAmount"
           v-model:toSymbol="toSymbol"
-          @tofocus="handleToFocused"
+          @tofocus="handleTokenBFocused"
           @toblur="handleBlur"
           :toMax="true"
           @tomaxclicked="handleToMaxClicked"
