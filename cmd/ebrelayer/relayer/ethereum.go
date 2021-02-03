@@ -187,12 +187,12 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 		case err := <-subBridgeBank.Err():
 			sub.Logger.Error("subBridgeBank failed: ", err.Error())
 			completionEvent.Add(1)
-			//go sub.Start(completionEvent)
+			go sub.Start(completionEvent)
 			return
 		case err := <-subHead.Err():
 			sub.Logger.Error("subHead failed: " , err.Error())
 			completionEvent.Add(1)
-			//go sub.Start(completionEvent)
+			go sub.Start(completionEvent)
 			return
 		case newHead := <-heads:
 			sub.Logger.Info(fmt.Sprintf("New header %d with hash %v", newHead.Number, newHead.Hash()))
