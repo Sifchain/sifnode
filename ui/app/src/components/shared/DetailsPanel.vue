@@ -14,15 +14,21 @@
     >
       <div v-if="minimumReceived && toToken" class="details-row">
         <span>Minimum Amount Received</span>
-        <span>{{ showMinReceived(minimumReceived) }} <span>{{ toToken.toUpperCase().replace("C", "c")  }}</span></span>
+        <span
+          >{{ formatNumber(minimumReceived) }}
+          <span>{{ toToken.toUpperCase().replace("C", "c") }}</span></span
+        >
       </div>
       <div v-if="priceImpact" class="details-row">
         <span>Price Impact</span>
-        <span>{{ parseFloat(priceImpact) < 0.01 ? "< 0.01" : parseFloat(priceImpact).toFixed(2) }} %</span>
+        <span>{{ formatPercentage(priceImpact) }}</span>
       </div>
       <div v-if="providerFee && toToken" class="details-row">
         <span>Liquidity Provider Fee</span>
-        <span>{{ showProviderFee(providerFee) }} <span>{{ toToken.toUpperCase().replace("C", "c") }}</span></span>
+        <span
+          >{{ showProviderFee(providerFee) }}
+          <span>{{ toToken.toUpperCase().replace("C", "c") }}</span></span
+        >
       </div>
     </div>
   </div>
@@ -66,6 +72,7 @@
 </style>
 <script lang="ts">
 import { defineComponent } from "vue";
+import { formatNumber, formatPercentage } from "./utils";
 
 export default defineComponent({
   props: {
@@ -81,29 +88,21 @@ export default defineComponent({
       if (floatFee < 0.001) {
         return providerFee;
       } else if (floatFee < 10) {
-        return floatFee.toFixed(4)
+        return floatFee.toFixed(4);
       } else if (floatFee < 100) {
-        return floatFee.toFixed(3)
+        return floatFee.toFixed(3);
       } else if (floatFee < 1000) {
-        return floatFee.toFixed(2)
+        return floatFee.toFixed(2);
       } else {
-        return floatFee.toFixed(1)
-      }
-    }
-
-    function showMinReceived(minReceived: string) {
-      const minimumReceived = parseFloat(minReceived);
-      if (minimumReceived < 100000) {
-        return minimumReceived.toFixed(5);
-      } else {
-        return minimumReceived.toFixed(2)
+        return floatFee.toFixed(1);
       }
     }
 
     return {
       showProviderFee,
-      showMinReceived
-    }
-  }
+      formatNumber,
+      formatPercentage,
+    };
+  },
 });
 </script>
