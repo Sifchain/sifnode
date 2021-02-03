@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"github.com/prometheus/common/log"
 	"os"
 	"os/signal"
 	"sync"
@@ -80,7 +79,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 	defer func() {
 		if err := client.Unsubscribe(context.Background(), "test", query); err != nil {
-			log.Errorln("Unsubscribe failed: ", err.Error())
+			sub.Logger.Error("Unsubscribe failed: ", err.Error())
 		}
 	}()
 
