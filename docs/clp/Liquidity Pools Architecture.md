@@ -10,6 +10,8 @@
 
 -Third Revision: Austin Haines (Barefoot Coders) October 1, 2020
 
+-Fourth Revision: Austin Haines (Barefoot Coders) January 11, 2021
+
 
 ## Context
 Outlined below are the starting points of an architecture that will allow Sifchain to implement an MVP version of liquidity pools similar to Sushiswap.
@@ -68,11 +70,11 @@ These structures contain all data pertaining to liquidity pools that are stored 
 
 **LiquidityProvider:** Contains `Asset` structure, liquidity provider units, and liquidity provider address.
 
-**Asset:** Contains source chain, symbol and ticker identifying a single asset.
+**Asset:** Contains symbol identifying a single asset.
 
 ![](images/SifchainCLPArchitecture/SifchainStructs.png)
 
-**Addresses:** Pool addresses are a hash of "pool-" prefix and asset ticker suffixes following the form "pool-[firstTicker][secondTicker]" ie: "pool-cETHROWAN". This module is designed to be extensible, therefore the pool address serves as both an identifier for future pools with multiple external assets and as an address for holding tokens in the liquidity pool. `lpAddress` is the address of a liquidity provider's account. Both types of addresses will be used to send tokens in and out of liquidity pools.
+**Addresses:** Pool addresses are a hash of "pool-" prefix and asset symbol suffixes following the form "pool-[firstSymbol][secondSymbol]" ie: "pool-cETHROWAN". This module is designed to be extensible, therefore the pool address serves as both an identifier for future pools with multiple external assets and as an address for holding tokens in the liquidity pool. `lpAddress` is the address of a liquidity provider's account. Both types of addresses will be used to send tokens in and out of liquidity pools.
 
 **Units:** These units are used to represent a `LiquidityProvider`&#39;s ownership of a `Pool` (lpUnits), and the total ownership of the `Pool` (poolUnits). They are used in Thorchain&#39;s CLP model for calculating asymmetric deposits/withdrawals and slip-fee swaps.
 
@@ -81,22 +83,43 @@ The following are formulas needed to implement Thorchain's slip-fee CLP model wi
 
 **Pool and LiquidityProvider Units:**
 
->lpUnits (calculated when liquidity is added) =
->(nativeAssetBalance + externalAssetBalance) * (lpNativeAssetAmount * externalAssetBalance + nativeAssetBalance * lpExternalAsset) /
->(4 * nativeAssetBalance * externalAssetBalance)
-
->poolUnits = total of all outstanding lpUnits
+>r = Native amount added
+>a = External amount added
+>R = Native Balance (before)
+>A = External Balance (before)
+>P = existing Pool Units
+>slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
+>units = ((P (a R + A r))/(2 A R))*slipAdjustment
 
 **Asymmetrical Withdrawal:**
 
 >asymmetry: -10000 = 100% Native Asset, 0 = 50% Native Asset 50% External Asset, 10000 = 100% External Asset
 
 >wBasisPoints: 0 = 0%, 10000 = 100%
-
->S = Liquidity Pool Units, P = Pool Units, W = Withdrawal Basis Points, A = Asymmetry
-
->(S * R * W * ((-1 * A * (P - S * W)^2) / (P * ((-1 *A -1) * S * W + P)^2) + 1/P))
-
+```golang
+        {
+          unitsToClaim = lpUnits / (10000 / wBasisPoints) 
+          withdrawExternalAssetAmount = externalAssetBalance / (poolUnits / unitsToClaim)
+          withdrawNativeAssetAmount = nativeAssetBalance / (poolUnits / unitsToClaim)
+          
+          swapAmount = 0
+          //if asymmetry is positive we need to swap from native to external
+          if asymmetry > 0
+            unitsToSwap = (unitsToClaim / (10000 / asymmetry))
+            swapAmount = nativeAssetBalance / (poolUnits / unitsToSwap)
+        
+          //if asymmetry is negative we need to swap from external to native
+          if asymmetry < 0
+            unitsToSwap = (unitsToClaim / (10000 / asymmetry))
+            swapAmount = externalAssetBalance / (poolUnits / unitsToSwap)
+        
+          //if asymmetry is 0 we don't need to swap
+          
+          lpUnitsLeft = lpUnits - unitsToClaim
+          
+          return withdrawNativeAssetAmount, withdrawExternalAssetAmount, lpUnitsLeft, swapAmount
+        }
+```
 **Slip-Fee Swap:** Note: We're aware this notation is not standard and will revise it when we release a LaTex version of formulas.
 
 >x = Sent Asset Amount, X = Sent Asset Pool Balance, Y = Received Asset Pool Balance
