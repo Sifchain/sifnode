@@ -163,7 +163,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	// get the bridgebank address from the registry contract
 	bridgeBankAddress, err := txs.GetAddressFromBridgeRegistry(client, sub.RegistryContractAddress, txs.BridgeBank)
 	if err != nil {
-		sub.Logger.Error(err.Error())
+		log.Fatal("Error getting bridgebank address: ", err.Error())
 	}
 
 	bridgeBankContractABI := contract.LoadABI(txs.BridgeBank)
