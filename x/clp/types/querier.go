@@ -7,6 +7,7 @@ const (
 	QueryPools             = "allpools"
 	QueryAssetList         = "assetList"
 	QueryLiquidityProvider = "liquidityProvider"
+	QueryLPList            = "lpList"
 )
 
 type QueryReqGetPool struct {
@@ -30,7 +31,14 @@ type QueryReqGetAssetList struct {
 	LpAddress sdk.AccAddress `json:"lp_address"`
 }
 
+type QueryReqGetLiquidityProviderList struct {
+	Symbol string `json:"symbol"`
+}
+
+func NewQueryReqGetLiquidityProviderList(symbol string) QueryReqGetLiquidityProviderList {
+	return QueryReqGetLiquidityProviderList{Symbol: symbol}
+}
+
 func NewQueryReqGetAssetList(lpAddress sdk.AccAddress) QueryReqGetAssetList {
 	return QueryReqGetAssetList{LpAddress: lpAddress}
-
 }
