@@ -33,6 +33,9 @@ type Node struct {
 	BondAmount         string    `yaml:"-"`
 	MintAmount         string    `yaml:"-"`
 	FaucetAmount       string    `yaml:"-"`
+	MinCLPCreatePoolThreshold string `yaml:"-"`
+	GovMaxDepositPeriod string `yaml:"-"`
+	GovVotingPeriod string `yaml:"-"`
 	PeerAddress        string    `yaml:"-"`
 	GenesisURL         string    `yaml:"-"`
 	Key                *key.Key  `yaml:"-"`
@@ -200,12 +203,7 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	minCLPCreatePoolThreshold := os.Getenv("MIN_CLP_CREATE_POOL_THRESHOLD")
-	if minCLPCreatePoolThreshold == "" {
-		minCLPCreatePoolThreshold = common.MinCLPCreatePoolThreshold
-	}
-
-	if err = genesis.ReplaceCLPMinCreatePoolThreshold(common.DefaultNodeHome, minCLPCreatePoolThreshold); err != nil {
+	if err = genesis.ReplaceCLPMinCreatePoolThreshold(common.DefaultNodeHome, n.MinCLPCreatePoolThreshold); err != nil {
 		return err
 	}
 
@@ -213,13 +211,11 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	govDepositParamsMaxDepositPeriod := os.Getenv("GOV_DEPOSIT_PARAMS_MAX_DEPOSIT_PERIOD")
-	if err = genesis.ReplaceGovDepositParamsMaxDepositPeriod(common.DefaultNodeHome, govDepositParamsMaxDepositPeriod); err != nil {
+	if err = genesis.ReplaceGovDepositParamsMaxDepositPeriod(common.DefaultNodeHome, n.GovMaxDepositPeriod); err != nil {
 		return err
 	}
 
-	govVotingParamsVotingPeriod := os.Getenv("GOV_VOTING_PARAMS_VOTING_PERIOD")
-	if err = genesis.ReplaceGovVotingParamsVotingPeriod(common.DefaultNodeHome, govVotingParamsVotingPeriod); err != nil {
+	if err = genesis.ReplaceGovVotingParamsVotingPeriod(common.DefaultNodeHome, n.GovVotingPeriod); err != nil {
 		return err
 	}
 
