@@ -220,6 +220,12 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				continue
 			}
 
+			tmpEndingBlock := big.NewInt(0).Add(lastProcessedBlock, big.NewInt(2))
+
+			if endingBlock.Cmp(tmpEndingBlock) > 0 {
+
+			}
+
 			// If the last processed block is the default (0), then go and set it to the difference of ending block minus 1
 			// The user who starts this must provide a valid last processed block
 			if lastProcessedBlock.Cmp(big.NewInt(0)) == 0 {
