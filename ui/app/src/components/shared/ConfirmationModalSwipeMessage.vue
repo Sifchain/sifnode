@@ -13,3 +13,13 @@ export default {
   props: ["title", "sub"],
 };
 </script>
+
+<style lang="scss" scoped>
+.sub {
+  font-weight: normal;
+  font-size: $fs_sm;
+}
+.anchor {
+  color: $c_black;
+}
+</style>
