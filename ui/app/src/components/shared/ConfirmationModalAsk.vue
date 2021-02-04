@@ -1,12 +1,18 @@
 <template>
-  <div class="ask-wrapper">
-    <h3 class="title mb-10">{{ title }}</h3>
-    <div class="ask-body">
-      <slot name="body"></slot>
+  <div class="modal-inner">
+    <div class="ask-wrapper">
+      <h3 class="title mb-10">{{ title }}</h3>
+      <div class="ask-body">
+        <slot name="body"></slot>
+      </div>
+      <SifButton
+        block
+        primary
+        class="confirm-btn"
+        @click="$emit('confirmed')"
+        >{{ confirmButtonText }}</SifButton
+      >
     </div>
-    <SifButton block primary class="confirm-btn" @click="$emit('confirmed')">{{
-      confirmButtonText
-    }}</SifButton>
   </div>
 </template>
 
@@ -23,11 +29,18 @@ export default defineComponent({
   props: {
     title: String,
     confirmButtonText: String,
+    onConfirmed: Function,
   },
 });
 </script>
 
 <style lang="scss" scoped>
+.modal-inner {
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px 20px 20px;
+  min-height: 50vh;
+}
 .ask-wrapper {
   flex: 1;
   display: flex;

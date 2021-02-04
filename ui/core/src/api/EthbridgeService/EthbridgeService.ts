@@ -133,10 +133,6 @@ export default function createEthbridgeService({
           JSON.stringify({ cosmosRecipient, coinDenom, amount, sendArgs })
         );
 
-        // if (coinDenom !== ETH_ADDRESS) {
-        //   await approveBridgeBankSpend(fromAddress, assetAmount);
-        // }
-
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
           .send(sendArgs)

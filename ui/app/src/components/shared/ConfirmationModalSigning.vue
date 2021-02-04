@@ -1,14 +1,15 @@
 <template>
-  <div>
-    <div class="confirmation">
-      <div class="message">
-        <Loader
-          black
-          :success="state === 'confirmed'"
-          :failed="state === 'rejected' || state === 'failed'"
-        /><br />
-        <div class="text-wrapper">
-          <!-- 
+  <div class="modal-inner">
+    <div>
+      <div class="confirmation">
+        <div class="message">
+          <Loader
+            black
+            :success="state === 'confirmed'"
+            :failed="state === 'rejected' || state === 'failed'"
+          /><br />
+          <div class="text-wrapper">
+            <!-- 
             TODO: This could be abstracted to AnimatedLoaderStateModal 
             that takes screens and switches them based on arbitrary state
             with arbitrary content that can be specified in page.
@@ -17,64 +18,65 @@
 
             Perhaps we could use render functions to accomplish this?
           -->
-          <transition name="swipe">
-            <div class="text" v-if="state === 'signing'">
-              <p>Waiting for confirmation</p>
-              <slot name="signing"></slot>
-              <br />
-              <p class="sub">Confirm this transaction in your wallet</p>
-            </div>
-          </transition>
+            <transition name="swipe">
+              <div class="text" v-if="state === 'signing'">
+                <p>Waiting for confirmation</p>
+                <slot name="signing"></slot>
+                <br />
+                <p class="sub">Confirm this transaction in your wallet</p>
+              </div>
+            </transition>
 
-          <transition name="swipe">
-            <div class="text" v-if="state === 'rejected'">
-              <p>Transaction Rejected</p>
-              <slot name="rejected"></slot>
-              <br />
-              <p class="sub">{{ transactionStateMsg }}</p>
-            </div>
-          </transition>
+            <transition name="swipe">
+              <div class="text" v-if="state === 'rejected'">
+                <p>Transaction Rejected</p>
+                <slot name="rejected"></slot>
+                <br />
+                <p class="sub">{{ transactionStateMsg }}</p>
+              </div>
+            </transition>
 
-          <transition name="swipe">
-            <div class="text" v-if="state === 'failed'">
-              <p>Transaction Failed</p>
-              <slot name="failed"></slot>
-              <br />
-              <p class="sub">{{ transactionStateMsg }}</p>
-            </div>
-          </transition>
+            <transition name="swipe">
+              <div class="text" v-if="state === 'failed'">
+                <p>Transaction Failed</p>
+                <slot name="failed"></slot>
+                <br />
+                <p class="sub">{{ transactionStateMsg }}</p>
+              </div>
+            </transition>
 
-          <transition name="swipe">
-            <div class="text" v-if="state === 'confirmed'">
-              <p>Transaction Submitted</p>
-              <slot name="confirmed"></slot>
-              <br />
-              <p class="sub">
-                <!-- To the todo point above, we need to be able to control this better, hence isSifTxHash() -->
-                <a
-                  v-if="transactionHash?.substring(0,2) !== '0x'"
-                  class="anchor"
-                  target="_blank"
-                  :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
-                  >View transaction on Block Explorer</a
-                >
-                <a
-                  v-else
-                  class="anchor"
-                  target="_blank"
-                  :href="`https://etherscan.io/tx/${transactionHash}`"
-                  >View transaction on Block Explorer</a
-                >
-              </p>
-            </div>
-          </transition>
+            <transition name="swipe">
+              <div class="text" v-if="state === 'confirmed'">
+                <p>Transaction Submitted</p>
+                <slot name="confirmed"></slot>
+                <br />
+                <p class="sub">
+                  <!-- To the todo point above, we need to be able to control this better, hence isSifTxHash() -->
+                  <a
+                    v-if="transactionHash?.substring(0, 2) !== '0x'"
+                    class="anchor"
+                    target="_blank"
+                    :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
+                    >View transaction on Block Explorer</a
+                  >
+                  <a
+                    v-else
+                    class="anchor"
+                    target="_blank"
+                    :href="`https://etherscan.io/tx/${transactionHash}`"
+                    >View transaction on Block Explorer</a
+                  >
+                </p>
+              </div>
+            </transition>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="footer" :class="{ confirmed }">
-      <SifButton block @click="$emit('closerequested')" primary
-        >Close</SifButton
-      >
+      <div class="footer" :class="{ confirmed }">
+        <SifButton block @click="$emit('closerequested')" primary
+          >Close</SifButton
+        >
+      </div>
     </div>
   </div>
 </template>

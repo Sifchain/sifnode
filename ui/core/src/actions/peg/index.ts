@@ -12,6 +12,7 @@ import EthbridgeService from "../../api/EthbridgeService";
 function isOriginallySifchainNativeToken(asset: Asset) {
   return ["erowan", "rowan"].includes(asset.symbol);
 }
+
 // listen for 50 confirmations
 // Eventually this should be set on ebrelayer
 // to centralize the business logic
@@ -85,53 +86,33 @@ export default ({
       return txStatus;
     },
 
-    async peg(assetAmount: AssetAmount): Promise<TransactionStatus> {
-      try {
-        await api.EthbridgeService.approveSpend(assetAmount);
-      } catch (err) {
-        // user cancelled approve
-        return {
-          hash: "",
-          memo: "Transaction spend was not approved",
-          state: "rejected",
-        };
-      }
+    async approveSpend(assetAmount: AssetAmount) {
+      await api.EthbridgeService.approveSpend(assetAmount);
+    },
 
+    async peg(assetAmount: AssetAmount): Promise<TransactionStatus> {
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
         ? api.EthbridgeService.burnToSifchain
         : api.EthbridgeService.lockToSifchain;
 
-      return await new Promise<TransactionStatus>(done => {
-        let txHash: string;
+      return await new Promise<TransactionStatus>(resolve => {
         lockOrBurnFn(store.wallet.sif.address, assetAmount, ETH_CONFIRMATIONS)
           .onTxHash(hash => {
-            // Cache txHash incase error later
-            txHash = hash.txHash;
-
             const status: TransactionStatus = {
               hash: hash.txHash,
               memo: "Transaction Accepted",
               state: "accepted",
             };
 
-            // save to store
-            store.tx.hash[hash.txHash] = status;
-
-            done(status);
+            resolve(status);
           })
           .onError(err => {
-            const status: TransactionStatus = {
-              hash: txHash,
-              memo: "Transaction Error: " + err.payload,
-              state: "failed",
-            };
+            const status = err.payload;
 
-            // save to store
-            store.tx.hash[txHash] = status;
+            notify({ type: "error", message: status.memo! });
 
-            notify({ type: "error", message: err.payload.memo! });
-
-            done(err.payload);
+            // Resolve because error could happen after promise is resolved
+            resolve(status);
           })
           .onComplete(({ txHash }) => {
             const status: TransactionStatus = {
@@ -139,9 +120,6 @@ export default ({
               memo: `Transfer ${txHash} has succeded.`,
               state: "complete",
             };
-
-            // save to store
-            store.tx.hash[txHash] = status;
 
             notify({
               type: "success",

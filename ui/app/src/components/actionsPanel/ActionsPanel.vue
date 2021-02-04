@@ -9,7 +9,6 @@ export default defineComponent({
   components: {
     WithWallet,
     SifButton,
-    Icon,
   },
   props: {
     nextStepAllowed: Boolean,
@@ -39,7 +38,7 @@ export default defineComponent({
           {{ connectCta }}
         </SifButton>
       </template>
-      <template v-slot:connected="{ connectedText }"
+      <template v-slot:connected
         ><div>
           <SifButton
             v-if="nextStepMessage"
