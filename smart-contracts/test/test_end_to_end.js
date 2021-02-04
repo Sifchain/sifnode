@@ -16,8 +16,9 @@ require("chai")
 const {
   expectRevert, // Assertions for transactions that should fail
 } = require('@openzeppelin/test-helpers');
+const { expect } = require('chai');
 
-contract("CosmosBridge", function (accounts) {
+contract("End To End", function (accounts) {
   // System operator
   const operator = accounts[0];
 
@@ -57,6 +58,7 @@ contract("CosmosBridge", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -73,7 +75,7 @@ contract("CosmosBridge", function (accounts) {
       this.cosmosSenderSequence = 1;
       this.ethereumReceiver = userSeven;
       this.ethTokenAddress = "0x0000000000000000000000000000000000000000";
-      this.symbol = "ETH";
+      this.symbol = "eth";
       this.nativeCosmosAssetDenom = "ATOM";
       this.prefixedNativeCosmosAssetDenom = "eATOM";
       this.amountWei = 100;
@@ -87,6 +89,7 @@ contract("CosmosBridge", function (accounts) {
       this.thirdValidators = [userThree, userFour];
       this.thirdPowers = [50, 50];
 
+      this.symbol.token
       // Deploy CosmosBridge contract
       this.cosmosBridge = await deployProxy(CosmosBridge, [
         operator,
@@ -101,6 +104,7 @@ contract("CosmosBridge", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -138,7 +142,7 @@ contract("CosmosBridge", function (accounts) {
       );
 
       // Confirm that the contract has been loaded with funds
-      contractBalanceWei.should.be.bignumber.equal(this.amountWei);
+      Number(contractBalanceWei).should.be.equal(this.amountWei);
 
       // --------------------------------------------------------
       //  Check receiver's account balance prior to the claims
@@ -234,7 +238,7 @@ contract("CosmosBridge", function (accounts) {
       );
 
       // Confirm that the contract has been loaded with funds
-      contractBalanceWei2.should.be.bignumber.equal(this.amountWei);
+      Number(contractBalanceWei2).should.be.equal(this.amountWei);
 
       // --------------------------------------------------------
       //  Check receiver's account balance prior to the claims
@@ -343,7 +347,7 @@ contract("CosmosBridge", function (accounts) {
       );
 
       // Confirm that the contract has been loaded with funds
-      contractBalanceWei3.should.be.bignumber.equal(this.amountWei);
+      Number(contractBalanceWei3).should.be.equal(this.amountWei);
 
       // --------------------------------------------------------
       //  Check receiver's account balance prior to the claims
@@ -456,7 +460,7 @@ contract("CosmosBridge", function (accounts) {
       );
 
       // Confirm that the contract has been loaded with funds
-      contractBalanceWei4.should.be.bignumber.equal(this.amountWei);
+      Number(contractBalanceWei4).should.be.equal(this.amountWei);
 
       // --------------------------------------------------------
       //  Check receiver's account balance prior to the claims
@@ -506,21 +510,21 @@ contract("CosmosBridge", function (accounts) {
           "Must be an active validator"
       );
 
+      const contractBalanceWeiAfter = await web3.eth.getBalance(
+        this.bridgeBank.address
+      );
+      contractBalanceWeiAfter.toString().should.be.equal("0")
       // --------------------------------------------------------
       //  Check receiver's account balance after the claim is processed
       // --------------------------------------------------------
-      const postRecipientBalance4 = bigInt(
-          String(await web3.eth.getBalance(userSeven))
-      );
+      // const postRecipientBalance4 = (await web3.eth.getBalance(userSeven)).toString();
 
-      var expectedBalance4 = bigInt(String(priorRecipientBalance)).plus(
-          String(this.amountWei)
-      );
+      // var expectedBalance4 = bigInt(String(priorRecipientBalance)).plus(
+      //     String(this.amountWei)
+      // );
 
-      const receivedFunds4 = expectedBalance.equals(postRecipientBalance);
-      receivedFunds4.should.be.equal(true);
-
-
+      // const receivedFunds4 = Number(expectedBalance4).should.be.equal(postRecipientBalance4);
+      // receivedFunds4.should.be.equal(true);
     });
 
     it("Lock prophecy claim flow", async function () {
@@ -542,35 +546,6 @@ contract("CosmosBridge", function (accounts) {
         }
       ).should.be.fulfilled;
 
-      await this.cosmosBridge.newProphecyClaim(
-        CLAIM_TYPE_LOCK,
-        this.cosmosSender,
-        this.cosmosSenderSequence,
-        this.ethereumReceiver,
-        this.nativeCosmosAssetDenom,
-        this.amountNativeCosmos,
-        {
-          from: userTwo
-        }
-      ).should.be.fulfilled;
-      
-      await this.cosmosBridge.newProphecyClaim(
-        CLAIM_TYPE_LOCK,
-        this.cosmosSender,
-        this.cosmosSenderSequence,
-        this.ethereumReceiver,
-        this.nativeCosmosAssetDenom,
-        this.amountNativeCosmos,
-        {
-          from: userThree
-        }
-      ).should.be.fulfilled;
-
-      const event = logs.find(e => e.event === "LogNewProphecyClaim");
-      const claimProphecyId = Number(event.args._prophecyID);
-      const claimCosmosSender = event.args._cosmosSender;
-      const claimEthereumReceiver = event.args._ethereumReceiver;
-
       // Check that the bridge token is a controlled bridge token
       const bridgeTokenAddr = await this.bridgeBank.getBridgeToken(
         this.prefixedNativeCosmosAssetDenom
@@ -580,16 +555,59 @@ contract("CosmosBridge", function (accounts) {
       // --------------------------------------------------------
       this.bridgeToken = await BridgeToken.at(bridgeTokenAddr);
 
+      await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_LOCK,
+        this.cosmosSender,
+        this.cosmosSenderSequence,
+        this.ethereumReceiver,
+        this.nativeCosmosAssetDenom.toLowerCase(),
+        this.amountNativeCosmos,
+        {
+          from: userTwo
+        }
+      ).should.be.fulfilled;
+
+      await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_LOCK,
+        this.cosmosSender,
+        this.cosmosSenderSequence,
+        this.ethereumReceiver,
+        this.nativeCosmosAssetDenom.toLowerCase(),
+        this.amountNativeCosmos,
+        {
+          from: userThree
+        }
+      ).should.be.fulfilled;
+
+      await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_LOCK,
+        this.cosmosSender,
+        this.cosmosSenderSequence,
+        this.ethereumReceiver,
+        this.nativeCosmosAssetDenom.toLowerCase(),
+        this.amountNativeCosmos,
+        {
+          from: userFour
+        }
+      ).should.be.fulfilled;
+
+      (await this.bridgeToken.balanceOf(this.ethereumReceiver)).toString().should.be.equal(this.amountNativeCosmos.toString());
+      const event = logs.find(e => e.event === "LogNewProphecyClaim");
+      const claimProphecyId = Number(event.args._prophecyID);
+      const claimCosmosSender = event.args._cosmosSender;
+      const claimEthereumReceiver = event.args._ethereumReceiver;
+
+
       const postRecipientBalance = bigInt(
         String(await this.bridgeToken.balanceOf(claimEthereumReceiver))
       );
 
-      var expectedBalance = bigInt(String(priorRecipientBalance)).plus(
-        String(this.amountNativeCosmos)
-      );
+      // var expectedBalance = bigInt(String(priorRecipientBalance)).plus(
+      //   String(this.amountNativeCosmos)
+      // );
 
-      const receivedFunds = expectedBalance.equals(postRecipientBalance);
-      receivedFunds.should.be.equal(true);
+      // const receivedFunds = expectedBalance.equals(postRecipientBalance);
+      // receivedFunds.should.be.equal(true);
 
       // --------------------------------------------------------
       //  Now we'll do a 2nd lock prophecy claim of the native cosmos asset
@@ -601,7 +619,7 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosSender,
         ++this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.nativeCosmosAssetDenom,
+        this.nativeCosmosAssetDenom.toLowerCase(),
         this.amountNativeCosmos,
         {
           from: userTwo
@@ -613,7 +631,7 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.nativeCosmosAssetDenom,
+        this.nativeCosmosAssetDenom.toLowerCase(),
         this.amountNativeCosmos,
         {
           from: userThree
@@ -625,13 +643,12 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosSender,
         this.cosmosSenderSequence,
         this.ethereumReceiver,
-        this.nativeCosmosAssetDenom,
+        this.nativeCosmosAssetDenom.toLowerCase(),
         this.amountNativeCosmos,
         {
           from: userFour
         }
       ).should.be.fulfilled;
-
 
       const event2 = logs2.find(e => e.event === "LogNewProphecyClaim");
       const claimProphecyId2 = Number(event2.args._prophecyID);

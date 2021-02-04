@@ -60,6 +60,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -111,6 +112,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -134,9 +136,9 @@ contract("BridgeBank", function (accounts) {
       // Fail to remove the token from the white list if not there yet.
       await expectRevert(
           this.bridgeBank.updateEthWhiteList(this.token.address, false, {from: operator}),
-          "Token not whitelisted"
+          "!whitelisted"
       );
-
+      
       // Add the token into white list
       await this.bridgeBank.updateEthWhiteList(this.token.address, true, {
         from: operator
@@ -166,7 +168,6 @@ contract("BridgeBank", function (accounts) {
           value: 0
         }
       ).should.be.fulfilled;
-
     });
 
     it("should return true if a sifchain address prefix is correct", async function () {
@@ -190,7 +191,7 @@ contract("BridgeBank", function (accounts) {
         this.sender,
         this.senderSequence,
         this.recipient,
-        this.symbol,
+        (this.symbol).toLowerCase(),
         this.amount, {
           from: userOne
         }
@@ -211,7 +212,7 @@ contract("BridgeBank", function (accounts) {
       // Fail to add token already there
       await expectRevert(
         this.bridgeBank.updateEthWhiteList(newToken.address, true, {from: operator}),
-        "Token already whitelisted"
+        "whitelisted"
       );
 
       (await this.bridgeBank.getTokenInEthWhiteList(newToken.address)).should.be.equal(false)
@@ -249,6 +250,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -337,6 +339,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -414,7 +417,7 @@ contract("BridgeBank", function (accounts) {
           value: 0
         }
       ),
-        "Invalid sif address length"
+        "Invalid len"
       );
     });
 
@@ -431,7 +434,7 @@ contract("BridgeBank", function (accounts) {
           value: 0
         }
       ),
-        "Invalid sif address prefix"
+        "Invalid sif address"
       );
     });
 
@@ -500,6 +503,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -517,7 +521,7 @@ contract("BridgeBank", function (accounts) {
       );
       this.senderSequence = 1;
       this.recipient = accounts[4];
-      this.ethereumSymbol = "ETH";
+      this.ethereumSymbol = "eth";
       this.ethereumToken = "0x0000000000000000000000000000000000000000";
       this.weiAmount = web3.utils.toWei("0.25", "ether");
       this.halfWeiAmount = web3.utils.toWei("0.125", "ether");
@@ -622,6 +626,29 @@ contract("BridgeBank", function (accounts) {
       );
     });
 
+    it("should revert when invalid symbol is given for burn prophecy", async function () {
+      this.nonce = 1;
+      // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
+      // console.log("getLockedFunds: ", (await this.bridgeBank.getLockedFunds("this.ethereumSymbol")).toString())
+      // console.log("getLockedTokenAddress: ", await this.bridgeBank.getLockedTokenAddress("this.ethereumSymbol"))
+      // console.log("users eth balance before: ", (await web3.eth.getBalance(this.recipient)).toString())
+      // console.log("bridgebank eth balance before: ", (await web3.eth.getBalance(this.bridgeBank.address)).toString())
+      
+      await expectRevert(
+        this.cosmosBridge.newProphecyClaim(
+          CLAIM_TYPE_BURN,
+          this.sender,
+          this.senderSequence,
+          this.recipient,
+          "this.ethereumSymbol",
+          1000000000, {
+            from: userOne
+          }
+        ),
+        "Invalid token address"
+      );
+    });
+
     it("should unlock and transfer ERC20 tokens upon the processing of a burn prophecy", async function () {
       // Submit a new prophecy claim to the CosmosBridge for the Ethereum deposit
       // Get Bridge and user's token balance prior to unlocking
@@ -640,7 +667,7 @@ contract("BridgeBank", function (accounts) {
         this.sender,
         this.senderSequence,
         this.recipient,
-        this.symbol,
+        this.symbol.toLowerCase(),
         this.amount, {
           from: userOne
         }
@@ -787,7 +814,7 @@ contract("BridgeBank", function (accounts) {
         this.sender,
         this.senderSequence,
         this.recipient,
-        this.symbol,
+        this.symbol.toLowerCase(),
         OVERLIMIT_TOKEN_AMOUNT, {
           from: userOne
         }
@@ -825,6 +852,7 @@ contract("BridgeBank", function (accounts) {
       this.bridgeBank = await deployProxy(BridgeBank, [
         operator,
         this.cosmosBridge.address,
+        operator,
         operator
       ],
       {unsafeAllowCustomTypes: true}
@@ -843,7 +871,7 @@ contract("BridgeBank", function (accounts) {
       // Fail to addExistingBridgeToken unless operator
       await expectRevert(
           this.bridgeBank.addExistingBridgeToken(this.token.address, {from: userOne}),
-          "Must be Owner."
+          "!owner"
       );
       // Attempt to lock tokens
       await this.bridgeBank.addExistingBridgeToken(this.token.address, {from: operator}).should.be.fulfilled;
@@ -904,7 +932,7 @@ contract("BridgeBank", function (accounts) {
         cosmosSender,
         senderSequence,
         operator,
-        symbol,
+        symbol.toLowerCase(),
         amount,
         {from: userOne}
       );  
@@ -913,7 +941,7 @@ contract("BridgeBank", function (accounts) {
         cosmosSender,
         senderSequence,
         operator,
-        symbol,
+        symbol.toLowerCase(),
         amount,
         {from: userTwo}
       );  
@@ -923,7 +951,7 @@ contract("BridgeBank", function (accounts) {
         cosmosSender,
         senderSequence,
         operator,
-        symbol,
+        symbol.toLowerCase(),
         amount,
       )).toString();
 

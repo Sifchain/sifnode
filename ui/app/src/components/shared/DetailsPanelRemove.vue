@@ -1,18 +1,15 @@
 <template>
   <div class="details">
     <div class="details-header">
+        <h4 class="text--left">You Should Receive:</h4>
+
       <div class="details-row">
-        <span>Withdraw Rowan</span>
-        <span>{{ nativeAssetAmount }}</span>
+          <AssetItem :symbol="nativeAssetSymbol" /> {{ nativeAssetAmount }}
       </div>
-      <div class="details-row">
-        <span>Withdraw {{ externalAssetSymbol }}</span>
-        <span>{{ externalAssetAmount }}</span>
+      <div class="details-row">    
+          <AssetItem :symbol="externalAssetSymbol" /> {{ externalAssetAmount }}
+        </div>
       </div>
-    </div>
-    <div class="details-body">
-      
-    </div>
   </div>
 </template>
 
@@ -32,11 +29,13 @@
 
   &-row {
     display: flex;
-    justify-content: space-between;
+    flex-direction: row;
+    align-items: center;
 
     span:last-child {
       text-align: right;
       color: $c_gray_900;
+      margin-left: auto;
     }
 
     span:first-child {
@@ -44,18 +43,26 @@
       font-weight: 400;
       text-align: left;
     }
+
+    img {
+      margin-right: 8px;
+    }
   }
 }
 </style>
 <script lang="ts">
 import { defineComponent } from "vue";
+import AssetItem from "@/components/shared/AssetItem.vue";
 
 export default defineComponent({
+  components: {
+    AssetItem,
+  },
   props: {
     nativeAssetSymbol: { type: String, default: ""},
+    nativeAssetAmount: { type: String, default: ""},
     externalAssetAmount: { type: String, default: ""},
     externalAssetSymbol: { type: String, default: ""},
-    nativeAssetAmount: { type: String, default: ""},
   },
 });
 </script>

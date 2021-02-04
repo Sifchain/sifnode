@@ -3,12 +3,13 @@ package txs
 // DONTCOVER
 
 import (
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 )
@@ -17,11 +18,12 @@ import (
 // information about an event on the Ethereum blockchain before relaying to the Bridge
 func RelayToCosmos(cdc *codec.Codec, moniker, password string, claim *types.EthBridgeClaim, cliCtx context.CLIContext,
 	txBldr authtypes.TxBuilder) error {
-	// Packages the claim as a Tendermint message
+
 	msg := ethbridge.NewMsgCreateEthBridgeClaim(*claim)
 
 	err := msg.ValidateBasic()
 	if err != nil {
+		fmt.Println("failed to get message from claim with:", err.Error())
 		return err
 	}
 

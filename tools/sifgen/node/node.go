@@ -27,7 +27,7 @@ type Node struct {
 	Moniker            string    `yaml:"moniker"`
 	Mnemonic           string    `yaml:"mnemonic"`
 	AdminOracleAddress string    `yaml:"admin_oracle_address"`
-	IPAddr             string    `yml:"ip_address"`
+	IPAddr             string    `yaml:"ip_address"`
 	Address            string    `yaml:"address"`
 	Password           string    `yaml:"password"`
 	BondAmount         string    `yaml:"-"`
@@ -57,6 +57,10 @@ func Reset(chainID string, nodeDir *string) error {
 }
 
 func (n *Node) Build() (*string, error) {
+	if _, err := os.Stat(fmt.Sprintf("%v/config/genesis.json", common.DefaultNodeHome)); err == nil {
+		return nil, nil
+	}
+
 	if err := n.setup(); err != nil {
 		return nil, err
 	}
@@ -205,6 +209,20 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
+	if err = genesis.ReplaceGovDepositParamsMinDeposit(common.DefaultNodeHome, common.StakeTokenDenom); err != nil {
+		return err
+	}
+
+	govDepositParamsMaxDepositPeriod := os.Getenv("GOV_DEPOSIT_PARAMS_MAX_DEPOSIT_PERIOD")
+	if err = genesis.ReplaceGovDepositParamsMaxDepositPeriod(common.DefaultNodeHome, govDepositParamsMaxDepositPeriod); err != nil {
+		return err
+	}
+
+	govVotingParamsVotingPeriod := os.Getenv("GOV_VOTING_PARAMS_VOTING_PERIOD")
+	if err = genesis.ReplaceGovVotingParamsVotingPeriod(common.DefaultNodeHome, govVotingParamsVotingPeriod); err != nil {
+		return err
+	}
+
 	err = n.replaceConfig()
 	if err != nil {
 		return err
@@ -339,7 +357,7 @@ func (n *Node) setupCosmovisor() error {
 		return err
 	}
 
-	if err := n.CLI.CreateDir(fmt.Sprintf("%v/cosmovisor/upgrade", app.DefaultNodeHome)); err != nil {
+	if err := n.CLI.CreateDir(fmt.Sprintf("%v/cosmovisor/upgrades", app.DefaultNodeHome)); err != nil {
 		return err
 	}
 

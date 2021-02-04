@@ -283,11 +283,11 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, error) {
 	var (
 		liquidityFee sdk.Uint
-		tradeSlip    sdk.Uint
+		priceImpact  sdk.Uint
 	)
 
 	liquidityFee = sdk.ZeroUint()
-	tradeSlip = sdk.ZeroUint()
+	priceImpact = sdk.ZeroUint()
 	sentAmount := msg.SentAmount
 
 	sentAsset := msg.SentAsset
@@ -329,7 +329,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		sentAmount = emitAmount
 		sentAsset = nativeAsset
 		liquidityFee = liquidityFee.Add(lp)
-		tradeSlip = tradeSlip.Add(ts)
+		priceImpact = priceImpact.Add(ts)
 	}
 	// If receiving  rowan , add directly to  Native balance  instead of fetching from rowan pool
 	if msg.ReceivedAsset == types.GetSettlementAsset() {
@@ -351,7 +351,22 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	}
 
 	if emitAmount.LT(msg.MinReceivingAmount) {
-		return nil, types.ErrReceivedAmountBelowExpected
+		ctx.EventManager().EmitEvents(sdk.Events{
+			sdk.NewEvent(
+				types.EventTypeSwapFailed,
+				sdk.NewAttribute(types.AttributeKeySwapAmount, emitAmount.String()),
+				sdk.NewAttribute(types.AttributeKeyThreshold, msg.MinReceivingAmount.String()),
+				sdk.NewAttribute(types.AttributeKeyInPool, inPool.String()),
+				sdk.NewAttribute(types.AttributeKeyOutPool, outPool.String()),
+				sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),
+			),
+			sdk.NewEvent(
+				sdk.EventTypeMessage,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+				sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer.String()),
+			),
+		})
+		return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 	}
 
 	err = keeper.FinalizeSwap(ctx, emitAmount.String(), finalPool, msg)
@@ -360,13 +375,13 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 	}
 	liquidityFee = liquidityFee.Add(lp)
-	tradeSlip = tradeSlip.Add(ts)
+	priceImpact = priceImpact.Add(ts)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeSwap,
 			sdk.NewAttribute(types.AttributeKeySwapAmount, emitAmount.String()),
 			sdk.NewAttribute(types.AttributeKeyLiquidityFee, liquidityFee.String()),
-			sdk.NewAttribute(types.AttributeKeyTradeSlip, tradeSlip.String()),
+			sdk.NewAttribute(types.AttributeKeyPriceImpact, priceImpact.String()),
 			sdk.NewAttribute(types.AttributeKeyInPool, inPool.String()),
 			sdk.NewAttribute(types.AttributeKeyOutPool, outPool.String()),
 			sdk.NewAttribute(types.AttributeKeyHeight, strconv.FormatInt(ctx.BlockHeight(), 10)),

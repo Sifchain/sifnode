@@ -1,4 +1,5 @@
 import {
+  BroadcastTxResult,
   coins,
   isBroadcastTxFailure,
   makeCosmoshubPath,
@@ -7,14 +8,22 @@ import {
 } from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
 import { debounce, filter } from "lodash";
-import { Address, Asset, AssetAmount, Network, TxParams } from "../../entities";
+import {
+  Address,
+  Asset,
+  AssetAmount,
+  Network,
+  TransactionStatus,
+  TxParams,
+} from "../../entities";
 
 import { Mnemonic } from "../../entities/Wallet";
-import { IWalletService } from "../IWalletService";
+
 import { SifClient, SifUnSignedClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 import getKeplrProvider from "./getKeplrProvider";
 import { KeplrChainConfig } from "../../utils/parseConfig";
+import { parseTxFailure } from "./parseTxFailure";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
@@ -24,12 +33,8 @@ export type SifServiceContext = {
   assets: Asset[];
 };
 type HandlerFn<T> = (a: T) => void;
-export type ISifService = IWalletService & {
-  getSupportedTokens: () => Asset[];
-  onSocketError: (handler: HandlerFn<any>) => void;
-  onTx: (handler: HandlerFn<any>) => void;
-  onNewBlock: (handler: HandlerFn<any>) => void;
-};
+
+export type ISifService = ReturnType<typeof createSifService>;
 
 /**
  * Constructor for SifService
@@ -42,7 +47,7 @@ export default function createSifService({
   sifWsUrl,
   keplrChainConfig,
   assets,
-}: SifServiceContext): ISifService {
+}: SifServiceContext) {
   const {} = sifAddrPrefix;
 
   // Reactive state for communicating state changes
@@ -277,7 +282,10 @@ export default function createSifService({
       }
     },
 
-    async signAndBroadcast(msg: Msg | Msg[], memo?: string) {
+    async signAndBroadcast(
+      msg: Msg | Msg[],
+      memo?: string
+    ): Promise<TransactionStatus> {
       if (!client) throw "No client. Please sign in.";
       try {
         const fee = {
@@ -286,19 +294,24 @@ export default function createSifService({
         };
 
         const msgArr = Array.isArray(msg) ? msg : [msg];
-        console.log("msgArr", msgArr);
 
-        const txHash = await client.signAndBroadcast(msgArr, fee, memo);
+        const result = await client.signAndBroadcast(msgArr, fee, memo);
 
-        if (isBroadcastTxFailure(txHash)) {
-          throw new Error(txHash.rawLog);
+        if (isBroadcastTxFailure(result)) {
+          /* istanbul ignore next */ // TODO: fix coverage
+          return parseTxFailure(result);
         }
 
         triggerUpdate();
 
-        return txHash;
+        return {
+          hash: result.transactionHash,
+          memo,
+          state: "accepted",
+        };
       } catch (err) {
-        console.error(err);
+        console.log("signAndBroadcast ERROR", err);
+        return parseTxFailure({ transactionHash: "", rawLog: err.message });
       }
     },
   };

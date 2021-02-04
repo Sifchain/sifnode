@@ -10,6 +10,7 @@ import { Fraction } from "../../entities/fraction/Fraction";
 
 import { SifUnSignedClient } from "../utils/SifClient";
 import { toPool } from "../utils/SifClient/toPool";
+import JSBI from "jsbi";
 
 export type ClpServiceContext = {
   nativeAsset: Asset;
@@ -24,8 +25,9 @@ type IClpService = {
   getPoolSymbolsByLiquidityProvider: (address: string) => Promise<string[]>;
   swap: (params: {
     fromAddress: string;
-    receivedAsset: Asset;
     sentAmount: AssetAmount;
+    receivedAsset: Asset;
+    minimumReceived: AssetAmount;
   }) => any;
   addLiquidity: (params: {
     fromAddress: string;
@@ -88,9 +90,7 @@ export default function createClpService({
           symbol: params.externalAssetAmount.asset.symbol,
           ticker: params.externalAssetAmount.asset.symbol,
         },
-        external_asset_amount: params.externalAssetAmount
-          .toBaseUnits()
-          .toString(),
+        external_asset_amount: params.externalAssetAmount.toBaseUnits().toString(),
         native_asset_amount: params.nativeAssetAmount.toBaseUnits().toString(),
         signer: params.fromAddress,
       });
@@ -126,18 +126,23 @@ export default function createClpService({
           symbol: params.sentAmount.asset.symbol,
           ticker: params.sentAmount.asset.symbol,
         },
+        min_receiving_amount: params.minimumReceived.toBaseUnits().toString(),
         signer: params.fromAddress,
       });
     },
     async getLiquidityProvider(params) {
       const response = await client.getLiquidityProvider(params);
       let asset: Asset;
-
+      const {
+        LiquidityProvider: liquidityProvider,
+        native_asset_balance,
+        external_asset_balance,
+      } = response.result;
       const {
         asset: { symbol },
         liquidity_provider_units,
         liquidity_provider_address,
-      } = response.result.LiquidityProvider;
+      } = liquidityProvider;
 
       try {
         asset = Asset.get(symbol);
@@ -152,8 +157,10 @@ export default function createClpService({
 
       return LiquidityProvider(
         asset,
-        new Fraction(liquidity_provider_units).divide("1000000000000000000"),
-        liquidity_provider_address
+        new Fraction(liquidity_provider_units),
+        liquidity_provider_address,
+        new Fraction(native_asset_balance),
+        new Fraction(external_asset_balance)
       );
     },
 
