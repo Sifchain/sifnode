@@ -33,7 +33,7 @@ spec:
           args: ["-c", "ebrelayer init {{ .Values.ebrelayer.args.nodeHost }} {{ .Values.ebrelayer.args.ethWebsocketAddress }} {{ .Values.ebrelayer.args.ethBridgeRegistryAddress }} $MONIKER \"{{ .Values.ebrelayer.args.mnemonic }}\" --chain-id $CHAINNET --rpc-url {{ .Values.ebrelayer.args.nodeHost }} --gas-prices {{ .Values.ebrelayer.args.gasPrices }}"]
           volumeMounts:
             - name: data
-              mountPath: /root/
+              mountPath: /relayerdb
           env:
             - name: MONIKER
               value: {{ .Values.ebrelayer.env.moniker }}
