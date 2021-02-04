@@ -40,6 +40,7 @@ import (
 const (
 	transactionInterval = 10 * time.Second
 	trailingBlocks      = 50
+	levelDbFile         = "relayerdb"
 )
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
@@ -178,18 +179,21 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	}
 	defer subHead.Unsubscribe()
 
-	db, err := leveldb.OpenFile("relayerdb", nil)
+	db, err := leveldb.OpenFile(levelDbFile, nil)
 	if err != nil {
 		log.Println("Error opening leveldb: ", err)
 		return
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Println("db.Close filed: ", err.Error())
+		}
+	}()
 
 	ethLevelDBKey := "ethereumLastProcessedBlock"
+	var lastProcessedBlock *big.Int
 
 	data, err := db.Get([]byte(ethLevelDBKey), nil)
-
-	var lastProcessedBlock *big.Int
 	if err != nil {
 		log.Println("Error getting the last ethereum block from level db", err)
 		lastProcessedBlock = big.NewInt(0)
@@ -234,7 +238,6 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				ToBlock:   endingBlock,
 				Addresses: []common.Address{bridgeBankAddress},
 			})
-
 			if err != nil {
 				log.Printf("Error getting events on block %d from bridgebank: %v", newHead.Number, err)
 				// if you have an error getting the logs from the block, continue and keep
@@ -242,7 +245,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				continue
 			}
 
-			// Assumption here is that we will repeat a failing block becaus we return if there is an error retrieving logs
+			// Assumption here is that we will repeat a failing block because we return if there is an error retrieving logs
 			log.Printf("Successfully received bridgebank events from block %d to %d ", lastProcessedBlock, endingBlock)
 
 			var events []types.EthereumEvent
