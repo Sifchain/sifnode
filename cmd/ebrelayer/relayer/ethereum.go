@@ -17,6 +17,7 @@ import (
 
 	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -38,9 +39,8 @@ import (
 
 const (
 	transactionInterval      = 10 * time.Second
+	trailingBlocks           = 50
 )
-
-// TODO: Move relay functionality out of EthereumSub into a new Relayer parent struct
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
 type EthereumSub struct {
@@ -178,7 +178,24 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	}
 	defer subHead.Unsubscribe()
 
-	lastProcessedBlock := big.NewInt(0)
+	db, err := leveldb.OpenFile("relayerdb", nil)
+	if err != nil {
+		log.Println("Error opening leveldb: ", err)
+		return
+	}
+	defer db.Close()
+
+	ethLevelDBKey := "ethereumLastProcessedBlock"
+
+	data, err := db.Get([]byte(ethLevelDBKey), nil)
+	
+	var lastProcessedBlock *big.Int
+	if err != nil {
+		log.Println("Error getting the last ethereum block from level db", err)
+		lastProcessedBlock = big.NewInt(0)
+	} else {
+		lastProcessedBlock = new(big.Int).SetBytes(data)
+	}
 
 	for {
 		select {
@@ -192,23 +209,26 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			return
 		case newHead := <-heads:
 			sub.Logger.Info(fmt.Sprintf("New header %d with hash %v", newHead.Number, newHead.Hash()))
-			
-			trailingBlocks := big.NewInt(4)
+
 			startingBigInt := newHead.Number
-			endingBlock := startingBigInt.Sub(startingBigInt, trailingBlocks)
-			
+			endingBlock := startingBigInt.Sub(startingBigInt, big.NewInt(trailingBlocks))
+
+			// if the current block number - trailing blocks is negative, don't bother
+			// going deeper into the function.
 			if endingBlock.Cmp(big.NewInt(0)) == -1 {
 				log.Println("Ending block index negative. Cancelling run")
-				return
+				continue
 			}
-			
+
+			// If the last processed block is the default (0), then go and set it to the difference of ending block minus 1
+			// The user who starts this must provide a valid last processed block
 			if lastProcessedBlock.Cmp(big.NewInt(0)) == 0 {
 				lastProcessedBlock.Sub(endingBlock, big.NewInt(1))
 			}
-			
+
 			sub.Logger.Info(fmt.Sprintf("Processing events from block %d to %d", lastProcessedBlock, endingBlock))
 
-			// query event data from this specific block
+			// query event data from this specific block range
 			ethLogs, err := client.FilterLogs(context.Background(), ethereum.FilterQuery{
 				FromBlock: lastProcessedBlock,
 				ToBlock:   endingBlock,
@@ -217,16 +237,16 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 
 			if err != nil {
 				log.Printf("Error getting events on block %d from bridgebank: %v", newHead.Number, err)
-				return
+				// if you have an error getting the logs from the block, continue and keep 
+				// the current last processed block so we keep retrying
+				continue
 			}
 
 			// Assumption here is that we will repeat a failing block becaus we return if there is an error retrieving logs
-			lastProcessedBlock = endingBlock
-			
 			log.Printf("Successfully received bridgebank events from block %d to %d ", lastProcessedBlock, endingBlock)
-
+			
 			var events []types.EthereumEvent
-
+			
 			// loop over ethlogs, and build an array of burn/lock events
 			for _, ethLog := range ethLogs {
 				log.Printf("Processed events from block %v", ethLog.BlockNumber)
@@ -241,12 +261,19 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				}
 				events = append(events, event)
 			}
-
+			
 			if len(events) > 0 {
 				if err := sub.handleEthereumEvent(events); err != nil {
 					log.Println("handleEthereumEvent failed: ", err.Error())
 				}
 				time.Sleep(transactionInterval)
+			}
+			// save the current ending block to the lastprocessed block to ensure we keep reading blocks sequentially
+			lastProcessedBlock = endingBlock
+			err = db.Put([]byte(ethLevelDBKey), []byte(lastProcessedBlock.Bytes()), nil)
+			if err != nil {
+				// if you can't write to leveldb, then error out as something is seriously amiss
+				log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
 			}
 		}
 	}
