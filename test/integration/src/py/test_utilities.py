@@ -107,8 +107,9 @@ cmdfile = open("/tmp/testcmds.txt", "w")
 
 
 def get_shell_output(command_line):
-    time.sleep(2)
     cmdfile.write(command_line)
+    if "sifnodecli" in command_line:
+        time.sleep(2)
     logging.debug(f"execute shell command:\n{command_line}")
     sub = subprocess.run(command_line, shell=True, capture_output=True)
     stdout_string = sub.stdout.decode("utf-8").rstrip()

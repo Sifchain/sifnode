@@ -26,7 +26,8 @@ def generate_minimal_test_account(
     request.ethereum_symbol = "eth"
     logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
     burn_lock_functions.transfer_ethereum_to_sifchain(request)
-    logging.info(f"created sifchain addr {new_sifaddr} with {test_utilities.display_currency_value(target_ceth_balance)} ceth")
+    logging.info(
+        f"created sifchain addr {new_sifaddr} with {test_utilities.display_currency_value(target_ceth_balance)} ceth")
     return request, credentials
 
 
@@ -51,7 +52,8 @@ def generate_test_account(
     )
 
     if target_rowan_balance > 0:
-        rowan_request: EthereumToSifchainTransferRequest = copy.deepcopy(rowan_source_integrationtest_env_transfer_request)
+        rowan_request: EthereumToSifchainTransferRequest = copy.deepcopy(
+            rowan_source_integrationtest_env_transfer_request)
         rowan_request.sifchain_destination_address = new_sifaddr
         rowan_request.amount = target_rowan_balance
         logging.debug(f"transfer {target_rowan_balance} to {new_sifaddr} from {rowan_request.sifchain_address}")
@@ -74,5 +76,13 @@ def generate_test_account(
     rowan_used = initial_rowan - ending_rowan
     rowan_fees = rowan_used - target_rowan_balance
     # logging.info(f"rowan fees from source is {rowan_fees}")
-    logging.info(f"created sifchain addr {new_sifaddr} with {test_utilities.display_currency_value(target_ceth_balance)} ceth and {test_utilities.display_currency_value(target_rowan_balance)} rowan")
+    logging.info(
+        f"created sifchain addr {new_sifaddr} with {test_utilities.display_currency_value(target_ceth_balance)} ceth and {test_utilities.display_currency_value(target_rowan_balance)} rowan")
     return request, credentials
+
+
+def create_new_sifaddr() -> str:
+    new_account_key = test_utilities.get_shell_output("uuidgen")
+    credentials = sifchain_cli_credentials_for_test(new_account_key)
+    new_addr = burn_lock_functions.create_new_sifaddr(credentials=credentials, keyname=new_account_key)
+    return new_addr["address"]
