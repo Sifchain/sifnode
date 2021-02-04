@@ -169,6 +169,7 @@ export function calculateExternalExternalSwapResult(
 // Need to use Big.js for sqrt calculation
 // Ok to accept a little precision loss as reverse swap amount can be rough
 export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
+  // Adding a check here because sqrt of a negative number will throw an exception
   if (S.eq("0") || Y.minus(S.times(4)).lt(Big("0"))) {
     return Big("0");
   }
@@ -179,7 +180,8 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
   const term3 = X.times(underRoot.sqrt());
   const numerator = term1.plus(term2).minus(term3);
 
-  if (numerator.lt(Big("0"))) {
+  // Check if numerator is > 0
+  if (numerator.lte(Big("0"))) {
     return Big("0");
   } else {
     const denominator = S.times(2);
