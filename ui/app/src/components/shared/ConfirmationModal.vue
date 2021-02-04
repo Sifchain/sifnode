@@ -81,6 +81,8 @@ export default defineComponent({
 
     // is the dialog open
     isOpen: Boolean,
+
+    onConfirmed: Function,
   },
 
   setup(props) {
@@ -104,6 +106,7 @@ export default defineComponent({
         }
 
         if (props.txStatus.state === "failed") return "failed";
+        return "failed";
       }),
     };
   },

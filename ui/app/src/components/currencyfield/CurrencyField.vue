@@ -26,6 +26,10 @@ export default defineComponent({
     selectable: { type: Boolean, default: true },
     max: { type: Boolean, default: false },
     symbolFixed: { type: Boolean, default: false },
+
+    // Need to trick TS
+    onBlur: Function,
+    onMaxclicked: Function,
   },
   inheritAttrs: false,
   emits: [

@@ -17,6 +17,8 @@ export default defineComponent({
     connectType: String as PropType<
       "connectToAny" | "connectToAll" | "connectToSif"
     >,
+    // TS
+    onNextstepclick: Function,
   },
   emits: ["nextstepclick"],
   setup(_, { emit }) {

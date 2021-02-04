@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="tsx">
 import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { computed, ref, toRefs } from "@vue/reactivity";
@@ -30,18 +30,6 @@ function capitalize(value: string) {
 }
 
 export default defineComponent({
-  components: {
-    Layout,
-    CurrencyField,
-    RaisedPanel,
-    Label,
-    SifInput,
-    DetailsTable,
-    ActionsPanel,
-    RaisedPanelColumn,
-    ConfirmationModal,
-  },
-
   setup(props, context) {
     const { store, actions } = useCore();
     const router = useRouter();
@@ -52,7 +40,6 @@ export default defineComponent({
     });
 
     const transactionState = ref<ConfirmState>("selecting");
-    const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
 
     // const symbol = ref<string | null>(null);
@@ -136,177 +123,190 @@ export default defineComponent({
     }
 
     const confirmationModalOpen = ref(false);
+    function handleMaxClicked() {
+      if (!accountBalance.value) return;
 
-    const pageState = {
-      currentTxStatus,
-      confirmationModalOpen,
-      mode,
-      modeLabel: computed(() => capitalize(mode.value)),
-      symbol,
-      symbolLabel: useAssetItem(symbol).label,
-      amount,
-      address,
-      feeAmount: computed(() => {
-        return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
-      }),
-      handleBlur: () => {
-        amount.value = trimZeros(amount.value);
-      },
-      handleSelectSymbol: () => {},
-      handleMaxClicked: () => {
-        if (!accountBalance.value) return;
+      amount.value = accountBalance.value.toFixed();
+    }
 
-        amount.value = accountBalance.value.toFixed();
-      },
-      handleAmountUpdated: (newAmount: string) => {
-        amount.value = newAmount;
-      },
-      handleActionClicked: () => {
-        transactionState.value = "confirming";
-        confirmationModalOpen.value = true;
-      },
-      handlePegRequested,
-      handleUnpegRequested,
-      oppositeSymbol,
-      formatSymbol,
-      requestTransactionModalClose,
-      transactionState,
-      // transactionStateMsg,
-      // transactionHash,
-      nextStepAllowed,
-      nextStepMessage: computed(() => {
-        return mode.value === "peg" ? "Peg" : "Unpeg";
-      }),
+    function handleBlur() {
+      amount.value = trimZeros(amount.value);
+    }
+
+    function handleAmountUpdated(newAmount: string) {
+      amount.value = newAmount;
+    }
+    const modeLabel = computed(() => capitalize(mode.value));
+    const symbolLabel = useAssetItem(symbol).label;
+
+    const feeAmount = computed(() => {
+      return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
+    });
+
+    function handleActionClicked() {
+      transactionState.value = "confirming";
+      confirmationModalOpen.value = true;
+    }
+
+    const nextStepMessage = computed(() => {
+      return mode.value === "peg" ? "Peg" : "Unpeg";
+    });
+
+    return () => {
+      return (
+        <Layout
+          title={mode.value === "peg" ? "Peg Asset" : "Unpeg Asset"}
+          backLink="/peg"
+        >
+          <div class="vspace">
+            <CurrencyField
+              amount={amount.value}
+              {...{ "onUpdate:amount": handleAmountUpdated }}
+              max
+              selectable
+              symbol={symbol.value}
+              symbolFixed
+              onBlur={handleBlur}
+              onMaxclicked={handleMaxClicked}
+              label="Amount"
+            />
+            <RaisedPanel>
+              {mode.value === "peg" ? (
+                <RaisedPanelColumn>
+                  <Label>Sifchain Recipient Address</Label>
+                  <SifInput disabled v-model={address} />
+                </RaisedPanelColumn>
+              ) : (
+                <RaisedPanelColumn>
+                  <Label>Ethereum Recipient Address</Label>
+                  <SifInput
+                    v-model={address.value}
+                    placeholder="Eg. 0xeaf65652e380528fffbb9fc276dd8ef608931e3c"
+                  />
+                </RaisedPanelColumn>
+              )}
+            </RaisedPanel>
+            {mode.value === "unpeg" && (
+              <DetailsTable
+                header={{
+                  show: amount.value !== "0.0",
+                  label: `${modeLabel.value} Amount`,
+                  data: `${amount.value} ${symbolLabel.value}`,
+                }}
+                rows={[
+                  {
+                    show: !!feeAmount.value,
+                    label: "Transaction Fee",
+                    data: `${feeAmount.value.toFixed(8)} cETH`,
+                  },
+                ]}
+              />
+            )}
+            <ActionsPanel
+              connectType="connectToAll"
+              onNextstepclick={handleActionClicked}
+              nextStepAllowed={nextStepAllowed.value}
+              nextStepMessage={nextStepMessage.value}
+            />
+            {mode.value === "peg" && (
+              <ConfirmationModal
+                isOpen={confirmationModalOpen.value}
+                onConfirmed={handlePegRequested}
+                requestClose={requestTransactionModalClose}
+                txStatus={currentTxStatus.value ?? undefined}
+                confirmButtonText="Confirm Peg"
+                title="Peg token to Sifchain"
+                v-slots={{
+                  common: () => (
+                    <p class="text--normal">
+                      Pegging{" "}
+                      <span class="text--bold">
+                        {{ amount }} {{ symbol }}
+                      </span>
+                    </p>
+                  ),
+                  selecting: () => (
+                    <>
+                      <DetailsTable
+                        header={{
+                          show: amount.value !== "0.0",
+                          label: `${modeLabel.value} Amount`,
+                          data: `${amount.value} ${formatSymbol(symbol.value)}`,
+                        }}
+                        rows={[
+                          {
+                            show: true,
+                            label: "Direction",
+                            data: `${formatSymbol(
+                              symbol.value
+                            )} → ${formatSymbol(oppositeSymbol.value)}`,
+                          },
+                        ]}
+                      />
+                      <br />
+                      <p class="text--normal">
+                        *Please note your funds will be available for use on
+                        Sifchain only after 50 Ethereum block confirmations.
+                        This can take upwards of 20 minutes.
+                      </p>
+                    </>
+                  ),
+                }}
+              ></ConfirmationModal>
+            )}
+
+            {mode.value === "unpeg" && (
+              <ConfirmationModal
+                isOpen={confirmationModalOpen.value}
+                onConfirmed={handlePegRequested}
+                requestClose={requestTransactionModalClose}
+                txStatus={currentTxStatus.value ?? undefined}
+                confirmButtonText="Confirm Unpeg"
+                title="Unpeg token from Sifchain"
+                v-slots={{
+                  common: () => (
+                    <p class="text--normal">
+                      Unpegging{" "}
+                      <span class="text--bold">
+                        {{ amount }} {{ symbol }}
+                      </span>
+                    </p>
+                  ),
+                  selecting: () => (
+                    <>
+                      <DetailsTable
+                        header={{
+                          show: amount.value !== "0.0",
+                          label: `${modeLabel.value} Amount`,
+                          data: `${amount.value} ${formatSymbol(symbol.value)}`,
+                        }}
+                        rows={[
+                          {
+                            show: true,
+                            label: "Direction",
+                            data: `${formatSymbol(
+                              symbol.value
+                            )} → ${formatSymbol(oppositeSymbol.value)}`,
+                          },
+                          {
+                            show: !!feeAmount,
+                            label: "Transaction Fee",
+                            data: `${feeAmount.value.toFixed(8)} cETH`,
+                          },
+                        ]}
+                      />
+                    </>
+                  ),
+                }}
+              ></ConfirmationModal>
+            )}
+          </div>
+        </Layout>
+      );
     };
-    (window as any).pageState = pageState;
-    return pageState;
   },
 });
 </script>
-
-<template>
-  <Layout :title="mode === 'peg' ? 'Peg Asset' : 'Unpeg Asset'" backLink="/peg">
-    <div class="vspace">
-      <CurrencyField
-        :amount="amount"
-        :max="true"
-        :selectable="true"
-        :symbol="symbol"
-        :symbolFixed="true"
-        @blur="handleBlur"
-        @maxclicked="handleMaxClicked"
-        @update:amount="handleAmountUpdated"
-        label="Amount"
-      />
-      <RaisedPanel>
-        <RaisedPanelColumn v-if="mode === 'peg'">
-          <Label>Sifchain Recipient Address</Label>
-          <SifInput disabled v-model="address" />
-        </RaisedPanelColumn>
-        <RaisedPanelColumn v-if="mode === 'unpeg'">
-          <Label>Ethereum Recipient Address</Label>
-          <SifInput
-            v-model="address"
-            placeholder="Eg. 0xeaf65652e380528fffbb9fc276dd8ef608931e3c"
-          />
-        </RaisedPanelColumn>
-      </RaisedPanel>
-      <DetailsTable
-        v-if="mode === 'unpeg'"
-        :header="{
-          show: amount !== '0.0',
-          label: `${modeLabel} Amount`,
-          data: `${amount} ${symbolLabel}`,
-        }"
-        :rows="[
-          {
-            show: !!feeAmount,
-            label: 'Transaction Fee',
-            data: `${feeAmount.toFixed(8)} cETH`,
-          },
-        ]"
-      />
-      <ActionsPanel
-        connectType="connectToAll"
-        @nextstepclick="handleActionClicked"
-        :nextStepAllowed="nextStepAllowed"
-        :nextStepMessage="nextStepMessage"
-      />
-    </div>
-    <ConfirmationModal
-      v-if="mode === 'peg'"
-      :isOpen="confirmationModalOpen"
-      @confirmed="handlePegRequested"
-      :requestClose="requestTransactionModalClose"
-      :txStatus="currentTxStatus"
-      confirmButtonText="Confirm Peg"
-      :title="`Peg token to Sifchain`"
-    >
-      <template v-slot:selecting>
-        <DetailsTable
-          :header="{
-            show: amount !== '0.0',
-            label: `${modeLabel} Amount`,
-            data: `${amount} ${formatSymbol(symbol)}`,
-          }"
-          :rows="[
-            {
-              show: true,
-              label: 'Direction',
-              data: `${formatSymbol(symbol)} → ${formatSymbol(oppositeSymbol)}`,
-            },
-          ]"
-        />
-        <br />
-        <p class="text--normal">
-          *Please note your funds will be available for use on Sifchain only
-          after 50 Ethereum block confirmations. This can take upwards of 20
-          minutes.
-        </p>
-      </template>
-      <template v-slot:common>
-        <p class="text--normal">
-          Pegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
-        </p>
-      </template>
-    </ConfirmationModal>
-    <ConfirmationModal
-      v-if="mode === 'unpeg'"
-      :isOpen="confirmationModalOpen"
-      @confirmed="handleUnpegRequested"
-      :requestClose="requestTransactionModalClose"
-      confirmButtonText="Confirm Unpeg"
-      title="Unpeg token from Sifchain"
-    >
-      <template v-slot:selecting>
-        <DetailsTable
-          :header="{
-            show: amount !== '0.0',
-            label: `${modeLabel} Amount`,
-            data: `${amount} ${formatSymbol(symbol)}`,
-          }"
-          :rows="[
-            {
-              show: true,
-              label: 'Direction',
-              data: `${formatSymbol(symbol)} → ${formatSymbol(oppositeSymbol)}`,
-            },
-            {
-              show: !!feeAmount,
-              label: 'Transaction Fee',
-              data: `${feeAmount.toFixed(8)} cETH`,
-            },
-          ]"
-        />
-      </template>
-      <template v-slot:common>
-        <p class="text--normal">
-          Unpegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
-        </p>
-      </template>
-    </ConfirmationModal>
-  </Layout>
-</template>
 
 <style lang="scss" scoped>
 .vspace {
