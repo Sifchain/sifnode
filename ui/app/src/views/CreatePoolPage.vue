@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import Layout from "@/components/layout/Layout.vue";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
@@ -14,11 +14,14 @@ import FatInfoTable from "@/components/shared/FatInfoTable.vue";
 import FatInfoTableCell from "@/components/shared/FatInfoTableCell.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
-import { toConfirmState } from "./utils/toConfirmState";
-import { ConfirmState } from "../types";
-import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
+import ModalView from "@/components/shared/ModalView.vue";
+import ConfirmationModalAsk from "../components/shared/ConfirmationModalAsk.vue";
+import ConfirmationModalSwipe from "../components/shared/ConfirmationModalSwipe.vue";
+import SwipeMessage from "@/components/shared/ConfirmationModalSwipeMessage.vue";
 import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
-import { formatNumber, formatPercentage } from "@/components/shared/utils";
+import { formatNumber } from "@/components/shared/utils";
+
+type PageStates = "idle" | "confirm" | "sign" | "success" | "fail" | "reject";
 
 export default defineComponent({
   components: {
@@ -27,7 +30,10 @@ export default defineComponent({
     Modal,
     CurrencyPairPanel,
     SelectTokenDialogSif,
-    ConfirmationModal,
+    ModalView,
+    ConfirmationModalAsk,
+    ConfirmationModalSwipe,
+    SwipeMessage,
     DetailsPanelPool,
     FatInfoTable,
     FatInfoTableCell,
@@ -36,8 +42,8 @@ export default defineComponent({
   setup() {
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
-    const transactionState = ref<ConfirmState | string>("selecting");
-    const transactionStateMsg = ref<string>("");
+    const pageState = ref<PageStates>("idle");
+    const errorMessage = ref<string | null>(null);
     const transactionHash = ref<string | null>(null);
     const router = useRouter();
     const route = useRoute();
@@ -45,6 +51,14 @@ export default defineComponent({
     const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
 
     const toSymbol = ref("rowan");
+
+    watch(pageState, (newState, prevState) => {
+      // When we are moving from success to idle head back to pools
+      if (prevState === "success" && newState === "idle") {
+        router.push("/pool");
+        clearAmounts();
+      }
+    });
 
     fromSymbol.value = route.params.externalAsset
       ? route.params.externalAsset.toString()
@@ -97,33 +111,39 @@ export default defineComponent({
       if (!tokenBFieldAmount.value)
         throw new Error("to field amount is not defined");
 
-      transactionState.value = "confirming";
+      pageState.value = "confirm";
     }
 
-    async function handleAskConfirmClicked() {
+    async function handleAddLiquidityClicked() {
       if (!tokenAFieldAmount.value)
         throw new Error("Token A field amount is not defined");
       if (!tokenBFieldAmount.value)
         throw new Error("Token B field amount is not defined");
 
-      transactionState.value = "signing";
+      pageState.value = "sign";
       const tx = await actions.clp.addLiquidity(
         tokenBFieldAmount.value,
         tokenAFieldAmount.value
       );
 
       transactionHash.value = tx.hash;
-      transactionState.value = toConfirmState(tx.state); // TODO: align states
-      transactionStateMsg.value = tx.memo ?? "";
+
+      if (tx.state === "failed") {
+        pageState.value = "fail";
+        errorMessage.value = tx.memo ?? "The transaction failed";
+      }
+
+      if (tx.state === "rejected") {
+        pageState.value = "reject";
+        errorMessage.value = tx.memo ?? "You rejected the transaction";
+      }
+
+      pageState.value = "success";
+      errorMessage.value = "";
     }
 
     function requestTransactionModalClose() {
-      if (transactionState.value === "confirmed") {
-        router.push("/pool");
-        clearAmounts();
-      } else {
-        transactionState.value = "selecting";
-      }
+      pageState.value = "idle";
     }
 
     return {
@@ -178,15 +198,14 @@ export default defineComponent({
 
       handleNextStepClicked,
 
-      handleAskConfirmClicked,
+      handleAddLiquidityClicked,
 
       transactionHash,
 
       requestTransactionModalClose,
 
-      transactionState,
-      transactionStateMsg,
-
+      pageState,
+      errorMessage,
       handleBlur() {
         selectedField.value = null;
       },
@@ -223,7 +242,11 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" :backLink="`${fromSymbol ? '/pool/' + fromSymbol : '/pool' }`" :title="title">
+  <Layout
+    class="pool"
+    :backLink="`${fromSymbol ? '/pool/' + fromSymbol : '/pool'}`"
+    :title="title"
+  >
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel
@@ -309,17 +332,18 @@ export default defineComponent({
       :nextStepAllowed="nextStepAllowed"
       :nextStepMessage="nextStepMessage"
     />
-    <ConfirmationModal
+    <ModalView
+      :isOpen="pageState !== 'idle'"
       :requestClose="requestTransactionModalClose"
-      @confirmed="handleAskConfirmClicked"
-      :state="transactionState"
-      :transactionHash="transactionHash"
-      :transactionStateMsg="transactionStateMsg"
-      confirmButtonText="Confirm Supply"
-      title="You are depositing"
     >
-      <template v-slot:selecting>
-        <div>
+      <ConfirmationModalAsk
+        v-if="pageState === 'confirm'"
+        confirmButtonText="Create Pool"
+        :onConfirmed="handleAddLiquidityClicked"
+        :title="
+          mode === 'peg' ? 'Peg token to Sifchain' : 'Unpeg token from Sifchain'
+        "
+        ><div>
           <DetailsPanelPool
             class="details"
             :fromTokenLabel="fromSymbol"
@@ -331,17 +355,85 @@ export default defineComponent({
             :shareOfPool="shareOfPoolPercent"
           />
         </div>
-      </template>
+      </ConfirmationModalAsk>
+      <ConfirmationModalSwipe
+        v-else
+        :state="pageState"
+        :loaderState="{
+          success: { success: true, failed: false },
+          fail: { success: false, failed: true },
+          reject: { success: false, failed: true },
+        }"
+      >
+        <template #sign>
+          <SwipeMessage
+            title="Waiting for confirmation"
+            sub="Confirm this transaction in your wallet"
+          >
+            <p class="text--normal">
+              Supplying
+              <span class="text--bold">{{ fromAmount }} {{ fromSymbol }}</span>
+              and
+              <span class="text--bold">{{ toAmount }} {{ toSymbol }}</span>
+            </p>
+          </SwipeMessage>
+        </template>
+        <template #success>
+          <SwipeMessage title="Transaction Submitted"
+            ><template #sub>
+              <a
+                v-if="mode === 'peg'"
+                class="anchor"
+                target="_blank"
+                :href="`https://blockexplorer-${config.sifChainId}.sifchain.finance/transactions/${transactionHash}`"
+              >
+                View transaction on Block Explorer
+              </a>
 
-      <template v-slot:common>
-        <p class="text--normal">
-          Supplying
-          <span class="text--bold">{{ fromAmount }} {{ fromSymbol }}</span>
-          and
-          <span class="text--bold">{{ toAmount }} {{ toSymbol }}</span>
-        </p>
-      </template>
-    </ConfirmationModal>
+              <a
+                v-else
+                class="anchor"
+                target="_blank"
+                :href="`https://etherscan.io/tx/${transactionHash}`"
+              >
+                View transaction on Block Explorer
+              </a>
+            </template>
+
+            <template #default
+              ><p class="text--normal">
+                Supplying
+                <span class="text--bold"
+                  >{{ fromAmount }} {{ fromSymbol }}</span
+                >
+                and
+                <span class="text--bold">{{ toAmount }} {{ toSymbol }}</span>
+              </p></template
+            >
+          </SwipeMessage>
+        </template>
+        <template #fail>
+          <SwipeMessage title="Transaction Failed" :sub="errorMessage">
+            <p class="text--normal">
+              Supplying
+              <span class="text--bold">{{ fromAmount }} {{ fromSymbol }}</span>
+              and
+              <span class="text--bold">{{ toAmount }} {{ toSymbol }}</span>
+            </p>
+          </SwipeMessage>
+        </template>
+        <template #reject>
+          <SwipeMessage title="Transaction Rejected" :sub="errorMessage">
+            <p class="text--normal">
+              Supplying
+              <span class="text--bold">{{ fromAmount }} {{ fromSymbol }}</span>
+              and
+              <span class="text--bold">{{ toAmount }} {{ toSymbol }}</span>
+            </p>
+          </SwipeMessage>
+        </template>
+      </ConfirmationModalSwipe>
+    </ModalView>
   </Layout>
 </template>
 
@@ -349,5 +441,8 @@ export default defineComponent({
 .number {
   font-size: 16px;
   font-weight: bold;
+}
+.anchor {
+  color: $c_black;
 }
 </style>

@@ -5,48 +5,38 @@ import { useCore } from "@/hooks/useCore";
 // import SifButton from "@/components/shared/SifButton.vue";
 import ConfirmationModalSwipeOuter from "./ConfirmationModalSwipeOuter.vue";
 import ConfirmationModalSwipePanel from "./ConfirmationModalSwipePanel.vue";
+import SwipeTransition from "./SwipeTransition.vue";
+
+type LoaderState = {
+  [s: string]: { success: boolean; failed: boolean };
+};
 
 export default defineComponent({
   props: {
-    state: String,
-    loaderState: Object as PropType<{
-      [s: string]: { success: boolean; failed: boolean };
-    }>,
+    state: { type: String, required: true },
+    loaderState: {
+      type: Object as PropType<LoaderState>,
+      required: true,
+    },
   },
 
   setup(props, context) {
-    // const { config } = useCore();
-    const stateMap = computed(() => {
-      if (!props.loaderState || !props.state) return null;
-
-      return props.loaderState[props.state];
-    });
-    const success = computed(() => {
-      if (!stateMap.value) return false;
-
-      return stateMap.value.success || false;
-    });
-
-    const failed = computed(() => {
-      if (!stateMap.value) return false;
-
-      return stateMap.value.failed || false;
-    });
-
     return () => {
+      const stateMap = props.loaderState[props.state];
+
       return (
         <ConfirmationModalSwipeOuter
-          success={success.value}
-          failed={failed.value}
+          success={!!stateMap?.success}
+          failed={!!stateMap?.failed}
         >
           {Object.entries(context.slots).map(([name, slotFn]) => {
             if (!slotFn) return null;
             return (
-              <Transition name="swipe">
+              <SwipeTransition>
                 <ConfirmationModalSwipePanel v-show={props.state === name}>
                   {slotFn()}
                 </ConfirmationModalSwipePanel>
-              </Transition>
+              </SwipeTransition>
             );
           })}
         </ConfirmationModalSwipeOuter>
@@ -55,17 +45,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style lang="scss">
-.swipe-enter-active,
-.swipe-leave-active {
-  transition: transform 0.5s ease-out;
-}
-
-.swipe-enter-from {
-  transform: translateX(100%);
-}
-.swipe-leave-to {
-  transform: translateX(-100%);
-}
-</style>

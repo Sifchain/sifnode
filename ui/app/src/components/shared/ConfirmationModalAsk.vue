@@ -3,7 +3,7 @@
     <div class="ask-wrapper">
       <h3 class="title mb-10">{{ title }}</h3>
       <div class="ask-body">
-        <slot name="body"></slot>
+        <slot></slot>
       </div>
       <SifButton
         block

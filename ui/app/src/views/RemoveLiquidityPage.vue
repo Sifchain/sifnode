@@ -10,10 +10,13 @@ import { computed, effect, Ref, toRef } from "@vue/reactivity";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
 import Slider from "@/components/shared/Slider.vue";
-import { toConfirmState } from "./utils/toConfirmState";
-import { ConfirmState } from "../types";
-import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
+import ConfirmationModalAsk from "../components/shared/ConfirmationModalAsk.vue";
+import ConfirmationModalSwipe from "../components/shared/ConfirmationModalSwipe.vue";
 import DetailsPanelRemove from "@/components/shared/DetailsPanelRemove.vue";
+import SwipeMessage from "@/components/shared/ConfirmationModalSwipeMessage.vue";
+import ModalView from "@/components/shared/ModalView.vue";
+
+type PageStates = "idle" | "confirm" | "sign" | "success" | "fail" | "reject";
 
 export default defineComponent({
   components: {
@@ -21,14 +24,18 @@ export default defineComponent({
     Layout,
     ActionsPanel,
     Slider,
-    ConfirmationModal,
+    ConfirmationModalAsk,
+    ConfirmationModalSwipe,
+    SwipeMessage,
     DetailsPanelRemove,
+    ModalView,
   },
   setup() {
     const { store, actions, poolFinder, api } = useCore();
     const route = useRoute();
     const router = useRouter();
-    const transactionState = ref<ConfirmState>("selecting");
+    const pageState = ref<PageStates>("idle");
+    // const pageState = ref<ConfirmState>("selecting");
     const transactionHash = ref<string | null>(null);
     const transactionStateMsg = ref<string>("");
     const asymmetry = ref("0");
@@ -39,6 +46,13 @@ export default defineComponent({
     );
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
+    });
+
+    watch(pageState, (newState, prevState) => {
+      // When we are moving from success to idle head back to peg
+      if (prevState === "success" && newState === "idle") {
+        router.push("/pool");
+      }
     });
 
     const liquidityProvider = ref(null) as Ref<LiquidityProvider | null>;
@@ -107,7 +121,7 @@ export default defineComponent({
         )
           return;
 
-        transactionState.value = "confirming";
+        pageState.value = "confirm";
       },
       async handleAskConfirmClicked() {
         if (
@@ -117,23 +131,32 @@ export default defineComponent({
         )
           return;
 
-        transactionState.value = "signing";
+        pageState.value = "sign";
+
         const tx = await actions.clp.removeLiquidity(
           Asset.get(externalAssetSymbol.value),
           wBasisPoints.value,
           asymmetry.value
         );
+
         transactionHash.value = tx.hash;
-        transactionState.value = toConfirmState(tx.state); // TODO: align states
-        transactionStateMsg.value = tx.memo ?? "";
+
+        if (tx.state === "failed") {
+          pageState.value = "fail";
+          transactionStateMsg.value = tx.memo ?? "The transaction failed";
+        }
+
+        if (tx.state === "rejected") {
+          pageState.value = "reject";
+          transactionStateMsg.value = tx.memo ?? "You rejected the transaction";
+        }
+
+        pageState.value = "success";
+        transactionStateMsg.value = "";
       },
 
       requestTransactionModalClose() {
-        if (transactionState.value === "confirmed") {
-          router.push("/pool");
-        } else {
-          transactionState.value = "selecting";
-        }
+        pageState.value = "idle";
       },
       PoolState,
       wBasisPoints,
@@ -143,7 +166,7 @@ export default defineComponent({
       withdrawNativeAssetAmount,
       connectedText,
       externalAssetSymbol,
-      transactionState,
+      pageState,
       transactionHash,
     };
   },
@@ -212,18 +235,16 @@ export default defineComponent({
       :nextStepAllowed="nextStepAllowed"
       :nextStepMessage="nextStepMessage"
     />
-
-    <ConfirmationModal
+    <ModalView
+      :isOpen="pageState !== 'idle'"
       :requestClose="requestTransactionModalClose"
-      @confirmed="handleAskConfirmClicked"
-      :state="transactionState"
-      :transactionHash="transactionHash"
-      :transactionStateMsg="transactionStateMsg"
-      confirmButtonText="Confirm Withdrawal"
-      title="You are withdrawing"
     >
-      <template v-slot:selecting>
-        <div>
+      <ConfirmationModalAsk
+        v-if="pageState === 'confirm'"
+        :onConfirmed="handleAskConfirmClicked"
+        confirmButtonText="Confirm Withdrawal"
+        title="You are withdrawing"
+        ><div>
           <DetailsPanelRemove
             class="details"
             :externalAssetSymbol="externalAssetSymbol"
@@ -232,25 +253,116 @@ export default defineComponent({
             :nativeAssetAmount="withdrawNativeAssetAmount"
           />
         </div>
-      </template>
+      </ConfirmationModalAsk>
+      <ConfirmationModalSwipe
+        v-else
+        :state="pageState"
+        :loaderState="{
+          success: { success: true, failed: false },
+          fail: { success: false, failed: true },
+          reject: { success: false, failed: true },
+        }"
+      >
+        <template #sign>
+          <SwipeMessage
+            title="Waiting for confirmation"
+            sub="Confirm this transaction in your wallet"
+          >
+            <p class="text--normal">
+              You should receive
+              <span class="text--bold"
+                >{{ withdrawExternalAssetAmount }}
+                {{ externalAssetSymbol.toUpperCase().replace("C", "c") }}</span
+              >
+              and
+              <span class="text--bold"
+                >{{ withdrawNativeAssetAmount }}
+                {{ nativeAssetSymbol.toUpperCase() }}</span
+              >
+            </p>
+          </SwipeMessage>
+        </template>
+        <template #success>
+          <SwipeMessage title="Transaction Submitted"
+            ><template #sub>
+              <a
+                v-if="mode === 'peg'"
+                class="anchor"
+                target="_blank"
+                :href="`https://blockexplorer-${config.sifChainId}.sifchain.finance/transactions/${transactionHash}`"
+              >
+                View transaction on Block Explorer
+              </a>
 
-      <template v-slot:common>
-        <p class="text--normal">
-          You should receive
-          <span class="text--bold"
-            >{{ withdrawExternalAssetAmount }} {{ externalAssetSymbol.toUpperCase().replace("C", "c") }}</span
-          >
-          and
-          <span class="text--bold"
-            >{{ withdrawNativeAssetAmount }} {{ nativeAssetSymbol.toUpperCase() }}</span
-          >
-        </p>
-      </template>
-    </ConfirmationModal>
+              <a
+                v-else
+                class="anchor"
+                target="_blank"
+                :href="`https://etherscan.io/tx/${transactionHash}`"
+              >
+                View transaction on Block Explorer
+              </a>
+            </template>
+
+            <template #default>
+              <p class="text--normal">
+                You should receive
+                <span class="text--bold"
+                  >{{ withdrawExternalAssetAmount }}
+                  {{
+                    externalAssetSymbol.toUpperCase().replace("C", "c")
+                  }}</span
+                >
+                and
+                <span class="text--bold"
+                  >{{ withdrawNativeAssetAmount }}
+                  {{ nativeAssetSymbol.toUpperCase() }}</span
+                >
+              </p></template
+            >
+          </SwipeMessage>
+        </template>
+        <template #fail>
+          <SwipeMessage title="Transaction Failed" :sub="errorMessage">
+            <p class="text--normal">
+              You should receive
+              <span class="text--bold"
+                >{{ withdrawExternalAssetAmount }}
+                {{ externalAssetSymbol.toUpperCase().replace("C", "c") }}</span
+              >
+              and
+              <span class="text--bold"
+                >{{ withdrawNativeAssetAmount }}
+                {{ nativeAssetSymbol.toUpperCase() }}</span
+              >
+            </p>
+          </SwipeMessage>
+        </template>
+        <template #reject>
+          <SwipeMessage title="Transaction Rejected" :sub="errorMessage">
+            <p class="text--normal">
+              You should receive
+              <span class="text--bold"
+                >{{ withdrawExternalAssetAmount }}
+                {{ externalAssetSymbol.toUpperCase().replace("C", "c") }}</span
+              >
+              and
+              <span class="text--bold"
+                >{{ withdrawNativeAssetAmount }}
+                {{ nativeAssetSymbol.toUpperCase() }}</span
+              >
+            </p>
+          </SwipeMessage>
+        </template>
+      </ConfirmationModalSwipe>
+    </ModalView>
   </Layout>
 </template>
 
 <style lang="scss" scoped>
+.anchor {
+  color: $c_black;
+}
 h1 {
   font-size: 42px;
   color: $c_gray_900;

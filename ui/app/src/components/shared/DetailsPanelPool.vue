@@ -1,6 +1,5 @@
 <template>
   <div class="details">
-    
     <div class="details-header">
       <div class="details-row">
         <span class="details-row-asset">
@@ -84,7 +83,6 @@
         margin-left: 5px;
       }
     }
-
   }
 }
 </style>
@@ -97,14 +95,14 @@ export default defineComponent({
     AssetItem,
   },
   props: {
-    fromTokenLabel: { type: String, default: ""},
-    fromAmount: { type: String, default: ""},
-    fromTokenImage: { type: String, default: ""},
-    toTokenLabel: { type: String, default: ""},
-    toAmount: { type: String, default: ""},
-    toTokenImage: { type: String, default: ""},
-    aPerB: { type: String, default: ""},
-    bPerA: { type: String, default: ""},
+    fromTokenLabel: { type: String, default: "" },
+    fromAmount: { type: String, default: "" },
+    fromTokenImage: { type: String, default: "" },
+    toTokenLabel: { type: String, default: "" },
+    toAmount: { type: String, default: "" },
+    toTokenImage: { type: String, default: "" },
+    aPerB: { type: String, default: "" },
+    bPerA: { type: String, default: "" },
     shareOfPool: String,
   },
 });
