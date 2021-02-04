@@ -6,7 +6,6 @@ import { useCore } from "@/hooks/useCore";
 import { Asset, AssetAmount } from "ui-core";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
-
 import RaisedPanel from "@/components/shared/RaisedPanel.vue";
 import { useRouter } from "vue-router";
 import SifInput from "@/components/shared/SifInput.vue";
@@ -21,11 +20,9 @@ import {
   getUnpeggedSymbol,
   useAssetItem,
 } from "@/components/shared/utils";
-import { toConfirmState } from "./utils/toConfirmState";
 import { createMachine, interpret } from "xstate";
 import ConfirmationModalAsk from "../components/shared/ConfirmationModalAsk.vue";
 import ModalView from "@/components/shared/ModalView.vue";
-import ModalVue from "../components/shared/Modal.vue";
 import ConfirmationModalSwipe from "../components/shared/ConfirmationModalSwipe.vue";
 import SwipeMessage from "../components/shared/ConfirmationModalSwipeMessage.vue";
 
