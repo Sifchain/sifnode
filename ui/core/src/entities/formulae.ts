@@ -1,5 +1,5 @@
 import Big from "big.js";
-import {Fraction, IFraction} from "./fraction/Fraction";
+import { Fraction, IFraction } from "./fraction/Fraction";
 
 /**
  *
@@ -197,10 +197,7 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
 export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
   if (x.equalTo("0") || Y.equalTo("0")) return new Fraction("0");
   const xPlusX = x.add(X);
-  return x
-    .multiply(x)
-    .multiply(Y)
-    .divide(xPlusX.multiply(xPlusX));
+  return x.multiply(x).multiply(Y).divide(xPlusX.multiply(xPlusX));
 }
 
 /**
