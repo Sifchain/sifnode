@@ -35,13 +35,6 @@ sifnode:
     daemonRestartAfterUpgrade: true
     chainnet:
     moniker:
-    minCLPCreatePoolThreshold: "100"
-    govDepositParamsMaxDepositPeriod: "900000000000"
-    govVotingParamsVotingPeriod: "900000000000"
-  service:
-    type: LoadBalancer
-
-sifnodecli:
 
 service:
   type: LoadBalancer
@@ -60,13 +53,20 @@ ingress:
       paths: []
   tls: []
 
-resources: {}
+resources:
+  requests:
+    cpu: 1
+    memory: 2Gi
+  limits:
+    memory: 4Gi
 
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
+
+strategyType: Recreate
 
 nodeSelector: {}
 

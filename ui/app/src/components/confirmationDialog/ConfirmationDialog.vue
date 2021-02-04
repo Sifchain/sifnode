@@ -8,11 +8,13 @@ import { ConfirmState } from "../../types";
 
 export default defineComponent({
   components: { AskConfirmation, AnimatedConfirmation },
+  inheritAttrs: false,
   props: {
     state: { type: String as PropType<ConfirmState>, default: "confirming" },
     requestClose: Function,
     priceMessage: { type: String, default: "" },
     fromAmount: String,
+    fromToken: String,
     toAmount: String,
     toToken: String,
     leastAmount: String,

@@ -55,18 +55,31 @@ export default defineComponent({
       get: () => props.slippage,
       set: (amount) => handleUpdateSlippage(amount),
     });
+
     function handleUpdateSlippage(amount: string) {
       context.emit("update:slippage", amount);
     }
+
+    function isNumeric(s: any) {
+      return (s - 0) == s && (''+s).trim().length > 0;
+    }
+
     function validateSlippage() {
-      if (parseFloat(localSlippage.value) >= 99.99) {
-        localSlippage.value = "99.99";
-      } else if (parseFloat(localSlippage.value) < 0) {
-        localSlippage.value = "0"
-      } else if (localSlippage.value === "") {
-        localSlippage.value = "0"
+      try {
+        if (!isNumeric(localSlippage.value)) {
+          localSlippage.value = "1.0";
+        } else if (parseFloat(localSlippage.value) < 0) {
+          localSlippage.value = localSlippage.value.substring(1);
+        } else if (parseFloat(localSlippage.value) >= 99.0) {
+          localSlippage.value = "99.0"
+        } else if (!(localSlippage.value.startsWith(".") && localSlippage.value.length === 2)) {
+          localSlippage.value = parseFloat(localSlippage.value).toFixed(1);
+        }
+      } catch (e) {
+        localSlippage.value = "1.0";
       }
     }
+
     return {
       localSlippage,
       handleUpdateSlippage,

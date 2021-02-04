@@ -6,6 +6,7 @@ import { Address } from "./Address";
 import { Asset } from "./Asset";
 
 export type TransactionStatus = {
+  code?: number;
   hash: string;
   state: "requested" | "accepted" | "failed" | "rejected";
   memo?: string;
