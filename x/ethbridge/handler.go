@@ -3,9 +3,8 @@ package ethbridge
 
 import (
 	"fmt"
-	"sync"
-	"github.com/davecgh/go-spew/spew"
 	"strconv"
+	"sync"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -45,13 +44,6 @@ func handleMsgCreateEthBridgeClaim(
 	var mutex = &sync.RWMutex{}
 	mutex.Lock()
 	defer mutex.Unlock()
-	// require tx lock to be false
-	// set mutex lock to true
-	fmt.Println("Sifnode handleMsgCreateEthBridgeClaim 43")
-
-	spew.Dump("---------------- handleMsgCreateEthBridgeClaim ----------------------")
-	spew.Dump(msg)
-	spew.Dump("--------------------------------------")
 
 	status, err := bridgeKeeper.ProcessClaim(ctx, types.EthBridgeClaim(msg))
 	if err != nil {
