@@ -198,13 +198,6 @@ export default defineComponent({
       );
     });
 
-    // const currentTxStatus = computed(() => {
-    //   if (!transactionHash.value) return null;
-    //   return store.tx.hash[transactionHash.value] ?? null;
-    // });
-
-    // const confirmationModalOpen = ref(false);
-
     function handleMaxClicked() {
       if (!accountBalance.value) return;
 
@@ -458,99 +451,6 @@ export default defineComponent({
     };
   },
 });
-
-//  {mode.value === "peg" && (
-//               <ConfirmationModal
-//                 isOpen={confirmationModalOpen.value}
-//                 onConfirmed={handlePegRequested}
-//                 requestClose={requestTransactionModalClose}
-//                 txStatus={currentTxStatus.value ?? undefined}
-//                 confirmButtonText="Confirm Peg"
-//                 title="Peg token to Sifchain"
-//                 v-slots={{
-//                   common: () => (
-//                     <p class="text--normal">
-//                       Pegging{" "}
-//                       <span class="text--bold">
-//                         {{ amount }} {{ symbol }}
-//                       </span>
-//                     </p>
-//                   ),
-//                   selecting: () => (
-//                     <>
-//                       <DetailsTable
-//                         header={{
-//                           show: amount.value !== "0.0",
-//                           label: `${modeLabel.value} Amount`,
-//                           data: `${amount.value} ${formatSymbol(symbol.value)}`,
-//                         }}
-//                         rows={[
-//                           {
-//                             show: true,
-//                             label: "Direction",
-//                             data: `${formatSymbol(
-//                               symbol.value
-//                             )} → ${formatSymbol(oppositeSymbol.value)}`,
-//                           },
-//                         ]}
-//                       />
-//                       <br />
-//                       <p class="text--normal">
-//                         *Please note your funds will be available for use on
-//                         Sifchain only after 50 Ethereum block confirmations.
-//                         This can take upwards of 20 minutes.
-//                       </p>
-//                     </>
-//                   ),
-//                 }}
-//               ></ConfirmationModal>
-//             )}
-
-//             {mode.value === "unpeg" && (
-//               <ConfirmationModal
-//                 isOpen={confirmationModalOpen.value}
-//                 onConfirmed={handlePegRequested}
-//                 requestClose={requestTransactionModalClose}
-//                 txStatus={currentTxStatus.value ?? undefined}
-//                 confirmButtonText="Confirm Unpeg"
-//                 title="Unpeg token from Sifchain"
-//                 v-slots={{
-//                   common: () => (
-//                     <p class="text--normal">
-//                       Unpegging{" "}
-//                       <span class="text--bold">
-//                         {{ amount }} {{ symbol }}
-//                       </span>
-//                     </p>
-//                   ),
-//                   selecting: () => (
-//                     <>
-//                       <DetailsTable
-//                         header={{
-//                           show: amount.value !== "0.0",
-//                           label: `${modeLabel.value} Amount`,
-//                           data: `${amount.value} ${formatSymbol(symbol.value)}`,
-//                         }}
-//                         rows={[
-//                           {
-//                             show: true,
-//                             label: "Direction",
-//                             data: `${formatSymbol(
-//                               symbol.value
-//                             )} → ${formatSymbol(oppositeSymbol.value)}`,
-//                           },
-//                           {
-//                             show: !!feeAmount,
-//                             label: "Transaction Fee",
-//                             data: `${feeAmount.value.toFixed(8)} cETH`,
-//                           },
-//                         ]}
-//                       />
-//                     </>
-//                   ),
-//                 }}
-//               ></ConfirmationModal>
-//             )}
 </script>
 
 
