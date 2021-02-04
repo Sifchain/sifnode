@@ -1,6 +1,7 @@
 #!/bin/bash
 # must run from the root directory of the sifnode tree
 
+set -xv
 set -e # exit on any failure
 set -o pipefail
 
