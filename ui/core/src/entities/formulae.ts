@@ -170,23 +170,17 @@ export function calculateExternalExternalSwapResult(
 // Ok to accept a little precision loss as reverse swap amount can be rough
 export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
   // Adding a check here because sqrt of a negative number will throw an exception
-  if (S.eq("0") || Y.minus(S.times(4)).lt(Big("0"))) {
+  if (S.eq("0") || S.times(4).lt(Y)) {
     return Big("0");
   }
-
   const term1 = Big(-2).times(X).times(S);
   const term2 = X.times(Y);
   const underRoot = Y.times(Y.minus(S.times(4)));
   const term3 = X.times(underRoot.sqrt());
   const numerator = term1.plus(term2).minus(term3);
-
-  // Check if numerator is > 0
-  if (numerator.lte(Big("0"))) {
-    return Big("0");
-  } else {
-    const denominator = S.times(2);
-    return numerator.div(denominator);
-  }
+  const denominator = S.times(2);
+  const x = numerator.div(denominator);
+  return x.gte(Big("0")) ? x : Big("0");
 }
 
 /**
