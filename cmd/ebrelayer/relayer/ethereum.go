@@ -9,15 +9,14 @@ import (
 	"io"
 	"log"
 	"math/big"
-	"time"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,6 +27,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/sethvargo/go-password/password"
+	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/tendermint/go-amino"
 	tmLog "github.com/tendermint/tendermint/libs/log"
 
@@ -38,8 +38,8 @@ import (
 )
 
 const (
-	transactionInterval      = 10 * time.Second
-	trailingBlocks           = 50
+	transactionInterval = 10 * time.Second
+	trailingBlocks      = 50
 )
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
@@ -188,7 +188,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	ethLevelDBKey := "ethereumLastProcessedBlock"
 
 	data, err := db.Get([]byte(ethLevelDBKey), nil)
-	
+
 	var lastProcessedBlock *big.Int
 	if err != nil {
 		log.Println("Error getting the last ethereum block from level db", err)
@@ -203,7 +203,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 		case <-quit:
 			return
 		case err := <-subHead.Err():
-			sub.Logger.Error("subHead failed: " , err.Error())
+			sub.Logger.Error("subHead failed: ", err.Error())
 			completionEvent.Add(1)
 			go sub.Start(completionEvent)
 			return
@@ -237,16 +237,16 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 
 			if err != nil {
 				log.Printf("Error getting events on block %d from bridgebank: %v", newHead.Number, err)
-				// if you have an error getting the logs from the block, continue and keep 
+				// if you have an error getting the logs from the block, continue and keep
 				// the current last processed block so we keep retrying
 				continue
 			}
 
 			// Assumption here is that we will repeat a failing block becaus we return if there is an error retrieving logs
 			log.Printf("Successfully received bridgebank events from block %d to %d ", lastProcessedBlock, endingBlock)
-			
+
 			var events []types.EthereumEvent
-			
+
 			// loop over ethlogs, and build an array of burn/lock events
 			for _, ethLog := range ethLogs {
 				log.Printf("Processed events from block %v", ethLog.BlockNumber)
@@ -261,7 +261,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				}
 				events = append(events, event)
 			}
-			
+
 			if len(events) > 0 {
 				if err := sub.handleEthereumEvent(events); err != nil {
 					log.Println("handleEthereumEvent failed: ", err.Error())
@@ -270,7 +270,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			}
 			// save the current ending block to the lastprocessed block to ensure we keep reading blocks sequentially
 			lastProcessedBlock = endingBlock
-			err = db.Put([]byte(ethLevelDBKey), []byte(lastProcessedBlock.Bytes()), nil)
+			err = db.Put([]byte(ethLevelDBKey), lastProcessedBlock.Bytes(), nil)
 			if err != nil {
 				// if you can't write to leveldb, then error out as something is seriously amiss
 				log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
