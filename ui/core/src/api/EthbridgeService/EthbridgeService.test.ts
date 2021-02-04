@@ -75,8 +75,6 @@ describe("EthbridgeService", () => {
 
     const amountToLock = AssetAmount(ETH, "3");
 
-    await EthbridgeService.approveSpend(amountToLock);
-
     // Send funds to the smart contract
     await new Promise<void>(async done => {
       EthbridgeService.lockToSifchain(getSifAddress(), amountToLock, 100)
@@ -217,7 +215,9 @@ describe("EthbridgeService", () => {
     const sendERowanAmount = AssetAmount(EROWAN, "10");
 
     // Burn eRowan to Rowan
-    await EthbridgeService.approveSpend(sendERowanAmount);
+
+    // Approve the amount
+    // await EthbridgeService.approveSpend(sendERowanAmount);
 
     await new Promise<void>((done, reject) => {
       EthbridgeService.burnToSifchain(

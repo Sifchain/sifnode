@@ -111,16 +111,9 @@ export default ({
 
             notify({ type: "error", message: status.memo! });
 
-            // Resolve because error could happen after promise is resolved
             resolve(status);
           })
           .onComplete(({ txHash }) => {
-            const status: TransactionStatus = {
-              hash: txHash,
-              memo: `Transfer ${txHash} has succeded.`,
-              state: "complete",
-            };
-
             notify({
               type: "success",
               message: `Transfer ${txHash} has succeded.`,
