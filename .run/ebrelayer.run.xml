@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ebrelayer" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="sifnode" />
+    <working_directory value="$PROJECT_DIR$" />
+    <go_parameters value="-i" />
+    <parameters value="init tcp://0.0.0.0:26657 ws://localhost:7545/ 0xFB88dE099e13c3ED21F80a7a1E49f8CAEcF10df6 small-water 'cement lyrics shadow video radar vessel blouse tell another because tiny garlic kangaroo use profit gospel blanket gown faculty almost ignore tomato talk lake' --chain-id localnet --home $PROJECT_DIR$/deploy/networks/validators/localnet/small-water/.sifnodecli --gas 5000000000000 --gas-prices 0.5rowan " />
+    <envs>
+      <env name="CC" value="gcc" />
+      <env name="ETHEREUM_PRIVATE_KEY" value="c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3" />
+    </envs>
+    <kind value="PACKAGE" />
+    <filePath value="$PROJECT_DIR$" />
+    <package value="github.com/Sifchain/sifnode/cmd/ebrelayer" />
+    <directory value="$PROJECT_DIR$" />
+    <method v="2" />
+  </configuration>
+</component>
