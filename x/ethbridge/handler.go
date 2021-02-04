@@ -3,6 +3,8 @@ package ethbridge
 
 import (
 	"fmt"
+	"sync"
+	"github.com/davecgh/go-spew/spew"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -40,16 +42,31 @@ func NewHandler(
 func handleMsgCreateEthBridgeClaim(
 	ctx sdk.Context, cdc *codec.Codec, bridgeKeeper Keeper, msg MsgCreateEthBridgeClaim,
 ) (*sdk.Result, error) {
+	var mutex = &sync.RWMutex{}
+	mutex.Lock()
+	defer mutex.Unlock()
+	// require tx lock to be false
+	// set mutex lock to true
+	fmt.Println("Sifnode handleMsgCreateEthBridgeClaim 43")
+
+	spew.Dump("---------------- handleMsgCreateEthBridgeClaim ----------------------")
+	spew.Dump(msg)
+	spew.Dump("--------------------------------------")
+
 	status, err := bridgeKeeper.ProcessClaim(ctx, types.EthBridgeClaim(msg))
 	if err != nil {
+		fmt.Printf("Sifnode handleMsgCreateEthBridgeClaim 46 %s\n", err.Error())
 		return nil, err
 	}
 	if status.Text == oracle.SuccessStatusText {
 		if err = bridgeKeeper.ProcessSuccessfulClaim(ctx, status.FinalClaim); err != nil {
+			fmt.Printf("Sifnode handleMsgCreateEthBridgeClaim 51 %s\n", err.Error())
 			return nil, err
 		}
 	}
+	// set mutex lock to false
 
+	fmt.Printf("Sifnode handleMsgCreateEthBridgeClaim 56 all done, emit events statue is %s\n", status.Text.String())
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
