@@ -127,7 +127,7 @@ func (m MsgRemoveLiquidity) ValidateBasic() error {
 	if !(m.WBasisPoints.IsPositive()) || m.WBasisPoints.GT(sdk.NewInt(MaxWbasis)) {
 		return sdkerrors.Wrap(ErrInvalidWBasis, m.WBasisPoints.String())
 	}
-	if m.Asymmetry.GTE(sdk.NewInt(10000)) || m.Asymmetry.LTE(sdk.NewInt(-10000)) {
+	if m.Asymmetry.GT(sdk.NewInt(10000)) || m.Asymmetry.LT(sdk.NewInt(-10000)) {
 		return sdkerrors.Wrap(ErrInvalidAsymmetry, m.Asymmetry.String())
 	}
 	return nil

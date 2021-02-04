@@ -46,25 +46,15 @@ export default function createEthbridgeService({
       web3,
       (amount.asset as Token).address
     );
-
     const sendArgs = {
       from: account,
       value: 0,
     };
-
-    // Hmm what happens when there is a signing failure but we have approved bridgebank
-    return await new Promise((resolve, reject) => {
-      tokenContract.methods
-        .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
-        .send(sendArgs)
-        .on("transactionHash", (hash: string) => {
-          resolve(hash);
-        })
-        .on("error", (err: any) => {
-          console.log("lockToSifchain: bridgeBankContract.lock ERROR", err);
-          reject(err);
-        });
-    });
+    const res = await tokenContract.methods
+      .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
+      .send(sendArgs);
+    console.log("approveBridgeBankSpend:", res);
+    return res;
   }
 
   return {
@@ -78,6 +68,7 @@ export default function createEthbridgeService({
       const ethereumChainId = await web3.eth.net.getId();
       const tokenAddress =
         (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
+      console.log("burnToEthereum: start: ", tokenAddress);
 
       const txReceipt = await sifUnsignedClient.burn({
         ethereum_receiver: params.ethereumRecipient,
@@ -93,6 +84,7 @@ export default function createEthbridgeService({
         ceth_amount: params.feeAmount.toBaseUnits().toString(),
       });
 
+      console.log("burnToEthereum: txReceipt: ", txReceipt, tokenAddress);
       return txReceipt;
     },
 
@@ -104,13 +96,14 @@ export default function createEthbridgeService({
       const emitter = createPegTxEventEmitter();
 
       function handleError(err: any) {
+        console.log("lockToSifchain: handleError: ", err);
         emitter.emit({
           type: "Error",
           payload: parseTxFailure({ hash: "", log: err.message.toString() }),
         });
       }
 
-      (async function() {
+      (async function () {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
 
@@ -133,13 +126,15 @@ export default function createEthbridgeService({
           JSON.stringify({ cosmosRecipient, coinDenom, amount, sendArgs })
         );
 
-        if (coinDenom !== ETH_ADDRESS)
+        if (coinDenom !== ETH_ADDRESS) {
           await approveBridgeBankSpend(fromAddress, assetAmount);
+        }
 
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
           .send(sendArgs)
           .on("transactionHash", (hash: string) => {
+            console.log("lockToSifchain: bridgeBankContract.lock TX", hash);
             emitter.setTxHash(hash);
           })
           .on("error", (err: any) => {
@@ -153,15 +148,16 @@ export default function createEthbridgeService({
             txHash,
             confirmations,
             onSuccess() {
-              console.log("lockToSifchain: bridgeBankContract.lock complete");
+              console.log("lockToSifchain: confirmTx SUCCESS", txHash, confirmations);
               emitter.emit({ type: "Complete", payload: null });
             },
             onCheckConfirmation(count) {
+              console.log("lockToSifchain: onCheckConfirmation PENDING", confirmations);
               emitter.emit({ type: "EthConfCountChanged", payload: count });
             },
           });
         });
-      })().catch(err => {
+      })().catch((err) => {
         handleError(err);
       });
 
@@ -176,8 +172,7 @@ export default function createEthbridgeService({
     }) {
       const web3 = await ensureWeb3();
       const ethereumChainId = await web3.eth.net.getId();
-      const tokenAddress =
-        (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
+      const tokenAddress = (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
 
       const lockParams = {
         ethereum_receiver: params.ethereumRecipient,
@@ -193,7 +188,9 @@ export default function createEthbridgeService({
         ceth_amount: params.feeAmount.toBaseUnits().toString(),
       };
 
+      console.log("lockToEthereum: TRY LOCK", tokenAddress);
       const lockReceipt = await sifUnsignedClient.lock(lockParams);
+      console.log("lockToEthereum: LOCKED", lockReceipt);
 
       return lockReceipt;
     },
@@ -207,13 +204,14 @@ export default function createEthbridgeService({
       const emitter = createPegTxEventEmitter();
 
       function handleError(err: any) {
+        console.log("burnToSifchain: handleError ERROR", err);
         emitter.emit({
           type: "Error",
           payload: parseTxFailure({ hash: "", log: err }),
         });
       }
 
-      (async function() {
+      (async function () {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
 
@@ -237,10 +235,11 @@ export default function createEthbridgeService({
           .burn(cosmosRecipient, coinDenom, amount)
           .send(sendArgs)
           .on("transactionHash", (hash: string) => {
+            console.log("burnToSifchain: bridgeBankContract.burn TX", hash);
             emitter.setTxHash(hash);
           })
           .on("error", (err: any) => {
-            console.log("lockToSifchain: bridgeBankContract.burn ERROR", err);
+            console.log("burnToSifchain: bridgeBankContract.burn ERROR", err);
             handleError(err);
           });
 
@@ -251,14 +250,16 @@ export default function createEthbridgeService({
             txHash,
             confirmations,
             onSuccess() {
+              console.log("burnToSifchain: commitTx SUCCESS", txHash, confirmations);
               emitter.emit({ type: "Complete", payload: null });
             },
             onCheckConfirmation(count) {
+              console.log("burnToSifchain: commitTx.checkConfirmation PENDING", confirmations);
               emitter.emit({ type: "EthConfCountChanged", payload: count });
             },
           });
         });
-      })().catch(err => {
+      })().catch((err) => {
         handleError(err);
       });
 

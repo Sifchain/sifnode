@@ -4,13 +4,16 @@ import { ErrorCode, getErrorMessage } from "../../entities/Errors";
 // TODO: Should this go in a shared ethereum client mimicking sifchain?
 export function parseTxFailure({
   hash = "",
-  log,
+  log = "",
 }: {
   hash: string;
   log: string;
 }): TransactionStatus {
   // Ethereum events
-  if (log.toLowerCase().includes("user denied transaction")) {
+  if (
+    log.toString().toLowerCase().includes("request rejected") ||
+    log.toString().toLowerCase().includes("user denied transaction")
+  ) {
     return {
       code: ErrorCode.USER_REJECTED,
       memo: getErrorMessage(ErrorCode.USER_REJECTED),

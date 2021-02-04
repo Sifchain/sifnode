@@ -90,9 +90,7 @@ export default function createClpService({
           symbol: params.externalAssetAmount.asset.symbol,
           ticker: params.externalAssetAmount.asset.symbol,
         },
-        external_asset_amount: params.externalAssetAmount
-          .toBaseUnits()
-          .toString(),
+        external_asset_amount: params.externalAssetAmount.toBaseUnits().toString(),
         native_asset_amount: params.nativeAssetAmount.toBaseUnits().toString(),
         signer: params.fromAddress,
       });
