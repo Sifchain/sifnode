@@ -16,41 +16,32 @@ podSecurityContext: {}
 securityContext: {}
 
 image:
-  repository: sifchain/ebrelayer
+  repository: sifchain/sifnodecli
   pullPolicy: Always
   tag: "testnet"
 
-ebrelayer:
+sifnodeApi:
   args:
-    nodeHost: ""
-    ethWebsocketAddress: ""
-    ethBridgeRegistryAddress: ""
-    mnemonic: ""
-    gasPrices: "0.5rowan"
-  env:
-    chainnet: ""
-    moniker: ""
-    ethPrivateKey: ""
+    nodeHost:
 
-persistence:
-  enabled: true
-  size: 25Gi
-  accessMode: ReadWriteOnce
+service:
+  type: LoadBalancer
 
 ingress:
   enabled: false
   annotations: {}
   hosts:
-    - host: ebrelayer.local
+    - host: sifnode-api.local
       paths: []
   tls: []
 
 resources:
+  limits:
+    cpu: 0.5
+    memory: 512Mi
   requests:
     cpu: 0.5
-    memory: 1Gi
-  limits:
-    memory: 2Gi
+    memory: 512Mi
 
 autoscaling:
   enabled: false
