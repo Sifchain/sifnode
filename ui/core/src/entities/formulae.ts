@@ -170,7 +170,7 @@ export function calculateExternalExternalSwapResult(
 // Ok to accept a little precision loss as reverse swap amount can be rough
 export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
   // Adding a check here because sqrt of a negative number will throw an exception
-  if (S.eq("0") || S.times(4).lt(Y)) {
+  if (S.eq("0") || S.times(4).gt(Y)) {
     return Big("0");
   }
   const term1 = Big(-2).times(X).times(S);
