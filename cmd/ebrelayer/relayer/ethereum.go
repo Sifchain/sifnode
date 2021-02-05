@@ -232,7 +232,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			}
 
 			// just process two blocks each time
-			var tmpEndingBlock *big.Int
+			tmpEndingBlock := big.NewInt(0)
 			tmpEndingBlock.Add(lastProcessedBlock, big.NewInt(blockScope))
 
 			if endingBlock.Cmp(tmpEndingBlock) > 0 {
