@@ -35,7 +35,6 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
     const pageState = ref<PageStates>("idle");
-    // const pageState = ref<ConfirmState>("selecting");
     const transactionHash = ref<string | null>(null);
     const transactionStateMsg = ref<string>("");
     const asymmetry = ref("0");
