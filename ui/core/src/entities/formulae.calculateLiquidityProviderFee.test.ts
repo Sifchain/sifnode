@@ -1,10 +1,10 @@
 import { calculateProviderFee } from "./formulae";
-import {Fraction, TEN} from "./fraction/Fraction";
-import tests from "../../../../test/test-tables/sample_liquidity_fee.json";
+import { Fraction, TEN } from "./fraction/Fraction";
+import tests from "../../../../test/test-tables/singleswap_liquidityfees.json";
 import B from "./utils/B";
 import JSBI from "jsbi";
 
-tests.LiquidityFee.forEach(({ x, X, Y, expected } : any) => {
+tests.SingleSwapLiquidityFee.forEach(({ x, X, Y, expected }: any) => {
   // Need to convert inputs to JSBI to be able to test decimal input from tables.
   // In the actual logic, user input is converted before calculations are made.
   const bigx = B(x);
