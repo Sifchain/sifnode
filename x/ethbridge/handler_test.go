@@ -47,23 +47,28 @@ func TestBasicMsgs(t *testing.T) {
 			value := string(attribute.Value)
 			switch key := string(attribute.Key); key {
 			case "module":
-				require.Equal(t, value, types.ModuleName)
+				require.Equal(t, types.ModuleName, value)
 			case senderString:
-				require.Equal(t, value, valAddress.String())
+				require.Equal(t, valAddress.String(), value)
 			case "ethereum_sender":
-				require.Equal(t, value, types.TestEthereumAddress)
+				require.Equal(t, types.TestEthereumAddress, value)
 			case "cosmos_receiver":
-				require.Equal(t, value, types.TestAddress)
+				require.Equal(t, types.TestAddress, value)
 			case "amount":
-				require.Equal(t, value, strconv.FormatInt(10, 10))
+				require.Equal(t, strconv.FormatInt(10, 10), value)
 			case "symbol":
-				require.Equal(t, value, types.TestCoinsSymbol)
+				require.Equal(t, types.TestCoinsSymbol, value)
 			case "token_contract_address":
-				require.Equal(t, value, types.TestTokenContractAddress)
+				require.Equal(t, types.TestTokenContractAddress, value)
 			case statusString:
-				require.Equal(t, value, oracle.StatusTextToString[oracle.PendingStatusText])
+				require.Equal(t, oracle.StatusTextToString[oracle.PendingStatusText], value)
 			case "claim_type":
-				require.Equal(t, value, types.ClaimTypeToString[types.LockText])
+				require.Equal(t, types.ClaimTypeToString[types.LockText], value)
+			case "nonce":
+				v, _ := strconv.Atoi(value)
+				require.Equal(t, types.TestNonce, v)
+			case "validator_address":
+				require.Equal(t, types.TestValidatorAddress, value)
 			default:
 				require.Fail(t, fmt.Sprintf("unrecognized event %s", key))
 			}

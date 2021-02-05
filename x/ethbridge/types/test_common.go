@@ -16,6 +16,7 @@ const (
 	TestBridgeContractAddress = "0xC4cE93a5699c68241fc2fB503Fb0f21724A624BB"
 	TestAddress               = "cosmos1gn8409qq9hnrxde37kuxwx5hrxpfpv8426szuv"
 	TestValidator             = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
+	TestValidatorAddress      = "cosmosvaloper1mnfm9c7cdgqnkk66sganp78m0ydmcr4pn7fqfk"
 	TestNonce                 = 0
 	TestTokenContractAddress  = "0x0000000000000000000000000000000000000000"
 	TestEthereumAddress       = "0x7B95B6EC7EbD73572298cEf32Bb54FA408207359"
