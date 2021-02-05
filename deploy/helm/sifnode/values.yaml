@@ -28,6 +28,8 @@ sifnode:
     adminCLPAddresses: ""
     adminOracleAddress: ""
     minimumGasPrices: "0.5rowan"
+    govMaxDepositPeriod: "900000000000"
+    govVotingPeriod: "900000000000"
   env:
     daemonHome: "/root/.sifnoded"
     daemonName: "sifnoded"
