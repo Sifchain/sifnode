@@ -1,10 +1,10 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 
 import Swap from "@/views/SwapPage.vue";
 import Pool from "@/views/PoolPage.vue";
 import CreatePool from "@/views/CreatePoolPage.vue";
 import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
-import SinglePool from "@/components/poolList/SinglePool.vue";
+import SinglePool from "@/views/SinglePool.vue";
 import PegListingPage from "@/views/PegListingPage.vue";
 import PegAssetPage from "@/views/PegAssetPage.vue";
 
@@ -33,16 +33,16 @@ const routes: Array<RouteRecordRaw> = [
     name: "AddLiquidity",
     component: CreatePool,
     props: {
-      title: 'Add Liquidity',
-    }
+      title: "Add Liquidity",
+    },
   },
   {
     path: "/pool/create-pool",
     name: "CreatePool",
     component: CreatePool,
     props: {
-      title: 'Create Pair',
-    }
+      title: "Create Pair",
+    },
   },
   {
     path: "/pool/remove-liquidity/:externalAsset?",
@@ -67,7 +67,7 @@ const routes: Array<RouteRecordRaw> = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHashHistory(process.env.BASE_URL),
   routes,
 });
 

@@ -1,21 +1,22 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "sifnode.fullname" . }}-cli
+  name: {{ include "sifnode.fullname" . }}
   labels:
-    {{- include "sifnode.labels" . | nindent 4 }}-cli
+    {{- include "sifnode.labels" . | nindent 4 }}
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
     service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
     service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
 spec:
-  externalTrafficPolicy: Local
   type: {{ .Values.service.type }}
   ports:
-    - port: 1317
-      targetPort: 1317
+    - port: 26656
       protocol: TCP
-      name: rest-server
+      name: p2p
+    - port: 26657
+      protocol: TCP
+      name: rpc
   selector:
-    {{- include "sifnode.selectorLabels" . | nindent 4 }}-cli
+    {{- include "sifnode.selectorLabels" . | nindent 4 }}

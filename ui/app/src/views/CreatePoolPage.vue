@@ -6,8 +6,6 @@ import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
-import ModalView from "@/components/shared/ModalView.vue";
-import ConfirmationDialog from "@/components/confirmationDialog/PoolConfirmationDialog.vue";
 import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
@@ -18,6 +16,9 @@ import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import { toConfirmState } from "./utils/toConfirmState";
 import { ConfirmState } from "../types";
+import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
+import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
+import { formatNumber, formatPercentage } from "@/components/shared/utils";
 
 export default defineComponent({
   components: {
@@ -26,16 +27,17 @@ export default defineComponent({
     Modal,
     CurrencyPairPanel,
     SelectTokenDialogSif,
+    ConfirmationModal,
+    DetailsPanelPool,
     FatInfoTable,
-    ConfirmationDialog,
     FatInfoTableCell,
-    ModalView,
   },
   props: ["title"],
-  setup(props) {
+  setup() {
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
-    const transactionState = ref<ConfirmState>("selecting");
+    const transactionState = ref<ConfirmState | string>("selecting");
+    const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
     const router = useRouter();
     const route = useRoute();
@@ -43,6 +45,7 @@ export default defineComponent({
     const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
 
     const toSymbol = ref("rowan");
+
     fromSymbol.value = route.params.externalAsset
       ? route.params.externalAsset.toString()
       : null;
@@ -62,7 +65,7 @@ export default defineComponent({
       if (!fromSymbol) return null;
       return (
         store.accountpools.find((pool) => {
-          pool.lp.asset.symbol === fromSymbol.value;
+          return pool.lp.asset.symbol === fromSymbol.value;
         })?.lp ?? null
       );
     });
@@ -111,13 +114,13 @@ export default defineComponent({
 
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
-
-      clearAmounts();
+      transactionStateMsg.value = tx.memo ?? "";
     }
 
     function requestTransactionModalClose() {
       if (transactionState.value === "confirmed") {
         router.push("/pool");
+        clearAmounts();
       } else {
         transactionState.value = "selecting";
       }
@@ -182,16 +185,7 @@ export default defineComponent({
       requestTransactionModalClose,
 
       transactionState,
-
-      transactionModalOpen: computed(() => {
-        return [
-          "confirming",
-          "signing",
-          "failed",
-          "rejected",
-          "confirmed",
-        ].includes(transactionState.value);
-      }),
+      transactionStateMsg,
 
       handleBlur() {
         selectedField.value = null;
@@ -220,6 +214,8 @@ export default defineComponent({
       },
       shareOfPoolPercent,
       connectedText,
+      formatNumber,
+
       poolUnits: totalLiquidityProviderUnits,
     };
   },
@@ -227,7 +223,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" backLink="/pool" :title="title">
+  <Layout class="pool" :backLink="`${fromSymbol ? '/pool/' + fromSymbol : '/pool' }`" :title="title">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel
@@ -260,7 +256,7 @@ export default defineComponent({
       <template #header>Pool Token Prices</template>
       <template #body>
         <FatInfoTableCell>
-          <span class="number">{{ aPerBRatioMessage }}</span
+          <span class="number">{{ formatNumber(aPerBRatioMessage) }}</span
           ><br />
           <span
             >{{ fromSymbol.toUpperCase() }} per
@@ -268,13 +264,13 @@ export default defineComponent({
           >
         </FatInfoTableCell>
         <FatInfoTableCell>
-          <span class="number">{{ bPerARatioMessage }}</span
+          <span class="number">{{ formatNumber(bPerARatioMessage) }}</span
           ><br />
           <span
             >{{ toSymbol.toUpperCase() }} per
             {{ fromSymbol.toUpperCase() }}</span
-          >
-        </FatInfoTableCell>
+          > </FatInfoTableCell
+        ><FatInfoTableCell />
       </template>
     </FatInfoTable>
 
@@ -282,7 +278,9 @@ export default defineComponent({
       <template #header>Price Impact and Pool Share</template>
       <template #body>
         <FatInfoTableCell>
-          <span class="number">{{ aPerBRatioProjectedMessage }}</span
+          <span class="number">{{
+            formatNumber(aPerBRatioProjectedMessage)
+          }}</span
           ><br />
           <span
             >{{ fromSymbol.toUpperCase() }} per
@@ -290,7 +288,9 @@ export default defineComponent({
           >
         </FatInfoTableCell>
         <FatInfoTableCell>
-          <span class="number">{{ bPerARatioProjectedMessage }}</span
+          <span class="number">{{
+            formatNumber(bPerARatioProjectedMessage)
+          }}</span
           ><br />
           <span
             >{{ toSymbol.toUpperCase() }} per
@@ -309,23 +309,39 @@ export default defineComponent({
       :nextStepAllowed="nextStepAllowed"
       :nextStepMessage="nextStepMessage"
     />
-    <ModalView
+    <ConfirmationModal
       :requestClose="requestTransactionModalClose"
-      :isOpen="transactionModalOpen"
-      ><ConfirmationDialog
-        @confirmswap="handleAskConfirmClicked"
-        :state="transactionState"
-        :requestClose="requestTransactionModalClose"
-        :fromToken="fromSymbol"
-        :fromAmount="fromAmount"
-        :poolUnits="poolUnits"
-        :toAmount="toAmount"
-        :toToken="toSymbol"
-        :aPerB="aPerBRatioMessage"
-        :bPerA="bPerARatioMessage"
-        :shareOfPool="shareOfPoolPercent"
-        :transactionHash="transactionHash"
-    /></ModalView>
+      @confirmed="handleAskConfirmClicked"
+      :state="transactionState"
+      :transactionHash="transactionHash"
+      :transactionStateMsg="transactionStateMsg"
+      confirmButtonText="Confirm Supply"
+      title="You are depositing"
+    >
+      <template v-slot:selecting>
+        <div>
+          <DetailsPanelPool
+            class="details"
+            :fromTokenLabel="fromSymbol"
+            :fromAmount="fromAmount"
+            :toTokenLabel="toSymbol"
+            :toAmount="toAmount"
+            :aPerB="aPerBRatioMessage"
+            :bPerA="bPerARatioMessage"
+            :shareOfPool="shareOfPoolPercent"
+          />
+        </div>
+      </template>
+
+      <template v-slot:common>
+        <p class="text--normal">
+          Supplying
+          <span class="text--bold">{{ fromAmount }} {{ fromSymbol }}</span>
+          and
+          <span class="text--bold">{{ toAmount }} {{ toSymbol }}</span>
+        </p>
+      </template>
+    </ConfirmationModal>
   </Layout>
 </template>
 

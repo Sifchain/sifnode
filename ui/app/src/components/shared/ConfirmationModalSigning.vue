@@ -2,32 +2,67 @@
   <div>
     <div class="confirmation">
       <div class="message">
-        <Loader black :success="confirmed" /><br />
+        <Loader
+          black
+          :success="state === 'confirmed'"
+          :failed="state === 'rejected' || state === 'failed'"
+        /><br />
         <div class="text-wrapper">
+          <!-- 
+            TODO: This could be abstracted to AnimatedLoaderStateModal 
+            that takes screens and switches them based on arbitrary state
+            with arbitrary content that can be specified in page.
+            The content below isn't really flexible enough and can be 
+            templed into components
+
+            Perhaps we could use render functions to accomplish this?
+          -->
           <transition name="swipe">
             <div class="text" v-if="state === 'signing'">
               <p>Waiting for confirmation</p>
-              <p class="thin">
-                Removing liquidity
-                <span class="thick">{{ cNativeAssetAmount }} {{ cNativeAssetSymbol }}</span>
-                and
-                <span class="thick">{{ cExternalAssetAmount }} {{ cExternalAssetSymbol }}</span>
-              </p>
+              <slot name="signing"></slot>
               <br />
               <p class="sub">Confirm this transaction in your wallet</p>
             </div>
           </transition>
+
+          <transition name="swipe">
+            <div class="text" v-if="state === 'rejected'">
+              <p>Transaction Rejected</p>
+              <slot name="rejected"></slot>
+              <br />
+              <p class="sub">{{ transactionStateMsg }}</p>
+            </div>
+          </transition>
+
+          <transition name="swipe">
+            <div class="text" v-if="state === 'failed'">
+              <p>Transaction Failed</p>
+              <slot name="failed"></slot>
+              <br />
+              <p class="sub">{{ transactionStateMsg }}</p>
+            </div>
+          </transition>
+
           <transition name="swipe">
             <div class="text" v-if="state === 'confirmed'">
-              <p>Liquidity Removed</p>
-              <p class="thin">
-                <span class="thick">{{ cNativeAssetAmount }} {{ cNativeAssetSymbol }}</span>
-                and
-                <span class="thick">{{ cExternalAssetAmount }} {{ cExternalAssetSymbol }}</span>
-              </p>
+              <p>Transaction Submitted</p>
+              <slot name="confirmed"></slot>
               <br />
               <p class="sub">
-                <a class="anchor" target="_blank" :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
+                <!-- To the todo point above, we need to be able to control this better, hence isSifTxHash() -->
+                <a
+                  v-if="transactionHash?.substring(0,2) !== '0x'"
+                  class="anchor"
+                  target="_blank"
+                  :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
+                  >View transaction on Block Explorer</a
+                >
+                <a
+                  v-else
+                  class="anchor"
+                  target="_blank"
+                  :href="`https://etherscan.io/tx/${transactionHash}`"
                   >View transaction on Block Explorer</a
                 >
               </p>
@@ -46,30 +81,23 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { useCore } from "@/hooks/useCore";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
-import { useCore } from "@/hooks/useCore";
 
 export default defineComponent({
+  inheritAttrs: false,
   components: { Loader, SifButton },
   props: {
-    confirmed: Boolean,
     state: String,
-    externalAssetSymbol: String,
-    nativeAssetSymbol: String,
-    externalAssetAmount: String,
-    nativeAssetAmount: String,
     transactionHash: String,
+    transactionStateMsg: String,
   },
-  setup(props) {
+
+  setup() {
     const { config } = useCore();
-    // Need to cache amounts and disconnect reactivity
+
     return {
-      state: props.state,
-      cExternalAssetSymbol: props.externalAssetSymbol,
-      cNativeAssetSymbol: props.nativeAssetSymbol,
-      cExternalAssetAmount: props.externalAssetAmount,
-      cNativeAssetAmount: props.nativeAssetAmount,
       chainId: config.sifChainId,
     };
   },
@@ -101,18 +129,11 @@ export default defineComponent({
 .anchor {
   color: $c_black;
 }
-.thin {
-  font-weight: normal;
-}
-.thick {
-  font-weight: bold;
-}
 .sub {
   font-weight: normal;
   font-size: $fs_sm;
 }
 .footer {
-  padding: 16px;
   visibility: hidden;
   transition: opacity 0.5s ease-out;
   opacity: 0;
