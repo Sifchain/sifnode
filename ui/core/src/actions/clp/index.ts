@@ -1,4 +1,10 @@
-import {Asset, AssetAmount, Fraction, LiquidityProvider, Pool} from "../../entities";
+import {
+  Asset,
+  AssetAmount,
+  Fraction,
+  LiquidityProvider,
+  Pool,
+} from "../../entities";
 import { ActionContext } from "..";
 import { PoolStore } from "../../store/pools";
 import notify from "../../api/utils/Notifications";
@@ -125,6 +131,7 @@ export default ({
       });
 
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
+
       if (txStatus.state !== "accepted") {
         notify({
           type: "error",
@@ -139,7 +146,6 @@ export default ({
       wBasisPoints: string,
       asymmetry: string
     ) {
-
       const tx = await api.ClpService.removeLiquidity({
         fromAddress: state.address,
         asset,

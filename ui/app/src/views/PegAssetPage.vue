@@ -272,7 +272,9 @@ export default defineComponent({
           >
             {pageState.value === "confirm" ? (
               <ConfirmationModalAsk
-                confirmButtonText="Confirm Peg"
+                confirmButtonText={
+                  mode.value === "peg" ? "Confirm Peg" : "Confirm Unpeg"
+                }
                 onConfirmed={handleActionConfirmed}
                 title={
                   mode.value === "peg"
