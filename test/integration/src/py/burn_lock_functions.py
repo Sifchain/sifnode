@@ -5,6 +5,7 @@ import os
 import sys
 import tempfile
 import textwrap
+import time
 from typing import List
 
 from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks, \
@@ -34,6 +35,8 @@ def force_log_level(new_level):
 
 def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest, max_seconds: int = default_timeout_for_ganache):
     logging.debug(f"transfer_ethereum_to_sifchain {transfer_request.as_json()}")
+    assert transfer_request.ethereum_address
+    assert transfer_request.sifchain_address
 
     # it's possible that this is the first transfer to the address, so there's
     # no balance to retrieve.  Catch that exception.
@@ -59,13 +62,14 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
 
     force_log_level(original_log_level)
     starting_block = send_from_ethereum_to_sifchain(transfer_request)
-    logging.info(f"send_from_ethereum_to_sifchain block number: {starting_block}")
+    logging.debug(f"send_from_ethereum_to_sifchain ethereum block number: {starting_block}")
     original_log_level = decrease_log_level()
 
     half_n_wait_blocks = n_wait_blocks / 2
     logging.debug("wait half the blocks, transfer should not complete")
     if transfer_request.manual_block_advance:
         advance_n_ethereum_blocks(half_n_wait_blocks, transfer_request.smart_contracts_dir)
+        time.sleep(5)
     else:
         wait_for_ethereum_block_number(
             block_number=starting_block + half_n_wait_blocks,
@@ -82,7 +86,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     except:
         sifchain_balance_before_required_elapsed_blocks = 0
 
-    if sifchain_balance_before_required_elapsed_blocks != sifchain_starting_balance:
+    if transfer_request.check_wait_blocks and sifchain_balance_before_required_elapsed_blocks != sifchain_starting_balance:
         print_error_message(
             f"balance should not have changed yet.  Starting balance {sifchain_starting_balance},"
             f" current balance {sifchain_balance_before_required_elapsed_blocks}"
@@ -150,7 +154,7 @@ def transfer_sifchain_to_ethereum(
     logging.debug(status)
 
     force_log_level(original_log_level)
-    block_number = send_from_sifchain_to_ethereum(transfer_request, credentials)
+    raw_output = send_from_sifchain_to_ethereum(transfer_request, credentials)
     original_log_level = decrease_log_level()
 
     target_balance = ethereum_starting_balance + transfer_request.amount

@@ -23,10 +23,17 @@ class EthereumToSifchainTransferRequest:
     ethereum_chain_id: str = "5777"
     chain_id: str = "localnet"
     manual_block_advance: bool = True
-    n_wait_blocks: int = 50
+    n_wait_blocks: int = 4
     bridgebank_address: str = ""
     bridgetoken_address: str = ""
     sifnodecli_node: str = "tcp://localhost:26657"
+    # set to true if you want to fail if the balance changes before
+    # the block waiting period has elapsed.  If you're runing
+    # transactions in parallel, and you're doing manual block
+    # advances, you can't set this to True.  You also can't set
+    # this to true if the block time is really short, since
+    # you may get a block advance as soon as you submit the transaction.
+    check_wait_blocks: bool= False
 
     def as_json(self):
         return json.dumps(self.__dict__)
@@ -76,6 +83,8 @@ ETHEREUM_ROWAN = "erowan"
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 n_wait_blocks = 50  # number of blocks to wait for the relayer to act
+burn_gas_cost = 65000000000 * 248692  # see x/ethbridge/types/msgs.go for gas
+lock_gas_cost = 65000000000 * 282031
 
 
 def print_error_message(error_message):
@@ -94,7 +103,13 @@ def get_optional_env_var(name: str, default_value: str):
     return result if result else default_value
 
 
+cmdfile = open("/tmp/testcmds.txt", "w")
+
+
 def get_shell_output(command_line):
+    cmdfile.write(command_line)
+    if "sifnodecli" in command_line:
+        time.sleep(2)
     logging.debug(f"execute shell command:\n{command_line}")
     sub = subprocess.run(command_line, shell=True, capture_output=True)
     stdout_string = sub.stdout.decode("utf-8").rstrip()
@@ -103,7 +118,7 @@ def get_shell_output(command_line):
     if stderr_string:
         logging.debug(f"\nexecute shell command stderr:\n{stderr_string}")
     if sub.returncode != 0:
-        raise Exception(f"error running command: {sub.returncode} for command {command_line}\n{stderr_string}")
+        raise Exception(f"error running command: {sub.returncode} for command\n{command_line}\nstdout:\n{stdout_string}\nstderr:\n{stderr_string}")
     return stdout_string
 
 
@@ -233,11 +248,19 @@ def wait_for_sifchain_addr_balance(
     )
 
 
+def detect_errors_in_sifnodecli_output(result):
+    result_lines = result.split("\n")
+    for line in result_lines:
+        line: str
+        if "rawlog:" in line and line != "rawlog: '[]'":
+            raise Exception(f"should not have error in output: {result}")
+
+
 def send_from_sifchain_to_sifchain(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials
 ):
-    logging.info(f"send_from_sifchain_to_sifchain {transfer_request}")
+    logging.debug(f"send_from_sifchain_to_sifchain {transfer_request}")
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
@@ -253,9 +276,12 @@ def send_from_sifchain_to_sifchain(
         node,
         f"{transfer_request.amount}{transfer_request.sifchain_symbol}",
         sifchain_fees_entry,
+        f"--home {credentials.sifnodecli_homedir} ",
         "-y"
     ])
-    return get_shell_output(cmd)
+    result = get_shell_output(cmd)
+    detect_errors_in_sifnodecli_output(result)
+    return result
 
 
 def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferRequest,
@@ -265,11 +291,12 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
     node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
+    amount_as_str = "{:d}".format(transfer_request.amount)
     command_line = f"{yes_entry} " \
                    f"sifnodecli tx ethbridge {direction} {node} " \
                    f"{transfer_request.sifchain_address} " \
                    f"{transfer_request.ethereum_address} " \
-                   f"{transfer_request.amount} " \
+                   f"{amount_as_str} " \
                    f"{transfer_request.sifchain_symbol} " \
                    f"{transfer_request.ceth_amount} " \
                    f"{keyring_backend_entry} " \
@@ -279,7 +306,9 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
                    f"--home {credentials.sifnodecli_homedir} " \
                    f"--from {credentials.from_key} " \
                    f"--yes "
-    return get_shell_output(command_line)
+    result = get_shell_output(command_line)
+    detect_errors_in_sifnodecli_output(result)
+    return result
 
 
 # this does not wait for the transaction to complete
@@ -300,6 +329,7 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
     else:
         result = transaction_result["receipt"]["blockNumber"]
     return result
+
 
 def lock_rowan(user, amount):
     command_line = """yes {} |sifnodecli tx ethbridge lock {} \
@@ -371,9 +401,10 @@ def current_ethereum_block_number(smart_contracts_dir: str):
 
 
 def wait_for_ethereum_block_number(block_number: int, transfer_request: EthereumToSifchainTransferRequest):
+    network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     command_line = f"yarn --cwd {transfer_request.smart_contracts_dir} " \
                    f"integrationtest:waitForBlock " \
-                   f"--ethereum_network {transfer_request.ethereum_network} " \
+                   f"{network_element} " \
                    f"--block_number {block_number} "
     get_shell_output(command_line)
 
@@ -429,8 +460,26 @@ def set_lock_burn_limit(smart_contracts_dir: str, token: str, amount: int):
     return get_shell_output(cmd)
 
 
-def create_ethereum_address(smart_contracts_dir: str, ethereum_network: str):
+def create_ethereum_address(smart_contracts_dir: str, ethereum_network: str) -> (str, str):
     cmd = f"yarn -s --cwd {smart_contracts_dir} " \
           "integrationtest:createEthereumAddress " \
           f"--ethereum_network {ethereum_network} "
-    return run_yarn_command(cmd)
+    result = run_yarn_command(cmd)
+    return result["address"], result["privateKey"]
+
+
+def display_currency_value(x: int) -> str:
+    """if x is 19 + 18 zeros, return (19000000000000000000 | 19)"""
+    return f"({x} | {x / 10 ** 18})"
+
+
+def create_new_currency(amount, symbol, smart_contracts_dir, bridgebank_address):
+    """returns {'destination': '0x627306090abaB3A6e1400e9345bC60c78a8BEf57', 'amount': '9000000000000000000', 'newtoken_address': '0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc', 'newtoken_symbol': 'a3c626b'}"""
+    return run_yarn_command(
+        f"yarn --cwd {smart_contracts_dir} "
+        f"integrationtest:enableNewToken "
+        f"--bridgebank_address {bridgebank_address} "
+        f"--symbol {symbol} "
+        f"--amount {amount} "
+        f"--limit_amount {amount}"
+    )
