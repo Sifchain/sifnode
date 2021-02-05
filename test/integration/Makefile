@@ -2,6 +2,7 @@
 
 # Speed up re-running the tests by only doing a go build if any .go file has changed
 
+GOBIN:=${HOME}/go/bin
 SHELL:=/bin/bash
 
 
