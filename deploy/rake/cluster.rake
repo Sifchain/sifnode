@@ -113,6 +113,21 @@ namespace :cluster do
 
         system({"KUBECONFIG" => kubeconfig(args) }, cmd)
       end
+
+      desc "Deploy the sifnode API to your cluster"
+      task :api, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :node_host] do |t, args|
+        check_args(args)
+
+        cmd = %Q{helm upgrade sifnode-api #{cwd}/../../deploy/helm/sifnode-api \
+          --install -n #{ns(args)} --create-namespace \
+          --set sifnodeApi.args.chainnet=#{args[:chainnet]} \
+          --set sifnodeApi.args.nodeHost=#{args[:node_host]} \
+          --set image.tag=#{image_tag(args)} \
+          --set image.repository=#{image_repository(args)}
+        }
+
+        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      end
     end
   end
 

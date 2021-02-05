@@ -21,67 +21,68 @@ export enum PoolState {
 }
 
 export function usePoolCalculator(input: {
-  fromAmount: Ref<string>;
-  fromSymbol: Ref<string | null>;
-  toAmount: Ref<string>;
-  toSymbol: Ref<string | null>;
+  tokenAAmount: Ref<string>;
+  tokenASymbol: Ref<string | null>;
+  tokenBAmount: Ref<string>;
+  tokenBSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
-  selectedField: Ref<"from" | "to" | null>;
   liquidityProvider: Ref<LiquidityProvider | null>;
   poolFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
 }) {
-  const fromField = useField(input.fromAmount, input.fromSymbol);
-  const toField = useField(input.toAmount, input.toSymbol);
+  const tokenAField = useField(input.tokenAAmount, input.tokenASymbol);
+  const tokenBField = useField(input.tokenBAmount, input.tokenBSymbol);
   const balanceMap = useBalances(input.balances);
 
-  const fromBalance = computed(() => {
-    return input.fromSymbol.value
-      ? balanceMap.value.get(input.fromSymbol.value) ?? null
+  const tokenABalance = computed(() => {
+    return input.tokenASymbol.value
+      ? balanceMap.value.get(input.tokenASymbol.value) ?? null
       : null;
   });
 
-  const toBalance = computed(() => {
-    return input.toSymbol.value
-      ? balanceMap.value.get(input.toSymbol.value) ?? null
+  const tokenBBalance = computed(() => {
+    return input.tokenBSymbol.value
+      ? balanceMap.value.get(input.tokenBSymbol.value) ?? null
       : null;
   });
 
   const fromBalanceOverdrawn = computed(() => {
-    return !fromBalance.value?.greaterThanOrEqual(
-      fromField.fieldAmount.value || "0"
+    return !tokenABalance.value?.greaterThanOrEqual(
+      tokenAField.fieldAmount.value || "0"
     );
   });
 
   const toBalanceOverdrawn = computed(
-    () => !toBalance.value?.greaterThanOrEqual(toField.fieldAmount.value || "0")
+    () =>
+      !tokenBBalance.value?.greaterThanOrEqual(
+        tokenBField.fieldAmount.value || "0"
+      )
   );
 
   const preExistingPool = computed(() => {
-    if (!fromField.asset.value || !toField.asset.value) return null;
+    if (!tokenAField.asset.value || !tokenBField.asset.value) return null;
 
     // Find pool from poolFinder
     const pool = input.poolFinder(
-      fromField.asset.value.symbol,
-      toField.asset.value.symbol
+      tokenAField.asset.value.symbol,
+      tokenBField.asset.value.symbol
     );
-    return pool?.value ?? null;
+
+    return pool?.value || null;
   });
 
   const liquidityPool = computed(() => {
+    if (preExistingPool.value) return preExistingPool.value;
     if (
-      !fromField.fieldAmount.value ||
-      !toField.fieldAmount.value ||
-      !fromField.asset.value ||
-      !toField.asset.value
+      !tokenAField.fieldAmount.value ||
+      !tokenBField.fieldAmount.value ||
+      !tokenAField.asset.value ||
+      !tokenBField.asset.value
     )
       return null;
 
-    return (
-      preExistingPool.value ||
-      Pool(
-        AssetAmount(fromField.asset.value, "0"),
-        AssetAmount(toField.asset.value, "0")
-      )
+    return Pool(
+      AssetAmount(tokenAField.asset.value, "0"),
+      AssetAmount(tokenBField.asset.value, "0")
     );
   });
 
@@ -89,14 +90,15 @@ export function usePoolCalculator(input: {
   const provisionedPoolUnitsArray = computed(() => {
     if (
       !liquidityPool.value ||
-      !toField.fieldAmount.value ||
-      !fromField.fieldAmount.value
-    )
+      !tokenBField.fieldAmount.value ||
+      !tokenAField.fieldAmount.value
+    ) {
       return [new Fraction("0"), new Fraction("0")];
+    }
 
     return liquidityPool.value.calculatePoolUnits(
-      toField.fieldAmount.value,
-      fromField.fieldAmount.value
+      tokenBField.fieldAmount.value,
+      tokenAField.fieldAmount.value
     );
   });
 
@@ -115,17 +117,16 @@ export function usePoolCalculator(input: {
     return [totalPoolUnits, totalLiquidityProviderUnits];
   });
 
-  const totalLiquidityProviderUnits = computed(() =>
-    liquidityProviderPoolUnitsArray.value[1].toFixed(0)
-  );
-
   const totalPoolUnits = computed(() =>
     liquidityProviderPoolUnitsArray.value[0].toFixed(0)
   );
 
+  const totalLiquidityProviderUnits = computed(() =>
+    liquidityProviderPoolUnitsArray.value[1].toFixed(0)
+  );
+
   const shareOfPool = computed(() => {
     if (!liquidityProviderPoolUnitsArray.value) return new Fraction("0");
-    if (!input.liquidityProvider.value) return new Fraction("0");
 
     const [units, lpUnits] = liquidityProviderPoolUnitsArray.value;
 
@@ -137,60 +138,122 @@ export function usePoolCalculator(input: {
   });
 
   const shareOfPoolPercent = computed(() => {
+    if (shareOfPool.value.multiply("10000").lessThan("1")) return "< 0.01%";
     return `${shareOfPool.value.multiply("100").toFixed(2)}%`;
   });
 
-  const aPerBRatioMessage = computed(() => {
-    const aAmount = fromField.fieldAmount.value;
-    const bAmount = toField.fieldAmount.value;
+  const poolAmounts = computed(() => {
+    if (!preExistingPool.value || !tokenAField.asset.value) {
+      return null;
+    }
+    if (!preExistingPool.value.contains(tokenAField.asset.value)) return null;
+    const externalBalance = preExistingPool.value.getAmount(
+      tokenAField.asset.value
+    );
+    const nativeBalance = preExistingPool.value.getAmount("rowan");
+    return [nativeBalance, externalBalance];
+  });
 
-    if (!aAmount || aAmount.equalTo("0")) return ""; // invalid, must supply external
-    if (!bAmount || bAmount.equalTo("0")) {
-      // if rowan is 0 or empty ...
-      // allow if the pool exists (BUT ratio is inapplicable - N/A),
-      // invalid if the pool doesn't exist - ""
-      return preExistingPool.value ? "N/A" : "";
+  // external_balance / native_balance
+  const aPerBRatio = computed(() => {
+    if (!poolAmounts.value) return null;
+    const [native, external] = poolAmounts.value;
+    return external.divide(native);
+  });
+
+  const aPerBRatioMessage = computed(() => {
+    if (!aPerBRatio.value) {
+      return "N/A";
     }
 
-    return aAmount.divide(bAmount).toFixed(8);
+    return aPerBRatio.value.toFixed(8);
+  });
+
+  // native_balance / external_balance
+  const bPerARatio = computed(() => {
+    if (!poolAmounts.value) return null;
+    const [native, external] = poolAmounts.value;
+    return native.divide(external);
   });
 
   const bPerARatioMessage = computed(() => {
-    const aAmount = fromField.fieldAmount.value;
-    const bAmount = toField.fieldAmount.value;
-
-    if (!aAmount || aAmount.equalTo("0")) return ""; // invalid, must supply external
-
-    if (!bAmount || bAmount.equalTo("0")) {
-      // if rowan is 0 or empty ...
-      // allow if the pool exists (BUT ratio is inapplicable - N/A),
-      // invalid if the pool doesn't exist - ""
-      return preExistingPool.value ? "N/A" : "";
+    if (!bPerARatio.value) {
+      return "N/A";
     }
 
-    return bAmount.divide(aAmount).toFixed(8);
+    return bPerARatio.value.toFixed(8);
+  });
+
+  // Price Impact and Pool Share:
+  // (external_balance + external_added) / (native_balance + native_added)
+  const aPerBRatioProjected = computed(() => {
+    if (
+      !poolAmounts.value ||
+      !tokenAField.fieldAmount.value ||
+      !tokenBField.fieldAmount.value
+    )
+      return null;
+
+    const [native, external] = poolAmounts.value;
+    const externalAdded = tokenAField.fieldAmount.value;
+    const nativeAdded = tokenBField.fieldAmount.value;
+
+    return external.add(externalAdded).divide(native.add(nativeAdded));
+  });
+
+  const aPerBRatioProjectedMessage = computed(() => {
+    if (!aPerBRatioProjected.value) {
+      return "N/A";
+    }
+
+    return aPerBRatioProjected.value.toFixed(8);
+  });
+
+  // Price Impact and Pool Share:
+  // (native_balance + native_added)/(external_balance + external_added)
+  const bPerARatioProjected = computed(() => {
+    if (
+      !poolAmounts.value ||
+      !tokenAField.fieldAmount.value ||
+      !tokenBField.fieldAmount.value
+    )
+      return null;
+
+    const [native, external] = poolAmounts.value;
+    const externalAdded = tokenAField.fieldAmount.value;
+    const nativeAdded = tokenBField.fieldAmount.value;
+    return native.add(nativeAdded).divide(external.add(externalAdded));
+  });
+
+  const bPerARatioProjectedMessage = computed(() => {
+    if (!bPerARatioProjected.value) {
+      return "N/A";
+    }
+
+    return bPerARatioProjected.value.toFixed(8);
   });
 
   const state = computed(() => {
-    const aAmount = fromField.fieldAmount.value;
-    const bAmount = toField.fieldAmount.value;
-
-    if (!input.fromSymbol.value || !input.toSymbol.value)
+    // Select Tokens
+    const aSymbolNotSelected = !input.tokenASymbol.value;
+    const bSymbolNotSelected = !input.tokenBSymbol.value;
+    if (aSymbolNotSelected || bSymbolNotSelected)
       return PoolState.SELECT_TOKENS;
 
-    if (!aAmount || aAmount.equalTo("0")) return PoolState.ZERO_AMOUNTS;
+    // Zero amounts
+    const aAmount = tokenAField.fieldAmount.value;
+    const bAmount = tokenBField.fieldAmount.value;
+    const aAmountIsZeroOrFalsy = !aAmount || aAmount.equalTo("0");
+    const bAmountIsZeroOrFalsy = !bAmount || bAmount.equalTo("0");
+    const noPreexistingPool = !preExistingPool.value;
+    if ((noPreexistingPool && bAmountIsZeroOrFalsy) || aAmountIsZeroOrFalsy)
+      return PoolState.ZERO_AMOUNTS;
 
-    if (!bAmount || bAmount.equalTo("0"))
-      // if rowan is 0 or empty ...
-      // allow if the pool exists
-      // invalid if the pool doesn't exist - ""
-      return preExistingPool.value
-        ? PoolState.VALID_INPUT
-        : PoolState.ZERO_AMOUNTS;
-
+    // Insufficient Funds
     if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value)
       return PoolState.INSUFFICIENT_FUNDS;
 
+    // Valid yay!
     return PoolState.VALID_INPUT;
   });
 
@@ -198,12 +261,14 @@ export function usePoolCalculator(input: {
     state,
     aPerBRatioMessage,
     bPerARatioMessage,
+    aPerBRatioProjectedMessage,
+    bPerARatioProjectedMessage,
     shareOfPool,
     shareOfPoolPercent,
     preExistingPool,
     totalLiquidityProviderUnits,
     totalPoolUnits,
-    fromFieldAmount: fromField.fieldAmount,
-    toFieldAmount: toField.fieldAmount,
+    tokenAFieldAmount: tokenAField.fieldAmount,
+    tokenBFieldAmount: tokenBField.fieldAmount,
   };
 }

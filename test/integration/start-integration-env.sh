@@ -1,6 +1,7 @@
 #!/bin/bash
 # must run from the root directory of the sifnode tree
 
+set -xv
 set -e # exit on any failure
 set -o pipefail
 
@@ -15,6 +16,9 @@ export envexportfile=$BASEDIR/test/integration/vagrantenv.sh
 rm -f $envexportfile
 
 set_persistant_env_var ETHEREUM_PRIVATE_KEY c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 $envexportfile
+set_persistant_env_var OWNER 0x627306090abaB3A6e1400e9345bC60c78a8BEf57 $envexportfile
+# we may eventually switch things so PAUSER and OWNER aren't the same account, but for now they're the same
+set_persistant_env_var PAUSER $OWNER $envexportfile
 set_persistant_env_var BASEDIR $(fullpath $BASEDIR) $envexportfile
 set_persistant_env_var SIFCHAIN_BIN $BASEDIR/cmd $envexportfile
 set_persistant_env_var envexportfile $(fullpath $envexportfile) $envexportfile
@@ -54,6 +58,7 @@ set_persistant_env_var ETHEREUM_CONTRACT_ADDRESS $BRIDGE_REGISTRY_ADDRESS $envex
 
 set_persistant_env_var BRIDGE_BANK_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeBank.json | jq -r '.networks["5777"].address') $envexportfile required
 
+rm -rf $SMART_CONTRACTS_DIR/relayerdb
 ADD_VALIDATOR_TO_WHITELIST=true bash ${BASEDIR}/test/integration/setup_sifchain.sh && . $envexportfile
 
 UPDATE_ADDRESS=0x0000000000000000000000000000000000000000 npx truffle exec scripts/setTokenLockBurnLimit.js 31000000000000000000

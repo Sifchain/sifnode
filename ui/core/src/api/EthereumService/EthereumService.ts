@@ -62,28 +62,20 @@ export class EthereumService implements IWalletService {
   };
 
   constructor(getWeb3Provider: () => Promise<provider>, assets: Asset[]) {
-    // init state
     this.state = reactive({ ...initState });
-    this.supportedTokens = assets.filter(t => t.network === Network.ETHEREUM);
-
-    // TODO refactor to similar pattern in TendermintSocketSubscriber
-    // around waiting for provider
+    this.supportedTokens = assets.filter((t) => t.network === Network.ETHEREUM);
     this.providerPromise = getWeb3Provider();
     this.providerPromise
-      .then(provider => {
+      .then((provider) => {
         if (!provider) return (this.provider = null);
         if (isEventEmittingProvider(provider)) {
-          provider.on("connect", () => {
-            this.state.connected = true;
-          });
-          provider.on("disconnect", () => {
-            this.state.connected = false;
-          });
+          provider.on("chainChanged", () => window.location.reload());
+          provider.on("accountsChanged", () => this.updateData());
         }
         this.provider = provider;
       })
-      .catch(error => {
-        console.log("er", error);
+      .catch((error) => {
+        console.log("error", error);
       });
   }
 
@@ -124,19 +116,15 @@ export class EthereumService implements IWalletService {
   async connect() {
     const provider = await this.providerPromise;
     try {
-      if (!provider)
+      if (!provider) {
         throw new Error("Cannot connect because provider is not yet loaded!");
-
+      }
       this.web3 = new Web3(provider);
-
-      // Let's test for Metamask
       if (isMetaMaskProvider(provider)) {
         if (provider.request) {
-          // If metamask lets try and connect
           await provider.request({ method: "eth_requestAccounts" });
         }
       }
-
       this.addWeb3Subscription();
       notify({ type: "success", message: "Connected to Metamask" });
       await this.updateData();
@@ -147,32 +135,27 @@ export class EthereumService implements IWalletService {
   }
 
   addWeb3Subscription() {
-    // TODO: Work out why we cannot subscribe to events when using metamask
-    //       provider and reinstate the following
-    //       Commenting out for now
-    //
-    // this.blockSubscription = this.web3?.eth.subscribe("newBlockHeaders");
-    // this.blockSubscription.on("data", (result: any) => {
-    //   console.log("Ethereum new block header");
-    //   this.updateData();
-    //   this.state.log = result?.hash ?? "null";
-    // });
-
-    // So the above is not working for Metamask instead we setup an interval and do a simple poll
-    let count = 0;
-    let interval = setInterval(() => {
-      this.updateData();
-      this.state.log = `${++count}`;
-    }, 2000);
-    this.blockSubscription = {
-      unsubscribe() {
-        clearInterval(interval);
-      },
-    };
+    this.blockSubscription = this.web3?.eth.subscribe(
+      "newBlockHeaders",
+      (error, blockHeader) => {
+        if (blockHeader) {
+          this.updateData();
+          this.state.log = blockHeader.hash;
+        } else {
+          this.state.log = error.message;
+        }
+      }
+    );
   }
 
   removeWeb3Subscription() {
-    this.blockSubscription?.unsubscribe();
+    const success = this.blockSubscription?.unsubscribe();
+    if (success) {
+      this.blockSubscription = null;
+    } else {
+      // try again if not success
+      this.blockSubscription?.unsubscribe();
+    }
   }
 
   async disconnect() {
@@ -190,13 +173,12 @@ export class EthereumService implements IWalletService {
     asset?: Asset | Token
   ): Promise<Balances> {
     const supportedTokens = this.getSupportedTokens();
-
     const addr = address || this.state.address;
-
-    if (!this.web3 || !addr) return [];
+    if (!this.web3 || !addr) {
+      return [];
+    }
 
     const web3 = this.web3;
-
     let balances = [];
 
     if (asset) {
@@ -215,7 +197,7 @@ export class EthereumService implements IWalletService {
         getEtheriumBalance(web3, addr),
         ...supportedTokens
           .slice(0, 10)
-          .filter(t => t.symbol !== "eth")
+          .filter((t) => t.symbol !== "eth")
           .map((token: Asset) => {
             if (isToken(token)) return getTokenBalance(web3, addr, token);
             return AssetAmount(token, "0");

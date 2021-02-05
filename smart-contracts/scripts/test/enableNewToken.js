@@ -27,7 +27,7 @@ module.exports = async (cb) => {
     const BridgeToken = artifacts.require("BridgeToken");
     const newToken = await BridgeToken.new(argv.symbol);
 
-    const bridgeBankContract = await contractUtilites.buildContract(this, argv, "BridgeBank", argv.bridgebank_address);
+    const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging, "BridgeBank", argv.bridgebank_address);
 
     const accounts = await web3.eth.getAccounts();
     const operator_address = accounts[0]; // operator

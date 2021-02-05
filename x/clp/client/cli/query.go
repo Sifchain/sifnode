@@ -29,6 +29,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdPools(queryRoute, cdc),
 		GetCmdAssets(queryRoute, cdc),
 		GetCmdLiquidityProvider(queryRoute, cdc),
+		GetCmdLpList(queryRoute, cdc),
 	)...)
 	return clpQueryCmd
 }
@@ -151,6 +152,32 @@ $ %s pool ETH sif1h2zjknvr3xlpk22q4dnv396ahftzqhyeth7egd`,
 			var lp types.LiquidityProviderResponse
 			cdc.MustUnmarshalJSON(res, &lp)
 			return cliCtx.PrintOutput(lp)
+		},
+	}
+}
+
+func GetCmdLpList(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "lplist [symbol]",
+		Short: "Get all liquidity providers for the asset ",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			assetSymbol := args[0]
+			params := types.NewQueryReqGetLiquidityProviderList(assetSymbol)
+			bz, err := cliCtx.Codec.MarshalJSON(params)
+			if err != nil {
+				return err
+			}
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryLPList)
+			res, height, err := cliCtx.QueryWithData(route, bz)
+			if err != nil {
+				return err
+			}
+			var assetList types.LiquidityProviders
+			cdc.MustUnmarshalJSON(res, &assetList)
+			out := types.NewLpListResponse(assetList, height)
+			return cliCtx.PrintOutput(out)
 		},
 	}
 }

@@ -10,64 +10,85 @@ import pytest
 
 import burn_lock_functions
 from burn_lock_functions import EthereumToSifchainTransferRequest
+from pytest_utilities import generate_test_account
+import test_utilities
 from test_utilities import get_required_env_var, SifchaincliCredentials
 
 
-def build_request():
-    credentials = SifchaincliCredentials(
-        keyring_passphrase=get_required_env_var("OWNER_PASSWORD"),
-        keyring_backend="file",
-        from_key=get_required_env_var("MONIKER"),
-        sifnodecli_homedir=f"""{get_required_env_var("CHAINDIR")}/.sifnodecli"""
+def test_fee_charged_to_transfer_rowan_to_erowan(
+        basic_transfer_request: EthereumToSifchainTransferRequest,
+        source_ethereum_address: str,
+        rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
+        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
+        ethereum_network,
+        smart_contracts_dir,
+        bridgetoken_address,
+):
+    basic_transfer_request.ethereum_address = source_ethereum_address
+    logging.info(f"credentials: {rowan_source_integrationtest_env_credentials}")
+    request, credentials = generate_test_account(
+        basic_transfer_request,
+        rowan_source_integrationtest_env_transfer_request,
+        rowan_source_integrationtest_env_credentials,
+        target_ceth_balance=10 ** 18,
+        target_rowan_balance=10 ** 18
     )
-    request = EthereumToSifchainTransferRequest(
-        ethereum_symbol="eth",
-        sifchain_symbol="ceth",
-        sifchain_address=get_required_env_var("OWNER_ADDR"),
-        smart_contracts_dir=get_required_env_var("SMART_CONTRACTS_DIR"),
-        ethereum_address=get_required_env_var("ETHEREUM_ADDRESS"),
-        ethereum_private_key_env_var="ETHEREUM_PRIVATE_KEY",
-        bridgebank_address=get_required_env_var("BRIDGE_BANK_ADDRESS"),
-        bridgetoken_address=get_required_env_var("BRIDGE_TOKEN_ADDRESS"),
-        ethereum_network=(os.environ.get("ETHEREUM_NETWORK") or ""),
-        amount=2 * (10 ** 17),
-        ceth_amount=2 * 10 ** 16 - 37
+    # send some test account ceth back to a new ethereum address
+    request.ethereum_address, _ = test_utilities.create_ethereum_address(
+        smart_contracts_dir, ethereum_network
     )
-    return request, credentials
-
-
-def test_charge_a_fee_on_a_sifchain_burn():
-    logging.info(f"get initial ceth to cover fees")
-    (request, credentials) = build_request()
-    burn_lock_functions.transfer_ethereum_to_sifchain(request, 10)
-
-    request.ethereum_symbol = "erowan"
+    logging.info(f"sending rowan to erowan and checking that a ceth fee was charged")
     request.sifchain_symbol = "rowan"
-    request.amount = 12000
-    logging.info(f"transfer rowan to erowan: {request}")
-    ceth_balance = burn_lock_functions.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
-                                                                 "ceth")
-    logging.info(f"initial ceth balance is {ceth_balance}")
+    request.ethereum_symbol = bridgetoken_address
+    request.amount = 31500
+
+    # get the starting ceth balance, transfer some rowan to erowan, get the ending ceth
+    # balance.  The difference is the fee charged and should be equal to request.ceth_amount
+
+    starting_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node, "ceth")
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
-    new_ceth_balance = burn_lock_functions.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
-                                                                     "ceth")
-    ceth_fee = ceth_balance - new_ceth_balance
-    logging.info(f"ceth fee is {ceth_fee}")
-    logging.info(f"final ceth balance change due to fees should be <= the request ceth_amount {request.ceth_amount}")
-    assert (ceth_fee <= request.ceth_amount)
+    ending_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node, "ceth")
+    fee = starting_ceth_balance - ending_ceth_balance
+    assert fee == request.ceth_amount
 
 
-def test_do_not_transfer_if_fee_allowed_is_too_low():
-    logging.info(f"get initial ceth to cover fees")
-    (request, credentials) = build_request()
-    request.ethereum_symbol = "erowan"
+def test_do_not_transfer_if_fee_allowed_is_too_low(
+        basic_transfer_request: EthereumToSifchainTransferRequest,
+        source_ethereum_address: str,
+        rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
+        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
+        ethereum_network,
+        smart_contracts_dir,
+        bridgetoken_address,
+):
+    basic_transfer_request.ethereum_address = source_ethereum_address
+    target_ceth_balance = 10 ** 18
+    target_rowan_balance = 10 ** 18
+    request, credentials = generate_test_account(
+        basic_transfer_request,
+        rowan_source_integrationtest_env_transfer_request,
+        rowan_source_integrationtest_env_credentials,
+        target_ceth_balance=target_ceth_balance,
+        target_rowan_balance=target_rowan_balance
+    )
+    # send some test account ceth back to a new ethereum address
+    request.ethereum_address, _ = test_utilities.create_ethereum_address(
+        smart_contracts_dir, ethereum_network
+    )
     request.sifchain_symbol = "rowan"
-    request.amount = 12000
-    request.ceth_amount = 65000000000 * 248692 - 1  # from x/ethbridge/types/msgs.go
+    request.ethereum_symbol = bridgetoken_address
+    request.amount = 31500
 
-    starting_rowan_balance = burn_lock_functions.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node, request.sifchain_symbol)
+    logging.info("try to transfer rowan to erowan with a ceth_amount that's too low")
     with pytest.raises(Exception):
+        request.ceth_amount = test_utilities.lock_gas_cost - 1
         burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
-    ending_rowan_balance = burn_lock_functions.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node, request.sifchain_symbol)
-    logging.info(f"starting_rowan_balance {starting_rowan_balance} and ending_rowan_balance {ending_rowan_balance} should be equal")
-    assert(starting_rowan_balance == ending_rowan_balance)
+    ending_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node, "ceth")
+    assert ending_ceth_balance == target_ceth_balance
+
+    logging.info("try with not owning enough ceth to cover the offer")
+    with pytest.raises(Exception):
+        request.ceth_amount = target_ceth_balance + 1
+        burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
+    ending_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node, "ceth")
+    assert ending_ceth_balance == target_ceth_balance

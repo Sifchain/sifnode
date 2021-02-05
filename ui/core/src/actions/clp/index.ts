@@ -1,9 +1,9 @@
-import { Asset, AssetAmount, LiquidityProvider, Pool } from "../../entities";
+import {Asset, AssetAmount, Fraction, LiquidityProvider, Pool} from "../../entities";
 import { ActionContext } from "..";
 import { PoolStore } from "../../store/pools";
 import notify from "../../api/utils/Notifications";
-import { toPool } from "../../api/utils/SifClient/toPool";
 import { effect } from "@vue/reactivity";
+import JSBI from "jsbi";
 
 export default ({
   api,
@@ -77,58 +77,61 @@ export default ({
   }
 
   const actions = {
-    async swap(sentAmount: AssetAmount, receivedAsset: Asset) {
+    async swap(
+      sentAmount: AssetAmount,
+      receivedAsset: Asset,
+      minimumReceived: AssetAmount
+    ) {
       if (!state.address) throw "No from address provided for swap";
-      try {
-        const tx = await api.ClpService.swap({
-          fromAddress: state.address,
-          sentAmount,
-          receivedAsset,
-        });
 
-        return await api.SifService.signAndBroadcast(tx.value.msg);
-      } catch (err) {
-        if (err.message) {
-          notify({
-            type: "error",
-            message: err.message,
-          });
-        }
+      const tx = await api.ClpService.swap({
+        fromAddress: state.address,
+        sentAmount,
+        receivedAsset,
+        minimumReceived,
+      });
+
+      const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
+
+      if (txStatus.state !== "accepted") {
+        notify({
+          type: "error",
+          message: txStatus.memo || "There was an error with your swap",
+        });
       }
+
+      return txStatus;
     },
 
     async addLiquidity(
       nativeAssetAmount: AssetAmount,
       externalAssetAmount: AssetAmount
     ) {
-      try {
-        if (!state.address) throw "No from address provided for swap";
-        const hasPool = !!findPool(
-          store.pools,
-          nativeAssetAmount.asset.symbol,
-          externalAssetAmount.asset.symbol
-        );
+      if (!state.address) throw "No from address provided for swap";
+      const hasPool = !!findPool(
+        store.pools,
+        nativeAssetAmount.asset.symbol,
+        externalAssetAmount.asset.symbol
+      );
 
-        const provideLiquidity = hasPool
-          ? api.ClpService.addLiquidity
-          : api.ClpService.createPool;
+      const provideLiquidity = hasPool
+        ? api.ClpService.addLiquidity
+        : api.ClpService.createPool;
 
-        const tx = await provideLiquidity({
-          fromAddress: state.address,
-          nativeAssetAmount,
-          externalAssetAmount,
+      const tx = await provideLiquidity({
+        fromAddress: state.address,
+        nativeAssetAmount,
+        externalAssetAmount,
+      });
+
+      const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
+      if (txStatus.state !== "accepted") {
+        notify({
+          type: "error",
+          message: txStatus.memo || "There was an error adding liquidity",
         });
-
-        return await api.SifService.signAndBroadcast(tx.value.msg);
-      } catch (err) {
-        // TODO: coordinate with blockchain to get more standardised errors
-        if (err.message) {
-          notify({
-            type: "error",
-            message: err.message,
-          });
-        }
       }
+      return txStatus;
     },
 
     async removeLiquidity(
@@ -136,24 +139,24 @@ export default ({
       wBasisPoints: string,
       asymmetry: string
     ) {
-      try {
-        const tx = await api.ClpService.removeLiquidity({
-          fromAddress: state.address,
-          asset,
-          asymmetry,
-          wBasisPoints,
-        });
 
-        return await api.SifService.signAndBroadcast(tx.value.msg);
-      } catch (err) {
-        // TODO: coordinate with blockchain to get more standardised errors
-        if (err.message) {
-          notify({
-            type: "error",
-            message: err.message,
-          });
-        }
+      const tx = await api.ClpService.removeLiquidity({
+        fromAddress: state.address,
+        asset,
+        asymmetry,
+        wBasisPoints,
+      });
+
+      const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
+
+      if (txStatus.state !== "accepted") {
+        notify({
+          type: "error",
+          message: txStatus.memo || "There was an error removing liquidity",
+        });
       }
+
+      return txStatus;
     },
 
     async disconnect() {

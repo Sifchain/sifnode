@@ -12,12 +12,12 @@ loglevel=${LOG_LEVEL:-INFO}
 
 logecho $0 starting
 
-# TODO we should get this from a script, not hardcoded
-operator_address=0xf17f52151EbEF6C7334FAD080c5704D77216b732
-
-ETHEREUM_ADDRESS=$operator_address python3 -m pytest -olog_level=$loglevel -v -olog_file=/tmp/log.txt -v \
-  ${TEST_INTEGRATION_PY_DIR}/test_parallel_eth_transfers.py \
-  ${TEST_INTEGRATION_PY_DIR}/test_rowan_transfers.py \
-  ${TEST_INTEGRATION_PY_DIR}/test_foo.py \
+python3 -m pytest -olog_level=$loglevel -v -olog_file=/tmp/log.txt -v \
+  ${TEST_INTEGRATION_PY_DIR}/test_bulk_transfers.py \
+  ${TEST_INTEGRATION_PY_DIR}/test_ebrelayer_replay.py \
   ${TEST_INTEGRATION_PY_DIR}/test_new_currency_transfers.py \
-  ${TEST_INTEGRATION_PY_DIR}/test_rollback_chain.py
+  ${TEST_INTEGRATION_PY_DIR}/test_peggy_fees.py \
+  ${TEST_INTEGRATION_PY_DIR}/test_random_currency_roundtrip.py \
+  ${TEST_INTEGRATION_PY_DIR}/test_rollback_chain.py \
+  ${TEST_INTEGRATION_PY_DIR}/test_transfers.py
+

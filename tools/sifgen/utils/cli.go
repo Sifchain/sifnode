@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -251,7 +252,10 @@ func (c CLI) shellExecInput(cmd string, inputs [][]byte, args ...string) (*strin
 
 	buf := bytes.NewBuffer(nil)
 	go func() {
-		io.Copy(buf, stdout)
+		_, err := io.Copy(buf, stdout)
+		if err != nil {
+			log.Println("io.Copy failed: ", err.Error())
+		}
 	}()
 
 	if err := cm.Start(); err != nil {
@@ -259,7 +263,10 @@ func (c CLI) shellExecInput(cmd string, inputs [][]byte, args ...string) (*strin
 	}
 
 	for _, i := range inputs {
-		stdin.Write(i)
+		_, err := stdin.Write(i)
+		if err != nil {
+			log.Println("Write failed: ", err.Error())
+		}
 	}
 
 	if err := cm.Wait(); err != nil {

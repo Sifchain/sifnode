@@ -49,7 +49,7 @@ def build_request(new_currency, amount):
     return (request, credentials)
 
 
-@pytest.mark.xfail
+@pytest.mark.skip(reason="fails and is too slow to mark with xfail")
 def test_can_create_a_new_token_with_a_one_number_name_and_peg_it():
     new_account_key = "0"
     amount = amount_in_wei(9)
@@ -58,7 +58,7 @@ def test_can_create_a_new_token_with_a_one_number_name_and_peg_it():
     burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
 
 
-@pytest.mark.xfail
+@pytest.mark.skip(reason="fails and is too slow to mark with xfail")
 def test_can_create_a_new_token_with_a_one_letter_name_and_peg_it():
     new_account_key = "a"
     amount = amount_in_wei(9)
@@ -67,7 +67,7 @@ def test_can_create_a_new_token_with_a_one_letter_name_and_peg_it():
     burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
 
 
-@pytest.mark.xfail
+@pytest.mark.skip(reason="fails and is too slow to mark with xfail")
 def test_can_create_a_new_token_with_a_long_name_and_peg_it():
     new_account_key = "ca36e47edfeb28489d8e110fb91d351bcd"
     amount = amount_in_wei(9)
@@ -84,15 +84,7 @@ def test_can_create_a_new_token_with_a_7_char_name_and_peg_it():
     burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
 
 
-def test_can_create_dai_and_peg_it():
-    new_account_key = "Dai"
-    amount = amount_in_wei(9)
-    new_currency = create_new_currency(amount, new_account_key)
-    (request1, _) = build_request(new_currency, amount)
-    burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
-
-
-@pytest.mark.xfail
+@pytest.mark.skip(reason="fails and is too slow to mark with xfail")
 def test_two_currencies_with_different_capitalization_should_not_interfere_with_each_other():
     new_account_key = ("a" + get_shell_output("uuidgen").replace("-", "").lower())[:5]
     amount = amount_in_wei(9)
@@ -112,7 +104,7 @@ def test_two_currencies_with_different_capitalization_should_not_interfere_with_
     assert(balance_1 == balance_1_again)
 
 
-@pytest.mark.xfail
+@pytest.mark.skip(reason="fails and is too slow to mark with xfail")
 def test_cannot_create_two_currencies_that_only_differ_in_capitalization():
     new_account_key = get_shell_output("uuidgen").replace("-", "").lower()
     create_new_currency(amount_in_wei(10), new_account_key)
@@ -120,7 +112,7 @@ def test_cannot_create_two_currencies_that_only_differ_in_capitalization():
         create_new_currency(amount_in_wei(10), new_account_key.upper())
 
 
-@pytest.mark.xfail
+@pytest.mark.skip(reason="fails and is too slow to mark with xfail")
 def test_cannot_create_two_currencies_with_the_same_name():
     new_account_key = get_shell_output("uuidgen").replace("-", "")
     create_new_currency(amount_in_wei(10), new_account_key)
@@ -128,7 +120,7 @@ def test_cannot_create_two_currencies_with_the_same_name():
         create_new_currency(amount_in_wei(10), new_account_key)
 
 
-@pytest.mark.xfail
+@pytest.mark.skip(reason="fails and is too slow to mark with xfail")
 def test_can_use_a_token_with_a_dash_in_the_name():
     n = "a-b"
     new_currency = create_new_currency(amount_in_wei(10), n)
