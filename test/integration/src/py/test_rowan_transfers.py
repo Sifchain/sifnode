@@ -6,57 +6,44 @@ import pytest
 import burn_lock_functions
 from burn_lock_functions import EthereumToSifchainTransferRequest
 import test_utilities
+from pytest_utilities import generate_test_account
 from test_utilities import get_required_env_var, SifchaincliCredentials, get_optional_env_var, ganache_owner_account
 
-bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
-bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
-smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
-owner_password = get_required_env_var("OWNER_PASSWORD", "because we need to get rowan from the owner")
-ethereum_address = get_optional_env_var(
-    "ETHEREUM_ADDRESS",
-    ganache_owner_account(smart_contracts_dir)
-)
+# bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
+# bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
+# smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
+# owner_password = get_required_env_var("OWNER_PASSWORD", "because we need to get rowan from the owner")
+# ethereum_address = get_optional_env_var(
+#     "ETHEREUM_ADDRESS",
+#     ganache_owner_account(smart_contracts_dir)
+# )
 
 
-# this transfers rowan that's already in the owner account back to the ethereum side,
-# so we don't need to mint new rowan
-def test_transfer_rowan_to_erowan_and_back():
-    # we need to use the credentials that were created for the owner to get rowan
-    credentials = SifchaincliCredentials(
-        keyring_passphrase=owner_password,
-        keyring_backend="file",
-        from_key=get_required_env_var("MONIKER"),
-        sifnodecli_homedir=f"""{get_required_env_var("CHAINDIR")}/.sifnodecli"""
+def test_rowan_to_erowan(
+        basic_transfer_request: EthereumToSifchainTransferRequest,
+        source_ethereum_address: str,
+        rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
+        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
+        ethereum_network,
+        bridgetoken_address,
+        smart_contracts_dir
+):
+    basic_transfer_request.ethereum_address = source_ethereum_address
+    basic_transfer_request.check_wait_blocks = True
+    target_rowan_balance = 10 ** 18
+    request, credentials = generate_test_account(
+        basic_transfer_request,
+        rowan_source_integrationtest_env_transfer_request,
+        rowan_source_integrationtest_env_credentials,
+        target_ceth_balance=10 ** 18,
+        target_rowan_balance=target_rowan_balance
     )
-    request = EthereumToSifchainTransferRequest(
-        ethereum_symbol="eth",
-        sifchain_symbol="ceth",
-        sifchain_address=get_required_env_var("OWNER_ADDR"),
-        smart_contracts_dir=smart_contracts_dir,
-        ethereum_address=ethereum_address,
-        ethereum_private_key_env_var="ETHEREUM_PRIVATE_KEY",
-        bridgebank_address=bridgebank_address,
-        bridgetoken_address=bridgetoken_address,
-        ethereum_network=(os.environ.get("ETHEREUM_NETWORK") or ""),
-        amount=10 ** 17,
-        ceth_amount=2 * 10 ** 16
-    )
-    logging.info(f"get initial ceth to cover fees: {request}")
-    burn_lock_functions.transfer_ethereum_to_sifchain(request, 10)
 
-    request.ethereum_symbol = bridgetoken_address
+    logging.info(f"send erowan to ethereum from test account")
+    request.ethereum_address, _ = test_utilities.create_ethereum_address(
+        smart_contracts_dir, ethereum_network
+    )
     request.sifchain_symbol = "rowan"
-    request.amount = 12000
-    logging.info(f"transfer rowan to erowan: {request}")
-    starting_balance = burn_lock_functions.get_eth_balance(request)
+    request.ethereum_symbol = bridgetoken_address
+    request.amount = int(target_rowan_balance / 2)
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
-    ending_balance = burn_lock_functions.get_eth_balance(request)
-    assert(ending_balance == starting_balance + request.amount)
-
-    test_utilities.whitelist_token(bridgetoken_address, smart_contracts_dir)
-    burn_lock_functions.transfer_ethereum_to_sifchain(request, 20)
-
-
-@pytest.mark.skip(reason="not implemented")
-def test_transfer_erowan_to_another_sifchain_address():
-    assert False

@@ -6,6 +6,7 @@ import { useCore } from "@/hooks/useCore";
 import { Asset, AssetAmount } from "ui-core";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
+
 import RaisedPanel from "@/components/shared/RaisedPanel.vue";
 import { useRouter } from "vue-router";
 import SifInput from "@/components/shared/SifInput.vue";
@@ -14,7 +15,15 @@ import Label from "@/components/shared/Label.vue";
 import RaisedPanelColumn from "@/components/shared/RaisedPanelColumn.vue";
 import { trimZeros } from "ui-core/src/hooks/utils";
 import BigNumber from "bignumber.js";
-import { useAssetItem } from "../components/shared/utils";
+import {
+  formatSymbol,
+  getPeggedSymbol,
+  getUnpeggedSymbol,
+  useAssetItem,
+} from "@/components/shared/utils";
+import { toConfirmState } from "./utils/toConfirmState";
+import { ConfirmState } from "../types";
+import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -30,6 +39,7 @@ export default defineComponent({
     DetailsTable,
     ActionsPanel,
     RaisedPanelColumn,
+    ConfirmationModal,
   },
 
   setup(props, context) {
@@ -41,36 +51,49 @@ export default defineComponent({
         : "peg";
     });
 
+    const transactionState = ref<ConfirmState>("selecting");
+    const transactionStateMsg = ref<string>("");
+    const transactionHash = ref<string | null>(null);
+
     // const symbol = ref<string | null>(null);
     const symbol = computed(() => {
       const assetFrom = router.currentRoute.value.params.assetFrom;
       return Array.isArray(assetFrom) ? assetFrom[0] : assetFrom;
     });
+
+    const oppositeSymbol = computed(() => {
+      if (mode.value === "peg") {
+        return getPeggedSymbol(symbol.value);
+      }
+      return getUnpeggedSymbol(symbol.value);
+    });
+
     const amount = ref("0.0");
     const address = computed(() =>
       mode.value === "peg" ? store.wallet.sif.address : store.wallet.eth.address
     );
 
-    async function handlePeg() {
-      try {
-        await actions.peg.peg(
-          AssetAmount(Asset.get(symbol.value), amount.value)
-        );
-        router.push("/peg");
-      } catch (err) {
-        console.error(err);
-      }
+    async function handlePegRequested() {
+      transactionState.value = "signing";
+      const tx = await actions.peg.peg(
+        AssetAmount(Asset.get(symbol.value), amount.value)
+      );
+
+      transactionHash.value = tx.hash;
+      transactionState.value = toConfirmState(tx.state); // TODO: align states
+      transactionStateMsg.value = tx.memo ?? "";
     }
 
-    async function handleUnpeg() {
-      try {
-        await actions.peg.unpeg(
-          AssetAmount(Asset.get(symbol.value), amount.value)
-        );
-        router.push("/peg");
-      } catch (err) {
-        console.error(err);
-      }
+    async function handleUnpegRequested() {
+      transactionState.value = "signing";
+
+      const tx = await actions.peg.unpeg(
+        AssetAmount(Asset.get(symbol.value), amount.value)
+      );
+
+      transactionHash.value = tx.hash;
+      transactionState.value = toConfirmState(tx.state); // TODO: align states
+      transactionStateMsg.value = tx.memo ?? "";
     }
 
     const accountBalance = computed(() => {
@@ -87,7 +110,7 @@ export default defineComponent({
 
     const nextStepAllowed = computed(() => {
       const amountNum = new BigNumber(amount.value);
-      const balance = accountBalance.value?.toFixed(0) ?? "0.0";
+      const balance = accountBalance.value?.toFixed(18) ?? "0.0";
       return (
         amountNum.isGreaterThan("0.0") &&
         address.value !== "" &&
@@ -95,7 +118,16 @@ export default defineComponent({
       );
     });
 
-    return {
+    function requestTransactionModalClose() {
+      if (transactionState.value === "confirmed") {
+        transactionState.value = "selecting";
+        router.push("/peg"); // TODO push back to peg, but load unpeg tab when unpegging -> dynamic routing?
+      } else {
+        transactionState.value = "selecting";
+      }
+    }
+
+    const pageState = {
       mode,
       modeLabel: computed(() => capitalize(mode.value)),
       symbol,
@@ -118,18 +150,23 @@ export default defineComponent({
         amount.value = newAmount;
       },
       handleActionClicked: () => {
-        if (mode.value === "peg") {
-          handlePeg();
-        } else {
-          handleUnpeg();
-        }
+        transactionState.value = "confirming";
       },
-
+      handlePegRequested,
+      handleUnpegRequested,
+      oppositeSymbol,
+      formatSymbol,
+      requestTransactionModalClose,
+      transactionState,
+      transactionStateMsg,
+      transactionHash,
       nextStepAllowed,
       nextStepMessage: computed(() => {
         return mode.value === "peg" ? "Peg" : "Unpeg";
       }),
     };
+    (window as any).pageState = pageState;
+    return pageState;
   },
 });
 </script>
@@ -183,6 +220,79 @@ export default defineComponent({
         :nextStepMessage="nextStepMessage"
       />
     </div>
+    <ConfirmationModal
+      v-if="mode === 'peg'"
+      @confirmed="handlePegRequested"
+      :requestClose="requestTransactionModalClose"
+      :state="transactionState"
+      :transactionHash="transactionHash"
+      :transactionStateMsg="transactionStateMsg"
+      confirmButtonText="Confirm Peg"
+      :title="`Peg token to Sifchain`"
+    >
+      <template v-slot:selecting>
+        <DetailsTable
+          :header="{
+            show: amount !== '0.0',
+            label: `${modeLabel} Amount`,
+            data: `${amount} ${formatSymbol(symbol)}`,
+          }"
+          :rows="[
+            {
+              show: true,
+              label: 'Direction',
+              data: `${formatSymbol(symbol)} → ${formatSymbol(oppositeSymbol)}`,
+            },
+          ]"
+        />
+        <br />
+        <p class="text--normal">
+          *Please note your funds will be available for use on Sifchain only after 50 Ethereum block confirmations. This can take upwards of 20 minutes.
+        </p>
+      </template>
+      <template v-slot:common>
+        <p class="text--normal">
+          Pegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
+        </p>
+      </template>
+    </ConfirmationModal>
+    <ConfirmationModal
+      v-if="mode === 'unpeg'"
+      @confirmed="handleUnpegRequested"
+      :requestClose="requestTransactionModalClose"
+      :state="transactionState"
+      :transactionHash="transactionHash"
+      :transactionStateMsg="transactionStateMsg"
+      confirmButtonText="Confirm Unpeg"
+      title="Unpeg token from Sifchain"
+    >
+      <template v-slot:selecting>
+        <DetailsTable
+          :header="{
+            show: amount !== '0.0',
+            label: `${modeLabel} Amount`,
+            data: `${amount} ${formatSymbol(symbol)}`,
+          }"
+          :rows="[
+            {
+              show: true,
+              label: 'Direction',
+              data: `${formatSymbol(symbol)} → ${formatSymbol(oppositeSymbol)}`,
+            },
+            {
+              show: !!feeAmount,
+              label: 'Transaction Fee',
+              data: `${feeAmount.toFixed(8)} cETH`,
+            },
+          ]"
+        />
+      </template>
+      <template v-slot:common>
+        <p class="text--normal">
+          Unpegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
+        </p>
+      </template>
+    </ConfirmationModal>
   </Layout>
 </template>
 

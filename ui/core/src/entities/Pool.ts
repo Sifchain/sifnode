@@ -84,7 +84,7 @@ export function Pool(
       return AssetAmount(this.otherAsset(x.asset), swapAmount);
     },
 
-    calcReverseSwapResult(Sa: AssetAmount) {
+    calcReverseSwapResult(Sa: AssetAmount): IAssetAmount {
       const Ya = amounts.find(a => a.asset.symbol === Sa.asset.symbol);
       if (!Ya)
         throw new Error(

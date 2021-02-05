@@ -1,4 +1,5 @@
 import {
+  BroadcastTxResult,
   coins,
   isBroadcastTxFailure,
   makeCosmoshubPath,
@@ -297,7 +298,7 @@ export default function createSifService({
         const result = await client.signAndBroadcast(msgArr, fee, memo);
 
         if (isBroadcastTxFailure(result)) {
-          /* istanbul ignore next */ // TODO: fix converage
+          /* istanbul ignore next */ // TODO: fix coverage
           return parseTxFailure(result);
         }
 
@@ -309,12 +310,8 @@ export default function createSifService({
           state: "accepted",
         };
       } catch (err) {
-        /* istanbul ignore next */ // TODO: fix converage
-        return {
-          hash: "",
-          memo: "An unknown error occured while signing and broadcasting",
-          state: "failed",
-        };
+        console.log("signAndBroadcast ERROR", err);
+        return parseTxFailure({ transactionHash: "", rawLog: err.message });
       }
     },
   };

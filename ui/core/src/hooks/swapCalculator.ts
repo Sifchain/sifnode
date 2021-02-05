@@ -1,4 +1,4 @@
-import { Ref, computed, effect } from "@vue/reactivity";
+import { Ref, computed, effect, ref } from "@vue/reactivity";
 import {
   Asset,
   AssetAmount,
@@ -6,6 +6,7 @@ import {
   CompositePool,
   IAssetAmount,
 } from "../entities";
+import Big from "big.js";
 import { useField } from "./useField";
 import { assetPriceMessage, trimZeros, useBalances } from "./utils";
 
@@ -25,14 +26,6 @@ function calculateFormattedProviderFee(pair: IPool, amount: AssetAmount) {
   return trimZeros(pair.calcProviderFee(amount).toFixed());
 }
 
-function calculateFormattedSwapResult(pair: IPool, amount: AssetAmount) {
-  return trimZeros(pair.calcSwapResult(amount).toFixed());
-}
-
-function calculateFormattedReverseSwapResult(pair: IPool, amount: AssetAmount) {
-  return trimZeros(pair.calcReverseSwapResult(amount).toFixed());
-}
-
 // TODO: make swap calculator only generate Fractions/Amounts that get stringified in the view
 export function useSwapCalculator(input: {
   fromAmount: Ref<string>;
@@ -41,6 +34,7 @@ export function useSwapCalculator(input: {
   toSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
+  slippage: Ref<string>;
   poolFinder: (a: Asset | string, b: Asset | string) => Ref<IPool> | null;
 }) {
   // extracting selectedField so we can use it without tracking its change
@@ -87,7 +81,12 @@ export function useSwapCalculator(input: {
     return assetPriceMessage(amount, pair, 6);
   });
 
+  // Selected field changes when the user changes the field selection
+  // If the selected field is the "tokenA" field and something changes we change the "tokenB" input value
+  // If the selected field is the "tokenB" field and something changes we change the "tokenA" input value
+
   // Changing the "from" field recalculates the "to" amount
+  const swapResult = ref<IAssetAmount | null>(null);
   effect(() => {
     if (
       pool.value &&
@@ -96,14 +95,13 @@ export function useSwapCalculator(input: {
       pool.value.contains(fromField.asset.value) &&
       selectedField === "from"
     ) {
-      input.toAmount.value = calculateFormattedSwapResult(
-        pool.value as IPool,
-        fromField.fieldAmount.value
-      );
+      swapResult.value = pool.value.calcSwapResult(fromField.fieldAmount.value);
+      input.toAmount.value = trimZeros(swapResult.value.toFixed());
     }
   });
 
   // Changing the "to" field recalculates the "from" amount
+  const reverseSwapResult = ref<IAssetAmount | null>(null);
   effect(() => {
     if (
       pool.value &&
@@ -112,10 +110,18 @@ export function useSwapCalculator(input: {
       pool.value.contains(toField.asset.value) &&
       selectedField === "to"
     ) {
-      input.fromAmount.value = calculateFormattedReverseSwapResult(
-        pool.value,
+      reverseSwapResult.value = pool.value.calcReverseSwapResult(
         toField.fieldAmount.value
       );
+
+      // Internally trigger calulations based off swapResult as this is how we
+      // work out priceImpact, providerFee, minimumReceived
+
+      swapResult.value = pool.value.calcSwapResult(
+        reverseSwapResult.value as IAssetAmount
+      );
+
+      input.fromAmount.value = trimZeros(reverseSwapResult.value.toFixed());
     }
   });
 
@@ -169,6 +175,21 @@ export function useSwapCalculator(input: {
     );
   });
 
+  // minimumReceived
+  const minimumReceived = computed(() => {
+    if (!input.slippage.value || !toField.asset.value || !swapResult.value)
+      return null;
+
+    const slippage = new Big(input.slippage.value);
+    const amount = new Big(swapResult.value.toFixed(18));
+    const minAmount = new Big("1.0")
+      .minus(slippage.div(100))
+      .mul(amount)
+      .toFixed(18);
+
+    return AssetAmount(toField.asset.value, minAmount);
+  });
+
   // Derive state
   const state = computed(() => {
     if (!pool.value) return SwapState.SELECT_TOKENS;
@@ -211,5 +232,8 @@ export function useSwapCalculator(input: {
     fromAmount: input.fromAmount,
     priceImpact,
     providerFee,
+    minimumReceived,
+    swapResult,
+    reverseSwapResult,
   };
 }
