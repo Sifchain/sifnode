@@ -1,8 +1,8 @@
 {
   "sifAddrPrefix": "sif",
-  "sifApiUrl": "",
-  "sifWsUrl": "",
-  "sifRpcUrl": "",
+  "sifApiUrl": "https://api.sifchain.finance",
+  "sifWsUrl": "wss://rpc.sifchain.finance/websocket",
+  "sifRpcUrl": "https://rpc.sifchain.finance",
   "sifChainId": "sifchain",
   "web3Provider": "metamask",
   "nativeAsset": "rowan",
