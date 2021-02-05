@@ -41,7 +41,6 @@ const (
 	transactionInterval = 10 * time.Second
 	trailingBlocks      = 50
 	levelDbFile         = "relayerdb"
-	blockScope          = 2
 )
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
