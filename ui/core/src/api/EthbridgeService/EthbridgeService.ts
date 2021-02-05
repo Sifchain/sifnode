@@ -40,10 +40,11 @@ export default function createEthbridgeService({
   }
 
   return {
-    async approveSpend(assetAmount: AssetAmount) {
+    async approveSpend(assetAmount: AssetAmount, account?: string) {
       const web3 = await ensureWeb3();
       const accounts = await web3.eth.getAccounts();
-      const fromAddress = accounts[0];
+
+      const fromAddress = account || accounts[0];
       const coinDenom = (assetAmount.asset as Token).address ?? ETH_ADDRESS;
       if (coinDenom === ETH_ADDRESS) return;
 
@@ -239,8 +240,6 @@ export default function createEthbridgeService({
           from: fromAddress,
           value: 0,
         };
-
-        // await approveBridgeBankSpend(fromAddress, assetAmount);
 
         bridgeBankContract.methods
           .burn(cosmosRecipient, coinDenom, amount)

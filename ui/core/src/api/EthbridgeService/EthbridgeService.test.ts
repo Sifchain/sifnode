@@ -217,7 +217,7 @@ describe("EthbridgeService", () => {
     // Burn eRowan to Rowan
 
     // Approve the amount
-    // await EthbridgeService.approveSpend(sendERowanAmount);
+    await EthbridgeService.approveSpend(sendERowanAmount, getEthAddress());
 
     await new Promise<void>((done, reject) => {
       EthbridgeService.burnToSifchain(
