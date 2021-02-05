@@ -1,4 +1,4 @@
-function buildProvider(context, argv) {
+function buildProvider(context, argv, logging) {
     const HDWalletProvider = context.require("@truffle/hdwallet-provider");
     const Web3 = context.require("web3");
     const {getRequiredEnvironmentVariable} = context.require('./sifchainUtilities');
@@ -37,24 +37,24 @@ function buildProvider(context, argv) {
 }
 
 function buildBridgeBank(context, argv) {
-    return buildContract(context, argv, "BridgeBank", argv.bridgebank_address)
+    return buildContract(context, argv, logging, "BridgeBank", argv.bridgebank_address)
 }
 
 let web3 = undefined;
 
-function buildWeb3(context, argv) {
+function buildWeb3(context, argv, logging) {
     if (web3) {
         return web3;
     } else {
-        const provider = buildProvider(context, argv);
+        const provider = buildProvider(context, argv, logging);
         const Web3 = context.require("web3");
         web3 = new Web3(provider);
         return web3;
     }
 }
 
-function buildContract(context, argv, name, address) {
-    const web3 = buildWeb3(context, argv);
+function buildContract(context, argv, logging, name, address) {
+    const web3 = buildWeb3(context, argv, logging);
     const contract = context.artifacts.require(name);
     contract.setProvider(web3.currentProvider);
     return contract.at(address);

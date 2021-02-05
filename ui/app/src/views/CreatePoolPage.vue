@@ -6,17 +6,19 @@ import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
-import ModalView from "@/components/shared/ModalView.vue";
-import ConfirmationDialog, {
-  ConfirmState,
-} from "@/components/confirmationDialog/PoolConfirmationDialog.vue";
 import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
-import PriceCalculation from "@/components/shared/PriceCalculation.vue";
+import FatInfoTable from "@/components/shared/FatInfoTable.vue";
+import FatInfoTableCell from "@/components/shared/FatInfoTableCell.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
+import { toConfirmState } from "./utils/toConfirmState";
+import { ConfirmState } from "../types";
+import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
+import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
+import { formatNumber, formatPercentage } from "@/components/shared/utils";
 
 export default defineComponent({
   components: {
@@ -25,32 +27,28 @@ export default defineComponent({
     Modal,
     CurrencyPairPanel,
     SelectTokenDialogSif,
-    PriceCalculation,
-    ConfirmationDialog,
-    ModalView,
+    ConfirmationModal,
+    DetailsPanelPool,
+    FatInfoTable,
+    FatInfoTableCell,
   },
   props: ["title"],
-  setup(props) {
+  setup() {
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
-    const transactionState = ref<ConfirmState>("selecting");
+    const transactionState = ref<ConfirmState | string>("selecting");
+    const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
     const router = useRouter();
     const route = useRoute();
 
-    const {
-      fromSymbol,
-      fromAmount,
-
-      toAmount,
-    } = useCurrencyFieldState();
+    const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
 
     const toSymbol = ref("rowan");
+
     fromSymbol.value = route.params.externalAsset
       ? route.params.externalAsset.toString()
       : null;
-
-    const priceMessage = ref("");
 
     function clearAmounts() {
       fromAmount.value = "0.0";
@@ -67,7 +65,7 @@ export default defineComponent({
       if (!fromSymbol) return null;
       return (
         store.accountpools.find((pool) => {
-          pool.lp.asset.symbol === fromSymbol.value;
+          return pool.lp.asset.symbol === fromSymbol.value;
         })?.lp ?? null
       );
     });
@@ -75,56 +73,54 @@ export default defineComponent({
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
-      shareOfPool,
+      aPerBRatioProjectedMessage,
+      bPerARatioProjectedMessage,
       shareOfPoolPercent,
       totalLiquidityProviderUnits,
-      fromFieldAmount,
-      toFieldAmount,
+      tokenAFieldAmount,
+      tokenBFieldAmount,
       preExistingPool,
       state,
     } = usePoolCalculator({
       balances,
-      fromAmount,
-      toAmount,
-      fromSymbol,
-      selectedField,
-      toSymbol,
+      tokenAAmount: fromAmount,
+      tokenBAmount: toAmount,
+      tokenASymbol: fromSymbol,
+      tokenBSymbol: toSymbol,
       poolFinder,
       liquidityProvider,
     });
 
     function handleNextStepClicked() {
-      if (!fromFieldAmount.value)
+      if (!tokenAFieldAmount.value)
         throw new Error("from field amount is not defined");
-      if (!toFieldAmount.value)
+      if (!tokenBFieldAmount.value)
         throw new Error("to field amount is not defined");
-      if (state.value !== PoolState.VALID_INPUT) return;
 
       transactionState.value = "confirming";
     }
 
     async function handleAskConfirmClicked() {
-      if (!fromFieldAmount.value)
+      if (!tokenAFieldAmount.value)
         throw new Error("Token A field amount is not defined");
-      if (!toFieldAmount.value)
+      if (!tokenBFieldAmount.value)
         throw new Error("Token B field amount is not defined");
 
       transactionState.value = "signing";
-      let tx = await actions.clp.addLiquidity(
-        toFieldAmount.value,
-        fromFieldAmount.value
+      const tx = await actions.clp.addLiquidity(
+        tokenBFieldAmount.value,
+        tokenAFieldAmount.value
       );
 
-      console.log("POOL transaction hash: ", tx);
-      transactionHash.value = tx?.transactionHash ?? "";
-      transactionState.value = "confirmed";
-
-      clearAmounts();
+      transactionHash.value = tx.hash;
+      transactionState.value = toConfirmState(tx.state); // TODO: align states
+      transactionStateMsg.value = tx.memo ?? "";
     }
 
     function requestTransactionModalClose() {
       if (transactionState.value === "confirmed") {
         router.push("/pool");
+        clearAmounts();
       } else {
         transactionState.value = "selecting";
       }
@@ -140,7 +136,8 @@ export default defineComponent({
       connected,
       aPerBRatioMessage,
       bPerARatioMessage,
-
+      aPerBRatioProjectedMessage,
+      bPerARatioProjectedMessage,
       nextStepMessage: computed(() => {
         switch (state.value) {
           case PoolState.SELECT_TOKENS:
@@ -188,12 +185,7 @@ export default defineComponent({
       requestTransactionModalClose,
 
       transactionState,
-
-      transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "confirmed"].includes(
-          transactionState.value
-        );
-      }),
+      transactionStateMsg,
 
       handleBlur() {
         selectedField.value = null;
@@ -212,8 +204,18 @@ export default defineComponent({
         if (!accountBalance) return;
         fromAmount.value = accountBalance.toFixed(8);
       },
+      handleToMaxClicked() {
+        selectedField.value = "to";
+        const accountBalance = balances.value.find(
+          (balance) => balance.asset.symbol === toSymbol.value
+        );
+        if (!accountBalance) return;
+        toAmount.value = accountBalance.toFixed(8);
+      },
       shareOfPoolPercent,
       connectedText,
+      formatNumber,
+
       poolUnits: totalLiquidityProviderUnits,
     };
   },
@@ -221,7 +223,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" backLink="/pool" :title="title">
+  <Layout class="pool" :backLink="`${fromSymbol ? '/pool/' + fromSymbol : '/pool' }`" :title="title">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel
@@ -237,6 +239,8 @@ export default defineComponent({
           v-model:toSymbol="toSymbol"
           @tofocus="handleToFocused"
           @toblur="handleBlur"
+          :toMax="true"
+          @tomaxclicked="handleToMaxClicked"
           toSymbolFixed
           canSwapIcon="plus"
       /></template>
@@ -248,86 +252,102 @@ export default defineComponent({
       </template>
     </Modal>
 
-    <PriceCalculation>
-      <div class="pool-share">
-        <h4 class="pool-share-title text--left">Prices and pool share</h4>
-        <div class="pool-share-details" v-if="nextStepAllowed">
-          <div>
-            <span class="number">{{ aPerBRatioMessage }}</span
-            ><br />
-            <span
-              >{{ fromSymbol.toUpperCase() }} per
-              {{ toSymbol.toUpperCase() }}</span
-            >
-          </div>
-          <div>
-            <span class="number">{{ bPerARatioMessage }}</span
-            ><br />
-            <span
-              >{{ toSymbol.toUpperCase() }} per
-              {{ fromSymbol.toUpperCase() }}</span
-            >
-          </div>
-          <div>
-            <span class="number">{{ shareOfPoolPercent }}</span
-            ><br />Share of Pool
-          </div>
-        </div>
-      </div>
-    </PriceCalculation>
+    <FatInfoTable :show="nextStepAllowed">
+      <template #header>Pool Token Prices</template>
+      <template #body>
+        <FatInfoTableCell>
+          <span class="number">{{ formatNumber(aPerBRatioMessage) }}</span
+          ><br />
+          <span
+            >{{ fromSymbol.toUpperCase() }} per
+            {{ toSymbol.toUpperCase() }}</span
+          >
+        </FatInfoTableCell>
+        <FatInfoTableCell>
+          <span class="number">{{ formatNumber(bPerARatioMessage) }}</span
+          ><br />
+          <span
+            >{{ toSymbol.toUpperCase() }} per
+            {{ fromSymbol.toUpperCase() }}</span
+          > </FatInfoTableCell
+        ><FatInfoTableCell />
+      </template>
+    </FatInfoTable>
+
+    <FatInfoTable :show="nextStepAllowed">
+      <template #header>Price Impact and Pool Share</template>
+      <template #body>
+        <FatInfoTableCell>
+          <span class="number">{{
+            formatNumber(aPerBRatioProjectedMessage)
+          }}</span
+          ><br />
+          <span
+            >{{ fromSymbol.toUpperCase() }} per
+            {{ toSymbol.toUpperCase() }}</span
+          >
+        </FatInfoTableCell>
+        <FatInfoTableCell>
+          <span class="number">{{
+            formatNumber(bPerARatioProjectedMessage)
+          }}</span
+          ><br />
+          <span
+            >{{ toSymbol.toUpperCase() }} per
+            {{ fromSymbol.toUpperCase() }}</span
+          >
+        </FatInfoTableCell>
+        <FatInfoTableCell>
+          <span class="number">{{ shareOfPoolPercent }}</span
+          ><br />Share of Pool
+        </FatInfoTableCell></template
+      >
+    </FatInfoTable>
+
     <ActionsPanel
       @nextstepclick="handleNextStepClicked"
       :nextStepAllowed="nextStepAllowed"
       :nextStepMessage="nextStepMessage"
     />
-    <ModalView
+    <ConfirmationModal
       :requestClose="requestTransactionModalClose"
-      :isOpen="transactionModalOpen"
-      ><ConfirmationDialog
-        @confirmswap="handleAskConfirmClicked"
-        :state="transactionState"
-        :requestClose="requestTransactionModalClose"
-        :fromToken="fromSymbol"
-        :fromAmount="fromAmount"
-        :poolUnits="poolUnits"
-        :toAmount="toAmount"
-        :toToken="toSymbol"
-        :aPerB="aPerBRatioMessage"
-        :bPerA="bPerARatioMessage"
-        :shareOfPool="shareOfPoolPercent"
-        :transactionHash="transactionHash"
-    /></ModalView>
+      @confirmed="handleAskConfirmClicked"
+      :state="transactionState"
+      :transactionHash="transactionHash"
+      :transactionStateMsg="transactionStateMsg"
+      confirmButtonText="Confirm Supply"
+      title="You are depositing"
+    >
+      <template v-slot:selecting>
+        <div>
+          <DetailsPanelPool
+            class="details"
+            :fromTokenLabel="fromSymbol"
+            :fromAmount="fromAmount"
+            :toTokenLabel="toSymbol"
+            :toAmount="toAmount"
+            :aPerB="aPerBRatioMessage"
+            :bPerA="bPerARatioMessage"
+            :shareOfPool="shareOfPoolPercent"
+          />
+        </div>
+      </template>
+
+      <template v-slot:common>
+        <p class="text--normal">
+          Supplying
+          <span class="text--bold">{{ fromAmount }} {{ fromSymbol }}</span>
+          and
+          <span class="text--bold">{{ toAmount }} {{ toSymbol }}</span>
+        </p>
+      </template>
+    </ConfirmationModal>
   </Layout>
 </template>
 
-<style lang="scss">
-.pool-share {
-  font-size: 12px;
-  font-weight: 400;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-
-  &-title {
-    text-align: left;
-    padding: 4px 16px;
-    border-bottom: $divider;
-  }
-
-  &-details {
-    display: flex;
-    padding: 4px 16px;
-    flex-grow: 1;
-    justify-content: space-between;
-    align-items: center;
-
-    div {
-      flex: 33%;
-    }
-  }
-  .number {
-    font-size: 16px;
-    font-weight: bold;
-  }
+<style lang="scss" scoped>
+.number {
+  font-size: 16px;
+  font-weight: bold;
 }
 </style>

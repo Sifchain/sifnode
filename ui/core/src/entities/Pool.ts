@@ -29,6 +29,7 @@ export function Pool(
     symbol: pair.symbol,
     contains: pair.contains,
     toString: pair.toString,
+    getAmount: pair.getAmount,
     poolUnits:
       poolUnits ||
       calculatePoolUnits(
@@ -83,7 +84,7 @@ export function Pool(
       return AssetAmount(this.otherAsset(x.asset), swapAmount);
     },
 
-    calcReverseSwapResult(Sa: AssetAmount) {
+    calcReverseSwapResult(Sa: AssetAmount): IAssetAmount {
       const Ya = amounts.find(a => a.asset.symbol === Sa.asset.symbol);
       if (!Ya)
         throw new Error(
@@ -122,7 +123,6 @@ export function Pool(
         externalBalanceBefore,
         this.poolUnits
       );
-
       const newTotalPoolUnits = lpUnits.add(this.poolUnits);
 
       return [newTotalPoolUnits, lpUnits];
@@ -158,6 +158,19 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
   return {
     amounts: amounts as [IAssetAmount, IAssetAmount],
 
+    getAmount: (asset: Asset | string) => {
+      if (Asset.get(asset).symbol === nativeSymbol) {
+        throw new Error(`Asset ${nativeSymbol} doesnt exist in pair`);
+      }
+
+      // quicker to try catch than contains
+      try {
+        return pair1.getAmount(asset);
+      } catch (err) {}
+
+      return pair2.getAmount(asset);
+    },
+
     priceAsset(asset: Asset) {
       return this.calcSwapResult(AssetAmount(asset, "1"));
     },
@@ -178,17 +191,9 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
     },
 
     contains(...assets: Asset[]) {
-      const local = amounts
-        .map(a => a.asset.symbol)
-        .sort()
-        .join(",");
-
-      const other = assets
-        .map(a => a.symbol)
-        .sort()
-        .join(",");
-
-      return local === other;
+      const local = amounts.map(a => a.asset.symbol).sort();
+      const other = assets.map(a => a.symbol).sort();
+      return !!local.find(s => other.includes(s));
     },
 
     calcProviderFee(x: AssetAmount) {

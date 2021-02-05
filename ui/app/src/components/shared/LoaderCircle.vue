@@ -38,10 +38,10 @@ export default defineComponent({
   animation: load8 1.1s infinite linear;
   &.success {
     animation: none;
-    border-top: 2px solid $c_gray_700;
-    border-right: 2px solid $c_gray_700;
-    border-bottom: 2px solid $c_gray_700;
-    border-left: 2px solid $c_gray_700;
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
   }
 }
 
