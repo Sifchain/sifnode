@@ -3,7 +3,7 @@
   "sifApiUrl": "",
   "sifWsUrl": "",
   "sifRpcUrl": "",
-  "sifChainId": "",
+  "sifChainId": "sifchain",
   "web3Provider": "metamask",
   "nativeAsset": "rowan",
   "bridgebankContractAddress": "",
