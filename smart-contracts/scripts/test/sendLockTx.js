@@ -28,6 +28,7 @@ module.exports = async (cb) => {
     };
 
     if (request.gas === 'estimate') {
+        logging.info('getting estimate');
         const estimate = await bridgeBankContract.lock.estimateGas(cosmosRecipient, coinDenom, amount, {
             ...request,
             gas: 6000000,
