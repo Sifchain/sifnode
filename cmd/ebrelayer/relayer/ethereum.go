@@ -41,6 +41,7 @@ const (
 	transactionInterval = 10 * time.Second
 	trailingBlocks      = 50
 	levelDbFile         = "relayerdb"
+	blockScope          = 2
 )
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
@@ -228,6 +229,14 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			// The user who starts this must provide a valid last processed block
 			if lastProcessedBlock.Cmp(big.NewInt(0)) == 0 {
 				lastProcessedBlock.Sub(endingBlock, big.NewInt(1))
+			}
+
+			// just process two blocks each time
+			var tmpEndingBlock *big.Int
+			tmpEndingBlock.Add(lastProcessedBlock, big.NewInt(blockScope))
+
+			if endingBlock.Cmp(tmpEndingBlock) > 0 {
+				endingBlock = tmpEndingBlock
 			}
 
 			sub.Logger.Info(fmt.Sprintf("Processing events from block %d to %d", lastProcessedBlock, endingBlock))
