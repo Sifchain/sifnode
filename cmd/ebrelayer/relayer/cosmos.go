@@ -77,7 +77,11 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		return
 	}
 
-	defer client.Unsubscribe(context.Background(), "test", query)
+	defer func() {
+		if err := client.Unsubscribe(context.Background(), "test", query); err != nil {
+			sub.Logger.Error("Unsubscribe failed: ", err.Error())
+		}
+	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
