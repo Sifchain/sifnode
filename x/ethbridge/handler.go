@@ -4,6 +4,7 @@ package ethbridge
 import (
 	"fmt"
 	"strconv"
+	"sync"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -40,16 +41,24 @@ func NewHandler(
 func handleMsgCreateEthBridgeClaim(
 	ctx sdk.Context, cdc *codec.Codec, bridgeKeeper Keeper, msg MsgCreateEthBridgeClaim,
 ) (*sdk.Result, error) {
+	var mutex = &sync.RWMutex{}
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	status, err := bridgeKeeper.ProcessClaim(ctx, types.EthBridgeClaim(msg))
 	if err != nil {
+		fmt.Printf("Sifnode handleMsgCreateEthBridgeClaim 46 %s\n", err.Error())
 		return nil, err
 	}
 	if status.Text == oracle.SuccessStatusText {
 		if err = bridgeKeeper.ProcessSuccessfulClaim(ctx, status.FinalClaim); err != nil {
+			fmt.Printf("Sifnode handleMsgCreateEthBridgeClaim 51 %s\n", err.Error())
 			return nil, err
 		}
 	}
+	// set mutex lock to false
 
+	fmt.Printf("Sifnode handleMsgCreateEthBridgeClaim 56 all done, emit events statue is %s\n", status.Text.String())
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			sdk.EventTypeMessage,

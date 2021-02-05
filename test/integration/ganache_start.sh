@@ -3,7 +3,7 @@
 # $0 block-delay-time [default is none, always generate a block]
 #   block-delay-time is passed to ganache as -b block-delay-time
 
-set -x
+set -xv
 
 block_delay=$1
 if [ ! -z "$block_delay" ]

@@ -58,6 +58,7 @@
     "integrationtest:createEthereumAddress": "npx truffle exec scripts/test/createEthereumAddress.js",
     "integrationtest:sendBurnTx": "npx truffle exec scripts/test/sendBurnTx.js",
     "integrationtest:sendLockTx": "npx truffle exec scripts/test/sendLockTx.js",
+    "integrationtest:sendBulkLockTx": "npx truffle exec scripts/test/sendBulkLockTx.js",
     "integrationtest:waitForBlock": "npx truffle exec scripts/test/waitForBlock.js",
     "integrationtest:getTokenBalance": "npx truffle exec scripts/test/getTokenBalance.js",
     "integrationtest:enableNewToken": "npx truffle exec scripts/test/enableNewToken.js",

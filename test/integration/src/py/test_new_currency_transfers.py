@@ -84,14 +84,6 @@ def test_can_create_a_new_token_with_a_7_char_name_and_peg_it():
     burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
 
 
-def test_can_create_dai_and_peg_it():
-    new_account_key = "Dai"
-    amount = amount_in_wei(9)
-    new_currency = create_new_currency(amount, new_account_key)
-    (request1, _) = build_request(new_currency, amount)
-    burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
-
-
 @pytest.mark.skip(reason="fails and is too slow to mark with xfail")
 def test_two_currencies_with_different_capitalization_should_not_interfere_with_each_other():
     new_account_key = ("a" + get_shell_output("uuidgen").replace("-", "").lower())[:5]
