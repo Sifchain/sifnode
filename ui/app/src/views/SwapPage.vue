@@ -263,6 +263,7 @@ export default defineComponent({
         :nextStepAllowed="nextStepAllowed"
         :nextStepMessage="nextStepMessage"
       />
+      <!-- TODO: Refactor the following and replace with ConfirmationModalSwipe -->
       <ModalView
         :requestClose="requestTransactionModalClose"
         :isOpen="transactionModalOpen"
