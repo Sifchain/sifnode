@@ -15,3 +15,5 @@ log/*.log
 .ssh
 
 .vercel
+nohup.out
+relayerdb

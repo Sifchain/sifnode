@@ -8,6 +8,8 @@ spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
+  strategy:
+    type: {{ .Values.strategyType }}
   selector:
     matchLabels:
       {{- include "sifnode.selectorLabels" . | nindent 6 }}
@@ -33,6 +35,27 @@ spec:
           env:
             - name: MONIKER
               value: {{ .Values.sifnode.env.moniker }}
+        - name: sifgen
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["/bin/sh"]
+          {{- if .Values.sifnode.args.peerAddress }}
+          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" --bind-ip-address $EXTERNAL_IP --peer-address {{ .Values.sifnode.args.peerAddress }} --genesis-url {{ .Values.sifnode.args.genesisURL }} --with-cosmovisor"]
+          {{- else }}
+          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" --admin-clp-addresses \"{{ .Values.sifnode.args.adminCLPAddresses }}\" --admin-oracle-address {{ .Values.sifnode.args.adminOracleAddress }} --bind-ip-address $EXTERNAL_IP --gov-max-deposit-period {{ .Values.sifnode.args.govMaxDepositPeriod }} --gov-voting-period {{ .Values.sifnode.args.govVotingPeriod }} --standalone --with-cosmovisor"]
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /root/
+          env:
+            - name: CHAINNET
+              value: {{ .Values.sifnode.env.chainnet }}
+            - name: MONIKER
+              value: {{ .Values.sifnode.env.moniker }}
+            - name: EXTERNAL_IP
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sifnode.fullname" . }}-external-ip
+                  key: externalIP
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -40,14 +63,10 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
+          args: ["-c", "cosmovisor start --rpc.laddr tcp://0.0.0.0:26657 --minimum-gas-prices \"{{ .Values.sifnode.args.minimumGasPrices }}\""]
           volumeMounts:
             - name: data
               mountPath: /root/
-          {{- if .Values.sifnode.args.peerAddress }}
-          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" --bind-ip-address $EXTERNAL_IP --peer-address {{ .Values.sifnode.args.peerAddress }} --genesis-url {{ .Values.sifnode.args.genesisURL }} --with-cosmovisor; cosmovisor start --rpc.laddr tcp://0.0.0.0:26657 --minimum-gas-prices \"{{ .Values.sifnode.args.minimumGasPrices }}\""]
-          {{- else }}
-          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" --admin-clp-addresses \"{{ .Values.sifnode.args.adminCLPAddresses }}\" --admin-oracle-address {{ .Values.sifnode.args.adminOracleAddress }} --bind-ip-address $EXTERNAL_IP --standalone --with-cosmovisor; cosmovisor start --rpc.laddr tcp://0.0.0.0:26657 --minimum-gas-prices \"{{ .Values.sifnode.args.minimumGasPrices }}\""]
-          {{- end }}
           ports:
             - name: p2p
               containerPort: 26656
@@ -64,21 +83,6 @@ spec:
               value: "{{ .Values.sifnode.env.daemonAllowDownloadBinaries }}"
             - name: DAEMON_RESTART_AFTER_UPGRADE
               value: "{{ .Values.sifnode.env.daemonRestartAfterUpgrade }}"
-            - name: CHAINNET
-              value: {{ .Values.sifnode.env.chainnet }}
-            - name: MONIKER
-              value: {{ .Values.sifnode.env.moniker }}
-            - name: EXTERNAL_IP
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "sifnode.fullname" . }}-external-ip
-                  key: externalIP
-            - name: MIN_CLP_CREATE_POOL_THRESHOLD
-              value: {{ .Values.sifnode.env.minPoolThreshold }}
-            - name: GOV_DEPOSIT_PARAMS_MAX_DEPOSIT_PERIOD
-              value: "{{ .Values.sifnode.env.govDepositParamsMaxDepositPeriod }}"
-            - name: GOV_VOTING_PARAMS_VOTING_PERIOD
-              value: "{{ .Values.sifnode.env.govVotingParamsVotingPeriod }}"
           livenessProbe:
             tcpSocket:
               port: 26657

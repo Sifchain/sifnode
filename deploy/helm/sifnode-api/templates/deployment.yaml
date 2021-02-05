@@ -1,16 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "sifnode.fullname" . }}-cli
+  name: {{ include "sifnode-api.fullname" . }}
   labels:
-    {{- include "sifnode.labels" . | nindent 4 }}-cli
+    {{- include "sifnode-api.labels" . | nindent 4 }}
 spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
   selector:
     matchLabels:
-      {{- include "sifnode.selectorLabels" . | nindent 6 }}-cli
+      {{- include "sifnode-api.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: {{ .Values.strategyType }}
   template:
     metadata:
     {{- with .Values.podAnnotations }}
@@ -18,21 +20,18 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
-        {{- include "sifnode.selectorLabels" . | nindent 8 }}-cli
+        {{- include "sifnode-api.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: {{ include "sifnode.serviceAccountName" . }}
+      serviceAccountName: {{ include "sifnode-api.serviceAccountName" . }}
       containers:
-        - name: {{ .Chart.Name }}-cli
+        - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "sifnodecli rest-server --unsafe-cors --laddr tcp://0.0.0.0:1317 --node $NODE_HOST --trust-node --trace"]
+          args: ["-c", "sifnodecli rest-server --unsafe-cors --laddr tcp://0.0.0.0:1317 --node {{ .Values.sifnodeApi.args.nodeHost }} --trust-node"]
           ports:
             - name: port-1317
-              containerPort: 1317          
-          env:
-            - name: NODE_HOST
-              value: "tcp://{{ .Chart.Name }}.{{ .Release.Namespace }}.svc.cluster.local:26657"
+              containerPort: 1317
           livenessProbe:
             tcpSocket:
               port: 1317
