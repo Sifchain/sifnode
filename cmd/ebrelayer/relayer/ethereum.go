@@ -30,6 +30,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/tendermint/go-amino"
 	tmLog "github.com/tendermint/tendermint/libs/log"
+	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
@@ -47,6 +48,7 @@ const (
 type EthereumSub struct {
 	Cdc                     *codec.Codec
 	EthProvider             string
+	TmProvider              string
 	RegistryContractAddress common.Address
 	ValidatorName           string
 	ValidatorAddress        sdk.ValAddress
@@ -96,6 +98,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 	return EthereumSub{
 		Cdc:                     cdc,
 		EthProvider:             ethProvider,
+		TmProvider:              rpcURL,
 		RegistryContractAddress: registryContractAddress,
 		ValidatorName:           validatorMoniker,
 		ValidatorAddress:        validatorAddress,
@@ -253,7 +256,6 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				// the current last processed block so we keep retrying
 				continue
 			}
-
 			// Assumption here is that we will repeat a failing block because we return if there is an error retrieving logs
 			log.Printf("Successfully received bridgebank events from block %d to %d ", lastProcessedBlock, endingBlock)
 
@@ -290,6 +292,129 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			}
 		}
 	}
+}
+
+func (sub EthereumSub) getAllClaims(fromBlock int64, toBlock int64) []types.EthereumBridgeClaim {
+	sub.Logger.Info(fmt.Sprintf("Replay get all ethereum bridge claim from block %d to block %d\n", fromBlock, toBlock))
+
+	var claimArray []types.EthereumBridgeClaim
+	client, err := tmClient.New(sub.TmProvider, "/websocket")
+	if err != nil {
+		sub.Logger.Error("failed to initialize a client", "err", err)
+		return claimArray
+	}
+	client.SetLogger(sub.Logger)
+
+	if err := client.Start(); err != nil {
+		sub.Logger.Error("failed to start a client", "err", err)
+		return claimArray
+	}
+
+	defer client.Stop() //nolint:errcheck
+
+	for blockNumber := fromBlock; blockNumber < toBlock; {
+		tmpBlockNumber := blockNumber
+		block, err := client.BlockResults(&tmpBlockNumber)
+		blockNumber++
+		sub.Logger.Info(fmt.Sprintf("Replay start to process block %d", blockNumber))
+
+		if err != nil {
+			sub.Logger.Error(fmt.Sprintf("failed to start a client %s", err))
+			continue
+		}
+
+		for _, log := range block.TxsResults {
+			for _, event := range log.Events {
+				sub.Logger.Info(fmt.Sprintf("Replay get an event %s", event.GetType()))
+				if event.GetType() == "create_claim" {
+					claim, err := txs.AttributesToEthereumBridgeClaim(event.GetAttributes())
+					if err != nil {
+						continue
+					}
+
+					// Check if sender is me
+					if claim.CosmosSender.Equals(sub.ValidatorAddress) {
+						sub.Logger.Info("We got a eth bridge claim message %s", claim.EthereumSender.String())
+						claimArray = append(claimArray, claim)
+					}
+				}
+			}
+		}
+	}
+
+	return claimArray
+}
+
+// EventProcessed check if the event processed by relayer
+func EventProcessed(bridgeClaims []types.EthereumBridgeClaim, event types.EthereumEvent) bool {
+	for _, claim := range bridgeClaims {
+		if event.From == claim.EthereumSender && event.Nonce.Cmp(claim.Nonce.BigInt()) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// Replay the missed events
+func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock int64, cosmosToBlock int64) {
+	sub.Logger.Info(fmt.Sprintf("ethereum replay for %d block to %d block\n", fromBlock, toBlock))
+
+	bridgeClaims := sub.getAllClaims(cosmosFromBlock, cosmosToBlock)
+	sub.Logger.Info(fmt.Sprintf("found out %d bridgeClaims\n", len(bridgeClaims)))
+
+	client, err := SetupRPCEthClient(sub.EthProvider)
+	if err != nil {
+		sub.Logger.Error(err.Error())
+		return
+	}
+	defer client.Close()
+
+	clientChainID, err := client.NetworkID(context.Background())
+	if err != nil {
+		sub.Logger.Error(err.Error())
+		return
+	}
+
+	// Get the contract address for this subscription
+	subContractAddress, err := txs.GetAddressFromBridgeRegistry(client, sub.RegistryContractAddress, txs.BridgeBank)
+	if err != nil {
+		sub.Logger.Error(err.Error())
+		return
+	}
+	bridgeBankContractABI := contract.LoadABI(txs.BridgeBank)
+	// We need the address in []bytes for the query
+	subQuery := ethereum.FilterQuery{
+		Addresses: []common.Address{subContractAddress},
+		FromBlock: big.NewInt(fromBlock),
+		ToBlock:   big.NewInt(toBlock),
+	}
+
+	logs, err := client.FilterLogs(context.Background(), subQuery)
+	if err != nil {
+		sub.Logger.Error(err.Error())
+		return
+	}
+
+	for _, log := range logs {
+		// fmt.Printf("log is %v", log)
+		// Before deal with it, we need check in cosmos if it is already handled by myself bofore.
+		event, isBurnLock, err := sub.logToEvent(clientChainID, subContractAddress, bridgeBankContractABI, log)
+		if err != nil {
+			sub.Logger.Error("Failed to get event from ethereum log")
+		} else if isBurnLock {
+			sub.Logger.Info(fmt.Sprintf("found out a burn lock event\n"))
+			if !EventProcessed(bridgeClaims, event) {
+				err := sub.handleEthereumEvent([]types.EthereumEvent{event})
+				time.Sleep(transactionInterval)
+				if err != nil {
+					sub.Logger.Error(err.Error())
+				}
+			} else {
+				sub.Logger.Info(fmt.Sprintf("event already processed by me\n"))
+			}
+		}
+	}
+
 }
 
 // logToEvent unpacks an Ethereum event
