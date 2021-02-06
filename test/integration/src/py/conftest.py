@@ -131,7 +131,7 @@ def source_ethereum_address(is_ropsten_testnet, smart_contracts_dir):
         logging.debug("using ETHEREUM_ADDRESS provided for source_ethereum_address")
         return addr
     if is_ropsten_testnet:
-        # Ropsten requires ETHEREUM_ADDRESS
+        # Ropsten requires that you manually set the ETHEREUM_ADDRESS environment variable
         assert addr
     result = test_utilities.ganache_owner_account(smart_contracts_dir)
     logging.debug(
