@@ -193,12 +193,15 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	ethLevelDBKey := "ethereumLastProcessedBlock"
 	var lastProcessedBlock *big.Int
 
+	var catchUpNeeded bool
 	data, err := db.Get([]byte(ethLevelDBKey), nil)
 	if err != nil {
 		log.Println("Error getting the last ethereum block from level db", err)
 		lastProcessedBlock = big.NewInt(0)
+		catchUpNeeded = false
 	} else {
 		lastProcessedBlock = new(big.Int).SetBytes(data)
+		catchUpNeeded = true
 	}
 
 	for {
@@ -228,6 +231,11 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			// The user who starts this must provide a valid last processed block
 			if lastProcessedBlock.Cmp(big.NewInt(0)) == 0 {
 				lastProcessedBlock.Sub(endingBlock, big.NewInt(1))
+			} else if catchUpNeeded {
+				// if we need to catch up, then do that and let the relayer know that we don't need to catch up again
+				catchUpNeeded = false
+			} else {
+				lastProcessedBlock = endingBlock
 			}
 
 			sub.Logger.Info(fmt.Sprintf("Processing events from block %d to %d", lastProcessedBlock, endingBlock))
@@ -238,6 +246,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				ToBlock:   endingBlock,
 				Addresses: []common.Address{bridgeBankAddress},
 			})
+
 			if err != nil {
 				log.Printf("Error getting events on block %d from bridgebank: %v", newHead.Number, err)
 				// if you have an error getting the logs from the block, continue and keep
@@ -271,9 +280,10 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				}
 				time.Sleep(transactionInterval)
 			}
-			// save the current ending block to the lastprocessed block to ensure we keep reading blocks sequentially
-			lastProcessedBlock = endingBlock
-			err = db.Put([]byte(ethLevelDBKey), lastProcessedBlock.Bytes(), nil)
+			// add 1 to the current block so we don't reprocess it
+			endingBlock = endingBlock.Add(endingBlock, big.NewInt(1))
+			// save the current ending block + 1 to the lastprocessed block to ensure we keep reading blocks sequentially and don't repeat blocks
+			err = db.Put([]byte(ethLevelDBKey), endingBlock.Bytes(), nil)
 			if err != nil {
 				// if you can't write to leveldb, then error out as something is seriously amiss
 				log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
