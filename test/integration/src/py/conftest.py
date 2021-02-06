@@ -76,6 +76,7 @@ def rowan_source_key(is_ropsten_testnet):
     if result:
         return result
     if is_ropsten_testnet:
+        # Ropsten requires that you manually set the ROWAN_SOURCE_KEY environment variable
         assert result
     else:
         return test_utilities.get_required_env_var("MONIKER")
