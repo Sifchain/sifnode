@@ -7,6 +7,11 @@ from dataclasses import dataclass
 from functools import lru_cache
 
 
+n_wait_blocks = 50  # number of blocks to wait for the relayer to act
+burn_gas_cost = 65000000000 * 248692  # see x/ethbridge/types/msgs.go for gas
+lock_gas_cost = 65000000000 * 282031
+
+
 @dataclass
 class EthereumToSifchainTransferRequest:
     sifchain_address: str = ""
@@ -21,12 +26,13 @@ class EthereumToSifchainTransferRequest:
     sifchain_fees: str = ""
     smart_contracts_dir: str = ""
     ethereum_chain_id: str = "5777"
-    chain_id: str = "localnet"
+    chain_id: str = "localnet" #cosmos chain id
     manual_block_advance: bool = True
-    n_wait_blocks: int = 4
+    n_wait_blocks: int = n_wait_blocks
     bridgebank_address: str = ""
     bridgetoken_address: str = ""
     sifnodecli_node: str = "tcp://localhost:26657"
+    solidity_json_path: str = ""
     # set to true if you want to fail if the balance changes before
     # the block waiting period has elapsed.  If you're runing
     # transactions in parallel, and you're doing manual block
@@ -81,10 +87,6 @@ ETHEREUM_ETH = "eth"
 SIF_ROWAN = "rowan"
 ETHEREUM_ROWAN = "erowan"
 NULL_ADDRESS = "0x0000000000000000000000000000000000000000"
-
-n_wait_blocks = 50  # number of blocks to wait for the relayer to act
-burn_gas_cost = 65000000000 * 248692  # see x/ethbridge/types/msgs.go for gas
-lock_gas_cost = 65000000000 * 282031
 
 
 def print_error_message(error_message):
@@ -164,10 +166,13 @@ def get_password(network_definition_file_json):
 def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
     network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
+    private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
     command_line = " ".join(
         [f"yarn -s --cwd {transfer_request.smart_contracts_dir}",
          f"integrationtest:getTokenBalance",
          f"--ethereum_address {transfer_request.ethereum_address}",
+         f"--json_path {transfer_request.solidity_json_path}",
+         private_element,
          symbol_element,
          network_element]
     )
@@ -239,7 +244,7 @@ def wait_for_sifchain_addr_balance(
     normalized_symbol = normalize_symbol(symbol)
     if not max_seconds:
         max_seconds = 30
-    logging.debug(f"wait_for_sifchain_addr_balance {sifchaincli_node} {normalized_symbol} {target_balance}")
+    logging.debug(f"wait_for_sifchain_addr_balance for node {sifchaincli_node}, {normalized_symbol}, {target_balance}")
     return wait_for_balance(
         lambda: int(get_sifchain_addr_balance(sifchain_address, sifchaincli_node, normalized_symbol)),
         target_balance,
@@ -286,6 +291,7 @@ def send_from_sifchain_to_sifchain(
 
 def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferRequest,
                                    credentials: SifchaincliCredentials):
+    assert transfer_request.amount > 0
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
@@ -321,6 +327,7 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
                    f"--bridgebank_address {transfer_request.bridgebank_address} " \
                    f"--ethereum_address {transfer_request.ethereum_address} " \
                    f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
+                   f"--json_path {transfer_request.solidity_json_path} " \
                    f"--gas estimate "
     command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     transaction_result = run_yarn_command(command_line)
@@ -473,13 +480,15 @@ def display_currency_value(x: int) -> str:
     return f"({x} | {x / 10 ** 18})"
 
 
-def create_new_currency(amount, symbol, smart_contracts_dir, bridgebank_address):
+def create_new_currency(amount, symbol, smart_contracts_dir, bridgebank_address, solidity_json_path):
     """returns {'destination': '0x627306090abaB3A6e1400e9345bC60c78a8BEf57', 'amount': '9000000000000000000', 'newtoken_address': '0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc', 'newtoken_symbol': 'a3c626b'}"""
     return run_yarn_command(
         f"yarn --cwd {smart_contracts_dir} "
         f"integrationtest:enableNewToken "
         f"--bridgebank_address {bridgebank_address} "
+        f"--json_path {solidity_json_path} "
         f"--symbol {symbol} "
         f"--amount {amount} "
         f"--limit_amount {amount}"
     )
+

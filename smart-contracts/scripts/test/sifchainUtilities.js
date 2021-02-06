@@ -49,10 +49,6 @@ const transactionYargOptions = {
     ...ethereumAddressYargOption,
     ...symbolYargOption,
     ...ethereumNetworkYargOption,
-    'json_path': {
-        describe: 'path to the json files',
-        default: "../build/contracts",
-    },
     'bridgebank_address': {
         type: "string",
         demandOption: true
@@ -71,6 +67,10 @@ const sharedYargOptions = {
     },
     'gas': {
         default: 300000
+    },
+    'json_path': {
+        describe: 'path to the json files',
+        default: "../build/contracts",
     },
 };
 
