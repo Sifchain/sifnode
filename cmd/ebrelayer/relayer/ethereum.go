@@ -280,9 +280,10 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				}
 				time.Sleep(transactionInterval)
 			}
-
+			// add 1 to the current block so we don't reprocess it
+			endingBlock = endingBlock.Add(endingBlock, big.NewInt(1))
 			// save the current ending block + 1 to the lastprocessed block to ensure we keep reading blocks sequentially and don't repeat blocks
-			err = db.Put([]byte(ethLevelDBKey), endingBlock.Add(endingBlock, big.NewInt(1)).Bytes(), nil)
+			err = db.Put([]byte(ethLevelDBKey), endingBlock.Bytes(), nil)
 			if err != nil {
 				// if you can't write to leveldb, then error out as something is seriously amiss
 				log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
