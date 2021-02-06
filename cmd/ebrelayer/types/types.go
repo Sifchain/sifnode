@@ -27,11 +27,15 @@ const (
 	LogBurn
 	// LogNewProphecyClaim is an Ethereum event named 'LogNewProphecyClaim'
 	LogNewProphecyClaim
+	// NewProphecyClaim for newProphecyClaim method in smart contract
+	NewProphecyClaim
+	// CreateEthBridgeClaim is a Cosmos msg of type MsgCreateEthBridgeClaim
+	CreateEthBridgeClaim
 )
 
 // String returns the event type as a string
 func (d Event) String() string {
-	return [...]string{"unsupported", "burn", "lock", "LogLock", "LogBurn", "LogNewProphecyClaim"}[d]
+	return [...]string{"unsupported", "burn", "lock", "LogLock", "LogBurn", "LogNewProphecyClaim", "newProphecyClaim", "create_claim"}[d]
 }
 
 // EthereumEvent struct is used by LogLock and LogBurn
@@ -130,13 +134,13 @@ func NewCosmosMsg(claimType Event, cosmosSender []byte, cosmosSenderSequence *bi
 // String implements fmt.Stringer
 func (c CosmosMsg) String() string {
 	if c.ClaimType == MsgLock {
-		return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nEthereum Recipient: %v"+
+		return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+
 			"\nSymbol: %v\nAmount: %v\n",
-			c.ClaimType.String(), string(c.CosmosSender), c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
+			c.ClaimType.String(), string(c.CosmosSender), c.CosmosSenderSequence, c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
 	}
-	return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nEthereum Recipient: %v"+
+	return fmt.Sprintf("\nClaim Type: %v\nCosmos Sender: %v\nCosmos Sender Sequence: %v\nEthereum Recipient: %v"+
 		"\nSymbol: %v\nAmount: %v\n",
-		c.ClaimType.String(), string(c.CosmosSender), c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
+		c.ClaimType.String(), string(c.CosmosSender), c.CosmosSenderSequence, c.EthereumReceiver.Hex(), c.Symbol, c.Amount)
 }
 
 // CosmosMsgAttributeKey enum containing supported attribute keys
@@ -155,9 +159,26 @@ const (
 	Amount
 	// Symbol is the coin type
 	Symbol
+	// EthereumSender is ethereum sender address
+	EthereumSender
+	// EthereumSenderNonce is ethereum sender nonce
+	EthereumSenderNonce
 )
 
 // String returns the event type as a string
 func (d CosmosMsgAttributeKey) String() string {
-	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol"}[d]
+	return [...]string{"unsupported", "cosmos_sender", "cosmos_sender_sequence", "ethereum_receiver", "amount", "symbol", "ethereum_sender", "ethereum_sender_nonce"}[d]
+}
+
+// EthereumBridgeClaim for store the EventTypeCreateClaim from cosmos
+type EthereumBridgeClaim struct {
+	EthereumSender common.Address
+	CosmosSender   sdk.ValAddress
+	Nonce          sdk.Int
+}
+
+// ProphecyClaimUnique for data part of ProphecyClaim transaction in Ethereum
+type ProphecyClaimUnique struct {
+	CosmosSenderSequence *big.Int
+	CosmosSender         []byte
 }
