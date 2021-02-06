@@ -58,7 +58,8 @@ def test_transfer_eth_to_ceth_using_replay_blocks(integration_dir, smart_contrac
     mn=test_utilities.get_required_env_var("MNEMONIC")
     cn=test_utilities.get_required_env_var("CHAINNET")
     ending_block = test_utilities.current_ethereum_block_number(smart_contracts_dir) + 1
-    cmd = f"""ebrelayer replayEthereum tcp://0.0.0.0:26657 {ews} {bra} {mon} '{mn}' {starting_block} {ending_block} 1 2 --chain-id {cn}"""
+    cmd = f"""ebrelayer replayEthereum tcp://0.0.0.0:26657 {ews} {bra} {mon} '{mn}' {starting_block} {ending_block} 1 2 --chain-id {cn} --gas 5000000000000 \
+  --gas-prices 0.5rowan"""
     test_utilities.get_shell_output(cmd)
     time.sleep(15)
     logging.info(f"check the ending balance of {request.sifchain_address} after replaying blocks")
