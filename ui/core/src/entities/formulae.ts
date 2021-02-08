@@ -1,5 +1,4 @@
 import Big from "big.js";
-import { AssetAmount, IAssetAmount } from "./AssetAmount";
 import { Fraction, IFraction } from "./fraction/Fraction";
 
 /**
@@ -170,24 +169,18 @@ export function calculateExternalExternalSwapResult(
 // Need to use Big.js for sqrt calculation
 // Ok to accept a little precision loss as reverse swap amount can be rough
 export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
-  if (S.eq("0")) {
+  // Adding a check here because sqrt of a negative number will throw an exception
+  if (S.eq("0") || S.times(4).gt(Y)) {
     return Big("0");
   }
-
-  const term1 = Big(-2)
-    .times(X)
-    .times(S);
-
+  const term1 = Big(-2).times(X).times(S);
   const term2 = X.times(Y);
   const underRoot = Y.times(Y.minus(S.times(4)));
-
   const term3 = X.times(underRoot.sqrt());
-
   const numerator = term1.plus(term2).minus(term3);
   const denominator = S.times(2);
-
   const x = numerator.div(denominator);
-  return x;
+  return x.gte(Big("0")) ? x : Big("0");
 }
 
 /**
@@ -200,10 +193,7 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
 export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
   if (x.equalTo("0") || Y.equalTo("0")) return new Fraction("0");
   const xPlusX = x.add(X);
-  return x
-    .multiply(x)
-    .multiply(Y)
-    .divide(xPlusX.multiply(xPlusX));
+  return x.multiply(x).multiply(Y).divide(xPlusX.multiply(xPlusX));
 }
 
 /**

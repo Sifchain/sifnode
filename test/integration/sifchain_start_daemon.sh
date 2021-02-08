@@ -21,4 +21,4 @@ else
   sifnoded add-genesis-validators $whitelisted_validator --home $CHAINDIR/.sifnoded
 fi
 
-sifnoded start --rpc.laddr tcp://0.0.0.0:26657 --home $CHAINDIR/.sifnoded
+sifnoded start --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:26657 --home $CHAINDIR/.sifnoded

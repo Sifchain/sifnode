@@ -30,6 +30,9 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().String("bond-amount", "1000000000000000000000000rowan", "bond amount")
 	_nodeCreateCmd.PersistentFlags().String("mint-amount", "999000000000000000000000000rowan", "mint amount")
 	_nodeCreateCmd.PersistentFlags().String("faucet-amount", "1000000000000000000000000rowan", "faucet amount")
+	_nodeCreateCmd.PersistentFlags().String("min-clp-create-pool-threshold", "100", "minimum CLP create pool threshold")
+	_nodeCreateCmd.PersistentFlags().String("gov-max-deposit-period", "900000000000", "governance max deposit period")
+	_nodeCreateCmd.PersistentFlags().String("gov-voting-period", "900000000000", "governance voting period")
 	_nodeCreateCmd.PersistentFlags().Bool("print-details", false, "print the node details")
 	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
@@ -109,6 +112,9 @@ func nodeCreateCmd() *cobra.Command {
 			bondAmount, _ := cmd.Flags().GetString("bond-amount")
 			mintAmount, _ := cmd.Flags().GetString("mint-amount")
 			faucetAmount, _ := cmd.Flags().GetString("faucet-amount")
+			minCLPCreatePoolThreshold, _ := cmd.Flags().GetString("min-clp-create-pool-threshold")
+			govMaxDepositPeriod, _ := cmd.Flags().GetString("gov-max-deposit-period")
+			govVotingPeriod, _ := cmd.Flags().GetString("gov-voting-period")
 			printDetails, _ := cmd.Flags().GetBool("print-details")
 			withCosmovisor, _ := cmd.Flags().GetBool("with-cosmovisor")
 
@@ -123,6 +129,9 @@ func nodeCreateCmd() *cobra.Command {
 				node.BondAmount = bondAmount
 				node.MintAmount = mintAmount
 				node.FaucetAmount = faucetAmount
+				node.MinCLPCreatePoolThreshold = minCLPCreatePoolThreshold
+				node.GovMaxDepositPeriod = govMaxDepositPeriod
+				node.GovVotingPeriod = govVotingPeriod
 			} else {
 				node.PeerAddress = peerAddress
 				node.GenesisURL = genesisURL
