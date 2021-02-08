@@ -98,7 +98,6 @@ export default defineComponent({
       lastFocusedTokenField,
     });
 
-    console.log({shareOfPoolPercent})
 
     function handleNextStepClicked() {
       if (!tokenAFieldAmount.value)
@@ -136,7 +135,6 @@ export default defineComponent({
     }
 
     function toggleAsyncPooling() {
-      console.log('CREATEPOOLPAGE async pooling', asyncPooling.value)
       asyncPooling.value = !asyncPooling.value;
     }
 

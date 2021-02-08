@@ -22,29 +22,13 @@ export default {
     const toggled = computed(() => {
       return props.checked
     });
-    console.log('asdasd', this)
     return {
       toggled
     }
   },
-	// data() {
-	// 	return {
-	// 		toggle: computerfalse,
-	// 	}
-	// },
-  watch: {
-    checked: {
-      // the callback will be called immediately after the start of the observation
-      immediate: true,
-      handler (val, oldVal) {
-        // do your stuff
-        console.log("is prop pudating", val, oldVal)
-      }
-    }
-  },
 	methods: {
     onClickButton (event) {
-      this.$emit('clicked', 'someValue')
+      this.$emit('clicked', '')
     },
 	},
 

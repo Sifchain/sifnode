@@ -20,7 +20,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png",
       "name": "Apple Coin",
-      "address": "0x4E72770760c011647D4873f60A3CF6cDeA896CD8",
+      "address": "0x13274Fe19C0178208bCbee397af8167A7be27f6f",
       "network": "ethereum"
     },
     {
@@ -28,7 +28,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png",
       "name": "Banana Coin",
-      "address": "0xbaAA2a3237035A2c7fA2A33c76B44a8C6Fe18e87",
+      "address": "0xA4392264a2d8c998901D10C154C91725b1BF0158",
       "network": "ethereum"
     },
     {
@@ -36,7 +36,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png",
       "name": "USD Coin",
-      "address": "0x13274Fe19C0178208bCbee397af8167A7be27f6f",
+      "address": "0xB529f14AA8096f943177c09Ca294Ad66d2E08b1f",
       "network": "ethereum"
     },
     {
@@ -44,7 +44,7 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png",
       "name": "Chainlink",
-      "address": "0xA4392264a2d8c998901D10C154C91725b1BF0158",
+      "address": "0x3d49d1eF2adE060a33c6E6Aa213513A7EE9a6241",
       "network": "ethereum"
     }
   ]

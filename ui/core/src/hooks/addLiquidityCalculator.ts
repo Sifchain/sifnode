@@ -38,14 +38,10 @@ export function usePoolCalculator(input: {
 
 
   const tokenABalance = computed(() => {
-    console.log('lastFocusedTokenField', input.lastFocusedTokenField.value)
     return input.tokenASymbol.value
       ? balanceMap.value.get(input.tokenASymbol.value) ?? null
       : null;
   });
-  // if (input.asyncPooling.value && input.lastFocusedTokenField.value === 'A') {
-  //   return 100;
-  // } else {
   const tokenBBalance = computed(() => {
     return input.tokenBSymbol.value
       ? balanceMap.value.get(input.tokenBSymbol.value) ?? null
@@ -241,13 +237,10 @@ export function usePoolCalculator(input: {
   });
 
   effect(() => {
-    // console.log('COMEONMAN', input.asyncPooling, input.lastFocusedTokenField)
     // if in guided mode
     // calculate the price ratio of A / B
     if (input.asyncPooling.value && input.lastFocusedTokenField.value !== null) {
       if (input.lastFocusedTokenField.value === 'A') {
-        // console.log("LOST HERE", input.tokenAAmount.value)
-        // console.log("LOST HERE1", bPerARatio.value)
         input.tokenBAmount.value = input.tokenAAmount.value * bPerARatio.value.toFixed(8);
       } else if (input.lastFocusedTokenField.value === 'B') {
         input.tokenAAmount.value = input.tokenBAmount.value * aPerBRatio.value.toFixed(8);
