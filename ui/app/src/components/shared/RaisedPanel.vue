@@ -10,6 +10,5 @@
   border: 1px solid $c_gray_100;
   background: $g_gray_reverse;
   color: $c_gray_700;
-  display: flex;
 }
 </style>

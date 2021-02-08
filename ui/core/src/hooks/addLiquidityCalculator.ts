@@ -38,9 +38,6 @@ export function usePoolCalculator(input: {
 
 
   const tokenABalance = computed(() => {
-    console.log('tokenA', input.tokenAAmount.value, input.asyncPooling)
-    console.log('tokenB', input.tokenBAmount.value, input.asyncPooling)
-    console.log('asdasd', input.asyncPooling)
     console.log('lastFocusedTokenField', input.lastFocusedTokenField.value)
     return input.tokenASymbol.value
       ? balanceMap.value.get(input.tokenASymbol.value) ?? null
@@ -244,13 +241,13 @@ export function usePoolCalculator(input: {
   });
 
   effect(() => {
-    console.log('COMEONMAN', input.asyncPooling, input.lastFocusedTokenField)
+    // console.log('COMEONMAN', input.asyncPooling, input.lastFocusedTokenField)
     // if in guided mode
     // calculate the price ratio of A / B
-    if (input.asyncPooling && input.lastFocusedTokenField.value !== null) {
+    if (input.asyncPooling.value && input.lastFocusedTokenField.value !== null) {
       if (input.lastFocusedTokenField.value === 'A') {
-        console.log("LOST HERE", input.tokenAAmount.value)
-        console.log("LOST HERE1", bPerARatio.value)
+        // console.log("LOST HERE", input.tokenAAmount.value)
+        // console.log("LOST HERE1", bPerARatio.value)
         input.tokenBAmount.value = input.tokenAAmount.value * bPerARatio.value.toFixed(8);
       } else if (input.lastFocusedTokenField.value === 'B') {
         input.tokenAAmount.value = input.tokenBAmount.value * aPerBRatio.value.toFixed(8);

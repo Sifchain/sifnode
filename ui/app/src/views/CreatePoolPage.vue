@@ -11,6 +11,7 @@ import { useCore } from "@/hooks/useCore";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
 import FatInfoTable from "@/components/shared/FatInfoTable.vue";
+import Checkbox from "@/components/shared/Checkbox.vue";
 import FatInfoTableCell from "@/components/shared/FatInfoTableCell.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
@@ -31,6 +32,7 @@ export default defineComponent({
     DetailsPanelPool,
     FatInfoTable,
     FatInfoTableCell,
+    Checkbox,
   },
   props: ["title"],
   setup() {
@@ -41,14 +43,11 @@ export default defineComponent({
     const transactionState = ref<ConfirmState | string>("selecting");
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
-    const asyncPooling = ref<boolean>(true);
+    let asyncPooling = ref<boolean>(false);
     const router = useRouter();
     const route = useRoute();
 
     const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
-    console.log({asyncPooling})
-    console.log({asyncPooling})
-    console.log({asyncPooling})
     const toSymbol = ref("rowan");
 
     fromSymbol.value = route.params.externalAsset
@@ -75,7 +74,6 @@ export default defineComponent({
       );
     });
 
-    asyncPooling.value = true;
 
     const {
       aPerBRatioMessage,
@@ -135,6 +133,11 @@ export default defineComponent({
       } else {
         transactionState.value = "selecting";
       }
+    }
+
+    function toggleAsyncPooling() {
+      console.log('CREATEPOOLPAGE async pooling', asyncPooling.value)
+      asyncPooling.value = !asyncPooling.value;
     }
 
     return {
@@ -208,7 +211,8 @@ export default defineComponent({
 
       transactionState,
       transactionStateMsg,
-
+      toggleAsyncPooling,
+      asyncPooling,
       handleBlur() {
         selectedField.value = null;
       },
@@ -242,8 +246,6 @@ export default defineComponent({
   <Layout class="pool" :backLink="`${fromSymbol ? '/pool/' + fromSymbol : '/pool' }`" :title="title">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
-        <div>Asymmetrical Pooling (turned on)</div>
-        <br />
         <CurrencyPairPanel
           v-model:fromAmount="fromAmount"
           v-model:fromSymbol="fromSymbol"
@@ -261,6 +263,9 @@ export default defineComponent({
           @tomaxclicked="handleToMaxClicked"
           toSymbolFixed
           canSwapIcon="plus"
+          toggleLabel="Pool Equally"
+          :asyncPooling="asyncPooling"
+          @toggleAsyncPooling="toggleAsyncPooling"
       /></template>
       <template v-slot:default="{ requestClose }">
         <SelectTokenDialogSif

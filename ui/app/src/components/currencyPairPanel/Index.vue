@@ -2,6 +2,7 @@
 
 <template>
   <div class="field-wrappers">
+
     <CurrencyField
       :label="tokenALabel"
       tabindex="1"
@@ -17,6 +18,9 @@
       :symbolFixed="fromSymbolFixed"
       :selectable="fromSymbolSelectable"
       @update:symbol="handleFromUpdateSymbol"
+      :handleToggle="toggleAsyncPooling"
+      :asyncPooling="asyncPooling"
+      :toggleLabel="toggleLabel"
     />
     <ArrowIconButton
       @click="$emit('arrowclicked')"
@@ -48,8 +52,9 @@ import { defineComponent } from "vue";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
 import ArrowIconButton from "@/components/shared/ArrowIconButton.vue";
 import Icon from "@/components/shared/Icon.vue";
+import Checkbox from "@/components/shared/Checkbox.vue";
 export default defineComponent({
-  components: { CurrencyField, ArrowIconButton, Icon },
+  components: { CurrencyField, ArrowIconButton, Icon, Checkbox },
   props: {
     priceMessage: String,
     fromAmount: String,
@@ -71,6 +76,9 @@ export default defineComponent({
     fromSymbolSelectable: { type: Boolean, default: true },
     toSymbolFixed: { type: Boolean, default: false },
     toSymbolSelectable: { type: Boolean, default: true },
+    toggleLabel: { type: String, default: null },
+    asyncPooling: { type: Boolean, default: null },
+    toggleAsyncPooling: { type: Function }
   },
   emits: [
     "fromfocus",
@@ -88,6 +96,8 @@ export default defineComponent({
     "update:toSymbol",
     "update:fromAmount",
     "update:fromSymbol",
+    "handleToggle",
+    "toggleAsyncPooling"
   ],
   setup(props, context) {
     function handleFromUpdateAmount(amount: string) {
@@ -123,6 +133,9 @@ export default defineComponent({
     function handleToMaxClicked() {
       context.emit("tomaxclicked");
     }
+    function toggleAsyncPooling() {
+      context.emit("toggleAsyncPooling");
+    }
     return {
       handleFromUpdateAmount,
       handleFromUpdateSymbol,
@@ -134,6 +147,7 @@ export default defineComponent({
       handleToMaxClicked,
       handleToFocused,
       handleToBlur,
+      toggleAsyncPooling,
     };
   },
 });
