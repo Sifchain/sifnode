@@ -1,7 +1,7 @@
 import { calculatePoolUnits } from "./formulae";
 import { Fraction } from "./fraction/Fraction";
 
-import tables from "../../../../test/test-tables/sample_pool_units.json";
+import tables from "../../../../test/test-tables/pool_units.json";
 
 // Use this list to only run specific tests
 const filterList: number[] = [];

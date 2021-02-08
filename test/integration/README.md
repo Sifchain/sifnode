@@ -52,6 +52,16 @@ test/integration/setup-linux-environment.sh
 test/integration/start-integration-env.sh
 ```
 
+## Running tests against ropsten
+
+###  Bring the environment variables for the target environment into your shell:
+
+```
+source <(smart_contract_env.sh ~/workspace/sifnode/smart-contracts/deployments/sandpit/)
+```
+
+
+1.  
 ## Github actions
 
 See [the github action file](../../.github/workflows/integrationtest.yml) for the description of what's executed in the integration test environment.
