@@ -93,8 +93,11 @@ def test_kevin(
         target_ceth_balance=0,
         target_rowan_balance=target_rowan_balance
     )
+    time.sleep(10)
 
-    sifaddress = rowan_source_integrationtest_env_transfer_request.sifchain_address
+    #sifaddress = rowan_source_integrationtest_env_transfer_request.sifchain_address
+    sifaddress = request.sifchain_address
+    from_key = credentials.from_key
     logging.info("get balances just to have those commands in the history")
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
 
@@ -102,11 +105,11 @@ def test_kevin(
     basic_transfer_request.amount = 10 ** 17
     basic_transfer_request.sifchain_symbol = "rowan"
     basic_transfer_request.sifchain_address = sifaddress
-    add_faucet_coins(basic_transfer_request, rowan_source_integrationtest_env_credentials)
+    add_faucet_coins(basic_transfer_request, credentials)
     time.sleep(10)
     get_faucet_balance(basic_transfer_request.sifnodecli_node)
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
-    request_faucet_coins(basic_transfer_request, rowan_source_integrationtest_env_credentials)
+    request_faucet_coins(basic_transfer_request, credentials)
     time.sleep(10)
     get_faucet_balance(basic_transfer_request.sifnodecli_node)
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
