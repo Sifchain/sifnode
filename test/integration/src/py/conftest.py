@@ -4,6 +4,7 @@ import logging
 import pytest
 
 import test_utilities
+from burn_lock_functions import decrease_log_level, force_log_level
 
 
 @pytest.fixture
@@ -151,11 +152,14 @@ def ganache_timed_blocks(integration_dir):
 
 
 @pytest.fixture(scope="function")
-def ensure_relayer_restart(integration_dir):
+def ensure_relayer_restart(integration_dir, smart_contracts_dir):
     """restarts relayer after the test function completes.  Used by tests that need to stop the relayer."""
     yield None
-    logging.info("restart ebrelayer")
+    logging.info("restart ebrelayer after advancing wait blocks - avoids any interaction with replaying blocks")
+    original_log_level = decrease_log_level(new_level=logging.WARNING)
+    test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks + 1, smart_contracts_dir)
     test_utilities.get_shell_output(f"{integration_dir}/sifchain_start_ebrelayer.sh")
+    force_log_level(original_log_level)
 
 
 @pytest.fixture(scope="function")
