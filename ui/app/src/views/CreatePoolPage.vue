@@ -243,7 +243,8 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" :backLink="`${fromSymbol ? '/pool/' + fromSymbol : '/pool' }`" :title="title">
+  <Layout class="pool" :backLink="`${fromSymbol && connected && aPerBRatioMessage === 'N/A'
+    ? '/pool/' + fromSymbol : '/pool' }`" :title="title">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel
