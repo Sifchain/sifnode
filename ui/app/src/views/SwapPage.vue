@@ -131,6 +131,8 @@ export default defineComponent({
             return "Insufficient Funds";
           case SwapState.INSUFFICIENT_LIQUIDITY:
             return "Insufficient Liquidity";
+          case SwapState.INVALID_AMOUNT:
+            return "Invalid Amount";
           case SwapState.VALID_INPUT:
             return "Swap";
         }
