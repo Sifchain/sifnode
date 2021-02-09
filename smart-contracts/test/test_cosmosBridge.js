@@ -223,14 +223,11 @@ contract("CosmosBridge", function (accounts) {
           ),
           "Not enough locked assets to complete the proposed prophecy"
       );
+    });
 
     it("should allow correct operator to change the operator", async function () {
-      await this.cosmosBridge.changeOperator(
-        userTwo,
-        {
-          from: operator
-        }
-      );
+      await this.cosmosBridge.changeOperator(userTwo, { from: operator })
+        .should.be.fulfilled;
       (await this.cosmosBridge.operator()).should.be.equal(userTwo);
     });
 
@@ -239,7 +236,7 @@ contract("CosmosBridge", function (accounts) {
         this.cosmosBridge.changeOperator(
             userTwo,
             {
-              from: userTwo
+              from: userOne
             }
         ),
         "Must be the operator."
@@ -520,5 +517,4 @@ contract("CosmosBridge", function (accounts) {
       (status[0]).should.be.equal(true);
     });
   });
-});
 });
