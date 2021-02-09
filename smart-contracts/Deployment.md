@@ -65,9 +65,6 @@ truffle deploy --network mainnet
 ```
 You can replace mainnet with ropsten or local, whichever network you would like to deploy to.
 
-Now you will need to manually set the bridgebank address on the cosmos bridge by calling setBridgeBank as the operator to get the smart contract fully wired up to talk with each other.
-Do this by opening up a new truffle console on mainnet with the operator as the private key in your env file.
-
 5. After you have deployed the contracts to your network of choice, you will need to run this command from the smart-contracts folder:
 ```
 DIRECTORY_NAME="your_deployment_name_here" node scripts/saveContracts.js

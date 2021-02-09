@@ -223,6 +223,28 @@ contract("CosmosBridge", function (accounts) {
           ),
           "Not enough locked assets to complete the proposed prophecy"
       );
+
+    it("should allow correct operator to change the operator", async function () {
+      await this.cosmosBridge.changeOperator(
+        userTwo,
+        {
+          from: operator
+        }
+      );
+      (await this.cosmosBridge.operator()).should.be.equal(userTwo);
+    });
+
+    it("should not allow incorrect operator to change the operator", async function () {
+      await expectRevert(
+        this.cosmosBridge.changeOperator(
+            userTwo,
+            {
+              from: userTwo
+            }
+        ),
+        "Must be the operator."
+      );
+      (await this.cosmosBridge.operator()).should.be.equal(operator);
     });
 
     it("should not allow for anything other than BURN/LOCK (1 or 2)", async function () {
@@ -498,4 +520,5 @@ contract("CosmosBridge", function (accounts) {
       (status[0]).should.be.equal(true);
     });
   });
+});
 });
