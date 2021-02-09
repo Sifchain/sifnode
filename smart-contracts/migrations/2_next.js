@@ -121,7 +121,7 @@ module.exports = function(deployer, network, accounts) {
     if (network === 'mainnet') {
       return console.log("Network is mainnet, not going to deploy token");
     }
-
+    
     const erowan = await deployer.deploy(eRowan, "erowan", setTxSpecifications(4612388, operator));
 
     await erowan.addMinter(BridgeBank.address, setTxSpecifications(4612388, operator));
