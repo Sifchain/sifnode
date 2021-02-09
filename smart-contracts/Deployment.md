@@ -22,8 +22,6 @@ ETHEREUM_PRIVATE_KEY="c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f4
 OWNER='0x627306090abaB3A6e1400e9345bC60c78a8BEf57'
 # Address of the pauser
 PAUSER='0x627306090abaB3A6e1400e9345bC60c78a8BEf57'
-# Replace example MNEMONIC with your MetaMask mnemonic
-MNEMONIC="candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
 # Replace example INFURA_PROJECT_ID with your Infura project's ID
 INFURA_PROJECT_ID="JFSH7439sjsdtqTM23Dz"
 # Replace example OPERATOR with the intended address
@@ -55,9 +53,7 @@ https://etherscan.io/gastracker
 
 Go to your .env file and assign the current gas price in wei to the variable MAINNET_GAS_PRICE
 
-Set the ETHEREUM_PRIVATE_KEY to your private key you want to be the operator for the smart contract.
-
-Ensure that OPERATOR is the address that corresponds to the ETHEREUM_PRIVATE_KEY.
+Set the ETHEREUM_PRIVATE_KEY to your private key you want to be the upgradeable proxy contract owner for the smart contract.
 
 Ensure that OWNER is the address that will be the admin for the bridge bank and can wire eRowan in.
 
