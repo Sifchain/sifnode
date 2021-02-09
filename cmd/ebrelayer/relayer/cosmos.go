@@ -81,8 +81,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 	defer client.Stop() //nolint:errcheck
 
-	// Subscribe to all tendermint transactions
-	// query := "tm.event = 'Tx'"
+	// Subscribe to all new blocks
 	query := "tm.event = 'NewBlock'"
 	results, err := client.Subscribe(context.Background(), "test", query, 1000)
 	if err != nil {
