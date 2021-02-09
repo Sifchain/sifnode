@@ -1,25 +1,10 @@
-# Sifchain - Kubernetes (k8s) Tutorial
+# Connecting to the Merry-go-Round Testnet with Kubernetes (k8s). 
 
 #### Demo Videos
 
 1. https://youtu.be/dlPLIivwRGg
 2. https://youtu.be/ff9CZkmHo3o
 3. https://youtu.be/iJjXGXWMfsk
-
-#### Prerequisites / Dependencies:
-
-- Clone the repository (`git clone git@github.com:Sifchain/sifnode.git`)
-- [Ruby 2.7.x](https://www.ruby-lang.org/en/documentation/installation)
-- [Golang](https://golang.org/doc/install)
-- [AWS CLI Tool](https://aws.amazon.com/cli/)
-- [kubectl](https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html)
-- [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
-
-_This tutorial assumes that you have at least a basic understanding of setting up AWS and configuring your access keys accordingly, so that you may interact with AWS via the CLI Tool._
-
-#### What is Kubernetes? (k8s)
-
-Kubernetes is an open-source container-orchestration system for automating application deployment, scaling, and management.
 
 ## Scaffold and deploy a new cluster
 
@@ -28,20 +13,20 @@ Kubernetes is an open-source container-orchestration system for automating appli
 2. Scaffold a new cluster:
 
 ```
-rake "cluster:scaffold[<chainID>,<provider>]"
+rake "cluster:scaffold[<cluster>,<provider>]"
 ```
 
 e.g.:
 
 ```
-rake "cluster:scaffold[merry-go-round,aws]"
+rake "cluster:scaffold[my-cluster,aws]"
 ```
 
 where:
 
 |Param|Description|
 |-----|----------|
-|`<chainID>`|The Chain ID of the network (e.g.: merry-go-round).|
+|`<cluster>`|A name for your new cluster.|
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 
 3. Once complete, you'll notice that several Terraform files/folders have been setup inside of the `.live` directory. We recommend you leave the defaults as-is, but for those that have experience with Terraform, feel free to adjust the configuration as you see fit.
@@ -49,19 +34,19 @@ where:
 4. Deploy the cluster to AWS:
 
 ```
-rake "cluster:deploy[<chainID>,<provider>]"
+rake "cluster:deploy[<cluster>,<provider>]"
 ```
 
 e.g.:
 
 ```
-rake "cluster:deploy[merry-go-round,aws]"
+rake "cluster:deploy[my-cluster,aws]"
 ```
 
 5. Once complete, you should see your cluster on your AWS account. You can also check using `kubectl`:
 
 ```
-kubectl get pods --all-namespaces --kubeconfig ./.live/sifchain-aws-merry-go-round/kubeconfig_sifchain-aws-merry-go-round
+kubectl get pods --all-namespaces --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
 ```
 
 ## Deploy a new node
@@ -99,13 +84,14 @@ sifnodecli keys show <moniker> --keyring-backend file
 4. Deploy a new node to your cluster and connect to an existing network:
 
 ```
-rake "cluster:sifnode:deploy:peer[<chainID>,<provider>,<namespace>,<image>,<image tag>,<moniker>,<mnemonic>,<peer address>,<genesis URL>]"
+rake "cluster:sifnode:deploy:peer[<cluster>,<chainID>,<provider>,<namespace>,<image>,<image tag>,<moniker>,<mnemonic>,<peer address>,<genesis URL>]"
 ```
 
 where:
 
 |Param|Description|
 |-----|----------|
+|`<cluster>`|The name of your cluster.|
 |`<chainID>`|The Chain ID of the network (e.g.: merry-go-round).|
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 |`<namespace>`|The Kubernetes namespace to use (e.g.: sifnode).|
@@ -118,7 +104,7 @@ where:
 e.g.:
 
 ```
-rake "cluster:sifnode:deploy:peer[merry-go-round,aws,sifnode,sifchain/sifnoded,merry-go-round-3,my-node,'my mnemonic',e99deeec54ca1c477f8826801bc1fd29f5539a45@44.226.150.203:26656,http://44.226.150.203:26657/genesis]"
+rake "cluster:sifnode:deploy:peer[my-cluster,aws,sifnode,sifchain/sifnoded,merry-go-round-3,my-node,'my mnemonic',e99deeec54ca1c477f8826801bc1fd29f5539a45@44.226.150.203:26656,http://44.226.150.203:26657/genesis]"
 ```
 
 5. Once deployed, check the status of the pods:
@@ -131,8 +117,7 @@ and you should see something that resembles the following:
 
 ```                            
 NAME                           READY   STATUS     RESTARTS   AGE
-sifnode-75464fcd4c-dsmzq       0/1     Init:0/1   0          10s
-sifnode-cli-67bcfd4b54-mhdjx   0/1     Running    0          10s
+sifnode-75464fcd4c-dsmzq       0/1     Init:0/2   0          10s
 ```
 
 _It may take several minutes for your node to become active._
@@ -140,13 +125,13 @@ _It may take several minutes for your node to become active._
 6. Once your node is active (Status of "Running"), you can view it's sync status by looking at the logs. Run:
 
 ```
-kubectl -n sifnode logs <pod> --kubeconfig ./.live/sifchain-aws-merry-go-round/kubeconfig_sifchain-aws-merry-go-round
+kubectl -n sifnode logs <pod> --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
 ```
 
 e.g.:
 
 ```
-kubectl -n sifnode logs sifnode-65fbd7798f-6wqhb --kubeconfig ./.live/sifchain-aws-merry-go-round/kubeconfig_sifchain-aws-merry-go-round
+kubectl -n sifnode logs sifnode-65fbd7798f-6wqhb --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
 ```
 
 ## Stake to become a validator
@@ -158,13 +143,13 @@ In order to become a validator, that is a node which can participate in consensu
 2. Get the public key of your node:
 
 ```
-rake "validator:expose:pub_key[<chainID>,<provider>,<namespace>]"
+rake "validator:expose:pub_key[<cluster>,<provider>,<namespace>]"
 ```
 
 e.g.:
 
 ```
-rake "validator:expose:pub_key[merry-go-round,aws,sifnode]"
+rake "validator:expose:pub_key[my-cluster,aws,sifnode]"
 ```
 
 3. Stake:
@@ -187,7 +172,7 @@ where:
 e.g.:
 
 ```
-rake "validator:stake[merry-go-round,my-node,10000000rowan,<public key>,0.5rowan,tcp://44.226.150.203:26657]"
+rake "validator:stake[merry-go-round,my-node,10000000rowan,0.5rowan,<public key>,0.5rowan,tcp://44.226.150.203:26657]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
@@ -201,3 +186,11 @@ e.g.:
 ```
 sifnodecli q tendermint-validator-set --node tcp://44.226.150.203:26657 --trust-node
 ```
+
+## Additional Resources
+
+### Block Explorer
+
+A block explorer is available at:
+
+https://blockexplorer-merry-go-round.sifchain.finance
