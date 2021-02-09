@@ -41,7 +41,8 @@ import (
 const (
 	transactionInterval = 10 * time.Second
 	trailingBlocks      = 50
-	levelDbFile         = "relayerdb"
+	ethLevelDBKey       = "ethereumLastProcessedBlock"
+	// levelDbFile         = "relayerdb"
 )
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
@@ -58,6 +59,7 @@ type EthereumSub struct {
 	TempPassword            string
 	EventsBuffer            types.EthEventBuffer
 	Logger                  tmLog.Logger
+	DB                      *leveldb.DB
 }
 
 // NewKeybase create a new keybase instance
@@ -74,7 +76,7 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keys.Keybase, keys
 
 // NewEthereumSub initializes a new EthereumSub
 func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorMoniker, chainID, ethProvider string,
-	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, logger tmLog.Logger) (EthereumSub, error) {
+	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, logger tmLog.Logger, db *leveldb.DB) (EthereumSub, error) {
 
 	tempPassword, _ := password.Generate(32, 5, 0, false, false)
 	keybase, info, err := NewKeybase(validatorMoniker, mnemonic, tempPassword)
@@ -108,6 +110,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 		TempPassword:            tempPassword,
 		EventsBuffer:            types.NewEthEventBuffer(),
 		Logger:                  logger,
+		DB:                      db,
 	}, nil
 }
 
@@ -181,23 +184,10 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 		return
 	}
 	defer subHead.Unsubscribe()
-
-	db, err := leveldb.OpenFile(levelDbFile, nil)
-	if err != nil {
-		log.Println("Error opening leveldb: ", err)
-		return
-	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			log.Println("db.Close filed: ", err.Error())
-		}
-	}()
-
-	ethLevelDBKey := "ethereumLastProcessedBlock"
 	var lastProcessedBlock *big.Int
 
 	var catchUpNeeded bool
-	data, err := db.Get([]byte(ethLevelDBKey), nil)
+	data, err := sub.DB.Get([]byte(ethLevelDBKey), nil)
 	if err != nil {
 		log.Println("Error getting the last ethereum block from level db", err)
 		lastProcessedBlock = big.NewInt(0)
@@ -285,7 +275,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			// add 1 to the current block so we don't reprocess it
 			endingBlock = endingBlock.Add(endingBlock, big.NewInt(1))
 			// save the current ending block + 1 to the lastprocessed block to ensure we keep reading blocks sequentially and don't repeat blocks
-			err = db.Put([]byte(ethLevelDBKey), endingBlock.Bytes(), nil)
+			err = sub.DB.Put([]byte(ethLevelDBKey), endingBlock.Bytes(), nil)
 			if err != nil {
 				// if you can't write to leveldb, then error out as something is seriously amiss
 				log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)

@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/ecdsa"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"log"
@@ -23,9 +24,14 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/syndtr/goleveldb/leveldb"
 	tmLog "github.com/tendermint/tendermint/libs/log"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	tmTypes "github.com/tendermint/tendermint/types"
+)
+
+const (
+	cosmosLevelDBKey = "cosmosLastProcessedBlock"
 )
 
 // TODO: Move relay functionality out of CosmosSub into a new Relayer parent struct
@@ -37,17 +43,19 @@ type CosmosSub struct {
 	RegistryContractAddress common.Address
 	PrivateKey              *ecdsa.PrivateKey
 	Logger                  tmLog.Logger
+	DB                      *leveldb.DB
 }
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common.Address,
-	privateKey *ecdsa.PrivateKey, logger tmLog.Logger) CosmosSub {
+	privateKey *ecdsa.PrivateKey, logger tmLog.Logger, db *leveldb.DB) CosmosSub {
 	return CosmosSub{
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
 		PrivateKey:              privateKey,
 		Logger:                  logger,
+		DB:                      db,
 	}
 }
 
@@ -74,8 +82,9 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	defer client.Stop() //nolint:errcheck
 
 	// Subscribe to all tendermint transactions
-	query := "tm.event = 'Tx'"
-	out, err := client.Subscribe(context.Background(), "test", query, 1000)
+	// query := "tm.event = 'Tx'"
+	query := "tm.event = 'NewBlock'"
+	results, err := client.Subscribe(context.Background(), "test", query, 1000)
 	if err != nil {
 		sub.Logger.Error("failed to subscribe to query", "err", err, "query", query)
 		completionEvent.Add(1)
@@ -93,33 +102,65 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	defer close(quit)
 
-	for {
-		select {
-		case result := <-out:
-			tx, ok := result.Data.(tmTypes.EventDataTx)
-			if !ok {
-				sub.Logger.Error("new tx: error while extracting event data from new tx")
+	var lastProcessedBlock int64
+
+	data, err := sub.DB.Get([]byte(cosmosLevelDBKey), nil)
+	if err != nil {
+		log.Println("Error getting the last ethereum block from level db", err)
+		lastProcessedBlock = 0
+	} else {
+		lastProcessedBlock = int64(binary.BigEndian.Uint64(data))
+	}
+
+	for e := range results {
+		data, ok := e.Data.(tmTypes.EventDataNewBlock)
+		if !ok {
+			fmt.Println("we have an error")
+		}
+		blockHeight := data.Block.Height
+
+		// Just start from current block number if never process any block before
+		if lastProcessedBlock == 0 {
+			lastProcessedBlock = blockHeight
+		}
+
+		fmt.Printf("cosmos process events from %d to %d\n", lastProcessedBlock+1, blockHeight)
+
+		for blockNumber := lastProcessedBlock + 1; blockNumber <= blockHeight; {
+			tmpBlockNumber := blockNumber
+			block, err := client.BlockResults(&tmpBlockNumber)
+			blockNumber++
+
+			if err != nil {
+				sub.Logger.Error(fmt.Sprintf("failed to get a block %s", err))
+				continue
 			}
 
-			sub.Logger.Info("New transaction witnessed")
+			for _, log := range block.TxsResults {
+				for _, event := range log.Events {
 
-			// Iterate over each event in the transaction
-			for _, event := range tx.Result.Events {
-				claimType := getOracleClaimType(event.GetType())
+					claimType := getOracleClaimType(event.GetType())
 
-				switch claimType {
-				case types.MsgBurn, types.MsgLock:
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
-					if err != nil {
-						fmt.Println(err)
-						continue
+					switch claimType {
+					case types.MsgBurn, types.MsgLock:
+						cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
+						if err != nil {
+							fmt.Println(err)
+							break
+						}
+						sub.handleBurnLockMsg(cosmosMsg, claimType)
 					}
-					// Parse event data, then package it as a ProphecyClaim and relay to the Ethereum Network
-					sub.handleBurnLockMsg(cosmosMsg, claimType)
 				}
 			}
-		case <-quit:
-			return
+
+			b := make([]byte, 8)
+			binary.BigEndian.PutUint64(b, uint64(blockNumber))
+
+			err = sub.DB.Put([]byte(ethLevelDBKey), b, nil)
+			if err != nil {
+				// if you can't write to leveldb, then error out as something is seriously amiss
+				log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
+			}
 		}
 	}
 }

@@ -16,7 +16,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/tendermint/tendermint/libs/cli"
+
 	tmLog "github.com/tendermint/tendermint/libs/log"
 
 	"github.com/Sifchain/sifnode/app"
@@ -31,7 +33,8 @@ const (
 	// FlagRPCURL defines the URL for the tendermint RPC connection
 	FlagRPCURL = "rpc-url"
 	// EnvPrefix defines the environment prefix for the root cmd
-	EnvPrefix = "EBRELAYER"
+	EnvPrefix   = "EBRELAYER"
+	levelDbFile = "relayerdb"
 )
 
 func init() {
@@ -109,6 +112,17 @@ func generateBindingsCmd() *cobra.Command {
 
 // RunInitRelayerCmd executes initRelayerCmd
 func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
+	// Open the level db
+	db, err := leveldb.OpenFile(levelDbFile, nil)
+	if err != nil {
+		log.Fatal("Error opening leveldb: ", err)
+	}
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Println("db.Close filed: ", err.Error())
+		}
+	}()
+
 	tmpRPCURL := viper.GetString(FlagRPCURL)
 	fmt.Printf("rpcRUL is  %v \n", tmpRPCURL)
 
@@ -161,12 +175,12 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
 	ethSub, err := relayer.NewEthereumSub(inBuf, rpcURL, cdc, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, mnemonic, logger)
+		contractAddress, privateKey, mnemonic, logger, db)
 	if err != nil {
 		return err
 	}
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger, db)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)

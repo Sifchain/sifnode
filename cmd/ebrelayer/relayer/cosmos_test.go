@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
+	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/tendermint/tendermint/libs/log"
 )
 
@@ -21,12 +22,13 @@ const (
 )
 
 func TestNewCosmosSub(t *testing.T) {
-
+	db, err := leveldb.OpenFile("relayerdb", nil)
+	require.Equal(t, err, nil)
 	privateKey, _ := crypto.HexToECDSA(privateKeyStr)
 	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 	registryContractAddress := common.HexToAddress(contractAddress)
 	sub := NewCosmosSub(tmProvider, ethProvider, registryContractAddress,
-		privateKey, logger)
+		privateKey, logger, db)
 	require.NotEqual(t, sub, nil)
 }
 
