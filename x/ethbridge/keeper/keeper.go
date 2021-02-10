@@ -40,8 +40,10 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 // ProcessClaim processes a new claim coming in from a validator
 func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.EthBridgeClaim) (oracle.Status, error) {
+	fmt.Println("sifnode ethbridge keeper ProcessClaim")
 	oracleClaim, err := types.CreateOracleClaimFromEthClaim(k.cdc, claim)
 	if err != nil {
+		fmt.Printf("sifnode ethbridge keeper ProcessClaim oracle %s\n", err.Error())
 		return oracle.Status{}, err
 	}
 

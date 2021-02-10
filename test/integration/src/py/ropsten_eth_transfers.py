@@ -51,8 +51,8 @@ def test_transfer_eth_to_ceth_and_back(ropsten_wait_time, rowan_source, sifnodec
     return_request = deepcopy(eth_transfer)
     # don't transfer ceth => eth to the BridgeBank address since BridgeBank is responsible for paying gas.
     # That means you can't just see if the exact transfer went through.
-    return_request.ethereum_address = test_utilities.create_ethereum_address(
+    return_request.ethereum_address, _ = test_utilities.create_ethereum_address(
         smart_contracts_dir, ethereum_network
-    )["address"]
+    )
     return_request.amount = amount
     burn_lock_functions.transfer_sifchain_to_ethereum(return_request, credentials, ropsten_wait_time)

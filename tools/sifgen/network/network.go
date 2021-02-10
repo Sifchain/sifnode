@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 
@@ -25,7 +26,10 @@ type Network struct {
 
 func Reset(chainID, networkDir string) error {
 	s := sha256.New()
-	s.Write([]byte(chainID))
+	_, err := s.Write([]byte(chainID))
+	if err != nil {
+		log.Println("Write failed: ", err.Error())
+	}
 	file := fmt.Sprintf("%x", s.Sum(nil))
 
 	data, err := ioutil.ReadFile(fmt.Sprintf("%s/%s.yml", networkDir, file))
