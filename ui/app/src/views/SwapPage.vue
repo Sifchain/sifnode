@@ -109,9 +109,12 @@ export default defineComponent({
       clearAmounts();
     }
 
+    const inputsSwapped = ref<boolean>(false);
+
     function swapInputs() {
-      // we want the "from" value to persist, but now in the "to" input
-      selectedField.value = "to";
+      selectedField.value === "to" ? 
+        selectedField.value = "from" : 
+        selectedField.value = "to"
       const fromAmountValue = fromAmount.value;
       const fromSymbolValue = fromSymbol.value;
       fromAmount.value = toAmount.value;
