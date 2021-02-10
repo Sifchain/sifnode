@@ -15,6 +15,12 @@
       "symbol": "cUSDT"
     },
     {
+      "imageUrl": "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
+      "name": "Ethereum",
+      "network": "sifchain",
+      "symbol": "cETH"
+    },
+    {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/677/thumb/basic-attention-token.png?1547034427",
       "name": "Basic Attention Token",
@@ -300,12 +306,6 @@
       "name": "Secret ERC20",
       "network": "sifchain",
       "symbol": "cWSCRT"
-    },
-    {
-      "imageUrl": "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
-      "name": "Ethereum",
-      "network": "sifchain",
-      "symbol": "cETH"
     },
     {
       "decimals": 18,
