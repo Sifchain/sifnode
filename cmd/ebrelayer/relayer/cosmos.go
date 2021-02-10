@@ -124,12 +124,11 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		}
 
 		startBlockHeight := lastProcessedBlock + 1
-		fmt.Printf("cosmos process events from %d to %d\n", startBlockHeight, blockHeight)
+		fmt.Printf("cosmos process events from block %d to %d\n", startBlockHeight, blockHeight)
 
 		for blockNumber := startBlockHeight; blockNumber <= blockHeight; {
 			tmpBlockNumber := blockNumber
 			block, err := client.BlockResults(&tmpBlockNumber)
-			blockNumber++
 
 			if err != nil {
 				sub.Logger.Error(fmt.Sprintf("failed to get a block %s", err))
@@ -162,6 +161,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 				// if you can't write to leveldb, then error out as something is seriously amiss
 				log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
 			}
+			blockNumber++
 		}
 	}
 }
