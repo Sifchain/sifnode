@@ -1,4 +1,5 @@
 // TODO - Conditional load or build-time tree shake
+import mainnnetconfig from "./config.mainnet.json";
 import localnetconfig from "./config.localnet.json";
 import sandpitconfig from "./config.sandpit.json";
 import monkeybarsconfig from "./config.monkeybars.json"
@@ -60,6 +61,7 @@ export function getConfig(
   const allAssets = [...sifchainAssets, ...ethereumAssets].map(cacheAsset);
 
   const configMap: ConfigMap = {
+    mainnet: parseConfig(mainnnetconfig as ChainConfig, allAssets),
     localnet: parseConfig(localnetconfig as ChainConfig, allAssets),
     monkeybars: parseConfig(monkeybarsconfig as ChainConfig, allAssets),
     sandpit: parseConfig(sandpitconfig as ChainConfig, allAssets),
