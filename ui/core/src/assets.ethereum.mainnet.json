@@ -1,6 +1,14 @@
 {
   "assets": [
     {
+      "symbol": "erowan",
+      "decimals": 18,
+      "name": "Rowan",
+      "imageUrl": "./images/siflogo.png",
+      "address": "0x07bac35846e5ed502aa91adf6a9e7aa210f2dcbe",
+      "network": "ethereum"
+    },
+    {
       "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707",
