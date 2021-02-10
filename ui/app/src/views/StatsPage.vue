@@ -24,7 +24,7 @@ export default defineComponent({
 
 <template>
   <div class="layout">
-    <PoolStatsList class="mb-2" :poolData="poolData" />
+    <PoolStatsList :poolData="poolData" />
   </div>
 </template>
 
