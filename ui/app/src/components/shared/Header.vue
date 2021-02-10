@@ -22,7 +22,6 @@ export default defineComponent({
         <Suspense>
           <div>
             <RowanPrice />
-
           </div>
         </Suspense>
         <div>

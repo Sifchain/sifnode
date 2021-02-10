@@ -17,7 +17,8 @@ export default defineComponent({
   },
   async mounted() {
     const data = await fetch("https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/tokenstats");
-    this.poolData = await data.json();
+    const json = await data.json();
+    this.poolData = json.body;
   },
 });
 </script>

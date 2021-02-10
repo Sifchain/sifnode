@@ -12,7 +12,8 @@ export default defineComponent({
     }
 
     const data = await fetch("https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/tokenstats");
-    const rowanPriceInUSDT = (await data.json())?.rowanUSD;
+    const json = await data.json();
+    const rowanPriceInUSDT = json.body ? json.body.rowanUSD : "";
 
     let rowanUSD = "";
     if (isNumeric(rowanPriceInUSDT) && route.path === '/stats') {
@@ -47,7 +48,7 @@ export default defineComponent({
     font-style: normal;
     font-weight: bold;
     font-size: 12px;
-    padding: 1px 8px;
+    padding: 1px 5px;
     height: auto;
     line-height: initial;
     border: 1px solid $c_gray_400;
