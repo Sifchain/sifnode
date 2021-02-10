@@ -225,6 +225,25 @@ contract("CosmosBridge", function (accounts) {
       );
     });
 
+    it("should allow correct operator to change the operator", async function () {
+      await this.cosmosBridge.changeOperator(userTwo, { from: operator })
+        .should.be.fulfilled;
+      (await this.cosmosBridge.operator()).should.be.equal(userTwo);
+    });
+
+    it("should not allow incorrect operator to change the operator", async function () {
+      await expectRevert(
+        this.cosmosBridge.changeOperator(
+            userTwo,
+            {
+              from: userOne
+            }
+        ),
+        "Must be the operator."
+      );
+      (await this.cosmosBridge.operator()).should.be.equal(operator);
+    });
+
     it("should not allow for anything other than BURN/LOCK (1 or 2)", async function () {
       await this.cosmosBridge.newProphecyClaim(
           3,

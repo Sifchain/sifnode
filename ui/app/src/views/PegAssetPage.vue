@@ -110,7 +110,7 @@ export default defineComponent({
 
     const nextStepAllowed = computed(() => {
       const amountNum = new BigNumber(amount.value);
-      const balance = accountBalance.value?.toFixed(18) ?? "0.0";
+      const balance = accountBalance.value?.toFixed() ?? "0.0";
       return (
         amountNum.isGreaterThan("0.0") &&
         address.value !== "" &&
@@ -193,6 +193,7 @@ export default defineComponent({
         <RaisedPanelColumn v-if="mode === 'unpeg'">
           <Label>Ethereum Recipient Address</Label>
           <SifInput
+            disabled
             v-model="address"
             placeholder="Eg. 0xeaf65652e380528fffbb9fc276dd8ef608931e3c"
           />
