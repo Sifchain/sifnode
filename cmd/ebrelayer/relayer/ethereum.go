@@ -282,6 +282,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				// if you can't write to leveldb, then error out as something is seriously amiss
 				log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
 			}
+			lastProcessedBlock = endingBlock
 		}
 	}
 }
