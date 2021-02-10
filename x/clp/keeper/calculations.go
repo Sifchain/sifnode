@@ -153,14 +153,38 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	slipAdjustment = sdk.NewDec(1).Sub(slipAdjustment)
 
 	// ((P (a R + A r))
+
+	P = ReducePrecision(P)
+	R = ReducePrecision(R)
+	A = ReducePrecision(A)
+	a = ReducePrecision(a)
+	r = ReducePrecision(r)
+	fmt.Println("P", P.String())
+	fmt.Println("R", R.String())
+	fmt.Println("A", A.String())
+	fmt.Println("a", a.String())
+	fmt.Println("r", R.String())
+
 	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
+	numerator = IncreasePrecision(numerator)
 	// 2AR
-	denominator := sdk.NewDec(2).Mul(A).Mul(R)
+	denominator := sdk.NewDecWithPrec(2, 18).Mul(A).Mul(R)
+	denominator = IncreasePrecision(numerator)
+
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
 	newPoolUnit := P.Add(stakeUnits)
 
-	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
+	return sdk.NewUintFromBigInt(newPoolUnit.TruncateInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.TruncateInt().BigInt()), nil
 
+}
+func ReducePrecision(dec sdk.Dec) sdk.Dec {
+	p := sdk.NewDec(10).Power(15)
+	return dec.Quo(p)
+}
+
+func IncreasePrecision(dec sdk.Dec) sdk.Dec {
+	p := sdk.NewDec(10).Power(15)
+	return dec.Mul(p)
 }
 
 func calcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {

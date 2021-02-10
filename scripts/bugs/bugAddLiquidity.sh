@@ -15,12 +15,11 @@ sleep 5
 sifnoded start >> sifnode.log 2>&1  &
 sleep 5
 
-yes Y | sifnodecli tx clp create-pool --from sif --symbol cacoin --nativeAmount 144219482657918838950052 --externalAmount 95306982476314799709783920 --fees 1300000rowan
+yes Y | sifnodecli tx clp create-pool --from sif --symbol cacoin --nativeAmount 162057826929020210025062784 --externalAmount 1000000000000000000000 --fees 1300000rowan
 sleep 5
 
 sifnodecli q clp pools
 
 echo "adding new liquidity provider"
 sleep 5
-yes Y | sifnodecli tx clp add-liquidity --from akasha --symbol cacoin --nativeAmount 1000000000000000000000 --externalAmount 999990445060966787235986082005 --fees 1300000rowan
-
+yes Y | sifnodecli tx clp add-liquidity --from akasha --symbol cacoin --nativeAmount 1000000000000000000000 --externalAmount 8999998679900000000000000000000 --fees 1300000rowan

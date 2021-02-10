@@ -70,9 +70,12 @@ func TestAddLiquidity(t *testing.T) {
 	signer := test.GenerateAddress("")
 	handler := clp.NewHandler(keeper)
 	//Parameters for add liquidity
-	initialBalance := sdk.NewUint(10000) // Initial account balance for all assets created
-	poolBalance := sdk.NewUint(1000)     // Amount funded to pool , This same amount is used both for native and external asset
-	addLiquidityAmount := sdk.NewUint(1000)
+	//initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
+	//poolBalance := sdk.NewUintFromString("1000000000000000000")     // Amount funded to pool , This same amount is used both for native and external asset
+	//addLiquidityAmount := sdk.NewUintFromString("1000000000000000000")
+	initialBalance := sdk.NewUintFromString("10000") // Initial account balance for all assets created
+	poolBalance := sdk.NewUintFromString("1000")     // Amount funded to pool , This same amount is used both for native and external asset
+	addLiquidityAmount := sdk.NewUintFromString("1000")
 
 	asset := clp.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
@@ -106,6 +109,33 @@ func TestAddLiquidity(t *testing.T) {
 
 	lpList := keeper.GetLiquidityProvidersForAsset(ctx, asset)
 	assert.Equal(t, 2, len(lpList))
+
+}
+
+func TestAddLiquidity_BIg(t *testing.T) {
+	ctx, keeper := test.CreateTestAppClp(false)
+	signer := test.GenerateAddress("")
+	handler := clp.NewHandler(keeper)
+	//Parameters for add liquidity
+	poolBalanceRowan := sdk.NewUintFromString("162057826929020210025062784")
+	poolBalanceCacoin := sdk.NewUintFromString("1000000000000000000000") // Amount funded to pool , This same amount is used both for native and external asset
+	addLiquidityAmountRowan := sdk.NewUintFromString("1000000000000000000000")
+	addLiquidityAmountCaCoin := sdk.NewUintFromString("8999998679900000000000000000000")
+
+	asset := clp.NewAsset("cacoin")
+	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(poolBalanceCacoin).Add(sdk.Int(addLiquidityAmountCaCoin)))
+	nativeCoin := sdk.NewCoin(clp.NativeSymbol, sdk.Int(poolBalanceRowan).Add(sdk.Int(addLiquidityAmountRowan)))
+	_, _ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin, nativeCoin})
+
+	msgCreatePool := clp.NewMsgCreatePool(signer, asset, poolBalanceRowan, poolBalanceCacoin)
+	res, err := handler(ctx, msgCreatePool)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+
+	msg := clp.NewMsgAddLiquidity(signer, asset, addLiquidityAmountRowan, addLiquidityAmountCaCoin)
+	res, err = handler(ctx, msg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
 
 }
 
