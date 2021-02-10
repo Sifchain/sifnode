@@ -123,9 +123,10 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 			lastProcessedBlock = blockHeight
 		}
 
-		fmt.Printf("cosmos process events from %d to %d\n", lastProcessedBlock+1, blockHeight)
+		startBlockHeight := lastProcessedBlock + 1
+		fmt.Printf("cosmos process events from %d to %d\n", startBlockHeight, blockHeight)
 
-		for blockNumber := lastProcessedBlock + 1; blockNumber <= blockHeight; {
+		for blockNumber := startBlockHeight; blockNumber <= blockHeight; {
 			tmpBlockNumber := blockNumber
 			block, err := client.BlockResults(&tmpBlockNumber)
 			blockNumber++
@@ -154,6 +155,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 			b := make([]byte, 8)
 			binary.BigEndian.PutUint64(b, uint64(blockNumber))
+			lastProcessedBlock = blockNumber
 
 			err = sub.DB.Put([]byte(ethLevelDBKey), b, nil)
 			if err != nil {
