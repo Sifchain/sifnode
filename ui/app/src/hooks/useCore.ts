@@ -6,7 +6,7 @@ import {
   getConfig,
 } from "ui-core";
 
-console.log(process.env.GIT_SHA)
+console.info("GIT COMMIT SHA: " + process.env.GIT_SHA)
 
 const config = getConfig(
   process.env.VUE_APP_DEPLOYMENT_TAG,
