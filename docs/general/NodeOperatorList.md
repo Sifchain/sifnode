@@ -1,13 +1,13 @@
 # List of available Node Operators
 
-Below is a consolidated list of the Node Operators who have expressed interest in running a node for Sifnode. We have consolidated information that they have provided below for easy reference. This is a summarized version of their full responses to all questions. For additional details please reference out google sheet here.
+Below is a consolidated list of the Node Operators who have expressed interest in running a node for Sifnode. We have consolidated information that they have provided below for easy reference. This is a summarized version of their responses. We collected information across numerous categories, including: Contact Details, Node Validator Experience, Emergency Resoponse & Monitoring, Server Infrastructure & Security, and Contributions to Sifchain. For all answers across all of these categores, please reference our [google sheet here](https://docs.google.com/spreadsheets/d/1pq_0Ca7IBfUkIiIU8lpzYQ-uUGLbT8NK3SdRoma1KOc/edit?usp=sharing).
   
 If you are wondering with node to delegat to, keep in mind certain criteria for your selection selection: well known node operator, supporting a specific application or community run node, nodes run by large enterprises and so forth. To avoid any slashable activities and to maximize your potential staking reward, select nodes you believe will behave honestly and will have strong uptime.
   
 
 ## Node Operator list
-| Sifchain Address | Discord | Other blockchains I run Nodes for | How long do I plan on running a node? | Why would I stop running my node? | What kind of emergency response plans do I have? |
-|:-----------------|:--------|:----------------------------------|:--------------------------------------|:----------------------------------|:-------------------------------------------------|
+| Sifchain Address | Discord | Other blockchains I run Nodes for | How long do I plan on running a node? |
+|:-----------------|:--------|:----------------------------------|:--------------------------------------|
 sif14tm9600fx088jw55gypcwkwh04j34e9jp68t8r | Danil Ushakov#5735 | Solana, Stafi, Darwinia, Oasis (Tendermint), Akash (Tendermint), Certik (Tendermint), Avalanche, Pocket (Tendermint) | at least 5 years | 
 sif1fydtkmm7u6smh4rvae70n8y79lg6sarrqqz366 | stakely.io#9147 | Mainet: Certik, Stafi, marlin, fantom. Testnet: crypto.com, nym, bluzelle and others |  Years | 
 sif1q4zknsmnzjtn569mmttufauwpgh5j9rc78dzcx | Alibaba#0280 | Oasis Mainnet, Solana Mainnet, the Graph Mainnet, Certik Mainnet, Dock testnet, Crypto.com testnet, Kira testnet, Casper testnet, Robonomics testnet, Bitsong testnet | As long as required | 
