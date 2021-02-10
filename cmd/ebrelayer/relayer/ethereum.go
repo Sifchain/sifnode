@@ -196,15 +196,12 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	ethLevelDBKey := "ethereumLastProcessedBlock"
 	var lastProcessedBlock *big.Int
 
-	var catchUpNeeded bool
 	data, err := db.Get([]byte(ethLevelDBKey), nil)
 	if err != nil {
 		log.Println("Error getting the last ethereum block from level db", err)
 		lastProcessedBlock = big.NewInt(0)
-		catchUpNeeded = false
 	} else {
 		lastProcessedBlock = new(big.Int).SetBytes(data)
-		catchUpNeeded = true
 	}
 
 	for {
@@ -234,11 +231,6 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			// The user who starts this must provide a valid last processed block
 			if lastProcessedBlock.Cmp(big.NewInt(0)) == 0 {
 				lastProcessedBlock.Sub(endingBlock, big.NewInt(1))
-			} else if catchUpNeeded {
-				// if we need to catch up, then do that and let the relayer know that we don't need to catch up again
-				catchUpNeeded = false
-			} else {
-				lastProcessedBlock = endingBlock
 			}
 
 			sub.Logger.Info(fmt.Sprintf("Processing events from block %d to %d", lastProcessedBlock, endingBlock))
