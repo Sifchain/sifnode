@@ -233,7 +233,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				lastProcessedBlock.Sub(endingBlock, big.NewInt(1))
 			}
 
-			sub.Logger.Info(fmt.Sprintf("Processing events from block %d to %d", lastProcessedBlock, endingBlock))
+			sub.Logger.Info(fmt.Sprintf("Ethereum processing events from block %d to %d", lastProcessedBlock, endingBlock))
 
 			// query event data from this specific block range
 			ethLogs, err := client.FilterLogs(context.Background(), ethereum.FilterQuery{
