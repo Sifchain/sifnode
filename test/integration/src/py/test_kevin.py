@@ -295,7 +295,7 @@ def test_pools(
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth")
 
     # This has problems, querying tx never returns.
-    if False:
+    if True:
         basic_transfer_request.amount = 10 ** 19
         add_pool_liquidity(basic_transfer_request, credentials)
         time.sleep(10)
