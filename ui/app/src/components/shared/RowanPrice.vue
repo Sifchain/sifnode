@@ -46,17 +46,19 @@ export default defineComponent({
     font-family: Arial, Helvetica, sans-serif;
     font-style: normal;
     font-weight: bold;
-    font-size: 13px;
-    padding: 2px 8px;
+    font-size: 12px;
+    padding: 1px 8px;
     height: auto;
     line-height: initial;
     border: 1px solid $c_gray_400;
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-top: 2px;
+    margin-right:48px;
 
     .image {
-      height: 18px;
+      height: 16px;
       margin-right: 4px;
     }
   }

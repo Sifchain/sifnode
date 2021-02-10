@@ -275,7 +275,7 @@ export default defineComponent({
     </FatInfoTable>
 
     <FatInfoTable :show="nextStepAllowed">
-      <template #header>Price Impact and Pool Share</template>
+      <template #header>Prices after pooling and pool share</template>
       <template #body>
         <FatInfoTableCell>
           <span class="number">{{

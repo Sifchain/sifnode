@@ -18,11 +18,16 @@ export default defineComponent({
       <div>
         <Menu />
       </div>
-      <Suspense>
-        <RowanPrice />
-      </Suspense>
-      <div>
-        <slot name="right"></slot>
+      <div class="third-container">
+        <Suspense>
+          <div>
+            <RowanPrice />
+
+          </div>
+        </Suspense>
+        <div>
+          <slot name="right"></slot>
+        </div>
       </div>
     </div>
   </header>
@@ -55,6 +60,10 @@ export default defineComponent({
       color: $c_white;
       text-decoration: underline;
     }
+  }
+  .third-container {
+    display: flex;
+    justify-content: center;
   }
 }
 </style>

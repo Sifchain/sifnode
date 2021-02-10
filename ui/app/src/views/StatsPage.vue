@@ -16,7 +16,7 @@ export default defineComponent({
     };
   },
   async mounted() {
-    const data = await fetch("http://localhost:8010/proxy/default/tokenstats");
+    const data = await fetch("https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/tokenstats");
     this.poolData = await data.json();
   },
 });
