@@ -109,8 +109,6 @@ export default defineComponent({
       clearAmounts();
     }
 
-    const inputsSwapped = ref<boolean>(false);
-
     function swapInputs() {
       selectedField.value === "to" ? 
         selectedField.value = "from" : 
