@@ -110,6 +110,9 @@ export default defineComponent({
     }
 
     function swapInputs() {
+      selectedField.value === "to" ? 
+        selectedField.value = "from" : 
+        selectedField.value = "to"
       const fromAmountValue = fromAmount.value;
       const fromSymbolValue = fromSymbol.value;
       fromAmount.value = toAmount.value;
@@ -131,6 +134,8 @@ export default defineComponent({
             return "Insufficient Funds";
           case SwapState.INSUFFICIENT_LIQUIDITY:
             return "Insufficient Liquidity";
+          case SwapState.INVALID_AMOUNT:
+            return "Invalid Amount";
           case SwapState.VALID_INPUT:
             return "Swap";
         }
