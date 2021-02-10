@@ -1,36 +1,32 @@
+<script lang="ts">
+import { defineComponent } from "vue";
+import Menu from "./Menu.vue";
+import RowanPrice from "./RowanPrice.vue";
+
+export default defineComponent({
+  components: {
+    Menu,
+    RowanPrice
+  },
+});
+</script>
+
 <template>
   <header class="header">
     <div class="secondary-header-container">Welcome to our BetaNet! Please be aware that while this has passed several public security audits, it is still in Beta. We encourage you to first understand how it works before transacting on it and exercise caution at all times. <a target="_blank" href="https://docs.sifchain.finance/resources/betanet-launch">Here's a list of security measures taken</a>, but please note that all transactions conducted are at your own risk.</div>
     <div class="primary-header-container">
       <div>
         <Menu />
-        <!-- <SifSwitch label="Typeface Cursive" v-model="typefaceCursive" /> -->
       </div>
+      <Suspense>
+        <RowanPrice />
+      </Suspense>
       <div>
         <slot name="right"></slot>
       </div>
     </div>
   </header>
 </template>
-
-<script lang="ts">
-import { defineComponent } from "vue";
-import Menu from "./Menu.vue";
-// import SifSwitch from "./SifSwitch.vue";
-
-export default defineComponent({
-  components: {
-    Menu,
-    // SifSwitch
-  },
-
-  data() {
-    return {
-      typefaceCursive: true,
-    };
-  },
-});
-</script>
 
 <style lang="scss" scoped>
 .header {

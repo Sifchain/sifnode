@@ -1,21 +1,23 @@
 <template>
   <div class="main">
-    <Header>
-      <template v-slot:right>
-        <WithWallet>
-          <template v-slot:disconnected="{ requestDialog }">
-            <SifButton round small ghost secondary @click="requestDialog"
+    <Suspense>
+      <Header>
+        <template v-slot:right>
+          <WithWallet>
+            <template v-slot:disconnected="{ requestDialog }">
+              <SifButton round small ghost secondary @click="requestDialog"
               >Not connected</SifButton
-            >
-          </template>
-          <template v-slot:connected="{ connectedText, requestDialog }">
-            <SifButton small ghost success round @click="requestDialog">
-              {{ connectedText }}
-            </SifButton>
-          </template>
-        </WithWallet>
-      </template>
-    </Header>
+              >
+            </template>
+            <template v-slot:connected="{ connectedText, requestDialog }">
+              <SifButton small ghost success round @click="requestDialog">
+                {{ connectedText }}
+              </SifButton>
+            </template>
+          </WithWallet>
+        </template>
+      </Header>
+    </Suspense>
 
     <router-view />
     <Notifications />
