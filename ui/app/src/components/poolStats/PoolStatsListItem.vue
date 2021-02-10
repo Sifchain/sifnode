@@ -66,20 +66,20 @@ export default defineComponent({
         <img v-if="image" width="22" height="22" :src="image" class="image" />
         <div class="placeholder" v-else></div>
         <div class="icon">
-          <span>{{ symbol }}</span>
+          <span>{{ symbol.replace("c", "") }}</span>
         </div>
-      </div>
-      <div class="value">
-        <span>{{ externalUSD }}</span>
-      </div>
-      <div class="value">
-        <span>{{ externalRowan }}</span>
       </div>
       <div class="value">
         <span>{{ poolUSD }}</span>
       </div>
       <div class="value">
         <span>{{ poolRowan }}</span>
+      </div>
+      <div class="value">
+        <span>{{ externalUSD }}</span>
+      </div>
+      <div class="value">
+        <span>{{ externalRowan }}</span>
       </div>
       <div class="value">
         <span>{{ liqAPY }}</span>
