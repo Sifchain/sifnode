@@ -110,7 +110,7 @@ export default defineComponent({
 
     const nextStepAllowed = computed(() => {
       const amountNum = new BigNumber(amount.value);
-      const balance = accountBalance.value?.toFixed(18) ?? "0.0";
+      const balance = accountBalance.value?.toFixed() ?? "0.0";
       return (
         amountNum.isGreaterThan("0.0") &&
         address.value !== "" &&

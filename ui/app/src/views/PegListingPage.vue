@@ -100,7 +100,7 @@ export default defineComponent({
           if (!amount) return { amount: "", asset };
 
           return {
-            amount: amount.toFixed(amount.asset.decimals === 0 ? 0 : 6),
+            amount,
             asset,
           };
         });
