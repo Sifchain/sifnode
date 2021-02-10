@@ -105,7 +105,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 	data, err := sub.DB.Get([]byte(cosmosLevelDBKey), nil)
 	if err != nil {
-		log.Println("Error getting the last ethereum block from level db", err)
+		log.Println("Error getting the last cosmos block from level db", err)
 		lastProcessedBlock = 0
 	} else {
 		lastProcessedBlock = int64(binary.BigEndian.Uint64(data))
@@ -156,7 +156,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 			binary.BigEndian.PutUint64(b, uint64(blockNumber))
 			lastProcessedBlock = blockNumber
 
-			err = sub.DB.Put([]byte(ethLevelDBKey), b, nil)
+			err = sub.DB.Put([]byte(cosmosLevelDBKey), b, nil)
 			if err != nil {
 				// if you can't write to leveldb, then error out as something is seriously amiss
 				log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
