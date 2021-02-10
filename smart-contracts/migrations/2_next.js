@@ -82,7 +82,7 @@ module.exports = function(deployer, network, accounts) {
         initialValidators,
         initialPowers
       ],
-      setTxSpecifications(6721975, operator, deployer)
+      setTxSpecifications(6721975, accounts[0], deployer)
     );
 
     console.log("cosmosBridge address: ", cosmosBridge.address)
@@ -98,7 +98,7 @@ module.exports = function(deployer, network, accounts) {
         owner,
         pauser
       ],
-      setTxSpecifications(6721975, operator, deployer)
+      setTxSpecifications(6721975, accounts[0], deployer)
     );
     console.log("bridgeBank address: ", bridgeBank.address)
 
@@ -111,17 +111,17 @@ module.exports = function(deployer, network, accounts) {
         CosmosBridge.address,
         BridgeBank.address
       ],
-      setTxSpecifications(6721975, operator, deployer)
+      setTxSpecifications(6721975, accounts[0], deployer)
     );
 
     await cosmosBridge.setBridgeBank(bridgeBank.address, 
-      setTxSpecifications(600000, operator)
+      setTxSpecifications(600000, accounts[0])
     );
 
     if (network === 'mainnet') {
       return console.log("Network is mainnet, not going to deploy token");
     }
-
+    
     const erowan = await deployer.deploy(eRowan, "erowan", setTxSpecifications(4612388, operator));
 
     await erowan.addMinter(BridgeBank.address, setTxSpecifications(4612388, operator));
@@ -132,6 +132,9 @@ module.exports = function(deployer, network, accounts) {
 
     // allow 10 eth to be sent at once
     await bridgeBank.updateTokenLockBurnLimit(tokenAddress, '10000000000000000000', setTxSpecifications(4612388, operator));
+    await bridgeBank.updateTokenLockBurnLimit(erowan.address, '10000000000000000000', setTxSpecifications(4612388, operator));
+    await erowan.approve(bridgeBank.address, '10000000000000000000', setTxSpecifications(4612388, operator));
+
     console.log("erowan token address: ", erowan.address);
 
     const bnAmount = web3.utils.toWei("100", "ether");
