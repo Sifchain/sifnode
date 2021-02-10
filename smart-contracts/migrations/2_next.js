@@ -114,14 +114,14 @@ module.exports = function(deployer, network, accounts) {
       setTxSpecifications(6721975, accounts[0], deployer)
     );
 
+    if (network === 'mainnet') {
+      return console.log("Network is mainnet, not going to deploy token");
+    }
+
     await cosmosBridge.setBridgeBank(bridgeBank.address, 
       setTxSpecifications(600000, accounts[0])
     );
 
-    if (network === 'mainnet') {
-      return console.log("Network is mainnet, not going to deploy token");
-    }
-    
     const erowan = await deployer.deploy(eRowan, "erowan", setTxSpecifications(4612388, operator));
 
     await erowan.addMinter(BridgeBank.address, setTxSpecifications(4612388, operator));
