@@ -6,6 +6,8 @@ import {
   getConfig,
 } from "ui-core";
 
+console.log(process.env.GIT_SHA)
+
 const config = getConfig(
   process.env.VUE_APP_DEPLOYMENT_TAG,
   process.env.VUE_APP_SIFCHAIN_ASSET_TAG,
