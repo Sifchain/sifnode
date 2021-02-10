@@ -135,6 +135,8 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 	var symbol string
 	var amount sdk.Int
 
+	attributeNumber := 0
+
 	for _, attribute := range attributes {
 		key := string(attribute.GetKey())
 		val := string(attribute.GetValue())
@@ -143,7 +145,9 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 		switch key {
 		case types.CosmosSender.String():
 			cosmosSender = []byte(val)
+			attributeNumber++
 		case types.CosmosSenderSequence.String():
+			attributeNumber++
 			tempSequence := new(big.Int)
 			tempSequence, ok := tempSequence.SetString(val, 10)
 			if !ok {
@@ -152,12 +156,14 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 			}
 			cosmosSenderSequence = tempSequence
 		case types.EthereumReceiver.String():
+			attributeNumber++
 			if !common.IsHexAddress(val) {
 				log.Printf("Invalid recipient address: %v", val)
 				return types.CosmosMsg{}, errors.New("invalid recipient address: " + val)
 			}
 			ethereumReceiver = common.HexToAddress(val)
 		case types.Symbol.String():
+			attributeNumber++
 			if claimType == types.MsgBurn {
 				if !strings.Contains(val, defaultSifchainPrefix) {
 					log.Printf("Can only relay burns of '%v' prefixed coins", defaultSifchainPrefix)
@@ -169,6 +175,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 				symbol = val
 			}
 		case types.Amount.String():
+			attributeNumber++
 			tempAmount, ok := sdk.NewIntFromString(val)
 			if !ok {
 				log.Println("Invalid amount:", val)
@@ -177,7 +184,54 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 			amount = tempAmount
 		}
 	}
+
+	if attributeNumber < 5 {
+		return types.CosmosMsg{}, errors.New("message not complete")
+	}
 	return types.NewCosmosMsg(claimType, cosmosSender, cosmosSenderSequence, ethereumReceiver, symbol, amount), nil
+}
+
+// AttributesToEthereumBridgeClaim parses data from event to EthereumBridgeClaim
+func AttributesToEthereumBridgeClaim(attributes []tmKv.Pair) (types.EthereumBridgeClaim, error) {
+	var cosmosSender sdk.ValAddress
+	var ethereumSenderNonce sdk.Int
+	var ethereumSender common.Address
+	var err error
+
+	for _, attribute := range attributes {
+		key := string(attribute.GetKey())
+		val := string(attribute.GetValue())
+
+		// Set variable based on the attribute's key
+		switch key {
+		case types.CosmosSender.String():
+			cosmosSender, err = sdk.ValAddressFromBech32(val)
+			if err != nil {
+				return types.EthereumBridgeClaim{}, err
+			}
+
+		case types.EthereumSender.String():
+			if !common.IsHexAddress(val) {
+				log.Printf("Invalid recipient address: %v", val)
+				return types.EthereumBridgeClaim{}, errors.New("invalid recipient address: " + val)
+			}
+			ethereumSender = common.HexToAddress(val)
+
+		case types.EthereumSenderNonce.String():
+			tempNonce, ok := sdk.NewIntFromString(val)
+			if !ok {
+				log.Println("Invalid nonce:", val)
+				return types.EthereumBridgeClaim{}, errors.New("invalid nonce:" + val)
+			}
+			ethereumSenderNonce = tempNonce
+		}
+	}
+
+	return types.EthereumBridgeClaim{
+		EthereumSender: ethereumSender,
+		CosmosSender:   cosmosSender,
+		Nonce:          ethereumSenderNonce,
+	}, nil
 }
 
 // isZeroAddress checks an Ethereum address and returns a bool which indicates if it is the null address
