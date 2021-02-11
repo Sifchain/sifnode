@@ -109,6 +109,12 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 
 func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
+
+	minValue := sdk.NewUintFromString("100000000000000")
+	if nativeAssetAmount.LT(minValue) || externalAssetAmount.LT(minValue) {
+		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
+	}
+
 	if nativeAssetBalance.Add(nativeAssetAmount).IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), errors.Wrap(errors.ErrInsufficientFunds, nativeAssetAmount.String())
 	}
