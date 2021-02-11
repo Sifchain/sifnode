@@ -61,7 +61,7 @@ jobs:
 
       - name: Set environment for branch
         run: |
-          echo $GITHUB_BASE_REF
+          echo GITHUB_BASE_REF: $GITHUB_BASE_REF
 
           if [[ $GITHUB_BASE_REF == 'master' ]]; then
             echo "Config set for mainnet deployment"
