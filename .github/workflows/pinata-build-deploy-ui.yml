@@ -61,6 +61,8 @@ jobs:
 
       - name: Set environment for branch
         run: |
+          echo $GITHUB_BASE_REF
+
           if [[ $GITHUB_BASE_REF == 'master' ]]; then
             echo "Config set for mainnet deployment"
             echo "RECORD_DOMAIN=dex.sifchain.finance" >> $GITHUB_ENV
