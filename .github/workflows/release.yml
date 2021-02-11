@@ -18,11 +18,11 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v2.x
 
-      - if: contains('${{ env.GITHUB_REF }}', 'testnet')
+      - if: contains(github.ref, 'testnet')
         run: |
           echo "CHAINNET=testnet" >> "$GITHUB_ENV"
 
-      - if: contains('${{ env.GITHUB_REF }}', 'mainnet')
+      - if: contains(github.ref, 'mainnet')
         run: |
           echo "CHAINNET=mainnet" >> "$GITHUB_ENV"
 
