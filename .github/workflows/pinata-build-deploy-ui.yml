@@ -21,14 +21,15 @@ jobs:
 
       - name: Set environment for branch
         run: |
-          echo $GITHUB_BASE_REF
-          echo $GITHUB_REF
-          echo $GITHUB_HEAD_REF
           if [[ $GITHUB_BASE_REF == 'master' ]]; then
+              echo "Config set for mainnet deployment"
               echo "VUE_APP_DEPLOYMENT_TAG=mainnet" >> "$GITHUB_ENV"
               echo "VUE_APP_ETHEREUM_ASSET_TAG=ethereum.mainnet" >> "$GITHUB_ENV"
               echo "VUE_APP_SIFCHAIN_ASSET_TAG=sifchain.mainnet" >> "$GITHUB_ENV"
-          else
+          fi
+
+          if [[ $GITHUB_BASE_REF == 'develop' ]]; then
+              echo "Config set for sandpit deployment"
               echo "VUE_APP_DEPLOYMENT_TAG=sandpit" >> "$GITHUB_ENV"
               echo "VUE_APP_ETHEREUM_ASSET_TAG=ethereum.ropsten" >> "$GITHUB_ENV"
               echo "VUE_APP_SIFCHAIN_ASSET_TAG=sifchain.sandpit" >> "$GITHUB_ENV"
@@ -66,11 +67,13 @@ jobs:
           echo ${{ steps.pinata.outputs.hash }}
 
           if [[ $GITHUB_BASE_REF == 'master' ]]; then
+            echo "Config set for mainnet deployment"
             echo "RECORD_DOMAIN=dex.sifchain.finance" >> $GITHUB_ENV
             echo "RECORD_NAME=_dnslink.dex" >> $GITHUB_ENV
           fi
 
           if [[ $GITHUB_BASE_REF == 'develop' ]]; then
+            echo "Config set for sandpit deployment"
             echo "RECORD_DOMAIN=sandpit.sifchain.finance" >> $GITHUB_ENV
             echo "RECORD_NAME=_dnslink.sandpit" >> $GITHUB_ENV
           fi
