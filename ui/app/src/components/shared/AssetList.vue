@@ -4,7 +4,7 @@
       <AssetItem class="token" :symbol="item.asset.symbol" />
       <div class="amount">{{ formatNumber(item.amount) }}</div>
       <div class="action">
-        <slot v-if="!!item.amount" :asset="item"></slot>
+        <slot v-if="Number(item.amount.toFixed()) > 0" :asset="item"></slot>
       </div>
     </div>
   </div>
