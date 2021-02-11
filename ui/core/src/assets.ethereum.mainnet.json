@@ -1,6 +1,14 @@
 {
   "assets": [
     {
+      "symbol": "erowan",
+      "decimals": 18,
+      "name": "Rowan",
+      "imageUrl": "./images/siflogo.png",
+      "address": "0x07bac35846e5ed502aa91adf6a9e7aa210f2dcbe",
+      "network": "ethereum"
+    },
+    {
       "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707",
@@ -11,10 +19,20 @@
       "transferLimit": "5004238590"
     },
     {
+      "address": "",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
+      "name": "Ethereum",
+      "network": "ethereum",
+      "priceUsd": 1145,
+      "symbol": "ETH",
+      "transferLimit": "4381237787299667968"
+    },
+    {
       "address": "0x0d8775f648430679a709e98d2b0cb6250d2887ef",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/677/thumb/basic-attention-token.png?1547034427",
-      "name": "Basic Attention Tok",
+      "name": "Basic Attention Token",
       "network": "ethereum",
       "priceUsd": 0.309639,
       "symbol": "BAT",
@@ -34,7 +52,7 @@
       "address": "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/736/thumb/bancor.png?1547034477",
-      "name": "Bancor Network Toke",
+      "name": "Bancor Network Token",
       "network": "ethereum",
       "priceUsd": 1.94,
       "symbol": "BNT",
@@ -104,7 +122,7 @@
       "address": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/3406/thumb/SNX.png?1598631139",
-      "name": "Synthetix Network T",
+      "name": "Synthetix Network Token",
       "network": "ethereum",
       "priceUsd": 17.31,
       "symbol": "SNX",
@@ -404,7 +422,7 @@
       "address": "0x3155ba85d5f96b2d030a4966af206230e46849cb",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/13677/thumb/BrMhBTr8_400x400.jpg?1610723303",
-      "name": "THORChain  ERC20 ",
+      "name": "THORChain ERC20",
       "network": "ethereum",
       "priceUsd": 3.23,
       "symbol": "RUNE",
@@ -414,21 +432,11 @@
       "address": "0x2b89bf8ba858cd2fcee1fada378d5cd6936968be",
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/13767/thumb/Secret_S_Black_Coingecko.png?1611667298",
-      "name": "Secret  ERC20 ",
+      "name": "Secret ERC20 ",
       "network": "ethereum",
       "priceUsd": 1.12,
       "symbol": "WSCRT",
       "transferLimit": "4464285714"
-    },
-    {
-      "address": "",
-      "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
-      "name": "Ethereum",
-      "network": "ethereum",
-      "priceUsd": 1145,
-      "symbol": "ETH",
-      "transferLimit": "4381237787299667968"
     },
     {
       "address": "0x6fb3e0a217407efff7ca062d46c26e5d60a14d69",
