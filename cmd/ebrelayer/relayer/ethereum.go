@@ -230,7 +230,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			// If the last processed block is the default (0), then go and set it to the difference of ending block minus 1
 			// The user who starts this must provide a valid last processed block
 			if lastProcessedBlock.Cmp(big.NewInt(0)) == 0 {
-				lastProcessedBlock.Sub(endingBlock, big.NewInt(1))
+				lastProcessedBlock = endingBlock
 			}
 
 			sub.Logger.Info(fmt.Sprintf("Ethereum processing events from block %d to %d", lastProcessedBlock, endingBlock))
