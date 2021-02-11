@@ -57,10 +57,7 @@ jobs:
           repo-token-user-login: 'github-actions[bot]'
           allow-repeats: false
 
-      - name: Update cloudflare DNSLink
-        env:
-          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
-          CLOUDFLARE_TOKEN_ZONE_ID: ${{ secrets.CLOUDFLARE_TOKEN_ZONE_ID
+      - name: Set environment for branch
         run: |
           echo $GITHUB_BASE_REF
           echo $GITHUB_REF
@@ -68,14 +65,18 @@ jobs:
           echo ${{ steps.pinata.outputs.hash }}
 
           if [[ $GITHUB_BASE_REF == 'master' ]]; then
-            export RECORD_DOMAIN: 'dex.sifchain.finance'
-            export RECORD_NAME: '_dnslink.dex'
+            echo "RECORD_DOMAIN=dex.sifchain.finance" >> $GITHUB_ENV
+            echo "RECORD_NAME=_dnslink.dex" >> $GITHUB_ENV
           fi
 
           if [[ $GITHUB_BASE_REF == 'develop' ]]; then
-            export RECORD_DOMAIN: 'sandpit.sifchain.finance'
-            export RECORD_NAME: '_dnslink.sandpit'
+            echo "RECORD_DOMAIN=sandpit.sifchain.finance" >> $GITHUB_ENV
+            echo "RECORD_NAME=_dnslink.sandpit" >> $GITHUB_ENV
           fi
+      - name: Update cloudflare DNSLink
+        env:
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_TOKEN_ZONE_ID: ${{ secrets.CLOUDFLARE_TOKEN_ZONE_ID
         id: dnslink
         uses: textileio/cloudflare-update-dnslink@master
         with:
