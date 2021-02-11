@@ -138,9 +138,12 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	if err != nil {
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
 	}
+	P = ReducePrecision(P, 15)
+	R = ReducePrecision(R, 15)
+	A = ReducePrecision(A, 15)
+	a = ReducePrecision(a, 15)
+	r = ReducePrecision(r, 15)
 
-	// (2 r + R) (a + A)
-	// (2 r + R) (a + A)
 	slipAdjDenominator := (r.MulInt64(2).Add(R)).Mul(a.Add(A))
 	// ABS((R a - r A)/((2 r + R) (a + A)))
 	var slipAdjustment sdk.Dec
@@ -153,31 +156,15 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	slipAdjustment = sdk.NewDec(1).Sub(slipAdjustment)
 
 	// ((P (a R + A r))
-
-	P = ReducePrecision(P, 15)
-	R = ReducePrecision(R, 15)
-	A = ReducePrecision(A, 15)
-	a = ReducePrecision(a, 15)
-	r = ReducePrecision(r, 15)
-	//fmt.Println("P", P.String())
-	//fmt.Println("R", R.String())
-	//fmt.Println("A", A.String())
-	//fmt.Println("a", a.String())
-	//fmt.Println("r", R.String())
 	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
-	numerator = IncreasePrecision(numerator, 15)
-
 	// 2AR
 	denominator := sdk.NewDec(2).Mul(A).Mul(R)
-	denominator = IncreasePrecision(numerator, 15)
-	fmt.Println(slipAdjustment, numerator, denominator)
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
-	fmt.Println(stakeUnits)
 	P = IncreasePrecision(P, 15)
 	newPoolUnit := P.Add(stakeUnits)
-
+	newPoolUnit = IncreasePrecision(newPoolUnit, 15)
+	stakeUnits = IncreasePrecision(stakeUnits, 15)
 	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
-
 }
 func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
 	p := sdk.NewDec(10).Power(uint64(po))
