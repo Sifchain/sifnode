@@ -5,19 +5,19 @@
     </div>
     <div class="col-md">
       <span>Value of Pool</span>
-      <span>(USD)</span>
+      <span> (USD)</span>
     </div>
     <div class="col-md">
       <span>Value of Pool</span>
-      <span>(ROWAN)</span>
+      <span> (ROWAN)</span>
     </div>
     <div class="col-md">
       <span>Value of External Token</span>
-      <span>(USD)</span>
+      <span> (USD)</span>
     </div>
     <div class="col-md">
       <span>Value of External Token</span>
-      <span>(ROWAN)</span>
+      <span> (ROWAN)</span>
     </div>
     <div class="col-md">
       <span>Liquidity Mining Bonus APY</span>
@@ -48,5 +48,7 @@
   .col-md {
     width: 18%;
     color: $c_gray_400;
+    display: flex;
+    flex-direction: column;
   }
 </style>
