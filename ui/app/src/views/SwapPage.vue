@@ -56,6 +56,18 @@ export default defineComponent({
       return store.wallet.sif.balances;
     });
 
+    const getAccountBalance = () => {
+      return balances.value.find(
+          (balance) => balance.asset.symbol === fromSymbol.value
+        )
+    }
+
+    const isFromMaxActive = computed(() => {
+      const accountBalance = getAccountBalance()
+      if (!accountBalance) return false
+      return fromAmount.value === accountBalance.toFixed(18);
+    })
+
     const {
       state,
       fromFieldAmount,
@@ -173,6 +185,7 @@ export default defineComponent({
       },
       handleNextStepClicked,
       handleBlur() {
+        if (isFromMaxActive) return
         selectedField.value = null;
       },
       slippage,
@@ -186,9 +199,7 @@ export default defineComponent({
       providerFee,
       handleFromMaxClicked() {
         selectedField.value = "from";
-        const accountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === fromSymbol.value
-        );
+        const accountBalance = getAccountBalance()
         if (!accountBalance) return;
         fromAmount.value = accountBalance.toFixed(18);
       },
@@ -214,6 +225,7 @@ export default defineComponent({
       },
       handleAskConfirmClicked,
       transactionHash,
+      isFromMaxActive
     };
   },
 });
@@ -228,6 +240,7 @@ export default defineComponent({
             v-model:fromAmount="fromAmount"
             v-model:fromSymbol="fromSymbol"
             :fromMax="!!fromSymbol"
+            :isFromMaxActive="isFromMaxActive"
             :fromDisabled="disableInputFields"
             :toDisabled="disableInputFields"
             @frommaxclicked="handleFromMaxClicked"
