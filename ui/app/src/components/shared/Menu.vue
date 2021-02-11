@@ -14,7 +14,7 @@
       >
     </div>
     <div class="item">
-      <router-link class="link" target="_blank" to="/stats">Pool Stats</router-link>
+      <router-link class="link" to="/stats">Pool Stats</router-link>
     </div>
   </div>
 </template>
