@@ -4,22 +4,12 @@
       <span>Token</span>
     </div>
     <div class="col-md">
-      <span>Value of Pool</span>
-      <span>(USD)</span>
+      <span>Pool Depth in USD</span>
     </div>
     <div class="col-md">
-      <span>Value of Pool</span>
-      <span>(ROWAN)</span>
+      <span>Pool Depth in Rowan</span>
     </div>
-    <div class="col-md">
-      <span>Value of External Token</span>
-      <span>(USD)</span>
-    </div>
-    <div class="col-md">
-      <span>Value of External Token</span>
-      <span>(ROWAN)</span>
-    </div>
-    <div class="col-md">
+    <div class="col-lg">
       <span>Liquidity Mining Bonus APY</span>
     </div>
   </div>
@@ -40,13 +30,20 @@
 }
 
 .col-sm {
-  width: 10%;
+  min-width: 100px;
+  width: 19%;
   color: $c_gray_400;
   justify-items: start;
 }
 
 .col-md {
-  width: 18%;
+  min-width: 160px;
+  width: 27%;
+  color: $c_gray_400;
+}
+.col-lg {
+  min-width: 200px;
+  width: 27%;
   color: $c_gray_400;
 }
 </style>

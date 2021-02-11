@@ -34,12 +34,6 @@ export default defineComponent({
       }
     });
 
-    const poolUSD = formatNumberString(
-      parseFloat(props.pool?.poolUSD).toFixed(2)
-    );
-    const poolRowan = formatNumberString(
-      parseFloat(props.pool?.poolRowan).toFixed(2)
-    );
     const externalUSD = formatNumberString(
       parseFloat(props.pool?.externalUSD).toFixed(8)
     );
@@ -70,18 +64,12 @@ export default defineComponent({
         </div>
       </div>
       <div class="value">
-        <span>{{ poolUSD }}</span>
-      </div>
-      <div class="value">
-        <span>{{ poolRowan }}</span>
-      </div>
-      <div class="value">
         <span>{{ externalUSD }}</span>
       </div>
       <div class="value">
         <span>{{ externalRowan }}</span>
       </div>
-      <div class="value">
+      <div class="value-lg">
         <span>{{ liqAPY }}</span>
       </div>
     </div>
@@ -134,14 +122,23 @@ export default defineComponent({
     text-align: center;
   }
 
+  .value-lg {
+    min-width: 200px;
+    width: 27%;
+    font-size: $fs_md;
+    color: $c_text;
+  }
+
   .value {
-    width: 18%;
+    min-width: 160px;
+    width: 27%;
     font-size: $fs_md;
     color: $c_text;
   }
 
   .token {
-    width: 10%;
+    min-width: 100px;
+    width: 19%;
     display: flex;
     justify-content: start;
   }
