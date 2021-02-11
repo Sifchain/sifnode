@@ -77,7 +77,7 @@ jobs:
       - name: Update cloudflare DNSLink
         env:
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
-          CLOUDFLARE_TOKEN_ZONE_ID: ${{ secrets.CLOUDFLARE_TOKEN_ZONE_ID
+          CLOUDFLARE_TOKEN_ZONE_ID: ${{ secrets.CLOUDFLARE_TOKEN_ZONE_ID }}
         id: dnslink
         uses: textileio/cloudflare-update-dnslink@master
         with:
