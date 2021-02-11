@@ -18,15 +18,23 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v2.x
 
+      - name: Set Chainnet
+        run: |
+          if [[ $GITHUB_REF == 'refs/heads/master' ]]; then
+            echo "CHAINNET=mainnet" >> "$GITHUB_ENV"
+          else
+            echo "CHAINNET=testnet" >> "$GITHUB_ENV"
+          fi
+
       - name: Build docker images
         run: |
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=sifnodecli build-image
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=sifcrg build-image
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
+          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
+          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnodecli build-image
+          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifcrg build-image
+          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
           cd ./api/openapi
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} build-image-swagger-iu
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} build-image-prim
+          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} build-image-swagger-iu
+          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} build-image-prim
 
       - name: Push docker images
         run: |
