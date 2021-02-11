@@ -110,6 +110,9 @@ export default defineComponent({
     }
 
     function swapInputs() {
+      selectedField.value === "to" ? 
+        selectedField.value = "from" : 
+        selectedField.value = "to"
       const fromAmountValue = fromAmount.value;
       const fromSymbolValue = fromSymbol.value;
       fromAmount.value = toAmount.value;
