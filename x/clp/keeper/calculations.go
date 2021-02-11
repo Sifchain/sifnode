@@ -168,7 +168,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	numerator = IncreasePrecision(numerator, 15)
 
 	// 2AR
-	denominator := sdk.NewDecWithPrec(2, 18).Mul(A).Mul(R)
+	denominator := sdk.NewDec(2).Mul(A).Mul(R)
 	denominator = IncreasePrecision(numerator, 15)
 	fmt.Println(slipAdjustment, numerator, denominator)
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
