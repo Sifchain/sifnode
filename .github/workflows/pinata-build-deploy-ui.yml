@@ -57,4 +57,26 @@ jobs:
           repo-token-user-login: 'github-actions[bot]'
           allow-repeats: false
 
-      # TODO: SET CLOUDFLARE DNS 
+      - name: Update cloudflare DNSLink
+        env:
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+          CLOUDFLARE_TOKEN_ZONE_ID: ${{ secrets.CLOUDFLARE_TOKEN_ZONE_ID
+        run: |
+          echo $GITHUB_BASE_REF
+          echo $GITHUB_REF
+          echo $GITHUB_HEAD_REF
+          echo ${{ steps.pinata.outputs.hash }}
+
+          if [[ $GITHUB_BASE_REF == 'master' ]]; then
+            export RECORD_DOMAIN: 'dex.sifchain.finance'
+            export RECORD_NAME: '_dnslink.dex'
+          fi
+
+          if [[ $GITHUB_BASE_REF == 'develop' ]]; then
+            export RECORD_DOMAIN: 'sandpit.sifchain.finance'
+            export RECORD_NAME: '_dnslink.sandpit'
+          fi
+        id: dnslink
+        uses: textileio/cloudflare-update-dnslink@master
+        with:
+            cid: ${{ steps.pinata.outputs.hash }}
