@@ -308,8 +308,8 @@ func TestDecommisionPool(t *testing.T) {
 	handler := clp.NewHandler(keeper)
 
 	//Parameters for Decommission
-	initialBalance := sdk.NewUintFromString("10000000000000000") // Initial account balance for all assets created
-	poolBalance := sdk.NewUintFromString("1000000000000000")
+	initialBalance := sdk.NewUintFromString("1000") // Initial account balance for all assets created
+	poolBalance := sdk.NewUintFromString("100")
 	//initialBalance := sdk.NewInt(10000) // Initial account balance for all assets created
 	//poolBalance := sdk.NewUint(100)     // Amount funded to pool , This same amount is used both for native and external asset
 
