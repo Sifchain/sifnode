@@ -18,16 +18,17 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v2.x
 
-      - name: Set Chainnet
+      - if: contains(github.ref, 'testnet')
         run: |
-          if [[ $GITHUB_REF == 'refs/heads/master' ]]; then
-            echo "CHAINNET=mainnet" >> "$GITHUB_ENV"
-          else
-            echo "CHAINNET=testnet" >> "$GITHUB_ENV"
-          fi
+          echo "CHAINNET=testnet" >> "$GITHUB_ENV"
+
+      - if: contains(github.ref, 'mainnet')
+        run: |
+          echo "CHAINNET=mainnet" >> "$GITHUB_ENV"
 
       - name: Build docker images
         run: |
+          echo ${{ env.CHAINNET }}
           make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
           make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnodecli build-image
           make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
