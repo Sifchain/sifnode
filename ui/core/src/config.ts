@@ -2,7 +2,7 @@
 import mainnnetconfig from "./config.mainnet.json";
 import localnetconfig from "./config.localnet.json";
 import sandpitconfig from "./config.sandpit.json";
-import monkeybarsconfig from "./config.monkeybars.json"
+import testnetconfig from "./config.testnet.json"
 import assetsEthereumLocalnet from "./assets.ethereum.localnet.json";
 import assetsEthereumMainnet from "./assets.ethereum.mainnet.json";
 import assetsEthereumRopsten from "./assets.ethereum.ropsten.json";
@@ -63,7 +63,7 @@ export function getConfig(
   const configMap: ConfigMap = {
     mainnet: parseConfig(mainnnetconfig as ChainConfig, allAssets),
     localnet: parseConfig(localnetconfig as ChainConfig, allAssets),
-    monkeybars: parseConfig(monkeybarsconfig as ChainConfig, allAssets),
+    testnet: parseConfig(testnetconfig as ChainConfig, allAssets),
     sandpit: parseConfig(sandpitconfig as ChainConfig, allAssets),
   };
 
