@@ -20,7 +20,8 @@ jobs:
 
       - name: Set Chainnet
         run: |
-          if [[ $GITHUB_REF == 'refs/heads/master' ]]; then
+          echo $GITHUB_REF
+          if [[ $GITHUB_REF == 'master' ]]; then
             echo "CHAINNET=mainnet" >> "$GITHUB_ENV"
           else
             echo "CHAINNET=testnet" >> "$GITHUB_ENV"
