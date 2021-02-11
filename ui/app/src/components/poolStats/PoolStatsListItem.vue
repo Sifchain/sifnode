@@ -43,8 +43,6 @@ export default defineComponent({
 
     return {
       symbol,
-      poolUSD,
-      poolRowan,
       externalUSD,
       externalRowan,
       image,
