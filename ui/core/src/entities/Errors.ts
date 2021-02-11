@@ -3,6 +3,7 @@ export enum ErrorCode {
   TX_FAILED,
   USER_REJECTED,
   UNKNOWN_FAILURE,
+  INSUFFICIENT_FUNDS
 }
 
 const ErrorMessages = {
