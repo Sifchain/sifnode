@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"sync/atomic"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,6 +21,10 @@ import (
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
 	GasLimit = uint64(3000000)
+)
+
+var (
+	nextNonce uint64 = 0
 )
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
@@ -60,6 +65,11 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	case 0:
 		fmt.Println("Tx Status: 0 - Failed")
 	case 1:
+		if nextSequenceNumber == 0 {
+			setNextNonce(uint64(auth.Nonce.Int64() + 1))
+		} else {
+			incrementNextNonce()
+		}
 		fmt.Println("Tx Status: 1 - Successful")
 	}
 	return nil
@@ -99,7 +109,13 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 
 	// Set up TransactOpts auth's tx signature authorization
 	transactOptsAuth := bind.NewKeyedTransactor(key)
-	transactOptsAuth.Nonce = big.NewInt(int64(nonce))
+
+	if nextNonce > 0 {
+		transactOptsAuth.Nonce = big.NewInt(int64(nextNonce))
+	} else {
+		transactOptsAuth.Nonce = big.NewInt(int64(nonce))
+	}
+
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 	transactOptsAuth.GasPrice = gasPrice
@@ -124,4 +140,12 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 
 	}
 	return client, transactOptsAuth, target, nil
+}
+
+func incrementNextNonce() {
+	atomic.AddUint64(&nextNonce, 1)
+}
+
+func setNextNonce(nonce uint64) {
+	atomic.StoreUint64(&nextNonce, nonce)
 }
