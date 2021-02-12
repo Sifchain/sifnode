@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"sync/atomic"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,6 +21,10 @@ import (
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
 	GasLimit = uint64(3000000)
+)
+
+var (
+	nextNonce uint64 = 0
 )
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
@@ -47,6 +52,12 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		log.Println(err)
 		return err
 	}
+	if nextNonce == 0 {
+		setNextNonce(uint64(auth.Nonce.Int64() + 1))
+	} else {
+		incrementNextNonce()
+	}
+	fmt.Printf("After tx nextNonce is %d\n:", nextNonce)
 	fmt.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
 
 	// Get the transaction receipt
@@ -84,10 +95,10 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	}
 
 	nonce, err := client.PendingNonceAt(context.Background(), sender)
+	log.Println("Current eth operator at pending nonce: ", nonce)
 	if err != nil {
-		log.Println(err)
+		log.Println("Error broadcasting tx: ", err)
 		return nil, nil, common.Address{}, err
-
 	}
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
@@ -99,10 +110,20 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 
 	// Set up TransactOpts auth's tx signature authorization
 	transactOptsAuth := bind.NewKeyedTransactor(key)
-	transactOptsAuth.Nonce = big.NewInt(int64(nonce))
+
+	if nextNonce > 0 {
+		transactOptsAuth.Nonce = big.NewInt(int64(nextNonce))
+	} else {
+		transactOptsAuth.Nonce = big.NewInt(int64(nonce))
+	}
+
+	log.Printf("ethereum tx current nonce from client api is %d\n", nonce)
+	log.Printf("ethereum tx current nonce from local storage is %d\n", nextNonce)
+
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 	transactOptsAuth.GasPrice = gasPrice
+	log.Println("transactOptsAuth.Nonce: ", transactOptsAuth.Nonce)
 
 	var targetContract ContractRegistry
 	switch event {
@@ -124,4 +145,12 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 
 	}
 	return client, transactOptsAuth, target, nil
+}
+
+func incrementNextNonce() {
+	atomic.AddUint64(&nextNonce, 1)
+}
+
+func setNextNonce(nonce uint64) {
+	atomic.StoreUint64(&nextNonce, nonce)
 }

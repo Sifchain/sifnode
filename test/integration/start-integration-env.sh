@@ -31,7 +31,7 @@ set_persistant_env_var NETWORKDIR $BASEDIR/deploy/networks $envexportfile
 set_persistant_env_var GANACHE_DB_DIR $(mktemp -d /tmp/ganachedb.XXXX) $envexportfile
 set_persistant_env_var ETHEREUM_WEBSOCKET_ADDRESS ws://localhost:7545/ $envexportfile
 set_persistant_env_var CHAINNET localnet $envexportfile
-
+set_persistant_env_var ETHEREUM_ADDRESS "0xf17f52151EbEF6C7334FAD080c5704D77216b732" $envexportfile
 mkdir -p $datadir
 
 make -C ${TEST_INTEGRATION_DIR}
