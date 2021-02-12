@@ -24,7 +24,7 @@
     background: $c_gray_900;
     display: flex;
     justify-content: space-evenly;
-    align-items: flex-start;
+    align-items: center;
 
     &:hover {
       cursor: pointer;
