@@ -185,13 +185,13 @@ def get_sifchain_addr_balance(sifaddress, sifnodecli_node, denom):
             return int(coin["amount"])
     return 0
 
-
+"""
 def wait_for_success(success_fn, max_seconds=30):
     done_at_time = time.time() + max_seconds
     while True:
         try
         result = success_fn()
-
+"""
 
 def get_transaction_result(tx_hash, sifnodecli_node, chain_id):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
