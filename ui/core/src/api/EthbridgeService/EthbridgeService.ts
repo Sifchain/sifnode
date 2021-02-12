@@ -39,25 +39,25 @@ export default function createEthbridgeService({
     return _web3;
   }
 
-  async function approveBridgeBankSpend(account: string, amount: AssetAmount) {
-    // This will popup an approval request in metamask
-    const web3 = await ensureWeb3();
-    const tokenContract = await getTokenContract(
-      web3,
-      (amount.asset as Token).address
-    );
-    const sendArgs = {
-      from: account,
-      value: 0,
-    };
-    const res = await tokenContract.methods
-      .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
-      .send(sendArgs);
-    console.log("approveBridgeBankSpend:", res);
-    return res;
-  }
-
   return {
+    async approveBridgeBankSpend(account: string, amount: AssetAmount) {
+      // This will popup an approval request in metamask
+      const web3 = await ensureWeb3();
+      const tokenContract = await getTokenContract(
+        web3,
+        (amount.asset as Token).address
+      );
+      const sendArgs = {
+        from: account,
+        value: 0,
+      };
+      const res = await tokenContract.methods
+        .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
+        .send(sendArgs);
+      console.log("approveBridgeBankSpend:", res);
+      return res;
+    },
+
     async burnToEthereum(params: {
       fromAddress: string;
       ethereumRecipient: string;
@@ -125,10 +125,6 @@ export default function createEthbridgeService({
           "lockToSifchain: bridgeBankContract.lock",
           JSON.stringify({ cosmosRecipient, coinDenom, amount, sendArgs })
         );
-
-        if (coinDenom !== ETH_ADDRESS) {
-          await approveBridgeBankSpend(fromAddress, assetAmount);
-        }
 
         bridgeBankContract.methods
           .lock(cosmosRecipient, coinDenom, amount)
@@ -228,8 +224,6 @@ export default function createEthbridgeService({
           from: fromAddress,
           value: 0,
         };
-
-        await approveBridgeBankSpend(fromAddress, assetAmount);
 
         bridgeBankContract.methods
           .burn(cosmosRecipient, coinDenom, amount)
