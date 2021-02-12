@@ -18,6 +18,13 @@
             Perhaps we could use render functions to accomplish this?
           -->
           <transition name="swipe">
+            <div class="text" v-if="state === 'approving'">
+              <p>Waiting for approval</p>
+              <br />
+              <p class="sub">Confirm this transaction in your wallet</p>
+            </div>
+          </transition>
+          <transition name="swipe">
             <div class="text" v-if="state === 'signing'">
               <p>Waiting for confirmation</p>
               <slot name="signing"></slot>
