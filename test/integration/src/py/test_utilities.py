@@ -185,19 +185,34 @@ def get_sifchain_addr_balance(sifaddress, sifnodecli_node, denom):
             return int(coin["amount"])
     return 0
 
-"""
-def wait_for_success(success_fn, max_seconds=30):
+
+def wait_for_success(success_fn, max_seconds=30, debug_prefix=""):
     done_at_time = time.time() + max_seconds
     while True:
-        try
-        result = success_fn()
-"""
+        try:
+            return success_fn()
+        except Exception as e:
+            if time.time() >= done_at_time:
+                errmsg = f"{debug_prefix} Failed to wait for success, waited for {max_seconds} seconds"
+                logging.critical(errmsg)
+                raise Exception(errmsg)
+            else:
+                logging.debug(f"waiting for success...")
+                time.sleep(1)
+
+
+def wait_for_successful_command(command_line, max_seconds=30):
+    return wait_for_success(
+        lambda: get_shell_output_json(command_line),
+        max_seconds
+    )
+
 
 def get_transaction_result(tx_hash, sifnodecli_node, chain_id):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
     chain_id_entry = f"--chain-id {chain_id}" if chain_id else ""
     command_line = f"sifnodecli q tx {node} {tx_hash} {chain_id_entry} -o json"
-    json_str = get_shell_output_json(command_line)
+    json_str = wait_for_successful_command(command_line)
     logging.debug(f"get_transaction_result keys: {json_str.keys()}")
     return json_str
 
