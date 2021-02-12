@@ -52,7 +52,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		log.Println(err)
 		return err
 	}
-	if nextSequenceNumber == 0 {
+	if nextNonce == 0 {
 		setNextNonce(uint64(auth.Nonce.Int64() + 1))
 	} else {
 		incrementNextNonce()
