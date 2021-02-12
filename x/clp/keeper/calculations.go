@@ -119,18 +119,18 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 		(!externalAssetAmount.IsZero() && externalAssetAmount.LT(minValue)) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), errors.ErrInvalidRequest
 	}
-	min_len := GetLen(oldPoolUnits.String())
-	if GetLen(nativeAssetAmount.String()) < min_len {
-		min_len = GetLen(nativeAssetAmount.String())
+	minLen := GetLen(oldPoolUnits.String())
+	if GetLen(nativeAssetAmount.String()) < minLen {
+		minLen = GetLen(nativeAssetAmount.String())
 	}
-	if GetLen(externalAssetAmount.String()) < min_len {
-		min_len = GetLen(externalAssetAmount.String())
+	if GetLen(externalAssetAmount.String()) < minLen {
+		minLen = GetLen(externalAssetAmount.String())
 	}
-	if GetLen(nativeAssetAmount.String()) < min_len {
-		min_len = GetLen(nativeAssetAmount.String())
+	if GetLen(nativeAssetAmount.String()) < minLen {
+		minLen = GetLen(nativeAssetAmount.String())
 	}
-	if GetLen(externalAssetAmount.String()) < min_len {
-		min_len = GetLen(externalAssetAmount.String())
+	if GetLen(externalAssetAmount.String()) < minLen {
+		minLen = GetLen(externalAssetAmount.String())
 	}
 
 	if nativeAssetBalance.Add(nativeAssetAmount).IsZero() {
@@ -174,11 +174,11 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	// (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 	slipAdjustment = sdk.NewDec(1).Sub(slipAdjustment)
 
-	P = ReducePrecision(P, min_len)
-	R = ReducePrecision(R, min_len)
-	A = ReducePrecision(A, min_len)
-	a = ReducePrecision(a, min_len)
-	r = ReducePrecision(r, min_len)
+	P = ReducePrecision(P, minLen)
+	R = ReducePrecision(R, minLen)
+	A = ReducePrecision(A, minLen)
+	a = ReducePrecision(a, minLen)
+	r = ReducePrecision(r, minLen)
 
 	// ((P (a R + A r))
 
@@ -186,10 +186,10 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	// 2AR
 	denominator := sdk.NewDec(2).Mul(A).Mul(R)
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
-	P = IncreasePrecision(P, min_len)
+	P = IncreasePrecision(P, minLen)
 	newPoolUnit := P.Add(stakeUnits)
-	newPoolUnit = IncreasePrecision(newPoolUnit, min_len)
-	stakeUnits = IncreasePrecision(stakeUnits, min_len)
+	newPoolUnit = IncreasePrecision(newPoolUnit, minLen)
+	stakeUnits = IncreasePrecision(stakeUnits, minLen)
 	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
 }
 
