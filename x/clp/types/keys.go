@@ -17,8 +17,9 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
-	NativeSymbol = "rowan"
-	PoolThrehold = "1000000000000000000"
+	NativeSymbol      = "rowan"
+	PoolThrehold      = "1000000000000000000"
+	PoolUnitsMinValue = "1000000000"
 
 	MaxSymbolLength = 10
 	MaxWbasis       = 10000

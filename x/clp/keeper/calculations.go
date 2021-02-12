@@ -113,12 +113,6 @@ func GetLen(str string) int64 {
 
 func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
-	//fmt.Println("-----------------------------------------------------------")
-	//fmt.Println("oldpoolUnits :", oldPoolUnits.String())
-	//fmt.Println("nativeAssetBalance :", nativeAssetBalance.String())
-	//fmt.Println("externalAssetBalance :", externalAssetBalance.String())
-	//fmt.Println("nativeAssetAmount :", nativeAssetAmount.String())
-	//fmt.Println("externalAssetAmount :", externalAssetAmount.String())
 	minValue := sdk.NewUintFromString("1000000000")
 	if (nativeAssetAmount.IsZero() && externalAssetAmount.IsZero()) ||
 		(!nativeAssetAmount.IsZero() && nativeAssetAmount.LT(minValue)) ||
@@ -139,10 +133,6 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 		min_len = GetLen(externalAssetAmount.String())
 	}
 
-	// 1000000000000000000
-	// 1000000000000000
-	// 0.00005 Wei
-	// 10E18 x 0.00005
 	if nativeAssetBalance.Add(nativeAssetAmount).IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), errors.Wrap(errors.ErrInsufficientFunds, nativeAssetAmount.String())
 	}
@@ -172,7 +162,6 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	if err != nil {
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
 	}
-	//(1-15)
 
 	slipAdjDenominator := (r.MulInt64(2).Add(R)).Mul(a.Add(A))
 	// ABS((R a - r A)/((2 r + R) (a + A)))

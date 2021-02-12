@@ -109,7 +109,7 @@ func TestAddLiquidity(t *testing.T) {
 
 }
 
-func TestAddLiquidity_BIg(t *testing.T) {
+func TestAddLiquidity_LargeValue(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("")
 	handler := clp.NewHandler(keeper)
@@ -142,8 +142,6 @@ func TestRemoveLiquidity(t *testing.T) {
 	newLP := test.GenerateAddress(test.AddressKey2)
 	handler := clp.NewHandler(keeper)
 	externalDenom := "eth"
-	//nativeDenom := clp.GetSettlementAsset().Symbol
-	//Parameters for Remove Liquidity
 	initialBalance := sdk.NewUintFromString("100000000000000000000000") // Initial account balance for all assets created
 	poolBalance := sdk.NewUintFromString("10000000000000000000")        // Amount funded to pool , This same amount is used both for native and external asset
 	wBasis := sdk.NewInt(1000)
@@ -167,57 +165,41 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handler(ctx, msgCreatePool)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	////nativeAmountOLD := keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(nativeDenom)
-	////externalAmountOLD := keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(externalDenom)
 	coins := CalculateWithdraw(t, keeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clp.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	//assert.Equal(t, keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(nativeDenom).Int64(), nativeAmountOLD.Int64())
-	//assert.Greater(t, keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(externalDenom).Int64(), externalAmountOLD.Int64())
 	ok := keeper.HasCoins(ctx, signer, coins)
 	assert.True(t, ok, "")
 
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.NewInt(10000)
-	//nativeAmountOLD = keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(nativeDenom)
-	//externalAmountOLD = keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(externalDenom)
 	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clp.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	//assert.Equal(t, keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(nativeDenom).Int64(), nativeAmountOLD.Int64())
-	//assert.Greater(t, keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(externalDenom).Int64(), externalAmountOLD.Int64())
 	ok = keeper.HasCoins(ctx, signer, coins)
 	assert.True(t, ok, "")
 
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.ZeroInt()
-	//nativeAmountOLD = keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(nativeDenom)
-	//externalAmountOLD = keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(externalDenom)
 	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clp.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	//assert.Greater(t, keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(nativeDenom).Int64(), nativeAmountOLD.Int64())
-	//assert.Greater(t, keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(externalDenom).Int64(), externalAmountOLD.Int64())
 	ok = keeper.HasCoins(ctx, signer, coins)
 	assert.True(t, ok, "")
 
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.NewInt(-10000)
-	//nativeAmountOLD = keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(nativeDenom)
-	//externalAmountOLD = keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(externalDenom)
 	coins = CalculateWithdraw(t, keeper, ctx, asset, signer.String(), wBasis.String(), asymmetry)
 	msg = clp.NewMsgRemoveLiquidity(signer, asset, wBasis, asymmetry)
 	res, err = handler(ctx, msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	//assert.Greater(t, keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(nativeDenom).Int64(), nativeAmountOLD.Int64())
-	//assert.Equal(t, keeper.GetBankKeeper().GetCoins(ctx, signer).AmountOf(externalDenom).Int64(), externalAmountOLD.Int64())
 	ok = keeper.HasCoins(ctx, signer, coins)
 	assert.True(t, ok, "")
 
@@ -310,8 +292,6 @@ func TestDecommisionPool(t *testing.T) {
 	//Parameters for Decommission
 	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
 	poolBalance := sdk.NewUintFromString("1000000000000000000")
-	//initialBalance := sdk.NewInt(10000) // Initial account balance for all assets created
-	//poolBalance := sdk.NewUint(100)     // Amount funded to pool , This same amount is used both for native and external asset
 
 	asset := clp.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
