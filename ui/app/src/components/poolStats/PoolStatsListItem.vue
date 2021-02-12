@@ -34,25 +34,13 @@
         }
       });
 
-      const poolUSD = formatNumberString(
-              parseFloat(props.pool?.poolUSD).toFixed(2)
-      );
-      const poolRowan = formatNumberString(
-              parseFloat(props.pool?.poolRowan).toFixed(2)
-      );
-      const externalUSD = formatNumberString(
-              parseFloat(props.pool?.externalUSD).toFixed(8)
-      );
-      const externalRowan = formatNumberString(
-              parseFloat(props.pool?.externalRowan).toFixed(8)
-      );
+      const priceToken = formatNumberString(parseFloat(props.pool?.priceToken).toFixed(2));
+      const poolDepth = formatNumberString(parseFloat(props.pool?.poolDepth).toFixed(2));
 
       return {
         symbol,
-        poolUSD,
-        poolRowan,
-        externalUSD,
-        externalRowan,
+        priceToken,
+        poolDepth,
         image,
       };
     },
@@ -70,10 +58,10 @@
         </div>
       </div>
       <div class="col-md">
-        <span>{{ externalUSD }}</span>
+        <span>{{ priceToken }}</span>
       </div>
       <div class="col-md">
-        <span>{{ poolUSD }}</span>
+        <span>{{ poolDepth }}</span>
       </div>
       <div class="col-lg">
         <span>{{ liqAPY }}</span>
