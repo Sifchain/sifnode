@@ -52,6 +52,11 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		log.Println(err)
 		return err
 	}
+	if nextSequenceNumber == 0 {
+		setNextNonce(uint64(auth.Nonce.Int64() + 1))
+	} else {
+		incrementNextNonce()
+	}
 	fmt.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
 
 	// Get the transaction receipt
@@ -65,11 +70,6 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	case 0:
 		fmt.Println("Tx Status: 0 - Failed")
 	case 1:
-		if nextSequenceNumber == 0 {
-			setNextNonce(uint64(auth.Nonce.Int64() + 1))
-		} else {
-			incrementNextNonce()
-		}
 		fmt.Println("Tx Status: 1 - Successful")
 	}
 	return nil
