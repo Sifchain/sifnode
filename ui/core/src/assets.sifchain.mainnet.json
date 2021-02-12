@@ -78,13 +78,6 @@
     },
     {
       "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/1364/thumb/Mark_Maker.png?1585191826",
-      "name": "Maker",
-      "network": "sifchain",
-      "symbol": "cMKR"
-    },
-    {
-      "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/3406/thumb/SNX.png?1598631139",
       "name": "Synthetix Network Token",
       "network": "sifchain",
@@ -152,13 +145,6 @@
       "name": "Band Protocol",
       "network": "sifchain",
       "symbol": "cBAND"
-    },
-    {
-      "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/9644/thumb/Blk_icon_current.png?1584980686",
-      "name": "Tellor",
-      "network": "sifchain",
-      "symbol": "cTRB"
     },
     {
       "decimals": 18,

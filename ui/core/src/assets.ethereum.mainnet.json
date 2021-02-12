@@ -109,16 +109,6 @@
       "transferLimit": "13591240717182590517248"
     },
     {
-      "address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
-      "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/1364/thumb/Mark_Maker.png?1585191826",
-      "name": "Maker",
-      "network": "ethereum",
-      "priceUsd": 1420.15,
-      "symbol": "MKR",
-      "transferLimit": "3520754849839805440"
-    },
-    {
       "address": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/3406/thumb/SNX.png?1598631139",
@@ -219,16 +209,6 @@
       "transferLimit": "555555555555555540992"
     },
     {
-      "address": "0x0ba45a8b5d5575935b8158a88c631e9f9c95a2e5",
-      "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/9644/thumb/Blk_icon_current.png?1584980686",
-      "name": "Tellor",
-      "network": "ethereum",
-      "priceUsd": 33.57,
-      "symbol": "TRB",
-      "transferLimit": "148942508191837945856"
-    },
-    {
       "address": "0x6b175474e89094c44da98b954eedeac495271d0f",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774",
@@ -259,7 +239,7 @@
       "transferLimit": "460405156537753272320"
     },
     {
-      "address": "0xb83cd8d39462b761bb0092437d38b37812dd80a2",
+      "address": "0xc944e90c64b2c07662a292be6244bdf05cda44a7",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/11022/thumb/golden_ratio_token.png?1592811112",
       "name": "Golden Ratio Token",
