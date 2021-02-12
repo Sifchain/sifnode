@@ -24,8 +24,8 @@ func TestCreatePool(t *testing.T) {
 	handler := clp.NewHandler(keeper)
 	signer := test.GenerateAddress("")
 	//Parameters for create pool
-	initialBalance := sdk.NewUintFromString("10000000000000000") // Initial account balance for all assets created
-	poolBalance := sdk.NewUintFromString("1000000000000000")     // Amount funded to pool , This same amount is used both for native and external asset
+	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
+	poolBalance := sdk.NewUintFromString("1000000000000000000")      // Amount funded to pool , This same amount is used both for native and external asset
 
 	asset := clp.NewAsset("eth")
 	externalCoin := sdk.NewCoin(asset.Symbol, sdk.Int(initialBalance))
@@ -257,8 +257,8 @@ func TestSwap(t *testing.T) {
 
 	// Test Parameters for swap
 
-	initialBalance := sdk.NewUintFromString("10000000000000000") // Initial account balance for all assets created
-	poolBalance := sdk.NewUintFromString("1000000000000000")     // Amount funded to pool , This same amount is used both for native and external asset
+	initialBalance := sdk.NewUintFromString("1000000000000000000000") // Initial account balance for all assets created
+	poolBalance := sdk.NewUintFromString("1000000000000000000")       // Amount funded to pool , This same amount is used both for native and external asset
 	swapSentAssetETH := sdk.NewUintFromString("1000000000000000")
 
 	externalCoin1 := sdk.NewCoin(assetEth.Symbol, sdk.Int(initialBalance))
@@ -308,8 +308,8 @@ func TestDecommisionPool(t *testing.T) {
 	handler := clp.NewHandler(keeper)
 
 	//Parameters for Decommission
-	initialBalance := sdk.NewUintFromString("1000") // Initial account balance for all assets created
-	poolBalance := sdk.NewUintFromString("100")
+	initialBalance := sdk.NewUintFromString("100000000000000000000") // Initial account balance for all assets created
+	poolBalance := sdk.NewUintFromString("1000000000000000000")
 	//initialBalance := sdk.NewInt(10000) // Initial account balance for all assets created
 	//poolBalance := sdk.NewUint(100)     // Amount funded to pool , This same amount is used both for native and external asset
 

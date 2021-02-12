@@ -13,6 +13,7 @@ const (
 	DefaultParamspace = types.DefaultParamspace
 	NativeSymbol      = types.NativeSymbol
 	MaxWbasis         = types.MaxWbasis
+	PoolThrehold      = types.PoolThrehold
 )
 
 var (

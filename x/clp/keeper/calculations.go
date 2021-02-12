@@ -107,14 +107,42 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 // slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
+func GetLen(str string) int64 {
+	return int64(len(str))
+}
+
 func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
+	//fmt.Println("-----------------------------------------------------------")
+	//fmt.Println("oldpoolUnits :", oldPoolUnits.String())
+	//fmt.Println("nativeAssetBalance :", nativeAssetBalance.String())
+	//fmt.Println("externalAssetBalance :", externalAssetBalance.String())
+	//fmt.Println("nativeAssetAmount :", nativeAssetAmount.String())
+	//fmt.Println("externalAssetAmount :", externalAssetAmount.String())
+	minValue := sdk.NewUintFromString("1000000000")
+	if (nativeAssetAmount.IsZero() && externalAssetAmount.IsZero()) ||
+		(!nativeAssetAmount.IsZero() && nativeAssetAmount.LT(minValue)) ||
+		(!externalAssetAmount.IsZero() && externalAssetAmount.LT(minValue)) {
+		return sdk.ZeroUint(), sdk.ZeroUint(), errors.ErrInvalidRequest
+	}
+	min_len := GetLen(oldPoolUnits.String())
+	if GetLen(nativeAssetAmount.String()) < min_len {
+		min_len = GetLen(nativeAssetAmount.String())
+	}
+	if GetLen(externalAssetAmount.String()) < min_len {
+		min_len = GetLen(externalAssetAmount.String())
+	}
+	if GetLen(nativeAssetAmount.String()) < min_len {
+		min_len = GetLen(nativeAssetAmount.String())
+	}
+	if GetLen(externalAssetAmount.String()) < min_len {
+		min_len = GetLen(externalAssetAmount.String())
+	}
 
-	//minValue := sdk.NewUintFromString("100000000000000")
-	//if nativeAssetAmount.LT(minValue) || externalAssetAmount.LT(minValue) {
-	//	return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
-	//}
-
+	// 1000000000000000000
+	// 1000000000000000
+	// 0.00005 Wei
+	// 10E18 x 0.00005
 	if nativeAssetBalance.Add(nativeAssetAmount).IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), errors.Wrap(errors.ErrInsufficientFunds, nativeAssetAmount.String())
 	}
@@ -144,11 +172,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	if err != nil {
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
 	}
-	P = ReducePrecision(P, 15)
-	R = ReducePrecision(R, 15)
-	A = ReducePrecision(A, 15)
-	a = ReducePrecision(a, 15)
-	r = ReducePrecision(r, 15)
+	//(1-15)
 
 	slipAdjDenominator := (r.MulInt64(2).Add(R)).Mul(a.Add(A))
 	// ABS((R a - r A)/((2 r + R) (a + A)))
@@ -161,17 +185,25 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	// (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 	slipAdjustment = sdk.NewDec(1).Sub(slipAdjustment)
 
+	P = ReducePrecision(P, min_len)
+	R = ReducePrecision(R, min_len)
+	A = ReducePrecision(A, min_len)
+	a = ReducePrecision(a, min_len)
+	r = ReducePrecision(r, min_len)
+
 	// ((P (a R + A r))
+
 	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
 	// 2AR
 	denominator := sdk.NewDec(2).Mul(A).Mul(R)
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
-	P = IncreasePrecision(P, 15)
+	P = IncreasePrecision(P, min_len)
 	newPoolUnit := P.Add(stakeUnits)
-	newPoolUnit = IncreasePrecision(newPoolUnit, 15)
-	stakeUnits = IncreasePrecision(stakeUnits, 15)
+	newPoolUnit = IncreasePrecision(newPoolUnit, min_len)
+	stakeUnits = IncreasePrecision(stakeUnits, min_len)
 	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
 }
+
 func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
 	p := sdk.NewDec(10).Power(uint64(po))
 	return dec.Quo(p)
