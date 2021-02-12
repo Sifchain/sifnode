@@ -62,26 +62,20 @@
 <template>
   <div class="pool-list-item">
     <div class="pool-asset" :class="{ inline: inline }">
-      <div class="token">
+      <div class="col-sm">
         <img v-if="image" width="22" height="22" :src="image" class="image" />
         <div class="placeholder" v-else></div>
         <div class="icon">
           <span>{{ symbol.replace("c", "") }}</span>
         </div>
       </div>
-      <div class="value">
-        <span>{{ poolUSD }}</span>
-      </div>
-      <div class="value">
-        <span>{{ poolRowan }}</span>
-      </div>
-      <div class="value">
+      <div class="col-md">
         <span>{{ externalUSD }}</span>
       </div>
-      <div class="value">
-        <span>{{ externalRowan }}</span>
+      <div class="col-md">
+        <span>{{ poolUSD }}</span>
       </div>
-      <div class="value">
+      <div class="col-lg">
         <span>{{ liqAPY }}</span>
       </div>
     </div>
@@ -134,14 +128,23 @@
       text-align: center;
     }
 
-    .value {
-      width: 18%;
+    .col-lg {
+      min-width: 200px;
+      width: 27%;
       font-size: $fs_md;
       color: $c_text;
     }
 
-    .token {
-      width: 10%;
+    .col-md {
+      min-width: 160px;
+      width: 27%;
+      font-size: $fs_md;
+      color: $c_text;
+    }
+
+    .col-sm {
+      min-width: 100px;
+      width: 19%;
       display: flex;
       justify-content: start;
     }
