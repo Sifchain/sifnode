@@ -11,6 +11,7 @@
           <template v-slot:connected="{ connectedText, requestDialog }">
             <SifButton small ghost success round @click="requestDialog">
               {{ connectedText }}
+              
             </SifButton>
           </template>
         </WithWallet>
