@@ -116,6 +116,9 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 		transactOptsAuth.Nonce = big.NewInt(int64(nonce))
 	}
 
+	log.Printf("ethereum tx current nonce from client api is %d\n", nonce)
+	log.Printf("ethereum tx current nonce from local storage is %d\n", nextNonce)
+
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 	transactOptsAuth.GasPrice = gasPrice
