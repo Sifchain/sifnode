@@ -159,7 +159,7 @@ export function usePoolCalculator(input: {
 
   // external_balance / native_balance
   const aPerBRatio = computed(() => {
-    if (!poolAmounts.value) return null;
+    if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
     return external.divide(native);
   });
@@ -174,7 +174,7 @@ export function usePoolCalculator(input: {
 
   // native_balance / external_balance
   const bPerARatio = computed(() => {
-    if (!poolAmounts.value) return null;
+    if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
     return native.divide(external);
   });
@@ -240,10 +240,13 @@ export function usePoolCalculator(input: {
     // if in guided mode
     // calculate the price ratio of A / B
     if (input.asyncPooling.value && input.lastFocusedTokenField.value !== null) {
+      if (bPerARatio === null || aPerBRatio === null) {
+        return null;
+      }
       if (input.lastFocusedTokenField.value === 'A') {
-        input.tokenBAmount.value = input.tokenAAmount.value * bPerARatio.value.toFixed(8);
+        input.tokenBAmount.value = (Number(input.tokenAAmount.value) * Number(bPerARatio.value.toFixed(8))).toString();
       } else if (input.lastFocusedTokenField.value === 'B') {
-        input.tokenAAmount.value = input.tokenBAmount.value * aPerBRatio.value.toFixed(8);
+        input.tokenAAmount.value = (Number(input.tokenBAmount.value) * Number(aPerBRatio.value.toFixed(8))).toString();
       }
     }
 
