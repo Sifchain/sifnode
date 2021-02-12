@@ -73,6 +73,10 @@ export default defineComponent({
       mode.value === "peg" ? store.wallet.sif.address : store.wallet.eth.address
     );
 
+    const isMaxActive = computed(() => {
+      return amount.value === accountBalance.value?.toFixed()
+    })
+
     async function handlePegRequested() {
       transactionState.value = "signing";
       const tx = await actions.peg.peg(
@@ -138,6 +142,7 @@ export default defineComponent({
         return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
       }),
       handleBlur: () => {
+        if (isMaxActive.value === true) return
         amount.value = trimZeros(amount.value);
       },
       handleSelectSymbol: () => {},
@@ -161,6 +166,7 @@ export default defineComponent({
       transactionStateMsg,
       transactionHash,
       nextStepAllowed,
+      isMaxActive,
       nextStepMessage: computed(() => {
         return mode.value === "peg" ? "Peg" : "Unpeg";
       }),
@@ -177,6 +183,7 @@ export default defineComponent({
       <CurrencyField
         :amount="amount"
         :max="true"
+        :isMaxActive="isMaxActive"
         :selectable="true"
         :symbol="symbol"
         :symbolFixed="true"
