@@ -57,6 +57,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	} else {
 		incrementNextNonce()
 	}
+	fmt.Printf("After tx nextNonce is %d\n:", nextNonce)
 	fmt.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
 
 	// Get the transaction receipt
