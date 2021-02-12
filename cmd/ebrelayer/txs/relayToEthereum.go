@@ -95,10 +95,10 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	}
 
 	nonce, err := client.PendingNonceAt(context.Background(), sender)
+	log.Println("Current eth operator at pending nonce: ", nonce)
 	if err != nil {
-		log.Println(err)
+		log.Println("Error broadcasting tx: ", err)
 		return nil, nil, common.Address{}, err
-
 	}
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
@@ -123,6 +123,7 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 	transactOptsAuth.GasPrice = gasPrice
+	log.Println("transactOptsAuth.Nonce: ", transactOptsAuth.Nonce)
 
 	var targetContract ContractRegistry
 	switch event {
