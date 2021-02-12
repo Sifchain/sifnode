@@ -12,7 +12,7 @@
       "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707",
-      "name": "Tether",
+      "name": "Tether USDT",
       "network": "ethereum",
       "priceUsd": 0.999153,
       "symbol": "USDT",
@@ -212,7 +212,7 @@
       "address": "0x6b175474e89094c44da98b954eedeac495271d0f",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774",
-      "name": "Dai",
+      "name": "Dai Stablecoin",
       "network": "ethereum",
       "priceUsd": 0.997605,
       "symbol": "DAI",
@@ -347,16 +347,6 @@
       "priceUsd": 49.83,
       "symbol": "BOND",
       "transferLimit": "100341159943808942080"
-    },
-    {
-      "address": "0x5dc02ea99285e17656b8350722694c35154db1e8",
-      "decimals": 8,
-      "imageUrl": "https://assets.coingecko.com/coins/images/13222/thumb/bonded_finance_logo.png?1606318433",
-      "name": "Bonded Finance",
-      "network": "ethereum",
-      "priceUsd": 0.01475068,
-      "symbol": "BOND",
-      "transferLimit": "33896742387469"
     },
     {
       "address": "0x6e1a19f235be7ed8e3369ef73b196c07257494de",
