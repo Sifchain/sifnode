@@ -43,11 +43,17 @@ yarn --cwd $BASEDIR/smart-contracts install
 
 # Startup ganache-cli (https://github.com/trufflesuite/ganache)
 #   Uses GANACHE_DB_DIR for the --db argument to the chain
-bash ${TEST_INTEGRATION_DIR}/ganache_start.sh
+bash ${TEST_INTEGRATION_DIR}/ganache_start.sh && . ${TEST_INTEGRATION_DIR}/vagrantenv.sh
+
+# Arbitrarily pick key #9 as the key for the relayer to use
+addr=$(cat $GANACHE_KEYS_JSON | jq -r '.private_keys | keys | .[9]')
+pk=$(cat $GANACHE_KEYS_JSON | jq -r ".private_keys[\"$addr\"]")
+set_persistant_env_var EBRELAYER_ETHEREUM_ADDR $addr $envexportfile
+set_persistant_env_var EBRELAYER_ETHEREUM_PRIVATE_KEY $pk $envexportfile
 
 # https://www.trufflesuite.com/docs/truffle/overview
 # and note that truffle migrate and truffle deploy are the same command
-npx truffle deploy --network develop --reset
+INITIAL_VALIDATOR_ADDRESSES=$EBRELAYER_ETHEREUM_ADDR npx truffle deploy --network develop --reset
 
 # ETHEREUM_CONTRACT_ADDRESS is used for the BridgeRegistry address in many places, so we
 # set it and BRIDGE_REGISTRY_ADDRESS to the same value
