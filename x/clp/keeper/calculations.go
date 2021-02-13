@@ -99,10 +99,10 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 //native asset to added  : the amount the user sends
 //external asset amount to be added : the amount the user sends
 
-// r = native asset added;
-// a = external asset added
 // R = native Balance (before)
 // A = external Balance (before)
+// r = native asset added;
+// a = external asset added
 // P = existing Pool Units
 // slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
@@ -111,14 +111,40 @@ func GetLen(str string) int64 {
 	return int64(len(str))
 }
 
+func ValidatePoolUnit(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
+	nativeAssetAmount, externalAssetAmount sdk.Uint) bool {
+
+	minValue := sdk.NewUintFromString("1000000000")
+	// No token is added
+	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
+		return false
+	}
+	// Check all values are within range
+	if !oldPoolUnits.IsZero() && oldPoolUnits.LT(minValue) {
+		return false
+	}
+	if !nativeAssetBalance.IsZero() && nativeAssetBalance.LT(minValue) {
+		return false
+	}
+	if !externalAssetBalance.IsZero() && externalAssetBalance.LT(minValue) {
+		return false
+	}
+	if !nativeAssetAmount.IsZero() && nativeAssetAmount.LT(minValue) {
+		return false
+	}
+	if !externalAssetAmount.IsZero() && externalAssetAmount.LT(minValue) {
+		return false
+	}
+	return true
+}
 func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
-	minValue := sdk.NewUintFromString("1000000000")
-	if (nativeAssetAmount.IsZero() && externalAssetAmount.IsZero()) ||
-		(!nativeAssetAmount.IsZero() && nativeAssetAmount.LT(minValue)) ||
-		(!externalAssetAmount.IsZero() && externalAssetAmount.LT(minValue)) {
-		return sdk.ZeroUint(), sdk.ZeroUint(), errors.ErrInvalidRequest
+	// refactor this to use ValidInputs
+	if !ValidatePoolUnit(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
+		nativeAssetAmount, externalAssetAmount) {
+		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
 	}
+
 	minLen := GetLen(oldPoolUnits.String())
 	if GetLen(nativeAssetAmount.String()) < minLen {
 		minLen = GetLen(nativeAssetAmount.String())
@@ -193,31 +219,57 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
 }
 
-func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
-	p := sdk.NewDec(10).Power(uint64(po))
-	return dec.Quo(p)
-}
-
-func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
-	p := sdk.NewDec(10).Power(uint64(po))
-	return dec.Mul(p)
-}
-
+// Add validations for X,x,Y
+//( x^2 * Y ) / ( x + X )^2
 func calcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
+	// if inputs are outside range return error
+	if !ValidateInputs([]sdk.Uint{X, x, Y}) {
+		return sdk.ZeroUint() //error
+	}
+	//if any input is 0 return 0
+	if !ValidateZero([]sdk.Uint{X, x, Y}) {
+		return sdk.ZeroUint()
+	}
+	//if !ValidateInputs([]sdk.Uint{x,Y}){
+	//	return sdk.ZeroUint() //error
+	//}
+	//if X.IsZero() && x.IsZero() {
+	//	return sdk.ZeroUint()
+	//}
+	//n := x.Mul(x).Mul(Y)
+	//d := x.Add(X)
+	//de := d.Mul(d)
+	//return n.Quo(de)
 	d := x.Add(X)
 	denom := d.Mul(d)
 	return (x.Mul(x).Mul(Y)).Quo(denom)
 }
-
-func calcPriceImpact(X, x sdk.Uint) sdk.Uint {
-	denom := x.Add(X)
-	return x.Quo(denom)
-}
-
 func calcSwapResult(X, x, Y sdk.Uint) sdk.Uint {
+	// if inputs are outside range return error
+	if !ValidateInputs([]sdk.Uint{X, x, Y}) {
+		return sdk.ZeroUint()
+	}
+	//if any input is 0 return 0
+	if !ValidateZero([]sdk.Uint{X, x, Y}) {
+		return sdk.ZeroUint()
+	}
 	d := x.Add(X)
 	denom := d.Mul(d)
 	return (x.Mul(X).Mul(Y)).Quo(denom)
+}
+
+//( x^2 * Y ) / ( x + X )^2
+
+func calcPriceImpact(X, x sdk.Uint) sdk.Uint {
+	// if inputs are outside range return error
+	if !ValidateInputs([]sdk.Uint{X, x}) {
+		return sdk.ZeroUint()
+	}
+	if (X.IsZero() && x.IsZero()) || x.IsZero() {
+		return sdk.ZeroUint()
+	}
+	denom := x.Add(X)
+	return x.Quo(denom)
 }
 
 func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
@@ -226,4 +278,33 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 	externalAssetBalance := pool.ExternalAssetBalance
 	return CalculateWithdrawal(poolUnits, nativeAssetBalance.String(), externalAssetBalance.String(),
 		lp.LiquidityProviderUnits.String(), sdk.NewInt(types.MaxWbasis).String(), sdk.ZeroInt())
+}
+
+func ValidateInputs(inputs []sdk.Uint) bool {
+	minValue := sdk.NewUintFromString("1000000000")
+	for _, val := range inputs {
+		if !val.IsZero() && val.LT(minValue) {
+			return false
+		}
+	}
+	return true
+}
+
+func ValidateZero(inputs []sdk.Uint) bool {
+	for _, val := range inputs {
+		if val.IsZero() {
+			return false
+		}
+	}
+	return true
+}
+
+func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
+	p := sdk.NewDec(10).Power(uint64(po))
+	return dec.Quo(p)
+}
+
+func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
+	p := sdk.NewDec(10).Power(uint64(po))
+	return dec.Mul(p)
 }
