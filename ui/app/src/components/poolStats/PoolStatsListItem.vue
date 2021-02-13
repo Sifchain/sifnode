@@ -34,7 +34,7 @@
         }
       });
 
-      const priceToken = formatNumberString(parseFloat(props.pool?.priceToken).toFixed(2));
+      const priceToken = formatNumberString(parseFloat(props.pool?.priceToken).toFixed(6));
       const poolDepth = formatNumberString(parseFloat(props.pool?.poolDepth).toFixed(2));
 
       return {
