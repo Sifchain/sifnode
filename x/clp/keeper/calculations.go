@@ -182,10 +182,10 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	// 2AR
 	denominator := sdk.NewDec(2).Mul(A).Mul(R)
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
-	P = IncreasePrecision(P, minLen)
 	newPoolUnit := P.Add(stakeUnits)
 	newPoolUnit = IncreasePrecision(newPoolUnit, minLen)
 	stakeUnits = IncreasePrecision(stakeUnits, minLen)
+
 	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
 }
 
@@ -193,26 +193,29 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 //( x^2 * Y ) / ( x + X )^2
 func calcLiquidityFee(X, x, Y sdk.Uint) (sdk.Uint, error) {
 	// if inputs are outside range return error
-	if !ValidateInputs([]sdk.Uint{X, x, Y}) {
+
+	//if !ValidateInputs([]sdk.Uint{X, x, Y}) {
+	//	return sdk.ZeroUint(), types.ErrInvalid //error
+	//}
+	////if any input is 0 return 0
+	//if !ValidateZero([]sdk.Uint{X, x, Y}) {
+	//	return sdk.ZeroUint(), nil
+	//}
+	//d := x.Add(X)
+	//denom := d.Mul(d)
+	//return (x.Mul(x).Mul(Y)).Quo(denom), nil
+
+	if !ValidateInputs([]sdk.Uint{x, Y}) {
 		return sdk.ZeroUint(), types.ErrInvalid //error
 	}
-	//if any input is 0 return 0
-	if !ValidateZero([]sdk.Uint{X, x, Y}) {
+	if X.IsZero() && x.IsZero() {
 		return sdk.ZeroUint(), nil
 	}
-	//if !ValidateInputs([]sdk.Uint{x,Y}){
-	//	return sdk.ZeroUint() //error
-	//}
-	//if X.IsZero() && x.IsZero() {
-	//	return sdk.ZeroUint()
-	//}
-	//n := x.Mul(x).Mul(Y)
-	//d := x.Add(X)
-	//de := d.Mul(d)
-	//return n.Quo(de)
+	n := x.Mul(x).Mul(Y)
 	d := x.Add(X)
-	denom := d.Mul(d)
-	return (x.Mul(x).Mul(Y)).Quo(denom), nil
+	de := d.Mul(d)
+	return n.Quo(de), nil
+
 }
 func calcSwapResult(X, x, Y sdk.Uint) (sdk.Uint, error) {
 	// if inputs are outside range return error

@@ -6,17 +6,17 @@ sifnodecli tx clp create-pool --from sif --symbol ceth --nativeAmount 1000000000
 sleep 5
 sifnodecli tx clp create-pool --from sif --symbol cdash --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --yes
 
-#echo "Query all pools"
-#sleep 8
-#sifnodecli query clp pools
-#
-#echo "Query specific pool"
-#sleep 8
-#sifnodecli query clp pool ceth
+echo "Query all pools"
+sleep 8
+sifnodecli query clp pools
 
-#echo "Query Liquidity Provider / Pool creator is the first lp for the pool"
-#sleep 8
-#sifnodecli query clp lp ceth $(sifnodecli keys show sif -a)
+echo "Query specific pool"
+sleep 8
+sifnodecli query clp pool ceth
+
+echo "Query Liquidity Provider / Pool creator is the first lp for the pool"
+sleep 8
+sifnodecli query clp lp ceth $(sifnodecli keys show sif -a)
 
 echo "adding more liquidity"
 sleep 8
@@ -38,14 +38,8 @@ echo "decommission pool"
 sleep 8
 sifnodecli tx clp decommission-pool --from sif --symbol ceth --yes
 
-#echo "sifnodecli query clp pools "
-#echo "Should list only 1 pool , user has been added as admin"
+echo "sifnodecli query clp pools "
+echo "Should list only 1 pool , user has been added as admin"
 
-Gas Used
-Create Pool : 85578
-Add Liquidity : 85578
-Swap : 109095
-Remove Liquidity : 81745
-Decomison Pool : 76347
 
 
