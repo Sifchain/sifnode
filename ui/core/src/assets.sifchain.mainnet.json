@@ -10,7 +10,7 @@
     {
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707",
-      "name": "Tether",
+      "name": "Tether USDT",
       "network": "sifchain",
       "symbol": "cUSDT"
     },
@@ -75,13 +75,6 @@
       "name": "Enjin Coin",
       "network": "sifchain",
       "symbol": "cENJ"
-    },
-    {
-      "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/1364/thumb/Mark_Maker.png?1585191826",
-      "name": "Maker",
-      "network": "sifchain",
-      "symbol": "cMKR"
     },
     {
       "decimals": 18,
@@ -155,15 +148,8 @@
     },
     {
       "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/9644/thumb/Blk_icon_current.png?1584980686",
-      "name": "Tellor",
-      "network": "sifchain",
-      "symbol": "cTRB"
-    },
-    {
-      "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774",
-      "name": "Dai",
+      "name": "Dai Stablecoin",
       "network": "sifchain",
       "symbol": "cDAI"
     },
@@ -255,13 +241,6 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/12811/thumb/barnbridge.jpg?1602728853",
       "name": "BarnBridge",
-      "network": "sifchain",
-      "symbol": "cBOND"
-    },
-    {
-      "decimals": 8,
-      "imageUrl": "https://assets.coingecko.com/coins/images/13222/thumb/bonded_finance_logo.png?1606318433",
-      "name": "Bonded Finance",
       "network": "sifchain",
       "symbol": "cBOND"
     },
