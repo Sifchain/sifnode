@@ -1,4 +1,5 @@
 import { effect } from "@vue/reactivity";
+import { getTransactions } from "../api/utils/LocalStorage";
 import { ActionContext } from "..";
 import { Asset } from "../entities";
 import B from "../entities/utils/B";
@@ -34,6 +35,10 @@ export default ({
 
   effect(() => {
     store.wallet.eth.address = etheriumState.address;
+    getTransactions(etheriumState.address)
+    // then what ? 
+    // for each tx, query chain, create notification, setItem
+    // ideally this is set in connectToWallet() above
   });
 
   effect(() => {
