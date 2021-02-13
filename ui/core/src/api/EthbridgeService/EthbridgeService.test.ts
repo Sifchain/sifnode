@@ -214,6 +214,8 @@ describe("EthbridgeService", () => {
 
     const sendERowanAmount = AssetAmount(EROWAN, "10");
 
+    await EthbridgeService.approveBridgeBankSpend(getEthAddress(), sendERowanAmount);
+
     // Burn eRowan to Rowan
     await new Promise<void>((done, reject) => {
       EthbridgeService.burnToSifchain(

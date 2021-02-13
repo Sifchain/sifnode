@@ -78,9 +78,20 @@ export default defineComponent({
     })
 
     async function handlePegRequested() {
+      const asset =  Asset.get(symbol.value)
+      if (asset.symbol !== "eth" ) {
+        // if not eth you need to approve spend before peg
+        transactionState.value = "approving";
+        try {
+          await actions.peg.approve(store.wallet.eth.address, AssetAmount(asset, amount.value))
+        } catch (err) {
+          return transactionState.value = "rejected"
+        }
+      }
+      
       transactionState.value = "signing";
       const tx = await actions.peg.peg(
-        AssetAmount(Asset.get(symbol.value), amount.value)
+        AssetAmount(asset, amount.value)
       );
 
       transactionHash.value = tx.hash;
@@ -257,6 +268,9 @@ export default defineComponent({
         <p class="text--normal">
           *Please note your funds will be available for use on Sifchain only after 50 Ethereum block confirmations. This can take upwards of 20 minutes.
         </p>
+      </template>
+      <template v-slot:approving>
+        <p>Approving</p>
       </template>
       <template v-slot:common>
         <p class="text--normal">
