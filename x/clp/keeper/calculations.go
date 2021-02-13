@@ -5,6 +5,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/ethereum/go-ethereum/common/math"
 )
 
 //------------------------------------------------------------------------------------------------------------------
@@ -23,9 +24,18 @@ func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.P
 		Y = pool.ExternalAssetBalance
 	}
 	x := sentAmount
-	liquidityFee := calcLiquidityFee(X, x, Y)
-	priceImpact := calcPriceImpact(X, x)
-	swapResult := calcSwapResult(X, x, Y)
+	liquidityFee, err := calcLiquidityFee(X, x, Y)
+	if err != nil {
+		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
+	}
+	priceImpact, err := calcPriceImpact(X, x)
+	if err != nil {
+		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
+	}
+	swapResult, err := calcSwapResult(X, x, Y)
+	if err != nil {
+		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
+	}
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrNotEnoughAssetTokens
 	}
@@ -107,57 +117,18 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 // slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
-func GetLen(str string) int64 {
-	return int64(len(str))
-}
-
-func ValidatePoolUnit(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
-	nativeAssetAmount, externalAssetAmount sdk.Uint) bool {
-
-	minValue := sdk.NewUintFromString("1000000000")
-	// No token is added
-	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
-		return false
-	}
-	// Check all values are within range
-	if !oldPoolUnits.IsZero() && oldPoolUnits.LT(minValue) {
-		return false
-	}
-	if !nativeAssetBalance.IsZero() && nativeAssetBalance.LT(minValue) {
-		return false
-	}
-	if !externalAssetBalance.IsZero() && externalAssetBalance.LT(minValue) {
-		return false
-	}
-	if !nativeAssetAmount.IsZero() && nativeAssetAmount.LT(minValue) {
-		return false
-	}
-	if !externalAssetAmount.IsZero() && externalAssetAmount.LT(minValue) {
-		return false
-	}
-	return true
-}
 func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
 	// refactor this to use ValidInputs
-	if !ValidatePoolUnit(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
-		nativeAssetAmount, externalAssetAmount) {
+	inputs := []sdk.Uint{oldPoolUnits, nativeAssetBalance, externalAssetBalance,
+		nativeAssetAmount, externalAssetAmount}
+	if !ValidateInputs(inputs) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
 	}
-
-	minLen := GetLen(oldPoolUnits.String())
-	if GetLen(nativeAssetAmount.String()) < minLen {
-		minLen = GetLen(nativeAssetAmount.String())
+	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
+		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
 	}
-	if GetLen(externalAssetAmount.String()) < minLen {
-		minLen = GetLen(externalAssetAmount.String())
-	}
-	if GetLen(nativeAssetAmount.String()) < minLen {
-		minLen = GetLen(nativeAssetAmount.String())
-	}
-	if GetLen(externalAssetAmount.String()) < minLen {
-		minLen = GetLen(externalAssetAmount.String())
-	}
+	minLen := GetMinLen(inputs)
 
 	if nativeAssetBalance.Add(nativeAssetAmount).IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), errors.Wrap(errors.ErrInsufficientFunds, nativeAssetAmount.String())
@@ -207,7 +178,6 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	r = ReducePrecision(r, minLen)
 
 	// ((P (a R + A r))
-
 	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
 	// 2AR
 	denominator := sdk.NewDec(2).Mul(A).Mul(R)
@@ -221,14 +191,14 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 
 // Add validations for X,x,Y
 //( x^2 * Y ) / ( x + X )^2
-func calcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
+func calcLiquidityFee(X, x, Y sdk.Uint) (sdk.Uint, error) {
 	// if inputs are outside range return error
 	if !ValidateInputs([]sdk.Uint{X, x, Y}) {
-		return sdk.ZeroUint() //error
+		return sdk.ZeroUint(), types.ErrInvalid //error
 	}
 	//if any input is 0 return 0
 	if !ValidateZero([]sdk.Uint{X, x, Y}) {
-		return sdk.ZeroUint()
+		return sdk.ZeroUint(), nil
 	}
 	//if !ValidateInputs([]sdk.Uint{x,Y}){
 	//	return sdk.ZeroUint() //error
@@ -242,34 +212,34 @@ func calcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
 	//return n.Quo(de)
 	d := x.Add(X)
 	denom := d.Mul(d)
-	return (x.Mul(x).Mul(Y)).Quo(denom)
+	return (x.Mul(x).Mul(Y)).Quo(denom), nil
 }
-func calcSwapResult(X, x, Y sdk.Uint) sdk.Uint {
+func calcSwapResult(X, x, Y sdk.Uint) (sdk.Uint, error) {
 	// if inputs are outside range return error
 	if !ValidateInputs([]sdk.Uint{X, x, Y}) {
-		return sdk.ZeroUint()
+		return sdk.ZeroUint(), types.ErrInvalid
 	}
 	//if any input is 0 return 0
 	if !ValidateZero([]sdk.Uint{X, x, Y}) {
-		return sdk.ZeroUint()
+		return sdk.ZeroUint(), nil
 	}
 	d := x.Add(X)
 	denom := d.Mul(d)
-	return (x.Mul(X).Mul(Y)).Quo(denom)
+	return (x.Mul(X).Mul(Y)).Quo(denom), nil
 }
 
 //( x^2 * Y ) / ( x + X )^2
 
-func calcPriceImpact(X, x sdk.Uint) sdk.Uint {
+func calcPriceImpact(X, x sdk.Uint) (sdk.Uint, error) {
 	// if inputs are outside range return error
 	if !ValidateInputs([]sdk.Uint{X, x}) {
-		return sdk.ZeroUint()
+		return sdk.ZeroUint(), types.ErrInvalid
 	}
 	if (X.IsZero() && x.IsZero()) || x.IsZero() {
-		return sdk.ZeroUint()
+		return sdk.ZeroUint(), nil
 	}
 	denom := x.Add(X)
-	return x.Quo(denom)
+	return x.Quo(denom), nil
 }
 
 func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
@@ -302,6 +272,18 @@ func ValidateZero(inputs []sdk.Uint) bool {
 func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
 	p := sdk.NewDec(10).Power(uint64(po))
 	return dec.Quo(p)
+}
+
+func GetMinLen(inputs []sdk.Uint) int64 {
+	minLen := math.MaxInt64
+	minValue := sdk.NewUintFromString("1000000000")
+	for _, val := range inputs {
+		currentLen := len(val.String())
+		if currentLen < minLen && val.GTE(minValue) {
+			minLen = currentLen
+		}
+	}
+	return int64(minLen)
 }
 
 func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
