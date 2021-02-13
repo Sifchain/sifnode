@@ -24,6 +24,8 @@ sifnode:
   args:
     mnemonic: ""
     genesisURL:
+    mintAmount: "999999000000000000000000000rowan"
+    bondAmount: "1000000000000000000000rowan"
     peerAddress:
     adminCLPAddresses: ""
     adminOracleAddress: ""
