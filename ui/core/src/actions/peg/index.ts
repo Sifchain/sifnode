@@ -7,6 +7,7 @@ import {
 } from "../../entities";
 import notify from "../../api/utils/Notifications";
 import JSBI from "jsbi";
+import { setTransaction } from "../../api/utils/LocalStorage";
 
 function isOriginallySifchainNativeToken(asset: Asset) {
   return ["erowan", "rowan"].includes(asset.symbol);
@@ -77,16 +78,30 @@ export default ({
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
         ? api.EthbridgeService.burnToSifchain
         : api.EthbridgeService.lockToSifchain;
-
       return await new Promise<TransactionStatus>(done => {
         lockOrBurnFn(store.wallet.sif.address, assetAmount, ETH_CONFIRMATIONS)
-          .onTxHash(hash =>
+          .onTxHash(hash => {
+            // sets tx in localstorage
+            setTransaction(store.wallet.eth.address, hash.txHash)
+            notify({ 
+              type: "info", 
+              message: "Pegged Transaction Pending", 
+              detail: hash.txHash,
+              loader: true // TODO
+            })
+            
             done({
               hash: hash.txHash,
               memo: "Transaction Accepted",
               state: "accepted",
             })
+          }
           )
+          // invoked on each eth confirmation, was originally used to invoke
+          // notification, but above is more accurate (there is etherscan value)
+          // .onEthConfCountChanged(instance => {
+          //   console.log(instance)
+          // })
           .onError(err => {
             notify({ type: "error", message: err.payload.memo! });
             done(err.payload);
