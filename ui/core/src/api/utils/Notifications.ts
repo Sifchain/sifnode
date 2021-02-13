@@ -11,12 +11,17 @@ export default function notify({
   type,
   message,
   detail,
+  loader
 }: Notification): boolean {
   if (!type) throw 'Notification type required: "error", "success", "inform"';
   if (!message) throw "Message string required";
 
-  // add to first place in notification state
-  notifications.unshift({ type, message, detail });
+  // check if notification already exists
+  if(notifications.find((item) => {
+    return item.message === message
+  })) { return false }
+
+  notifications.unshift({ type, message, detail, loader });
 
   return true;
 }
