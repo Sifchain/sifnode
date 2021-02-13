@@ -52,6 +52,8 @@ func TestBasicMsgs(t *testing.T) {
 				require.Equal(t, value, valAddress.String())
 			case "ethereum_sender":
 				require.Equal(t, value, types.TestEthereumAddress)
+			case "ethereum_sender_nonce":
+				require.Equal(t, value, strconv.Itoa(types.TestNonce))
 			case "cosmos_receiver":
 				require.Equal(t, value, types.TestAddress)
 			case "amount":
@@ -64,6 +66,8 @@ func TestBasicMsgs(t *testing.T) {
 				require.Equal(t, value, oracle.StatusTextToString[oracle.PendingStatusText])
 			case "claim_type":
 				require.Equal(t, value, types.ClaimTypeToString[types.LockText])
+			case "cosmos_sender":
+				require.Equal(t, value, valAddress.String())
 			default:
 				require.Fail(t, fmt.Sprintf("unrecognized event %s", key))
 			}

@@ -1,0 +1,438 @@
+{
+  "manifestVersion": "3.1",
+  "impls": {
+    "f43c224fa58552f827dfbb27d88cf21700d595eb999e5bc63d73a2ac14fab906": {
+      "address": "0x7e5b2a7A9F11e406C7cC38B5e2DdEAfC8C5EaF65",
+      "txHash": "0x129fb2b63c1969abefe395e4ef09727a473c364ab24b5dbf8cd869fc7f95ffff",
+      "layout": {
+        "storage": [
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "COSMOS_NATIVE_ASSET_PREFIX",
+            "type": "t_string_storage",
+            "src": "CosmosBridgeStorage.sol:10"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "operator",
+            "type": "t_address",
+            "src": "CosmosBridgeStorage.sol:15"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "valset",
+            "type": "t_address_payable",
+            "src": "CosmosBridgeStorage.sol:20"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "oracle",
+            "type": "t_address_payable",
+            "src": "CosmosBridgeStorage.sol:25"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "bridgeBank",
+            "type": "t_address_payable",
+            "src": "CosmosBridgeStorage.sol:30"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "hasBridgeBank",
+            "type": "t_bool",
+            "src": "CosmosBridgeStorage.sol:35"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "prophecyClaims",
+            "type": "t_mapping(t_uint256,t_struct(ProphecyClaim)2304_storage)",
+            "src": "CosmosBridgeStorage.sol:40"
+          },
+          {
+            "contract": "CosmosBridgeStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "CosmosBridgeStorage.sol:64"
+          },
+          {
+            "contract": "OracleStorage",
+            "label": "cosmosBridge",
+            "type": "t_address",
+            "src": "OracleStorage.sol:7"
+          },
+          {
+            "contract": "OracleStorage",
+            "label": "operator",
+            "type": "t_address",
+            "src": "OracleStorage.sol:12"
+          },
+          {
+            "contract": "OracleStorage",
+            "label": "consensusThreshold",
+            "type": "t_uint256",
+            "src": "OracleStorage.sol:17"
+          },
+          {
+            "contract": "OracleStorage",
+            "label": "oracleClaimValidators",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "OracleStorage.sol:22"
+          },
+          {
+            "contract": "OracleStorage",
+            "label": "hasMadeClaim",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "OracleStorage.sol:27"
+          },
+          {
+            "contract": "OracleStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "OracleStorage.sol:32"
+          },
+          {
+            "contract": "ValsetStorage",
+            "label": "totalPower",
+            "type": "t_uint256",
+            "src": "ValsetStorage.sol:8"
+          },
+          {
+            "contract": "ValsetStorage",
+            "label": "currentValsetVersion",
+            "type": "t_uint256",
+            "src": "ValsetStorage.sol:13"
+          },
+          {
+            "contract": "ValsetStorage",
+            "label": "validatorCount",
+            "type": "t_uint256",
+            "src": "ValsetStorage.sol:18"
+          },
+          {
+            "contract": "ValsetStorage",
+            "label": "validators",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_bool))",
+            "src": "ValsetStorage.sol:23"
+          },
+          {
+            "contract": "ValsetStorage",
+            "label": "operator",
+            "type": "t_address",
+            "src": "ValsetStorage.sol:28"
+          },
+          {
+            "contract": "ValsetStorage",
+            "label": "powers",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "src": "ValsetStorage.sol:33"
+          },
+          {
+            "contract": "ValsetStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "ValsetStorage.sol:38"
+          },
+          {
+            "contract": "Valset",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "Valset.sol:9"
+          },
+          {
+            "contract": "Oracle",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "Oracle.sol:12"
+          },
+          {
+            "contract": "CosmosBridge",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "CosmosBridge.sol:13"
+          },
+          {
+            "contract": "CosmosBridge",
+            "label": "___gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "CosmosBridge.sol:14"
+          }
+        ],
+        "types": {
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(address => mapping(uint256 => bool))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_address_payable": {
+            "label": "address payable"
+          },
+          "t_mapping(t_uint256,t_struct(ProphecyClaim)2304_storage)": {
+            "label": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
+          }
+        }
+      }
+    },
+    "49930df925c5c64c2e2f820cf2b692094bcd3259f9aff0096e056a0f219d6ab5": {
+      "address": "0xEcA46baed9fbe8543b5963571aA93762343B7F9F",
+      "txHash": "0xab957746b90ff9cb277b0db9697f47abaa2dace5893ea3cb19232b7c81b58150",
+      "layout": {
+        "storage": [
+          {
+            "contract": "CosmosBankStorage",
+            "label": "bridgeTokenCount",
+            "type": "t_uint256",
+            "src": "BridgeBank/CosmosBankStorage.sol:19"
+          },
+          {
+            "contract": "CosmosBankStorage",
+            "label": "cosmosDepositNonce",
+            "type": "t_uint256",
+            "src": "BridgeBank/CosmosBankStorage.sol:24"
+          },
+          {
+            "contract": "CosmosBankStorage",
+            "label": "controlledBridgeTokens",
+            "type": "t_mapping(t_string_memory,t_address)",
+            "src": "BridgeBank/CosmosBankStorage.sol:29"
+          },
+          {
+            "contract": "CosmosBankStorage",
+            "label": "lowerToUpperTokens",
+            "type": "t_mapping(t_string_memory,t_string_storage)",
+            "src": "BridgeBank/CosmosBankStorage.sol:34"
+          },
+          {
+            "contract": "CosmosBankStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "BridgeBank/CosmosBankStorage.sol:39"
+          },
+          {
+            "contract": "EthereumBankStorage",
+            "label": "lockBurnNonce",
+            "type": "t_uint256",
+            "src": "BridgeBank/EthereumBankStorage.sol:8"
+          },
+          {
+            "contract": "EthereumBankStorage",
+            "label": "lockedFunds",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "BridgeBank/EthereumBankStorage.sol:13"
+          },
+          {
+            "contract": "EthereumBankStorage",
+            "label": "lockedTokenList",
+            "type": "t_mapping(t_string_memory,t_address)",
+            "src": "BridgeBank/EthereumBankStorage.sol:18"
+          },
+          {
+            "contract": "EthereumBankStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "BridgeBank/EthereumBankStorage.sol:23"
+          },
+          {
+            "contract": "CosmosWhiteListStorage",
+            "label": "_cosmosTokenWhiteList",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "BridgeBank/CosmosWhiteListStorage.sol:8"
+          },
+          {
+            "contract": "CosmosWhiteListStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "BridgeBank/CosmosWhiteListStorage.sol:13"
+          },
+          {
+            "contract": "BankStorage",
+            "label": "operator",
+            "type": "t_address",
+            "src": "BridgeBank/BankStorage.sol:15"
+          },
+          {
+            "contract": "BankStorage",
+            "label": "oracle",
+            "type": "t_address",
+            "src": "BridgeBank/BankStorage.sol:20"
+          },
+          {
+            "contract": "BankStorage",
+            "label": "cosmosBridge",
+            "type": "t_address",
+            "src": "BridgeBank/BankStorage.sol:25"
+          },
+          {
+            "contract": "BankStorage",
+            "label": "owner",
+            "type": "t_address",
+            "src": "BridgeBank/BankStorage.sol:30"
+          },
+          {
+            "contract": "BankStorage",
+            "label": "maxTokenAmount",
+            "type": "t_mapping(t_string_memory,t_uint256)",
+            "src": "BridgeBank/BankStorage.sol:32"
+          },
+          {
+            "contract": "BankStorage",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "BridgeBank/BankStorage.sol:37"
+          },
+          {
+            "contract": "EthereumWhiteList",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "BridgeBank/EthereumWhitelist.sol:9"
+          },
+          {
+            "contract": "EthereumWhiteList",
+            "label": "_ethereumTokenWhiteList",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "BridgeBank/EthereumWhitelist.sol:14"
+          },
+          {
+            "contract": "EthereumWhiteList",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "BridgeBank/EthereumWhitelist.sol:19"
+          },
+          {
+            "contract": "CosmosWhiteList",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "BridgeBank/CosmosWhiteList.sol:11"
+          },
+          {
+            "contract": "PauserRole",
+            "label": "pausers",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "BridgeBank/PauserRole.sol:5"
+          },
+          {
+            "contract": "Pausable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "BridgeBank/Pausable.sol:25"
+          },
+          {
+            "contract": "BridgeBank",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "BridgeBank/BridgeBank.sol:29"
+          }
+        ],
+        "types": {
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_string_memory,t_uint256)": {
+            "label": "mapping(string => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_string_memory,t_address)": {
+            "label": "mapping(string => address)"
+          },
+          "t_mapping(t_string_memory,t_string_storage)": {
+            "label": "mapping(string => string)"
+          }
+        }
+      }
+    },
+    "e2784dab76fe23e6bc87a6ad174be3fc3158ac557335ed5d38b4cc2c08d38038": {
+      "address": "0xAAb00D9bDbD49257B01a7BF444aCee5a8B87A4B3",
+      "txHash": "0x88c78ad00026c5a1d8f7e46d84506c7bb9eb9e44a0c300108bd2d1910d38969c",
+      "layout": {
+        "storage": [
+          {
+            "contract": "BridgeRegistry",
+            "label": "cosmosBridge",
+            "type": "t_address",
+            "src": "BridgeRegistry.sol:5"
+          },
+          {
+            "contract": "BridgeRegistry",
+            "label": "bridgeBank",
+            "type": "t_address",
+            "src": "BridgeRegistry.sol:6"
+          },
+          {
+            "contract": "BridgeRegistry",
+            "label": "oracle",
+            "type": "t_address",
+            "src": "BridgeRegistry.sol:7"
+          },
+          {
+            "contract": "BridgeRegistry",
+            "label": "valset",
+            "type": "t_address",
+            "src": "BridgeRegistry.sol:8"
+          },
+          {
+            "contract": "BridgeRegistry",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "BridgeRegistry.sol:10"
+          },
+          {
+            "contract": "BridgeRegistry",
+            "label": "____gap",
+            "type": "t_array(t_uint256)100_storage",
+            "src": "BridgeRegistry.sol:12"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)100_storage": {
+            "label": "uint256[100]"
+          }
+        }
+      }
+    }
+  },
+  "admin": {
+    "address": "0xD60500F92b59B4D02664442E023408Bad3725133",
+    "txHash": "0xeab46c9191693873bee2d981aa9091f55aca2790c62a0c4914b4f2328914eb66"
+  }
+}
