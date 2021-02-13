@@ -15,6 +15,7 @@
       "symbol": "cUSDT"
     },
     {
+      "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
       "name": "Ethereum",
       "network": "sifchain",
