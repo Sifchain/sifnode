@@ -1,6 +1,6 @@
 import { computed, Ref } from "@vue/reactivity";
 import ColorHash from "color-hash";
-import { Asset, Network } from "ui-core";
+import { Asset, Network, TxHash } from "ui-core";
 
 export function formatSymbol(symbol: string) {
   if (symbol.indexOf("c") === 0) {
@@ -74,4 +74,14 @@ export function useAssetItem(symbol: Ref<string | undefined>) {
   };
 
   return asset;
+}
+
+export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {
+  if (chainId === "sifchain") {
+    if(!txHash) return "https://blockexplorer.sifchain.finance/";
+    return `https://blockexplorer.sifchain.finance/transactions/${txHash}`;
+  } else {
+    if (!txHash) return `https://blockexplorer-${chainId}.sifchain.finance/`;
+    return `https://blockexplorer-${chainId}.sifchain.finance/transactions/${txHash}`;
+  }
 }
