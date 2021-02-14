@@ -111,57 +111,64 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		lastProcessedBlock = int64(binary.BigEndian.Uint64(data))
 	}
 
-	for e := range results {
-		data, ok := e.Data.(tmTypes.EventDataNewBlock)
-		if !ok {
-			fmt.Println("we have an error")
-		}
-		blockHeight := data.Block.Height
+	for {
+		select {
+		case <-quit:
+			log.Println("we receive the quit signal and exit")
+			return
 
-		// Just start from current block number if never process any block before
-		if lastProcessedBlock == 0 {
-			lastProcessedBlock = blockHeight
-		}
+		case e := <-results:
+			data, ok := e.Data.(tmTypes.EventDataNewBlock)
+			if !ok {
+				fmt.Println("we have an error")
+			}
+			blockHeight := data.Block.Height
 
-		startBlockHeight := lastProcessedBlock + 1
-		fmt.Printf("cosmos process events from block %d to %d\n", startBlockHeight, blockHeight)
-
-		for blockNumber := startBlockHeight; blockNumber <= blockHeight; {
-			tmpBlockNumber := blockNumber
-			block, err := client.BlockResults(&tmpBlockNumber)
-
-			if err != nil {
-				sub.Logger.Error(fmt.Sprintf("failed to get a block %s", err))
-				continue
+			// Just start from current block number if never process any block before
+			if lastProcessedBlock == 0 {
+				lastProcessedBlock = blockHeight
 			}
 
-			for _, log := range block.TxsResults {
-				for _, event := range log.Events {
+			startBlockHeight := lastProcessedBlock + 1
+			fmt.Printf("cosmos process events from block %d to %d\n", startBlockHeight, blockHeight)
 
-					claimType := getOracleClaimType(event.GetType())
+			for blockNumber := startBlockHeight; blockNumber <= blockHeight; {
+				tmpBlockNumber := blockNumber
+				block, err := client.BlockResults(&tmpBlockNumber)
 
-					switch claimType {
-					case types.MsgBurn, types.MsgLock:
-						cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
-						if err != nil {
-							fmt.Println(err)
-							break
+				if err != nil {
+					sub.Logger.Error(fmt.Sprintf("failed to get a block %s", err))
+					continue
+				}
+
+				for _, log := range block.TxsResults {
+					for _, event := range log.Events {
+
+						claimType := getOracleClaimType(event.GetType())
+
+						switch claimType {
+						case types.MsgBurn, types.MsgLock:
+							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
+							if err != nil {
+								fmt.Println(err)
+								break
+							}
+							sub.handleBurnLockMsg(cosmosMsg, claimType)
 						}
-						sub.handleBurnLockMsg(cosmosMsg, claimType)
 					}
 				}
-			}
 
-			b := make([]byte, 8)
-			binary.BigEndian.PutUint64(b, uint64(blockNumber))
-			lastProcessedBlock = blockNumber
+				b := make([]byte, 8)
+				binary.BigEndian.PutUint64(b, uint64(blockNumber))
+				lastProcessedBlock = blockNumber
 
-			err = sub.DB.Put([]byte(cosmosLevelDBKey), b, nil)
-			if err != nil {
-				// if you can't write to leveldb, then error out as something is seriously amiss
-				log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
+				err = sub.DB.Put([]byte(cosmosLevelDBKey), b, nil)
+				if err != nil {
+					// if you can't write to leveldb, then error out as something is seriously amiss
+					log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
+				}
+				blockNumber++
 			}
-			blockNumber++
 		}
 	}
 }
