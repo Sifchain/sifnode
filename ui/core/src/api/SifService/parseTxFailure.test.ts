@@ -9,7 +9,7 @@ test("parseTxFailure", () => {
     })
   ).toMatchObject({
     hash: "123",
-    memo: "There was an unknown failiure",
+    memo: "There was an unknown failure",
     state: "failed",
   });
 
