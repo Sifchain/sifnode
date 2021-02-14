@@ -86,7 +86,10 @@ export default ({
             notify({ 
               type: "info", 
               message: "Pegged Transaction Pending", 
-              detail: hash.txHash,
+              detail: {
+                type: 'etherscan',
+                message: hash.txHash,
+              },
               loader: true // TODO
             })
             
