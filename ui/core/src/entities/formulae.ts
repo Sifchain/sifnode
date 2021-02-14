@@ -1,5 +1,5 @@
 import Big from "big.js";
-import { Fraction, IFraction } from "./fraction/Fraction";
+import {Fraction, IFraction} from "./fraction/Fraction";
 
 /**
  *
@@ -17,8 +17,8 @@ export function calculatePoolUnits(
   A: IFraction, // External Balance (before)
   P: IFraction // existing Pool Units
 ) {
-  if (A.equalTo("0") || R.equalTo("0")) {
-    return r;
+  if (A.equalTo("0") || R.equalTo("0") || P.equalTo("0" || (a.equalTo("0") && r.equalTo("0")))) {
+    return new Fraction("0");
   }
   // slipAdjustment = ((R a - r A)/((2 r + R) (a + A)))
   const slipAdjDenominator = new Fraction("2")
@@ -45,9 +45,7 @@ export function calculatePoolUnits(
   const numerator = P.multiply(a.multiply(R).add(A.multiply(r)));
   const denominator = new Fraction("2").multiply(A).multiply(R);
 
-  const units = numerator.divide(denominator).multiply(slipAdjustment);
-
-  return units;
+  return numerator.divide(denominator).multiply(slipAdjustment);
 }
 
 function abs(num: Fraction) {
