@@ -223,7 +223,7 @@ export default function createSifService({
 
       try {
         const account = await client.getAccount(address);
-        if (!account) throw "No Address found on chain";
+        if (!account) throw "No Address found on chain"; // todo handle this better
         const supportedTokenSymbols = supportedTokens.map(s => s.symbol);
         const balances = account.balance
           .filter(balance => supportedTokenSymbols.includes(balance.denom))
