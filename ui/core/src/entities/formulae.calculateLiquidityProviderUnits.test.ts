@@ -17,7 +17,7 @@ tables.PoolUnits.forEach(({ r, a, R, A, P, expected }, index) => {
         new Fraction(P)
       );
 
-      expect(output.toFixed(0)).toBe(expected);
+      expect(output).toBe(expected);
     });
   }
 });

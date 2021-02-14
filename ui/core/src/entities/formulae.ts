@@ -18,8 +18,29 @@ export function calculatePoolUnits(
   P: IFraction // existing Pool Units
 ) {
   if (A.equalTo("0") || R.equalTo("0") || P.equalTo("0" || (a.equalTo("0") && r.equalTo("0")))) {
-    return new Fraction("0");
+    return r.toFixed(0);
   }
+
+  if (!r.equalTo("0") && r.lessThan("1000000000")) {
+    return "error";
+  }
+
+  if (!a.equalTo("0") && a.lessThan("1000000000")) {
+    return "error";
+  }
+
+  if (!R.equalTo("0") && R.lessThan("1000000000")) {
+    return "error";
+  }
+
+  if (!A.equalTo("0") && A.lessThan("1000000000")) {
+    return "error";
+  }
+
+  if (!P.equalTo("0") && P.lessThan("1000000000")) {
+    return "error";
+  }
+
   // slipAdjustment = ((R a - r A)/((2 r + R) (a + A)))
   const slipAdjDenominator = new Fraction("2")
     .multiply(r)
@@ -45,7 +66,7 @@ export function calculatePoolUnits(
   const numerator = P.multiply(a.multiply(R).add(A.multiply(r)));
   const denominator = new Fraction("2").multiply(A).multiply(R);
 
-  return numerator.divide(denominator).multiply(slipAdjustment);
+  return numerator.divide(denominator).multiply(slipAdjustment).toFixed(0);
 }
 
 function abs(num: Fraction) {

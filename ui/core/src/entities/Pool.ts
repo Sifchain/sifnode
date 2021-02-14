@@ -30,15 +30,7 @@ export function Pool(
     contains: pair.contains,
     toString: pair.toString,
     getAmount: pair.getAmount,
-    poolUnits:
-      poolUnits ||
-      calculatePoolUnits(
-        a,
-        b,
-        new Fraction("0"),
-        new Fraction("0"),
-        new Fraction("0")
-      ),
+    poolUnits: poolUnits || new Fraction("0"),
     priceAsset(asset: Asset) {
       return this.calcSwapResult(AssetAmount(asset, "1"));
     },
@@ -116,13 +108,13 @@ export function Pool(
       const [nativeBalanceBefore, externalBalanceBefore] = amounts;
 
       // Calculate current units created by this potential liquidity provision
-      const lpUnits = calculatePoolUnits(
+      const lpUnits = new Fraction(calculatePoolUnits(
         nativeAssetAmount,
         externalAssetAmount,
         nativeBalanceBefore,
         externalBalanceBefore,
         this.poolUnits
-      );
+      ));
       const newTotalPoolUnits = lpUnits.add(this.poolUnits);
 
       return [newTotalPoolUnits, lpUnits];
