@@ -46,7 +46,7 @@ yarn --cwd $BASEDIR/smart-contracts install
 bash ${TEST_INTEGRATION_DIR}/ganache_start.sh && . ${TEST_INTEGRATION_DIR}/vagrantenv.sh
 
 # Arbitrarily pick key #9 as the key for the relayer to use
-addr=$(cat $GANACHE_KEYS_JSON | jq -r '.private_keys | keys | .[9]')
+addr=$(cat $GANACHE_KEYS_JSON | jq -r '.private_keys | keys_unsorted | .[9]')
 pk=$(cat $GANACHE_KEYS_JSON | jq -r ".private_keys[\"$addr\"]")
 set_persistant_env_var EBRELAYER_ETHEREUM_ADDR $addr $envexportfile
 set_persistant_env_var EBRELAYER_ETHEREUM_PRIVATE_KEY $pk $envexportfile
