@@ -38,9 +38,9 @@
     ],
     "coinType": 118,
     "gasPriceStep": {
-      "low": 0.5,
-      "average": 0.65,
-      "high": 0.8
+      "low": 5000000000000,
+      "average": 6500000000000,
+      "high": 8000000000000
     }
   }
 }
