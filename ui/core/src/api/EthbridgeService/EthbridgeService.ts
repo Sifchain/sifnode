@@ -56,11 +56,11 @@ export default function createEthbridgeService({
       // only for usdt?
       if (amount.asset.symbol === "USDT") {
         const hasAlreadyApprovedSpend = await tokenContract.methods
-        .allowance(account, bridgebankContractAddress)
-        .call()
+          .allowance(account, bridgebankContractAddress)
+          .call()
         if (hasAlreadyApprovedSpend >= amount.toBaseUnits().toString()) {
           // dont request approve again
-          console.log("approveBridgeBankSpend: spend already approved", hasAlreadyApprovedSpend, )
+          console.log("approveBridgeBankSpend: spend already approved", hasAlreadyApprovedSpend);
           return
         } else { }// else would need to approve for the difference ?
       }
