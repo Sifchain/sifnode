@@ -18,7 +18,7 @@ export function calculatePoolUnits(
   P: IFraction // existing Pool Units
 ) {
   if (A.equalTo("0") || R.equalTo("0") || P.equalTo("0" || (a.equalTo("0") && r.equalTo("0")))) {
-    return r.toFixed(0);
+    return r;
   }
 
   if (!r.equalTo("0") && r.lessThan("1000000000")) {
@@ -66,7 +66,7 @@ export function calculatePoolUnits(
   const numerator = P.multiply(a.multiply(R).add(A.multiply(r)));
   const denominator = new Fraction("2").multiply(A).multiply(R);
 
-  return numerator.divide(denominator).multiply(slipAdjustment).toFixed(0);
+  return numerator.divide(denominator).multiply(slipAdjustment);
 }
 
 function abs(num: Fraction) {

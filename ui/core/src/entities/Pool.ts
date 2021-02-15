@@ -115,7 +115,7 @@ export function Pool(
         externalBalanceBefore,
         this.poolUnits
       );
-      const lpUnits = new Fraction(lpUnitsString === "error" ? "0": lpUnitsString);
+      const lpUnits = lpUnitsString === "error" ? new Fraction("0") : lpUnitsString;
       const newTotalPoolUnits = lpUnits.add(this.poolUnits);
 
       return [newTotalPoolUnits, lpUnits];
