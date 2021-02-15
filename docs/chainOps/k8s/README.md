@@ -1,4 +1,4 @@
-# Sifchain - Kubernetes (k8s) Tutorial
+# Sifchain - Kubernetes (k8s) node setup
 
 #### Prerequisites / Dependencies:
 

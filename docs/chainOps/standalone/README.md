@@ -1,4 +1,4 @@
-# Sifchain - Tutorial
+# Sifchain - Standalone node setup
 
 #### Prerequisites / Dependencies:
 
