@@ -37,16 +37,16 @@ const tests = [
   {
     name: "all native",
     input: {
-      poolUnits: "100000000000",
+      poolUnits: "10000000000",
       wBasisPoints: "10000",
       asymmetry: "-10000",
-      lpUnits: "1000000000000",
-      externalAssetBalance: "100000000000",
-      nativeAssetBalance: "100000000000",
+      lpUnits: "1000000000",
+      externalAssetBalance: "10000000000",
+      nativeAssetBalance: "10000000000",
     },
     expected: {
       withdrawExternalAssetAmount: "0",
-      withdrawNativeAssetAmount: "18100000000",
+      withdrawNativeAssetAmount: "181000",
     },
   },
   {
@@ -61,7 +61,7 @@ const tests = [
     },
     expected: {
       withdrawExternalAssetAmount: "5000000000",
-      withdrawNativeAssetAmount: "14487500000",
+      withdrawNativeAssetAmount: "14487534626",
     },
   },
   {
@@ -90,7 +90,7 @@ const tests = [
       nativeAssetBalance: "100000000000",
     },
     expected: {
-      withdrawExternalAssetAmount: "20000000000",
+      withdrawExternalAssetAmount: "200000000000",
       withdrawNativeAssetAmount: "10000000000",
     },
   },
@@ -105,7 +105,7 @@ const tests = [
       nativeAssetBalance: "99019800000",
     },
     expected: {
-      withdrawExternalAssetAmount: "18279400000",
+      withdrawExternalAssetAmount: "18279370308",
       withdrawNativeAssetAmount: "0",
     },
   },
@@ -136,7 +136,7 @@ const tests = [
     },
     expected: {
       withdrawExternalAssetAmount: "5000000000",
-      withdrawNativeAssetAmount: "7243800000",
+      withdrawNativeAssetAmount: "7243767313",
     },
   },
   {
@@ -160,27 +160,27 @@ const tests = [
       poolUnits: "10000000000",
       wBasisPoints: "10000",
       asymmetry: "5000",
-      lpUnits: "10000000000",
+      lpUnits: "1000000000",
       externalAssetBalance: "10000000000",
       nativeAssetBalance: "5000000000",
     },
     expected: {
-      withdrawExternalAssetAmount: "1448750000",
+      withdrawExternalAssetAmount: "14487534626",
       withdrawNativeAssetAmount: "250000000",
     },
   },
   {
     name: "Calculates asymmetry 10000",
     input: {
-      poolUnits: "10000000000",
+      poolUnits: "100000000000",
       wBasisPoints: "10000",
       asymmetry: "10000",
-      lpUnits: "1000000000",
-      externalAssetBalance: "10000000000",
-      nativeAssetBalance: "5000000000",
+      lpUnits: "10000000000",
+      externalAssetBalance: "100000000000",
+      nativeAssetBalance: "50000000000",
     },
     expected: {
-      withdrawExternalAssetAmount: "1810000000",
+      withdrawExternalAssetAmount: "18100000000",
       withdrawNativeAssetAmount: "0",
     },
   },
