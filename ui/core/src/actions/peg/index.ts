@@ -1,8 +1,8 @@
 import { ActionContext } from "..";
 import {
+  Address,
   Asset,
   AssetAmount,
-  Fraction,
   TransactionStatus,
 } from "../../entities";
 import notify from "../../api/utils/Notifications";
@@ -70,7 +70,9 @@ export default ({
 
       return txStatus;
     },
-
+    async approve(address: Address ,assetAmount: AssetAmount) {
+       return await api.EthbridgeService.approveBridgeBankSpend(address, assetAmount)
+    },
     async peg(assetAmount: AssetAmount) {
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
         ? api.EthbridgeService.burnToSifchain
