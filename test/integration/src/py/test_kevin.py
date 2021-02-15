@@ -290,8 +290,8 @@ def test_create_pools(
 ):
     basic_transfer_request.ethereum_address = source_ethereum_address
     basic_transfer_request.check_wait_blocks = True
-    target_rowan_balance = 10 ** 18
-    target_ceth_balance = 10 ** 18
+    target_rowan_balance = 10 ** 19
+    target_ceth_balance = 10 ** 19
     request, credentials = generate_test_account(
         basic_transfer_request,
         rowan_source_integrationtest_env_transfer_request,
@@ -308,7 +308,7 @@ def test_create_pools(
     test_utilities.wait_for_sifchain_addr_balance(sifaddress, "ceth", target_ceth_balance, basic_transfer_request.sifnodecli_node)
 
     pools = get_pools(basic_transfer_request.sifnodecli_node)
-    change_amount = 10 ** 17
+    change_amount = 10 ** 18
     sifchain_fees = 100000  # Should probably make this a constant
     basic_transfer_request.amount = change_amount
     basic_transfer_request.sifchain_symbol = "ceth"
