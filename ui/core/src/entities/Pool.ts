@@ -108,13 +108,14 @@ export function Pool(
       const [nativeBalanceBefore, externalBalanceBefore] = amounts;
 
       // Calculate current units created by this potential liquidity provision
-      const lpUnits = new Fraction(calculatePoolUnits(
+      const lpUnitsString = calculatePoolUnits(
         nativeAssetAmount,
         externalAssetAmount,
         nativeBalanceBefore,
         externalBalanceBefore,
         this.poolUnits
-      ));
+      );
+      const lpUnits = new Fraction(lpUnitsString === "error" ? "0": lpUnitsString);
       const newTotalPoolUnits = lpUnits.add(this.poolUnits);
 
       return [newTotalPoolUnits, lpUnits];
