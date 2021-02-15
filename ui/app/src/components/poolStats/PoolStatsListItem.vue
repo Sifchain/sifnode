@@ -36,11 +36,13 @@
 
       const priceToken = formatNumberString(parseFloat(props.pool?.priceToken).toFixed(6));
       const poolDepth = formatNumberString(parseFloat(props.pool?.poolDepth).toFixed(2));
+      const volume24h = formatNumberString(parseFloat(props.pool?.volume24h).toFixed(6));
 
       return {
         symbol,
         priceToken,
         poolDepth,
+        volume24h,
         image,
       };
     },
@@ -62,6 +64,9 @@
       </div>
       <div class="col-md">
         <span>{{ poolDepth }}</span>
+      </div>
+      <div class="col-md">
+        <span>{{ volume24h }}</span>
       </div>
       <div class="col-lg">
         <span>{{ liqAPY }}</span>

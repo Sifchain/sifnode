@@ -11,6 +11,10 @@
       <span>Pool Depth</span>
       <span>(USD)</span>
     </div>
+    <div class="col-sm">
+      <span>Volume</span>
+      <span>(24H)</span>
+    </div>
     <div class="col-lg">
       <span>Liquidity Mining Bonus</span>
       <span>APY</span>
@@ -34,7 +38,7 @@
 
   .col-sm {
     min-width: 100px;
-    width: 19%;
+    width: 15%;
     color: $c_gray_400;
     display: flex;
     flex-direction: column;
@@ -42,7 +46,7 @@
 
   .col-md {
     min-width: 160px;
-    width: 27%;
+    width: 20%;
     color: $c_gray_400;
     display: flex;
     flex-direction: column;
