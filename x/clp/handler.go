@@ -41,7 +41,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 	if !keeper.ValidateAddress(ctx, msg.Signer) {
 		return nil, errors.Wrap(types.ErrInvalid, "user does not have permission to decommission pool")
 	}
-	if pool.NativeAssetBalance.GTE(sdk.NewUint(uint64(keeper.GetParams(ctx).MinCreatePoolThreshold))) {
+	if pool.NativeAssetBalance.GTE(sdk.NewUintFromString(PoolThrehold)) {
 		return nil, types.ErrBalanceTooHigh
 	}
 	// Get all LP's for the pool
@@ -97,7 +97,7 @@ func handleMsgDecommissionPool(ctx sdk.Context, keeper Keeper, msg MsgDecommissi
 func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sdk.Result, error) {
 	// Verify min threshold
 
-	MinThreshold := sdk.NewUint(uint64(keeper.GetParams(ctx).MinCreatePoolThreshold))
+	MinThreshold := sdk.NewUintFromString(PoolThrehold)
 
 	if msg.NativeAssetAmount.LT(MinThreshold) { // Need to verify
 		return nil, types.ErrTotalAmountTooLow
@@ -146,6 +146,7 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	if err != nil {
 		return nil, types.ErrPoolDoesNotExist
 	}
+
 	newPoolUnits, lpUnits, err := clpkeeper.CalculatePoolUnits(
 		pool.PoolUnits,
 		pool.NativeAssetBalance,
@@ -155,7 +156,9 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	if err != nil {
 		return nil, err
 	}
+
 	// Get lp , if lp doesnt exist create lp
+
 	lp, err := keeper.AddLiquidity(ctx, msg, pool, newPoolUnits, lpUnits)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToAddLiquidity, err.Error())
@@ -187,7 +190,6 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	if err != nil {
 		return nil, types.ErrLiquidityProviderDoesNotExist
 	}
-
 	poolOriginalEB := pool.ExternalAssetBalance
 	poolOriginalNB := pool.NativeAssetBalance
 	//Calculate amount to withdraw
@@ -211,6 +213,7 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	pool.NativeAssetBalance = pool.NativeAssetBalance.Sub(withdrawNativeAssetAmount)
 	pool.ExternalAssetBalance = pool.ExternalAssetBalance.Sub(withdrawExternalAssetAmount)
 	// Check if withdrawal makes pool too shallow , checking only for asymetric withdraw.
+
 	if !msg.Asymmetry.IsZero() && (pool.ExternalAssetBalance.IsZero() || pool.NativeAssetBalance.IsZero()) {
 		return nil, errors.Wrap(types.ErrPoolTooShallow, "pool balance nil before adjusting asymmetry")
 	}
