@@ -51,6 +51,23 @@ export default function createEthbridgeService({
         from: account,
         value: 0,
       };
+
+      // only for usdt?
+      if (amount.asset.symbol === "USDT") {
+        const hasAlreadyApprovedSpend = await tokenContract.methods
+          .allowance(account, bridgebankContractAddress)
+          .call();
+        if (hasAlreadyApprovedSpend >= amount.toBaseUnits().toString()) {
+          // dont request approve again
+          console.log(
+            "approveBridgeBankSpend: spend already approved",
+            hasAlreadyApprovedSpend
+          );
+          return;
+        } else {
+        } // else would need to approve for the difference ?
+      }
+
       const res = await tokenContract.methods
         .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
         .send(sendArgs);
@@ -144,11 +161,18 @@ export default function createEthbridgeService({
             txHash,
             confirmations,
             onSuccess() {
-              console.log("lockToSifchain: confirmTx SUCCESS", txHash, confirmations);
+              console.log(
+                "lockToSifchain: confirmTx SUCCESS",
+                txHash,
+                confirmations
+              );
               emitter.emit({ type: "Complete", payload: null });
             },
             onCheckConfirmation(count) {
-              console.log("lockToSifchain: onCheckConfirmation PENDING", confirmations);
+              console.log(
+                "lockToSifchain: onCheckConfirmation PENDING",
+                confirmations
+              );
               emitter.emit({ type: "EthConfCountChanged", payload: count });
             },
           });
@@ -168,7 +192,8 @@ export default function createEthbridgeService({
     }) {
       const web3 = await ensureWeb3();
       const ethereumChainId = await web3.eth.net.getId();
-      const tokenAddress = (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
+      const tokenAddress =
+        (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
 
       const lockParams = {
         ethereum_receiver: params.ethereumRecipient,
@@ -244,11 +269,18 @@ export default function createEthbridgeService({
             txHash,
             confirmations,
             onSuccess() {
-              console.log("burnToSifchain: commitTx SUCCESS", txHash, confirmations);
+              console.log(
+                "burnToSifchain: commitTx SUCCESS",
+                txHash,
+                confirmations
+              );
               emitter.emit({ type: "Complete", payload: null });
             },
             onCheckConfirmation(count) {
-              console.log("burnToSifchain: commitTx.checkConfirmation PENDING", confirmations);
+              console.log(
+                "burnToSifchain: commitTx.checkConfirmation PENDING",
+                confirmations
+              );
               emitter.emit({ type: "EthConfCountChanged", payload: count });
             },
           });
