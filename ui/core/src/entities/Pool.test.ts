@@ -144,7 +144,7 @@ describe("Pool", () => {
         AssetAmount(ATK, "1000000000"),
         AssetAmount(BTK, "1400000000")
       );
-      expect(units.toFixed(0)).toBe("101195400000");
+      expect(units.toFixed(0)).toBe("101195359090");
       expect(
         lpunits
           .divide(units)

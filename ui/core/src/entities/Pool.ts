@@ -36,8 +36,7 @@ export function Pool(
         b,
         new Fraction("0"),
         new Fraction("0"),
-        new Fraction("0"),
-        true
+        new Fraction("0")
       ),
     priceAsset(asset: Asset) {
       return this.calcSwapResult(AssetAmount(asset, "1"));
