@@ -14,6 +14,6 @@ SingleSwapStandardSlip.forEach(({ x, X, expected }: any) => {
       new Fraction(bigx), // Swap Amount
       new Fraction(bigX) // In Asset Pool Balance
     );
-    expect(output.toFixed(18)).toBe(expected);
+    expect(output.toFixed(0)).toBe(expected);
   });
 });
