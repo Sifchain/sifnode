@@ -298,6 +298,7 @@
       "imageUrl": "https://assets.coingecko.com/coins/images/13504/small/Group_10572.png?1610534130",
       "name": "Reef Finance",
       "symbol": "creef",
+      "network": "sifchain",
       "decimals": 18
     }
   ]
