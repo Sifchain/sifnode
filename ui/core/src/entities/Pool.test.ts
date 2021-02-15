@@ -128,23 +128,23 @@ describe("Pool", () => {
   describe("poolUnits", () => {
     test("poolUnits", () => {
       const pool = Pool(
-        AssetAmount(ATK, "1000000"),
-        AssetAmount(BTK, "1000000")
+        AssetAmount(ATK, "1000000000"),
+        AssetAmount(BTK, "1000000000")
       );
 
-      expect(pool.poolUnits.toFixed(0)).toBe("1000000");
+      expect(pool.poolUnits.toFixed(0)).toBe("1000000000");
     });
 
     test("addLiquidity:calculate pool units", () => {
       const pool = Pool(
-        AssetAmount(ATK, "1000000"),
-        AssetAmount(BTK, "1000000")
+        AssetAmount(ATK, "100000000000"),
+        AssetAmount(BTK, "100000000000")
       );
       const [units, lpunits] = pool.calculatePoolUnits(
-        AssetAmount(ATK, "10000"),
-        AssetAmount(BTK, "14000")
+        AssetAmount(ATK, "1000000000"),
+        AssetAmount(BTK, "1400000000")
       );
-      expect(units.toFixed(0)).toBe("1011954");
+      expect(units.toFixed(0)).toBe("101195359090");
       expect(
         lpunits
           .divide(units)

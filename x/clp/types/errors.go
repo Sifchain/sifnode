@@ -35,4 +35,5 @@ var (
 	ErrUnableToDecommissionPool        = sdkerrors.Register(ModuleName, 29, "Unable to decommission pool")
 	ErrUnableToParseInt                = sdkerrors.Register(ModuleName, 30, "Unable to parse to Int")
 	ErrReceivedAmountBelowExpected     = sdkerrors.Register(ModuleName, 31, "Unable to swap, received amount is below expected")
+	ErrAmountTooLow                    = sdkerrors.Register(ModuleName, 32, "Tx amount is too low")
 )

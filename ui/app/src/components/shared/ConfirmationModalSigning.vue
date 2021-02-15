@@ -62,7 +62,7 @@
                   v-if="transactionHash?.substring(0,2) !== '0x'"
                   class="anchor"
                   target="_blank"
-                  :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
+                  :href="getBlockExplorerUrl(chainId, transactionHash)"
                   >View transaction on Block Explorer</a
                 >
                 <a
@@ -91,6 +91,7 @@ import { defineComponent } from "vue";
 import { useCore } from "@/hooks/useCore";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
+import { getBlockExplorerUrl } from "./utils";
 
 export default defineComponent({
   inheritAttrs: false,
@@ -106,6 +107,7 @@ export default defineComponent({
 
     return {
       chainId: config.sifChainId,
+      getBlockExplorerUrl
     };
   },
 });
