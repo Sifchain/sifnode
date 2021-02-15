@@ -225,7 +225,8 @@ export default defineComponent({
       },
       handleAskConfirmClicked,
       transactionHash,
-      isFromMaxActive
+      isFromMaxActive,
+      selectedField
     };
   },
 });
@@ -264,6 +265,7 @@ export default defineComponent({
           <SelectTokenDialogSif
             :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
             @tokenselected="requestClose"
+            :mode="selectedField"
           />
         </template>
       </Modal>
