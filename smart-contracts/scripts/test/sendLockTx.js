@@ -28,18 +28,23 @@ module.exports = async (cb) => {
     };
 
     if (request.gas === 'estimate') {
-        logging.info('getting estimate');
-        const estimate = await bridgeBankContract.lock.estimateGas(cosmosRecipient, coinDenom, amount, {
+        let gasEstimateParameters = {
             ...request,
+            value: 0,
             gas: 6000000,
-        });
-        // increase by 10%
-        request.gas = new BN(estimate, 10).mul(new BN(11)).div(new BN(10));
+        };
+        try {
+            const estimate = await bridgeBankContract.lock.estimateGas(cosmosRecipient.toString(), coinDenom.toString(), amount);
+            // increase by 10%
+            request.gas = new BN(estimate, 10).mul(new BN(11)).div(new BN(10));
+        } catch (e) {
+            logging.error(`in bridgeBankContract.lock.estimateGas got error: ${e}`);
+            request.gas = 6000000;
+        }
+        logging.debug(`got gas estimate, request is now ${JSON.stringify(request)}`);
     }
 
     const lockResult = await bridgeBankContract.lock(cosmosRecipient, coinDenom, amount, request);
-
-    logging.debug(`bridgeBankContract.lock: ${JSON.stringify(lockResult, undefined, 2)}`);
 
     console.log(JSON.stringify(lockResult, undefined, 0))
 
