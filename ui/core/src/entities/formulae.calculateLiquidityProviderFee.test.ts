@@ -16,6 +16,6 @@ tests.SingleSwapLiquidityFee.forEach(({ x, X, Y, expected }: any) => {
       new Fraction(bigX), // In Asset Pool Balance
       new Fraction(bigY) // Out Asset Pool Balance
     );
-    expect(output.toFixed(0)).toBe(expected);
+    expect(output.divide("1000000000000000000").toFixed(18)).toBe(expected);
   });
 });
