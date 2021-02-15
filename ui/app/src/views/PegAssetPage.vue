@@ -74,25 +74,26 @@ export default defineComponent({
     );
 
     const isMaxActive = computed(() => {
-      return amount.value === accountBalance.value?.toFixed()
-    })
+      return amount.value === accountBalance.value?.toFixed();
+    });
 
     async function handlePegRequested() {
-      const asset =  Asset.get(symbol.value)
-      if (asset.symbol !== "eth" ) {
+      const asset = Asset.get(symbol.value);
+      if (asset.symbol !== "eth") {
         // if not eth you need to approve spend before peg
         transactionState.value = "approving";
         try {
-          await actions.peg.approve(store.wallet.eth.address, AssetAmount(asset, amount.value))
+          await actions.peg.approve(
+            store.wallet.eth.address,
+            AssetAmount(asset, amount.value)
+          );
         } catch (err) {
-          return transactionState.value = "rejected"
+          return (transactionState.value = "rejected");
         }
       }
 
       transactionState.value = "signing";
-      const tx = await actions.peg.peg(
-        AssetAmount(asset, amount.value)
-      );
+      const tx = await actions.peg.peg(AssetAmount(asset, amount.value));
 
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
@@ -153,17 +154,17 @@ export default defineComponent({
       address,
       feeAmount,
       handleBlur: () => {
-        if (isMaxActive.value === true) return
+        if (isMaxActive.value === true) return;
         amount.value = trimZeros(amount.value);
       },
       handleSelectSymbol: () => {},
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
         let realMaxAmount = Number(accountBalance.value.toFixed());
-        if (symbol.value === 'ceth') {
-          realMaxAmount = (realMaxAmount - Number(feeAmount.value.toFixed()))
+        if (symbol.value === "ceth") {
+          realMaxAmount = realMaxAmount - Number(feeAmount.value.toFixed());
         }
-        amount.value = realMaxAmount.toString()
+        amount.value = realMaxAmount.toString();
       },
       handleAmountUpdated: (newAmount: string) => {
         amount.value = newAmount;
@@ -269,7 +270,9 @@ export default defineComponent({
         />
         <br />
         <p class="text--normal">
-          *Please note your funds will be available for use on Sifchain only after 50 Ethereum block confirmations. This can take upwards of 20 minutes.
+          *Please note your funds will be available for use on Sifchain only
+          after 50 Ethereum block confirmations. This can take upwards of 20
+          minutes.
         </p>
       </template>
       <template v-slot:approving>
