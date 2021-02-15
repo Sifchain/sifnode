@@ -88,7 +88,7 @@ export default defineComponent({
           return transactionState.value = "rejected"
         }
       }
-      
+
       transactionState.value = "signing";
       const tx = await actions.peg.peg(
         AssetAmount(asset, amount.value)
@@ -141,7 +141,9 @@ export default defineComponent({
         transactionState.value = "selecting";
       }
     }
-
+    const feeAmount = computed(() => {
+      return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
+    });
     const pageState = {
       mode,
       modeLabel: computed(() => capitalize(mode.value)),
@@ -149,9 +151,7 @@ export default defineComponent({
       symbolLabel: useAssetItem(symbol).label,
       amount,
       address,
-      feeAmount: computed(() => {
-        return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
-      }),
+      feeAmount,
       handleBlur: () => {
         if (isMaxActive.value === true) return
         amount.value = trimZeros(amount.value);
@@ -159,8 +159,11 @@ export default defineComponent({
       handleSelectSymbol: () => {},
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
-
-        amount.value = accountBalance.value.toFixed();
+        let realMaxAmount = Number(accountBalance.value.toFixed());
+        if (symbol.value === 'ceth') {
+          realMaxAmount = (realMaxAmount - Number(feeAmount.value.toFixed()))
+        }
+        amount.value = realMaxAmount.toString()
       },
       handleAmountUpdated: (newAmount: string) => {
         amount.value = newAmount;
