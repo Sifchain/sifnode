@@ -269,7 +269,7 @@ export default function createSifService({
 
         const fee = {
           amount: coins(0, params.asset.symbol),
-          gas: "200000", // need gas fee for tx to work - see genesis file
+          gas: "300000", // TODO - see if "auto" setting
         };
 
         const txHash = await client.signAndBroadcast([msg], fee, params.memo);
@@ -290,7 +290,7 @@ export default function createSifService({
       try {
         const fee = {
           amount: coins(0, "rowan"),
-          gas: "200000", // need gas fee for tx to work - see genesis file
+          gas: "300000", // TODO - see if "auto" setting
         };
 
         const msgArr = Array.isArray(msg) ? msg : [msg];
