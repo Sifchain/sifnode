@@ -30,7 +30,15 @@ export function Pool(
     contains: pair.contains,
     toString: pair.toString,
     getAmount: pair.getAmount,
-    poolUnits: poolUnits || new Fraction("0"),
+    poolUnits: poolUnits ||
+      calculatePoolUnits(
+        a,
+        b,
+        new Fraction("0"),
+        new Fraction("0"),
+        new Fraction("0"),
+        true
+      ),
     priceAsset(asset: Asset) {
       return this.calcSwapResult(AssetAmount(asset, "1"));
     },

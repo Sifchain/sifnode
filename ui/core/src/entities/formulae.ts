@@ -8,6 +8,7 @@ import {Fraction, IFraction} from "./fraction/Fraction";
  * @param R Native Balance (before)
  * @param A External Balance (before)
  * @param P Existing Pool Units
+ * @param initial True if calculating pool units when adding new pool
  * @returns
  */
 export function calculatePoolUnits(
@@ -15,9 +16,10 @@ export function calculatePoolUnits(
   a: IFraction, // External amount added
   R: IFraction, // Native Balance (before)
   A: IFraction, // External Balance (before)
-  P: IFraction // existing Pool Units
+  P: IFraction, // existing Pool Units
+  initial: Bool = false,
 ) {
-  if (A.equalTo("0") || R.equalTo("0") || P.equalTo("0")) {
+  if (!initial && (A.equalTo("0") || R.equalTo("0") || P.equalTo("0"))) {
     return r;
   }
 
