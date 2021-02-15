@@ -8,6 +8,7 @@ import {Fraction, IFraction} from "./fraction/Fraction";
  * @param R Native Balance (before)
  * @param A External Balance (before)
  * @param P Existing Pool Units
+ * @param initial True if creating new pool
  * @returns
  */
 export function calculatePoolUnits(
@@ -15,34 +16,35 @@ export function calculatePoolUnits(
   a: IFraction, // External amount added
   R: IFraction, // Native Balance (before)
   A: IFraction, // External Balance (before)
-  P: IFraction // existing Pool Units
+  P: IFraction, // existing Pool Units
+  initial: boolean = false
 ) {
-  if (A.equalTo("0") || R.equalTo("0") || P.equalTo("0")) {
+  if (initial && (A.equalTo("0") || R.equalTo("0") || P.equalTo("0"))) {
     return r;
   }
 
   if (a.equalTo("0") && r.equalTo("0")) {
-    return "error";
+    return new Fraction("0");
   }
 
   if (!r.equalTo("0") && r.lessThan("1000000000")) {
-    return "error";
+    return new Fraction("0");
   }
 
   if (!a.equalTo("0") && a.lessThan("1000000000")) {
-    return "error";
+    return new Fraction("0");
   }
 
   if (!R.equalTo("0") && R.lessThan("1000000000")) {
-    return "error";
+    return new Fraction("0");
   }
 
   if (!A.equalTo("0") && A.lessThan("1000000000")) {
-    return "error";
+    return new Fraction("0");
   }
 
   if (!P.equalTo("0") && P.lessThan("1000000000")) {
-    return "error";
+    return new Fraction("0");
   }
 
   // slipAdjustment = ((R a - r A)/((2 r + R) (a + A)))
