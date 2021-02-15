@@ -17,8 +17,12 @@ export function calculatePoolUnits(
   A: IFraction, // External Balance (before)
   P: IFraction // existing Pool Units
 ) {
-  if (A.equalTo("0") || R.equalTo("0") || P.equalTo("0" || (a.equalTo("0") && r.equalTo("0")))) {
+  if (A.equalTo("0") || R.equalTo("0") || P.equalTo("0")) {
     return r;
+  }
+
+  if (a.equalTo("0") && r.equalTo("0")) {
+    return "error";
   }
 
   if (!r.equalTo("0") && r.lessThan("1000000000")) {
