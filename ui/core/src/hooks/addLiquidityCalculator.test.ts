@@ -76,11 +76,11 @@ describe("addLiquidityCalculator", () => {
 
   const ratios = [
     {
-      poolExternal: "1000000000",
-      poolNative: "1000000000",
-      poolUnits: "1000000000",
-      addedExternal: "10000000",
-      addedNative: "10000000",
+      poolExternal: "1000000000000",
+      poolNative: "1000000000000",
+      poolUnits: "1000000000000",
+      addedExternal: "10000000000",
+      addedNative: "10000000000",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
       preexistingLiquidity: {
@@ -98,17 +98,17 @@ describe("addLiquidityCalculator", () => {
       },
     },
     {
-      poolExternal: "1000000000",
-      poolNative: "1000000000",
-      poolUnits: "1000000000",
-      addedExternal: "10000000",
-      addedNative: "10000000",
+      poolExternal: "1000000000000",
+      poolNative: "1000000000000",
+      poolUnits: "1000000000000",
+      addedExternal: "10000000000",
+      addedNative: "10000000000",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
       preexistingLiquidity: {
-        native: "500000000",
-        external: "500000000",
-        units: "500000000",
+        native: "500000000000",
+        external: "500000000000",
+        units: "500000000000",
       },
       expected: {
         aPerBRatioMessage: "1.00000000",
@@ -142,11 +142,11 @@ describe("addLiquidityCalculator", () => {
       },
     },
     {
-      poolExternal: "1000000000",
-      poolNative: "1000000000",
-      poolUnits: "1000000000",
-      addedExternal: "10000000",
-      addedNative: "10000000",
+      poolExternal: "1000000000000",
+      poolNative: "1000000000000",
+      poolUnits: "1000000000000",
+      addedExternal: "10000000000",
+      addedNative: "10000000000",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
       expected: {
@@ -159,11 +159,11 @@ describe("addLiquidityCalculator", () => {
       },
     },
     {
-      poolExternal: "20000000",
-      poolNative: "10000000",
-      poolUnits: "20000000",
-      addedExternal: "10000000",
-      addedNative: "40000000",
+      poolExternal: "20000000000",
+      poolNative: "10000000000",
+      poolUnits: "20000000000",
+      addedExternal: "10000000000",
+      addedNative: "40000000000",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
       expected: {
@@ -176,11 +176,11 @@ describe("addLiquidityCalculator", () => {
       },
     },
     {
-      poolExternal: "40000000",
-      poolNative: "10000000",
-      poolUnits: "40000000",
-      addedExternal: "10000000",
-      addedNative: "40000000",
+      poolExternal: "40000000000",
+      poolNative: "10000000000",
+      poolUnits: "40000000000",
+      addedExternal: "10000000000",
+      addedNative: "40000000000",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
       expected: {
@@ -194,10 +194,10 @@ describe("addLiquidityCalculator", () => {
     },
 
     {
-      poolExternal: "100000000",
-      poolNative: "100000000",
-      poolUnits: "10000000000000000000000000",
-      addedExternal: "100000000000",
+      poolExternal: "100000000000",
+      poolNative: "100000000000",
+      poolUnits: "10000000000000000000000000000",
+      addedExternal: "100000000000000",
       addedNative: "1",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
@@ -211,10 +211,10 @@ describe("addLiquidityCalculator", () => {
       },
     },
     {
-      poolExternal: "100000000",
-      poolNative: "100000000",
-      poolUnits: "10000000000000000000000000",
-      addedExternal: "100000000000000", // more than balance
+      poolExternal: "100000000000",
+      poolNative: "100000000000",
+      poolUnits: "10000000000000000000000000000",
+      addedExternal: "100000000000000000", // more than balance
       addedNative: "1",
       externalSymbol: "atk",
       nativeSymbol: "rowan",

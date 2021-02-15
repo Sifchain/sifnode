@@ -25,23 +25,23 @@ export function calculatePoolUnits(
     return "error";
   }
 
-  if (!r.equalTo("0") && r.lessThan("0.000000001")) {
+  if (!r.equalTo("0") && r.lessThan("1000000000")) {
     return "error";
   }
 
-  if (!a.equalTo("0") && a.lessThan("0.000000001")) {
+  if (!a.equalTo("0") && a.lessThan("1000000000")) {
     return "error";
   }
 
-  if (!R.equalTo("0") && R.lessThan("0.000000001")) {
+  if (!R.equalTo("0") && R.lessThan("1000000000")) {
     return "error";
   }
 
-  if (!A.equalTo("0") && A.lessThan("0.000000001")) {
+  if (!A.equalTo("0") && A.lessThan("1000000000")) {
     return "error";
   }
 
-  if (!P.equalTo("0") && P.lessThan("0.000000001")) {
+  if (!P.equalTo("0") && P.lessThan("1000000000")) {
     return "error";
   }
 
