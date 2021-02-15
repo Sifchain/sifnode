@@ -1,6 +1,6 @@
 # Connecting to the Merry-go-Round Testnet with Kubernetes (k8s). 
 
-#### Demo Videos
+## Demo Videos
 
 1. https://youtu.be/dlPLIivwRGg
 2. https://youtu.be/ff9CZkmHo3o
@@ -84,7 +84,7 @@ sifnodecli keys show <moniker> --keyring-backend file
 4. Deploy a new node to your cluster and connect to an existing network:
 
 ```
-rake "cluster:sifnode:deploy:peer[<cluster>,<chainID>,<provider>,<namespace>,<image>,<image tag>,<moniker>,<mnemonic>,<peer address>,<genesis URL>]"
+rake "cluster:sifnode:deploy:peer[<cluster>,<chain_id>,<provider>,<namespace>,<image>,<image_tag>,<moniker>,<mnemonic>,<peer_address>,<genesis_url>]"
 ```
 
 where:
@@ -92,20 +92,22 @@ where:
 |Param|Description|
 |-----|----------|
 |`<cluster>`|The name of your cluster.|
-|`<chainID>`|The Chain ID of the network (e.g.: merry-go-round).|
+|`<chain_id>`|The Chain ID of the network (e.g.: merry-go-round).|
 |`<provider>`|The cloud provider to use (currently only AWS is supported).|
 |`<namespace>`|The Kubernetes namespace to use (e.g.: sifnode).|
 |`<image>`|The image to pull down from Docker Hub (e.g.: sifchain/sifnoded).|
-|`<image tag>`|The image tag to use (e.g.: merry-go-round).|
+|`<image_tag>`|The image tag to use (this must be `testnet-genesis`)..|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
-|`<peer address>`|The address of the peer to connect to.|
-|`<genesis URL>`|The URL of genesis file for the network.|
+|`<peer_address>`|The address of the peer to connect to.|
+|`<genesis_url>`|The URL of genesis file for the network.|
 
 e.g.:
 
 ```
-rake "cluster:sifnode:deploy:peer[my-cluster,aws,sifnode,sifchain/sifnoded,merry-go-round-3,my-node,'my mnemonic',e99deeec54ca1c477f8826801bc1fd29f5539a45@44.226.150.203:26656,http://44.226.150.203:26657/genesis]"
+rake "cluster:sifnode:deploy:peer[my-cluster,merry-go-round,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',e99deeec54ca1c477f8826801bc1fd29f5539a45@44.226.150.203:26656,http://44.226.150.203:26657/genesis]"
 ```
+
+_Please note: the image tag *must* be `testnet-genesis`._
 
 5. Once deployed, check the status of the pods:
 
@@ -155,30 +157,30 @@ rake "validator:expose:pub_key[my-cluster,aws,sifnode]"
 3. Stake:
 
 ```
-rake "validator:stake[<chainID>,<moniker>,<amount>,<public key>,<node RPC address>]"
+rake "validator:stake[<chain_id>,<moniker>,<amount>,<public_key>,<node_rpc_address>]"
 ```
 
 where:
 
 |Param|Description|
 |-----|----------|
-|`<chainID>`|The Chain ID of the network (e.g.: merry-go-round).|
+|`<chain_id>`|The Chain ID of the network (e.g.: merry-go-round).|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
 |`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan).|
 |`<gas>`|The gas price (e.g.: 0.5rowan).|
-|`<public key>`|The public key of your validator (you got this in the previous step).|
-|`<node RPC address>`|The address to broadcast the transaction to (e.g.: tcp://<node IP address>:26657).|
+|`<public_key>`|The public key of your validator (you got this in the previous step).|
+|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://<node IP address>:26657).|
 
 e.g.:
 
 ```
-rake "validator:stake[merry-go-round,my-node,10000000rowan,0.5rowan,<public key>,0.5rowan,tcp://44.226.150.203:26657]"
+rake "validator:stake[merry-go-round,my-node,10000000rowan,0.5rowan,<public_key>,0.5rowan,tcp://44.226.150.203:26657]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
 
 ```
-sifnodecli q tendermint-validator-set --node <node RPC address> --trust-node
+sifnodecli q tendermint-validator-set --node <node_rpc_address> --trust-node
 ```
 
 e.g.:
@@ -189,8 +191,10 @@ sifnodecli q tendermint-validator-set --node tcp://44.226.150.203:26657 --trust-
 
 ## Additional Resources
 
-### Block Explorer
+### Endpoints
 
-A block explorer is available at:
-
-https://blockexplorer-merry-go-round.sifchain.finance
+|Description|Address|
+|-----------|-------|
+|Block Explorer|https://blockexplorer-merry-go-round.sifchain.finance|
+|RPC|https://rpc-merry-go-round.sifchain.finance|
+|API|https://lcd-merry-go-round.sifchain.finance|
