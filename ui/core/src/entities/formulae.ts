@@ -1,6 +1,15 @@
 import Big from "big.js";
 import {Fraction, IFraction} from "./fraction/Fraction";
 
+function verifyInputs(inputs: IFraction[]) {
+  for (let i of inputs) {
+    if (!i.equalTo("0") && i.lessThan("1000000000")) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /**
  *
  * @param r Native amount added
@@ -25,23 +34,7 @@ export function calculatePoolUnits(
     return new Fraction("0");
   }
 
-  if (!r.equalTo("0") && r.lessThan("1000000000")) {
-    return new Fraction("0");
-  }
-
-  if (!a.equalTo("0") && a.lessThan("1000000000")) {
-    return new Fraction("0");
-  }
-
-  if (!R.equalTo("0") && R.lessThan("1000000000")) {
-    return new Fraction("0");
-  }
-
-  if (!A.equalTo("0") && A.lessThan("1000000000")) {
-    return new Fraction("0");
-  }
-
-  if (!P.equalTo("0") && P.lessThan("1000000000")) {
+  if (!verifyInputs([r, a, R, A, P])) {
     return new Fraction("0");
   }
 
