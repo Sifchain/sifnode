@@ -39,8 +39,7 @@ func TestCalculatePoolUnits(t *testing.T) {
 			sdk.NewUintFromString(test.ExternalAdded),
 		)
 		//assert.NoError(t, err)
-
-		if test.Expected != "error" && !stakeUnits.Equal(sdk.NewUintFromString(test.Expected)) {
+		if test.Expected != "0" && !stakeUnits.Equal(sdk.NewUintFromString(test.Expected)) {
 			errCount++
 			fmt.Printf("Got %s , Expected %s \n", stakeUnits, test.Expected)
 			//fmt.Printf("%+v \n", test)
