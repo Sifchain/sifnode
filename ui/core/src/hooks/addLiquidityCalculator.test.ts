@@ -198,7 +198,7 @@ describe("addLiquidityCalculator", () => {
       poolNative: "100000000000",
       poolUnits: "10000000000000000000000000000",
       addedExternal: "100000000000000",
-      addedNative: "1",
+      addedNative: "1000",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
       expected: {
@@ -215,7 +215,7 @@ describe("addLiquidityCalculator", () => {
       poolNative: "100000000000",
       poolUnits: "10000000000000000000000000000",
       addedExternal: "100000000000000000", // more than balance
-      addedNative: "1",
+      addedNative: "1000",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
       expected: {
