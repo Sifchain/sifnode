@@ -215,7 +215,7 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
     return Big("0");
   }
   if (!verifyInputs([new Fraction(S.toFixed(0)), new Fraction(X.toFixed(0)), new Fraction(Y.toFixed(0))])) {
-    return new Fraction("0");
+    return new Big("0");
   }
   const term1 = Big(-2).times(X).times(S);
   const term2 = X.times(Y);
