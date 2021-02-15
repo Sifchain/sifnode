@@ -59,13 +59,25 @@ Ensure that OWNER is the address that will be the admin for the bridge bank and 
 
 Ensure that INITIAL_VALIDATOR_ADDRESSES and INITIAL_VALIDATOR_POWERS are set correctly.
 
-then run the following command:
+then run the following commands:
 ```
-truffle deploy --network mainnet
+truffle migrate --network mainnet -f 1 --to 1
+truffle migrate --network mainnet -f 2 --to 2
+truffle migrate --network mainnet -f 3 --to 3
+truffle migrate --network mainnet -f 4 --to 4
 ```
-You can replace mainnet with ropsten or local, whichever network you would like to deploy to.
+You can replace mainnet with ropsten or local, whichever network you would like to deploy to. If you are deploying to local or testnet, you can instead run:
+```
+truffle migrate --network <ropsten or develop>
+```
 
-5. After you have deployed the contracts to your network of choice, you will need to run this command from the smart-contracts folder:
+4.5 Now you will need to manually set the bridgebank address on the cosmos bridge by calling setBridgeBank as the operator to get the smart contract fully wired up to talk with each other.
+Do this by running:
+```
+BRIDGEBANK_ADDRESS='insert bridgebank address' COSMOS_BRIDGE_ADDRESS='insert cosmosbridge address' truffle exec scripts/setBridgeBank.js --network mainnet
+```
+
+5. After you have deployed the contracts to your network of choice and run the setBridgeBank script, you will need to run this command from the smart-contracts folder:
 ```
 DIRECTORY_NAME="your_deployment_name_here" node scripts/saveContracts.js
 ```

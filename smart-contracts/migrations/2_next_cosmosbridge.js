@@ -30,11 +30,8 @@ module.exports = function(deployer, network, accounts) {
 
   let consensusThreshold = process.env.CONSENSUS_THRESHOLD;
   let operator = process.env.OPERATOR;
-  let owner = process.env.OWNER;
-  let pauser = process.env.PAUSER;
   let initialValidators = process.env.INITIAL_VALIDATOR_ADDRESSES.split(",");
   let initialPowers = process.env.INITIAL_VALIDATOR_POWERS.split(",");
-  const tokenAmount = web3.utils.toWei("120000000");
 
   if (!initialPowers.length || !initialValidators.length) {
     return console.error(
@@ -86,64 +83,6 @@ module.exports = function(deployer, network, accounts) {
     );
 
     console.log("cosmosBridge address: ", cosmosBridge.address)
-
-    // 2. Deploy BridgeBank contract:
-    //    Gas used:        4,823,348 Gwei
-    //    Total cost:    0.09646696 Ether
-    const bridgeBank = await deployProxy(
-      BridgeBank,
-      [
-        operator,
-        CosmosBridge.address,
-        owner,
-        pauser
-      ],
-      setTxSpecifications(6721975, accounts[0], deployer)
-    );
-    console.log("bridgeBank address: ", bridgeBank.address)
-
-    // 3. Deploy BridgeRegistry contract:
-    //    Gas used:          363,370 Gwei
-    //    Total cost:     0.0072674 Ether
-    await deployProxy(
-      BridgeRegistry,
-      [
-        CosmosBridge.address,
-        BridgeBank.address
-      ],
-      setTxSpecifications(6721975, accounts[0], deployer)
-    );
-
-    await cosmosBridge.setBridgeBank(bridgeBank.address, 
-      setTxSpecifications(600000, accounts[0])
-    );
-
-    if (network === 'mainnet') {
-      return console.log("Network is mainnet, not going to deploy token");
-    }
-    
-    const erowan = await deployer.deploy(eRowan, "erowan", setTxSpecifications(4612388, operator));
-
-    await erowan.addMinter(BridgeBank.address, setTxSpecifications(4612388, operator));
-
-    await bridgeBank.addExistingBridgeToken(erowan.address, setTxSpecifications(4612388, operator));
-
-    const tokenAddress = "0x0000000000000000000000000000000000000000";
-
-    // allow 10 eth to be sent at once
-    await bridgeBank.updateTokenLockBurnLimit(tokenAddress, '10000000000000000000', setTxSpecifications(4612388, operator));
-    await bridgeBank.updateTokenLockBurnLimit(erowan.address, '10000000000000000000', setTxSpecifications(4612388, operator));
-    await erowan.approve(bridgeBank.address, '10000000000000000000', setTxSpecifications(4612388, operator));
-
-    console.log("erowan token address: ", erowan.address);
-
-    const bnAmount = web3.utils.toWei("100", "ether");
-
-    await erowan.mint(operator, bnAmount, setTxSpecifications(4612388, operator));
-
-    if (network === "develop") {
-      await erowan.mint(accounts[1], bnAmount, setTxSpecifications(4612388, operator));
-    }
 
     return;
   });
