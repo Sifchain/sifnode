@@ -32,16 +32,19 @@
         }
       });
 
-      const priceToken = formatNumberString(parseFloat(props.pool?.priceToken).toFixed(6));
+      const priceToken = formatNumberString(parseFloat(props.pool?.priceToken).toFixed(2));
       const poolDepth = formatNumberString(parseFloat(props.pool?.poolDepth).toFixed(2));
-      const volume = formatNumberString(parseFloat(props.pool?.volume).toFixed(6));
+      const volume = formatNumberString(parseFloat(props.pool?.volume).toFixed(1));
+      const poolAPY = formatNumberString((parseFloat(props.pool?.volume) / parseFloat(props.pool?.poolDepth)).toFixed(1));
 
       return {
         symbol,
+        image,
         priceToken,
         poolDepth,
         volume,
-        image,
+        poolAPY,
+        formatNumberString
       };
     },
   });
@@ -50,24 +53,30 @@
 <template>
   <div class="pool-list-item">
     <div class="pool-asset" :class="{ inline: inline }">
-      <div class="col-sm">
+      <div class="col-sm-s">
         <img v-if="image" width="22" height="22" :src="image" class="image" />
         <div class="placeholder" v-else></div>
         <div class="icon">
           <span>{{ symbol.toString().substring(1) }}</span>
         </div>
       </div>
-      <div class="col-md">
-        <span>{{ priceToken }}</span>
+      <div class="col-sm">
+        <span>${{ priceToken }}</span>
       </div>
-      <div class="col-md">
-        <span>{{ poolDepth }}</span>
+      <div class="col-sm">
+        <span>${{ poolDepth }}</span>
       </div>
-      <div class="col-md">
+      <div class="col-sm">
         <span>{{ volume }}</span>
       </div>
+      <div class="col-sm">
+        <span>{{ poolAPY }}%</span>
+      </div>
       <div class="col-lg">
-        <span>{{ liqAPY }}</span>
+        <span>{{ formatNumberString(parseFloat(liqAPY).toFixed(1)) }}%</span>
+      </div>
+      <div class="col-sm">
+        <span>{{ formatNumberString((parseFloat(poolAPY) + parseFloat(liqAPY)).toFixed(1)) }}%</span>
       </div>
     </div>
   </div>
@@ -89,7 +98,7 @@
 
     .image {
       height: 22px;
-      margin-right: 10px;
+      margin-right: 8px;
 
       & > * {
         border-radius: 16px;
@@ -119,25 +128,32 @@
       text-align: center;
     }
 
-    .col-lg {
-      min-width: 200px;
-      width: 27%;
+    .col-sm-s {
+      padding-left: 12px;
+      min-width: 102px;
+      width: 10%;
+      display: flex;
+      justify-content: start;
+    }
+
+    .col-sm {
+      min-width: 102px;
+      display: flex;
+      justify-content: center;
       font-size: $fs_md;
       color: $c_text;
     }
 
     .col-md {
-      min-width: 160px;
-      width: 20%;
+      min-width: 110px;
       font-size: $fs_md;
       color: $c_text;
     }
 
-    .col-sm {
-      min-width: 100px;
-      width: 15%;
-      display: flex;
-      justify-content: start;
+    .col-lg {
+      min-width: 168px;
+      font-size: $fs_md;
+      color: $c_text;
     }
   }
 </style>

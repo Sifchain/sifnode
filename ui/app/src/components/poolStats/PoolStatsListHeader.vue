@@ -3,11 +3,11 @@
     <div class="col-sm">
       <span>Token</span>
     </div>
-    <div class="col-md">
+    <div class="col-sm">
       <span>Price of Token</span>
       <span>(USD)</span>
     </div>
-    <div class="col-md">
+    <div class="col-sm">
       <span>Pool Depth</span>
       <span>(USD)</span>
     </div>
@@ -15,9 +15,15 @@
       <span>Trade Volume</span>
       <span>(24h)</span>
     </div>
+    <div class="col-sm">
+      <span>Pool APY</span>
+    </div>
     <div class="col-lg">
       <span>Liquidity Mining Bonus</span>
       <span>APY</span>
+    </div>
+    <div class="col-sm">
+      <span>Total APY</span>
     </div>
   </div>
 </template>
@@ -37,23 +43,20 @@
   }
 
   .col-sm {
-    min-width: 100px;
-    width: 15%;
+    min-width: 102px;
     color: $c_gray_400;
     display: flex;
     flex-direction: column;
   }
 
   .col-md {
-    min-width: 160px;
-    width: 20%;
+    min-width: 110px;
     color: $c_gray_400;
     display: flex;
     flex-direction: column;
   }
   .col-lg {
-    min-width: 200px;
-    width: 27%;
+    min-width: 168px;
     color: $c_gray_400;
     display: flex;
     flex-direction: column;
