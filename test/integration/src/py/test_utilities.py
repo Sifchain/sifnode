@@ -497,7 +497,7 @@ def display_currency_value(x: int) -> str:
     return f"({x} | {x / 10 ** 18})"
 
 
-def create_new_currency(amount, symbol, smart_contracts_dir, bridgebank_address):
+def create_new_currency(amount: object, symbol: object, smart_contracts_dir: object, bridgebank_address: object) -> object:
     """returns {'destination': '0x627306090abaB3A6e1400e9345bC60c78a8BEf57', 'amount': '9000000000000000000', 'newtoken_address': '0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc', 'newtoken_symbol': 'a3c626b'}"""
     return run_yarn_command(
         f"yarn --cwd {smart_contracts_dir} "

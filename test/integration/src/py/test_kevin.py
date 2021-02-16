@@ -384,11 +384,11 @@ def test_pools(
     get_pools(basic_transfer_request.sifnodecli_node)
     current_ceth_balance = current_ceth_balance + change_amount
     current_rowan_balance = current_rowan_balance + change_amount - sifchain_fees
-    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
-    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
+    #assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
+    #assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
     # no slippage if pool is perfectly balanced.
 
-    """    
+    #"""
     # TODO: compute this precisely?
     slip_pct = 0.0001
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
@@ -399,7 +399,7 @@ def test_pools(
     slip_cost = (slip_pct * current_ceth_balance)
     assert(balance >= current_ceth_balance - slip_cost and balance <= current_ceth_balance + slip_cost)
     current_ceth_balance = balance
-    """
+    #"""
 
     # check for failure if we try to add too much liquidity
     basic_transfer_request.amount = 10 ** 19
