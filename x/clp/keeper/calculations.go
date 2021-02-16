@@ -52,6 +52,30 @@ func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.P
 	return swapResult, liquidityFee, priceImpact, pool, nil
 }
 
+func GetSwapFee(sentAmount sdk.Uint, to types.Asset, pool types.Pool) sdk.Uint {
+
+	var X sdk.Uint
+	var Y sdk.Uint
+	toRowan := true
+	if to == types.GetSettlementAsset() {
+		Y = pool.NativeAssetBalance
+		X = pool.ExternalAssetBalance
+	} else {
+		X = pool.NativeAssetBalance
+		Y = pool.ExternalAssetBalance
+		toRowan = false
+	}
+	x := sentAmount
+	swapResult, err := calcSwapResult(pool.ExternalAsset.Symbol, toRowan, X, x, Y)
+	if err != nil {
+		return sdk.Uint{}
+	}
+	if swapResult.GTE(Y) {
+		return sdk.ZeroUint()
+	}
+	return swapResult
+}
+
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
