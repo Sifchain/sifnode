@@ -196,7 +196,6 @@ export class EthereumService implements IWalletService {
       balances = await Promise.all([
         getEtheriumBalance(web3, addr),
         ...supportedTokens
-          .slice(0, 10)
           .filter((t) => t.symbol !== "eth")
           .map((token: Asset) => {
             if (isToken(token)) return getTokenBalance(web3, addr, token);
