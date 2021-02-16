@@ -21,7 +21,7 @@
         return x.replace(/\B(?=(?=\d*\.)(\d{3})+(?!\d))/g, ",");
       }
 
-      const symbol = computed(() => props.pool?.symbol ? "c" + props.pool?.symbol : "");
+      const symbol = computed(() => props.pool?.symbol ?? "");
       const asset = useAssetItem(symbol);
       const token = asset.token;
       const image = computed(() => {
