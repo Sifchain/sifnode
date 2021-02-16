@@ -239,16 +239,6 @@
       "transferLimit": "460405156537753272320"
     },
     {
-      "address": "0xc944e90c64b2c07662a292be6244bdf05cda44a7",
-      "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/11022/thumb/golden_ratio_token.png?1592811112",
-      "name": "Golden Ratio Token",
-      "network": "ethereum",
-      "priceUsd": 2.34,
-      "symbol": "GRT",
-      "transferLimit": "2136752136752136716288"
-    },
-    {
       "address": "0xba100000625a3754423978a60c9317c58a424e3d",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/11683/thumb/Balancer.png?1592792958",
