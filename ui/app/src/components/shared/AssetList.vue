@@ -34,7 +34,7 @@ export default defineComponent({
   background: white;
   padding: 10px;
   min-height: 300px;
-  max-height: 425px;
+  max-height: 300px;
   overflow-y: auto;
 }
 
