@@ -145,32 +145,29 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 
 func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
-	// refactor this to use ValidInputs
 	normalizationFactor := sdk.NewDec(1)
-	factor, ok := types.GetNormalizationMap()[symbol[1:]]
+	nf, ok := types.GetNormalizationMap()[symbol[1:]]
+	adjustExternalToken := true
 	if ok {
-		diffFactor := 18 - factor
-		adjustNativeToken := false
+		diffFactor := 18 - nf
 		if diffFactor < 0 {
-			adjustNativeToken = true
+		    diffFactor = nf - 18
+			adjustExternalToken = false
 		}
-
-		if !adjustNativeToken {
-			normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
-		} else {
-			// Handle Adjusted token .
-		}
+		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
 	}
-	// E6 - > E18
-	aM := externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt())) // Convert token which are not E18 to E18 format
-	AM := externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
+
+	if adjustExternalToken {
+	    aM := externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt())) // Convert token which are not E18 to E18 format
+	    AM := externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
+	} else {
+	    nativeAssetAmount = nativeAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
+	    nativeAssetBalance = nativeAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
+	}
 
 	inputs := []sdk.Uint{oldPoolUnits, nativeAssetBalance, AM,
 		nativeAssetAmount, aM}
 
-	//if !ValidateInputs(inputs) {
-	//	return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
-	//}
 	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
 	}
@@ -255,18 +252,33 @@ func calcSwapResult(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, er
 	if !ValidateZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint(), nil
 	}
-	nfUint := sdk.NewDec(1)
+	normalizationFactor := sdk.NewDec(1)
 	nf, ok := types.GetNormalizationMap()[symbol[1:]]
-	if ok {
-		diffFactor := 18 - nf
-		nfUint = sdk.NewDec(10).Power(uint64(diffFactor))
-	}
-	if toRowan {
-		X = X.Mul(sdk.NewUintFromBigInt(nfUint.RoundInt().BigInt()))
-		x = x.Mul(sdk.NewUintFromBigInt(nfUint.RoundInt().BigInt()))
-	} else {
-		Y = Y.Mul(sdk.NewUintFromBigInt(nfUint.RoundInt().BigInt()))
-	}
+   	adjustExternalToken := true
+    if ok {
+        diffFactor := 18 - nf
+        if diffFactor < 0 {
+            diffFactor = nf - 18
+            adjustExternalToken = false
+        }
+        normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
+    }
+
+    if adjustExternalToken {
+    	if toRowan {
+    		X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+    		x = x.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+    	} else {
+    		Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+    	}
+    } else {
+        if toRowan {
+            X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+            x = x.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+        } else {
+            Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+        }
+    }
 	minLen := GetMinLen([]sdk.Uint{X, x, Y})
 	Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
 	xd := ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
