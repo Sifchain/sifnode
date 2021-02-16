@@ -23,6 +23,8 @@ describe("addLiquidityCalculator", () => {
   const tokenASymbol: Ref<string | null> = ref(null);
   const tokenBAmount: Ref<string> = ref("0");
   const tokenBSymbol: Ref<string | null> = ref(null);
+  const asyncPooling: Ref<boolean> = ref(false);
+  const lastFocusedTokenField: Ref<'A' | 'B' | null> = ref(null);
   const balances = ref([]) as Ref<IAssetAmount[]>;
   const selectedField: Ref<"from" | "to" | null> = ref("from");
   const poolFinder = jest.fn<Ref<Pool> | null, any>(() => null);
@@ -58,6 +60,8 @@ describe("addLiquidityCalculator", () => {
       tokenBAmount,
       tokenASymbol,
       tokenBSymbol,
+      asyncPooling,
+      lastFocusedTokenField,
       poolFinder,
       liquidityProvider,
     }));
