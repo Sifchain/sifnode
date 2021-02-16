@@ -249,4 +249,12 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     {
         return string(abi.encodePacked(_prefix, _suffix));
     }
+
+    /*
+     * @dev: setProphecyThreshold
+     *       Issues a request for the Oracle to update threshold
+     */
+    function updateProphecyThreshold(uint256 _consensusThreshold) public onlyOperator {
+        setProphecyThreshold(_consensusThreshold);
+    }
 }

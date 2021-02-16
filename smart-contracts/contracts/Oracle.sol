@@ -44,14 +44,8 @@ contract Oracle is OracleStorage, Valset {
         uint256[] memory _initPowers
     ) internal {
         require(!_initialized, "Initialized");
-        require(
-            _consensusThreshold > 0,
-            "Consensus threshold must be positive."
-        );
-        require(
-            _consensusThreshold <= 100,
-            "Invalid consensus threshold."
-        );
+
+        setProphecyThreshold(_consensusThreshold);
         operator = _operator;
         consensusThreshold = _consensusThreshold;
         _initialized = true;
@@ -119,5 +113,25 @@ contract Oracle is OracleStorage, Valset {
             prophecyPowerCurrent,
             prophecyPowerThreshold
         );
+    }
+
+    /*
+     * @dev: setProphecyThreshold
+     *       set the prophecy threshold value
+     */
+    function setProphecyThreshold(uint256 _consensusThreshold)
+        internal
+    {
+        require(
+            _consensusThreshold > 0,
+            "Consensus threshold must be positive."
+        );
+        require(
+            _consensusThreshold <= 100,
+            "Invalid consensus threshold."
+        );
+
+        consensusThreshold = _consensusThreshold;
+
     }
 }

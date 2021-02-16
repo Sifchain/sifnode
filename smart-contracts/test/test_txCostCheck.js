@@ -169,7 +169,64 @@ contract("Gas Cost Test", function (accounts) {
 
       // Bridge claim should be completed
       status['0'].should.be.equal(true);
-      console.log(`~~~~~~~~~~~~\nTotal: ${sum}`);
+      console.log(`~~~~~~~~~~~~\nTotal of 3 validators: ${sum}`);
+
+      // Update threshold
+      sum = 0;
+      const newConsensusThreshold = 50;
+      this.cosmosSenderSequence = 11;
+      await this.cosmosBridge.updateProphecyThreshold( 
+        newConsensusThreshold, {
+        from: operator
+      }).should.be.fulfilled;
+
+      const value = await this.cosmosBridge.consensusThreshold();
+      assert.equal(value, newConsensusThreshold);
+        
+      // console.log("Params: ", CLAIM_TYPE_LOCK, this.cosmosSender, this.cosmosSenderSequence, this.ethereumReceiver, this.symbol, this.amount)
+        // Create the prophecy claim
+      receipt, logs = await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_BURN,
+        this.cosmosSender,
+        this.cosmosSenderSequence,
+        this.ethereumReceiver,
+        this.symbol.toLowerCase(),
+        this.amount,
+        {
+          from: userOne,
+          gasPrice: "1"
+        }
+      );
+      sum += receipt.gasUsed
+
+      console.log("\ntx: ", receipt.gasUsed)
+
+      tx = await this.cosmosBridge.newProphecyClaim(
+        CLAIM_TYPE_BURN,
+        this.cosmosSender,
+        this.cosmosSenderSequence,
+        this.ethereumReceiver,
+        this.symbol.toLowerCase(),
+        this.amount,
+        {
+          from: userTwo,
+          gasPrice: "1"
+        }
+      );
+
+      console.log("tx2: ", tx.receipt.gasUsed);
+      sum += tx.receipt.gasUsed
+      
+      status = await this.cosmosBridge.getProphecyThreshold(
+        prophecyClaimCount,
+        {
+          from: accounts[7]
+        }
+      );
+
+      // Bridge claim should be completed
+      status['0'].should.be.equal(true);
+      console.log(`~~~~~~~~~~~~\nTotal of 2 validators: ${sum}`);
 
     });
 
@@ -343,7 +400,64 @@ contract("Gas Cost Test", function (accounts) {
 
     // Bridge claim should be completed
     status['0'].should.be.equal(true);
-    console.log(`~~~~~~~~~~~~\nTotal: ${sum}`);
+    console.log(`~~~~~~~~~~~~\nTotal of 3 validators: ${sum}`);
+
+    // Update threshold
+    sum = 0;
+    const newConsensusThreshold = 50;
+    this.cosmosSenderSequence = 11;
+    await this.cosmosBridge.updateProphecyThreshold( 
+      newConsensusThreshold, {
+      from: operator
+    }).should.be.fulfilled;
+
+    const value = await this.cosmosBridge.consensusThreshold();
+    assert.equal(value, newConsensusThreshold);
+      
+    // console.log("Params: ", CLAIM_TYPE_LOCK, this.cosmosSender, this.cosmosSenderSequence, this.ethereumReceiver, this.symbol, this.amount)
+      // Create the prophecy claim
+    receipt, logs = await this.cosmosBridge.newProphecyClaim(
+      CLAIM_TYPE_LOCK,
+      this.cosmosSender,
+      this.cosmosSenderSequence,
+      this.ethereumReceiver,
+      this.symbol.toLowerCase(),
+      this.amount,
+      {
+        from: userOne,
+        gasPrice: "1"
+      }
+    );
+    sum += receipt.gasUsed
+
+    console.log("\ntx: ", receipt.gasUsed)
+
+    tx = await this.cosmosBridge.newProphecyClaim(
+      CLAIM_TYPE_LOCK,
+      this.cosmosSender,
+      this.cosmosSenderSequence,
+      this.ethereumReceiver,
+      this.symbol.toLowerCase(),
+      this.amount,
+      {
+        from: userTwo,
+        gasPrice: "1"
+      }
+    );
+
+    console.log("tx2: ", tx.receipt.gasUsed);
+    sum += tx.receipt.gasUsed
+    
+    status = await this.cosmosBridge.getProphecyThreshold(
+      prophecyClaimCount,
+      {
+        from: accounts[7]
+      }
+    );
+
+    // Bridge claim should be completed
+    status['0'].should.be.equal(true);
+    console.log(`~~~~~~~~~~~~\nTotal of 2 validators: ${sum}`);
 
   });
   });

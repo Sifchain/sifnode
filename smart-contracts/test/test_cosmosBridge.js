@@ -517,4 +517,68 @@ contract("CosmosBridge", function (accounts) {
       (status[0]).should.be.equal(true);
     });
   });
+
+  describe("CosmosBridge update threshold", function() {
+    beforeEach(async function () {
+      await silenceWarnings();
+      // Deploy Valset contract
+      this.initialValidators = [userOne, userTwo, userThree, userFour];
+      this.initialPowers = [30, 30, 20, 20];
+      
+      // Deploy CosmosBridge contract
+      this.cosmosBridge = await deployProxy(CosmosBridge, [
+        operator,
+        consensusThreshold,
+        this.initialValidators,
+        this.initialPowers
+      ],
+        {unsafeAllowCustomTypes: true}
+      );
+      
+      // Deploy BridgeBank contract
+      this.bridgeBank = await deployProxy(BridgeBank, [
+        operator,
+        this.cosmosBridge.address,
+        operator,
+        operator
+      ],
+      {unsafeAllowCustomTypes: true}
+      );
+    });
+
+    it("should allow the operator to set the Bridge Bank", async function () {
+      const newConsensusThreshold = 60;
+
+      await this.cosmosBridge.updateProphecyThreshold( 
+        newConsensusThreshold, {
+        from: operator
+      }).should.be.fulfilled;
+
+      const value = await this.cosmosBridge.consensusThreshold();
+      assert.equal(value, newConsensusThreshold);
+
+      const zeroConsensusThreshold = 0;
+      await expectRevert(this.cosmosBridge.updateProphecyThreshold( 
+        zeroConsensusThreshold, {
+        from: operator
+      }),
+      "Consensus threshold must be positive.")
+
+      const largeConsensusThreshold = 101;
+      await expectRevert(this.cosmosBridge.updateProphecyThreshold( 
+        largeConsensusThreshold, {
+        from: operator
+      }),
+      "Invalid consensus threshold.")
+
+      await expectRevert(this.cosmosBridge.updateProphecyThreshold( 
+        newConsensusThreshold, {
+        from: userOne
+      }),
+      "Must be the operator.")
+    });
+
+
+  });
+
 });
