@@ -2,9 +2,9 @@
   <div class="asset-list">
     <div class="line" v-for="item in items" :key="item.asset.symbol">
       <AssetItem class="token" :symbol="item.asset.symbol" />
-      <div class="amount">{{ item.amount || "0" }}</div>
+      <div class="amount">{{ formatNumber(item.amount) }}</div>
       <div class="action">
-        <slot v-if="!!item.amount" :asset="item"></slot>
+        <slot v-if="Number(item.amount.toFixed()) > 0" :asset="item"></slot>
       </div>
     </div>
   </div>
@@ -13,7 +13,7 @@
 <script lang="ts">
 import { PropType, defineComponent } from "vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
-
+import { formatNumber } from "@/components/shared/utils.ts"
 import { Asset } from "ui-core";
 import { computed } from "@vue/reactivity";
 export default defineComponent({
@@ -23,6 +23,9 @@ export default defineComponent({
   props: {
     items: { type: Array as PropType<{ amount: string; asset: Asset }[]> },
   },
+  methods: {
+    formatNumber
+  }
 });
 </script>
 
@@ -31,7 +34,7 @@ export default defineComponent({
   background: white;
   padding: 10px;
   min-height: 300px;
-  max-height: 425px;
+  max-height: 300px;
   overflow-y: auto;
 }
 

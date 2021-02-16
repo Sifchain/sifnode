@@ -15,6 +15,7 @@ export enum SwapState {
   ZERO_AMOUNTS,
   INSUFFICIENT_FUNDS,
   VALID_INPUT,
+  INVALID_AMOUNT,
   INSUFFICIENT_LIQUIDITY,
 }
 
@@ -192,6 +193,7 @@ export function useSwapCalculator(input: {
 
   // Derive state
   const state = computed(() => {
+    // SwapState.INSUFFICIENT_LIQUIDITY is probably better here
     if (!pool.value) return SwapState.SELECT_TOKENS;
     const fromTokenLiquidity = (pool.value as IPool).amounts.find(
       amount => amount.asset.symbol === fromField.asset.value?.symbol
@@ -211,6 +213,10 @@ export function useSwapCalculator(input: {
       return SwapState.ZERO_AMOUNTS;
     }
 
+    if  (toField.fieldAmount.value.greaterThan("0") && fromField.fieldAmount.value.equalTo("0")) {
+      return SwapState.INVALID_AMOUNT;
+    }
+    
     if (!balance.value?.greaterThanOrEqual(fromField.fieldAmount.value || "0"))
       return SwapState.INSUFFICIENT_FUNDS;
 

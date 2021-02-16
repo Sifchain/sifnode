@@ -27,6 +27,7 @@ export default defineComponent({
     inputDisabled: { type: Boolean, default: false },
     selectable: { type: Boolean, default: true },
     max: { type: Boolean, default: false },
+    isMaxActive: { type: Boolean, default: false },
     symbolFixed: { type: Boolean, default: false },
     toggleLabel: { type: String, default: null },
     asyncPooling: { type: Boolean, default: null },
@@ -92,7 +93,7 @@ export default defineComponent({
           @click="$event.target.select()"
           ><template v-slot:end
             ><SifButton
-              v-if="max"
+              v-if="max && !isMaxActive"
               @click="$emit('maxclicked')"
               small
               ghost
@@ -102,7 +103,6 @@ export default defineComponent({
           ></SifInput
         >
       </RaisedPanelColumn>
-
       <RaisedPanelColumn class="right">
         <Label>
           <BalanceField :symbol="localSymbol" />

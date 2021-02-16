@@ -49,6 +49,21 @@ export default defineComponent({
 
     const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
     const toSymbol = ref("rowan");
+    const isFromMaxActive = computed(() => {
+        const accountBalance = balances.value.find(
+          (balance) => balance.asset.symbol === fromSymbol.value
+        );
+        if (!accountBalance) return;
+        return fromAmount.value === accountBalance.toFixed();
+    })
+
+    const isToMaxActive = computed(() => {
+      const accountBalance = balances.value.find(
+          (balance) => balance.asset.symbol === toSymbol.value
+        );
+        if (!accountBalance) return;
+        return toAmount.value === accountBalance.toFixed();
+    })
 
     fromSymbol.value = route.params.externalAsset
       ? route.params.externalAsset.toString()
@@ -141,10 +156,10 @@ export default defineComponent({
     return {
       fromAmount,
       fromSymbol,
-
       toAmount,
       toSymbol,
-
+      isToMaxActive,
+      isFromMaxActive,
       connected,
       aPerBRatioMessage,
       bPerARatioMessage,
@@ -220,7 +235,7 @@ export default defineComponent({
           (balance) => balance.asset.symbol === fromSymbol.value
         );
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.toFixed(8);
+        fromAmount.value = accountBalance.toFixed();
       },
       handleToMaxClicked() {
         selectedField.value = "to";
@@ -228,7 +243,7 @@ export default defineComponent({
           (balance) => balance.asset.symbol === toSymbol.value
         );
         if (!accountBalance) return;
-        toAmount.value = accountBalance.toFixed(8);
+        toAmount.value = accountBalance.toFixed();
       },
       shareOfPoolPercent,
       connectedText,
@@ -254,12 +269,14 @@ export default defineComponent({
           :fromSymbolSelectable="connected"
           :fromMax="true"
           @frommaxclicked="handleFromMaxClicked"
+          :isFromMaxActive="isFromMaxActive"
           v-model:toAmount="toAmount"
           v-model:toSymbol="toSymbol"
           @tofocus="handleTokenBFocused"
           @toblur="handleBlur"
           :toMax="true"
           @tomaxclicked="handleToMaxClicked"
+          :isToMaxActive="isToMaxActive"
           toSymbolFixed
           canSwapIcon="plus"
           toggleLabel="Pool Equally"

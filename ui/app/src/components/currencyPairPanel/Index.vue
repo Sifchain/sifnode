@@ -6,7 +6,8 @@
     <CurrencyField
       :label="tokenALabel"
       tabindex="1"
-      :max="fromMax"
+      :max="fromMax && !isFromMaxActive"
+      :isMaxActive="isFromMaxActive"
       @focus="handleFromFocused"
       @blur="handleFromBlur"
       :amount="fromAmount"
@@ -31,7 +32,8 @@
     <CurrencyField
       :label="tokenBLabel"
       tabindex="2"
-      :max="toMax"
+      :max="toMax && !isToMaxActive"
+      :isMaxActive="isToMaxActive"
       @focus="handleToFocused"
       @blur="handleToBlur"
       :amount="toAmount"
@@ -79,6 +81,8 @@ export default defineComponent({
     toggleLabel: { type: String, default: null },
     asyncPooling: { type: Boolean, default: null },
     toggleAsyncPooling: { type: Function }
+    isFromMaxActive: { type: Boolean, default: false },
+    isToMaxActive: { type: Boolean, default: false },
   },
   emits: [
     "fromfocus",

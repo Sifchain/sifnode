@@ -77,6 +77,9 @@ type (
 	}
 )
 
+//   wallet  < - > abci <-mempool-> tendermint
+//   storage > tx
+//   /tx hash= []
 func createPooHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req CreatePoolReq

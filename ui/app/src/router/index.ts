@@ -99,6 +99,8 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  const win = window as any
+  if (!win.gtag) { return next() }
   // Taken from https://www.digitalocean.com/community/tutorials/vuejs-vue-router-modify-head
   // This goes through the matched routes from last to first, finding the closest route with a title.
   // e.g., if we have `/some/deep/nested/route` and `/some`, `/deep`, and `/nested` have titles,

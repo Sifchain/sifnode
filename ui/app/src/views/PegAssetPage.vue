@@ -73,11 +73,27 @@ export default defineComponent({
       mode.value === "peg" ? store.wallet.sif.address : store.wallet.eth.address
     );
 
+    const isMaxActive = computed(() => {
+      return amount.value === accountBalance.value?.toFixed();
+    });
+
     async function handlePegRequested() {
+      const asset = Asset.get(symbol.value);
+      if (asset.symbol !== "eth") {
+        // if not eth you need to approve spend before peg
+        transactionState.value = "approving";
+        try {
+          await actions.peg.approve(
+            store.wallet.eth.address,
+            AssetAmount(asset, amount.value)
+          );
+        } catch (err) {
+          return (transactionState.value = "rejected");
+        }
+      }
+
       transactionState.value = "signing";
-      const tx = await actions.peg.peg(
-        AssetAmount(Asset.get(symbol.value), amount.value)
-      );
+      const tx = await actions.peg.peg(AssetAmount(asset, amount.value));
 
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
@@ -110,7 +126,7 @@ export default defineComponent({
 
     const nextStepAllowed = computed(() => {
       const amountNum = new BigNumber(amount.value);
-      const balance = accountBalance.value?.toFixed(18) ?? "0.0";
+      const balance = accountBalance.value?.toFixed() ?? "0.0";
       return (
         amountNum.isGreaterThan("0.0") &&
         address.value !== "" &&
@@ -126,7 +142,9 @@ export default defineComponent({
         transactionState.value = "selecting";
       }
     }
-
+    const feeAmount = computed(() => {
+      return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
+    });
     const pageState = {
       mode,
       modeLabel: computed(() => capitalize(mode.value)),
@@ -134,17 +152,19 @@ export default defineComponent({
       symbolLabel: useAssetItem(symbol).label,
       amount,
       address,
-      feeAmount: computed(() => {
-        return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
-      }),
+      feeAmount,
       handleBlur: () => {
+        if (isMaxActive.value === true) return;
         amount.value = trimZeros(amount.value);
       },
       handleSelectSymbol: () => {},
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
-
-        amount.value = accountBalance.value.toFixed();
+        let realMaxAmount = Number(accountBalance.value.toFixed());
+        if (symbol.value === "ceth") {
+          realMaxAmount = realMaxAmount - Number(feeAmount.value.toFixed());
+        }
+        amount.value = realMaxAmount.toString();
       },
       handleAmountUpdated: (newAmount: string) => {
         amount.value = newAmount;
@@ -161,6 +181,7 @@ export default defineComponent({
       transactionStateMsg,
       transactionHash,
       nextStepAllowed,
+      isMaxActive,
       nextStepMessage: computed(() => {
         return mode.value === "peg" ? "Peg" : "Unpeg";
       }),
@@ -177,6 +198,7 @@ export default defineComponent({
       <CurrencyField
         :amount="amount"
         :max="true"
+        :isMaxActive="isMaxActive"
         :selectable="true"
         :symbol="symbol"
         :symbolFixed="true"
@@ -193,6 +215,7 @@ export default defineComponent({
         <RaisedPanelColumn v-if="mode === 'unpeg'">
           <Label>Ethereum Recipient Address</Label>
           <SifInput
+            disabled
             v-model="address"
             placeholder="Eg. 0xeaf65652e380528fffbb9fc276dd8ef608931e3c"
           />
@@ -247,8 +270,13 @@ export default defineComponent({
         />
         <br />
         <p class="text--normal">
-          *Please note your funds will be available for use on Sifchain only after 50 Ethereum block confirmations. This can take upwards of 20 minutes.
+          *Please note your funds will be available for use on Sifchain only
+          after 50 Ethereum block confirmations. This can take upwards of 20
+          minutes.
         </p>
+      </template>
+      <template v-slot:approving>
+        <p>Approving</p>
       </template>
       <template v-slot:common>
         <p class="text--normal">
