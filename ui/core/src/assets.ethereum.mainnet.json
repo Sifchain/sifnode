@@ -19,13 +19,13 @@
       "transferLimit": "5004238590"
     },
     {
-      "address": "",
+      "address": "0x0000000000000000000000000000000000000000",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
       "name": "Ethereum",
       "network": "ethereum",
       "priceUsd": 1145,
-      "symbol": "ETH",
+      "symbol": "eth",
       "transferLimit": "4381237787299667968"
     },
     {
@@ -237,16 +237,6 @@
       "priceUsd": 10.86,
       "symbol": "UMA",
       "transferLimit": "460405156537753272320"
-    },
-    {
-      "address": "0xc944e90c64b2c07662a292be6244bdf05cda44a7",
-      "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/11022/thumb/golden_ratio_token.png?1592811112",
-      "name": "Golden Ratio Token",
-      "network": "ethereum",
-      "priceUsd": 2.34,
-      "symbol": "GRT",
-      "transferLimit": "2136752136752136716288"
     },
     {
       "address": "0xba100000625a3754423978a60c9317c58a424e3d",

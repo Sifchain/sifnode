@@ -30,8 +30,7 @@ export function Pool(
     contains: pair.contains,
     toString: pair.toString,
     getAmount: pair.getAmount,
-    poolUnits:
-      poolUnits ||
+    poolUnits: poolUnits ||
       calculatePoolUnits(
         a,
         b,
