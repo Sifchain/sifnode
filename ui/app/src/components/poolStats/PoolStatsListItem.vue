@@ -128,14 +128,14 @@
 
     .col-md {
       min-width: 160px;
-      width: 27%;
+      width: 20%;
       font-size: $fs_md;
       color: $c_text;
     }
 
     .col-sm {
       min-width: 100px;
-      width: 19%;
+      width: 15%;
       display: flex;
       justify-content: start;
     }

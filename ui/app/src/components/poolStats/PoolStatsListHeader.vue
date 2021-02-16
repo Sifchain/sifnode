@@ -13,7 +13,7 @@
     </div>
     <div class="col-sm">
       <span>Volume</span>
-      <span>(24H)</span>
+      <span>(24h)</span>
     </div>
     <div class="col-lg">
       <span>Liquidity Mining Bonus</span>
