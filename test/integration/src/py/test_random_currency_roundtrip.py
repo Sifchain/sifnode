@@ -73,7 +73,7 @@ def test_transfer_tokens_with_some_currency(
         ethereum_network,
     )
 
-@pytest.mark.skip(reason="ethereum nonce set by relayer now")
+
 def test_three_letter_currency_with_capitals_in_name(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
