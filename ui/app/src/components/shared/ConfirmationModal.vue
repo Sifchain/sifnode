@@ -71,6 +71,7 @@ export default defineComponent({
   setup(props) {
     const isOpen = computed(() => {
       return [
+        "approving",
         "confirming",
         "signing",
         "failed",
