@@ -36,13 +36,13 @@
 
       const priceToken = formatNumberString(parseFloat(props.pool?.priceToken).toFixed(6));
       const poolDepth = formatNumberString(parseFloat(props.pool?.poolDepth).toFixed(2));
-      const volume24h = formatNumberString(parseFloat(props.pool?.volume24h).toFixed(6));
+      const volume = formatNumberString(parseFloat(props.pool?.volume).toFixed(6));
 
       return {
         symbol,
         priceToken,
         poolDepth,
-        volume24h,
+        volume,
         image,
       };
     },
@@ -56,7 +56,7 @@
         <img v-if="image" width="22" height="22" :src="image" class="image" />
         <div class="placeholder" v-else></div>
         <div class="icon">
-          <span>{{ symbol.replace("c", "") }}</span>
+          <span>{{ symbol.toString().substring(1) }}</span>
         </div>
       </div>
       <div class="col-md">
@@ -66,7 +66,7 @@
         <span>{{ poolDepth }}</span>
       </div>
       <div class="col-md">
-        <span>{{ volume24h }}</span>
+        <span>{{ volume }}</span>
       </div>
       <div class="col-lg">
         <span>{{ liqAPY }}</span>
