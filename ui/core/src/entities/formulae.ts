@@ -185,11 +185,12 @@ export function calculateSwapResult(X: IFraction, x: IFraction, Y: IFraction) {
   if (!verifyInputs([X, x, Y])) {
     return new Fraction("0");
   }
+  const xPlusX = x.add(X);
 
   return x
     .multiply(X)
     .multiply(Y)
-    .divide(x.add(X).multiply(x.add(X)));
+    .divide(xPlusX.multiply(xPlusX));
 }
 
 export function calculateExternalExternalSwapResult(

@@ -46,7 +46,7 @@ const tests = [
     },
     expected: {
       withdrawExternalAssetAmount: "0",
-      withdrawNativeAssetAmount: "181000",
+      withdrawNativeAssetAmount: "1810000000",
     },
   },
   {
@@ -75,8 +75,8 @@ const tests = [
       nativeAssetBalance: "10000000000",
     },
     expected: {
-      withdrawExternalAssetAmount: "14487500000",
-      withdrawNativeAssetAmount: "5000000000",
+      withdrawExternalAssetAmount: "10000000000",
+      withdrawNativeAssetAmount: "500000000",
     },
   },
   {
@@ -165,7 +165,7 @@ const tests = [
       nativeAssetBalance: "5000000000",
     },
     expected: {
-      withdrawExternalAssetAmount: "14487534626",
+      withdrawExternalAssetAmount: "1000000000",
       withdrawNativeAssetAmount: "250000000",
     },
   },

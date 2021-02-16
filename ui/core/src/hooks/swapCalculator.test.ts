@@ -78,13 +78,13 @@ describe("swapCalculator", () => {
 
     fromAmount.value = "100000000000000";
 
-    expect(toAmount.value).toBe("49999999990000"); // 1 ATK ~= 0.5 BTK
+    expect(toAmount.value).toBe("49999999990000.0"); // 1 ATK ~= 0.5 BTK
     expect(state.value).toBe(SwapState.VALID_INPUT);
-    expect(minimumReceived.value?.toString()).toBe("49749999990050 BTK");
+    expect(minimumReceived.value?.toFixed(0)).toBe("49749999990050");
 
     selectedField.value = null; // deselect
 
-    expect(fromAmount.value).toBe("100000000000000");
+    expect(fromAmount.value).toBe("100000000000000.0");
 
     // Check background update
     pool1.value = Pool(
@@ -96,7 +96,7 @@ describe("swapCalculator", () => {
     fromAmount.value = "1000000000000000";
     selectedField.value = null;
 
-    expect(toAmount.value).toBe("999999996000000");
+    expect(toAmount.value).toBe("999999996000000.0");
 
     pool1.value = Pool(
       AssetAmount(ATK, "2000000000000000000000000"),
@@ -111,20 +111,20 @@ describe("swapCalculator", () => {
     selectedField.value = "to"; // select to field
 
     toAmount.value = "50000000000000"; // set to amount to 100
-    expect(fromAmount.value).toBe("100000000040000");
+    expect(fromAmount.value).toBe("100000000020000.0");
     expect(toAmount.value).toBe("50000000000000");
 
     selectedField.value = null; // deselect
     selectedField.value = "from"; // select from field
-    expect(toAmount.value).toBe("50000000000000");
+    expect(toAmount.value).toBe("50000000000000.0");
 
     fromAmount.value = "10000000000000000";
 
     expect(state.value).toBe(SwapState.INSUFFICIENT_FUNDS);
-    expect(toAmount.value).toBe("49999999000000000");
-    expect(priceMessage.value).toBe("0500000000000 BTK per ATK");
-    expect(priceImpact.value).toBe("1000000");
-    expect(providerFee.value).toBe("50000000");
+    expect(toAmount.value).toBe("4999999900000002.0");
+    expect(priceMessage.value).toBe("0.500000 BTK per ATK");
+    expect(priceImpact.value).toBe("0.000001");
+    expect(providerFee.value).toBe("24999999.2500000149");
   });
 
   test("Avoid division by zero", () => {
