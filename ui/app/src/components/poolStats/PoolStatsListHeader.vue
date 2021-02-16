@@ -12,7 +12,7 @@
       <span>(USD)</span>
     </div>
     <div class="col-sm">
-      <span>Volume</span>
+      <span>Trade Volume</span>
       <span>(24h)</span>
     </div>
     <div class="col-lg">
