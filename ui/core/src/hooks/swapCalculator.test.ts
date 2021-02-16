@@ -122,9 +122,9 @@ describe("swapCalculator", () => {
 
     expect(state.value).toBe(SwapState.INSUFFICIENT_FUNDS);
     expect(toAmount.value).toBe("4999999900000002.0");
-    expect(priceMessage.value).toBe("500000000000 BTK per ATK");
-    expect(priceImpact.value).toBe("1000000");
-    expect(providerFee.value).toBe("50000000");
+    expect(priceMessage.value).toBe("0.500000 BTK per ATK");
+    expect(priceImpact.value).toBe("0.000001");
+    expect(providerFee.value).toBe("24999999.2500000149");
   });
 
   test("Avoid division by zero", () => {
