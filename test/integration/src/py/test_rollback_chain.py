@@ -14,7 +14,7 @@ from test_utilities import wait_for_sifchain_addr_balance, \
 test_integration_dir = get_required_env_var("TEST_INTEGRATION_DIR")
 
 
-def test_rollback_chain(source_ethereum_address):
+def test_rollback_chain(source_ethereum_address, solidity_json_path):
     new_account_key = get_shell_output("uuidgen")
     credentials = sifchain_cli_credentials_for_test(new_account_key)
     new_account = burn_lock_functions.create_new_sifaddr(credentials=credentials, keyname=new_account_key)
@@ -30,7 +30,8 @@ def test_rollback_chain(source_ethereum_address):
         ethereum_private_key_env_var="ETHEREUM_PRIVATE_KEY",
         bridgebank_address=get_required_env_var("BRIDGE_BANK_ADDRESS"),
         ethereum_network=(os.environ.get("ETHEREUM_NETWORK") or ""),
-        amount=amount
+        amount=amount,
+        solidity_json_path=solidity_json_path
     )
 
     logging.info(f"create account with a balance of {request.amount}")
