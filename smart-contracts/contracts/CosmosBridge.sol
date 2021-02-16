@@ -251,7 +251,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     }
 
     /*
-     * @dev: setProphecyThreshold
+     * @dev: updateProphecyThreshold
      *       Issues a request for the Oracle to update threshold
      */
     function updateProphecyThreshold(uint256 _consensusThreshold) public onlyOperator {
