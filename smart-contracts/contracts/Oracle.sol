@@ -47,7 +47,6 @@ contract Oracle is OracleStorage, Valset {
 
         setProphecyThreshold(_consensusThreshold);
         operator = _operator;
-        consensusThreshold = _consensusThreshold;
         _initialized = true;
 
         Valset._initialize(_operator, _initValidators, _initPowers);
