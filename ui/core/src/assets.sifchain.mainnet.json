@@ -170,13 +170,6 @@
     },
     {
       "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/11022/thumb/golden_ratio_token.png?1592811112",
-      "name": "Golden Ratio Token",
-      "network": "sifchain",
-      "symbol": "cgrt"
-    },
-    {
-      "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/11683/thumb/Balancer.png?1592792958",
       "name": "Balancer",
       "network": "sifchain",
