@@ -80,7 +80,7 @@ export default defineComponent({
     toSymbolSelectable: { type: Boolean, default: true },
     toggleLabel: { type: String, default: null },
     asyncPooling: { type: Boolean, default: null },
-    toggleAsyncPooling: { type: Function }
+    toggleAsyncPooling: { type: Function },
     isFromMaxActive: { type: Boolean, default: false },
     isToMaxActive: { type: Boolean, default: false },
   },
