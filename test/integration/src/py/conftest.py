@@ -50,6 +50,11 @@ def sifnodecli_node():
 
 
 @pytest.fixture
+def basedir():
+    return test_utilities.get_required_env_var("BASEDIR")
+
+
+@pytest.fixture
 def ceth_fee():
     return max(test_utilities.burn_gas_cost, test_utilities.lock_gas_cost)
 
@@ -101,6 +106,13 @@ def ganache_timed_blocks(integration_dir):
     yield test_utilities.get_shell_output(f"{integration_dir}/ganache_start.sh 2")
     logging.info("restart ganache with instant mining (keeps existing database)")
     test_utilities.get_shell_output(f"{integration_dir}/ganache_start.sh")
+
+
+@pytest.fixture(scope="function")
+def no_whitelisted_validators(integration_dir):
+    """restart sifchain with no whitelisted validators, execute test, then restart with validators"""
+    yield test_utilities.get_shell_output(f"ADD_VALIDATOR_TO_WHITELIST= bash {integration_dir}/setup_sifchain.sh")
+    test_utilities.get_shell_output(f". {integration_dir}/vagrantenv.sh; ADD_VALIDATOR_TO_WHITELIST=true bash {integration_dir}/setup_sifchain.sh")
 
 
 @pytest.fixture(scope="function")
