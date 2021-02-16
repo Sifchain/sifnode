@@ -19,53 +19,64 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="pool-list">
-    <PoolStatsListHeader />
-    <PoolStatsListItem
-      v-if="poolData && poolData.pools && poolData.liqAPY && poolData.pools[0]"
-      v-for="(pool, index) in poolData.pools"
-      :key="index"
-      :pool="pool"
-      :liqAPY="poolData.liqAPY"
-    />
-    <div v-else class="loading">
-      <div class="ring"></div>
+  <div
+    v-if="poolData && poolData.pools && poolData.liqAPY && poolData.pools[0]"
+  >
+    <PoolStatsListHeader class="pool-list-header" />
+    <div class="pool-list">
+      <PoolStatsListItem
+        v-for="(pool, index) in poolData.pools"
+        :key="index"
+        :pool="pool"
+        :liqAPY="poolData.liqAPY"
+      />
     </div>
+  </div>
+  <div v-else class="loading">
+    <div class="logo"></div>
   </div>
 </template>
 
 <style scoped lang="scss">
+.pool-list-header {
+  border-top-left-radius: $br_sm;
+  border-top-right-radius: $br_sm;
+}
+
+.pool-list-container {
+}
+
 .pool-list {
   overflow-y: auto;
   background: $c_white;
-  border-radius: $br_sm;
 }
 
 .loading {
-  height: 240px;
+  margin-top: 160px;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 20px;
 }
 
-.ring {
-  position: absolute;
-  top: 300px;
+.logo {
+  background: url("../../../public/images/siflogo.png");
+  background-size: cover;
   width: 64px;
   height: 64px;
-  border: 4px solid $c_gold;
-  border-radius: 40px;
-  border-top-color: transparent;
-  animation: 1s rotate infinite linear;
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+  transform: scale(1);
+  animation: pulse 1s infinite;
 }
 
-@keyframes rotate {
+@keyframes pulse {
   0% {
-    transform: rotate(0deg);
+    transform: scale(0.85);
+  }
+  70% {
+    transform: scale(1);
   }
   100% {
-    transform: rotate(360deg);
+    transform: scale(0.85);
   }
 }
 </style>

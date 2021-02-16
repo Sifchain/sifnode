@@ -29,36 +29,36 @@
 </template>
 
 <style scoped lang="scss">
-  .header {
-    padding: 12px 12px;
-    background: $c_gray_900;
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
+.header {
+  padding: 12px 12px;
+  background: $c_gray_900;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
 
-    &:hover {
-      cursor: pointer;
-      background: $c_gray_800;
-    }
+  &:hover {
+    cursor: pointer;
+    background: $c_gray_800;
   }
+}
 
-  .col-sm {
-    min-width: 102px;
-    color: $c_gray_400;
-    display: flex;
-    flex-direction: column;
-  }
+.col-sm {
+  min-width: 102px;
+  color: $c_gray_400;
+  display: flex;
+  flex-direction: column;
+}
 
-  .col-md {
-    min-width: 110px;
-    color: $c_gray_400;
-    display: flex;
-    flex-direction: column;
-  }
-  .col-lg {
-    min-width: 168px;
-    color: $c_gray_400;
-    display: flex;
-    flex-direction: column;
-  }
+.col-md {
+  min-width: 110px;
+  color: $c_gray_400;
+  display: flex;
+  flex-direction: column;
+}
+.col-lg {
+  min-width: 168px;
+  color: $c_gray_400;
+  display: flex;
+  flex-direction: column;
+}
 </style>
