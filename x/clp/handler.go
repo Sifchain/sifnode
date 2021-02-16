@@ -1,4 +1,4 @@
-package clp
+¬package clp
 
 import (
 	"fmt"
@@ -283,6 +283,12 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
+
+
+
+
+
+
 func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, error) {
 	var (
 		liquidityFee sdk.Uint
@@ -290,6 +296,9 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	)
 
 	liquidityFee = sdk.ZeroUint()
+	liquidityFeeNative := sdk.ZeroUint()
+	liquidityFeeExternal := sdk.ZeroUint()
+	totalLiquidityFee := sdk.ZeroUint()
 	priceImpact = sdk.ZeroUint()
 	sentAmount := msg.SentAmount
 
@@ -320,6 +329,11 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	// Check if its a two way swap, swapping non native fro non native .
 	// If its one way we can skip this if condition and add balance to users account from outpool
 
+
+
+
+
+
 	if msg.SentAsset != nativeAsset && msg.ReceivedAsset != nativeAsset {
 		emitAmount, lp, ts, finalPool, err := clpkeeper.SwapOne(sentAsset, sentAmount, nativeAsset, inPool)
 		if err != nil {
@@ -333,6 +347,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		sentAsset = nativeAsset
 		liquidityFee = liquidityFee.Add(lp)
 		priceImpact = priceImpact.Add(ts)
+		liquidityFeeNative := liquidityFeeNative.Add(lp)
 	}
 	// If receiving  rowan , add directly to  Native balance  instead of fetching from rowan pool
 	if msg.ReceivedAsset == types.GetSettlementAsset() {
@@ -377,13 +392,23 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 	}
-	liquidityFee = liquidityFee.Add(lp)
+
+	if liquidityFeeNative.GT(sdk.ZeroUint()) {
+		liquidityFeeExternal = liquidityFeeExternal.Add(lp)
+		firstSwapFeeInOutputAsset := calcSwapResult(liquidityFeeNative)
+		totalLiquidityFee = liquidityFeeExternal.Add(firstSwapFeeInOutputAsset)
+	} else {
+		totalLiquidityFee = liquidityFeeNative.Add(lp)
+	}
+
+    liquidityFee = lp.Add(firstSwapFeeInOutputAsset)
+
 	priceImpact = priceImpact.Add(ts)
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeSwap,
 			sdk.NewAttribute(types.AttributeKeySwapAmount, emitAmount.String()),
-			sdk.NewAttribute(types.AttributeKeyLiquidityFee, liquidityFee.String()),
+			sdk.NewAttribute(types.AttributeKeyLiquidityFee, totalLiquidityFee.String()),
 			sdk.NewAttribute(types.AttributeKeyPriceImpact, priceImpact.String()),
 			sdk.NewAttribute(types.AttributeKeyInPool, inPool.String()),
 			sdk.NewAttribute(types.AttributeKeyOutPool, outPool.String()),
