@@ -11,6 +11,7 @@ from test_utilities import get_shell_output, SifchaincliCredentials
 def generate_minimal_test_account(
         base_transfer_request: EthereumToSifchainTransferRequest,
         target_ceth_balance: int = 10 ** 18,
+        timeout=burn_lock_functions.default_timeout_for_ganache
 ) -> (EthereumToSifchainTransferRequest, SifchaincliCredentials):
     """Creates a test account with ceth and rowan.  The address for the new account is in request.sifchain_address"""
     new_account_key = get_shell_output("uuidgen")
@@ -25,7 +26,7 @@ def generate_minimal_test_account(
     request.sifchain_symbol = "ceth"
     request.ethereum_symbol = "eth"
     logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
-    burn_lock_functions.transfer_ethereum_to_sifchain(request)
+    burn_lock_functions.transfer_ethereum_to_sifchain(request, timeout)
     logging.info(
         f"created sifchain addr {new_sifaddr} with {test_utilities.display_currency_value(target_ceth_balance)} ceth")
     return request, credentials

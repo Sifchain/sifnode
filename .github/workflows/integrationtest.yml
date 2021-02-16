@@ -25,9 +25,3 @@ jobs:
           . test/integration/vagrantenv.sh
           export LOG_LEVEL=DEBUG
           bash test/integration/execute_integration_tests_against_test_chain.sh
-      - name: Execute whitelisted validators integration tests
-        run: |
-          source $HOME/.bash_profile
-          . test/integration/vagrantenv.sh
-          export LOG_LEVEL=DEBUG
-          bash test/integration/execute_integration_tests_whitelisted_validators.sh

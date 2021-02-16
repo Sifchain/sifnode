@@ -57,7 +57,6 @@ def do_currency_test(
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
 
 
-@pytest.mark.skip(reason="investigate failure")
 def test_transfer_tokens_with_some_currency(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
@@ -77,7 +76,7 @@ def test_transfer_tokens_with_some_currency(
         solidity_json_path=solidity_json_path
     )
 
-@pytest.mark.skip(reason="ethereum nonce set by relayer now")
+
 def test_three_letter_currency_with_capitals_in_name(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
