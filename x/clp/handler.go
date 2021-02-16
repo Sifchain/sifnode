@@ -109,7 +109,7 @@ func handleMsgCreatePool(ctx sdk.Context, keeper Keeper, msg MsgCreatePool) (*sd
 
 	nativeBalance := msg.NativeAssetAmount
 	externalBalance := msg.ExternalAssetAmount
-	poolUnits, lpunits, err := clpkeeper.CalculatePoolUnits(sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), nativeBalance, externalBalance)
+	poolUnits, lpunits, err := clpkeeper.CalculatePoolUnits(msg.ExternalAsset.Symbol, sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), nativeBalance, externalBalance)
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
@@ -148,6 +148,7 @@ func handleMsgAddLiquidity(ctx sdk.Context, keeper Keeper, msg MsgAddLiquidity) 
 	}
 
 	newPoolUnits, lpUnits, err := clpkeeper.CalculatePoolUnits(
+		msg.ExternalAsset.Symbol,
 		pool.PoolUnits,
 		pool.NativeAssetBalance,
 		pool.ExternalAssetBalance,

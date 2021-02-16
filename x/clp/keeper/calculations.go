@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/common/math"
+	"math/big"
 )
 
 //------------------------------------------------------------------------------------------------------------------
@@ -15,13 +16,14 @@ func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.P
 
 	var X sdk.Uint
 	var Y sdk.Uint
-
+	toRowan := true
 	if to == types.GetSettlementAsset() {
 		Y = pool.NativeAssetBalance
 		X = pool.ExternalAssetBalance
 	} else {
 		X = pool.NativeAssetBalance
 		Y = pool.ExternalAssetBalance
+		toRowan = false
 	}
 	x := sentAmount
 	liquidityFee, err := calcLiquidityFee(X, x, Y)
@@ -32,7 +34,7 @@ func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.P
 	if err != nil {
 		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
 	}
-	swapResult, err := calcSwapResult(X, x, Y)
+	swapResult, err := calcSwapResult(pool.ExternalAsset.Symbol, toRowan, X, x, Y)
 	if err != nil {
 		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
 	}
@@ -117,14 +119,34 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 // slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
-func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
+func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
 	// refactor this to use ValidInputs
-	inputs := []sdk.Uint{oldPoolUnits, nativeAssetBalance, externalAssetBalance,
-		nativeAssetAmount, externalAssetAmount}
-	if !ValidateInputs(inputs) {
-		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
+	normalizationFactor := sdk.NewDec(1)
+	factor, ok := types.GetNormalizationMap()[symbol[1:]]
+	if ok {
+		diffFactor := 18 - factor
+		adjustNativeToken := false
+		if diffFactor < 0 {
+			adjustNativeToken = true
+		}
+
+		if !adjustNativeToken {
+			normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
+		} else {
+			// Handle Adjusted token .
+		}
 	}
+	// E6 - > E18
+	aM := externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt())) // Convert token which are not E18 to E18 format
+	AM := externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
+
+	inputs := []sdk.Uint{oldPoolUnits, nativeAssetBalance, AM,
+		nativeAssetAmount, aM}
+
+	//if !ValidateInputs(inputs) {
+	//	return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
+	//}
 	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
 	}
@@ -147,7 +169,7 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	if err != nil {
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance.String(), err))
 	}
-	A, err := sdk.NewDecFromStr(externalAssetBalance.String())
+	A, err := sdk.NewDecFromStr(AM.String())
 	if err != nil {
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance.String(), err))
 	}
@@ -155,10 +177,16 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	if err != nil {
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetAmount.String(), err))
 	}
-	a, err := sdk.NewDecFromStr(externalAssetAmount.String())
+	a, err := sdk.NewDecFromStr(aM.String())
 	if err != nil {
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
 	}
+	// E18 - > E1
+	P = ReducePrecision(P, minLen)
+	R = ReducePrecision(R, minLen)
+	A = ReducePrecision(A, minLen)
+	a = ReducePrecision(a, minLen)
+	r = ReducePrecision(r, minLen)
 
 	slipAdjDenominator := (r.MulInt64(2).Add(R)).Mul(a.Add(A))
 	// ABS((R a - r A)/((2 r + R) (a + A)))
@@ -171,18 +199,13 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	// (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 	slipAdjustment = sdk.NewDec(1).Sub(slipAdjustment)
 
-	P = ReducePrecision(P, minLen)
-	R = ReducePrecision(R, minLen)
-	A = ReducePrecision(A, minLen)
-	a = ReducePrecision(a, minLen)
-	r = ReducePrecision(r, minLen)
-
 	// ((P (a R + A r))
 	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
 	// 2AR
 	denominator := sdk.NewDec(2).Mul(A).Mul(R)
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
 	newPoolUnit := P.Add(stakeUnits)
+	//E1 ->E18
 	newPoolUnit = IncreasePrecision(newPoolUnit, minLen)
 	stakeUnits = IncreasePrecision(stakeUnits, minLen)
 
@@ -192,19 +215,6 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 // Add validations for X,x,Y
 //( x^2 * Y ) / ( x + X )^2
 func calcLiquidityFee(X, x, Y sdk.Uint) (sdk.Uint, error) {
-	// if inputs are outside range return error
-
-	//if !ValidateInputs([]sdk.Uint{X, x, Y}) {
-	//	return sdk.ZeroUint(), types.ErrInvalid //error
-	//}
-	////if any input is 0 return 0
-	//if !ValidateZero([]sdk.Uint{X, x, Y}) {
-	//	return sdk.ZeroUint(), nil
-	//}
-	//d := x.Add(X)
-	//denom := d.Mul(d)
-	//return (x.Mul(x).Mul(Y)).Quo(denom), nil
-
 	if !ValidateInputs([]sdk.Uint{x, Y}) {
 		return sdk.ZeroUint(), types.ErrInvalid //error
 	}
@@ -217,18 +227,34 @@ func calcLiquidityFee(X, x, Y sdk.Uint) (sdk.Uint, error) {
 	return n.Quo(de), nil
 
 }
-func calcSwapResult(X, x, Y sdk.Uint) (sdk.Uint, error) {
-	// if inputs are outside range return error
-	if !ValidateInputs([]sdk.Uint{X, x, Y}) {
-		return sdk.ZeroUint(), types.ErrInvalid
-	}
-	//if any input is 0 return 0
+func calcSwapResult(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, error) {
 	if !ValidateZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint(), nil
 	}
-	d := x.Add(X)
+	nfUint := sdk.NewDec(1)
+	nf, ok := types.GetNormalizationMap()[symbol[1:]]
+	if ok {
+		diffFactor := 18 - nf
+		nfUint = sdk.NewDec(10).Power(uint64(diffFactor))
+	}
+	if toRowan {
+		X = X.Mul(sdk.NewUintFromBigInt(nfUint.RoundInt().BigInt()))
+		x = x.Mul(sdk.NewUintFromBigInt(nfUint.RoundInt().BigInt()))
+	} else {
+		Y = Y.Mul(sdk.NewUintFromBigInt(nfUint.RoundInt().BigInt()))
+	}
+	minLen := GetMinLen([]sdk.Uint{X, x, Y})
+	Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
+	xd := ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
+	Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
+	d := xd.Add(Xd)
 	denom := d.Mul(d)
-	return (x.Mul(X).Mul(Y)).Quo(denom), nil
+	y := xd.Mul(Xd).Mul(Yd).Quo(denom)
+	y = IncreasePrecision(y, minLen)
+	if !toRowan {
+		y = y.Quo(nfUint)
+	}
+	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
 }
 
 //( x^2 * Y ) / ( x + X )^2
@@ -277,16 +303,32 @@ func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
 	return dec.Quo(p)
 }
 
+func ReducePrecisionInt(num sdk.Int, po int64) sdk.Int {
+	multiplier := big.NewInt(10).Exp(big.NewInt(10), big.NewInt(po), nil)
+	multiplierInt := sdk.NewIntFromBigInt(multiplier)
+	fmt.Println(num.String(), multiplierInt.String())
+	val := num.Quo(multiplierInt)
+	fmt.Println("val", val)
+	return val
+}
+
+func IncreasePrecisionInt(num sdk.Int, po int64) sdk.Int {
+	multiplier := big.NewInt(10).Exp(big.NewInt(10), big.NewInt(po), nil)
+	multiplierInt := sdk.NewIntFromBigInt(multiplier)
+	return num.Mul(multiplierInt)
+}
 func GetMinLen(inputs []sdk.Uint) int64 {
 	minLen := math.MaxInt64
-	minValue := sdk.NewUintFromString("1000000000")
 	for _, val := range inputs {
 		currentLen := len(val.String())
-		if currentLen < minLen && val.GTE(minValue) {
+		if currentLen < minLen { //&& val.GTE(minValue)
 			minLen = currentLen
 		}
 	}
-	return int64(minLen)
+	if minLen <= 1 {
+		return int64(1)
+	}
+	return int64(minLen - 1)
 }
 
 func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
