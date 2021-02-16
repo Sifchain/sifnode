@@ -1,5 +1,5 @@
 import Big from "big.js";
-import {Fraction, IFraction} from "./fraction/Fraction";
+import { Fraction, IFraction } from "./fraction/Fraction";
 
 function verifyInputs(inputs: IFraction[]) {
   for (let i of inputs) {
@@ -90,17 +90,36 @@ export function calculateWithdrawal({
   wBasisPoints: IFraction;
   asymmetry: IFraction;
 }) {
-  const unitsToClaim = lpUnits.divide(TEN_THOUSAND.divide(wBasisPoints));
+  if (!verifyInputs([poolUnits, nativeAssetBalance, externalAssetBalance, lpUnits])) {
+    return {
+      withdrawNativeAssetAmount: new Fraction("0"),
+      withdrawExternalAssetAmount: new Fraction("0"),
+      lpUnitsLeft: new Fraction("0"),
+      swapAmount: new Fraction("0"),
+    };
+  }
 
-  const poolUnitsOverUnitsToClaim = poolUnits.divide(unitsToClaim);
+  let unitsToClaim = new Fraction("0");
+  if (!wBasisPoints.equalTo("0")) {
+    unitsToClaim = lpUnits.divide(TEN_THOUSAND.divide(wBasisPoints));
+  }
 
-  const withdrawExternalAssetAmountPreSwap = externalAssetBalance.divide(
-    poolUnitsOverUnitsToClaim
-  );
+  let poolUnitsOverUnitsToClaim = new Fraction("0");
+  if (!unitsToClaim.equalTo("0")) {
+    poolUnitsOverUnitsToClaim = poolUnits.divide(unitsToClaim);
+  }
 
-  const withdrawNativeAssetAmountPreSwap = nativeAssetBalance.divide(
-    poolUnitsOverUnitsToClaim
-  );
+  let withdrawExternalAssetAmountPreSwap = new Fraction("0");
+  let withdrawNativeAssetAmountPreSwap = new Fraction("0");
+  if (!poolUnitsOverUnitsToClaim.equalTo("0")) {
+    withdrawExternalAssetAmountPreSwap = externalAssetBalance.divide(
+      poolUnitsOverUnitsToClaim
+    );
+
+    withdrawNativeAssetAmountPreSwap = nativeAssetBalance.divide(
+      poolUnitsOverUnitsToClaim
+    );
+  }
 
   const lpUnitsLeft = lpUnits.subtract(unitsToClaim);
 
@@ -160,7 +179,13 @@ export function calculateWithdrawal({
  * @returns swapAmount
  */
 export function calculateSwapResult(X: IFraction, x: IFraction, Y: IFraction) {
-  if (x.equalTo("0") || Y.equalTo("0")) return new Fraction("0");
+  if (x.equalTo("0") || X.equalTo("0") ||  Y.equalTo("0")) {
+    return new Fraction("0");
+  }
+  if (!verifyInputs([X, x, Y])) {
+    return new Fraction("0");
+  }
+
   return x
     .multiply(X)
     .multiply(Y)
@@ -186,8 +211,11 @@ export function calculateExternalExternalSwapResult(
 // Ok to accept a little precision loss as reverse swap amount can be rough
 export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
   // Adding a check here because sqrt of a negative number will throw an exception
-  if (S.eq("0") || S.times(4).gt(Y)) {
+  if (S.eq("0") || X.eq("0") || S.times(4).gt(Y)) {
     return Big("0");
+  }
+  if (!verifyInputs([new Fraction(S.toFixed(0)), new Fraction(X.toFixed(0)), new Fraction(Y.toFixed(0))])) {
+    return new Big("0");
   }
   const term1 = Big(-2).times(X).times(S);
   const term2 = X.times(Y);
@@ -207,7 +235,13 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
  * @returns providerFee
  */
 export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
-  if (x.equalTo("0") || Y.equalTo("0")) return new Fraction("0");
+  if (x.equalTo("0") || Y.equalTo("0")) {
+    return new Fraction("0");
+  }
+  if (!verifyInputs([x, X, Y])) {
+    return new Fraction("0");
+  }
+
   const xPlusX = x.add(X);
   return x.multiply(x).multiply(Y).divide(xPlusX.multiply(xPlusX));
 }
@@ -219,7 +253,14 @@ export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
  * @returns
  */
 export function calculatePriceImpact(x: IFraction, X: IFraction) {
-  if (x.equalTo("0")) return new Fraction("0");
+  if (x.equalTo("0")) {
+    return new Fraction("0");
+  }
+
+  if (!verifyInputs([x, X])) {
+    return new Fraction("0");
+  }
+
   const denominator = x.add(X);
   return x.divide(denominator);
 }

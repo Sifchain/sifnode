@@ -12,10 +12,10 @@ tests.SingleSwapLiquidityFee.forEach(({ x, X, Y, expected }: any) => {
   const bigY = B(Y);
   test(`Calc LP fee for swapping ${x}, expecting ${expected}`, () => {
     const output = calculateProviderFee(
-      new Fraction(bigx, JSBI.exponentiate(TEN, JSBI.BigInt(18))), // Swap Amount
-      new Fraction(bigX, JSBI.exponentiate(TEN, JSBI.BigInt(18))), // In Asset Pool Balance
-      new Fraction(bigY, JSBI.exponentiate(TEN, JSBI.BigInt(18))) // Out Asset Pool Balance
+      new Fraction(bigx), // Swap Amount
+      new Fraction(bigX), // In Asset Pool Balance
+      new Fraction(bigY) // Out Asset Pool Balance
     );
-    expect(output.toFixed(18)).toBe(expected);
+    expect(output.divide("1000000000000000000").toFixed(18)).toBe(expected);
   });
 });

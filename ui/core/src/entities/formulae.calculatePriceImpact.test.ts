@@ -11,9 +11,9 @@ SingleSwapStandardSlip.forEach(({ x, X, expected }: any) => {
   const bigX = B(X);
   test.skip(`Calc Price Impact for swapping ${x}, expecting ${expected}`, () => {
     const output = calculatePriceImpact(
-      new Fraction(bigx, JSBI.exponentiate(TEN, JSBI.BigInt(18))), // Swap Amount
-      new Fraction(bigX, JSBI.exponentiate(TEN, JSBI.BigInt(18))) // In Asset Pool Balance
+      new Fraction(bigx), // Swap Amount
+      new Fraction(bigX) // In Asset Pool Balance
     );
-    expect(output.toFixed(18)).toBe(expected);
+    expect(output.divide("1000000000000000000").toFixed(18)).toBe(expected);
   });
 });
