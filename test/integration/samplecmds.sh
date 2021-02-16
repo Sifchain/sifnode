@@ -1,7 +1,6 @@
 # some sample shell commands to transfer eth to ceth
 #
 
-operator_address=0xf17f52151EbEF6C7334FAD080c5704D77216b732
 export ETHEREUM_ADDRESS=$operator_address
 
 args="
