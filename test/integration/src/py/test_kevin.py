@@ -390,7 +390,7 @@ def test_pools(
 
     #"""
     # TODO: compute this precisely?
-    slip_pct = 0.0001
+    slip_pct = 0.01
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
     slip_cost = (slip_pct * current_rowan_balance)
     assert(balance >= current_rowan_balance - slip_cost and balance <= current_rowan_balance + slip_cost )
@@ -420,7 +420,6 @@ def test_pools(
 
     # check for failure if we try to swap too much for user
     txn = swap_pool(basic_transfer_request, "rowan", "ceth", credentials)
-    # error is bogus, look into this
     assert(txn["code"] == 27)
     get_pools(basic_transfer_request.sifnodecli_node)
     current_rowan_balance = current_rowan_balance - sifchain_fees
@@ -428,23 +427,20 @@ def test_pools(
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
 
     # check for failure if we try to swap too much for pool
-    """
     basic_transfer_request.amount = 5 * 10 ** 17
     txn = swap_pool(basic_transfer_request, "rowan", "ceth", credentials)
-    # error is bogus, look into this
-    assert(txn.get("code", 0) == 0)
+    assert(txn["code"] == 31)
     get_pools(basic_transfer_request.sifnodecli_node)
     current_rowan_balance = current_rowan_balance - sifchain_fees
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
-    """
 
     # now try to do a swap that works
     change_amount = 10 ** 15
     basic_transfer_request.amount = change_amount
     txn = swap_pool(basic_transfer_request, "rowan", "ceth", credentials)
     # TODO: compute this precisely?
-    slip_pct = 0.0001
+    slip_pct = 0.01
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
     assert(balance < current_rowan_balance)
     current_rowan_balance = balance
