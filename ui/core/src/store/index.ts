@@ -6,6 +6,9 @@ import { notifications, NotificationsStore } from "./notifications";
 import { LiquidityProvider, Pool } from "../entities";
 export * from "./poolFinder";
 
+// TODO: Add a tx lookup per blockchain so we have access to txs
+// TODO: Consider storing local txs key in local storage as an effect
+
 export type Store = {
   wallet: WalletStore;
   asset: AssetStore;

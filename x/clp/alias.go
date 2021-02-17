@@ -31,6 +31,7 @@ var (
 	ModuleCdc                   = types.ModuleCdc
 	GetSettlementAsset          = types.GetSettlementAsset
 	GetGenesisStateFromAppState = types.GetGenesisStateFromAppState
+	GetNormalizationMap         = types.GetNormalizationMap
 )
 
 type (

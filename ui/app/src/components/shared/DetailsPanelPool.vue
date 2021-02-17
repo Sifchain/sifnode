@@ -1,6 +1,6 @@
 <template>
   <div class="details">
-    
+
     <div class="details-header">
       <div class="details-row">
         <span class="details-row-asset">
@@ -27,13 +27,13 @@
       </div>
     </div>
     <div class="details-body">
-      <div class="details-row" v-if="aPerB">
-        <span>Rates</span>
-        <span>1 {{ fromTokenLabel }} = {{ aPerB }} {{ toTokenLabel }}</span>
-      </div>
       <div class="details-row" v-if="bPerA">
+        <span>Rates</span>
+        <span>1 {{ fromTokenLabel }} = {{ bPerA }} {{ toTokenLabel }}</span>
+      </div>
+      <div class="details-row" v-if="aPerB">
         <span>&nbsp;</span>
-        <span>1 {{ toTokenLabel }} = {{ bPerA }} {{ fromTokenLabel }}</span>
+        <span>1 {{ toTokenLabel }} = {{ aPerB }} {{ fromTokenLabel }}</span>
       </div>
       <div class="details-row">
         <span>Share of Pool:</span>

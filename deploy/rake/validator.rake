@@ -29,7 +29,7 @@ namespace :validator do
   desc "Expose operations"
   namespace :expose do
     desc "Expose the Sifnode validator public key"
-    task :pub_key, [:chainnet, :provider, :namespace] do |t, args|
+    task :pub_key, [:cluster, :provider, :namespace] do |t, args|
       pod_name = pod_name(args)
       if pod_name.nil?
         puts "Please check the supplied moniker; unable to find any pods!"
