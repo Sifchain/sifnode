@@ -236,6 +236,7 @@ func calcLiquidityFee(X, x, Y sdk.Uint) (sdk.Uint, error) {
 	return n.Quo(de), nil
 
 }
+
 func calcSwapResult(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, error) {
 	if !ValidateZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint(), nil
@@ -267,6 +268,7 @@ func calcSwapResult(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, er
             Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
         }
     }
+    // E18
 	minLen := GetMinLen([]sdk.Uint{X, x, Y})
 	Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
 	xd := ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
