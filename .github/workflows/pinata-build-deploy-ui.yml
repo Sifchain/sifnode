@@ -1,10 +1,9 @@
 name: Build then Deploy to Pinata
 # run run on merge
 on: 
-  push
-# Add as a new PR:
-#    paths:
-#      - 'ui/**'
+  push:
+    paths:
+      - 'ui/**'
 
 jobs:
   build:
