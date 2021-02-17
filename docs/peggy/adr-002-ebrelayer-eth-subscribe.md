@@ -13,15 +13,15 @@ In this ADR, we discuss the solution for ebrelayer how to subscribe the events f
 ### Summary
 
 For ebrelayer, it just needs to subscribe to the events from the BridgeBank smart contract, both LogLock event and LogBurn event, then process both events and send transaction to Sifchain. Basically, there are two problems.
-1. The block produced in Ethereum maybe be reorganized, most of system opt to confirm the finalization of block after 6 blocks. So it is better to process the event with some dalay. For the events once we receive from subscription, we store them in the buffer and wait for more blocks produced.
-2. How to store the events, there are two options. First one is store them in memory, but events will be lost if ebrelayer restarted. Second solution is store in local db, message queue like Kafka, but will increase the complexity of ebrelayer's deployment.
+1. The block produced in Ethereum maybe be reorganized, most of system opt to confirm the finalization of block after 6 blocks.
+2. How to store the events. The way that this is accomplished is anytime we see a new block, we look back 50 blocks, look at all of the events in that block, then package them up as prophecy claims and send them to sifchain.
 
 ## Current solution
-We start to process the events happened 50 blocks before. 50 blocks can guarantee the finalization of block. Then there is no impact from block reorganization. Repeated events and invalid events are abondoned in events buffer. We choose memory to store events for now, it is simple and easy to implements. The ebrelayer will miss some events if ebrelayer restarted. Considering the whole Sifchain system is a decentralized, we can tolerate some ebrelayer offline and not send transaction to Sifnode.  
+We start to process the events happened 50 blocks before. 50 blocks can guarantee the finalization of block. Then there is no impact from block reorganization. Whenever a new block comes in, we look back 50 blocks ago, and relay events from that block to sifchain.
 
 ### Pros and Cons
 
-Pros: The solution is easy to implement. 
+Pros: The solution is easy to implement.
 
 Cons: The events lost if ebrelayer restart. We will store the events in persistent storage like local database or message queue system. It depends on the requirement of product in the future.
 
