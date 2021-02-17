@@ -1,4 +1,4 @@
-import { reactive } from "@vue/reactivity";
+import { reactive, computed } from "@vue/reactivity";
 
 import { Address, AssetAmount } from "../entities";
 
