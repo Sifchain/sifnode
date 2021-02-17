@@ -106,8 +106,8 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 	testcases := test.TestType
 	errCount := 0
 	for _, test := range testcases {
-		Yy, _ := calcLiquidityFee("cusdt",
-		    true,
+		Yy, _ := calcLiquidityFee("ceth",
+			true,
 			sdk.NewUintFromString(test.X),
 			sdk.NewUintFromString(test.Xx),
 			sdk.NewUintFromString(test.Y))

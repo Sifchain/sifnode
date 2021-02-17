@@ -230,43 +230,42 @@ func calcLiquidityFee(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, 
 	if X.IsZero() && x.IsZero() {
 		return sdk.ZeroUint(), nil
 	}
-    if !ValidateZero([]sdk.Uint{X, x, Y}) {
-        return sdk.ZeroUint(), nil
-    }
+	if !ValidateZero([]sdk.Uint{X, x, Y}) {
+		return sdk.ZeroUint(), nil
+	}
+	normalizationFactor := sdk.NewDec(1)
+	nf, ok := types.GetNormalizationMap()[symbol[1:]]
+	adjustExternalToken := true
+	if ok {
+		diffFactor := 18 - nf
+		if diffFactor < 0 {
+			diffFactor = nf - 18
+			adjustExternalToken = false
+		}
+		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
+	}
 
-    normalizationFactor := sdk.NewDec(1)
-    nf, ok := types.GetNormalizationMap()[symbol[1:]]
-    adjustExternalToken := true
-    if ok {
-        diffFactor := 18 - nf
-        if diffFactor < 0 {
-            diffFactor = nf - 18
-            adjustExternalToken = false
-        }
-        normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
-    }
+	if adjustExternalToken {
+		if toRowan {
+			X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+			x = x.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+		} else {
+			Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+		}
+	} else {
+		if toRowan {
+			X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+			x = x.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+		} else {
+			Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+		}
+	}
+	// Assuming the max supply for any token in the world to be 1 trillion
+	minLen := int64(6)
 
-    if adjustExternalToken {
-        if toRowan {
-            X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-            x = x.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-        } else {
-            Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-        }
-    } else {
-        if toRowan {
-            X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-            x = x.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-        } else {
-            Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-        }
-    }
-
-    minLen := GetMinLen([]sdk.Uint{X, x, Y})
-
-    Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
-    xd := ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
-    Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
+	Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
+	xd := ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
+	Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
 
 	n := xd.Mul(xd).Mul(Yd)
 	d := xd.Add(Xd)
@@ -274,11 +273,11 @@ func calcLiquidityFee(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, 
 	y := n.Quo(de)
 
 	y = IncreasePrecision(y, minLen)
-   	if !toRowan {
-   		y = y.Quo(normalizationFactor)
-   	}
+	if !toRowan {
+		y = y.Quo(normalizationFactor)
+	}
 
-    return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
+	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
 }
 
 func calcSwapResult(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, error) {
