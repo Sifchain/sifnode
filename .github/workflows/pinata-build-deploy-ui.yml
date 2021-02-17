@@ -21,7 +21,10 @@ jobs:
 
       - name: Set environment for branch
         run: |
-          if [[ $GITHUB_BASE_REF == 'master' ]]; then
+          echo $GITHUB_BASE_REF
+          echo $GITHUB_REF
+          echo $GITHUB_HEAD_REF
+          if [[ $GITHUB_BASE_REF == 'refs/heads/master' ]]; then
               echo "Config set for mainnet deployment"
               echo "VUE_APP_DEPLOYMENT_TAG=mainnet" >> "$GITHUB_ENV"
               echo "VUE_APP_ETHEREUM_ASSET_TAG=ethereum.mainnet" >> "$GITHUB_ENV"
@@ -59,9 +62,10 @@ jobs:
 
       - name: Set environment for branch
         run: |
-          echo GITHUB_BASE_REF: $GITHUB_BASE_REF
-
-          if [[ $GITHUB_BASE_REF == 'master' ]]; then
+          echo $GITHUB_BASE_REF
+          echo $GITHUB_REF
+          echo $GITHUB_HEAD_REF
+          if [[ $GITHUB_BASE_REF == 'refs/heads/master' ]]; then
             echo "Config set for mainnet deployment"
             echo "RECORD_DOMAIN=dex.sifchain.finance" >> $GITHUB_ENV
             echo "RECORD_NAME=_dnslink.dex" >> $GITHUB_ENV
