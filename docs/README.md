@@ -1,17 +1,12 @@
-### README.md
+# Documentation
 
-* `./chainOps` Documentation for all chainOps/DevOps processes 
+## Contents
 
-* `./clp` Documentation for the clp module 
+- [ChainOps](https://github.com/Sifchain/sifnode/tree/master/docs/chainOps)
+- [CLP](https://github.com/Sifchain/sifnode/tree/master/docs/clp)
+- [General](https://github.com/Sifchain/sifnode/tree/master/docs/general)
+- [Peggy](https://github.com/Sifchain/sifnode/tree/master/docs/peggy)
+- [Testing](https://github.com/Sifchain/sifnode/tree/master/docs/testing)
+- [Tutorials](https://github.com/Sifchain/sifnode/tree/master/docs/tutorials)
 
-* `./general` Documentation for general project matters 
-
-* `./peggy` Documentation for the peggy/ethBridge stack
-
-* `./testing` Documentation for testing
-
-* `./tutorials` Documentation cover public feature tutorials 
-
-#### Note;
-
-All documentation is a work in progress 
+_Please note: all documentation is a work in progress._ 
