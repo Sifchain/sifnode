@@ -9,6 +9,8 @@
 set -e
 
 . $TEST_INTEGRATION_DIR/vagrantenv.sh
+. ${TEST_INTEGRATION_DIR}/shell_utilities.sh
+
 
 #
 # Wait for the RPC port to be active.
@@ -38,7 +40,7 @@ else
   runner="dlv exec $GOBIN/ebrelayer -- "
 fi
 
-$runner init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" \
+ETHEREUM_PRIVATE_KEY=$EBRELAYER_ETHEREUM_PRIVATE_KEY $runner init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" \
   "$ETHEREUM_CONTRACT_ADDRESS" \
   "$MONIKER" \
   "$MNEMONIC" \
