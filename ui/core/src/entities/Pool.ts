@@ -10,7 +10,6 @@ import {
   calculateReverseSwapResult,
   calculateSwapResult,
 } from "./formulae";
-import { LiquidityProvider } from "./LiquidityProvider";
 
 export type Pool = ReturnType<typeof Pool>;
 export type IPool = Omit<Pool, "poolUnits" | "calculatePoolUnits">;

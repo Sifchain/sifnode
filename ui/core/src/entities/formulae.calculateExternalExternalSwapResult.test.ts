@@ -15,13 +15,13 @@ tests.DoubleSwap.forEach(({ ax, aX, aY, bX, bY, expected }: any) => {
   test(`Swapping ${ax}, expecting ${expected}`, () => {
     const output = calculateExternalExternalSwapResult(
       // External -> Native pool
-      new Fraction(bigax), // Swap Amount
-      new Fraction(bigaX), // External Balance
-      new Fraction(bigaY), // Native Balance
+      new Fraction(bigax, JSBI.exponentiate(TEN, JSBI.BigInt(18))), // Swap Amount
+      new Fraction(bigaX, JSBI.exponentiate(TEN, JSBI.BigInt(18))), // External Balance
+      new Fraction(bigaY, JSBI.exponentiate(TEN, JSBI.BigInt(18))), // Native Balance
       // Native -> External pool
-      new Fraction(bigbX), // External Balance
-      new Fraction(bigbY) // Native Balance
+      new Fraction(bigbX, JSBI.exponentiate(TEN, JSBI.BigInt(18))), // External Balance
+      new Fraction(bigbY, JSBI.exponentiate(TEN, JSBI.BigInt(18))) // Native Balance
     );
-    expect(output.divide("1000000000000000000").toFixed(18)).toBe(expected);
+    expect(output.toFixed(18)).toBe(expected);
   });
 });

@@ -25,15 +25,15 @@ describe("swapCalculator", () => {
   test("calculate swap usecase", () => {
     const pool1 = ref(
       Pool(
-        AssetAmount(ATK, "2000000000000000000000000"),
-        AssetAmount(ROWAN, "1000000000000000000000000")
+        AssetAmount(ATK, "2000000000000"),
+        AssetAmount(ROWAN, "1000000000000")
       )
     ) as Ref<Pool | null>;
 
     const pool2 = ref(
       Pool(
-        AssetAmount(BTK, "1000000000000000000000000"),
-        AssetAmount(ROWAN, "1000000000000000000000000")
+        AssetAmount(BTK, "1000000000000"),
+        AssetAmount(ROWAN, "1000000000000")
       )
     ) as Ref<Pool | null>;
 
@@ -66,9 +66,9 @@ describe("swapCalculator", () => {
     expect(state.value).toBe(SwapState.SELECT_TOKENS);
 
     balances.value = [
-      AssetAmount(ATK, "1000000000000000"),
-      AssetAmount(BTK, "1000000000000000"),
-      AssetAmount(ETH, "1234000000000000"),
+      AssetAmount(ATK, "1000"),
+      AssetAmount(BTK, "1000"),
+      AssetAmount(ETH, "1234"),
     ];
 
     fromSymbol.value = "atk";
@@ -76,55 +76,55 @@ describe("swapCalculator", () => {
 
     expect(state.value).toBe(SwapState.ZERO_AMOUNTS);
 
-    fromAmount.value = "100000000000000";
+    fromAmount.value = "100";
 
-    expect(toAmount.value).toBe("49999999990000.0"); // 1 ATK ~= 0.5 BTK
+    expect(toAmount.value).toBe("49.99999999"); // 1 ATK ~= 0.5 BTK
     expect(state.value).toBe(SwapState.VALID_INPUT);
-    expect(minimumReceived.value?.toFixed(0)).toBe("49749999990050");
+    expect(minimumReceived.value?.toString()).toBe("49.749999990050000000 BTK");
 
     selectedField.value = null; // deselect
 
-    expect(fromAmount.value).toBe("100000000000000.0");
+    expect(fromAmount.value).toBe("100.0");
 
     // Check background update
     pool1.value = Pool(
-      AssetAmount(ATK, "1000000000000000000000000"),
-      AssetAmount(ROWAN, "1000000000000000000000000")
+      AssetAmount(ATK, "1000000000000"),
+      AssetAmount(ROWAN, "1000000000000")
     );
 
     selectedField.value = "from";
-    fromAmount.value = "1000000000000000";
+    fromAmount.value = "1000";
     selectedField.value = null;
 
-    expect(toAmount.value).toBe("999999996000000.0");
+    expect(toAmount.value).toBe("999.999996");
 
     pool1.value = Pool(
-      AssetAmount(ATK, "2000000000000000000000000"),
-      AssetAmount(ROWAN, "1000000000000000000000000")
+      AssetAmount(ATK, "2000000000000"),
+      AssetAmount(ROWAN, "1000000000000")
     );
 
     selectedField.value = "from";
-    fromAmount.value = "100000000000000";
+    fromAmount.value = "100";
 
     selectedField.value = null;
 
     selectedField.value = "to"; // select to field
 
-    toAmount.value = "50000000000000"; // set to amount to 100
-    expect(fromAmount.value).toBe("100000000020000.0");
-    expect(toAmount.value).toBe("50000000000000");
+    toAmount.value = "50"; // set to amount to 100
+    expect(fromAmount.value).toBe("100.00000004");
+    expect(toAmount.value).toBe("50");
 
     selectedField.value = null; // deselect
     selectedField.value = "from"; // select from field
-    expect(toAmount.value).toBe("50000000000000.0");
+    expect(toAmount.value).toBe("50.0");
 
-    fromAmount.value = "10000000000000000";
+    fromAmount.value = "10000";
 
     expect(state.value).toBe(SwapState.INSUFFICIENT_FUNDS);
-    expect(toAmount.value).toBe("4999999900000002.0");
+    expect(toAmount.value).toBe("4999.9999");
     expect(priceMessage.value).toBe("0.500000 BTK per ATK");
     expect(priceImpact.value).toBe("0.000001");
-    expect(providerFee.value).toBe("24999999.2500000149");
+    expect(providerFee.value).toBe("0.00005");
   });
 
   test("Avoid division by zero", () => {
