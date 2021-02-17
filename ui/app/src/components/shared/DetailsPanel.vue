@@ -61,10 +61,9 @@ export default defineComponent({
           </Tooltip>
         </span>
 
-        <span
-          >{{ formatNumber(minimumReceived) }}
-          <span>{{ toToken.toUpperCase().replace("C", "c") }}</span></span
-        >
+        <span>{{ formatNumber(minimumReceived) }}
+          <span>{{ "c" + toToken.slice(1).toUpperCase() }}</span>
+        </span>
       </div>
       <div v-if="priceImpact" class="details-row">
         <span>
@@ -84,7 +83,7 @@ export default defineComponent({
         </span>
         <span
           >{{ showProviderFee(providerFee) }}
-          <span>{{ toToken.toUpperCase().replace("C", "c") }}</span></span
+          <span>{{ "c" + toToken.slice(1).toUpperCase() }}</span></span
         >
       </div>
     </div>
