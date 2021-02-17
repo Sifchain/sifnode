@@ -246,7 +246,7 @@ export function usePoolCalculator(input: {
     const aAmountIsZeroOrFalsy = !aAmount || aAmount.equalTo("0");
     const bAmountIsZeroOrFalsy = !bAmount || bAmount.equalTo("0");
     const noPreexistingPool = !preExistingPool.value;
-    if ((noPreexistingPool && bAmountIsZeroOrFalsy) || aAmountIsZeroOrFalsy)
+    if (noPreexistingPool || (bAmountIsZeroOrFalsy && aAmountIsZeroOrFalsy))
       return PoolState.ZERO_AMOUNTS;
 
     // Insufficient Funds
