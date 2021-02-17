@@ -10,15 +10,15 @@ describe("assets with decimals", () => {
   };
   test("assetPriceMessage", () => {
     const msg = assetPriceMessage(
-      AssetAmount(ASSETS.atk, "100000000000"),
+      AssetAmount(ASSETS.atk, "100"),
       Pool(
-        AssetAmount(ASSETS.atk, "1000000000000000"),
-        AssetAmount(ASSETS.btk, "2000000000000000")
+        AssetAmount(ASSETS.atk, "1000000"),
+        AssetAmount(ASSETS.btk, "2000000")
       ),
       4
     );
 
-    expect(msg).toBe("0.0000 CBTK per CATK");
+    expect(msg).toBe("1.9996 CBTK per CATK");
   });
 
   test("with zero amounts message should be nothing", () => {
@@ -53,7 +53,7 @@ describe("assets with zero decimals", () => {
         AssetAmount(ASSETS.btk, "1000000")
       )
     );
-    expect(msg).toBe("0 CBTK per CATK");
+    expect(msg).toBe("1 CBTK per CATK");
   });
 
   test("with 12 as an amount", () => {
@@ -65,6 +65,6 @@ describe("assets with zero decimals", () => {
       ),
       4
     );
-    expect(msg).toBe("0.0000 CBTK per CATK");
+    expect(msg).toBe("1.0000 CBTK per CATK");
   });
 });
