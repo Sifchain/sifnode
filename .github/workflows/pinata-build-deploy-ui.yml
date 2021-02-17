@@ -19,10 +19,7 @@ jobs:
 
       - name: Set environment for IPFS build
         run: |
-          echo $GITHUB_BASE_REF
-          echo $GITHUB_REF
-          echo $GITHUB_HEAD_REF
-          if [[ $GITHUB_BASE_REF == 'refs/heads/master' ]]; then
+          if [[ $GITHUB_REF == 'refs/heads/master' ]]; then
               echo "Config set for mainnet deployment"
               echo "VUE_APP_DEPLOYMENT_TAG=mainnet" >> "$GITHUB_ENV"
               echo "VUE_APP_ETHEREUM_ASSET_TAG=ethereum.mainnet" >> "$GITHUB_ENV"
@@ -61,9 +58,6 @@ jobs:
 
       - name: Set environment for dnslink
         run: |
-          echo $GITHUB_BASE_REF
-          echo $GITHUB_REF
-          echo $GITHUB_HEAD_REF
           if [[ $GITHUB_REF == 'refs/heads/master' ]]; then
             echo "Config set for mainnet deployment"
             echo "RECORD_DOMAIN=sifchain.finance" >> $GITHUB_ENV
