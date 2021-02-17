@@ -1,11 +1,7 @@
 name: Build then Deploy to Pinata
 # run run on merge
 on: 
-  push:
-    branches:
-      - master
-      - develop
-      - feature/dnslink
+  [push]
 
 jobs:
   build:
@@ -19,7 +15,7 @@ jobs:
         with:
           node-version: '14.x'
 
-      - name: Set environment for branch
+      - name: Set environment for IPFS build
         run: |
           echo $GITHUB_BASE_REF
           echo $GITHUB_REF
@@ -54,13 +50,14 @@ jobs:
         uses: mshick/add-pr-comment@v1
         with:
           message: |
+            VUE_APP_DEPLOYMENT_TAG: ${{ echo $VUE_APP_DEPLOYMENT_TAG }} \
             IPFS Hash: ${{ steps.pinata.outputs.hash }}\
             URL: <https://gateway.pinata.cloud/ipfs/${{ steps.pinata.outputs.hash }}>
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           repo-token-user-login: 'github-actions[bot]'
           allow-repeats: false
 
-      - name: Set environment for branch
+      - name: Set environment for dnslink
         run: |
           echo $GITHUB_BASE_REF
           echo $GITHUB_REF
@@ -69,7 +66,9 @@ jobs:
             echo "Config set for mainnet deployment"
             echo "RECORD_DOMAIN=sifchain.finance" >> $GITHUB_ENV
             echo "RECORD_NAME=_dnslink.dex" >> $GITHUB_ENV
-          else
+          fi
+
+          if [[ $GITHUB_BASE_REF == 'refs/heads/develop' ]]; then
             echo "Config set for sandpit deployment"
             echo "RECORD_DOMAIN=sifchain.finance" >> $GITHUB_ENV
             echo "RECORD_NAME=_dnslink.sandpit" >> $GITHUB_ENV
