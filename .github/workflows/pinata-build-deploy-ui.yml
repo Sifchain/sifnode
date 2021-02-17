@@ -67,11 +67,11 @@ jobs:
           echo $GITHUB_HEAD_REF
           if [[ $GITHUB_BASE_REF == 'refs/heads/master' ]]; then
             echo "Config set for mainnet deployment"
-            echo "RECORD_DOMAIN=dex.sifchain.finance" >> $GITHUB_ENV
+            echo "RECORD_DOMAIN=sifchain.finance" >> $GITHUB_ENV
             echo "RECORD_NAME=_dnslink.dex" >> $GITHUB_ENV
           else
             echo "Config set for sandpit deployment"
-            echo "RECORD_DOMAIN=sandpit.sifchain.finance" >> $GITHUB_ENV
+            echo "RECORD_DOMAIN=sifchain.finance" >> $GITHUB_ENV
             echo "RECORD_NAME=_dnslink.sandpit" >> $GITHUB_ENV
           fi
       - name: Update cloudflare DNSLink
