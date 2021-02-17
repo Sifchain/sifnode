@@ -48,7 +48,7 @@ describe("useRemoveLiquidityCalculator", () => {
   test("displays the correct withdrawal amounts", async () => {
     liquidityProvider.value = LiquidityProvider(
       CATK,
-      new Fraction("100000000000000") as IFraction,
+      new Fraction("100000") as IFraction,
       "sif123456876512341234",
       ZERO,
       ZERO
@@ -58,9 +58,9 @@ describe("useRemoveLiquidityCalculator", () => {
       () =>
         ref(
           Pool(
-            AssetAmount(CATK, "1000000000000000"),
-            AssetAmount(ROWAN, "1000000000000000"),
-            new Fraction("1000000000000000")
+            AssetAmount(CATK, "1000000"),
+            AssetAmount(ROWAN, "1000000"),
+            new Fraction("1000000")
           )
         ) as Ref<Pool>
     );
@@ -79,17 +79,17 @@ describe("useRemoveLiquidityCalculator", () => {
 
     expect(state.value).toBe(PoolState.VALID_INPUT);
 
-    expect(withdrawExternalAssetAmount.value).toEqual("100000000000000.000000");
-    expect(withdrawNativeAssetAmount.value).toEqual("100000000000000.000000");
+    expect(withdrawExternalAssetAmount.value).toEqual("100000.00000");
+    expect(withdrawNativeAssetAmount.value).toEqual("100000.00000");
     asymmetry.value = "10000";
     simulateWatch();
 
-    expect(withdrawExternalAssetAmount.value).toEqual("181000000000000.000000");
-    expect(withdrawNativeAssetAmount.value).toEqual("0.000000");
+    expect(withdrawExternalAssetAmount.value).toEqual("181000.00000");
+    expect(withdrawNativeAssetAmount.value).toEqual("0.00000");
     wBasisPoints.value = "5000";
     simulateWatch();
 
-    expect(withdrawExternalAssetAmount.value).toEqual("95125000000000.000000");
-    expect(withdrawNativeAssetAmount.value).toEqual("0.000000");
+    expect(withdrawExternalAssetAmount.value).toEqual("95125.00000");
+    expect(withdrawNativeAssetAmount.value).toEqual("0.00000");
   });
 });
