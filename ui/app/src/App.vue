@@ -16,15 +16,13 @@
         </WithWallet>
       </template>
     </Header>
-
     <router-view />
     <Notifications />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from "vue";
-import { useCore } from "./hooks/useCore";
+import { defineComponent } from "vue";
 import WithWallet from "@/components/wallet/WithWallet.vue";
 import Header from "./components/shared/Header.vue";
 import SifButton from "./components/shared/SifButton.vue";
@@ -57,7 +55,7 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
 
