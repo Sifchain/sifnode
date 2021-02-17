@@ -50,7 +50,7 @@ jobs:
         uses: mshick/add-pr-comment@v1
         with:
           message: |
-            VUE_APP_DEPLOYMENT_TAG: ${{ VUE_APP_DEPLOYMENT_TAG }} \
+            VUE_APP_DEPLOYMENT_TAG: ${{ env.VUE_APP_DEPLOYMENT_TAG }} \
             IPFS Hash: ${{ steps.pinata.outputs.hash }}\
             URL: <https://gateway.pinata.cloud/ipfs/${{ steps.pinata.outputs.hash }}>
           repo-token: ${{ secrets.GITHUB_TOKEN }}
