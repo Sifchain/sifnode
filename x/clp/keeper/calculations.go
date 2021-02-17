@@ -5,6 +5,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/ethereum/go-ethereum/common/math"
 )
 
 //------------------------------------------------------------------------------------------------------------------
@@ -23,9 +24,18 @@ func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.P
 		Y = pool.ExternalAssetBalance
 	}
 	x := sentAmount
-	liquidityFee := calcLiquidityFee(X, x, Y)
-	priceImpact := calcPriceImpact(X, x)
-	swapResult := calcSwapResult(X, x, Y)
+	liquidityFee, err := calcLiquidityFee(X, x, Y)
+	if err != nil {
+		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
+	}
+	priceImpact, err := calcPriceImpact(X, x)
+	if err != nil {
+		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
+	}
+	swapResult, err := calcSwapResult(X, x, Y)
+	if err != nil {
+		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
+	}
 	if swapResult.GTE(Y) {
 		return sdk.ZeroUint(), sdk.ZeroUint(), sdk.ZeroUint(), types.Pool{}, types.ErrNotEnoughAssetTokens
 	}
@@ -99,16 +109,27 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 //native asset to added  : the amount the user sends
 //external asset amount to be added : the amount the user sends
 
-// r = native asset added;
-// a = external asset added
 // R = native Balance (before)
 // A = external Balance (before)
+// r = native asset added;
+// a = external asset added
 // P = existing Pool Units
 // slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
 func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
+	// refactor this to use ValidInputs
+	inputs := []sdk.Uint{oldPoolUnits, nativeAssetBalance, externalAssetBalance,
+		nativeAssetAmount, externalAssetAmount}
+	if !ValidateInputs(inputs) {
+		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
+	}
+	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
+		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
+	}
+	minLen := GetMinLen(inputs)
+
 	if nativeAssetBalance.Add(nativeAssetAmount).IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), errors.Wrap(errors.ErrInsufficientFunds, nativeAssetAmount.String())
 	}
@@ -139,8 +160,6 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
 	}
 
-	// (2 r + R) (a + A)
-	// (2 r + R) (a + A)
 	slipAdjDenominator := (r.MulInt64(2).Add(R)).Mul(a.Add(A))
 	// ABS((R a - r A)/((2 r + R) (a + A)))
 	var slipAdjustment sdk.Dec
@@ -152,32 +171,78 @@ func CalculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	// (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 	slipAdjustment = sdk.NewDec(1).Sub(slipAdjustment)
 
+	P = ReducePrecision(P, minLen)
+	R = ReducePrecision(R, minLen)
+	A = ReducePrecision(A, minLen)
+	a = ReducePrecision(a, minLen)
+	r = ReducePrecision(r, minLen)
+
 	// ((P (a R + A r))
 	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
 	// 2AR
 	denominator := sdk.NewDec(2).Mul(A).Mul(R)
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
 	newPoolUnit := P.Add(stakeUnits)
+	newPoolUnit = IncreasePrecision(newPoolUnit, minLen)
+	stakeUnits = IncreasePrecision(stakeUnits, minLen)
 
 	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
-
 }
 
-func calcLiquidityFee(X, x, Y sdk.Uint) sdk.Uint {
+// Add validations for X,x,Y
+//( x^2 * Y ) / ( x + X )^2
+func calcLiquidityFee(X, x, Y sdk.Uint) (sdk.Uint, error) {
+	// if inputs are outside range return error
+
+	//if !ValidateInputs([]sdk.Uint{X, x, Y}) {
+	//	return sdk.ZeroUint(), types.ErrInvalid //error
+	//}
+	////if any input is 0 return 0
+	//if !ValidateZero([]sdk.Uint{X, x, Y}) {
+	//	return sdk.ZeroUint(), nil
+	//}
+	//d := x.Add(X)
+	//denom := d.Mul(d)
+	//return (x.Mul(x).Mul(Y)).Quo(denom), nil
+
+	if !ValidateInputs([]sdk.Uint{x, Y}) {
+		return sdk.ZeroUint(), types.ErrInvalid //error
+	}
+	if X.IsZero() && x.IsZero() {
+		return sdk.ZeroUint(), nil
+	}
+	n := x.Mul(x).Mul(Y)
+	d := x.Add(X)
+	de := d.Mul(d)
+	return n.Quo(de), nil
+
+}
+func calcSwapResult(X, x, Y sdk.Uint) (sdk.Uint, error) {
+	// if inputs are outside range return error
+	if !ValidateInputs([]sdk.Uint{X, x, Y}) {
+		return sdk.ZeroUint(), types.ErrInvalid
+	}
+	//if any input is 0 return 0
+	if !ValidateZero([]sdk.Uint{X, x, Y}) {
+		return sdk.ZeroUint(), nil
+	}
 	d := x.Add(X)
 	denom := d.Mul(d)
-	return (x.Mul(x).Mul(Y)).Quo(denom)
+	return (x.Mul(X).Mul(Y)).Quo(denom), nil
 }
 
-func calcPriceImpact(X, x sdk.Uint) sdk.Uint {
+//( x^2 * Y ) / ( x + X )^2
+
+func calcPriceImpact(X, x sdk.Uint) (sdk.Uint, error) {
+	// if inputs are outside range return error
+	if !ValidateInputs([]sdk.Uint{X, x}) {
+		return sdk.ZeroUint(), types.ErrInvalid
+	}
+	if (X.IsZero() && x.IsZero()) || x.IsZero() {
+		return sdk.ZeroUint(), nil
+	}
 	denom := x.Add(X)
-	return x.Quo(denom)
-}
-
-func calcSwapResult(X, x, Y sdk.Uint) sdk.Uint {
-	d := x.Add(X)
-	denom := d.Mul(d)
-	return (x.Mul(X).Mul(Y)).Quo(denom)
+	return x.Quo(denom), nil
 }
 
 func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
@@ -186,4 +251,45 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 	externalAssetBalance := pool.ExternalAssetBalance
 	return CalculateWithdrawal(poolUnits, nativeAssetBalance.String(), externalAssetBalance.String(),
 		lp.LiquidityProviderUnits.String(), sdk.NewInt(types.MaxWbasis).String(), sdk.ZeroInt())
+}
+
+func ValidateInputs(inputs []sdk.Uint) bool {
+	minValue := sdk.NewUintFromString("1000000000")
+	for _, val := range inputs {
+		if !val.IsZero() && val.LT(minValue) {
+			return false
+		}
+	}
+	return true
+}
+
+func ValidateZero(inputs []sdk.Uint) bool {
+	for _, val := range inputs {
+		if val.IsZero() {
+			return false
+		}
+	}
+	return true
+}
+
+func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
+	p := sdk.NewDec(10).Power(uint64(po))
+	return dec.Quo(p)
+}
+
+func GetMinLen(inputs []sdk.Uint) int64 {
+	minLen := math.MaxInt64
+	minValue := sdk.NewUintFromString("1000000000")
+	for _, val := range inputs {
+		currentLen := len(val.String())
+		if currentLen < minLen && val.GTE(minValue) {
+			minLen = currentLen
+		}
+	}
+	return int64(minLen)
+}
+
+func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
+	p := sdk.NewDec(10).Power(uint64(po))
+	return dec.Mul(p)
 }
