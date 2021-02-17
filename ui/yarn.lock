@@ -2461,6 +2461,13 @@
     web3 "^1.2.5"
     web3-utils "^1.2.5"
 
+"@ramp-network/ramp-instant-sdk@^2.3.1":
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/@ramp-network/ramp-instant-sdk/-/ramp-instant-sdk-2.3.1.tgz#c3a434d82349577c832f1915e3b51d06eceebef4"
+  integrity sha512-PA6j2+iSodW0MNNtdAprZqbRLK5l0ivuVzXOO2ZhjByh6r1ARA07HsGFhvKMKO1LivArXpoT7Hlu3inL68N7QA==
+  dependencies:
+    body-scroll-lock "^2.6.4"
+
 "@sideway/address@^4.1.0":
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/@sideway/address/-/address-4.1.0.tgz#0b301ada10ac4e0e3fa525c90615e0b61a72b78d"
@@ -4563,6 +4570,11 @@ body-parser@1.19.0, body-parser@^1.16.0:
     qs "6.7.0"
     raw-body "2.4.0"
     type-is "~1.6.17"
+
+body-scroll-lock@^2.6.4:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/body-scroll-lock/-/body-scroll-lock-2.7.1.tgz#caf3f9c91773af1ffb684cd66ed9137b5b737014"
+  integrity sha512-hS53SQ8RhM0e4DsQ3PKz6Gr2O7Kpdh59TWU98GHjaQznL7y4dFycEPk7pFQAikqBaUSCArkc5E3pe7CWIt2fZA==
 
 bonjour@^3.5.0:
   version "3.5.0"

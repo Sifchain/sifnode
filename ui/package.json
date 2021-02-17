@@ -49,6 +49,7 @@
     ]
   },
   "dependencies": {
+    "@ramp-network/ramp-instant-sdk": "^2.3.1",
     "codecov": "^3.8.0"
   }
 }

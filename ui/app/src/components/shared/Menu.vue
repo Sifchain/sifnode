@@ -1,3 +1,21 @@
+<script>
+import { defineComponent } from "vue";
+import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
+
+
+export default defineComponent({
+  methods: {
+    openRamp: function () {
+      new RampInstantSDK({
+        hostAppName: 'Maker DAO',
+        hostLogoUrl: 'https://cdn-images-1.medium.com/max/2600/1*nqtMwugX7TtpcS-5c3lRjw.png',
+      }).show();
+    }
+  }
+});
+
+</script>
+
 <template>
   <div class="menu">
     <div>
@@ -13,7 +31,13 @@
         >Get Rowan</a
       >
     </div>
-    <!-- 
+
+    <div class="item">
+      <span class="link" v-on:click="openRamp">Buy Crypto</span>
+    </div>
+
+
+    <!--
     <div class="item">
       <router-link class="link" to="/">New wallet</router-link>
     </div>
@@ -25,10 +49,6 @@
     </div> -->
   </div>
 </template>
-
-<script>
-export default {};
-</script>
 
 <style lang="scss" scoped>
 .menu {
@@ -52,7 +72,7 @@ export default {};
     font-weight: normal;
     opacity: 1;
     transition: opacity $trans_fast;
-
+    cursor: pointer;
     &:hover {
       opacity: 0.5;
     }
