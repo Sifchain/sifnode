@@ -50,7 +50,10 @@ export default ({
         notify({
           type: "error",
           message: "No Liquidity Pools Found",
-          detail: "Create liquidity pool to swap.",
+          detail: {
+            type: "info",
+            message: "Create liquidity pool to swap.",
+          }
         });
       }
     });
@@ -62,11 +65,14 @@ export default ({
     await syncPools();
   });
 
-  api.SifService.onSocketError(({ sifWsUrl }) => {
+  api.SifService.onSocketError((instance) => {
     notify({
       type: "error",
       message: "Websocket Not Connected",
-      detail: `${sifWsUrl}`,
+      detail: {
+        type: 'websocket',
+        message: instance.target.url
+      }
     });
   });
 
