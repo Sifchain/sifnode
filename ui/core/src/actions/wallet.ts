@@ -54,7 +54,10 @@ export default ({
         notify({
           type: "success",
           message: "Sif Account connected",
-          detail: store.wallet.sif.address,
+          detail: {
+            type: 'info',
+            message: store.wallet.sif.address,
+          }
         });
       }
     }

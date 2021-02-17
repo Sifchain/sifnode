@@ -76,11 +76,11 @@ describe("addLiquidityCalculator", () => {
 
   const ratios = [
     {
-      poolExternal: "1000000000000",
-      poolNative: "1000000000000",
-      poolUnits: "1000000000000",
-      addedExternal: "10000000000",
-      addedNative: "10000000000",
+      poolExternal: "1000000000",
+      poolNative: "1000000000",
+      poolUnits: "1000000000",
+      addedExternal: "10000000",
+      addedNative: "10000000",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
       preexistingLiquidity: {
@@ -98,17 +98,17 @@ describe("addLiquidityCalculator", () => {
       },
     },
     {
-      poolExternal: "1000000000000",
-      poolNative: "1000000000000",
-      poolUnits: "1000000000000",
-      addedExternal: "10000000000",
-      addedNative: "10000000000",
+      poolExternal: "1000000000",
+      poolNative: "1000000000",
+      poolUnits: "1000000000",
+      addedExternal: "10000000",
+      addedNative: "10000000",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
       preexistingLiquidity: {
-        native: "500000000000",
-        external: "500000000000",
-        units: "500000000000",
+        native: "500000000",
+        external: "500000000",
+        units: "500000000",
       },
       expected: {
         aPerBRatioMessage: "1.00000000",
@@ -142,11 +142,11 @@ describe("addLiquidityCalculator", () => {
       },
     },
     {
-      poolExternal: "1000000000000",
-      poolNative: "1000000000000",
-      poolUnits: "1000000000000",
-      addedExternal: "10000000000",
-      addedNative: "10000000000",
+      poolExternal: "1000000000",
+      poolNative: "1000000000",
+      poolUnits: "1000000000",
+      addedExternal: "10000000",
+      addedNative: "10000000",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
       expected: {
@@ -159,11 +159,11 @@ describe("addLiquidityCalculator", () => {
       },
     },
     {
-      poolExternal: "20000000000",
-      poolNative: "10000000000",
-      poolUnits: "20000000000",
-      addedExternal: "10000000000",
-      addedNative: "40000000000",
+      poolExternal: "20000000",
+      poolNative: "10000000",
+      poolUnits: "20000000",
+      addedExternal: "10000000",
+      addedNative: "40000000",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
       expected: {
@@ -176,11 +176,11 @@ describe("addLiquidityCalculator", () => {
       },
     },
     {
-      poolExternal: "40000000000",
-      poolNative: "10000000000",
-      poolUnits: "40000000000",
-      addedExternal: "10000000000",
-      addedNative: "40000000000",
+      poolExternal: "40000000",
+      poolNative: "10000000",
+      poolUnits: "40000000",
+      addedExternal: "10000000",
+      addedNative: "40000000",
       externalSymbol: "atk",
       nativeSymbol: "rowan",
       expected: {
@@ -190,6 +190,41 @@ describe("addLiquidityCalculator", () => {
         bPerARatioProjectedMessage: "1.00000000",
         shareOfPool: "50.00%",
         state: PoolState.VALID_INPUT,
+      },
+    },
+
+    {
+      poolExternal: "100000000",
+      poolNative: "100000000",
+      poolUnits: "10000000000000000000000000",
+      addedExternal: "100000000000",
+      addedNative: "1",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      expected: {
+        aPerBRatioMessage: "1.00000000", // 100000000 / 100000000
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1000.99998999", // 100100000000/100000001
+        bPerARatioProjectedMessage: "0.00099900",
+        shareOfPool: "33.31%",
+        state: PoolState.VALID_INPUT,
+      },
+    },
+    {
+      poolExternal: "100000000",
+      poolNative: "100000000",
+      poolUnits: "10000000000000000000000000",
+      addedExternal: "100000000000000", // more than balance
+      addedNative: "1",
+      externalSymbol: "atk",
+      nativeSymbol: "rowan",
+      expected: {
+        aPerBRatioMessage: "1.00000000", // 100000000 / 100000000
+        bPerARatioMessage: "1.00000000",
+        aPerBRatioProjectedMessage: "1000000.98999999", // 100100000000/100000001
+        bPerARatioProjectedMessage: "0.00000100",
+        shareOfPool: "33.77%",
+        state: PoolState.INSUFFICIENT_FUNDS,
       },
     },
   ];
@@ -216,12 +251,12 @@ describe("addLiquidityCalculator", () => {
         liquidityProvider.value = !preexistingLiquidity
           ? null
           : LiquidityProvider(
-              ATK,
-              new Fraction(preexistingLiquidity.units),
-              akasha.address,
-              new Fraction(preexistingLiquidity.native),
-              new Fraction(preexistingLiquidity.external)
-            );
+            ATK,
+            new Fraction(preexistingLiquidity.units),
+            akasha.address,
+            new Fraction(preexistingLiquidity.native),
+            new Fraction(preexistingLiquidity.external)
+          );
 
         poolFinder.mockImplementation(() => {
           const pool = Pool(
@@ -255,12 +290,12 @@ describe("addLiquidityCalculator", () => {
     poolFinder.mockImplementation(
       () =>
         ref(
-          Pool(AssetAmount(ATK, "20000000000"), AssetAmount(ROWAN, "10000000000"))
+          Pool(AssetAmount(ATK, "2000000"), AssetAmount(ROWAN, "1000000"))
         ) as Ref<Pool>
     );
 
-    tokenAAmount.value = "1000000000";
-    tokenBAmount.value = "5000000000";
+    tokenAAmount.value = "100000";
+    tokenBAmount.value = "500000";
     tokenASymbol.value = "atk";
     tokenBSymbol.value = "rowan";
 
@@ -277,9 +312,9 @@ describe("addLiquidityCalculator", () => {
       () =>
         ref(
           Pool(
-            AssetAmount(ATK, "10000000000"),
-            AssetAmount(ROWAN, "10000000000"),
-            new Fraction("10000000000")
+            AssetAmount(ATK, "1000000"),
+            AssetAmount(ROWAN, "1000000"),
+            new Fraction("1000000")
           )
         ) as Ref<Pool>
     );
@@ -287,15 +322,15 @@ describe("addLiquidityCalculator", () => {
     // Liquidity provider already owns 1000 pool units (1000000 from another investor)
     liquidityProvider.value = LiquidityProvider(
       ATK,
-      new Fraction("5000000000"),
+      new Fraction("500000"),
       akasha.address,
-      new Fraction("5000000000"),
-      new Fraction("5000000000")
+      new Fraction("500000"),
+      new Fraction("500000")
     );
 
     // Add 1000 of both tokens
-    tokenAAmount.value = "5000000000";
-    tokenBAmount.value = "5000000000";
+    tokenAAmount.value = "500000";
+    tokenBAmount.value = "500000";
     tokenASymbol.value = "atk";
     tokenBSymbol.value = "rowan";
 
@@ -308,9 +343,9 @@ describe("addLiquidityCalculator", () => {
     expect(shareOfPoolPercent.value).toBe("66.67%");
 
     // New pool units for liquidity provider (inc prev liquidity)
-    expect(totalLiquidityProviderUnits.value).toBe("10000000000");
+    expect(totalLiquidityProviderUnits.value).toBe("1000000");
 
-    expect(totalPoolUnits.value).toBe("15000000000");
+    expect(totalPoolUnits.value).toBe("1500000");
   });
 
   test("poolCalculator with preexisting pool but no preexisting liquidity", () => {
@@ -319,9 +354,9 @@ describe("addLiquidityCalculator", () => {
       () =>
         ref(
           Pool(
-            AssetAmount(ATK, "10000000000"),
-            AssetAmount(ROWAN, "10000000000"),
-            new Fraction("10000000000")
+            AssetAmount(ATK, "1000000"),
+            AssetAmount(ROWAN, "1000000"),
+            new Fraction("1000000")
           )
         ) as Ref<Pool>
     );
@@ -330,8 +365,8 @@ describe("addLiquidityCalculator", () => {
     liquidityProvider.value = null;
 
     // Add 1000 of both tokens
-    tokenAAmount.value = "5000000000";
-    tokenBAmount.value = "5000000000";
+    tokenAAmount.value = "500000";
+    tokenBAmount.value = "500000";
     tokenASymbol.value = "atk";
     tokenBSymbol.value = "rowan";
 
@@ -345,9 +380,9 @@ describe("addLiquidityCalculator", () => {
     expect(shareOfPoolPercent.value).toBe("33.33%");
 
     // New pool units for liquidity provider (inc prev liquidity)
-    expect(totalLiquidityProviderUnits.value).toBe("5000000000");
+    expect(totalLiquidityProviderUnits.value).toBe("500000");
 
-    expect(totalPoolUnits.value).toBe("15000000000");
+    expect(totalPoolUnits.value).toBe("1500000");
   });
 
   test("Can handle division by zero", () => {
