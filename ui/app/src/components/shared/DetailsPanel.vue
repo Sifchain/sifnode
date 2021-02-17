@@ -62,7 +62,7 @@ export default defineComponent({
         </span>
 
         <span>{{ formatNumber(minimumReceived) }}
-          <span>{{ toToken.slice(1).toUpperCase() }}</span>
+          <span>{{ "c" + toToken.slice(1).toUpperCase() }}</span>
         </span>
       </div>
       <div v-if="priceImpact" class="details-row">
@@ -83,7 +83,7 @@ export default defineComponent({
         </span>
         <span
           >{{ showProviderFee(providerFee) }}
-          <span>{{ toToken.slice(1).toUpperCase() }}</span></span
+          <span>{{ "c" + toToken.slice(1).toUpperCase() }}</span></span
         >
       </div>
     </div>
