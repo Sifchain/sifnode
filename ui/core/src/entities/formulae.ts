@@ -125,8 +125,8 @@ export function calculateWithdrawal({
     ? withdrawNativeAssetAmountPreSwap.subtract(swapAmount)
     : withdrawNativeAssetAmountPreSwap.add(
         calculateSwapResult(
-          newExternalAssetBalance,
           abs(swapAmount),
+          newExternalAssetBalance,
           newNativeAssetBalance
         )
       );
@@ -135,8 +135,8 @@ export function calculateWithdrawal({
     ? withdrawExternalAssetAmountPreSwap.subtract(swapAmount)
     : withdrawExternalAssetAmountPreSwap.add(
         calculateSwapResult(
-          newNativeAssetBalance,
           abs(swapAmount),
+          newNativeAssetBalance,
           newExternalAssetBalance
         )
       );
@@ -156,7 +156,7 @@ export function calculateWithdrawal({
  * @param Y Native Balance
  * @returns swapAmount
  */
-export function calculateSwapResult(X: IFraction, x: IFraction, Y: IFraction) {
+export function calculateSwapResult(x: IFraction, X: IFraction, Y: IFraction) {
   if (x.equalTo("0") || X.equalTo("0") ||  Y.equalTo("0")) {
     return new Fraction("0");
   }
@@ -176,8 +176,8 @@ export function calculateExternalExternalSwapResult(
   bX: IFraction, // External Balance
   bY: IFraction // Native Balance
 ) {
-  const emitAmount = calculateSwapResult(aX, ax, aY);
-  return calculateSwapResult(bX, emitAmount, bY);
+  const ay = calculateSwapResult(ax, aX, aY);
+  return calculateSwapResult(ay, bX, bY);
 }
 
 // Formula: S = (x * X * Y) / (x + X) ^ 2
@@ -207,7 +207,7 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
  * @returns providerFee
  */
 export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
-  if (x.equalTo("0") || Y.equalTo("0")) {
+  if (x.equalTo("0") || X.equalTo("0") || Y.equalTo("0")) {
     return new Fraction("0");
   }
   const xPlusX = x.add(X);

@@ -1,8 +1,8 @@
-import { Asset } from "./Asset";
-import { AssetAmount, IAssetAmount } from "./AssetAmount";
-import { Pair } from "./Pair";
+import {Asset} from "./Asset";
+import {AssetAmount, IAssetAmount} from "./AssetAmount";
+import {Pair} from "./Pair";
 import Big from "big.js";
-import { Fraction } from "./fraction/Fraction";
+import {Fraction} from "./fraction/Fraction";
 import {
   calculatePoolUnits,
   calculatePriceImpact,
@@ -22,7 +22,7 @@ export function Pool(
   const pair = Pair(a, b);
   const amounts: [IAssetAmount, IAssetAmount] = pair.amounts;
 
-  const instance = {
+  return {
     amounts,
     otherAsset: pair.otherAsset,
     symbol: pair.symbol,
@@ -78,7 +78,7 @@ export function Pool(
         );
       const Y = amounts.find(a => a.asset.symbol !== x.asset.symbol);
       if (!Y) throw new Error("Pool does not have an opposite asset."); // For Typescript's sake will probably never happen
-      const swapAmount = calculateSwapResult(X, x, Y);
+      const swapAmount = calculateSwapResult(x, X, Y);
       return AssetAmount(this.otherAsset(x.asset), swapAmount);
     },
 
@@ -126,8 +126,6 @@ export function Pool(
       return [newTotalPoolUnits, lpUnits];
     },
   };
-
-  return instance;
 }
 
 export function CompositePool(pair1: IPool, pair2: IPool): IPool {
