@@ -286,11 +286,9 @@ func handleMsgRemoveLiquidity(ctx sdk.Context, keeper Keeper, msg MsgRemoveLiqui
 
 func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, error) {
 	var (
-		//liquidityFee sdk.Uint
 		priceImpact sdk.Uint
 	)
 
-	//liquidityFee = sdk.ZeroUint()
 	liquidityFeeNative := sdk.ZeroUint()
 	liquidityFeeExternal := sdk.ZeroUint()
 	totalLiquidityFee := sdk.ZeroUint()
@@ -335,7 +333,6 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 		}
 		sentAmount = emitAmount
 		sentAsset = nativeAsset
-		//liquidityFee = liquidityFee.Add(lp)
 		priceImpact = priceImpact.Add(ts)
 		liquidityFeeNative = liquidityFeeNative.Add(lp)
 	}
@@ -382,7 +379,6 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	if err != nil {
 		return nil, errors.Wrap(types.ErrUnableToSwap, err.Error())
 	}
-	//firstSwapFeeInOutputAsset := sdk.ZeroUint()
 	if liquidityFeeNative.GT(sdk.ZeroUint()) {
 		liquidityFeeExternal = liquidityFeeExternal.Add(lp)
 		firstSwapFeeInOutputAsset := clpkeeper.GetSwapFee(liquidityFeeNative, msg.ReceivedAsset, outPool)
@@ -390,8 +386,6 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	} else {
 		totalLiquidityFee = liquidityFeeNative.Add(lp)
 	}
-
-	//liquidityFee = lp.Add(firstSwapFeeInOutputAsset)
 
 	priceImpact = priceImpact.Add(ts)
 	ctx.EventManager().EmitEvents(sdk.Events{
@@ -410,5 +404,6 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Signer.String()),
 		),
 	})
+
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
