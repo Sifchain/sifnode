@@ -12,9 +12,9 @@ export default defineComponent({
     return {
       notifications,
       removeItem(index: any) {
-        console.log(index, store.notifications)
+        console.log(index, store.notifications);
         store.notifications.splice(index, 1);
-      }
+      },
     };
   },
 });
@@ -37,14 +37,20 @@ export default defineComponent({
             <div>{{ item.message }}</div>
           </div>
           <div class="detail" v-show="item.detail">
-            <div v-if="item.detail.type === 'etherscan'">
-              Check on <a :href="`https://etherscan.io/tx/${item.detail.message}`">Block Explorer</a>
+            <div v-if="item.detail?.type === 'etherscan'">
+              Check on
+              <a
+                target="_blank"
+                :href="`https://etherscan.io/tx/${item.detail?.message}`"
+                @click.stop
+                >Block Explorer</a
+              >
             </div>
-            <div v-else-if="item.detail.type === 'websocket'">
-              {{item.detail.message}}
-              </div>
-            <div v-else-if="item.detail.type === 'info'">
-              {{ item.detail.message}}
+            <div v-else-if="item.detail?.type === 'websocket'">
+              {{ item.detail.message }}
+            </div>
+            <div v-else-if="item.detail?.type === 'info'">
+              {{ item.detail.message }}
             </div>
           </div>
         </div>

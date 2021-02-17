@@ -1,13 +1,7 @@
 import { ActionContext } from "..";
-import {
-  Address,
-  Asset,
-  AssetAmount,
-  TransactionStatus,
-} from "../../entities";
+import { Address, Asset, AssetAmount, TransactionStatus } from "../../entities";
 import notify from "../../api/utils/Notifications";
 import JSBI from "jsbi";
-import { setTransaction } from "../../api/utils/LocalStorage";
 
 function isOriginallySifchainNativeToken(asset: Asset) {
   return ["erowan", "rowan"].includes(asset.symbol);
@@ -57,7 +51,14 @@ export default ({
         feeAmount,
       });
 
-      console.log("unpeg", tx, assetAmount, store.wallet.eth.address, store.wallet.sif.address, feeAmount);
+      console.log(
+        "unpeg",
+        tx,
+        assetAmount,
+        store.wallet.eth.address,
+        store.wallet.sif.address,
+        feeAmount
+      );
 
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 
@@ -67,12 +68,24 @@ export default ({
           message: txStatus.memo || "There was an error while unpegging",
         });
       }
-      console.log("unpeg txStatus.state", txStatus.state, txStatus.memo, txStatus.code, tx.value.msg);
+      console.log(
+        "unpeg txStatus.state",
+        txStatus.state,
+        txStatus.memo,
+        txStatus.code,
+        tx.value.msg
+      );
 
       return txStatus;
     },
-    async approve(address: Address ,assetAmount: AssetAmount) {
-       return await api.EthbridgeService.approveBridgeBankSpend(address, assetAmount)
+    // TODO: Move this approval command to within peg and report status via store or some other means
+    //       This has been done for convenience but we should not have to know in the view that
+    //       approval is required before pegging
+    async approve(address: Address, assetAmount: AssetAmount) {
+      return await api.EthbridgeService.approveBridgeBankSpend(
+        address,
+        assetAmount
+      );
     },
     async peg(assetAmount: AssetAmount) {
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
@@ -81,25 +94,23 @@ export default ({
       return await new Promise<TransactionStatus>(done => {
         lockOrBurnFn(store.wallet.sif.address, assetAmount, ETH_CONFIRMATIONS)
           .onTxHash(hash => {
-            // sets tx in localstorage
-            setTransaction(store.wallet.eth.address, hash.txHash)
-            notify({ 
-              type: "info", 
-              message: "Pegged Transaction Pending", 
+            // TODO: Set tx status on store for pending txs to use elsewhere
+            notify({
+              type: "info",
+              message: "Pegged Transaction Pending",
               detail: {
-                type: 'etherscan',
+                type: "etherscan",
                 message: hash.txHash,
               },
-              loader: true // TODO
-            })
-            
+              loader: true,
+            });
+
             done({
               hash: hash.txHash,
               memo: "Transaction Accepted",
               state: "accepted",
-            })
-          }
-          )
+            });
+          })
           // invoked on each eth confirmation, was originally used to invoke
           // notification, but above is more accurate (there is etherscan value)
           // .onEthConfCountChanged(instance => {
