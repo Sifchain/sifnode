@@ -12,7 +12,6 @@ export default defineComponent({
     return {
       notifications,
       removeItem(index: any) {
-        console.log(index, store.notifications);
         store.notifications.splice(index, 1);
       },
     };
