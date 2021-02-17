@@ -6,11 +6,7 @@ Upgrades on the Sifnodes themselves are automated, however there are several act
 
 1. Generate a new release [here](https://github.com/Sifchain/sifnode/releases).
 
-2. Github actions will then build a new sifnoded binary, add it to a zip file, and upload it to [S3](https://s3.console.aws.amazon.com/s3/buckets/finance.sifchain.release?region=us-west-2&tab=objects).
-
-The parent folder's name will be the SHA256 checksum of the binary. This will be required when broadcasting a proposal to the network. 
-
-Also, get the full S3 URL by clicking on the binary itself (inside the S3 console).  
+2. Github actions will then build a new sifnoded binary and add it to the assets of the release. A sha256 will also be published (you will need this also).
 
 3. Submit an upgrade proposal to the network:
 
