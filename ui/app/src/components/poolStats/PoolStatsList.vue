@@ -19,21 +19,22 @@ export default defineComponent({
 </script>
 
 <template>
-  <div
+  <PoolStatsListHeader
     v-if="poolData && poolData.pools && poolData.liqAPY && poolData.pools[0]"
-  >
-    <PoolStatsListHeader class="pool-list-header" />
-    <div class="pool-list">
-      <PoolStatsListItem
-        v-for="(pool, index) in poolData.pools"
-        :key="index"
-        :pool="pool"
-        :liqAPY="poolData.liqAPY"
-      />
+    class="pool-list-header"
+  />
+  <div class="pool-list-container">
+    <PoolStatsListItem
+      v-if="poolData && poolData.pools && poolData.liqAPY && poolData.pools[0]"
+      v-for="(pool, index) in poolData.pools"
+      :key="index"
+      :pool="pool"
+      :liqAPY="poolData.liqAPY"
+      class="pool-list"
+    />
+    <div v-else class="loading">
+      <div class="logo"></div>
     </div>
-  </div>
-  <div v-else class="loading">
-    <div class="logo"></div>
   </div>
 </template>
 
@@ -44,10 +45,10 @@ export default defineComponent({
 }
 
 .pool-list-container {
+  overflow-y: auto;
 }
 
 .pool-list {
-  overflow-y: auto;
   background: $c_white;
 }
 
