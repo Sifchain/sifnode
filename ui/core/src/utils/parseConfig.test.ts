@@ -113,7 +113,7 @@ const expected = {
     address: "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4",
     decimals: 12,
     name: "123",
-    network: "ethereum",
+    network: "sifchain",
     symbol: "rowan",
   },
   sifAddrPrefix: "sif",
