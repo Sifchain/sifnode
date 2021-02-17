@@ -113,7 +113,7 @@ export default defineComponent({
   align-items: center;
 
   .image {
-    height: 22px;
+    height: 20px;
     margin-right: 8px;
 
     & > * {
@@ -139,8 +139,8 @@ export default defineComponent({
     background: #aaa;
     box-sizing: border-box;
     border-radius: 16px;
-    height: 22px;
-    width: 22px;
+    height: 20px;
+    width: 20px;
     text-align: center;
   }
 
