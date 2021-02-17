@@ -160,11 +160,11 @@ export default defineComponent({
       handleSelectSymbol: () => {},
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
-        let realMaxAmount = Number(accountBalance.value.toFixed());
-        if (symbol.value === "ceth") {
-          realMaxAmount = realMaxAmount - Number(feeAmount.value.toFixed());
-        }
-        amount.value = realMaxAmount.toString();
+        const decimals = Asset.get(symbol.value).decimals;
+        amount.value =
+          symbol.value === "ceth"
+            ? accountBalance.value.subtract(feeAmount.value).toFixed(decimals)
+            : accountBalance.value.toFixed(decimals);
       },
       handleAmountUpdated: (newAmount: string) => {
         amount.value = newAmount;
