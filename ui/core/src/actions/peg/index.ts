@@ -1,10 +1,5 @@
 import { ActionContext } from "..";
-import {
-  Asset,
-  AssetAmount,
-  Fraction,
-  TransactionStatus,
-} from "../../entities";
+import { Address, Asset, AssetAmount, TransactionStatus } from "../../entities";
 import notify from "../../api/utils/Notifications";
 import JSBI from "jsbi";
 
@@ -56,7 +51,14 @@ export default ({
         feeAmount,
       });
 
-      console.log("unpeg", tx, assetAmount, store.wallet.eth.address, store.wallet.sif.address, feeAmount);
+      console.log(
+        "unpeg",
+        tx,
+        assetAmount,
+        store.wallet.eth.address,
+        store.wallet.sif.address,
+        feeAmount
+      );
 
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 
@@ -66,25 +68,49 @@ export default ({
           message: txStatus.memo || "There was an error while unpegging",
         });
       }
-      console.log("unpeg txStatus.state", txStatus.state, txStatus.memo, txStatus.code, tx.value.msg);
+      console.log(
+        "unpeg txStatus.state",
+        txStatus.state,
+        txStatus.memo,
+        txStatus.code,
+        tx.value.msg
+      );
 
       return txStatus;
     },
-
+    // TODO: Move this approval command to within peg and report status via store or some other means
+    //       This has been done for convenience but we should not have to know in the view that
+    //       approval is required before pegging as that is very much business domain knowledge
+    async approve(address: Address, assetAmount: AssetAmount) {
+      return await api.EthbridgeService.approveBridgeBankSpend(
+        address,
+        assetAmount
+      );
+    },
     async peg(assetAmount: AssetAmount) {
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
         ? api.EthbridgeService.burnToSifchain
         : api.EthbridgeService.lockToSifchain;
-
       return await new Promise<TransactionStatus>(done => {
         lockOrBurnFn(store.wallet.sif.address, assetAmount, ETH_CONFIRMATIONS)
-          .onTxHash(hash =>
+          .onTxHash(hash => {
+            // TODO: Set tx status on store for pending txs to use elsewhere
+            notify({
+              type: "info",
+              message: "Pegged Transaction Pending",
+              detail: {
+                type: "etherscan",
+                message: hash.txHash,
+              },
+              loader: true,
+            });
+
             done({
               hash: hash.txHash,
               memo: "Transaction Accepted",
               state: "accepted",
-            })
-          )
+            });
+          })
           .onError(err => {
             notify({ type: "error", message: err.payload.memo! });
             done(err.payload);
