@@ -111,11 +111,6 @@ export default ({
               state: "accepted",
             });
           })
-          // invoked on each eth confirmation, was originally used to invoke
-          // notification, but above is more accurate (there is etherscan value)
-          // .onEthConfCountChanged(instance => {
-          //   console.log(instance)
-          // })
           .onError(err => {
             notify({ type: "error", message: err.payload.memo! });
             done(err.payload);
