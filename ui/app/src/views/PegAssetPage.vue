@@ -161,7 +161,7 @@ export default defineComponent({
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
         let realMaxAmount = Number(accountBalance.value.toFixed());
-        if (symbol.value === "ceth") {
+        if (symbol.value === "eth") {
           realMaxAmount = realMaxAmount - Number(feeAmount.value.toFixed());
         }
         amount.value = realMaxAmount.toString();
