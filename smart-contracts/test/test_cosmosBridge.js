@@ -556,7 +556,9 @@ contract("CosmosBridge", function (accounts) {
 
       const value = await this.cosmosBridge.consensusThreshold();
       assert.equal(value, newConsensusThreshold);
+    });
 
+    it("should reject invalid threshold value", async function () {
       const zeroConsensusThreshold = 0;
       await expectRevert(this.cosmosBridge.updateProphecyThreshold( 
         zeroConsensusThreshold, {
@@ -570,6 +572,10 @@ contract("CosmosBridge", function (accounts) {
         from: operator
       }),
       "Invalid consensus threshold.")
+    });
+
+    it("should reject update from non operator account", async function () {
+      const newConsensusThreshold = 60;
 
       await expectRevert(this.cosmosBridge.updateProphecyThreshold( 
         newConsensusThreshold, {
@@ -577,7 +583,6 @@ contract("CosmosBridge", function (accounts) {
       }),
       "Must be the operator.")
     });
-
 
   });
 
