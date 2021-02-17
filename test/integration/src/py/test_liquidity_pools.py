@@ -9,7 +9,12 @@ from burn_lock_functions import EthereumToSifchainTransferRequest
 import test_utilities
 from pytest_utilities import generate_test_account
 from test_utilities import get_required_env_var, SifchaincliCredentials, get_optional_env_var, ganache_owner_account, \
-    get_shell_output_json, get_shell_output, detect_errors_in_sifnodecli_output, get_transaction_result
+    get_shell_output_json, get_shell_output, detect_errors_in_sifnodecli_output, get_transaction_result, amount_in_wei
+
+
+smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
+bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
+bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
 
 
 def get_faucet_balance(sifnodecli_node):
@@ -56,6 +61,7 @@ def create_pool(
         "-y -o json"
     ])
     json_str = get_shell_output_json(cmd)
+    assert(json_str.get("code", 0) == 0)
     txn = get_transaction_result(json_str["txhash"], transfer_request.sifnodecli_node, transfer_request.chain_id)
     tx = txn["tx"]
     logging.debug(f"resulting tx: {tx}")
@@ -89,6 +95,7 @@ def swap_pool(
         "-y -o json"
     ])
     json_str = get_shell_output_json(cmd)
+    assert(json_str.get("code", 0) == 0)
     txn = get_transaction_result(json_str["txhash"], transfer_request.sifnodecli_node, transfer_request.chain_id)
     tx = txn["tx"]
     logging.debug(f"resulting tx: {tx}")
@@ -98,7 +105,8 @@ def swap_pool(
 # sifnodecli tx clp remove-liquidity --from sif1cffgyxgvw80rr6n9pcwpzrm6v8cd6dax8x32f5 --symbol cacoin --wBasis 5001 --asymmetry -1 --yes --node tcp://54.218.170.168:26657 --trust-node --chain-id sandpit --gas-prices "0.5rowan"
 def remove_pool_liquidity(
         transfer_request: EthereumToSifchainTransferRequest,
-        credentials: SifchaincliCredentials
+        credentials: SifchaincliCredentials,
+        wBasis
 ):
     logging.debug(f"remove_pool_liquidity")
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
@@ -111,7 +119,7 @@ def remove_pool_liquidity(
         "sifnodecli tx clp remove-liquidity",
         f"--from {transfer_request.sifchain_address}",
         f"--symbol {transfer_request.sifchain_symbol}",
-        f"--wBasis 10000",
+        f"--wBasis {wBasis}",
         f"--asymmetry 0",
         keyring_backend_entry,
         chain_id_entry,
@@ -121,6 +129,7 @@ def remove_pool_liquidity(
         "-y -o json"
     ])
     json_str = get_shell_output_json(cmd)
+    assert(json_str.get("code", 0) == 0)
     txn = get_transaction_result(json_str["txhash"], transfer_request.sifnodecli_node, transfer_request.chain_id)
     tx = txn["tx"]
     logging.debug(f"resulting tx: {tx}")
@@ -152,6 +161,7 @@ def add_pool_liquidity(
         "-y -o json"
     ])
     json_str = get_shell_output_json(cmd)
+    assert(json_str.get("code", 0) == 0)
     txn = get_transaction_result(json_str["txhash"], transfer_request.sifnodecli_node, transfer_request.chain_id)
     tx = txn["tx"]
     logging.debug(f"resulting tx: {tx}")
@@ -281,7 +291,7 @@ def test_request_faucet_coins(
     get_faucet_balance(basic_transfer_request.sifnodecli_node)
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
 
-#@pytest.mark.skip(reason="not now")
+@pytest.mark.skip(reason="not now")
 def test_create_pools(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
@@ -334,16 +344,68 @@ def test_create_pools(
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
 
 
+def init_currency_test(
+        new_currency_symbol,
+        basic_transfer_request: EthereumToSifchainTransferRequest,
+        source_ethereum_address: str,
+        rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
+        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
+        test_amount,
+        ethereum_network,
+        solidity_json_path,
+):
+    amount = test_amount * 1000 # create a bunch more than initial amount
+    logging.info(f"create new currency")
+    new_currency = test_utilities.create_new_currency(
+        amount,
+        new_currency_symbol,
+        smart_contracts_dir=smart_contracts_dir,
+        bridgebank_address=bridgebank_address,
+        solidity_json_path=solidity_json_path
+    )
+
+    logging.info(f"create test account to use with new currency {new_currency_symbol}")
+    basic_transfer_request.ethereum_address = source_ethereum_address
+    request, credentials = generate_test_account(
+        basic_transfer_request,
+        rowan_source_integrationtest_env_transfer_request,
+        rowan_source_integrationtest_env_credentials,
+        target_ceth_balance=10 ** 17,
+        target_rowan_balance=10 ** 18
+    )
+    #test_amount = 39000
+    logging.info(f"transfer some of the new currency {new_currency_symbol} to the test sifchain address")
+    request.ethereum_symbol = new_currency["newtoken_address"]
+    request.sifchain_symbol = ("c" + new_currency["newtoken_symbol"]).lower()
+    request.amount = test_amount
+    burn_lock_functions.transfer_ethereum_to_sifchain(request)
+    return request, credentials
+
+
 # @pytest.mark.skip(reason="not now")
 def test_pools(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
-        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest
+        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
+        solidity_json_path
 ):
+    # max symbol length in clp is 10
+    new_currency_symbol = ("a" + get_shell_output("uuidgen").replace("-", ""))[:8]
+    target_new_currency_balance = 5 * 10 ** 18
+    logging.info(f"create new currency")
+    new_currency = test_utilities.create_new_currency(
+        1000 * target_new_currency_balance,
+        new_currency_symbol,
+        smart_contracts_dir=smart_contracts_dir,
+        bridgebank_address=bridgebank_address,
+        solidity_json_path=solidity_json_path
+    )
+    sifchain_symbol = ("c" + new_currency["newtoken_symbol"]).lower()
+
     basic_transfer_request.ethereum_address = source_ethereum_address
     basic_transfer_request.check_wait_blocks = True
-    target_rowan_balance = 10 ** 18
+    target_rowan_balance = 5 * 10 ** 18
     target_ceth_balance = 10 ** 18
     request, credentials = generate_test_account(
         basic_transfer_request,
@@ -352,54 +414,98 @@ def test_pools(
         target_ceth_balance=target_ceth_balance,
         target_rowan_balance=target_rowan_balance
     )
-    #time.sleep(10)
+
+    logging.info(f"transfer some of the new currency {new_currency_symbol} to the test sifchain address")
+    request.ethereum_symbol = new_currency["newtoken_address"]
+    request.sifchain_symbol = sifchain_symbol
+    request.amount = target_new_currency_balance
+    burn_lock_functions.transfer_ethereum_to_sifchain(request)
 
     sifaddress = request.sifchain_address
-    from_key = credentials.from_key
+    sifchain_fees = 100000  # Should probably make this a constant
+    #from_key = credentials.from_key
     # wait for balance
     test_utilities.wait_for_sifchain_addr_balance(sifaddress, "rowan", target_rowan_balance, basic_transfer_request.sifnodecli_node)
-    test_utilities.wait_for_sifchain_addr_balance(sifaddress, "ceth", target_ceth_balance, basic_transfer_request.sifnodecli_node)
+    test_utilities.wait_for_sifchain_addr_balance(sifaddress, sifchain_symbol, target_new_currency_balance, basic_transfer_request.sifnodecli_node)
 
     pools = get_pools(basic_transfer_request.sifnodecli_node)
-    change_amount = 10 ** 17
-    sifchain_fees = 100000  # Should probably make this a constant
-    basic_transfer_request.amount = change_amount
-    basic_transfer_request.sifchain_symbol = "ceth"
+    basic_transfer_request.sifchain_symbol = sifchain_symbol
     basic_transfer_request.sifchain_address = sifaddress
-    current_ceth_balance = target_ceth_balance
+    current_coin_balance = target_new_currency_balance
     current_rowan_balance = target_rowan_balance
+
+    change_amount = 10 ** 19
+    basic_transfer_request.amount = change_amount
+    # Fail if amount is greater than user has
+    txn = create_pool(basic_transfer_request, credentials)
+    assert(txn["code"] == 12)
+    current_rowan_balance = current_rowan_balance - sifchain_fees
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
+
+    change_amount = 10 ** 17
+    basic_transfer_request.amount = change_amount
+    # Fail if amount is less than or equal to minimum
+    txn = create_pool(basic_transfer_request, credentials)
+    assert(txn["code"] == 7)
+    current_rowan_balance = current_rowan_balance - sifchain_fees
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
+
+    change_amount = 10 ** 18
+    basic_transfer_request.amount = change_amount
+    # Only works the first time, fails later.
+    txn = create_pool(basic_transfer_request, credentials)
+    assert(txn.get("code", 0) == 0)
+    get_pools(basic_transfer_request.sifnodecli_node)
+    current_coin_balance = current_coin_balance - change_amount
+    current_rowan_balance = current_rowan_balance - change_amount - sifchain_fees
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
+
+    # check for failure if we try to create a pool twice
+    txn = create_pool(basic_transfer_request, credentials)
+    assert(txn["code"] == 14)
+    get_pools(basic_transfer_request.sifnodecli_node)
+    current_rowan_balance = current_rowan_balance - sifchain_fees
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
 
     # ensure we can add liquidity, money gets transferred
     txn = add_pool_liquidity(basic_transfer_request, credentials)
     assert(txn.get("code", 0) == 0)
     get_pools(basic_transfer_request.sifnodecli_node)
-    current_ceth_balance = current_ceth_balance - change_amount
+    current_coin_balance = current_coin_balance - change_amount
     current_rowan_balance = current_rowan_balance - change_amount - sifchain_fees
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
-    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
+
+    # check for failure if we try to remove all liquidity
+    txn = remove_pool_liquidity(basic_transfer_request, credentials, 10000)
+    assert(txn["code"] == 26)
+    get_pools(basic_transfer_request.sifnodecli_node)
+    current_rowan_balance = current_rowan_balance - sifchain_fees
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
 
     # ensure we can remove liquidity, money gets transferred
-    txn = remove_pool_liquidity(basic_transfer_request, credentials)
+    txn = remove_pool_liquidity(basic_transfer_request, credentials, 5000)
     assert(txn.get("code", 0) == 0)
     get_pools(basic_transfer_request.sifnodecli_node)
-    current_ceth_balance = current_ceth_balance + change_amount
+    current_coin_balance = current_coin_balance + change_amount
     current_rowan_balance = current_rowan_balance + change_amount - sifchain_fees
     #assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
-    #assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
+    #assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_ceth_balance)
     # no slippage if pool is perfectly balanced.
 
-    #"""
     # TODO: compute this precisely?
     slip_pct = 0.01
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
     slip_cost = (slip_pct * current_rowan_balance)
     assert(balance >= current_rowan_balance - slip_cost and balance <= current_rowan_balance + slip_cost )
     current_rowan_balance = balance
-    balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth")
-    slip_cost = (slip_pct * current_ceth_balance)
-    assert(balance >= current_ceth_balance - slip_cost and balance <= current_ceth_balance + slip_cost)
-    current_ceth_balance = balance
-    #"""
+    balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol)
+    slip_cost = (slip_pct * current_coin_balance)
+    assert(balance >= current_coin_balance - slip_cost and balance <= current_coin_balance + slip_cost)
+    current_coin_balance = balance
 
     # check for failure if we try to add too much liquidity
     basic_transfer_request.amount = 10 ** 19
@@ -408,45 +514,47 @@ def test_pools(
     get_pools(basic_transfer_request.sifnodecli_node)
     current_rowan_balance = current_rowan_balance - sifchain_fees
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
-    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
 
-    # check for failure if we try to remove too much liquidity
-    txn = remove_pool_liquidity(basic_transfer_request, credentials)
+    # check for failure if we try to remove too much liquidity, only occurs now if not 100% liquidity provider
+    """
+    txn = remove_pool_liquidity(basic_transfer_request, credentials, 10000)
     assert(txn["code"] == 3)
     get_pools(basic_transfer_request.sifnodecli_node)
     current_rowan_balance = current_rowan_balance - sifchain_fees
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
-    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
+    """
 
     # check for failure if we try to swap too much for user
-    txn = swap_pool(basic_transfer_request, "rowan", "ceth", credentials)
+    txn = swap_pool(basic_transfer_request, "rowan", sifchain_symbol, credentials)
     assert(txn["code"] == 27)
     get_pools(basic_transfer_request.sifnodecli_node)
     current_rowan_balance = current_rowan_balance - sifchain_fees
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
-    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
 
     # check for failure if we try to swap too much for pool
     basic_transfer_request.amount = 5 * 10 ** 17
-    txn = swap_pool(basic_transfer_request, "rowan", "ceth", credentials)
+    txn = swap_pool(basic_transfer_request, "rowan", sifchain_symbol, credentials)
     assert(txn["code"] == 31)
     get_pools(basic_transfer_request.sifnodecli_node)
     current_rowan_balance = current_rowan_balance - sifchain_fees
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
-    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
+    assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
 
     # now try to do a swap that works
     change_amount = 10 ** 15
     basic_transfer_request.amount = change_amount
-    txn = swap_pool(basic_transfer_request, "rowan", "ceth", credentials)
+    txn = swap_pool(basic_transfer_request, "rowan", sifchain_symbol, credentials)
     # TODO: compute this precisely?
     slip_pct = 0.01
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
     assert(balance < current_rowan_balance)
     current_rowan_balance = balance
-    balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth")
-    assert(balance > current_ceth_balance)
-    current_ceth_balance = balance
+    balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol)
+    assert(balance > current_coin_balance)
+    current_coin_balance = balance
 
     #current_ceth_balance = current_ceth_balance + change_amount
     #current_rowan_balance = current_rowan_balance - change_amount - sifchain_fees
