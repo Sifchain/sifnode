@@ -77,7 +77,7 @@ export default defineComponent({
         <span>${{ poolDepth }}</span>
       </div>
       <div class="col-sm">
-        <span>{{ volume }}</span>
+        <span>${{ volume }}</span>
       </div>
       <div class="col-sm">
         <span>{{ poolAPY }}%</span>
