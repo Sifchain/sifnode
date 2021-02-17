@@ -56,26 +56,29 @@ func TestCalculateSwapResult(t *testing.T) {
 		Y        string `json:"Y"`
 		Expected string `json:"expected"`
 	}
+
 	type Test struct {
 		TestType []TestCase `json:"SingleSwapResult"`
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/singleswap_result.json")
 	assert.NoError(t, err)
+
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
+
 	testcases := test.TestType
 	errCount := 0
 	for _, test := range testcases {
-		res, _ := calcSwapResult("cusdt",
-			true, //100000000000000000000
+		Yy, _ := calcSwapResult("cusdt",
+			true,
 			sdk.NewUintFromString(test.X),
 			sdk.NewUintFromString(test.Xx),
 			sdk.NewUintFromString(test.Y))
-		if test.Expected != "0" && !res.Equal(sdk.NewUintFromString(test.Expected)) {
+		if test.Expected != "0" && !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
 			errCount++
-			fmt.Printf("Got %s , Expected %s \n", res, strings.Split(test.Expected, ".")[0])
+			fmt.Printf("Got %s , Expected %s \n", Yy, strings.Split(test.Expected, ".")[0])
 		}
 	}
 	fmt.Printf("Total/Failed: %d/%d", len(testcases), errCount)
@@ -88,25 +91,29 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 		Y        string `json:"Y"`
 		Expected string `json:"expected"`
 	}
+
 	type Test struct {
 		TestType []TestCase `json:"SingleSwapLiquidityFee"`
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/singleswap_liquidityfees.json")
 	assert.NoError(t, err)
+
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
+
 	testcases := test.TestType
 	errCount := 0
 	for _, test := range testcases {
-		res, _ := calcLiquidityFee(
+		Yy, _ := calcLiquidityFee("cusdt",
+		    true,
 			sdk.NewUintFromString(test.X),
 			sdk.NewUintFromString(test.Xx),
 			sdk.NewUintFromString(test.Y))
-		if test.Expected != "0" && !res.Equal(sdk.NewUintFromString(test.Expected)) {
+		if test.Expected != "0" && !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
 			errCount++
-			fmt.Printf("Got %s , Expected %s \n", res, strings.Split(test.Expected, ".")[0])
+			fmt.Printf("Got %s , Expected %s \n", Yy, strings.Split(test.Expected, ".")[0])
 		}
 	}
 	fmt.Printf("Total/Failed: %d/%d", len(testcases), errCount)
@@ -114,40 +121,43 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 
 func TestCalculateDoubleSwapResult(t *testing.T) {
 	type TestCase struct {
-		Xx       string `json:"ax"`
-		X        string `json:"aX"`
-		Y        string `json:"aY"`
+		Ax       string `json:"ax"`
+		AX       string `json:"aX"`
+		AY       string `json:"aY"`
 		BX       string `json:"bX"`
 		BY       string `json:"bY"`
 		Expected string `json:"expected"`
 	}
+
 	type Test struct {
 		TestType []TestCase `json:"DoubleSwap"`
 	}
 	file, err := ioutil.ReadFile("../../../test/test-tables/doubleswap_result.json")
 	assert.NoError(t, err)
+
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 	var test Test
 	err = json.Unmarshal(file, &test)
 	assert.NoError(t, err)
+
 	testcases := test.TestType
 	errCount := 0
 	for _, test := range testcases {
-		res, _ := calcSwapResult("cusdt",
-			true, //100000000000000000000
-			sdk.NewUintFromString(test.X),
-			sdk.NewUintFromString(test.Xx),
-			sdk.NewUintFromString(test.Y))
+		Ay, _ := calcSwapResult("cusdt",
+			true,
+			sdk.NewUintFromString(test.AX),
+			sdk.NewUintFromString(test.Ax),
+			sdk.NewUintFromString(test.AY))
 
-		res2, _ := calcSwapResult("cusdt",
-			true, //100000000000000000000
-			sdk.NewUintFromString(test.X),
-			sdk.NewUintFromString(test.Xx),
-			sdk.NewUintFromString(test.Y))
+		By, _ := calcSwapResult("cusdt",
+			true,
+			sdk.NewUintFromString(test.BX),
+			Ay,
+			sdk.NewUintFromString(test.BY))
 
-		if test.Expected != "0" && !res2.Equal(sdk.NewUintFromString(test.Expected)) {
+		if test.Expected != "0" && !By.Equal(sdk.NewUintFromString(test.Expected)) {
 			errCount++
-			fmt.Printf("Got %s , Expected %s \n", res, strings.Split(test.Expected, ".")[0])
+			fmt.Printf("Got %s , Expected %s \n", By, strings.Split(test.Expected, ".")[0])
 		}
 	}
 	fmt.Printf("Total/Failed: %d/%d", len(testcases), errCount)
