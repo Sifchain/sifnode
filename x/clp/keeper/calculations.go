@@ -13,7 +13,6 @@ import (
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
-
 	var X sdk.Uint
 	var Y sdk.Uint
 	toRowan := true
@@ -53,7 +52,6 @@ func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.P
 }
 
 func GetSwapFee(sentAmount sdk.Uint, to types.Asset, pool types.Pool) sdk.Uint {
-
 	var X sdk.Uint
 	var Y sdk.Uint
 	toRowan := true
@@ -202,7 +200,7 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 	if err != nil {
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
 	}
-	// E18 - > E1
+
 	P = ReducePrecision(P, minLen)
 	R = ReducePrecision(R, minLen)
 	A = ReducePrecision(A, minLen)
@@ -210,35 +208,25 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 	r = ReducePrecision(r, minLen)
 
 	slipAdjDenominator := (r.MulInt64(2).Add(R)).Mul(a.Add(A))
-	// ABS((R a - r A)/((2 r + R) (a + A)))
 	var slipAdjustment sdk.Dec
 	if R.Mul(a).GT(r.Mul(A)) {
 		slipAdjustment = R.Mul(a).Sub(r.Mul(A)).Quo(slipAdjDenominator)
 	} else {
 		slipAdjustment = r.Mul(A).Sub(R.Mul(a)).Quo(slipAdjDenominator)
 	}
-	// (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 	slipAdjustment = sdk.NewDec(1).Sub(slipAdjustment)
 
-	// ((P (a R + A r))
 	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
-	// 2AR
 	denominator := sdk.NewDec(2).Mul(A).Mul(R)
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
 	newPoolUnit := P.Add(stakeUnits)
-	//E1 ->E18
 	newPoolUnit = IncreasePrecision(newPoolUnit, minLen)
 	stakeUnits = IncreasePrecision(stakeUnits, minLen)
 
 	return sdk.NewUintFromBigInt(newPoolUnit.RoundInt().BigInt()), sdk.NewUintFromBigInt(stakeUnits.RoundInt().BigInt()), nil
 }
 
-// Add validations for X,x,Y
-//( x^2 * Y ) / ( x + X )^2
 func calcLiquidityFee(X, x, Y sdk.Uint) (sdk.Uint, error) {
-	if !ValidateInputs([]sdk.Uint{x, Y}) {
-		return sdk.ZeroUint(), types.ErrInvalid //error
-	}
 	if X.IsZero() && x.IsZero() {
 		return sdk.ZeroUint(), nil
 	}
@@ -293,13 +281,7 @@ func calcSwapResult(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, er
 	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
 }
 
-//( x^2 * Y ) / ( x + X )^2
-
 func calcPriceImpact(X, x sdk.Uint) (sdk.Uint, error) {
-	// if inputs are outside range return error
-	if !ValidateInputs([]sdk.Uint{X, x}) {
-		return sdk.ZeroUint(), types.ErrInvalid
-	}
 	if (X.IsZero() && x.IsZero()) || x.IsZero() {
 		return sdk.ZeroUint(), nil
 	}
@@ -313,16 +295,6 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 	externalAssetBalance := pool.ExternalAssetBalance
 	return CalculateWithdrawal(poolUnits, nativeAssetBalance.String(), externalAssetBalance.String(),
 		lp.LiquidityProviderUnits.String(), sdk.NewInt(types.MaxWbasis).String(), sdk.ZeroInt())
-}
-
-func ValidateInputs(inputs []sdk.Uint) bool {
-	minValue := sdk.NewUintFromString("1000000000")
-	for _, val := range inputs {
-		if !val.IsZero() && val.LT(minValue) {
-			return false
-		}
-	}
-	return true
 }
 
 func ValidateZero(inputs []sdk.Uint) bool {
@@ -357,7 +329,7 @@ func GetMinLen(inputs []sdk.Uint) int64 {
 	minLen := math.MaxInt64
 	for _, val := range inputs {
 		currentLen := len(val.String())
-		if currentLen < minLen { //&& val.GTE(minValue)
+		if currentLen < minLen {
 			minLen = currentLen
 		}
 	}
