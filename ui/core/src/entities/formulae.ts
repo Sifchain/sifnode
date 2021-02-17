@@ -1,15 +1,6 @@
 import Big from "big.js";
 import { Fraction, IFraction } from "./fraction/Fraction";
 
-function verifyInputs(inputs: IFraction[]) {
-  for (let i of inputs) {
-    if (!i.equalTo("0") && i.lessThan("1000000000")) {
-      return false;
-    }
-  }
-  return true;
-}
-
 /**
  *
  * @param r Native amount added
@@ -31,10 +22,6 @@ export function calculatePoolUnits(
   }
 
   if (a.equalTo("0") && r.equalTo("0")) {
-    return new Fraction("0");
-  }
-
-  if (!verifyInputs([r, a, R, A, P])) {
     return new Fraction("0");
   }
 
@@ -90,15 +77,6 @@ export function calculateWithdrawal({
   wBasisPoints: IFraction;
   asymmetry: IFraction;
 }) {
-  if (!verifyInputs([poolUnits, nativeAssetBalance, externalAssetBalance, lpUnits])) {
-    return {
-      withdrawNativeAssetAmount: new Fraction("0"),
-      withdrawExternalAssetAmount: new Fraction("0"),
-      lpUnitsLeft: new Fraction("0"),
-      swapAmount: new Fraction("0"),
-    };
-  }
-
   let unitsToClaim = new Fraction("0");
   if (!wBasisPoints.equalTo("0")) {
     unitsToClaim = lpUnits.divide(TEN_THOUSAND.divide(wBasisPoints));
@@ -182,11 +160,7 @@ export function calculateSwapResult(X: IFraction, x: IFraction, Y: IFraction) {
   if (x.equalTo("0") || X.equalTo("0") ||  Y.equalTo("0")) {
     return new Fraction("0");
   }
-  if (!verifyInputs([X, x, Y])) {
-    return new Fraction("0");
-  }
   const xPlusX = x.add(X);
-
   return x
     .multiply(X)
     .multiply(Y)
@@ -215,9 +189,6 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
   if (S.eq("0") || X.eq("0") || S.times(4).gt(Y)) {
     return Big("0");
   }
-  if (!verifyInputs([new Fraction(S.toFixed(0)), new Fraction(X.toFixed(0)), new Fraction(Y.toFixed(0))])) {
-    return new Big("0");
-  }
   const term1 = Big(-2).times(X).times(S);
   const term2 = X.times(Y);
   const underRoot = Y.times(Y.minus(S.times(4)));
@@ -239,10 +210,6 @@ export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
   if (x.equalTo("0") || Y.equalTo("0")) {
     return new Fraction("0");
   }
-  if (!verifyInputs([x, X, Y])) {
-    return new Fraction("0");
-  }
-
   const xPlusX = x.add(X);
   return x.multiply(x).multiply(Y).divide(xPlusX.multiply(xPlusX));
 }
@@ -257,11 +224,6 @@ export function calculatePriceImpact(x: IFraction, X: IFraction) {
   if (x.equalTo("0")) {
     return new Fraction("0");
   }
-
-  if (!verifyInputs([x, X])) {
-    return new Fraction("0");
-  }
-
   const denominator = x.add(X);
   return x.divide(denominator);
 }
