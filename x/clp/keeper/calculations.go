@@ -263,6 +263,7 @@ func calcLiquidityFee(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, 
     }
 
     minLen := GetMinLen([]sdk.Uint{X, x, Y})
+
     Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
     xd := ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
     Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)

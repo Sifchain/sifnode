@@ -46,7 +46,7 @@ func TestCalculatePoolUnits(t *testing.T) {
 		}
 
 	}
-	fmt.Printf("Total/Failed: %d/%d", len(testcases), errCount)
+	fmt.Printf("TestCalculatePoolUnits \nTotal/Failed: %d/%d\n", len(testcases), errCount)
 }
 
 func TestCalculateSwapResult(t *testing.T) {
@@ -81,7 +81,7 @@ func TestCalculateSwapResult(t *testing.T) {
 			fmt.Printf("Got %s , Expected %s \n", Yy, strings.Split(test.Expected, ".")[0])
 		}
 	}
-	fmt.Printf("Total/Failed: %d/%d", len(testcases), errCount)
+	fmt.Printf("TestCalculateSwapResult \nTotal/Failed: %d/%d\n", len(testcases), errCount)
 }
 
 func TestCalculateSwapLiquidityFee(t *testing.T) {
@@ -116,7 +116,7 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 			fmt.Printf("Got %s , Expected %s \n", Yy, strings.Split(test.Expected, ".")[0])
 		}
 	}
-	fmt.Printf("Total/Failed: %d/%d", len(testcases), errCount)
+	fmt.Printf("TestCalculateSwapLiquidityFee \nTotal/Failed: %d/%d\n", len(testcases), errCount)
 }
 
 func TestCalculateDoubleSwapResult(t *testing.T) {
@@ -157,8 +157,8 @@ func TestCalculateDoubleSwapResult(t *testing.T) {
 
 		if test.Expected != "0" && !By.Equal(sdk.NewUintFromString(test.Expected)) {
 			errCount++
-			fmt.Printf("Got %s , Expected %s \n", By, strings.Split(test.Expected, ".")[0])
+			fmt.Printf("TestCalculateDoubleSwapResult: Was %s, Got %s , Expected %s \n %v \n", Ay, By, strings.Split(test.Expected, ".")[0], test)
 		}
 	}
-	fmt.Printf("Total/Failed: %d/%d", len(testcases), errCount)
+	fmt.Printf("\nTotal/Failed: %d/%d \n", len(testcases), errCount)
 }
