@@ -45,7 +45,8 @@ export default defineComponent({
 }
 
 .pool-list-container {
-  overflow-y: auto;
+  overflow-y: scroll;
+  overflow-x: hidden;
   margin-bottom: 32px;
   border-bottom-left-radius: $br_sm;
   border-bottom-right-radius: $br_sm;

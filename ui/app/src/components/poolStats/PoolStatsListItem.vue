@@ -100,7 +100,7 @@ export default defineComponent({
 
 <style scoped lang="scss">
 .pool-list-item {
-  padding: 12px 12px;
+  padding: 12px 1em;
 
   &:not(:last-of-type) {
     border-bottom: $divider;

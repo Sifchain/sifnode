@@ -30,7 +30,8 @@
 
 <style scoped lang="scss">
 .header {
-  padding: 12px 12px;
+  padding: 2em 1em;
+  min-height: 64px;
   background: $c_gray_900;
   display: flex;
   justify-content: space-evenly;
