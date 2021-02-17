@@ -116,9 +116,10 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 		unitsToSwap := unitsToClaim.Quo(sdk.NewDec(10000).Quo(asymmetryF.Abs()))
 		swapAmount = externalAssetBalanceF.Quo(poolUnitsF.Quo(unitsToSwap))
 	}
-	//if asymmetry is 0 we don't need to swap
 
+	//if asymmetry is 0 we don't need to swap
 	lpUnitsLeft := lpUnitsF.Sub(unitsToClaim)
+
 	return sdk.NewUintFromBigInt(withdrawNativeAssetAmount.RoundInt().BigInt()),
 		sdk.NewUintFromBigInt(withdrawExternalAssetAmount.RoundInt().BigInt()),
 		sdk.NewUintFromBigInt(lpUnitsLeft.RoundInt().BigInt()),
@@ -260,6 +261,7 @@ func calcLiquidityFee(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, 
 			Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
 		}
 	}
+
 	// Assuming the max supply for any token in the world to be 1 trillion
 	minLen := int64(6)
 
@@ -268,9 +270,9 @@ func calcLiquidityFee(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, 
 	Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
 
 	n := xd.Mul(xd).Mul(Yd)
-	d := xd.Add(Xd)
-	de := d.Mul(d)
-	y := n.Quo(de)
+	s := xd.Add(Xd)
+	d := s.Mul(s)
+	y := n.Quo(d)
 
 	y = IncreasePrecision(y, minLen)
 	if !toRowan {
@@ -317,9 +319,9 @@ func calcSwapResult(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, er
 	xd := ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
 	Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
 
-	d := xd.Add(Xd)
-	denom := d.Mul(d)
-	y := xd.Mul(Xd).Mul(Yd).Quo(denom)
+	s := xd.Add(Xd)
+	d := s.Mul(s)
+	y := xd.Mul(Xd).Mul(Yd).Quo(d)
 
 	y = IncreasePrecision(y, minLen)
 	if !toRowan {
@@ -330,11 +332,11 @@ func calcSwapResult(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, er
 }
 
 func calcPriceImpact(X, x sdk.Uint) (sdk.Uint, error) {
-	if (X.IsZero() && x.IsZero()) || x.IsZero() {
+	if x.IsZero() {
 		return sdk.ZeroUint(), nil
 	}
-	denom := x.Add(X)
-	return x.Quo(denom), nil
+	d := x.Add(X)
+	return x.Quo(d), nil
 }
 
 func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.Uint, sdk.Uint, sdk.Uint, sdk.Uint) {
@@ -359,20 +361,11 @@ func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
 	return dec.Quo(p)
 }
 
-func ReducePrecisionInt(num sdk.Int, po int64) sdk.Int {
-	multiplier := big.NewInt(10).Exp(big.NewInt(10), big.NewInt(po), nil)
-	multiplierInt := sdk.NewIntFromBigInt(multiplier)
-	fmt.Println(num.String(), multiplierInt.String())
-	val := num.Quo(multiplierInt)
-	fmt.Println("val", val)
-	return val
+func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
+	p := sdk.NewDec(10).Power(uint64(po))
+	return dec.Mul(p)
 }
 
-func IncreasePrecisionInt(num sdk.Int, po int64) sdk.Int {
-	multiplier := big.NewInt(10).Exp(big.NewInt(10), big.NewInt(po), nil)
-	multiplierInt := sdk.NewIntFromBigInt(multiplier)
-	return num.Mul(multiplierInt)
-}
 func GetMinLen(inputs []sdk.Uint) int64 {
 	minLen := math.MaxInt64
 	for _, val := range inputs {
@@ -385,9 +378,4 @@ func GetMinLen(inputs []sdk.Uint) int64 {
 		return int64(1)
 	}
 	return int64(minLen - 1)
-}
-
-func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
-	p := sdk.NewDec(10).Power(uint64(po))
-	return dec.Mul(p)
 }

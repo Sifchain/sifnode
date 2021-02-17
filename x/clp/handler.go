@@ -309,7 +309,6 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
 		}
 	}
-	fmt.Println(err)
 	sentAmountInt, ok := keeper.ParseToInt(sentAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt

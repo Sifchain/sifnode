@@ -157,14 +157,11 @@ export function calculateWithdrawal({
  * @returns swapAmount
  */
 export function calculateSwapResult(x: IFraction, X: IFraction, Y: IFraction) {
-  if (x.equalTo("0") || X.equalTo("0") ||  Y.equalTo("0")) {
+  if (x.equalTo("0") || X.equalTo("0") || Y.equalTo("0")) {
     return new Fraction("0");
   }
   const xPlusX = x.add(X);
-  return x
-    .multiply(X)
-    .multiply(Y)
-    .divide(xPlusX.multiply(xPlusX));
+  return x.multiply(X).multiply(Y).divide(xPlusX.multiply(xPlusX));
 }
 
 export function calculateExternalExternalSwapResult(
