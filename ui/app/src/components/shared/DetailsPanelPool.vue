@@ -1,6 +1,6 @@
 <template>
   <div class="details">
-    
+
     <div class="details-header">
       <div class="details-row">
         <span class="details-row-asset">
@@ -29,7 +29,7 @@
     <div class="details-body">
       <div class="details-row" v-if="bPerA">
         <span>Rates</span>
-        <span>1 {{ fromTokenLabel }} = {{  bPerA }} {{ toTokenLabel }}</span>
+        <span>1 {{ fromTokenLabel }} = {{ bPerA }} {{ toTokenLabel }}</span>
       </div>
       <div class="details-row" v-if="aPerB">
         <span>&nbsp;</span>
