@@ -11,7 +11,6 @@
           <template v-slot:connected="{ connectedText, requestDialog }">
             <SifButton small ghost success round @click="requestDialog">
               {{ connectedText }}
-              
             </SifButton>
           </template>
         </WithWallet>
@@ -58,7 +57,7 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
 
