@@ -158,15 +158,15 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 	}
 
 	if adjustExternalToken {
-	    aM := externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt())) // Convert token which are not E18 to E18 format
-	    AM := externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
+	    externalAssetAmount = externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt())) // Convert token which are not E18 to E18 format
+	    externalAssetBalance = externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
 	} else {
 	    nativeAssetAmount = nativeAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
 	    nativeAssetBalance = nativeAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
 	}
 
-	inputs := []sdk.Uint{oldPoolUnits, nativeAssetBalance, AM,
-		nativeAssetAmount, aM}
+	inputs := []sdk.Uint{oldPoolUnits, nativeAssetBalance, externalAssetBalance,
+		nativeAssetAmount, externalAssetAmount}
 
 	if nativeAssetAmount.IsZero() && externalAssetAmount.IsZero() {
 		return sdk.ZeroUint(), sdk.ZeroUint(), types.ErrAmountTooLow
@@ -190,7 +190,7 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 	if err != nil {
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance.String(), err))
 	}
-	A, err := sdk.NewDecFromStr(AM.String())
+	A, err := sdk.NewDecFromStr(externalAssetBalance.String())
 	if err != nil {
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance.String(), err))
 	}
@@ -198,7 +198,7 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 	if err != nil {
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetAmount.String(), err))
 	}
-	a, err := sdk.NewDecFromStr(aM.String())
+	a, err := sdk.NewDecFromStr(externalAssetAmount.String())
 	if err != nil {
 		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
 	}
@@ -288,7 +288,7 @@ func calcSwapResult(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, er
 	y := xd.Mul(Xd).Mul(Yd).Quo(denom)
 	y = IncreasePrecision(y, minLen)
 	if !toRowan {
-		y = y.Quo(nfUint)
+		y = y.Quo(normalizationFactor)
 	}
 	return sdk.NewUintFromBigInt(y.RoundInt().BigInt()), nil
 }
