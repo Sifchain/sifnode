@@ -67,13 +67,11 @@ export function useAssetItem(symbol: Ref<string | undefined>) {
     return `background: ${color};`;
   });
 
-  const asset = {
+  return {
     token: token,
     label: tokenLabel,
     background: backgroundStyle,
   };
-
-  return asset;
 }
 
 export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {
