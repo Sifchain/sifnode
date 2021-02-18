@@ -8,7 +8,7 @@
         v-model="searchText"
       />
     </div>
-    <Tabs @tabselected="onTabSelected">
+    <Tabs :defaultIndex="1" @tabselected="onTabSelected">
       <Tab title="External Tokens">
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton

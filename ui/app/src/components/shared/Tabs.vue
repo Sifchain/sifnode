@@ -55,6 +55,7 @@
 </style>
 <script lang="ts">
 import {
+  defineComponent,
   EmitsOptions,
   provide,
   ref,
@@ -64,13 +65,16 @@ import {
   VNode,
 } from "vue";
 import { effect } from "@vue/reactivity";
-export default {
+export default defineComponent({
   emits: ["tabselected"],
-  setup(_: any, context: SetupContext<EmitsOptions>) {
-    const selectedIndex = ref(1);
+  props: ["defaultIndex"],
+  setup(props, context: SetupContext<EmitsOptions>) {
+    const selectedIndex = ref(props.defaultIndex || 0);
     const slots = (context.slots.default && context.slots.default()) ?? [];
     const tabs = slots.map((s: any) => ({ name: (s.props as any).title }));
-    const selectedTitle = ref<string | undefined>(tabs[0].name);
+    const selectedTitle = ref<string | undefined>(
+      tabs[selectedIndex.value].name
+    );
 
     function tabSelected(index: number) {
       const selectedProps = tabs[index].name;
@@ -90,5 +94,5 @@ export default {
       tabs,
     };
   },
-};
+});
 </script>
