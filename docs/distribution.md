@@ -72,6 +72,7 @@ func (CollectLiquidityMiningRewards)getRewards([]sdk.address) map[sdk.address]am
 Keeper stores a list of distributionList 
 
 ##Keeper Functions
+
 ```go
 func SetDistributionList() {}
 func GetDistributionList() {}
@@ -80,6 +81,7 @@ func IterateAllList() {}
 
 
 ##BlockEnderLogic
+
 -Iterate over all distribution lists
 
 -Iterate over receiverTypes , and call getAddressList() on each
@@ -91,6 +93,7 @@ func IterateAllList() {}
 -Call distributionFunction on complete address list .
 
 -Store the returned map in ReceivingList , append values if addresses are present it the list . Create new entries if they are not. 
+
 ##BlockBeginnerLogic
 
 -Iterate over distribution lists
