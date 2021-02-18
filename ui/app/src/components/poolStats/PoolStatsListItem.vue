@@ -67,7 +67,7 @@ export default defineComponent({
         <img v-if="image" width="22" height="22" :src="image" class="image" />
         <div class="placeholder" v-else></div>
         <div class="icon">
-          <span>{{ symbol.toString().substring(1) }}</span>
+          <span>{{ "c" + symbol.toString().slice(1).toUpperCase() }}</span>
         </div>
       </div>
       <div class="col-sm">
@@ -77,7 +77,7 @@ export default defineComponent({
         <span>${{ poolDepth }}</span>
       </div>
       <div class="col-sm">
-        <span>{{ volume }}</span>
+        <span>${{ volume }}</span>
       </div>
       <div class="col-sm">
         <span>{{ poolAPY }}%</span>
@@ -113,7 +113,7 @@ export default defineComponent({
   align-items: center;
 
   .image {
-    height: 22px;
+    height: 20px;
     margin-right: 8px;
 
     & > * {
@@ -139,8 +139,8 @@ export default defineComponent({
     background: #aaa;
     box-sizing: border-box;
     border-radius: 16px;
-    height: 22px;
-    width: 22px;
+    height: 20px;
+    width: 20px;
     text-align: center;
   }
 

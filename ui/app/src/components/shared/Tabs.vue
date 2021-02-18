@@ -67,9 +67,9 @@ import { effect } from "@vue/reactivity";
 export default {
   emits: ["tabselected"],
   setup(_: any, context: SetupContext<EmitsOptions>) {
-    const selectedIndex = ref(0);
+    const selectedIndex = ref(1);
     const slots = (context.slots.default && context.slots.default()) ?? [];
-    const tabs = slots.map((s) => ({ name: (s.props as any).title }));
+    const tabs = slots.map((s: any) => ({ name: (s.props as any).title }));
     const selectedTitle = ref<string | undefined>(tabs[0].name);
 
     function tabSelected(index: number) {

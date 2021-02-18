@@ -51,7 +51,7 @@ export default defineComponent({
         );
         if (!accountBalance) return;
         return fromAmount.value === accountBalance.toFixed();
-    })
+    });
 
     const isToMaxActive = computed(() => {
       const accountBalance = balances.value.find(
@@ -59,7 +59,7 @@ export default defineComponent({
         );
         if (!accountBalance) return;
         return toAmount.value === accountBalance.toFixed();
-    })
+    });
 
     fromSymbol.value = route.params.externalAsset
       ? route.params.externalAsset.toString()

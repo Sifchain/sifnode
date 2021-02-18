@@ -66,7 +66,7 @@ export default defineComponent({
     const { store, actions } = useCore();
 
     const searchText = ref("");
-    const selectedTab = ref("External Tokens");
+    const selectedTab = ref("Sifchain Native");
 
     const allTokens = computed(() => {
       if (selectedTab.value === "External Tokens") {
