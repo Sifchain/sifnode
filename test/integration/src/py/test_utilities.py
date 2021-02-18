@@ -527,7 +527,7 @@ def create_new_currency(
         f"--limit_amount {amount} "
         f"--operator_address {operator_address} "
         f"--ethereum_private_key_env_var ETHEREUM_PRIVATE_KEY "
-        f"--token_name {token_name} "
+        f"--token_name \"{token_name}\" "
         f"--decimals {decimals} "
         f"{network_element} "
     )

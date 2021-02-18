@@ -3,7 +3,6 @@ import copy
 import pytest
 
 import burn_lock_functions
-import test_utilities
 from burn_lock_functions import EthereumToSifchainTransferRequest
 from integration_env_credentials import create_new_sifaddr_and_credentials
 from test_utilities import get_shell_output, amount_in_wei, \
