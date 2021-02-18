@@ -391,7 +391,7 @@ describe("addLiquidityCalculator", () => {
     tokenBAmount.value = "0";
     tokenASymbol.value = "atk";
     tokenBSymbol.value = "rowan";
-    expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
+    expect(state.value).toBe(PoolState.SELECT_TOKENS);
     expect(aPerBRatioMessage.value).toBe("N/A");
     expect(bPerARatioMessage.value).toBe("N/A");
     expect(aPerBRatioProjectedMessage.value).toBe("N/A");
@@ -402,6 +402,18 @@ describe("addLiquidityCalculator", () => {
   test("Don't allow rowan === 0 when creating new pool", () => {
     tokenAAmount.value = "1000";
     tokenBAmount.value = "0";
+    tokenASymbol.value = "atk";
+    tokenBSymbol.value = "rowan";
+    expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
+    expect(aPerBRatioMessage.value).toBe("N/A");
+    expect(bPerARatioMessage.value).toBe("N/A");
+    expect(aPerBRatioProjectedMessage.value).toBe("N/A");
+    expect(bPerARatioProjectedMessage.value).toBe("N/A");
+  });
+
+  test("Don't allow external token === 0 when creating new pool", () => {
+    tokenAAmount.value = "0";
+    tokenBAmount.value = "1000";
     tokenASymbol.value = "atk";
     tokenBSymbol.value = "rowan";
     expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
