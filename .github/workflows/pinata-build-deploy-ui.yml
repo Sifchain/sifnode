@@ -44,7 +44,7 @@ jobs:
         id: pinata
         uses: anantaramdas/ipfs-pinata-deploy-action@v1.6.4
         with:
-          pin-name: 'Sifchain ${{ github.sha }}-${{GITHUB_REF}}'
+          pin-name: 'Sifchain ${{ github.sha }}-${{ env.GITHUB_REF }}'
           path: './ui/app/dist'
           pinata-api-key: ${{ secrets.PINATA_API_KEY }}
           pinata-secret-api-key: ${{ secrets.PINATA_SECRET_KEY }}
