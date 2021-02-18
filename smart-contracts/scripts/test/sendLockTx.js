@@ -13,33 +13,33 @@ module.exports = async (cb) => {
         ...sifchainUtilities.transactionYargOptions
     });
 
-    logging.info(`sendLockTx: ${JSON.stringify(argv, undefined, 2)}`);
+    logging.debug(`sendLockTx arguments: ${JSON.stringify(argv, undefined, 2)}`);
 
-    const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging,"BridgeBank", argv.bridgebank_address);
+    const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging, "BridgeBank", argv.bridgebank_address);
 
     let cosmosRecipient = Web3.utils.utf8ToHex(argv.sifchain_address);
     let coinDenom = argv.symbol;
-    let amount = argv.amount;
+    let amount = new BN(argv.amount);
 
     let request = {
         from: argv.ethereum_address,
         value: coinDenom === sifchainUtilities.NULL_ADDRESS ? amount : 0,
-        gas: argv.gas,
     };
 
-    if (request.gas === 'estimate') {
-        logging.info('getting estimate');
-        const estimate = await bridgeBankContract.lock.estimateGas(cosmosRecipient, coinDenom, amount, {
-            ...request,
-            gas: 6000000,
-        });
+    if (argv.gas === 'estimate') {
+        const estimate = await bridgeBankContract.lock.estimateGas(
+            cosmosRecipient,
+            coinDenom,
+            amount,
+            request,
+        );
         // increase by 10%
-        request.gas = new BN(estimate, 10).mul(new BN(11)).div(new BN(10));
+        request.gas = new BN(estimate).mul(new BN(11)).div(new BN(10));
+    } else {
+        request.gas = argv.gas;
     }
 
     const lockResult = await bridgeBankContract.lock(cosmosRecipient, coinDenom, amount, request);
-
-    logging.debug(`bridgeBankContract.lock: ${JSON.stringify(lockResult, undefined, 2)}`);
 
     console.log(JSON.stringify(lockResult, undefined, 0))
 
