@@ -54,7 +54,7 @@ func (DistributeLiquidityMiningRewards)getAmounts([]sdk.address) map[sdk.address
 }
 ```
 
-###rewards Interface
+### rewards Interface
 
 ```go
 type Rewards interface {
@@ -71,7 +71,7 @@ func (CollectLiquidityMiningRewards)getRewards([]sdk.address) map[sdk.address]am
 
 Keeper stores a list of distributionList 
 
-##Keeper Functions
+## Keeper Functions
 
 ```go
 func SetDistributionList() {}
@@ -80,7 +80,7 @@ func IterateAllList() {}
 ```
 
 
-##BlockEnderLogic
+## BlockEnderLogic
 
 -Iterate over all distribution lists
 
