@@ -251,12 +251,12 @@ describe("addLiquidityCalculator", () => {
         liquidityProvider.value = !preexistingLiquidity
           ? null
           : LiquidityProvider(
-            ATK,
-            new Fraction(preexistingLiquidity.units),
-            akasha.address,
-            new Fraction(preexistingLiquidity.native),
-            new Fraction(preexistingLiquidity.external)
-          );
+              ATK,
+              new Fraction(preexistingLiquidity.units),
+              akasha.address,
+              new Fraction(preexistingLiquidity.native),
+              new Fraction(preexistingLiquidity.external)
+            );
 
         poolFinder.mockImplementation(() => {
           const pool = Pool(
@@ -428,6 +428,25 @@ describe("addLiquidityCalculator", () => {
     expect(bPerARatioMessage.value).toBe("1.00000000");
     expect(aPerBRatioProjectedMessage.value).toBe("1.00100000");
     expect(bPerARatioProjectedMessage.value).toBe("0.99900100");
+  });
+
+  test("Allow external token === 0 when adding to preExistingPool", () => {
+    balances.value = [AssetAmount(ATK, "1000"), AssetAmount(ROWAN, "1000")];
+    poolFinder.mockImplementation(
+      () =>
+        ref(
+          Pool(AssetAmount(ATK, "1000000"), AssetAmount(ROWAN, "1000000"))
+        ) as Ref<Pool>
+    );
+    tokenAAmount.value = "0";
+    tokenBAmount.value = "1000";
+    tokenASymbol.value = "atk";
+    tokenBSymbol.value = "rowan";
+    expect(state.value).toBe(PoolState.VALID_INPUT);
+    expect(aPerBRatioMessage.value).toBe("1.00000000");
+    expect(bPerARatioMessage.value).toBe("1.00000000");
+    expect(aPerBRatioProjectedMessage.value).toBe("0.99900100");
+    expect(bPerARatioProjectedMessage.value).toBe("1.00100000");
   });
 
   test("insufficient funds", () => {
