@@ -161,10 +161,15 @@ export default defineComponent({
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
         const decimals = Asset.get(symbol.value).decimals;
-        amount.value =
+
+        const afterMaxValue =
           symbol.value === "ceth"
-            ? accountBalance.value.subtract(feeAmount.value).toFixed(decimals)
-            : accountBalance.value.toFixed(decimals);
+            ? accountBalance.value.subtract(feeAmount.value)
+            : accountBalance.value;
+
+        amount.value = afterMaxValue.lessThan("0")
+          ? "0.0"
+          : afterMaxValue.toFixed(decimals);
       },
       handleAmountUpdated: (newAmount: string) => {
         amount.value = newAmount;
