@@ -1,0 +1,249 @@
+logstashConfig:
+  logstash.yml: |
+    http.host: 0.0.0.0
+    xpack.monitoring.enabled: true
+    xpack.monitoring.elasticsearch.username: '${ELASTICSEARCH_USERNAME}'
+    xpack.monitoring.elasticsearch.password: '${ELASTICSEARCH_PASSWORD}'
+    xpack.monitoring.elasticsearch.hosts: ["https://54.90.115.189:9200","https://54.235.50.44:9200","https://54.226.53.195:9200"]
+    xpack.monitoring.elasticsearch.ssl.certificate_authority: "/usr/share/logstash/config/elasticsearch-ca.pem"
+    xpack.monitoring.elasticsearch.ssl.verification_mode: "none"
+
+  log4j2.properties: |
+    logger.elasticsearchoutput.name: 'logstash.outputs.elasticsearch'
+    logger.elasticsearchoutput.level: 'debug'
+
+  pipelines.yml: |
+    - pipeline.id: main
+      path.config: "/usr/share/logstash/pipeline/ebrelayer.conf"
+    - pipeline.id: sifnode
+      path.config: "/usr/share/logstash/pipeline/sifnode.conf"
+
+  elasticsearch-ca.pem: |
+    -----BEGIN CERTIFICATE-----
+    MIIDSjCCAjKgAwIBAgIVAM7pknSf64ytE+tnKQF1puqRvhj9MA0GCSqGSIb3DQEB
+    CwUAMDQxMjAwBgNVBAMTKUVsYXN0aWMgQ2VydGlmaWNhdGUgVG9vbCBBdXRvZ2Vu
+    ZXJhdGVkIENBMB4XDTIxMDExODAyNDUwNVoXDTI0MDExODAyNDUwNVowNDEyMDAG
+    A1UEAxMpRWxhc3RpYyBDZXJ0aWZpY2F0ZSBUb29sIEF1dG9nZW5lcmF0ZWQgQ0Ew
+    ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCwiY0+FootRH0+xc/tBu3V
+    TreuP8PDQpWtlaGsA/OiV2jhAzRuGtE1vPa5XNWF98aRfSUoHsE12fBdxkEH/DNw
+    A0eSwsvNrFor7LG7xnIQLUoKldPDSh7siekg7hQz3Q0qEx2ej0QaBvzCYCkik+TC
+    1EeKdl6MHDc44guK7SPctw1Lf1NUVINnyiMBWGCjIzzxgZgesILD8Ph5hISSUrTv
+    YIgBeyP/EVEuf0SDpKyWXK6Vj1YLsNaagj2cJXJI+2wEX5l0FjeuCVQ6Qfx5TV7e
+    XHH+gzBu8aF1PCuV7GqDk8m0jeFYyNuCZ5Gg3gZ1QKuySf4eQxCviBr5aITOhOV7
+    AgMBAAGjUzBRMB0GA1UdDgQWBBTpIvI13W3WAGTb2ZnRC8jrJaUYQzAfBgNVHSME
+    GDAWgBTpIvI13W3WAGTb2ZnRC8jrJaUYQzAPBgNVHRMBAf8EBTADAQH/MA0GCSqG
+    SIb3DQEBCwUAA4IBAQCIEaC0UTOQdH4XCpRxQMIlowPPkcDM5sdTs0gvd9E7Rlse
+    STd/jFVHIjeYbwSlBVhACj16hTcdAcFi8clKTJwxuIx8rV2EQSEd5JwThyOYOV90
+    xGcUQBdrbPHYrtvhGjS90rTWyTwIOu1LklsPcNCSLtIiWjBapiwBBviVQ5TAYApz
+    QmQgqGwBppDVhiDhHlbmZbhI6FbZ/4hVJ7WzVN9Mdorm9c0aldlYtZ4vaVq6vgxV
+    FbkkQNLL/eiW7AohDY99FSYI1HuhkU8C7YwSUyt3v7v8ntIVQ86JQN5BNFjyyyPJ
+    1S1uAeTx+xsRJj3Iz5bVsAk1BlCG2qUw+uQHhhZx
+    -----END CERTIFICATE-----
+
+logstashPipeline:
+  logstash.conf: |
+
+  ebrelayer.conf: |
+    input {
+      file {
+        path => "/container_log/containers/ebrelayer-**.log"
+        type => "relayer_log"
+        start_position => "beginning"
+        sincedb_path => "/container_log/ebrelayer.sincedbpath"
+      }
+     }
+    filter {
+      json {
+        source => "message"
+        remove_field => ["message"]
+        add_field => { "cluster" => '{{ .Values.logstash.args.cluster }}' }
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => ["https://54.90.115.189:9200","https://54.235.50.44:9200","https://54.226.53.195:9200"]
+        user => '${ELASTICSEARCH_USERNAME}'
+        password => '${ELASTICSEARCH_PASSWORD}'
+        index => "ebrelayer"
+        ssl => true
+        cacert => "/usr/share/logstash/config/elasticsearch-ca.pem"
+        ssl_certificate_verification => false
+      }
+    }
+  sifnode.conf: |
+    input {
+      file {
+        path => "/container_log/containers/sifnode-**.log"
+        exclude => "sifnode-cli-**.log"
+        type => "sifnode_log"
+        start_position => "beginning"
+        sincedb_path => "/container_log/sifnode.sincedbpath"
+      }
+     }
+      filter {
+        mutate {
+          add_field => { "cluster" => '{{ .Values.logstash.args.cluster }}' }
+        }
+    }
+    output {
+      elasticsearch {
+        hosts => ["https://54.90.115.189:9200","https://54.235.50.44:9200","https://54.226.53.195:9200"]
+        user => '${ELASTICSEARCH_USERNAME}'
+        password => '${ELASTICSEARCH_PASSWORD}'
+        index => "sifnode"
+        ssl => true
+        cacert => "/usr/share/logstash/config/elasticsearch-ca.pem"
+        ssl_certificate_verification => false
+      }
+    }
+
+extraVolumes: |
+  - name: varlog
+    hostPath:
+      path: /var/log
+  - name: pods
+    hostPath:
+      path: /var/lib/docker/containers
+  - name: docker
+    hostPath:
+      path: /var/log/pods
+
+extraVolumeMounts: |
+  - name: varlog
+    mountPath: /container_log
+  - name: pods
+    mountPath: /var/lib/docker/containers
+    readOnly: true
+  - name: docker
+    mountPath: /var/log/pods
+    readOnly: true
+
+logstash:
+  args:
+    elasticsearchUsername:
+    elasticsearchPassword:
+    cluster:
+
+podSecurityContext:
+  fsGroup: 0
+  runAsUser: 0
+
+securityContext:
+  privileged: true
+  runAsNonRoot: false
+  runAsUser: 0
+
+persistence:
+  enabled: true
+
+replicas: 1
+
+secretMounts: []
+
+hostAliases: []
+
+image: "docker.elastic.co/logstash/logstash"
+imageTag: "8.0.0-SNAPSHOT"
+imagePullPolicy: "IfNotPresent"
+imagePullSecrets: []
+
+podAnnotations: {}
+
+labels: {}
+
+logstashJavaOpts: "-Xmx1g -Xms1g"
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "1536Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1536Mi"
+
+volumeClaimTemplate:
+  accessModes: [ "ReadWriteOnce" ]
+  resources:
+    requests:
+      storage: 1Gi
+
+rbac:
+  create: false
+  serviceAccountAnnotations: {}
+  serviceAccountName: ""
+  annotations: {}
+
+podSecurityPolicy:
+  create: false
+  name: ""
+  spec:
+    privileged: false
+    fsGroup:
+      rule: RunAsAny
+    runAsUser:
+      rule: RunAsAny
+    seLinux:
+      rule: RunAsAny
+    supplementalGroups:
+      rule: RunAsAny
+    volumes:
+      - secret
+      - configMap
+      - persistentVolumeClaim
+
+priorityClassName: ""
+
+antiAffinityTopologyKey: "kubernetes.io/hostname"
+
+antiAffinity: "hard"
+
+nodeAffinity: {}
+
+podManagementPolicy: "Parallel"
+
+httpPort: 9600
+
+extraPorts: []
+
+updateStrategy: RollingUpdate
+
+maxUnavailable: 1
+
+terminationGracePeriod: 120
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 300
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 3
+
+schedulerName: ""
+
+nodeSelector: {}
+
+tolerations: []
+
+nameOverride: ""
+
+fullnameOverride: ""
+
+lifecycle: {}
+
+service: {}
+
+ingress:
+  enabled: false
