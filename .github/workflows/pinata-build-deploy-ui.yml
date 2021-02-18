@@ -1,9 +1,9 @@
 name: Build then Deploy to Pinata
 # run run on merge
 on: 
-  push:
-    paths:
-      - 'ui/**'
+  push
+#    paths:
+#      - 'ui/**'
 
 jobs:
   build:
@@ -25,7 +25,7 @@ jobs:
               echo "VUE_APP_DEPLOYMENT_TAG=mainnet" >> "$GITHUB_ENV"
               echo "VUE_APP_ETHEREUM_ASSET_TAG=ethereum.mainnet" >> "$GITHUB_ENV"
               echo "VUE_APP_SIFCHAIN_ASSET_TAG=sifchain.mainnet" >> "$GITHUB_ENV"
-          elif [[ $GITHUB_REF == 'refs/heads/develop' ]];
+          elif [[ $GITHUB_REF == 'refs/heads/develop' ]]; then
               echo "Config set for betaNet deployment"
               echo "VUE_APP_DEPLOYMENT_TAG=mainnet" >> "$GITHUB_ENV"
               echo "VUE_APP_ETHEREUM_ASSET_TAG=ethereum.mainnet" >> "$GITHUB_ENV"
