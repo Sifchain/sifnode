@@ -4,7 +4,7 @@ logstashConfig:
     xpack.monitoring.enabled: true
     xpack.monitoring.elasticsearch.username: '${ELASTICSEARCH_USERNAME}'
     xpack.monitoring.elasticsearch.password: '${ELASTICSEARCH_PASSWORD}'
-    xpack.monitoring.elasticsearch.hosts: ["https://54.90.115.189:9200","https://54.235.50.44:9200","https://54.226.53.195:9200"]
+    xpack.monitoring.elasticsearch.hosts: ["http://elk-prod-1125755348.us-east-1.elb.amazonaws.com"]
     xpack.monitoring.elasticsearch.ssl.certificate_authority: "/usr/share/logstash/config/elasticsearch-ca.pem"
     xpack.monitoring.elasticsearch.ssl.verification_mode: "none"
 
@@ -61,7 +61,7 @@ logstashPipeline:
     }
     output {
       elasticsearch {
-        hosts => ["https://54.90.115.189:9200","https://54.235.50.44:9200","https://54.226.53.195:9200"]
+        hosts => ["http://elk-prod-1125755348.us-east-1.elb.amazonaws.com"]
         user => '${ELASTICSEARCH_USERNAME}'
         password => '${ELASTICSEARCH_PASSWORD}'
         index => "ebrelayer"
@@ -87,7 +87,7 @@ logstashPipeline:
     }
     output {
       elasticsearch {
-        hosts => ["https://54.90.115.189:9200","https://54.235.50.44:9200","https://54.226.53.195:9200"]
+        hosts => ["http://elk-prod-1125755348.us-east-1.elb.amazonaws.com"]
         user => '${ELASTICSEARCH_USERNAME}'
         password => '${ELASTICSEARCH_PASSWORD}'
         index => "sifnode"
