@@ -10,7 +10,7 @@ export default defineComponent({
   },
   data() {
     return {
-      liqvalrewards: null,
+      data: null,
     };
   },
   async mounted() {
@@ -18,7 +18,7 @@ export default defineComponent({
       "https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/liqvalrewards"
     );
     const json = await data.json();
-    this.liqvalrewards = json.body;
+    this.data = json.body;
   },
 });
 </script>
@@ -26,14 +26,14 @@ export default defineComponent({
 <template>
   <Layout :header="false" title="Staking & Rewards" backLink="/peg">
     <div class="liquidity-container">
-      <Loader black v-if="!liqvalrewards"/>
+      <Loader black v-if="!data"/>
       <div v-else>
         <p class="mb-8">
           Earn additional ROWAN by staking or delegating! 
           The amount of rewards you can earn are: 
-          <span v-if="liqvalrewards.liqValRewards === ''">TBD</span>
+          <span v-if="data.liqValRewards === ''">TBD</span>
           <span v-else>
-            {{liqvalrewards}} 
+            {{data.liqValRewards}} 
           </span>
           + Block rewards (variable)
         </p>
@@ -48,7 +48,9 @@ export default defineComponent({
 <style scoped lang="scss">
 .liquidity-container { 
   text-align: left;
-  color: $c_gray_800;
+  color: $c_gray_700;
+  border-top: 1px solid $c_gray_400;
+  min-height: 145px;
   background: white; 
   padding: 15px;
   border-radius: 0 0 6px 6px
