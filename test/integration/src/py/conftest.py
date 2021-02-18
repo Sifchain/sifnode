@@ -1,6 +1,5 @@
 import copy
 import logging
-import sys
 
 import pytest
 
@@ -11,6 +10,16 @@ from burn_lock_functions import decrease_log_level, force_log_level
 @pytest.fixture
 def smart_contracts_dir():
     return test_utilities.get_required_env_var("SMART_CONTRACTS_DIR")
+
+
+@pytest.fixture
+def validator_password():
+    return test_utilities.get_optional_env_var("OWNER_PASSWORD", None)
+
+
+@pytest.fixture
+def validator_address():
+    return test_utilities.get_optional_env_var("OWNER_ADDR", None)
 
 
 @pytest.fixture
@@ -34,14 +43,44 @@ def ethereum_network():
 
 
 @pytest.fixture
-def sifnodecli_homedir():
-    return f"""{test_utilities.get_required_env_var("CHAINDIR")}/.sifnodecli"""
+def solidity_json_path(smart_contracts_dir):
+    return test_utilities.get_optional_env_var("SOLIDITY_JSON_PATH", f"{smart_contracts_dir}/build/contracts")
 
 
 @pytest.fixture
-def rowan_source(is_ropsten_testnet):
+def sifnodecli_homedir(is_ropsten_testnet):
+    if is_ropsten_testnet:
+        base = test_utilities.get_required_env_var("HOME")
+    else:
+        base = test_utilities.get_required_env_var("CHAINDIR")
+    result = f"""{base}/.sifnodecli"""
+    return result
+
+
+@pytest.fixture
+def rowan_source(is_ropsten_testnet, validator_address):
     """A sifchain address or key that has rowan and can send that rowan to other address"""
-    return test_utilities.get_required_env_var("ROWAN_SOURCE")
+    result = test_utilities.get_optional_env_var("ROWAN_SOURCE", None)
+    if result:
+        return result
+    if is_ropsten_testnet:
+        assert result
+    else:
+        assert validator_address
+        return validator_address
+
+
+@pytest.fixture
+def rowan_source_key(is_ropsten_testnet):
+    """A sifchain address or key that has rowan and can send that rowan to other address"""
+    result = test_utilities.get_optional_env_var("ROWAN_SOURCE_KEY", None)
+    if result:
+        return result
+    if is_ropsten_testnet:
+        # Ropsten requires that you manually set the ROWAN_SOURCE_KEY environment variable
+        assert result
+    else:
+        return test_utilities.get_required_env_var("MONIKER")
 
 
 @pytest.fixture
@@ -61,8 +100,12 @@ def ceth_fee():
 
 @pytest.fixture
 def chain_id(is_ropsten_testnet):
-    id = "sandpit" if is_ropsten_testnet else 5777
-    return test_utilities.get_optional_env_var("CHAINNET", id)
+    result = test_utilities.get_optional_env_var("CHAINNET", None)
+    if result:
+        return result
+    else:
+        id = "sandpit" if is_ropsten_testnet else "localnet"
+        return id
 
 
 @pytest.fixture
@@ -77,6 +120,12 @@ def is_ropsten_testnet(sifnodecli_node):
 
 
 @pytest.fixture
+def is_ganache(ethereum_network):
+    """true if we're using ganache"""
+    return not ethereum_network
+
+
+@pytest.fixture
 def sifchain_fees():
     return "100000rowan"
 
@@ -85,23 +134,22 @@ def sifchain_fees():
 def source_ethereum_address(is_ropsten_testnet, smart_contracts_dir):
     """account with some starting eth that can be transferred out"""
     addr = test_utilities.get_optional_env_var("ETHEREUM_ADDRESS", "")
-    if is_ropsten_testnet:
-        assert addr
+    if addr:
+        logging.debug("using ETHEREUM_ADDRESS provided for source_ethereum_address")
         return addr
-    else:
-        if addr:
-            logging.debug("using ETHEREUM_ADDRESS provided for source_ethereum_address")
-            return addr
-        else:
-            result = test_utilities.ganache_owner_account(smart_contracts_dir)
-            logging.debug(
-                f"Using source_ethereum_address {result} from ganache_owner_account.  (Set ETHEREUM_ADDRESS env var to set it manually)")
-            assert result
-            return result
+    if is_ropsten_testnet:
+        # Ropsten requires that you manually set the ETHEREUM_ADDRESS environment variable
+        assert addr
+    result = test_utilities.ganache_owner_account(smart_contracts_dir)
+    logging.debug(
+        f"Using source_ethereum_address {result} from ganache_owner_account.  (Set ETHEREUM_ADDRESS env var to set it manually)")
+    assert result
+    return result
 
 
 @pytest.fixture(scope="function")
 def ganache_timed_blocks(integration_dir):
+    "restart ganache with timed blocks (keeps existing database)"
     logging.info("restart ganache with timed blocks (keeps existing database)")
     yield test_utilities.get_shell_output(f"{integration_dir}/ganache_start.sh 2")
     logging.info("restart ganache with instant mining (keeps existing database)")
@@ -136,6 +184,8 @@ def basic_transfer_request(
         sifnodecli_node,
         chain_id,
         sifchain_fees,
+        solidity_json_path,
+        is_ganache,
 ):
     """
     Creates a EthereumToSifchainTransferRequest with all the generic fields filled in.
@@ -148,35 +198,42 @@ def basic_transfer_request(
         ethereum_network=ethereum_network,
         ceth_amount=ceth_fee,
         sifnodecli_node=sifnodecli_node,
-        manual_block_advance=True,
+        manual_block_advance=is_ganache,
         chain_id=chain_id,
-        sifchain_fees=sifchain_fees
+        sifchain_fees=sifchain_fees,
+        solidity_json_path=solidity_json_path
     )
 
 
 @pytest.fixture(scope="function")
-def rowan_source_integrationtest_env_credentials(sifnodecli_homedir):
+def rowan_source_integrationtest_env_credentials(
+        sifnodecli_homedir,
+        validator_password,
+        rowan_source_key,
+        is_ganache,
+):
     """
     Creates a SifchaincliCredentials with all the fields filled in
     to transfer rowan from an account that already has rowan.
     """
     return test_utilities.SifchaincliCredentials(
-        keyring_backend="file",
-        keyring_passphrase=test_utilities.get_required_env_var("OWNER_PASSWORD"),
-        from_key=test_utilities.get_required_env_var("MONIKER"),
+        keyring_backend="file" if is_ganache else "test",
+        keyring_passphrase=validator_password,
+        from_key=rowan_source_key,
         sifnodecli_homedir=sifnodecli_homedir
     )
 
 
 @pytest.fixture(scope="function")
 def rowan_source_integrationtest_env_transfer_request(
-        basic_transfer_request
+        basic_transfer_request,
+        rowan_source
 ) -> test_utilities.EthereumToSifchainTransferRequest:
     """
     Creates a EthereumToSifchainTransferRequest with all the generic fields filled in
     for a transfer of rowan from an account that already has rowan.
     """
     result: test_utilities.EthereumToSifchainTransferRequest = copy.deepcopy(basic_transfer_request)
-    result.sifchain_address = test_utilities.get_required_env_var("OWNER_ADDR")
+    result.sifchain_address = rowan_source
     result.sifchain_symbol = "rowan"
     return result
