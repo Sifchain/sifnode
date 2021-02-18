@@ -94,7 +94,7 @@ func IterateAllList() {}
 
 -Store the returned map in ReceivingList , append values if addresses are present it the list . Create new entries if they are not. 
 
-##BlockBeginnerLogic
+## BlockBeginnerLogic
 
 -Iterate over distribution lists
 
@@ -104,7 +104,7 @@ func IterateAllList() {}
 
 -Use Funding address to as from address for distribution.
 
-##Sample Code 
+## Sample Code 
 
 ```go
 package main
