@@ -1,7 +1,5 @@
 import logging
 
-import pytest
-
 import burn_lock_functions
 import test_utilities
 from burn_lock_functions import EthereumToSifchainTransferRequest
@@ -28,6 +26,8 @@ def do_currency_test(
     new_currency = test_utilities.create_new_currency(
         amount,
         new_currency_symbol,
+        new_currency_symbol,
+        18,
         smart_contracts_dir=smart_contracts_dir,
         bridgebank_address=bridgebank_address,
         solidity_json_path=solidity_json_path

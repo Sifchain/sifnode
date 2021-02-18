@@ -1,5 +1,4 @@
 import copy
-import logging
 
 import pytest
 
@@ -11,7 +10,7 @@ from test_utilities import get_shell_output, amount_in_wei, \
     get_sifchain_addr_balance, create_new_currency
 
 
-def build_request(basic_transfer_request, source_ethereum_address, new_currency, amount):
+def build_request_for_new_sifchain_address(basic_transfer_request, source_ethereum_address, new_currency, amount):
     sifaddress, _ = create_new_sifaddr_and_credentials()
     request = copy.deepcopy(basic_transfer_request)
     request.ethereum_symbol = new_currency["newtoken_address"]
@@ -34,17 +33,20 @@ def test_can_create_a_new_token_and_peg_it(
         source_ethereum_address,
 ):
     new_account_key = ("a" + get_shell_output("uuidgen").replace("-", ""))[:token_length]
+    token_name = new_account_key
     amount = amount_in_wei(9)
     new_currency = create_new_currency(
         amount=amount,
         symbol=new_account_key,
+        token_name=token_name,
+        decimals=18,
         smart_contracts_dir=smart_contracts_dir,
         bridgebank_address=bridgebank_address,
         solidity_json_path=solidity_json_path,
         operator_address=operator_account,
         ethereum_network=ethereum_network
     )
-    request = build_request(
+    request = build_request_for_new_sifchain_address(
         basic_transfer_request,
         source_ethereum_address,
         new_currency,
@@ -63,7 +65,7 @@ def test_can_create_a_new_token_with_a_one_number_name_and_peg_it(
     amount = amount_in_wei(9)
     new_currency = create_new_currency(amount, new_account_key, smart_contracts_dir, bridgebank_address,
                                        solidity_json_path)
-    (request1, _) = build_request(new_currency, amount)
+    (request1, _) = build_request_for_new_sifchain_address(new_currency, amount)
     burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
 
 
@@ -77,7 +79,7 @@ def test_can_create_a_new_token_with_a_one_letter_name_and_peg_it(
     amount = amount_in_wei(9)
     new_currency = create_new_currency(amount, new_account_key, smart_contracts_dir, bridgebank_address,
                                        solidity_json_path)
-    (request1, _) = build_request(new_currency, amount)
+    (request1, _) = build_request_for_new_sifchain_address(new_currency, amount)
     burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
 
 
@@ -91,7 +93,7 @@ def test_can_create_a_new_token_with_a_long_name_and_peg_it(
     amount = amount_in_wei(9)
     new_currency = create_new_currency(amount, new_account_key, smart_contracts_dir, bridgebank_address,
                                        solidity_json_path)
-    (request1, _) = build_request(new_currency, amount)
+    (request1, _) = build_request_for_new_sifchain_address(new_currency, amount)
     burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
 
 
@@ -106,14 +108,14 @@ def test_two_currencies_with_different_capitalization_should_not_interfere_with_
 
     new_currency = create_new_currency(amount, new_account_key, smart_contracts_dir, bridgebank_address,
                                        solidity_json_path)
-    (request1, _) = build_request(new_currency, amount)
+    (request1, _) = build_request_for_new_sifchain_address(new_currency, amount)
     burn_lock_functions.transfer_ethereum_to_sifchain(request1, 10)
     balance_1 = get_sifchain_addr_balance(request1.sifchain_address, request1.sifnodecli_node, request1.sifchain_symbol)
     assert (balance_1 == request1.amount)
 
     new_currency = create_new_currency(amount, new_account_key.upper(), smart_contracts_dir, bridgebank_address,
                                        solidity_json_path)
-    (request2, _) = build_request(new_currency, amount + 70000)
+    (request2, _) = build_request_for_new_sifchain_address(new_currency, amount + 70000)
     burn_lock_functions.transfer_ethereum_to_sifchain(request2, 10)
 
     balance_1_again = get_sifchain_addr_balance(request1.sifchain_address, request1.sifnodecli_node,
@@ -159,5 +161,5 @@ def test_can_use_a_token_with_a_dash_in_the_name(
     n = "a-b"
     new_currency = create_new_currency(amount_in_wei(10), n, smart_contracts_dir, bridgebank_address,
                                        solidity_json_path)
-    (request, _) = build_request(new_currency, 60000)
+    (request, _) = build_request_for_new_sifchain_address(new_currency, 60000)
     burn_lock_functions.transfer_ethereum_to_sifchain(request, 10)

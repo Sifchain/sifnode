@@ -6,7 +6,6 @@ import time
 from dataclasses import dataclass
 from functools import lru_cache
 
-
 n_wait_blocks = 50  # number of blocks to wait for the relayer to act
 burn_gas_cost = 65000000000 * 248692  # see x/ethbridge/types/msgs.go for gas
 lock_gas_cost = 65000000000 * 282031
@@ -26,7 +25,7 @@ class EthereumToSifchainTransferRequest:
     sifchain_fees: str = ""
     smart_contracts_dir: str = ""
     ethereum_chain_id: str = "5777"
-    chain_id: str = "localnet" #cosmos chain id
+    chain_id: str = "localnet"  # cosmos chain id
     manual_block_advance: bool = True
     n_wait_blocks: int = n_wait_blocks
     bridgebank_address: str = ""
@@ -39,7 +38,7 @@ class EthereumToSifchainTransferRequest:
     # advances, you can't set this to True.  You also can't set
     # this to true if the block time is really short, since
     # you may get a block advance as soon as you submit the transaction.
-    check_wait_blocks: bool= False
+    check_wait_blocks: bool = False
 
     def as_json(self):
         return json.dumps(self.__dict__)
@@ -63,10 +62,10 @@ class EthereumToSifchainTransferRequest:
 
 @dataclass
 class SifchaincliCredentials:
-    keyring_passphrase: str
-    keyring_backend: str
-    from_key: str
-    sifnodecli_homedir: str
+    keyring_passphrase: str = None
+    keyring_backend: str = "test"
+    from_key: str = None
+    sifnodecli_homedir: str = None
 
     def printable_entries(self):
         return {**(self.__dict__), "keyring_passphrase": "** hidden **"}
@@ -120,7 +119,8 @@ def get_shell_output(command_line):
     if stderr_string:
         logging.debug(f"\nexecute shell command stderr:\n{stderr_string}")
     if sub.returncode != 0:
-        raise Exception(f"error running command: {sub.returncode} for command\n{command_line}\nstdout:\n{stdout_string}\nstderr:\n{stderr_string}")
+        raise Exception(
+            f"error running command: {sub.returncode} for command\n{command_line}\nstdout:\n{stdout_string}\nstderr:\n{stderr_string}")
     return stdout_string
 
 
@@ -502,7 +502,17 @@ def display_currency_value(x: int) -> str:
     return f"({x} | {x / 10 ** 18})"
 
 
-def create_new_currency(amount, symbol, smart_contracts_dir, bridgebank_address, solidity_json_path, operator_address = "", ethereum_network: str = ""):
+def create_new_currency(
+        amount,
+        symbol,
+        token_name,
+        decimals,
+        smart_contracts_dir,
+        bridgebank_address,
+        solidity_json_path,
+        operator_address="",
+        ethereum_network: str = ""
+):
     """returns {'destination': '0x627306090abaB3A6e1400e9345bC60c78a8BEf57', 'amount': '9000000000000000000', 'newtoken_address': '0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc', 'newtoken_symbol': 'a3c626b'}"""
     if not operator_address:
         operator_address = ganache_owner_account(smart_contracts_dir)
@@ -517,6 +527,7 @@ def create_new_currency(amount, symbol, smart_contracts_dir, bridgebank_address,
         f"--limit_amount {amount} "
         f"--operator_address {operator_address} "
         f"--ethereum_private_key_env_var ETHEREUM_PRIVATE_KEY "
+        f"--token_name {token_name} "
+        f"--decimals {decimals} "
         f"{network_element} "
     )
-
