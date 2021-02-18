@@ -3,6 +3,8 @@
 Below is a consolidated list of the Node Operators who have expressed interest in running a node for Sifnode. We have consolidated information that they have provided below for easy reference. This is a summarized version of their responses. We collected information across numerous categories, including: Contact Details, Node Validator Experience, Emergency Response & Monitoring, Server Infrastructure & Security, and Contributions to Sifchain. For all answers across all of these categores, please reference our [google sheet here](https://docs.google.com/spreadsheets/d/1pq_0Ca7IBfUkIiIU8lpzYQ-uUGLbT8NK3SdRoma1KOc/edit?usp=sharing). Please feel free to also check our BlockExplorer as well for additional node operator details: https://blockexplorer.sifchain.finance/
   
 If you are wondering with node to delegate to, keep in mind certain criteria for your selection: well known node operator, supporting a specific application or community run node, nodes run by large enterprises and so forth. To avoid any slashable activities and to maximize your potential staking reward, select nodes you believe will behave honestly and will have strong uptime.
+
+NOTE: If you are a node operator and want to be added to this list, or have your information edited in the below list, please update here and submit a PR for our review.
   
 
 ## Node Operator list
