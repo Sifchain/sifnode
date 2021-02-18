@@ -1,9 +1,9 @@
 name: Build then Deploy to Pinata
 # run run on merge
 on: 
-  push
-#    paths:
-#      - 'ui/**'
+  push:
+    paths:
+      - 'ui/**'
 
 jobs:
   build:
