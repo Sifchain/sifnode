@@ -1,14 +1,16 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
+import Loader from "@/components/shared/Loader.vue";
 
 export default defineComponent({
   components: {
     Layout,
+    Loader
   },
   data() {
     return {
-      poolData: {},
+      liqvalrewards: null,
     };
   },
   async mounted() {
@@ -16,34 +18,39 @@ export default defineComponent({
       "https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/liqvalrewards"
     );
     const json = await data.json();
-    console.log(json)
-    this.poolData = json.body;
+    this.liqvalrewards = json.body;
   },
 });
 </script>
 
 <template>
-  <Layout>
-    
-      <template slot="header">
-          hi
-      </template>
+  <Layout :header="false" title="Staking & Rewards" backLink="/peg">
+    <div class="liquidity-container">
+      <Loader black v-if="!liqvalrewards"/>
+      <div v-else>
+        <p class="mb-8">
+          Earn additional ROWAN by staking or delegating! 
+          The amount of rewards you can earn are: 
+          <span v-if="liqvalrewards.liqValRewards === ''">TBD</span>
+          <span v-else>
+            {{liqvalrewards}} 
+          </span>
+          + Block rewards (variable)
+        </p>
+        <p>
+          Learn more about staking and delegating <a href="https://docs.sifchain.finance/roles/validators" target="_blank">here</a>!
+        </p>
+      </div>
+    </div>
   </Layout>
 </template>
 
-<style scoped lang="scss">
-// .layout {
-//   background: url("../assets/World_Background_opt.jpg");
-//   background-size: cover;
-//   background-position: bottom center;
-//   box-sizing: border-box;
-//   padding-top: $header_height;
-//   padding-right: 32px;
-//   padding-left: 32px;
-//   width: 100%;
-//   height: 100vh;
-//   display: flex;
-//   flex-direction: column;
-//   align-items: center;
-// }
+<style lang="scss">
+.liquidity-container { 
+  font-size: 18px;
+  text-align: left;
+  color: $c_gray_800;
+  background: white; 
+  padding: 15px !important
+}
 </style>
