@@ -34,6 +34,7 @@ def test_bulk_transfers(
         source_ethereum_address,
         bridgebank_address,
         integration_dir,
+        ensure_relayer_restart,
 ):
     logging.info("shut down ebrelayer")
     test_utilities.get_shell_output(f"pkill -9 ebrelayer || true")
@@ -57,6 +58,7 @@ def test_bulk_transfers(
             "integrationtest:sendBulkLockTx",
             f"--amount {amount}",
             f"--symbol eth",
+            f"--json_path {request.solidity_json_path}",
             f"--sifchain_address {new_addresses[0]}",
             f"--transactions \'{json_requests}\'",
             f"--ethereum_address {source_ethereum_address}",

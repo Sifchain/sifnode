@@ -7,7 +7,7 @@
           <AssetItem :symbol="fromTokenLabel" inline />&nbsp;Deposited
         </span>
         <div class="details-row-value">
-          <span>{{ fromAmount }}</span>
+          <span>{{ fromAmount ? fromAmount : 0 }}</span>
         </div>
       </div>
       <div class="details-row">
@@ -15,7 +15,7 @@
           <AssetItem :symbol="toTokenLabel" inline />&nbsp;Deposited
         </span>
         <div class="details-row-value">
-          <span>{{ toAmount }}</span>
+          <span>{{ toAmount ? toAmount : 0 }}</span>
           <img
             v-if="toTokenImage"
             width="22"
