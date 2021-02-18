@@ -11,11 +11,6 @@ end
 # @param args Arguments passed to rake
 #
 def check_args(args)
-  if args[:chainnet] == nil
-    puts "Please provider a chainnet argument E.g testnet, mainnet, etc"
-    exit
-  end
-
   case args[:provider]
   when "aws"
   when "az"

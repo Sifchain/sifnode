@@ -9,24 +9,16 @@ function buildProvider(context, argv, logging) {
 
     switch (argv.ethereum_network) {
         case "ropsten":
-            let ropstenConnectionString = "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID);
+        case "mainnet":
+            let netConnectionString = `https://${argv.ethereum_network}.infura.io/v3/${process.env.INFURA_PROJECT_ID}`;
             if (argv.ethereum_private_key_env_var) {
-                const ropstenKey = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
+                const privateKey = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
                 provider = new HDWalletProvider(
-                    ropstenKey,
-                    ropstenConnectionString
+                    privateKey,
+                    netConnectionString
                 );
             } else {
-                provider = new Web3(ropstenConnectionString);
-            }
-            break;
-        case "mainnet":
-            if (argv.ethereum_private_key_env_var) {
-                const mainnetKey = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
-                provider = new HDWalletProvider(
-                    mainnetKey,
-                    "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
-                );
+                provider = new Web3(netConnectionString);
             }
             break;
         default:
@@ -53,11 +45,20 @@ function buildWeb3(context, argv, logging) {
     }
 }
 
-function buildContract(context, argv, logging, name, address) {
+const truffleContractProvider = require("@truffle/contract");
+
+function buildBaseContract(context, argv, logging, name) {
     const web3 = buildWeb3(context, argv, logging);
-    const contract = context.artifacts.require(name);
+    const js = `${argv.json_path}/${name}.json`;
+    let solidityContractJson = require(js);
+    const contract = truffleContractProvider(solidityContractJson);
     contract.setProvider(web3.currentProvider);
+    return contract;
+}
+
+function buildContract(context, argv, logging, name, address) {
+    const contract = buildBaseContract(context, argv, logging, name)
     return contract.at(address);
 }
 
-module.exports = {buildProvider, buildContract, buildWeb3};
+module.exports = {buildProvider, buildContract, buildBaseContract, buildWeb3};

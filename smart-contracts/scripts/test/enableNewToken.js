@@ -38,17 +38,19 @@ module.exports = async (cb) => {
     });
     logging.info(`bridgeBankContract.updateEthWhiteList result ${JSON.stringify(updateWhiteListResult)}`);
 
-    // Update the lock/burn limit for this token
+    logging.info(`bridgeBankContract.updateTokenLockBurnLimit address ${newToken.address}, limitAmount ${limitAmount}, from ${operator_address}`);
     await bridgeBankContract.updateTokenLockBurnLimit(newToken.address, limitAmount, {
         from: operator_address
     });
 
     const token_destination = accounts[0];
-        
-    await newToken.mint(token_destination, amount.toString(), {
+
+    logging.info(`newToken.mint to destination ${token_destination}, amount ${amount}, from ${operator_address}`);
+    await newToken.mint(token_destination, amount, {
         from: operator_address
     });
 
+    logging.info(`newToken.approve address ${bridgeBankContract.address}, from ${token_destination}`);
     await newToken.approve(bridgeBankContract.address, amount.toString(), {
         from: token_destination
     });
