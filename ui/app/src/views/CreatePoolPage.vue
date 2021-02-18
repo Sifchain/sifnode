@@ -238,7 +238,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" :backLink="`${fromSymbol && connected && aPerBRatioMessage === 'N/A'
+  <Layout class="pool" :backLink="`${fromSymbol && connected && aPerBRatioMessage > 0
     ? '/pool/' + fromSymbol : '/pool' }`" :title="title">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
