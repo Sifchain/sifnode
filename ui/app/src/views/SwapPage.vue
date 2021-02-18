@@ -63,9 +63,9 @@ export default defineComponent({
     };
 
     const isFromMaxActive = computed(() => {
-      const accountBalance = getAccountBalance()
-      if (!accountBalance) return false
-      return fromAmount.value === accountBalance.toFixed(8);
+      const accountBalance = getAccountBalance();
+      if (!accountBalance) return false;
+      return fromAmount.value === accountBalance.toFixed();
     });
 
     const {
