@@ -167,7 +167,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return aPerBRatio.value.toFixed(6);
+    return aPerBRatio.value.toFixed(8);
   });
 
   // native_balance / external_balance
@@ -182,7 +182,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return bPerARatio.value.toFixed(6);
+    return bPerARatio.value.toFixed(8);
   });
 
   // Price Impact and Pool Share:
@@ -207,7 +207,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return aPerBRatioProjected.value.toFixed(6);
+    return aPerBRatioProjected.value.toFixed(8);
   });
 
   // Price Impact and Pool Share:
@@ -231,7 +231,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return bPerARatioProjected.value.toFixed(6);
+    return bPerARatioProjected.value.toFixed(8);
   });
 
   const state = computed(() => {
