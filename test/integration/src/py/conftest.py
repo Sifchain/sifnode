@@ -131,6 +131,11 @@ def sifchain_fees():
 
 
 @pytest.fixture
+def operator_account(smart_contracts_dir):
+    return test_utilities.get_optional_env_var("OPERATOR_ACCOUNT", test_utilities.ganache_owner_account(smart_contracts_dir))
+
+
+@pytest.fixture
 def source_ethereum_address(is_ropsten_testnet, smart_contracts_dir):
     """account with some starting eth that can be transferred out"""
     addr = test_utilities.get_optional_env_var("ETHEREUM_ADDRESS", "")

@@ -15,6 +15,13 @@ const bridgeBankAddressYargOptions = {
     },
 };
 
+const bridgeTokenAddressYargOptions = {
+    'bridgetoken_address': {
+        type: "string",
+        demandOption: true
+    },
+};
+
 const symbolYargOption = {
     'symbol': {
         type: "string",
@@ -113,6 +120,7 @@ module.exports = {
     configureLogging,
     transactionYargOptions,
     bridgeBankAddressYargOptions,
+    bridgeTokenAddressYargOptions,
     ethereumAddressYargOption,
     symbolYargOption,
     amountYargOption,
