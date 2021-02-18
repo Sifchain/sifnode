@@ -54,21 +54,11 @@
 }
 </style>
 <script lang="ts">
-import {
-  defineComponent,
-  EmitsOptions,
-  provide,
-  ref,
-  RendererElement,
-  RendererNode,
-  SetupContext,
-  VNode,
-} from "vue";
-import { effect } from "@vue/reactivity";
+import { defineComponent, provide, ref } from "vue";
 export default defineComponent({
   emits: ["tabselected"],
   props: ["defaultIndex"],
-  setup(props, context: SetupContext<EmitsOptions>) {
+  setup(props, context) {
     const selectedIndex = ref(props.defaultIndex || 0);
     const slots = (context.slots.default && context.slots.default()) ?? [];
     const tabs = slots.map((s: any) => ({ name: (s.props as any).title }));
