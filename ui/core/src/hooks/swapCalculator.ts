@@ -20,11 +20,11 @@ export enum SwapState {
 }
 
 function calculateFormattedPriceImpact(pair: IPool, amount: AssetAmount) {
-  return trimZeros(pair.calcPriceImpact(amount).toFixed(18));
+  return trimZeros(pair.calcPriceImpact(amount).toFixed(8));
 }
 
 function calculateFormattedProviderFee(pair: IPool, amount: AssetAmount) {
-  return trimZeros(pair.calcProviderFee(amount).toFixed());
+  return trimZeros(pair.calcProviderFee(amount).toFixed(8));
 }
 
 // TODO: make swap calculator only generate Fractions/Amounts that get stringified in the view
@@ -97,7 +97,7 @@ export function useSwapCalculator(input: {
       selectedField === "from"
     ) {
       swapResult.value = pool.value.calcSwapResult(fromField.fieldAmount.value);
-      input.toAmount.value = trimZeros(swapResult.value.toFixed());
+      input.toAmount.value = trimZeros(swapResult.value.toFixed(8));
     }
   });
 
@@ -122,7 +122,7 @@ export function useSwapCalculator(input: {
         reverseSwapResult.value as IAssetAmount
       );
 
-      input.fromAmount.value = trimZeros(reverseSwapResult.value.toFixed());
+      input.fromAmount.value = trimZeros(reverseSwapResult.value.toFixed(8));
     }
   });
 
@@ -182,11 +182,11 @@ export function useSwapCalculator(input: {
       return null;
 
     const slippage = new Big(input.slippage.value);
-    const amount = new Big(swapResult.value.toFixed(18));
+    const amount = new Big(swapResult.value.toFixed(8));
     const minAmount = new Big("1.0")
       .minus(slippage.div(100))
       .mul(amount)
-      .toFixed(18);
+      .toFixed(8);
 
     return AssetAmount(toField.asset.value, minAmount);
   });
@@ -216,7 +216,7 @@ export function useSwapCalculator(input: {
     if  (toField.fieldAmount.value.greaterThan("0") && fromField.fieldAmount.value.equalTo("0")) {
       return SwapState.INVALID_AMOUNT;
     }
-    
+
     if (!balance.value?.greaterThanOrEqual(fromField.fieldAmount.value || "0"))
       return SwapState.INSUFFICIENT_FUNDS;
 

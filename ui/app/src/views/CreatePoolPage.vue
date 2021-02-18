@@ -50,16 +50,16 @@ export default defineComponent({
           (balance) => balance.asset.symbol === fromSymbol.value
         );
         if (!accountBalance) return;
-        return fromAmount.value === accountBalance.toFixed();
-    })
+        return fromAmount.value === accountBalance.toFixed(8);
+    });
 
     const isToMaxActive = computed(() => {
       const accountBalance = balances.value.find(
           (balance) => balance.asset.symbol === toSymbol.value
         );
         if (!accountBalance) return;
-        return toAmount.value === accountBalance.toFixed();
-    })
+        return toAmount.value === accountBalance.toFixed(8);
+    });
 
     fromSymbol.value = route.params.externalAsset
       ? route.params.externalAsset.toString()
@@ -217,7 +217,7 @@ export default defineComponent({
           (balance) => balance.asset.symbol === fromSymbol.value
         );
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.toFixed();
+        fromAmount.value = accountBalance.toFixed(8);
       },
       handleToMaxClicked() {
         selectedField.value = "to";
@@ -225,7 +225,7 @@ export default defineComponent({
           (balance) => balance.asset.symbol === toSymbol.value
         );
         if (!accountBalance) return;
-        toAmount.value = accountBalance.toFixed();
+        toAmount.value = accountBalance.toFixed(8);
       },
       shareOfPoolPercent,
       connectedText,

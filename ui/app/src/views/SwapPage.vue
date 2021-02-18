@@ -60,13 +60,13 @@ export default defineComponent({
       return balances.value.find(
           (balance) => balance.asset.symbol === fromSymbol.value
         )
-    }
+    };
 
     const isFromMaxActive = computed(() => {
       const accountBalance = getAccountBalance()
       if (!accountBalance) return false
-      return fromAmount.value === accountBalance.toFixed(18);
-    })
+      return fromAmount.value === accountBalance.toFixed(8);
+    });
 
     const {
       state,
@@ -122,8 +122,8 @@ export default defineComponent({
     }
 
     function swapInputs() {
-      selectedField.value === "to" ? 
-        selectedField.value = "from" : 
+      selectedField.value === "to" ?
+        selectedField.value = "from" :
         selectedField.value = "to"
       const fromAmountValue = fromAmount.value;
       const fromSymbolValue = fromSymbol.value;

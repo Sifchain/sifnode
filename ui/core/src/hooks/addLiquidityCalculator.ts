@@ -59,7 +59,9 @@ export function usePoolCalculator(input: {
   );
 
   const preExistingPool = computed(() => {
-    if (!tokenAField.asset.value || !tokenBField.asset.value) return null;
+    if (!tokenAField.asset.value || !tokenBField.asset.value) {
+      return null;
+    }
 
     // Find pool from poolFinder
     const pool = input.poolFinder(
@@ -71,14 +73,17 @@ export function usePoolCalculator(input: {
   });
 
   const liquidityPool = computed(() => {
-    if (preExistingPool.value) return preExistingPool.value;
+    if (preExistingPool.value) {
+      return preExistingPool.value;
+    }
     if (
       !tokenAField.fieldAmount.value ||
       !tokenBField.fieldAmount.value ||
       !tokenAField.asset.value ||
       !tokenBField.asset.value
-    )
+    ) {
       return null;
+    }
 
     return Pool(
       AssetAmount(tokenAField.asset.value, "0"),
@@ -88,11 +93,7 @@ export function usePoolCalculator(input: {
 
   // pool units for this prospective transaction [total, newUnits]
   const provisionedPoolUnitsArray = computed(() => {
-    if (
-      !liquidityPool.value ||
-      !tokenBField.fieldAmount.value ||
-      !tokenAField.fieldAmount.value
-    ) {
+    if (!liquidityPool.value || !tokenBField.fieldAmount.value || !tokenAField.fieldAmount.value) {
       return [new Fraction("0"), new Fraction("0")];
     }
 
@@ -166,7 +167,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return aPerBRatio.value.toFixed(8);
+    return aPerBRatio.value.toFixed(6);
   });
 
   // native_balance / external_balance
@@ -181,7 +182,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return bPerARatio.value.toFixed(8);
+    return bPerARatio.value.toFixed(6);
   });
 
   // Price Impact and Pool Share:
@@ -206,7 +207,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return aPerBRatioProjected.value.toFixed(8);
+    return aPerBRatioProjected.value.toFixed(6);
   });
 
   // Price Impact and Pool Share:
@@ -230,7 +231,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return bPerARatioProjected.value.toFixed(8);
+    return bPerARatioProjected.value.toFixed(6);
   });
 
   const state = computed(() => {
