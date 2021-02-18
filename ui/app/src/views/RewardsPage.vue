@@ -37,7 +37,7 @@ export default defineComponent({
           </span>
           + Block rewards (variable)
         </p>
-        <p>
+        <p class="mb-9">
           Learn more about staking and delegating <a href="https://docs.sifchain.finance/roles/validators" target="_blank">here</a>!
         </p>
       </div>
@@ -45,12 +45,12 @@ export default defineComponent({
   </Layout>
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
 .liquidity-container { 
-  font-size: 18px;
   text-align: left;
   color: $c_gray_800;
   background: white; 
-  padding: 15px !important
+  padding: 15px;
+  border-radius: 0 0 6px 6px
 }
 </style>
