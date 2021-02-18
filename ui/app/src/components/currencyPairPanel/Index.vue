@@ -5,7 +5,8 @@
     <CurrencyField
       :label="tokenALabel"
       tabindex="1"
-      :max="fromMax"
+      :max="fromMax && !isFromMaxActive"
+      :isMaxActive="isFromMaxActive"
       @focus="handleFromFocused"
       @blur="handleFromBlur"
       :amount="fromAmount"
@@ -27,7 +28,8 @@
     <CurrencyField
       :label="tokenBLabel"
       tabindex="2"
-      :max="toMax"
+      :max="toMax && !isToMaxActive"
+      :isMaxActive="isToMaxActive"
       @focus="handleToFocused"
       @blur="handleToBlur"
       :amount="toAmount"
@@ -71,6 +73,8 @@ export default defineComponent({
     fromSymbolSelectable: { type: Boolean, default: true },
     toSymbolFixed: { type: Boolean, default: false },
     toSymbolSelectable: { type: Boolean, default: true },
+    isFromMaxActive: { type: Boolean, default: false },
+    isToMaxActive: { type: Boolean, default: false },
   },
   emits: [
     "fromfocus",

@@ -251,12 +251,12 @@ describe("addLiquidityCalculator", () => {
         liquidityProvider.value = !preexistingLiquidity
           ? null
           : LiquidityProvider(
-              ATK,
-              new Fraction(preexistingLiquidity.units),
-              akasha.address,
-              new Fraction(preexistingLiquidity.native),
-              new Fraction(preexistingLiquidity.external)
-            );
+            ATK,
+            new Fraction(preexistingLiquidity.units),
+            akasha.address,
+            new Fraction(preexistingLiquidity.native),
+            new Fraction(preexistingLiquidity.external)
+          );
 
         poolFinder.mockImplementation(() => {
           const pool = Pool(

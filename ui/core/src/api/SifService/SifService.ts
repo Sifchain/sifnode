@@ -135,7 +135,10 @@ export default function createSifService({
       if (!keplrProvider) {
         throw {
           message: "Keplr Not Found",
-          detail: "Check if extension enabled for this URL",
+          detail: {
+            type: "info",
+            message: "Check if extension enabled for this URL",
+          }
         };
       }
       // open extension
@@ -167,7 +170,7 @@ export default function createSifService({
           throw { message: "Failed to Suggest Chain" };
         }
       } else {
-        throw { message: "Keplr Outdated", detail: "Need at least 0.6.4" };
+        throw { message: "Keplr Outdated", detail: { type: "info", message: "Need at least 0.6.4" }};
       }
     },
 
@@ -223,7 +226,7 @@ export default function createSifService({
 
       try {
         const account = await client.getAccount(address);
-        if (!account) throw "No Address found on chain";
+        if (!account) throw "No Address found on chain"; // todo handle this better
         const supportedTokenSymbols = supportedTokens.map(s => s.symbol);
         const balances = account.balance
           .filter(balance => supportedTokenSymbols.includes(balance.denom))
@@ -269,7 +272,7 @@ export default function createSifService({
 
         const fee = {
           amount: coins(0, params.asset.symbol),
-          gas: "200000", // need gas fee for tx to work - see genesis file
+          gas: "300000", // TODO - see if "auto" setting
         };
 
         const txHash = await client.signAndBroadcast([msg], fee, params.memo);
@@ -290,7 +293,7 @@ export default function createSifService({
       try {
         const fee = {
           amount: coins(0, "rowan"),
-          gas: "200000", // need gas fee for tx to work - see genesis file
+          gas: "300000", // TODO - see if "auto" setting
         };
 
         const msgArr = Array.isArray(msg) ? msg : [msg];

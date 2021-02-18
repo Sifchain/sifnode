@@ -3,7 +3,7 @@ require "securerandom"
 desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
   desc "Scaffold new cluster environment configuration"
-  task :scaffold, [:chainnet, :provider] do |t, args|
+  task :scaffold, [:cluster, :provider] do |t, args|
     check_args(args)
 
     # create path location
@@ -12,10 +12,10 @@ namespace :cluster do
 
     # create config from template
     system("go run github.com/belitre/gotpl #{cwd}/../terraform/template/aws/cluster.tf.tpl \
-      --set chainnet=#{args[:chainnet]} > #{path(args)}/main.tf")
+      --set chainnet=#{args[:cluster]} > #{path(args)}/main.tf")
 
     system("go run github.com/belitre/gotpl #{cwd}/../terraform/template/aws/.envrc.tpl \
-      --set chainnet=#{args[:chainnet]} > #{path(args)}/.envrc")
+      --set chainnet=#{args[:cluster]} > #{path(args)}/.envrc")
 
     # init terraform
     system("cd #{path(args)} && terraform init")
@@ -24,24 +24,15 @@ namespace :cluster do
   end
 
   desc "Deploy a new cluster"
-  task :deploy, [:chainnet, :provider] do |t, args|
+  task :deploy, [:cluster, :provider] do |t, args|
     check_args(args)
     puts "Deploy cluster config: #{path(args)}"
     system("cd #{path(args)} && terraform apply -auto-approve") or exit 1
     puts "Cluster #{path(args)} created successfully"
   end
 
-  desc "Status of your cluster"
-  task :status, [:chainnet, :provider] do
-    puts "Build me!"
-  end
-
-  desc "Backup your cluster"
-  task :backup, [:chainnet, :provider] do
-    puts "Build me!"
-  end
-
-  task :destroy, [:chainnet, :provider] do |t, args|
+  desc "Destroy a cluster"
+  task :destroy, [:cluster, :provider] do |t, args|
     check_args(args)
     puts "Destroy running cluster: #{path(args)}"
     system("cd #{path(args)} && terraform destroy") or exit 1
@@ -157,7 +148,7 @@ namespace :cluster do
   desc "Block Explorer"
   namespace :blockexplorer do
     desc "Deploy a Block Explorer to an existing cluster"
-    task :deploy, [:chainnet, :provider, :namespace, :root_url, :genesis_url, :rpc_url, :lcd_url] do |t, args|
+    task :deploy, [:cluster, :chainnet, :provider, :namespace, :root_url, :genesis_url, :rpc_url, :lcd_url] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade block-explorer #{cwd}/../../deploy/helm/block-explorer \

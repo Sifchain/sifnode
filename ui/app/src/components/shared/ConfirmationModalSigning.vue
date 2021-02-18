@@ -18,6 +18,13 @@
             Perhaps we could use render functions to accomplish this?
           -->
           <transition name="swipe">
+            <div class="text" v-if="state === 'approving'">
+              <p>Waiting for approval</p>
+              <br />
+              <p class="sub">Confirm this transaction in your wallet</p>
+            </div>
+          </transition>
+          <transition name="swipe">
             <div class="text" v-if="state === 'signing'">
               <p>Waiting for confirmation</p>
               <slot name="signing"></slot>
@@ -55,7 +62,7 @@
                   v-if="transactionHash?.substring(0,2) !== '0x'"
                   class="anchor"
                   target="_blank"
-                  :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
+                  :href="getBlockExplorerUrl(chainId, transactionHash)"
                   >View transaction on Block Explorer</a
                 >
                 <a
@@ -84,6 +91,7 @@ import { defineComponent } from "vue";
 import { useCore } from "@/hooks/useCore";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
+import { getBlockExplorerUrl } from "./utils";
 
 export default defineComponent({
   inheritAttrs: false,
@@ -99,6 +107,7 @@ export default defineComponent({
 
     return {
       chainId: config.sifChainId,
+      getBlockExplorerUrl
     };
   },
 });

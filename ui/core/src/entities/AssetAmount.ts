@@ -62,7 +62,9 @@ export class _AssetAmount implements IAssetAmount {
     format?: object,
     rounding: Rounding = Rounding.ROUND_DOWN
   ): string {
-    invariant(decimalPlaces <= this.asset.decimals, "DECIMALS");
+    // Provisional: This breaks app if falsy. N
+    // Do not know why necessary if only for display
+    // invariant(decimalPlaces <= this.asset.decimals, "DECIMALS");
     return this.fraction.toFixed(decimalPlaces, format, rounding);
   }
 

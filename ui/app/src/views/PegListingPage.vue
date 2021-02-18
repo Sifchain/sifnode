@@ -97,10 +97,10 @@ export default defineComponent({
             return asset.symbol.toLowerCase() === symbol.toLowerCase();
           });
 
-          if (!amount) return { amount: "", asset };
+          if (!amount) return { amount: 0, asset };
 
           return {
-            amount: amount.toFixed(amount.asset.decimals === 0 ? 0 : 6),
+            amount,
             asset,
           };
         });

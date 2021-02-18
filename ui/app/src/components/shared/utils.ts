@@ -1,6 +1,6 @@
 import { computed, Ref } from "@vue/reactivity";
 import ColorHash from "color-hash";
-import { Asset, Network } from "ui-core";
+import { Asset, Network, TxHash } from "ui-core";
 
 export function formatSymbol(symbol: string) {
   if (symbol.indexOf("c") === 0) {
@@ -16,6 +16,7 @@ export function formatPercentage(amount: string) {
 }
 // TODO: make this work for AssetAmounts and Fractions / Amounts
 export function formatNumber(displayNumber: string) {
+  if (!displayNumber) return "0"
   const amount = parseFloat(displayNumber);
   if (amount < 100000) {
     return amount.toFixed(5);
@@ -66,11 +67,19 @@ export function useAssetItem(symbol: Ref<string | undefined>) {
     return `background: ${color};`;
   });
 
-  const asset = {
+  return {
     token: token,
     label: tokenLabel,
     background: backgroundStyle,
   };
+}
 
-  return asset;
+export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {
+  if (chainId === "sifchain") {
+    if(!txHash) return "https://blockexplorer.sifchain.finance/";
+    return `https://blockexplorer.sifchain.finance/transactions/${txHash}`;
+  } else {
+    if (!txHash) return `https://blockexplorer-${chainId}.sifchain.finance/`;
+    return `https://blockexplorer-${chainId}.sifchain.finance/transactions/${txHash}`;
+  }
 }

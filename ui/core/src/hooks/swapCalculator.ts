@@ -193,6 +193,7 @@ export function useSwapCalculator(input: {
 
   // Derive state
   const state = computed(() => {
+    // SwapState.INSUFFICIENT_LIQUIDITY is probably better here
     if (!pool.value) return SwapState.SELECT_TOKENS;
     const fromTokenLiquidity = (pool.value as IPool).amounts.find(
       amount => amount.asset.symbol === fromField.asset.value?.symbol

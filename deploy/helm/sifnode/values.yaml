@@ -24,12 +24,14 @@ sifnode:
   args:
     mnemonic: ""
     genesisURL:
+    mintAmount: "999999000000000000000000000rowan"
+    bondAmount: "1000000000000000000000rowan"
     peerAddress:
     adminCLPAddresses: ""
     adminOracleAddress: ""
     minimumGasPrices: "0.5rowan"
-    govMaxDepositPeriod: "900000000000"
-    govVotingPeriod: "900000000000"
+    govMaxDepositPeriod: "10800000000000"
+    govVotingPeriod: "10800000000000"
   env:
     daemonHome: "/root/.sifnoded"
     daemonName: "sifnoded"

@@ -1,20 +1,38 @@
 {
   "assets": [
     {
+      "symbol": "erowan",
+      "decimals": 18,
+      "name": "Rowan",
+      "imageUrl": "./images/siflogo.png",
+      "address": "0x07bac35846e5ed502aa91adf6a9e7aa210f2dcbe",
+      "network": "ethereum"
+    },
+    {
       "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707",
-      "name": "Tether",
+      "name": "Tether USDT",
       "network": "ethereum",
       "priceUsd": 0.999153,
       "symbol": "USDT",
       "transferLimit": "5004238590"
     },
     {
+      "address": "0x0000000000000000000000000000000000000000",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
+      "name": "Ethereum",
+      "network": "ethereum",
+      "priceUsd": 1145,
+      "symbol": "eth",
+      "transferLimit": "4381237787299667968"
+    },
+    {
       "address": "0x0d8775f648430679a709e98d2b0cb6250d2887ef",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/677/thumb/basic-attention-token.png?1547034427",
-      "name": "Basic Attention Tok",
+      "name": "Basic Attention Token",
       "network": "ethereum",
       "priceUsd": 0.309639,
       "symbol": "BAT",
@@ -34,7 +52,7 @@
       "address": "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/736/thumb/bancor.png?1547034477",
-      "name": "Bancor Network Toke",
+      "name": "Bancor Network Token",
       "network": "ethereum",
       "priceUsd": 1.94,
       "symbol": "BNT",
@@ -91,20 +109,10 @@
       "transferLimit": "13591240717182590517248"
     },
     {
-      "address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
-      "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/1364/thumb/Mark_Maker.png?1585191826",
-      "name": "Maker",
-      "network": "ethereum",
-      "priceUsd": 1420.15,
-      "symbol": "MKR",
-      "transferLimit": "3520754849839805440"
-    },
-    {
       "address": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/3406/thumb/SNX.png?1598631139",
-      "name": "Synthetix Network T",
+      "name": "Synthetix Network Token",
       "network": "ethereum",
       "priceUsd": 17.31,
       "symbol": "SNX",
@@ -201,20 +209,10 @@
       "transferLimit": "555555555555555540992"
     },
     {
-      "address": "0x0ba45a8b5d5575935b8158a88c631e9f9c95a2e5",
-      "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/9644/thumb/Blk_icon_current.png?1584980686",
-      "name": "Tellor",
-      "network": "ethereum",
-      "priceUsd": 33.57,
-      "symbol": "TRB",
-      "transferLimit": "148942508191837945856"
-    },
-    {
       "address": "0x6b175474e89094c44da98b954eedeac495271d0f",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774",
-      "name": "Dai",
+      "name": "Dai Stablecoin",
       "network": "ethereum",
       "priceUsd": 0.997605,
       "symbol": "DAI",
@@ -239,16 +237,6 @@
       "priceUsd": 10.86,
       "symbol": "UMA",
       "transferLimit": "460405156537753272320"
-    },
-    {
-      "address": "0xb83cd8d39462b761bb0092437d38b37812dd80a2",
-      "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/11022/thumb/golden_ratio_token.png?1592811112",
-      "name": "Golden Ratio Token",
-      "network": "ethereum",
-      "priceUsd": 2.34,
-      "symbol": "GRT",
-      "transferLimit": "2136752136752136716288"
     },
     {
       "address": "0xba100000625a3754423978a60c9317c58a424e3d",
@@ -351,16 +339,6 @@
       "transferLimit": "100341159943808942080"
     },
     {
-      "address": "0x5dc02ea99285e17656b8350722694c35154db1e8",
-      "decimals": 8,
-      "imageUrl": "https://assets.coingecko.com/coins/images/13222/thumb/bonded_finance_logo.png?1606318433",
-      "name": "Bonded Finance",
-      "network": "ethereum",
-      "priceUsd": 0.01475068,
-      "symbol": "BOND",
-      "transferLimit": "33896742387469"
-    },
-    {
       "address": "0x6e1a19f235be7ed8e3369ef73b196c07257494de",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/13238/thumb/WFIL-Icon.png?1606630561",
@@ -404,7 +382,7 @@
       "address": "0x3155ba85d5f96b2d030a4966af206230e46849cb",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/13677/thumb/BrMhBTr8_400x400.jpg?1610723303",
-      "name": "THORChain  ERC20 ",
+      "name": "THORChain ERC20",
       "network": "ethereum",
       "priceUsd": 3.23,
       "symbol": "RUNE",
@@ -414,21 +392,11 @@
       "address": "0x2b89bf8ba858cd2fcee1fada378d5cd6936968be",
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/13767/thumb/Secret_S_Black_Coingecko.png?1611667298",
-      "name": "Secret  ERC20 ",
+      "name": "Secret ERC20 ",
       "network": "ethereum",
       "priceUsd": 1.12,
       "symbol": "WSCRT",
       "transferLimit": "4464285714"
-    },
-    {
-      "address": "",
-      "decimals": 18,
-      "imageUrl": "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
-      "name": "Ethereum",
-      "network": "ethereum",
-      "priceUsd": 1145,
-      "symbol": "ETH",
-      "transferLimit": "4381237787299667968"
     },
     {
       "address": "0x6fb3e0a217407efff7ca062d46c26e5d60a14d69",

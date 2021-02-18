@@ -31,18 +31,18 @@ variable "tags" {
 }
 
 variable "desired_capacity" {
-  description = "desired kubes nodes pre cluster"
-  default = 1
+  description = "Desired nodes per cluster"
+  default = 2
 }
 
 variable "max_capacity" {
-  description = "Max kubes nodes pre cluster"
-  default = 3
+  description = "Max nodes per cluster"
+  default = 5
 }
 
 variable "min_capacity" {
-  description = "Min capacity of nodes pre kubes cluster"
-  default = 1
+  description = "Min nodes per cluster"
+  default = 2
 }
 
 variable "instance_type" {

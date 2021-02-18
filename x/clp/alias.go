@@ -13,6 +13,8 @@ const (
 	DefaultParamspace = types.DefaultParamspace
 	NativeSymbol      = types.NativeSymbol
 	MaxWbasis         = types.MaxWbasis
+	PoolThrehold      = types.PoolThrehold
+	PoolUnitsMinValue = types.PoolUnitsMinValue
 )
 
 var (
@@ -29,6 +31,7 @@ var (
 	ModuleCdc                   = types.ModuleCdc
 	GetSettlementAsset          = types.GetSettlementAsset
 	GetGenesisStateFromAppState = types.GetGenesisStateFromAppState
+	GetNormalizationMap         = types.GetNormalizationMap
 )
 
 type (

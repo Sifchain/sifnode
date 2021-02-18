@@ -150,9 +150,11 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	_, err = n.CLI.AddFaucet(n.FaucetAmount)
-	if err != nil {
-		return err
+	if n.ChainID != "sifchain" {
+		_, err = n.CLI.AddFaucet(n.FaucetAmount)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, adminAddress := range n.AdminCLPAddresses {

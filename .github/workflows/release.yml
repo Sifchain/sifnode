@@ -18,24 +18,33 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v2.x
 
+      - if: contains(github.ref, 'testnet')
+        run: |
+          echo "CHAINNET=testnet" >> "$GITHUB_ENV"
+
+      - if: contains(github.ref, 'mainnet')
+        run: |
+          echo "CHAINNET=mainnet" >> "$GITHUB_ENV"
+
       - name: Build docker images
         run: |
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=sifnodecli build-image
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=sifcrg build-image
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
-          cd ./api/openapi
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} build-image-swagger-iu
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} build-image-prim
+          echo ${{ env.CHAINNET }}
+          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
+          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnodecli build-image
+          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
+      #          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifcrg build-image
+      #          cd ./api/openapi
+      #          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} build-image-swagger-iu
+      #          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} build-image-prim
 
       - name: Push docker images
         run: |
           docker push sifchain/sifnoded:${{ env.GITHUB_REF_SLUG }}
           docker push sifchain/sifnodecli:${{ env.GITHUB_REF_SLUG }}
-          docker push sifchain/sifcrg:${{ env.GITHUB_REF_SLUG }}
-          docker push sifchain/swagger-ui:${{ env.GITHUB_REF_SLUG }}
-          docker push sifchain/prism:${{ env.GITHUB_REF_SLUG }}
           docker push sifchain/ebrelayer:${{ env.GITHUB_REF_SLUG }}
+      #          docker push sifchain/sifcrg:${{ env.GITHUB_REF_SLUG }}
+      #          docker push sifchain/swagger-ui:${{ env.GITHUB_REF_SLUG }}
+      #          docker push sifchain/prism:${{ env.GITHUB_REF_SLUG }}
 
       - name: Release a new sifnoded binary
         uses: ./deploy/release

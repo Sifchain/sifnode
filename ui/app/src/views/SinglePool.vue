@@ -7,6 +7,7 @@ import { getAssetLabel, useAssetItem } from "@/components/shared/utils";
 import { Fraction, LiquidityProvider, Pool, usePoolCalculator, AssetAmount, Asset } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useRoute } from 'vue-router';
+import { getBlockExplorerUrl } from "../components/shared/utils"
 
 const DECIMALS = 5
 
@@ -87,6 +88,7 @@ export default defineComponent({
       myPoolUnits,
       myPoolShare,
       chainId: config.sifChainId,
+      getBlockExplorerUrl
     };
   },
 });
@@ -177,7 +179,7 @@ export default defineComponent({
         </div>
       </div>
       <div class="text--small mt-6 mb-2">
-        <a target="_blank" :href="`https://blockexplorer-${chainId}.sifchain.finance/`"
+        <a target="_blank" :href="getBlockExplorerUrl(chainId)"
           >Blockexplorer</a
         >
       </div>

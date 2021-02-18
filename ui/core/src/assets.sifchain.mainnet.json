@@ -1,352 +1,296 @@
 {
   "assets": [
     {
-      "name": "Tether",
-      "symbol": "cusdt",
-      "imageUrl": "https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707",
-      "network": "sifchain",
-      "decimals": 6
+      "symbol": "rowan",
+      "decimals": 18,
+      "name": "Rowan",
+      "imageUrl": "./images/siflogo.png",
+      "network": "sifchain"
     },
     {
-      "name": "Chainlink",
-      "symbol": "clink",
-      "imageUrl": "https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png?1547034700",
+      "decimals": 6,
+      "imageUrl": "https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707",
+      "name": "Tether USDT",
       "network": "sifchain",
-      "decimals": 18
+      "symbol": "cusdt"
     },
     {
-      "name": "USD Coin",
-      "symbol": "cusdc",
-      "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389",
-      "network": "sifchain",
-      "decimals": 6
-    },
-    {
-      "name": "Crypto.com Coin",
-      "symbol": "ccro",
-      "imageUrl": "https://assets.coingecko.com/coins/images/7310/large/cypto.png?1547043960",
-      "network": "sifchain",
-      "decimals": 8
-    },
-    {
-      "name": "cDAI",
-      "symbol": "ccdai",
-      "imageUrl": "https://assets.coingecko.com/coins/images/9281/large/cDAI.png?1576467585",
-      "network": "sifchain",
-      "decimals": 8
-    },
-    {
-      "name": "Wrapped Bitcoin",
-      "symbol": "cwbtc",
-      "imageUrl": "https://assets.coingecko.com/coins/images/7598/large/wrapped_bitcoin_wbtc.png?1548822744",
-      "network": "sifchain",
-      "decimals": 8
-    },
-    {
-      "name": "OKB",
-      "symbol": "cokb",
-      "imageUrl": "https://assets.coingecko.com/coins/images/4463/large/okb_token.png?1548386209",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "LEO Token",
-      "symbol": "cleo",
-      "imageUrl": "https://assets.coingecko.com/coins/images/8418/large/leo-token.png?1558326215",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Huobi Token",
-      "symbol": "cht",
-      "imageUrl": "https://assets.coingecko.com/coins/images/2822/large/huobi-token-logo.png?1547036992",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Dai",
-      "symbol": "cdai",
-      "imageUrl": "https://assets.coingecko.com/coins/images/9956/large/dai-multi-collateral-mcd.png?1574218774",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Binance USD",
-      "symbol": "cbusd",
-      "imageUrl": "https://assets.coingecko.com/coins/images/9576/large/BUSD.png?1568947766",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Uniswap",
-      "symbol": "cuni",
-      "imageUrl": "https://assets.coingecko.com/coins/images/12504/large/uniswap-uni.png?1600306604",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Maker",
-      "symbol": "cmkr",
-      "imageUrl": "https://assets.coingecko.com/coins/images/1364/large/Mark_Maker.png?1585191826",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "OMG Network",
-      "symbol": "comg",
-      "imageUrl": "https://assets.coingecko.com/coins/images/776/large/OMG_Network.jpg?1591167168",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Celsius Network",
-      "symbol": "ccel",
-      "imageUrl": "https://assets.coingecko.com/coins/images/3263/large/New_CEL_Token_Logo.jpg?1600913901",
-      "network": "sifchain",
-      "decimals": 4
-    },
-    {
-      "name": "Synthetix Network Token",
-      "symbol": "csnx",
-      "imageUrl": "https://assets.coingecko.com/coins/images/3406/large/SNX.png?1598631139",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "yearn.finance",
-      "symbol": "cyfi",
-      "imageUrl": "https://assets.coingecko.com/coins/images/11849/large/yfi-192x192.png?1598325330",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "UMA",
-      "symbol": "cuma",
-      "imageUrl": "https://assets.coingecko.com/coins/images/10951/large/UMA.png?1586307916",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Aave",
-      "symbol": "caave",
-      "imageUrl": "https://assets.coingecko.com/coins/images/12645/large/AAVE.png?1601374110",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
       "name": "Ethereum",
-      "symbol": "ceth",
-      "imageUrl": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
       "network": "sifchain",
-      "decimals": 18
+      "symbol": "ceth"
     },
     {
-      "name": "Compound",
-      "symbol": "ccomp",
-      "imageUrl": "https://assets.coingecko.com/coins/images/10775/large/COMP.png?1592625425",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Paxos Standard",
-      "symbol": "cpax",
-      "imageUrl": "https://assets.coingecko.com/coins/images/6013/large/paxos_standard.png?1548386291",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "FTX Token",
-      "symbol": "cftt",
-      "imageUrl": "https://assets.coingecko.com/coins/images/9026/large/ftt.png?1563776835",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Aave LINK",
-      "symbol": "calink",
-      "imageUrl": "https://assets.coingecko.com/coins/images/11729/large/aLINK.png?1593084323",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "renBTC",
-      "symbol": "crenbtc",
-      "imageUrl": "https://assets.coingecko.com/coins/images/11370/large/renBTC.png?1589985711",
-      "network": "sifchain",
-      "decimals": 8
-    },
-    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/677/thumb/basic-attention-token.png?1547034427",
       "name": "Basic Attention Token",
-      "symbol": "cbat",
-      "imageUrl": "https://assets.coingecko.com/coins/images/677/large/basic-attention-token.png?1547034427",
       "network": "sifchain",
-      "decimals": 18
+      "symbol": "cbat"
     },
     {
-      "name": "TrueUSD",
-      "symbol": "ctusd",
-      "imageUrl": "https://assets.coingecko.com/coins/images/3449/large/TUSD.png?1559172762",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "REN",
-      "symbol": "cren",
-      "imageUrl": "https://assets.coingecko.com/coins/images/3139/large/REN.png?1589985807",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "0x",
-      "symbol": "czrx",
-      "imageUrl": "https://assets.coingecko.com/coins/images/863/large/0x.png?1547034672",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "cUSDC",
-      "symbol": "ccusdc",
-      "imageUrl": "https://assets.coingecko.com/coins/images/9442/large/Compound_USDC.png?1567581577",
-      "network": "sifchain",
-      "decimals": 8
-    },
-    {
-      "name": "HUSD",
-      "symbol": "chusd",
-      "imageUrl": "https://assets.coingecko.com/coins/images/9567/large/HUSD.jpg?1568889385",
-      "network": "sifchain",
-      "decimals": 8
-    },
-    {
-      "name": "Aave ETH",
-      "symbol": "caeth",
-      "imageUrl": "https://assets.coingecko.com/coins/images/11619/large/aETH_2x.png?1591976597",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Nexus Mutual",
-      "symbol": "cnxm",
-      "imageUrl": "https://assets.coingecko.com/coins/images/11810/large/nexus-mutual.jpg?1594547726",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Loopring",
-      "symbol": "clrc",
-      "imageUrl": "https://assets.coingecko.com/coins/images/913/large/LRC.png?1572852344",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Kyber Network",
-      "symbol": "cknc",
-      "imageUrl": "https://assets.coingecko.com/coins/images/947/large/kyber-logo.png?1547034806",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Quant",
-      "symbol": "cqnt",
-      "imageUrl": "https://assets.coingecko.com/coins/images/3370/large/QNT.jpg?1547038004",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Ocean Protocol",
-      "symbol": "cocean",
-      "imageUrl": "https://assets.coingecko.com/coins/images/3687/large/ocean-protocol-logo.jpg?1547038686",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Aave USDC",
-      "symbol": "causdc",
-      "imageUrl": "https://assets.coingecko.com/coins/images/11674/large/aUSDC.png?1592546449",
-      "network": "sifchain",
-      "decimals": 6
-    },
-    {
-      "name": "Enjin Coin",
-      "symbol": "cenj",
-      "imageUrl": "https://assets.coingecko.com/coins/images/1102/large/enjin-coin-logo.png?1547035078",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Numeraire",
-      "symbol": "cnmr",
-      "imageUrl": "https://assets.coingecko.com/coins/images/752/large/numeraire.png?1592538976",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Band Protocol",
-      "symbol": "cband",
-      "imageUrl": "https://assets.coingecko.com/coins/images/9545/large/band-protocol.png?1568730326",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Reserve Rights Token",
-      "symbol": "crsr",
-      "imageUrl": "https://assets.coingecko.com/coins/images/8365/large/Reserve_Rights.png?1557737411",
-      "network": "sifchain",
-      "decimals": 18
-    },
-    {
-      "name": "Ampleforth",
-      "symbol": "campl",
-      "imageUrl": "https://assets.coingecko.com/coins/images/4708/large/Ampleforth.png?1561684250",
-      "network": "sifchain",
-      "decimals": 9
-    },
-    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/681/thumb/JelZ58cv_400x400.png?1601449653",
       "name": "Aragon",
-      "symbol": "cant",
-      "imageUrl": "https://assets.coingecko.com/coins/images/681/large/JelZ58cv_400x400.png?1601449653",
       "network": "sifchain",
-      "decimals": 18
+      "symbol": "cant"
     },
     {
-      "name": "Aave TUSD",
-      "symbol": "catusd",
-      "imageUrl": "https://assets.coingecko.com/coins/images/11724/large/aTUSD.png?1593082700",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/736/thumb/bancor.png?1547034477",
+      "name": "Bancor Network Toke",
       "network": "sifchain",
-      "decimals": 18
+      "symbol": "cbnt"
     },
     {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/863/thumb/0x.png?1547034672",
+      "name": "0x",
+      "network": "sifchain",
+      "symbol": "czrx"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/877/thumb/chainlink-new-logo.png?1547034700",
+      "name": "Chainlink",
+      "network": "sifchain",
+      "symbol": "clink"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/878/thumb/decentraland-mana.png?1550108745",
       "name": "Decentraland",
-      "symbol": "cmana",
-      "imageUrl": "https://assets.coingecko.com/coins/images/878/large/decentraland-mana.png?1550108745",
       "network": "sifchain",
-      "decimals": 18
+      "symbol": "cmana"
     },
     {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/913/thumb/LRC.png?1572852344",
+      "name": "Loopring",
+      "network": "sifchain",
+      "symbol": "clrc"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/1102/thumb/enjin-coin-logo.png?1547035078",
+      "name": "Enjin Coin",
+      "network": "sifchain",
+      "symbol": "cenj"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/3406/thumb/SNX.png?1598631139",
+      "name": "Synthetix Network Token",
+      "network": "sifchain",
+      "symbol": "csnx"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/3449/thumb/TUSD.png?1559172762",
+      "name": "TrueUSD",
+      "network": "sifchain",
+      "symbol": "ctusd"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/3687/thumb/ocean-protocol-logo.jpg?1547038686",
+      "name": "Ocean Protocol",
+      "network": "sifchain",
+      "symbol": "cocean"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/4001/thumb/Fantom.png?1558015016",
+      "name": "Fantom",
+      "network": "sifchain",
+      "symbol": "cftm"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/5013/thumb/sUSD.png?1562212426",
+      "name": "sUSD",
+      "network": "sifchain",
+      "symbol": "csusd"
+    },
+    {
+      "decimals": 6,
+      "imageUrl": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
+      "name": "USD Coin",
+      "network": "sifchain",
+      "symbol": "cusdc"
+    },
+    {
+      "decimals": 8,
+      "imageUrl": "https://assets.coingecko.com/coins/images/7310/thumb/cypto.png?1547043960",
+      "name": "Crypto com Coin",
+      "network": "sifchain",
+      "symbol": "ccro"
+    },
+    {
+      "decimals": 8,
+      "imageUrl": "https://assets.coingecko.com/coins/images/7598/thumb/wrapped_bitcoin_wbtc.png?1548822744",
+      "name": "Wrapped Bitcoin",
+      "network": "sifchain",
+      "symbol": "cwbtc"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/9368/thumb/swipe.png?1566792311",
+      "name": "Swipe",
+      "network": "sifchain",
+      "symbol": "csxp"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/9545/thumb/band-protocol.png?1568730326",
+      "name": "Band Protocol",
+      "network": "sifchain",
+      "symbol": "cband"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774",
+      "name": "Dai Stablecoin",
+      "network": "sifchain",
+      "symbol": "cdai"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/10775/thumb/COMP.png?1592625425",
+      "name": "Compound",
+      "network": "sifchain",
+      "symbol": "ccomp"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/10951/thumb/UMA.png?1586307916",
+      "name": "UMA",
+      "network": "sifchain",
+      "symbol": "cuma"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/11683/thumb/Balancer.png?1592792958",
       "name": "Balancer",
-      "symbol": "cbal",
-      "imageUrl": "https://assets.coingecko.com/coins/images/11683/large/Balancer.png?1592792958",
       "network": "sifchain",
-      "decimals": 18
+      "symbol": "cbal"
     },
     {
-      "name": "GateToken",
-      "symbol": "cgt",
-      "imageUrl": "https://assets.coingecko.com/coins/images/8183/large/gt.png?1556085624",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/11849/thumb/yfi-192x192.png?1598325330",
+      "name": "yearn finance",
       "network": "sifchain",
-      "decimals": 18
+      "symbol": "cyfi"
     },
     {
-      "name": "Golem",
-      "symbol": "cgnt",
-      "imageUrl": "https://assets.coingecko.com/coins/images/542/large/golem_token.png?1548838076",
+      "decimals": 6,
+      "imageUrl": "https://assets.coingecko.com/coins/images/11970/thumb/serum-logo.png?1597121577",
+      "name": "Serum",
       "network": "sifchain",
-      "decimals": 18
+      "symbol": "csrm"
     },
     {
-      "name": "Status",
-      "symbol": "cSNT",
-      "imageUrl": "https://assets.coingecko.com/coins/images/779/large/status.png?1548610778",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/11976/thumb/Cream.png?1596593418",
+      "name": "Cream",
+      "network": "sifchain",
+      "symbol": "ccream"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12129/thumb/sandbox_logo.jpg?1597397942",
+      "name": "SAND",
+      "network": "sifchain",
+      "symbol": "csand"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12271/thumb/512x512_Logo_no_chop.png?1606986688",
+      "name": "Sushi",
+      "network": "sifchain",
+      "symbol": "csushi"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12440/thumb/esd_logo_circle.png?1603676421",
+      "name": "Empty Set Dollar",
+      "network": "sifchain",
+      "symbol": "cesd"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12504/thumb/uniswap-uni.png?1600306604",
+      "name": "Uniswap",
+      "network": "sifchain",
+      "symbol": "cuni"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12645/thumb/AAVE.png?1601374110",
+      "name": "Aave",
+      "network": "sifchain",
+      "symbol": "caave"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12811/thumb/barnbridge.jpg?1602728853",
+      "name": "BarnBridge",
+      "network": "sifchain",
+      "symbol": "cbond"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/13238/thumb/WFIL-Icon.png?1606630561",
+      "name": "Wrapped Filecoin",
+      "network": "sifchain",
+      "symbol": "cwfil"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/13397/thumb/Graph_Token.png?1608145566",
+      "name": "The Graph",
+      "network": "sifchain",
+      "symbol": "cgrt"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/13454/thumb/lon_logo.png?1608701720",
+      "name": "Tokenlon",
+      "network": "sifchain",
+      "symbol": "clon"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/13469/thumb/1inch-token.png?1608803028",
+      "name": "1inch",
+      "network": "sifchain",
+      "symbol": "c1inch"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/13677/thumb/BrMhBTr8_400x400.jpg?1610723303",
+      "name": "THORChain ERC20",
+      "network": "sifchain",
+      "symbol": "crune"
+    },
+    {
+      "decimals": 6,
+      "imageUrl": "https://assets.coingecko.com/coins/images/13767/thumb/Secret_S_Black_Coingecko.png?1611667298",
+      "name": "Secret ERC20",
+      "network": "sifchain",
+      "symbol": "cwscrt"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/3334/small/iotex-logo.png?1547037941",
+      "name": "IoTeX",
+      "network": "sifchain",
+      "symbol": "ciotx"
+    },
+    {
+      "imageUrl": "https://assets.coingecko.com/coins/images/13504/small/Group_10572.png?1610534130",
+      "name": "Reef Finance",
+      "symbol": "creef",
       "network": "sifchain",
       "decimals": 18
     }

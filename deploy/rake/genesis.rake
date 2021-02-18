@@ -44,11 +44,6 @@ namespace :genesis do
       boot_docker_network(chainnet: args[:chainnet], seed_network_address: "192.168.2.0/24", eth_config: with_eth)
     end
 
-    desc "Expose local seed node to the outside world"
-    task :expose, [:chainnet] do |t, args|
-      puts "Build me!" # TODO use something like ngrok to expose local ports of seed node to the world
-    end
-
     desc "Reset the state of a network"
     task :reset, [:chainnet] do |t, args|
       safe_system("sifgen network reset #{args[:chainnet]} #{cwd}/../networks")
@@ -59,12 +54,24 @@ namespace :genesis do
   namespace :sifnode do
     desc "Scaffold a new local node and configure it to connect to an existing network"
     task :scaffold, [:chainnet, :moniker, :mnemonic, :peer_address, :genesis_url] do |t, args|
-      safe_system("sifgen node create #{args[:chainnet]} #{args[:moniker]} #{args[:mnemonic]} --peer-address #{args[:peer_address]} --genesis-url #{args[:genesis_url]} --print-details")
+      setup_cosmovisor
+      safe_system("sifgen node create #{args[:chainnet]} #{args[:moniker]} #{args[:mnemonic]} --peer-address #{args[:peer_address]} --genesis-url #{args[:genesis_url]} --print-details --with-cosmovisor")
     end
 
-    desc "boot scaffolded node and connect to existing network"
-    task :boot do
-      safe_system("sifnoded start --p2p.laddr tcp://0.0.0.0:26658 ")
+    desc "boot node"
+    task :boot, [:gas_price] do |t, args|
+      gas_price = if args.has_key? :gas_price
+                    args[:gas_price]
+                  else
+                    "0.5rowan"
+                  end
+
+      cmd = %Q{cosmovisor start --rpc.laddr tcp://0.0.0.0:26657 --minimum-gas-prices #{args[:gas_price]}}
+      safe_system({
+        "DAEMON_NAME" => sifnoded,
+        "DAEMON_HOME" => "#{ENV['HOME']}/.sifnoded",
+        "DAEMON_ALLOW_DOWNLOAD_BINARIES" => "true",
+        "DAEMON_RESTART_AFTER_UPGRADE" => "true"}, cmd)
     end
 
     desc "Reset the state of a node"
@@ -72,6 +79,13 @@ namespace :genesis do
       safe_system("sifgen node reset #{args[:chainnet]} #{args[:node_directory]}")
     end
   end
+end
+
+#
+# Setup Cosmovisor
+#
+def setup_cosmovisor
+  safe_system("go get github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor")
 end
 
 #

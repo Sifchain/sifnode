@@ -42,7 +42,8 @@ module.exports = {
         );
       },
       network_id: 1,
-      gas: 6000000
+      gas: 6000000,
+      gasPrice: 190000000000
     },
     xdai: {
       provider: function () {

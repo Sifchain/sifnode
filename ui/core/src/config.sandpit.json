@@ -8,7 +8,7 @@
   "nativeAsset": "rowan",
   "bridgebankContractAddress": "0x979F0880de42A7aE510829f13E66307aBb957f13",
   "keplrChainConfig": {
-    "chainName": "Sifchain",
+    "chainName": "SifchainSandpit",
     "chainId": "",
     "rpc": "",
     "rest": "", 
@@ -38,9 +38,9 @@
     ],
     "coinType": 118,
     "gasPriceStep": {
-      "low": 0.5,
-      "average": 0.65,
-      "high": 0.8
+      "low": 5000000000000,
+      "average": 6500000000000,
+      "high": 8000000000000
     }
   }
 }
