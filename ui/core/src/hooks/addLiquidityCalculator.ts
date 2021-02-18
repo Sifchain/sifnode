@@ -59,7 +59,9 @@ export function usePoolCalculator(input: {
   );
 
   const preExistingPool = computed(() => {
-    if (!tokenAField.asset.value || !tokenBField.asset.value) return null;
+    if (!tokenAField.asset.value && !tokenBField.asset.value) {
+      return null;
+    }
 
     // Find pool from poolFinder
     const pool = input.poolFinder(
@@ -71,14 +73,15 @@ export function usePoolCalculator(input: {
   });
 
   const liquidityPool = computed(() => {
-    if (preExistingPool.value) return preExistingPool.value;
+    if (preExistingPool.value) {
+      return preExistingPool.value;
+    }
     if (
-      !tokenAField.fieldAmount.value ||
-      !tokenBField.fieldAmount.value ||
-      !tokenAField.asset.value ||
-      !tokenBField.asset.value
-    )
+      (!tokenAField.fieldAmount.value && !tokenBField.fieldAmount.value) ||
+      (!tokenAField.asset.value && !tokenBField.asset.value)
+    ) {
       return null;
+    }
 
     return Pool(
       AssetAmount(tokenAField.asset.value, "0"),
@@ -90,8 +93,7 @@ export function usePoolCalculator(input: {
   const provisionedPoolUnitsArray = computed(() => {
     if (
       !liquidityPool.value ||
-      !tokenBField.fieldAmount.value ||
-      !tokenAField.fieldAmount.value
+      (!tokenBField.fieldAmount.value && !tokenAField.fieldAmount.value)
     ) {
       return [new Fraction("0"), new Fraction("0")];
     }
@@ -104,11 +106,11 @@ export function usePoolCalculator(input: {
 
   // pool units from the perspective of the liquidity provider
   const liquidityProviderPoolUnitsArray = computed(() => {
-    if (!provisionedPoolUnitsArray.value)
+    if (!provisionedPoolUnitsArray.value) {
       return [new Fraction("0"), new Fraction("0")];
+    }
 
     const [totalPoolUnits, newUnits] = provisionedPoolUnitsArray.value;
-
     // if this user already has pool units include those in the newUnits
     const totalLiquidityProviderUnits = input.liquidityProvider.value
       ? input.liquidityProvider.value.units.add(newUnits)
@@ -126,12 +128,16 @@ export function usePoolCalculator(input: {
   );
 
   const shareOfPool = computed(() => {
-    if (!liquidityProviderPoolUnitsArray.value) return new Fraction("0");
+    if (!liquidityProviderPoolUnitsArray.value) {
+      return new Fraction("0");
+    }
 
     const [units, lpUnits] = liquidityProviderPoolUnitsArray.value;
 
     // shareOfPool should be 0 if units and lpUnits are zero
-    if (units.equalTo("0") && lpUnits.equalTo("0")) return new Fraction("0");
+    if (units.equalTo("0") && lpUnits.equalTo("0")) {
+      return new Fraction("0");
+    }
 
     // if no units lp owns 100% of pool
     return units.equalTo("0") ? new Fraction("1") : lpUnits.divide(units);
@@ -143,10 +149,12 @@ export function usePoolCalculator(input: {
   });
 
   const poolAmounts = computed(() => {
-    if (!preExistingPool.value || !tokenAField.asset.value) {
+    if (!preExistingPool.value) {
       return null;
     }
-    if (!preExistingPool.value.contains(tokenAField.asset.value)) return null;
+    if (!preExistingPool.value.contains(tokenAField.asset.value)) {
+      return null;
+    }
     const externalBalance = preExistingPool.value.getAmount(
       tokenAField.asset.value
     );
@@ -156,8 +164,14 @@ export function usePoolCalculator(input: {
 
   // external_balance / native_balance
   const aPerBRatio = computed(() => {
-    if (!poolAmounts.value) return null;
+    if (!poolAmounts.value) {
+      return null;
+    }
     const [native, external] = poolAmounts.value;
+    if (!native || !external) {
+      return null;
+    }
+
     return external.divide(native);
   });
 
@@ -166,13 +180,19 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return aPerBRatio.value.toFixed(8);
+    return aPerBRatio.value.toFixed(6);
   });
 
   // native_balance / external_balance
   const bPerARatio = computed(() => {
-    if (!poolAmounts.value) return null;
+    if (!poolAmounts.value) {
+      return null;
+    }
     const [native, external] = poolAmounts.value;
+    if (!native || !external) {
+      return null;
+    }
+
     return native.divide(external);
   });
 
@@ -181,7 +201,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return bPerARatio.value.toFixed(8);
+    return bPerARatio.value.toFixed(6);
   });
 
   // Price Impact and Pool Share:
@@ -189,12 +209,16 @@ export function usePoolCalculator(input: {
   const aPerBRatioProjected = computed(() => {
     if (
       !poolAmounts.value ||
-      !tokenAField.fieldAmount.value ||
-      !tokenBField.fieldAmount.value
-    )
+      (!tokenAField.fieldAmount.value && !tokenBField.fieldAmount.value)
+    ) {
       return null;
+    }
 
     const [native, external] = poolAmounts.value;
+    if (!native && !external) {
+      return null;
+    }
+
     const externalAdded = tokenAField.fieldAmount.value;
     const nativeAdded = tokenBField.fieldAmount.value;
 
@@ -206,7 +230,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return aPerBRatioProjected.value.toFixed(8);
+    return aPerBRatioProjected.value.toFixed(6);
   });
 
   // Price Impact and Pool Share:
@@ -214,12 +238,16 @@ export function usePoolCalculator(input: {
   const bPerARatioProjected = computed(() => {
     if (
       !poolAmounts.value ||
-      !tokenAField.fieldAmount.value ||
-      !tokenBField.fieldAmount.value
-    )
+      (!tokenAField.fieldAmount.value && !tokenBField.fieldAmount.value)
+    ) {
       return null;
+    }
 
     const [native, external] = poolAmounts.value;
+    if (!native && !external) {
+      return null;
+    }
+
     const externalAdded = tokenAField.fieldAmount.value;
     const nativeAdded = tokenBField.fieldAmount.value;
     return native.add(nativeAdded).divide(external.add(externalAdded));
@@ -230,7 +258,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return bPerARatioProjected.value.toFixed(8);
+    return bPerARatioProjected.value.toFixed(6);
   });
 
   const state = computed(() => {
@@ -246,12 +274,14 @@ export function usePoolCalculator(input: {
     const aAmountIsZeroOrFalsy = !aAmount || aAmount.equalTo("0");
     const bAmountIsZeroOrFalsy = !bAmount || bAmount.equalTo("0");
     const noPreexistingPool = !preExistingPool.value;
-    if (noPreexistingPool || (bAmountIsZeroOrFalsy && aAmountIsZeroOrFalsy))
+    if (noPreexistingPool || (bAmountIsZeroOrFalsy && aAmountIsZeroOrFalsy)) {
       return PoolState.ZERO_AMOUNTS;
+    }
 
     // Insufficient Funds
-    if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value)
+    if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value) {
       return PoolState.INSUFFICIENT_FUNDS;
+    }
 
     // Valid yay!
     return PoolState.VALID_INPUT;
