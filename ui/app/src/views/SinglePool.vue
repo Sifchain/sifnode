@@ -171,10 +171,10 @@ export default defineComponent({
             Liquidity providers earn a percentage fee on all trades proportional
             to their share of the pool. Fees are added to the pool, accrue in
             real time and can be claimed by withdrawing your liquidity. To learn
-            more, reference of documentation
+            more, refer to the documentation
             <a target="_blank" href="https://docs.sifchain.finance/core-concepts/liquidity-pool"
               >here</a
-            >
+            >.
           </p>
         </div>
       </div>
