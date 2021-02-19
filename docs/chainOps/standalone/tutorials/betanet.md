@@ -16,7 +16,7 @@ rake "keys:generate:mnemonic"
 2. Boot your node:
 
 ```
-rake "genesis:sifnode:mainnet:boot[<moniker>,<mnemonic>,<gas_price>]"
+rake "genesis:sifnode:mainnet:boot[<moniker>,'<mnemonic>',<gas_price>]"
 ```
 
 Where:
