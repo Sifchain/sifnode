@@ -191,6 +191,15 @@ export default defineComponent({
         selectedField.value = null;
       },
 
+      backlink: computed(() => {
+        let link = '/pool';
+        if (fromSymbol.value && connected && Number(aPerBRatioMessage.value) > 0 &&
+          totalLiquidityProviderUnits.value !== '0') {
+          link = `/pool/${fromSymbol.value}`;
+        }
+        return link;
+      }),
+
       handleNextStepClicked,
 
       handleAskConfirmClicked,
@@ -238,8 +247,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" :backLink="`${fromSymbol && connected && aPerBRatioMessage > 0
-    ? '/pool/' + fromSymbol : '/pool' }`" :title="title">
+  <Layout class="pool" :backLink="backlink" :title="title">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel
