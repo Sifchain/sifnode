@@ -14,15 +14,16 @@ type DistributionList struct {
 	FundingAddress sdk.Address
 	Receivers receiverType
 	TotalRewards sdk.Uint
-	ReceivingList map([]sdk.Address)sdk.Coins
+	ReceivingList map([]sdk.Address)sdk.Coins  // I have see some issues with map and amino before .Not 100 % if this is the best idea . Will need to look into for cosmos handles the deserialization
 	DistributionFunction distributionFunction
 	DistributionFrequency int64 // in num of blocks
 	DistributionTokens []string // Type of token to be distributed
+	// IntermediaryAddress sdk.Address or string 
 }
 ```
 
-We can add a field here to store and intermediary address , to which all funds are transferred at the block ender 
-I chose not to , because the funding address for all use cases would be controlled by us.This simplifies the logic a lot .
+We can add a field here to store an intermediary address , to which all funds are transferred at the block ender .
+I chose not to , because the funding address for all use cases would be controlled by us  .This simplifies the logic .
 We can add that feature in the future
 ## Interfaces
 
@@ -131,7 +132,8 @@ func IterateAllLists() {}
 - The module would need to handle state export etc , for upgrades to happen , which would be part of a subsequent document.
 
 ## Sample Code 
-We can use functions instead of interfaces , Choosing to use interfaces becuase it would allow us to differentiate types easily 
+We can use functions instead of interfaces , Choosing to use interfaces because it would allow us to differentiate types easily .
+Also the structs implementing the interface can hold parameters required fo the underlying functions .
 
 ```go
 package main
