@@ -54,10 +54,25 @@ test/integration/start-integration-env.sh
 
 ## Running tests against ropsten
 
-###  Bring the environment variables for the target environment into your shell:
+###  Set the appropriate environment variables:
 
 ```
+# only once, add a sifchain account that has rowan
+# sifnodecli keys import rowansource key.txt --keyring-backend test
+
+# Set an ethereum private key for an acount that has eth on the testnet
+export SMART_CONTRACTS_DIR=...
+export ETHEREUM_ADDRESS=...
+export ROWAN_SOURCE=sif1pvnu2kh826vn8r0ttlgt82hsmfknvcnf7qmpvk
+export ROWAN_SOURCE_KEY=thekey
+export ETHEREUM_NETWORK=ropsten
+export SIFNODE=http://xx.xx.xx.xx:26657
+export INFURA_PROJECT_ID=yourId
+cd $yourtestintegrationdirectory
 source <(smart_contract_env.sh ~/workspace/sifnode/smart-contracts/deployments/sandpit/)
+export ETHEREUM_PRIVATE_KEY=...
+
+python3 -m pytest -x -olog_cli=true -olog_level=DEBUG -v -olog_file=/tmp/log.txt -v src/py/test_eth_transfers
 ```
 
 
