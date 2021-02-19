@@ -12,9 +12,9 @@
 type DistributionList struct {
 	Identifier string // or id 
 	FundingAddress sdk.Address
-	Receivers receiverType 
-	ReceivingList map([]sdk.Address)sdk.Coins 
-	RewardsAllocated rewards
+	Receivers receiverType
+	TotalRewards sdk.Uint
+	ReceivingList map([]sdk.Address)sdk.Coins
 	DistributionFunction distributionFunction
 	DistributionFrequency int64 // in num of blocks
 	DistributionTokens []string // Type of token to be distributed
@@ -53,18 +53,21 @@ func (LiquidityProviders)getAddressList() []sdk.address {
 ### distributionFunction Interface
 ```go
 type distributionFunction interface {
-	getAmounts([]string,[]sdk.address,{}interface) map[sdk.address]amounts
+	getAmounts(sdk.Uint,[]string,[]sdk.address,{}interface) map[sdk.address]amounts
 }
 
 ```
 ```go
 type DistributeLiquidityMiningRewards struct {}
-func (DistributeLiquidityMiningRewards)getAmounts(distributionTokens []string, 
+func (DistributeLiquidityMiningRewards)getAmounts(
+	    totalRewards sdk.Uint,
+	    distributionTokens []string, 
 	    addrlist []sdk.address,
 	    i {}interface) map[sdk.address]Coins {
 	// parse interface into struct
+	// use Total rewards to check if required amount is available.
 	// Iterate over all addresses .
-	// Logically allocate tokens .
+	// Logically allocate tokens  
 	// Create output map
 }
 ```
@@ -91,7 +94,7 @@ Note the structs can be used to store data required by the underlying functions.
 ```go
 func SetDistributionList() {}
 func GetDistributionList() {}
-func IterateAllList() {}
+func IterateAllLists() {}
 ```
 
 
@@ -121,11 +124,14 @@ func IterateAllList() {}
 
 - Use Funding address to as from address for distribution.
 
+- When distributed deduct amount from total rewards
+
 ### Points to note
 - This is a very high level document for the overall logic. 
 - The module would need to handle state export etc , for upgrades to happen , which would be part of a subsequent document.
 
 ## Sample Code 
+We can use functions instead of interfaces , Choosing to use interfaces becuase it would allow us to differentiate types easily 
 
 ```go
 package main
