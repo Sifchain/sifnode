@@ -5,8 +5,6 @@ logstashConfig:
     xpack.monitoring.elasticsearch.username: '${ELASTICSEARCH_USERNAME}'
     xpack.monitoring.elasticsearch.password: '${ELASTICSEARCH_PASSWORD}'
     xpack.monitoring.elasticsearch.hosts: ["http://elk-prod-1125755348.us-east-1.elb.amazonaws.com:80"]
-    xpack.monitoring.elasticsearch.ssl.certificate_authority: "/usr/share/logstash/config/elasticsearch-ca.pem"
-    xpack.monitoring.elasticsearch.ssl.verification_mode: "none"
 
   log4j2.properties: |
     logger.elasticsearchoutput.name: 'logstash.outputs.elasticsearch'
@@ -19,58 +17,6 @@ logstashConfig:
       path.config: "/usr/share/logstash/pipeline/sifnode.conf"
 
   elasticsearch-ca.pem: |
-    -----BEGIN CERTIFICATE-----
-    MIIEyTCCA7GgAwIBAgIUUrcgco8D1iDPIV2ueZJa5BtqWbAwDQYJKoZIhvcNAQEL
-    BQAwgYsxCzAJBgNVBAYTAlVTMRkwFwYDVQQKExBDbG91ZEZsYXJlLCBJbmMuMTQw
-    MgYDVQQLEytDbG91ZEZsYXJlIE9yaWdpbiBTU0wgQ2VydGlmaWNhdGUgQXV0aG9y
-    aXR5MRYwFAYDVQQHEw1TYW4gRnJhbmNpc2NvMRMwEQYDVQQIEwpDYWxpZm9ybmlh
-    MB4XDTIwMTIyMzAxNTMwMFoXDTM1MTIyMDAxNTMwMFowYjEZMBcGA1UEChMQQ2xv
-    dWRGbGFyZSwgSW5jLjEdMBsGA1UECxMUQ2xvdWRGbGFyZSBPcmlnaW4gQ0ExJjAk
-    BgNVBAMTHUNsb3VkRmxhcmUgT3JpZ2luIENlcnRpZmljYXRlMIIBIjANBgkqhkiG
-    9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsM2cDfXz7Ziz1qCEwiX3v95aEwfvg7xV7G1w
-    L+9YkKJTV5BMwxlYfU9wZO4CWFmK09FJW1LmnjX6iRPUGeY2zeaEQFFrwatjuxll
-    A6aUHe3Mx9uTz5JroklYcx3HG8u9JdlpDh0BSJ5pDs5d61cYX9EGOSvspkt/B25U
-    /5xhdQJC2gmhjHvbEMlRWh9ozSeZ1fK8y1qnyY5a19tHdIK+AjBpxVrEF38VE7lv
-    MQYUMrLIi9bP4SHcnwp8uPGeUDE1CJDXuJO6tz7cuzGf9iE+bJkcjO163+0xznBr
-    fP1BDoVpOW5xgbISQP7cuB/EM5331OH6pUehhb8SffjQAG41iQIDAQABo4IBSzCC
-    AUcwDgYDVR0PAQH/BAQDAgWgMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcD
-    ATAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBSKhqnjbo3favfq6iWIqbmv8f8uLjAf
-    BgNVHSMEGDAWgBQk6FNXXXw0QIep65TbuuEWePwppDBABggrBgEFBQcBAQQ0MDIw
-    MAYIKwYBBQUHMAGGJGh0dHA6Ly9vY3NwLmNsb3VkZmxhcmUuY29tL29yaWdpbl9j
-    YTBMBgNVHREERTBDghIqLnNpZmNoYWluLmZpbmFuY2WCGyoudGVzdG5ldHMuc2lm
-    Y2hhaW4uZmluYW5jZYIQc2lmY2hhaW4uZmluYW5jZTA4BgNVHR8EMTAvMC2gK6Ap
-    hidodHRwOi8vY3JsLmNsb3VkZmxhcmUuY29tL29yaWdpbl9jYS5jcmwwDQYJKoZI
-    hvcNAQELBQADggEBABDbfp9Yphhy/958bOZ3O/5yXHJ0qed7aVXo0ulLem3amiJm
-    wNBWvdYWS++i8Fm4D4WPwqntHQR3Ub7L9rOOvggiwx86lAdSGAGKHO5al1lCi7ib
-    GHcBEzI45lDmwxC+NvD4UNA5//FJsW2+/cRTYbePfcfniuPADnE0boO32R3FlPgb
-    sB3s8BnhGw9vERJDnSb7/28Y9NA2KsknKRf/Rx3Lqr2u/qK1PiMDmxMnu5erRMQl
-    v2zpGJaELL9Y01oFlvameRlDbJRtGQCDTStp3N+3tl58bh/Ds36UXvHkh8LpVNZi
-    wUoSE23ezUH3BWaleQbNqC9DjSaMIfRz2f74s0M=
-    -----END CERTIFICATE-----
-    -----BEGIN CERTIFICATE-----
-    MIIEADCCAuigAwIBAgIID+rOSdTGfGcwDQYJKoZIhvcNAQELBQAwgYsxCzAJBgNV
-    BAYTAlVTMRkwFwYDVQQKExBDbG91ZEZsYXJlLCBJbmMuMTQwMgYDVQQLEytDbG91
-    ZEZsYXJlIE9yaWdpbiBTU0wgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MRYwFAYDVQQH
-    Ew1TYW4gRnJhbmNpc2NvMRMwEQYDVQQIEwpDYWxpZm9ybmlhMB4XDTE5MDgyMzIx
-    MDgwMFoXDTI5MDgxNTE3MDAwMFowgYsxCzAJBgNVBAYTAlVTMRkwFwYDVQQKExBD
-    bG91ZEZsYXJlLCBJbmMuMTQwMgYDVQQLEytDbG91ZEZsYXJlIE9yaWdpbiBTU0wg
-    Q2VydGlmaWNhdGUgQXV0aG9yaXR5MRYwFAYDVQQHEw1TYW4gRnJhbmNpc2NvMRMw
-    EQYDVQQIEwpDYWxpZm9ybmlhMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC
-    AQEAwEiVZ/UoQpHmFsHvk5isBxRehukP8DG9JhFev3WZtG76WoTthvLJFRKFCHXm
-    V6Z5/66Z4S09mgsUuFwvJzMnE6Ej6yIsYNCb9r9QORa8BdhrkNn6kdTly3mdnykb
-    OomnwbUfLlExVgNdlP0XoRoeMwbQ4598foiHblO2B/LKuNfJzAMfS7oZe34b+vLB
-    yrP/1bgCSLdc1AxQc1AC0EsQQhgcyTJNgnG4va1c7ogPlwKyhbDyZ4e59N5lbYPJ
-    SmXI/cAe3jXj1FBLJZkwnoDKe0v13xeF+nF32smSH0qB7aJX2tBMW4TWtFPmzs5I
-    lwrFSySWAdwYdgxw180yKU0dvwIDAQABo2YwZDAOBgNVHQ8BAf8EBAMCAQYwEgYD
-    VR0TAQH/BAgwBgEB/wIBAjAdBgNVHQ4EFgQUJOhTV118NECHqeuU27rhFnj8KaQw
-    HwYDVR0jBBgwFoAUJOhTV118NECHqeuU27rhFnj8KaQwDQYJKoZIhvcNAQELBQAD
-    ggEBAHwOf9Ur1l0Ar5vFE6PNrZWrDfQIMyEfdgSKofCdTckbqXNTiXdgbHs+TWoQ
-    wAB0pfJDAHJDXOTCWRyTeXOseeOi5Btj5CnEuw3P0oXqdqevM1/+uWp0CM35zgZ8
-    VD4aITxity0djzE6Qnx3Syzz+ZkoBgTnNum7d9A66/V636x4vTeqbZFBr9erJzgz
-    hhurjcoacvRNhnjtDRM0dPeiCJ50CP3wEYuvUzDHUaowOsnLCjQIkWbR7Ni6KEIk
-    MOz2U0OBSif3FTkhCgZWQKOOLo1P42jHC3ssUZAtVNXrCk3fw9/E15k8NPkBazZ6
-    0iykLhH1trywrKRMVw67F44IE8Y=
-    -----END CERTIFICATE-----
 
 logstashPipeline:
   logstash.conf: |
@@ -160,7 +106,7 @@ securityContext:
   runAsUser: 0
 
 persistence:
-  enabled: true
+  enabled: false
 
 replicas: 1
 

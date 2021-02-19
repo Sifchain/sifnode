@@ -1,6 +1,6 @@
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: DaemonSet
 metadata:
   name: {{ template "logstash.fullname" . }}
   labels:
@@ -12,13 +12,10 @@ metadata:
     {{ $key }}: {{ $value | quote }}
     {{- end }}
 spec:
-  serviceName: {{ template "logstash.fullname" . }}-headless
   selector:
     matchLabels:
       app: "{{ template "logstash.fullname" . }}"
       release: {{ .Release.Name | quote }}
-  replicas: {{ .Values.replicas }}
-  podManagementPolicy: {{ .Values.podManagementPolicy }}
   updateStrategy:
     type: {{ .Values.updateStrategy }}
   {{- if .Values.persistence.enabled }}
@@ -160,18 +157,18 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         env:
-          - name: LS_JAVA_OPTS
-            value: "{{ .Values.logstashJavaOpts }}"
           - name: ELASTICSEARCH_USERNAME
             valueFrom:
               secretKeyRef:
-                name: {{ template "logstash.fullname" . }}-elasticsearch
+                name: {{ include "logstash.fullname" . }}-elasticsearch
                 key: USERNAME
           - name: ELASTICSEARCH_PASSWORD
             valueFrom:
               secretKeyRef:
-                name:  {{ template "logstash.fullname" . }}-elasticsearch
+                name: {{ include "logstash.fullname" . }}-elasticsearch
                 key: PASSWORD
+          - name: LS_JAVA_OPTS
+            value: "{{ .Values.logstashJavaOpts }}"
 {{- if .Values.extraEnvs }}
 {{ toYaml .Values.extraEnvs | indent 10 }}
 {{- end }}
