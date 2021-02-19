@@ -8,7 +8,7 @@
         v-model="searchText"
       />
     </div>
-    <Tabs @tabselected="onTabSelected">
+    <Tabs :defaultIndex="1" @tabselected="onTabSelected">
       <Tab title="External Tokens">
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
@@ -66,7 +66,7 @@ export default defineComponent({
     const { store, actions } = useCore();
 
     const searchText = ref("");
-    const selectedTab = ref("External Tokens");
+    const selectedTab = ref("Sifchain Native");
 
     const allTokens = computed(() => {
       if (selectedTab.value === "External Tokens") {

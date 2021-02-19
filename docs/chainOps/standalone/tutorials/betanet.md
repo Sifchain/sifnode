@@ -59,7 +59,7 @@ e.g.:
 rake "genesis:sifnode:boot[0.5rowan]"
 ```
 
-and your node will start synchronizing with the network. Please note that this may take several hours or more.
+and your node will start synchronizing with the network. Please note that this may take several hours or more. *It's important that you start your node with this command, as this will ensure that network upgrades are applied automatically.*
 
 ## Verify
 
