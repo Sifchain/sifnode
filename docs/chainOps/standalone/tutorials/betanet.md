@@ -1,35 +1,22 @@
 # Connecting to the Sifchain BetaNet. 
 
+## Prerequisites / Dependencies:
+
+- [Docker](https://www.docker.com/get-started)
+- [Ruby 2.7.x](https://www.ruby-lang.org/en/documentation/installation)
+
 ## Scaffold and run your node
 
-1. Clone the respository.
-
-```
-git clone ssh://git@github.com/Sifchain/sifnode && cd sifnode
-```
-
-2. Checkout the mainnet release:
-
-```
-git checkout tags/mainnet-genesis
-```
-
-3. Build:
-
-```
-make clean install
-```
-
-4. Generate a mnemonic:
+1. Generate a mnemonic (if you don't already have one):
 
 ```
 rake "keys:generate:mnemonic"
 ```
 
-5. Scaffold your node:
+2. Boot your node:
 
 ```
-rake "genesis:sifnode:scaffold[sifchain, <moniker>, '<mnemonic>', 0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656, http://44.235.108.41:26657/genesis]"
+rake "genesis:sifnode:mainnet:boot[<moniker>,<mnemonic>,<gas_price>]"
 ```
 
 Where:
@@ -38,32 +25,13 @@ Where:
 |-----|----------|
 |`<moniker>`|A name for your node.|
 |`<mnemonic>`|The mnemonic phrase generated in the previous step.|
+|`<gas_price>`|Optional. The minimum gas price (e.g.: 0.5rowan).|
 
-This step will also output the keyring password, so please record this and the moniker somewhere secure.
-
-7. Connect:
-
-```
-rake "genesis:sifnode:boot[<gas_price>]"
-```
-
-Where:
-
-|Param|Description|
-|-----|----------|
-|`<gas_price>`|The minimum gas price (e.g.: 0.5rowan).|
-
-e.g.:
-
-```
-rake "genesis:sifnode:boot[0.5rowan]"
-```
-
-and your node will start synchronizing with the network. Please note that this may take several hours or more. *It's important that you start your node with this command, as this will ensure that network upgrades are applied automatically.*
+and your node will start synchronizing with the network. Please note that this may take several hours or more.
 
 ## Verify
 
-You can verify that you're connected by running:
+You can verify that you're connected by running (from within the container) :
 
 ```
 sifnodecli q tendermint-validator-set
@@ -109,21 +77,6 @@ validators:
 
 Congratulations. You are now connected to the network.
 
-## Additional Peers
-
-The following can be used as additional peers on the network:
-
-```
-0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656
-bcc2d07a14a8a0b3aa202e9ac106dec0bef91fda@13.55.247.60:26656
-663dec65b754aceef5fcccb864048305208e7eb2@34.248.110.88:26656
-0120f0a48e7e81cc98829ef4f5b39480f11ecd5a@52.76.185.17:26656
-6535497f0152293d773108774a705b86c2249a9c@44.238.121.65:26656
-fdf5cffc2b20a20fab954d3b6785e9c382762d14@34.255.133.248:26656
-8c240f71f9e060277ce18dc09d82d3bbb05d1972@13.211.43.177:26656
-9fbcb6bd5a7f20a716564157c4f6296d2faf5f64@18.138.208.95:26656
-```
-
 ## Become a Validator
 
 You won't be able to participate in consensus until you become a validator.
@@ -136,7 +89,7 @@ You won't be able to participate in consensus until you become a validator.
 cat ~/.sifnoded/config/config.toml | grep moniker
 ```
 
-3. Run the following command to become a validator: 
+3. Run the following command to become a validator (from within the container): 
 
 ```
 sifnodecli tx staking create-validator \
