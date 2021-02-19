@@ -191,11 +191,34 @@ def get_sifchain_addr_balance(sifaddress, sifnodecli_node, denom):
     return 0
 
 
-def get_transaction_result(tx_hash, sifnodecli_node):
+def wait_for_success(success_fn, max_seconds=30, debug_prefix=""):
+    done_at_time = time.time() + max_seconds
+    while True:
+        try:
+            return success_fn()
+        except Exception as e:
+            if time.time() >= done_at_time:
+                errmsg = f"{debug_prefix} Failed to wait for success, waited for {max_seconds} seconds"
+                logging.critical(errmsg)
+                raise Exception(errmsg)
+            else:
+                logging.debug(f"waiting for success...")
+                time.sleep(1)
+
+
+def wait_for_successful_command(command_line, max_seconds=30):
+    return wait_for_success(
+        lambda: get_shell_output_json(command_line),
+        max_seconds
+    )
+
+
+def get_transaction_result(tx_hash, sifnodecli_node, chain_id):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
-    command_line = f"sifnodecli q tx {node} {tx_hash} -o json"
-    json_str = get_shell_output_json(command_line)
-    print(json_str)
+    chain_id_entry = f"--chain-id {chain_id}" if chain_id else ""
+    command_line = f"sifnodecli q tx {node} {tx_hash} {chain_id_entry} -o json"
+    json_str = wait_for_successful_command(command_line)
+    return json_str
 
 
 # balance_fn is a lambda that takes no arguments
@@ -297,12 +320,11 @@ def send_from_sifchain_to_ethereum(transfer_request: EthereumToSifchainTransferR
     node = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
     sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
-    amount_as_str = "{:d}".format(transfer_request.amount)
     command_line = f"{yes_entry} " \
                    f"sifnodecli tx ethbridge {direction} {node} " \
                    f"{transfer_request.sifchain_address} " \
                    f"{transfer_request.ethereum_address} " \
-                   f"{amount_as_str} " \
+                   f"{int(transfer_request.amount):0} " \
                    f"{transfer_request.sifchain_symbol} " \
                    f"{transfer_request.ceth_amount} " \
                    f"{keyring_backend_entry} " \
@@ -323,7 +345,7 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
     command_line = f"yarn -s --cwd {transfer_request.smart_contracts_dir} integrationtest:{direction} " \
                    f"--sifchain_address {transfer_request.sifchain_address} " \
                    f"--symbol {transfer_request.ethereum_symbol} " \
-                   f"--amount {transfer_request.amount} " \
+                   f"--amount {int(transfer_request.amount):0} " \
                    f"--bridgebank_address {transfer_request.bridgebank_address} " \
                    f"--ethereum_address {transfer_request.ethereum_address} " \
                    f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
@@ -480,8 +502,11 @@ def display_currency_value(x: int) -> str:
     return f"({x} | {x / 10 ** 18})"
 
 
-def create_new_currency(amount, symbol, smart_contracts_dir, bridgebank_address, solidity_json_path):
+def create_new_currency(amount, symbol, smart_contracts_dir, bridgebank_address, solidity_json_path, operator_address = "", ethereum_network: str = ""):
     """returns {'destination': '0x627306090abaB3A6e1400e9345bC60c78a8BEf57', 'amount': '9000000000000000000', 'newtoken_address': '0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc', 'newtoken_symbol': 'a3c626b'}"""
+    if not operator_address:
+        operator_address = ganache_owner_account(smart_contracts_dir)
+    network_element = f"--ethereum_network {ethereum_network} " if ethereum_network else ""
     return run_yarn_command(
         f"yarn --cwd {smart_contracts_dir} "
         f"integrationtest:enableNewToken "
@@ -489,6 +514,9 @@ def create_new_currency(amount, symbol, smart_contracts_dir, bridgebank_address,
         f"--json_path {solidity_json_path} "
         f"--symbol {symbol} "
         f"--amount {amount} "
-        f"--limit_amount {amount}"
+        f"--limit_amount {amount} "
+        f"--operator_address {operator_address} "
+        f"--ethereum_private_key_env_var ETHEREUM_PRIVATE_KEY "
+        f"{network_element} "
     )
 
