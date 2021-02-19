@@ -164,6 +164,7 @@ func main() {
 	}
 }
 
+
 type ReceiverType interface {
 	GetAddressList()
 }
