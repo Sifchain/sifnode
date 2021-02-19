@@ -62,13 +62,14 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
 
     force_log_level(original_log_level)
     starting_block = send_from_ethereum_to_sifchain(transfer_request)
-    logging.debug(f"send_from_ethereum_to_sifchain ethereum block number: {starting_block}")
     original_log_level = decrease_log_level()
+    logging.debug(f"send_from_ethereum_to_sifchain ethereum block number: {starting_block}")
 
     half_n_wait_blocks = n_wait_blocks / 2
     logging.debug("wait half the blocks, transfer should not complete")
     if transfer_request.manual_block_advance:
         advance_n_ethereum_blocks(half_n_wait_blocks, transfer_request.smart_contracts_dir)
+        # we really want to wait for ebrelayer to catch up, but that's not possible yet
         time.sleep(5)
     else:
         wait_for_ethereum_block_number(
@@ -86,6 +87,9 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
     except:
         sifchain_balance_before_required_elapsed_blocks = 0
 
+    # need to be able to turn off checking the balance after waiting half the blocks
+    # because we want to be able to run some tests in parallel.  If parallel tests
+    # are manually advancing blocks, you can't be sure where you are.
     if transfer_request.check_wait_blocks and sifchain_balance_before_required_elapsed_blocks != sifchain_starting_balance:
         print_error_message(
             f"balance should not have changed yet.  Starting balance {sifchain_starting_balance},"
@@ -405,6 +409,7 @@ def create_new_sifaddr(
         credentials: SifchaincliCredentials,
         keyname
 ):
+    """returns something like {"name":"9cbf3bd4-f15c-4128-bae6-a534fc8d6877","type":"local","address":"sif19u4xtckuvy2zk9r2l4063g93s3r8qc4vw0a20t","pubkey":"sifpub1addwnpepqw88ns6dmy3xwjqh4mkvuda6ezn056nxy8ldrtpkrfuvuamexv9hxyzhxm7","mnemonic":"surprise fire cupboard orange scatter boat cruel ability oven gap accident purity delay"}"""
     keyring_passphrase = credentials.keyring_passphrase
     yes_subcmd = f"yes {keyring_passphrase} |" if keyring_passphrase else ""
     keyring_backend_subcmd = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""

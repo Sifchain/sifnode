@@ -25,7 +25,7 @@ module.exports = async (cb) => {
             result.symbol = "eth";
         } else {
             const addr = argv.symbol;
-            const tokenContract = await contractUtilites.buildContract(this, argv, logging, "BridgeToken", argv.symbol.toString());
+            const tokenContract = await contractUtilites.buildContract(this, argv, logging, "BridgeToken", argv.symbol);
             result["symbol"] = await tokenContract.symbol();
             balanceWei = new BigNumber(await tokenContract.balanceOf(argv.ethereum_address))
         }

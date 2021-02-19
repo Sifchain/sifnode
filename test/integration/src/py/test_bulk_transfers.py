@@ -43,6 +43,7 @@ def test_bulk_transfers(
             "integrationtest:sendBulkLockTx",
             f"--amount {amount}",
             f"--symbol eth",
+            f"--json_path {request.solidity_json_path}",
             f"--sifchain_address {new_addresses[0]}",
             f"--transactions \'{json_requests}\'",
             f"--ethereum_address {source_ethereum_address}",
