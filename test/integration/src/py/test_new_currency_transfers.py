@@ -4,6 +4,7 @@ import logging
 import pytest
 
 import burn_lock_functions
+import test_utilities
 from burn_lock_functions import EthereumToSifchainTransferRequest
 from integration_env_credentials import create_new_sifaddr_and_credentials
 from test_utilities import get_shell_output, amount_in_wei, \
@@ -131,7 +132,8 @@ def test_cannot_create_two_currencies_that_only_differ_in_capitalization(
     new_currency = create_new_currency(10 ** 18, new_account_key, smart_contracts_dir, bridgebank_address,
                                        solidity_json_path)
     with pytest.raises(Exception):
-        create_new_currency(amount_in_wei(10), new_account_key.upper())
+        new_currency = create_new_currency(10 ** 18, new_account_key, smart_contracts_dir, bridgebank_address,
+                                           solidity_json_path)
 
 
 @pytest.mark.skip(reason="fails and is too slow to mark with xfail")
@@ -141,9 +143,11 @@ def test_cannot_create_two_currencies_with_the_same_name(
         solidity_json_path,
 ):
     new_account_key = get_shell_output("uuidgen").replace("-", "")
-    create_new_currency(amount_in_wei(10), new_account_key)
+    new_currency = create_new_currency(amount_in_wei(10), new_account_key, smart_contracts_dir, bridgebank_address,
+                                       solidity_json_path)
     with pytest.raises(Exception):
-        create_new_currency(amount_in_wei(10), new_account_key)
+        new_currency = create_new_currency(amount_in_wei(10), new_account_key, smart_contracts_dir, bridgebank_address,
+                                           solidity_json_path)
 
 
 @pytest.mark.skip(reason="fails and is too slow to mark with xfail")
@@ -153,6 +157,7 @@ def test_can_use_a_token_with_a_dash_in_the_name(
         solidity_json_path,
 ):
     n = "a-b"
-    new_currency = create_new_currency(amount_in_wei(10), n)
+    new_currency = create_new_currency(amount_in_wei(10), n, smart_contracts_dir, bridgebank_address,
+                                       solidity_json_path)
     (request, _) = build_request(new_currency, 60000)
     burn_lock_functions.transfer_ethereum_to_sifchain(request, 10)

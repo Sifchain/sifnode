@@ -59,8 +59,9 @@ def generate_test_account(
     request.amount = target_ceth_balance
     request.sifchain_symbol = "ceth"
     request.ethereum_symbol = "eth"
-    logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
-    burn_lock_functions.transfer_ethereum_to_sifchain(request)
+    if target_ceth_balance > 0:
+        logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
+        burn_lock_functions.transfer_ethereum_to_sifchain(request)
 
     logging.info(
         f"created sifchain addr {new_sifaddr} "
