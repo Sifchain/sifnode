@@ -11,12 +11,12 @@ export default defineComponent({
       return (s - 0) == s && (''+s).trim().length > 0;
     }
 
-    const data = await fetch("https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/tokenstats");
+      const data = await fetch("https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/tokenstats");
     const json = await data.json();
     const rowanPriceInUSDT = json.body ? json.body.rowanUSD : "";
 
     let rowanUSD = "";
-    if (isNumeric(rowanPriceInUSDT) && route.path === '/stats') {
+    if (isNumeric(rowanPriceInUSDT)) {
       rowanUSD = "ROWAN: $" + parseFloat(rowanPriceInUSDT).toPrecision(6);
     }
 
