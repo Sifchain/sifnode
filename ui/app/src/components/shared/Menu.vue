@@ -1,19 +1,19 @@
 <script>
 import { defineComponent } from "vue";
-import { RampInstantSDK } from '@ramp-network/ramp-instant-sdk';
-
+import { RampInstantSDK } from "@ramp-network/ramp-instant-sdk";
 
 export default defineComponent({
   methods: {
-    openRamp: function () {
+    openRamp: function() {
       new RampInstantSDK({
-        hostAppName: 'Maker DAO',
-        hostLogoUrl: 'https://cdn-images-1.medium.com/max/2600/1*nqtMwugX7TtpcS-5c3lRjw.png',
+        swapAsset: "CELO,CUSD,DAI,DOT,ETH,KSM,USDC,USDT,XDAI,XLM",
+        hostAppName: "Maker DAO",
+        hostLogoUrl:
+          "https://cdn-images-1.medium.com/max/2600/1*nqtMwugX7TtpcS-5c3lRjw.png"
       }).show();
     }
   }
 });
-
 </script>
 
 <template>
@@ -22,12 +22,18 @@ export default defineComponent({
       <router-link class="logo" to="/">S</router-link>
     </div>
     <div class="item">
-      <a class="link" target="_blank" href="https://docs.sifchain.finance/resources/sifchain-dex-ui"
+      <a
+        class="link"
+        target="_blank"
+        href="https://docs.sifchain.finance/resources/sifchain-dex-ui"
         >Discover</a
       >
     </div>
     <div class="item">
-      <a class="link" target="_blank" href="https://docs.sifchain.finance/resources/faq#how-can-i-acquire-rowan-and-or-erowan"
+      <a
+        class="link"
+        target="_blank"
+        href="https://docs.sifchain.finance/resources/faq#how-can-i-acquire-rowan-and-or-erowan"
         >Get Rowan</a
       >
     </div>
@@ -35,7 +41,6 @@ export default defineComponent({
     <div class="item">
       <span class="link" v-on:click="openRamp">Buy Crypto</span>
     </div>
-
 
     <!--
     <div class="item">
