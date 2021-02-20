@@ -51,6 +51,11 @@ type IClpService = {
   }) => any;
 };
 
+// TS not null type guard
+function notNull<T>(val: T | null): val is T {
+  return val !== null;
+}
+
 export default function createClpService({
   sifApiUrl,
   nativeAsset,
@@ -64,7 +69,12 @@ export default function createClpService({
     async getPools() {
       try {
         const rawPools = await client.getPools();
-        return rawPools.map(toPool(nativeAsset));
+        return (
+          rawPools
+            .map(toPool(nativeAsset))
+            // toPool can return a null pool for invalid pools lets filter them out
+            .filter(notNull)
+        );
       } catch (error) {
         return [];
       }
@@ -90,7 +100,9 @@ export default function createClpService({
           symbol: params.externalAssetAmount.asset.symbol,
           ticker: params.externalAssetAmount.asset.symbol,
         },
-        external_asset_amount: params.externalAssetAmount.toBaseUnits().toString(),
+        external_asset_amount: params.externalAssetAmount
+          .toBaseUnits()
+          .toString(),
         native_asset_amount: params.nativeAssetAmount.toBaseUnits().toString(),
         signer: params.fromAddress,
       });
