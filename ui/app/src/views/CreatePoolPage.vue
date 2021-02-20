@@ -264,6 +264,7 @@ export default defineComponent({
       /></template>
       <template v-slot:default="{ requestClose }">
         <SelectTokenDialogSif
+          forceShowAllATokens="true"
           :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
           @tokenselected="requestClose"
         />
