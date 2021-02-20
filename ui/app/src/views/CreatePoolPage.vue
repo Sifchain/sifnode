@@ -46,19 +46,19 @@ export default defineComponent({
 
     const toSymbol = ref("rowan");
     const isFromMaxActive = computed(() => {
-        const accountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === fromSymbol.value
-        );
-        if (!accountBalance) return;
-        return fromAmount.value === accountBalance.toFixed();
+      const accountBalance = balances.value.find(
+        (balance) => balance.asset.symbol === fromSymbol.value
+      );
+      if (!accountBalance) return;
+      return fromAmount.value === accountBalance.toFixed();
     });
 
     const isToMaxActive = computed(() => {
       const accountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === toSymbol.value
-        );
-        if (!accountBalance) return;
-        return toAmount.value === accountBalance.toFixed();
+        (balance) => balance.asset.symbol === toSymbol.value
+      );
+      if (!accountBalance) return;
+      return toAmount.value === accountBalance.toFixed();
     });
 
     fromSymbol.value = route.params.externalAsset
@@ -79,9 +79,9 @@ export default defineComponent({
     const liquidityProvider = computed(() => {
       if (!fromSymbol) return null;
       return (
-        store.accountpools.find((pool) => {
-          return pool.lp.asset.symbol === fromSymbol.value;
-        })?.lp ?? null
+        store.accountpools[store.wallet.sif.address][
+          `${fromSymbol.value}_rowan`
+        ].lp ?? null
       );
     });
 
@@ -238,8 +238,15 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" :backLink="`${fromSymbol && connected && aPerBRatioMessage > 0
-    ? '/pool/' + fromSymbol : '/pool' }`" :title="title">
+  <Layout
+    class="pool"
+    :backLink="`${
+      fromSymbol && connected && aPerBRatioMessage > 0
+        ? '/pool/' + fromSymbol
+        : '/pool'
+    }`"
+    :title="title"
+  >
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel
