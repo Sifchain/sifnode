@@ -2,7 +2,7 @@ name: Run integration tests
 on: [push]
 jobs:
   integration-tests:
-    timeout-minutes: 40
+    timeout-minutes: 400
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
