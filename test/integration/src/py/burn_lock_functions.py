@@ -137,7 +137,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
 def transfer_sifchain_to_ethereum(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials,
-        max_seconds: int = 30
+        max_seconds: int = 90
 ):
     logging.debug(f"transfer_sifchain_to_ethereum_json: {transfer_request.as_json()}")
 
