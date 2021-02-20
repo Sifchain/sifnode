@@ -16,7 +16,7 @@ export default defineComponent({
     const rowanPriceInUSDT = json.body ? json.body.rowanUSD : "";
 
     let rowanUSD = "";
-    if (isNumeric(rowanPriceInUSDT) && route.path === '/stats') {
+    if (isNumeric(rowanPriceInUSDT)) {
       rowanUSD = "ROWAN: $" + parseFloat(rowanPriceInUSDT).toPrecision(6);
     }
 
