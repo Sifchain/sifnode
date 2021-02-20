@@ -82,6 +82,12 @@ export default ({
     return pools[key] ?? null;
   }
 
+  effect(() => {
+    // When sif address changes syncPools
+    store.wallet.sif.address;
+    syncPools();
+  });
+
   const actions = {
     async swap(
       sentAmount: AssetAmount,
