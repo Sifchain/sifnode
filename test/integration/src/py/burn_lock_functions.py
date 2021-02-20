@@ -15,7 +15,7 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
     get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
 
 
-default_timeout_for_ganache = 10
+default_timeout_for_ganache = 160
 
 
 def decrease_log_level(new_level=logging.WARNING):

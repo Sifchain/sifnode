@@ -261,12 +261,12 @@ def wait_for_sifchain_addr_balance(
         symbol,
         target_balance,
         sifchaincli_node,
-        max_seconds=30,
+        max_seconds=90,
         debug_prefix=""
 ):
     normalized_symbol = normalize_symbol(symbol)
     if not max_seconds:
-        max_seconds = 30
+        max_seconds = 90
     logging.debug(f"wait_for_sifchain_addr_balance for node {sifchaincli_node}, {normalized_symbol}, {target_balance}")
     return wait_for_balance(
         lambda: int(get_sifchain_addr_balance(sifchain_address, sifchaincli_node, normalized_symbol)),
