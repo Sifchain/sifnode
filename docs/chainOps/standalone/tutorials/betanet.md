@@ -4,6 +4,9 @@
 
 - [Docker](https://www.docker.com/get-started)
 - [Ruby 2.7.x](https://www.ruby-lang.org/en/documentation/installation)
+- [Golang](https://golang.org/doc/install)
+  - Add `export GOPATH=~/go` to your shell
+  - Add `export PATH=$PATH:$GOPATH/bin` to your shell
 
 ## Scaffold and run your node
 
@@ -13,13 +16,19 @@
 git clone https://github.com/Sifchain/sifnode && cd sifnode
 ```
 
-2. Generate a mnemonic (if you don't already have one):
+2. Build:
+
+```
+make clean install
+```
+
+3. Generate a mnemonic (if you don't already have one):
 
 ```
 rake "keys:generate:mnemonic"
 ```
 
-3. Boot your node:
+4. Boot your node:
 
 ```
 rake "genesis:sifnode:mainnet:boot[<moniker>,'<mnemonic>',<gas_price>]"
@@ -87,15 +96,21 @@ Congratulations. You are now connected to the network.
 
 You won't be able to participate in consensus until you become a validator.
 
-1. You will need to have tokens (rowan) on your account in order to become a validator.
-
-2. Obtain your node moniker (if you don't already know it):
+1. Import your mnemonic locally:
 
 ```
-cat ~/.sifnoded/config/config.toml | grep moniker
+rake keys:import[<moniker>]
 ```
 
-3. Run the following command to become a validator (from within the container): 
+Where:
+
+|Param|Description|
+|-----|----------|
+|`<moniker>`|A name for your node.|
+
+*You will need to have tokens (rowan) on your account in order to become a validator.*
+
+2. Run the following command to become a validator (from within the container): 
 
 ```
 sifnodecli tx staking create-validator \
@@ -109,7 +124,8 @@ sifnodecli tx staking create-validator \
     --min-self-delegation="1" \
     --gas-prices="0.5rowan" \
     --from=<moniker> \
-    --keyring-backend=file
+    --keyring-backend=file \
+    --node tcp://18.138.208.95:26657
 ```
 
 Where:
