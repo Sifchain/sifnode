@@ -149,7 +149,8 @@ sifnodecli tx staking create-validator \
     --min-self-delegation="1" \
     --gas-prices="0.5rowan" \
     --from=my-node \
-    --keyring-backend=file
+    --keyring-backend=file \
+    --node tcp://18.138.208.95:26657
 ```
 
 ## Additional Resources
