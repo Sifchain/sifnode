@@ -110,7 +110,7 @@ Where:
 
 *You will need to have tokens (rowan) on your account in order to become a validator.*
 
-2. Run the following command to become a validator (from within the container): 
+2. Run the following command to become a validator: 
 
 ```
 sifnodecli tx staking create-validator \
