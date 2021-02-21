@@ -110,7 +110,13 @@ Where:
 
 *You will need to have tokens (rowan) on your account in order to become a validator.*
 
-2. Run the following command to become a validator: 
+2. From within your running container, obtain your node's public key:
+
+```
+sifnoded tendermint show-validator
+```
+
+3. Run the following command to become a validator: 
 
 ```
 sifnodecli tx staking create-validator \
@@ -118,7 +124,7 @@ sifnodecli tx staking create-validator \
     --commission-max-rate="0.1" \
     --commission-rate="0.1" \
     --amount="<amount>" \
-    --pubkey=$(sifnoded tendermint show-validator) \
+    --pubkey=<pub_key> \
     --moniker=<moniker> \
     --chain-id=sifchain \
     --min-self-delegation="1" \
@@ -133,6 +139,7 @@ Where:
 |Param|Description|
 |-----|----------|
 |`<amount>`|The amount of rowan you wish to stake (the more the better).|
+|`<pub_key>`|The public key of your node, that you got in the previous step.|
 |`<moniker>`|The moniker (name) of your node.|
 
 e.g.:
@@ -143,8 +150,8 @@ sifnodecli tx staking create-validator \
     --commission-max-rate="0.1" \
     --commission-rate="0.1" \
     --amount="1000000000000000000000rowan" \
-    --pubkey=$(sifnoded tendermint show-validator) \
-    --moniker=<moniker> \
+    --pubkey=thepublickeyofyournode \
+    --moniker=my-node \
     --chain-id=sifchain \
     --min-self-delegation="1" \
     --gas-prices="0.5rowan" \
