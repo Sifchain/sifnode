@@ -7,13 +7,19 @@
 
 ## Scaffold and run your node
 
-1. Generate a mnemonic (if you don't already have one):
+1. Clone the repository:
+
+```
+git clone https://github.com/Sifchain/sifnode && cd sifnode
+```
+
+2. Generate a mnemonic (if you don't already have one):
 
 ```
 rake "keys:generate:mnemonic"
 ```
 
-2. Boot your node:
+3. Boot your node:
 
 ```
 rake "genesis:sifnode:mainnet:boot[<moniker>,'<mnemonic>',<gas_price>]"
