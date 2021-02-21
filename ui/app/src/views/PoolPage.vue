@@ -22,8 +22,20 @@ export default defineComponent({
     const { store } = useCore();
 
     const selectedPool = ref<AccountPool | null>(null);
-    const refsStore = toRefs(store);
-    const accountPools = computed(() => refsStore.accountpools.value);
+
+    // TODO: Sort pools?
+    const accountPools = computed(() => {
+      if (!store.wallet.sif.address) return [];
+
+      return Object.entries(
+        store.accountpools[store.wallet.sif.address] ?? {}
+      ).map(([poolName, accountPool]) => {
+        return {
+          ...accountPool,
+          pool: store.pools[poolName],
+        } as AccountPool;
+      });
+    });
 
     return {
       accountPools,
