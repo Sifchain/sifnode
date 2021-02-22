@@ -29,6 +29,7 @@ export default defineComponent({
     const searchText = ref("");
     const selectedTokens = props.selectedTokens || [];
 
+    const allTokens = actions.peg.getSifTokens()
     const { fullSearchList, displayList } = toRefs(props);
 
     const list = filterTokenList({
