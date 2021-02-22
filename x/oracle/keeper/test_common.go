@@ -6,26 +6,28 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
-
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	dbm "github.com/tendermint/tm-db"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
 	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
+	auth "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/cosmos/cosmos-sdk/x/supply"
+	supply "github.com/cosmos/cosmos-sdk/x/supply/keeper"
+	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/libs/log"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtypes "github.com/tendermint/tendermint/types"
+	dbm "github.com/tendermint/tm-db"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
@@ -40,20 +42,18 @@ const (
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
 func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (
-	sdk.Context, Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, []sdk.ValAddress, sdk.StoreKey) {
+	sdk.Context, Keeper, bankkeeper.Keeper, supply.Keeper, auth.AccountKeeper, []sdk.ValAddress, sdk.StoreKey) {
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
-	tkeyStaking := sdk.NewTransientStoreKey(stakingtypes.TStoreKey)
-	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keyParams := sdk.NewKVStoreKey(params.StoreKey)
-	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
+	keyAcc := sdk.NewKVStoreKey(authtypes.StoreKey)
+	keyParams := sdk.NewKVStoreKey(paramtypes.StoreKey)
+	tkeyParams := sdk.NewTransientStoreKey(paramtypes.TStoreKey)
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 	keyOracle := sdk.NewKVStoreKey(types.StoreKey)
 	keyEthBridge := sdk.NewKVStoreKey(extraMaccPerm)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
-	ms.MountStoreWithDB(tkeyStaking, sdk.StoreTypeTransient, nil)
 	ms.MountStoreWithDB(keyStaking, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
@@ -64,10 +64,10 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	err := ms.LoadLatestVersion()
 	require.NoError(t, err)
 
-	ctx := sdk.NewContext(ms, abci.Header{ChainID: "foochainid"}, false, nil)
+	ctx := sdk.NewContext(ms, tmproto.Header{ChainID: "foochainid"}, false, nil)
 	ctx = ctx.WithConsensusParams(
 		&abci.ConsensusParams{
-			Validator: &abci.ValidatorParams{
+			Validator: &tmproto.ValidatorParams{
 				PubKeyTypes: []string{tmtypes.ABCIPubKeyTypeEd25519},
 			},
 		},
@@ -75,7 +75,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ctx = ctx.WithLogger(log.NewNopLogger())
 	cdc := MakeTestCodec()
 
-	feeCollectorAcc := supply.NewEmptyModuleAccount(auth.FeeCollectorName)
+	feeCollectorAcc := supply.NewEmptyModuleAccount(authtypes.FeeCollectorName)
 	notBondedPool := supply.NewEmptyModuleAccount(stakingtypes.NotBondedPoolName, supply.Burner, supply.Staking)
 	bondPool := supply.NewEmptyModuleAccount(stakingtypes.BondedPoolName, supply.Burner, supply.Staking)
 

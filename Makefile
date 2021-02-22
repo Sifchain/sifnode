@@ -5,6 +5,10 @@ NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
 
+HTTPS_GIT := https://github.com/sifchain/sifnode.git
+DOCKER := $(shell which docker)
+DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
+
 ifeq (mainnet,${CHAINNET})
 	BUILD_TAGS=mainnet
 else
@@ -79,3 +83,32 @@ run-image: build-image
 
 sh-image: build-image
 	docker run -it sifchain/$(BINARY):$(CHAINNET) sh
+
+###############################################################################
+###                                Protobuf                                 ###
+###############################################################################
+
+proto-all: proto-format proto-lint proto-gen
+
+proto-gen:
+	@echo "Generating Protobuf files"
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./scripts/protocgen.sh
+
+proto-format:
+	@echo "Formatting Protobuf files"
+	$(DOCKER) run --rm -v $(CURDIR):/workspace \
+	--workdir /workspace tendermintdev/docker-build-proto \
+	find ./ -not -path "./third_party/*" -name *.proto -exec clang-format -i {} \;
+
+# This generates the SDK's custom wrapper for google.protobuf.Any. It should only be run manually when needed
+proto-gen-any:
+	$(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace tendermintdev/sdk-proto-gen sh ./scripts/protocgen-any.sh
+
+proto-swagger-gen:
+	@./scripts/protoc-swagger-gen.sh
+
+proto-lint:
+	@$(DOCKER_BUF) check lint --error-format=json
+
+proto-check-breaking:
+	@$(DOCKER_BUF) check breaking --against-input $(HTTPS_GIT)#branch=master

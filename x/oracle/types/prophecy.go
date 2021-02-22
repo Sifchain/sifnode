@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/cosmos/cosmos-sdk/x/staking"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // DefaultConsensusNeeded defines the default consensus value required for a
@@ -32,14 +31,14 @@ type Prophecy struct {
 	ValidatorClaims map[string]string `json:"validator_claims"`
 }
 
-// DBProphecy is what the prophecy becomes when being saved to the database.
-//  Tendermint/Amino does not support maps so we must serialize those variables into bytes.
-type DBProphecy struct {
-	ID              string `json:"id"`
-	Status          Status `json:"status"`
-	ClaimValidators []byte `json:"claim_validators"`
-	ValidatorClaims []byte `json:"validator_claims"`
-}
+// // DBProphecy is what the prophecy becomes when being saved to the database.
+// //  Tendermint/Amino does not support maps so we must serialize those variables into bytes.
+// type DBProphecy struct {
+// 	ID              string `json:"id"`
+// 	Status          Status `json:"status"`
+// 	ClaimValidators []byte `json:"claim_validators"`
+// 	ValidatorClaims []byte `json:"validator_claims"`
+// }
 
 // SerializeForDB serializes a prophecy into a DBProphecy
 // TODO: Using gob here may mean that different tendermint clients in different languages may serialize/store
@@ -58,7 +57,7 @@ func (prophecy Prophecy) SerializeForDB() (DBProphecy, error) {
 	}
 
 	return DBProphecy{
-		ID:              prophecy.ID,
+		Id:              prophecy.ID,
 		Status:          prophecy.Status,
 		ClaimValidators: claimValidators,
 		ValidatorClaims: validatorClaims,
@@ -78,7 +77,7 @@ func (dbProphecy DBProphecy) DeserializeFromDB() (Prophecy, error) {
 	}
 
 	return Prophecy{
-		ID:              dbProphecy.ID,
+		ID:              dbProphecy.Id,
 		Status:          dbProphecy.Status,
 		ClaimValidators: claimValidators,
 		ValidatorClaims: validatorClaims,
@@ -120,7 +119,7 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 	//Index the validators by address for looking when scanning through claims
 	validatorsByAddress := make(map[string]staking.Validator)
 	for _, validator := range validators {
-		validatorsByAddress[validator.OperatorAddress.String()] = validator
+		validatorsByAddress[validator.OperatorAddress] = validator
 	}
 
 	totalClaimsPower := int64(0)
@@ -150,16 +149,10 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 func NewProphecy(id string) Prophecy {
 	return Prophecy{
 		ID:              id,
-		Status:          NewStatus(PendingStatusText, ""),
+		Status:          NewStatus(StatusText_PEDNING_STATUS_TEXT, ""),
 		ClaimValidators: make(map[string][]sdk.ValAddress),
 		ValidatorClaims: make(map[string]string),
 	}
-}
-
-// Status is a struct that contains the status of a given prophecy
-type Status struct {
-	Text       StatusText `json:"text"`
-	FinalClaim string     `json:"final_claim"`
 }
 
 // NewStatus returns a new Status with the given data contained

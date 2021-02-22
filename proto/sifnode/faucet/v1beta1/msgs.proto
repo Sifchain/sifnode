@@ -1,0 +1,18 @@
+syntax = "proto3";
+package sifchain.faucet.v1beta1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/sifchain/sifnode/x/faucet/types";
+
+message MsgRequestCoins {}
+// type MsgRequestCoins struct {
+// 	Coins     sdk.Coins
+// 	Requester sdk.AccAddress
+// }
+
+message MsgAddCoins {}
+// type MsgAddCoins struct {
+// 	Signer sdk.AccAddress
+// 	Coins  sdk.Coins
+// }
