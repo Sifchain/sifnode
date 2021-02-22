@@ -41,7 +41,7 @@ module.exports = async () => {
       );
     }
   } else {
-    if (NUM_ARGS !== 1) {
+    if (NUM_ARGS !== 1 && NUM_ARGS !== 2) {
       return console.error("Error: Must specify token amount or --default.");
     }
   }
