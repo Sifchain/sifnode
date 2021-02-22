@@ -77,7 +77,13 @@ export default defineComponent({
     const { balances } = useWallet(store);
 
     const liquidityProvider = computed(() => {
-      if (!fromSymbol) return null;
+      if (
+        !fromSymbol.value ||
+        !store.wallet.sif.address ||
+        !store.accountpools[store.wallet.sif.address]
+      )
+        return null;
+
       return (
         store.accountpools[store.wallet.sif.address][
           `${fromSymbol.value}_rowan`
