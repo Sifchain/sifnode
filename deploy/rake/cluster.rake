@@ -3,7 +3,7 @@ require "securerandom"
 desc "management processes for the kube cluster and terraform commands"
 namespace :cluster do
   desc "Scaffold new cluster environment configuration"
-  task :scaffold, [:chainnet, :provider] do |t, args|
+  task :scaffold, [:cluster, :provider] do |t, args|
     check_args(args)
 
     # create path location
@@ -12,10 +12,10 @@ namespace :cluster do
 
     # create config from template
     system("go run github.com/belitre/gotpl #{cwd}/../terraform/template/aws/cluster.tf.tpl \
-      --set chainnet=#{args[:chainnet]} > #{path(args)}/main.tf")
+      --set chainnet=#{args[:cluster]} > #{path(args)}/main.tf")
 
     system("go run github.com/belitre/gotpl #{cwd}/../terraform/template/aws/.envrc.tpl \
-      --set chainnet=#{args[:chainnet]} > #{path(args)}/.envrc")
+      --set chainnet=#{args[:cluster]} > #{path(args)}/.envrc")
 
     # init terraform
     system("cd #{path(args)} && terraform init")
@@ -24,24 +24,15 @@ namespace :cluster do
   end
 
   desc "Deploy a new cluster"
-  task :deploy, [:chainnet, :provider] do |t, args|
+  task :deploy, [:cluster, :provider] do |t, args|
     check_args(args)
     puts "Deploy cluster config: #{path(args)}"
     system("cd #{path(args)} && terraform apply -auto-approve") or exit 1
     puts "Cluster #{path(args)} created successfully"
   end
 
-  desc "Status of your cluster"
-  task :status, [:chainnet, :provider] do
-    puts "Build me!"
-  end
-
-  desc "Backup your cluster"
-  task :backup, [:chainnet, :provider] do
-    puts "Build me!"
-  end
-
-  task :destroy, [:chainnet, :provider] do |t, args|
+  desc "Destroy a cluster"
+  task :destroy, [:cluster, :provider] do |t, args|
     check_args(args)
     puts "Destroy running cluster: #{path(args)}"
     system("cd #{path(args)} && terraform destroy") or exit 1
@@ -58,7 +49,7 @@ namespace :cluster do
           --install -n #{ns(args)} --create-namespace \
         }
 
-        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+        system({"KUBECONFIG" => kubeconfig(args)}, cmd)
       end
 
       desc "Deploy OpenAPI - Prism Mock server "
@@ -69,7 +60,7 @@ namespace :cluster do
           --install -n #{ns(args)} --create-namespace \
         }
 
-        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+        system({"KUBECONFIG" => kubeconfig(args)}, cmd)
       end
     end
   end
@@ -93,7 +84,7 @@ namespace :cluster do
           --set image.repository=#{image_repository(args)}
         }
 
-        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+        system({"KUBECONFIG" => kubeconfig(args)}, cmd)
       end
 
       desc "Deploy a single network-aware sifnode on to your cluster"
@@ -111,7 +102,7 @@ namespace :cluster do
           --set image.repository=#{image_repository(args)}
         }
 
-        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+        system({"KUBECONFIG" => kubeconfig(args)}, cmd)
       end
 
       desc "Deploy the sifnode API to your cluster"
@@ -126,7 +117,7 @@ namespace :cluster do
           --set image.repository=#{image_repository(args)}
         }
 
-        system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+        system({"KUBECONFIG" => kubeconfig(args)}, cmd)
       end
     end
   end
@@ -150,7 +141,7 @@ namespace :cluster do
         --set ebrelayer.args.mnemonic=#{args[:mnemonic]}
       }
 
-      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end
 
@@ -169,14 +160,14 @@ namespace :cluster do
         --set blockExplorer.env.remote.lcdURL=#{args[:lcd_url]}
       }
 
-      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end
 
   desc "eth operations"
   namespace :ethereum do
     desc "Deploy an ETH node"
-    task :deploy, [:chainnet, :provider, :namespace, :network] do |t, args|
+    task :deploy, [:cluster, :provider, :namespace, :network] do |t, args|
       check_args(args)
 
       if args.has_key? :network
@@ -201,7 +192,22 @@ namespace :cluster do
             }
       end
 
-      system({"KUBECONFIG" => kubeconfig(args) }, cmd)
+      system({"KUBECONFIG" => kubeconfig(args)}, cmd)
+    end
+  end
+
+  desc "logstash operations"
+  namespace :logstash do
+    desc "Deploy a logstash node"
+    task :deploy, [:cluster, :provider, :namespace, :elasticsearch_username, :elasticsearch_password] do |t, args|
+      cmd = %Q{helm upgrade logstash #{cwd}/../../deploy/helm/logstash \
+            --install -n #{ns(args)} --create-namespace \
+            --set logstash.args.cluster=#{args[:cluster]} \
+            --set logstash.args.elasticsearchUsername=#{args[:elasticsearch_username]} \
+            --set logstash.args.elasticsearchPassword=#{args[:elasticsearch_password]} \
+      }
+
+      system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end
 

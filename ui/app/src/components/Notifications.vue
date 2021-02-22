@@ -7,10 +7,8 @@ export default defineComponent({
   name: "Notifications",
   components: {},
   setup() {
-    const { store, actions } = useCore();
-    // @ts-ignore ??
+    const { store } = useCore();
     const notifications = computed(() => store.notifications);
-
     return {
       notifications,
       removeItem(index: any) {
@@ -37,8 +35,22 @@ export default defineComponent({
             <div class="circle" v-if="item.type !== 'info'"></div>
             <div>{{ item.message }}</div>
           </div>
-          <div class="detail" v-if="item.detail">
-            {{ item.detail }}
+          <div class="detail" v-show="item.detail">
+            <div v-if="item.detail?.type === 'etherscan'">
+              Check on
+              <a
+                target="_blank"
+                :href="`https://etherscan.io/tx/${item.detail?.message}`"
+                @click.stop
+                >Block Explorer</a
+              >
+            </div>
+            <div v-else-if="item.detail?.type === 'websocket'">
+              {{ item.detail.message }}
+            </div>
+            <div v-else-if="item.detail?.type === 'info'">
+              {{ item.detail.message }}
+            </div>
           </div>
         </div>
       </div>

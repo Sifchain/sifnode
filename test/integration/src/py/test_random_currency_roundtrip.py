@@ -21,6 +21,7 @@ def do_currency_test(
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
         ethereum_network,
+        solidity_json_path,
 ):
     amount = amount_in_wei(9)
     logging.info(f"create new currency")
@@ -28,7 +29,8 @@ def do_currency_test(
         amount,
         new_currency_symbol,
         smart_contracts_dir=smart_contracts_dir,
-        bridgebank_address=bridgebank_address
+        bridgebank_address=bridgebank_address,
+        solidity_json_path=solidity_json_path
     )
 
     logging.info(f"create test account to use with new currency {new_currency_symbol}")
@@ -55,13 +57,13 @@ def do_currency_test(
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
 
 
-@pytest.mark.skip(reason="investigate failure")
 def test_transfer_tokens_with_some_currency(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
         ethereum_network,
+        solidity_json_path,
 ):
     new_currency_symbol = ("a" + get_shell_output("uuidgen").replace("-", ""))[:4]
     do_currency_test(
@@ -71,15 +73,17 @@ def test_transfer_tokens_with_some_currency(
         rowan_source_integrationtest_env_credentials,
         rowan_source_integrationtest_env_transfer_request,
         ethereum_network,
+        solidity_json_path=solidity_json_path
     )
 
-@pytest.mark.skip(reason="ethereum nonce set by relayer now")
+
 def test_three_letter_currency_with_capitals_in_name(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
         ethereum_network,
+        solidity_json_path,
 ):
     new_currency_symbol = ("F" + get_shell_output("uuidgen").replace("-", ""))[:3]
     do_currency_test(
@@ -89,4 +93,5 @@ def test_three_letter_currency_with_capitals_in_name(
         rowan_source_integrationtest_env_credentials,
         rowan_source_integrationtest_env_transfer_request,
         ethereum_network,
+        solidity_json_path=solidity_json_path
     )

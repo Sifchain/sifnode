@@ -16,10 +16,10 @@ export function formatPercentage(amount: string) {
 }
 // TODO: make this work for AssetAmounts and Fractions / Amounts
 export function formatNumber(displayNumber: string) {
-  if (!displayNumber) return "0"
+  if (!displayNumber) return "0";
   const amount = parseFloat(displayNumber);
   if (amount < 100000) {
-    return amount.toFixed(5);
+    return amount.toFixed(6);
   } else {
     return amount.toFixed(2);
   }
@@ -67,13 +67,11 @@ export function useAssetItem(symbol: Ref<string | undefined>) {
     return `background: ${color};`;
   });
 
-  const asset = {
+  return {
     token: token,
     label: tokenLabel,
     background: backgroundStyle,
   };
-
-  return asset;
 }
 
 export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {

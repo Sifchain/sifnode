@@ -51,7 +51,7 @@ export default defineComponent({
         );
         if (!accountBalance) return;
         return fromAmount.value === accountBalance.toFixed();
-    })
+    });
 
     const isToMaxActive = computed(() => {
       const accountBalance = balances.value.find(
@@ -59,7 +59,7 @@ export default defineComponent({
         );
         if (!accountBalance) return;
         return toAmount.value === accountBalance.toFixed();
-    })
+    });
 
     fromSymbol.value = route.params.externalAsset
       ? route.params.externalAsset.toString()
@@ -238,7 +238,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" :backLink="`${fromSymbol && connected && aPerBRatioMessage === 'N/A'
+  <Layout class="pool" :backLink="`${fromSymbol && connected && aPerBRatioMessage > 0
     ? '/pool/' + fromSymbol : '/pool' }`" :title="title">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
@@ -293,7 +293,7 @@ export default defineComponent({
     </FatInfoTable>
 
     <FatInfoTable :show="nextStepAllowed">
-      <template #header>Price Impact and Pool Share</template>
+      <template #header>Prices after pooling and pool share</template>
       <template #body>
         <FatInfoTableCell>
           <span class="number">{{

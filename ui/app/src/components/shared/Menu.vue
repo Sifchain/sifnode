@@ -42,16 +42,12 @@ export default defineComponent({
       <span class="link" v-on:click="openRamp">Buy Crypto</span>
     </div>
 
-    <!--
     <div class="item">
-      <router-link class="link" to="/">New wallet</router-link>
+      <router-link class="link" to="/stats">Pool Stats</router-link>
     </div>
     <div class="item">
-      <router-link class="link" to="/">Convert</router-link>
+      <router-link class="link" to="/rewards">Stake & Delegate</router-link>
     </div>
-    <div class="item">
-      <router-link class="link" to="/">Deposit</router-link>
-    </div> -->
   </div>
 </template>
 

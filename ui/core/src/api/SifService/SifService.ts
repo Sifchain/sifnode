@@ -135,7 +135,10 @@ export default function createSifService({
       if (!keplrProvider) {
         throw {
           message: "Keplr Not Found",
-          detail: "Check if extension enabled for this URL",
+          detail: {
+            type: "info",
+            message: "Check if extension enabled for this URL",
+          }
         };
       }
       // open extension
@@ -167,7 +170,7 @@ export default function createSifService({
           throw { message: "Failed to Suggest Chain" };
         }
       } else {
-        throw { message: "Keplr Outdated", detail: "Need at least 0.6.4" };
+        throw { message: "Keplr Outdated", detail: { type: "info", message: "Need at least 0.6.4" }};
       }
     },
 

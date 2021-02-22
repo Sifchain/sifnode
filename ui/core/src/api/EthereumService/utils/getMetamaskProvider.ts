@@ -17,7 +17,7 @@ export const getMetamaskProvider = async (): Promise<provider> => {
   const mmp = await detectMetaMaskProvider();
   const win = window as WindowWithPossibleMetaMask;
   if (!mmp) {
-    notify({type: "error", message: "Metamask not found.", detail: "Check if extension enabled for this URL."})
+    notify({type: "error", message: "Metamask not found.", detail: { type: "info", message: "Check if extension enabled for this URL."}})
     return null
   }
   if (!win) return null;

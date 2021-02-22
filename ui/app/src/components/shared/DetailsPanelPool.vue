@@ -1,13 +1,13 @@
 <template>
   <div class="details">
-    
+
     <div class="details-header">
       <div class="details-row">
         <span class="details-row-asset">
           <AssetItem :symbol="fromTokenLabel" inline />&nbsp;Deposited
         </span>
         <div class="details-row-value">
-          <span>{{ fromAmount }}</span>
+          <span>{{ fromAmount ? fromAmount : 0 }}</span>
         </div>
       </div>
       <div class="details-row">
@@ -15,7 +15,7 @@
           <AssetItem :symbol="toTokenLabel" inline />&nbsp;Deposited
         </span>
         <div class="details-row-value">
-          <span>{{ toAmount }}</span>
+          <span>{{ toAmount ? toAmount : 0 }}</span>
           <img
             v-if="toTokenImage"
             width="22"
@@ -27,13 +27,13 @@
       </div>
     </div>
     <div class="details-body">
-      <div class="details-row" v-if="aPerB">
-        <span>Rates</span>
-        <span>1 {{ fromTokenLabel }} = {{ aPerB }} {{ toTokenLabel }}</span>
-      </div>
       <div class="details-row" v-if="bPerA">
+        <span>Rates</span>
+        <span>1 {{ fromTokenLabel }} = {{ bPerA }} {{ toTokenLabel }}</span>
+      </div>
+      <div class="details-row" v-if="aPerB">
         <span>&nbsp;</span>
-        <span>1 {{ toTokenLabel }} = {{ bPerA }} {{ fromTokenLabel }}</span>
+        <span>1 {{ toTokenLabel }} = {{ aPerB }} {{ fromTokenLabel }}</span>
       </div>
       <div class="details-row">
         <span>Share of Pool:</span>
