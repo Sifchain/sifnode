@@ -12,6 +12,8 @@ module.exports = async () => {
         require("../build/contracts/BridgeBank.json")
     );
 
+    console.log("Expected usage: \n truffle exec scripts/hasLockedTokens.js --network ropsten eth");
+
     /*******************************************
      *** Constants
      ******************************************/

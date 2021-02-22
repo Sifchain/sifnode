@@ -46,7 +46,7 @@ module.exports = async () => {
 
   const web3 = new Web3(provider);
 
-  console.log("Fetching Oracle contract...");
+  console.log("Expected usage: \n truffle exec scripts/sendCheckProphecy.js --network ropsten 1");
   cosmosBridgeContract.setProvider(web3.currentProvider);
 
   /*******************************************

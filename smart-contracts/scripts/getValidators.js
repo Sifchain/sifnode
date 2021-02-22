@@ -13,6 +13,8 @@ module.exports = async () => {
         require("../build/contracts/CosmosBridge.json")
     );
 
+    console.log("Expected usage: \n truffle exec scripts/peggy:validators --network ropsten");
+
     /*******************************************
      *** Constants
      ******************************************/

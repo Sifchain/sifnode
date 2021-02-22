@@ -14,6 +14,8 @@ module.exports = async () => {
     require("../build/contracts/BridgeToken.json")
   );
 
+  console.log("Expected usage: \n truffle exec scripts/sendApproveTx.js --network ropsten 10 0xdDA6327139485221633A1FcD65f4aC932E60A2e1");
+
   /*******************************************
    *** Constants
    ******************************************/
