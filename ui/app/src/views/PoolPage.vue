@@ -22,8 +22,20 @@ export default defineComponent({
     const { store } = useCore();
 
     const selectedPool = ref<AccountPool | null>(null);
-    const refsStore = toRefs(store);
-    const accountPools = computed(() => refsStore.accountpools.value);
+
+    // TODO: Sort pools?
+    const accountPools = computed(() => {
+      if (!store.wallet.sif.address) return [];
+
+      return Object.entries(
+        store.accountpools[store.wallet.sif.address] ?? {}
+      ).map(([poolName, accountPool]) => {
+        return {
+          ...accountPool,
+          pool: store.pools[poolName],
+        } as AccountPool;
+      });
+    });
 
     return {
       accountPools,
@@ -49,12 +61,12 @@ export default defineComponent({
           Liquidity providers earn a percentage fee on all trades proportional
           to their share of the pool. Fees are added to the pool, accrue in real
           time and can be claimed by withdrawing your liquidity. To learn more,
-          reference of documentation
+          refer to the documentation
           <a
             target="_blank"
             href="https://docs.sifchain.finance/roles/liquidity-providers"
             >here</a
-          >
+          >.
         </p>
       </div>
 

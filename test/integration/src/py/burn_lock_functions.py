@@ -15,7 +15,7 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
     get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
 
 
-default_timeout_for_ganache = 10
+default_timeout_for_ganache = 160
 
 
 def decrease_log_level(new_level=logging.WARNING):
@@ -137,7 +137,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
 def transfer_sifchain_to_ethereum(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials,
-        max_seconds: int = 30
+        max_seconds: int = 90
 ):
     logging.debug(f"transfer_sifchain_to_ethereum_json: {transfer_request.as_json()}")
 
@@ -409,6 +409,7 @@ def create_new_sifaddr(
         credentials: SifchaincliCredentials,
         keyname
 ):
+    """returns something like {"name":"9cbf3bd4-f15c-4128-bae6-a534fc8d6877","type":"local","address":"sif19u4xtckuvy2zk9r2l4063g93s3r8qc4vw0a20t","pubkey":"sifpub1addwnpepqw88ns6dmy3xwjqh4mkvuda6ezn056nxy8ldrtpkrfuvuamexv9hxyzhxm7","mnemonic":"surprise fire cupboard orange scatter boat cruel ability oven gap accident purity delay"}"""
     keyring_passphrase = credentials.keyring_passphrase
     yes_subcmd = f"yes {keyring_passphrase} |" if keyring_passphrase else ""
     keyring_backend_subcmd = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
