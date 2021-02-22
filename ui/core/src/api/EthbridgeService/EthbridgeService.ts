@@ -52,24 +52,22 @@ export default function createEthbridgeService({
         value: 0,
       };
 
-      // only for usdt?
-      if (amount.asset.symbol === "USDT") {
-        const hasAlreadyApprovedSpend = await tokenContract.methods
-          .allowance(account, bridgebankContractAddress)
-          .call();
-        if (hasAlreadyApprovedSpend >= amount.toBaseUnits().toString()) {
-          // dont request approve again
-          console.log(
-            "approveBridgeBankSpend: spend already approved",
-            hasAlreadyApprovedSpend
-          );
-          return;
-        } else {
-        } // else would need to approve for the difference ?
+      const MAX = web3.utils.toTwosComplement(-1);
+
+      const hasAlreadyApprovedSpend = await tokenContract.methods
+        .allowance(account, bridgebankContractAddress)
+        .call();
+      if (hasAlreadyApprovedSpend >= MAX) {
+        // dont request approve again
+        console.log(
+          "approveBridgeBankSpend: spend already approved",
+          hasAlreadyApprovedSpend
+        );
+        return;
       }
 
       const res = await tokenContract.methods
-        .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
+        .approve(bridgebankContractAddress, MAX)
         .send(sendArgs);
       console.log("approveBridgeBankSpend:", res);
       return res;
