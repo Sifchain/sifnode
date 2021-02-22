@@ -80,14 +80,17 @@ export default defineComponent({
       if (
         !fromSymbol.value ||
         !store.wallet.sif.address ||
-        !store.accountpools[store.wallet.sif.address]
+        !store.accountpools[store.wallet.sif.address] ||
+        !store.accountpools[store.wallet.sif.address][
+          `${fromSymbol.value}_rowan`
+        ]
       )
         return null;
 
       return (
         store.accountpools[store.wallet.sif.address][
           `${fromSymbol.value}_rowan`
-        ].lp ?? null
+        ].lp || null
       );
     });
 
