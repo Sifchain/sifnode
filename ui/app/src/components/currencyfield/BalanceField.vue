@@ -35,6 +35,6 @@ export default defineComponent({
 </script>
 
 <template>
-  <span v-if="available !== '0'">Balance: {{ available }}</span>
-  <span v-else>&nbsp;</span>
+  <span>Balance: {{ available }}</span>
+  <span>&nbsp;</span>
 </template>

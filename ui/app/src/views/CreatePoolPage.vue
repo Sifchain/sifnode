@@ -105,7 +105,8 @@ export default defineComponent({
       poolFinder,
       liquidityProvider,
     });
-
+    console.log('aPerBRatioMessage', aPerBRatioMessage.value)
+    console.log('bPerARatioMessage', bPerARatioMessage.value)
     function handleNextStepClicked() {
       if (!tokenAFieldAmount.value)
         throw new Error("from field amount is not defined");
@@ -116,17 +117,16 @@ export default defineComponent({
     }
 
     async function handleAskConfirmClicked() {
+      alert('where am i')
       if (!tokenAFieldAmount.value)
         throw new Error("Token A field amount is not defined");
       if (!tokenBFieldAmount.value)
         throw new Error("Token B field amount is not defined");
-
       transactionState.value = "signing";
       const tx = await actions.clp.addLiquidity(
         tokenBFieldAmount.value,
         tokenAFieldAmount.value
       );
-
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
       transactionStateMsg.value = tx.memo ?? "";
@@ -275,7 +275,7 @@ export default defineComponent({
       <template #header>Pool Token Prices</template>
       <template #body>
         <FatInfoTableCell>
-          <span class="number">{{ formatNumber(aPerBRatioMessage) }}</span
+          <span class="number">{{ formatNumber(aPerBRatioMessage === 'N/A' ? '0' : aPerBRatioMessage) }}</span
           ><br />
           <span
             >{{ fromSymbol.toUpperCase() }} per
@@ -283,7 +283,7 @@ export default defineComponent({
           >
         </FatInfoTableCell>
         <FatInfoTableCell>
-          <span class="number">{{ formatNumber(bPerARatioMessage) }}</span
+          <span class="number">{{ formatNumber(bPerARatioMessage === 'N/A' ? '0' : bPerARatioMessage) }}</span
           ><br />
           <span
             >{{ toSymbol.toUpperCase() }} per
@@ -298,7 +298,7 @@ export default defineComponent({
       <template #body>
         <FatInfoTableCell>
           <span class="number">{{
-            formatNumber(aPerBRatioProjectedMessage)
+            formatNumber(aPerBRatioProjectedMessage === 'N/A' ? '0' : aPerBRatioProjectedMessage)
           }}</span
           ><br />
           <span
@@ -308,7 +308,7 @@ export default defineComponent({
         </FatInfoTableCell>
         <FatInfoTableCell>
           <span class="number">{{
-            formatNumber(bPerARatioProjectedMessage)
+            formatNumber(bPerARatioProjectedMessage === 'N/A' ? '0' : bPerARatioProjectedMessage)
           }}</span
           ><br />
           <span

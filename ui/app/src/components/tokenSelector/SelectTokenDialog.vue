@@ -29,15 +29,15 @@ export default defineComponent({
     const { forceShowAllATokens } = props;
     const searchText = ref("");
     const selectedTokens = props.selectedTokens || [];
-    const allTokens = actions.peg.getSifTokens()
+    const allSifTokens = ref(actions.peg.getSifTokens());
     const { fullSearchList, displayList } = toRefs(props);
 
 
 
     const list = filterTokenList({
       searchText,
-      tokens: forceShowAllATokens ? allTokens : fullSearchList,
-      displayList,
+      tokens: forceShowAllATokens ? allSifTokens : fullSearchList,
+      displayList: forceShowAllATokens ? allSifTokens : displayList,
     });
 
     const tokens = disableSelected({ list, selectedTokens });

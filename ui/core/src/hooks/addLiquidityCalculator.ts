@@ -35,17 +35,18 @@ export function usePoolCalculator(input: {
 
   const tokenABalance = computed(() => {
     return input.tokenASymbol.value
-      ? balanceMap.value.get(input.tokenASymbol.value) ?? null
+      ? balanceMap.value.get(input.tokenASymbol.value) ?? AssetAmount(tokenAField.asset.value, "0")
       : null;
   });
 
   const tokenBBalance = computed(() => {
     return input.tokenBSymbol.value
-      ? balanceMap.value.get(input.tokenBSymbol.value) ?? null
+      ? balanceMap.value.get(input.tokenBSymbol.value) ?? AssetAmount(tokenBField.asset.value, "0")
       : null;
   });
 
   const fromBalanceOverdrawn = computed(() => {
+
     return !tokenABalance.value?.greaterThanOrEqual(
       tokenAField.fieldAmount.value || "0"
     );
@@ -163,6 +164,8 @@ export function usePoolCalculator(input: {
   });
 
   const aPerBRatioMessage = computed(() => {
+
+    console.log('aPerbRatio', aPerBRatio.value)
     if (!aPerBRatio.value) {
       return "N/A";
     }
@@ -178,6 +181,7 @@ export function usePoolCalculator(input: {
   });
 
   const bPerARatioMessage = computed(() => {
+    console.log('bPerARatio', bPerARatio.value)
     if (!bPerARatio.value) {
       return "N/A";
     }
