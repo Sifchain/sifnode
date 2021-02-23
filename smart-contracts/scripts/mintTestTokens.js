@@ -12,6 +12,8 @@ module.exports = async () => {
     require("../build/contracts/BridgeToken.json")
   );
 
+  console.log("Expected usage: \n truffle exec scripts/mintTestTokens.js --network ropsten");
+
   /*******************************************
    *** Constants
    ******************************************/
