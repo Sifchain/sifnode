@@ -12,7 +12,7 @@ module.exports = async () => {
     require("../build/contracts/BridgeRegistry.json")
   );
 
-  console.log("Expected usage: \n truffle exec scripts/peggy:address.js --network ropsten");
+  console.log("Expected usage: \n truffle exec scripts/peggy:getBridgeRegistryAddress.js --network ropsten");
 
   /*******************************************
    *** Constants
