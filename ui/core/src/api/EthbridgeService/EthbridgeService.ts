@@ -52,12 +52,11 @@ export default function createEthbridgeService({
         value: 0,
       };
 
-      const MAX = web3.utils.toTwosComplement(-1);
-
+      // TODO - give interface option to approve unlimited spend via web3.utils.toTwosComplement(-1);
       const hasAlreadyApprovedSpend = await tokenContract.methods
         .allowance(account, bridgebankContractAddress)
         .call();
-      if (hasAlreadyApprovedSpend >= MAX) {
+      if (hasAlreadyApprovedSpend >= amount.toBaseUnits().toString()) {
         // dont request approve again
         console.log(
           "approveBridgeBankSpend: spend already approved",
@@ -67,7 +66,7 @@ export default function createEthbridgeService({
       }
 
       const res = await tokenContract.methods
-        .approve(bridgebankContractAddress, MAX)
+        .approve(bridgebankContractAddress, amount.toBaseUnits().toString())
         .send(sendArgs);
       console.log("approveBridgeBankSpend:", res);
       return res;
