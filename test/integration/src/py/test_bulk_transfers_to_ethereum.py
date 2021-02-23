@@ -5,7 +5,6 @@ import logging
 import burn_lock_functions
 import test_utilities
 from integration_env_credentials import sifchain_cli_credentials_for_test
-from pytest_utilities import generate_minimal_test_account
 from test_utilities import EthereumToSifchainTransferRequest, SifchaincliCredentials
 
 
@@ -39,7 +38,9 @@ def test_bulk_transfers(
     logging.info(f"aandk: {new_addresses_and_keys}")
     new_addresses = list(map(lambda a: a[0], new_addresses_and_keys))
     logging.debug(f"new_addresses: {new_addresses}")
-    new_eth_addrs = test_utilities.create_ethereum_addresses(smart_contracts_dir, basic_transfer_request.ethereum_network, len(new_addresses))
+    new_eth_addrs = test_utilities.create_ethereum_addresses(smart_contracts_dir,
+                                                             basic_transfer_request.ethereum_network,
+                                                             len(new_addresses))
     logging.info(f"new eth addrs: {new_eth_addrs}")
     request: EthereumToSifchainTransferRequest = copy.deepcopy(basic_transfer_request)
     requests = list(map(lambda addr: {
@@ -47,47 +48,21 @@ def test_bulk_transfers(
         "symbol": test_utilities.NULL_ADDRESS,
         "sifchain_address": addr
     }, new_addresses))
-    json_requests = json.dumps(requests)
-    test_utilities.run_yarn_command(
-        " ".join([
-            f"yarn --cwd {smart_contracts_dir}",
-            "integrationtest:sendBulkLockTx",
-            f"--amount {amount}",
-            f"--symbol eth",
-            f"--json_path {request.solidity_json_path}",
-            f"--sifchain_address {new_addresses[0]}",
-            f"--transactions \'{json_requests}\'",
-            f"--ethereum_address {source_ethereum_address}",
-            f"--bridgebank_address {bridgebank_address}",
-            f"--ethereum_network {ethereum_network}",
-        ])
-    )
-    requests = list(map(lambda addr: {
-        "amount": amount,
-        "symbol": bridgetoken_address,
-        "sifchain_address": addr
-    }, new_addresses))
-    json_requests = json.dumps(requests)
-    yarn_result = test_utilities.run_yarn_command(
-        " ".join([
-            f"yarn --cwd {smart_contracts_dir}",
-            "integrationtest:sendBulkLockTx",
-            f"--amount {amount}",
-            "--lock_or_burn burn",
-            f"--symbol {bridgetoken_address}",
-            f"--json_path {request.solidity_json_path}",
-            f"--sifchain_address {new_addresses[0]}",
-            f"--transactions \'{json_requests}\'",
-            f"--ethereum_address {source_ethereum_address}",
-            f"--bridgebank_address {bridgebank_address}",
-            f"--ethereum_network {ethereum_network}",
-        ])
-    )
-    logging.info(f"bulk result: {yarn_result}")
+    request.amount = 5 * test_utilities.highest_gas_cost
+    last_block_number = 0
+    for r in requests:
+        request.ethereum_address = source_ethereum_address
+        request.sifchain_address = r["sifchain_address"]
+        request.sifchain_symbol = "ceth"
+        request.ethereum_symbol = "eth"
+        test_utilities.send_from_ethereum_to_sifchain(request)
+        request.sifchain_symbol = "rowan"
+        request.ethereum_symbol = bridgetoken_address
+        last_block_number = test_utilities.send_from_ethereum_to_sifchain(request)
     manual_advance = False
     if manual_advance:
         test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks, smart_contracts_dir)
-    test_utilities.wait_for_ethereum_block_number(yarn_result["blockNumber"] + test_utilities.n_wait_blocks, basic_transfer_request);
+    test_utilities.wait_for_ethereum_block_number(last_block_number + test_utilities.n_wait_blocks, basic_transfer_request);
     for a in new_addresses:
         test_utilities.wait_for_sif_account(a, basic_transfer_request.sifnodecli_node, 90)
         test_utilities.wait_for_sifchain_addr_balance(a, "ceth", amount, basic_transfer_request.sifnodecli_node, 180)
@@ -109,8 +84,8 @@ def test_bulk_transfers(
         c = test_utilities.send_from_sifchain_to_ethereum_cmd(r, simple_credentials)
         text_file.write(f"{c}\n")
     text_file.close()
-    # test_utilities.get_shell_output("cat pfile.cmds | parallel --trim lr -v {}")
-    test_utilities.get_shell_output("bash -x pfile.cmds")
+    test_utilities.get_shell_output("cat pfile.cmds | parallel --trim lr -v {}")
+    # test_utilities.get_shell_output("bash -x pfile.cmds")
     for sifaddr, ethaddr in zip(new_addresses_and_keys, new_eth_addrs):
         r = copy.deepcopy(basic_transfer_request)
         r.ethereum_address = ethaddr["address"]

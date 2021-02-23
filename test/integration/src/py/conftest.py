@@ -43,6 +43,23 @@ def ethereum_network():
 
 
 @pytest.fixture
+def n_sifchain_accounts():
+    return int(test_utilities.get_optional_env_var("N_SIFCHAIN_ACCOUNTS", 1))
+
+
+@pytest.fixture
+def ceth_amount():
+    """the meaning of ceth_amount is determined by the test using it"""
+    return int(int(test_utilities.get_optional_env_var("CETH_AMOUNT", 10 ** 18)))
+
+
+@pytest.fixture
+def rowan_amount():
+    """the meaning of rowan_amount is determined by the test using it"""
+    return int(int(test_utilities.get_optional_env_var("ROWAN_AMOUNT", 10 ** 18)))
+
+
+@pytest.fixture
 def solidity_json_path(smart_contracts_dir):
     return test_utilities.get_optional_env_var("SOLIDITY_JSON_PATH", f"{smart_contracts_dir}/build/contracts")
 

@@ -2,16 +2,17 @@ import argparse
 import json
 import logging
 import os
-import sys
 import tempfile
 import textwrap
-import time
 from typing import List
+
+import sys
+import time
 
 from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks, \
     n_wait_blocks, print_error_message, wait_for_sifchain_addr_balance, send_from_ethereum_to_sifchain, \
     get_eth_balance, send_from_sifchain_to_ethereum, wait_for_eth_balance, \
-    current_ethereum_block_number, wait_for_ethereum_block_number, send_from_sifchain_to_sifchain, wait_for_sif_account, \
+    wait_for_ethereum_block_number, send_from_sifchain_to_sifchain, wait_for_sif_account, \
     get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
 
 
@@ -33,7 +34,8 @@ def force_log_level(new_level):
     return existing_level
 
 
-def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest, max_seconds: int = default_timeout_for_ganache):
+def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRequest,
+                                  max_seconds: int = default_timeout_for_ganache):
     logging.debug(f"transfer_ethereum_to_sifchain {transfer_request.as_json()}")
     assert transfer_request.ethereum_address
     assert transfer_request.sifchain_address
@@ -188,14 +190,19 @@ def transfer_sifchain_to_ethereum(
 def transfer_sifchain_to_sifchain(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials,
+        max_seconds: int = 30
 ):
     logging.debug(f"transfer_sifchain_to_sifchain: {transfer_request.as_json()}")
 
-    sifchain_starting_balance = get_sifchain_addr_balance(
-        transfer_request.sifchain_destination_address,
-        transfer_request.sifnodecli_node,
-        transfer_request.sifchain_symbol
-    )
+    try:
+        sifchain_starting_balance = get_sifchain_addr_balance(
+            transfer_request.sifchain_destination_address,
+            transfer_request.sifnodecli_node,
+            transfer_request.sifchain_symbol
+        )
+    except Exception as e:
+        # this is a new account, so the balance is 0
+        sifchain_starting_balance = 0
 
     status = {
         "action": "transfer_sifchain_to_sifchain",
@@ -204,20 +211,17 @@ def transfer_sifchain_to_sifchain(
     logging.info(status)
 
     send_from_sifchain_to_sifchain(
-        from_address=transfer_request.sifchain_address,
-        to_address=transfer_request.sifchain_destination_address,
-        amount=transfer_request.amount,
-        currency=transfer_request.sifchain_symbol,
-        yes_password=credentials.keyring_passphrase
+        transfer_request,
+        credentials
     )
     target_balance = transfer_request.amount + sifchain_starting_balance
     wait_for_sifchain_addr_balance(
-        transfer_request.sifchain_destination_address,
-        transfer_request.sifchain_symbol,
-        transfer_request.sifnodecli_node,
-        target_balance,
-        30,
-        f"transfer_sifchain_to_sifchain {transfer_request}"
+        sifchain_address=transfer_request.sifchain_destination_address,
+        symbol=transfer_request.sifchain_symbol,
+        target_balance=target_balance,
+        sifchaincli_node=transfer_request.sifnodecli_node,
+        max_seconds=max_seconds,
+        debug_prefix=f"transfer_sifchain_to_sifchain {transfer_request}"
     )
 
     return {
