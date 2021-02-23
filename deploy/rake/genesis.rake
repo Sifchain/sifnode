@@ -52,26 +52,14 @@ namespace :genesis do
 
   desc "node operations"
   namespace :sifnode do
-    desc "Scaffold a new local node and configure it to connect to an existing network"
-    task :scaffold, [:chainnet, :moniker, :mnemonic, :peer_address, :genesis_url] do |t, args|
-      setup_cosmovisor
-      safe_system("sifgen node create #{args[:chainnet]} #{args[:moniker]} #{args[:mnemonic]} --peer-address #{args[:peer_address]} --genesis-url #{args[:genesis_url]} --print-details --with-cosmovisor")
-    end
-
-    desc "boot node"
-    task :boot, [:gas_price] do |t, args|
-      gas_price = if args.has_key? :gas_price
-                    args[:gas_price]
-                  else
-                    "0.5rowan"
-                  end
-
-      cmd = %Q{cosmovisor start --rpc.laddr tcp://0.0.0.0:26657 --minimum-gas-prices #{args[:gas_price]}}
-      safe_system({
-        "DAEMON_NAME" => sifnoded,
-        "DAEMON_HOME" => "#{ENV['HOME']}/.sifnoded",
-        "DAEMON_ALLOW_DOWNLOAD_BINARIES" => "true",
-        "DAEMON_RESTART_AFTER_UPGRADE" => "true"}, cmd)
+    namespace :mainnet do
+      desc "boot node"
+      task :boot, [:moniker, :mnemonic, :gas_price] do |t, args|
+        cmd = %Q{MONIKER=#{args[:moniker]} MNEMONIC=#{args[:mnemonic]} GAS_PRICE=#{gas_price(args)} \
+                 docker-compose -f #{cwd}/../docker/mainnet/docker-compose.yml up
+        }
+        safe_system(cmd)
+      end
     end
 
     desc "Reset the state of a node"
@@ -82,10 +70,12 @@ namespace :genesis do
 end
 
 #
-# Setup Cosmovisor
+# Get the gas price.
 #
-def setup_cosmovisor
-  safe_system("go get github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor")
+def gas_price(args)
+  return args[:gas_price] if args.has_key? :gas_price
+
+  "0.5rowan"
 end
 
 #
