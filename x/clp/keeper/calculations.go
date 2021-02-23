@@ -5,7 +5,6 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/ethereum/go-ethereum/common/math"
 )
 
 //------------------------------------------------------------------------------------------------------------------
@@ -154,7 +153,7 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 		}
 		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
 	}
-
+	//( cusdt , p = 100000000000000000000, R= 1000000000000000000, A = 10000000000000000000, r = 0,a= 10000000)
 	if adjustExternalToken {
 		externalAssetAmount = externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt())) // Convert token which are not E18 to E18 format
 		externalAssetBalance = externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
@@ -215,7 +214,6 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 		slipAdjustment = r.Mul(A).Sub(R.Mul(a)).Quo(slipAdjDenominator)
 	}
 	slipAdjustment = sdk.NewDec(1).Sub(slipAdjustment)
-
 	numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
 	denominator := sdk.NewDec(2).Mul(A).Mul(R)
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
@@ -344,37 +342,4 @@ func CalculateAllAssetsForLP(pool types.Pool, lp types.LiquidityProvider) (sdk.U
 	externalAssetBalance := pool.ExternalAssetBalance
 	return CalculateWithdrawal(poolUnits, nativeAssetBalance.String(), externalAssetBalance.String(),
 		lp.LiquidityProviderUnits.String(), sdk.NewInt(types.MaxWbasis).String(), sdk.ZeroInt())
-}
-
-func ValidateZero(inputs []sdk.Uint) bool {
-	for _, val := range inputs {
-		if val.IsZero() {
-			return false
-		}
-	}
-	return true
-}
-
-func ReducePrecision(dec sdk.Dec, po int64) sdk.Dec {
-	p := sdk.NewDec(10).Power(uint64(po))
-	return dec.Quo(p)
-}
-
-func IncreasePrecision(dec sdk.Dec, po int64) sdk.Dec {
-	p := sdk.NewDec(10).Power(uint64(po))
-	return dec.Mul(p)
-}
-
-func GetMinLen(inputs []sdk.Uint) int64 {
-	minLen := math.MaxInt64
-	for _, val := range inputs {
-		currentLen := len(val.String())
-		if currentLen < minLen {
-			minLen = currentLen
-		}
-	}
-	if minLen <= 1 {
-		return int64(1)
-	}
-	return int64(minLen - 1)
 }
