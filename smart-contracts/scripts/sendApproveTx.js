@@ -14,6 +14,8 @@ module.exports = async () => {
     require("../build/contracts/BridgeToken.json")
   );
 
+  console.log("Expected usage: \n truffle exec scripts/sendApproveTx.js --network ropsten 10 0xdDA6327139485221633A1FcD65f4aC932E60A2e1");
+
   /*******************************************
    *** Constants
    ******************************************/
@@ -41,7 +43,7 @@ module.exports = async () => {
       );
     }
   } else {
-    if (NUM_ARGS !== 1) {
+    if (NUM_ARGS !== 1 && NUM_ARGS !== 2) {
       return console.error("Error: Must specify token amount or --default.");
     }
   }
