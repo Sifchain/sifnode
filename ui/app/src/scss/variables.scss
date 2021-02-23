@@ -8,11 +8,16 @@ $c_blue: #5f88d9;
 $c_green: #8cc63f;
 $c_pink: #f48394;
 $c_white: #ffffff;
-$c_gray_50: #fafafa; // use for btn on white, use for non-white panels
+$c_gray_25: #fdfdfd;
+$c_gray_50: #fafafa;  // use for btn on white, use for non-white panels
+$c_gray_75: #f7f7f7;
 $c_gray_100: #f4f4f4;
+$c_gray_150: #E8E8E8;
 $c_gray_200: #e6e6e6;
 $c_gray_300: #dedede;
 $c_gray_400: #ccc;
+$c_gray_500: #bbb;
+$c_gray_600: #aaa;
 $c_gray_700: #818181; // switch bg, disabled font on dark, gradients
 $c_gray_800: #333;
 $c_gray_900: #272727;
@@ -26,6 +31,8 @@ $c_text: $c_gray_900;
 $g_gold: linear-gradient(to right, $c_gold, $c_gold_dark);
 $g_gray: linear-gradient(180deg, $c_gray_50 0%, $c_gray_300 100%);
 $g_gray_reverse: linear-gradient(180deg, $c_gray_200 0%, $c_gray_50 100%);
+$g_gray_disabled: linear-gradient(180deg, $c_gray_75 0%, $c_gray_25 100%);
+$g_gray_light: linear-gradient(180deg, $c_white 0%, $c_gray_150 100%);
 
 /*
  *  BOX SHADOW:
@@ -61,4 +68,4 @@ $zi_modal: 5000;
  *  LAYOUT:
  */
 
-$header_height: 80px;
+$header_height: 160px;

@@ -27,7 +27,9 @@ export default ({
   };
 
   effect(() => {
-    store.wallet.eth.isConnected = etheriumState.connected;
+    // Only show connected when we have an address
+    store.wallet.eth.isConnected =
+      etheriumState.connected && !!etheriumState.address;
   });
 
   effect(() => {

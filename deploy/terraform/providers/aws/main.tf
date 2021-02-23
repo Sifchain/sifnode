@@ -56,6 +56,7 @@ module "eks" {
   subnets      = module.vpc.public_subnets
   vpc_id       = module.vpc.vpc_id
   tags         = merge({ "Name" = var.cluster_name }, var.tags)
+  version      = "13.2.1"
 
   node_groups_defaults = {
     ami_type  = var.ami_type

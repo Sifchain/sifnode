@@ -3,9 +3,10 @@
 <template>
   <div class="field-wrappers">
     <CurrencyField
-      label="From"
+      :label="tokenALabel"
       tabindex="1"
-      :max="fromMax"
+      :max="fromMax && !isFromMaxActive"
+      :isMaxActive="isFromMaxActive"
       @focus="handleFromFocused"
       @blur="handleFromBlur"
       :amount="fromAmount"
@@ -25,14 +26,17 @@
     />
     <Icon icon="plus" v-if="canSwapIcon === 'plus'" />
     <CurrencyField
-      label="To"
+      :label="tokenBLabel"
       tabindex="2"
+      :max="toMax && !isToMaxActive"
+      :isMaxActive="isToMaxActive"
       @focus="handleToFocused"
       @blur="handleToBlur"
       :amount="toAmount"
       :inputDisabled="toDisabled"
       @selectsymbol="$emit('tosymbolclicked')"
       @update:amount="handleToUpdateAmount"
+      @maxclicked="handleToMaxClicked"
       :symbol="toSymbol"
       :symbolFixed="toSymbolFixed"
       :selectable="toSymbolSelectable"
@@ -53,9 +57,12 @@ export default defineComponent({
     fromAmount: String,
     fromSymbol: String,
     fromMax: { type: Boolean, default: false },
+    toMax: { type: Boolean, default: false },
     toAmount: String,
     toSymbol: String,
     connected: Boolean,
+    tokenALabel: { type: String, default: "Input" },
+    tokenBLabel: { type: String, default: "Input" },
     nextStepMessage: String,
     canSwap: { type: Boolean, default: false },
     fromDisabled: { type: Boolean, default: false },
@@ -66,6 +73,8 @@ export default defineComponent({
     fromSymbolSelectable: { type: Boolean, default: true },
     toSymbolFixed: { type: Boolean, default: false },
     toSymbolSelectable: { type: Boolean, default: true },
+    isFromMaxActive: { type: Boolean, default: false },
+    isToMaxActive: { type: Boolean, default: false },
   },
   emits: [
     "fromfocus",
@@ -76,6 +85,7 @@ export default defineComponent({
     "tosymbolclicked",
     "fromsymbolclicked",
     "frommaxclicked",
+    "tomaxclicked",
     "swapclicked",
     "connectclicked",
     "update:toAmount",
@@ -114,6 +124,9 @@ export default defineComponent({
     function handleFromMaxClicked() {
       context.emit("frommaxclicked");
     }
+    function handleToMaxClicked() {
+      context.emit("tomaxclicked");
+    }
     return {
       handleFromUpdateAmount,
       handleFromUpdateSymbol,
@@ -122,6 +135,7 @@ export default defineComponent({
       handleFromFocused,
       handleFromBlur,
       handleFromMaxClicked,
+      handleToMaxClicked,
       handleToFocused,
       handleToBlur,
     };

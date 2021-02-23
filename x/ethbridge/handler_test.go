@@ -20,6 +20,10 @@ const (
 	senderString = "sender"
 )
 
+var (
+	UnregisteredValidatorAddress = sdk.ValAddress("cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq")
+)
+
 func TestBasicMsgs(t *testing.T) {
 	//Setup
 	ctx, _, _, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.7, []int64{3, 7})
@@ -48,6 +52,8 @@ func TestBasicMsgs(t *testing.T) {
 				require.Equal(t, value, valAddress.String())
 			case "ethereum_sender":
 				require.Equal(t, value, types.TestEthereumAddress)
+			case "ethereum_sender_nonce":
+				require.Equal(t, value, strconv.Itoa(types.TestNonce))
 			case "cosmos_receiver":
 				require.Equal(t, value, types.TestAddress)
 			case "amount":
@@ -60,6 +66,8 @@ func TestBasicMsgs(t *testing.T) {
 				require.Equal(t, value, oracle.StatusTextToString[oracle.PendingStatusText])
 			case "claim_type":
 				require.Equal(t, value, types.ClaimTypeToString[types.LockText])
+			case "cosmos_sender":
+				require.Equal(t, value, valAddress.String())
 			default:
 				require.Fail(t, fmt.Sprintf("unrecognized event %s", key))
 			}
@@ -210,6 +218,32 @@ func TestNoMintFail(t *testing.T) {
 	require.True(t, receiver1Coins.IsZero())
 }
 
+func TestLockFail(t *testing.T) {
+	//Setup
+	ctx, _, _, _, _, _, handler := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+
+	//Initial message
+	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.LockText)
+	res, err := handler(ctx, normalCreateMsg)
+
+	require.Error(t, err)
+	require.Nil(t, res)
+	require.Equal(t, err.Error(), "validator must be in whitelist")
+}
+
+func TestBurnFail(t *testing.T) {
+	//Setup
+	ctx, _, _, _, _, _, handler := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+
+	//Initial message
+	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.BurnText)
+	res, err := handler(ctx, normalCreateMsg)
+
+	require.Error(t, err)
+	require.Nil(t, res)
+	require.Equal(t, err.Error(), "validator must be in whitelist")
+}
+
 func TestBurnEthFail(t *testing.T) {
 
 }
@@ -243,6 +277,20 @@ func TestBurnEthSuccess(t *testing.T) {
 	receiverCoins := bankKeeper.GetCoins(ctx, receiverAddress)
 	mintedCoins := sdk.Coins{sdk.NewCoin(coinsToMintSymbolLocked, coinsToMintAmount)}
 	require.True(t, receiverCoins.IsEqual(mintedCoins))
+
+	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
+	coinsToMintSymbol = "eth"
+	testEthereumAddress = types.NewEthereumAddress(types.AltTestEthereumAddress)
+
+	ethClaim1 = types.CreateTestEthClaim(
+		t, testEthereumAddress, testTokenContractAddress,
+		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.LockText)
+	ethMsg1 = NewMsgCreateEthBridgeClaim(ethClaim1)
+
+	// Initial message succeeds and mints eth
+	res, err = handler(ctx, ethMsg1)
+	require.NoError(t, err)
+	require.NotNil(t, res)
 
 	coinsToBurnAmount := sdk.NewInt(3)
 	coinsToBurnSymbol := "ether"
@@ -304,7 +352,21 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
 	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
-	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
+	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin("ceth", sdk.NewInt(65000000000*300000)), sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
+
+	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
+	coinsToMintSymbol = "eth"
+	testEthereumAddress = types.NewEthereumAddress(types.Alt2TestEthereumAddress)
+
+	ethClaim1 = types.CreateTestEthClaim(
+		t, testEthereumAddress, testTokenContractAddress,
+		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.LockText)
+	ethMsg1 = NewMsgCreateEthBridgeClaim(ethClaim1)
+
+	// Initial message succeeds and mints eth
+	res, err = handler(ctx, ethMsg1)
+	require.NoError(t, err)
+	require.NotNil(t, res)
 
 	// Third message failed since pegged token can be lock.
 	lockMsg := types.CreateTestLockMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,

@@ -21,22 +21,26 @@ import (
 )
 
 type Node struct {
-	CLI                utils.CLI `yaml:"-"`
-	AdminCLPAddresses  []string  `yaml:"admin_clp_addresses"`
-	ChainID            string    `yaml:"chain_id"`
-	Moniker            string    `yaml:"moniker"`
-	Mnemonic           string    `yaml:"mnemonic"`
-	AdminOracleAddress string    `yaml:"admin_oracle_address"`
-	IPAddr             string    `yml:"ip_address"`
-	Address            string    `yaml:"address"`
-	Password           string    `yaml:"password"`
-	BondAmount         string    `yaml:"-"`
-	MintAmount         string    `yaml:"-"`
-	PeerAddress        string    `yaml:"-"`
-	GenesisURL         string    `yaml:"-"`
-	Key                *key.Key  `yaml:"-"`
-	Standalone         bool      `yaml:"-"`
-	WithCosmovisor     bool      `yaml:"-"`
+	CLI                       utils.CLI `yaml:"-"`
+	AdminCLPAddresses         []string  `yaml:"admin_clp_addresses"`
+	ChainID                   string    `yaml:"chain_id"`
+	Moniker                   string    `yaml:"moniker"`
+	Mnemonic                  string    `yaml:"mnemonic"`
+	AdminOracleAddress        string    `yaml:"admin_oracle_address"`
+	IPAddr                    string    `yaml:"ip_address"`
+	Address                   string    `yaml:"address"`
+	Password                  string    `yaml:"password"`
+	BondAmount                string    `yaml:"-"`
+	MintAmount                string    `yaml:"-"`
+	FaucetAmount              string    `yaml:"-"`
+	MinCLPCreatePoolThreshold string    `yaml:"-"`
+	GovMaxDepositPeriod       string    `yaml:"-"`
+	GovVotingPeriod           string    `yaml:"-"`
+	PeerAddress               string    `yaml:"-"`
+	GenesisURL                string    `yaml:"-"`
+	Key                       *key.Key  `yaml:"-"`
+	Standalone                bool      `yaml:"-"`
+	WithCosmovisor            bool      `yaml:"-"`
 }
 
 func Reset(chainID string, nodeDir *string) error {
@@ -56,6 +60,10 @@ func Reset(chainID string, nodeDir *string) error {
 }
 
 func (n *Node) Build() (*string, error) {
+	if _, err := os.Stat(fmt.Sprintf("%v/config/genesis.json", common.DefaultNodeHome)); err == nil {
+		return nil, nil
+	}
+
 	if err := n.setup(); err != nil {
 		return nil, err
 	}
@@ -142,6 +150,13 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
+	if n.ChainID != "sifchain" {
+		_, err = n.CLI.AddFaucet(n.FaucetAmount)
+		if err != nil {
+			return err
+		}
+	}
+
 	for _, adminAddress := range n.AdminCLPAddresses {
 		_, err := n.CLI.AddGenesisCLPAdmin(adminAddress, common.DefaultNodeHome)
 		if err != nil {
@@ -190,12 +205,19 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	minCLPCreatePoolThreshold := os.Getenv("MIN_CLP_CREATE_POOL_THRESHOLD")
-	if minCLPCreatePoolThreshold == "" {
-		minCLPCreatePoolThreshold = common.MinCLPCreatePoolThreshold
+	if err = genesis.ReplaceCLPMinCreatePoolThreshold(common.DefaultNodeHome, n.MinCLPCreatePoolThreshold); err != nil {
+		return err
 	}
 
-	if err = genesis.ReplaceCLPMinCreatePoolThreshold(common.DefaultNodeHome, minCLPCreatePoolThreshold); err != nil {
+	if err = genesis.ReplaceGovDepositParamsMinDeposit(common.DefaultNodeHome, common.StakeTokenDenom); err != nil {
+		return err
+	}
+
+	if err = genesis.ReplaceGovDepositParamsMaxDepositPeriod(common.DefaultNodeHome, n.GovMaxDepositPeriod); err != nil {
+		return err
+	}
+
+	if err = genesis.ReplaceGovVotingParamsVotingPeriod(common.DefaultNodeHome, n.GovVotingPeriod); err != nil {
 		return err
 	}
 
@@ -333,7 +355,7 @@ func (n *Node) setupCosmovisor() error {
 		return err
 	}
 
-	if err := n.CLI.CreateDir(fmt.Sprintf("%v/cosmovisor/upgrade", app.DefaultNodeHome)); err != nil {
+	if err := n.CLI.CreateDir(fmt.Sprintf("%v/cosmovisor/upgrades", app.DefaultNodeHome)); err != nil {
 		return err
 	}
 

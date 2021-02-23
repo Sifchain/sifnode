@@ -7,8 +7,9 @@ import "./CosmosWhiteList.sol";
 import "../Oracle.sol";
 import "../CosmosBridge.sol";
 import "./BankStorage.sol";
+import "./Pausable.sol";
 
-/**
+/*
  * @title BridgeBank
  * @dev Bank contract which coordinates asset-related functionality.
  *      CosmosBank manages the minting and burning of tokens which
@@ -22,7 +23,8 @@ contract BridgeBank is BankStorage,
     CosmosBank,
     EthereumBank,
     EthereumWhiteList,
-    CosmosWhiteList {
+    CosmosWhiteList,
+    Pausable {
 
     bool private _initialized;
 
@@ -34,24 +36,30 @@ contract BridgeBank is BankStorage,
     function initialize(
         address _operatorAddress,
         address _cosmosBridgeAddress,
-        address _owner
+        address _owner,
+        address _pauser
     ) public {
-        require(!_initialized, "Initialized");
+        require(!_initialized, "Init");
 
         EthereumWhiteList.initialize();
         CosmosWhiteList.initialize();
+        Pausable.initialize(_pauser);
 
         operator = _operatorAddress;
         cosmosBridge = _cosmosBridgeAddress;
         owner = _owner;
         _initialized = true;
+
+        // hardcode since this is the first token
+        lowerToUpperTokens["erowan"] = "erowan";
+        lowerToUpperTokens["eth"] = "eth";
     }
 
     /*
      * @dev: Modifier to restrict access to operator
      */
     modifier onlyOperator() {
-        require(msg.sender == operator, "Must be BridgeBank operator.");
+        require(msg.sender == operator, "!operator");
         _;
     }
 
@@ -59,11 +67,9 @@ contract BridgeBank is BankStorage,
      * @dev: Modifier to restrict access to operator
      */
     modifier onlyOwner() {
-        require(msg.sender == owner, "Must be Owner.");
+        require(msg.sender == owner, "!owner");
         _;
     }
-
-
 
     /*
      * @dev: Modifier to restrict access to the cosmos bridge
@@ -71,7 +77,7 @@ contract BridgeBank is BankStorage,
     modifier onlyCosmosBridge() {
         require(
             msg.sender == cosmosBridge,
-            "Access restricted to the cosmos bridge"
+            "!cosmosbridge"
         );
         _;
     }
@@ -80,9 +86,19 @@ contract BridgeBank is BankStorage,
      * @dev: Modifier to only allow valid sif addresses
      */
     modifier validSifAddress(bytes memory _sifAddress) {
-        require(_sifAddress.length == 42, "Invalid sif address length");
-        require(verifySifPrefix(_sifAddress) == true, "Invalid sif address prefix");
+        require(_sifAddress.length == 42, "Invalid len");
+        require(verifySifPrefix(_sifAddress) == true, "Invalid sif address");
         _;
+    }
+
+    function changeOwner(address _newOwner) public onlyOwner {
+        require(_newOwner != address(0), "invalid address");
+        owner = _newOwner;
+    }
+
+    function changeOperator(address _newOperator) public onlyOperator {
+        require(_newOperator != address(0), "invalid address");
+        operator = _newOperator;
     }
 
     /*
@@ -98,7 +114,6 @@ contract BridgeBank is BankStorage,
         }
         return true;
     }
-
 
     /*
      * @dev: Creates a new BridgeToken
@@ -127,6 +142,7 @@ contract BridgeBank is BankStorage,
         address _contractAddress
     ) public onlyOwner returns (address) {
         setTokenInCosmosWhiteList(_contractAddress, true);
+
         return useExistingBridgeToken(_contractAddress);
     }
 
@@ -149,12 +165,13 @@ contract BridgeBank is BankStorage,
         if (_inList) {
             // if we want to add it to the whitelist, make sure that the address
             // is 0, meaning we have not seen that symbol in the whitelist before
-            require(listAddress == address(0), "Token already whitelisted");
+            require(listAddress == address(0), "whitelisted");
         } else {
             // if we want to de-whitelist it, make sure that the symbol is 
             // in fact stored in our locked token list before we set to false
-            require(uint256(listAddress) > 0, "Token not whitelisted");
+            require(uint256(listAddress) > 0, "!whitelisted");
         }
+        lowerToUpperTokens[toLower(symbol)] = symbol;
         return setTokenInEthWhiteList(_token, _inList);
     }
 
@@ -162,7 +179,7 @@ contract BridgeBank is BankStorage,
     // private so that it is not inheritable or able to be called
     // by anyone other than this contract
     function _updateTokenLimits(address _token, uint256 _amount) private {
-        string memory symbol = _token == address(0) ? "ETH" : BridgeToken(_token).symbol();
+        string memory symbol = _token == address(0) ? "eth" : BridgeToken(_token).symbol();
         maxTokenAmount[symbol] = _amount;
     }
 
@@ -186,6 +203,8 @@ contract BridgeBank is BankStorage,
         for (uint256 i = 0; i < tokenAddresses.length; i++) {
             _updateTokenLimits(tokenAddresses[i], tokenLimit[i]);
             setTokenInEthWhiteList(tokenAddresses[i], true);
+            string memory symbol = BridgeToken(tokenAddresses[i]).symbol();
+            lowerToUpperTokens[toLower(symbol)] = symbol;
         }
         return true;
     }
@@ -204,7 +223,7 @@ contract BridgeBank is BankStorage,
         address _bridgeTokenAddress,
         string memory _symbol,
         uint256 _amount
-    ) public onlyCosmosBridge {
+    ) public onlyCosmosBridge whenNotPaused {
         return
             mintNewBridgeTokens(
                 _intendedRecipient,
@@ -225,7 +244,7 @@ contract BridgeBank is BankStorage,
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) {
+    ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) whenNotPaused {
         string memory symbol = BridgeToken(_token).symbol();
 
         if (_amount > maxTokenAmount[symbol]) {
@@ -247,20 +266,20 @@ contract BridgeBank is BankStorage,
         bytes memory _recipient,
         address _token,
         uint256 _amount
-    ) public payable onlyEthTokenWhiteList(_token) validSifAddress(_recipient) {
+    ) public payable onlyEthTokenWhiteList(_token) validSifAddress(_recipient) whenNotPaused {
         string memory symbol;
 
         // Ethereum deposit
         if (msg.value > 0) {
             require(
                 _token == address(0),
-                "Ethereum deposits require the 'token' address to be the null address"
+                "!address(0)"
             );
             require(
                 msg.value == _amount,
-                "The transactions value must be equal the specified amount (in wei)"
+                "incorrect eth amount"
             );
-            symbol = "ETH";
+            symbol = "eth";
             // ERC20 deposit
         } else {
             IERC20 tokenToTransfer = IERC20(_token);
@@ -290,18 +309,16 @@ contract BridgeBank is BankStorage,
         address payable _recipient,
         string memory _symbol,
         uint256 _amount
-    ) public onlyCosmosBridge {
+    ) public onlyCosmosBridge whenNotPaused {
         // Confirm that the bank has sufficient locked balances of this token type
         require(
             getLockedFunds(_symbol) >= _amount,
-            "The Bank does not hold enough locked tokens to fulfill this request."
+            "!Bank funds"
         );
 
         // Confirm that the bank holds sufficient balances to complete the unlock
         address tokenAddress = lockedTokenList[_symbol];
         if (tokenAddress == address(0)) {
-            // uint256 contractBalance = ;
-            // revert("no error before 299 for eth unlock");
             require(
                 ((address(this)).balance) >= _amount,
                 "Insufficient ethereum balance for delivery."
@@ -314,4 +331,10 @@ contract BridgeBank is BankStorage,
         }
         unlockFunds(_recipient, tokenAddress, _symbol, _amount);
     }
+
+    /*
+    * @dev fallback function for ERC223 tokens so that we can receive these tokens in our contract
+    * Don't need to do anything to handle these tokens
+    */
+    function tokenFallback(address _from, uint _value, bytes memory _data) public {}
 }

@@ -34,6 +34,7 @@ const swapParams = {
   },
   signer: "",
   sent_amount: "",
+  min_receiving_amount: "",
 };
 
 const liquidityParams = {

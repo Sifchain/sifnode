@@ -33,6 +33,29 @@
     font-size: $fs_sm;
     line-height: 14px;
 }
+.text--left {
+    text-align: left;
+}
+
+.text--standard {
+    font-size: $fs;
+}
+.text--medium {
+    font-size: $fs_md;
+}
+.text--italic {
+    font-style: italic;
+}
+.text--regular {
+    font-style: normal;
+}
+.text--normal {
+    font-weight: normal;
+}
+.text--bold {
+    font-weight: bold;
+}
+
 
 // display
 .d-flex {

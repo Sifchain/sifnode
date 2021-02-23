@@ -5,4 +5,5 @@ shift
 token=$1
 shift
 
-docker exec -ti ${CONTAINER_NAME} bash -c "cd /smart-contracts; yarn peggy:getTokenBalance ${addr:=${BRIDGE_BANK_ADDRESS}} ${token:=eth}"
+cd $SMART_CONTRACTS_DIR
+yarn peggy:getTokenBalance ${addr:=${BRIDGE_BANK_ADDRESS}} ${token:=eth}

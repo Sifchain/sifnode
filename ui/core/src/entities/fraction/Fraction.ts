@@ -79,8 +79,10 @@ export interface IFraction {
   add(other: IFraction | BigintIsh): IFraction;
   subtract(other: IFraction | BigintIsh): IFraction;
   lessThan(other: IFraction | BigintIsh): boolean;
+  lessThanOrEqual(other: IFraction | BigintIsh): boolean;
   equalTo(other: IFraction | BigintIsh): boolean;
   greaterThan(other: IFraction | BigintIsh): boolean;
+  greaterThanOrEqual(other: IFraction | BigintIsh): boolean;
   multiply(other: IFraction | BigintIsh): IFraction;
   divide(other: IFraction | BigintIsh): IFraction;
   toSignificant(
@@ -172,6 +174,10 @@ export class Fraction implements IFraction {
     );
   }
 
+  public lessThanOrEqual(other: IFraction | BigintIsh): boolean {
+    return this.lessThan(other) || this.equalTo(other);
+  }
+
   public equalTo(other: IFraction | BigintIsh): boolean {
     const otherParsed = ensureFraction(other);
 
@@ -188,6 +194,10 @@ export class Fraction implements IFraction {
       JSBI.multiply(this.numerator, otherParsed.denominator),
       JSBI.multiply(otherParsed.numerator, this.denominator)
     );
+  }
+
+  public greaterThanOrEqual(other: IFraction | BigintIsh): boolean {
+    return this.greaterThan(other) || this.equalTo(other);
   }
 
   public multiply(other: IFraction | BigintIsh): IFraction {

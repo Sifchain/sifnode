@@ -108,11 +108,11 @@ func GetCmdCreateEthBridgeClaim(cdc *codec.Codec) *cobra.Command {
 //nolint:lll
 func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] --ethereum-chain-id [ethereum-chain-id]",
+		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [cethAmount] --ethereum-chain-id [ethereum-chain-id]",
 		Short: "burn cETH or cERC20 on the Cosmos chain",
 		Long: `This should be used to burn cETH or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
 		It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the withdrawal of the original ETH/ERC20 to you from the Ethereum contract!`,
-		Args: cobra.ExactArgs(4),
+		Args: cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -150,7 +150,12 @@ func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 
 			symbol := args[3]
 
-			msg := types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol)
+			cethAmount, ok := sdk.NewIntFromString(args[4])
+			if !ok {
+				return errors.New("Error parsing ceth amount")
+			}
+
+			msg := types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -164,9 +169,9 @@ func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 	//nolint:lll
 	return &cobra.Command{
-		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] --ethereum-chain-id [ethereum-chain-id]",
+		Use:   "lock [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [cethAmount] --ethereum-chain-id [ethereum-chain-id]",
 		Short: "This should be used to lock Cosmos-originating coins (eg: ATOM). It will lock up your coins in the supply module, removing them from your account. It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the minting of the pegged token on Etherum to you!",
-		Args:  cobra.ExactArgs(4),
+		Args:  cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -205,7 +210,12 @@ func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 
 			symbol := args[3]
 
-			msg := types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol)
+			cethAmount, ok := sdk.NewIntFromString(args[4])
+			if !ok {
+				return errors.New("Error parsing ceth amount")
+			}
+
+			msg := types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, amount, symbol, cethAmount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

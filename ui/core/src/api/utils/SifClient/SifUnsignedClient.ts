@@ -55,6 +55,7 @@ export class SifUnSignedClient extends CosmosClient
     this.removeLiquidity = this.lcdClient.clp.removeLiquidity;
     this.getPool = this.lcdClient.clp.getPool;
     this.burn = this.lcdClient.ethbridge.burn;
+    this.lock = this.lcdClient.ethbridge.lock;
     if (wsUrl) this.subscriber = createTendermintSocketSubscriber(wsUrl);
   }
 
@@ -70,6 +71,7 @@ export class SifUnSignedClient extends CosmosClient
 
   // Ethbridge Extension
   burn: IEthbridgeApi["burn"];
+  lock: IEthbridgeApi["lock"];
 
   onNewBlock<T>(handler: HandlerFn<T>) {
     console.log("received onNewBlock handler");

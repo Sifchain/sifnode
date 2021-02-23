@@ -12,6 +12,11 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+const (
+	burnGasCost = 65000000000 * 248692 // assuming 65gigawei gas prices
+	lockGasCost = 65000000000 * 282031
+)
+
 // MsgLock defines a message for locking coins and triggering a related event
 type MsgLock struct {
 	CosmosSender     sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`
@@ -19,18 +24,20 @@ type MsgLock struct {
 	Symbol           string          `json:"symbol" yaml:"symbol"`
 	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
 	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
+	CethAmount       sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
 }
 
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
 	ethereumChainID int, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string) MsgLock {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgLock {
 	return MsgLock{
 		EthereumChainID:  ethereumChainID,
 		CosmosSender:     cosmosSender,
 		EthereumReceiver: ethereumReceiver,
 		Amount:           amount,
 		Symbol:           symbol,
+		CethAmount:       cethAmount,
 	}
 }
 
@@ -62,6 +69,11 @@ func (msg MsgLock) ValidateBasic() error {
 		return ErrInvalidAmount
 	}
 
+	// if you don't pay enough gas, this tx won't go through
+	if msg.CethAmount.LT(sdk.NewInt(lockGasCost)) {
+		return ErrCethAmount
+	}
+
 	if len(msg.Symbol) == 0 {
 		return ErrInvalidSymbol
 	}
@@ -71,12 +83,7 @@ func (msg MsgLock) ValidateBasic() error {
 
 // GetSignBytes encodes the message for signing
 func (msg MsgLock) GetSignBytes() []byte {
-	b, err := json.Marshal(msg)
-	if err != nil {
-		panic(err)
-	}
-
-	return sdk.MustSortJSON(b)
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // GetSigners defines whose signature is required
@@ -91,18 +98,20 @@ type MsgBurn struct {
 	Symbol           string          `json:"symbol" yaml:"symbol"`
 	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
 	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
+	CethAmount       sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
 }
 
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
 	ethereumChainID int, cosmosSender sdk.AccAddress,
-	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string) MsgBurn {
+	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgBurn {
 	return MsgBurn{
 		EthereumChainID:  ethereumChainID,
 		CosmosSender:     cosmosSender,
 		EthereumReceiver: ethereumReceiver,
 		Amount:           amount,
 		Symbol:           symbol,
+		CethAmount:       cethAmount,
 	}
 }
 
@@ -137,6 +146,11 @@ func (msg MsgBurn) ValidateBasic() error {
 	if symbolPrefix != PeggedCoinPrefix {
 		return ErrInvalidBurnSymbol
 	}
+	// check that enough ceth is sent to cover the gas cost.
+	if msg.CethAmount.LT(sdk.NewInt(burnGasCost)) {
+		return ErrCethAmount
+	}
+
 	symbolSuffix := msg.Symbol[prefixLength:]
 	if len(symbolSuffix) == 0 {
 		return ErrInvalidBurnSymbol
@@ -216,7 +230,7 @@ func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
 type MsgUpdateWhiteListValidator struct {
 	CosmosSender  sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
 	Validator     sdk.ValAddress `json:"validator" yaml:"validator"`
-	OperationType string         `json:"operation_tyoe" yaml:"operation_type"`
+	OperationType string         `json:"operation_type" yaml:"operation_type"`
 }
 
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
@@ -237,8 +251,6 @@ func (msg MsgUpdateWhiteListValidator) Type() string { return "update_whitelist_
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgUpdateWhiteListValidator) ValidateBasic() error {
-	fmt.Println(" MsgUpdateWhiteListValidator ValidateBasic")
-
 	if msg.CosmosSender.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
@@ -246,8 +258,6 @@ func (msg MsgUpdateWhiteListValidator) ValidateBasic() error {
 	if msg.Validator.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator.String())
 	}
-	fmt.Println(" MsgUpdateWhiteListValidator ValidateBasic over")
-
 	return nil
 }
 

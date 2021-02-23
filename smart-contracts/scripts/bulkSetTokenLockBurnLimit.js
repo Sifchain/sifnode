@@ -3,7 +3,7 @@ const whitelistLimitData = require("./" + process.argv[6]);
 module.exports = async (cb) => {
 
     const err = () => {
-        console.log("\nUsage: \ntruffle exec scripts/bulkSetTokenLockBurnLimit.js --network develop PATH_TO_WHITELIST_FILE.json\n\n\n");
+        console.log("\nUsage: \nBRIDGEBANK_ADDRESS='0x9201903991991...' truffle exec scripts/bulkSetTokenLockBurnLimit.js --network develop PATH_TO_WHITELIST_FILE.json\n\n\n");
     }
 
     const HDWalletProvider = require("@truffle/hdwallet-provider");
@@ -63,7 +63,7 @@ module.exports = async (cb) => {
     try {
         const accounts = await web3.eth.getAccounts();
 
-        bridgeBank = await BridgeBank.deployed()
+        bridgeBank = await BridgeBank.at(process.env.BRIDGEBANK_ADDRESS)
         console.log(await bridgeBank.bulkWhitelistUpdateLimits(addresses, limits, {
             from: accounts[0],
             gas: 300000 // 300,000 gas

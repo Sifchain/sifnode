@@ -31,8 +31,9 @@
     "truffle-contract": "^4.0.31",
     "truffle-contract-size": "^2.0.0",
     "utf8": "^3.0.0",
-    "web3": "^1.2.6",
-    "solidity-coverage": "^0.7.11"
+    "solidity-coverage": "^0.7.11",
+    "winston": "^3.3.3",
+    "yargs": "^16"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.6",
@@ -46,13 +47,23 @@
     "openzeppelin-solidity": "^2.1.3",
     "shelljs": "^0.8.4",
     "truffle": "^5.1.48",
-    "web3": "^1.2.6",
+    "web3": "^1.3.1",
     "web3-utils": "^1.3.0"
   },
   "scripts": {
     "develop": "ganache-cli -q -i 5777 -p 7545 -m 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat'",
     "migrate": "npx truffle migrate --reset",
     "advance": "npx truffle exec scripts/advanceBlock.js",
+    "integrationtest:approve": "npx truffle exec scripts/test/approve.js",
+    "integrationtest:createEthereumAddress": "npx truffle exec scripts/test/createEthereumAddress.js",
+    "integrationtest:sendBurnTx": "npx truffle exec scripts/test/sendBurnTx.js",
+    "integrationtest:sendLockTx": "npx truffle exec scripts/test/sendLockTx.js",
+    "integrationtest:sendBulkLockTx": "npx truffle exec scripts/test/sendBulkLockTx.js",
+    "integrationtest:waitForBlock": "npx truffle exec scripts/test/waitForBlock.js",
+    "integrationtest:getTokenBalance": "npx truffle exec scripts/test/getTokenBalance.js",
+    "integrationtest:enableNewToken": "npx truffle exec scripts/test/enableNewToken.js",
+    "integrationtest:ganacheAccounts": "npx truffle exec scripts/test/ganacheAccounts.js",
+    "integrationtest:setTokenLockBurnLimit": "npx truffle exec scripts/setTokenLockBurnLimit.js",
     "peggy:abi": "node scripts/formatAbi.js",
     "peggy:address": "npx truffle exec scripts/getBridgeRegistryAddress.js",
     "peggy:validators": "npx truffle exec scripts/getValidators.js",

@@ -4,6 +4,7 @@ package ethbridge
 import (
 	"fmt"
 	"strconv"
+	"sync"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -40,16 +41,24 @@ func NewHandler(
 func handleMsgCreateEthBridgeClaim(
 	ctx sdk.Context, cdc *codec.Codec, bridgeKeeper Keeper, msg MsgCreateEthBridgeClaim,
 ) (*sdk.Result, error) {
+	var mutex = &sync.RWMutex{}
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	status, err := bridgeKeeper.ProcessClaim(ctx, types.EthBridgeClaim(msg))
 	if err != nil {
+		fmt.Printf("Sifnode handleMsgCreateEthBridgeClaim 46 %s\n", err.Error())
 		return nil, err
 	}
 	if status.Text == oracle.SuccessStatusText {
 		if err = bridgeKeeper.ProcessSuccessfulClaim(ctx, status.FinalClaim); err != nil {
+			fmt.Printf("Sifnode handleMsgCreateEthBridgeClaim 51 %s\n", err.Error())
 			return nil, err
 		}
 	}
+	// set mutex lock to false
 
+	fmt.Printf("Sifnode handleMsgCreateEthBridgeClaim 56 all done, emit events statue is %s\n", status.Text.String())
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
@@ -58,7 +67,9 @@ func handleMsgCreateEthBridgeClaim(
 		),
 		sdk.NewEvent(
 			types.EventTypeCreateClaim,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.ValidatorAddress.String()),
 			sdk.NewAttribute(types.AttributeKeyEthereumSender, msg.EthereumSender.String()),
+			sdk.NewAttribute(types.AttributeKeyEthereumSenderNonce, strconv.Itoa(msg.Nonce)),
 			sdk.NewAttribute(types.AttributeKeyCosmosReceiver, msg.CosmosReceiver.String()),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
@@ -87,7 +98,13 @@ func handleMsgBurn(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+	var coins sdk.Coins
+
+	if msg.Symbol == CethSymbol {
+		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount.Add(msg.Amount)))
+	} else {
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
+	}
 	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, coins); err != nil {
 		return nil, err
 	}
@@ -127,7 +144,7 @@ func handleMsgLock(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 	if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, coins); err != nil {
 		return nil, err
 	}
@@ -158,7 +175,6 @@ func handleMsgUpdateWhiteListValidator(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
 	bridgeKeeper Keeper, msg MsgUpdateWhiteListValidator,
 ) (*sdk.Result, error) {
-	fmt.Println("handleMsgUpdateWhiteListValidator ")
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())

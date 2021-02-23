@@ -8,6 +8,8 @@ spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
+  strategy:
+    type: {{ .Values.strategyType }}
   selector:
     matchLabels:
       {{- include "ebrelayer.selectorLabels" . | nindent 6 }}
@@ -30,18 +32,15 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "ebrelayer init $NODE_HOST $ETH_WEBSOCKET_ADDRESS $ETH_BRIDGE_REGISTRY_ADDRESS $MONIKER \"{{ .Values.ebrelayer.mnemonic }}\" --chain-id $CHAINNET --rpc-url $NODE_HOST"]
+          args: ["-c", "ebrelayer init {{ .Values.ebrelayer.args.nodeHost }} {{ .Values.ebrelayer.args.ethWebsocketAddress }} {{ .Values.ebrelayer.args.ethBridgeRegistryAddress }} $MONIKER \"{{ .Values.ebrelayer.args.mnemonic }}\" --chain-id $CHAINNET --rpc-url {{ .Values.ebrelayer.args.nodeHost }} --gas {{ .Values.ebrelayer.args.gas }} --gas-prices {{ .Values.ebrelayer.args.gasPrices }}"]
+          volumeMounts:
+            - name: data
+              mountPath: /relayerdb
           env:
-            - name: NODE_HOST
-              value: {{ .Values.ebrelayer.env.nodeHost }}
-            - name: CHAINNET
-              value: {{ .Values.ebrelayer.env.chainnet }}
-            - name: ETH_WEBSOCKET_ADDRESS
-              value: {{ .Values.ebrelayer.env.ethWebsocketAddress }}
-            - name: ETH_BRIDGE_REGISTRY_ADDRESS
-              value: {{ .Values.ebrelayer.env.ethBridgeRegistryAddress }}
             - name: MONIKER
               value: {{ .Values.ebrelayer.env.moniker }}
+            - name: CHAINNET
+              value: {{ .Values.ebrelayer.env.chainnet }}
             - name: ETHEREUM_PRIVATE_KEY
               valueFrom:
                 secretKeyRef:
@@ -49,6 +48,18 @@ spec:
                   key: ethPrivateKey
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+      - name: data
+      {{- if and .Values.persistence.enabled (not .Values.persistence.hostPath) }}
+        persistentVolumeClaim:
+          claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "ebrelayer.fullname" . }}{{- end }}
+        {{- else if and .Values.persistence.enabled .Values.persistence.hostPath }}
+        hostPath:
+          path: {{ .Values.persistence.hostPath }}
+          type: DirectoryOrCreate
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

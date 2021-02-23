@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -38,6 +39,7 @@ type CLIUtils interface {
 	SetConfigTrustNode(bool) (*string, error)
 	AddKey(string, string, string, string) (*string, error)
 	AddGenesisAccount(string, string, []string) (*string, error)
+	AddFaucet(string) (*string, error)
 	AddGenesisCLPAdmin(string, string) (*string, error)
 	SetGenesisOracleAdmin(string, string) (*string, error)
 	GenerateGenesisTxn(string, string, string, string, string, string, string, string, string) (*string, error)
@@ -139,6 +141,10 @@ func (c CLI) AddKey(name, mnemonic, keyPassword, cliDir string) (*string, error)
 
 func (c CLI) AddGenesisAccount(address, nodeDir string, coins []string) (*string, error) {
 	return c.shellExec("sifnoded", "add-genesis-account", address, strings.Join(coins[:], ","), "--home", nodeDir)
+}
+
+func (c CLI) AddFaucet(amount string) (*string, error) {
+	return c.shellExec("sifnoded", "add-faucet", amount)
 }
 
 func (c CLI) AddGenesisCLPAdmin(address, nodeDir string) (*string, error) {
@@ -246,7 +252,10 @@ func (c CLI) shellExecInput(cmd string, inputs [][]byte, args ...string) (*strin
 
 	buf := bytes.NewBuffer(nil)
 	go func() {
-		io.Copy(buf, stdout)
+		_, err := io.Copy(buf, stdout)
+		if err != nil {
+			log.Println("io.Copy failed: ", err.Error())
+		}
 	}()
 
 	if err := cm.Start(); err != nil {
@@ -254,7 +263,10 @@ func (c CLI) shellExecInput(cmd string, inputs [][]byte, args ...string) (*strin
 	}
 
 	for _, i := range inputs {
-		stdin.Write(i)
+		_, err := stdin.Write(i)
+		if err != nil {
+			log.Println("Write failed: ", err.Error())
+		}
 	}
 
 	if err := cm.Wait(); err != nil {

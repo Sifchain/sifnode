@@ -1,9 +1,12 @@
 <template>
   <div class="positioner">
-    <LoaderCircle :black="black" :success="success" />
+    <LoaderCircle :black="black" :success="success || failed" />
     <div class="tick-holder">
       <transition name="reveal">
         <LoaderTick v-if="success" class="tick" />
+      </transition>
+      <transition name="reveal">
+        <LoaderFailed v-if="failed" class="tick" />
       </transition>
     </div>
   </div>
@@ -13,12 +16,14 @@
 import { defineComponent } from "vue";
 import LoaderTick from "@/components/shared/LoaderTick.vue";
 import LoaderCircle from "@/components/shared/LoaderCircle.vue";
+import LoaderFailed from "@/components/shared/LoaderFailed.vue";
 
 export default defineComponent({
-  components: { LoaderCircle, LoaderTick },
+  components: { LoaderCircle, LoaderTick, LoaderFailed },
   props: {
     black: { type: Boolean, default: false },
     success: { type: Boolean, default: false },
+    failed: { type: Boolean, default: false },
   },
 });
 </script>

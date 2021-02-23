@@ -1,0 +1,58 @@
+replicaCount: 1
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+image:
+  repository: sifchain/sifnodecli
+  pullPolicy: Always
+  tag: "testnet"
+
+sifnodeApi:
+  args:
+    nodeHost:
+
+service:
+  type: LoadBalancer
+
+ingress:
+  enabled: false
+  annotations: {}
+  hosts:
+    - host: sifnode-api.local
+      paths: []
+  tls: []
+
+resources:
+  limits:
+    cpu: 0.5
+    memory: 512Mi
+  requests:
+    cpu: 0.5
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+strategyType: Recreate
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

@@ -25,7 +25,7 @@ jobs:
 
       - name: Build image
         run: |
-          make CHAINNET=${{ steps.vars.outputs.sha_short }} BINARY=sifnoded build-image
+          make CHAINNET=testnet IMAGE_TAG=${{ steps.vars.outputs.sha_short }} BINARY=sifnoded build-image
 
       - name: Push image
         run: |

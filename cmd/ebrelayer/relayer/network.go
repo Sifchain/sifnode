@@ -34,3 +34,17 @@ func SetupWebsocketEthClient(ethURL string) (*ethclient.Client, error) {
 
 	return client, nil
 }
+
+// SetupRPCEthClient returns boolean indicating if a URL is valid websocket ethclient
+func SetupRPCEthClient(ethURL string) (*ethclient.Client, error) {
+	if strings.TrimSpace(ethURL) == "" {
+		return nil, nil
+	}
+
+	client, err := ethclient.Dial(ethURL)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}

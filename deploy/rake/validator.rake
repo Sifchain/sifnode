@@ -1,7 +1,7 @@
 desc "validator operations"
 namespace :validator do
   desc "Stake a node so it can participate in consensus"
-  task :stake, [:chainnet, :moniker, :amount, :pub_key, :node] do |t, args|
+  task :stake, [:chainnet, :moniker, :amount, :gas, :pub_key, :node] do |t, args|
     node = if args[:node].nil?
              "tcp://127.0.0.1:26657"
            else
@@ -16,7 +16,7 @@ namespace :validator do
             --pubkey=#{args[:pub_key]} \
             --chain-id=#{args[:chainnet]} \
             --min-self-delegation="1" \
-            --gas="auto" \
+            --gas-prices=#{args[:gas]} \
             --moniker=#{args[:moniker]} \
             --from=#{args[:moniker]} \
             --keyring-backend=file \
@@ -29,7 +29,7 @@ namespace :validator do
   desc "Expose operations"
   namespace :expose do
     desc "Expose the Sifnode validator public key"
-    task :pub_key, [:chainnet, :provider, :namespace] do |t, args|
+    task :pub_key, [:cluster, :provider, :namespace] do |t, args|
       pod_name = pod_name(args)
       if pod_name.nil?
         puts "Please check the supplied moniker; unable to find any pods!"

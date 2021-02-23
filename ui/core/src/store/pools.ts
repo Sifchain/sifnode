@@ -1,11 +1,17 @@
 import { reactive } from "@vue/reactivity";
 
-import { Pool } from "../entities";
+import { LiquidityProvider, Pool } from "../entities";
 
 export type PoolStore = {
   [s: string]: Pool;
 };
 
-export const pools = reactive<PoolStore>({}) as PoolStore;
+export type AccountPool = { lp: LiquidityProvider; pool: string };
+export type AccountPoolStore = {
+  [address: string]: {
+    [pool: string]: AccountPool;
+  };
+};
 
-export const accountpools = reactive<PoolStore>({}) as PoolStore;
+export const pools = reactive<PoolStore>({}) as PoolStore;
+export const accountpools = reactive<AccountPoolStore>({}) as AccountPoolStore;

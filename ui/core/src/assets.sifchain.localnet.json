@@ -5,7 +5,7 @@
       "decimals": 18,
       "name": "Rowan",
       "address": "",
-      "imageUrl": "/images/siflogo.png",
+      "imageUrl": "./images/siflogo.png",
       "network": "sifchain"
     },
     {

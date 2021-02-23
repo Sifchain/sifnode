@@ -22,9 +22,10 @@
     "chain:start:all": "concurrently -r -k \"yarn chain:sif\" \"yarn chain:eth\"",
     "core:test:with-peggy": "concurrently -r -k -s first \"yarn chain:peggy\" \"yarn core:test\"",
     "core:test": "cd core && yarn test",
+    "core:compile": "cd core && yarn compile",
     "core:watch": "cd core && yarn watch",
     "core:build": "cd core && yarn build",
-    "core:test:all": "concurrently -r -k -s first \"yarn chain:start:all\" \"sleep 5 && yarn chain:migrate && yarn core:test:with-peggy\"",
+    "core:test:all": "yarn core:compile && concurrently -r -k -s first \"yarn chain:start:all\" \"sleep 5 && yarn chain:migrate && yarn core:test:with-peggy\"",
     "stack": "./scripts/run-stack.sh",
     "build": "yarn chain:compile:peggy && yarn core:build && yarn app:build",
     "test": "yarn core:test:all"
@@ -37,7 +38,8 @@
     "lerna": "^3.22.1",
     "truffle": "^5.1.48",
     "vercel": "^21.0.1",
-    "wait-on": "^5.2.1"
+    "wait-on": "^5.2.1",
+    "wscat": "^4.0.1"
   },
   "workspaces": {
     "packages": [

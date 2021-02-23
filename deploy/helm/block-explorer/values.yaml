@@ -49,7 +49,12 @@ ingress:
       paths: []
   tls: []
 
-resources: {}
+resources:
+  requests:
+    cpu: 1
+    memory: 2Gi
+  limits:
+    memory: 4Gi
 
 autoscaling:
   enabled: false

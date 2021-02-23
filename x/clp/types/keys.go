@@ -17,7 +17,9 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
-	NativeSymbol = "rowan"
+	NativeSymbol      = "rowan"
+	PoolThrehold      = "1000000000000000000"
+	PoolUnitsMinValue = "1000000000"
 
 	MaxSymbolLength = 10
 	MaxWbasis       = 10000
@@ -44,4 +46,21 @@ func GetPoolKey(externalTicker string, nativeTicker string) ([]byte, error) {
 func GetLiquidityProviderKey(externalTicker string, lp string) []byte {
 	key := []byte(fmt.Sprintf("%s_%s", externalTicker, lp))
 	return append(LiquidityProviderPrefix, key...)
+}
+
+func GetNormalizationMap() map[string]int64 {
+	m := make(map[string]int64)
+	m["cel"] = 4
+	m["ausdc"] = 6
+	m["usdt"] = 6
+	m["usdc"] = 6
+	m["cro"] = 8
+	m["cdai"] = 8
+	m["wbtc"] = 8
+	m["ceth"] = 8
+	m["renbtc"] = 8
+	m["cusdc"] = 8
+	m["husd"] = 8
+	m["ampl"] = 9
+	return m
 }

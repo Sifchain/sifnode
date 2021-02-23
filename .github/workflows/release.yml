@@ -1,41 +1,16 @@
-name: Release and Upgrade Images
+name: Release
 
 on:
   release:
-    type: created
+    types: [published]
 
 jobs:
   release:
-    name: release
+    name: Release
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-
-      - name: Build
-        run: |
-          make install
-
-      - name: Set env vars
-        run: |
-          echo "SIFNODED_SHA256_CHECKSUM=$(sha256sum $GOPATH/bin/sifnoded | cut -c 1-64)" >> $GITHUB_ENV
-
-      - name: Create zip
-        run: |
-          mkdir -p /tmp/bin && mv $GOPATH/bin/sifnoded /tmp/bin/sifnoded
-          cd /tmp/ && zip -r09 sifnoded.zip bin/
-
-      - name: Upload sifnoded to S3
-        uses: jakejarvis/s3-sync-action@master
-        with:
-          args: --acl public-read --follow-symlinks --delete
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-west-2
-          AWS_S3_BUCKET: finance.sifchain.release
-          SOURCE_DIR: /tmp/sifnoded.zip
-          DEST_DIR: ${{ env.SIFNODED_SHA256_CHECKSUM }}/sifnoded.zip
 
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
@@ -43,21 +18,41 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v2.x
 
+      - if: contains(github.ref, 'testnet')
+        run: |
+          echo "CHAINNET=testnet" >> "$GITHUB_ENV"
+
+      - if: contains(github.ref, 'mainnet')
+        run: |
+          echo "CHAINNET=mainnet" >> "$GITHUB_ENV"
+
       - name: Build docker images
         run: |
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=sifnodecli build-image
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=sifcrg build-image
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
-          cd ./api/openapi
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} build-image-swagger-iu
-          make CHAINNET=${{ env.GITHUB_REF_SLUG }} build-image-prim
+          echo ${{ env.CHAINNET }}
+          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnoded build-image
+          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifnodecli build-image
+          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=ebrelayer build-image
+      #          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} BINARY=sifcrg build-image
+      #          cd ./api/openapi
+      #          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} build-image-swagger-iu
+      #          make CHAINNET=${{ env.CHAINNET }} IMAGE_TAG=${{ env.GITHUB_REF_SLUG }} build-image-prim
 
       - name: Push docker images
         run: |
           docker push sifchain/sifnoded:${{ env.GITHUB_REF_SLUG }}
           docker push sifchain/sifnodecli:${{ env.GITHUB_REF_SLUG }}
-          docker push sifchain/sifcrg:${{ env.GITHUB_REF_SLUG }}
-          docker push sifchain/swagger-ui:${{ env.GITHUB_REF_SLUG }}
-          docker push sifchain/prism:${{ env.GITHUB_REF_SLUG }}
           docker push sifchain/ebrelayer:${{ env.GITHUB_REF_SLUG }}
+      #          docker push sifchain/sifcrg:${{ env.GITHUB_REF_SLUG }}
+      #          docker push sifchain/swagger-ui:${{ env.GITHUB_REF_SLUG }}
+      #          docker push sifchain/prism:${{ env.GITHUB_REF_SLUG }}
+
+      - name: Release a new sifnoded binary
+        uses: ./deploy/release
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          goos: linux
+          goarch: amd64
+          goversion: "https://dl.google.com/go/go1.15.1.linux-amd64.tar.gz"
+          project_path: "./cmd/sifnoded"
+          binary_name: "sifnoded"
+          sha256sum: true
