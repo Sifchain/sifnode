@@ -50,6 +50,19 @@ export default ({
 
         store.accountpools[state.address][pool] = { lp, pool };
       });
+
+      // Delete accountpools
+      const currentPoolIds = accountPoolSymbols.map(id => `${id}_rowan`);
+      if (store.accountpools[state.address]) {
+        const existingPoolIds = Object.keys(store.accountpools[state.address]);
+        const disjunctiveIds = existingPoolIds.filter(
+          id => !currentPoolIds.includes(id)
+        );
+
+        disjunctiveIds.forEach(poolToRemove => {
+          delete store.accountpools[state.address][poolToRemove];
+        });
+      }
     }
   }
 
