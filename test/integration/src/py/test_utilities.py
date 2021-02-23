@@ -2,9 +2,10 @@ import json
 import logging
 import os
 import subprocess
-import time
 from dataclasses import dataclass
 from functools import lru_cache
+
+import time
 
 n_wait_blocks = 50  # number of blocks to wait for the relayer to act
 burn_gas_cost = 65000000000 * 248692  # see x/ethbridge/types/msgs.go for gas
@@ -360,14 +361,6 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
     return result
 
 
-def lock_rowan(user, amount):
-    command_line = """yes {} |sifnodecli tx ethbridge lock {} \
-            0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rowan \
-            --ethereum-chain-id=5777 --from={} --yes -o json
-    """.format(network_password, get_user_account(user, network_password), amount, user)
-    return get_shell_output(command_line)
-
-
 currency_pairs = {
     "eth": "ceth",
     "ceth": "eth",
@@ -531,3 +524,33 @@ def create_new_currency(
         f"--decimals {decimals} "
         f"{network_element} "
     )
+
+
+def read_json_file(json_filename):
+    with open(json_filename, mode="r") as json_file:
+        contents = json_file.read()
+        return json.loads(contents)
+
+
+@lru_cache(maxsize=1)
+def contract_address(
+        smart_contract_artifact_dir: str,
+        contract_name: str,
+        ethereum_network_id,
+):
+    artifacts = contract_artifacts(smart_contract_artifact_dir)
+    return artifacts[contract_name]["networks"][str(ethereum_network_id)]["address"]
+
+
+@lru_cache(maxsize=1)
+def contract_artifacts(
+        smart_contract_artifact_dir: str,
+):
+    """returns json for all the artifacts in smart_contract_artifact_dir"""
+    files = os.listdir(smart_contract_artifact_dir)
+    result = {}
+    for file in filter(lambda f: ".json" in f, files):
+        logging.info(f"fileis: {file}")
+        item = read_json_file(os.path.join(smart_contract_artifact_dir, file))
+        result[file[:-5]] = item
+    return result

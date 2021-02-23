@@ -27,7 +27,7 @@ def test_can_create_a_new_token_and_peg_it(
         smart_contracts_dir,
         bridgebank_address,
         solidity_json_path,
-        operator_account,
+        operator_address,
         ethereum_network,
         source_ethereum_address,
 ):
@@ -42,7 +42,7 @@ def test_can_create_a_new_token_and_peg_it(
         smart_contracts_dir=smart_contracts_dir,
         bridgebank_address=bridgebank_address,
         solidity_json_path=solidity_json_path,
-        operator_address=operator_account,
+        operator_address=operator_address,
         ethereum_network=ethereum_network
     )
     request = build_request_for_new_sifchain_address(
