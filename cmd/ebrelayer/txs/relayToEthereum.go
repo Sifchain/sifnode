@@ -24,10 +24,6 @@ const (
 	transactionInterval = 60 * time.Second
 )
 
-var (
-	nextNonce uint64 = 0
-)
-
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
 func RelayProphecyClaimToEthereum(provider string, contractAddress common.Address, event types.Event,
 	claim ProphecyClaim, key *ecdsa.PrivateKey) error {
@@ -55,7 +51,6 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		return err
 	}
 
-	fmt.Printf("After tx nextNonce is %d\n:", nextNonce)
 	fmt.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
 
 	// Get the transaction receipt
@@ -111,12 +106,25 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	transactOptsAuth := bind.NewKeyedTransactor(key)
 
 	log.Printf("ethereum tx current nonce from client api is %d\n", nonce)
-	log.Printf("ethereum tx current nonce from local storage is %d\n", nextNonce)
+
+	fmt.Println("suggested gas price: ", gasPrice)
+
+	gasPrice = gasPrice.Mul(gasPrice, big.NewInt(2))
+	fmt.Println("suggested gas price after multiplying by 2: ", gasPrice)
+
+	quarterGasPrice := big.NewInt(0)
+	quarterGasPrice = quarterGasPrice.Div(gasPrice, big.NewInt(4))
+	fmt.Println("quarterGasPrice: ", quarterGasPrice)
+	fmt.Println("gasPrice after: ", gasPrice)
+
+	gasPrice.Sub(gasPrice, quarterGasPrice)
+	fmt.Println("suggested gas price after subtracting 1/4: ", gasPrice)
 
 	transactOptsAuth.Nonce = big.NewInt(int64(nonce))
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 	transactOptsAuth.GasPrice = gasPrice
+
 	log.Println("transactOptsAuth.Nonce: ", transactOptsAuth.Nonce)
 
 	var targetContract ContractRegistry
