@@ -174,7 +174,7 @@ describe("EthbridgeService", () => {
       ethereumRecipient: getEthAddress(),
       feeAmount: AssetAmount(
         Asset.get("ceth"),
-        JSBI.BigInt("18332015000000000")
+        JSBI.BigInt("54080000000000000")
       ),
     });
 
@@ -183,7 +183,7 @@ describe("EthbridgeService", () => {
         type: "ethbridge/MsgLock",
         value: {
           amount: "100000000000000000000",
-          ceth_amount: "18332015000000000",
+          ceth_amount: "54080000000000000",
           cosmos_sender: getSifAddress(),
           ethereum_chain_id: `${ethereumChainId}`,
           ethereum_receiver: getEthAddress(),
