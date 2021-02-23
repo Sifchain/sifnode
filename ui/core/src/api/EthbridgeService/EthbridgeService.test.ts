@@ -109,7 +109,7 @@ describe("EthbridgeService", () => {
     const amountToSend = AssetAmount(CETH, "2");
     const feeAmount = AssetAmount(
       Asset.get("ceth"),
-      JSBI.BigInt("16164980000000000")
+      JSBI.BigInt("58560000000000000")
     );
 
     const message = await EthbridgeService.burnToEthereum({
@@ -126,7 +126,7 @@ describe("EthbridgeService", () => {
         type: "ethbridge/MsgBurn",
         value: {
           amount: "2000000000000000000",
-          ceth_amount: "16164980000000000",
+          ceth_amount: "58560000000000000",
           cosmos_sender: getSifAddress(),
           symbol: "ceth",
           ethereum_chain_id: `${ethereumChainId}`,
