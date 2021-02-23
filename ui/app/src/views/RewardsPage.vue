@@ -37,7 +37,7 @@ export default defineComponent({
           
           <span v-if="data.liqValRewards === ''">TBD</span>
           <span v-else>
-            {{data.liqValRewards}} Rowan
+            {{data.liqValRewards}} % APY
           </span>
         </p>
         <p class="mb-8">
@@ -45,8 +45,11 @@ export default defineComponent({
             <a class="ul" href="https://docs.sifchain.finance/roles/validators#block-rewards" target="_blank">Block Rewards</a>:
            (variable)
         </p>
-        <p class="mb-9">
+        <p class="mb-8">
           Learn more about staking and delegating <a class="ul" href="https://docs.sifchain.finance/roles/validators" target="_blank">here</a>!
+        </p>
+        <p class="mb-9">
+          Delegation instructions <a class="ul" href="https://docs.sifchain.finance/roles/delegators#how-to-delegate" target="_blank">here</a>
         </p>
       </div>
     </div>
