@@ -1,5 +1,6 @@
 import copy
 import logging
+import os
 
 import pytest
 
@@ -8,18 +9,29 @@ from burn_lock_functions import decrease_log_level, force_log_level
 
 
 @pytest.fixture
-def smart_contracts_dir():
-    return test_utilities.get_required_env_var("SMART_CONTRACTS_DIR")
+def smart_contracts_dir(sifnode_base_dir):
+    return test_utilities.get_optional_env_var("SMART_CONTRACTS_DIR", os.path.join(sifnode_base_dir, "smart-contracts"))
+
+
+@pytest.fixture
+def sifnode_base_dir():
+    return test_utilities.get_required_env_var("BASEDIR")
+
+
+@pytest.fixture
+def smart_contract_artifact_dir(smart_contracts_dir):
+    result = test_utilities.get_optional_env_var("SMART_CONTRACT_ARTIFACT_DIR", None)
+    return result if result else os.path.join(smart_contracts_dir, "build/contracts")
 
 
 @pytest.fixture
 def validator_password():
-    return test_utilities.get_optional_env_var("OWNER_PASSWORD", None)
+    return test_utilities.get_optional_env_var("VALIDATOR1_PASSWORD", None)
 
 
 @pytest.fixture
 def validator_address():
-    return test_utilities.get_optional_env_var("OWNER_ADDR", None)
+    return test_utilities.get_optional_env_var("VALIDATOR1_ADDR", None)
 
 
 @pytest.fixture
@@ -28,13 +40,24 @@ def integration_dir():
 
 
 @pytest.fixture
-def bridgebank_address():
-    return test_utilities.get_required_env_var("BRIDGE_BANK_ADDRESS")
+def bridgebank_address(smart_contract_artifact_dir, ethereum_network_id):
+    return env_or_truffle_artifact("BridgeBank", "BRIDGE_BANK_ADDRESS", smart_contract_artifact_dir,
+                                   ethereum_network_id)
+
+
+def env_or_truffle_artifact(contract_name, contract_env_var, smart_contract_artifact_dir, ethereum_network_id):
+    result = test_utilities.get_optional_env_var(contract_env_var, None)
+    return result if result else test_utilities.contract_address(
+        smart_contract_artifact_dir=smart_contract_artifact_dir,
+        contract_name=contract_name,
+        ethereum_network_id=ethereum_network_id
+    )
 
 
 @pytest.fixture
-def bridgetoken_address():
-    return test_utilities.get_required_env_var("BRIDGE_TOKEN_ADDRESS")
+def bridgetoken_address(smart_contract_artifact_dir, ethereum_network_id):
+    return env_or_truffle_artifact("BridgeToken", "BRIDGE_TOKEN_ADDRESS", smart_contract_artifact_dir,
+                                   ethereum_network_id)
 
 
 @pytest.fixture
@@ -109,6 +132,22 @@ def chain_id(is_ropsten_testnet):
 
 
 @pytest.fixture
+def ethereum_network_id(is_ropsten_testnet):
+    result = test_utilities.get_optional_env_var("ETHEREUM_NETWORK_ID", None)
+    if result:
+        return result
+    else:
+        result = 3 if is_ropsten_testnet else 5777
+        return result
+
+
+@pytest.fixture
+def ethereum_chain_id(ethereum_network_id):
+    """For now, we always use the same network id and chain id"""
+    return ethereum_network_id
+
+
+@pytest.fixture
 def ropsten_wait_time():
     return 30 * 60
 
@@ -131,13 +170,37 @@ def sifchain_fees():
 
 
 @pytest.fixture
-def operator_account(smart_contracts_dir):
-    return test_utilities.get_optional_env_var("OPERATOR_ACCOUNT", test_utilities.ganache_owner_account(smart_contracts_dir))
+def operator_address(smart_contracts_dir):
+    return test_utilities.get_optional_env_var("OPERATOR_ADDRESS",
+                                               test_utilities.ganache_owner_account(smart_contracts_dir))
+
+
+@pytest.fixture
+def operator_private_key(ganache_keys_file, operator_address):
+    result = test_utilities.get_optional_env_var(
+        "OPERATOR_PRIVATE_KEY",
+        test_utilities.ganache_private_key(ganache_keys_file, operator_address)
+    )
+    os.environ["OPERATOR_PRIVATE_KEY"] = result
+    return result
+
+
+@pytest.fixture
+def ganache_keys_file(sifnode_base_dir):
+    return test_utilities.get_optional_env_var(
+        "GANACHE_KEYS_FILE",
+        os.path.join(sifnode_base_dir, "test/integration/vagrant/data/ganachekeys.json")
+    )
 
 
 @pytest.fixture
 def source_ethereum_address(is_ropsten_testnet, smart_contracts_dir):
-    """account with some starting eth that can be transferred out"""
+    """
+    Account with some starting eth that can be transferred out.
+
+    Our test wallet can only use one address/privatekey combination,
+    so if you set OPERATOR_ACCOUNT you have to set ETHEREUM_PRIVATE_KEY to the operator private key
+    """
     addr = test_utilities.get_optional_env_var("ETHEREUM_ADDRESS", "")
     if addr:
         logging.debug("using ETHEREUM_ADDRESS provided for source_ethereum_address")
@@ -165,7 +228,8 @@ def ganache_timed_blocks(integration_dir):
 def no_whitelisted_validators(integration_dir):
     """restart sifchain with no whitelisted validators, execute test, then restart with validators"""
     yield test_utilities.get_shell_output(f"ADD_VALIDATOR_TO_WHITELIST= bash {integration_dir}/setup_sifchain.sh")
-    test_utilities.get_shell_output(f". {integration_dir}/vagrantenv.sh; ADD_VALIDATOR_TO_WHITELIST=true bash {integration_dir}/setup_sifchain.sh")
+    test_utilities.get_shell_output(
+        f". {integration_dir}/vagrantenv.sh; ADD_VALIDATOR_TO_WHITELIST=true bash {integration_dir}/setup_sifchain.sh")
 
 
 @pytest.fixture(scope="function")

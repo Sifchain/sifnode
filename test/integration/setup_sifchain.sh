@@ -28,8 +28,8 @@ set_persistant_env_var NETDEF_JSON $datadir/netdef.json $envexportfile
 cat $NETDEF | to_json > $NETDEF_JSON
 
 set_persistant_env_var MONIKER $(cat $NETDEF_JSON | jq -r '.[0].moniker') $envexportfile
-set_persistant_env_var OWNER_PASSWORD $(cat $NETDEF_JSON | jq -r '.[0].password') $envexportfile
-set_persistant_env_var OWNER_ADDR $(cat $NETDEF_JSON | jq -r '.[0].address') $envexportfile
+set_persistant_env_var VALIDATOR1_PASSWORD $(cat $NETDEF_JSON | jq -r '.[0].password') $envexportfile
+set_persistant_env_var VALIDATOR1_ADDR $(cat $NETDEF_JSON | jq -r '.[0].address') $envexportfile
 set_persistant_env_var MNEMONIC "$(cat $NETDEF_JSON | jq -r '.[0].mnemonic')" $envexportfile
 set_persistant_env_var CHAINDIR $NETWORKDIR/validators/$CHAINNET/$MONIKER $envexportfile
 set_persistant_env_var SIFNODED_LOG $datadir/logs/sifnoded.log $envexportfile

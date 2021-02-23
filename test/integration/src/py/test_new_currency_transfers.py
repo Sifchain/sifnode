@@ -21,13 +21,14 @@ def build_request_for_new_sifchain_address(basic_transfer_request, source_ethere
 
 
 @pytest.mark.parametrize("token_length", [7, 12])
+@pytest.mark.usefixtures("operator_private_key")
 def test_can_create_a_new_token_and_peg_it(
         token_length: int,
         basic_transfer_request: EthereumToSifchainTransferRequest,
         smart_contracts_dir,
         bridgebank_address,
         solidity_json_path,
-        operator_account,
+        operator_address,
         ethereum_network,
         source_ethereum_address,
 ):
@@ -42,7 +43,7 @@ def test_can_create_a_new_token_and_peg_it(
         smart_contracts_dir=smart_contracts_dir,
         bridgebank_address=bridgebank_address,
         solidity_json_path=solidity_json_path,
-        operator_address=operator_account,
+        operator_address=operator_address,
         ethereum_network=ethereum_network
     )
     request = build_request_for_new_sifchain_address(
@@ -55,6 +56,7 @@ def test_can_create_a_new_token_and_peg_it(
 
 
 @pytest.mark.skip(reason="fails and is too slow to mark with xfail")
+@pytest.mark.usefixtures("operator_private_key")
 def test_can_create_a_new_token_with_a_one_number_name_and_peg_it(
         smart_contracts_dir,
         bridgebank_address,
@@ -69,6 +71,7 @@ def test_can_create_a_new_token_with_a_one_number_name_and_peg_it(
 
 
 @pytest.mark.skip(reason="fails and is too slow to mark with xfail")
+@pytest.mark.usefixtures("operator_private_key")
 def test_can_create_a_new_token_with_a_one_letter_name_and_peg_it(
         smart_contracts_dir,
         bridgebank_address,
@@ -83,6 +86,7 @@ def test_can_create_a_new_token_with_a_one_letter_name_and_peg_it(
 
 
 @pytest.mark.skip(reason="fails and is too slow to mark with xfail")
+@pytest.mark.usefixtures("operator_private_key")
 def test_can_create_a_new_token_with_a_long_name_and_peg_it(
         smart_contracts_dir,
         bridgebank_address,
@@ -97,6 +101,7 @@ def test_can_create_a_new_token_with_a_long_name_and_peg_it(
 
 
 @pytest.mark.skip(reason="fails and is too slow to mark with xfail")
+@pytest.mark.usefixtures("operator_private_key")
 def test_two_currencies_with_different_capitalization_should_not_interfere_with_each_other(
         smart_contracts_dir,
         bridgebank_address,
@@ -124,6 +129,7 @@ def test_two_currencies_with_different_capitalization_should_not_interfere_with_
 
 
 @pytest.mark.skip(reason="fails and is too slow to mark with xfail")
+@pytest.mark.usefixtures("operator_private_key")
 def test_cannot_create_two_currencies_that_only_differ_in_capitalization(
         smart_contracts_dir,
         bridgebank_address,
@@ -138,6 +144,7 @@ def test_cannot_create_two_currencies_that_only_differ_in_capitalization(
 
 
 @pytest.mark.skip(reason="fails and is too slow to mark with xfail")
+@pytest.mark.usefixtures("operator_private_key")
 def test_cannot_create_two_currencies_with_the_same_name(
         smart_contracts_dir,
         bridgebank_address,
@@ -152,6 +159,7 @@ def test_cannot_create_two_currencies_with_the_same_name(
 
 
 @pytest.mark.skip(reason="fails and is too slow to mark with xfail")
+@pytest.mark.usefixtures("operator_private_key")
 def test_can_use_a_token_with_a_dash_in_the_name(
         smart_contracts_dir,
         bridgebank_address,

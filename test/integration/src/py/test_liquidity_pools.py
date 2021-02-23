@@ -333,6 +333,7 @@ def test_create_pools(
 
 
 # @pytest.mark.skip(reason="not now")
+@pytest.mark.usefixtures("operator_private_key")
 def test_pools(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
