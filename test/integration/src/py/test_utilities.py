@@ -191,7 +191,7 @@ def get_sifchain_addr_balance(sifaddress, sifnodecli_node, denom):
     return 0
 
 
-def wait_for_success(success_fn, max_seconds=30, debug_prefix=""):
+def wait_for_success(success_fn, max_seconds=80, debug_prefix=""):
     done_at_time = time.time() + max_seconds
     while True:
         try:
@@ -206,7 +206,7 @@ def wait_for_success(success_fn, max_seconds=30, debug_prefix=""):
                 time.sleep(1)
 
 
-def wait_for_successful_command(command_line, max_seconds=30):
+def wait_for_successful_command(command_line, max_seconds=80):
     return wait_for_success(
         lambda: get_shell_output_json(command_line),
         max_seconds
@@ -224,7 +224,7 @@ def get_transaction_result(tx_hash, sifnodecli_node, chain_id):
 # balance_fn is a lambda that takes no arguments
 # and returns a result.  Runs the function until
 # max_seconds have passed, or until the result is equal to target_balance
-def wait_for_balance(balance_fn, target_balance, max_seconds=30, debug_prefix="") -> int:
+def wait_for_balance(balance_fn, target_balance, max_seconds=80, debug_prefix="") -> int:
     done_at_time = time.time() + max_seconds
     while True:
         balance = balance_fn()
@@ -244,7 +244,7 @@ def wait_for_balance(balance_fn, target_balance, max_seconds=30, debug_prefix=""
                 time.sleep(1)
 
 
-def wait_for_eth_balance(transfer_request: EthereumToSifchainTransferRequest, target_balance, max_seconds=30):
+def wait_for_eth_balance(transfer_request: EthereumToSifchainTransferRequest, target_balance, max_seconds=80):
     wait_for_balance(
         lambda: get_eth_balance(transfer_request),
         target_balance,
@@ -261,12 +261,12 @@ def wait_for_sifchain_addr_balance(
         symbol,
         target_balance,
         sifchaincli_node,
-        max_seconds=30,
+        max_seconds=90,
         debug_prefix=""
 ):
     normalized_symbol = normalize_symbol(symbol)
     if not max_seconds:
-        max_seconds = 30
+        max_seconds = 90
     logging.debug(f"wait_for_sifchain_addr_balance for node {sifchaincli_node}, {normalized_symbol}, {target_balance}")
     return wait_for_balance(
         lambda: int(get_sifchain_addr_balance(sifchain_address, sifchaincli_node, normalized_symbol)),
@@ -380,7 +380,7 @@ def mirror_of(currency):
     return currency_pairs.get(currency)
 
 
-def wait_for_sif_account(sif_addr, sifchaincli_node, max_seconds=30):
+def wait_for_sif_account(sif_addr, sifchaincli_node, max_seconds=90):
     def fn():
         try:
             get_sifchain_addr_balance(sif_addr, sifchaincli_node, "eth")
@@ -391,7 +391,7 @@ def wait_for_sif_account(sif_addr, sifchaincli_node, max_seconds=30):
     wait_for_predicate(lambda: fn(), True, max_seconds, f"wait for account {sif_addr}")
 
 
-def wait_for_predicate(predicate, success_result, max_seconds=30, debug_prefix="") -> int:
+def wait_for_predicate(predicate, success_result, max_seconds=90, debug_prefix="") -> int:
     done_at_time = time.time() + max_seconds
     while True:
         if predicate():

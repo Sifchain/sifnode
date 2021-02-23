@@ -15,7 +15,7 @@ from test_utilities import get_sifchain_addr_balance, advance_n_ethereum_blocks,
     get_shell_output_json, EthereumToSifchainTransferRequest, SifchaincliCredentials, RequestAndCredentials
 
 
-default_timeout_for_ganache = 10
+default_timeout_for_ganache = 160
 
 
 def decrease_log_level(new_level=logging.WARNING):
@@ -137,7 +137,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
 def transfer_sifchain_to_ethereum(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials,
-        max_seconds: int = 30
+        max_seconds: int = 90
 ):
     logging.debug(f"transfer_sifchain_to_ethereum_json: {transfer_request.as_json()}")
 
