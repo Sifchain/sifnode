@@ -153,7 +153,6 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 		}
 		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
 	}
-	//( cusdt , p = 100000000000000000000, R= 1000000000000000000, A = 10000000000000000000, r = 0,a= 10000000)
 	if adjustExternalToken {
 		externalAssetAmount = externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt())) // Convert token which are not E18 to E18 format
 		externalAssetBalance = externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
