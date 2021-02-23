@@ -32,13 +32,15 @@ export default defineComponent({
     const allTokens = actions.peg.getSifTokens()
     const { fullSearchList, displayList } = toRefs(props);
 
+
+
     const list = filterTokenList({
       searchText,
-      tokens: fullSearchList,
+      tokens: forceShowAllATokens ? allTokens : fullSearchList,
       displayList,
     });
 
-    const tokens = forceShowAllATokens ? allTokens : disableSelected({ list, selectedTokens });
+    const tokens = disableSelected({ list, selectedTokens });
 
     function selectToken(symbol: string) {
       context.emit("tokenselected", symbol);
