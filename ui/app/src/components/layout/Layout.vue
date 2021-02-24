@@ -52,9 +52,9 @@ export default defineComponent({
   background-size: cover;
   background-position: bottom center;
   box-sizing: border-box;
-  padding-top: $header_height;
+  padding-top: 80px;
   width: 100%;
-  height: 100vh; /* TODO: header height */
+  height: 110vh; /* TODO: header height */
   display: flex;
   flex-direction: column;
   justify-content: center;
