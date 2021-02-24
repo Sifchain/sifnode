@@ -15,6 +15,7 @@ export default defineComponent({
   <div class="header">
     <div class="col-sm">
       <span>Token</span>
+
     </div>
     <div class="col-sm">
       <span>Price of Token</span>
