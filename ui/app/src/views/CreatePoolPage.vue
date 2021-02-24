@@ -105,8 +105,7 @@ export default defineComponent({
       poolFinder,
       liquidityProvider,
     });
-    console.log('aPerBRatioMessage', aPerBRatioMessage.value)
-    console.log('bPerARatioMessage', bPerARatioMessage.value)
+
     function handleNextStepClicked() {
       if (!tokenAFieldAmount.value)
         throw new Error("from field amount is not defined");
@@ -263,7 +262,7 @@ export default defineComponent({
       /></template>
       <template v-slot:default="{ requestClose }">
         <SelectTokenDialogSif
-          forceShowAllATokens="true"
+          :forceShowAllATokens="true"
           :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
           @tokenselected="requestClose"
         />

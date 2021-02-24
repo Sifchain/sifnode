@@ -180,7 +180,6 @@ export function usePoolCalculator(input: {
 
   const aPerBRatioMessage = computed(() => {
 
-    console.log('aPerbRatio', aPerBRatio.value)
     if (!aPerBRatio.value) {
       return "N/A";
     }
@@ -196,7 +195,6 @@ export function usePoolCalculator(input: {
   });
 
   const bPerARatioMessage = computed(() => {
-    console.log('bPerARatio', bPerARatio.value)
     if (!bPerARatio.value) {
       return "N/A";
     }
