@@ -1,7 +1,7 @@
 import { reactive } from "@vue/reactivity";
 import { wallet, WalletStore } from "./wallet";
 import { asset, AssetStore } from "./asset";
-import { pools, accountpools, AccountPoolStore, PoolStore } from "./pools";
+import { accountpools, AccountPoolStore, pools, PoolStore } from "./pools";
 import { notifications, NotificationsStore } from "./notifications";
 export * from "./poolFinder";
 
@@ -17,15 +17,13 @@ export type Store = {
 };
 
 export function createStore() {
-  const state = reactive<Store>({
+  return reactive<Store>({
     wallet,
     asset,
     pools,
     accountpools,
     notifications,
   }) as Store;
-
-  return state;
 }
 
 export type WithStore<T extends keyof Store = keyof Store> = {
