@@ -18,7 +18,7 @@ describe("assets with decimals", () => {
       4
     );
 
-    expect(msg).toBe("1.9996 CBTK per CATK");
+    expect(msg).toBe("1.9996 cBTK per cATK");
   });
 
   test("with zero amounts message should be nothing", () => {
@@ -53,7 +53,7 @@ describe("assets with zero decimals", () => {
         AssetAmount(ASSETS.btk, "1000000")
       )
     );
-    expect(msg).toBe("1 CBTK per CATK");
+    expect(msg).toBe("1 cBTK per cATK");
   });
 
   test("with 12 as an amount", () => {
@@ -65,6 +65,6 @@ describe("assets with zero decimals", () => {
       ),
       4
     );
-    expect(msg).toBe("1.0000 CBTK per CATK");
+    expect(msg).toBe("1.0000 cBTK per cATK");
   });
 });
