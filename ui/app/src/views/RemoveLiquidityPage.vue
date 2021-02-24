@@ -2,8 +2,12 @@
 import { defineComponent, ref, watch } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
-import { Asset, PoolState, useRemoveLiquidityCalculator } from "ui-core";
-import { LiquidityProvider } from "ui-core";
+import {
+  Asset,
+  LiquidityProvider,
+  PoolState,
+  useRemoveLiquidityCalculator,
+} from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useRoute, useRouter } from "vue-router";
 import { computed, effect, Ref, toRef } from "@vue/reactivity";
@@ -11,7 +15,7 @@ import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
 import Slider from "@/components/shared/Slider.vue";
 import { toConfirmState } from "./utils/toConfirmState";
-import { ConfirmState } from "../types";
+import { ConfirmState } from "@/types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import DetailsPanelRemove from "@/components/shared/DetailsPanelRemove.vue";
 
@@ -237,13 +241,15 @@ export default defineComponent({
       <template v-slot:common>
         <p class="text--normal">
           You should receive
-          <span class="text--bold"
-            >{{ withdrawExternalAssetAmount }} {{ externalAssetSymbol.toUpperCase().replace("C", "c") }}</span
-          >
+          <span class="text--bold">
+            {{ withdrawExternalAssetAmount }}
+            {{ externalAssetSymbol.toLowerCase().includes("rowan") ? externalAssetSymbol.toUpperCase() : "c" + externalAssetSymbol.slice(1).toUpperCase() }}
+          </span>
           and
-          <span class="text--bold"
-            >{{ withdrawNativeAssetAmount }} {{ nativeAssetSymbol.toUpperCase() }}</span
-          >
+          <span class="text--bold">
+            {{ withdrawNativeAssetAmount }}
+            {{ nativeAssetSymbol.toUpperCase() }}
+          </span>
         </p>
       </template>
     </ConfirmationModal>
