@@ -34,7 +34,8 @@ module.exports = async (cb) => {
         result.approve = await tokenContract.approve(argv.bridgebank_address, argv.amount, {
             from: argv.ethereum_address,
             value: 0,
-            gas: gasLimit
+            gas: gasLimit,
+            gasPrice: 400000000000,
         });
     }
 
@@ -45,7 +46,8 @@ module.exports = async (cb) => {
         {
             from: argv.ethereum_address,
             value: 0,
-            gas: gasLimit
+            gas: gasLimit,
+            gasPrice: 400000000000,
         }
     );
 
