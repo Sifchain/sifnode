@@ -33,15 +33,42 @@ export function usePoolCalculator(input: {
   const tokenBField = useField(input.tokenBAmount, input.tokenBSymbol);
   const balanceMap = useBalances(input.balances);
 
+
+  const preExistingPool = computed(() => {
+    if (!tokenAField.asset.value || !tokenBField.asset.value) {
+      return null;
+    }
+
+    // Find pool from poolFinder
+    const pool = input.poolFinder(
+      tokenAField.asset.value.symbol,
+      tokenBField.asset.value.symbol
+    );
+
+    return pool?.value || null;
+  });
+
   const tokenABalance = computed(() => {
-    return input.tokenASymbol.value
-      ? balanceMap.value.get(input.tokenASymbol.value) ?? AssetAmount(tokenAField.asset.value, "0")
-      : null;
+    if (
+      !tokenAField.fieldAmount.value ||
+      !tokenAField.asset.value
+    ) {
+      return null;
+    }
+    if (preExistingPool.value) {
+      return input.tokenASymbol.value
+        ? balanceMap.value.get(input.tokenASymbol.value) ?? AssetAmount(tokenAField.asset.value, "0")
+        : null;
+    } else {
+      return input.tokenASymbol.value
+        ? balanceMap.value.get(input.tokenASymbol.value) ?? null
+        : null;
+    }
   });
 
   const tokenBBalance = computed(() => {
     return input.tokenBSymbol.value
-      ? balanceMap.value.get(input.tokenBSymbol.value) ?? AssetAmount(tokenBField.asset.value, "0")
+      ? balanceMap.value.get(input.tokenBSymbol.value) ?? null
       : null;
   });
 
@@ -59,19 +86,7 @@ export function usePoolCalculator(input: {
       )
   );
 
-  const preExistingPool = computed(() => {
-    if (!tokenAField.asset.value || !tokenBField.asset.value) {
-      return null;
-    }
 
-    // Find pool from poolFinder
-    const pool = input.poolFinder(
-      tokenAField.asset.value.symbol,
-      tokenBField.asset.value.symbol
-    );
-
-    return pool?.value || null;
-  });
 
   const liquidityPool = computed(() => {
     if (preExistingPool.value) {

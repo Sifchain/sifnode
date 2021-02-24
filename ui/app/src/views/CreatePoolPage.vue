@@ -117,7 +117,6 @@ export default defineComponent({
     }
 
     async function handleAskConfirmClicked() {
-      alert('where am i')
       if (!tokenAFieldAmount.value)
         throw new Error("Token A field amount is not defined");
       if (!tokenBFieldAmount.value)
