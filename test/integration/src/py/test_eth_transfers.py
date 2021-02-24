@@ -34,7 +34,7 @@ def test_eth_to_ceth_and_back_to_eth(
         basic_transfer_request,
         rowan_source_integrationtest_env_transfer_request,
         rowan_source_integrationtest_env_credentials,
-        target_ceth_balance=10 ** 17,
+        target_ceth_balance=10 ** 18,
         target_rowan_balance=10 ** 18
     )
     # send some test account ceth back to a new ethereum address

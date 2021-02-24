@@ -20,8 +20,7 @@ export default defineComponent({
       >,
     },
   },
-  components: { Cross, Tick, DownArrow, CircleArrows, CircleHalf, PoolIcon, Back, Plus,
-    InfoBoxBlack, InfoBoxWhite},
+  components: { Cross, Tick, DownArrow, CircleArrows, CircleHalf, PoolIcon, Back, Plus, InfoBoxBlack, InfoBoxWhite },
 });
 </script>
 
