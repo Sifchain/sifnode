@@ -8,8 +8,8 @@ from functools import lru_cache
 import time
 
 n_wait_blocks = 50  # number of blocks to wait for the relayer to act
-burn_gas_cost = 65000000000 * 248692  # see x/ethbridge/types/msgs.go for gas
-lock_gas_cost = 65000000000 * 282031
+burn_gas_cost = 160000000000 * 366000  # see x/ethbridge/types/msgs.go for gas
+lock_gas_cost = 160000000000 * 338000
 highest_gas_cost = max(burn_gas_cost, lock_gas_cost)
 
 @dataclass
