@@ -132,7 +132,7 @@ def transfer_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferRe
         **status,
         "sifchain_ending_balance": target_balance,
     }
-    logging.debug(f"transfer_ethereum_to_sifchain completed {result}")
+    logging.debug(f"transfer_ethereum_to_sifchain completed {json.dumps(result)}")
     return result
 
 

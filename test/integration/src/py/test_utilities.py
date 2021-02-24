@@ -63,10 +63,10 @@ class EthereumToSifchainTransferRequest:
 
 @dataclass
 class SifchaincliCredentials:
-    keyring_passphrase: str
-    keyring_backend: str
-    from_key: str
-    sifnodecli_homedir: str
+    keyring_passphrase: str = None
+    keyring_backend: str = "test"
+    from_key: str = None
+    sifnodecli_homedir: str = None
 
     def printable_entries(self):
         return {**(self.__dict__), "keyring_passphrase": "** hidden **"}
@@ -378,14 +378,6 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
     return result
 
 
-def lock_rowan(user, amount):
-    command_line = """yes {} |sifnodecli tx ethbridge lock {} \
-            0x11111111262b236c9ac9a9a8c8e4276b5cf6b2c9 {} rowan \
-            --ethereum-chain-id=5777 --from={} --yes -o json
-    """.format(network_password, get_user_account(user, network_password), amount, user)
-    return get_shell_output(command_line)
-
-
 currency_pairs = {
     "eth": "ceth",
     "ceth": "eth",
@@ -470,7 +462,7 @@ def ganache_accounts(smart_contracts_dir: str):
 
 
 def ganache_owner_account(smart_contracts_dir: str):
-    return ganache_accounts(smart_contracts_dir)["accounts"][0]
+    return ganache_accounts(smart_contracts_dir)["accounts"][0].lower()
 
 
 def ganache_second_account(smart_contracts_dir: str):
@@ -481,7 +473,7 @@ def ganache_second_account(smart_contracts_dir: str):
     ethereum address that doesn't have anything to do with
     paying gas fees.
     """
-    return ganache_accounts(smart_contracts_dir)["accounts"][1]
+    return ganache_accounts(smart_contracts_dir)["accounts"][1].lower()
 
 
 def whitelist_token(token: str, smart_contracts_dir: str, setting: bool = True):
@@ -529,7 +521,17 @@ def display_currency_value(x: int) -> str:
     return f"({x} | {x / 10 ** 18})"
 
 
-def create_new_currency(amount, symbol, smart_contracts_dir, bridgebank_address, solidity_json_path, operator_address = "", ethereum_network: str = ""):
+def create_new_currency(
+        amount,
+        symbol,
+        token_name,
+        decimals,
+        smart_contracts_dir,
+        bridgebank_address,
+        solidity_json_path,
+        operator_address="",
+        ethereum_network: str = ""
+):
     """returns {'destination': '0x627306090abaB3A6e1400e9345bC60c78a8BEf57', 'amount': '9000000000000000000', 'newtoken_address': '0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc', 'newtoken_symbol': 'a3c626b'}"""
     if not operator_address:
         operator_address = ganache_owner_account(smart_contracts_dir)
@@ -543,6 +545,46 @@ def create_new_currency(amount, symbol, smart_contracts_dir, bridgebank_address,
         f"--amount {amount} "
         f"--limit_amount {amount} "
         f"--operator_address {operator_address} "
-        f"--ethereum_private_key_env_var ETHEREUM_PRIVATE_KEY "
+        f"--ethereum_private_key_env_var OPERATOR_PRIVATE_KEY "
+        f"--token_name \"{token_name}\" "
+        f"--decimals {decimals} "
         f"{network_element} "
     )
+
+
+def read_json_file(json_filename):
+    with open(json_filename, mode="r") as json_file:
+        contents = json_file.read()
+        return json.loads(contents)
+
+
+@lru_cache(maxsize=20)
+def contract_address(
+        smart_contract_artifact_dir: str,
+        contract_name: str,
+        ethereum_network_id,
+):
+    artifacts = contract_artifacts(smart_contract_artifact_dir)
+    return artifacts[contract_name]["networks"][str(ethereum_network_id)]["address"]
+
+
+@lru_cache(maxsize=1)
+def contract_artifacts(
+        smart_contract_artifact_dir: str,
+):
+    """returns json for all the artifacts in smart_contract_artifact_dir"""
+    files = os.listdir(smart_contract_artifact_dir)
+    result = {}
+    for file in filter(lambda f: ".json" in f, files):
+        logging.info(f"fileis: {file}")
+        item = read_json_file(os.path.join(smart_contract_artifact_dir, file))
+        result[file[:-5]] = item
+    return result
+
+
+@lru_cache(maxsize=10)
+def ganache_private_key(ganache_private_keys_file: str, address):
+    keys = read_json_file(ganache_private_keys_file)
+    pks = keys["private_keys"]
+    logging.debug(f"keysare: {pks}")
+    return pks[address]
