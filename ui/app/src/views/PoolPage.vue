@@ -25,7 +25,12 @@ export default defineComponent({
 
     // TODO: Sort pools?
     const accountPools = computed(() => {
-      if (!store.wallet.sif.address) return [];
+      if (
+        !store.accountpools ||
+        !store.wallet.sif.address ||
+        !store.accountpools[store.wallet.sif.address]
+      )
+        return [];
 
       return Object.entries(
         store.accountpools[store.wallet.sif.address] ?? {}
