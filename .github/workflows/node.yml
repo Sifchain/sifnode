@@ -27,9 +27,6 @@ jobs:
         run: |
           go get -v -t -d ./...
 
-      - name: Build
-        run: go build -v ./...
-
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -69,3 +66,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./ui/core/coverage
+          flags: ui

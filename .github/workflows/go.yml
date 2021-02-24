@@ -29,7 +29,7 @@ jobs:
         go get -v -t -d ./...
 
     - name: Build
-      run: go build -v ./...
+      run: make install
 
     - name: Test
       run: |
@@ -46,3 +46,4 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.txt
+        flags: server
