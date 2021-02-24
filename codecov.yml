@@ -13,12 +13,17 @@ coverage:
     project:
       default:
         threshold: 1% # allow this much decrease on project
+        flag_coverage_not_uploaded_behavior: exclude
       server:
         target: 70%
         flags: server
+        paths:
+          - "x/"
+          - "!x/**/client/" # ignore client package
       ui:
         target: 70%
         flags: ui
+        paths: "ui/core/src"
     changes: false
 
 comment:
@@ -31,7 +36,6 @@ flags:
     paths:
       - "x/"
       - "!x/**/client/" # ignore client package
-      - "!cmd/ebrelayer" # ignore ebrelayer, can only do integration tests
   ui:
     paths:
       - "ui/core/src"
