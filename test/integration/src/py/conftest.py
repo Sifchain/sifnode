@@ -144,7 +144,7 @@ def chain_id(is_ropsten_testnet):
     if result:
         return result
     else:
-        id = "sandpit" if is_ropsten_testnet else "localnet"
+        id = "swing-set" if is_ropsten_testnet else "localnet"
         return id
 
 
