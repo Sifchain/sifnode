@@ -248,6 +248,7 @@ export default function createEthbridgeService({
         const sendArgs = {
           from: fromAddress,
           value: 0,
+          gas: 150000 // Note: This chose in lieu of burn(params).estimateGas({from})
         };
 
         bridgeBankContract.methods
