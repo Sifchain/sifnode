@@ -25,7 +25,7 @@ export default {
 .panel {
   width: 410px;
   border-radius: $br_lg;
-  overflow: hidden;
+  overflow: scroll;
   background: $c_white;
   position: relative;
 
