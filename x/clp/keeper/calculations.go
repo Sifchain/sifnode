@@ -125,6 +125,31 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 		sdk.NewUintFromBigInt(swapAmount.RoundInt().BigInt())
 }
 
+func GetDecPoolUnitInputs(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
+	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Dec, sdk.Dec, sdk.Dec, sdk.Dec, sdk.Dec) {
+	P, err := sdk.NewDecFromStr(oldPoolUnits.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", oldPoolUnits.String(), err))
+	}
+	R, err := sdk.NewDecFromStr(nativeAssetBalance.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance.String(), err))
+	}
+	A, err := sdk.NewDecFromStr(externalAssetBalance.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance.String(), err))
+	}
+	r, err := sdk.NewDecFromStr(nativeAssetAmount.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetAmount.String(), err))
+	}
+	a, err := sdk.NewDecFromStr(externalAssetAmount.String())
+	if err != nil {
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
+	}
+	return P, R, A, r, a
+}
+
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 
@@ -143,17 +168,7 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 
 func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externalAssetBalance,
 	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
-	normalizationFactor := sdk.NewDec(1)
-	nf, ok := types.GetNormalizationMap()[symbol[1:]]
-	adjustExternalToken := true
-	if ok {
-		diffFactor := 18 - nf
-		if diffFactor < 0 {
-			diffFactor = nf - 18
-			adjustExternalToken = false
-		}
-		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
-	}
+	normalizationFactor, adjustExternalToken := GetNormalizationFactor(symbol)
 	if adjustExternalToken {
 		externalAssetAmount = externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())) // Convert token which are not E18 to E18 format
 		externalAssetBalance = externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
@@ -179,27 +194,10 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 	if nativeAssetBalance.IsZero() || externalAssetBalance.IsZero() {
 		return nativeAssetAmount, nativeAssetAmount, nil
 	}
-	P, err := sdk.NewDecFromStr(oldPoolUnits.String())
-	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", oldPoolUnits.String(), err))
-	}
-	R, err := sdk.NewDecFromStr(nativeAssetBalance.String())
-	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance.String(), err))
-	}
-	A, err := sdk.NewDecFromStr(externalAssetBalance.String())
-	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance.String(), err))
-	}
-	r, err := sdk.NewDecFromStr(nativeAssetAmount.String())
-	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetAmount.String(), err))
-	}
-	a, err := sdk.NewDecFromStr(externalAssetAmount.String())
-	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
-	}
-
+	// Convert to decimal to avoid divide by 0 errors
+	P, R, A, r, a := GetDecPoolUnitInputs(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
+		nativeAssetAmount, externalAssetAmount)
+	// Reduce number of zeros ,to avoid int overflow
 	P = ReducePrecision(P, minLen)
 	R = ReducePrecision(R, minLen)
 	A = ReducePrecision(A, minLen)
@@ -218,6 +216,7 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 	denominator := sdk.NewDec(2).Mul(A).Mul(R)
 	stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
 	newPoolUnit := P.Add(stakeUnits)
+	// Increase precision for return types.
 	newPoolUnit = IncreasePrecision(newPoolUnit, minLen)
 	stakeUnits = IncreasePrecision(stakeUnits, minLen)
 
@@ -231,17 +230,7 @@ func calcLiquidityFee(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, 
 	if !ValidateZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint(), nil
 	}
-	normalizationFactor := sdk.NewDec(1)
-	nf, ok := types.GetNormalizationMap()[symbol[1:]]
-	adjustExternalToken := true
-	if ok {
-		diffFactor := 18 - nf
-		if diffFactor < 0 {
-			diffFactor = nf - 18
-			adjustExternalToken = false
-		}
-		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
-	}
+	normalizationFactor, adjustExternalToken := GetNormalizationFactor(symbol)
 
 	if adjustExternalToken {
 		if toRowan {
@@ -260,7 +249,7 @@ func calcLiquidityFee(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, 
 	}
 
 	// Assuming the max supply for any token in the world to be 1 trillion
-	minLen := int64(6)
+	minLen := int64(types.MinTokenPrecision)
 
 	Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
 	xd := ReducePrecision(sdk.NewDecFromBigInt(x.BigInt()), minLen)
@@ -283,17 +272,7 @@ func calcSwapResult(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, er
 	if !ValidateZero([]sdk.Uint{X, x, Y}) {
 		return sdk.ZeroUint(), nil
 	}
-	normalizationFactor := sdk.NewDec(1)
-	nf, ok := types.GetNormalizationMap()[symbol[1:]]
-	adjustExternalToken := true
-	if ok {
-		diffFactor := 18 - nf
-		if diffFactor < 0 {
-			diffFactor = nf - 18
-			adjustExternalToken = false
-		}
-		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
-	}
+	normalizationFactor, adjustExternalToken := GetNormalizationFactor(symbol)
 
 	if adjustExternalToken {
 		if toRowan {

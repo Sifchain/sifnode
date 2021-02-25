@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"math"
 )
@@ -32,8 +33,22 @@ func GetMinLen(inputs []sdk.Uint) int64 {
 			minLen = currentLen
 		}
 	}
-	if minLen <= 6 {
-		return int64(6)
+	if minLen <= types.MinTokenPrecision {
+		return int64(types.MinTokenPrecision)
 	}
 	return int64(minLen - 1)
+}
+
+func GetNormalizationFactor(symbol string) (sdk.Dec, bool) {
+	normalizationFactor := sdk.NewDec(1)
+	adjustExternalToken := true
+	nf, ok := types.GetNormalizationMap()[symbol[1:]]
+	if ok {
+		diffFactor := types.MaxTokenPrecision - nf
+		if diffFactor < 0 {
+			diffFactor = nf - types.MaxTokenPrecision
+			adjustExternalToken = false
+		}
+	}
+	return normalizationFactor, adjustExternalToken
 }
