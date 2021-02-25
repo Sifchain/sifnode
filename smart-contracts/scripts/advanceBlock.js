@@ -7,6 +7,8 @@ require('@openzeppelin/test-helpers/configure')({
 /*******************************************
  *** the script just used in local test to generate a new block via trivial amount transfer
   ******************************************/
+console.log("Expected usage: \n truffle exec scripts/advanceBlock.js 50");
+
 module.exports = async (cb) => {
   // default is to advance 5 blocks
   let txNumber = 5;

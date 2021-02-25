@@ -17,5 +17,13 @@ After noticed the ebrelayer down, can't get new message or can't send transactio
 
 The block scope you input is not neccessary to be very accurate. But must include the blocks when ebrelayer not working. Otherwise we can't gunratee all messages will be replayed.
 
+### replay sifchain step by step
+1. If notice the ebrelayer is offline, have some errors to send prophecy to smart contract in Ethereum or cross-chain transfer from Sifchain to Ethereum doesn't work, we need check the timestamp and estimate the block scope in sifchain side.
+2. We choose those failed ebrelayer nodes, check their voting power and compute how many nodes we need run replay scripts on those nodes.
+3. We also need check the blocks in Ethereum side to find out all prophecies transaction already sent by the ebrelayer, avoid send the same transaction again. It will not mint or burn the token twice since we have the unique prophecy ID. but it will waste of some gas fee. 
+4. After confirm the from/to block number in both Ethereum and Sifchain, we can run ebrelayer replayEthereum. the command usage could be found in Command sample segment.
+5. Check the output of replay script, it will print out all the cross-chain token transfer messages and tell you if the ebrelayer processed it or not.
+6. Need run the replay script in several nodes until the prophecy completed in Ethereum side. It depends on each ebrelayer's voting power.
+
 ## Side effect
 If the block scope set not correct, script may miss some messages or process the same messages twice. For duplicated message processing, there is no side effect on the network except extra gas fee. If missing some message, some prophecies may never be finalized. You can decide the recovery scope based on the working validators' power.
