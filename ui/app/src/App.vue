@@ -41,7 +41,8 @@ export default defineComponent({
 
 <style lang="scss">
 #app,
-#portal-target {
+#portal-target,
+#tooltip-target {
   font: italic normal bold 14px/22px $f_default;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
