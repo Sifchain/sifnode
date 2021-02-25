@@ -1,13 +1,16 @@
 <script lang="ts">
-import { defineComponent, PropType, ComputedRef, ref, watch } from "vue";
-import { computed, toRefs } from "@vue/reactivity";
+import { defineComponent } from "vue";
+import { computed } from "@vue/reactivity";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
-import { getAssetLabel, useAssetItem } from "@/components/shared/utils";
+import {
+  getAssetLabel,
+  getBlockExplorerUrl,
+  useAssetItem,
+} from "@/components/shared/utils";
 import { Fraction } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useRoute } from "vue-router";
-import { getBlockExplorerUrl } from "../components/shared/utils";
 
 const DECIMALS = 5;
 
@@ -19,10 +22,14 @@ export default defineComponent({
 
     const accountPool = computed(() => {
       if (
+        !route ||
         !store.wallet.sif.address ||
-        !store.accountpools[store.wallet.sif.address]
-      )
+        !store.accountpools ||
+        !store.accountpools[store.wallet.sif.address] ||
+        !store.accountpools[store.wallet.sif.address][`${route}_rowan`]
+      ) {
         return null;
+      }
 
       const poolTicker = `${route}_rowan`;
       const storeAccountPool =

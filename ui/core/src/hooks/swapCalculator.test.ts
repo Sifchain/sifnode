@@ -122,7 +122,7 @@ describe("swapCalculator", () => {
 
     expect(state.value).toBe(SwapState.INSUFFICIENT_FUNDS);
     expect(toAmount.value).toBe("4999.9999");
-    expect(priceMessage.value).toBe("0.500000 BTK per ATK");
+    expect(priceMessage.value).toBe("0.500000 cTK per cTK");
     expect(priceImpact.value).toBe("0.000001");
     expect(providerFee.value).toBe("0.00005");
   });

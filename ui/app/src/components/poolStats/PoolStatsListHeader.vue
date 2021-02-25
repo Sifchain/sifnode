@@ -3,7 +3,6 @@ import { defineComponent } from "vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
 import Icon from "@/components/shared/Icon.vue";
 
-
 export default defineComponent({
   components: {
     Tooltip,
