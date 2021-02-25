@@ -29,11 +29,11 @@
     <div class="details-body">
       <div class="details-row" v-if="realBPerA">
         <span>Rates</span>
-        <span>1 {{ fromTokenLabel }} = {{ realBPerA }} {{ toTokenLabel }}</span>
+        <span>1 {{ fromTokenLabel.toLowerCase().includes("rowan") ? fromTokenLabel.toUpperCase() : "c" + fromTokenLabel.slice(1).toUpperCase() }} = {{ realBPerA }} {{ toTokenLabel.toLowerCase().includes("rowan") ? toTokenLabel.toUpperCase() : "c" + toTokenLabel.slice(1).toUpperCase() }}</span>
       </div>
       <div class="details-row" v-if="realAPerB">
         <span>&nbsp;</span>
-        <span>1 {{ toTokenLabel }} = {{ realAPerB }} {{ fromTokenLabel }}</span>
+        <span>1 {{ toTokenLabel.toLowerCase().includes("rowan") ? toTokenLabel.toUpperCase() : "c" + toTokenLabel.slice(1).toUpperCase() }} = {{ realAPerB }} {{ fromTokenLabel.toLowerCase().includes("rowan") ? fromTokenLabel.toUpperCase() : "c" + fromTokenLabel.slice(1).toUpperCase() }}</span>
       </div>
       <div class="details-row">
         <span>Share of Pool:</span>
