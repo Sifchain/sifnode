@@ -291,16 +291,16 @@ export default defineComponent({
           <span class="number">{{ formatNumber(aPerBRatioMessage === 'N/A' ? '0' : aPerBRatioMessage) }}</span
           ><br />
           <span
-            >{{ fromSymbol.toUpperCase() }} per
-            {{ toSymbol.toUpperCase() }}</span
+            >{{ fromSymbol.toLowerCase().includes("rowan") ? fromSymbol.toUpperCase() : "c" + fromSymbol.slice(1).toUpperCase() }} per
+            {{ toSymbol.toLowerCase().includes("rowan") ? toSymbol.toUpperCase() : "c" + toSymbol.slice(1).toUpperCase() }}</span
           >
         </FatInfoTableCell>
         <FatInfoTableCell>
           <span class="number">{{ formatNumber(bPerARatioMessage === 'N/A' ? '0' : bPerARatioMessage) }}</span
           ><br />
           <span
-            >{{ toSymbol.toUpperCase() }} per
-            {{ fromSymbol.toUpperCase() }}</span
+            >{{ toSymbol.toLowerCase().includes("rowan") ? toSymbol.toUpperCase() : "c" + toSymbol.slice(1).toUpperCase() }} per
+            {{ fromSymbol.toLowerCase().includes("rowan") ? fromSymbol.toUpperCase() : "c" + fromSymbol.slice(1).toUpperCase() }}</span
           > </FatInfoTableCell
         ><FatInfoTableCell />
       </template>

@@ -49,11 +49,11 @@ export default defineComponent({
       </span>
     </div>
     <div class="col-lg">
-      <span>Liquidity Mining Bonus</span>
+      <span>Validator Subsidy Bonus</span>
 
       <span>
         APY&nbsp;
-        <Tooltip message="Annual percentage return earned via our Liquidity mining program for providing liquidity to this pool. ">
+        <Tooltip message="Annual percentage return earned via our Validator subsidy program for providing liquidity to this pool. ">
           <Icon icon="info-box-white" />
         </Tooltip>
       </span>
@@ -61,7 +61,7 @@ export default defineComponent({
     <div class="col-sm">
       <span>
         Total APY
-        <Tooltip message="Total APY earned (Pool + Liquidity Mining) by providing liquidity to this pool.">
+        <Tooltip message="Total APY earned (Pool + Validator Subsidy) by providing liquidity to this pool.">
           <Icon icon="info-box-white" />
         </Tooltip>
       </span>
