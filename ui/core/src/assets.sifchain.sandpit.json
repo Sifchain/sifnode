@@ -1,13 +1,6 @@
 {
   "assets": [
     {
-      "symbol": "rowan",
-      "decimals": 18,
-      "name": "Rowan",
-      "imageUrl": "./images/siflogo.png",
-      "network": "sifchain"
-    },
-    {
       "symbol": "cdtoken",
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/279/large/ethereum.png",
@@ -40,6 +33,13 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png",
       "name": "cacoin",
+      "network": "sifchain"
+    },
+    {
+      "symbol": "rowan",
+      "decimals": 18,
+      "name": "Rowan",
+      "imageUrl": "./images/siflogo.png",
       "network": "sifchain"
     }
   ]

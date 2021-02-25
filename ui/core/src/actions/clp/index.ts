@@ -1,4 +1,10 @@
-import {Asset, AssetAmount, Fraction, LiquidityProvider, Pool} from "../../entities";
+import {
+  Asset,
+  AssetAmount,
+  Fraction,
+  LiquidityProvider,
+  Pool,
+} from "../../entities";
 import { ActionContext } from "..";
 import { PoolStore } from "../../store/pools";
 import notify from "../../api/utils/Notifications";
@@ -29,17 +35,34 @@ export default ({
         state.address
       );
 
-      const accountPools: { lp: LiquidityProvider; pool: Pool }[] = [];
-      for (const symbol of accountPoolSymbols) {
+      // This is a hot method when there are a heap of pools
+      // Ideally we would have a better rest endpoint design
+
+      accountPoolSymbols.forEach(async symbol => {
         const lp = await api.ClpService.getLiquidityProvider({
           symbol,
           lpAddress: state.address,
         });
-        if (!lp) continue;
-        const pool = store.pools[`${symbol}_rowan`];
-        accountPools.push({ lp, pool });
+        if (!lp) return;
+        const pool = `${symbol}_rowan`;
+        store.accountpools[state.address] =
+          store.accountpools[state.address] || {};
+
+        store.accountpools[state.address][pool] = { lp, pool };
+      });
+
+      // Delete accountpools
+      const currentPoolIds = accountPoolSymbols.map(id => `${id}_rowan`);
+      if (store.accountpools[state.address]) {
+        const existingPoolIds = Object.keys(store.accountpools[state.address]);
+        const disjunctiveIds = existingPoolIds.filter(
+          id => !currentPoolIds.includes(id)
+        );
+
+        disjunctiveIds.forEach(poolToRemove => {
+          delete store.accountpools[state.address][poolToRemove];
+        });
       }
-      store.accountpools = accountPools;
     }
   }
 
@@ -53,7 +76,7 @@ export default ({
           detail: {
             type: "info",
             message: "Create liquidity pool to swap.",
-          }
+          },
         });
       }
     });
@@ -65,14 +88,14 @@ export default ({
     await syncPools();
   });
 
-  api.SifService.onSocketError((instance) => {
+  api.SifService.onSocketError(instance => {
     notify({
       type: "error",
       message: "Websocket Not Connected",
       detail: {
-        type: 'websocket',
-        message: instance.target.url
-      }
+        type: "websocket",
+        message: instance.target.url,
+      },
     });
   });
 
@@ -81,6 +104,12 @@ export default ({
 
     return pools[key] ?? null;
   }
+
+  effect(() => {
+    // When sif address changes syncPools
+    store.wallet.sif.address;
+    syncPools();
+  });
 
   const actions = {
     async swap(
@@ -145,7 +174,6 @@ export default ({
       wBasisPoints: string,
       asymmetry: string
     ) {
-
       const tx = await api.ClpService.removeLiquidity({
         fromAddress: state.address,
         asset,

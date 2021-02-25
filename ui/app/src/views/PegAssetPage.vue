@@ -161,12 +161,10 @@ export default defineComponent({
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
         const decimals = Asset.get(symbol.value).decimals;
-
         const afterMaxValue =
           symbol.value === "ceth"
             ? accountBalance.value.subtract(feeAmount.value)
             : accountBalance.value;
-
         amount.value = afterMaxValue.lessThan("0")
           ? "0.0"
           : afterMaxValue.toFixed(decimals);
@@ -238,6 +236,7 @@ export default defineComponent({
             show: !!feeAmount,
             label: 'Transaction Fee',
             data: `${feeAmount.toFixed(8)} cETH`,
+            tooltipMessage: `This is a fixed fee amount. This is a temporary solution as we are working towards improving this amount in upcoming versions of the network.`,
           },
         ]"
       />
