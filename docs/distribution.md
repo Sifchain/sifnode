@@ -1,4 +1,9 @@
 # Distribution Module
+## Requirements
+- Create mechanism which allows us to distribute different types of rewards ( liquidity mining rewards being one of them ) .
+- Option to start and pause distributions.
+- Keep extensibility in mind so that the distribution set is not limited to a certain set of users (Should be able to distribute to Liquidity providers , Validators or a Combination of Both) . Any other set can be added in the future .
+- The distribution should be logic based ( ex based on validator weights or liquidity provided). It should be fairly simple to add this functionality programmatically to a distribution    
 
 ## Concepts
 - Every distribution will start with a distibutionList. The distribution list contains all parameters to facilitate a distribution .
@@ -10,8 +15,10 @@
 ## Data-Structures
 ```go
 type DistributionList struct {
+	IsActive bool
 	Identifier string // or id 
-	FundingAddress sdk.Address
+	ListType listType
+	FundingAddress sdk.Address  // Assuming that the funding address would activate a distribution list
 	Receivers receiverType
 	TotalRewards sdk.Uint
 	ReceivingList map([]sdk.Address)sdk.Coins  // I have see some issues with map and amino before .Not 100 % if this is the best idea . Will need to look into for cosmos handles the deserialization
@@ -101,7 +108,7 @@ func IterateAllLists() {}
 
 ## BlockEnderLogic
 
-- Iterate over all distribution lists
+- Iterate over active distribution lists
 
 - Iterate over receiverTypes , and call getAddressList() on each 
 
@@ -117,7 +124,7 @@ func IterateAllLists() {}
 
 ## BlockBeginnerLogic
 
-- Iterate over distribution lists
+- Iterate over active distribution lists
 
 - Use DistributionFrequency parameter and block height to create to check if we need to distribute in the present block.
 
@@ -127,6 +134,64 @@ func IterateAllLists() {}
 
 - When distributed deduct amount from total rewards
 
+## How the developed module would behave 
+- We would be defining types by Implementing the various interfaces .
+- We create distribution lists , by using the types defined 
+```go
+func GetLiquidityMiningDistibutionList(/* Cli input for values*/) types.DistributionList {
+        return DistributionList {
+        IsActive false
+        Identifier "CLI INPUT"
+        ListType LiquidityMining
+        FundingAddress "CLI INPUT"
+        Receivers []ReceiverType{Validators{}, LiquidityProviders{}}
+        TotalRewards "CLI INPUT"
+        ReceivingList make(map([]sdk.Address)sdk.Coins)
+        DistributionFunction DistributeLiquidityMiningRewards
+        DistributionFrequency 1 
+        DistributionTokens []string{"rowan"} 
+        }
+      }
+```
+- The creation of the list would take some inputs from the user, and some default values, I feel we can take only Identifier ,Funding address and Total funds as input and use a switch case for creating the lists. We would have a maximum of 3 different types of lists which can be defined easily. 
+- Sample cli command to create the above list 
+```shell
+sifnodecli tx distribution create --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd LiquidityMining SifLiquidityRewards  21000000000000000000000
+```
+- The command would run through a switch case like 
+```go
+switch ListType {
+ case LiquidityMining : GetLiquidityMiningDistibutionList
+ _
+}
+```
+- Save the list with " active = true " . Key will be the identifier .
+### Additional functionality
+
+- Deactivate distribution - funding address can send a transaction to pause distribution
+```shell
+sifnodecli tx distribution deactivate --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd SifLiquidityRewards
+```
+
+- Activate distribution - funding address can send a transaction to pause distribution
+```shell
+sifnodecli tx distribution activate --from sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd SifLiquidityRewards
+```
+
+- (Optional )While distributing in the BlockBeginner we can add an entry to the keeper for rewards earned by an address .This can be saved as
+  
+  Key : Address_ListType_Height
+  
+  Value : Reward_Earned
+
+   This can be used to provide various queries to users such as 
+- Query rewards earned at a particular height / for listtype /combination of both etc
+```shell
+sifnodecli q distribution rewardsforheight sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd 1
+sifnodecli q distribution rewardsforlistname sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd SifLiquidityRewards
+```
+
+  
 ### Points to note
 - This is a very high level document for the overall logic. 
 - The module would need to handle state export etc , for upgrades to happen , which would be part of a subsequent document.
