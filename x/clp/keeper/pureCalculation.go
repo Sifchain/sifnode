@@ -49,6 +49,7 @@ func GetNormalizationFactor(symbol string) (sdk.Dec, bool) {
 			diffFactor = nf - types.MaxTokenPrecision
 			adjustExternalToken = false
 		}
+		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
 	}
 	return normalizationFactor, adjustExternalToken
 }
