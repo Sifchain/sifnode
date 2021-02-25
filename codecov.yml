@@ -13,40 +13,39 @@ coverage:
     project:
       default:
         threshold: 1% # allow this much decrease on project
-      app:
+        flag_coverage_not_uploaded_behavior: exclude
+      server:
         target: 70%
-        flags: app
-      modules:
+        flags: server
+        paths:
+          - "x/"
+          - "!x/**/client/" # ignore client package
+      ui:
         target: 70%
-        flags: modules
-      client:
-        flags: client
+        flags: ui
+        paths: "ui/core/src"
     changes: false
 
 comment:
-  layout: "reach, diff, files"
+  layout: "reach, diff, flags, files"
   behavior: default # update if exists else create new
   require_changes: true
 
 flags:
-  app:
-    paths:
-      - "app/"
-      - "baseapp/"
-  modules:
+  server:
     paths:
       - "x/"
       - "!x/**/client/" # ignore client package
-  client:
+  ui:
     paths:
-      - "client/"
-      - "x/**/client/"
+      - "ui/core/src"
 
 ignore:
   - "docs"
   - "*.md"
   - "*.rst"
   - "**/test_common.go"
+  - "**/test_helpers.go"
   - "**/module.go"
   - "**/genesis.go"
   - "scripts/"
