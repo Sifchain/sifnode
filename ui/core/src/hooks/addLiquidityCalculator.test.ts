@@ -171,7 +171,7 @@ describe("addLiquidityCalculator", () => {
         bPerARatioMessage: "0.50000000",
         aPerBRatioProjectedMessage: "0.60000000",
         bPerARatioProjectedMessage: "1.66666667",
-        shareOfPool: "57.45%",
+        shareOfPool: "55.56%",
         state: PoolState.VALID_INPUT,
       },
     },
@@ -223,7 +223,7 @@ describe("addLiquidityCalculator", () => {
         bPerARatioMessage: "1.00000000",
         aPerBRatioProjectedMessage: "1000000.98999999", // 100100000000/100000001
         bPerARatioProjectedMessage: "0.00000100",
-        shareOfPool: "33.77%",
+        shareOfPool: "33.55%",
         state: PoolState.INSUFFICIENT_FUNDS,
       },
     },
@@ -303,7 +303,7 @@ describe("addLiquidityCalculator", () => {
     expect(bPerARatioMessage.value).toBe("0.50000000");
     expect(aPerBRatioProjectedMessage.value).toBe("1.40000000");
     expect(bPerARatioProjectedMessage.value).toBe("0.71428571");
-    expect(shareOfPoolPercent.value).toBe("13.73%");
+    expect(shareOfPoolPercent.value).toBe("13.49%");
   });
 
   test("poolCalculator with preexisting pool", () => {

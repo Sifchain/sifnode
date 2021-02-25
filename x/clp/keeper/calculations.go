@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -137,7 +138,7 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 // r = native asset added;
 // a = external asset added
 // P = existing Pool Units
-// slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
+// slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
 func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externalAssetBalance,
@@ -154,11 +155,11 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
 	}
 	if adjustExternalToken {
-		externalAssetAmount = externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt())) // Convert token which are not E18 to E18 format
-		externalAssetBalance = externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
+		externalAssetAmount = externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())) // Convert token which are not E18 to E18 format
+		externalAssetBalance = externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
 	} else {
-		nativeAssetAmount = nativeAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
-		nativeAssetBalance = nativeAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
+		nativeAssetAmount = nativeAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+		nativeAssetBalance = nativeAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
 	}
 
 	inputs := []sdk.Uint{oldPoolUnits, nativeAssetBalance, externalAssetBalance,
@@ -205,7 +206,7 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 	a = ReducePrecision(a, minLen)
 	r = ReducePrecision(r, minLen)
 
-	slipAdjDenominator := (r.MulInt64(2).Add(R)).Mul(a.Add(A))
+	slipAdjDenominator := (r.Add(R)).Mul(a.Add(A))
 	var slipAdjustment sdk.Dec
 	if R.Mul(a).GT(r.Mul(A)) {
 		slipAdjustment = R.Mul(a).Sub(r.Mul(A)).Quo(slipAdjDenominator)

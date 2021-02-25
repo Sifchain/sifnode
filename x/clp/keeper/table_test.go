@@ -3,10 +3,11 @@ package keeper
 import (
 	"bytes"
 	"encoding/json"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCalculatePoolUnits(t *testing.T) {
