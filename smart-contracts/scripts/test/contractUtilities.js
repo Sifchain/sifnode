@@ -21,8 +21,15 @@ function buildProvider(context, argv, logging) {
                 provider = new Web3(netConnectionString);
             }
             break;
-        default:
+        case "http://localhost:7545":
             provider = new Web3.providers.HttpProvider(argv.ethereum_network);
+            break;
+        default:
+            const privateKeyDefault = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
+            provider = new HDWalletProvider(
+                privateKeyDefault,
+                argv.ethereum_network,
+            );
             break;
     }
     return provider;
@@ -56,6 +63,20 @@ function buildBaseContract(context, argv, logging, name) {
     return contract;
 }
 
+/**
+ * Builds a contract object at a particular address
+ *
+ * For interacting with deployed contracts.  If you're deploying
+ * a new contract, use buildBaseContract and then call new on
+ * the buildBaseContract result.
+ *
+ * @param context
+ * @param argv
+ * @param logging
+ * @param name
+ * @param address
+ * @returns {*}
+ */
 function buildContract(context, argv, logging, name, address) {
     const contract = buildBaseContract(context, argv, logging, name)
     return contract.at(address);

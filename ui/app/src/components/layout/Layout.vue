@@ -1,7 +1,7 @@
 <template>
   <div class="layout">
     <Panel dark>
-      <template v-slot:header>
+      <template v-slot:header v-if="header">
         <PanelNav />
       </template>
       <div class="header" v-if="backLink || title">
@@ -36,6 +36,7 @@ export default defineComponent({
   components: { Panel, PanelNav, Icon },
   props: {
     backLink: String,
+    header: { type: Boolean, default: true },
     emitBack: {
       type: Boolean,
       default: false,
