@@ -33,30 +33,6 @@ export function usePoolCalculator(input: {
   const tokenBField = useField(input.tokenBAmount, input.tokenBSymbol);
   const balanceMap = useBalances(input.balances);
 
-  const tokenABalance = computed(() => {
-    return input.tokenASymbol.value
-      ? balanceMap.value.get(input.tokenASymbol.value) ?? null
-      : null;
-  });
-
-  const tokenBBalance = computed(() => {
-    return input.tokenBSymbol.value
-      ? balanceMap.value.get(input.tokenBSymbol.value) ?? null
-      : null;
-  });
-
-  const fromBalanceOverdrawn = computed(() => {
-    return !tokenABalance.value?.greaterThanOrEqual(
-      tokenAField.fieldAmount.value || "0"
-    );
-  });
-
-  const toBalanceOverdrawn = computed(
-    () =>
-      !tokenBBalance.value?.greaterThanOrEqual(
-        tokenBField.fieldAmount.value || "0"
-      )
-  );
 
   const preExistingPool = computed(() => {
     if (!tokenAField.asset.value || !tokenBField.asset.value) {
@@ -71,6 +47,46 @@ export function usePoolCalculator(input: {
 
     return pool?.value || null;
   });
+
+  const tokenABalance = computed(() => {
+    if (
+      !tokenAField.fieldAmount.value ||
+      !tokenAField.asset.value
+    ) {
+      return null;
+    }
+    if (preExistingPool.value) {
+      return input.tokenASymbol.value
+        ? balanceMap.value.get(input.tokenASymbol.value) ?? AssetAmount(tokenAField.asset.value, "0")
+        : null;
+    } else {
+      return input.tokenASymbol.value
+        ? balanceMap.value.get(input.tokenASymbol.value) ?? null
+        : null;
+    }
+  });
+
+  const tokenBBalance = computed(() => {
+    return input.tokenBSymbol.value
+      ? balanceMap.value.get(input.tokenBSymbol.value) ?? null
+      : null;
+  });
+
+  const fromBalanceOverdrawn = computed(() => {
+
+    return !tokenABalance.value?.greaterThanOrEqual(
+      tokenAField.fieldAmount.value || "0"
+    );
+  });
+
+  const toBalanceOverdrawn = computed(
+    () =>
+      !tokenBBalance.value?.greaterThanOrEqual(
+        tokenBField.fieldAmount.value || "0"
+      )
+  );
+
+
 
   const liquidityPool = computed(() => {
     if (preExistingPool.value) {
@@ -163,6 +179,7 @@ export function usePoolCalculator(input: {
   });
 
   const aPerBRatioMessage = computed(() => {
+
     if (!aPerBRatio.value) {
       return "N/A";
     }
