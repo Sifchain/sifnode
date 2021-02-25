@@ -126,26 +126,26 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 }
 
 func GetDecPoolUnitInputs(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
-	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Dec, sdk.Dec, sdk.Dec, sdk.Dec, sdk.Dec) {
-	P, err := sdk.NewDecFromStr(oldPoolUnits.String())
+	nativeAssetAmount, externalAssetAmount string) (sdk.Dec, sdk.Dec, sdk.Dec, sdk.Dec, sdk.Dec) {
+	P, err := sdk.NewDecFromStr(oldPoolUnits)
 	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", oldPoolUnits.String(), err))
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", oldPoolUnits, err))
 	}
-	R, err := sdk.NewDecFromStr(nativeAssetBalance.String())
+	R, err := sdk.NewDecFromStr(nativeAssetBalance)
 	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance.String(), err))
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetBalance, err))
 	}
-	A, err := sdk.NewDecFromStr(externalAssetBalance.String())
+	A, err := sdk.NewDecFromStr(externalAssetBalance)
 	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance.String(), err))
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetBalance, err))
 	}
-	r, err := sdk.NewDecFromStr(nativeAssetAmount.String())
+	r, err := sdk.NewDecFromStr(nativeAssetAmount)
 	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetAmount.String(), err))
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", nativeAssetAmount, err))
 	}
-	a, err := sdk.NewDecFromStr(externalAssetAmount.String())
+	a, err := sdk.NewDecFromStr(externalAssetAmount)
 	if err != nil {
-		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount.String(), err))
+		panic(fmt.Errorf("fail to convert %s to cosmos.Dec: %w", externalAssetAmount, err))
 	}
 	return P, R, A, r, a
 }
@@ -195,8 +195,8 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 		return nativeAssetAmount, nativeAssetAmount, nil
 	}
 	// Convert to decimal to avoid divide by 0 errors
-	P, R, A, r, a := GetDecPoolUnitInputs(oldPoolUnits, nativeAssetBalance, externalAssetBalance,
-		nativeAssetAmount, externalAssetAmount)
+	P, R, A, r, a := GetDecPoolUnitInputs(oldPoolUnits.String(), nativeAssetBalance.String(), externalAssetBalance.String(),
+		nativeAssetAmount.String(), externalAssetAmount.String())
 	// Reduce number of zeros ,to avoid int overflow
 	P = ReducePrecision(P, minLen)
 	R = ReducePrecision(R, minLen)
