@@ -27,13 +27,13 @@
       </div>
     </div>
     <div class="details-body">
-      <div class="details-row" v-if="bPerA">
+      <div class="details-row" v-if="realBPerA">
         <span>Rates</span>
-        <span>1 {{ fromTokenLabel }} = {{ bPerA }} {{ toTokenLabel }}</span>
+        <span>1 {{ fromTokenLabel }} = {{ realBPerA }} {{ toTokenLabel }}</span>
       </div>
-      <div class="details-row" v-if="aPerB">
+      <div class="details-row" v-if="realAPerB">
         <span>&nbsp;</span>
-        <span>1 {{ toTokenLabel }} = {{ aPerB }} {{ fromTokenLabel }}</span>
+        <span>1 {{ toTokenLabel }} = {{ realAPerB }} {{ fromTokenLabel }}</span>
       </div>
       <div class="details-row">
         <span>Share of Pool:</span>
@@ -91,6 +91,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
+import { computed } from "@vue/reactivity";
 
 export default defineComponent({
   components: {
@@ -107,5 +108,16 @@ export default defineComponent({
     bPerA: { type: String, default: ""},
     shareOfPool: String,
   },
+  setup(props) {
+    const { aPerB, bPerA } = props;
+    return {
+      realAPerB: computed(() => {
+        return aPerB === 'N/A' ? '0' : aPerB;
+      }),
+      realBPerA: computed(() => {
+        return bPerA === 'N/A' ? '0' : bPerA;
+      }),
+    }
+  }
 });
 </script>

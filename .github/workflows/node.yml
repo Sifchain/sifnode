@@ -3,7 +3,7 @@ name: Node.js CI
 on: [pull_request]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,9 +26,6 @@ jobs:
       - name: Get dependencies
         run: |
           go get -v -t -d ./...
-
-      - name: Build
-        run: go build -v ./...
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
@@ -69,3 +66,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./ui/core/coverage
+          flags: ui

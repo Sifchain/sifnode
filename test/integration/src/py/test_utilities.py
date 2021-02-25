@@ -218,7 +218,7 @@ def get_transaction_result(tx_hash, sifnodecli_node, chain_id):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
     chain_id_entry = f"--chain-id {chain_id}" if chain_id else ""
     command_line = f"sifnodecli q tx {node} {tx_hash} {chain_id_entry} -o json"
-    json_str = wait_for_successful_command(command_line)
+    json_str = wait_for_successful_command(command_line, max_seconds=30)
     return json_str
 
 
