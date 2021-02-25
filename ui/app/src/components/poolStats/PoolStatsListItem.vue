@@ -67,7 +67,11 @@ export default defineComponent({
         <img v-if="image" width="22" height="22" :src="image" class="image" />
         <div class="placeholder" v-else></div>
         <div class="icon">
-          <span>{{ "c" + symbol.toString().slice(1).toUpperCase() }}</span>
+          <span>{{
+            symbol.toString().toLowerCase().includes("rowan")
+              ? symbol.toString().toUpperCase()
+              : "c" + symbol.toString().slice(1).toUpperCase()
+          }}</span>
         </div>
       </div>
       <div class="col-sm">

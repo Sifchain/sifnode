@@ -38,6 +38,8 @@ module.exports = async () => {
     }
   }
 
+  console.log("Expected usage: \n truffle exec scripts/sendUpdateWhiteList.js --network ropsten 0xdDA6327139485221633A1FcD65f4aC932E60A2e1 true");
+
   /*******************************************
    *** Lock transaction parameters
    ******************************************/

@@ -15,10 +15,10 @@ import FatInfoTableCell from "@/components/shared/FatInfoTableCell.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import { toConfirmState } from "./utils/toConfirmState";
-import { ConfirmState } from "../types";
+import { ConfirmState } from "@/types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
-import { formatNumber, formatPercentage } from "@/components/shared/utils";
+import { formatNumber } from "@/components/shared/utils";
 
 export default defineComponent({
   components: {
@@ -46,23 +46,23 @@ export default defineComponent({
 
     const toSymbol = ref("rowan");
     const isFromMaxActive = computed(() => {
-        const accountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === fromSymbol.value
-        );
-        if (!accountBalance) return;
-        return fromAmount.value === accountBalance.toFixed();
+      const accountBalance = balances.value.find(
+        (balance) => balance.asset.symbol === fromSymbol.value
+      );
+      if (!accountBalance) return;
+      return fromAmount.value === accountBalance.toFixed();
     });
 
     const isToMaxActive = computed(() => {
       const accountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === toSymbol.value
-        );
-        if (!accountBalance) return;
-        return toAmount.value === accountBalance.toFixed();
+        (balance) => balance.asset.symbol === toSymbol.value
+      );
+      if (!accountBalance) return;
+      return toAmount.value === accountBalance.toFixed();
     });
 
     fromSymbol.value = route.params.externalAsset
-      ? route.params.externalAsset.toString()
+      ? "c" + route.params.externalAsset.toString().slice(1).toUpperCase()
       : null;
 
     function clearAmounts() {
@@ -75,13 +75,21 @@ export default defineComponent({
     });
 
     const { balances } = useWallet(store);
-
     const liquidityProvider = computed(() => {
-      if (!fromSymbol) return null;
+      if (
+        !fromSymbol.value ||
+        !store.wallet.sif.address ||
+        !store.accountpools[store.wallet.sif.address] ||
+        !store.accountpools[store.wallet.sif.address][
+          `${fromSymbol.value}_rowan`
+        ]
+      )
+        return null;
+
       return (
-        store.accountpools.find((pool) => {
-          return pool.lp.asset.symbol === fromSymbol.value;
-        })?.lp ?? null
+        store.accountpools[store.wallet.sif.address][
+          `${fromSymbol.value}_rowan`
+        ].lp || null
       );
     });
 
@@ -238,8 +246,15 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout class="pool" :backLink="`${fromSymbol && connected && aPerBRatioMessage > 0
-    ? '/pool/' + fromSymbol : '/pool' }`" :title="title">
+  <Layout
+    class="pool"
+    :backLink="`${
+      fromSymbol && connected && aPerBRatioMessage > 0
+        ? '/pool/' + fromSymbol
+        : '/pool'
+    }`"
+    :title="title"
+  >
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel

@@ -1,9 +1,8 @@
 import { reactive } from "@vue/reactivity";
 import { wallet, WalletStore } from "./wallet";
 import { asset, AssetStore } from "./asset";
-import { pools, PoolStore } from "./pools";
+import { accountpools, AccountPoolStore, pools, PoolStore } from "./pools";
 import { notifications, NotificationsStore } from "./notifications";
-import { LiquidityProvider, Pool } from "../entities";
 export * from "./poolFinder";
 
 // TODO: Add a tx lookup per blockchain so we have access to txs
@@ -13,20 +12,18 @@ export type Store = {
   wallet: WalletStore;
   asset: AssetStore;
   pools: PoolStore;
-  accountpools: { lp: LiquidityProvider; pool: Pool }[];
+  accountpools: AccountPoolStore;
   notifications: NotificationsStore;
 };
 
 export function createStore() {
-  const state = reactive<Store>({
+  return reactive<Store>({
     wallet,
     asset,
     pools,
-    accountpools: [],
+    accountpools,
     notifications,
   }) as Store;
-
-  return state;
 }
 
 export type WithStore<T extends keyof Store = keyof Store> = {
