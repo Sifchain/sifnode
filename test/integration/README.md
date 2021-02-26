@@ -59,6 +59,7 @@ test/integration/start-integration-env.sh
 ./exampleenv.sh is designed to be used in a shell like this:
 
 ```
+# cd ~/workspace/sifnode/test/integration 
 # source ./exampleenv.sh
 # sifnodecli q auth account --node tcp://44.241.55.154:26657 sif1pvnu2kh826vn8r0ttlgt82hsmfknvcnf7qmpvk
 # ...
