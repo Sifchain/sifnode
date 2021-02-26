@@ -32,16 +32,6 @@ def generate_minimal_test_account(
     return request, credentials
 
 
-def generate_sifchain_account(
-        base_transfer_request: EthereumToSifchainTransferRequest,
-        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
-        rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
-        target_ceth_balance: int = 10 ** 18,
-        target_rowan_balance: int = 10 ** 18
-):
-    assert False
-
-
 def generate_test_account(
         base_transfer_request: EthereumToSifchainTransferRequest,
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
