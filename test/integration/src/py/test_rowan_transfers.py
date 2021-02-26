@@ -9,15 +9,6 @@ import test_utilities
 from pytest_utilities import generate_test_account
 from test_utilities import get_required_env_var, SifchaincliCredentials, get_optional_env_var, ganache_owner_account
 
-# bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
-# bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
-# smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
-# owner_password = get_required_env_var("OWNER_PASSWORD", "because we need to get rowan from the owner")
-# ethereum_address = get_optional_env_var(
-#     "ETHEREUM_ADDRESS",
-#     ganache_owner_account(smart_contracts_dir)
-# )
-
 
 def test_rowan_to_erowan(
         basic_transfer_request: EthereumToSifchainTransferRequest,

@@ -334,6 +334,7 @@ def test_create_pools(
 
 
 # @pytest.mark.skip(reason="not now")
+@pytest.mark.usefixtures("operator_private_key")
 def test_pools(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
