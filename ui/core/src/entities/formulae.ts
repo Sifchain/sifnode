@@ -25,8 +25,11 @@ export function calculatePoolUnits(
     return new Fraction("0");
   }
 
-  // slipAdjustment = ((R a - r A)/((r + R) (a + A)))
-  const slipAdjDenominator = r.add(R).multiply(a.add(A));
+  // slipAdjustment = ((R a - r A)/((2 r + R) (a + A)))
+  const slipAdjDenominator = new Fraction("2")
+    .multiply(r)
+    .add(R)
+    .multiply(a.add(A));
 
   let slipAdjustmentReciprocal: IFraction;
   if (R.multiply(a).greaterThan(r.multiply(A))) {
