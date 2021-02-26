@@ -7,9 +7,9 @@ import {
 } from "@cosmjs/launchpad";
 
 import {
-  createTendermintSocketSubscriber,
-  TendermintSocketSubscriber,
-} from "./TendermintSocketSubscriber";
+  createTendermintSocketPoll,
+  TendermintSocketPoll,
+} from "./TendermintSocketPoll";
 
 import { ClpExtension, setupClpExtension } from "./x/clp";
 import { EthbridgeExtension, setupEthbridgeExtension } from "./x/ethbridge";
@@ -38,7 +38,7 @@ type HandlerFn<T> = (a: T) => void;
 export class SifUnSignedClient extends CosmosClient
   implements IClpApi, IEthbridgeApi {
   protected readonly lcdClient: CustomLcdClient;
-  private subscriber: TendermintSocketSubscriber | undefined;
+  private subscriber: TendermintSocketPoll | undefined;
   constructor(
     apiUrl: string,
     wsUrl: string = "ws://localhost:26657/websocket",
@@ -56,7 +56,7 @@ export class SifUnSignedClient extends CosmosClient
     this.getPool = this.lcdClient.clp.getPool;
     this.burn = this.lcdClient.ethbridge.burn;
     this.lock = this.lcdClient.ethbridge.lock;
-    if (wsUrl) this.subscriber = createTendermintSocketSubscriber(wsUrl);
+    this.subscriber = createTendermintSocketPoll(apiUrl);
   }
 
   // Clp Extension
