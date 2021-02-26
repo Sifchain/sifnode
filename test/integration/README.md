@@ -67,7 +67,7 @@ test/integration/start-integration-env.sh
 It should echo a set of sample commands and tests that you can run 
 after it sets up your environment.
 
-Don't use exampleenv.sh itself, make a copy modify the variables to match your setup.
+ Don't use exampleenv.sh itself, make a copy modify the variables to match your setup.
 
 ## Github actions
 
