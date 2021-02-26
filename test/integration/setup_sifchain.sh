@@ -10,6 +10,8 @@ pkill sifnodecli || true
 pkill sifnoded || true
 pkill ebrelayer || true
 
+sleep 1
+
 #
 # Remove prior generations Config
 #

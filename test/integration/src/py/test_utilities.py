@@ -289,7 +289,7 @@ def send_from_sifchain_to_sifchain_cmd(
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials
 ):
-    logging.debug(f"send_from_sifchain_to_sifchain {transfer_request}")
+    logging.debug(f"send_from_sifchain_to_sifchain {transfer_request} {credentials}")
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
     chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
@@ -307,7 +307,7 @@ def send_from_sifchain_to_sifchain_cmd(
         f"{transfer_request.amount}{transfer_request.sifchain_symbol}",
         sifchain_fees_entry,
         home_entry,
-        "-y"
+        "-y -o json"
     ])
     return cmd
 
@@ -317,8 +317,10 @@ def send_from_sifchain_to_sifchain(
         credentials: SifchaincliCredentials
 ):
     cmd = send_from_sifchain_to_sifchain_cmd(transfer_request, credentials)
-    result = get_shell_output(cmd)
-    detect_errors_in_sifnodecli_output(result)
+    result = get_shell_output_json(cmd)
+    # detect_errors_in_sifnodecli_output(result)
+    time.sleep(2)
+    # get_transaction_result(result["txhash"], transfer_request.sifnodecli_node, transfer_request.chain_id)
     return result
 
 

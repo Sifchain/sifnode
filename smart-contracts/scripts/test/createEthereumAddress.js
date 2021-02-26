@@ -18,8 +18,6 @@ module.exports = async (cb) => {
 
     const web3 = contractUtilites.buildWeb3(this, argv, logging);
 
-    logging.info(`countis ${argv.count}`);
-
     if (argv.count > 1) {
         const result = [];
         for (let i = 0; i <= argv.count; i = i + 1) {
