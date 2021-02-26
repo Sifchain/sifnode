@@ -22,6 +22,9 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+::-webkit-scrollbar {
+    display: none;
+}
 .panel {
   width: 410px;
   border-radius: $br_lg;
