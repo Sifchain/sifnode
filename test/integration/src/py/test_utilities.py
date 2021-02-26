@@ -578,7 +578,6 @@ def contract_artifacts(
     files = os.listdir(smart_contract_artifact_dir)
     result = {}
     for file in filter(lambda f: ".json" in f, files):
-        logging.info(f"fileis: {file}")
         item = read_json_file(os.path.join(smart_contract_artifact_dir, file))
         result[file[:-5]] = item
     return result
@@ -588,5 +587,4 @@ def contract_artifacts(
 def ganache_private_key(ganache_private_keys_file: str, address):
     keys = read_json_file(ganache_private_keys_file)
     pks = keys["private_keys"]
-    logging.debug(f"keysare: {pks}")
     return pks[address]

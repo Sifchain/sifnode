@@ -40,9 +40,7 @@ module.exports = async (cb) => {
         request.gas = argv.gas;
     }
 
-    logging.info(`about to lock at ${Date.now()}`);
     const lockResult = await bridgeBankContract.lock(cosmosRecipient, coinDenom, amount, request);
-    logging.info(`finished lock at ${Date.now()}`);
 
     console.log(JSON.stringify(lockResult, undefined, 0))
 

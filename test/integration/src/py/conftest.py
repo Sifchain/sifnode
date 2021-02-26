@@ -111,9 +111,9 @@ def rowan_source(is_ropsten_testnet, validator_address):
 
 
 @pytest.fixture
-def rowan_source_key(is_ropsten_testnet):
+def rowan_source_key(is_ropsten_testnet, rowan_source):
     """A sifchain address or key that has rowan and can send that rowan to other address"""
-    result = test_utilities.get_optional_env_var("ROWAN_SOURCE_KEY", None)
+    result = test_utilities.get_optional_env_var("ROWAN_SOURCE_KEY", rowan_source)
     if result:
         return result
     if is_ropsten_testnet:
@@ -297,6 +297,7 @@ def rowan_source_integrationtest_env_credentials(
         validator_password,
         rowan_source_key,
         is_ganache,
+        rowan_source
 ):
     """
     Creates a SifchaincliCredentials with all the fields filled in
@@ -305,7 +306,7 @@ def rowan_source_integrationtest_env_credentials(
     return test_utilities.SifchaincliCredentials(
         keyring_backend="file" if is_ganache else "test",
         keyring_passphrase=validator_password,
-        from_key=rowan_source_key,
+        from_key=rowan_source,
         sifnodecli_homedir=sifnodecli_homedir
     )
 
