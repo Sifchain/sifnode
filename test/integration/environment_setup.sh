@@ -83,7 +83,7 @@ echo sifnodecli tx ethbridge burn \
   --from $ROWAN_SOURCE \
 
 echo; echo == send ceth
-echo sifnodecli tx send $ROWAN_SOURCE sifsomedestination \
+echo sifnodecli tx send $ROWAN_SOURCE sifsomedestination 100rowan \
   --node $SIFNODE \
   --keyring-backend test \
   --fees 100000rowan \

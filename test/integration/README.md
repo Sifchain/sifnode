@@ -70,6 +70,8 @@ after it sets up your environment.
 
  Don't use exampleenv.sh itself, make a copy modify the variables to match your setup.
 
+Don't mix this with vagrantenv.sh; use one or the other in a shell.
+
 ## Github actions
 
 See [the github action file](../../.github/workflows/integrationtest.yml) for the description of what's executed in the integration test environment.
