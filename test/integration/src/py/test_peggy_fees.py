@@ -1,8 +1,3 @@
-# to test against ropsten, define:
-# ETHEREUM_ADDRESS
-# ETHEREUM_PRIVATE_KEY
-# ETHEREUM_NETWORK = ropsten
-#
 import logging
 import os
 
