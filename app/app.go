@@ -243,6 +243,27 @@ func NewInitApp(
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
 
+	app.UpgradeKeeper.SetUpgradeHandler("testPoolFormula", func(ctx sdk.Context, plan upgrade.Plan) {
+		f, err := os.Create("testlog.log")
+		defer f.Close()
+		loger := log.NewTMLogger(f)
+		loger.Info("Starting to execute upgrade plan")
+		ethAsset := clp.NewAsset("ceth")
+		loger.Info("Asset Created")
+		pool, err := clp.NewPool(ethAsset, sdk.NewUint(100), sdk.NewUint(100), sdk.NewUint(10))
+		if err != nil {
+			loger.Info("Pool Not Created", err.Error())
+			return
+		}
+		loger.Info("Pool Created")
+		err = app.clpKeeper.SetPool(ctx, pool)
+		if err != nil {
+			loger.Info("Pool Not Set", err.Error())
+			return
+		}
+		loger.Info("Pool Set")
+	})
+
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
 		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))

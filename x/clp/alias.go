@@ -32,6 +32,7 @@ var (
 	GetSettlementAsset          = types.GetSettlementAsset
 	GetGenesisStateFromAppState = types.GetGenesisStateFromAppState
 	GetNormalizationMap         = types.GetNormalizationMap
+	NewPool                     = types.NewPool
 )
 
 type (
