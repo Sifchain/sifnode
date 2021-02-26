@@ -1,7 +1,5 @@
 const BN = require('bn.js');
 
-const x = new BN("91660075000000000")
-
 module.exports = async (cb) => {
     const Web3 = require("web3");
 
