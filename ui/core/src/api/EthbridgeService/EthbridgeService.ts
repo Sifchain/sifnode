@@ -7,6 +7,7 @@ import { createPegTxEventEmitter } from "./PegTxEventEmitter";
 import { confirmTx } from "./utils/confirmTx";
 import { SifUnSignedClient } from "../utils/SifClient";
 import { parseTxFailure } from "./parseTxFailure";
+import JSBI from "jsbi"
 
 // TODO: Do we break this service out to ethbridge and cosmos?
 
@@ -52,20 +53,24 @@ export default function createEthbridgeService({
         value: 0,
       };
 
-      // only for usdt?
-      if (amount.asset.symbol === "USDT") {
-        const hasAlreadyApprovedSpend = await tokenContract.methods
-          .allowance(account, bridgebankContractAddress)
-          .call();
-        if (hasAlreadyApprovedSpend >= amount.toBaseUnits().toString()) {
-          // dont request approve again
-          console.log(
-            "approveBridgeBankSpend: spend already approved",
-            hasAlreadyApprovedSpend
-          );
-          return;
-        } else {
-        } // else would need to approve for the difference ?
+      // TODO - give interface option to approve unlimited spend via web3.utils.toTwosComplement(-1);
+      // NOTE - We may want to move this out into its own separate function. 
+      // Although I couldn't think of a situation we'd call allowance separately from approve
+      const hasAlreadyApprovedSpend = await tokenContract.methods
+        .allowance(account, bridgebankContractAddress)
+        .call();
+      if (
+        JSBI.lessThanOrEqual(
+          amount.toBaseUnits(),
+          JSBI.BigInt(hasAlreadyApprovedSpend)
+        )
+      ) {
+        // dont request approve again
+        console.log(
+          "approveBridgeBankSpend: spend already approved",
+          hasAlreadyApprovedSpend
+        );
+        return;
       }
 
       const res = await tokenContract.methods

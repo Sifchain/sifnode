@@ -9,7 +9,12 @@
     <div v-if="rows.length > 0" class="details-body">
       <span v-for="row in rows" :key="row.label">
         <div v-if="row.show" class="details-row">
-          <span>{{ row.label }}</span>
+          <div class="details-row-label">
+            <span>{{ row.label }}</span>
+            <Tooltip v-if="row.tooltipMessage" :message="row.tooltipMessage">
+              <Icon icon="info-box-black" />
+            </Tooltip>
+          </div>
           <span>{{ row.data }}</span>
         </div>
       </span>
@@ -34,7 +39,13 @@
   &-row {
     display: flex;
     justify-content: space-between;
-
+    &-label {
+      display: flex;
+      flex-direction: row;
+      & span {
+        margin-right: 8px;
+      }
+    }
     span:last-child {
       text-align: right;
       color: $c_gray_900;
@@ -50,11 +61,16 @@
 </style>
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
-import { computed } from "@vue/reactivity";
+import Tooltip from "@/components/shared/Tooltip.vue";
+import Icon from "@/components/shared/Icon.vue";
 
 type Row = { show: boolean; label: string; data: string };
 
 export default defineComponent({
+  components: {
+    Tooltip,
+    Icon,
+  },
   props: {
     header: {
       type: Object as PropType<Row>,
@@ -64,6 +80,7 @@ export default defineComponent({
       type: Array as PropType<Row[]>,
       default: [],
     },
+    tooltipMessage: { type: String, default: "" },
   },
 });
 </script>

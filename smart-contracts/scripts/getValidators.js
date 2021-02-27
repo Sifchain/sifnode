@@ -10,8 +10,10 @@ module.exports = async () => {
     // Contract abstraction
     const truffleContract = require("truffle-contract");
     const contract = truffleContract(
-        require("../build/contracts/Valset.json")
+        require("../build/contracts/CosmosBridge.json")
     );
+
+    console.log("Expected usage: \n truffle exec scripts/peggy:validators --network ropsten");
 
     /*******************************************
      *** Constants

@@ -7,6 +7,7 @@ import Layout from "@/components/layout/Layout.vue";
 import PoolList from "@/components/poolList/PoolList.vue";
 import PoolListItem from "@/components/poolList/PoolListItem.vue";
 import SifButton from "@/components/shared/SifButton.vue";
+import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 
 type AccountPool = { lp: LiquidityProvider; pool: Pool };
 
@@ -16,6 +17,7 @@ export default defineComponent({
     SifButton,
     PoolList,
     PoolListItem,
+    ActionsPanel,
   },
 
   setup() {
@@ -25,7 +27,12 @@ export default defineComponent({
 
     // TODO: Sort pools?
     const accountPools = computed(() => {
-      if (!store.wallet.sif.address) return [];
+      if (
+        !store.accountpools ||
+        !store.wallet.sif.address ||
+        !store.accountpools[store.wallet.sif.address]
+      )
+        return [];
 
       return Object.entries(
         store.accountpools[store.wallet.sif.address] ?? {}
@@ -78,6 +85,9 @@ export default defineComponent({
         />
       </PoolList>
     </div>
+    <ActionsPanel
+      connectType="connectToSif"
+    />
   </Layout>
 </template>
 
