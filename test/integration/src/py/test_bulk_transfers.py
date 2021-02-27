@@ -2,6 +2,8 @@ import copy
 import json
 import logging
 
+import pytest
+
 import burn_lock_functions
 import test_utilities
 from integration_env_credentials import sifchain_cli_credentials_for_test
@@ -23,6 +25,7 @@ def create_new_sifaddr_and_key():
     return new_addr["address"], new_addr["name"]
 
 
+@pytest.mark.skip(reason="run manually")
 def test_bulk_transfers(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         smart_contracts_dir,
