@@ -31,8 +31,6 @@ module.exports = async (cb) => {
         },
     });
 
-    const ethMultiplier = (new BN("10", 10)).pow(new BN(18));
-
     const amount = new BN(argv.amount, 10);
     const limitAmount = new BN(argv.limit_amount, 10);
 

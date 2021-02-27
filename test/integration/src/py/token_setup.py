@@ -46,28 +46,30 @@ def test_can_create_a_new_token_and_peg_it(
     request = copy.deepcopy(basic_transfer_request)
     request.sifchain_address = sifaddress
     request.ethereum_address = source_ethereum_address
-    amount = 10 ** 9 * 10 ** 18  # one billion of the token
-    request.amount = amount
+    amount_in_tokens = 10 ** 9  # one billion of the token; note that this is not 1/(10 **18) of a token
 
     for t in tokens["assets"]:
         if t["symbol"] == "rowan" or t["symbol"] == 'ceth':
             continue
         logging.info(f"token is: {t}")
         try:
+            decimals_int = int(t["decimals"])
+            amount_in_fractions_of_a_token = amount_in_tokens * (10 ** decimals_int)
             new_currency = create_new_currency(
-                amount=amount,
+                amount=amount_in_fractions_of_a_token,
                 symbol=t["symbol"][1:],
                 token_name=t["name"],
-                decimals=int(t["decimals"]),
+                decimals=decimals_int,
                 smart_contracts_dir=smart_contracts_dir,
                 bridgebank_address=bridgebank_address,
                 solidity_json_path=solidity_json_path,
                 operator_address=operator_address,
                 ethereum_network=ethereum_network
             )
+            request.amount = amount_in_fractions_of_a_token
             request.ethereum_symbol = new_currency["newtoken_address"]
             request.sifchain_symbol = "c" + new_currency["newtoken_symbol"]
-            burn_lock_functions.transfer_ethereum_to_sifchain(request)
+            burn_lock_functions.send_from_ethereum_to_sifchain(request)
         except Exception as e:
             # it might already exist, so do nothing
             logging.info(f"failed to create token {t}, error was {e}")

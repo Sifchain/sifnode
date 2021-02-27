@@ -52,7 +52,7 @@ def test_eth_to_ceth_and_back_to_eth(
     request.ethereum_address, _ = test_utilities.create_ethereum_address(
         smart_contracts_dir, ethereum_network
     )
-    logging.critical(f"get balance of test account")
+    logging.info(f"get balance of test account")
     test_utilities.get_sifchain_addr_balance(
         request.sifchain_address,
         sifnodecli_node=request.sifnodecli_node, denom="ceth"
@@ -64,8 +64,8 @@ def test_eth_to_ceth_and_back_to_eth(
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
     test_utilities.get_eth_balance(request)
 
-    logging.critical("send eth back to ethereum chain")
-    logging.critical("get ceth balance to decide how much to return")
+    logging.info("send eth back to ethereum chain")
+    logging.info("get ceth balance to decide how much to return")
     request.sifchain_symbol = "ceth"
     request.ethereum_symbol = "eth"
     ceth_balance = test_utilities.get_sifchain_addr_balance(
@@ -75,7 +75,7 @@ def test_eth_to_ceth_and_back_to_eth(
     )
     request.amount = ceth_balance - request.ceth_amount
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
-    logging.critical("get final eth balance")
+    logging.info("get final eth balance")
     test_utilities.get_eth_balance(request)
     test_utilities.get_sifchain_addr_balance(
         request.sifchain_address,
