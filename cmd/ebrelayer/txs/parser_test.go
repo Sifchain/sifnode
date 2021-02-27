@@ -10,10 +10,16 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
+
+func GetLogger() *zap.SugaredLogger {
+	logger, _ := zap.NewProduction()
+	return logger.Sugar()
+}
 
 func TestLogLockToEthBridgeClaim(t *testing.T) {
 	// Set up testing variables
@@ -84,7 +90,7 @@ func TestBurnEventToCosmosMsg(t *testing.T) {
 
 	// Create MsgBurn attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgAttributes(t, types.MsgBurn)
-	msgBurn, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes)
+	msgBurn, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes, GetLogger())
 
 	require.Nil(t, err)
 	require.Equal(t, expectedMsgBurn, msgBurn)
@@ -96,7 +102,7 @@ func TestLockEventToCosmosMsg(t *testing.T) {
 
 	// Create MsgLock attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgAttributes(t, types.MsgLock)
-	msgLock, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes)
+	msgLock, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, GetLogger())
 
 	require.Nil(t, err)
 	require.Equal(t, expectedMsgLock, msgLock)
@@ -105,7 +111,7 @@ func TestLockEventToCosmosMsg(t *testing.T) {
 func TestFailedBurnEventToCosmosMsg(t *testing.T) {
 	// Create MsgBurn attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgIncompleteAttributes(t, types.MsgBurn)
-	_, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes)
+	_, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes, GetLogger())
 
 	require.Error(t, err)
 }
@@ -113,7 +119,7 @@ func TestFailedBurnEventToCosmosMsg(t *testing.T) {
 func TestFailedLockEventToCosmosMsg(t *testing.T) {
 	// Create MsgLock attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgIncompleteAttributes(t, types.MsgLock)
-	_, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes)
+	_, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, GetLogger())
 
 	require.Error(t, err)
 }

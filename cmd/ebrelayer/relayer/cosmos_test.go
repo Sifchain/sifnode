@@ -1,8 +1,8 @@
 package relayer
 
 import (
+	"log"
 	"math/big"
-	"os"
 	"testing"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
@@ -10,7 +10,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
+
+	// "github.com/tendermint/tendermint/libs/log"
+	"go.uber.org/zap"
 )
 
 const (
@@ -23,10 +25,20 @@ const (
 func TestNewCosmosSub(t *testing.T) {
 
 	privateKey, _ := crypto.HexToECDSA(privateKeyStr)
-	logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+	// logger := log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalln("failed to init zap logging")
+	}
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			log.Fatalln("failed to sync zap logging")
+		}
+	}()
+	sugaredLogger := logger.Sugar()
 	registryContractAddress := common.HexToAddress(contractAddress)
 	sub := NewCosmosSub(tmProvider, ethProvider, registryContractAddress,
-		privateKey, logger)
+		privateKey, sugaredLogger)
 	require.NotEqual(t, sub, nil)
 }
 

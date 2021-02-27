@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
-	tmLog "github.com/tendermint/tendermint/libs/log"
+	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
@@ -156,17 +156,28 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	mnemonic := args[4]
 
 	// Universal logger
-	logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
+	// logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalln("failed to init zap logging")
+	}
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			log.Fatalln("failed to sync zap logging")
+		}
+	}()
+
+	sugaredLogger := logger.Sugar()
 
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
 	ethSub, err := relayer.NewEthereumSub(inBuf, rpcURL, cdc, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, mnemonic, logger)
+		contractAddress, privateKey, mnemonic, sugaredLogger)
 	if err != nil {
 		return err
 	}
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)

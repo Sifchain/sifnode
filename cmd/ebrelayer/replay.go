@@ -3,8 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 
@@ -13,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	tmLog "github.com/tendermint/tendermint/libs/log"
+	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
@@ -82,13 +82,24 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Universal logger
-	logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
+	// logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
+
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalln("failed to init zap logging")
+	}
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			log.Fatalln("failed to sync zap logging")
+		}
+	}()
+	sugaredLogger := logger.Sugar()
 
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
 
 	ethSub, err := relayer.NewEthereumSub(inBuf, tendermintNode, cdc, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, mnemonic, logger)
+		contractAddress, privateKey, mnemonic, sugaredLogger)
 	if err != nil {
 		return err
 	}
@@ -158,10 +169,21 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	// Universal logger
-	logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
+	// logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
+
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalln("failed to init zap logging")
+	}
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			log.Fatalln("failed to sync zap logging")
+		}
+	}()
+	sugaredLogger := logger.Sugar()
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, sugaredLogger)
 
 	cosmosSub.Replay(fromBlock, toBlock, ethFromBlock, ethToBlock)
 
