@@ -41,7 +41,8 @@ export class SifUnSignedClient extends CosmosClient
   private subscriber: TendermintSocketPoll | undefined;
   constructor(
     apiUrl: string,
-    wsUrl: string = "ws://localhost:26657/websocket",
+    wsUrl = "ws://localhost:26657/websocket",
+    rpcUrl = "http://localhost:26657",
     broadcastMode?: BroadcastMode
   ) {
     super(apiUrl, broadcastMode);
@@ -56,7 +57,7 @@ export class SifUnSignedClient extends CosmosClient
     this.getPool = this.lcdClient.clp.getPool;
     this.burn = this.lcdClient.ethbridge.burn;
     this.lock = this.lcdClient.ethbridge.lock;
-    this.subscriber = createTendermintSocketPoll(apiUrl);
+    this.subscriber = createTendermintSocketPoll(rpcUrl);
   }
 
   // Clp Extension

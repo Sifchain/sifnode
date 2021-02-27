@@ -14,6 +14,7 @@ type BlockData = {
 };
 
 async function fetchBlock<T extends BlockData>(url: string): Promise<T> {
+  console.log({ url });
   const res = await axios.get(url);
   return res.data;
 }
@@ -32,7 +33,7 @@ export function TendermintSocketPoll({
 
   async function pollBlock(height?: number) {
     const query = typeof height !== "undefined" ? `?height=${height}` : "";
-    return await fetcher(`${apiUrl}/block${query}`);
+    return await fetcher(`${apiUrl.replace(/\/$/, "")}/block${query}`);
   }
 
   // Process a block and emit events based on that block

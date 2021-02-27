@@ -12,6 +12,7 @@ beforeEach(() => {
     sifChainId: "sifchain",
     sifApiUrl: "http://localhost:1317",
     sifWsUrl: "ws://localhost:26667/websocket",
+    sifRpcUrl: "http://localhost:26667",
   });
 });
 
