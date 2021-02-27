@@ -32,7 +32,7 @@ export function TendermintSocketPoll({
 
   async function pollBlock(height?: number) {
     const query = typeof height !== "undefined" ? `?height=${height}` : "";
-    return await fetcher(`${apiUrl}block${query}`);
+    return await fetcher(`${apiUrl}/block${query}`);
   }
 
   // Process a block and emit events based on that block
