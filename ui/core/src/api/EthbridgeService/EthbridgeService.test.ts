@@ -29,8 +29,8 @@ describe("EthbridgeService", () => {
   beforeEach(async () => {
     EthbridgeService = createEthbridgeService({
       sifApiUrl: "http://localhost:1317",
-      sifWsUrl: "ws://localhost:26667/nosocket",
-      sifRpcUrl: "http://localhost:26667",
+      sifWsUrl: "ws://localhost:26657/nosocket",
+      sifRpcUrl: "http://localhost:26657",
       sifChainId: "sifchain",
       bridgebankContractAddress: config.bridgebankContractAddress,
       bridgetokenContractAddress: (EROWAN as Token).address,
