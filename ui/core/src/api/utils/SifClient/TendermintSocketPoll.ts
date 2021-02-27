@@ -18,6 +18,8 @@ async function fetchBlock<T extends BlockData>(url: string): Promise<T> {
   return res.data;
 }
 
+export type ITendermintSocketPoll = ReturnType<typeof TendermintSocketPoll>;
+
 export function TendermintSocketPoll({
   apiUrl,
   fetcher = fetchBlock,
@@ -53,6 +55,10 @@ export function TendermintSocketPoll({
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  /**
+   * Get all blocks that havent been processed since last known blockheight
+   * @param height last processed blockheight or null for no new blockheight
+   */
   async function getBlocksToProcess(height: number | null) {
     const blockData = await pollBlock();
     const newHeight = parseInt(blockData.result.block.header.height);
@@ -67,7 +73,7 @@ export function TendermintSocketPoll({
       return [];
     }
 
-    // Build up a list of blocks to process in order
+    // There are blocks to be processed build up a list of them
     let heightDiff = newHeight - height;
     const blocks = [blockData];
     for (let i = heightDiff - 1; i > 0; --i) {
@@ -79,6 +85,7 @@ export function TendermintSocketPoll({
   }
 
   let polling = false;
+
   async function startPoll() {
     polling = true;
     let height: number | null = null;
@@ -97,6 +104,7 @@ export function TendermintSocketPoll({
       await sleep(pollInterval);
     }
   }
+
   function stopPoll() {
     polling = false;
   }
@@ -117,6 +125,11 @@ export function TendermintSocketPoll({
   };
 }
 
+// Make this a singleton to avoid multiple polling
+let instance: ITendermintSocketPoll;
 export function createTendermintSocketPoll(apiUrl: string) {
-  return TendermintSocketPoll({ apiUrl });
+  if (!instance) {
+    instance = TendermintSocketPoll({ apiUrl });
+  }
+  return instance;
 }
