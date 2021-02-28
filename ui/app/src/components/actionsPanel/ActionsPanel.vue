@@ -1,4 +1,3 @@
-
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import WithWallet from "@/components/wallet/WithWallet.vue";
@@ -37,19 +36,6 @@ export default defineComponent({
           {{ connectCta }}
         </SifButton>
       </template>
-      <template v-slot:connected="{ connectedText }"
-        ><div>
-          <SifButton
-            v-if="nextStepMessage"
-            block
-            primary
-            :disabled="!nextStepAllowed"
-            @click="handleNextStepClicked"
-          >
-            {{ nextStepMessage }}
-          </SifButton>
-        </div></template
-      >
     </WithWallet>
   </div>
 </template>

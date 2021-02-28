@@ -1,55 +1,34 @@
 <script lang="ts">
 import { computed, defineComponent } from "vue";
 import { useCore } from "@/hooks/useCore";
-import BalanceTable from "./BalanceTable.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import Icon from "@/components/shared/Icon.vue";
-
-function useEtheriumWallet() {
-  const { store, actions } = useCore();
-
-  async function handleDisconnectClicked() {
-    await actions.ethWallet.disconnectWallet();
-  }
-
-  async function handleConnectClicked() {
-    await actions.ethWallet.connectToWallet();
-  }
-
-  const address = computed(() => store.wallet.eth.address);
-  const balances = computed(() => store.wallet.eth.balances);
-  const connected = computed(() => store.wallet.eth.isConnected);
-
-  return {
-    address,
-    balances,
-    connected,
-    handleConnectClicked,
-    handleDisconnectClicked,
-  };
-}
 
 export default defineComponent({
   name: "EtheriumWalletController",
   components: {
-    // BalanceTable,
     SifButton,
-    Icon
+    Icon,
   },
   setup() {
-    const {
-      address,
-      balances,
-      connected,
-      handleConnectClicked,
-      handleDisconnectClicked,
-    } = useEtheriumWallet();
+    const { store, actions } = useCore();
+    function formatAddress(address: string) {
+      return !address || address.length < 4
+        ? ""
+        : address.substring(0, 6) +
+            "..." +
+            address.substring(address.length - 4);
+    }
+    async function handleConnectClicked() {
+      await actions.ethWallet.connectToWallet();
+    }
+    const address = computed(() => store.wallet.eth.address);
+    const connected = computed(() => store.wallet.eth.isConnected);
     return {
       address,
-      balances,
       connected,
+      formatAddress,
       handleConnectClicked,
-      handleDisconnectClicked,
     };
   },
 });
@@ -58,14 +37,17 @@ export default defineComponent({
 <template>
   <div class="wrapper">
     <div v-if="connected">
-      <p class="mb-2" v-if="address">{{ address }} <Icon icon="tick" /></p>
-      <!-- <BalanceTable :balances="balances" /> -->
-      <SifButton connect active @click="handleDisconnectClicked"
-        >Disconnect Metamask</SifButton
-      >
+      <img class="image" src="../../assets/metamask.png" />
+      <p class="mb-2" v-if="address">
+        {{ formatAddress(address) }} <Icon icon="tick" />
+      </p>
     </div>
-    <SifButton connect v-else @click="handleConnectClicked"
-      >Metamask</SifButton
-    >
+    <SifButton connect v-else @click="handleConnectClicked">Metamask</SifButton>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.image {
+  height: 35px;
+}
+</style>
