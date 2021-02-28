@@ -2,18 +2,21 @@ import { EventEmitter2 } from "eventemitter2";
 import axios from "axios";
 export type TendermintSocketPoll = ReturnType<typeof TendermintSocketPoll>;
 
-type BlockData = {
+// Partial BlockData we need
+export type BlockData = {
   result: {
     block: {
       header: {
         height: string; // number in string
       };
-      txs: null | string[]; // Array of hashes
+      data: {
+        txs: null | string[]; // Array of hashes
+      };
     };
   };
 };
 
-async function fetchBlock<T extends BlockData>(url: string): Promise<T> {
+async function fetchBlock(url: string): Promise<BlockData> {
   const res = await axios.get(url);
   return res.data;
 }
@@ -23,11 +26,12 @@ export type ITendermintSocketPoll = ReturnType<typeof TendermintSocketPoll>;
 export function TendermintSocketPoll({
   apiUrl,
   fetcher = fetchBlock,
+  pollInterval = 5000,
 }: {
   apiUrl: string;
   fetcher?: typeof fetchBlock;
+  pollInterval?: number;
 }) {
-  const pollInterval = 5000;
   const emitter = new EventEmitter2();
 
   async function pollBlock(height?: number) {
@@ -39,7 +43,8 @@ export function TendermintSocketPoll({
   function processData(blockData: BlockData) {
     emitter.emit("NewBlock", blockData);
 
-    const txs = blockData.result.block.txs;
+    const txs = blockData.result.block.data.txs;
+
     if (txs) {
       txs.forEach(tx => {
         // TODO: Not sure if we should/can add more tx information here as all we have is the encoded tx - can we decode it? need to look into it
@@ -87,6 +92,9 @@ export function TendermintSocketPoll({
   let polling = false;
 
   async function startPoll() {
+    // If already polling dont poll again
+    if (polling) return;
+
     polling = true;
     let height: number | null = null;
 
