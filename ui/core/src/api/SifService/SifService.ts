@@ -1,5 +1,4 @@
 import {
-  BroadcastTxResult,
   coins,
   isBroadcastTxFailure,
   makeCosmoshubPath,
@@ -7,7 +6,7 @@ import {
   Secp256k1HdWallet,
 } from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
-import { debounce, filter } from "lodash";
+import { debounce } from "lodash";
 import {
   Address,
   Asset,
@@ -74,7 +73,7 @@ export default function createSifService({
   const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl);
 
   const supportedTokens = assets.filter(
-    asset => asset.network === Network.SIFCHAIN
+    (asset) => asset.network === Network.SIFCHAIN
   );
 
   // TODO: deletion ?
@@ -127,7 +126,29 @@ export default function createSifService({
       return supportedTokens;
     },
 
+    async initProvider() {
+      const keplrProvider = await keplrProviderPromise;
+      const offlineSigner = keplrProvider.getOfflineSigner(
+        keplrChainConfig.chainId
+      );
+      const accounts = await offlineSigner.getAccounts();
+      const address = accounts.length > 0 ? accounts[0].address : "";
+
+      if (!address) {
+        throw "No address on sif account";
+      }
+
+      client = new SifClient(sifApiUrl, address, offlineSigner, sifWsUrl);
+      triggerUpdate();
+      closeUpdateListener = client.getUnsignedClient().onNewBlock(() => {
+        triggerUpdate();
+      });
+    },
+
     async connect() {
+      if (sifApiUrl.includes("127.0.0.1") || sifApiUrl.includes("localhost")) {
+        return;
+      }
       const keplrProvider = await keplrProviderPromise;
 
       // connect to Keplr
@@ -138,7 +159,7 @@ export default function createSifService({
           detail: {
             type: "info",
             message: "Check if extension enabled for this URL",
-          }
+          },
         };
       }
       // open extension
@@ -162,15 +183,15 @@ export default function createSifService({
 
           client = new SifClient(sifApiUrl, address, offlineSigner, sifWsUrl);
           triggerUpdate();
-          closeUpdateListener = client.getUnsignedClient().onNewBlock(() => {
-            triggerUpdate();
-          });
         } catch (error) {
           console.log(error);
           throw { message: "Failed to Suggest Chain" };
         }
       } else {
-        throw { message: "Keplr Outdated", detail: { type: "info", message: "Need at least 0.6.4" }};
+        throw {
+          message: "Keplr Outdated",
+          detail: { type: "info", message: "Need at least 0.6.4" },
+        };
       }
     },
 
@@ -227,25 +248,23 @@ export default function createSifService({
       try {
         const account = await client.getAccount(address);
         if (!account) throw "No Address found on chain"; // todo handle this better
-        const supportedTokenSymbols = supportedTokens.map(s => s.symbol);
-        const balances = account.balance
-          .filter(balance => supportedTokenSymbols.includes(balance.denom))
+        const supportedTokenSymbols = supportedTokens.map((s) => s.symbol);
+        return account.balance
+          .filter((balance) => supportedTokenSymbols.includes(balance.denom))
           .map(({ amount, denom }) => {
             const asset = supportedTokens.find(
-              token => token.symbol === denom
+              (token) => token.symbol === denom
             )!; // will be found because of filter above
 
             return AssetAmount(asset, amount, { inBaseUnit: true });
           })
-          .filter(balance => {
+          .filter((balance) => {
             // If an aseet is supplied filter for it
             if (!asset) {
               return true;
             }
             return balance.asset.symbol === asset.symbol;
           });
-
-        return balances;
       } catch (error) {
         throw error;
       }
@@ -318,5 +337,8 @@ export default function createSifService({
       }
     },
   };
+
+  instance.initProvider();
+
   return instance;
 }
