@@ -128,6 +128,9 @@ export default function createSifService({
 
     async initProvider() {
       const keplrProvider = await keplrProviderPromise;
+      if (!keplrProvider) {
+        return;
+      }
       const offlineSigner = keplrProvider.getOfflineSigner(
         keplrChainConfig.chainId
       );
@@ -146,9 +149,6 @@ export default function createSifService({
     },
 
     async connect() {
-      if (sifApiUrl.includes("127.0.0.1") || sifApiUrl.includes("localhost")) {
-        return;
-      }
       const keplrProvider = await keplrProviderPromise;
 
       // connect to Keplr
