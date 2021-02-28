@@ -53,7 +53,7 @@ export default defineComponent({
         </div>
       </div>
     </teleport>
-    <span ref="trigger">
+    <span class="trigger" ref="trigger">
       <slot></slot>
     </span>
   </span>
@@ -90,5 +90,8 @@ export default defineComponent({
     border-bottom-left-radius: 0;
     padding: 1rem;
   }
+}
+.trigger {
+  cursor: pointer;
 }
 </style>

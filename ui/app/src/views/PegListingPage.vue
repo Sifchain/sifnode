@@ -47,8 +47,8 @@
                   </p></template
                 >
                 <template #default
-                  >&nbsp;<Icon icon="info-box-black"
-                /></template>
+                  >&nbsp;<span class="footnote">*</span></template
+                >
               </Tooltip>
             </span>
           </template>
@@ -62,6 +62,12 @@
 .search-text {
   margin-bottom: 1rem;
 }
+.footnote {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  font-style: normal;
+  color: $c_gold_dark;
+}
 </style>
 <script lang="ts">
 import Tab from "@/components/shared/Tab.vue";
@@ -72,11 +78,10 @@ import SifInput from "@/components/shared/SifInput.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
-import Icon from "@/components/shared/Icon.vue";
 
 import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";
-import { computed, effect, toRaw } from "@vue/reactivity";
+import { computed } from "@vue/reactivity";
 import { getUnpeggedSymbol } from "../components/shared/utils";
 import { TransactionStatus } from "ui-core";
 
@@ -90,7 +95,6 @@ export default defineComponent({
     SifInput,
     ActionsPanel,
     Tooltip,
-    Icon,
   },
   setup(_, context) {
     const { store, actions } = useCore();
