@@ -3,15 +3,18 @@ import { wallet, WalletStore } from "./wallet";
 import { asset, AssetStore } from "./asset";
 import { accountpools, AccountPoolStore, pools, PoolStore } from "./pools";
 import { notifications, NotificationsStore } from "./notifications";
+import { LiquidityProvider, Pool } from "../entities";
+import { tx, TxStore } from "./tx";
 export * from "./poolFinder";
 
-// TODO: Add a tx lookup per blockchain so we have access to txs
-// TODO: Consider storing local txs key in local storage as an effect
+export * from "./poolFinder";
 
+// TODO: Consider storing tx key in local storage as an optimization?
 export type Store = {
   wallet: WalletStore;
   asset: AssetStore;
   pools: PoolStore;
+  tx: TxStore;
   accountpools: AccountPoolStore;
   notifications: NotificationsStore;
 };
@@ -21,6 +24,7 @@ export function createStore() {
     wallet,
     asset,
     pools,
+    tx,
     accountpools,
     notifications,
   }) as Store;
