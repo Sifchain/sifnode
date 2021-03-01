@@ -31,7 +31,7 @@ rake "keys:generate:mnemonic"
 4. Boot your node:
 
 ```
-rake "genesis:sifnode:mainnet:boot[<moniker>,'<mnemonic>',<gas_price>]"
+rake "genesis:sifnode:mainnet:boot[<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>]"
 ```
 
 Where:
@@ -40,7 +40,8 @@ Where:
 |-----|----------|
 |`<moniker>`|A name for your node.|
 |`<mnemonic>`|The mnemonic phrase generated in the previous step.|
-|`<gas_price>`|Optional. The minimum gas price (e.g.: 0.5rowan).|
+|`<gas_price>`|The minimum gas price (e.g.: 0.5rowan).|
+|`<bind_ip_address>`|The IP Address to bind to (*Important:* this is what your node will advertise to the rest of the network). This should be the public IP of the host.|
 
 and your node will start synchronizing with the network. Please note that this may take several hours or more.
 
