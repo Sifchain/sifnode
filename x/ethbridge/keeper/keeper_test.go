@@ -23,6 +23,10 @@ var (
 	//BadValidatorAddress                        = sdk.ValAddress(CreateTestPubKeys(1)[0].Address().Bytes())
 )
 
+var (
+	sugaredLogger = NewZapSugaredLogger()
+)
+
 func NewZapSugaredLogger() *zap.SugaredLogger {
 	logger, err := zap.NewProduction()
 	if err != nil {
@@ -59,12 +63,12 @@ func TestProcessClaimLock(t *testing.T) {
 		claimType,
 	)
 
-	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim, NewZapSugaredLogger())
+	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim, sugaredLogger)
 
 	require.NoError(t, err)
 	require.Equal(t, status.Text, oracle.PendingStatusText)
 	// duplicate execution
-	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim, NewZapSugaredLogger())
+	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim, sugaredLogger)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
 
@@ -82,7 +86,7 @@ func TestProcessClaimLock(t *testing.T) {
 		amount,
 		claimType,
 	)
-	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim, NewZapSugaredLogger())
+	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim, sugaredLogger)
 	require.NoError(t, err)
 	require.Equal(t, status.Text, oracle.SuccessStatusText)
 
@@ -111,12 +115,12 @@ func TestProcessClaimBurn(t *testing.T) {
 		claimType,
 	)
 
-	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim, NewZapSugaredLogger())
+	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim, sugaredLogger)
 
 	require.NoError(t, err)
 	require.Equal(t, status.Text, oracle.PendingStatusText)
 
-	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim, NewZapSugaredLogger())
+	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim, sugaredLogger)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
 
@@ -134,7 +138,7 @@ func TestProcessClaimBurn(t *testing.T) {
 		amount,
 		claimType,
 	)
-	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim, NewZapSugaredLogger())
+	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim, sugaredLogger)
 	require.NoError(t, err)
 	require.Equal(t, status.Text, oracle.SuccessStatusText)
 
@@ -152,7 +156,7 @@ func TestProcessSuccessfulClaimLock(t *testing.T) {
 	claimBytes, err := json.Marshal(claimContent)
 	require.NoError(t, err)
 	claimString := string(claimBytes)
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString, NewZapSugaredLogger())
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -160,7 +164,7 @@ func TestProcessSuccessfulClaimLock(t *testing.T) {
 	require.Equal(t, receiverCoins.String(), "10cstake")
 
 	// duplicate processSuccessClaim
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString, NewZapSugaredLogger())
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -180,7 +184,7 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 	claimBytes, err := json.Marshal(claimContent)
 	require.NoError(t, err)
 	claimString := string(claimBytes)
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString, NewZapSugaredLogger())
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -188,7 +192,7 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 	require.Equal(t, receiverCoins.String(), "10stake")
 
 	// duplicate processSuccessClaim
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString, NewZapSugaredLogger())
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -201,7 +205,7 @@ func TestProcessBurn(t *testing.T) {
 
 	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
-	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], coins, NewZapSugaredLogger())
+	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], coins, sugaredLogger)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
@@ -214,10 +218,10 @@ func TestProcessBurn(t *testing.T) {
 	claimBytes, err := json.Marshal(claimContent)
 	require.NoError(t, err)
 	claimString := string(claimBytes)
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString, NewZapSugaredLogger())
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
 	require.NoError(t, err)
 
-	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], coins, NewZapSugaredLogger())
+	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], coins, sugaredLogger)
 	require.NoError(t, err)
 	// lock stake
 
@@ -246,7 +250,7 @@ func TestProcessLock(t *testing.T) {
 	claimBytes, err := json.Marshal(claimContent)
 	require.NoError(t, err)
 	claimString := string(claimBytes)
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString, NewZapSugaredLogger())
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])

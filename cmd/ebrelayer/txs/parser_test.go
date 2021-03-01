@@ -16,7 +16,11 @@ import (
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
-func GetLogger() *zap.SugaredLogger {
+var (
+	sugaredLogger = NewZapSugaredLogger()
+)
+
+func NewZapSugaredLogger() *zap.SugaredLogger {
 	logger, _ := zap.NewProduction()
 	return logger.Sugar()
 }
@@ -90,7 +94,7 @@ func TestBurnEventToCosmosMsg(t *testing.T) {
 
 	// Create MsgBurn attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgAttributes(t, types.MsgBurn)
-	msgBurn, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes, GetLogger())
+	msgBurn, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes, sugaredLogger)
 
 	require.Nil(t, err)
 	require.Equal(t, expectedMsgBurn, msgBurn)
@@ -102,7 +106,7 @@ func TestLockEventToCosmosMsg(t *testing.T) {
 
 	// Create MsgLock attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgAttributes(t, types.MsgLock)
-	msgLock, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, GetLogger())
+	msgLock, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, sugaredLogger)
 
 	require.Nil(t, err)
 	require.Equal(t, expectedMsgLock, msgLock)
@@ -111,7 +115,7 @@ func TestLockEventToCosmosMsg(t *testing.T) {
 func TestFailedBurnEventToCosmosMsg(t *testing.T) {
 	// Create MsgBurn attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgIncompleteAttributes(t, types.MsgBurn)
-	_, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes, GetLogger())
+	_, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes, sugaredLogger)
 
 	require.Error(t, err)
 }
@@ -119,7 +123,7 @@ func TestFailedBurnEventToCosmosMsg(t *testing.T) {
 func TestFailedLockEventToCosmosMsg(t *testing.T) {
 	// Create MsgLock attributes as input parameter
 	cosmosMsgAttributes := CreateCosmosMsgIncompleteAttributes(t, types.MsgLock)
-	_, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, GetLogger())
+	_, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes, sugaredLogger)
 
 	require.Error(t, err)
 }

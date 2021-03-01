@@ -63,7 +63,6 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		go sub.Start(completionEvent)
 		return
 	}
-	// client.SetLogger(sub.SugaredLogger)
 
 	if err := client.Start(); err != nil {
 		sub.SugaredLogger.Errorw("failed to start a sifchain client.",
