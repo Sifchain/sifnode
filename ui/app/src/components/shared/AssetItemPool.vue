@@ -26,7 +26,7 @@ export default defineComponent({
         ? getAssetLabel(props.pool?.pool.amounts[1].asset)
         : props.tokenASymbol
     );
-    
+
     const fromAsset = useAssetItem(fromSymbol);
     const fromToken = fromAsset.token;
     const fromBackgroundStyle = fromAsset.background;
@@ -63,7 +63,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="pool-asset" :class="{'inline': inline}">
+  <div class="pool-asset" :class="{ inline: inline }">
     <div class="image">
       <img
         v-if="fromTokenImage"

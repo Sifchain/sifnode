@@ -49,6 +49,7 @@
     ]
   },
   "dependencies": {
-    "codecov": "^3.8.0"
+    "codecov": "^3.8.0",
+    "prettier": "^2.2.1"
   }
 }

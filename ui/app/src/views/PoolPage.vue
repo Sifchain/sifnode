@@ -85,9 +85,7 @@ export default defineComponent({
         />
       </PoolList>
     </div>
-    <ActionsPanel
-      connectType="connectToSif"
-    />
+    <ActionsPanel connectType="connectToSif" />
   </Layout>
 </template>
 

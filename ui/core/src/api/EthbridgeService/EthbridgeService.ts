@@ -7,7 +7,7 @@ import { createPegTxEventEmitter } from "./PegTxEventEmitter";
 import { confirmTx } from "./utils/confirmTx";
 import { SifUnSignedClient } from "../utils/SifClient";
 import { parseTxFailure } from "./parseTxFailure";
-import JSBI from "jsbi"
+import JSBI from "jsbi";
 
 // TODO: Do we break this service out to ethbridge and cosmos?
 
@@ -54,7 +54,7 @@ export default function createEthbridgeService({
       };
 
       // TODO - give interface option to approve unlimited spend via web3.utils.toTwosComplement(-1);
-      // NOTE - We may want to move this out into its own separate function. 
+      // NOTE - We may want to move this out into its own separate function.
       // Although I couldn't think of a situation we'd call allowance separately from approve
       const hasAlreadyApprovedSpend = await tokenContract.methods
         .allowance(account, bridgebankContractAddress)
@@ -253,7 +253,7 @@ export default function createEthbridgeService({
         const sendArgs = {
           from: fromAddress,
           value: 0,
-          gas: 150000 // Note: This chose in lieu of burn(params).estimateGas({from})
+          gas: 150000, // Note: This chose in lieu of burn(params).estimateGas({from})
         };
 
         bridgeBankContract.methods

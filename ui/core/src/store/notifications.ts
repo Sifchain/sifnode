@@ -5,6 +5,6 @@ import { reactive } from "@vue/reactivity";
 import { Notification } from "../entities";
 
 // entity:
-export type NotificationsStore = Array<Notification>
+export type NotificationsStore = Array<Notification>;
 
 export const notifications = reactive([]) as NotificationsStore;

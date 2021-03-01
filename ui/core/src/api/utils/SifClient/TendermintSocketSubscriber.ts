@@ -6,7 +6,7 @@ import { ensureWs } from "./ensureWs";
 // Helper to allow us to add listeners to the open websocket
 // In kind of a synchronous looking way
 function openWebsocket(ws: ReconnectingWebSocket) {
-  const wsPromise = new Promise<ReconnectingWebSocket>(resolve => {
+  const wsPromise = new Promise<ReconnectingWebSocket>((resolve) => {
     if (ws.readyState === ReconnectingWebSocket.OPEN) {
       resolve(ws);
       return;
@@ -32,8 +32,8 @@ export function TendermintSocketSubscriber({ wsUrl }: { wsUrl: string }) {
   const _ws = ensureWs(wsUrl);
   const withWebsocket = openWebsocket(_ws);
 
-  withWebsocket(ws => {
-    ws.addEventListener("message", message => {
+  withWebsocket((ws) => {
+    ws.addEventListener("message", (message) => {
       const data = JSON.parse(message.data);
 
       const eventData = data.result?.data;
@@ -58,7 +58,7 @@ export function TendermintSocketSubscriber({ wsUrl }: { wsUrl: string }) {
       }
 
       if (!emitter.hasListeners(event)) {
-        withWebsocket(ws => {
+        withWebsocket((ws) => {
           ws.send(
             JSON.stringify({
               jsonrpc: "2.0",

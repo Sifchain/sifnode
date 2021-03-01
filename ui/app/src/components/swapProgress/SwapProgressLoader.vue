@@ -1,5 +1,5 @@
 <template>
-  <div class="swap-loader" :class="{'loading': loading, 'success': success}">
+  <div class="swap-loader" :class="{ loading: loading, success: success }">
     <div class="ring"></div>
     <slot></slot>
   </div>
@@ -10,8 +10,8 @@ export default {
   props: {
     loading: Boolean,
     success: Boolean,
-  }
-}
+  },
+};
 </script>
 
 <style scoped lang="scss">

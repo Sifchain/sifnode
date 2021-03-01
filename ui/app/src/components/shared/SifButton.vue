@@ -204,11 +204,11 @@ export default defineComponent({
       color: $c_white;
       &:hover {
         background: $g_gray;
-        color: initial
+        color: initial;
       }
     }
   }
-  
+
   &.ghost {
     background: transparent;
     &.secondary {

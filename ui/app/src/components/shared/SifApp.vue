@@ -16,18 +16,18 @@
       <div class="footer">
         <slot name="footer"></slot>
       </div>
-    </div> <!-- main app card -->
+    </div>
+    <!-- main app card -->
 
     <div class="after">
       <slot name="after"></slot>
     </div>
-  </div> <!-- wrapper -->
+  </div>
+  <!-- wrapper -->
 </template>
 
 <script>
-export default {
-
-}
+export default {};
 </script>
 
 <style lang="scss" scoped>

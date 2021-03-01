@@ -196,10 +196,10 @@ export function useSwapCalculator(input: {
     // SwapState.INSUFFICIENT_LIQUIDITY is probably better here
     if (!pool.value) return SwapState.SELECT_TOKENS;
     const fromTokenLiquidity = (pool.value as IPool).amounts.find(
-      amount => amount.asset.symbol === fromField.asset.value?.symbol
+      (amount) => amount.asset.symbol === fromField.asset.value?.symbol
     );
     const toTokenLiquidity = (pool.value as IPool).amounts.find(
-      amount => amount.asset.symbol === toField.asset.value?.symbol
+      (amount) => amount.asset.symbol === toField.asset.value?.symbol
     );
 
     if (
@@ -213,7 +213,10 @@ export function useSwapCalculator(input: {
       return SwapState.ZERO_AMOUNTS;
     }
 
-    if  (toField.fieldAmount.value.greaterThan("0") && fromField.fieldAmount.value.equalTo("0")) {
+    if (
+      toField.fieldAmount.value.greaterThan("0") &&
+      fromField.fieldAmount.value.equalTo("0")
+    ) {
       return SwapState.INVALID_AMOUNT;
     }
 

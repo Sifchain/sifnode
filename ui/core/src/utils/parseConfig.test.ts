@@ -87,7 +87,7 @@ const expected = {
         coinDecimals: 12,
         coinDenom: "rowan",
         coinMinimalDenom: "rowan",
-      }
+      },
     ],
     feeCurrencies: [
       {

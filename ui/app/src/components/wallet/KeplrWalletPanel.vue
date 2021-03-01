@@ -11,10 +11,10 @@ function useKeplrWallet() {
     await actions.wallet.disconnectWallet();
   }
   async function handleConnectClicked() {
-    try{
+    try {
       await actions.wallet.connectToWallet();
     } catch (error) {
-      console.log('ui', error)
+      console.log("ui", error);
     }
   }
   const address = computed(() => store.wallet.sif.address);
@@ -59,8 +59,6 @@ export default defineComponent({
         >Disconnect Keplr</SifButton
       >
     </div>
-    <SifButton connect v-else @click="handleConnectClicked"
-      >Keplr</SifButton
-    >
+    <SifButton connect v-else @click="handleConnectClicked">Keplr</SifButton>
   </div>
 </template>

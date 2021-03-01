@@ -1,4 +1,3 @@
-
 <template>
   <Modal class="with-wallet-container">
     <template v-slot:activator="{ requestOpen }">
@@ -22,10 +21,8 @@
     </template>
     <template v-slot:default>
       <div class="wallet-connect-container">
-        <div class="pt-12">
-          Connect Wallet
-        </div>
-      
+        <div class="pt-12">Connect Wallet</div>
+
         <div class="vstack">
           <EtheriumWalletPanel />
           <KeplrWalletPanel />
@@ -74,7 +71,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .wallet-connect-container {
   background: $c_gray_100;
-  color: $c_gray_800
+  color: $c_gray_800;
 }
 .vstack {
   display: flex;

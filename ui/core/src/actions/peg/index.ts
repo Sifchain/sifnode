@@ -91,9 +91,9 @@ export default ({
       const lockOrBurnFn = isOriginallySifchainNativeToken(assetAmount.asset)
         ? api.EthbridgeService.burnToSifchain
         : api.EthbridgeService.lockToSifchain;
-      return await new Promise<TransactionStatus>(done => {
+      return await new Promise<TransactionStatus>((done) => {
         lockOrBurnFn(store.wallet.sif.address, assetAmount, ETH_CONFIRMATIONS)
-          .onTxHash(hash => {
+          .onTxHash((hash) => {
             // TODO: Set tx status on store for pending txs to use elsewhere
             notify({
               type: "info",
@@ -111,7 +111,7 @@ export default ({
               state: "accepted",
             });
           })
-          .onError(err => {
+          .onError((err) => {
             notify({ type: "error", message: err.payload.memo! });
             done(err.payload);
           })

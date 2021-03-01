@@ -58,8 +58,8 @@ export default defineComponent({
 
     const getAccountBalance = () => {
       return balances.value.find(
-          (balance) => balance.asset.symbol === fromSymbol.value
-        )
+        (balance) => balance.asset.symbol === fromSymbol.value
+      );
     };
 
     const isFromMaxActive = computed(() => {
@@ -122,9 +122,9 @@ export default defineComponent({
     }
 
     function swapInputs() {
-      selectedField.value === "to" ?
-        selectedField.value = "from" :
-        selectedField.value = "to"
+      selectedField.value === "to"
+        ? (selectedField.value = "from")
+        : (selectedField.value = "to");
       const fromAmountValue = fromAmount.value;
       const fromSymbolValue = fromSymbol.value;
       fromAmount.value = toAmount.value;
@@ -185,7 +185,7 @@ export default defineComponent({
       },
       handleNextStepClicked,
       handleBlur() {
-        if (isFromMaxActive) return
+        if (isFromMaxActive) return;
         selectedField.value = null;
       },
       slippage,
@@ -199,7 +199,7 @@ export default defineComponent({
       providerFee,
       handleFromMaxClicked() {
         selectedField.value = "from";
-        const accountBalance = getAccountBalance()
+        const accountBalance = getAccountBalance();
         if (!accountBalance) return;
         fromAmount.value = accountBalance.toFixed(18);
       },
@@ -226,7 +226,7 @@ export default defineComponent({
       handleAskConfirmClicked,
       transactionHash,
       isFromMaxActive,
-      selectedField
+      selectedField,
     };
   },
 });

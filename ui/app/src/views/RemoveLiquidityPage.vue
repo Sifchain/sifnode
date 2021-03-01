@@ -243,7 +243,11 @@ export default defineComponent({
           You should receive
           <span class="text--bold">
             {{ withdrawExternalAssetAmount }}
-            {{ externalAssetSymbol.toLowerCase().includes("rowan") ? externalAssetSymbol.toUpperCase() : "c" + externalAssetSymbol.slice(1).toUpperCase() }}
+            {{
+              externalAssetSymbol.toLowerCase().includes("rowan")
+                ? externalAssetSymbol.toUpperCase()
+                : "c" + externalAssetSymbol.slice(1).toUpperCase()
+            }}
           </span>
           and
           <span class="text--bold">

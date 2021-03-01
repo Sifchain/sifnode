@@ -34,7 +34,7 @@ export default defineComponent({
   components: {
     // BalanceTable,
     SifButton,
-    Icon
+    Icon,
   },
   setup() {
     const {
@@ -64,8 +64,6 @@ export default defineComponent({
         >Disconnect Metamask</SifButton
       >
     </div>
-    <SifButton connect v-else @click="handleConnectClicked"
-      >Metamask</SifButton
-    >
+    <SifButton connect v-else @click="handleConnectClicked">Metamask</SifButton>
   </div>
 </template>

@@ -38,7 +38,7 @@ export default ({
       // This is a hot method when there are a heap of pools
       // Ideally we would have a better rest endpoint design
 
-      accountPoolSymbols.forEach(async symbol => {
+      accountPoolSymbols.forEach(async (symbol) => {
         const lp = await api.ClpService.getLiquidityProvider({
           symbol,
           lpAddress: state.address,
@@ -52,14 +52,14 @@ export default ({
       });
 
       // Delete accountpools
-      const currentPoolIds = accountPoolSymbols.map(id => `${id}_rowan`);
+      const currentPoolIds = accountPoolSymbols.map((id) => `${id}_rowan`);
       if (store.accountpools[state.address]) {
         const existingPoolIds = Object.keys(store.accountpools[state.address]);
         const disjunctiveIds = existingPoolIds.filter(
-          id => !currentPoolIds.includes(id)
+          (id) => !currentPoolIds.includes(id)
         );
 
-        disjunctiveIds.forEach(poolToRemove => {
+        disjunctiveIds.forEach((poolToRemove) => {
           delete store.accountpools[state.address][poolToRemove];
         });
       }
@@ -88,7 +88,7 @@ export default ({
     await syncPools();
   });
 
-  api.SifService.onSocketError(instance => {
+  api.SifService.onSocketError((instance) => {
     notify({
       type: "error",
       message: "Websocket Not Connected",

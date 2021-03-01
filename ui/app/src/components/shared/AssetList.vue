@@ -13,7 +13,7 @@
 <script lang="ts">
 import { PropType, defineComponent } from "vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
-import { formatNumber } from "@/components/shared/utils.ts"
+import { formatNumber } from "@/components/shared/utils.ts";
 import { Asset } from "ui-core";
 import { computed } from "@vue/reactivity";
 export default defineComponent({
@@ -24,8 +24,8 @@ export default defineComponent({
     items: { type: Array as PropType<{ amount: string; asset: Asset }[]> },
   },
   methods: {
-    formatNumber
-  }
+    formatNumber,
+  },
 });
 </script>
 

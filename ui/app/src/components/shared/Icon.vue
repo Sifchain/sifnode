@@ -15,12 +15,31 @@ export default defineComponent({
   props: {
     icon: {
       type: String as PropType<
-        "arrows" | "back" | "circle-half" | "pool" | "plus" | "down" | "tick" | "cross" |
-        "info-box-black" | "info-box-white"
+        | "arrows"
+        | "back"
+        | "circle-half"
+        | "pool"
+        | "plus"
+        | "down"
+        | "tick"
+        | "cross"
+        | "info-box-black"
+        | "info-box-white"
       >,
     },
   },
-  components: { Cross, Tick, DownArrow, CircleArrows, CircleHalf, PoolIcon, Back, Plus, InfoBoxBlack, InfoBoxWhite },
+  components: {
+    Cross,
+    Tick,
+    DownArrow,
+    CircleArrows,
+    CircleHalf,
+    PoolIcon,
+    Back,
+    Plus,
+    InfoBoxBlack,
+    InfoBoxWhite,
+  },
 });
 </script>
 
