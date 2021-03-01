@@ -54,8 +54,9 @@ namespace :genesis do
   namespace :sifnode do
     namespace :mainnet do
       desc "boot node"
-      task :boot, [:moniker, :mnemonic, :gas_price, :flags] do |t, args|
-        cmd = %Q{MONIKER=#{args[:moniker]} MNEMONIC=#{args[:mnemonic]} GAS_PRICE=#{gas_price(args)} \
+      task :boot, [:moniker, :mnemonic, :gas_price, :bind_ip_address, :flags] do |t, args|
+        cmd = %Q{MONIKER=#{args[:moniker]} MNEMONIC=#{args[:mnemonic]} \
+                 GAS_PRICE=#{gas_price(args)} BIND_IP_ADDRESS=#{bind_ip_address(args)} \
                  docker-compose -f #{cwd}/../docker/mainnet/docker-compose.yml up #{args[:flags]}
         }
         safe_system(cmd)
@@ -67,6 +68,15 @@ namespace :genesis do
       safe_system("sifgen node reset #{args[:chainnet]} #{args[:node_directory]}")
     end
   end
+end
+
+#
+# Get the IP Address to bind to.
+#
+def bind_ip_address(args)
+  return args[:bind_ip_address] if args.has_key? :bind_ip_address
+
+  "127.0.0.1"
 end
 
 #
