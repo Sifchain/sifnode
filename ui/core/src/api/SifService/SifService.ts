@@ -28,6 +28,7 @@ export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
   sifWsUrl: string;
+  sifRpcUrl: string;
   keplrChainConfig: KeplrChainConfig;
   assets: Asset[];
 };
@@ -44,6 +45,7 @@ export default function createSifService({
   sifAddrPrefix,
   sifApiUrl,
   sifWsUrl,
+  sifRpcUrl,
   keplrChainConfig,
   assets,
 }: SifServiceContext) {
@@ -70,7 +72,7 @@ export default function createSifService({
   let client: SifClient | null = null;
   let closeUpdateListener = () => {};
 
-  const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl);
+  const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl);
 
   const supportedTokens = assets.filter(
     (asset) => asset.network === Network.SIFCHAIN
@@ -91,7 +93,7 @@ export default function createSifService({
       throw new Error("No address on sif account");
     }
 
-    return new SifClient(sifApiUrl, address, wallet, sifWsUrl);
+    return new SifClient(sifApiUrl, address, wallet, sifWsUrl, sifRpcUrl);
   }
 
   const triggerUpdate = debounce(
@@ -181,7 +183,13 @@ export default function createSifService({
             throw "No address on sif account";
           }
 
-          client = new SifClient(sifApiUrl, address, offlineSigner, sifWsUrl);
+          client = new SifClient(
+            sifApiUrl,
+            address,
+            offlineSigner,
+            sifWsUrl,
+            sifRpcUrl
+          );
           triggerUpdate();
         } catch (error) {
           console.log(error);
