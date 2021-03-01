@@ -21,9 +21,15 @@ module.exports = async (cb) => {
             type: "string",
             demandOption: true,
         },
+        'token_name': {
+            type: "string",
+            demandOption: true,
+        },
+        'decimals': {
+            type: "number",
+            demandOption: true,
+        },
     });
-
-    const ethMultiplier = (new BN("10", 10)).pow(new BN(18));
 
     const amount = new BN(argv.amount, 10);
     const limitAmount = new BN(argv.limit_amount, 10);
@@ -32,8 +38,8 @@ module.exports = async (cb) => {
         from: argv.operator_address
     }
 
-    const newTokenBuilder = await contractUtilites.buildBaseContract(this, argv, logging, "BridgeToken");
-    const newToken = await newTokenBuilder.new(argv.symbol, standardOptions);
+    const newTokenBuilder = await contractUtilites.buildBaseContract(this, argv, logging, "SifchainTestToken");
+    const newToken = await newTokenBuilder.new(argv.token_name, argv.symbol, argv.decimals, standardOptions);
 
     const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging, "BridgeBank", argv.bridgebank_address);
 
