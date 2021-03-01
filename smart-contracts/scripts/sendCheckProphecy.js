@@ -9,7 +9,7 @@ module.exports = async () => {
   const truffleContract = require("truffle-contract");
 
   const oracleContract = truffleContract(
-    require("../build/contracts/Oracle.json")
+    require("../build/contracts/CosmosBridge.json")
   );
 
   /*******************************************
@@ -46,8 +46,8 @@ module.exports = async () => {
 
   const web3 = new Web3(provider);
 
-  console.log("Fetching Oracle contract...");
-  oracleContract.setProvider(web3.currentProvider);
+  console.log("Expected usage: \n truffle exec scripts/sendCheckProphecy.js --network ropsten 1");
+  cosmosBridgeContract.setProvider(web3.currentProvider);
 
   /*******************************************
    *** Contract interaction
@@ -57,10 +57,10 @@ module.exports = async () => {
 
   console.log("Attempting to send checkBridgeProphecy() tx...");
 
-  const instance = await oracleContract.deployed()
+  const instance = await cosmosBridgeContract.deployed()
   let result
   try {
-    result = await instance.checkBridgeProphecy(prophecyID, {
+    result = await instance.getProphecyThreshold(prophecyID, {
       from: accounts[0],
       value: 0,
       gas: 300000 // 300,000 Gwei

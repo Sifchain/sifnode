@@ -15,3 +15,4 @@ gofiles=$(shell find ${BASEDIR}/* -name \*.go) ${BASEDIR}/go.mod ${BASEDIR}/go.s
 ${GOBIN}/sifnodecli: $(gofiles)
 	make -C ${BASEDIR} install
 	touch $@
+	rm -rf ~/.sifnodecli/localnet

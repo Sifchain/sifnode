@@ -29,7 +29,8 @@ describe("EthbridgeService", () => {
   beforeEach(async () => {
     EthbridgeService = createEthbridgeService({
       sifApiUrl: "http://localhost:1317",
-      sifWsUrl: "ws://localhost:26667/nosocket",
+      sifWsUrl: "ws://localhost:26657/nosocket",
+      sifRpcUrl: "http://localhost:26657",
       sifChainId: "sifchain",
       bridgebankContractAddress: config.bridgebankContractAddress,
       bridgetokenContractAddress: (EROWAN as Token).address,
@@ -109,7 +110,7 @@ describe("EthbridgeService", () => {
     const amountToSend = AssetAmount(CETH, "2");
     const feeAmount = AssetAmount(
       Asset.get("ceth"),
-      JSBI.BigInt("16164980000000000")
+      JSBI.BigInt("58560000000000000")
     );
 
     const message = await EthbridgeService.burnToEthereum({
@@ -126,7 +127,7 @@ describe("EthbridgeService", () => {
         type: "ethbridge/MsgBurn",
         value: {
           amount: "2000000000000000000",
-          ceth_amount: "16164980000000000",
+          ceth_amount: "58560000000000000",
           cosmos_sender: getSifAddress(),
           symbol: "ceth",
           ethereum_chain_id: `${ethereumChainId}`,
@@ -174,7 +175,7 @@ describe("EthbridgeService", () => {
       ethereumRecipient: getEthAddress(),
       feeAmount: AssetAmount(
         Asset.get("ceth"),
-        JSBI.BigInt("18332015000000000")
+        JSBI.BigInt("54080000000000000")
       ),
     });
 
@@ -183,7 +184,7 @@ describe("EthbridgeService", () => {
         type: "ethbridge/MsgLock",
         value: {
           amount: "100000000000000000000",
-          ceth_amount: "18332015000000000",
+          ceth_amount: "54080000000000000",
           cosmos_sender: getSifAddress(),
           ethereum_chain_id: `${ethereumChainId}`,
           ethereum_receiver: getEthAddress(),
@@ -214,7 +215,10 @@ describe("EthbridgeService", () => {
 
     const sendERowanAmount = AssetAmount(EROWAN, "10");
 
-    await EthbridgeService.approveBridgeBankSpend(getEthAddress(), sendERowanAmount);
+    await EthbridgeService.approveBridgeBankSpend(
+      getEthAddress(),
+      sendERowanAmount
+    );
 
     // Burn eRowan to Rowan
     await new Promise<void>((done, reject) => {

@@ -20,6 +20,7 @@ module.exports = async () => {
     }
 
     const web3 = new Web3(provider);
+    console.log("Expected usage: \n truffle exec scripts/getTxReceipt.js --network ropsten 0x455a31543fca6aad846f0bb6920559881e1e9b924a47907148d5a0033a0bd56e");
 
     // Map containing named events associated with a known topic hash
     var eventTopics = new Map()

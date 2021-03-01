@@ -7,12 +7,14 @@ import { createPegTxEventEmitter } from "./PegTxEventEmitter";
 import { confirmTx } from "./utils/confirmTx";
 import { SifUnSignedClient } from "../utils/SifClient";
 import { parseTxFailure } from "./parseTxFailure";
+import JSBI from "jsbi"
 
 // TODO: Do we break this service out to ethbridge and cosmos?
 
 export type EthbridgeServiceContext = {
   sifApiUrl: string;
   sifWsUrl: string;
+  sifRpcUrl: string;
   sifChainId: string;
   bridgebankContractAddress: string;
   bridgetokenContractAddress: string;
@@ -25,10 +27,11 @@ const ETH_ADDRESS = "0x0000000000000000000000000000000000000000";
 export default function createEthbridgeService({
   sifApiUrl,
   sifWsUrl,
+  sifRpcUrl,
   sifChainId,
   bridgebankContractAddress,
   getWeb3Provider,
-  sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl),
+  sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl),
 }: EthbridgeServiceContext) {
   // Pull this out to a util?
   let _web3: Web3 | null = null;
@@ -52,20 +55,24 @@ export default function createEthbridgeService({
         value: 0,
       };
 
-      // only for usdt?
-      if (amount.asset.symbol === "USDT") {
-        const hasAlreadyApprovedSpend = await tokenContract.methods
-          .allowance(account, bridgebankContractAddress)
-          .call();
-        if (hasAlreadyApprovedSpend >= amount.toBaseUnits().toString()) {
-          // dont request approve again
-          console.log(
-            "approveBridgeBankSpend: spend already approved",
-            hasAlreadyApprovedSpend
-          );
-          return;
-        } else {
-        } // else would need to approve for the difference ?
+      // TODO - give interface option to approve unlimited spend via web3.utils.toTwosComplement(-1);
+      // NOTE - We may want to move this out into its own separate function.
+      // Although I couldn't think of a situation we'd call allowance separately from approve
+      const hasAlreadyApprovedSpend = await tokenContract.methods
+        .allowance(account, bridgebankContractAddress)
+        .call();
+      if (
+        JSBI.lessThanOrEqual(
+          amount.toBaseUnits(),
+          JSBI.BigInt(hasAlreadyApprovedSpend)
+        )
+      ) {
+        // dont request approve again
+        console.log(
+          "approveBridgeBankSpend: spend already approved",
+          hasAlreadyApprovedSpend
+        );
+        return;
       }
 
       const res = await tokenContract.methods
@@ -120,7 +127,7 @@ export default function createEthbridgeService({
         });
       }
 
-      (async function () {
+      (async function() {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
 
@@ -177,7 +184,7 @@ export default function createEthbridgeService({
             },
           });
         });
-      })().catch((err) => {
+      })().catch(err => {
         handleError(err);
       });
 
@@ -232,7 +239,7 @@ export default function createEthbridgeService({
         });
       }
 
-      (async function () {
+      (async function() {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
 
@@ -248,7 +255,7 @@ export default function createEthbridgeService({
         const sendArgs = {
           from: fromAddress,
           value: 0,
-          gas: 150000 // Note: This chose in lieu of burn(params).estimateGas({from})
+          gas: 150000, // Note: This chose in lieu of burn(params).estimateGas({from})
         };
 
         bridgeBankContract.methods
@@ -286,7 +293,7 @@ export default function createEthbridgeService({
             },
           });
         });
-      })().catch((err) => {
+      })().catch(err => {
         handleError(err);
       });
 

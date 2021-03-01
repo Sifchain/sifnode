@@ -9,7 +9,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-MSGFSQQEJ3"></script>
     <script>
-      if (window.location.href === "dex.sifchain.finance") {
+      if (window.location.host === "dex.sifchain.finance") {
         // Only run GA on mainnet
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
@@ -24,6 +24,7 @@
     </noscript>
     <div id="app"></div>
     <div id="portal-target"></div>
+    <div id="tooltip-target"></div>
     <!-- built files will be auto injected -->
   </body>
 </html>

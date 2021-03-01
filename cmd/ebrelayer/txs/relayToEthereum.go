@@ -5,10 +5,9 @@ package txs
 import (
 	"context"
 	"crypto/ecdsa"
-	"fmt"
-	"time"
 	"log"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,12 +19,8 @@ import (
 
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
-	GasLimit = uint64(3000000)
+	GasLimit            = uint64(500000)
 	transactionInterval = 60 * time.Second
-)
-
-var (
-	nextNonce uint64 = 0
 )
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
@@ -38,7 +33,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	}
 
 	// Initialize CosmosBridge instance
-	fmt.Println("\nFetching CosmosBridge contract...")
+	log.Println("\nFetching CosmosBridge contract...")
 	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
 	if err != nil {
 		log.Println(err)
@@ -46,7 +41,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	}
 
 	// Send transaction
-	fmt.Println("Sending new ProphecyClaim to CosmosBridge...")
+	log.Println("Sending new ProphecyClaim to CosmosBridge...")
 	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
 		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
 
@@ -55,8 +50,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		return err
 	}
 
-	fmt.Printf("After tx nextNonce is %d\n:", nextNonce)
-	fmt.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
+	log.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
 
 	// Get the transaction receipt
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
@@ -67,9 +61,9 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 
 	switch receipt.Status {
 	case 0:
-		fmt.Println("Tx Status: 0 - Failed")
+		log.Println("Tx Status: 0 - Failed")
 	case 1:
-		fmt.Println("Tx Status: 1 - Successful")
+		log.Println("Tx Status: 1 - Successful")
 	}
 	return nil
 }
@@ -111,12 +105,25 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	transactOptsAuth := bind.NewKeyedTransactor(key)
 
 	log.Printf("ethereum tx current nonce from client api is %d\n", nonce)
-	log.Printf("ethereum tx current nonce from local storage is %d\n", nextNonce)
+
+	log.Println("suggested gas price: ", gasPrice)
+
+	gasPrice = gasPrice.Mul(gasPrice, big.NewInt(2))
+	log.Println("suggested gas price after multiplying by 2: ", gasPrice)
+
+	quarterGasPrice := big.NewInt(0)
+	quarterGasPrice = quarterGasPrice.Div(gasPrice, big.NewInt(4))
+	log.Println("quarterGasPrice: ", quarterGasPrice)
+	log.Println("gasPrice after: ", gasPrice)
+
+	gasPrice.Sub(gasPrice, quarterGasPrice)
+	log.Println("suggested gas price after subtracting 1/4: ", gasPrice)
 
 	transactOptsAuth.Nonce = big.NewInt(int64(nonce))
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 	transactOptsAuth.GasPrice = gasPrice
+
 	log.Println("transactOptsAuth.Nonce: ", transactOptsAuth.Nonce)
 
 	var targetContract ContractRegistry
