@@ -12,13 +12,6 @@ export default defineComponent({
   },
   setup() {
     const { store, actions } = useCore();
-    function formatAddress(address: string) {
-      return !address || address.length < 4
-        ? ""
-        : address.substring(0, 6) +
-            "..." +
-            address.substring(address.length - 4);
-    }
     async function handleConnectClicked() {
       await actions.ethWallet.connectToWallet();
     }
@@ -27,7 +20,6 @@ export default defineComponent({
     return {
       address,
       connected,
-      formatAddress,
       handleConnectClicked,
     };
   },
@@ -38,9 +30,7 @@ export default defineComponent({
   <div class="wrapper">
     <div v-if="connected">
       <img class="image" src="../../assets/metamask.png" />
-      <p class="mb-2" v-if="address">
-        {{ formatAddress(address) }} <Icon icon="tick" />
-      </p>
+      <p class="mb-2" v-if="address">{{ address }} <Icon icon="tick" /></p>
     </div>
     <SifButton connect v-else @click="handleConnectClicked">Metamask</SifButton>
   </div>
