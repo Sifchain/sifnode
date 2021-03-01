@@ -4,16 +4,31 @@
 
 - [Docker](https://www.docker.com/get-started)
 - [Ruby 2.7.x](https://www.ruby-lang.org/en/documentation/installation)
+- [Golang](https://golang.org/doc/install)
+  - Add `export GOPATH=~/go` to your shell
+  - Add `export PATH=$PATH:$GOPATH/bin` to your shell
 
 ## Scaffold and run your node
 
-1. Generate a mnemonic (if you don't already have one):
+1. Clone the repository:
+
+```
+git clone https://github.com/Sifchain/sifnode && cd sifnode
+```
+
+2. Build:
+
+```
+make clean install
+```
+
+3. Generate a mnemonic (if you don't already have one):
 
 ```
 rake "keys:generate:mnemonic"
 ```
 
-2. Boot your node:
+4. Boot your node:
 
 ```
 rake "genesis:sifnode:mainnet:boot[<moniker>,'<mnemonic>',<gas_price>]"
@@ -31,10 +46,10 @@ and your node will start synchronizing with the network. Please note that this m
 
 ## Verify
 
-You can verify that you're connected by running (from within the container) :
+You can verify that you're connected by running:
 
 ```
-sifnodecli q tendermint-validator-set
+sifnodecli q tendermint-validator-set --node tcp://44.235.108.41:26657 --trust-node
 ```
 
 and you should see the following primary validator node/s for Sifchain:
@@ -75,21 +90,33 @@ validators:
   votingpower: 1000
 ```
 
-Congratulations. You are now connected to the network.
+Congratulations! You are now connected to the network.
 
 ## Become a Validator
 
 You won't be able to participate in consensus until you become a validator.
 
-1. You will need to have tokens (rowan) on your account in order to become a validator.
-
-2. Obtain your node moniker (if you don't already know it):
+1. Import your mnemonic locally:
 
 ```
-cat ~/.sifnoded/config/config.toml | grep moniker
+rake "keys:import[<moniker>]"
 ```
 
-3. Run the following command to become a validator (from within the container): 
+Where:
+
+|Param|Description|
+|-----|----------|
+|`<moniker>`|A name for your node.|
+
+*You will need to have tokens (rowan) on your account in order to become a validator.*
+
+2. From within your running container, obtain your node's public key:
+
+```
+sifnoded tendermint show-validator
+```
+
+3. Run the following command to become a validator: 
 
 ```
 sifnodecli tx staking create-validator \
@@ -97,13 +124,14 @@ sifnodecli tx staking create-validator \
     --commission-max-rate="0.1" \
     --commission-rate="0.1" \
     --amount="<amount>" \
-    --pubkey=$(sifnoded tendermint show-validator) \
+    --pubkey=<pub_key> \
     --moniker=<moniker> \
     --chain-id=sifchain \
     --min-self-delegation="1" \
     --gas-prices="0.5rowan" \
     --from=<moniker> \
-    --keyring-backend=file
+    --keyring-backend=file \
+    --node tcp://44.235.108.41:26657
 ```
 
 Where:
@@ -111,6 +139,7 @@ Where:
 |Param|Description|
 |-----|----------|
 |`<amount>`|The amount of rowan you wish to stake (the more the better).|
+|`<pub_key>`|The public key of your node, that you got in the previous step.|
 |`<moniker>`|The moniker (name) of your node.|
 
 e.g.:
@@ -121,13 +150,14 @@ sifnodecli tx staking create-validator \
     --commission-max-rate="0.1" \
     --commission-rate="0.1" \
     --amount="1000000000000000000000rowan" \
-    --pubkey=$(sifnoded tendermint show-validator) \
-    --moniker=<moniker> \
+    --pubkey=thepublickeyofyournode \
+    --moniker=my-node \
     --chain-id=sifchain \
     --min-self-delegation="1" \
     --gas-prices="0.5rowan" \
     --from=my-node \
-    --keyring-backend=file
+    --keyring-backend=file \
+    --node tcp://44.235.108.41:26657
 ```
 
 ## Additional Resources
