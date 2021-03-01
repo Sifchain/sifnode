@@ -54,9 +54,9 @@ namespace :genesis do
   namespace :sifnode do
     namespace :mainnet do
       desc "boot node"
-      task :boot, [:moniker, :mnemonic, :gas_price] do |t, args|
+      task :boot, [:moniker, :mnemonic, :gas_price, :flags] do |t, args|
         cmd = %Q{MONIKER=#{args[:moniker]} MNEMONIC=#{args[:mnemonic]} GAS_PRICE=#{gas_price(args)} \
-                 docker-compose -f #{cwd}/../docker/mainnet/docker-compose.yml up
+                 docker-compose -f #{cwd}/../docker/mainnet/docker-compose.yml up #{args[:flags]}
         }
         safe_system(cmd)
       end
