@@ -25,8 +25,6 @@ var (
 func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.EthBridgeClaim, cliCtx context.CLIContext,
 	txBldr authtypes.TxBuilder, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
-	// log.Printf("ebrelayer RelayToCosmos with %d claims\n", len(claims))
-	// log.Printf("ebrelayer RelayToCosmos nextSequenceNumber is %d\n", nextSequenceNumber)
 
 	sugaredLogger.Infow("relay prophecies to cosmos.",
 		"claim amount", len(claims),
@@ -38,7 +36,6 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 
 		err := msg.ValidateBasic()
 		if err != nil {
-			// log.Println("failed to get message from claim with:", err.Error())
 			sugaredLogger.Errorw("failed to get message from claim.",
 				"error message", err.Error())
 			continue
@@ -50,15 +47,12 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	// Prepare tx
 	txBldr, err := utils.PrepareTxBuilder(txBldr, cliCtx)
 	if err != nil {
-		// log.Println("error building tx: ", err)
-		// log.Println("tx buidler response on error: ", txBldr)
 		sugaredLogger.Errorw("failed to get tx builder.",
 			"error message", err.Error(),
 			"transaction builder", txBldr)
 		return err
 	}
 
-	// log.Printf("ebrelayer RelayToCosmos sequenceNumber is %d from tx builder\n", txBldr.Sequence())
 	sugaredLogger.Infow("relay sequenceNumber from builder.",
 		"next sequence number", txBldr.Sequence())
 
@@ -72,7 +66,6 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	// Build and sign the transaction
 	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)
 	if err != nil {
-		// log.Printf("ebrelayer failed to sign transaction ", err.Error())
 		sugaredLogger.Errorw("failed to sign transaction.",
 			"error message", err.Error())
 		return err
@@ -82,7 +75,6 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	// Broadcast to a Tendermint node
 	res, err := cliCtx.BroadcastTxAsync(txBytes)
 	if err != nil {
-		// log.Printf("ebrelayer RelayToCosmos error 2 is %s\n", err.Error())
 		sugaredLogger.Errorw("failed to broadcast tx to sifchain.",
 			"error message", err.Error())
 		return err
@@ -90,7 +82,6 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	log.Println("Broadcasted tx without error")
 
 	if err = cliCtx.PrintOutput(res); err != nil {
-		// log.Printf("ebrelayer RelayToCosmos error 3 is %s\n", err.Error())
 		sugaredLogger.Errorw("failed to print out result.",
 			"error message", err.Error())
 		return err
@@ -102,7 +93,6 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	} else {
 		incrementNextSequenceNumber()
 	}
-	// log.Printf("ebrelayer RelayToCosmos nextSequenceNumber is %d after tx\n", nextSequenceNumber)
 	sugaredLogger.Infow("relay next sequenceNumber from memory.",
 		"next sequence number", nextSequenceNumber)
 

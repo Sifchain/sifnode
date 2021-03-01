@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/tendermint/tendermint/libs/log"
+	"go.uber.org/zap"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 
@@ -39,21 +40,23 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 // ProcessClaim processes a new claim coming in from a validator
-func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.EthBridgeClaim) (oracle.Status, error) {
-	fmt.Println("sifnode ethbridge keeper ProcessClaim")
+func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.EthBridgeClaim, sugaredLogger *zap.SugaredLogger) (oracle.Status, error) {
 	oracleClaim, err := types.CreateOracleClaimFromEthClaim(k.cdc, claim)
 	if err != nil {
-		fmt.Printf("sifnode ethbridge keeper ProcessClaim oracle %s\n", err.Error())
+		sugaredLogger.Errorw("failed to create oracle claim from eth claim.",
+			"error message", err.Error())
 		return oracle.Status{}, err
 	}
 
-	return k.oracleKeeper.ProcessClaim(ctx, oracleClaim)
+	return k.oracleKeeper.ProcessClaim(ctx, oracleClaim, sugaredLogger)
 }
 
 // ProcessSuccessfulClaim processes a claim that has just completed successfully with consensus
-func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
+func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string, sugaredLogger *zap.SugaredLogger) error {
 	oracleClaim, err := types.CreateOracleClaimFromOracleString(claim)
 	if err != nil {
+		sugaredLogger.Errorw("failed to create oracle claim from oracle string.",
+			"error message", err.Error())
 		return err
 	}
 
@@ -75,6 +78,8 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 	}
 
 	if err != nil {
+		sugaredLogger.Errorw("failed to process successful claim.",
+			"error message", err.Error())
 		return err
 	}
 
@@ -88,10 +93,12 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 }
 
 // ProcessBurn processes the burn of bridged coins from the given sender
-func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
+func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins, sugaredLogger *zap.SugaredLogger) error {
 	if err := k.supplyKeeper.SendCoinsFromAccountToModule(
 		ctx, cosmosSender, types.ModuleName, amount,
 	); err != nil {
+		sugaredLogger.Errorw("failed to process burn.",
+			"error message", err.Error())
 		return err
 	}
 
@@ -108,8 +115,8 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, amount
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error {
-	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender, validator, operationtype)
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
+	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender, validator, operationtype, sugaredLogger)
 }
 
 // Exists chec if the key existed in db.

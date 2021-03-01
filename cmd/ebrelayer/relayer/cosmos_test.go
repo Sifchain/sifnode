@@ -30,11 +30,7 @@ func TestNewCosmosSub(t *testing.T) {
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
 	}
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			log.Fatalln("failed to sync zap logging")
-		}
-	}()
+
 	sugaredLogger := logger.Sugar()
 	registryContractAddress := common.HexToAddress(contractAddress)
 	sub := NewCosmosSub(tmProvider, ethProvider, registryContractAddress,

@@ -155,8 +155,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	validatorMoniker := args[3]
 	mnemonic := args[4]
 
-	// Universal logger
-	// logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalln("failed to init zap logging")

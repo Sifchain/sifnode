@@ -35,7 +35,6 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	}
 
 	// Initialize CosmosBridge instance
-	// log.Println("\nFetching CosmosBridge contract...")
 	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
 	if err != nil {
 		sugaredLogger.Errorw("failed to get cosmosBridge instance.",
@@ -44,7 +43,6 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	}
 
 	// Send transaction
-	// log.Println("Sending new ProphecyClaim to CosmosBridge...")
 	sugaredLogger.Infow("Sending new ProphecyClaim to CosmosBridge.",
 		"CosmosSender", claim.CosmosSender,
 		"CosmosSenderSequence", claim.CosmosSenderSequence)
@@ -72,7 +70,6 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	case 0:
 		sugaredLogger.Infow("trasaction failed:")
 	case 1:
-		// log.Println("Tx Status: 1 - Successful")
 		sugaredLogger.Infow("trasaction is successful:")
 	}
 	return nil
@@ -84,7 +81,6 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	// Start Ethereum client
 	client, err := ethclient.Dial(provider)
 	if err != nil {
-		// log.Println(err)
 		sugaredLogger.Errorw("failed to connect ethereum node.",
 			"error message", err.Error())
 		return nil, nil, common.Address{}, err
@@ -95,7 +91,6 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	if err != nil {
 		sugaredLogger.Errorw("failed to load validator address.",
 			"error message", err.Error())
-		// log.Println(err)
 		return nil, nil, common.Address{}, err
 	}
 
@@ -103,11 +98,9 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	time.Sleep(transactionInterval)
 
 	nonce, err := client.PendingNonceAt(context.Background(), sender)
-	// log.Println("Current eth operator at pending nonce: ", nonce)
 	sugaredLogger.Infow("Current eth operator at pending nonce.", "pending nonce", nonce)
 
 	if err != nil {
-		// log.Println("Error broadcasting tx: ", err)
 		sugaredLogger.Errorw("failed to broadcast transaction.",
 			"error message", err.Error())
 		return nil, nil, common.Address{}, err
@@ -115,7 +108,6 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
-		// log.Println(err)
 		sugaredLogger.Errorw("failed to get gas price.",
 			"error message", err.Error())
 		return nil, nil, common.Address{}, err
@@ -124,24 +116,16 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	// Set up TransactOpts auth's tx signature authorization
 	transactOptsAuth := bind.NewKeyedTransactor(key)
 
-	// log.Printf("ethereum tx current nonce from client api is %d\n", nonce)
-
-	// log.Println("suggested gas price: ", gasPrice)
-
 	sugaredLogger.Infow("ethereum tx current nonce from client api.",
 		"nonce", nonce,
 		"suggested gas price", gasPrice)
 
 	gasPrice = gasPrice.Mul(gasPrice, big.NewInt(2))
-	// log.Println("suggested gas price after multiplying by 2: ", gasPrice)
 
 	quarterGasPrice := big.NewInt(0)
 	quarterGasPrice = quarterGasPrice.Div(gasPrice, big.NewInt(4))
-	// log.Println("quarterGasPrice: ", quarterGasPrice)
-	// log.Println("gasPrice after: ", gasPrice)
 
 	gasPrice.Sub(gasPrice, quarterGasPrice)
-	// log.Println("suggested gas price after subtracting 1/4: ", gasPrice)
 	sugaredLogger.Infow("final gas price after adjustment.",
 		"final gas price", gasPrice)
 
@@ -150,7 +134,6 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	transactOptsAuth.GasLimit = GasLimit
 	transactOptsAuth.GasPrice = gasPrice
 
-	// log.Println("transactOptsAuth.Nonce: ", transactOptsAuth.Nonce)
 	sugaredLogger.Infow("nonce before send transaction.",
 		"transactOptsAuth.Nonce", transactOptsAuth.Nonce)
 
@@ -169,7 +152,6 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	// Get the specific contract's address
 	target, err := GetAddressFromBridgeRegistry(client, registry, targetContract, sugaredLogger)
 	if err != nil {
-		// log.Println(err)
 		sugaredLogger.Errorw("failed to get cosmos bridger contract address from registry.",
 			"error message", err.Error())
 		return nil, nil, common.Address{}, err

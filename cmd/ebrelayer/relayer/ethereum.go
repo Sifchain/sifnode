@@ -144,7 +144,6 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	time.Sleep(time.Second)
 	client, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
-		// sub.Logger.Error("SetupWebsocketEthClient failed: ", err.Error())
 		sub.SugaredLogger.Errorw("SetupWebsocketEthClient failed.",
 			"error message", err.Error())
 
@@ -153,13 +152,11 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 		return
 	}
 	defer client.Close()
-	// sub.Logger.Info("Started Ethereum websocket with provider:", sub.EthProvider)
 	sub.SugaredLogger.Infow("Started Ethereum websocket with provider:",
 		"Ethereum provider", sub.EthProvider)
 
 	clientChainID, err := client.NetworkID(context.Background())
 	if err != nil {
-		// sub.Logger.Error(err.Error())
 		sub.SugaredLogger.Errorw("failed to get network ID.",
 			"error message", err.Error())
 		completionEvent.Add(1)
@@ -258,7 +255,6 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				lastProcessedBlock = endingBlock
 			}
 
-			// sub.Logger.Info(fmt.Sprintf("Processing events from block %d to %d", lastProcessedBlock, endingBlock))
 			sub.SugaredLogger.Infow("Processing events from blocks.",
 				"lastProcessedBlock", lastProcessedBlock,
 				"endingBlock", endingBlock)
@@ -279,7 +275,6 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				continue
 			}
 			// Assumption here is that we will repeat a failing block because we return if there is an error retrieving logs
-			// log.Printf("Successfully received bridgebank events from block %d to %d ", lastProcessedBlock, endingBlock)
 			sub.SugaredLogger.Infow("received events from bridgebank.",
 				"lastProcessedBlock", lastProcessedBlock,
 				"endingBlock", endingBlock)
@@ -423,7 +418,6 @@ func (sub EthereumSub) Replay(fromBlock int64, toBlock int64, cosmosFromBlock in
 	}
 
 	for _, ethLog := range logs {
-		// fmt.Printf("log is %v", log)
 		// Before deal with it, we need check in cosmos if it is already handled by myself bofore.
 		event, isBurnLock, err := sub.logToEvent(clientChainID, subContractAddress, bridgeBankContractABI, ethLog)
 		if err != nil {

@@ -81,9 +81,6 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [to-block]: %s", args[8])
 	}
 
-	// Universal logger
-	// logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
-
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
@@ -167,9 +164,6 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return errors.Errorf("invalid [eth-to-block]: %s", args[4])
 	}
-
-	// Universal logger
-	// logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
 
 	logger, err := zap.NewProduction()
 	if err != nil {
