@@ -325,7 +325,6 @@ func (sub EthereumSub) getAllClaims(fromBlock int64, toBlock int64) []types.Ethe
 		log.Printf("failed to initialize a client, error is %s\n", err.Error())
 		return claimArray
 	}
-	// client.SetLogger(sub.Logger)
 
 	if err := client.Start(); err != nil {
 		log.Printf("failed to start a client, error is %s\n", err.Error())
