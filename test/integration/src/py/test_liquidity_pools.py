@@ -334,6 +334,7 @@ def test_create_pools(
 
 
 # @pytest.mark.skip(reason="not now")
+@pytest.mark.usefixtures("operator_private_key")
 def test_pools(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
@@ -341,7 +342,7 @@ def test_pools(
         smart_contracts_dir,
         bridgebank_address,
         solidity_json_path,
-        operator_account,
+        operator_address,
         ethereum_network,
         source_ethereum_address
 ):
@@ -352,10 +353,12 @@ def test_pools(
     new_currency = test_utilities.create_new_currency(
         1000 * target_new_currency_balance,
         new_currency_symbol,
+        token_name=new_currency_symbol,
+        decimals=18,
         smart_contracts_dir=smart_contracts_dir,
         bridgebank_address=bridgebank_address,
         solidity_json_path=solidity_json_path,
-        operator_address=operator_account,
+        operator_address=operator_address,
         ethereum_network=ethereum_network
     )
     sifchain_symbol = ("c" + new_currency["newtoken_symbol"]).lower()

@@ -28,6 +28,8 @@ def do_currency_test(
     new_currency = test_utilities.create_new_currency(
         amount,
         new_currency_symbol,
+        new_currency_symbol,
+        18,
         smart_contracts_dir=smart_contracts_dir,
         bridgebank_address=bridgebank_address,
         solidity_json_path=solidity_json_path
@@ -57,6 +59,7 @@ def do_currency_test(
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
 
 
+@pytest.mark.usefixtures("operator_private_key")
 def test_transfer_tokens_with_some_currency(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
@@ -77,6 +80,7 @@ def test_transfer_tokens_with_some_currency(
     )
 
 
+@pytest.mark.usefixtures("operator_private_key")
 def test_three_letter_currency_with_capitals_in_name(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,

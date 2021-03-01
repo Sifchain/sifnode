@@ -7,6 +7,7 @@ import { createPegTxEventEmitter } from "./PegTxEventEmitter";
 import { confirmTx } from "./utils/confirmTx";
 import { SifUnSignedClient } from "../utils/SifClient";
 import { parseTxFailure } from "./parseTxFailure";
+import JSBI from "jsbi"
 
 // TODO: Do we break this service out to ethbridge and cosmos?
 
@@ -60,7 +61,12 @@ export default function createEthbridgeService({
       const hasAlreadyApprovedSpend = await tokenContract.methods
         .allowance(account, bridgebankContractAddress)
         .call();
-      if (hasAlreadyApprovedSpend >= amount.toBaseUnits().toString()) {
+      if (
+        JSBI.lessThanOrEqual(
+          amount.toBaseUnits(),
+          JSBI.BigInt(hasAlreadyApprovedSpend)
+        )
+      ) {
         // dont request approve again
         console.log(
           "approveBridgeBankSpend: spend already approved",
