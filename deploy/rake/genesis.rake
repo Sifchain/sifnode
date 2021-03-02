@@ -52,15 +52,9 @@ namespace :genesis do
 
   desc "node operations"
   namespace :sifnode do
-    namespace :mainnet do
-      desc "boot node"
-      task :boot, [:moniker, :mnemonic, :gas_price, :bind_ip_address, :flags] do |t, args|
-        cmd = %Q{MONIKER=#{args[:moniker]} MNEMONIC=#{args[:mnemonic]} \
-                 GAS_PRICE=#{gas_price(args)} BIND_IP_ADDRESS=#{bind_ip_address(args)} \
-                 docker-compose -f #{cwd}/../docker/mainnet/docker-compose.yml up #{args[:flags]}
-        }
-        safe_system(cmd)
-      end
+    desc "Boot node"
+    task :boot, [:chainnet, :moniker, :mnemonic, :gas_price, :bind_ip_address, :flags] do |t, args|
+      boot_standalone(args)
     end
 
     desc "Reset the state of a node"
@@ -86,6 +80,18 @@ def gas_price(args)
   return args[:gas_price] if args.has_key? :gas_price
 
   "0.5rowan"
+end
+
+#
+# Boot the node.
+#
+def boot_standalone(args)
+  cmd = %Q{MONIKER=#{args[:moniker]} MNEMONIC=#{args[:mnemonic]} \
+          GAS_PRICE=#{gas_price(args)} BIND_IP_ADDRESS=#{bind_ip_address(args)} \
+          docker-compose -f #{cwd}/../docker/#{args[:chainnet]}/docker-compose.yml up #{args[:flags]}
+  }
+
+  safe_system(cmd)
 end
 
 #

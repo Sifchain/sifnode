@@ -1,0 +1,37 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: rpc-block-latency-check
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: rpc-block-latency-check
+              image: praqma/network-multitool
+              imagePullPolicy: IfNotPresent
+              resources:
+                requests:
+                  cpu: 1m
+                  memory: 100Mi
+              env:
+                - name: domain
+                  value: https://rpc.sifchain.finance/status
+              command:
+                -  /bin/sh
+                -  -x
+                -  /scripts/latency_check.sh
+                - http://aa9e3883136e242999beb3b0ef32a2bc-47444a57d6897aad.elb.eu-west-1.amazonaws.com:26657/status
+                - http://ac34e5ab0d9c542ef8e220b8a88d2faa-d89f6c62b79e9531.elb.eu-west-1.amazonaws.com:26657/status
+                - http://a878a145935a842e384af194d7495e28-b64ad0ddad1f752a.elb.eu-west-1.amazonaws.com:26657/status
+              volumeMounts:
+                - name: rpc-block-latency-check
+                  mountPath: /scripts
+          volumes:
+            - name: rpc-block-latency-check
+              configMap:
+                name: rpc-block-latency-check
+                defaultMode: 0744
+          restartPolicy: Never

@@ -104,7 +104,7 @@ where:
 e.g.:
 
 ```
-rake "cluster:sifnode:deploy:peer[my-cluster,merry-go-round,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',e99deeec54ca1c477f8826801bc1fd29f5539a45@44.226.150.203:26656,http://44.226.150.203:26657/genesis]"
+rake "cluster:sifnode:deploy:peer[my-cluster,merry-go-round,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',f214ec6828b85793289fcb0b025bc260747983f0@100.20.201.226:26656,http://100.20.201.226:26657/genesis]"
 ```
 
 _Please note: the image tag *must* be `testnet-genesis`._
@@ -174,7 +174,7 @@ where:
 e.g.:
 
 ```
-rake "validator:stake[merry-go-round,my-node,10000000rowan,0.5rowan,<public_key>,0.5rowan,tcp://44.226.150.203:26657]"
+rake "validator:stake[merry-go-round,my-node,10000000rowan,0.5rowan,<public_key>,tcp://100.20.201.226:26657]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
@@ -186,7 +186,7 @@ sifnodecli q tendermint-validator-set --node <node_rpc_address> --trust-node
 e.g.:
 
 ```
-sifnodecli q tendermint-validator-set --node tcp://44.226.150.203:26657 --trust-node
+sifnodecli q tendermint-validator-set --node tcp://100.20.201.226:26657 --trust-node
 ```
 
 ## Additional Resources
