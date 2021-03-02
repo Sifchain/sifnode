@@ -30,7 +30,9 @@ jobs:
 
       - name: Cypress run
         uses: cypress-io/github-action@v1
+
         with:
+          project: ui
           build: yarn chain:build && yarn build
           start: npm start
           wait-on: http://localhost:8080
