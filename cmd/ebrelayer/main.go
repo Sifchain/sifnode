@@ -161,7 +161,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}
 	defer func() {
 		if err := logger.Sync(); err != nil {
-			log.Fatalln("failed to sync zap logging")
+			log.Println("failed to sync zap logging")
 		}
 	}()
 

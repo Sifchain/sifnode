@@ -25,6 +25,11 @@ func NewZapLogger() *zap.SugaredLogger {
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
 	}
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			log.Println("failed to sync zap logging")
+		}
+	}()
 	return logger.Sugar()
 }
 
