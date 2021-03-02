@@ -197,7 +197,7 @@ export default defineComponent({
         selectedField.value = null;
       },
 
-      backlink: window.history.state.back,
+      backlink: window.history.state.back || '/pool',
 
       handleNextStepClicked,
 
