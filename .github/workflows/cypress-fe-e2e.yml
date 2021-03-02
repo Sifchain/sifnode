@@ -29,12 +29,7 @@ jobs:
           go get -v -t -d ./...
 
       - name: Cypress run
-        uses: cypress-io/github-action@v1
-        with:
-          working-directory: ui
-          build: yarn chain:build && yarn build
-          start: yarn cy:stack
-          wait-on: http://localhost:8080
+        run: yarn cy:test:stack
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v1

@@ -28,6 +28,7 @@
     "core:test:all": "yarn core:compile && concurrently -r -k -s first \"yarn chain:start:all\" \"sleep 5 && yarn chain:migrate && yarn core:test:with-peggy\"",
     "stack": "./scripts/run-stack.sh",
     "cy:stack": "./scripts/run-cypress-stack.sh",
+    "cy:test:stack": "concurrently -r -k -s \"./scripts/run-cypress-stack.sh\" \"wait-on http://localhost:8080 && yarn cypress run\"",
     "build": "yarn chain:compile:peggy && yarn core:build && yarn app:build",
     "test": "yarn core:test:all"
   },

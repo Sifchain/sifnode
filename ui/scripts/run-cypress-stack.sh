@@ -1,3 +1,5 @@
+# ensure migrate complete flag is not there
+rm -rf node_modules/.migrate-complete
 
 yarn concurrently -r -k \
  "yarn chain:eth" \
