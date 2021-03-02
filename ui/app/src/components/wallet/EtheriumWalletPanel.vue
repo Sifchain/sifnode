@@ -35,7 +35,7 @@ export default defineComponent({
         Metamask Connected
       </SifButton>
     </div>
-    <SifButton connect v-else @click="handleConnectClicked">Metamask</SifButton>
+    <SifButton connect v-else @click="handleConnectClicked">Connect Metamask</SifButton>
   </div>
 </template>
 

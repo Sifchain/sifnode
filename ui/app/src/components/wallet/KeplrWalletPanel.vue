@@ -36,7 +36,7 @@ export default defineComponent({
         Keplr Connected
       </SifButton>      
     </div>
-    <SifButton connect v-else @click="handleConnectClicked">Keplr</SifButton>
+    <SifButton connect v-else @click="handleConnectClicked">Connect Keplr</SifButton>
   </div>
 </template>
 
