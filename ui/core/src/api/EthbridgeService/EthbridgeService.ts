@@ -53,6 +53,7 @@ export default function createEthbridgeService({
       const sendArgs = {
         from: account,
         value: 0,
+        gas: 100000,
       };
 
       // TODO - give interface option to approve unlimited spend via web3.utils.toTwosComplement(-1);
@@ -143,6 +144,7 @@ export default function createEthbridgeService({
         const sendArgs = {
           from: fromAddress,
           value: coinDenom === ETH_ADDRESS ? amount : 0,
+          gas: 150000,
         };
 
         console.log(
