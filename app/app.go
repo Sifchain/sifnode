@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/tendermint/tendermint/libs/log"
@@ -256,10 +257,23 @@ func NewInitApp(
 			return
 		}
 		loger.Info("Pool Created")
+		//allPools := app.clpKeeper.GetPools(ctx)
+		//allLiquidityProviders := app.clpKeeper.GetLiquidityProviders(ctx)
 		err = app.clpKeeper.SetPool(ctx, pool)
 		if err != nil {
 			loger.Info("Pool Not Set", err.Error())
 			return
+		}
+
+		currentHeight := ctx.BlockHeight()
+		for i := int64(0); i < currentHeight; i++ {
+			err := app.LoadHeight(ctx.BlockHeight() - 1)
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Println("Ctx Block height :", ctx.BlockHeight())
+			fmt.Println("Events for height : ", ctx.BlockHeight()-1)
+			fmt.Println(ctx.EventManager().ABCIEvents())
 		}
 		loger.Info("Pool Set")
 	})
