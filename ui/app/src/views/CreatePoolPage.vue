@@ -197,6 +197,8 @@ export default defineComponent({
         selectedField.value = null;
       },
 
+      backlink: window.history.state.back || '/pool',
+
       handleNextStepClicked,
 
       handleAskConfirmClicked,
@@ -244,15 +246,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout
-    class="pool"
-    :backLink="`${
-      fromSymbol && connected && aPerBRatioMessage > 0
-        ? '/pool/' + fromSymbol
-        : '/pool'
-    }`"
-    :title="title"
-  >
+  <Layout class="pool" :backLink="backlink" :title="title">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel
