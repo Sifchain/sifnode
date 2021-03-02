@@ -9,13 +9,6 @@ export default defineComponent({
   components: { SifButton, Icon },
   setup() {
     const { store, actions } = useCore();
-    function formatAddress(address: string) {
-      return !address || address.length < 4
-        ? ""
-        : address.substring(0, 7) +
-            "..." +
-            address.substring(address.length - 4);
-    }
     async function handleConnectClicked() {
       try {
         await actions.wallet.connectToWallet();
@@ -28,7 +21,6 @@ export default defineComponent({
     return {
       address,
       connected,
-      formatAddress,
       handleConnectClicked,
     };
   },
@@ -39,9 +31,7 @@ export default defineComponent({
   <div class="wrapper">
     <div v-if="connected">
       <img class="image" src="../../assets/keplr.jpg" />
-      <p class="mb-2" v-if="address">
-        {{ formatAddress(address) }} <Icon icon="tick" />
-      </p>
+      <p class="mb-2" v-if="address">{{ address }} <Icon icon="tick" /></p>
     </div>
     <SifButton connect v-else @click="handleConnectClicked">Keplr</SifButton>
   </div>
