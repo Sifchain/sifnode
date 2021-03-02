@@ -143,7 +143,13 @@ export default function createSifService({
         throw "No address on sif account";
       }
 
-      client = new SifClient(sifApiUrl, address, offlineSigner, sifWsUrl);
+      client = new SifClient(
+        sifApiUrl,
+        address,
+        offlineSigner,
+        sifWsUrl,
+        sifRpcUrl
+      );
       triggerUpdate();
       closeUpdateListener = client.getUnsignedClient().onNewBlock(() => {
         triggerUpdate();
