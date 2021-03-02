@@ -1,5 +1,5 @@
 
-name: Node.js CI
+name: Cypress Frontend Tests
 
 on: [pull_request]
 
