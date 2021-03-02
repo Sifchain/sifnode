@@ -151,7 +151,7 @@ rake "validator:expose:pub_key[my-cluster,aws,sifnode]"
 3. Stake:
 
 ```
-rake "validator:stake[<chain_id>,<moniker>,<amount>,<public_key>,<node_rpc_address>]"
+rake "validator:stake[<chain_id>,<moniker>,<amount>,<gas>,<public_key>,<node_rpc_address>]"
 ```
 
 where:
@@ -168,7 +168,7 @@ where:
 e.g.:
 
 ```
-rake "validator:stake[sifchain,my-node,10000000rowan,0.5rowan,<public_key>,0.5rowan,tcp://44.235.108.41:26657]"
+rake "validator:stake[sifchain,my-node,10000000rowan,0.5rowan,<public_key>,tcp://44.235.108.41:26657]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
