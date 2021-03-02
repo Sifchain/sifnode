@@ -1,4 +1,4 @@
-# Connecting to the Sifchain BetaNet with Kubernetes (k8s). 
+# Connecting to the Sifchain BetaNet with Kubernetes (k8s).
 
 ## Scaffold and deploy a new cluster
 

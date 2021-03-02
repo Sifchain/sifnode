@@ -1,4 +1,4 @@
-# Connecting to the Sifchain BetaNet. 
+# Connecting to the Sifchain BetaNet.
 
 ## Prerequisites / Dependencies:
 
@@ -31,7 +31,7 @@ rake "keys:generate:mnemonic"
 4. Boot your node:
 
 ```
-rake "genesis:sifnode:mainnet:boot[<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>]"
+rake "genesis:sifnode:mainnet:boot[mainnet,<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>]"
 ```
 
 Where:
