@@ -85,11 +85,6 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
 	}
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			log.Println("failed to sync zap logging")
-		}
-	}()
 	sugaredLogger := logger.Sugar()
 
 	// Initialize new Ethereum event listener
@@ -169,11 +164,6 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
 	}
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			log.Println("failed to sync zap logging")
-		}
-	}()
 	sugaredLogger := logger.Sugar()
 
 	// Initialize new Cosmos event listener
