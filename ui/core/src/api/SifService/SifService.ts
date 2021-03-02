@@ -1,4 +1,4 @@
-import { coins, isBroadcastTxFailure, Msg } from "@cosmjs/launchpad";
+import {coins, isBroadcastTxFailure, makeCosmoshubPath, Msg, Secp256k1HdWallet} from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
 import { debounce } from "lodash";
 import {
@@ -43,21 +43,19 @@ export default function createSifService({
 }: SifServiceContext) {
   const {} = sifAddrPrefix;
 
-  const initState = {
-    connected: false,
-    accounts: [],
-    address: "",
-    balances: [],
-    log: "unset",
-  };
-
   const state: {
     connected: boolean;
     address: Address;
     accounts: Address[];
     balances: AssetAmount[];
     log: string; // latest transaction hash
-  } = reactive(initState);
+  } = reactive({
+    connected: false,
+    accounts: [],
+    address: "",
+    balances: [],
+    log: "unset",
+  });
 
   const keplrProviderPromise = getKeplrProvider();
   let keplrProvider: any;
@@ -70,6 +68,23 @@ export default function createSifService({
   const supportedTokens = assets.filter(
     (asset) => asset.network === Network.SIFCHAIN
   );
+
+  async function createSifClientFromMnemonic(mnemonic: string) {
+    const wallet = await Secp256k1HdWallet.fromMnemonic(
+      mnemonic,
+      makeCosmoshubPath(0),
+      sifAddrPrefix
+    );
+    const accounts = await wallet.getAccounts();
+
+    const address = accounts.length > 0 ? accounts[0].address : "";
+
+    if (!address) {
+      throw new Error("No address on sif account");
+    }
+
+    return new SifClient(sifApiUrl, address, wallet, sifWsUrl, sifRpcUrl);
+  }
 
   const triggerUpdate = debounce(
     async () => {
@@ -178,11 +193,6 @@ export default function createSifService({
       }
     },
 
-    async disconnect() {
-      // disconnect from Keplr
-      await this.purgeClient();
-    },
-
     isConnected() {
       return state.connected;
     },
@@ -199,9 +209,17 @@ export default function createSifService({
       unSignedClient.onNewBlock(handler);
     },
 
+    // Required solely for testing purposes
     async setPhrase(mnemonic: Mnemonic): Promise<Address> {
-      // We currently delegate auth to Keplr so this is irrelevant
-      return "";
+      try {
+        if (!mnemonic) {
+          throw "No mnemonic. Can't generate wallet.";
+        }
+        client = await createSifClientFromMnemonic(mnemonic);
+        return client.senderAddress;
+      } catch (error) {
+        throw error;
+      }
     },
 
     async purgeClient() {
