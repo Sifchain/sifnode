@@ -30,8 +30,11 @@ export default defineComponent({
 <template>
   <div class="wrapper">
     <div v-if="connected">
-      <img class="image" src="../../assets/keplr.jpg" />
       <p class="mb-2" v-if="address">{{ address }} <Icon icon="tick" /></p>
+      <SifButton connect disabled>
+        <img class="image" src="../../assets/keplr.jpg" />
+        Keplr Connected
+      </SifButton>      
     </div>
     <SifButton connect v-else @click="handleConnectClicked">Keplr</SifButton>
   </div>
@@ -39,6 +42,8 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .image {
-  height: 32px;
+  height: 100%;
+  width: 20px;
+  margin-right: 16px;
 }
 </style>

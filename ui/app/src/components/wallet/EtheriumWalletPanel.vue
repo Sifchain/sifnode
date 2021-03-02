@@ -29,8 +29,11 @@ export default defineComponent({
 <template>
   <div class="wrapper">
     <div v-if="connected">
-      <img class="image" src="../../assets/metamask.png" />
       <p class="mb-2" v-if="address">{{ address }} <Icon icon="tick" /></p>
+      <SifButton connect disabled>
+        <img class="image" src="../../assets/metamask.png" />
+        Metamask Connected
+      </SifButton>
     </div>
     <SifButton connect v-else @click="handleConnectClicked">Metamask</SifButton>
   </div>
@@ -38,6 +41,9 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .image {
-  height: 35px;
+  width: 23px;
+  height: 100%;
+  margin-top: 0px;
+  margin-right: 12px;
 }
 </style>
