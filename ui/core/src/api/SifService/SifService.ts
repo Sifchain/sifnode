@@ -149,6 +149,7 @@ export default function createSifService({
         offlineSigner = keplrProvider.getOfflineSigner(
           keplrChainConfig.chainId
         );
+        await instance.setClient();
         triggerUpdate();
       } catch (e) {
         console.log("initProvider", e);
@@ -156,16 +157,8 @@ export default function createSifService({
     },
 
     async connect() {
-      // connect to Keplr
-      console.log("connect service", keplrChainConfig, keplrProvider);
       if (!keplrProvider) {
-        throw {
-          message: "Keplr Not Found",
-          detail: {
-            type: "info",
-            message: "Check if extension enabled for this URL",
-          },
-        };
+        keplrProvider = await keplrProviderPromise;
       }
       // open extension
       if (keplrProvider.experimentalSuggestChain) {
