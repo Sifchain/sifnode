@@ -197,14 +197,7 @@ export default defineComponent({
         selectedField.value = null;
       },
 
-      backlink: computed(() => {
-        let link = '/pool';
-        if (fromSymbol.value && connected && Number(aPerBRatioMessage.value) > 0 &&
-          totalLiquidityProviderUnits.value !== '0') {
-          link = `/pool/${fromSymbol.value}`;
-        }
-        return link;
-      }),
+      backlink: window.history.state.back,
 
       handleNextStepClicked,
 
