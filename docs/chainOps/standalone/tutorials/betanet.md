@@ -1,4 +1,4 @@
-# Connecting to the Sifchain BetaNet. 
+# Connecting to the Sifchain BetaNet.
 
 ## Prerequisites / Dependencies:
 
@@ -31,7 +31,7 @@ rake "keys:generate:mnemonic"
 4. Boot your node:
 
 ```
-rake "genesis:sifnode:mainnet:boot[<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>]"
+rake "genesis:sifnode:mainnet:boot[mainnet,<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>]"
 ```
 
 Where:
@@ -139,7 +139,7 @@ Where:
 
 |Param|Description|
 |-----|----------|
-|`<amount>`|The amount of rowan you wish to stake (the more the better).|
+|`<amount>`|The amount of rowan you wish to stake (the more the better). The precision used is 1e18.|
 |`<pub_key>`|The public key of your node, that you got in the previous step.|
 |`<moniker>`|The moniker (name) of your node.|
 
