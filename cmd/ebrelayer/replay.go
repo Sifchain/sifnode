@@ -167,3 +167,58 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 
 	return nil
 }
+
+// RunListMissedCosmosEventCmd executes initRelayerCmd
+func RunListMissedCosmosEventCmd(cmd *cobra.Command, args []string) error {
+	// Load the validator's Ethereum private key from environment variables
+	privateKey, err := txs.LoadPrivateKey()
+	if err != nil {
+		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
+	}
+
+	// Parse flag --chain-id
+	chainID := viper.GetString(flags.FlagChainID)
+	if strings.TrimSpace(chainID) == "" {
+		return errors.Errorf("Must specify a 'chain-id'")
+	}
+
+	// Parse flag --rpc-url
+	rpcURL := viper.GetString(FlagRPCURL)
+	if rpcURL != "" {
+		_, err := url.Parse(rpcURL)
+		if rpcURL != "" && err != nil {
+			return errors.Wrapf(err, "invalid RPC URL: %v", rpcURL)
+		}
+	}
+
+	// Validate and parse arguments
+	if len(strings.Trim(args[0], "")) == 0 {
+		return errors.Errorf("invalid [tendermint-node]: %s", args[0])
+	}
+	tendermintNode := args[0]
+
+	if !relayer.IsWebsocketURL(args[1]) {
+		return errors.Errorf("invalid [web3-provider]: %s", args[1])
+	}
+	web3Provider := args[1]
+
+	if !common.IsHexAddress(args[2]) {
+		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[2])
+	}
+	contractAddress := common.HexToAddress(args[2])
+
+	days, err := strconv.ParseInt(args[3], 10, 64)
+	if err != nil {
+		return errors.Errorf("invalid [from-block]: %s", args[3])
+	}
+
+	// Universal logger
+	logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
+
+	// Initialize new Cosmos event listener
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)
+
+	cosmosSub.ListMissedCosmosEvent(days)
+
+	return nil
+}

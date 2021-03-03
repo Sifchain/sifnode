@@ -124,17 +124,10 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	}
 }
 
-func (sub CosmosSub) getAllProphecyClaim(ethFromBlock int64, ethToBlock int64) []types.ProphecyClaimUnique {
+func (sub CosmosSub) getAllProphecyClaim(client *ethclient.Client, ethFromBlock int64, ethToBlock int64) []types.ProphecyClaimUnique {
 	log.Printf("getAllProphecyClaim from %d block to %d block\n", ethFromBlock, ethToBlock)
 
 	var prophecyClaimArray []types.ProphecyClaimUnique
-
-	// Start Ethereum client
-	client, err := ethclient.Dial(sub.EthProvider)
-	if err != nil {
-		log.Printf("%s \n", err.Error())
-		return prophecyClaimArray
-	}
 
 	clientChainID, err := client.NetworkID(context.Background())
 	if err != nil {
@@ -237,7 +230,13 @@ func MessageProcessed(message types.CosmosMsg, prophecyClaims []types.ProphecyCl
 
 // Replay the missed events
 func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
-	ProphecyClaims := sub.getAllProphecyClaim(ethFromBlock, ethToBlock)
+	// Start Ethereum client
+	ethClient, err := ethclient.Dial(sub.EthProvider)
+	if err != nil {
+		log.Printf("%s \n", err.Error())
+		return
+	}
+	ProphecyClaims := sub.getAllProphecyClaim(ethClient, ethFromBlock, ethToBlock)
 
 	fmt.Printf("found out %d prophecy claims I sent from %d to %d block", len(ProphecyClaims), ethFromBlock, ethToBlock)
 
@@ -316,5 +315,85 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 		claimType, prophecyClaim, sub.PrivateKey)
 	if err != nil {
 		fmt.Println(err)
+	}
+}
+
+func (sub CosmosSub) ListMissedCosmosEvent(days int64) {
+	log.Println("ListMissedCosmosEvent started")
+	// Start Ethereum client
+	ethClient, err := ethclient.Dial(sub.EthProvider)
+	if err != nil {
+		log.Printf("%s \n", err.Error())
+		return
+	}
+
+	header, err := ethClient.HeaderByNumber(context.Background(), nil)
+	if err != nil {
+		log.Printf("%s \n", err.Error())
+		return
+	}
+
+	currentEthHeight := header.Number.Int64()
+	// estimate blocks by one block every 15 seconds
+	blocks := 4 * 60 * 24 * days
+	ethFromHeight := currentEthHeight - blocks
+
+	ProphecyClaims := sub.getAllProphecyClaim(ethClient, ethFromHeight, currentEthHeight)
+
+	fmt.Printf("found out %d prophecy claims I sent from %d to %d block", len(ProphecyClaims), ethFromHeight, currentEthHeight)
+
+	client, err := tmClient.New(sub.TmProvider, "/websocket")
+	if err != nil {
+		sub.Logger.Error("failed to initialize a client", "err", err)
+		return
+	}
+
+	block, err := client.Block(nil)
+	if err != nil {
+		log.Printf("%s \n", err.Error())
+		return
+	}
+
+	currentCosmosHeight := block.Block.Header.Height
+	// estimate blocks by one block every 3 seconds
+	blocks = 20 * 60 * 24 * days
+	cosmosFromHeight := currentCosmosHeight - blocks
+
+	if err := client.Start(); err != nil {
+		sub.Logger.Error("failed to start a client", "err", err)
+		return
+	}
+
+	defer client.Stop() //nolint:errcheck
+
+	for blockNumber := cosmosFromHeight; blockNumber < currentCosmosHeight; {
+		tmpBlockNumber := blockNumber
+		block, err := client.BlockResults(&tmpBlockNumber)
+		blockNumber++
+
+		if err != nil {
+			continue
+		}
+
+		for _, result := range block.TxsResults {
+			for _, event := range result.Events {
+
+				claimType := getOracleClaimType(event.GetType())
+
+				switch claimType {
+				case types.MsgBurn, types.MsgLock:
+
+					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
+					if err != nil {
+						fmt.Println(err)
+						continue
+					}
+
+					if !MessageProcessed(cosmosMsg, ProphecyClaims) {
+						log.Printf("missed cosmos event: %s\n", cosmosMsg.String())
+					}
+				}
+			}
+		}
 	}
 }
