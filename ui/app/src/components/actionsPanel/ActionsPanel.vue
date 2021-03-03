@@ -36,6 +36,19 @@ export default defineComponent({
           {{ connectCta }}
         </SifButton>
       </template>
+      <template v-slot:connected="{ connectedText }"
+        ><div>
+          <SifButton
+            v-if="nextStepMessage"
+            block
+            primary
+            :disabled="!nextStepAllowed"
+            @click="handleNextStepClicked"
+          >
+            {{ nextStepMessage }}
+          </SifButton>
+        </div></template
+      >
     </WithWallet>
   </div>
 </template>
