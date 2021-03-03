@@ -8,7 +8,7 @@ import {
   LiquidityProvider,
   Pool,
 } from "../entities";
-import { Fraction } from "../entities/fraction/Fraction";
+import { Fraction } from "../entities";
 import { useField } from "./useField";
 import { useBalances } from "./utils";
 
@@ -36,11 +36,36 @@ export function usePoolCalculator(input: {
   const balanceMap = useBalances(input.balances);
 
 
+  const preExistingPool = computed(() => {
+    if (!tokenAField.asset.value || !tokenBField.asset.value) {
+      return null;
+    }
+
+    // Find pool from poolFinder
+    const pool = input.poolFinder(
+      tokenAField.asset.value.symbol,
+      tokenBField.asset.value.symbol
+    );
+
+    return pool?.value || null;
+  });
 
   const tokenABalance = computed(() => {
-    return input.tokenASymbol.value
-      ? balanceMap.value.get(input.tokenASymbol.value) ?? null
-      : null;
+    if (
+      !tokenAField.fieldAmount.value ||
+      !tokenAField.asset.value
+    ) {
+      return null;
+    }
+    if (preExistingPool.value) {
+      return input.tokenASymbol.value
+        ? balanceMap.value.get(input.tokenASymbol.value) ?? AssetAmount(tokenAField.asset.value, "0")
+        : null;
+    } else {
+      return input.tokenASymbol.value
+        ? balanceMap.value.get(input.tokenASymbol.value) ?? null
+        : null;
+    }
   });
   const tokenBBalance = computed(() => {
     return input.tokenBSymbol.value
@@ -49,6 +74,7 @@ export function usePoolCalculator(input: {
   });
 
   const fromBalanceOverdrawn = computed(() => {
+
     return !tokenABalance.value?.greaterThanOrEqual(
       tokenAField.fieldAmount.value || "0"
     );
@@ -61,27 +87,20 @@ export function usePoolCalculator(input: {
       )
   );
 
-  const preExistingPool = computed(() => {
-    if (!tokenAField.asset.value || !tokenBField.asset.value) return null;
 
-    // Find pool from poolFinder
-    const pool = input.poolFinder(
-      tokenAField.asset.value.symbol,
-      tokenBField.asset.value.symbol
-    );
-
-    return pool?.value || null;
-  });
 
   const liquidityPool = computed(() => {
-    if (preExistingPool.value) return preExistingPool.value;
+    if (preExistingPool.value) {
+      return preExistingPool.value;
+    }
     if (
       !tokenAField.fieldAmount.value ||
       !tokenBField.fieldAmount.value ||
       !tokenAField.asset.value ||
       !tokenBField.asset.value
-    )
+    ) {
       return null;
+    }
 
     return Pool(
       AssetAmount(tokenAField.asset.value, "0"),
@@ -91,11 +110,7 @@ export function usePoolCalculator(input: {
 
   // pool units for this prospective transaction [total, newUnits]
   const provisionedPoolUnitsArray = computed(() => {
-    if (
-      !liquidityPool.value ||
-      !tokenBField.fieldAmount.value ||
-      !tokenAField.fieldAmount.value
-    ) {
+    if (!liquidityPool.value || !tokenBField.fieldAmount.value || !tokenAField.fieldAmount.value) {
       return [new Fraction("0"), new Fraction("0")];
     }
 
@@ -165,6 +180,7 @@ export function usePoolCalculator(input: {
   });
 
   const aPerBRatioMessage = computed(() => {
+
     if (!aPerBRatio.value) {
       return "N/A";
     }
@@ -256,21 +272,24 @@ export function usePoolCalculator(input: {
     // Select Tokens
     const aSymbolNotSelected = !input.tokenASymbol.value;
     const bSymbolNotSelected = !input.tokenBSymbol.value;
-    if (aSymbolNotSelected || bSymbolNotSelected)
+    if (aSymbolNotSelected || bSymbolNotSelected) {
       return PoolState.SELECT_TOKENS;
+    }
 
     // Zero amounts
     const aAmount = tokenAField.fieldAmount.value;
     const bAmount = tokenBField.fieldAmount.value;
     const aAmountIsZeroOrFalsy = !aAmount || aAmount.equalTo("0");
     const bAmountIsZeroOrFalsy = !bAmount || bAmount.equalTo("0");
-    const noPreexistingPool = !preExistingPool.value;
-    if ((noPreexistingPool && bAmountIsZeroOrFalsy) || aAmountIsZeroOrFalsy)
+
+    if (aAmountIsZeroOrFalsy && bAmountIsZeroOrFalsy) {
       return PoolState.ZERO_AMOUNTS;
+    }
 
     // Insufficient Funds
-    if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value)
+    if (fromBalanceOverdrawn.value || toBalanceOverdrawn.value) {
       return PoolState.INSUFFICIENT_FUNDS;
+    }
 
     // Valid yay!
     return PoolState.VALID_INPUT;

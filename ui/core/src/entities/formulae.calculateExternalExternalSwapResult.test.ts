@@ -22,6 +22,6 @@ tests.DoubleSwap.forEach(({ ax, aX, aY, bX, bY, expected }: any) => {
       new Fraction(bigbX, JSBI.exponentiate(TEN, JSBI.BigInt(18))), // External Balance
       new Fraction(bigbY, JSBI.exponentiate(TEN, JSBI.BigInt(18))) // Native Balance
     );
-    expect(output.toFixed(18)).toBe(expected);
+    expect(output.toFixed(0)).toBe(expected);
   });
 });

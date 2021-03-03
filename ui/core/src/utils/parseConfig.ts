@@ -99,10 +99,21 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
     token => token.symbol === "erowan"
   ) as Token).address;
 
+  const sifAssets = assets
+    .filter(asset => asset.network === "sifchain")
+    .map(sifAsset => {
+      return {
+        coinDenom: sifAsset.symbol,
+        coinDecimals: sifAsset.decimals,
+        coinMinimalDenom: sifAsset.symbol,
+      };
+    });
+
   return {
     sifAddrPrefix: config.sifAddrPrefix,
     sifApiUrl: config.sifApiUrl,
     sifWsUrl: config.sifWsUrl,
+    sifRpcUrl: config.sifRpcUrl,
     sifChainId: config.sifChainId,
     getWeb3Provider:
       config.web3Provider === "metamask"
@@ -117,11 +128,7 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
       rest: config.sifApiUrl,
       rpc: config.sifRpcUrl,
       chainId: config.sifChainId,
-      currencies: assets.map(asset => ({
-        coinDenom: asset.symbol,
-        coinDecimals: asset.decimals,
-        coinMinimalDenom: asset.symbol,
-      })),
+      currencies: sifAssets,
     },
   };
 }

@@ -54,14 +54,24 @@ test/integration/start-integration-env.sh
 
 ## Running tests against ropsten
 
-###  Bring the environment variables for the target environment into your shell:
+### Start with exampleenv.sh
+
+./exampleenv.sh is designed to be used in a shell like this:
 
 ```
-source <(smart_contract_env.sh ~/workspace/sifnode/smart-contracts/deployments/sandpit/)
+# cd ~/workspace/sifnode/test/integration 
+# source ./exampleenv.sh
+# sifnodecli q auth account --node tcp://44.241.55.154:26657 sif1pvnu2kh826vn8r0ttlgt82hsmfknvcnf7qmpvk
+# ...
 ```
 
+It should echo a set of sample commands and tests that you can run 
+after it sets up your environment.
 
-1.  
+ Don't use exampleenv.sh itself, make a copy modify the variables to match your setup.
+
+Don't mix this with vagrantenv.sh; use one or the other in a shell.
+
 ## Github actions
 
 See [the github action file](../../.github/workflows/integrationtest.yml) for the description of what's executed in the integration test environment.

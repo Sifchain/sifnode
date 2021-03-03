@@ -9,28 +9,27 @@ function buildProvider(context, argv, logging) {
 
     switch (argv.ethereum_network) {
         case "ropsten":
-            let ropstenConnectionString = "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID);
+        case "mainnet":
+            let netConnectionString = `https://${argv.ethereum_network}.infura.io/v3/${process.env.INFURA_PROJECT_ID}`;
             if (argv.ethereum_private_key_env_var) {
-                const ropstenKey = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
+                const privateKey = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
                 provider = new HDWalletProvider(
-                    ropstenKey,
-                    ropstenConnectionString
+                    privateKey,
+                    netConnectionString
                 );
             } else {
-                provider = new Web3(ropstenConnectionString);
+                provider = new Web3(netConnectionString);
             }
             break;
-        case "mainnet":
-            if (argv.ethereum_private_key_env_var) {
-                const mainnetKey = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
-                provider = new HDWalletProvider(
-                    mainnetKey,
-                    "https://mainnet.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
-                );
-            }
+        case "http://localhost:7545":
+            provider = new Web3.providers.HttpProvider(argv.ethereum_network);
             break;
         default:
-            provider = new Web3.providers.HttpProvider(argv.ethereum_network);
+            const privateKeyDefault = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
+            provider = new HDWalletProvider(
+                privateKeyDefault,
+                argv.ethereum_network,
+            );
             break;
     }
     return provider;
@@ -53,11 +52,34 @@ function buildWeb3(context, argv, logging) {
     }
 }
 
-function buildContract(context, argv, logging, name, address) {
+const truffleContractProvider = require("@truffle/contract");
+
+function buildBaseContract(context, argv, logging, name) {
     const web3 = buildWeb3(context, argv, logging);
-    const contract = context.artifacts.require(name);
+    const js = `${argv.json_path}/${name}.json`;
+    let solidityContractJson = require(js);
+    const contract = truffleContractProvider(solidityContractJson);
     contract.setProvider(web3.currentProvider);
+    return contract;
+}
+
+/**
+ * Builds a contract object at a particular address
+ *
+ * For interacting with deployed contracts.  If you're deploying
+ * a new contract, use buildBaseContract and then call new on
+ * the buildBaseContract result.
+ *
+ * @param context
+ * @param argv
+ * @param logging
+ * @param name
+ * @param address
+ * @returns {*}
+ */
+function buildContract(context, argv, logging, name, address) {
+    const contract = buildBaseContract(context, argv, logging, name)
     return contract.at(address);
 }
 
-module.exports = {buildProvider, buildContract, buildWeb3};
+module.exports = {buildProvider, buildContract, buildBaseContract, buildWeb3};

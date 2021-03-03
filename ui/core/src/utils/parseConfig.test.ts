@@ -53,7 +53,7 @@ const expected = {
       address: "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4",
       decimals: 12,
       name: "123",
-      network: "ethereum",
+      network: "sifchain",
       symbol: "rowan",
     },
     {
@@ -87,12 +87,7 @@ const expected = {
         coinDecimals: 12,
         coinDenom: "rowan",
         coinMinimalDenom: "rowan",
-      },
-      {
-        coinDecimals: 12,
-        coinDenom: "erowan",
-        coinMinimalDenom: "erowan",
-      },
+      }
     ],
     feeCurrencies: [
       {
@@ -118,7 +113,7 @@ const expected = {
     address: "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4",
     decimals: 12,
     name: "123",
-    network: "ethereum",
+    network: "sifchain",
     symbol: "rowan",
   },
   sifAddrPrefix: "sif",
@@ -134,7 +129,7 @@ test("parseConfig", () => {
         address: "0x2C2B9C9a4a25e24B174f26114e8926a9f2128FE4",
         decimals: 12,
         name: "123",
-        network: Network.ETHEREUM,
+        network: Network.SIFCHAIN,
         symbol: "rowan",
       },
       {

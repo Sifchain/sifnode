@@ -88,7 +88,7 @@ The following are formulas needed to implement Thorchain's slip-fee CLP model wi
 >R = Native Balance (before)
 >A = External Balance (before)
 >P = existing Pool Units
->slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
+>slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
 >units = ((P (a R + A r))/(2 A R))*slipAdjustment
 
 **Asymmetrical Withdrawal:**
@@ -154,11 +154,21 @@ The creator of the pool contributes tokens and becomes the `Pool`&#39;s first `L
 **calculatePoolUnits(oldPoolUnits, nativeAssetBalance, externalAssetBalance, nativeAssetAmount, externalAssetAmount):**
 ```golang 
 {
-  R = nativeAssetBalance + nativeAssetAmount, A = externalAssetBalance + externalAssetAmount,
-  r = nativeAssetAmount, a = externalAssetAmount
-  poolerUnits = ((R + A) * (r * A + R * a))/(4 * R * A)
-  poolUnits = oldPoolUnits + lpUnits
-  return poolUnits, lpUnits
+    R = nativeAssetBalance + nativeAssetAmount, A = externalAssetBalance + externalAssetAmount,
+    r = nativeAssetAmount, a = externalAssetAmount
+  	slipAdjDenominator := (r.Add(R)).Mul(a.Add(A))
+    var slipAdjustment sdk.Dec
+    if R.Mul(a).GT(r.Mul(A)) {
+      slipAdjustment = R.Mul(a).Sub(r.Mul(A)).Quo(slipAdjDenominator)
+    } else {
+      slipAdjustment = r.Mul(A).Sub(R.Mul(a)).Quo(slipAdjDenominator)
+    }
+    slipAdjustment = sdk.NewDec(1).Sub(slipAdjustment)
+    numerator := P.Mul(a.Mul(R).Add(A.Mul(r)))
+    denominator := sdk.NewDec(2).Mul(A).Mul(R)
+    stakeUnits := numerator.Quo(denominator).Mul(slipAdjustment)
+    newPoolUnit := P.Add(stakeUnits)
+    return stakeUnits
 }
 ```
 ![](images/SifchainCLPArchitecture/SifchainCreatePool.png)

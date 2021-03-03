@@ -11,6 +11,7 @@ from test_utilities import get_shell_output, SifchaincliCredentials
 def generate_minimal_test_account(
         base_transfer_request: EthereumToSifchainTransferRequest,
         target_ceth_balance: int = 10 ** 18,
+        timeout=burn_lock_functions.default_timeout_for_ganache
 ) -> (EthereumToSifchainTransferRequest, SifchaincliCredentials):
     """Creates a test account with ceth and rowan.  The address for the new account is in request.sifchain_address"""
     new_account_key = get_shell_output("uuidgen")
@@ -25,7 +26,7 @@ def generate_minimal_test_account(
     request.sifchain_symbol = "ceth"
     request.ethereum_symbol = "eth"
     logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
-    burn_lock_functions.transfer_ethereum_to_sifchain(request)
+    burn_lock_functions.transfer_ethereum_to_sifchain(request, timeout)
     logging.info(
         f"created sifchain addr {new_sifaddr} with {test_utilities.display_currency_value(target_ceth_balance)} ceth")
     return request, credentials
@@ -45,18 +46,12 @@ def generate_test_account(
     new_sifaddr = new_addr["address"]
     credentials.from_key = new_addr["name"]
 
-    initial_rowan = test_utilities.get_sifchain_addr_balance(
-        rowan_source_integrationtest_env_transfer_request.sifchain_address,
-        rowan_source_integrationtest_env_transfer_request.sifnodecli_node,
-        "rowan"
-    )
-
     if target_rowan_balance > 0:
         rowan_request: EthereumToSifchainTransferRequest = copy.deepcopy(
             rowan_source_integrationtest_env_transfer_request)
         rowan_request.sifchain_destination_address = new_sifaddr
         rowan_request.amount = target_rowan_balance
-        logging.debug(f"transfer {target_rowan_balance} to {new_sifaddr} from {rowan_request.sifchain_address}")
+        logging.debug(f"transfer {target_rowan_balance} rowan to {new_sifaddr} from {rowan_request.sifchain_address}")
         test_utilities.send_from_sifchain_to_sifchain(rowan_request, rowan_source_integrationtest_env_credentials)
 
     request: EthereumToSifchainTransferRequest = copy.deepcopy(base_transfer_request)
@@ -64,20 +59,16 @@ def generate_test_account(
     request.amount = target_ceth_balance
     request.sifchain_symbol = "ceth"
     request.ethereum_symbol = "eth"
-    logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
-    burn_lock_functions.transfer_ethereum_to_sifchain(request)
+    if target_ceth_balance > 0:
+        logging.debug(f"transfer {target_ceth_balance} eth to {new_sifaddr} from {base_transfer_request.ethereum_address}")
+        burn_lock_functions.transfer_ethereum_to_sifchain(request)
 
-    ending_rowan = test_utilities.get_sifchain_addr_balance(
-        rowan_source_integrationtest_env_transfer_request.sifchain_address,
-        rowan_source_integrationtest_env_transfer_request.sifnodecli_node,
-        "rowan"
+    logging.info(
+        f"created sifchain addr {new_sifaddr} "
+        f"with {test_utilities.display_currency_value(target_ceth_balance)} ceth "
+        f"and {test_utilities.display_currency_value(target_rowan_balance)} rowan"
     )
 
-    rowan_used = initial_rowan - ending_rowan
-    rowan_fees = rowan_used - target_rowan_balance
-    # logging.info(f"rowan fees from source is {rowan_fees}")
-    logging.info(
-        f"created sifchain addr {new_sifaddr} with {test_utilities.display_currency_value(target_ceth_balance)} ceth and {test_utilities.display_currency_value(target_rowan_balance)} rowan")
     return request, credentials
 
 

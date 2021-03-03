@@ -2,6 +2,8 @@ import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 
 import Swap from "@/views/SwapPage.vue";
 import Pool from "@/views/PoolPage.vue";
+import StatsPage from "@/views/StatsPage.vue";
+import RewardsPage from "@/views/RewardsPage.vue";
 import CreatePool from "@/views/CreatePoolPage.vue";
 import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
 import SinglePool from "@/views/SinglePool.vue";
@@ -12,6 +14,16 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     redirect: { name: "PegListingPage" },
+  },
+  {
+    path: "/stats",
+    name: "StatsPage",
+    component: StatsPage,
+  },
+  {
+    path: "/rewards",
+    name: "RewardsPage",
+    component: RewardsPage,
   },
   {
     path: "/swap",

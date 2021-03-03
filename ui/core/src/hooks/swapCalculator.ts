@@ -216,7 +216,7 @@ export function useSwapCalculator(input: {
     if  (toField.fieldAmount.value.greaterThan("0") && fromField.fieldAmount.value.equalTo("0")) {
       return SwapState.INVALID_AMOUNT;
     }
-    
+
     if (!balance.value?.greaterThanOrEqual(fromField.fieldAmount.value || "0"))
       return SwapState.INSUFFICIENT_FUNDS;
 

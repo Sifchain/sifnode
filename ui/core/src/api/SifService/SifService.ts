@@ -29,6 +29,7 @@ export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
   sifWsUrl: string;
+  sifRpcUrl: string;
   keplrChainConfig: KeplrChainConfig;
   assets: Asset[];
 };
@@ -45,6 +46,7 @@ export default function createSifService({
   sifAddrPrefix,
   sifApiUrl,
   sifWsUrl,
+  sifRpcUrl,
   keplrChainConfig,
   assets,
 }: SifServiceContext) {
@@ -71,7 +73,7 @@ export default function createSifService({
   let client: SifClient | null = null;
   let closeUpdateListener = () => {};
 
-  const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl);
+  const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl);
 
   const supportedTokens = assets.filter(
     asset => asset.network === Network.SIFCHAIN
@@ -92,7 +94,7 @@ export default function createSifService({
       throw new Error("No address on sif account");
     }
 
-    return new SifClient(sifApiUrl, address, wallet, sifWsUrl);
+    return new SifClient(sifApiUrl, address, wallet, sifWsUrl, sifRpcUrl);
   }
 
   const triggerUpdate = debounce(
@@ -135,7 +137,10 @@ export default function createSifService({
       if (!keplrProvider) {
         throw {
           message: "Keplr Not Found",
-          detail: "Check if extension enabled for this URL",
+          detail: {
+            type: "info",
+            message: "Check if extension enabled for this URL",
+          },
         };
       }
       // open extension
@@ -157,7 +162,13 @@ export default function createSifService({
             throw "No address on sif account";
           }
 
-          client = new SifClient(sifApiUrl, address, offlineSigner, sifWsUrl);
+          client = new SifClient(
+            sifApiUrl,
+            address,
+            offlineSigner,
+            sifWsUrl,
+            sifRpcUrl
+          );
           triggerUpdate();
           closeUpdateListener = client.getUnsignedClient().onNewBlock(() => {
             triggerUpdate();
@@ -167,7 +178,10 @@ export default function createSifService({
           throw { message: "Failed to Suggest Chain" };
         }
       } else {
-        throw { message: "Keplr Outdated", detail: "Need at least 0.6.4" };
+        throw {
+          message: "Keplr Outdated",
+          detail: { type: "info", message: "Need at least 0.6.4" },
+        };
       }
     },
 
