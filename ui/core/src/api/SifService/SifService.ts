@@ -1,4 +1,10 @@
-import {coins, isBroadcastTxFailure, makeCosmoshubPath, Msg, Secp256k1HdWallet} from "@cosmjs/launchpad";
+import {
+  coins,
+  isBroadcastTxFailure,
+  makeCosmoshubPath,
+  Msg,
+  Secp256k1HdWallet,
+} from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
 import { debounce } from "lodash";
 import {
@@ -270,7 +276,6 @@ export default function createSifService({
         throw "No asset.";
       }
       try {
-        // https://github.com/tendermint/vue/blob/develop/src/store/cosmos.js#L91
         const msg = {
           type: "cosmos-sdk/MsgSend",
           value: {
@@ -290,11 +295,7 @@ export default function createSifService({
           gas: "300000", // TODO - see if "auto" setting
         };
 
-        const txHash = await client.signAndBroadcast([msg], fee, params.memo);
-
-        triggerUpdate();
-
-        return txHash;
+        return await client.signAndBroadcast([msg], fee, params.memo);
       } catch (err) {
         console.error(err);
       }
@@ -314,15 +315,12 @@ export default function createSifService({
         };
 
         const msgArr = Array.isArray(msg) ? msg : [msg];
-
         const result = await client.signAndBroadcast(msgArr, fee, memo);
 
         if (isBroadcastTxFailure(result)) {
           /* istanbul ignore next */ // TODO: fix coverage
           return parseTxFailure(result);
         }
-
-        triggerUpdate();
 
         return {
           hash: result.transactionHash,
