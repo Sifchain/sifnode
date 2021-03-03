@@ -17,7 +17,7 @@ import (
 	"github.com/Sifchain/sifnode/x/faucet/types"
 )
 
-func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetQueryCmd(queryRoute string) *cobra.Command {
 	faucetQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),

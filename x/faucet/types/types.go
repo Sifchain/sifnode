@@ -2,9 +2,9 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/supply"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 func GetFaucetModuleAddress() sdk.AccAddress {
-	return supply.NewModuleAddress(ModuleName)
+	return authtypes.NewModuleAddress(ModuleName)
 }

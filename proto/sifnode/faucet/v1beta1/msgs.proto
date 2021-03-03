@@ -2,17 +2,25 @@ syntax = "proto3";
 package sifchain.faucet.v1beta1;
 
 import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "github.com/sifchain/sifnode/x/faucet/types";
 
-message MsgRequestCoins {}
-// type MsgRequestCoins struct {
-// 	Coins     sdk.Coins
-// 	Requester sdk.AccAddress
-// }
+message MsgRequestCoins {
+  string requiester = 1;
+  repeated cosmos.base.v1beta1.Coin coins = 2;
+}
 
-message MsgAddCoins {}
-// type MsgAddCoins struct {
-// 	Signer sdk.AccAddress
-// 	Coins  sdk.Coins
-// }
+message MsgRequestCoinsResponse {}
+
+message MsgAddCoins {
+	string signer = 1;
+  repeated cosmos.base.v1beta1.Coin coins = 2;
+}
+
+message MsgAddCoinsResponse {}
+
+service Msg {
+  rpc RequestCoins(MsgRequestCoins) returns (MsgRequestCoinsResponse);
+  rpc AddCoins(MsgAddCoins) returns (MsgAddCoinsResponse);
+}

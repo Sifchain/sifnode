@@ -3,19 +3,25 @@ package faucet
 import (
 	"encoding/json"
 
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec"
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/spf13/cobra"
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	"github.com/Sifchain/sifnode/x/faucet/client/cli"
 	"github.com/Sifchain/sifnode/x/faucet/client/rest"
 	"github.com/Sifchain/sifnode/x/faucet/keeper"
 	"github.com/Sifchain/sifnode/x/faucet/types"
-	"github.com/gorilla/mux"
-	"github.com/spf13/cobra"
+)
 
-	abci "github.com/tendermint/tendermint/abci/types"
-
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
+const (
+	MAINNET = "mainnet"
+	TESTNET = "testnet"
 )
 
 var (
@@ -34,18 +40,23 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec registers the faucet module's types for the given codec.
-func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterCodec(cdc)
+}
+
+// RegisterInterfaces registers the module's interface types
+func (b AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
+	// types.RegisterInterfaces(registry)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the faucet
 // module.
-func (AppModuleBasic) DefaultGenesis() json.RawMessage {
+func (AppModuleBasic) DefaultGenesis(cdc codec.JSONMarshaler) json.RawMessage {
 	return types.ModuleCdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
 // ValidateGenesis performs genesis state validation for the faucet module.
-func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
+func (AppModuleBasic) ValidateGenesis(cdc codec.JSONMarshaler, config client.TxEncodingConfig, bz json.RawMessage) error {
 	var data types.GenesisState
 	err := types.ModuleCdc.UnmarshalJSON(bz, &data)
 	if err != nil {
@@ -55,24 +66,29 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 }
 
 // RegisterRESTRoutes registers the REST routes for the faucet module.
-func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
+func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
 	if profile == TESTNET {
-		rest.RegisterRoutes(ctx, rtr)
+		rest.RegisterRoutes(clientCtx, rtr)
 	}
 }
 
+// RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the faucet module.
+func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
+	// types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+}
+
 // GetTxCmd returns the root tx command for the faucet module.
-func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
+func (AppModuleBasic) GetTxCmd() *cobra.Command {
 	if profile == TESTNET {
-		return cli.GetTxCmd(cdc)
+		return cli.GetTxCmd()
 	}
 	return nil
 }
 
 // GetQueryCmd returns no root query command for the faucet module.
-func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
+func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	if profile == TESTNET {
-		return cli.GetQueryCmd(types.StoreKey, cdc)
+		return cli.GetQueryCmd(types.StoreKey)
 	}
 	return nil
 }
@@ -111,12 +127,11 @@ func (AppModule) Name() string {
 }
 
 // RegisterInvariants registers the faucet module invariants.
-func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
-}
+func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {}
 
 // Route returns the message routing key for the faucet module.
-func (AppModule) Route() string {
-	return types.RouterKey
+func (am AppModule) Route() sdk.Route {
+	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper))
 }
 
 // NewHandler returns an sdk.Handler for the faucet module.
@@ -132,15 +147,25 @@ func (AppModule) QuerierRoute() string {
 	return types.QuerierRoute
 }
 
-// NewQuerierHandler returns the faucet module sdk.Querier.
-func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return NewQuerier(am.keeper)
+// LegacyQuerierHandler returns the faucet module sdk.Querier.
+func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
+	return keeper.NewQuerier(am.keeper, legacyQuerierCdc)
+}
+
+// RegisterServices registers module services.
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	// types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+	// querier := keeper.Querier{Keeper: am.keeper}
+	// types.RegisterQueryServer(cfg.QueryServer(), querier)
+
+	// m := keeper.NewMigrator(am.keeper)
+	// cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2)
 }
 
 // InitGenesis performs genesis initialization for the faucet module. It returns
 // no validator updates.
 // TODO add functionality for Init genesis , Would need to verify if the faucet balance is automatically initialized by the supply module
-func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONMarshaler, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
 	InitGenesis(ctx, am.keeper, genesisState)
@@ -150,7 +175,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 // ExportGenesis returns the exported genesis state as raw bytes for the faucet
 // module.
 // TODO add functionality for export genesis , We would need to keep track of how much an address withdrew to prevent spam
-func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
+func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONMarshaler) json.RawMessage {
 	gs := ExportGenesis(ctx, am.keeper)
 	return types.ModuleCdc.MustMarshalJSON(gs)
 }

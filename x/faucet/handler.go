@@ -3,6 +3,7 @@ package faucet
 import (
 	"fmt"
 
+	"github.com/Sifchain/sifnode/x/faucet/keeper"
 	"github.com/Sifchain/sifnode/x/faucet/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -10,7 +11,7 @@ import (
 )
 
 // NewHandler creates an sdk.Handler for all the faucet type messages
-func NewHandler(keeper Keeper) sdk.Handler {
+func NewHandler(keeper keeper.Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {

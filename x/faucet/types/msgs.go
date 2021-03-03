@@ -12,11 +12,6 @@ var (
 	_ sdk.Msg = &MsgAddCoins{}
 )
 
-type MsgRequestCoins struct {
-	Coins     sdk.Coins
-	Requester sdk.AccAddress
-}
-
 func NewMsgRequestCoins(requester sdk.AccAddress, coins sdk.Coins) MsgRequestCoins {
 	return MsgRequestCoins{Requester: requester, Coins: coins}
 }
@@ -51,11 +46,6 @@ func (msg MsgRequestCoins) GetSignBytes() []byte {
 }
 func (msg MsgRequestCoins) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.Requester}
-}
-
-type MsgAddCoins struct {
-	Signer sdk.AccAddress
-	Coins  sdk.Coins
 }
 
 func NewMsgAddCoins(signer sdk.AccAddress, coins sdk.Coins) MsgAddCoins {

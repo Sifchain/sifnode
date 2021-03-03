@@ -102,7 +102,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	}
 
 	if claim.Id == "" {
-		fmt.Printf("sifnode oracle keeper ProcessClaim wrong claim id %s\n", claim.ID)
+		fmt.Printf("sifnode oracle keeper ProcessClaim wrong claim id %s\n", claim.Id)
 		return types.Status{}, types.ErrInvalidIdentifier
 	}
 

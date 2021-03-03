@@ -3,7 +3,7 @@ package types
 import (
 	"fmt"
 
-	"github.com/cosmos/cosmos-sdk/x/params"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // Default parameter namespace
@@ -18,8 +18,8 @@ var (
 )
 
 // ParamKeyTable for faucet module
-func ParamKeyTable() params.KeyTable {
-	return params.NewKeyTable().RegisterParamSet(&Params{})
+func ParamKeyTable() paramtypes.KeyTable {
+	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
 // Params - used for initializing default parameter for faucet at genesis
@@ -41,8 +41,8 @@ func (p Params) String() string {
 }
 
 // ParamSetPairs - Implements params.ParamSet
-func (p *Params) ParamSetPairs() params.ParamSetPairs {
-	return params.ParamSetPairs{}
+func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
+	return paramtypes.ParamSetPairs{}
 }
 
 // DefaultParams defines the parameters for this module
