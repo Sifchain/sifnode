@@ -65,6 +65,7 @@ module "eks" {
 
   node_groups = {
     main = {
+      name = var.node_group_name
       desired_capacity = var.desired_capacity
       max_capacity     = var.max_capacity
       min_capacity     = var.min_capacity
@@ -128,3 +129,4 @@ locals {
   subnet_ids_list   = split(",", local.subnet_ids_string)
   depends_on        = [module.vpc]
 }
+
