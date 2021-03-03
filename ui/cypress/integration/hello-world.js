@@ -1,5 +1,6 @@
-describe("My First Test", () => {
-  it("Does not do much!", () => {
-    expect(true).to.equal(true);
+describe("Page loads", () => {
+  it("Get rowan", () => {
+    cy.visit("/");
+    cy.contains("Get Rowan");
   });
 });
