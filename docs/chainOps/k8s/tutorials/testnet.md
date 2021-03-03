@@ -166,7 +166,7 @@ where:
 |-----|----------|
 |`<chain_id>`|The Chain ID of the network (e.g.: merry-go-round).|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
-|`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan).|
+|`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
 |`<gas>`|The gas price (e.g.: 0.5rowan).|
 |`<public_key>`|The public key of your validator (you got this in the previous step).|
 |`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://<node IP address>:26657).|
