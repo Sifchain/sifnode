@@ -50,6 +50,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		return err
 	}
 
+
 	log.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
 
 	// Get the transaction receipt
@@ -105,19 +106,18 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	transactOptsAuth := bind.NewKeyedTransactor(key)
 
 	log.Printf("ethereum tx current nonce from client api is %d\n", nonce)
-
-	log.Println("suggested gas price: ", gasPrice)
+	fmt.Println("suggested gas price: ", gasPrice)
 
 	gasPrice = gasPrice.Mul(gasPrice, big.NewInt(2))
-	log.Println("suggested gas price after multiplying by 2: ", gasPrice)
+	fmt.Println("suggested gas price after multiplying by 2: ", gasPrice)
 
 	quarterGasPrice := big.NewInt(0)
 	quarterGasPrice = quarterGasPrice.Div(gasPrice, big.NewInt(4))
-	log.Println("quarterGasPrice: ", quarterGasPrice)
-	log.Println("gasPrice after: ", gasPrice)
+	fmt.Println("quarterGasPrice: ", quarterGasPrice)
+	fmt.Println("gasPrice after: ", gasPrice)
 
 	gasPrice.Sub(gasPrice, quarterGasPrice)
-	log.Println("suggested gas price after subtracting 1/4: ", gasPrice)
+	fmt.Println("suggested gas price after subtracting 1/4: ", gasPrice)
 
 	transactOptsAuth.Nonce = big.NewInt(int64(nonce))
 	transactOptsAuth.Value = big.NewInt(0) // in wei
