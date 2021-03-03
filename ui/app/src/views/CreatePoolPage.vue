@@ -62,7 +62,7 @@ export default defineComponent({
     });
 
     fromSymbol.value = route.params.externalAsset
-      ? "c" + route.params.externalAsset.toString().slice(1).toUpperCase()
+      ? route.params.externalAsset.toString()
       : null;
 
     function clearAmounts() {
