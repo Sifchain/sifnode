@@ -6,7 +6,7 @@ Before running the following script go to the data folder and open create a file
 
 Make sure the private key in your .env file is the operator address, ensure the infura id is set correctly as well. Get the bridgebank address and set it in the env var when running the script. To bulk update the whitelist and limits for each token, use bulkSetTokenLockBurnLimit.js like so:
 ```
-BRIDGEBANK_ADDRESS='0x30753E4A8aad7F8597332E813735Def5dD395028' truffle exec scripts/bulkSetTokenLockBurnLimit.js --network develop ../data/limitWhitelistUpdate.json
+BRIDGEBANK_ADDRESS='0x30753E4A8aad7F8597332E813735Def5dD395028' truffle exec scripts/bulkSetTokenLockBurnLimit.js --network develop ../data/whitelist_<network>_<date>.json
 ```
 
 To update the limit on the amount of tokens an already whitelisted smart contract can be locked or burned in the ethereum smart contracts, use this command:
