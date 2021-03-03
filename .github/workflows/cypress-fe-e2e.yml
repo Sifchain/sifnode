@@ -47,7 +47,7 @@ jobs:
         run: yarn chain:build && yarn build  
       
       - name: Cypress run
-        run: yarn && yarn cy:test:stack
+        run: yarn cy:test:stack
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v1
