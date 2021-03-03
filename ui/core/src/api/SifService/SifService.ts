@@ -1,4 +1,5 @@
 import {
+  BroadcastTxResult,
   coins,
   isBroadcastTxFailure,
   makeCosmoshubPath,
@@ -6,31 +7,34 @@ import {
   Secp256k1HdWallet,
 } from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
-import { debounce } from "lodash";
-import { Address, Asset, AssetAmount, Network, TxParams } from "../../entities";
+import { debounce, filter } from "lodash";
+import {
+  Address,
+  Asset,
+  AssetAmount,
+  Network,
+  TransactionStatus,
+  TxParams,
+} from "../../entities";
 
 import { Mnemonic } from "../../entities/Wallet";
-import { IWalletService } from "../IWalletService";
+
 import { SifClient, SifUnSignedClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
 import getKeplrProvider from "./getKeplrProvider";
 import { KeplrChainConfig } from "../../utils/parseConfig";
+import { parseTxFailure } from "./parseTxFailure";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
   sifWsUrl: string;
-  // todo fix
   keplrChainConfig: KeplrChainConfig;
   assets: Asset[];
 };
 type HandlerFn<T> = (a: T) => void;
-export type ISifService = IWalletService & {
-  getSupportedTokens: () => Asset[];
-  onSocketError: (handler: HandlerFn<any>) => void;
-  onTx: (handler: HandlerFn<any>) => void;
-  onNewBlock: (handler: HandlerFn<any>) => void;
-};
+
+export type ISifService = ReturnType<typeof createSifService>;
 
 /**
  * Constructor for SifService
@@ -43,7 +47,7 @@ export default function createSifService({
   sifWsUrl,
   keplrChainConfig,
   assets,
-}: SifServiceContext): ISifService {
+}: SifServiceContext) {
   const {} = sifAddrPrefix;
 
   // Reactive state for communicating state changes
@@ -62,7 +66,8 @@ export default function createSifService({
     log: "unset",
   });
 
-  const keplrProvider = getKeplrProvider();
+  const keplrProviderPromise = getKeplrProvider();
+
   let client: SifClient | null = null;
   let closeUpdateListener = () => {};
 
@@ -92,7 +97,6 @@ export default function createSifService({
 
   const triggerUpdate = debounce(
     async () => {
-      console.log("triggerUpdate" + client?.senderAddress);
       if (!client) {
         state.connected = false;
         state.address = "";
@@ -124,12 +128,17 @@ export default function createSifService({
     },
 
     async connect() {
+      const keplrProvider = await keplrProviderPromise;
+
       // connect to Keplr
       console.log("connect service", keplrChainConfig, keplrProvider);
       if (!keplrProvider) {
         throw {
           message: "Keplr Not Found",
-          detail: "Check if extension enabled for this URL",
+          detail: {
+            type: "info",
+            message: "Check if extension enabled for this URL",
+          }
         };
       }
       // open extension
@@ -161,7 +170,7 @@ export default function createSifService({
           throw { message: "Failed to Suggest Chain" };
         }
       } else {
-        throw { message: "Keplr Outdated", detail: "Need at least 0.6.4" };
+        throw { message: "Keplr Outdated", detail: { type: "info", message: "Need at least 0.6.4" }};
       }
     },
 
@@ -196,6 +205,7 @@ export default function createSifService({
           triggerUpdate();
         });
         triggerUpdate();
+
         return client.senderAddress;
       } catch (error) {
         throw error;
@@ -208,7 +218,7 @@ export default function createSifService({
       closeUpdateListener();
     },
 
-    async getBalance(address?: Address): Promise<AssetAmount[]> {
+    async getBalance(address?: Address, asset?: Asset): Promise<AssetAmount[]> {
       if (!client) throw "No client. Please sign in.";
       if (!address) throw "Address undefined. Fail";
 
@@ -216,9 +226,7 @@ export default function createSifService({
 
       try {
         const account = await client.getAccount(address);
-        console.log(account);
-        if (!account) throw "No Address found on chain";
-
+        if (!account) throw "No Address found on chain"; // todo handle this better
         const supportedTokenSymbols = supportedTokens.map(s => s.symbol);
         const balances = account.balance
           .filter(balance => supportedTokenSymbols.includes(balance.denom))
@@ -228,7 +236,15 @@ export default function createSifService({
             )!; // will be found because of filter above
 
             return AssetAmount(asset, amount, { inBaseUnit: true });
+          })
+          .filter(balance => {
+            // If an aseet is supplied filter for it
+            if (!asset) {
+              return true;
+            }
+            return balance.asset.symbol === asset.symbol;
           });
+
         return balances;
       } catch (error) {
         throw error;
@@ -256,7 +272,7 @@ export default function createSifService({
 
         const fee = {
           amount: coins(0, params.asset.symbol),
-          gas: "200000", // need gas fee for tx to work - see genesis file
+          gas: "300000", // TODO - see if "auto" setting
         };
 
         const txHash = await client.signAndBroadcast([msg], fee, params.memo);
@@ -269,28 +285,36 @@ export default function createSifService({
       }
     },
 
-    async signAndBroadcast(msg: Msg | Msg[], memo?: string) {
+    async signAndBroadcast(
+      msg: Msg | Msg[],
+      memo?: string
+    ): Promise<TransactionStatus> {
       if (!client) throw "No client. Please sign in.";
       try {
         const fee = {
           amount: coins(0, "rowan"),
-          gas: "200000", // need gas fee for tx to work - see genesis file
+          gas: "300000", // TODO - see if "auto" setting
         };
 
         const msgArr = Array.isArray(msg) ? msg : [msg];
-        console.log("msgArr", msgArr);
 
-        const txHash = await client.signAndBroadcast(msgArr, fee, memo);
+        const result = await client.signAndBroadcast(msgArr, fee, memo);
 
-        if (isBroadcastTxFailure(txHash)) {
-          throw new Error(txHash.rawLog);
+        if (isBroadcastTxFailure(result)) {
+          /* istanbul ignore next */ // TODO: fix coverage
+          return parseTxFailure(result);
         }
 
         triggerUpdate();
 
-        return txHash;
+        return {
+          hash: result.transactionHash,
+          memo,
+          state: "accepted",
+        };
       } catch (err) {
-        console.error(err);
+        console.log("signAndBroadcast ERROR", err);
+        return parseTxFailure({ transactionHash: "", rawLog: err.message });
       }
     },
   };

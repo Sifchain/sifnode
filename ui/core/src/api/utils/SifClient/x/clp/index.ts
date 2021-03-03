@@ -1,5 +1,4 @@
 import { LcdClient, Msg } from "@cosmjs/launchpad";
-import { StdTx } from "../../../../../entities/noncore/Bank";
 
 export type SwapParams = {
   sent_asset: {
@@ -18,6 +17,7 @@ export type SwapParams = {
   };
   signer: string;
   sent_amount: string;
+  min_receiving_amount: string;
 };
 
 export type LiquidityParams = {
@@ -63,6 +63,8 @@ export type RawPool = {
 
 type LiquidityDetailsResponse = {
   result: {
+    external_asset_balance: string;
+    native_asset_balance: string;
     LiquidityProvider: {
       liquidity_provider_units: string;
       liquidity_provider_address: string;
@@ -80,14 +82,14 @@ type ClpCmdSwap = (params: SwapParams) => Promise<Msg>;
 type ClpQueryPools = () => Promise<RawPool[]>;
 type ClpQueryPool = (params: { ticker: string }) => Promise<RawPool>;
 type ClpQueryAssets = (address: string) => Promise<{ symbol: string }[]>;
-type ClpAddLiquidity = (params: LiquidityParams) => Promise<StdTx>;
-type ClpCreatePool = (params: LiquidityParams) => Promise<StdTx>;
+type ClpAddLiquidity = (params: LiquidityParams) => Promise<any>;
+type ClpCreatePool = (params: LiquidityParams) => Promise<any>;
 type ClpGetLiquidityProvider = (params: {
   symbol: string;
   lpAddress: string;
 }) => Promise<LiquidityDetailsResponse>;
 
-type ClpRemoveLiquidity = (param: RemoveLiquidityParams) => Promise<StdTx>;
+type ClpRemoveLiquidity = (param: RemoveLiquidityParams) => Promise<any>;
 
 export interface ClpExtension {
   readonly clp: {
@@ -109,19 +111,19 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
         return (await base.get(`/clp/getPools`)).result?.Pools;
       },
 
-      getAssets: async (address) => {
+      getAssets: async address => {
         return (await base.get(`/clp/getAssets?lpAddress=${address}`)).result;
       },
 
-      swap: async (params) => {
+      swap: async params => {
         return await base.post(`/clp/swap`, params);
       },
 
-      addLiquidity: async (params) => {
+      addLiquidity: async params => {
         return await base.post(`/clp/addLiquidity`, params);
       },
 
-      createPool: async (params) => {
+      createPool: async params => {
         return await base.post(`/clp/createPool`, params);
       },
 
@@ -131,7 +133,7 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
         );
       },
 
-      removeLiquidity: async (params) => {
+      removeLiquidity: async params => {
         return await base.post(`/clp/removeLiquidity`, params);
       },
 

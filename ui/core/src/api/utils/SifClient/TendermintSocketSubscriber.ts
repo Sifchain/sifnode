@@ -42,8 +42,8 @@ export function TendermintSocketSubscriber({ wsUrl }: { wsUrl: string }) {
       // Get last part of Tendermint Tx eg. 'tendermint/event/Tx'
       const [eventType] = eventData.type.split("/").slice(-1);
 
-      console.log("Message received");
-      console.log({ eventType, eventData });
+      // console.log("Message received");
+      // console.log({ eventType, eventData });
 
       emitter.emit(eventType, eventData);
     });

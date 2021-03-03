@@ -15,8 +15,8 @@ func main() {
 	rootCmd := &cobra.Command{Use: "sifgen"}
 
 	_networkCmd := networkCmd()
-	_networkCmd.PersistentFlags().String("bond-amount", "100000000000000000rowan", "bond amount")
-	_networkCmd.PersistentFlags().String("mint-amount", "1000000000000000000000000000rowan", "mint amount")
+	_networkCmd.PersistentFlags().String("bond-amount", "1000000000000000000000000rowan", "bond amount")
+	_networkCmd.PersistentFlags().String("mint-amount", "999000000000000000000000000rowan", "mint amount")
 	_networkCmd.AddCommand(networkCreateCmd(), networkResetCmd())
 
 	_nodeCmd := nodeCmd()
@@ -27,8 +27,12 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().String("bind-ip-address", "127.0.0.1", "IPv4 address to bind the node to")
 	_nodeCreateCmd.PersistentFlags().String("peer-address", "", "peer node to connect to")
 	_nodeCreateCmd.PersistentFlags().String("genesis-url", "", "genesis URL")
-	_nodeCreateCmd.PersistentFlags().String("bond-amount", "100000000000000000rowan", "bond amount")
-	_nodeCreateCmd.PersistentFlags().String("mint-amount", "1000000000000000000000000000rowan", "mint amount")
+	_nodeCreateCmd.PersistentFlags().String("bond-amount", "1000000000000000000000000rowan", "bond amount")
+	_nodeCreateCmd.PersistentFlags().String("mint-amount", "999000000000000000000000000rowan", "mint amount")
+	_nodeCreateCmd.PersistentFlags().String("faucet-amount", "1000000000000000000000000rowan", "faucet amount")
+	_nodeCreateCmd.PersistentFlags().String("min-clp-create-pool-threshold", "100", "minimum CLP create pool threshold")
+	_nodeCreateCmd.PersistentFlags().String("gov-max-deposit-period", "900000000000", "governance max deposit period")
+	_nodeCreateCmd.PersistentFlags().String("gov-voting-period", "900000000000", "governance voting period")
 	_nodeCreateCmd.PersistentFlags().Bool("print-details", false, "print the node details")
 	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
@@ -107,6 +111,10 @@ func nodeCreateCmd() *cobra.Command {
 			genesisURL, _ := cmd.Flags().GetString("genesis-url")
 			bondAmount, _ := cmd.Flags().GetString("bond-amount")
 			mintAmount, _ := cmd.Flags().GetString("mint-amount")
+			faucetAmount, _ := cmd.Flags().GetString("faucet-amount")
+			minCLPCreatePoolThreshold, _ := cmd.Flags().GetString("min-clp-create-pool-threshold")
+			govMaxDepositPeriod, _ := cmd.Flags().GetString("gov-max-deposit-period")
+			govVotingPeriod, _ := cmd.Flags().GetString("gov-voting-period")
 			printDetails, _ := cmd.Flags().GetBool("print-details")
 			withCosmovisor, _ := cmd.Flags().GetBool("with-cosmovisor")
 
@@ -116,16 +124,20 @@ func nodeCreateCmd() *cobra.Command {
 
 			if standalone {
 				node.Standalone = true
-				node.AdminCLPAddresses = strings.Split(adminCLPAddresses, ",")
+				node.AdminCLPAddresses = strings.Split(adminCLPAddresses, "|")
 				node.AdminOracleAddress = adminOracleAddress
-				node.IPAddr = bindIPAddress
 				node.BondAmount = bondAmount
 				node.MintAmount = mintAmount
+				node.FaucetAmount = faucetAmount
+				node.MinCLPCreatePoolThreshold = minCLPCreatePoolThreshold
+				node.GovMaxDepositPeriod = govMaxDepositPeriod
+				node.GovVotingPeriod = govVotingPeriod
 			} else {
 				node.PeerAddress = peerAddress
 				node.GenesisURL = genesisURL
 			}
 
+			node.IPAddr = bindIPAddress
 			node.WithCosmovisor = withCosmovisor
 			summary, err := node.Build()
 			if err != nil {

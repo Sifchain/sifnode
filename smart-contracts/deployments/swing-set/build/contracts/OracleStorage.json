@@ -1,0 +1,681 @@
+{
+  "contractName": "OracleStorage",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "consensusThreshold",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "cosmosBridge",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "hasMadeClaim",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "operator",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "oracleClaimValidators",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"consensusThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"cosmosBridge\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"hasMadeClaim\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"operator\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"oracleClaimValidators\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol\":\"OracleStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":1000},\"remappings\":[]},\"sources\":{\"/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol\":{\"keccak256\":\"0x9926c0b887b239bdce0ea42a8401fa91cbc14d3f74c73effdab4686bdf87d1d6\",\"urls\":[\"bzz-raw://d8f1ca270907b111cb9e91b52c96f70fc61cdf7f4128aa815b11085266d7895b\",\"dweb:/ipfs/QmPKFeJJgGs1Mns2CXVzV4rxmWnwkxYL8HiGnQp7QrdjMM\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506101ce806100206000396000f3fe608060405234801561001057600080fd5b50600436106100675760003560e01c8063a219763e11610050578063a219763e146100cc578063b0e9ef7114610119578063f9b0b5b91461012157610067565b8063570ca7351461006c57806378ffb1c61461009d575b600080fd5b610074610129565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b6100ba600480360360208110156100b357600080fd5b5035610145565b60408051918252519081900360200190f35b610105600480360360408110156100e257600080fd5b508035906020013573ffffffffffffffffffffffffffffffffffffffff16610157565b604080519115158252519081900360200190f35b610074610177565b6100ba610193565b60015473ffffffffffffffffffffffffffffffffffffffff1681565b60036020526000908152604090205481565b600460209081526000928352604080842090915290825290205460ff1681565b60005473ffffffffffffffffffffffffffffffffffffffff1681565b6002548156fea265627a7a723158206a42db8a4dfb4243e0faa0382d503d79b0d98861fa3536db8619c62a7d2be27c64736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100675760003560e01c8063a219763e11610050578063a219763e146100cc578063b0e9ef7114610119578063f9b0b5b91461012157610067565b8063570ca7351461006c57806378ffb1c61461009d575b600080fd5b610074610129565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b6100ba600480360360208110156100b357600080fd5b5035610145565b60408051918252519081900360200190f35b610105600480360360408110156100e257600080fd5b508035906020013573ffffffffffffffffffffffffffffffffffffffff16610157565b604080519115158252519081900360200190f35b610074610177565b6100ba610193565b60015473ffffffffffffffffffffffffffffffffffffffff1681565b60036020526000908152604090205481565b600460209081526000928352604080842090915290825290205460ff1681565b60005473ffffffffffffffffffffffffffffffffffffffff1681565b6002548156fea265627a7a723158206a42db8a4dfb4243e0faa0382d503d79b0d98861fa3536db8619c62a7d2be27c64736f6c63430005100032",
+  "sourceMap": "25:810:19:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:810:19;;;;;;;",
+  "deployedSourceMap": "25:810:19:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:810:19;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;242:23;;;:::i;:::-;;;;;;;;;;;;;;;;;;;523:56;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;523:56:19;;:::i;:::-;;;;;;;;;;;;;;;;669:64;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;669:64:19;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;111:27;;;:::i;369:33::-;;;:::i;242:23::-;;;;;;:::o;523:56::-;;;;;;;;;;;;;:::o;669:64::-;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;111:27::-;;;;;;:::o;369:33::-;;;;:::o",
+  "source": "pragma solidity 0.5.16;\n\ncontract OracleStorage {\n    /*\n     * @dev: Public variable declarations\n     */\n    address public cosmosBridge;\n\n    /**\n    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim\n    */\n    address public operator;\n\n    /**\n    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim\n    */\n    uint256 public consensusThreshold; // e.g. 75 = 75%\n\n    /**\n    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim\n    */\n    mapping(uint256 => uint256) public oracleClaimValidators;\n\n    /**\n    * @notice mapping of prophecyid to validator address to boolean\n    */\n    mapping(uint256 => mapping(address => bool)) public hasMadeClaim;\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256[100] private ____gap;\n}",
+  "sourcePath": "/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol",
+  "ast": {
+    "absolutePath": "/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol",
+    "exportedSymbols": {
+      "OracleStorage": [
+        2709
+      ]
+    },
+    "id": 2710,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2688,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".16"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:19"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 2709,
+        "linearizedBaseContracts": [
+          2709
+        ],
+        "name": "OracleStorage",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 2690,
+            "name": "cosmosBridge",
+            "nodeType": "VariableDeclaration",
+            "scope": 2709,
+            "src": "111:27:19",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 2689,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "111:7:19",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2692,
+            "name": "operator",
+            "nodeType": "VariableDeclaration",
+            "scope": 2709,
+            "src": "242:23:19",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 2691,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "242:7:19",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2694,
+            "name": "consensusThreshold",
+            "nodeType": "VariableDeclaration",
+            "scope": 2709,
+            "src": "369:33:19",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 2693,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "369:7:19",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2698,
+            "name": "oracleClaimValidators",
+            "nodeType": "VariableDeclaration",
+            "scope": 2709,
+            "src": "523:56:19",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+              "typeString": "mapping(uint256 => uint256)"
+            },
+            "typeName": {
+              "id": 2697,
+              "keyType": {
+                "id": 2695,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "531:7:19",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "523:27:19",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+                "typeString": "mapping(uint256 => uint256)"
+              },
+              "valueType": {
+                "id": 2696,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "542:7:19",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2704,
+            "name": "hasMadeClaim",
+            "nodeType": "VariableDeclaration",
+            "scope": 2709,
+            "src": "669:64:19",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_mapping$_t_address_$_t_bool_$_$",
+              "typeString": "mapping(uint256 => mapping(address => bool))"
+            },
+            "typeName": {
+              "id": 2703,
+              "keyType": {
+                "id": 2699,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "677:7:19",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "669:44:19",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_mapping$_t_address_$_t_bool_$_$",
+                "typeString": "mapping(uint256 => mapping(address => bool))"
+              },
+              "valueType": {
+                "id": 2702,
+                "keyType": {
+                  "id": 2700,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "696:7:19",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "nodeType": "Mapping",
+                "src": "688:24:19",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                  "typeString": "mapping(address => bool)"
+                },
+                "valueType": {
+                  "id": 2701,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "707:4:19",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2708,
+            "name": "____gap",
+            "nodeType": "VariableDeclaration",
+            "scope": 2709,
+            "src": "804:28:19",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_array$_t_uint256_$100_storage",
+              "typeString": "uint256[100]"
+            },
+            "typeName": {
+              "baseType": {
+                "id": 2705,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "804:7:19",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 2707,
+              "length": {
+                "argumentTypes": null,
+                "hexValue": "313030",
+                "id": 2706,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "812:3:19",
+                "subdenomination": null,
+                "typeDescriptions": {
+                  "typeIdentifier": "t_rational_100_by_1",
+                  "typeString": "int_const 100"
+                },
+                "value": "100"
+              },
+              "nodeType": "ArrayTypeName",
+              "src": "804:12:19",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
+                "typeString": "uint256[100]"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          }
+        ],
+        "scope": 2710,
+        "src": "25:810:19"
+      }
+    ],
+    "src": "0:835:19"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/OracleStorage.sol",
+    "exportedSymbols": {
+      "OracleStorage": [
+        2709
+      ]
+    },
+    "id": 2710,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2688,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".16"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:19"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 2709,
+        "linearizedBaseContracts": [
+          2709
+        ],
+        "name": "OracleStorage",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 2690,
+            "name": "cosmosBridge",
+            "nodeType": "VariableDeclaration",
+            "scope": 2709,
+            "src": "111:27:19",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 2689,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "111:7:19",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2692,
+            "name": "operator",
+            "nodeType": "VariableDeclaration",
+            "scope": 2709,
+            "src": "242:23:19",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 2691,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "242:7:19",
+              "stateMutability": "nonpayable",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2694,
+            "name": "consensusThreshold",
+            "nodeType": "VariableDeclaration",
+            "scope": 2709,
+            "src": "369:33:19",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 2693,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "369:7:19",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2698,
+            "name": "oracleClaimValidators",
+            "nodeType": "VariableDeclaration",
+            "scope": 2709,
+            "src": "523:56:19",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+              "typeString": "mapping(uint256 => uint256)"
+            },
+            "typeName": {
+              "id": 2697,
+              "keyType": {
+                "id": 2695,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "531:7:19",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "523:27:19",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_uint256_$",
+                "typeString": "mapping(uint256 => uint256)"
+              },
+              "valueType": {
+                "id": 2696,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "542:7:19",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2704,
+            "name": "hasMadeClaim",
+            "nodeType": "VariableDeclaration",
+            "scope": 2709,
+            "src": "669:64:19",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_mapping$_t_address_$_t_bool_$_$",
+              "typeString": "mapping(uint256 => mapping(address => bool))"
+            },
+            "typeName": {
+              "id": 2703,
+              "keyType": {
+                "id": 2699,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "677:7:19",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "669:44:19",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_mapping$_t_address_$_t_bool_$_$",
+                "typeString": "mapping(uint256 => mapping(address => bool))"
+              },
+              "valueType": {
+                "id": 2702,
+                "keyType": {
+                  "id": 2700,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "696:7:19",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "nodeType": "Mapping",
+                "src": "688:24:19",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                  "typeString": "mapping(address => bool)"
+                },
+                "valueType": {
+                  "id": 2701,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "707:4:19",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 2708,
+            "name": "____gap",
+            "nodeType": "VariableDeclaration",
+            "scope": 2709,
+            "src": "804:28:19",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_array$_t_uint256_$100_storage",
+              "typeString": "uint256[100]"
+            },
+            "typeName": {
+              "baseType": {
+                "id": 2705,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "804:7:19",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 2707,
+              "length": {
+                "argumentTypes": null,
+                "hexValue": "313030",
+                "id": 2706,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "812:3:19",
+                "subdenomination": null,
+                "typeDescriptions": {
+                  "typeIdentifier": "t_rational_100_by_1",
+                  "typeString": "int_const 100"
+                },
+                "value": "100"
+              },
+              "nodeType": "ArrayTypeName",
+              "src": "804:12:19",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
+                "typeString": "uint256[100]"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          }
+        ],
+        "scope": 2710,
+        "src": "25:810:19"
+      }
+    ],
+    "src": "0:835:19"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.3.2",
+  "updatedAt": "2021-01-31T03:14:05.347Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}

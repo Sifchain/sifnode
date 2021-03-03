@@ -29,8 +29,8 @@ linters:
     - unconvert
     - unused
     - misspell
-  disable:
     - errcheck
+  disable:
     - gosimple
 
 issues:

@@ -44,11 +44,6 @@ namespace :genesis do
       boot_docker_network(chainnet: args[:chainnet], seed_network_address: "192.168.2.0/24", eth_config: with_eth)
     end
 
-    desc "Expose local seed node to the outside world"
-    task :expose, [:chainnet] do |t, args|
-      puts "Build me!" # TODO use something like ngrok to expose local ports of seed node to the world
-    end
-
     desc "Reset the state of a network"
     task :reset, [:chainnet] do |t, args|
       safe_system("sifgen network reset #{args[:chainnet]} #{cwd}/../networks")
@@ -57,14 +52,14 @@ namespace :genesis do
 
   desc "node operations"
   namespace :sifnode do
-    desc "Scaffold a new local node and configure it to connect to an existing network"
-    task :scaffold, [:chainnet, :moniker, :mnemonic, :ipv4_address, :peer_address, :genesis_url] do |t, args|
-      safe_system("sifgen node create #{args[:chainnet]} #{args[:moniker]} #{args[:mnemonic]} #{args[:ipv4_address]} #{args[:peer_address]} #{args[:genesis_url]} --print-details")
-    end
-
-    desc "boot scaffolded node and connect to existing network"
-    task :boot do
-      safe_system("sifnoded start --p2p.laddr tcp://0.0.0.0:26658 ")
+    namespace :mainnet do
+      desc "boot node"
+      task :boot, [:moniker, :mnemonic, :gas_price] do |t, args|
+        cmd = %Q{MONIKER=#{args[:moniker]} MNEMONIC=#{args[:mnemonic]} GAS_PRICE=#{gas_price(args)} \
+                 docker-compose -f #{cwd}/../docker/mainnet/docker-compose.yml up
+        }
+        safe_system(cmd)
+      end
     end
 
     desc "Reset the state of a node"
@@ -72,6 +67,15 @@ namespace :genesis do
       safe_system("sifgen node reset #{args[:chainnet]} #{args[:node_directory]}")
     end
   end
+end
+
+#
+# Get the gas price.
+#
+def gas_price(args)
+  return args[:gas_price] if args.has_key? :gas_price
+
+  "0.5rowan"
 end
 
 #

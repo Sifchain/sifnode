@@ -21,14 +21,22 @@ image:
   tag: "testnet"
 
 ebrelayer:
-  mnemonic: ""
-  env:
-    chainnet: ""
+  args:
     nodeHost: ""
     ethWebsocketAddress: ""
     ethBridgeRegistryAddress: ""
-    ethPrivateKey: ""
+    mnemonic: ""
+    gas: "5000000000000"
+    gasPrices: "0.5rowan"
+  env:
+    chainnet: ""
     moniker: ""
+    ethPrivateKey: ""
+
+persistence:
+  enabled: true
+  size: 25Gi
+  accessMode: ReadWriteOnce
 
 ingress:
   enabled: false
@@ -38,13 +46,20 @@ ingress:
       paths: []
   tls: []
 
-resources: {}
+resources:
+  requests:
+    cpu: 0.5
+    memory: 4Gi
+  limits:
+    memory: 4Gi
 
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
+
+strategyType: Recreate
 
 nodeSelector: {}
 

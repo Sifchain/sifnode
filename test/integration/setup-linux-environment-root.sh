@@ -8,6 +8,8 @@ set -e
 # is run with sudo
 dockeruser=$1
 
+apt-get update && apt-get install -y curl sudo lsb-release software-properties-common wget
+
 # yarn repository
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add -
 echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
@@ -22,7 +24,7 @@ sudo apt-get install -y nodejs
 
 apt-get update
 
-apt-get install -y jq make rake docker-ce docker-ce-cli containerd.io libc6-dev gcc python3-venv python3-dev parallel
+apt-get install -y jq make rake docker-ce docker-ce-cli containerd.io libc6-dev gcc python3-venv python3-dev python3-pip parallel netcat uuid-runtime vim tmux rsync psmisc
 apt-get install -y --no-install-recommends yarn
 
 # don't want to require root to run docker

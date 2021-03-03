@@ -8,16 +8,20 @@ import Tick from "./icons/Tick.vue";
 import Cross from "./icons/Cross.vue";
 import Back from "./icons/Back.vue";
 import Plus from "./icons/Plus.vue";
+import InfoBoxBlack from "./icons/InfoBoxBlack.vue";
+import InfoBoxWhite from "./icons/InfoBoxWhite.vue";
 
 export default defineComponent({
   props: {
     icon: {
       type: String as PropType<
-        "arrows" | "back" | "circle-half" | "pool" | "plus" | "down" | "tick" | "cross"
+        "arrows" | "back" | "circle-half" | "pool" | "plus" | "down" | "tick" | "cross" |
+        "info-box-black" | "info-box-white"
       >,
     },
   },
-  components: { Cross, Tick, DownArrow, CircleArrows, CircleHalf, PoolIcon, Back, Plus },
+  components: { Cross, Tick, DownArrow, CircleArrows, CircleHalf, PoolIcon, Back, Plus,
+    InfoBoxBlack, InfoBoxWhite},
 });
 </script>
 
@@ -31,5 +35,7 @@ export default defineComponent({
     <Cross v-if="icon === 'cross'" />
     <Back v-if="icon === 'back'" />
     <Plus v-if="icon === 'plus'" />
+    <InfoBoxBlack v-if="icon === 'info-box-black'" />
+    <InfoBoxWhite v-if="icon === 'info-box-white'" />
   </span>
 </template>

@@ -1,37 +1,18 @@
 #!/bin/bash
 
-#
-# Sifnode entrypoint.
-#
+set -e
+
+. $(dirname $0)/vagrantenv.sh
+. ${TEST_INTEGRATION_DIR}/shell_utilities.sh
 
 set -x
 
-. $TEST_INTEGRATION_DIR/vagrantenv.sh
+pkill -9 ebrelayer || true
 
-#
-# Wait for the RPC port to be active.
-#
-wait_for_rpc() {
-  while ! nc -z localhost 26657; do
-    sleep 1
-  done
-}
+mkdir -p $datadir/logs
+set_persistant_env_var EBRELAYER_LOG $datadir/logs/ebrelayer.$(filenamedate).log $envexportfile
 
-wait_for_rpc
+nohup $TEST_INTEGRATION_DIR/sifchain_run_ebrelayer.sh < /dev/null > $EBRELAYER_LOG 2>&1 &
+set_persistant_env_var EBRELAYER_PID $! $envexportfile
 
-echo TEST_INTEGRATION_DIR is $TEST_INTEGRATION_DIR
-USER1ADDR=nothing python3 $TEST_INTEGRATION_DIR/wait_for_sif_account.py $NETDEF_JSON $OWNER_ADDR
-
-echo ETHEREUM_WEBSOCKET_ADDRESS $ETHEREUM_WEBSOCKET_ADDRESS
-echo ETHEREUM_CONTRACT_ADDRESS $ETHEREUM_CONTRACT_ADDRESS
-echo MONIKER $MONIKER
-echo MNEMONIC $MNEMONIC
-
-ebrelayer init tcp://0.0.0.0:26657 "$ETHEREUM_WEBSOCKET_ADDRESS" \
-                                           "$ETHEREUM_CONTRACT_ADDRESS" \
-                                           "$MONIKER" \
-                                           "$MNEMONIC" \
-                                           --chain-id "$CHAINNET" \
-                                           --gas 300000 \
-                                           --gas-adjustment 1.5 \
-                                            --home $CHAINDIR/.sifnodecli
+( tail -n +1 -F $EBRELAYER_LOG & ) | grep -m 1 "Started Ethereum websocket with provider"

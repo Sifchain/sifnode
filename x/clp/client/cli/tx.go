@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"log"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -55,10 +56,16 @@ func GetCmdCreatePool(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
 	cmd.Flags().AddFlagSet(FsExternalAssetAmount)
 	cmd.Flags().AddFlagSet(FsNativeAssetAmount)
-	cmd.MarkFlagRequired(FlagAssetSymbol)
-	cmd.MarkFlagRequired(FlagExternalAssetAmount)
-	cmd.MarkFlagRequired(FlagNativeAssetAmount)
+	if err := cmd.MarkFlagRequired(FlagAssetSymbol); err != nil {
+		log.Println("MarkFlagRequired failed: ", err.Error())
+	}
 
+	if err := cmd.MarkFlagRequired(FlagExternalAssetAmount); err != nil {
+		log.Println("MarkFlagRequired failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagNativeAssetAmount); err != nil {
+		log.Println("MarkFlagRequired failed: ", err.Error())
+	}
 	return cmd
 }
 
@@ -77,7 +84,9 @@ func GetCmdDecommissionPool(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
-	cmd.MarkFlagRequired(FlagAssetSymbol)
+	if err := cmd.MarkFlagRequired(FlagAssetSymbol); err != nil {
+		log.Println("MarkFlagRequired failed: ", err.Error())
+	}
 
 	return cmd
 }
@@ -102,9 +111,16 @@ func GetCmdAddLiquidity(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
 	cmd.Flags().AddFlagSet(FsExternalAssetAmount)
 	cmd.Flags().AddFlagSet(FsNativeAssetAmount)
-	cmd.MarkFlagRequired(FlagAssetSymbol)
-	cmd.MarkFlagRequired(FlagExternalAssetAmount)
-	cmd.MarkFlagRequired(FlagNativeAssetAmount)
+	if err := cmd.MarkFlagRequired(FlagAssetSymbol); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagExternalAssetAmount); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+
+	if err := cmd.MarkFlagRequired(FlagNativeAssetAmount); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
 
 	return cmd
 }
@@ -137,9 +153,15 @@ func GetCmdRemoveLiquidity(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
 	cmd.Flags().AddFlagSet(FsWBasisPoints)
 	cmd.Flags().AddFlagSet(FsAsymmetry)
-	cmd.MarkFlagRequired(FlagAssetSymbol)
-	cmd.MarkFlagRequired(FlagWBasisPoints)
-	cmd.MarkFlagRequired(FlagAsymmetry)
+	if err := cmd.MarkFlagRequired(FlagAssetSymbol); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagWBasisPoints); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagAsymmetry); err != nil {
+		log.Println("MarkFlagRequired  failed: ", err.Error())
+	}
 
 	return cmd
 }
@@ -167,10 +189,17 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().AddFlagSet(FsAmount)
 	cmd.Flags().AddFlagSet(FsMinReceivingAmount)
 
-	cmd.MarkFlagRequired(FlagSentAssetSymbol)
-	cmd.MarkFlagRequired(FlagReceivedAssetSymbol)
-	cmd.MarkFlagRequired(FlagAmount)
-	cmd.MarkFlagRequired(FlagMinimumReceivingAmount)
-
+	if err := cmd.MarkFlagRequired(FlagSentAssetSymbol); err != nil {
+		log.Println("MarkFlagRequired failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagReceivedAssetSymbol); err != nil {
+		log.Println("MarkFlagRequired failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagAmount); err != nil {
+		log.Println("MarkFlagRequired failed: ", err.Error())
+	}
+	if err := cmd.MarkFlagRequired(FlagMinimumReceivingAmount); err != nil {
+		log.Println("MarkFlagRequired failed: ", err.Error())
+	}
 	return cmd
 }

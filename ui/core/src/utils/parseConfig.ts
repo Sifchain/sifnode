@@ -33,8 +33,8 @@ function parseAsset(a: unknown): Asset {
 }
 
 export type KeplrChainConfig = {
-  rest?: string;
-  rpc?: string;
+  rest: string;
+  rpc: string;
   chainId: string;
   chainName: string;
   stakeCurrency: {
@@ -95,11 +95,19 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
       "No nativeAsset defined for chain config:" + JSON.stringify(config)
     );
 
-  // HACK: Filtering out our testing tokens if not in CI for the demo
-  const HACK_blacklist = process.env.CI ? [] : ["atk", "btk", "catk", "cbtk"];
-  const HACK_filteredAssets = assets.filter(
-    a => !HACK_blacklist.includes(a.symbol)
-  );
+  const bridgetokenContractAddress = (assets.find(
+    token => token.symbol === "erowan"
+  ) as Token).address;
+
+  const sifAssets = assets
+    .filter(asset => asset.network === "sifchain")
+    .map(sifAsset => {
+      return {
+        coinDenom: sifAsset.symbol,
+        coinDecimals: sifAsset.decimals,
+        coinMinimalDenom: sifAsset.symbol,
+      };
+    });
 
   return {
     sifAddrPrefix: config.sifAddrPrefix,
@@ -110,18 +118,16 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
       config.web3Provider === "metamask"
         ? getMetamaskProvider
         : async () => config.web3Provider,
-    assets: HACK_filteredAssets,
+    assets,
     nativeAsset,
     bridgebankContractAddress: config.bridgebankContractAddress,
+    bridgetokenContractAddress,
     keplrChainConfig: {
+      ...config.keplrChainConfig,
       rest: config.sifApiUrl,
       rpc: config.sifRpcUrl,
-      ...config.keplrChainConfig,
-      currencies: assets.map(asset => ({
-        coinDenom: asset.symbol,
-        coinDecimals: asset.decimals,
-        coinMinimalDenom: asset.symbol,
-      })),
+      chainId: config.sifChainId,
+      currencies: sifAssets,
     },
   };
 }

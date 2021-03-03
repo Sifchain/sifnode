@@ -10,7 +10,8 @@ export const Asset = {
 
     assetMap.set(key.toLowerCase(), value);
   },
-  get(key: string): Asset {
+  get(key: string | Asset): Asset {
+    key = typeof key == "string" ? key : key.symbol;
     const found = key ? assetMap.get(key.toLowerCase()) : false;
     if (!found) {
       console.log(

@@ -1,4 +1,5 @@
 import { OfflineSigner } from "@cosmjs/launchpad";
+import { sleep } from "../../test/utils/sleep";
 
 type WindowWithPossibleKeplr = typeof window & {
   keplr?: any;
@@ -46,17 +47,29 @@ type Keplr = {
 // Todo
 type provider = Keplr;
 
+let numChecks = 0;
+
 // Detect mossible keplr provider from browser
-export default (): provider | null => {
+export default async function getKeplrProvider(): Promise<provider | null> {
   const win = window as WindowWithPossibleKeplr;
 
   if (!win) return null;
+  console.log({
+    "win.keplr": win.keplr,
+    "win.getOfflineSigner": win.getOfflineSigner,
+  });
 
-  if (win.keplr && win.getOfflineSigner) {
-    // assign offline signer (they use __proto__ for some reason), so this is not as pretty as i'd like)
-    Object.getPrototypeOf(win.keplr).getOfflineSigner = win.getOfflineSigner;
-    return win.keplr as Keplr;
+  if (!win.keplr || !win.getOfflineSigner) {
+    numChecks++;
+    if (numChecks > 20) {
+      return null;
+    }
+    await sleep(100);
+    return getKeplrProvider();
   }
 
-  return null;
-};
+  // assign offline signer (they use __proto__ for some reason), so this is not as pretty as i'd like)
+  Object.getPrototypeOf(win.keplr).getOfflineSigner = win.getOfflineSigner;
+  console.log("Keplr wallet bootstraped");
+  return win.keplr as Keplr;
+}

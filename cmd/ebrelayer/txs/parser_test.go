@@ -36,7 +36,7 @@ func TestLogLockToEthBridgeClaim(t *testing.T) {
 	// Create test ethereum event
 	ethereumEvent := CreateTestLogEthereumEvent(t)
 
-	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address, &ethereumEvent)
+	ethBridgeClaim, err := EthereumEventToEthBridgeClaim(testCosmosValidatorBech32Address, ethereumEvent)
 	require.NoError(t, err)
 
 	require.Equal(t, expectedEthBridgeClaim, ethBridgeClaim)
@@ -102,6 +102,22 @@ func TestLockEventToCosmosMsg(t *testing.T) {
 	require.Equal(t, expectedMsgLock, msgLock)
 }
 
+func TestFailedBurnEventToCosmosMsg(t *testing.T) {
+	// Create MsgBurn attributes as input parameter
+	cosmosMsgAttributes := CreateCosmosMsgIncompleteAttributes(t, types.MsgBurn)
+	_, err := BurnLockEventToCosmosMsg(types.MsgBurn, cosmosMsgAttributes)
+
+	require.Error(t, err)
+}
+
+func TestFailedLockEventToCosmosMsg(t *testing.T) {
+	// Create MsgLock attributes as input parameter
+	cosmosMsgAttributes := CreateCosmosMsgIncompleteAttributes(t, types.MsgLock)
+	_, err := BurnLockEventToCosmosMsg(types.MsgLock, cosmosMsgAttributes)
+
+	require.Error(t, err)
+}
+
 func TestMsgBurnToProphecyClaim(t *testing.T) {
 	// Parse expected symbol
 	res := strings.SplitAfter(strings.ToLower(TestSymbol), defaultSifchainPrefix)
@@ -148,4 +164,29 @@ func TestIsZeroAddress(t *testing.T) {
 
 	trueRes := isZeroAddress(common.HexToAddress(TestNullAddress))
 	require.True(t, trueRes)
+}
+
+func TestAttributesToEthereumBridgeClaim(t *testing.T) {
+	attributes := CreateEthereumBridgeClaimAttributes(t)
+	claim, err := AttributesToEthereumBridgeClaim(attributes)
+	require.NotEqual(t, claim, nil)
+	require.Equal(t, err, nil)
+}
+
+func TestInvalidCosmosSenderAttributesToEthereumBridgeClaim(t *testing.T) {
+	attributes := CreateInvalidCosmosSenderEthereumBridgeClaimAttributes(t)
+	_, err := AttributesToEthereumBridgeClaim(attributes)
+	require.Error(t, err)
+}
+
+func TestInvalidEthereumSenderAttributesToEthereumBridgeClaim(t *testing.T) {
+	attributes := CreateInvalidEthereumSenderEthereumBridgeClaimAttributes(t)
+	_, err := AttributesToEthereumBridgeClaim(attributes)
+	require.Error(t, err)
+}
+
+func TestInvalidSequenceAttributesToEthereumBridgeClaim(t *testing.T) {
+	attributes := CreateInvalidSequenceEthereumBridgeClaimAttributes(t)
+	_, err := AttributesToEthereumBridgeClaim(attributes)
+	require.Error(t, err)
 }

@@ -106,5 +106,13 @@ type AssetListResponse struct {
 
 func NewAssetListResponse(assets Assets, height int64) AssetListResponse {
 	return AssetListResponse{Assets: assets, Height: height}
+}
 
+type LpListResponse struct {
+	LiquidityProviders
+	Height int64 `json:"height"`
+}
+
+func NewLpListResponse(liquidityProviders LiquidityProviders, height int64) *LpListResponse {
+	return &LpListResponse{LiquidityProviders: liquidityProviders, Height: height}
 }

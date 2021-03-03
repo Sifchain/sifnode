@@ -1,6 +1,7 @@
 #!/bin/bash
 # must run from the root directory of the sifnode tree
 
+set -xv
 set -e # exit on any failure
 set -o pipefail
 
@@ -15,10 +16,14 @@ export envexportfile=$BASEDIR/test/integration/vagrantenv.sh
 rm -f $envexportfile
 
 set_persistant_env_var ETHEREUM_PRIVATE_KEY c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3 $envexportfile
+set_persistant_env_var OWNER 0x627306090abaB3A6e1400e9345bC60c78a8BEf57 $envexportfile
+# we may eventually switch things so PAUSER and OWNER aren't the same account, but for now they're the same
+set_persistant_env_var PAUSER $OWNER $envexportfile
 set_persistant_env_var BASEDIR $(fullpath $BASEDIR) $envexportfile
 set_persistant_env_var SIFCHAIN_BIN $BASEDIR/cmd $envexportfile
 set_persistant_env_var envexportfile $(fullpath $envexportfile) $envexportfile
 set_persistant_env_var TEST_INTEGRATION_DIR ${BASEDIR}/test/integration $envexportfile
+set_persistant_env_var TEST_INTEGRATION_PY_DIR ${BASEDIR}/test/integration/src/py $envexportfile
 set_persistant_env_var SMART_CONTRACTS_DIR ${BASEDIR}/smart-contracts $envexportfile
 set_persistant_env_var datadir ${TEST_INTEGRATION_DIR}/vagrant/data $envexportfile
 set_persistant_env_var CONTAINER_NAME integration_sifnode1_1 $envexportfile
@@ -26,10 +31,9 @@ set_persistant_env_var NETWORKDIR $BASEDIR/deploy/networks $envexportfile
 set_persistant_env_var GANACHE_DB_DIR $(mktemp -d /tmp/ganachedb.XXXX) $envexportfile
 set_persistant_env_var ETHEREUM_WEBSOCKET_ADDRESS ws://localhost:7545/ $envexportfile
 set_persistant_env_var CHAINNET localnet $envexportfile
-
 mkdir -p $datadir
 
-make -C ${TEST_INTEGRATION_DIR} vagrant/.goBuild
+make -C ${TEST_INTEGRATION_DIR}
 
 cp ${TEST_INTEGRATION_DIR}/.env.ciExample .env
 
@@ -38,11 +42,17 @@ yarn --cwd $BASEDIR/smart-contracts install
 
 # Startup ganache-cli (https://github.com/trufflesuite/ganache)
 #   Uses GANACHE_DB_DIR for the --db argument to the chain
-docker-compose --project-name genesis -f ${TEST_INTEGRATION_DIR}/docker-compose-ganache.yml up -d --force-recreate
+bash ${TEST_INTEGRATION_DIR}/ganache_start.sh && . ${TEST_INTEGRATION_DIR}/vagrantenv.sh
+
+# Arbitrarily pick key #9 as the key for the relayer to use
+addr=$(cat $GANACHE_KEYS_JSON | jq -r '.private_keys | keys_unsorted | .[9]')
+pk=$(cat $GANACHE_KEYS_JSON | jq -r ".private_keys[\"$addr\"]")
+set_persistant_env_var EBRELAYER_ETHEREUM_ADDR $addr $envexportfile
+set_persistant_env_var EBRELAYER_ETHEREUM_PRIVATE_KEY $pk $envexportfile
 
 # https://www.trufflesuite.com/docs/truffle/overview
 # and note that truffle migrate and truffle deploy are the same command
-truffle deploy --network develop --reset
+INITIAL_VALIDATOR_ADDRESSES=$EBRELAYER_ETHEREUM_ADDR npx truffle deploy --network develop --reset
 
 # ETHEREUM_CONTRACT_ADDRESS is used for the BridgeRegistry address in many places, so we
 # set it and BRIDGE_REGISTRY_ADDRESS to the same value
@@ -53,22 +63,8 @@ set_persistant_env_var ETHEREUM_CONTRACT_ADDRESS $BRIDGE_REGISTRY_ADDRESS $envex
 
 set_persistant_env_var BRIDGE_BANK_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeBank.json | jq -r '.networks["5777"].address') $envexportfile required
 
+rm -rf $SMART_CONTRACTS_DIR/relayerdb
 ADD_VALIDATOR_TO_WHITELIST=true bash ${BASEDIR}/test/integration/setup_sifchain.sh && . $envexportfile
-
-#
-# Add keys for a second account to test functions against
-
-yes $OWNER_PASSWORD | sifnodecli keys add user1 --home $CHAINDIR/.sifnodecli || true
-yes $OWNER_PASSWORD | sifnodecli keys show user1 --home $CHAINDIR/.sifnodecli >> $NETDEF || true
-cat $NETDEF | to_json > $NETDEF_JSON
-set_persistant_env_var USER1ADDR $(cat $NETDEF_JSON | jq -r ".[1].address") $envexportfile
-
-# TODO the python tests use a lot of calls that require the owner password,
-# and they look it up every time.  Need to change that so they just have the
-# password passed in, but for now modify the user's ~/.sifnodecli directly
-
-rm -rf ~/.sifnodecli
-ln -s $CHAINDIR/.sifnodecli ~
 
 UPDATE_ADDRESS=0x0000000000000000000000000000000000000000 npx truffle exec scripts/setTokenLockBurnLimit.js 31000000000000000000
 UPDATE_ADDRESS=$BRIDGE_TOKEN_ADDRESS npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000

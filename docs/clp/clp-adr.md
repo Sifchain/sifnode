@@ -22,15 +22,11 @@ For the Sifchain MVP, CLP module provides the following functionalities
 - Decommission an Existing Liquidity pool 
 
 ### Basic Terminology 
--Asset : An asset is most basic unit of a CLP . It Contains source chain, symbol and ticker to identify a token .
+-Asset : An asset is most basic unit of a CLP . It Contains symbol to identify a token .
 ```golang
-SourceChain: ETHEREUM
 Symbol: ETH
-Ticker: ceth
 
-SourceChain: SIFCHAIN
 Symbol: rowan
-Ticker: rwn
 ```
 -Pool  : Every Liquidity pool for CLP is created by pairing an External asset with the Native asset .
 ````golang
@@ -100,7 +96,7 @@ liquidityOroviderAddress: sif15tyrwghfcjszj7sckxvqh0qpzprup9mhksmuzm
    - For asymmetric removal , (option 2 and 3), the user incurs a tradeslip and liquidity fee similar to a swap.
    - The pool is checked for being shallow ( Amount of an asset either native or external dropping to zero ),and the transaction is rejected if that happens.
    - The check is done after withdraw and then again after swap .
-   - The range for wBasisPoints was decided to be 0 -10000
+   - The range for wBasisPoints was decided to be 0 - 10000
    - The range for Asymmetry was decided to be -10000 to 10000 .
    - To calculate withdrawal amount ,the function converts all values to float .This is done to avoid divide by zero errors.
      The calculation formula used is

@@ -1,51 +1,68 @@
-<template>
-  <header class="header">
-    <div class="left">
-      <Menu />
-      <!-- <SifSwitch label="Typeface Cursive" v-model="typefaceCursive" /> -->
-    </div>
-    <div class="right">
-      <slot name="right"></slot>
-    </div>
-  </header>
-</template>
-
 <script lang="ts">
 import { defineComponent } from "vue";
 import Menu from "./Menu.vue";
-// import SifSwitch from "./SifSwitch.vue";
+import RowanPrice from "./RowanPrice.vue";
 
 export default defineComponent({
   components: {
     Menu,
-    // SifSwitch
-  },
-
-  data() {
-    return {
-      typefaceCursive: true,
-    };
+    RowanPrice
   },
 });
 </script>
 
+<template>
+  <header class="header">
+    <div class="secondary-header-container">Welcome to our BetaNet! Please be aware that while this has passed several public security audits, it is still in Beta. We encourage you to first understand how it works before transacting on it and exercise caution at all times. <a target="_blank" href="https://docs.sifchain.finance/resources/betanet-launch">Here's a list of security measures taken</a>, but please note that all transactions conducted are at your own risk.</div>
+    <div class="primary-header-container">
+      <div>
+        <Menu />
+      </div>
+      <div class="third-container">
+        <Suspense>
+          <div>
+            <RowanPrice />
+          </div>
+        </Suspense>
+        <div>
+          <slot name="right"></slot>
+        </div>
+      </div>
+    </div>
+  </header>
+</template>
+
 <style lang="scss" scoped>
 .header {
+  width: 100%;
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: $header_height;
-  padding: 0 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: white;
+  background: $c_white;
   border-bottom: $divider;
-
-  .left,
-  .right {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  .primary-header-container, .secondary-header-container {
     display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 1rem 2rem
+  }
+  .secondary-header-container {
+    display: block;
+    text-align:  center;
+    background: $c_gold;
+    color: $c_white;
+    padding: 8px 2rem;
+    a {
+      color: $c_white;
+      text-decoration: underline;
+    }
+  }
+  .third-container {
+    display: flex;
+    justify-content: center;
   }
 }
 </style>

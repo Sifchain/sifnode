@@ -1,23 +1,39 @@
 <template>
   <div class="details">
+
     <div class="details-header">
       <div class="details-row">
-        <span>{{ fromTokenLabel }} Deposited</span>
-        <span>{{ fromAmount }}</span>
+        <span class="details-row-asset">
+          <AssetItem :symbol="fromTokenLabel" inline />&nbsp;Deposited
+        </span>
+        <div class="details-row-value">
+          <span>{{ fromAmount ? fromAmount : 0 }}</span>
+        </div>
       </div>
       <div class="details-row">
-        <span>RWN Deposited</span>
-        <span>{{ toAmount }}</span>
+        <span class="details-row-asset">
+          <AssetItem :symbol="toTokenLabel" inline />&nbsp;Deposited
+        </span>
+        <div class="details-row-value">
+          <span>{{ toAmount ? toAmount : 0 }}</span>
+          <img
+            v-if="toTokenImage"
+            width="22"
+            height="22"
+            :src="toTokenImage"
+            class="info-img"
+          />
+        </div>
       </div>
     </div>
     <div class="details-body">
-      <div class="details-row">
+      <div class="details-row" v-if="bPerA">
         <span>Rates</span>
-        <span>1 {{ fromTokenLabel }} = {{ aPerB }} {{ toTokenLabel }}</span>
+        <span>1 {{ fromTokenLabel }} = {{ bPerA }} {{ toTokenLabel }}</span>
       </div>
-      <div class="details-row">
+      <div class="details-row" v-if="aPerB">
         <span>&nbsp;</span>
-        <span>1 {{ toTokenLabel }} = {{ bPerA }} {{ fromTokenLabel }}</span>
+        <span>1 {{ toTokenLabel }} = {{ aPerB }} {{ fromTokenLabel }}</span>
       </div>
       <div class="details-row">
         <span>Share of Pool:</span>
@@ -50,26 +66,46 @@
       color: $c_gray_900;
     }
 
-    span:first-child {
+    > span:first-child {
       color: $c_gray_700;
       font-weight: 400;
       text-align: left;
     }
+
+    &-asset {
+      display: flex;
+      align-items: center;
+    }
+
+    &-value {
+      display: flex;
+      color: $c_black;
+      img {
+        margin-left: 5px;
+      }
+    }
+
   }
 }
 </style>
 <script lang="ts">
 import { defineComponent } from "vue";
+import AssetItem from "@/components/shared/AssetItem.vue";
 
 export default defineComponent({
+  components: {
+    AssetItem,
+  },
   props: {
     fromTokenLabel: { type: String, default: ""},
-    fromAmount: { type: Number, default: ""},
+    fromAmount: { type: String, default: ""},
+    fromTokenImage: { type: String, default: ""},
     toTokenLabel: { type: String, default: ""},
-    toAmount: { type: Number, default: ""},
-    aPerB: { type: Number, default: ""},
-    bPerA: { type: Number, default: ""},
-    shareOfPool: Number,
+    toAmount: { type: String, default: ""},
+    toTokenImage: { type: String, default: ""},
+    aPerB: { type: String, default: ""},
+    bPerA: { type: String, default: ""},
+    shareOfPool: String,
   },
 });
 </script>

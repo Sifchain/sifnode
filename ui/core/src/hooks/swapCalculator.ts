@@ -1,12 +1,12 @@
-import { Ref, computed, effect } from "@vue/reactivity";
+import { Ref, computed, effect, ref } from "@vue/reactivity";
 import {
   Asset,
   AssetAmount,
   IPool,
   CompositePool,
   IAssetAmount,
-  Pool,
 } from "../entities";
+import Big from "big.js";
 import { useField } from "./useField";
 import { assetPriceMessage, trimZeros, useBalances } from "./utils";
 
@@ -15,16 +15,19 @@ export enum SwapState {
   ZERO_AMOUNTS,
   INSUFFICIENT_FUNDS,
   VALID_INPUT,
+  INVALID_AMOUNT,
+  INSUFFICIENT_LIQUIDITY,
 }
 
-function calculateFormattedSwapResult(pair: IPool, amount: AssetAmount) {
-  return trimZeros(pair.calcSwapResult(amount).toFixed());
+function calculateFormattedPriceImpact(pair: IPool, amount: AssetAmount) {
+  return trimZeros(pair.calcPriceImpact(amount).toFixed(18));
 }
 
-function calculateFormattedReverseSwapResult(pair: IPool, amount: AssetAmount) {
-  return trimZeros(pair.calcReverseSwapResult(amount).toFixed());
+function calculateFormattedProviderFee(pair: IPool, amount: AssetAmount) {
+  return trimZeros(pair.calcProviderFee(amount).toFixed());
 }
 
+// TODO: make swap calculator only generate Fractions/Amounts that get stringified in the view
 export function useSwapCalculator(input: {
   fromAmount: Ref<string>;
   fromSymbol: Ref<string | null>;
@@ -32,6 +35,7 @@ export function useSwapCalculator(input: {
   toSymbol: Ref<string | null>;
   balances: Ref<IAssetAmount[]>;
   selectedField: Ref<"from" | "to" | null>;
+  slippage: Ref<string>;
   poolFinder: (a: Asset | string, b: Asset | string) => Ref<IPool> | null;
 }) {
   // extracting selectedField so we can use it without tracking its change
@@ -78,33 +82,47 @@ export function useSwapCalculator(input: {
     return assetPriceMessage(amount, pair, 6);
   });
 
+  // Selected field changes when the user changes the field selection
+  // If the selected field is the "tokenA" field and something changes we change the "tokenB" input value
+  // If the selected field is the "tokenB" field and something changes we change the "tokenA" input value
+
   // Changing the "from" field recalculates the "to" amount
+  const swapResult = ref<IAssetAmount | null>(null);
   effect(() => {
     if (
       pool.value &&
       fromField.asset.value &&
       fromField.fieldAmount.value &&
+      pool.value.contains(fromField.asset.value) &&
       selectedField === "from"
     ) {
-      input.toAmount.value = calculateFormattedSwapResult(
-        pool.value as IPool,
-        fromField.fieldAmount.value
-      );
+      swapResult.value = pool.value.calcSwapResult(fromField.fieldAmount.value);
+      input.toAmount.value = trimZeros(swapResult.value.toFixed());
     }
   });
 
   // Changing the "to" field recalculates the "from" amount
+  const reverseSwapResult = ref<IAssetAmount | null>(null);
   effect(() => {
     if (
       pool.value &&
       toField.asset.value &&
       toField.fieldAmount.value &&
+      pool.value.contains(toField.asset.value) &&
       selectedField === "to"
     ) {
-      input.fromAmount.value = calculateFormattedReverseSwapResult(
-        pool.value,
+      reverseSwapResult.value = pool.value.calcReverseSwapResult(
         toField.fieldAmount.value
       );
+
+      // Internally trigger calulations based off swapResult as this is how we
+      // work out priceImpact, providerFee, minimumReceived
+
+      swapResult.value = pool.value.calcSwapResult(
+        reverseSwapResult.value as IAssetAmount
+      );
+
+      input.fromAmount.value = trimZeros(reverseSwapResult.value.toFixed());
     }
   });
 
@@ -122,17 +140,92 @@ export function useSwapCalculator(input: {
     }
   });
 
+  // Cache pool contains asset for reuse as is a little
+  const poolContainsFromAsset = computed(() => {
+    if (!fromField.asset.value || !pool.value) return false;
+    return pool.value.contains(fromField.asset.value);
+  });
+
+  const priceImpact = computed(() => {
+    if (
+      !pool.value ||
+      !fromField.asset.value ||
+      !fromField.fieldAmount.value ||
+      !poolContainsFromAsset.value
+    )
+      return null;
+
+    return calculateFormattedPriceImpact(
+      pool.value as IPool,
+      fromField.fieldAmount.value
+    );
+  });
+
+  const providerFee = computed(() => {
+    if (
+      !pool.value ||
+      !fromField.asset.value ||
+      !fromField.fieldAmount.value ||
+      !poolContainsFromAsset.value
+    )
+      return null;
+
+    return calculateFormattedProviderFee(
+      pool.value as IPool,
+      fromField.fieldAmount.value
+    );
+  });
+
+  // minimumReceived
+  const minimumReceived = computed(() => {
+    if (!input.slippage.value || !toField.asset.value || !swapResult.value)
+      return null;
+
+    const slippage = new Big(input.slippage.value);
+    const amount = new Big(swapResult.value.toFixed(18));
+    const minAmount = new Big("1.0")
+      .minus(slippage.div(100))
+      .mul(amount)
+      .toFixed(18);
+
+    return AssetAmount(toField.asset.value, minAmount);
+  });
+
   // Derive state
   const state = computed(() => {
+    // SwapState.INSUFFICIENT_LIQUIDITY is probably better here
     if (!pool.value) return SwapState.SELECT_TOKENS;
+    const fromTokenLiquidity = (pool.value as IPool).amounts.find(
+      amount => amount.asset.symbol === fromField.asset.value?.symbol
+    );
+    const toTokenLiquidity = (pool.value as IPool).amounts.find(
+      amount => amount.asset.symbol === toField.asset.value?.symbol
+    );
+
     if (
-      fromField.fieldAmount.value?.equalTo("0") &&
-      toField.fieldAmount.value?.equalTo("0")
-    )
+      !fromTokenLiquidity ||
+      !toTokenLiquidity ||
+      !fromField.fieldAmount.value ||
+      !toField.fieldAmount.value ||
+      (fromField.fieldAmount.value?.equalTo("0") &&
+        toField.fieldAmount.value?.equalTo("0"))
+    ) {
       return SwapState.ZERO_AMOUNTS;
-    if (!balance.value?.greaterThan(fromField.fieldAmount.value || "0"))
+    }
+
+    if  (toField.fieldAmount.value.greaterThan("0") && fromField.fieldAmount.value.equalTo("0")) {
+      return SwapState.INVALID_AMOUNT;
+    }
+
+    if (!balance.value?.greaterThanOrEqual(fromField.fieldAmount.value || "0"))
       return SwapState.INSUFFICIENT_FUNDS;
 
+    if (
+      fromTokenLiquidity.lessThan(fromField.fieldAmount.value) ||
+      toTokenLiquidity.lessThan(toField.fieldAmount.value)
+    ) {
+      return SwapState.INSUFFICIENT_LIQUIDITY;
+    }
     return SwapState.VALID_INPUT;
   });
 
@@ -143,5 +236,10 @@ export function useSwapCalculator(input: {
     toFieldAmount: toField.fieldAmount,
     toAmount: input.toAmount,
     fromAmount: input.fromAmount,
+    priceImpact,
+    providerFee,
+    minimumReceived,
+    swapResult,
+    reverseSwapResult,
   };
 }

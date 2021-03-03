@@ -8,6 +8,7 @@ export default defineComponent({
   props: {
     symbol: String,
     asset: Object as PropType<Asset>,
+    inline: Boolean,
   },
   setup(props) {
     const symbol = computed(() => props.symbol);
@@ -25,7 +26,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="row">
+  <div class="row" :class="{'inline': inline}">
     <img v-if="token.imageUrl" width="16" :src="token.imageUrl" />
     <div class="placeholder" :style="backgroundStyle" v-else></div>
     <span>{{ tokenLabel }}</span>
@@ -37,7 +38,18 @@ export default defineComponent({
   font-family: $f_default;
   display: flex;
   align-items: center;
-  /* cursor: pointer; */
+
+  & > * {
+    margin-right: 0.5rem;
+  }
+
+  &.inline {
+    display: inline-flex;
+
+    & > span {
+      margin-right: 0;
+    }
+  }
 }
 
 .row > * {

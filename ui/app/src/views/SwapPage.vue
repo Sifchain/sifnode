@@ -1,21 +1,21 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import Layout from "@/components/layout/Layout.vue";
-import { computed, ref, toRefs } from "@vue/reactivity";
+import { computed, ref } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
-import { Asset, SwapState, useSwapCalculator } from "ui-core";
+import { SwapState, useSwapCalculator } from "ui-core";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import Modal from "@/components/shared/Modal.vue";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
-import PriceCalculation from "@/components/shared/PriceCalculation.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import ModalView from "@/components/shared/ModalView.vue";
-import ConfirmationDialog, {
-  ConfirmState,
-} from "@/components/confirmationDialog/ConfirmationDialog.vue";
+import ConfirmationDialog from "@/components/confirmationDialog/ConfirmationDialog.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import DetailsPanel from "@/components/shared/DetailsPanel.vue";
+import SlippagePanel from "@/components/slippagePanel/Index.vue";
+import { ConfirmState } from "../types";
+import { toConfirmState } from "./utils/toConfirmState";
 
 export default defineComponent({
   components: {
@@ -27,6 +27,7 @@ export default defineComponent({
     SelectTokenDialogSif,
     ModalView,
     ConfirmationDialog,
+    SlippagePanel,
   },
 
   setup() {
@@ -38,7 +39,10 @@ export default defineComponent({
       toSymbol,
       toAmount,
     } = useCurrencyFieldState();
+
+    const slippage = ref<string>("1.0");
     const transactionState = ref<ConfirmState>("selecting");
+    const transactionHash = ref<string | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
     const { connected, connectedText } = useWalletButton({
       addrLen: 8,
@@ -52,11 +56,26 @@ export default defineComponent({
       return store.wallet.sif.balances;
     });
 
+    const getAccountBalance = () => {
+      return balances.value.find(
+          (balance) => balance.asset.symbol === fromSymbol.value
+        )
+    };
+
+    const isFromMaxActive = computed(() => {
+      const accountBalance = getAccountBalance();
+      if (!accountBalance) return false;
+      return fromAmount.value === accountBalance.toFixed();
+    });
+
     const {
       state,
       fromFieldAmount,
       toFieldAmount,
       priceMessage,
+      priceImpact,
+      providerFee,
+      minimumReceived,
     } = useSwapCalculator({
       balances,
       fromAmount,
@@ -64,12 +83,9 @@ export default defineComponent({
       fromSymbol,
       selectedField,
       toSymbol,
+      slippage,
       poolFinder,
     });
-
-    const minimumReceived = computed(() =>
-      parseFloat(toAmount.value).toPrecision(10)
-    );
 
     function clearAmounts() {
       fromAmount.value = "0.0";
@@ -90,14 +106,25 @@ export default defineComponent({
         throw new Error("from field amount is not defined");
       if (!toFieldAmount.value)
         throw new Error("to field amount is not defined");
+      if (!minimumReceived.value)
+        throw new Error("minimumReceived amount is not defined");
 
       transactionState.value = "signing";
-      await actions.clp.swap(fromFieldAmount.value, toFieldAmount.value.asset);
-      transactionState.value = "confirmed";
+
+      const tx = await actions.clp.swap(
+        fromFieldAmount.value,
+        toFieldAmount.value.asset,
+        minimumReceived.value
+      );
+      transactionHash.value = tx.hash;
+      transactionState.value = toConfirmState(tx.state); // TODO: align states
       clearAmounts();
     }
 
     function swapInputs() {
+      selectedField.value === "to" ?
+        selectedField.value = "from" :
+        selectedField.value = "to"
       const fromAmountValue = fromAmount.value;
       const fromSymbolValue = fromSymbol.value;
       fromAmount.value = toAmount.value;
@@ -117,6 +144,10 @@ export default defineComponent({
             return "Please enter an amount";
           case SwapState.INSUFFICIENT_FUNDS:
             return "Insufficient Funds";
+          case SwapState.INSUFFICIENT_LIQUIDITY:
+            return "Insufficient Liquidity";
+          case SwapState.INVALID_AMOUNT:
+            return "Invalid Amount";
           case SwapState.VALID_INPUT:
             return "Swap";
         }
@@ -154,31 +185,36 @@ export default defineComponent({
       },
       handleNextStepClicked,
       handleBlur() {
+        if (isFromMaxActive) return
         selectedField.value = null;
       },
-
+      slippage,
       fromAmount,
       toAmount,
       fromSymbol,
       minimumReceived,
       toSymbol,
       priceMessage,
+      priceImpact,
+      providerFee,
       handleFromMaxClicked() {
         selectedField.value = "from";
-        const accountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === fromSymbol.value
-        );
+        const accountBalance = getAccountBalance()
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.subtract("1").toFixed(1);
+        fromAmount.value = accountBalance.toFixed(18);
       },
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;
       }),
       transactionState,
       transactionModalOpen: computed(() => {
-        return ["confirming", "signing", "confirmed"].includes(
-          transactionState.value
-        );
+        return [
+          "confirming",
+          "signing",
+          "failed",
+          "rejected",
+          "confirmed",
+        ].includes(transactionState.value);
       }),
       requestTransactionModalClose,
       handleArrowClicked() {
@@ -188,6 +224,9 @@ export default defineComponent({
         transactionState.value = "signing";
       },
       handleAskConfirmClicked,
+      transactionHash,
+      isFromMaxActive,
+      selectedField
     };
   },
 });
@@ -202,6 +241,7 @@ export default defineComponent({
             v-model:fromAmount="fromAmount"
             v-model:fromSymbol="fromSymbol"
             :fromMax="!!fromSymbol"
+            :isFromMaxActive="isFromMaxActive"
             :fromDisabled="disableInputFields"
             :toDisabled="disableInputFields"
             @frommaxclicked="handleFromMaxClicked"
@@ -217,21 +257,25 @@ export default defineComponent({
             @toblur="handleBlur"
             @tosymbolclicked="handleToSymbolClicked(requestOpen)"
             :toSymbolSelectable="connected"
+            tokenALabel="From"
+            tokenBLabel="To"
           />
         </template>
         <template v-slot:default="{ requestClose }">
           <SelectTokenDialogSif
             :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
             @tokenselected="requestClose"
+            :mode="selectedField"
           />
         </template>
       </Modal>
+      <SlippagePanel v-if="nextStepAllowed" v-model:slippage="slippage" />
       <DetailsPanel
         :toToken="toSymbol || ''"
         :priceMessage="priceMessage || ''"
         :minimumReceived="minimumReceived || ''"
-        :providerFee="''"
-        :priceImpact="''"
+        :providerFee="providerFee || ''"
+        :priceImpact="priceImpact || ''"
       />
       <ActionsPanel
         connectType="connectToSif"
@@ -244,6 +288,7 @@ export default defineComponent({
         :isOpen="transactionModalOpen"
         ><ConfirmationDialog
           @confirmswap="handleAskConfirmClicked"
+          :transactionHash="transactionHash"
           :state="transactionState"
           :requestClose="requestTransactionModalClose"
           :priceMessage="priceMessage"
@@ -251,6 +296,9 @@ export default defineComponent({
           :fromAmount="fromAmount"
           :toAmount="toAmount"
           :toToken="toSymbol"
+          :minimumReceived="minimumReceived || ''"
+          :providerFee="providerFee || ''"
+          :priceImpact="priceImpact || ''"
       /></ModalView>
     </div>
   </Layout>

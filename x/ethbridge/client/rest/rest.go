@@ -48,6 +48,7 @@ type burnOrLockEthReq struct {
 	EthereumReceiver string       `json:"ethereum_receiver"`
 	Amount           sdk.Int      `json:"amount"`
 	Symbol           string       `json:"symbol"`
+	CethAmount       sdk.Int      `json:"ceth_amount" yaml:"ceth_amount"`
 }
 
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application
@@ -194,9 +195,9 @@ func burnOrLockHandler(cliCtx context.CLIContext, lockOrBurn string) http.Handle
 		var msg sdk.Msg
 		switch lockOrBurn {
 		case "lock":
-			msg = types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol)
+			msg = types.NewMsgLock(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
 		case "burn":
-			msg = types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol)
+			msg = types.NewMsgBurn(ethereumChainID, cosmosSender, ethereumReceiver, req.Amount, req.Symbol, req.CethAmount)
 		}
 		err = msg.ValidateBasic()
 		if err != nil {

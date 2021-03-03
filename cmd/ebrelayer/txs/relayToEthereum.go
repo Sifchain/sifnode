@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,7 +20,12 @@ import (
 
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
-	GasLimit = uint64(3000000)
+	GasLimit            = uint64(3000000)
+	transactionInterval = 60 * time.Second
+)
+
+var (
+	nextNonce uint64 = 0
 )
 
 // RelayProphecyClaimToEthereum relays the provided ProphecyClaim to CosmosBridge contract on the Ethereum network
@@ -43,10 +49,13 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	fmt.Println("Sending new ProphecyClaim to CosmosBridge...")
 	tx, err := cosmosBridgeInstance.NewProphecyClaim(auth, uint8(claim.ClaimType),
 		claim.CosmosSender, claim.CosmosSenderSequence, claim.EthereumReceiver, claim.Symbol, claim.Amount.BigInt())
+
 	if err != nil {
 		log.Println(err)
 		return err
 	}
+
+	fmt.Printf("After tx nextNonce is %d\n:", nextNonce)
 	fmt.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
 
 	// Get the transaction receipt
@@ -80,29 +89,35 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	if err != nil {
 		log.Println(err)
 		return nil, nil, common.Address{}, err
-
 	}
 
-	nonce, err := client.PendingNonceAt(context.Background(), sender)
-	if err != nil {
-		log.Println(err)
-		return nil, nil, common.Address{}, err
+	// rate limit the bridge so that nonce is handled correctly
+	time.Sleep(transactionInterval)
 
+	nonce, err := client.PendingNonceAt(context.Background(), sender)
+	log.Println("Current eth operator at pending nonce: ", nonce)
+	if err != nil {
+		log.Println("Error broadcasting tx: ", err)
+		return nil, nil, common.Address{}, err
 	}
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		log.Println(err)
 		return nil, nil, common.Address{}, err
-
 	}
 
 	// Set up TransactOpts auth's tx signature authorization
 	transactOptsAuth := bind.NewKeyedTransactor(key)
+
+	log.Printf("ethereum tx current nonce from client api is %d\n", nonce)
+	log.Printf("ethereum tx current nonce from local storage is %d\n", nextNonce)
+
 	transactOptsAuth.Nonce = big.NewInt(int64(nonce))
 	transactOptsAuth.Value = big.NewInt(0) // in wei
 	transactOptsAuth.GasLimit = GasLimit
 	transactOptsAuth.GasPrice = gasPrice
+	log.Println("transactOptsAuth.Nonce: ", transactOptsAuth.Nonce)
 
 	var targetContract ContractRegistry
 	switch event {

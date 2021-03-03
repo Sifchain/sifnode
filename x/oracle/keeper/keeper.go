@@ -74,7 +74,7 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 
 // ProcessClaim ...
 func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, error) {
-
+	fmt.Println("sifnode oracle keeper ProcessClaim")
 	inWhiteList := false
 	// Check if claim from whitelist validators
 	for _, address := range k.GetOracleWhiteList(ctx) {
@@ -86,6 +86,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	}
 
 	if !inWhiteList {
+		fmt.Println("sifnode oracle keeper ProcessClaim validator no in whitelist")
 		return types.Status{}, types.ErrValidatorNotInWhiteList
 	}
 
@@ -96,14 +97,18 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 
 	activeValidator := k.checkActiveValidator(ctx, addr)
 	if !activeValidator {
+		fmt.Println("sifnode oracle keeper ProcessClaim validator not active")
 		return types.Status{}, types.ErrInvalidValidator
 	}
 
 	if claim.Id == "" {
+		fmt.Printf("sifnode oracle keeper ProcessClaim wrong claim id %s\n", claim.ID)
 		return types.Status{}, types.ErrInvalidIdentifier
 	}
 
 	if claim.Content == "" {
+		fmt.Println("sifnode oracle keeper ProcessClaim claim content is empty")
+
 		return types.Status{}, types.ErrInvalidClaim
 	}
 
@@ -111,7 +116,6 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	if !found {
 		prophecy = types.NewProphecy(claim.Id)
 	}
-
 	switch prophecy.Status.Text {
 	case types.StatusText_PEDNING_STATUS_TEXT:
 		// continue processing
@@ -164,16 +168,19 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sd
 // left to push it over the threshold required for consensus.
 func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) types.Prophecy {
 	highestClaim, highestClaimPower, totalClaimsPower, totalPower := prophecy.FindHighestClaim(ctx, k.stakeKeeper, k.GetOracleWhiteList(ctx))
+
 	highestConsensusRatio := float64(highestClaimPower) / float64(totalPower)
 	remainingPossibleClaimPower := totalPower - totalClaimsPower
 	highestPossibleClaimPower := highestClaimPower + remainingPossibleClaimPower
 	highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower)
+
 	if highestConsensusRatio >= k.consensusNeeded {
 		prophecy.Status.Text = types.StatusText_SUCCESS_STATUS_TEXT
 		prophecy.Status.FinalClaim = highestClaim
 	} else if highestPossibleConsensusRatio < k.consensusNeeded {
 		prophecy.Status.Text = types.StatusText_SUCCESS_STATUS_TEXT
 	}
+
 	return prophecy
 }
 

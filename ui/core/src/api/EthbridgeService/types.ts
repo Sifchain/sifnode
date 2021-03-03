@@ -1,3 +1,5 @@
+import { TransactionStatus } from "../../entities";
+
 type TxEventBase<T> = {
   txHash: string;
   payload: T;
@@ -37,7 +39,7 @@ export type TxEventComplete = {
 
 export type TxEventError = {
   type: "Error";
-} & TxEventBase<unknown>;
+} & TxEventBase<TransactionStatus>;
 
 export type TxEvent =
   | TxEventEthConfCountChanged

@@ -122,6 +122,7 @@ test("swap()", async () => {
     fromAddress: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
     receivedAsset: CATK,
     sentAmount: AssetAmount(CBTK, "1000"),
+    minimumReceived: AssetAmount(CATK, "1000", { inBaseUnit: true }),
   });
 
   expect(message).toEqual({
@@ -135,7 +136,7 @@ test("swap()", async () => {
           value: {
             ReceivedAsset: { symbol: "catk" },
             SentAmount: "1000000000000000000000",
-            MinReceivingAmount:"0",
+            MinReceivingAmount: "1000",
             SentAsset: { symbol: "cbtk" },
             Signer: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
           },
@@ -153,5 +154,5 @@ test("getLiquidityProvider()", async () => {
 
   expect(lp?.asset.symbol).toEqual("catk");
   expect(lp?.address).toEqual("sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5");
-  expect(lp?.units.toFixed(0)).toEqual("10000000");
+  expect(lp?.units.toFixed(0)).toEqual("10000000000000000000000000");
 });

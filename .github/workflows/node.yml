@@ -54,6 +54,7 @@ jobs:
           CI: true
           CONSENSUS_THRESHOLD: 25
           OPERATOR: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57"
+          PAUSER: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57"
           OWNER: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57"
           MNEMONIC: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
           INFURA_PROJECT_ID: "JFSH7439sjsdtqTM23Dz"

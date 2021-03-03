@@ -18,6 +18,7 @@ export default defineComponent({
 .arrow {
   stroke: #c1c1c1;
   display: block;
+  cursor: pointer;
   &.enabled {
     stroke: $c_gold;
   }

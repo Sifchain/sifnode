@@ -76,10 +76,10 @@ run:
 	go run ./cmd/sifnoded start
 
 build-image:
-	docker build -t sifchain/$(BINARY):$(CHAINNET) -f ./cmd/$(BINARY)/Dockerfile .
+	docker build -t sifchain/$(BINARY):$(IMAGE_TAG) -f ./cmd/$(BINARY)/Dockerfile .
 
 run-image: build-image
-	docker run sifchain/$(BINARY):$(CHAINNET)
+	docker run sifchain/$(BINARY):$(IMAGE_TAG)
 
 sh-image: build-image
 	docker run -it sifchain/$(BINARY):$(CHAINNET) sh

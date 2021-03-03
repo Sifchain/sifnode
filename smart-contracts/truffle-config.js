@@ -10,6 +10,13 @@ module.exports = {
     }
   },
   networks: {
+    sifdocker: {
+      host: "localhost",
+      port: 7546, // Match default network 'ganache'
+      network_id: 5777,
+      gas: 6721975, // Truffle default development block gas limit
+      gasPrice: 200000000000
+    },
     develop: {
       host: "localhost",
       port: 7545, // Match default network 'ganache'
@@ -35,7 +42,8 @@ module.exports = {
         );
       },
       network_id: 1,
-      gas: 6000000
+      gas: 6000000,
+      gasPrice: 190000000000
     },
     xdai: {
       provider: function () {
