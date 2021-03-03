@@ -19,6 +19,8 @@ import (
 
 var sugaredLogger = NewZapLogger()
 
+const errorMessageKey = "errorMessage"
+
 // NewZapLogger initialize a new instance of SugaredLogger
 func NewZapLogger() *zap.SugaredLogger {
 	logger, err := zap.NewProduction()
@@ -62,13 +64,13 @@ func handleMsgCreateEthBridgeClaim(
 	status, err := bridgeKeeper.ProcessClaim(ctx, types.EthBridgeClaim(msg), sugaredLogger)
 	if err != nil {
 		sugaredLogger.Errorw("bridge keeper failed to process claim.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return nil, err
 	}
 	if status.Text == oracle.SuccessStatusText {
 		if err = bridgeKeeper.ProcessSuccessfulClaim(ctx, status.FinalClaim, sugaredLogger); err != nil {
 			sugaredLogger.Errorw("bridge keeper failed to process successful claim.",
-				"error message", err.Error())
+				errorMessageKey, err.Error())
 			return nil, err
 		}
 	}
@@ -133,7 +135,7 @@ func handleMsgBurn(
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 	}
 	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, coins, sugaredLogger); err != nil {
-		sugaredLogger.Errorw("bridge keeper failed to process burn.", "error message", err.Error())
+		sugaredLogger.Errorw("bridge keeper failed to process burn.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
@@ -185,7 +187,7 @@ func handleMsgLock(
 
 	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 	if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, coins); err != nil {
-		sugaredLogger.Errorw("bridge keeper failed to process lock.", "error message", err.Error())
+		sugaredLogger.Errorw("bridge keeper failed to process lock.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
@@ -232,7 +234,7 @@ func handleMsgUpdateWhiteListValidator(
 	}
 
 	if err := bridgeKeeper.ProcessUpdateWhiteListValidator(ctx, msg.CosmosSender, msg.Validator, msg.OperationType, sugaredLogger); err != nil {
-		sugaredLogger.Errorw("bridge keeper failed to process update validator.", "error message", err.Error())
+		sugaredLogger.Errorw("bridge keeper failed to process update validator.", errorMessageKey, err.Error())
 		return nil, err
 	}
 

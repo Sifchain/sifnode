@@ -14,6 +14,8 @@ import (
 	"github.com/Sifchain/sifnode/x/oracle"
 )
 
+const errorMessageKey = "errorMessageKey"
+
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
@@ -44,7 +46,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.EthBridgeClaim, sugare
 	oracleClaim, err := types.CreateOracleClaimFromEthClaim(k.cdc, claim)
 	if err != nil {
 		sugaredLogger.Errorw("failed to create oracle claim from eth claim.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return oracle.Status{}, err
 	}
 
@@ -56,7 +58,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string, sugaredLog
 	oracleClaim, err := types.CreateOracleClaimFromOracleString(claim)
 	if err != nil {
 		sugaredLogger.Errorw("failed to create oracle claim from oracle string.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return err
 	}
 
@@ -79,7 +81,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string, sugaredLog
 
 	if err != nil {
 		sugaredLogger.Errorw("failed to process successful claim.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return err
 	}
 
@@ -98,7 +100,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, amount
 		ctx, cosmosSender, types.ModuleName, amount,
 	); err != nil {
 		sugaredLogger.Errorw("failed to process burn.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return err
 	}
 

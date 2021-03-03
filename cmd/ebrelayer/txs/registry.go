@@ -42,14 +42,14 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 	sender, err := LoadSender()
 	if err != nil {
 		// log.Println(err)
-		sugaredLogger.Errorw("failed to get sender", "error message", err.Error())
+		sugaredLogger.Errorw("failed to get sender", errorMessageKey, err.Error())
 		return common.Address{}, err
 	}
 
 	header, err := client.HeaderByNumber(context.Background(), nil)
 	if err != nil {
 		// log.Println(err)
-		sugaredLogger.Errorw("failed to get header", "error message", err.Error())
+		sugaredLogger.Errorw("failed to get header", errorMessageKey, err.Error())
 
 		return common.Address{}, err
 	}
@@ -66,7 +66,7 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 	registryInstance, err := bridgeregistry.NewBridgeRegistry(registry, client)
 	if err != nil {
 		// log.Println(err)
-		sugaredLogger.Errorw("failed to get registry contract address", "error message", err.Error())
+		sugaredLogger.Errorw("failed to get registry contract address", errorMessageKey, err.Error())
 
 		return common.Address{}, err
 	}
@@ -87,7 +87,7 @@ func GetAddressFromBridgeRegistry(client *ethclient.Client, registry common.Addr
 
 	if err != nil {
 		// log.Println(err)
-		sugaredLogger.Errorw("failed to get contract address from registry", "error message", err.Error())
+		sugaredLogger.Errorw("failed to get contract address from registry", errorMessageKey, err.Error())
 		return common.Address{}, err
 	}
 

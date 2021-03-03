@@ -156,6 +156,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	mnemonic := args[4]
 
 	logger, err := zap.NewProduction()
+
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
 	}
@@ -166,6 +167,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	}()
 
 	sugaredLogger := logger.Sugar()
+	zap.RedirectStdLog(sugaredLogger.Desugar())
 
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())

@@ -30,7 +30,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	client, auth, target, err := initRelayConfig(provider, contractAddress, event, key, sugaredLogger)
 	if err != nil {
 		sugaredLogger.Errorw("failed in init relay config.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return err
 	}
 
@@ -38,7 +38,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	cosmosBridgeInstance, err := cosmosbridge.NewCosmosBridge(target, client)
 	if err != nil {
 		sugaredLogger.Errorw("failed to get cosmosBridge instance.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return err
 	}
 
@@ -52,7 +52,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 
 	if err != nil {
 		sugaredLogger.Errorw("failed to send ProphecyClaim to CosmosBridge.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return err
 	}
 
@@ -62,7 +62,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 	if err != nil {
 		sugaredLogger.Errorw("failed to get transaction receipt.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return err
 	}
 
@@ -82,7 +82,7 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	client, err := ethclient.Dial(provider)
 	if err != nil {
 		sugaredLogger.Errorw("failed to connect ethereum node.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return nil, nil, common.Address{}, err
 	}
 
@@ -90,7 +90,7 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	sender, err := LoadSender()
 	if err != nil {
 		sugaredLogger.Errorw("failed to load validator address.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return nil, nil, common.Address{}, err
 	}
 
@@ -102,14 +102,14 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 
 	if err != nil {
 		sugaredLogger.Errorw("failed to broadcast transaction.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return nil, nil, common.Address{}, err
 	}
 
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		sugaredLogger.Errorw("failed to get gas price.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return nil, nil, common.Address{}, err
 	}
 
@@ -153,7 +153,7 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	target, err := GetAddressFromBridgeRegistry(client, registry, targetContract, sugaredLogger)
 	if err != nil {
 		sugaredLogger.Errorw("failed to get cosmos bridger contract address from registry.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return nil, nil, common.Address{}, err
 
 	}

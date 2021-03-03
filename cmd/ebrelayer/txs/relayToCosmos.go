@@ -18,6 +18,7 @@ import (
 
 var (
 	nextSequenceNumber uint64 = 0
+	errorMessageKey           = "errorMessage"
 )
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
@@ -37,7 +38,7 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 		err := msg.ValidateBasic()
 		if err != nil {
 			sugaredLogger.Errorw("failed to get message from claim.",
-				"error message", err.Error())
+				errorMessageKey, err.Error())
 			continue
 		} else {
 			messages = append(messages, msg)
@@ -48,7 +49,7 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	txBldr, err := utils.PrepareTxBuilder(txBldr, cliCtx)
 	if err != nil {
 		sugaredLogger.Errorw("failed to get tx builder.",
-			"error message", err.Error(),
+			errorMessageKey, err.Error(),
 			"transaction builder", txBldr)
 		return err
 	}
@@ -67,7 +68,7 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)
 	if err != nil {
 		sugaredLogger.Errorw("failed to sign transaction.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return err
 	}
 
@@ -76,14 +77,14 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	res, err := cliCtx.BroadcastTxAsync(txBytes)
 	if err != nil {
 		sugaredLogger.Errorw("failed to broadcast tx to sifchain.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return err
 	}
 	log.Println("Broadcasted tx without error")
 
 	if err = cliCtx.PrintOutput(res); err != nil {
 		sugaredLogger.Errorw("failed to print out result.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return err
 	}
 

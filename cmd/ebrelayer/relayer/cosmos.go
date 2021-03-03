@@ -29,6 +29,7 @@ import (
 )
 
 // TODO: Move relay functionality out of CosmosSub into a new Relayer parent struct
+const errorMessageKey = "errorMessage"
 
 // CosmosSub defines a Cosmos listener that relays events to Ethereum and Cosmos
 type CosmosSub struct {
@@ -58,7 +59,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		completionEvent.Add(1)
 		go sub.Start(completionEvent)
 		return
@@ -66,7 +67,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 	if err := client.Start(); err != nil {
 		sub.SugaredLogger.Errorw("failed to start a sifchain client.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		completionEvent.Add(1)
 		go sub.Start(completionEvent)
 		return
@@ -79,7 +80,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	out, err := client.Subscribe(context.Background(), "test", query, 1000)
 	if err != nil {
 		sub.SugaredLogger.Errorw("sifchain client failed to subscribe to query.",
-			"error message", err.Error(),
+			errorMessageKey, err.Error(),
 			"query", query)
 		completionEvent.Add(1)
 		go sub.Start(completionEvent)
@@ -89,7 +90,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	defer func() {
 		if err := client.Unsubscribe(context.Background(), "test", query); err != nil {
 			sub.SugaredLogger.Errorw("sifchain client failed to unsubscribe query.",
-				"error message", err.Error())
+				errorMessageKey, err.Error())
 		}
 	}()
 
@@ -103,7 +104,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 			tx, ok := result.Data.(tmTypes.EventDataTx)
 			if !ok {
 				sub.SugaredLogger.Errorw("sifchain client failed to extract event data from new tx.",
-					"error message", err.Error())
+					errorMessageKey, err.Error())
 			}
 
 			sub.SugaredLogger.Infow("new transaction witnessed in sifchain client.")
@@ -117,7 +118,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
 					if err != nil {
 						sub.SugaredLogger.Errorw("sifchain client failed in get message from event.",
-							"error message", err.Error())
+							errorMessageKey, err.Error())
 						continue
 					}
 					// Parse event data, then package it as a ProphecyClaim and relay to the Ethereum Network
@@ -315,7 +316,7 @@ func getOracleClaimType(eventType string) types.Event {
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType types.Event) {
 	sub.SugaredLogger.Infow("handle burn lock message.",
-		"cosmos message is", cosmosMsg.String())
+		"cosmosMessage", cosmosMsg.String())
 
 	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
 

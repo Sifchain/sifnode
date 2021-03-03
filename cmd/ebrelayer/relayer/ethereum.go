@@ -80,7 +80,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 	keybase, info, err := NewKeybase(validatorMoniker, mnemonic, tempPassword)
 	if err != nil {
 		sugaredLogger.Errorw("failed to initialize a new key base.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return EthereumSub{}, err
 	}
 
@@ -132,7 +132,7 @@ func LoadTendermintCLIContext(appCodec *amino.Codec, validatorAddress sdk.ValAdd
 	err := accountRetriever.EnsureExists(sdk.AccAddress(validatorAddress))
 	if err != nil {
 		sugaredLogger.Errorw("validator address not exists.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return sdkContext.CLIContext{}, err
 	}
 	return cliCtx, nil
@@ -145,7 +145,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	client, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
 		sub.SugaredLogger.Errorw("SetupWebsocketEthClient failed.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 
 		completionEvent.Add(1)
 		go sub.Start(completionEvent)
@@ -158,7 +158,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	clientChainID, err := client.NetworkID(context.Background())
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get network ID.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		completionEvent.Add(1)
 		go sub.Start(completionEvent)
 		return
@@ -185,7 +185,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	subHead, err := client.SubscribeNewHead(context.Background(), heads)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to subscribe new head.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return
 	}
 	defer subHead.Unsubscribe()
@@ -193,13 +193,13 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	db, err := leveldb.OpenFile(levelDbFile, nil)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to open level db.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return
 	}
 	defer func() {
 		if err := db.Close(); err != nil {
 			sub.SugaredLogger.Errorw("failed to close level db.",
-				"error message", err.Error())
+				errorMessageKey, err.Error())
 		}
 	}()
 
@@ -210,7 +210,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	data, err := db.Get([]byte(ethLevelDBKey), nil)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get the last ethereum block from level db.",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		lastProcessedBlock = big.NewInt(0)
 		catchUpNeeded = false
 	} else {
@@ -225,7 +225,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			return
 		case err := <-subHead.Err():
 			sub.SugaredLogger.Errorw("failed to subscribe ethereum header.",
-				"error message", err.Error())
+				errorMessageKey, err.Error())
 			completionEvent.Add(1)
 			go sub.Start(completionEvent)
 			return
@@ -268,7 +268,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 
 			if err != nil {
 				sub.SugaredLogger.Errorw("failed to get events from bridgebank.",
-					"error message", err.Error(),
+					errorMessageKey, err.Error(),
 					"block number", newHead.Number)
 				// if you have an error getting the logs from the block, continue and keep
 				// the current last processed block so we keep retrying
@@ -287,7 +287,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 				event, isBurnLock, err := sub.logToEvent(clientChainID, bridgeBankAddress, bridgeBankContractABI, ethLog)
 				if err != nil {
 					sub.SugaredLogger.Errorw("failed to transform from log to event.",
-						"error message", err.Error())
+						errorMessageKey, err.Error())
 					continue
 				}
 				if !isBurnLock {
@@ -300,7 +300,7 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			if len(events) > 0 {
 				if err := sub.handleEthereumEvent(events); err != nil {
 					sub.SugaredLogger.Errorw("failed to handle ethereum event.",
-						"error message", err.Error())
+						errorMessageKey, err.Error())
 				}
 				time.Sleep(transactionInterval)
 			}
@@ -460,7 +460,7 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 	err := contractABI.Unpack(&event, eventName, cLog.Data)
 	if err != nil {
 		sub.SugaredLogger.Errorw(".",
-			"error message", err.Error())
+			errorMessageKey, err.Error())
 		return event, false, err
 	}
 	event.BridgeContractAddress = contractAddress
@@ -486,7 +486,7 @@ func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
 		prophecyClaim, err := txs.EthereumEventToEthBridgeClaim(sub.ValidatorAddress, event)
 		if err != nil {
 			sub.SugaredLogger.Errorw(".",
-				"error message", err.Error())
+				errorMessageKey, err.Error())
 		} else {
 			prophecyClaims = append(prophecyClaims, prophecyClaim)
 		}
