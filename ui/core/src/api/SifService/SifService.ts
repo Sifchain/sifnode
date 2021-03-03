@@ -65,7 +65,6 @@ export default function createSifService({
 
   const keplrProviderPromise = getKeplrProvider();
   let keplrProvider: any;
-  let offlineSigner: any;
   let client: SifClient | null = null;
   let polling: any;
 
@@ -143,10 +142,12 @@ export default function createSifService({
     },
 
     async setClient() {
-      if (!offlineSigner) {
-        client = null;
+      if (!keplrProvider) {
         return;
       }
+      const offlineSigner = keplrProvider.getOfflineSigner(
+        keplrChainConfig.chainId
+      );
       const accounts = await offlineSigner.getAccounts();
       const address = accounts.length > 0 ? accounts[0].address : "";
       if (!address) {
@@ -167,10 +168,6 @@ export default function createSifService({
         if (!keplrProvider) {
           return;
         }
-        offlineSigner = keplrProvider.getOfflineSigner(
-          keplrChainConfig.chainId
-        );
-        await instance.setClient();
         triggerUpdate();
       } catch (e) {
         console.log("initProvider", e);
