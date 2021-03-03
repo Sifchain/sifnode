@@ -1,4 +1,4 @@
-# Connecting to the Merry-go-Round Testnet with Kubernetes (k8s).
+# Connecting to the Sifchain TestNet with Kubernetes (k8s).
 
 ## Demo Videos
 

@@ -1,4 +1,4 @@
-# Connecting to the Sifchain BetaNet.
+# Connecting to the Sifchain TestNet.
 
 ## Prerequisites / Dependencies:
 
