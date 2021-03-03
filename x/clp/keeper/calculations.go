@@ -163,7 +163,7 @@ func GetDecPoolUnitInputs(oldPoolUnits, nativeAssetBalance, externalAssetBalance
 // r = native asset added;
 // a = external asset added
 // P = existing Pool Units
-// slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
+// slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
 func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externalAssetBalance,
@@ -204,7 +204,7 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 	a = ReducePrecision(a, minLen)
 	r = ReducePrecision(r, minLen)
 
-	slipAdjDenominator := (r.Add(R)).Mul(a.Add(A))
+	slipAdjDenominator := (r.MulInt64(2).Add(R)).Mul(a.Add(A))
 	var slipAdjustment sdk.Dec
 	if R.Mul(a).GT(r.Mul(A)) {
 		slipAdjustment = R.Mul(a).Sub(r.Mul(A)).Quo(slipAdjDenominator)

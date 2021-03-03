@@ -6,7 +6,7 @@
 #
 # where directory_name points to a directory with the json for our smart contracts
 
-. $(dirname $0)/shell_utilities.sh
+#. $(dirname $0)/shell_utilities.sh
 
 json_contracts_dir=${1}
 shift

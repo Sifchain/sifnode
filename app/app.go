@@ -243,7 +243,7 @@ func NewInitApp(
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
 
-	app.UpgradeKeeper.SetUpgradeHandler("release-20210225011500", func(ctx sdk.Context, plan upgrade.Plan) {})
+	app.UpgradeKeeper.SetUpgradeHandler("release-20210301075600", func(ctx sdk.Context, plan upgrade.Plan) {})
 
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
