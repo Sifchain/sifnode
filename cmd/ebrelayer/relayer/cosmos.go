@@ -337,10 +337,13 @@ func (sub CosmosSub) ListMissedCosmosEvent(days int64) {
 	// estimate blocks by one block every 15 seconds
 	blocks := 4 * 60 * 24 * days
 	ethFromHeight := currentEthHeight - blocks
+	if ethFromHeight < 0 {
+		ethFromHeight = 0
+	}
 
 	ProphecyClaims := sub.getAllProphecyClaim(ethClient, ethFromHeight, currentEthHeight)
 
-	fmt.Printf("found out %d prophecy claims I sent from %d to %d block", len(ProphecyClaims), ethFromHeight, currentEthHeight)
+	fmt.Printf("found out %d prophecy claims I sent from %d to %d block\n", len(ProphecyClaims), ethFromHeight, currentEthHeight)
 
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
@@ -358,6 +361,9 @@ func (sub CosmosSub) ListMissedCosmosEvent(days int64) {
 	// estimate blocks by one block every 6 seconds
 	blocks = 10 * 60 * 24 * days
 	cosmosFromHeight := currentCosmosHeight - blocks
+	if cosmosFromHeight < 0 {
+		cosmosFromHeight = 0
+	}
 
 	if err := client.Start(); err != nil {
 		sub.Logger.Error("failed to start a client", "err", err)
