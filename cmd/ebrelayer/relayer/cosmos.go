@@ -355,8 +355,8 @@ func (sub CosmosSub) ListMissedCosmosEvent(days int64) {
 	}
 
 	currentCosmosHeight := block.Block.Header.Height
-	// estimate blocks by one block every 3 seconds
-	blocks = 20 * 60 * 24 * days
+	// estimate blocks by one block every 6 seconds
+	blocks = 10 * 60 * 24 * days
 	cosmosFromHeight := currentCosmosHeight - blocks
 
 	if err := client.Start(); err != nil {
