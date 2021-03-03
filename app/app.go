@@ -2,9 +2,9 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	"github.com/pkg/errors"
 	"github.com/tendermint/tendermint/libs/log"
 	"math/big"
 
@@ -245,37 +245,30 @@ func NewInitApp(
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
 
 	app.UpgradeKeeper.SetUpgradeHandler("testPoolFormula", func(ctx sdk.Context, plan upgrade.Plan) {
-		f, err := os.Create("testlog.log")
-		defer f.Close()
-		loger := log.NewTMLogger(f)
-		loger.Info("Starting to execute upgrade plan")
-		ethAsset := clp.NewAsset("ceth")
-		loger.Info("Asset Created")
-		pool, err := clp.NewPool(ethAsset, sdk.NewUint(100), sdk.NewUint(100), sdk.NewUint(10))
-		if err != nil {
-			loger.Info("Pool Not Created", err.Error())
-			return
-		}
-		loger.Info("Pool Created")
-		//allPools := app.clpKeeper.GetPools(ctx)
-		//allLiquidityProviders := app.clpKeeper.GetLiquidityProviders(ctx)
-		err = app.clpKeeper.SetPool(ctx, pool)
-		if err != nil {
-			loger.Info("Pool Not Set", err.Error())
-			return
-		}
+		//f, err := os.Create("testlog.log")
+		//defer f.Close()
+		//loger := log.NewTMLogger(f)
+		//loger.Info("Starting to execute upgrade plan")
+		allPools := app.clpKeeper.GetPools(ctx)
 
-		currentHeight := ctx.BlockHeight()
-		for i := int64(0); i < currentHeight; i++ {
-			err := app.LoadHeight(ctx.BlockHeight() - 1)
-			if err != nil {
-				fmt.Println(err)
+		for _, pool := range allPools {
+			lpList := app.clpKeeper.GetLiquidityProvidersForAsset(ctx, pool.ExternalAsset)
+			temp := sdk.Uint{}
+			for _, lp := range lpList {
+				withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, _ := clp.CalculateWithdrawal(pool.PoolUnits, pool.NativeAssetBalance.String(),
+					pool.ExternalAsset.String(), lp.LiquidityProviderUnits.String(), sdk.NewUint(clp.MaxWbasis).String(), sdk.NewInt(0))
+				lpUnits := sdk.Uint{}
+				err := errors.New("No Error")
+				temp, lpUnits, err = clp.CalculatePoolUnits(pool.ExternalAsset.Symbol, temp, pool.NativeAssetBalance, pool.ExternalAssetBalance,
+					withdrawNativeAssetAmount, withdrawExternalAssetAmount)
+				if err != nil {
+					panic("Pool Migration cannot be completed")
+				}
+				lp.LiquidityProviderUnits = lpUnits
+				app.clpKeeper.SetLiquidityProvider(ctx, lp)
 			}
-			fmt.Println("Ctx Block height :", ctx.BlockHeight())
-			fmt.Println("Events for height : ", ctx.BlockHeight()-1)
-			fmt.Println(ctx.EventManager().ABCIEvents())
+			pool.PoolUnits = temp
 		}
-		loger.Info("Pool Set")
 	})
 
 	govRouter := gov.NewRouter()

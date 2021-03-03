@@ -206,7 +206,7 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 	a = ReducePrecision(a, minLen)
 	r = ReducePrecision(r, minLen)
 
-	slipAdjDenominator := (r.MulInt64(2).Add(R)).Mul(a.Add(A))
+	slipAdjDenominator := (r.Add(R)).Mul(a.Add(A))
 	var slipAdjustment sdk.Dec
 	if R.Mul(a).GT(r.Mul(A)) {
 		slipAdjustment = R.Mul(a).Sub(r.Mul(A)).Quo(slipAdjDenominator)

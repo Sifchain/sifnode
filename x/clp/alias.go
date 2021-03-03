@@ -33,6 +33,8 @@ var (
 	GetGenesisStateFromAppState = types.GetGenesisStateFromAppState
 	GetNormalizationMap         = types.GetNormalizationMap
 	NewPool                     = types.NewPool
+	CalculateWithdrawal         = keeper.CalculateWithdrawal
+	CalculatePoolUnits          = keeper.CalculatePoolUnits
 )
 
 type (
