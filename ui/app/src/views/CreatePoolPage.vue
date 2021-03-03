@@ -15,10 +15,10 @@ import FatInfoTableCell from "@/components/shared/FatInfoTableCell.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import { toConfirmState } from "./utils/toConfirmState";
-import { ConfirmState } from "../types";
+import { ConfirmState } from "@/types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
-import { formatNumber, formatPercentage } from "@/components/shared/utils";
+import { formatNumber } from "@/components/shared/utils";
 
 export default defineComponent({
   components: {
@@ -75,7 +75,6 @@ export default defineComponent({
     });
 
     const { balances } = useWallet(store);
-
     const liquidityProvider = computed(() => {
       if (
         !fromSymbol.value ||
@@ -129,13 +128,11 @@ export default defineComponent({
         throw new Error("Token A field amount is not defined");
       if (!tokenBFieldAmount.value)
         throw new Error("Token B field amount is not defined");
-
       transactionState.value = "signing";
       const tx = await actions.clp.addLiquidity(
         tokenBFieldAmount.value,
         tokenAFieldAmount.value
       );
-
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
       transactionStateMsg.value = tx.memo ?? "";
@@ -200,6 +197,8 @@ export default defineComponent({
         selectedField.value = null;
       },
 
+      backlink: window.history.state.back || '/pool',
+
       handleNextStepClicked,
 
       handleAskConfirmClicked,
@@ -247,15 +246,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout
-    class="pool"
-    :backLink="`${
-      fromSymbol && connected && aPerBRatioMessage > 0
-        ? '/pool/' + fromSymbol
-        : '/pool'
-    }`"
-    :title="title"
-  >
+  <Layout class="pool" :backLink="backlink" :title="title">
     <Modal @close="handleSelectClosed">
       <template v-slot:activator="{ requestOpen }">
         <CurrencyPairPanel
@@ -280,6 +271,7 @@ export default defineComponent({
       /></template>
       <template v-slot:default="{ requestClose }">
         <SelectTokenDialogSif
+          :forceShowAllATokens="true"
           :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
           @tokenselected="requestClose"
         />
@@ -290,19 +282,19 @@ export default defineComponent({
       <template #header>Pool Token Prices</template>
       <template #body>
         <FatInfoTableCell>
-          <span class="number">{{ formatNumber(aPerBRatioMessage) }}</span
+          <span class="number">{{ formatNumber(aPerBRatioMessage === 'N/A' ? '0' : aPerBRatioMessage) }}</span
           ><br />
           <span
-            >{{ fromSymbol.toUpperCase() }} per
-            {{ toSymbol.toUpperCase() }}</span
+            >{{ fromSymbol.toLowerCase().includes("rowan") ? fromSymbol.toUpperCase() : "c" + fromSymbol.slice(1).toUpperCase() }} per
+            {{ toSymbol.toLowerCase().includes("rowan") ? toSymbol.toUpperCase() : "c" + toSymbol.slice(1).toUpperCase() }}</span
           >
         </FatInfoTableCell>
         <FatInfoTableCell>
-          <span class="number">{{ formatNumber(bPerARatioMessage) }}</span
+          <span class="number">{{ formatNumber(bPerARatioMessage === 'N/A' ? '0' : bPerARatioMessage) }}</span
           ><br />
           <span
-            >{{ toSymbol.toUpperCase() }} per
-            {{ fromSymbol.toUpperCase() }}</span
+            >{{ toSymbol.toLowerCase().includes("rowan") ? toSymbol.toUpperCase() : "c" + toSymbol.slice(1).toUpperCase() }} per
+            {{ fromSymbol.toLowerCase().includes("rowan") ? fromSymbol.toUpperCase() : "c" + fromSymbol.slice(1).toUpperCase() }}</span
           > </FatInfoTableCell
         ><FatInfoTableCell />
       </template>
@@ -313,7 +305,7 @@ export default defineComponent({
       <template #body>
         <FatInfoTableCell>
           <span class="number">{{
-            formatNumber(aPerBRatioProjectedMessage)
+            formatNumber(aPerBRatioProjectedMessage === 'N/A' ? '0' : aPerBRatioProjectedMessage)
           }}</span
           ><br />
           <span
@@ -323,7 +315,7 @@ export default defineComponent({
         </FatInfoTableCell>
         <FatInfoTableCell>
           <span class="number">{{
-            formatNumber(bPerARatioProjectedMessage)
+            formatNumber(bPerARatioProjectedMessage === 'N/A' ? '0' : bPerARatioProjectedMessage)
           }}</span
           ><br />
           <span

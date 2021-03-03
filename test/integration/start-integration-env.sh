@@ -59,7 +59,6 @@ INITIAL_VALIDATOR_ADDRESSES=$EBRELAYER_ETHEREUM_ADDR npx truffle deploy --networ
 echo "# BRIDGE_REGISTRY_ADDRESS and ETHEREUM_CONTRACT_ADDRESS are synonyms">> $envexportfile
 set_persistant_env_var BRIDGE_REGISTRY_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeRegistry.json | jq -r '.networks["5777"].address') $envexportfile required
 set_persistant_env_var BRIDGE_TOKEN_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeToken.json | jq -r '.networks["5777"].address') $envexportfile required
-set_persistant_env_var ETHEREUM_CONTRACT_ADDRESS $BRIDGE_REGISTRY_ADDRESS $envexportfile required
 
 set_persistant_env_var BRIDGE_BANK_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeBank.json | jq -r '.networks["5777"].address') $envexportfile required
 

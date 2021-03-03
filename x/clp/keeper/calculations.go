@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -154,11 +155,11 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 		normalizationFactor = sdk.NewDec(10).Power(uint64(diffFactor))
 	}
 	if adjustExternalToken {
-		externalAssetAmount = externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt())) // Convert token which are not E18 to E18 format
-		externalAssetBalance = externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
+		externalAssetAmount = externalAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt())) // Convert token which are not E18 to E18 format
+		externalAssetBalance = externalAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
 	} else {
-		nativeAssetAmount = nativeAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
-		nativeAssetBalance = nativeAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.BigInt()))
+		nativeAssetAmount = nativeAssetAmount.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+		nativeAssetBalance = nativeAssetBalance.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
 	}
 
 	inputs := []sdk.Uint{oldPoolUnits, nativeAssetBalance, externalAssetBalance,

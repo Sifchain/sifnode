@@ -7,6 +7,7 @@
 - [Golang](https://golang.org/doc/install)
 - [AWS CLI Tool](https://aws.amazon.com/cli/)
 - [kubectl](https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html)
+- [helm](https://helm.sh/docs/intro/install)
 - [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 
 _This tutorial assumes that you have at least a basic understanding of setting up AWS and configuring your access keys accordingly, so that you may interact with AWS via the CLI Tool._
