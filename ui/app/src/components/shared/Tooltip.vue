@@ -18,7 +18,6 @@ export default defineComponent({
     close() {
       console.log("close tool tips");
       this.opened = false;
-      document.body.removeEventListener("mousedown", this.close);
     },
     open() {
       const element = this.$refs.trigger;
@@ -32,8 +31,6 @@ export default defineComponent({
       this.containerLocation.left = `${leftPos}px`;
 
       this.opened = true;
-      // add click handler to whole page to close tooltip
-      document.body.addEventListener("mousedown", this.close);
     },
   },
 });
@@ -42,7 +39,7 @@ export default defineComponent({
 <template>
   <span v-on:click="open()">
     <teleport to="#tooltip-target">
-      <div class="tooltip-background" v-if="opened">
+      <div class="tooltip-background" v-if="opened" @click="close">
         <div class="tooltip-positioner" :style="containerLocation">
           <div class="tooltip-container">
             <div class="tooltip-inner">
