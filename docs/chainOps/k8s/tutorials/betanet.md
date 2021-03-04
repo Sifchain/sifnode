@@ -1,4 +1,4 @@
-# Connecting to the Sifchain BetaNet with Kubernetes (k8s). 
+# Connecting to the Sifchain BetaNet with Kubernetes (k8s).
 
 ## Scaffold and deploy a new cluster
 
@@ -151,7 +151,7 @@ rake "validator:expose:pub_key[my-cluster,aws,sifnode]"
 3. Stake:
 
 ```
-rake "validator:stake[<chain_id>,<moniker>,<amount>,<public_key>,<node_rpc_address>]"
+rake "validator:stake[<chain_id>,<moniker>,<amount>,<gas>,<public_key>,<node_rpc_address>]"
 ```
 
 where:
@@ -160,7 +160,7 @@ where:
 |-----|----------|
 |`<chain_id>`|The Chain ID of the network (e.g.: sifchain).|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
-|`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan).|
+|`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
 |`<gas>`|The gas price (e.g.: 0.5rowan).|
 |`<public_key>`|The public key of your validator (you got this in the previous step).|
 |`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://<node IP address>:26657).|
@@ -168,7 +168,7 @@ where:
 e.g.:
 
 ```
-rake "validator:stake[sifchain,my-node,10000000rowan,0.5rowan,<public_key>,0.5rowan,tcp://44.235.108.41:26657]"
+rake "validator:stake[sifchain,my-node,10000000rowan,0.5rowan,<public_key>,tcp://44.235.108.41:26657]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
