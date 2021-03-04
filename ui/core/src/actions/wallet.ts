@@ -3,12 +3,14 @@ import { validateMnemonic } from "bip39";
 import { Mnemonic } from "../entities/Wallet";
 import { ActionContext } from ".";
 import { effect } from "@vue/reactivity";
-import notify from "../api/utils/Notifications";
 
 export default ({
   api,
   store,
-}: ActionContext<"SifService" | "ClpService", "wallet">) => {
+}: ActionContext<
+  "SifService" | "ClpService" | "NotificationService",
+  "wallet"
+>) => {
   const state = api.SifService.getState();
 
   const actions = {
@@ -38,7 +40,7 @@ export default ({
         store.wallet.sif.isConnected = true;
       } catch (error) {
         // to the ui??
-        notify({ type: "error", ...error });
+        api.NotificationService.notify({ type: "error", ...error });
       }
     },
 
@@ -51,13 +53,13 @@ export default ({
     if (store.wallet.sif.isConnected !== state.connected) {
       store.wallet.sif.isConnected = state.connected;
       if (store.wallet.sif.isConnected) {
-        notify({
+        api.NotificationService.notify({
           type: "success",
           message: "Sif Account connected",
           detail: {
-            type: 'info',
+            type: "info",
             message: store.wallet.sif.address,
-          }
+          },
         });
       }
     }

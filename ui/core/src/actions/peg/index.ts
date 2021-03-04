@@ -1,6 +1,5 @@
 import { ActionContext } from "..";
 import { Address, Asset, AssetAmount, TransactionStatus } from "../../entities";
-import notify from "../../api/utils/Notifications";
 import JSBI from "jsbi";
 
 function isOriginallySifchainNativeToken(asset: Asset) {
@@ -15,7 +14,7 @@ export default ({
   api,
   store,
 }: ActionContext<
-  "SifService" | "EthbridgeService" | "EthereumService",
+  "SifService" | "EthbridgeService" | "NotificationService" | "EthereumService",
   "wallet"
 >) => {
   const actions = {
@@ -63,7 +62,7 @@ export default ({
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        notify({
+        api.NotificationService.notify({
           type: "error",
           message: txStatus.memo || "There was an error while unpegging",
         });
@@ -95,7 +94,7 @@ export default ({
         lockOrBurnFn(store.wallet.sif.address, assetAmount, ETH_CONFIRMATIONS)
           .onTxHash(hash => {
             // TODO: Set tx status on store for pending txs to use elsewhere
-            notify({
+            api.NotificationService.notify({
               type: "info",
               message: "Pegged Transaction Pending",
               detail: {
@@ -112,11 +111,14 @@ export default ({
             });
           })
           .onError(err => {
-            notify({ type: "error", message: err.payload.memo! });
+            api.NotificationService.notify({
+              type: "error",
+              message: err.payload.memo!,
+            });
             done(err.payload);
           })
           .onComplete(({ txHash }) => {
-            notify({
+            api.NotificationService.notify({
               type: "success",
               message: `Transfer ${txHash} has succeded.`,
             });

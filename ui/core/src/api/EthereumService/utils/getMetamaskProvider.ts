@@ -1,7 +1,7 @@
 import detectMetaMaskProvider from "@metamask/detect-provider";
 import Web3 from "web3";
 import { AbstractProvider, provider } from "web3-core";
-import notify from "../../utils/Notifications"
+// import notify from "../../utils/Notifications"
 
 type MetaMaskProvider = AbstractProvider & {
   request?: (a: any) => Promise<void>;
@@ -17,8 +17,17 @@ export const getMetamaskProvider = async (): Promise<provider> => {
   const mmp = await detectMetaMaskProvider();
   const win = window as WindowWithPossibleMetaMask;
   if (!mmp) {
-    notify({type: "error", message: "Metamask not found.", detail: { type: "info", message: "Check if extension enabled for this URL."}})
-    return null
+    // XXX: Should not have access to sideeffects here surface in business layer
+    // TODO: Trigger this notifications in usecases
+    // notify({
+    //   type: "error",
+    //   message: "Metamask not found.",
+    //   detail: {
+    //     type: "info",
+    //     message: "Check if extension enabled for this URL.",
+    //   },
+    // });
+    return null;
   }
   if (!win) return null;
   if (mmp) {

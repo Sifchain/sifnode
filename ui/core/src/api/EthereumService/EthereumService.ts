@@ -18,7 +18,6 @@ import {
   transferAsset,
 } from "./utils/ethereumUtils";
 import { isToken } from "../../entities/utils/isToken";
-import notify from "../utils/Notifications";
 
 type Address = string;
 type Balances = AssetAmount[];
@@ -63,10 +62,10 @@ export class EthereumService implements IWalletService {
 
   constructor(getWeb3Provider: () => Promise<provider>, assets: Asset[]) {
     this.state = reactive({ ...initState });
-    this.supportedTokens = assets.filter((t) => t.network === Network.ETHEREUM);
+    this.supportedTokens = assets.filter(t => t.network === Network.ETHEREUM);
     this.providerPromise = getWeb3Provider();
     this.providerPromise
-      .then((provider) => {
+      .then(provider => {
         if (!provider) return (this.provider = null);
         if (isEventEmittingProvider(provider)) {
           provider.on("chainChanged", () => window.location.reload());
@@ -74,7 +73,7 @@ export class EthereumService implements IWalletService {
         }
         this.provider = provider;
       })
-      .catch((error) => {
+      .catch(error => {
         console.log("error", error);
       });
   }
@@ -126,7 +125,12 @@ export class EthereumService implements IWalletService {
         }
       }
       this.addWeb3Subscription();
-      notify({ type: "success", message: "Connected to Metamask" });
+      // XXX: Should not have access to sideeffects here
+      // TODO: Trigger this notifications in usecases
+      // notify({
+      //   type: "success",
+      //   message: "Connected to Metamask",
+      // });
       await this.updateData();
     } catch (err) {
       console.log(err);
@@ -196,7 +200,7 @@ export class EthereumService implements IWalletService {
       balances = await Promise.all([
         getEtheriumBalance(web3, addr),
         ...supportedTokens
-          .filter((t) => t.symbol !== "eth")
+          .filter(t => t.symbol !== "eth")
           .map((token: Asset) => {
             if (isToken(token)) return getTokenBalance(web3, addr, token);
             return AssetAmount(token, "0");
