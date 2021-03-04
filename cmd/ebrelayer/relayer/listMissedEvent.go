@@ -13,8 +13,6 @@ import (
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 )
 
-// TODO: Move relay functionality out of CosmosSub into a new Relayer parent struct
-
 // ListMissedCosmosEvent defines a Cosmos listener that relays events to Ethereum and Cosmos
 type ListMissedCosmosEvent struct {
 	TmProvider              string

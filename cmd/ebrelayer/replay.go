@@ -106,12 +106,6 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
 	}
 
-	// Parse flag --chain-id
-	chainID := viper.GetString(flags.FlagChainID)
-	if strings.TrimSpace(chainID) == "" {
-		return errors.Errorf("Must specify a 'chain-id'")
-	}
-
 	// Parse flag --rpc-url
 	rpcURL := viper.GetString(FlagRPCURL)
 	if rpcURL != "" {
@@ -170,12 +164,6 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 
 // RunListMissedCosmosEventCmd executes initRelayerCmd
 func RunListMissedCosmosEventCmd(cmd *cobra.Command, args []string) error {
-	// Parse flag --chain-id
-	chainID := viper.GetString(flags.FlagChainID)
-	if strings.TrimSpace(chainID) == "" {
-		return errors.Errorf("Must specify a 'chain-id'")
-	}
-
 	// Parse flag --rpc-url
 	rpcURL := viper.GetString(FlagRPCURL)
 	if rpcURL != "" {
