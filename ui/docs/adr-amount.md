@@ -96,21 +96,28 @@ Asset("eth"); // returns the cached 'eth' asset
 
 ## AssetAmount
 
-An `AssetAmount` is a convenience struct that represents an `Amount` that is connected to an `Asset`. Most of the values our application deals with will be `AssetAmount`s so it makes sense to have this construct. This is simply going to combine the two data constructs together and conform to the following interface
+An `AssetAmount` is a convenience struct that represents an `Amount` that is connected to an `Asset`. Most of the values our application deals with will be `AssetAmount`s so it makes sense to have this construct. This is simply going to combine the two data constructs together and conform to the following interface:
 
 ```ts
-interface IAssetAmount extends IAmount, IAsset {}
+interface IAssetAmount extends IAmount, IAsset {
+  readonly asset: IAsset;
+  readonly amount: IAmount;
+}
 ```
 
-This is effectively the same as the following:
+When expanded this is effectively the same as the following:
 
 ```ts
 interface IAssetAmout {
-  // for use by display lib and in testing
+  // Getters for source structures
+  readonly asset: IAsset;
+  readonly amount: IAmount;
+
+  // For use by display lib and in testing
   toBigInt(): JSBI;
   toString(): string;
 
-  // for use within and outside core
+  // For use within and outside core
   add(other: IAmount | string): IAmount;
   subtract(other: IAmount | string): IAmount;
   lessThan(other: IAmount | string): boolean;
@@ -122,7 +129,7 @@ interface IAssetAmout {
   divide(other: IAmount | string): IAmount;
   sqrt(): IAmount;
 
-  //
+  // Asset props
   symbol: string;
   label: string;
   name: string;
@@ -181,6 +188,14 @@ Despite using the Fraction floating point internal representation we deliberatel
 
 ```ts
 Amount("100.1234"); // will throw an error
+```
+
+Because we need to use the `AssetAmount` as an `Asset` we can simply cast like this (tbc - I think we can get away with this):
+
+```ts
+const assetAmount = AssetAmount("eth", "100");
+const amount = assetAmount as IAmount;
+const asset = assetAmount as IAsset;
 ```
 
 ## Task to do
