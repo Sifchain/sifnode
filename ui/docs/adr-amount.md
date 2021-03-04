@@ -190,14 +190,6 @@ Despite using the Fraction floating point internal representation we deliberatel
 Amount("100.1234"); // will throw an error
 ```
 
-Because we need to use the `AssetAmount` as an `Asset` we can simply cast like this (tbc - I think we can get away with this):
-
-```ts
-const assetAmount = AssetAmount("eth", "100");
-const amount = assetAmount as IAmount;
-const asset = assetAmount as IAsset;
-```
-
 ## Task to do
 
 - [ ] Create new `Amount` wrapper - implement all Fraction methods - write tests
