@@ -113,6 +113,7 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
     sifAddrPrefix: config.sifAddrPrefix,
     sifApiUrl: config.sifApiUrl,
     sifWsUrl: config.sifWsUrl,
+    sifRpcUrl: config.sifRpcUrl,
     sifChainId: config.sifChainId,
     getWeb3Provider:
       config.web3Provider === "metamask"

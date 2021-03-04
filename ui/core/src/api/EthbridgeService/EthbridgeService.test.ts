@@ -29,7 +29,8 @@ describe("EthbridgeService", () => {
   beforeEach(async () => {
     EthbridgeService = createEthbridgeService({
       sifApiUrl: "http://localhost:1317",
-      sifWsUrl: "ws://localhost:26667/nosocket",
+      sifWsUrl: "ws://localhost:26657/nosocket",
+      sifRpcUrl: "http://localhost:26657",
       sifChainId: "sifchain",
       bridgebankContractAddress: config.bridgebankContractAddress,
       bridgetokenContractAddress: (EROWAN as Token).address,
@@ -214,7 +215,10 @@ describe("EthbridgeService", () => {
 
     const sendERowanAmount = AssetAmount(EROWAN, "10");
 
-    await EthbridgeService.approveBridgeBankSpend(getEthAddress(), sendERowanAmount);
+    await EthbridgeService.approveBridgeBankSpend(
+      getEthAddress(),
+      sendERowanAmount
+    );
 
     // Burn eRowan to Rowan
     await new Promise<void>((done, reject) => {

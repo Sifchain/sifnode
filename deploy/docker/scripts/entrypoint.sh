@@ -7,7 +7,7 @@
 # Configure the node.
 #
 setup() {
-  sifgen node create "$CHAINNET" "$MONIKER" "$MNEMONIC" --peer-address "$PEER_ADDRESSES" --genesis-url "$GENESIS_URL" --with-cosmovisor
+  sifgen node create "$CHAINNET" "$MONIKER" "$MNEMONIC" --peer-address "$PEER_ADDRESSES" --genesis-url "$GENESIS_URL" --bind-ip-address "$BIND_IP_ADDRESS" --with-cosmovisor
 }
 
 #

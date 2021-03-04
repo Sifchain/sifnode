@@ -66,7 +66,7 @@ module.exports = async (cb) => {
         bridgeBank = await BridgeBank.at(process.env.BRIDGEBANK_ADDRESS)
         console.log(await bridgeBank.bulkWhitelistUpdateLimits(addresses, limits, {
             from: accounts[0],
-            gas: 300000 // 300,000 gas
+            gas: 4000000 // 300,000 gas
         }));
 
         console.log("\n\n~~~~ New Token Limits Set ~~~~\n\n");
