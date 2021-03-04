@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -160,6 +161,11 @@ func GetAllProphecyClaim(client *ethclient.Client, ethereumAddress common.Addres
 				continue
 			}
 
+			if len(tx.Data()) < 4 {
+				log.Println("the tx is not a smart contract call")
+				continue
+			}
+
 			// compare method id to check if it is NewProphecyClaim method
 			if bytes.Compare(tx.Data()[0:4], methodID) != 0 {
 				continue
@@ -182,6 +188,9 @@ func GetAllProphecyClaim(client *ethclient.Client, ethereumAddress common.Addres
 
 // MyDecode decode data in ProphecyClaim transaction
 func MyDecode(data []byte) (types.ProphecyClaimUnique, error) {
+	if len(data) < 32*7+42 {
+		return types.ProphecyClaimUnique{}, errors.New("tx data length not enough")
+	}
 
 	src := data[64:96]
 	dst := make([]byte, hex.EncodedLen(len(src)))
