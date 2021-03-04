@@ -18,6 +18,7 @@ import JSBI from "jsbi";
 export type EthbridgeServiceContext = {
   sifApiUrl: string;
   sifWsUrl: string;
+  sifRpcUrl: string;
   sifChainId: string;
   bridgebankContractAddress: string;
   bridgetokenContractAddress: string;
@@ -30,10 +31,11 @@ const ETH_ADDRESS = "0x0000000000000000000000000000000000000000";
 export default function createEthbridgeService({
   sifApiUrl,
   sifWsUrl,
+  sifRpcUrl,
   sifChainId,
   bridgebankContractAddress,
   getWeb3Provider,
-  sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl),
+  sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl),
 }: EthbridgeServiceContext) {
   // Pull this out to a util?
   // How to handle context/dependency injection?
@@ -74,6 +76,7 @@ export default function createEthbridgeService({
         },
       });
     });
+
     return emitter;
   }
 
@@ -129,6 +132,7 @@ export default function createEthbridgeService({
       const sendArgs = {
         from: account,
         value: 0,
+        gas: 100000,
       };
 
       // TODO - give interface option to approve unlimited spend via web3.utils.toTwosComplement(-1);
@@ -219,6 +223,7 @@ export default function createEthbridgeService({
         const sendArgs = {
           from: fromAddress,
           value: coinDenom === ETH_ADDRESS ? amount : 0,
+          gas: 150000,
         };
 
         console.log(

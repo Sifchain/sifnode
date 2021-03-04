@@ -9,17 +9,29 @@ export default defineComponent({
       return (s - 0) == s && (''+s).trim().length > 0;
     }
 
-    const data = await fetch("https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/tokenstats");
-    const json = await data.json();
-    const rowanPriceInUSDT = json.body ? json.body.rowanUSD : "";
-
-    let rowanUSD = "";
-    if (isNumeric(rowanPriceInUSDT)) {
-      rowanUSD = "ROWAN: $" + parseFloat(rowanPriceInUSDT).toPrecision(6);
+    function formatNumberString(x: string) {
+      return x.replace(/\B(?=(?=\d*\.)(\d{3})+(?!\d))/g, ",");
     }
 
+    const data = await fetch("https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/tokenstats");
+    const json = await data.json();
+    const pools = json.body ? json.body.pools : "";
+    if (!pools || pools.length < 1) {
+      return "";
+    }
+
+    let total: number = 0.0;
+    pools.map((p: any) => {
+      const depth = p.poolDepth;
+      if (isNumeric(depth)) {
+        total += (parseFloat(depth) * 2);
+      }
+    });
+
+    const tlv = "TVL: $" + formatNumberString(total.toFixed(1));
+
     return {
-      rowanUSD
+      tlv: tlv.substring(0, tlv.length - 2)
     }
   }
 });
@@ -27,10 +39,9 @@ export default defineComponent({
 
 <template>
   <div>
-    <div v-if="rowanUSD" class="rowan">
-      <img class="image" src="../../../public/images/siflogo.png">
+    <div v-if="tlv" class="rowan">
       <div>
-        {{ rowanUSD }}
+        {{ tlv }}
       </div>
     </div>
   </div>
@@ -38,6 +49,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
   .rowan {
+    min-height: 20px;
     background: transparent;
     color: $c_gray_700;
     border-radius: $br_md;
