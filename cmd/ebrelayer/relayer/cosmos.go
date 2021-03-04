@@ -124,27 +124,14 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	}
 }
 
-func (sub CosmosSub) getAllProphecyClaim(client *ethclient.Client, ethFromBlock int64, ethToBlock int64) []types.ProphecyClaimUnique {
+// GetAllProphecyClaim get all prophecy claims
+func GetAllProphecyClaim(client *ethclient.Client, ethereumAddress common.Address, ethFromBlock int64, ethToBlock int64) []types.ProphecyClaimUnique {
 	log.Printf("getAllProphecyClaim from %d block to %d block\n", ethFromBlock, ethToBlock)
 
 	var prophecyClaimArray []types.ProphecyClaimUnique
 
-	clientChainID, err := client.NetworkID(context.Background())
-	if err != nil {
-		log.Printf("%s \n", err.Error())
-		return prophecyClaimArray
-	}
-	log.Printf("clientChainID is %d \n", clientChainID)
-
 	// Used to recover address from transaction, the clientChainID doesn't work in ganache, hardcoded to 1
 	eIP155Signer := ethTypes.NewEIP155Signer(big.NewInt(1))
-
-	// Load the validator's ethereum address
-	mySender, err := txs.LoadSender()
-	if err != nil {
-		log.Println(err)
-		return prophecyClaimArray
-	}
 
 	CosmosBridgeContractABI := contract.LoadABI(txs.CosmosBridge)
 	methodID := CosmosBridgeContractABI.Methods[types.NewProphecyClaim.String()].ID()
@@ -168,7 +155,7 @@ func (sub CosmosSub) getAllProphecyClaim(client *ethclient.Client, ethFromBlock 
 			}
 
 			// compare tx sender with my ethereum account
-			if sender != mySender {
+			if sender != ethereumAddress {
 				// the prophecy claim not sent by me
 				continue
 			}
@@ -236,7 +223,22 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 		log.Printf("%s \n", err.Error())
 		return
 	}
-	ProphecyClaims := sub.getAllProphecyClaim(ethClient, ethFromBlock, ethToBlock)
+
+	clientChainID, err := ethClient.NetworkID(context.Background())
+	if err != nil {
+		log.Printf("%s \n", err.Error())
+		return
+	}
+	log.Printf("clientChainID is %d \n", clientChainID)
+
+	// Load the validator's ethereum address
+	mySender, err := txs.LoadSender()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	ProphecyClaims := GetAllProphecyClaim(ethClient, mySender, ethFromBlock, ethToBlock)
 
 	fmt.Printf("found out %d prophecy claims I sent from %d to %d block", len(ProphecyClaims), ethFromBlock, ethToBlock)
 
@@ -315,92 +317,5 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 		claimType, prophecyClaim, sub.PrivateKey)
 	if err != nil {
 		fmt.Println(err)
-	}
-}
-
-// ListMissedCosmosEvent print all missed cosmos events by this ebrelayer in days
-func (sub CosmosSub) ListMissedCosmosEvent(days int64) {
-	log.Println("ListMissedCosmosEvent started")
-	// Start Ethereum client
-	ethClient, err := ethclient.Dial(sub.EthProvider)
-	if err != nil {
-		log.Printf("%s \n", err.Error())
-		return
-	}
-
-	header, err := ethClient.HeaderByNumber(context.Background(), nil)
-	if err != nil {
-		log.Printf("%s \n", err.Error())
-		return
-	}
-
-	currentEthHeight := header.Number.Int64()
-	// estimate blocks by one block every 15 seconds
-	blocks := 4 * 60 * 24 * days
-	ethFromHeight := currentEthHeight - blocks
-	if ethFromHeight < 0 {
-		ethFromHeight = 0
-	}
-
-	ProphecyClaims := sub.getAllProphecyClaim(ethClient, ethFromHeight, currentEthHeight)
-
-	log.Printf("found out %d prophecy claims I sent from %d to %d block\n", len(ProphecyClaims), ethFromHeight, currentEthHeight)
-
-	client, err := tmClient.New(sub.TmProvider, "/websocket")
-	if err != nil {
-		log.Printf("failed to initialize a client %s\n", err.Error())
-		return
-	}
-
-	block, err := client.Block(nil)
-	if err != nil {
-		log.Printf("%s \n", err.Error())
-		return
-	}
-
-	currentCosmosHeight := block.Block.Header.Height
-	// estimate blocks by one block every 6 seconds
-	blocks = 10 * 60 * 24 * days
-	cosmosFromHeight := currentCosmosHeight - blocks
-	if cosmosFromHeight < 0 {
-		cosmosFromHeight = 0
-	}
-
-	if err := client.Start(); err != nil {
-		log.Printf("failed to start a client %s\n", err.Error())
-		return
-	}
-
-	defer client.Stop() //nolint:errcheck
-
-	for blockNumber := cosmosFromHeight; blockNumber < currentCosmosHeight; {
-		tmpBlockNumber := blockNumber
-		block, err := client.BlockResults(&tmpBlockNumber)
-		blockNumber++
-
-		if err != nil {
-			continue
-		}
-
-		for _, result := range block.TxsResults {
-			for _, event := range result.Events {
-
-				claimType := getOracleClaimType(event.GetType())
-
-				switch claimType {
-				case types.MsgBurn, types.MsgLock:
-
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
-					if err != nil {
-						log.Println(err.Error())
-						continue
-					}
-
-					if !MessageProcessed(cosmosMsg, ProphecyClaims) {
-						log.Printf("missed cosmos event: %s\n", cosmosMsg.String())
-					}
-				}
-			}
-		}
 	}
 }

@@ -226,10 +226,10 @@ func replayCosmosCmd() *cobra.Command {
 func listMissedCosmosEventCmd() *cobra.Command {
 	//nolint:lll
 	listMissedCosmosEventCmd := &cobra.Command{
-		Use:     "listMissedCosmosEventCmd [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [days]",
+		Use:     "listMissedCosmosEventCmd [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [ebrelayerEthereumAddress] [days]",
 		Short:   "replay missed cosmos events",
-		Args:    cobra.ExactArgs(4),
-		Example: "listMissedCosmosEventCmd tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 1 --chain-id=peggy",
+		Args:    cobra.ExactArgs(5),
+		Example: "listMissedCosmosEventCmd tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 0x627306090abaB3A6e1400e9345bC60c78a8BEf57 1 --chain-id=peggy",
 		RunE:    RunListMissedCosmosEventCmd,
 	}
 

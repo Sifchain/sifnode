@@ -170,12 +170,6 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 
 // RunListMissedCosmosEventCmd executes initRelayerCmd
 func RunListMissedCosmosEventCmd(cmd *cobra.Command, args []string) error {
-	// Load the validator's Ethereum private key from environment variables
-	privateKey, err := txs.LoadPrivateKey()
-	if err != nil {
-		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
-	}
-
 	// Parse flag --chain-id
 	chainID := viper.GetString(flags.FlagChainID)
 	if strings.TrimSpace(chainID) == "" {
@@ -207,18 +201,20 @@ func RunListMissedCosmosEventCmd(cmd *cobra.Command, args []string) error {
 	}
 	contractAddress := common.HexToAddress(args[2])
 
-	days, err := strconv.ParseInt(args[3], 10, 64)
+	if !common.IsHexAddress(args[3]) {
+		return errors.Errorf("invalid [relayer-ethereum-address]: %s", args[3])
+	}
+	relayerEthereumAddress := common.HexToAddress(args[3])
+
+	days, err := strconv.ParseInt(args[4], 10, 64)
 	if err != nil {
 		return errors.Errorf("invalid [days]: %s", args[3])
 	}
 
-	// Universal logger
-	logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
-
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)
+	listMissedCosmosEvent := relayer.NewListMissedCosmosEvent(tendermintNode, web3Provider, contractAddress, relayerEthereumAddress, days)
 
-	cosmosSub.ListMissedCosmosEvent(days)
+	listMissedCosmosEvent.ListMissedCosmosEvent()
 
 	return nil
 }
