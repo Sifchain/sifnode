@@ -16,7 +16,6 @@ export default defineComponent({
   },
   methods: {
     close() {
-      console.log("close tool tips");
       this.opened = false;
     },
     open() {
