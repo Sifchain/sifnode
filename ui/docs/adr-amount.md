@@ -72,13 +72,13 @@ Following is an interface which assets should conform
 
 ```ts
 interface IAsset {
-  symbol: string; // Eg. ceth
-  label: string; // Eg. cETH
-  name: string; // Eg. Ethereum
-  decimals: number; // 18
-  network: "ethereum" | "sifchain"; // | "bitcoin"; etc
-  address: string; // All assets must have an address with  (0x0000000000000000000000000000000000000000 for a native coin)
-  imageUrl?: string;
+  readonly symbol: string; // Eg. ceth
+  readonly label: string; // Eg. cETH
+  readonly name: string; // Eg. Ethereum
+  readonly decimals: number; // 18
+  readonly network: "ethereum" | "sifchain"; // | "bitcoin"; etc
+  readonly address: string; // All assets must have an address with (0x0000000000000000000000000000000000000000 for a native coin)
+  readonly imageUrl?: string;
 }
 ```
 
@@ -130,13 +130,13 @@ interface IAssetAmout {
   sqrt(): IAmount;
 
   // Asset props
-  symbol: string;
-  label: string;
-  name: string;
-  decimals: number;
-  network: Network;
-  address: string;
-  imageUrl?: string;
+  readonly symbol: string;
+  readonly label: string;
+  readonly name: string;
+  readonly decimals: number;
+  readonly network: Network;
+  readonly address: string;
+  readonly imageUrl?: string;
 }
 ```
 
