@@ -40,7 +40,7 @@ export default defineComponent({
   <span v-on:click="open()">
     <teleport to="#tooltip-target">
       <div class="tooltip-background" v-if="opened" @click="close">
-        <div class="tooltip-positioner" :style="containerLocation">
+        <div class="tooltip-positioner" :style="containerLocation" @click.stop>
           <div class="tooltip-container">
             <div class="tooltip-inner">
               {{ message }}
