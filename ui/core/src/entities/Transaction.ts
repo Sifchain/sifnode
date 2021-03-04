@@ -8,7 +8,7 @@ import { Asset } from "./Asset";
 export type TransactionStatus = {
   code?: number;
   hash: string;
-  state: "requested" | "accepted" | "failed" | "rejected";
+  state: "requested" | "accepted" | "failed" | "rejected" | "out_of_gas";
   memo?: string;
 };
 

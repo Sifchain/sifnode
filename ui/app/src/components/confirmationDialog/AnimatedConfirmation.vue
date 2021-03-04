@@ -18,6 +18,19 @@
             </div>
           </transition>
           <transition name="swipe">
+            <div class="text" v-if="state === 'out_of_gas'">
+              <p>Transaction Rejected</p>
+              <p class="thin">
+                Failed to swap
+                <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
+                for
+                <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
+              </p>
+              <br />
+              <p class="sub">Please try to increase the gas limit.</p>
+            </div>
+          </transition>
+          <transition name="swipe">
             <div class="text" v-if="state === 'rejected'">
               <p>Transaction Rejected</p>
               <p class="thin">
