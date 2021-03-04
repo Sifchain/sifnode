@@ -51,7 +51,7 @@ def generate_test_account(
             rowan_source_integrationtest_env_transfer_request)
         rowan_request.sifchain_destination_address = new_sifaddr
         rowan_request.amount = target_rowan_balance
-        logging.debug(f"transfer {target_rowan_balance} to {new_sifaddr} from {rowan_request.sifchain_address}")
+        logging.debug(f"transfer {target_rowan_balance} rowan to {new_sifaddr} from {rowan_request.sifchain_address}")
         test_utilities.send_from_sifchain_to_sifchain(rowan_request, rowan_source_integrationtest_env_credentials)
 
     request: EthereumToSifchainTransferRequest = copy.deepcopy(base_transfer_request)
