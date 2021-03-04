@@ -55,7 +55,7 @@ module "eks" {
   cluster_name = var.cluster_name
   subnets      = module.vpc.public_subnets
   vpc_id       = module.vpc.vpc_id
-  tags         = merge({ "Name" = var.cluster_name }, var.tags)
+  tags         = merge({ "Name" = var.cluster_name }, k8s.io/cluster-autoscaler/enabled, var.tags)
   version      = "13.2.1"
 
   node_groups_defaults = {

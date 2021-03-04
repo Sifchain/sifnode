@@ -27,26 +27,48 @@ resource "aws_iam_role_policy" "dlm_lifecycle" {
 
   policy = <<EOF
 {
-   "Version": "2012-10-17",
-   "Statement": [
-      {
-         "Effect": "Allow",
-         "Action": [
-            "ec2:CreateSnapshot",
-            "ec2:DeleteSnapshot",
-            "ec2:DescribeVolumes",
-            "ec2:DescribeSnapshots"
-         ],
-         "Resource": "*"
-      },
-      {
-         "Effect": "Allow",
-         "Action": [
-            "ec2:CreateTags"
-         ],
-         "Resource": "arn:aws:ec2:${data.aws_region.current.name}:*::snapshot/*"
-      }
-   ]
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:CreateSnapshot",
+                "ec2:CreateSnapshots",
+                "ec2:DeleteSnapshot",
+                "ec2:DescribeInstances",
+                "ec2:DescribeVolumes",
+                "ec2:DescribeSnapshots",
+                "ec2:EnableFastSnapshotRestores",
+                "ec2:DescribeFastSnapshotRestores",
+                "ec2:DisableFastSnapshotRestores",
+                "ec2:CopySnapshot",
+                "ec2:ModifySnapshotAttribute",
+                "ec2:DescribeSnapshotAttribute"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:CreateTags"
+            ],
+            "Resource": "arn:aws:ec2:*::snapshot/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "events:PutRule",
+                "events:DeleteRule",
+                "events:DescribeRule",
+                "events:EnableRule",
+                "events:DisableRule",
+                "events:ListTargetsByRule",
+                "events:PutTargets",
+                "events:RemoveTargets"
+            ],
+            "Resource": "arn:aws:events:*:*:rule/AwsDataLifecycleRule.managed-cwe.*"
+        }
+    ]
 }
 EOF
 }
@@ -65,7 +87,7 @@ resource "aws_dlm_lifecycle_policy" "snapshot" {
       create_rule {
         interval      = 24
         interval_unit = "HOURS"
-        times         = ["23:45"]
+        times         = ["17:05"]
       }
 
       retain_rule {
