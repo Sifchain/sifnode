@@ -209,7 +209,7 @@ func RunListMissedCosmosEventCmd(cmd *cobra.Command, args []string) error {
 
 	days, err := strconv.ParseInt(args[3], 10, 64)
 	if err != nil {
-		return errors.Errorf("invalid [from-block]: %s", args[3])
+		return errors.Errorf("invalid [days]: %s", args[3])
 	}
 
 	// Universal logger

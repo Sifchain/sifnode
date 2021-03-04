@@ -318,6 +318,7 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 	}
 }
 
+// ListMissedCosmosEvent print all missed cosmos events by this ebrelayer in days
 func (sub CosmosSub) ListMissedCosmosEvent(days int64) {
 	log.Println("ListMissedCosmosEvent started")
 	// Start Ethereum client
@@ -343,11 +344,11 @@ func (sub CosmosSub) ListMissedCosmosEvent(days int64) {
 
 	ProphecyClaims := sub.getAllProphecyClaim(ethClient, ethFromHeight, currentEthHeight)
 
-	fmt.Printf("found out %d prophecy claims I sent from %d to %d block\n", len(ProphecyClaims), ethFromHeight, currentEthHeight)
+	log.Printf("found out %d prophecy claims I sent from %d to %d block\n", len(ProphecyClaims), ethFromHeight, currentEthHeight)
 
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
-		sub.Logger.Error("failed to initialize a client", "err", err)
+		log.Printf("failed to initialize a client %s\n", err.Error())
 		return
 	}
 
@@ -366,7 +367,7 @@ func (sub CosmosSub) ListMissedCosmosEvent(days int64) {
 	}
 
 	if err := client.Start(); err != nil {
-		sub.Logger.Error("failed to start a client", "err", err)
+		log.Printf("failed to start a client %s\n", err.Error())
 		return
 	}
 
@@ -391,7 +392,7 @@ func (sub CosmosSub) ListMissedCosmosEvent(days int64) {
 
 					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
 					if err != nil {
-						fmt.Println(err)
+						log.Println(err.Error())
 						continue
 					}
 
