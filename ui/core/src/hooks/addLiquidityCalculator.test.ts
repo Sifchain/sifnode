@@ -171,7 +171,7 @@ describe("addLiquidityCalculator", () => {
         bPerARatioMessage: "0.50000000",
         aPerBRatioProjectedMessage: "0.60000000",
         bPerARatioProjectedMessage: "1.66666667",
-        shareOfPool: "57.56%",
+        shareOfPool: "55.56%",
         state: PoolState.VALID_INPUT,
       },
     },
