@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
-	"github.com/pkg/errors"
 	"github.com/tendermint/tendermint/libs/log"
 	"math/big"
 
