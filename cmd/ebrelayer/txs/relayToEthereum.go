@@ -50,6 +50,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		return err
 	}
 
+
 	log.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
 
 	// Get the transaction receipt

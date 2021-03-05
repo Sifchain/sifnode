@@ -1,11 +1,9 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-import { useRoute } from "vue-router";
 
 export default defineComponent({
   components: {},
   async setup() {
-    const route = useRoute();
 
     function isNumeric(s: any) {
       return (s - 0) == s && (''+s).trim().length > 0;

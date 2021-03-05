@@ -1,9 +1,3 @@
-// HACK: This mocks a websocket connection. Cannot connect correctly to websockets in Jest
-// TODO: Remove this and connect tothe live websocket
-import WS from "jest-websocket-mock";
-new WS("ws://localhost:26667/websocket");
-// end HACK
-
 import createClpService from ".";
 import { AssetAmount } from "../../entities";
 import { getTestingTokens } from "../../test/utils/getTestingToken";
@@ -18,6 +12,7 @@ beforeEach(() => {
     sifChainId: "sifchain",
     sifApiUrl: "http://localhost:1317",
     sifWsUrl: "ws://localhost:26667/websocket",
+    sifRpcUrl: "http://localhost:26667",
   });
 });
 

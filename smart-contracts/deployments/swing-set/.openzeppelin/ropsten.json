@@ -1,9 +1,9 @@
 {
   "manifestVersion": "3.1",
   "impls": {
-    "ac019ffc9f9510872af9ff178c3a7bda59a3253edb88d3ed88540b29f163e060": {
-      "address": "0xc0aa4A604F230b340e9a430cDB43614f77BBdaC1",
-      "txHash": "0x6968c7715c78ac4981180b24ce38564cb17322316b46beff31c74c6ae70af72c",
+    "f43c224fa58552f827dfbb27d88cf21700d595eb999e5bc63d73a2ac14fab906": {
+      "address": "0x51e9CDCCb1d83d59b7C4f90B123bDFe05BDA1eeE",
+      "txHash": "0xb6b3e4b3da7809b1351453af15d7ee15f49a58e4bb7c7653898fb2e20e285e92",
       "layout": {
         "storage": [
           {
@@ -45,7 +45,7 @@
           {
             "contract": "CosmosBridgeStorage",
             "label": "prophecyClaims",
-            "type": "t_mapping(t_uint256,t_struct(ProphecyClaim)2283_storage)",
+            "type": "t_mapping(t_uint256,t_struct(ProphecyClaim)2304_storage)",
             "src": "CosmosBridgeStorage.sol:40"
           },
           {
@@ -188,15 +188,15 @@
           "t_address_payable": {
             "label": "address payable"
           },
-          "t_mapping(t_uint256,t_struct(ProphecyClaim)2283_storage)": {
+          "t_mapping(t_uint256,t_struct(ProphecyClaim)2304_storage)": {
             "label": "mapping(uint256 => struct CosmosBridgeStorage.ProphecyClaim)"
           }
         }
       }
     },
-    "49930df925c5c64c2e2f820cf2b692094bcd3259f9aff0096e056a0f219d6ab5": {
-      "address": "0x4D34fb409E3cC4d036ba0a3fdc8dD3A14976ffbE",
-      "txHash": "0x34dfb131d7657df9852e02aed8ea725fea468db07ab30b02a47b0e4f3e95fa3f",
+    "86c744ec822c65083f928c8c72e266fc8f95c3af343cf2e8cfcdcc032a6d5497": {
+      "address": "0x50Ea19B9fdfCa5a22A143B6d5aB6ee126db8ca02",
+      "txHash": "0x34f026d907680c399b02428c531b18b6adfcfa0ef3028679d902e6a0b41d1dd8",
       "layout": {
         "storage": [
           {
@@ -376,8 +376,8 @@
       }
     },
     "e2784dab76fe23e6bc87a6ad174be3fc3158ac557335ed5d38b4cc2c08d38038": {
-      "address": "0xE9Af9DEBE42f6172bDc86B1e7eE8221c452430F9",
-      "txHash": "0x2794cb8ff463bdbdb0098f87cd2b223de9d39f0bae4056737799ca0feb243bfe",
+      "address": "0xa8ee7bd719e338385Db93A52B8B4C74F53844e3b",
+      "txHash": "0x4bc10e1433f0c40a9dfb85e32ce9397f62db5cd6296ea04ab29acf386aeb6c56",
       "layout": {
         "storage": [
           {
@@ -432,7 +432,7 @@
     }
   },
   "admin": {
-    "address": "0x38d713344C4bB14a470e745bA3b7Eb18bc21D21C",
-    "txHash": "0xad3e629fe68acd014be91dce4a7956f82ac92b04753169a12bce2c7017afb537"
+    "address": "0x09cE60bC691b31032A21d8bCee26216375dAecb6",
+    "txHash": "0x52ac6e6b090ed771fad952b6e7b435fc942046cb5191601c6632aa66f36b03ef"
   }
 }
