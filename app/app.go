@@ -257,9 +257,7 @@ func NewInitApp(
 			for _, lp := range lpList {
 				withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, _ := clp.CalculateWithdrawal(pool.PoolUnits, pool.NativeAssetBalance.String(),
 					pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), sdk.NewUint(clp.MaxWbasis).String(), sdk.NewInt(0))
-				lpUnits := sdk.ZeroUint()
-				err := errors.New("No Error")
-				temp, lpUnits, err = clp.CalculatePoolUnits(pool.ExternalAsset.Symbol, temp, tempNative, tempExternal,
+				newLpUnits, lpUnits, err := clp.CalculatePoolUnits(pool.ExternalAsset.Symbol, temp, tempNative, tempExternal,
 					withdrawNativeAssetAmount, withdrawExternalAssetAmount)
 				if err != nil {
 					panic(fmt.Sprintf("Pool Migration cannot be completed | Pool Units Cannot be calucaluted %s", pool.String()))
@@ -268,6 +266,7 @@ func NewInitApp(
 				app.clpKeeper.SetLiquidityProvider(ctx, lp)
 				tempExternal = tempExternal.Add(withdrawExternalAssetAmount)
 				tempNative = tempNative.Add(withdrawNativeAssetAmount)
+				temp = newLpUnits
 			}
 			pool.PoolUnits = temp
 			err := app.clpKeeper.SetPool(ctx, pool)
