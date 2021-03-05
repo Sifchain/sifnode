@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -42,6 +43,7 @@ func TestCalculatePoolUnits(t *testing.T) {
 			sdk.NewUintFromString(test.ExternalAdded),
 		)
 		if !stakeUnits.Equal(sdk.NewUintFromString(test.Expected)) {
+			fmt.Printf("Pool_Units | Expected : %s | Got : %s \n", test.Expected, stakeUnits.String())
 			errCount++
 		}
 	}
@@ -74,6 +76,7 @@ func TestCalculateSwapResult(t *testing.T) {
 			sdk.NewUintFromString(test.Xx),
 			sdk.NewUintFromString(test.Y))
 		if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
+			fmt.Printf("SingleSwap-Result | Expected : %s | Got : %s \n", test.Expected, Yy.String())
 			errCount++
 		}
 	}
@@ -106,6 +109,7 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 			sdk.NewUintFromString(test.Xx),
 			sdk.NewUintFromString(test.Y))
 		if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
+			fmt.Printf("SingleSwap-Liquidityfees | Expected : %s | Got : %s \n", test.Expected, Yy.String())
 			errCount++
 		}
 	}
@@ -147,6 +151,7 @@ func TestCalculateDoubleSwapResult(t *testing.T) {
 			sdk.NewUintFromString(test.BY))
 
 		if !By.Equal(sdk.NewUintFromString(test.Expected)) {
+			fmt.Printf("Doubleswap_Result | Expected : %s | Got : %s \n", test.Expected, By.String())
 			errCount++
 		}
 	}
