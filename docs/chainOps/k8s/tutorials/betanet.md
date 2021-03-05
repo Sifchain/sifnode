@@ -139,13 +139,13 @@ In order to become a validator, that is a node which can participate in consensu
 2. Get the public key of your node:
 
 ```
-rake "validator:expose:pub_key[<cluster>,<provider>,<namespace>]"
+rake "validator:keys:public[<cluster>,<provider>,<namespace>]"
 ```
 
 e.g.:
 
 ```
-rake "validator:expose:pub_key[my-cluster,aws,sifnode]"
+rake "validator:keys:public[my-cluster,aws,sifnode]"
 ```
 
 3. Stake:
