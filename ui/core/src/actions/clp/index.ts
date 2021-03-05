@@ -119,8 +119,6 @@ export default ({
             txStatus,
             message: txStatus.memo || "There was an error with your swap",
           },
-          // type: "error",
-          // message: txStatus.memo || "There was an error with your swap",
         });
       }
 

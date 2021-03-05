@@ -125,12 +125,6 @@ export class EthereumService implements IWalletService {
         }
       }
       this.addWeb3Subscription();
-      // XXX: Should not have access to sideeffects here
-      // TODO: Trigger this notifications in usecases
-      // notify({
-      //   type: "success",
-      //   message: "Connected to Metamask",
-      // });
       await this.updateData();
     } catch (err) {
       console.log(err);

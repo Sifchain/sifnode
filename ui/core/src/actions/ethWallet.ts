@@ -6,7 +6,10 @@ import B from "../entities/utils/B";
 export default ({
   api,
   store,
-}: ActionContext<"EthereumService", "wallet" | "asset">) => {
+}: ActionContext<
+  "EthereumService" | "NotificationService",
+  "wallet" | "asset"
+>) => {
   const etheriumState = api.EthereumService.getState();
 
   const actions = {
@@ -28,8 +31,20 @@ export default ({
 
   effect(() => {
     // Only show connected when we have an address
-    store.wallet.eth.isConnected =
-      etheriumState.connected && !!etheriumState.address;
+    if (store.wallet.eth.isConnected !== etheriumState.connected) {
+      store.wallet.eth.isConnected =
+        etheriumState.connected && !!etheriumState.address;
+
+      if (store.wallet.eth.isConnected) {
+        api.NotificationService.notify({
+          type: "WalletConnectedEvent",
+          payload: {
+            walletType: "eth",
+            address: store.wallet.eth.address,
+          },
+        });
+      }
+    }
   });
 
   effect(() => {

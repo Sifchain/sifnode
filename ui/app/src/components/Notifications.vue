@@ -65,7 +65,7 @@ function parseEventToNotifications(event: AppEvent): Notification | null {
   if (event.type === "WalletConnectedEvent") {
     const message = {
       sif: "Sif Account Connected",
-      eth: "Eth Account Connected",
+      eth: "Connected to Metamask",
     }[event.payload.walletType];
 
     return {

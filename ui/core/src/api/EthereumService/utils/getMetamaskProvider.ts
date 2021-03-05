@@ -19,6 +19,18 @@ export const getMetamaskProvider = async (): Promise<provider> => {
   if (!mmp) {
     // XXX: Should not have access to sideeffects here surface in business layer
     // TODO: Trigger this notifications in usecases
+    // This is tricky because of the way the ethereumService is designed and this needs to be overhauled
+    // Usecase Layer should do something along the lines of:
+
+    // ```ts
+    // const provider:IBlockchainProvider | null = MetamaskProvider.create()
+    // if(!provider){
+    //   services.events.dispatch({type:'MetamaskNotFoundErrorEvent'}) }
+    //   return
+    // }
+    // services.eth.setProvider(provider)
+    // ```
+
     // notify({
     //   type: "error",
     //   message: "Metamask not found.",
