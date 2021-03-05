@@ -3,8 +3,9 @@ import { IWalletService } from "../api/IWalletService";
 import { Address, Asset, Network, Token, TxParams } from "../entities";
 import { Msg } from "@cosmjs/launchpad";
 let mockEthereumService: IWalletService;
+let mockNotificationsService: any;
 let ethWalletActions: ReturnType<typeof createActions>;
-
+let notify = jest.fn();
 beforeEach(() => {
   mockEthereumService = {
     getState: () => ({
@@ -24,8 +25,15 @@ beforeEach(() => {
     setPhrase: async (phrase: string) => "",
     purgeClient: () => {},
   };
+
+  mockNotificationsService = {
+    notify: notify,
+  };
   ethWalletActions = createActions({
-    api: { EthereumService: mockEthereumService },
+    api: {
+      EthereumService: mockEthereumService,
+      NotificationService: mockNotificationsService,
+    },
     store: {
       asset: { topTokens: [] },
       wallet: {
