@@ -2,8 +2,10 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	"github.com/pkg/errors"
 	"github.com/tendermint/tendermint/libs/log"
 	"math/big"
 
@@ -243,7 +245,37 @@ func NewInitApp(
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
 
-	app.UpgradeKeeper.SetUpgradeHandler("release-20210301075600", func(ctx sdk.Context, plan upgrade.Plan) {})
+	app.UpgradeKeeper.SetUpgradeHandler("testPoolFormula", func(ctx sdk.Context, plan upgrade.Plan) {
+		ctx.Logger().Info("Starting to execute upgrade plan for pool re-balance")
+		allPools := app.clpKeeper.GetPools(ctx)
+
+		for _, pool := range allPools {
+			lpList := app.clpKeeper.GetLiquidityProvidersForAsset(ctx, pool.ExternalAsset)
+			temp := sdk.ZeroUint()
+			tempExternal := sdk.ZeroUint()
+			tempNative := sdk.ZeroUint()
+			for _, lp := range lpList {
+				withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, _ := clp.CalculateWithdrawal(pool.PoolUnits, pool.NativeAssetBalance.String(),
+					pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), sdk.NewUint(clp.MaxWbasis).String(), sdk.NewInt(0))
+				lpUnits := sdk.ZeroUint()
+				err := errors.New("No Error")
+				temp, lpUnits, err = clp.CalculatePoolUnits(pool.ExternalAsset.Symbol, temp, tempNative, tempExternal,
+					withdrawNativeAssetAmount, withdrawExternalAssetAmount)
+				if err != nil {
+					panic(fmt.Sprintf("Pool Migration cannot be completed | Pool Units Cannot be calucaluted %s", pool.String()))
+				}
+				lp.LiquidityProviderUnits = lpUnits
+				app.clpKeeper.SetLiquidityProvider(ctx, lp)
+				tempExternal = tempExternal.Add(withdrawExternalAssetAmount)
+				tempNative = tempNative.Add(withdrawNativeAssetAmount)
+			}
+			pool.PoolUnits = temp
+			err := app.clpKeeper.SetPool(ctx, pool)
+			if err != nil {
+				panic(fmt.Sprintf("Pool Migration cannot be completed | Pool not set %s", pool.String()))
+			}
+		}
+	})
 
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
