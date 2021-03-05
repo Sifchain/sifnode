@@ -76,6 +76,7 @@ export class EthereumService implements IWalletService {
         }
         this.web3 = new Web3(provider);
         this.provider = provider;
+        this.addWeb3Subscription();
         this.updateData();
       })
       .catch((error) => {
@@ -135,6 +136,7 @@ export class EthereumService implements IWalletService {
     } catch (err) {
       console.log(err);
       this.web3 = null;
+      this.removeWeb3Subscription()
     }
   }
 
