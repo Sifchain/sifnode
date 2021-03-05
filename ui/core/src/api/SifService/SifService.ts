@@ -114,14 +114,16 @@ export default function createSifService({
         state.accounts = await client.getAccounts();
         state.balances = await instance.getBalance(client.senderAddress);
       } catch (e) {
-        state.connected = false;
-        state.address = "";
-        state.balances = [];
-        state.accounts = [];
-        state.log = "";
-        if (polling) {
-          clearInterval(polling);
-          polling = null;
+        if (!e.toString().toLowerCase().includes("no address found on chain")) {
+          state.connected = false;
+          state.address = "";
+          state.balances = [];
+          state.accounts = [];
+          state.log = "";
+          if (polling) {
+            clearInterval(polling);
+            polling = null;
+          }
         }
       }
     },
