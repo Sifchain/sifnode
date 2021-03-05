@@ -59,11 +59,6 @@ export default ({
             walletType: "sif",
             address: store.wallet.sif.address,
           },
-          // message: "Sif Account connected",
-          // detail: {
-          //   type: "info",
-          //   message: store.wallet.sif.address,
-          // },
         });
       }
     }

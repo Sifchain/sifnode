@@ -105,12 +105,6 @@ export default ({
               payload: {
                 hash: txHash,
               },
-              // message: "Pegged Transaction Pending",
-              // detail: {
-              //   type: "etherscan",
-              //   message: hash.txHash,
-              // },
-              // loader: true,
             });
 
             done({
@@ -139,7 +133,6 @@ export default ({
               payload: {
                 hash: txHash,
               },
-              // message: `Transfer ${txHash} has succeded.`,
             });
           });
       });

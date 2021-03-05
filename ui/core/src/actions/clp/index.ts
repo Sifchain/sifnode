@@ -7,7 +7,6 @@ import {
 } from "../../entities";
 import { ActionContext } from "..";
 import { PoolStore } from "../../store/pools";
-// import notify from "../../api/utils/Notifications";
 import { effect } from "@vue/reactivity";
 import JSBI from "jsbi";
 
@@ -73,11 +72,6 @@ export default ({
         api.NotificationService.notify({
           type: "NoLiquidityPoolsFoundEvent",
           payload: {},
-          // message: "No Liquidity Pools Found",
-          // detail: {
-          //   type: "info",
-          //   message: "Create liquidity pool to swap.",
-          // },
         });
       }
     });
@@ -88,17 +82,6 @@ export default ({
   api.SifService.onNewBlock(async () => {
     await syncPools();
   });
-
-  // api.SifService.onSocketError(instance => {
-  //   notify({
-  //     type: "error",
-  //     message: "Websocket Not Connected",
-  //     detail: {
-  //       type: "websocket",
-  //       message: instance.target.url,
-  //     },
-  //   });
-  // });
 
   function findPool(pools: PoolStore, a: string, b: string) {
     const key = [a, b].sort().join("_");
@@ -173,8 +156,6 @@ export default ({
             txStatus,
             message: txStatus.memo || "There was an error with your swap",
           },
-          // type: "error",
-          // message: txStatus.memo || "There was an error with your swap",
         });
       }
       return txStatus;
@@ -202,10 +183,6 @@ export default ({
             message: txStatus.memo || "There was an error removing liquidity",
           },
         });
-        // notify({
-        //   type: "error",
-        //   message: txStatus.memo || "There was an error removing liquidity",
-        // });
       }
 
       return txStatus;
