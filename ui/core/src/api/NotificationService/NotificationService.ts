@@ -14,6 +14,7 @@ type ErrorEvent = {
     };
   };
 };
+
 type TransactionErrorEvent = {
   type: "TransactionErrorEvent";
   payload: {
@@ -21,6 +22,7 @@ type TransactionErrorEvent = {
     message: string;
   };
 };
+
 type WalletConnectedEvent = {
   type: "WalletConnectedEvent";
   payload: { walletType: WalletType; address: string };
@@ -70,12 +72,8 @@ export type EventHandler = (event: AppEvent) => void;
 export type AppEventType = AppEvent["type"];
 export type AppEventTypes = AppEventType[];
 
-// TODO: 1. Surface EventEmitter DONE
-// TODO: 2. Possibly type the events DONE
-// TODO: 3. Create view layer component to present events from surfaced emitter DONE
-// TODO: 4. Create view layer GA listener to surface events
-
 export type NotificationServiceContext = {};
+
 export default function createNotificationsService({}: NotificationServiceContext) {
   const emitter = new EventEmitter2();
 
