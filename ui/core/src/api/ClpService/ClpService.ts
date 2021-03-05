@@ -15,6 +15,7 @@ import JSBI from "jsbi";
 export type ClpServiceContext = {
   nativeAsset: Asset;
   sifApiUrl: string;
+  sifRpcUrl: string;
   sifWsUrl: string;
   sifChainId: string;
   sifUnsignedClient?: SifUnSignedClient;
@@ -61,7 +62,8 @@ export default function createClpService({
   nativeAsset,
   sifChainId,
   sifWsUrl,
-  sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl),
+  sifRpcUrl,
+  sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl),
 }: ClpServiceContext): IClpService {
   const client = sifUnsignedClient;
 

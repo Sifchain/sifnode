@@ -138,7 +138,7 @@ func CalculateWithdrawal(poolUnits sdk.Uint, nativeAssetBalance string,
 // r = native asset added;
 // a = external asset added
 // P = existing Pool Units
-// slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
+// slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
 // units = ((P (a R + A r))/(2 A R))*slidAdjustment
 
 func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externalAssetBalance,
