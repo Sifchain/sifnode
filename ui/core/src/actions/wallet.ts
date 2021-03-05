@@ -40,7 +40,7 @@ export default ({
         store.wallet.sif.isConnected = true;
       } catch (error) {
         // to the ui??
-        api.NotificationService.notify({ type: "error", ...error });
+        api.NotificationService.notify({ type: "ErrorEvent", payload: error });
       }
     },
 
@@ -54,12 +54,16 @@ export default ({
       store.wallet.sif.isConnected = state.connected;
       if (store.wallet.sif.isConnected) {
         api.NotificationService.notify({
-          type: "success",
-          message: "Sif Account connected",
-          detail: {
-            type: "info",
-            message: store.wallet.sif.address,
+          type: "WalletConnectedEvent",
+          payload: {
+            walletType: "sif",
+            address: store.wallet.sif.address,
           },
+          // message: "Sif Account connected",
+          // detail: {
+          //   type: "info",
+          //   message: store.wallet.sif.address,
+          // },
         });
       }
     }

@@ -63,10 +63,14 @@ export default ({
 
       if (txStatus.state !== "accepted") {
         api.NotificationService.notify({
-          type: "error",
-          message: txStatus.memo || "There was an error while unpegging",
+          type: "PegTransactionErrorEvent",
+          payload: {
+            txStatus,
+            message: txStatus.memo || "There was an error while unpegging",
+          },
         });
       }
+
       console.log(
         "unpeg txStatus.state",
         txStatus.state,
@@ -91,36 +95,51 @@ export default ({
         ? api.EthbridgeService.burnToSifchain
         : api.EthbridgeService.lockToSifchain;
       return await new Promise<TransactionStatus>(done => {
+        let txHash: string = "";
         lockOrBurnFn(store.wallet.sif.address, assetAmount, ETH_CONFIRMATIONS)
           .onTxHash(hash => {
+            txHash = hash.txHash;
             // TODO: Set tx status on store for pending txs to use elsewhere
             api.NotificationService.notify({
-              type: "info",
-              message: "Pegged Transaction Pending",
-              detail: {
-                type: "etherscan",
-                message: hash.txHash,
+              type: "PegTransactionPendingEvent",
+              payload: {
+                hash: txHash,
               },
-              loader: true,
+              // message: "Pegged Transaction Pending",
+              // detail: {
+              //   type: "etherscan",
+              //   message: hash.txHash,
+              // },
+              // loader: true,
             });
 
             done({
-              hash: hash.txHash,
+              hash: txHash,
               memo: "Transaction Accepted",
               state: "accepted",
             });
           })
           .onError(err => {
             api.NotificationService.notify({
-              type: "error",
-              message: err.payload.memo!,
+              type: "PegTransactionErrorEvent",
+              payload: {
+                txStatus: {
+                  hash: txHash,
+                  memo: "Transaction Accepted",
+                  state: "accepted",
+                },
+                message: err.payload.memo!,
+              },
             });
             done(err.payload);
           })
           .onComplete(({ txHash }) => {
             api.NotificationService.notify({
-              type: "success",
-              message: `Transfer ${txHash} has succeded.`,
+              type: "PegTransactionCompletedEvent",
+              payload: {
+                hash: txHash,
+              },
+              // message: `Transfer ${txHash} has succeded.`,
             });
           });
       });

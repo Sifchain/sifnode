@@ -45,9 +45,6 @@ export default defineComponent({
                 >Block Explorer</a
               >
             </div>
-            <div v-else-if="item.detail?.type === 'websocket'">
-              {{ item.detail.message }}
-            </div>
             <div v-else-if="item.detail?.type === 'info'">
               {{ item.detail.message }}
             </div>
