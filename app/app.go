@@ -246,10 +246,7 @@ func NewInitApp(
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
 
 	app.UpgradeKeeper.SetUpgradeHandler("testPoolFormula", func(ctx sdk.Context, plan upgrade.Plan) {
-		f, _ := os.Create("testlog.log")
-		defer f.Close()
-		loger := log.NewTMLogger(f)
-		loger.Info("Starting to execute upgrade plan for pool rebalance")
+		ctx.Logger().Info("Starting to execute upgrade plan for pool re-balance")
 		allPools := app.clpKeeper.GetPools(ctx)
 
 		for _, pool := range allPools {

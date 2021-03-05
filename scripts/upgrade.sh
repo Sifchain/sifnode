@@ -2,9 +2,8 @@
 
 cosmovisor start >> sifnode.log 2>&1  &
 sleep 10
-sifnodecli tx clp create-pool --from sif --symbol catk --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --yes
-sleep 5
-yes Y | sifnodecli tx gov submit-proposal software-upgrade testPoolFormula --from sif --deposit 100000000stake --upgrade-height 10 --title testPoolFormula --description testPoolFormula
+
+yes Y | sifnodecli tx gov submit-proposal software-upgrade testPoolFormula --from sif --deposit 100000000stake --upgrade-height 15 --title testPoolFormula --description testPoolFormula
 sleep 5
 yes Y | sifnodecli tx gov vote 1 yes --from sif --keyring-backend test --chain-id localnet
 clear
