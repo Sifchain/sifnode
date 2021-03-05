@@ -31,7 +31,7 @@ rake "keys:generate:mnemonic"
 4. Boot your node:
 
 ```
-rake "genesis:sifnode:mainnet:boot[mainnet,<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>]"
+rake "genesis:sifnode:boot[mainnet,<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>,<flags>]"
 ```
 
 Where:
@@ -42,6 +42,7 @@ Where:
 |`<mnemonic>`|The mnemonic phrase generated in the previous step.|
 |`<gas_price>`|The minimum gas price (e.g.: 0.5rowan).|
 |`<bind_ip_address>`|The IP Address to bind to (*Important:* this is what your node will advertise to the rest of the network). This should be the public IP of the host.|
+|`<flags>`|Optional. Docker compose run flags (see [here](https://docs.docker.com/compose/reference/run/)).|
 
 and your node will start synchronizing with the network. Please note that this may take several hours or more.
 
