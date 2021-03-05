@@ -22,6 +22,8 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 			return queryAssetList(ctx, req, keeper)
 		case types.QueryLPList:
 			return queryLPList(ctx, req, keeper)
+		case types.QueryAllLP:
+			return queryAllLP(ctx, keeper)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown clp query endpoint")
 		}
@@ -106,6 +108,15 @@ func queryLPList(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte,
 	}
 	searchingAsset := types.NewAsset(params.Symbol)
 	lpList := keeper.GetLiquidityProvidersForAsset(ctx, searchingAsset)
+	res, err := codec.MarshalJSONIndent(keeper.cdc, lpList)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+	return res, nil
+}
+
+func queryAllLP(ctx sdk.Context, keeper Keeper) ([]byte, error) {
+	lpList := keeper.GetAllLiquidityProviders(ctx)
 	res, err := codec.MarshalJSONIndent(keeper.cdc, lpList)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
