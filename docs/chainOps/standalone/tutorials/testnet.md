@@ -51,7 +51,7 @@ and your node will start synchronizing with the network. Please note that this m
 You can verify that you're connected by running:
 
 ```
-sifnodecli q tendermint-validator-set --node tcp://100.20.201.226:26657 --trust-node
+sifnodecli q tendermint-validator-set --node tcp://rpc-merry-go-round.sifchain.finance:80 --trust-node
 ```
 
 and you should see the following primary validator node/s for Sifchain:
@@ -117,7 +117,7 @@ sifnodecli tx staking create-validator \
     --gas-prices="0.5rowan" \
     --from=<moniker> \
     --keyring-backend=file \
-    --node tcp://100.20.201.226:26657
+    --node tcp://rpc-merry-go-round.sifchain.finance:80
 ```
 
 Where:
@@ -143,7 +143,7 @@ sifnodecli tx staking create-validator \
     --gas-prices="0.5rowan" \
     --from=my-node \
     --keyring-backend=file \
-    --node tcp://100.20.201.226:26657
+    --node tcp://rpc-merry-go-round.sifchain.finance:80
 ```
 
 ## Additional Resources
