@@ -66,27 +66,46 @@ export type AppEvent =
   | TransactionErrorEvent
   | PegTransactionErrorEvent;
 
-export type NotificationServiceContext = {};
-
 export type EventHandler = (event: AppEvent) => void;
+export type AppEventType = AppEvent["type"];
+export type AppEventTypes = AppEventType[];
 
-// TODO: 1. Surface EventEmitter
-// TODO: 2. Create view layer component to present events from surfaced emitter
-// TODO: 3. Create view layer GA listener to surface events
-// TODO: 4. Possibly type the events
+// TODO: 1. Surface EventEmitter DONE
+// TODO: 2. Possibly type the events DONE
+// TODO: 3. Create view layer component to present events from surfaced emitter DONE
+// TODO: 4. Create view layer GA listener to surface events
+
+export type NotificationServiceContext = {};
 export default function createNotificationsService({}: NotificationServiceContext) {
   const emitter = new EventEmitter2();
+
   return {
-    on(eventType: AppEvent["type"], handler: EventHandler) {
-      emitter.on(eventType, handler);
+    /**
+     * Listen to all events
+     * @param handler
+     */
+    onAny(handler: EventHandler) {
+      emitter.onAny((_, value: AppEvent) => handler(value));
     },
-    notify({ type, payload }: AppEvent) {
-      emitter.emit(type, payload);
-      // if (!type)
-      //   throw 'Notification type required: "error", "success", "inform"';
-      // if (!message) throw "Message string required";
-      // notifications.unshift({ type, message, detail, loader });
-      // return true;
+
+    /**
+     * Listen for a specific event or a list of specific events
+     * @param eventType string or array of strings list of eventTypes
+     * @param handler accepts an Event
+     */
+    on(eventType: AppEventType | AppEventTypes, handler: EventHandler) {
+      const types = !Array.isArray(eventType) ? [eventType] : eventType;
+      types.forEach(type => {
+        emitter.on(type, handler);
+      });
+    },
+
+    /**
+     * Emit an event
+     * @param event the AppEvent to emit
+     */
+    notify(event: AppEvent) {
+      emitter.emit(event.type, event);
     },
   };
 }

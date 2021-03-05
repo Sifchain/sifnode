@@ -125,8 +125,8 @@ export default ({
               payload: {
                 txStatus: {
                   hash: txHash,
-                  memo: "Transaction Accepted",
-                  state: "accepted",
+                  memo: "Transaction Error",
+                  state: "failed",
                 },
                 message: err.payload.memo!,
               },
