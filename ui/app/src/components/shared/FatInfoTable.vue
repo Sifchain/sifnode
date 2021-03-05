@@ -1,5 +1,5 @@
 <template>
-  <div v-if="show" class="price-calculation">
+  <div v-if="show" v-bind:class="{ warning: warning, 'price-calculation': true }">
     <div class="pool-share">
       <h4 class="pool-share-title text--left"><slot name="header"></slot></h4>
       <div class="pool-share-details">
@@ -12,7 +12,7 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  props: ["show"],
+  props: ["show", "warning"],
 });
 </script>
 <style lang="scss" scoped>
@@ -21,6 +21,9 @@ export default defineComponent({
   border-radius: $br_sm;
   background: $c_white;
   overflow-y: auto;
+}
+.warning {
+  border: 1px solid red;
 }
 .pool-share {
   font-size: 12px;

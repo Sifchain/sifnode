@@ -171,6 +171,10 @@ export default defineComponent({
             return preExistingPool.value ? "Add liquidity" : "Create Pool";
         }
       }),
+      warning: computed(() => {
+        console.log("what is this", aPerBRatioProjectedMessage.value, aPerBRatioMessage.value, aPerBRatioProjectedMessage.value !== aPerBRatioMessage.value)
+        return aPerBRatioProjectedMessage !== aPerBRatioMessage;
+      }),
       nextStepAllowed: computed(() => {
         return state.value === PoolState.VALID_INPUT;
       }),
@@ -300,7 +304,7 @@ export default defineComponent({
       </template>
     </FatInfoTable>
 
-    <FatInfoTable :show="nextStepAllowed">
+    <FatInfoTable :warning="warning" :show="nextStepAllowed">
       <template #header>Prices after pooling and pool share</template>
       <template #body>
         <FatInfoTableCell>
