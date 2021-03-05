@@ -6,6 +6,7 @@ let mockEthereumService: IWalletService;
 let mockNotificationsService: any;
 let ethWalletActions: ReturnType<typeof createActions>;
 let notify = jest.fn();
+
 beforeEach(() => {
   mockEthereumService = {
     getState: () => ({
@@ -29,6 +30,7 @@ beforeEach(() => {
   mockNotificationsService = {
     notify: notify,
   };
+
   ethWalletActions = createActions({
     api: {
       EthereumService: mockEthereumService,
@@ -55,6 +57,7 @@ beforeEach(() => {
 test("Calls disconnect", async () => {
   await ethWalletActions.disconnectWallet();
   expect(mockEthereumService.disconnect).toHaveBeenCalled();
+  expect(notify).toHaveBeenCalled();
 });
 
 test("Calls transfer correctly", async () => {
@@ -70,4 +73,5 @@ test("Calls transfer correctly", async () => {
     })
   );
   expect(mockEthereumService.transfer).toHaveBeenCalled();
+  expect(notify).toHaveBeenCalled();
 });
