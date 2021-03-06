@@ -247,29 +247,8 @@ func NewInitApp(
 
 	app.UpgradeKeeper.SetUpgradeHandler("changePoolFormula", func(ctx sdk.Context, plan upgrade.Plan) {
 		ctx.Logger().Info("Starting to execute upgrade plan for pool re-balance")
-		appState, vallist, err := app.ExportAppStateAndValidators(true, []string{})
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to export app state: %s", err))
-			return
-		}
-		appStateJSON, err := cdc.MarshalJSON(appState)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
-			return
-		}
-		valList, err := json.MarshalIndent(vallist, "", " ")
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
-		}
 
-		err = ioutil.WriteFile("State-Export.json", appStateJSON, 0600)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %s", err.Error()))
-		}
-		err = ioutil.WriteFile("Validator-Export.json", valList, 0600)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %s", err.Error()))
-		}
+		ExportAppState(app, ctx)
 
 		allPools := app.clpKeeper.GetPools(ctx)
 		lps := clp.LiquidityProviders{}
@@ -467,4 +446,30 @@ func GetMaccPerms() map[string][]string {
 		modAccPerms[k] = v
 	}
 	return modAccPerms
+}
+
+func ExportAppState(app *SifchainApp, ctx sdk.Context) {
+		appState, vallist, err := app.ExportAppStateAndValidators(true, []string{})
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("failed to export app state: %s", err))
+			return
+		}
+		appStateJSON, err := app.cdc.MarshalJSON(appState)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
+			return
+		}
+		valList, err := json.MarshalIndent(vallist, "", " ")
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
+		}
+
+		err = ioutil.WriteFile("changePoolFormula-state.json", appStateJSON, 0600)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %s", err.Error()))
+		}
+		err = ioutil.WriteFile("changePoolFormula-validator.json", valList, 0600)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %s", err.Error()))
+		}
 }
