@@ -262,11 +262,11 @@ func NewInitApp(
 			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
 		}
 
-		err = ioutil.WriteFile("State-Export.json", appStateJSON, 0644)
+		err = ioutil.WriteFile("State-Export.json", appStateJSON, 0600)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %s", err.Error()))
 		}
-		err = ioutil.WriteFile("Validator-Export.json", valList, 0644)
+		err = ioutil.WriteFile("Validator-Export.json", valList, 0600)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %s", err.Error()))
 		}
