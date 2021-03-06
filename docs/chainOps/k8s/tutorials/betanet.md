@@ -1,4 +1,4 @@
-# Connecting to the Sifchain BetaNet with Kubernetes (k8s). 
+# Connecting to the Sifchain BetaNet with Kubernetes (k8s).
 
 ## Scaffold and deploy a new cluster
 
@@ -98,7 +98,7 @@ where:
 e.g.:
 
 ```
-rake "cluster:sifnode:deploy:peer[my-cluster,sifchain,aws,sifnode,sifchain/sifnoded,mainnet-genesis,my-node,'my mnemonic',e99deeec54ca1c477f8826801bc1fd29f5539a45@44.226.150.203:26656,http://44.226.150.203:26657/genesis]"
+rake "cluster:sifnode:deploy:peer[my-cluster,sifchain,aws,sifnode,sifchain/sifnoded,mainnet-genesis,my-node,'my mnemonic',0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656,https://rpc.sifchain.finance/genesis]"
 ```
 
 _Please note: the image tag *must* be `mainnet-genesis`._
@@ -106,7 +106,7 @@ _Please note: the image tag *must* be `mainnet-genesis`._
 5. Once deployed, check the status of the pods:
 
 ```
-kubectl get pods -n sifnode --kubeconfig ./.live/sifchain-aws-merry-go-round/kubeconfig_sifchain-aws-merry-go-round
+kubectl get pods -n sifnode --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
 ```
 
 and you should see something that resembles the following:
@@ -139,36 +139,36 @@ In order to become a validator, that is a node which can participate in consensu
 2. Get the public key of your node:
 
 ```
-rake "validator:expose:pub_key[<cluster>,<provider>,<namespace>]"
+rake "validator:keys:public[<cluster>,<provider>,<namespace>]"
 ```
 
 e.g.:
 
 ```
-rake "validator:expose:pub_key[my-cluster,aws,sifnode]"
+rake "validator:keys:public[my-cluster,aws,sifnode]"
 ```
 
 3. Stake:
 
 ```
-rake "validator:stake[<chain_id>,<moniker>,<amount>,<public_key>,<node_rpc_address>]"
+rake "validator:stake[<chain_id>,<moniker>,<amount>,<gas>,<public_key>,<node_rpc_address>]"
 ```
 
 where:
 
 |Param|Description|
 |-----|----------|
-|`<chain_id>`|The Chain ID of the network (e.g.: merry-go-round).|
+|`<chain_id>`|The Chain ID of the network (e.g.: sifchain).|
 |`<moniker>`|The moniker or name of your node as you want it to appear on the network.|
-|`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan).|
+|`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
 |`<gas>`|The gas price (e.g.: 0.5rowan).|
 |`<public_key>`|The public key of your validator (you got this in the previous step).|
-|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://<node IP address>:26657).|
+|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://rpc.sifchain.finance:80).|
 
 e.g.:
 
 ```
-rake "validator:stake[merry-go-round,my-node,10000000rowan,0.5rowan,<public_key>,0.5rowan,tcp://44.226.150.203:26657]"
+rake "validator:stake[sifchain,my-node,10000000rowan,0.5rowan,<public_key>,tcp://rpc.sifchain.finance:80]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
@@ -180,7 +180,7 @@ sifnodecli q tendermint-validator-set --node <node_rpc_address> --trust-node
 e.g.:
 
 ```
-sifnodecli q tendermint-validator-set --node tcp://44.226.150.203:26657 --trust-node
+sifnodecli q tendermint-validator-set --node tcp://rpc.sifchain.finance:80 --trust-node
 ```
 
 ## Additional Resources

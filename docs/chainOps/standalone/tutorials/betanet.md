@@ -1,35 +1,37 @@
-# Connecting to the Sifchain BetaNet. 
+# Connecting to the Sifchain BetaNet.
+
+## Prerequisites / Dependencies:
+
+- [Docker](https://www.docker.com/get-started)
+- [Ruby 2.7.x](https://www.ruby-lang.org/en/documentation/installation)
+- [Golang](https://golang.org/doc/install)
+  - Add `export GOPATH=~/go` to your shell
+  - Add `export PATH=$PATH:$GOPATH/bin` to your shell
 
 ## Scaffold and run your node
 
-1. Clone the respository.
+1. Clone the repository:
 
 ```
-git clone ssh://git@github.com/Sifchain/sifnode && cd sifnode
+git clone https://github.com/Sifchain/sifnode && cd sifnode
 ```
 
-2. Checkout the mainnet release:
-
-```
-git checkout tags/mainnet-genesis
-```
-
-3. Build:
+2. Build:
 
 ```
 make clean install
 ```
 
-4. Generate a mnemonic:
+3. Generate a mnemonic (if you don't already have one):
 
 ```
 rake "keys:generate:mnemonic"
 ```
 
-5. Scaffold your node:
+4. Boot your node:
 
 ```
-rake "genesis:sifnode:scaffold[sifchain, <moniker>, '<mnemonic>', 0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656, http://44.235.108.41:26657/genesis]"
+rake "genesis:sifnode:boot[mainnet,<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>,'<flags>']"
 ```
 
 Where:
@@ -38,26 +40,9 @@ Where:
 |-----|----------|
 |`<moniker>`|A name for your node.|
 |`<mnemonic>`|The mnemonic phrase generated in the previous step.|
-
-This step will also output the keyring password, so please record this and the moniker somewhere secure.
-
-7. Connect:
-
-```
-rake "genesis:sifnode:boot[<gas_price>]"
-```
-
-Where:
-
-|Param|Description|
-|-----|----------|
 |`<gas_price>`|The minimum gas price (e.g.: 0.5rowan).|
-
-e.g.:
-
-```
-rake "genesis:sifnode:boot[0.5rowan]"
-```
+|`<bind_ip_address>`|The IP Address to bind to (*Important:* this is what your node will advertise to the rest of the network). This should be the public IP of the host.|
+|`<flags>`|Optional. Docker compose run flags (see [here](https://docs.docker.com/compose/reference/run/)).|
 
 and your node will start synchronizing with the network. Please note that this may take several hours or more.
 
@@ -66,7 +51,7 @@ and your node will start synchronizing with the network. Please note that this m
 You can verify that you're connected by running:
 
 ```
-sifnodecli q tendermint-validator-set
+sifnodecli q tendermint-validator-set --node tcp://rpc.sifchain.finance:80 --trust-node
 ```
 
 and you should see the following primary validator node/s for Sifchain:
@@ -107,33 +92,30 @@ validators:
   votingpower: 1000
 ```
 
-Congratulations. You are now connected to the network.
-
-## Additional Peers
-
-The following can be used as additional peers on the network:
-
-```
-0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0@44.235.108.41:26656
-bcc2d07a14a8a0b3aa202e9ac106dec0bef91fda@13.55.247.60:26656
-663dec65b754aceef5fcccb864048305208e7eb2@34.248.110.88:26656
-0120f0a48e7e81cc98829ef4f5b39480f11ecd5a@52.76.185.17:26656
-6535497f0152293d773108774a705b86c2249a9c@44.238.121.65:26656
-fdf5cffc2b20a20fab954d3b6785e9c382762d14@34.255.133.248:26656
-8c240f71f9e060277ce18dc09d82d3bbb05d1972@13.211.43.177:26656
-9fbcb6bd5a7f20a716564157c4f6296d2faf5f64@18.138.208.95:26656
-```
+Congratulations! You are now connected to the network.
 
 ## Become a Validator
 
 You won't be able to participate in consensus until you become a validator.
 
-1. You will need to have tokens (rowan) on your account in order to become a validator.
-
-2. Obtain your node moniker (if you don't already know it):
+1. Import your mnemonic locally:
 
 ```
-cat ~/.sifnoded/config/config.toml | grep moniker
+rake "keys:import[<moniker>]"
+```
+
+Where:
+
+|Param|Description|
+|-----|----------|
+|`<moniker>`|A name for your node.|
+
+*You will need to have tokens (rowan) on your account in order to become a validator.*
+
+2. From within your running container, obtain your node's public key:
+
+```
+sifnoded tendermint show-validator
 ```
 
 3. Run the following command to become a validator: 
@@ -144,20 +126,22 @@ sifnodecli tx staking create-validator \
     --commission-max-rate="0.1" \
     --commission-rate="0.1" \
     --amount="<amount>" \
-    --pubkey=$(sifnoded tendermint show-validator) \
+    --pubkey=<pub_key> \
     --moniker=<moniker> \
     --chain-id=sifchain \
     --min-self-delegation="1" \
     --gas-prices="0.5rowan" \
     --from=<moniker> \
-    --keyring-backend=file
+    --keyring-backend=file \
+    --node tcp://rpc.sifchain.finance:80
 ```
 
 Where:
 
 |Param|Description|
 |-----|----------|
-|`<amount>`|The amount of rowan you wish to stake (the more the better).|
+|`<amount>`|The amount of rowan you wish to stake (the more the better). The precision used is 1e18.|
+|`<pub_key>`|The public key of your node, that you got in the previous step.|
 |`<moniker>`|The moniker (name) of your node.|
 
 e.g.:
@@ -168,13 +152,14 @@ sifnodecli tx staking create-validator \
     --commission-max-rate="0.1" \
     --commission-rate="0.1" \
     --amount="1000000000000000000000rowan" \
-    --pubkey=$(sifnoded tendermint show-validator) \
-    --moniker=<moniker> \
+    --pubkey=thepublickeyofyournode \
+    --moniker=my-node \
     --chain-id=sifchain \
     --min-self-delegation="1" \
     --gas-prices="0.5rowan" \
     --from=my-node \
-    --keyring-backend=file
+    --keyring-backend=file \
+    --node tcp://rpc.sifchain.finance:80
 ```
 
 ## Additional Resources

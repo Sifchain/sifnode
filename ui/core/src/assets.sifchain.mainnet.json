@@ -38,7 +38,7 @@
     {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/736/thumb/bancor.png?1547034477",
-      "name": "Bancor Network Toke",
+      "name": "Bancor Network Token",
       "network": "sifchain",
       "symbol": "cbnt"
     },
@@ -293,6 +293,27 @@
       "symbol": "creef",
       "network": "sifchain",
       "decimals": 18
+    },
+    {
+      "imageUrl": "https://assets.coingecko.com/coins/images/4932/thumb_2x/_QPpjoUi_400x400.jpg?1566430520",
+      "name": "COCOS BCX",
+      "symbol": "ccocos",
+      "network": "sifchain",
+      "decimals": 18
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/3373/small/IuNzUb5b_400x400.jpg?1589526336",
+      "name": "Keep Network",
+      "network": "sifchain",
+      "symbol": "ckeep"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/3296/small/op.jpg?1547037878",
+      "name": "Origin Protocol",
+      "network": "sifchain",
+      "symbol": "cogn"
     }
   ]
 }

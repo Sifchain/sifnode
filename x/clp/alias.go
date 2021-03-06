@@ -32,6 +32,9 @@ var (
 	GetSettlementAsset          = types.GetSettlementAsset
 	GetGenesisStateFromAppState = types.GetGenesisStateFromAppState
 	GetNormalizationMap         = types.GetNormalizationMap
+	NewPool                     = types.NewPool
+	CalculateWithdrawal         = keeper.CalculateWithdrawal
+	CalculatePoolUnits          = keeper.CalculatePoolUnits
 )
 
 type (
@@ -45,4 +48,6 @@ type (
 	LiquidityProvider   = types.LiquidityProvider
 	Asset               = types.Asset
 	GenesisState        = types.GenesisState
+	LiquidityProviders  = types.LiquidityProviders
+	Pools               = types.Pools
 )

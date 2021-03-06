@@ -24,6 +24,7 @@ module.exports = async (cb) => {
     let request = {
         from: argv.ethereum_address,
         value: coinDenom === sifchainUtilities.NULL_ADDRESS ? amount : 0,
+        gasPrice: 400000000000,
     };
 
     if (argv.gas === 'estimate') {

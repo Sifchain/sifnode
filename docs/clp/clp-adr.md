@@ -59,7 +59,7 @@ liquidityOroviderAddress: sif15tyrwghfcjszj7sckxvqh0qpzprup9mhksmuzm
       R = Native Balance (before)
       A = External Balance (before)
       P = existing Pool Units
-      slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
+      slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
       units = ((P (a R + A r))/(2 A R))*slipAdjustment
    ````
     ***Consequences***
