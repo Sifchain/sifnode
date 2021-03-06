@@ -18,7 +18,13 @@
       label="Pool"
       color="green"
     ></PanelNavItem>
-    <PanelNavItem to="/" label="Soon" disabled></PanelNavItem>
+    <PanelNavItem 
+      to="/rewards-new" 
+      label="Rewards" 
+      icon="rewards"
+      color="gold"
+      >
+    </PanelNavItem>
     <PanelNavItem to="/" label="Soon" disabled></PanelNavItem>
   </div>
 </template>

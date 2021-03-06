@@ -9,6 +9,8 @@ import RemoveLiquidity from "@/views/RemoveLiquidityPage.vue";
 import SinglePool from "@/views/SinglePool.vue";
 import PegListingPage from "@/views/PegListingPage.vue";
 import PegAssetPage from "@/views/PegAssetPage.vue";
+import RewardsPageNew from "@/views/RewardsPageNew.vue";
+
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -25,6 +27,11 @@ const routes: Array<RouteRecordRaw> = [
     name: "RewardsPage",
     component: RewardsPage,
   },
+  {
+    path: "/rewards-new",
+    name: "RewardsPageNew",
+    component: RewardsPageNew,
+  }, 
   {
     path: "/swap",
     name: "Swap",
