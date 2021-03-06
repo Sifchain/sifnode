@@ -69,7 +69,6 @@ export default async function getKeplrProvider(): Promise<provider | null> {
   }
 
   // assign offline signer (they use __proto__ for some reason), so this is not as pretty as i'd like)
-  Object.getPrototypeOf(win.keplr).getOfflineSigner = win.getOfflineSigner;
   console.log("Keplr wallet bootstraped");
   return win.keplr as Keplr;
 }
