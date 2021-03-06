@@ -2,7 +2,7 @@
 
 ### chain init script for development purposes only ###
 
-make clean install
+make clean-config
 sifnoded init test --chain-id=localnet
 
 sifnodecli config output json

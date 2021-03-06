@@ -17,6 +17,17 @@ func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) error {
 	store.Set(key, k.cdc.MustMarshalBinaryBare(pool))
 	return nil
 }
+
+func (k Keeper) ValidatePool(pool types.Pool) bool {
+	if !pool.Validate() {
+		return false
+	}
+	_, err := types.GetPoolKey(pool.ExternalAsset.Symbol, types.GetSettlementAsset().Symbol)
+	if err != nil {
+		return false
+	}
+	return true
+}
 func (k Keeper) GetPool(ctx sdk.Context, symbol string) (types.Pool, error) {
 	var pool types.Pool
 	store := ctx.KVStore(k.storeKey)
