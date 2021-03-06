@@ -254,21 +254,21 @@ func NewInitApp(
 		}
 		appStateJSON, err := cdc.MarshalJSON(appState)
 		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %w", err))
+			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %w", err.Error()))
 			return
 		}
 		valList, err := json.MarshalIndent(vallist, "", " ")
 		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %w", err))
+			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
 		}
 
 		err = ioutil.WriteFile("State-Export.json", appStateJSON, 0644)
 		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %w", err))
+			ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %s", err.Error()))
 		}
 		err = ioutil.WriteFile("Validator-Export.json", valList, 0644)
 		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %w", err))
+			ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %s", err.Error()))
 		}
 
 		allPools := app.clpKeeper.GetPools(ctx)
@@ -287,11 +287,13 @@ func NewInitApp(
 					withdrawNativeAssetAmount, withdrawExternalAssetAmount)
 				if err != nil {
 					hasError = true
+					ctx.Logger().Error(fmt.Sprintf("failed to calculate pool units for | Pool : %s | LP %s ", pool.String(), lp.String()))
 					break
 				}
 				lp.LiquidityProviderUnits = lpUnits
 				if !lp.Validate() {
 					hasError = true
+					ctx.Logger().Error(fmt.Sprintf("Invalid | LP %s ", lp.String()))
 					break
 				}
 				lps = append(lps, lp)
@@ -302,13 +304,14 @@ func NewInitApp(
 			pool.PoolUnits = temp
 			if !app.clpKeeper.ValidatePool(pool) {
 				hasError = true
+				ctx.Logger().Error(fmt.Sprintf("Invalid | Pool %s ", pool.String()))
 				break
 			}
 			poolList = append(poolList, pool)
 		}
 		// If we have error dont set state
 		if hasError {
-			ctx.Logger().Error("Pool Rebalance Failed")
+			ctx.Logger().Error("Failed to execute upgrade plan for pool re-balance")
 		}
 		// If we have no errors , Set state .
 		if !hasError {
