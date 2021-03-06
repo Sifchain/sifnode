@@ -2,9 +2,11 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/tendermint/tendermint/libs/log"
+	"io/ioutil"
 	"math/big"
 
 	tmos "github.com/tendermint/tendermint/libs/os"
@@ -245,6 +247,30 @@ func NewInitApp(
 
 	app.UpgradeKeeper.SetUpgradeHandler("changePoolFormula", func(ctx sdk.Context, plan upgrade.Plan) {
 		ctx.Logger().Info("Starting to execute upgrade plan for pool re-balance")
+		appState, vallist, err := app.ExportAppStateAndValidators(true, []string{})
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("failed to export app state: %w", err))
+			return
+		}
+		appStateJSON, err := cdc.MarshalJSON(appState)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %w", err))
+			return
+		}
+		valList, err := json.MarshalIndent(vallist, "", " ")
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %w", err))
+		}
+
+		err = ioutil.WriteFile("State-Export.json", appStateJSON, 0644)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %w", err))
+		}
+		err = ioutil.WriteFile("Validator-Export.json", valList, 0644)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %w", err))
+		}
+
 		allPools := app.clpKeeper.GetPools(ctx)
 		lps := clp.LiquidityProviders{}
 		poolList := clp.Pools{}
