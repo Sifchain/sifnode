@@ -86,3 +86,6 @@ init-run:
 init-run-noInstall:
 	./scripts/init-noInstall.sh && ./scripts/run.sh
 
+rollback:
+	./scripts/rollback.sh
+
