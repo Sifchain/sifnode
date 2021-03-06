@@ -190,7 +190,7 @@ Despite using the Fraction floating point internal representation we deliberatel
 Amount("100.1234"); // will throw an error
 ```
 
-## Task to do
+## Migration Phases
 
 - [ ] Create new `Amount` wrapper - implement all Fraction methods - write tests
 - [ ] Create new `AssetAmount` wrapper - write tests
