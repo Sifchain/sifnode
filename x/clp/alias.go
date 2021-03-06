@@ -48,4 +48,6 @@ type (
 	LiquidityProvider   = types.LiquidityProvider
 	Asset               = types.Asset
 	GenesisState        = types.GenesisState
+	LiquidityProviders  = types.LiquidityProviders
+	Pools               = types.Pools
 )

@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/tendermint/tendermint/libs/log"
@@ -247,7 +246,9 @@ func NewInitApp(
 	app.UpgradeKeeper.SetUpgradeHandler("changePoolFormula", func(ctx sdk.Context, plan upgrade.Plan) {
 		ctx.Logger().Info("Starting to execute upgrade plan for pool re-balance")
 		allPools := app.clpKeeper.GetPools(ctx)
-
+		lps := clp.LiquidityProviders{}
+		poolList := clp.Pools{}
+		hasError := false
 		for _, pool := range allPools {
 			lpList := app.clpKeeper.GetLiquidityProvidersForAsset(ctx, pool.ExternalAsset)
 			temp := sdk.ZeroUint()
@@ -259,18 +260,37 @@ func NewInitApp(
 				newLpUnits, lpUnits, err := clp.CalculatePoolUnits(pool.ExternalAsset.Symbol, temp, tempNative, tempExternal,
 					withdrawNativeAssetAmount, withdrawExternalAssetAmount)
 				if err != nil {
-					panic(fmt.Sprintf("Pool Migration cannot be completed | Pool Units Cannot be calucaluted %s", pool.String()))
+					hasError = true
+					break
 				}
 				lp.LiquidityProviderUnits = lpUnits
-				app.clpKeeper.SetLiquidityProvider(ctx, lp)
+				if !lp.Validate() {
+					hasError = true
+					break
+				}
+				lps = append(lps, lp)
 				tempExternal = tempExternal.Add(withdrawExternalAssetAmount)
 				tempNative = tempNative.Add(withdrawNativeAssetAmount)
 				temp = newLpUnits
 			}
 			pool.PoolUnits = temp
-			err := app.clpKeeper.SetPool(ctx, pool)
-			if err != nil {
-				panic(fmt.Sprintf("Pool Migration cannot be completed | Pool not set %s", pool.String()))
+			if !app.clpKeeper.ValidatePool(pool) {
+				hasError = true
+				break
+			}
+			poolList = append(poolList, pool)
+		}
+		// If we have error dont set state
+		if hasError {
+			ctx.Logger().Error("Pool Rebalance Failed")
+		}
+		// If we have no errors , Set state .
+		if !hasError {
+			for _, pool := range poolList {
+				_ = app.clpKeeper.SetPool(ctx, pool)
+			}
+			for _, l := range lps {
+				app.clpKeeper.SetLiquidityProvider(ctx, l)
 			}
 		}
 	})
