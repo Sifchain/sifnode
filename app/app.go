@@ -249,12 +249,12 @@ func NewInitApp(
 		ctx.Logger().Info("Starting to execute upgrade plan for pool re-balance")
 		appState, vallist, err := app.ExportAppStateAndValidators(true, []string{})
 		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to export app state: %w", err))
+			ctx.Logger().Error(fmt.Sprintf("failed to export app state: %s", err))
 			return
 		}
 		appStateJSON, err := cdc.MarshalJSON(appState)
 		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %w", err.Error()))
+			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
 			return
 		}
 		valList, err := json.MarshalIndent(vallist, "", " ")
