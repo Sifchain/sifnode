@@ -3,10 +3,11 @@ package genesis
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
+	"github.com/Sifchain/sifnode/tools/sifgen/common/types"
 	"github.com/Sifchain/sifnode/tools/sifgen/utils"
+	"io/ioutil"
+	"net/http"
 )
 
 func ReplaceStakingBondDenom(nodeHomeDir string) error {
@@ -92,6 +93,45 @@ func ReplaceGovVotingParamsVotingPeriod(nodeHomeDir, period string) error {
 	}
 
 	(*genesis).AppState.Gov.VotingParams.VotingPeriod = period
+	content, err := json.Marshal(genesis)
+	if err != nil {
+		return err
+	}
+
+	if err := writeGenesis(nodeHomeDir, content); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func InitializeCLP(nodeHomeDir, clpConfigURL string) error {
+	genesis, err := readGenesis(nodeHomeDir)
+	if err != nil {
+		return err
+	}
+
+	response, err := http.Get(fmt.Sprintf("%v", clpConfigURL))
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+
+	var pools types.CLP
+	if err := json.Unmarshal(body, &pools); err != nil {
+		return err
+	}
+
+	(*genesis).AppState.CLP.PoolList = pools.PoolList
+	(*genesis).AppState.CLP.LiquidityProviderList = pools.LiquidityProviderList
+	(*genesis).AppState.CLP.CLPModuleAddress = pools.CLPModuleAddress
+
 	content, err := json.Marshal(genesis)
 	if err != nil {
 		return err

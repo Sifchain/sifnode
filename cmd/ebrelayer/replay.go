@@ -109,12 +109,6 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
 	}
 
-	// Parse flag --chain-id
-	chainID := viper.GetString(flags.FlagChainID)
-	if strings.TrimSpace(chainID) == "" {
-		return errors.Errorf("Must specify a 'chain-id'")
-	}
-
 	// Parse flag --rpc-url
 	rpcURL := viper.GetString(FlagRPCURL)
 	if rpcURL != "" {
@@ -170,6 +164,51 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, sugaredLogger)
 
 	cosmosSub.Replay(fromBlock, toBlock, ethFromBlock, ethToBlock)
+
+	return nil
+}
+
+// RunListMissedCosmosEventCmd executes initRelayerCmd
+func RunListMissedCosmosEventCmd(cmd *cobra.Command, args []string) error {
+	// Parse flag --rpc-url
+	rpcURL := viper.GetString(FlagRPCURL)
+	if rpcURL != "" {
+		_, err := url.Parse(rpcURL)
+		if rpcURL != "" && err != nil {
+			return errors.Wrapf(err, "invalid RPC URL: %v", rpcURL)
+		}
+	}
+
+	// Validate and parse arguments
+	if len(strings.Trim(args[0], "")) == 0 {
+		return errors.Errorf("invalid [tendermint-node]: %s", args[0])
+	}
+	tendermintNode := args[0]
+
+	if !relayer.IsWebsocketURL(args[1]) {
+		return errors.Errorf("invalid [web3-provider]: %s", args[1])
+	}
+	web3Provider := args[1]
+
+	if !common.IsHexAddress(args[2]) {
+		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[2])
+	}
+	contractAddress := common.HexToAddress(args[2])
+
+	if !common.IsHexAddress(args[3]) {
+		return errors.Errorf("invalid [relayer-ethereum-address]: %s", args[3])
+	}
+	relayerEthereumAddress := common.HexToAddress(args[3])
+
+	days, err := strconv.ParseInt(args[4], 10, 64)
+	if err != nil {
+		return errors.Errorf("invalid [days]: %s", args[3])
+	}
+
+	// Initialize new Cosmos event listener
+	listMissedCosmosEvent := relayer.NewListMissedCosmosEvent(tendermintNode, web3Provider, contractAddress, relayerEthereumAddress, days)
+
+	listMissedCosmosEvent.ListMissedCosmosEvent()
 
 	return nil
 }
