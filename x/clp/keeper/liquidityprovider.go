@@ -82,3 +82,17 @@ func (k Keeper) GetLiquidityProvidersForAsset(ctx sdk.Context, asset types.Asset
 	}
 	return lpList
 }
+
+func (k Keeper) GetAllLiquidityProviders(ctx sdk.Context) []types.LiquidityProvider {
+	var lpList []types.LiquidityProvider
+	iterator := k.GetLiquidityProviderIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var lp types.LiquidityProvider
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
+		lpList = append(lpList, lp)
+
+	}
+	return lpList
+}

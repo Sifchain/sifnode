@@ -79,3 +79,13 @@ run-image: build-image
 
 sh-image: build-image
 	docker run -it sifchain/$(BINARY):$(IMAGE_TAG) sh
+
+init-run:
+	./scripts/init.sh && ./scripts/run.sh
+
+init-run-noInstall:
+	./scripts/init-noInstall.sh && ./scripts/run.sh
+
+rollback:
+	./scripts/rollback.sh
+
