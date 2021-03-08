@@ -236,6 +236,7 @@ export default defineComponent({
             show: !!feeAmount,
             label: 'Transaction Fee',
             data: `${feeAmount.toFixed(8)} cETH`,
+            tooltipMessage: `This is a fixed fee amount. This is a temporary solution as we are working towards improving this amount in upcoming versions of the network.`,
           },
         ]"
       />

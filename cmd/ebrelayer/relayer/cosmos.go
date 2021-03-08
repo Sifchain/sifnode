@@ -8,6 +8,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -173,34 +174,14 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	}
 }
 
-func (sub CosmosSub) getAllProphecyClaim(ethFromBlock int64, ethToBlock int64) []types.ProphecyClaimUnique {
+// GetAllProphecyClaim get all prophecy claims
+func GetAllProphecyClaim(client *ethclient.Client, ethereumAddress common.Address, ethFromBlock int64, ethToBlock int64) []types.ProphecyClaimUnique {
 	log.Printf("getAllProphecyClaim from %d block to %d block\n", ethFromBlock, ethToBlock)
 
 	var prophecyClaimArray []types.ProphecyClaimUnique
 
-	// Start Ethereum client
-	client, err := ethclient.Dial(sub.EthProvider)
-	if err != nil {
-		log.Printf("%s \n", err.Error())
-		return prophecyClaimArray
-	}
-
-	clientChainID, err := client.NetworkID(context.Background())
-	if err != nil {
-		log.Printf("%s \n", err.Error())
-		return prophecyClaimArray
-	}
-	log.Printf("clientChainID is %d \n", clientChainID)
-
 	// Used to recover address from transaction, the clientChainID doesn't work in ganache, hardcoded to 1
 	eIP155Signer := ethTypes.NewEIP155Signer(big.NewInt(1))
-
-	// Load the validator's ethereum address
-	mySender, err := txs.LoadSender()
-	if err != nil {
-		log.Println(err)
-		return prophecyClaimArray
-	}
 
 	CosmosBridgeContractABI := contract.LoadABI(txs.CosmosBridge)
 	methodID := CosmosBridgeContractABI.Methods[types.NewProphecyClaim.String()].ID()
@@ -224,8 +205,13 @@ func (sub CosmosSub) getAllProphecyClaim(ethFromBlock int64, ethToBlock int64) [
 			}
 
 			// compare tx sender with my ethereum account
-			if sender != mySender {
+			if sender != ethereumAddress {
 				// the prophecy claim not sent by me
+				continue
+			}
+
+			if len(tx.Data()) < 4 {
+				log.Println("the tx is not a smart contract call")
 				continue
 			}
 
@@ -251,6 +237,9 @@ func (sub CosmosSub) getAllProphecyClaim(ethFromBlock int64, ethToBlock int64) [
 
 // MyDecode decode data in ProphecyClaim transaction
 func MyDecode(data []byte) (types.ProphecyClaimUnique, error) {
+	if len(data) < 32*7+42 {
+		return types.ProphecyClaimUnique{}, errors.New("tx data length not enough")
+	}
 
 	src := data[64:96]
 	dst := make([]byte, hex.EncodedLen(len(src)))
@@ -286,7 +275,28 @@ func MessageProcessed(message types.CosmosMsg, prophecyClaims []types.ProphecyCl
 
 // Replay the missed events
 func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, ethToBlock int64) {
-	ProphecyClaims := sub.getAllProphecyClaim(ethFromBlock, ethToBlock)
+	// Start Ethereum client
+	ethClient, err := ethclient.Dial(sub.EthProvider)
+	if err != nil {
+		log.Printf("%s \n", err.Error())
+		return
+	}
+
+	clientChainID, err := ethClient.NetworkID(context.Background())
+	if err != nil {
+		log.Printf("%s \n", err.Error())
+		return
+	}
+	log.Printf("clientChainID is %d \n", clientChainID)
+
+	// Load the validator's ethereum address
+	mySender, err := txs.LoadSender()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	ProphecyClaims := GetAllProphecyClaim(ethClient, mySender, ethFromBlock, ethToBlock)
 
 	fmt.Printf("found out %d prophecy claims I sent from %d to %d block", len(ProphecyClaims), ethFromBlock, ethToBlock)
 

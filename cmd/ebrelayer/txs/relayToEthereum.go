@@ -19,7 +19,7 @@ import (
 
 const (
 	// GasLimit the gas limit in Gwei used for transactions sent with TransactOpts
-	GasLimit            = uint64(200000)
+	GasLimit            = uint64(500000)
 	transactionInterval = 60 * time.Second
 )
 
@@ -49,6 +49,7 @@ func RelayProphecyClaimToEthereum(provider string, contractAddress common.Addres
 		log.Println(err)
 		return err
 	}
+
 
 	log.Println("NewProphecyClaim tx hash:", tx.Hash().Hex())
 

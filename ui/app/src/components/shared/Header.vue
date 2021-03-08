@@ -2,11 +2,13 @@
 import { defineComponent } from "vue";
 import Menu from "./Menu.vue";
 import RowanPrice from "./RowanPrice.vue";
+import TVL from "./TVL.vue";
 
 export default defineComponent({
   components: {
     Menu,
-    RowanPrice
+    RowanPrice,
+    TVL
   },
 });
 </script>
@@ -19,6 +21,11 @@ export default defineComponent({
         <Menu />
       </div>
       <div class="third-container">
+        <Suspense>
+          <div>
+            <TVL />
+          </div>
+        </Suspense>
         <Suspense>
           <div>
             <RowanPrice />
