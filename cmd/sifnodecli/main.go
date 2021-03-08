@@ -16,6 +16,7 @@ import (
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankcmd "github.com/cosmos/cosmos-sdk/x/bank/client/cli"
+	tmcli "github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -63,7 +64,7 @@ func main() {
 		keys.Commands(),
 		flags.LineBreak,
 		version.Cmd,
-		flags.NewCompletionCmd(rootCmd, true),
+		tmcli.NewCompletionCmd(rootCmd, true),
 	)
 
 	// Add flags and prefix all env exposed with AA

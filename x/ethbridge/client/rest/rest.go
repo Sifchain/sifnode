@@ -6,9 +6,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/types/rest"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
 	"github.com/gorilla/mux"
 
@@ -62,7 +63,7 @@ func RegisterRESTRoutes(cliCtx context.CLIContext, r *mux.Router, storeName stri
 	r.HandleFunc(fmt.Sprintf("/%s/lock", storeName), burnOrLockHandler(cliCtx, "lock")).Methods("POST")
 }
 
-func createClaimHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req createEthClaimReq
 
@@ -110,11 +111,11 @@ func createClaimHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			return
 		}
 
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
 	}
 }
 
-func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func getProphecyHandler(cliCtx client.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
@@ -163,7 +164,7 @@ func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.Handle
 	}
 }
 
-func burnOrLockHandler(cliCtx context.CLIContext, lockOrBurn string) http.HandlerFunc {
+func burnOrLockHandler(cliCtx client.Context, lockOrBurn string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req burnOrLockEthReq
 
@@ -205,6 +206,6 @@ func burnOrLockHandler(cliCtx context.CLIContext, lockOrBurn string) http.Handle
 			return
 		}
 
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
 	}
 }

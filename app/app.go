@@ -3,26 +3,11 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
-	"github.com/tendermint/tendermint/libs/log"
+	"io"
 	"io/ioutil"
 	"math/big"
-
-	tmos "github.com/tendermint/tendermint/libs/os"
-
-	"io"
 	"os"
 
-	"github.com/cosmos/cosmos-sdk/x/gov"
-	abci "github.com/tendermint/tendermint/abci/types"
-	dbm "github.com/tendermint/tm-db"
-
-	"github.com/cosmos/cosmos-sdk/x/slashing"
-
-	"github.com/Sifchain/sifnode/x/ethbridge"
-	"github.com/Sifchain/sifnode/x/faucet"
-	"github.com/Sifchain/sifnode/x/oracle"
 	bam "github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -30,15 +15,26 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
+	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
-
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
+	tmos "github.com/tendermint/tendermint/libs/os"
+	dbm "github.com/tendermint/tm-db"
+
+	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/Sifchain/sifnode/x/ethbridge"
+	"github.com/Sifchain/sifnode/x/faucet"
+	"github.com/Sifchain/sifnode/x/oracle"
 )
 
 const appName = "sifnode"
@@ -56,7 +52,6 @@ var (
 			upgradeclient.ProposalHandler,
 		),
 		params.AppModuleBasic{},
-		supply.AppModuleBasic{},
 		clp.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
 		oracle.AppModuleBasic{},
@@ -68,12 +63,12 @@ var (
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
 		distr.ModuleName:          nil,
-		staking.BondedPoolName:    {supply.Burner, supply.Staking},
-		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
-		gov.ModuleName:            {supply.Burner, supply.Staking},
-		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
-		clp.ModuleName:            {supply.Burner, supply.Minter},
-		faucet.ModuleName:         {supply.Minter},
+		staking.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
+		staking.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
+		gov.ModuleName:            {authtypes.Burner, authtypes.Staking},
+		ethbridge.ModuleName:      {authtypes.Burner, authtypes.Minter},
+		clp.ModuleName:            {authtypes.Burner, authtypes.Minter},
+		faucet.ModuleName:         {authtypes.Minter},
 	}
 )
 
@@ -112,7 +107,6 @@ type SifchainApp struct {
 	stakingKeeper  staking.Keeper
 	slashingKeeper slashing.Keeper
 	distrKeeper    distr.Keeper
-	SupplyKeeper   supply.Keeper
 
 	// Peggy keepers
 	EthBridgeKeeper ethbridge.Keeper
@@ -140,7 +134,6 @@ func NewInitApp(
 		bam.MainStoreKey,
 		auth.StoreKey,
 		staking.StoreKey,
-		supply.StoreKey,
 		params.StoreKey,
 		upgrade.StoreKey,
 		oracle.StoreKey,
@@ -185,18 +178,10 @@ func NewInitApp(
 		app.ModuleAccountAddrs(),
 	)
 
-	app.SupplyKeeper = supply.NewKeeper(
-		app.cdc,
-		keys[supply.StoreKey],
-		app.AccountKeeper,
-		app.bankKeeper,
-		maccPerms,
-	)
-
 	stakingKeeper := staking.NewKeeper(
 		app.cdc,
 		keys[staking.StoreKey],
-		app.SupplyKeeper,
+		app.BankKeeper,
 		app.subspaces[staking.ModuleName],
 	)
 
@@ -319,7 +304,6 @@ func NewInitApp(
 		genutil.NewAppModule(app.AccountKeeper, app.stakingKeeper, app.BaseApp.DeliverTx),
 		auth.NewAppModule(app.AccountKeeper),
 		bank.NewAppModule(app.bankKeeper, app.AccountKeeper),
-		supply.NewAppModule(app.SupplyKeeper, app.AccountKeeper),
 		distr.NewAppModule(app.distrKeeper, app.AccountKeeper, app.SupplyKeeper, app.stakingKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.AccountKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.AccountKeeper, app.SupplyKeeper),
@@ -352,7 +336,6 @@ func NewInitApp(
 		auth.ModuleName,
 		bank.ModuleName,
 		slashing.ModuleName,
-		supply.ModuleName,
 		genutil.ModuleName,
 		oracle.ModuleName,
 		ethbridge.ModuleName,
@@ -449,27 +432,27 @@ func GetMaccPerms() map[string][]string {
 }
 
 func ExportAppState(name string, app *SifchainApp, ctx sdk.Context) {
-		appState, vallist, err := app.ExportAppStateAndValidators(true, []string{})
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to export app state: %s", err))
-			return
-		}
-		appStateJSON, err := app.cdc.MarshalJSON(appState)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
-			return
-		}
-		valList, err := json.MarshalIndent(vallist, "", " ")
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
-		}
+	appState, vallist, err := app.ExportAppStateAndValidators(true, []string{})
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to export app state: %s", err))
+		return
+	}
+	appStateJSON, err := app.cdc.MarshalJSON(appState)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
+		return
+	}
+	valList, err := json.MarshalIndent(vallist, "", " ")
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
+	}
 
-		err = ioutil.WriteFile(fmt.Sprintf("%v-state.json", name), appStateJSON, 0600)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %s", err.Error()))
-		}
-		err = ioutil.WriteFile(fmt.Sprintf("%v-validator.json", name), valList, 0600)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %s", err.Error()))
-		}
+	err = ioutil.WriteFile(fmt.Sprintf("%v-state.json", name), appStateJSON, 0600)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %s", err.Error()))
+	}
+	err = ioutil.WriteFile(fmt.Sprintf("%v-validator.json", name), valList, 0600)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %s", err.Error()))
+	}
 }

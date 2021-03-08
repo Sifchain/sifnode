@@ -2,9 +2,10 @@ package types
 
 import (
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/supply"
 	"strings"
+
+	authtypes "github.com/cosmos/comsos-sdk/x/auth/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type Asset struct {
@@ -60,5 +61,5 @@ func GetSettlementAsset() Asset {
 }
 
 func GetCLPModuleAddress() sdk.AccAddress {
-	return supply.NewModuleAddress(ModuleName)
+	return authtypes.NewModuleAddress(ModuleName)
 }

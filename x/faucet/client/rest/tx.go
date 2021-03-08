@@ -1,22 +1,18 @@
 package rest
 
-// The packages below are commented out at first to prevent an error if this file isn't initially saved.
 import (
-	// "bytes"
-	// "net/http"
-
 	"net/http"
 
-	"github.com/Sifchain/sifnode/x/faucet/types"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
+	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/Sifchain/sifnode/x/faucet/types"
 )
 
-func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
+func registerTxRoutes(cliCtx client.Context, r *mux.Router) {
 	r.HandleFunc("/faucet/requestCoins", createCoinsHandler(cliCtx)).Methods("POST")
 }
 
@@ -28,7 +24,7 @@ type (
 	}
 )
 
-func createCoinsHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func createCoinsHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req CoinsReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
@@ -50,6 +46,6 @@ func createCoinsHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
 	}
 }

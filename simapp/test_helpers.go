@@ -17,7 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp/helpers"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 )
 
@@ -47,7 +47,7 @@ func Setup(isCheckTx bool) *SimApp {
 
 // SetupWithGenesisAccounts initializes a new SimApp with the passed in
 // genesis accounts.
-func SetupWithGenesisAccounts(genAccs []authexported.GenesisAccount) *SimApp {
+func SetupWithGenesisAccounts(genAccs []authtypes.GenesisAccount) *SimApp {
 	db := dbm.NewMemDB()
 	app := NewSimApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, 0)
 

@@ -17,12 +17,11 @@ import (
 
 // NewHandler returns a handler for "ethbridge" type messages.
 func NewHandler(
-	accountKeeper types.AccountKeeper, bridgeKeeper Keeper,
-	cdc *codec.Codec) sdk.Handler {
+	accountKeeper types.AccountKeeper, bridgeKeeper Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
-		case MsgCreateEthBridgeClaim:
+		case types.MsgCreateEthBridgeClaim:
 			return handleMsgCreateEthBridgeClaim(ctx, cdc, bridgeKeeper, msg)
 		case MsgBurn:
 			return handleMsgBurn(ctx, cdc, accountKeeper, bridgeKeeper, msg)

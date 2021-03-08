@@ -21,7 +21,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 )
@@ -86,7 +86,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			}
 
 			// create concrete account type based on input parameters
-			var genAccount authexported.GenesisAccount
+			var genAccount authtypes.GenesisAccount
 
 			baseAccount := auth.NewBaseAccount(addr, coins.Sort(), nil, 0, 0)
 			if !vestingAmt.IsZero() {
@@ -261,7 +261,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 			}
 
 			// create concrete account type based on input parameters
-			var genAccount authexported.GenesisAccount
+			var genAccount authtypes.GenesisAccount
 
 			baseAccount := auth.NewBaseAccount(addr, coins.Sort(), nil, 0, 0)
 			if !vestingAmt.IsZero() {

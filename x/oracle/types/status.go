@@ -8,13 +8,9 @@ import (
 
 var StatusTextToString = [...]string{"pending", "success", "failed"}
 var StringToStatusText = map[string]StatusText{
-	"pending": PendingStatusText,
-	"success": SuccessStatusText,
-	"failed":  FailedStatusText,
-}
-
-func (text StatusText) String() string {
-	return StatusTextToString[text]
+	"pending": StatusText_PEDNING_STATUS_TEXT,
+	"success": StatusText_SUCCESS_STATUS_TEXT,
+	"failed":  StatusText_FAILED_STATUS_TEXT,
 }
 
 func (text StatusText) MarshalJSON() ([]byte, error) {

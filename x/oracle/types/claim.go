@@ -1,11 +1,9 @@
 package types
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
-
 // NewClaim returns a new Claim
-func NewClaim(id string, validatorAddress sdk.ValAddress, content string) Claim {
+func NewClaim(id string, validatorAddress string, content string) Claim {
 	return Claim{
-		ID:               id,
+		Id:               id,
 		ValidatorAddress: validatorAddress,
 		Content:          content,
 	}

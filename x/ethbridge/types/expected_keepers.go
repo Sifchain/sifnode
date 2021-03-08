@@ -2,24 +2,23 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
-	supplyexported "github.com/cosmos/cosmos-sdk/x/supply/exported"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/Sifchain/sifnode/x/oracle"
 )
 
 // AccountKeeper defines the expected account keeper
 type AccountKeeper interface {
-	GetAccount(sdk.Context, sdk.AccAddress) authexported.Account
+	GetAccount(sdk.Context, sdk.AccAddress) authtypes.AccountI
 }
 
 // SupplyKeeper defines the expected supply keeper
-type SupplyKeeper interface {
+type BankKeeper interface {
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	MintCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
-	SetModuleAccount(sdk.Context, supplyexported.ModuleAccountI)
+	SetModuleAccount(sdk.Context, authtypes.ModuleAccountI)
 }
 
 // OracleKeeper defines the expected oracle keeper

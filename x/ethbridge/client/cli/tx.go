@@ -12,11 +12,10 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 )
@@ -32,7 +31,7 @@ func GetCmdCreateEthBridgeClaim(cdc *codec.Codec) *cobra.Command {
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			inBuf := bufio.NewReader(cmd.InOrStdin())
-			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			// txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			ethereumChainIDString := viper.GetString(types.FlagEthereumChainID)
 			ethereumChainID, err := strconv.Atoi(ethereumChainIDString)
@@ -99,25 +98,25 @@ func GetCmdCreateEthBridgeClaim(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
 		},
 	}
 }
 
 // GetCmdBurn is the CLI command for burning some of your eth and triggering an event
 //nolint:lll
-func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
+func GetCmdBurn() *cobra.Command {
 	return &cobra.Command{
 		Use:   "burn [cosmos-sender-address] [ethereum-receiver-address] [amount] [symbol] [cethAmount] --ethereum-chain-id [ethereum-chain-id]",
 		Short: "burn cETH or cERC20 on the Cosmos chain",
 		Long: `This should be used to burn cETH or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
 		It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the withdrawal of the original ETH/ERC20 to you from the Ethereum contract!`,
-		Args:  cobra.ExactArgs(5),
+		Args: cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			inBuf := bufio.NewReader(cmd.InOrStdin())
-			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			// txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			ethereumChainIDString := viper.GetString(types.FlagEthereumChainID)
 			ethereumChainID, err := strconv.Atoi(ethereumChainIDString)
@@ -160,7 +159,7 @@ func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
 		},
 	}
 }
@@ -176,7 +175,7 @@ func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			inBuf := bufio.NewReader(cmd.InOrStdin())
-			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			// txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			ethereumChainIDString := viper.GetString(types.FlagEthereumChainID)
 			ethereumChainID, err := strconv.Atoi(ethereumChainIDString)
@@ -220,13 +219,13 @@ func GetCmdLock(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
 		},
 	}
 }
 
 // GetCmdUpdateWhiteListValidator is the CLI command for update the validator whitelist
-func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
+func GetCmdUpdateWhiteListValidator() *cobra.Command {
 	return &cobra.Command{
 		Use:   "update_whitelist_validator [cosmos-sender-address] [validator-address] [operation-type] --node [node-address]",
 		Short: "This should be used to update the validator whitelist.",
@@ -235,7 +234,7 @@ func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			inBuf := bufio.NewReader(cmd.InOrStdin())
-			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			// txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			cosmosSender, err := sdk.AccAddressFromBech32(args[0])
 			if err != nil {
@@ -257,7 +256,7 @@ func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
 		},
 	}
 }

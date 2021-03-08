@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/kv"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	tmKv "github.com/tendermint/tendermint/libs/kv"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -128,7 +128,7 @@ func CosmosMsgToProphecyClaim(event types.CosmosMsg) ProphecyClaim {
 }
 
 // BurnLockEventToCosmosMsg parses data from a Burn/Lock event witnessed on Cosmos into a CosmosMsg struct
-func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (types.CosmosMsg, error) {
+func BurnLockEventToCosmosMsg(claimType types.Event, attributes []kv.Pair) (types.CosmosMsg, error) {
 	var cosmosSender []byte
 	var cosmosSenderSequence *big.Int
 	var ethereumReceiver common.Address
@@ -192,7 +192,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 }
 
 // AttributesToEthereumBridgeClaim parses data from event to EthereumBridgeClaim
-func AttributesToEthereumBridgeClaim(attributes []tmKv.Pair) (types.EthereumBridgeClaim, error) {
+func AttributesToEthereumBridgeClaim(attributes []kv.Pair) (types.EthereumBridgeClaim, error) {
 	var cosmosSender sdk.ValAddress
 	var ethereumSenderNonce sdk.Int
 	var ethereumSender common.Address

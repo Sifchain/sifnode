@@ -7,18 +7,18 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/Sifchain/sifnode/x/faucet/types"
-	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 )
 
-func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
+func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
 	r.HandleFunc(
 		"/faucet/getBalance",
 		getFaucetBalance(cliCtx),
 	).Methods("GET")
 }
 
-func getFaucetBalance(cliCtx context.CLIContext) http.HandlerFunc {
+func getFaucetBalance(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {

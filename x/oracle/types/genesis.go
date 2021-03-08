@@ -4,27 +4,26 @@ import (
 	"encoding/json"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // NewGenesisState creates a new GenesisState instance
 func NewGenesisState() GenesisState {
 	return GenesisState{
-		AddressWhitelist: []sdk.ValAddress{},
-		AdminAddress:     sdk.AccAddress{},
+		AddressWhitelist: []string{},
+		AdminAddress:     "",
 	}
 }
 
 // DefaultGenesisState gets the raw genesis raw message for testing
-func DefaultGenesisState() GenesisState {
-	return GenesisState{
-		AddressWhitelist: []sdk.ValAddress{},
-		AdminAddress:     sdk.AccAddress{},
+func DefaultGenesisState() *GenesisState {
+	return &GenesisState{
+		AddressWhitelist: []string{},
+		AdminAddress:     "",
 	}
 }
 
 // GetGenesisStateFromAppState gets the GenesisState from raw message
-func GetGenesisStateFromAppState(cdc *codec.Codec, appState map[string]json.RawMessage) GenesisState {
+func GetGenesisStateFromAppState(cdc codec.JSONMarshaler, appState map[string]json.RawMessage) GenesisState {
 	var genesisState GenesisState
 	if appState[ModuleName] != nil {
 		cdc.MustUnmarshalJSON(appState[ModuleName], &genesisState)

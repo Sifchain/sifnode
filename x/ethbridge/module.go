@@ -3,16 +3,14 @@ package ethbridge
 import (
 	"encoding/json"
 
-	"github.com/gorilla/mux"
-	"github.com/spf13/cobra"
-
-	abci "github.com/tendermint/tendermint/abci/types"
-
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/x/supply"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/gorilla/mux"
+	"github.com/spf13/cobra"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/client"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -72,30 +70,26 @@ type AppModuleSimulation struct{}
 // AppModule implements an application module for the ethbridge module.
 type AppModule struct {
 	AppModuleBasic
-	AppModuleSimulation
 
 	OracleKeeper  types.OracleKeeper
-	SupplyKeeper  types.SupplyKeeper
+	BankKeeper    types.BankKeeper
 	AccountKeeper types.AccountKeeper
 	BridgeKeeper  Keeper
-	Codec         *codec.Codec
 }
 
 // NewAppModule creates a new AppModule object
 func NewAppModule(
-	oracleKeeper types.OracleKeeper, supplyKeeper types.SupplyKeeper,
+	oracleKeeper types.OracleKeeper, bankKeeper types.BankKeeper,
 	accountKeeper types.AccountKeeper, bridgeKeeper Keeper,
 	cdc *codec.Codec) AppModule {
 
 	return AppModule{
-		AppModuleBasic:      AppModuleBasic{},
-		AppModuleSimulation: AppModuleSimulation{},
+		AppModuleBasic: AppModuleBasic{},
 
 		OracleKeeper:  oracleKeeper,
-		SupplyKeeper:  supplyKeeper,
+		BankKeeper:    bankKeeper,
 		AccountKeeper: accountKeeper,
 		BridgeKeeper:  bridgeKeeper,
-		Codec:         cdc,
 	}
 }
 
@@ -115,7 +109,7 @@ func (AppModule) Route() string {
 
 // NewHandler returns an sdk.Handler for the ethbridge module.
 func (am AppModule) NewHandler() sdk.Handler {
-	return NewHandler(am.AccountKeeper, am.BridgeKeeper, am.Codec)
+	return NewHandler(am.AccountKeeper, am.BridgeKeeper)
 }
 
 // QuerierRoute returns the ethbridge module's querier route name.
@@ -125,14 +119,13 @@ func (AppModule) QuerierRoute() string {
 
 // NewQuerierHandler returns the ethbridge module sdk.Querier.
 func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return NewQuerier(am.OracleKeeper, am.Codec)
+	return NewQuerier(am.OracleKeeper)
 }
 
 // InitGenesis performs genesis initialization for the ethbridge module. It returns
 // no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, _ json.RawMessage) []abci.ValidatorUpdate {
-	bridgeAccount := supply.NewEmptyModuleAccount(ModuleName, supply.Burner, supply.Minter)
-	am.SupplyKeeper.SetModuleAccount(ctx, bridgeAccount)
+	bridgeAccount := authtypes.NewEmptyModuleAccount(ModuleName, authtypes.Burner, authtypes.Minter)
 	return nil
 }
 
