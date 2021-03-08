@@ -22,6 +22,8 @@ import { ConfirmState } from "@/types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
 import { formatNumber } from "@/components/shared/utils";
+import Tooltip from "@/components/shared/Tooltip.vue";
+import Icon from "@/components/shared/Icon.vue";
 
 export default defineComponent({
   components: {
@@ -34,6 +36,8 @@ export default defineComponent({
     DetailsPanelPool,
     FatInfoTable,
     FatInfoTableCell,
+    Tooltip,
+    Icon,
   },
   props: ["title"],
   setup() {
@@ -339,7 +343,14 @@ export default defineComponent({
     </FatInfoTable>
 
     <FatInfoTable :warning="warning" :show="nextStepAllowed">
-      <template #header>Prices after pooling and pool share</template>
+      <template #header>
+        <div class="pool-ratio-label">
+          <span>Prices after pooling and pool share</span>
+          <Tooltip message="This is the current price of 1 TKN in USDT.">
+            <Icon icon="info-box-black" />
+          </Tooltip>
+        </div>
+      </template>
       <template #body>
         <FatInfoTableCell>
           <span class="number">{{
@@ -413,5 +424,9 @@ export default defineComponent({
 .number {
   font-size: 16px;
   font-weight: bold;
+}
+.pool-ratio-label {
+  display: flex;
+  justify-content: space-between;
 }
 </style>
