@@ -1,11 +1,8 @@
 import { useCore } from "@/hooks/useCore";
 import { computed } from "@vue/reactivity";
 
-const shorten = (num: number) => (str: string) => str.slice(0, num) + "...";
-
 export function useWalletButton(props?: {
   connectType?: "connectToAny" | "connectToAll" | "connectToSif";
-  addrLen?: number;
 }) {
   const connectType = props?.connectType || "connectToAny";
   const { store } = useCore();
@@ -28,15 +25,6 @@ export function useWalletButton(props?: {
     }
   });
 
-  const connectedText = computed(() => {
-    const addresses = [
-      store.wallet.eth.address,
-      store.wallet.sif.address,
-    ].filter(Boolean);
-
-    return addresses.length > 0 ? "Connected" : "Connected";
-  });
-
   const connectCta = computed(() => {
     if (!(store.wallet.eth.isConnected || store.wallet.sif.isConnected)) {
       return "Connect Wallet";
@@ -53,7 +41,6 @@ export function useWalletButton(props?: {
     connected,
     connectedToEth,
     connectedToSif,
-    connectedText,
     connectCta,
   };
 }

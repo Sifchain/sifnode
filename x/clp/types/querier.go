@@ -8,6 +8,7 @@ const (
 	QueryAssetList         = "assetList"
 	QueryLiquidityProvider = "liquidityProvider"
 	QueryLPList            = "lpList"
+	QueryAllLP             = "allLp"
 )
 
 type QueryReqGetPool struct {
