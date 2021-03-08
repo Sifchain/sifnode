@@ -36,7 +36,6 @@ func NewZapLogger() *zap.SugaredLogger {
 func NewHandler(
 	accountKeeper types.AccountKeeper, bridgeKeeper Keeper,
 	cdc *codec.Codec) sdk.Handler {
-	// sugaredLogger := NewZapLogger()
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
