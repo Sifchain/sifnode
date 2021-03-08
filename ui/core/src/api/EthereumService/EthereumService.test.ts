@@ -51,8 +51,6 @@ describe("EthereumService", () => {
   });
 
   test("isConnected", async () => {
-    expect(EthereumService.isConnected()).toBe(false);
-    await EthereumService.connect();
     expect(EthereumService.isConnected()).toBe(true);
   });
 
@@ -101,13 +99,6 @@ describe("EthereumService", () => {
     expect(account1NewBalance.toString()).toEqual("110000000000000000000");
   });
 
-  it("should disconnect", async () => {
-    await EthereumService.disconnect();
-    expect(EthereumService.getState().accounts).toEqual([]);
-    expect(EthereumService.getState().connected).toBe(false);
-    expect(EthereumService.getState().address).toBe("");
-    expect(EthereumService.getState().balances).toEqual([]);
-  });
   it("should not do anything with phase and purgingClient", async () => {
     // TODO: We probably don't need this right now because we delegate to metamask
     expect(await EthereumService.setPhrase("testing one two three")).toEqual(
