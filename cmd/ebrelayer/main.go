@@ -156,7 +156,9 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	validatorMoniker := args[3]
 	mnemonic := args[4]
 
-	logger, err := zap.NewProduction()
+	logConfig := zap.NewDevelopmentConfig()
+	logConfig.Sampling = nil
+	logger, err := logConfig.Build()
 
 	if err != nil {
 		log.Fatalln("failed to init zap logging")

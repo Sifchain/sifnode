@@ -23,7 +23,9 @@ const errorMessageKey = "errorMessage"
 
 // NewZapLogger initialize a new instance of SugaredLogger
 func NewZapLogger() *zap.SugaredLogger {
-	logger, err := zap.NewProduction()
+	logConfig := zap.NewDevelopmentConfig()
+	logConfig.Sampling = nil
+	logger, err := logConfig.Build()
 	if err != nil {
 		log.Fatalln("failed to init zap logging")
 	}
