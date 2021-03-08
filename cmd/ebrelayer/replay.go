@@ -205,8 +205,14 @@ func RunListMissedCosmosEventCmd(cmd *cobra.Command, args []string) error {
 		return errors.Errorf("invalid [days]: %s", args[3])
 	}
 
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalln("failed to init zap logging")
+	}
+	sugaredLogger := logger.Sugar()
+
 	// Initialize new Cosmos event listener
-	listMissedCosmosEvent := relayer.NewListMissedCosmosEvent(tendermintNode, web3Provider, contractAddress, relayerEthereumAddress, days)
+	listMissedCosmosEvent := relayer.NewListMissedCosmosEvent(tendermintNode, web3Provider, contractAddress, relayerEthereumAddress, days, sugaredLogger)
 
 	listMissedCosmosEvent.ListMissedCosmosEvent()
 
