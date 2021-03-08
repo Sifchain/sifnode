@@ -1,12 +1,14 @@
 package oracle
 
 import (
-	"github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+
+	"github.com/Sifchain/sifnode/x/oracle/keeper"
+	"github.com/Sifchain/sifnode/x/oracle/types"
 )
 
-func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
+func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 
 	if data.AddressWhitelist != nil {
 		keeper.SetOracleWhiteList(ctx, data.AddressWhitelist)
@@ -19,14 +21,14 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res [
 	return []abci.ValidatorUpdate{}
 }
 
-func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
+func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 	whiteList := keeper.GetOracleWhiteList(ctx)
-	return GenesisState{
+	return types.GenesisState{
 		AddressWhitelist: whiteList,
 	}
 }
 
 // ValidateGenesis validates the oracle genesis parameters
-func ValidateGenesis(data GenesisState) error {
+func ValidateGenesis(data *types.GenesisState) error {
 	return nil
 }

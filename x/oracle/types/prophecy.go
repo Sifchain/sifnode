@@ -33,15 +33,6 @@ type Prophecy struct {
 	ValidatorClaims map[string]string `json:"validator_claims"`
 }
 
-// DBProphecy is what the prophecy becomes when being saved to the database.
-//  Tendermint/Amino does not support maps so we must serialize those variables into bytes.
-type DBProphecy struct {
-	ID              string `json:"id"`
-	Status          Status `json:"status"`
-	ClaimValidators []byte `json:"claim_validators"`
-	ValidatorClaims []byte `json:"validator_claims"`
-}
-
 // SerializeForDB serializes a prophecy into a DBProphecy
 // TODO: Using gob here may mean that different tendermint clients in different languages may serialize/store
 // prophecies in their db in different ways -
