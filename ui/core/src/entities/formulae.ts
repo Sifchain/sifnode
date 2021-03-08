@@ -9,11 +9,6 @@ export function slipAdjustment(
   P: IFraction // existing Pool Units
 ) {
   // slipAdjustment = ((R a - r A)/((r + R) (a + A)))
-  console.log('r', r.toFixed(4))
-  console.log('a', a.toFixed(4))
-  console.log('R', R.toFixed(4))
-  console.log('A', A.toFixed(4))
-  console.log('P', P.toFixed(4))
   const slipAdjDenominator = r.add(R).multiply(a.add(A));
   let slipAdjustmentReciprocal: IFraction;
   if (R.multiply(a).greaterThan(r.multiply(A))) {
@@ -26,7 +21,7 @@ export function slipAdjustment(
       .subtract(R.multiply(a))
       .divide(slipAdjDenominator);
   }
-  console.log('slipAdjustmentReciprocal', slipAdjustmentReciprocal.toFixed(4))
+  console.log("slipAdjustmentReciprocal", slipAdjustmentReciprocal.toFixed(4));
   // (1 - ABS((R a - r A)/((2 r + R) (a + A))))
   return new Fraction("1").subtract(slipAdjustmentReciprocal);
 }

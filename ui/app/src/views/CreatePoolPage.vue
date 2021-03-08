@@ -9,8 +9,8 @@ import Modal from "@/components/shared/Modal.vue";
 import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 
-import { slipAdjustment } from "../../../core/src/entities/formulae"
-import { Fraction } from "../../../core/src/entities"
+import { slipAdjustment } from "../../../core/src/entities/formulae";
+import { Fraction } from "../../../core/src/entities";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
 import FatInfoTable from "@/components/shared/FatInfoTable.vue";
@@ -107,10 +107,11 @@ export default defineComponent({
       bPerARatioProjectedMessage,
       shareOfPoolPercent,
       totalLiquidityProviderUnits,
+      totalPoolUnits,
+      poolAmounts,
       tokenAFieldAmount,
       tokenBFieldAmount,
       preExistingPool,
-      totalPoolUnits,
       state,
     } = usePoolCalculator({
       balances,
@@ -180,7 +181,6 @@ export default defineComponent({
         }
       }),
       warning: computed(() => {
-        console.log("what is this", aPerBRatioProjectedMessage.value, aPerBRatioMessage.value, aPerBRatioProjectedMessage.value !== aPerBRatioMessage.value)
         return aPerBRatioProjectedMessage !== aPerBRatioMessage;
       }),
       nextStepAllowed: computed(() => {
@@ -196,32 +196,24 @@ export default defineComponent({
       },
 
       potentialMoneyLoss: computed(() => {
-        // r: IFraction, // Native amount added
-        // a: IFraction, // External amount added
-        // R: IFraction, // Native Balance (before)
-        // A: IFraction, // External Balance (before)
-        // P: IFraction // existing Pool Units
-        const toAccountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === toSymbol.value
-        );
-        const fromAccountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === fromSymbol.value
-        );
-        console.log("WHY SO BIG A", tokenAFieldAmount.value?.amount)
-        console.log("WHY SO BIG B", tokenBFieldAmount.value?.amount)
-        if (!tokenAFieldAmount.value)
+        if (!tokenAFieldAmount.value) {
           throw new Error("Token A field amount is not defined");
-        if (!tokenBFieldAmount.value)
+        }
+        if (!tokenBFieldAmount.value) {
           throw new Error("Token B field amount is not defined");
-        if (!fromAccountBalance)
-          throw new Error("as")
-        if (!toAccountBalance)
-          throw new Error("as")
-
-
-        const something = slipAdjustment(tokenAFieldAmount.value, tokenBFieldAmount.value, fromAccountBalance, toAccountBalance, new Fraction(totalPoolUnits.value));
-        console.log('something', something.toFixed(12));
-        return something;
+        }
+        if (!poolAmounts.value) {
+          throw new Error("Pool amounts not defined");
+        }
+        const nativeBalance = poolAmounts?.value[0];
+        const externalBalance = poolAmounts?.value[1];
+        return slipAdjustment(
+          tokenBFieldAmount.value,
+          tokenAFieldAmount.value,
+          nativeBalance,
+          externalBalance,
+          new Fraction(totalPoolUnits.value)
+        );
       }),
 
       handleSelectClosed(data: string) {
@@ -239,7 +231,7 @@ export default defineComponent({
         selectedField.value = null;
       },
 
-      backlink: window.history.state.back || '/pool',
+      backlink: window.history.state.back || "/pool",
 
       handleNextStepClicked,
 
@@ -321,22 +313,47 @@ export default defineComponent({
     </Modal>
 
     <FatInfoTable :show="nextStepAllowed">
-      <template #header>Pool Token Prices <br/> POTENTIAL MONEY LOSS: {{potentialMoneyLoss.toFixed(6)}}</template>
+      <template #header
+        >Pool Token Prices <br />
+        POTENTIAL MONEY LOSS: {{ potentialMoneyLoss.toFixed(6) }}</template
+      >
       <template #body>
         <FatInfoTableCell>
-          <span class="number">{{ formatNumber(aPerBRatioMessage === 'N/A' ? '0' : aPerBRatioMessage) }}</span
+          <span class="number">{{
+            formatNumber(aPerBRatioMessage === "N/A" ? "0" : aPerBRatioMessage)
+          }}</span
           ><br />
           <span
-            >{{ fromSymbol.toLowerCase().includes("rowan") ? fromSymbol.toUpperCase() : "c" + fromSymbol.slice(1).toUpperCase() }} per
-            {{ toSymbol.toLowerCase().includes("rowan") ? toSymbol.toUpperCase() : "c" + toSymbol.slice(1).toUpperCase() }}</span
+            >{{
+              fromSymbol.toLowerCase().includes("rowan")
+                ? fromSymbol.toUpperCase()
+                : "c" + fromSymbol.slice(1).toUpperCase()
+            }}
+            per
+            {{
+              toSymbol.toLowerCase().includes("rowan")
+                ? toSymbol.toUpperCase()
+                : "c" + toSymbol.slice(1).toUpperCase()
+            }}</span
           >
         </FatInfoTableCell>
         <FatInfoTableCell>
-          <span class="number">{{ formatNumber(bPerARatioMessage === 'N/A' ? '0' : bPerARatioMessage) }}</span
+          <span class="number">{{
+            formatNumber(bPerARatioMessage === "N/A" ? "0" : bPerARatioMessage)
+          }}</span
           ><br />
           <span
-            >{{ toSymbol.toLowerCase().includes("rowan") ? toSymbol.toUpperCase() : "c" + toSymbol.slice(1).toUpperCase() }} per
-            {{ fromSymbol.toLowerCase().includes("rowan") ? fromSymbol.toUpperCase() : "c" + fromSymbol.slice(1).toUpperCase() }}</span
+            >{{
+              toSymbol.toLowerCase().includes("rowan")
+                ? toSymbol.toUpperCase()
+                : "c" + toSymbol.slice(1).toUpperCase()
+            }}
+            per
+            {{
+              fromSymbol.toLowerCase().includes("rowan")
+                ? fromSymbol.toUpperCase()
+                : "c" + fromSymbol.slice(1).toUpperCase()
+            }}</span
           > </FatInfoTableCell
         ><FatInfoTableCell />
       </template>
@@ -354,7 +371,11 @@ export default defineComponent({
       <template #body>
         <FatInfoTableCell>
           <span class="number">{{
-            formatNumber(aPerBRatioProjectedMessage === 'N/A' ? '0' : aPerBRatioProjectedMessage)
+            formatNumber(
+              aPerBRatioProjectedMessage === "N/A"
+                ? "0"
+                : aPerBRatioProjectedMessage
+            )
           }}</span
           ><br />
           <span
@@ -364,7 +385,11 @@ export default defineComponent({
         </FatInfoTableCell>
         <FatInfoTableCell>
           <span class="number">{{
-            formatNumber(bPerARatioProjectedMessage === 'N/A' ? '0' : bPerARatioProjectedMessage)
+            formatNumber(
+              bPerARatioProjectedMessage === "N/A"
+                ? "0"
+                : bPerARatioProjectedMessage
+            )
           }}</span
           ><br />
           <span
