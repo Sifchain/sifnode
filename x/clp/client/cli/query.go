@@ -30,6 +30,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		GetCmdAssets(queryRoute, cdc),
 		GetCmdLiquidityProvider(queryRoute, cdc),
 		GetCmdLpList(queryRoute, cdc),
+		GetCmdAllLps(queryRoute, cdc),
 	)...)
 	return clpQueryCmd
 }
@@ -177,6 +178,26 @@ func GetCmdLpList(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			var assetList types.LiquidityProviders
 			cdc.MustUnmarshalJSON(res, &assetList)
 			out := types.NewLpListResponse(assetList, height)
+			return cliCtx.PrintOutput(out)
+		},
+	}
+}
+
+func GetCmdAllLps(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "all-lp",
+		Short: "Get all liquidity providers on sifnode ",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryAllLP)
+			res, height, err := cliCtx.QueryWithData(route, nil)
+			if err != nil {
+				return err
+			}
+			var lps types.LiquidityProviders
+			cdc.MustUnmarshalJSON(res, &lps)
+			out := types.NewLpListResponse(lps, height)
 			return cliCtx.PrintOutput(out)
 		},
 	}
