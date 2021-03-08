@@ -100,6 +100,28 @@ export default defineComponent({
       );
     });
 
+    const riskFactor = computed(() => {
+      if (!tokenAFieldAmount.value) {
+        throw new Error("Token A field amount is not defined");
+      }
+      if (!tokenBFieldAmount.value) {
+        throw new Error("Token B field amount is not defined");
+      }
+      if (!poolAmounts.value) {
+        throw new Error("Pool amounts not defined");
+      }
+      const nativeBalance = poolAmounts?.value[0];
+      const externalBalance = poolAmounts?.value[1];
+      const slipAdjustmentCalc = slipAdjustment(
+        tokenBFieldAmount.value,
+        tokenAFieldAmount.value,
+        nativeBalance,
+        externalBalance,
+        new Fraction(totalPoolUnits.value)
+      );
+      return new Fraction("1").subtract(slipAdjustmentCalc);
+    });
+
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
@@ -195,27 +217,6 @@ export default defineComponent({
         next();
       },
 
-      potentialMoneyLoss: computed(() => {
-        if (!tokenAFieldAmount.value) {
-          throw new Error("Token A field amount is not defined");
-        }
-        if (!tokenBFieldAmount.value) {
-          throw new Error("Token B field amount is not defined");
-        }
-        if (!poolAmounts.value) {
-          throw new Error("Pool amounts not defined");
-        }
-        const nativeBalance = poolAmounts?.value[0];
-        const externalBalance = poolAmounts?.value[1];
-        return slipAdjustment(
-          tokenBFieldAmount.value,
-          tokenAFieldAmount.value,
-          nativeBalance,
-          externalBalance,
-          new Fraction(totalPoolUnits.value)
-        );
-      }),
-
       handleSelectClosed(data: string) {
         if (typeof data !== "string") {
           return;
@@ -274,6 +275,18 @@ export default defineComponent({
       formatNumber,
 
       poolUnits: totalLiquidityProviderUnits,
+      riskFactor,
+      riskFactorStatus: computed(() => {
+        // TODO - These cutoffs need discussion
+        let status = "danger";
+        // TODO - Needs to us IFraction
+        if (Number(riskFactor.value.toFixed(8)) <= 0.2) {
+          status = "warning";
+        } else if (Number(riskFactor.value.toFixed(8)) <= 0.1) {
+          status = "bad";
+        }
+        return status;
+      }),
     };
   },
 });
@@ -315,7 +328,9 @@ export default defineComponent({
     <FatInfoTable :show="nextStepAllowed">
       <template #header
         >Pool Token Prices <br />
-        POTENTIAL MONEY LOSS: {{ potentialMoneyLoss.toFixed(6) }}</template
+        POTENTIAL MONEY LOSS: {{ riskFactor.toFixed(6) }}<br />{{
+          riskFactorStatus
+        }}</template
       >
       <template #body>
         <FatInfoTableCell>
@@ -359,7 +374,7 @@ export default defineComponent({
       </template>
     </FatInfoTable>
 
-    <FatInfoTable :warning="warning" :show="nextStepAllowed">
+    <FatInfoTable :status="riskFactorStatus" :show="nextStepAllowed">
       <template #header>
         <div class="pool-ratio-label">
           <span>Prices after pooling and pool share</span>
