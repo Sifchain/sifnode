@@ -8,6 +8,9 @@ import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSi
 import Modal from "@/components/shared/Modal.vue";
 import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
+
+import { slipAdjustment } from "../../../core/src/entities/formulae"
+import { Fraction } from "../../../core/src/entities"
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
 import FatInfoTable from "@/components/shared/FatInfoTable.vue";
@@ -103,6 +106,7 @@ export default defineComponent({
       tokenAFieldAmount,
       tokenBFieldAmount,
       preExistingPool,
+      totalPoolUnits,
       state,
     } = usePoolCalculator({
       balances,
@@ -186,6 +190,36 @@ export default defineComponent({
         selectedField.value = "to";
         next();
       },
+
+      potentialMoneyLoss: computed(() => {
+        // r: IFraction, // Native amount added
+        // a: IFraction, // External amount added
+        // R: IFraction, // Native Balance (before)
+        // A: IFraction, // External Balance (before)
+        // P: IFraction // existing Pool Units
+        const toAccountBalance = balances.value.find(
+          (balance) => balance.asset.symbol === toSymbol.value
+        );
+        const fromAccountBalance = balances.value.find(
+          (balance) => balance.asset.symbol === fromSymbol.value
+        );
+        console.log("WHY SO BIG A", tokenAFieldAmount.value?.amount)
+        console.log("WHY SO BIG B", tokenBFieldAmount.value?.amount)
+        if (!tokenAFieldAmount.value)
+          throw new Error("Token A field amount is not defined");
+        if (!tokenBFieldAmount.value)
+          throw new Error("Token B field amount is not defined");
+        if (!fromAccountBalance)
+          throw new Error("as")
+        if (!toAccountBalance)
+          throw new Error("as")
+
+
+        const something = slipAdjustment(tokenAFieldAmount.value, tokenBFieldAmount.value, fromAccountBalance, toAccountBalance, new Fraction(totalPoolUnits.value));
+        console.log('something', something.toFixed(12));
+        return something;
+      }),
+
       handleSelectClosed(data: string) {
         if (typeof data !== "string") {
           return;
@@ -283,7 +317,7 @@ export default defineComponent({
     </Modal>
 
     <FatInfoTable :show="nextStepAllowed">
-      <template #header>Pool Token Prices</template>
+      <template #header>Pool Token Prices <br/> POTENTIAL MONEY LOSS: {{potentialMoneyLoss.toFixed(6)}}</template>
       <template #body>
         <FatInfoTableCell>
           <span class="number">{{ formatNumber(aPerBRatioMessage === 'N/A' ? '0' : aPerBRatioMessage) }}</span
