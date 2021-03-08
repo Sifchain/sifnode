@@ -1,0 +1,9 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "playwright": "^1.9.1"
+  }
+}
