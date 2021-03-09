@@ -197,9 +197,6 @@ export default defineComponent({
             return preExistingPool.value ? "Add liquidity" : "Create Pool";
         }
       }),
-      warning: computed(() => {
-        return aPerBRatioProjectedMessage !== aPerBRatioMessage;
-      }),
       nextStepAllowed: computed(() => {
         return state.value === PoolState.VALID_INPUT;
       }),
@@ -270,7 +267,6 @@ export default defineComponent({
       formatNumber,
 
       poolUnits: totalLiquidityProviderUnits,
-      riskFactor,
       riskFactorStatus: computed(() => {
         // TODO - These cutoffs need discussion
         let status = "danger";

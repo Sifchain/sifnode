@@ -52,7 +52,7 @@ export function calculatePoolUnits(
 
   const slipAdjustmentCalc = slipAdjustment(r, a, R, A, P);
 
-  // // ((P (a R + A r))
+  // ((P (a R + A r))
   const numerator = P.multiply(a.multiply(R).add(A.multiply(r)));
   const denominator = new Fraction("2").multiply(A).multiply(R);
 
