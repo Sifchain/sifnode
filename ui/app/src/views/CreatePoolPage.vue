@@ -77,9 +77,7 @@ export default defineComponent({
       toAmount.value = "0.0";
     }
 
-    const { connected, connectedText } = useWalletButton({
-      addrLen: 8,
-    });
+    const { connected } = useWalletButton();
 
     const { balances } = useWallet(store);
     const liquidityProvider = computed(() => {
@@ -263,9 +261,7 @@ export default defineComponent({
         toAmount.value = accountBalance.toFixed();
       },
       shareOfPoolPercent,
-      connectedText,
       formatNumber,
-
       poolUnits: totalLiquidityProviderUnits,
       riskFactorStatus: computed(() => {
         // TODO - These cutoffs need discussion

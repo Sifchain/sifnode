@@ -41,10 +41,6 @@ export default ({
         notify({ type: "error", ...error });
       }
     },
-
-    async disconnectWallet() {
-      await api.SifService.disconnect();
-    },
   };
 
   effect(() => {
