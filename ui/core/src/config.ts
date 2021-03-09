@@ -6,9 +6,11 @@ import testnetconfig from "./config.testnet.json"
 import assetsEthereumLocalnet from "./assets.ethereum.localnet.json";
 import assetsEthereumMainnet from "./assets.ethereum.mainnet.json";
 import assetsEthereumRopsten from "./assets.ethereum.ropsten.json";
+import assetsEthereumTestnet from "./assets.ethereum.testnet.json";
 import assetsSifchainLocalnet from "./assets.sifchain.localnet.json";
 import assetsSifchainMainnet from "./assets.sifchain.mainnet.json";
 import assetsSifchainSandpit from "./assets.sifchain.sandpit.json";
+import assetsSifchainTestnet from "./assets.sifchain.testnet.json";
 
 import {
   parseConfig,
@@ -45,6 +47,9 @@ export function getConfig(
     "sifchain.sandpit": parseAssets(
       assetsSifchainSandpit.assets as AssetConfig[]
     ),
+    "sifchain.testnet": parseAssets(
+      assetsSifchainTestnet.assets as AssetConfig[]
+    ),
     "ethereum.localnet": parseAssets(
       assetsEthereumLocalnet.assets as AssetConfig[]
     ),
@@ -53,6 +58,9 @@ export function getConfig(
     ),
     "ethereum.mainnet": parseAssets(
       assetsEthereumMainnet.assets as AssetConfig[]
+    ),
+    "ethereum.testnet": parseAssets(
+      assetsEthereumTestnet.assets as AssetConfig[]
     ),
   };
 
