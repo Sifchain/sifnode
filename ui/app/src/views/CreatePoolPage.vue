@@ -101,14 +101,9 @@ export default defineComponent({
     });
 
     const riskFactor = computed(() => {
-      if (!tokenAFieldAmount.value) {
-        throw new Error("Token A field amount is not defined");
-      }
-      if (!tokenBFieldAmount.value) {
-        throw new Error("Token B field amount is not defined");
-      }
-      if (!poolAmounts.value) {
-        throw new Error("Pool amounts not defined");
+      const rFactor = new Fraction("1");
+      if (!tokenAFieldAmount.value || !tokenBFieldAmount.value || !poolAmounts.value) {
+        return rFactor;
       }
       const nativeBalance = poolAmounts?.value[0];
       const externalBalance = poolAmounts?.value[1];
@@ -119,7 +114,7 @@ export default defineComponent({
         externalBalance,
         new Fraction(totalPoolUnits.value)
       );
-      return new Fraction("1").subtract(slipAdjustmentCalc);
+      return rFactor.subtract(slipAdjustmentCalc);
     });
 
     const {
@@ -327,10 +322,7 @@ export default defineComponent({
 
     <FatInfoTable :show="nextStepAllowed">
       <template #header
-        >Pool Token Prices <br />
-        POTENTIAL MONEY LOSS: {{ riskFactor.toFixed(6) }}<br />{{
-          riskFactorStatus
-        }}</template
+        >Pool Token Prices</template
       >
       <template #body>
         <FatInfoTableCell>
@@ -377,8 +369,11 @@ export default defineComponent({
     <FatInfoTable :status="riskFactorStatus" :show="nextStepAllowed">
       <template #header>
         <div class="pool-ratio-label">
-          <span>Prices after pooling and pool share</span>
-          <Tooltip message="This is the current price of 1 TKN in USDT.">
+          <span>Est. prices after pooling & pool share</span>
+          <Tooltip>
+            <template #message>
+              This is an asymmetric liquidity add that has an estimated large impact on this pool. Please be aware of how this works by reading our documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool#asymmetric-liquidity-pool" target="_blank">here</a>.
+            </template>
             <Icon icon="info-box-black" />
           </Tooltip>
         </div>
