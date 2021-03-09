@@ -1,0 +1,12 @@
+{
+    "assets": [
+      {
+        "symbol": "erowan",
+        "decimals": 18,
+        "name": "Rowan",
+        "imageUrl": "/images/siflogo.png",
+        "address": "0x70B6CB8216d7fB98Db3C1f6d63C438fF6a2034a3",
+        "network": "ethereum"
+      }
+    ]
+  }
