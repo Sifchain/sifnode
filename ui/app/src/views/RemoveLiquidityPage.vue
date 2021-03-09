@@ -41,9 +41,7 @@ export default defineComponent({
     const externalAssetSymbol = ref<string | null>(
       route.params.externalAsset ? route.params.externalAsset.toString() : null
     );
-    const { connected, connectedText } = useWalletButton({
-      addrLen: 8,
-    });
+    const { connected } = useWalletButton();
 
     const liquidityProvider = ref(null) as Ref<LiquidityProvider | null>;
     const withdrawExternalAssetAmount: Ref<string | null> = ref(null);
@@ -145,7 +143,6 @@ export default defineComponent({
       nativeAssetSymbol,
       withdrawExternalAssetAmount,
       withdrawNativeAssetAmount,
-      connectedText,
       externalAssetSymbol,
       transactionState,
       transactionHash,
@@ -243,7 +240,11 @@ export default defineComponent({
           You should receive
           <span class="text--bold">
             {{ withdrawExternalAssetAmount }}
-            {{ externalAssetSymbol.toLowerCase().includes("rowan") ? externalAssetSymbol.toUpperCase() : "c" + externalAssetSymbol.slice(1).toUpperCase() }}
+            {{
+              externalAssetSymbol.toLowerCase().includes("rowan")
+                ? externalAssetSymbol.toUpperCase()
+                : "c" + externalAssetSymbol.slice(1).toUpperCase()
+            }}
           </span>
           and
           <span class="text--bold">
