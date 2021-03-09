@@ -2,35 +2,35 @@
     "assets": [
       {
         "decimals": 18,
-        "symbol": "rowan",
+        "symbol": "erowan",
+        "imageUrl": "/images/siflogo.png",
+        "address": "0x530eF1d9aB256609beC8fE4c1d6b79C45f25764f",
         "name": "Rowan",
-        "address": "",
-        "imageUrl": "./images/siflogo.png",
-        "network": "sifchain"
+        "network": "ethereum"
       },
       {
         "decimals": 18,
-        "symbol": "ceth",
+        "symbol": "eth",
         "imageUrl": "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
-        "address": "",
+        "address": "0x0000000000000000000000000000000000000000",
         "name": "Ethereum",
-        "network": "sifchain"
+        "network": "ethereum"
       },
       {
         "decimals": 18,
-        "symbol": "cdai",
+        "symbol": "dai",
         "imageUrl": "https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774",
-        "address": "",
+        "address": "0xfe1982fd4B26e282c47bb9353455A77929f0a155",
         "name": "Dai Stablecoin",
-        "network": "sifchain"
+        "network": "ethereum"
       },
       {
         "decimals": 18,
-        "symbol": "creef",
+        "symbol": "reef",
         "imageUrl": "https://assets.coingecko.com/coins/images/13504/small/Group_10572.png?1610534130",
-        "address": "",
+        "address": "0x21C8A6f8254cD70C36AE998F186fa21238803180",
         "name": "Reef Finance",
-        "network": "sifchain"
+        "network": "ethereum"
       }
     ]
 }
