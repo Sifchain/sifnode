@@ -11,6 +11,7 @@ import Plus from "./icons/Plus.vue";
 import InfoBoxBlack from "./icons/InfoBoxBlack.vue";
 import InfoBoxWhite from "./icons/InfoBoxWhite.vue";
 import Bang from "./icons/Bang.vue";
+import Sif from "./icons/Sif.vue"
 
 export default defineComponent({
   props: {
@@ -26,6 +27,7 @@ export default defineComponent({
         | "cross"
         | "info-box-black"
         | "info-box-white"
+        | "sif"
       >,
     },
   },
@@ -40,6 +42,7 @@ export default defineComponent({
     Plus,
     InfoBoxBlack,
     InfoBoxWhite,
+    Sif
   },
 });
 </script>
@@ -56,5 +59,7 @@ export default defineComponent({
     <Plus v-if="icon === 'plus'" />
     <InfoBoxBlack v-if="icon === 'info-box-black'" />
     <InfoBoxWhite v-if="icon === 'info-box-white'" />
+    <InfoBoxWhite v-if="icon === 'info-box-white'" />
+    <Sif v-if="icon === 'sif'" />
   </span>
 </template>

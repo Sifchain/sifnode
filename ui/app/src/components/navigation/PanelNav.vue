@@ -21,7 +21,7 @@
     <PanelNavItem 
       to="/rewards-new" 
       label="Rewards" 
-      icon="rewards"
+      icon="sif"
       color="gold"
       >
     </PanelNavItem>
