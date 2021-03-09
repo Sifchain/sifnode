@@ -44,9 +44,7 @@ type Keplr = {
   getOfflineSigner: (chainId?: string) => OfflineSigner;
 };
 
-// Todo
 type provider = Keplr;
-
 let numChecks = 0;
 
 // Detect mossible keplr provider from browser
@@ -68,7 +66,6 @@ export default async function getKeplrProvider(): Promise<provider | null> {
     return getKeplrProvider();
   }
 
-  // assign offline signer (they use __proto__ for some reason), so this is not as pretty as i'd like)
   console.log("Keplr wallet bootstraped");
   return win.keplr as Keplr;
 }
