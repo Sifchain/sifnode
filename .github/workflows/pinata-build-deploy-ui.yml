@@ -31,7 +31,7 @@ jobs:
               echo "VUE_APP_ETHEREUM_ASSET_TAG=ethereum.mainnet" >> "$GITHUB_ENV"
               echo "VUE_APP_SIFCHAIN_ASSET_TAG=sifchain.mainnet" >> "$GITHUB_ENV"
           else
-              echo "Config set for merry-go-rouund deployment"
+              echo "Config set for testNet deployment"
               echo "VUE_APP_DEPLOYMENT_TAG=testnet" >> "$GITHUB_ENV"
               echo "VUE_APP_ETHEREUM_ASSET_TAG=ethereum.testnet" >> "$GITHUB_ENV"
               echo "VUE_APP_SIFCHAIN_ASSET_TAG=sifchain.testnet" >> "$GITHUB_ENV"
