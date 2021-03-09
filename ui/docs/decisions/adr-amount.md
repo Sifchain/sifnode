@@ -1,8 +1,8 @@
 # Create Amount API to universally handle values throughout frontend
 
-Status: proposed
-Deciders: Michael Pierce, Thomas Davis, Rudi Yardley, Ivan Verchenko
-Date: 2020-03-09
+* Status: proposed                                                   
+* Deciders: Michael Pierce, Thomas Davis, Rudi Yardley, Ivan Verchenko 
+* Date: 2020-03-09                                                 
 
 ## Problem
 
