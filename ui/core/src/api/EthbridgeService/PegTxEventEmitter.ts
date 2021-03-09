@@ -1,14 +1,33 @@
-import { PegTxEventEmitter, TxEventError, TxEventPrepopulated } from "./types";
+import {
+  TxEvent,
+  TxEventComplete,
+  TxEventError,
+  TxEventEthConfCountChanged,
+  TxEventEthTxConfirmed,
+  TxEventEthTxInitiated,
+  TxEventHashReceived,
+  TxEventPrepopulated,
+  TxEventSifTxConfirmed,
+  TxEventSifTxInitiated,
+} from "./types";
 import { EventEmitter2 } from "eventemitter2";
+export type PegTxEventEmitter = ReturnType<typeof createPegTxEventEmitter>;
 /**
  * Adds types around EventEmitter2
  * @param txHash transaction hash this emitter responds to
  */
-export function createPegTxEventEmitter(txHash?: string) {
+export function createPegTxEventEmitter(txHash?: string, symbol?: string) {
   let _txHash = txHash;
+  let _symbol = symbol;
   const emitter = new EventEmitter2();
 
-  const instance: PegTxEventEmitter = {
+  const instance = {
+    get hash() {
+      return _txHash;
+    },
+    get symbol() {
+      return _symbol;
+    },
     setTxHash(hash: string) {
       _txHash = hash;
       this.emit({ type: "HashReceived", payload: hash });
@@ -16,40 +35,44 @@ export function createPegTxEventEmitter(txHash?: string) {
     emit(e: TxEventPrepopulated) {
       emitter.emit(e.type, { ...e, txHash: e.txHash || _txHash });
     },
-    onTxEvent(handler) {
+    onTxEvent(handler: (e: TxEvent) => void) {
       emitter.onAny((e, v) => handler(v));
       return instance;
     },
-    onTxHash(handler) {
+    onTxHash(handler: (e: TxEventHashReceived) => void) {
       emitter.on("HashReceived", handler);
       return instance;
     },
-    onEthConfCountChanged(handler) {
+    onEthConfCountChanged(handler: (e: TxEventEthConfCountChanged) => void) {
       emitter.on("EthConfCountChanged", handler);
       return instance;
     },
-    onEthTxConfirmed(handler) {
+    onEthTxConfirmed(handler: (e: TxEventEthTxConfirmed) => void) {
       emitter.on("EthTxConfirmed", handler);
       return instance;
     },
 
-    onSifTxConfirmed(handler) {
+    onSifTxConfirmed(handler: (e: TxEventSifTxConfirmed) => void) {
       emitter.on("SifTxConfirmed", handler);
       return instance;
     },
-    onEthTxInitiated(handler) {
+    onEthTxInitiated(handler: (e: TxEventEthTxInitiated) => void) {
       emitter.on("EthTxInitiated", handler);
       return instance;
     },
-    onSifTxInitiated(handler) {
+    onSifTxInitiated(handler: (e: TxEventSifTxInitiated) => void) {
       emitter.on("SifTxInitiated", handler);
       return instance;
     },
-    onComplete(handler) {
+    onComplete(handler: (e: TxEventComplete) => void) {
       emitter.on("Complete", handler);
       return instance;
     },
-    onError(handler) {
+    removeListeners() {
+      emitter.removeAllListeners();
+      return instance;
+    },
+    onError(handler: (e: TxEventError) => void) {
       emitter.on("Error", (e: TxEventError) => {
         handler(e);
 
@@ -62,5 +85,6 @@ export function createPegTxEventEmitter(txHash?: string) {
       return instance;
     },
   };
+
   return instance;
 }

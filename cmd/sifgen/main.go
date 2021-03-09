@@ -33,6 +33,7 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().String("min-clp-create-pool-threshold", "100", "minimum CLP create pool threshold")
 	_nodeCreateCmd.PersistentFlags().String("gov-max-deposit-period", "900000000000", "governance max deposit period")
 	_nodeCreateCmd.PersistentFlags().String("gov-voting-period", "900000000000", "governance voting period")
+	_nodeCreateCmd.PersistentFlags().String("clp-config-url", "", "URL of the JSON file to use to pre-populate CLPs during genesis")
 	_nodeCreateCmd.PersistentFlags().Bool("print-details", false, "print the node details")
 	_nodeCreateCmd.PersistentFlags().Bool("with-cosmovisor", false, "setup cosmovisor")
 	_nodeCmd.AddCommand(_nodeCreateCmd, nodeResetStateCmd())
@@ -115,6 +116,7 @@ func nodeCreateCmd() *cobra.Command {
 			minCLPCreatePoolThreshold, _ := cmd.Flags().GetString("min-clp-create-pool-threshold")
 			govMaxDepositPeriod, _ := cmd.Flags().GetString("gov-max-deposit-period")
 			govVotingPeriod, _ := cmd.Flags().GetString("gov-voting-period")
+			clpConfigURL, _ := cmd.Flags().GetString("clp-config-url")
 			printDetails, _ := cmd.Flags().GetBool("print-details")
 			withCosmovisor, _ := cmd.Flags().GetBool("with-cosmovisor")
 
@@ -132,6 +134,7 @@ func nodeCreateCmd() *cobra.Command {
 				node.MinCLPCreatePoolThreshold = minCLPCreatePoolThreshold
 				node.GovMaxDepositPeriod = govMaxDepositPeriod
 				node.GovVotingPeriod = govVotingPeriod
+				node.CLPConfigURL = clpConfigURL
 			} else {
 				node.PeerAddress = peerAddress
 				node.GenesisURL = genesisURL

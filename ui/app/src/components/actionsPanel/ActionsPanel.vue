@@ -1,4 +1,3 @@
-
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import WithWallet from "@/components/wallet/WithWallet.vue";
