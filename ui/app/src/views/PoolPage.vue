@@ -25,7 +25,6 @@ export default defineComponent({
 
     const selectedPool = ref<AccountPool | null>(null);
 
-    // TODO: Sort pools?
     const accountPools = computed(() => {
       if (
         !store.accountpools ||
@@ -85,9 +84,7 @@ export default defineComponent({
         />
       </PoolList>
     </div>
-    <ActionsPanel
-      connectType="connectToSif"
-    />
+    <ActionsPanel connectType="connectToSif" />
   </Layout>
 </template>
 
