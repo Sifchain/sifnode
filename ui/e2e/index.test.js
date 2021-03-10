@@ -1,10 +1,3 @@
-import "@babel/polyfill";
-const path = require("path");
-const fs = require("fs");
-const { chromium } = require("playwright");
-
-const keplr = require("./keplr");
-
 /* TODO
   - Connect Metamask
   - Different targets, local, sp, etc for deterministic addresses
@@ -13,9 +6,20 @@ const keplr = require("./keplr");
   - Cleanup
 */
 
+import "@babel/polyfill";
+const path = require("path");
+const fs = require("fs");
+const { chromium } = require("playwright");
+
+const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
+const { extractFile } = require("./utils");
+
 const DEX_TARGET =
   "https://gateway.pinata.cloud/ipfs/QmV7XdW4VTiaiyDJuHcqoLj67foxLuoequtTax8f7kgJAf";
-const KEPLR_PATH = "./extensions/dmkamcknogkgcdfhhbddcghachkejeap/0.8.1_0";
+
+const KEPLR_EXT_ID = "dmkamcknogkgcdfhhbddcghachkejeap";
+const KEPLR_VERSION = "0.8.1_0";
+const KEPLR_PATH = `./extensions/${KEPLR_EXT_ID}/${KEPLR_VERSION}`;
 const KEPLR_OPTIONS = {
   name: "juniper",
   mnemonic:
@@ -28,6 +32,7 @@ let browserContext;
 describe("connect to page", () => {
   beforeAll(async () => {
     // const pathToMetamaskExtension = path.join(__dirname, METAMASK_PATH);
+    await extractFile(`downloads/${KEPLR_EXT_ID}.zip`, "./extensions");
     const pathToKeplrExtension = path.join(__dirname, KEPLR_PATH);
     const userDataDir = path.join(__dirname, "./playwright");
     // need to rm userDataDir or else will store extension state
@@ -46,7 +51,7 @@ describe("connect to page", () => {
     await keplrPage.goto(
       "chrome-extension://dmkamcknogkgcdfhhbddcghachkejeap/popup.html#/register"
     );
-    await keplr.importKeplrAccount(keplrPage, KEPLR_OPTIONS);
+    await importKeplrAccount(keplrPage, KEPLR_OPTIONS);
   });
 
   afterAll(async () => {
@@ -56,7 +61,7 @@ describe("connect to page", () => {
   it("connect to keplr, check balance", async () => {
     const dexPage = await browserContext.newPage();
     await dexPage.goto(DEX_TARGET);
-    await keplr.connectKeplrAccount(dexPage, browserContext);
+    await connectKeplrAccount(dexPage, browserContext);
     await dexPage.waitForSelector(".wallet-connect-container", {
       state: "detached",
     });
