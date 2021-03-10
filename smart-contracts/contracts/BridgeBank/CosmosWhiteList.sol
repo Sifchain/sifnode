@@ -33,22 +33,6 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
     }
 
     /*
-     * @dev: Set the token address in whitelist
-     *
-     * @param _token: ERC 20's address
-     * @param _inList: set the _token in list or not
-     * @return: new value of if _token in whitelist
-     */
-    function setTokenInCosmosWhiteList(address _token, bool _inList)
-        internal virtual
-        returns (bool)
-    {
-        _cosmosTokenWhiteList[_token] = _inList;
-        emit LogWhiteListUpdate(_token, _inList);
-        return _inList;
-    }
-
-    /*
      * @dev: Get if the token in whitelist
      *
      * @param _token: ERC 20's address

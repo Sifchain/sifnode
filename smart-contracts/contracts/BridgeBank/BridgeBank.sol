@@ -2,7 +2,6 @@ pragma solidity 0.6.9;
 
 import "./CosmosBank.sol";
 import "./EthereumBank.sol";
-import "./EthereumWhitelist.sol";
 import "./CosmosWhiteList.sol";
 import "../Oracle.sol";
 import "../CosmosBridge.sol";
@@ -22,7 +21,6 @@ import "./Pausable.sol";
 contract BridgeBank is BankStorage,
     CosmosBank,
     EthereumBank,
-    EthereumWhiteList,
     CosmosWhiteList,
     Pausable {
 
@@ -41,7 +39,6 @@ contract BridgeBank is BankStorage,
     ) public {
         require(!_initialized, "Init");
 
-        EthereumWhiteList._initialize();
         CosmosWhiteList._cosmosWhitelistInitialize();
         Pausable._pausableInitialize(_pauser);
 
@@ -87,8 +84,19 @@ contract BridgeBank is BankStorage,
         _;
     }
 
-    function setTokenInCosmosWhiteList(address _token, bool _inList) internal override(CosmosBank, CosmosWhiteList) returns (bool) {
-        CosmosWhiteList.setTokenInCosmosWhiteList(_token, _inList);
+    /*
+     * @dev: Set the token address in whitelist
+     *
+     * @param _token: ERC 20's address
+     * @param _inList: set the _token in list or not
+     * @return: new value of if _token in whitelist
+     */
+    function setTokenInCosmosWhiteList(address _token, bool _inList)
+        internal returns (bool)
+    {
+        _cosmosTokenWhiteList[_token] = _inList;
+        emit LogWhiteListUpdate(_token, _inList);
+        return _inList;
     }
 
     function changeOwner(address _newOwner) public onlyOwner {
@@ -122,7 +130,7 @@ contract BridgeBank is BankStorage,
      * @return: The new BridgeToken contract's address
      */
     function createNewBridgeToken(string memory _symbol)
-        public
+        external
         onlyCosmosBridge
         returns (address)
     {
@@ -139,18 +147,17 @@ contract BridgeBank is BankStorage,
      * @return: The new BridgeToken contract's address
      */
     function addExistingBridgeToken(
-        address _contractAddress
-    ) public onlyOwner returns (address) {
-        setTokenInCosmosWhiteList(_contractAddress, true);
-
-        return useExistingBridgeToken(_contractAddress);
+        address _contractAddress    
+    ) external onlyOwner returns (bool) {
+        return setTokenInCosmosWhiteList(_contractAddress, true);
     }
 
     function handleUnpeg(
         address _ethereumReceiver,
         address _tokenAddress,
         uint256 _amount   
-    ) public onlyCosmosBridge whenNotPaused {
+    ) external onlyCosmosBridge whenNotPaused {
+        // if this is a bridge controlled token, then we need to mint
         if (getCosmosTokenInWhiteList(_tokenAddress)) {
             return mintNewBridgeTokens(
                 _ethereumReceiver,
@@ -158,6 +165,7 @@ contract BridgeBank is BankStorage,
                 _amount
             );
         } else {
+            // if this is an external token, we unlock
             return unlock(_ethereumReceiver, _tokenAddress, _amount);
         }
     }
@@ -171,10 +179,10 @@ contract BridgeBank is BankStorage,
      * @param _amount: value of deposit
      */
     function burn(
-        bytes memory _recipient,
+        bytes calldata _recipient,
         address _token,
         uint256 _amount
-    ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) whenNotPaused {
+    ) external validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) whenNotPaused {
         // burn the tokens
         BridgeToken(_token).burnFrom(msg.sender, _amount);
         // emit event
@@ -189,10 +197,10 @@ contract BridgeBank is BankStorage,
      * @param _amount: value of deposit
      */
     function lock(
-        bytes memory _recipient,
+        bytes calldata _recipient,
         address _token,
         uint256 _amount
-    ) public validSifAddress(_recipient) whenNotPaused {
+    ) external validSifAddress(_recipient) whenNotPaused {
         IERC20 tokenToTransfer = IERC20(_token);
         // lock tokens
         tokenToTransfer.safeTransferFrom(

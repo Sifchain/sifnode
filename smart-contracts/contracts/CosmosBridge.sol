@@ -33,7 +33,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     /*
      * @dev: Modifier to restrict access to current ValSet validators
      */
-    modifier onlyValidator() {
+    modifier onlyValidator {
         require(
             isActiveValidator(msg.sender),
             "Must be an active validator"
@@ -55,9 +55,9 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     function initialize(
         address _operator,
         uint256 _consensusThreshold,
-        address[] memory _initValidators,
-        uint256[] memory _initPowers
-    ) public {
+        address[] calldata _initValidators,
+        uint256[] calldata _initPowers
+    ) external {
         require(!_initialized, "Initialized");
 
         COSMOS_NATIVE_ASSET_PREFIX = "e";
@@ -72,7 +72,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
-    function changeOperator(address _newOperator) public onlyOperator {
+    function changeOperator(address _newOperator) external onlyOperator {
         require(_newOperator != address(0), "invalid address");
         operator = _newOperator;
     }
@@ -80,7 +80,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     /*
      * @dev: setBridgeBank
      */
-    function setBridgeBank(address payable _bridgeBank) public onlyOperator {
+    function setBridgeBank(address payable _bridgeBank) external onlyOperator {
         require(
             !hasBridgeBank,
             "The Bridge Bank cannot be updated once it has been set"
@@ -127,7 +127,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         address _ethereumReceiver,
         address _tokenAddress,
         uint256 _amount
-    ) public onlyValidator validClaimType(_claimType) {
+    ) external onlyValidator validClaimType(_claimType) {
 
         uint256 _prophecyID = getProphecyID(
             _claimType, 
