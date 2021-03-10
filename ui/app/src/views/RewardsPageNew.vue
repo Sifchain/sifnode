@@ -17,6 +17,7 @@ export default defineComponent({
 <template>
   <Layout :header="true" title="Rewards" backLink="/peg">
     <div class="info mb-8" style="line-height: 1.4">
+      <h3 class="mb-2">Your Rewards</h3>
       <p class="text--small mb-2">
         Earn rewards by participating in of our rewards-earning programs. Please
         see additional information of our current rewards programs and how to
