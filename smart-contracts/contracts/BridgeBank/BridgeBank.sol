@@ -2,6 +2,7 @@ pragma solidity 0.6.9;
 
 import "./CosmosBank.sol";
 import "./EthereumBank.sol";
+import "./EthereumWhiteList.sol";
 import "./CosmosWhiteList.sol";
 import "../Oracle.sol";
 import "../CosmosBridge.sol";
@@ -21,6 +22,7 @@ import "./Pausable.sol";
 contract BridgeBank is BankStorage,
     CosmosBank,
     EthereumBank,
+    EthereumWhiteList,
     CosmosWhiteList,
     Pausable {
 
