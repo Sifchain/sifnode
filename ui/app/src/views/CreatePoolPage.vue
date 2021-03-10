@@ -364,7 +364,7 @@ export default defineComponent({
           <span>Est. prices after pooling & pool share</span>
           <Tooltip>
             <template #message>
-              This is an asymmetric liquidity add that has an estimated large impact on this pool. Please be aware of how this works by reading our documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool#asymmetric-liquidity-pool" target="_blank">here</a>.
+              This is an asymmetric liquidity add that has an estimated large impact on this pool, and therefore a significant slip adjustment. Please be aware of how this works by reading our documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool#asymmetric-liquidity-pool" target="_blank">here</a>.
             </template>
             <Icon icon="exclaimation" />
           </Tooltip>
