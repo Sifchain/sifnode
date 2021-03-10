@@ -1,0 +1,20 @@
+on:
+  push
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest # or macos-latest, windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+
+      - uses: microsoft/playwright-github-action@v1
+
+      - name: Build App
+        run: |
+          cd ui/e2e && yarn install --frozen-lockfile && yarn build
+      - name: Run Tests
+        run: |
+          xvfb-run --auto-servernum -- yarn test  
