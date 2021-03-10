@@ -248,7 +248,7 @@ func NewInitApp(
 	app.UpgradeKeeper.SetUpgradeHandler("changePoolFormula", func(ctx sdk.Context, plan upgrade.Plan) {
 		ctx.Logger().Info("Starting to execute upgrade plan for pool re-balance")
 
-		ExportAppState("changePoolFormula", app, ctx)
+		ExportAppState("changePoolFormula-upgrade-pre", app, ctx)
 
 		allPools := app.clpKeeper.GetPools(ctx)
 		lps := clp.LiquidityProviders{}
@@ -301,6 +301,8 @@ func NewInitApp(
 				app.clpKeeper.SetLiquidityProvider(ctx, l)
 			}
 		}
+
+		ExportAppState("changePoolFormula-upgrade-post", app, ctx)
 	})
 
 	govRouter := gov.NewRouter()
