@@ -11,11 +11,9 @@ coverage:
   status:
     # Learn more at https://docs.codecov.io/docs/commit-status
     project:
-      default:
-        threshold: 1% # allow this much decrease on project
-        flag_coverage_not_uploaded_behavior: exclude
+      default: false
       server:
-        target: 70%
+        target: 50%
         flags: server
         paths:
           - "x/"
