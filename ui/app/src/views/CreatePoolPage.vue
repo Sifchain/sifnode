@@ -78,9 +78,7 @@ export default defineComponent({
       toAmount.value = "0.0";
     }
 
-    const { connected, connectedText } = useWalletButton({
-      addrLen: 8,
-    });
+    const { connected } = useWalletButton();
 
     const { balances } = useWallet(store);
     const liquidityProvider = computed(() => {
@@ -257,9 +255,7 @@ export default defineComponent({
         toAmount.value = accountBalance.toFixed();
       },
       shareOfPoolPercent,
-      connectedText,
       formatNumber,
-
       poolUnits: totalLiquidityProviderUnits,
     };
   },
@@ -306,19 +302,41 @@ export default defineComponent({
       <template #header>Pool Token Prices</template>
       <template #body>
         <FatInfoTableCell>
-          <span class="number">{{ formatNumber(aPerBRatioMessage === 'N/A' ? '0' : aPerBRatioMessage) }}</span
+          <span class="number">{{
+            formatNumber(aPerBRatioMessage === "N/A" ? "0" : aPerBRatioMessage)
+          }}</span
           ><br />
           <span
-            >{{ fromSymbol.toLowerCase().includes("rowan") ? fromSymbol.toUpperCase() : "c" + fromSymbol.slice(1).toUpperCase() }} per
-            {{ toSymbol.toLowerCase().includes("rowan") ? toSymbol.toUpperCase() : "c" + toSymbol.slice(1).toUpperCase() }}</span
+            >{{
+              fromSymbol.toLowerCase().includes("rowan")
+                ? fromSymbol.toUpperCase()
+                : "c" + fromSymbol.slice(1).toUpperCase()
+            }}
+            per
+            {{
+              toSymbol.toLowerCase().includes("rowan")
+                ? toSymbol.toUpperCase()
+                : "c" + toSymbol.slice(1).toUpperCase()
+            }}</span
           >
         </FatInfoTableCell>
         <FatInfoTableCell>
-          <span class="number">{{ formatNumber(bPerARatioMessage === 'N/A' ? '0' : bPerARatioMessage) }}</span
+          <span class="number">{{
+            formatNumber(bPerARatioMessage === "N/A" ? "0" : bPerARatioMessage)
+          }}</span
           ><br />
           <span
-            >{{ toSymbol.toLowerCase().includes("rowan") ? toSymbol.toUpperCase() : "c" + toSymbol.slice(1).toUpperCase() }} per
-            {{ fromSymbol.toLowerCase().includes("rowan") ? fromSymbol.toUpperCase() : "c" + fromSymbol.slice(1).toUpperCase() }}</span
+            >{{
+              toSymbol.toLowerCase().includes("rowan")
+                ? toSymbol.toUpperCase()
+                : "c" + toSymbol.slice(1).toUpperCase()
+            }}
+            per
+            {{
+              fromSymbol.toLowerCase().includes("rowan")
+                ? fromSymbol.toUpperCase()
+                : "c" + fromSymbol.slice(1).toUpperCase()
+            }}</span
           > </FatInfoTableCell
         ><FatInfoTableCell />
       </template>
@@ -336,7 +354,11 @@ export default defineComponent({
       <template #body>
         <FatInfoTableCell>
           <span class="number">{{
-            formatNumber(aPerBRatioProjectedMessage === 'N/A' ? '0' : aPerBRatioProjectedMessage)
+            formatNumber(
+              aPerBRatioProjectedMessage === "N/A"
+                ? "0"
+                : aPerBRatioProjectedMessage
+            )
           }}</span
           ><br />
           <span
@@ -346,7 +368,11 @@ export default defineComponent({
         </FatInfoTableCell>
         <FatInfoTableCell>
           <span class="number">{{
-            formatNumber(bPerARatioProjectedMessage === 'N/A' ? '0' : bPerARatioProjectedMessage)
+            formatNumber(
+              bPerARatioProjectedMessage === "N/A"
+                ? "0"
+                : bPerARatioProjectedMessage
+            )
           }}</span
           ><br />
           <span
