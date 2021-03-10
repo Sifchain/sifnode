@@ -1,20 +1,23 @@
-pragma solidity 0.5.16;
+pragma solidity 0.6.9;
 
-import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
-import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
-import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
-
+import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 
 /**
  * @title BridgeToken
  * @dev Mintable, ERC20Burnable, ERC20 compatible BankToken for use by BridgeBank
  **/
 
-contract BridgeToken is ERC20Mintable, ERC20Burnable, ERC20Detailed {
+contract BridgeToken is ERC20Burnable {
     constructor(string memory _symbol)
         public
-        ERC20Detailed(_symbol, _symbol, 18)
+        ERC20(_symbol, _symbol)
     {
         // Intentionally left blank
+    }
+
+    // permission this later
+    function mint(address user, uint256 amount) public returns (bool) {
+        _mint(user, amount);
+        return true;
     }
 }

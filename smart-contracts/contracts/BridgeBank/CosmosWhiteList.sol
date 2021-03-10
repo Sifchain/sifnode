@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.6.9;
 
 import "./CosmosWhiteListStorage.sol";
 
@@ -15,7 +15,7 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
      */
     event LogWhiteListUpdate(address _token, bool _value);
 
-    function initialize() public {
+    function _cosmosWhitelistInitialize() internal {
         require(!_initialized, "Initialized");
         _cosmosTokenWhiteList[address(0)] = true;
         _initialized = true;
@@ -40,7 +40,7 @@ contract CosmosWhiteList is CosmosWhiteListStorage {
      * @return: new value of if _token in whitelist
      */
     function setTokenInCosmosWhiteList(address _token, bool _inList)
-        internal
+        internal virtual
         returns (bool)
     {
         _cosmosTokenWhiteList[_token] = _inList;

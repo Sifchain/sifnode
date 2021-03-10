@@ -1,6 +1,6 @@
-pragma solidity 0.5.16;
+pragma solidity 0.6.9;
 
-import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./ValsetStorage.sol";
 
 contract Valset is ValsetStorage {

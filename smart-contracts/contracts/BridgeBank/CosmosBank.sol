@@ -1,9 +1,9 @@
-pragma solidity 0.5.16;
+pragma solidity 0.6.9;
 
-import "../../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./BridgeToken.sol";
 import "./CosmosBankStorage.sol";
-import "./ToLower.sol";
+import "./CosmosBankStorage.sol";
 
 /**
  * @title CosmosBank
@@ -11,7 +11,7 @@ import "./ToLower.sol";
  *      which represent assets based on the Cosmos blockchain.
  **/
 
-contract CosmosBank is CosmosBankStorage, ToLower {
+contract CosmosBank is CosmosBankStorage {
     using SafeMath for uint256;
 
     /*
@@ -21,33 +21,9 @@ contract CosmosBank is CosmosBankStorage, ToLower {
 
     event LogBridgeTokenMint(
         address _token,
-        string _symbol,
         uint256 _amount,
         address _beneficiary
     );
-
-    /*
-     * @dev: Get a token symbol's corresponding bridge token address.
-     *
-     * @param _symbol: The token's symbol/denom without 'e' prefix.
-     * @return: Address associated with the given symbol. Returns address(0) if none is found.
-     */
-    function getBridgeToken(string memory _symbol)
-        public
-        view
-        returns (address)
-    {
-        return (controlledBridgeTokens[_symbol]);
-    }
-
-    function safeLowerToUpperTokens(string memory _symbol)
-        public
-        view
-        returns (string memory)
-    {
-        string memory retrievedSymbol = lowerToUpperTokens[_symbol];
-        return keccak256(abi.encodePacked(retrievedSymbol)) == keccak256("") ? _symbol : retrievedSymbol;
-    }
 
     /*
      * @dev: Deploys a new BridgeToken contract
@@ -58,15 +34,12 @@ contract CosmosBank is CosmosBankStorage, ToLower {
         internal
         returns (address)
     {
-        bridgeTokenCount = bridgeTokenCount.add(1);
-
         // Deploy new bridge token contract
         BridgeToken newBridgeToken = (new BridgeToken)(_symbol);
 
         // Set address in tokens mapping
         address newBridgeTokenAddress = address(newBridgeToken);
-        controlledBridgeTokens[_symbol] = newBridgeTokenAddress;
-        lowerToUpperTokens[toLower(_symbol)] = _symbol;
+        setTokenInCosmosWhiteList(newBridgeTokenAddress, true);
 
         emit LogNewBridgeToken(newBridgeTokenAddress, _symbol);
         return newBridgeTokenAddress;
@@ -83,13 +56,10 @@ contract CosmosBank is CosmosBankStorage, ToLower {
         internal
         returns (address)
     {
-        bridgeTokenCount = bridgeTokenCount.add(1);
-
         string memory _symbol = BridgeToken(_contractAddress).symbol();
         // Set address in tokens mapping
         address newBridgeTokenAddress = _contractAddress;
-        controlledBridgeTokens[_symbol] = newBridgeTokenAddress;
-        lowerToUpperTokens[toLower(_symbol)] = _symbol;
+        setTokenInCosmosWhiteList(newBridgeTokenAddress, true);
 
         emit LogNewBridgeToken(newBridgeTokenAddress, _symbol);
         return newBridgeTokenAddress;
@@ -105,16 +75,10 @@ contract CosmosBank is CosmosBankStorage, ToLower {
      * @param _amount: number of comsos tokens to be minted
      */
     function mintNewBridgeTokens(
-        address payable _intendedRecipient,
+        address _intendedRecipient,
         address _bridgeTokenAddress,
-        string memory _symbol,
         uint256 _amount
     ) internal {
-        require(
-            controlledBridgeTokens[_symbol] == _bridgeTokenAddress,
-            "Token must be a controlled bridge token"
-        );
-
         // Mint bridge tokens
         require(
             BridgeToken(_bridgeTokenAddress).mint(_intendedRecipient, _amount),
@@ -123,9 +87,10 @@ contract CosmosBank is CosmosBankStorage, ToLower {
 
         emit LogBridgeTokenMint(
             _bridgeTokenAddress,
-            _symbol,
             _amount,
             _intendedRecipient
         );
     }
+
+    function setTokenInCosmosWhiteList(address _token, bool _inList) internal virtual returns (bool) {}
 }

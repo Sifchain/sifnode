@@ -1,15 +1,10 @@
-pragma solidity 0.5.16;
+pragma solidity 0.6.9;
 
 contract OracleStorage {
     /*
      * @dev: Public variable declarations
      */
     address public cosmosBridge;
-
-    /**
-    * @notice Tracks the number of OracleClaims made on an individual BridgeClaim
-    */
-    address public operator;
 
     /**
     * @notice Tracks the number of OracleClaims made on an individual BridgeClaim

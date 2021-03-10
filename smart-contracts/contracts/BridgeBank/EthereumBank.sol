@@ -1,8 +1,9 @@
-pragma solidity 0.5.16;
+pragma solidity 0.6.9;
 
 import "./BridgeToken.sol";
 import "./EthereumBankStorage.sol";
-import "../../node_modules/openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+
 /*
  *  @title: EthereumBank
  *  @dev: Ethereum bank which locks Ethereum/ERC20 token deposits, and unlocks
@@ -19,7 +20,6 @@ contract EthereumBank is EthereumBankStorage {
         address _from,
         bytes _to,
         address _token,
-        string _symbol,
         uint256 _value,
         uint256 _nonce
     );
@@ -28,7 +28,6 @@ contract EthereumBank is EthereumBankStorage {
         address _from,
         bytes _to,
         address _token,
-        string _symbol,
         uint256 _value,
         uint256 _nonce
     );
@@ -36,35 +35,8 @@ contract EthereumBank is EthereumBankStorage {
     event LogUnlock(
         address _to,
         address _token,
-        string _symbol,
         uint256 _value
     );
-
-    /*
-     * @dev: Gets the contract address of locked tokens by symbol.
-     *
-     * @param _symbol: The asset's symbol.
-     */
-    function getLockedTokenAddress(string memory _symbol)
-        public
-        view
-        returns (address)
-    {
-        return lockedTokenList[_symbol];
-    }
-
-    /*
-     * @dev: Gets the amount of locked tokens by symbol.
-     *
-     * @param _symbol: The asset's symbol.
-     */
-    function getLockedFunds(string memory _symbol)
-        public
-        view
-        returns (uint256)
-    {
-        return lockedFunds[lockedTokenList[_symbol]];
-    }
 
     /*
      * @dev: Creates a new Ethereum deposit with a unique id.
@@ -78,11 +50,11 @@ contract EthereumBank is EthereumBankStorage {
         address payable _sender,
         bytes memory _recipient,
         address _token,
-        string memory _symbol,
         uint256 _amount
     ) internal {
         lockBurnNonce = lockBurnNonce.add(1);
-        emit LogBurn(_sender, _recipient, _token, _symbol, _amount, lockBurnNonce);
+
+        emit LogBurn(_sender, _recipient, _token, _amount, lockBurnNonce);
     }
 
     /*
@@ -97,16 +69,11 @@ contract EthereumBank is EthereumBankStorage {
         address payable _sender,
         bytes memory _recipient,
         address _token,
-        string memory _symbol,
         uint256 _amount
     ) internal {
         lockBurnNonce = lockBurnNonce.add(1);
 
-        // Increment locked funds by the amount of tokens to be locked
-        lockedTokenList[_symbol] = _token;
-        lockedFunds[_token] = lockedFunds[_token].add(_amount);
-
-        emit LogLock(_sender, _recipient, _token, _symbol, _amount, lockBurnNonce);
+        emit LogLock(_sender, _recipient, _token, _amount, lockBurnNonce);
     }
 
     /*
@@ -119,23 +86,14 @@ contract EthereumBank is EthereumBankStorage {
      * @param _amount: wei amount or ERC20 token count
      */
     function unlockFunds(
-        address payable _recipient,
+        address _recipient,
         address _token,
-        string memory _symbol,
         uint256 _amount
     ) internal {
-        // Decrement locked funds mapping by the amount of tokens to be unlocked
-        lockedFunds[_token] = lockedFunds[_token].sub(_amount);
-
         // Transfer funds to intended recipient
-        if (_token == address(0)) {
-            (bool success,) = _recipient.call.value(_amount)("");
-            require(success, "error sending ether");
-        } else {
-            IERC20 tokenToTransfer = IERC20(_token);
-            tokenToTransfer.safeTransfer(_recipient, _amount);
-        }
+        IERC20 tokenToTransfer = IERC20(_token);
+        tokenToTransfer.safeTransfer(_recipient, _amount);
 
-        emit LogUnlock(_recipient, _token, _symbol, _amount);
+        emit LogUnlock(_recipient, _token, _amount);
     }
 }

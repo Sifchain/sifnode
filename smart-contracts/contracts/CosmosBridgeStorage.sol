@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity 0.6.9;
 
 import "./BridgeBank/CosmosBankStorage.sol";
 import "./BridgeBank/EthereumBankStorage.sol";
@@ -8,11 +8,6 @@ contract CosmosBridgeStorage {
     * @notice gap of storage for future upgrades
     */
     string COSMOS_NATIVE_ASSET_PREFIX;
-
-    /*
-     * @dev: Public variable declarations
-     */
-    address public operator;
     
     /**
     * @notice gap of storage for future upgrades

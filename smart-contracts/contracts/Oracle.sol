@@ -1,6 +1,6 @@
-pragma solidity 0.5.16;
+pragma solidity 0.6.9;
 
-import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./Valset.sol";
 import "./OracleStorage.sol";
 import "./Valset.sol";
@@ -26,13 +26,6 @@ contract Oracle is OracleStorage, Valset {
         address _submitter
     );
 
-    /*
-     * @dev: Modifier to restrict access to the operator.
-     */
-    modifier onlyOperator() {
-        require(msg.sender == operator, "Must be the operator.");
-        _;
-    }
 
     /*
      * @dev: Initialize Function
