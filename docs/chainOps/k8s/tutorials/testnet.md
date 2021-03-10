@@ -1,4 +1,4 @@
-# Connecting to the Merry-go-Round Testnet with Kubernetes (k8s).
+# Connecting to the Sifchain TestNet with Kubernetes (k8s).
 
 ## Demo Videos
 
@@ -104,7 +104,7 @@ where:
 e.g.:
 
 ```
-rake "cluster:sifnode:deploy:peer[my-cluster,merry-go-round,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',f214ec6828b85793289fcb0b025bc260747983f0@100.20.201.226:26656,http://100.20.201.226:26657/genesis]"
+rake "cluster:sifnode:deploy:peer[my-cluster,merry-go-round,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',169d512e28d142962f9e0aa51c1bd1f6b9d0bed8@35.160.89.251:26656,https://rpc-merry-go-round.sifchain.finance/genesis]"
 ```
 
 _Please note: the image tag *must* be `testnet-genesis`._
@@ -169,12 +169,12 @@ where:
 |`<amount>`|The amount to stake, including the denomination (e.g.: 100000000rowan). The precision used is 1e18.|
 |`<gas>`|The gas price (e.g.: 0.5rowan).|
 |`<public_key>`|The public key of your validator (you got this in the previous step).|
-|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://<node IP address>:26657).|
+|`<node_rpc_address>`|The address to broadcast the transaction to (e.g.: tcp://rpc-merry-go-round.sifchain.finance:80).|
 
 e.g.:
 
 ```
-rake "validator:stake[merry-go-round,my-node,10000000rowan,0.5rowan,<public_key>,tcp://100.20.201.226:26657]"
+rake "validator:stake[merry-go-round,my-node,10000000rowan,0.5rowan,<public_key>,tcp://rpc-merry-go-round.sifchain.finance:80]"
 ```
 
 4. It may take several blocks before your node appears as a validator on the network, but you can always check by running:
@@ -186,7 +186,7 @@ sifnodecli q tendermint-validator-set --node <node_rpc_address> --trust-node
 e.g.:
 
 ```
-sifnodecli q tendermint-validator-set --node tcp://100.20.201.226:26657 --trust-node
+sifnodecli q tendermint-validator-set --node tcp://rpc-merry-go-round.sifchain.finance:80 --trust-node
 ```
 
 ## Additional Resources

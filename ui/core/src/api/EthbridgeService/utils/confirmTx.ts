@@ -40,7 +40,9 @@ export function confirmTx({
     if (currentCount !== confirmationCount) {
       onCheckConfirmation && onCheckConfirmation(confirmationCount);
     }
+
     currentCount = confirmationCount;
+
     if (currentCount >= confirmations) {
       onSuccess && onSuccess();
       return;
