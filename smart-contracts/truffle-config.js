@@ -31,7 +31,7 @@ module.exports = {
       provider: function () {
         return new HDWalletProvider(
           process.env.ETHEREUM_PRIVATE_KEY,
-          "https://eth-ropsten.alchemyapi.io/v2/r5vDxb5RNM2NyXGs6A59_sYmH-8C5js6"
+          "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
         );
       },
       network_id: 3,
