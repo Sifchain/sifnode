@@ -366,7 +366,7 @@ export default defineComponent({
             <template #message>
               This is an asymmetric liquidity add that has an estimated large impact on this pool. Please be aware of how this works by reading our documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool#asymmetric-liquidity-pool" target="_blank">here</a>.
             </template>
-            <Icon icon="info-box-black" />
+            <Icon icon="exclaimation" />
           </Tooltip>
         </div>
       </template>
