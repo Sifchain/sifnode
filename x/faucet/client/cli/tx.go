@@ -68,7 +68,7 @@ func GetCmdAddCoins(cdc *codec.Codec) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
-			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc)).WithGas(0)
 			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
 			if cliCtx.ChainID != "sifchain" {
 				amount := args[0]
@@ -85,3 +85,11 @@ func GetCmdAddCoins(cdc *codec.Codec) *cobra.Command {
 	}
 	return cmd
 }
+
+//sif17s95c5jpc6x2l3edwh4dm8yhac68yru7a7kr3x
+//sif1d0q6q6afvzk3whu6cy338yth64vau78r43fsuh
+
+//sif1d0q6q6afvzk3whu6cy338yth64vau78r43fsuh
+//sif1r8x7m7u8ttwn6ue4z2krstrp62qdvcw2myg0xz
+//sif1rlt8svkn4h4vyqmklgzfgcvfeamdce2cwxntsq
+//sif18xt24a5psswl6a838ngtr2x29qp8626rkd32uf

@@ -25,11 +25,8 @@ func (msg MsgRequestCoins) Route() string {
 	return RouterKey
 }
 
-func (msg MsgRequestCoins) Name() string {
-	return "request_coins"
-}
 func (msg MsgRequestCoins) Type() string {
-	return "faucet"
+	return "request_coins"
 }
 
 func (msg MsgRequestCoins) ValidateBasic() error {
@@ -66,11 +63,8 @@ func (msg MsgAddCoins) Route() string {
 	return RouterKey
 }
 
-func (msg MsgAddCoins) Name() string {
-	return "request_coins"
-}
 func (msg MsgAddCoins) Type() string {
-	return "faucet"
+	return "add_coins"
 }
 
 func (msg MsgAddCoins) ValidateBasic() error {

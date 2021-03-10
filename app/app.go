@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/tendermint/tendermint/libs/log"
 	"io/ioutil"
@@ -368,10 +369,25 @@ func NewInitApp(
 	app.SetEndBlocker(app.EndBlocker)
 
 	app.SetAnteHandler(
-		auth.NewAnteHandler(
-			app.AccountKeeper,
-			app.SupplyKeeper,
-			auth.DefaultSigVerificationGasConsumer,
+		//auth.NewAnteHandler(
+		//	app.AccountKeeper,
+		//	app.SupplyKeeper,
+		//	auth.DefaultSigVerificationGasConsumer,
+		//),
+		sdk.ChainAnteDecorators(
+			faucet.NewRemoveFacuetFeeDecorator(),
+			ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
+			ante.NewMempoolFeeDecorator(),
+			ante.NewValidateBasicDecorator(),
+			ante.NewValidateMemoDecorator(app.AccountKeeper),
+			ante.NewConsumeGasForTxSizeDecorator(app.AccountKeeper),
+			ante.NewSetPubKeyDecorator(app.AccountKeeper), // SetPubKeyDecorator must be called before all signature verification decorators
+			ante.NewValidateSigCountDecorator(app.AccountKeeper),
+			ante.NewDeductFeeDecorator(app.AccountKeeper, app.SupplyKeeper),
+			ante.NewSigGasConsumeDecorator(app.AccountKeeper, auth.DefaultSigVerificationGasConsumer),
+			ante.NewSigVerificationDecorator(app.AccountKeeper),
+			ante.NewIncrementSequenceDecorator(app.AccountKeeper),
+			// innermost AnteDecorator
 		),
 	)
 
@@ -449,27 +465,37 @@ func GetMaccPerms() map[string][]string {
 }
 
 func ExportAppState(name string, app *SifchainApp, ctx sdk.Context) {
-		appState, vallist, err := app.ExportAppStateAndValidators(true, []string{})
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to export app state: %s", err))
-			return
-		}
-		appStateJSON, err := app.cdc.MarshalJSON(appState)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
-			return
-		}
-		valList, err := json.MarshalIndent(vallist, "", " ")
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
-		}
+	appState, vallist, err := app.ExportAppStateAndValidators(true, []string{})
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to export app state: %s", err))
+		return
+	}
+	appStateJSON, err := app.cdc.MarshalJSON(appState)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
+		return
+	}
+	valList, err := json.MarshalIndent(vallist, "", " ")
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
+	}
 
-		err = ioutil.WriteFile(fmt.Sprintf("%v-state.json", name), appStateJSON, 0600)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %s", err.Error()))
-		}
-		err = ioutil.WriteFile(fmt.Sprintf("%v-validator.json", name), valList, 0600)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %s", err.Error()))
-		}
+	err = ioutil.WriteFile(fmt.Sprintf("%v-state.json", name), appStateJSON, 0600)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %s", err.Error()))
+	}
+	err = ioutil.WriteFile(fmt.Sprintf("%v-validator.json", name), valList, 0600)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %s", err.Error()))
+	}
 }
+
+//rake keys:generate:mnemonic
+//account already picnic earn curious gift dance wood assist arch sugar nurse clarify right tuition winter pilot escape final van educate gain insane they
+//{
+//"name": "my-node",
+//"type": "local",
+//"address": "sif12dzcwupljmzhhn88q000a9dx59e83kclm5n6rt",
+//"pubkey": "sifpub1addwnpepqftut3cfz5hr9lysfuv79jrwaftr6ljsnp6gv3z6zuan64klz8f3khkj9f7"
+//}
+//sifnodecli q auth account sif12dzcwupljmzhhn88q000a9dx59e83kclm5n6rt --node tcp://35.160.89.251:26657 --chain-id merry-go-round
