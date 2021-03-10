@@ -34,8 +34,6 @@ export function usePoolCalculator(input: {
   const tokenAField = useField(input.tokenAAmount, input.tokenASymbol);
   const tokenBField = useField(input.tokenBAmount, input.tokenBSymbol);
   const balanceMap = useBalances(input.balances);
-
-
   const preExistingPool = computed(() => {
     if (!tokenAField.asset.value || !tokenBField.asset.value) {
       return null;
@@ -48,6 +46,20 @@ export function usePoolCalculator(input: {
     );
 
     return pool?.value || null;
+  });
+
+  const assetA = computed(() => {
+    if (!input.tokenASymbol.value) {
+      return null;
+    }
+    return Asset.get(input.tokenASymbol.value);
+  });
+
+  const assetB = computed(() => {
+    if (!input.tokenBSymbol.value) {
+      return null;
+    }
+    return Asset.get(input.tokenBSymbol.value);
   });
 
   const tokenABalance = computed(() => {
@@ -256,13 +268,16 @@ export function usePoolCalculator(input: {
     // if in guided mode
     // calculate the price ratio of A / B
     if (input.asyncPooling.value && input.lastFocusedTokenField.value !== null) {
-      if (bPerARatio === null || aPerBRatio === null) {
+      if (bPerARatio === null || aPerBRatio === null || !assetA.value || !assetB.value) {
         return null;
       }
+      const assetAmountA = AssetAmount(assetA.value, tokenAField.fieldAmount?.value || 0);
+      const assetAmountB = AssetAmount(assetB.value, tokenBField.fieldAmount?.value || 0);
       if (input.lastFocusedTokenField.value === 'A') {
-        input.tokenBAmount.value = (Number(input.tokenAAmount.value) * Number(bPerARatio.value.toFixed(8))).toString();
+
+        input.tokenBAmount.value = assetAmountA.multiply(bPerARatio.value || '0').toFixed(5);
       } else if (input.lastFocusedTokenField.value === 'B') {
-        input.tokenAAmount.value = (Number(input.tokenBAmount.value) * Number(aPerBRatio.value.toFixed(8))).toString();
+        input.tokenAAmount.value = assetAmountB.multiply(aPerBRatio.value || '0').toFixed(5);
       }
     }
 
