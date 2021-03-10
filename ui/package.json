@@ -28,10 +28,7 @@
     "core:test:all": "yarn core:compile && concurrently -r -k -s first \"yarn chain:start:all\" \"sleep 5 && yarn chain:migrate && yarn core:test:with-peggy\"",
     "stack": "./scripts/run-stack.sh",
     "build": "yarn chain:compile:peggy && yarn core:build && yarn app:build",
-    "test": "yarn core:test:all",
-    "pw:stack": "./scripts/run-playwright-stack.sh",
-    "pw:run": "cd e2e && jest -- \"prod\"",
-    "pw:test:stack": "concurrently -r -k -s first \"./scripts/run-playwright-stack.sh\" \"wait-on http://localhost:5000 && yarn playwright run\""
+    "test": "yarn core:test:all"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^3.2.0",
