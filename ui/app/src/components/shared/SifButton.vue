@@ -207,6 +207,10 @@ export default defineComponent({
         color: initial
       }
     }
+    &:disabled {
+      background: $g_gold !important;
+      color: $c_white !important;
+    }
   }
   
   &.ghost {
