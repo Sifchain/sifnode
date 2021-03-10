@@ -17,4 +17,4 @@ jobs:
           cd ui/e2e && yarn install --frozen-lockfile
       - name: Run Tests
         run: |
-          xvfb-run --auto-servernum -- yarn test  
+          cd ui/e2e && xvfb-run --auto-servernum -- yarn test  
