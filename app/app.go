@@ -248,7 +248,7 @@ func NewInitApp(
 	app.UpgradeKeeper.SetUpgradeHandler("changePoolFormula", func(ctx sdk.Context, plan upgrade.Plan) {
 		ctx.Logger().Info("Starting to execute upgrade plan for pool re-balance")
 
-		ExportAppState("changePoolFormula", app, ctx)
+		ExportAppState("changePoolFormula-upgrade-pre", app, ctx)
 
 		allPools := app.clpKeeper.GetPools(ctx)
 		lps := clp.LiquidityProviders{}
@@ -301,6 +301,8 @@ func NewInitApp(
 				app.clpKeeper.SetLiquidityProvider(ctx, l)
 			}
 		}
+
+		ExportAppState("changePoolFormula-upgrade-post", app, ctx)
 	})
 
 	govRouter := gov.NewRouter()
@@ -449,27 +451,27 @@ func GetMaccPerms() map[string][]string {
 }
 
 func ExportAppState(name string, app *SifchainApp, ctx sdk.Context) {
-		appState, vallist, err := app.ExportAppStateAndValidators(true, []string{})
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to export app state: %s", err))
-			return
-		}
-		appStateJSON, err := app.cdc.MarshalJSON(appState)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
-			return
-		}
-		valList, err := json.MarshalIndent(vallist, "", " ")
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
-		}
+	appState, vallist, err := app.ExportAppStateAndValidators(true, []string{})
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to export app state: %s", err))
+		return
+	}
+	appStateJSON, err := app.cdc.MarshalJSON(appState)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
+		return
+	}
+	valList, err := json.MarshalIndent(vallist, "", " ")
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
+	}
 
-		err = ioutil.WriteFile(fmt.Sprintf("%v-state.json", name), appStateJSON, 0600)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %s", err.Error()))
-		}
-		err = ioutil.WriteFile(fmt.Sprintf("%v-validator.json", name), valList, 0600)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %s", err.Error()))
-		}
+	err = ioutil.WriteFile(fmt.Sprintf("%v/%v-state.json", DefaultNodeHome, name), appStateJSON, 0600)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %s", err.Error()))
+	}
+	err = ioutil.WriteFile(fmt.Sprintf("%v/%v-validator.json", DefaultNodeHome, name), valList, 0600)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %s", err.Error()))
+	}
 }

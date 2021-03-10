@@ -43,7 +43,7 @@ export default defineComponent({
     );
     const poolAPY = formatNumberString(
       (
-        parseFloat(props.pool?.volume) / parseFloat(props.pool?.poolDepth)
+        (parseFloat(props.pool?.volume) / parseFloat(props.pool?.poolDepth)) * 100
       ).toFixed(1)
     );
 
