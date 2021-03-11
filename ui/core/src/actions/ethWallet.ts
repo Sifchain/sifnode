@@ -17,7 +17,17 @@ export default ({
       await api.EthereumService.disconnect();
     },
     async connectToWallet() {
-      await api.EthereumService.connect();
+      try {
+        await api.EthereumService.connect();
+      } catch (err) {
+        api.EventBusService.dispatch({
+          type: "WalletConnectionErrorEvent",
+          payload: {
+            walletType: "eth",
+            message: "Metamask not found.",
+          },
+        });
+      }
     },
     async transferEthWallet(amount: number, recipient: string, asset: Asset) {
       const hash = await api.EthereumService.transfer({

@@ -77,6 +77,18 @@ function parseEventToNotifications(event: AppEvent): Notification | null {
       },
     };
   }
+
+  if (event.type === "WalletConnectionErrorEvent") {
+    return {
+      type: "error",
+      message: event.payload.message,
+      detail: {
+        type: "info",
+        message: "Check if extension enabled for this URL.",
+      },
+    };
+  }
+
   console.error("Have not captured event", JSON.stringify(event));
   return null;
 }
