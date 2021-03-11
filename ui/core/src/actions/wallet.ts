@@ -7,10 +7,7 @@ import { effect } from "@vue/reactivity";
 export default ({
   api,
   store,
-}: ActionContext<
-  "SifService" | "ClpService" | "NotificationService",
-  "wallet"
->) => {
+}: ActionContext<"SifService" | "ClpService" | "EventsService", "wallet">) => {
   const state = api.SifService.getState();
 
   const actions = {
@@ -40,7 +37,7 @@ export default ({
         store.wallet.sif.isConnected = true;
       } catch (error) {
         // to the ui??
-        api.NotificationService.notify({ type: "ErrorEvent", payload: error });
+        api.EventsService.notify({ type: "ErrorEvent", payload: error });
       }
     },
   };
@@ -49,7 +46,7 @@ export default ({
     if (store.wallet.sif.isConnected !== state.connected) {
       store.wallet.sif.isConnected = state.connected;
       if (store.wallet.sif.isConnected) {
-        api.NotificationService.notify({
+        api.EventsService.notify({
           type: "WalletConnectedEvent",
           payload: {
             walletType: "sif",

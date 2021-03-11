@@ -6,10 +6,7 @@ import B from "../entities/utils/B";
 export default ({
   api,
   store,
-}: ActionContext<
-  "EthereumService" | "NotificationService",
-  "wallet" | "asset"
->) => {
+}: ActionContext<"EthereumService" | "EventsService", "wallet" | "asset">) => {
   const etheriumState = api.EthereumService.getState();
 
   const actions = {
@@ -36,7 +33,7 @@ export default ({
         etheriumState.connected && !!etheriumState.address;
 
       if (store.wallet.eth.isConnected) {
-        api.NotificationService.notify({
+        api.EventsService.notify({
           type: "WalletConnectedEvent",
           payload: {
             walletType: "eth",

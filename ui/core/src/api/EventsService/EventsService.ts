@@ -72,9 +72,9 @@ export type EventHandler = (event: AppEvent) => void;
 export type AppEventType = AppEvent["type"];
 export type AppEventTypes = AppEventType[];
 
-export type NotificationServiceContext = {};
+export type EventsServiceContext = {};
 
-export default function createNotificationsService({}: NotificationServiceContext) {
+export default function createEventsService({}: EventsServiceContext) {
   const emitter = new EventEmitter2();
 
   return {
