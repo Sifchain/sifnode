@@ -375,7 +375,7 @@ func NewInitApp(
 		//	auth.DefaultSigVerificationGasConsumer,
 		//),
 		sdk.ChainAnteDecorators(
-			faucet.NewRemoveFacuetFeeDecorator(),
+			faucet.NewRemoveFaucetFeeDecorator(),
 			ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 			ante.NewMempoolFeeDecorator(),
 			ante.NewValidateBasicDecorator(),
