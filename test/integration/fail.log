@@ -1,0 +1,355 @@
+DEBUG    root:test_utilities.py:115 execute shell command:
+yarn -s --cwd /Users/kevindegraaf/sifnode/smart-contracts integrationtest:ganacheAccounts
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+Using network 'ganache'.
+
+{"accounts":["0x627306090abaB3A6e1400e9345bC60c78a8BEf57","0xf17f52151EbEF6C7334FAD080c5704D77216b732","0xC5fdf4076b8F3A5357c5E395ab970B5B54098Fef","0x821aEa9a577a9b44299B9c15c88cf3087F3b5544","0x0d1d4e623D10F9FBA5Db95830F7d3839406C6AF2","0x2932b7A2355D6fecc4b5c0B6BD44cC31df247a2e","0x2191eF87E392377ec08E7c08Eb105Ef5448eCED5","0x0F4F2Ac550A1b4e2280d04c21cEa7EBD822934b5","0x6330A553Fc93768F612722BB8c2eC78aC90B3bbc","0x5AEDA56215b167893e80B4fE645BA6d5Bab767DE"]}
+
+DEBUG    root:conftest.py:229 Using source_ethereum_address 0x627306090abab3a6e1400e9345bc60c78a8bef57 from ganache_owner_account.  (Set ETHEREUM_ADDRESS env var to set it manually)
+DEBUG    root:test_utilities.py:115 execute shell command:
+yarn --cwd /Users/kevindegraaf/sifnode/smart-contracts advance 0
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+yarn run v1.22.10
+$ npx truffle exec scripts/advanceBlock.js 0
+Using network 'ganache'.
+
+Expected usage: 
+ truffle exec scripts/advanceBlock.js 50
+Advanced 0 blocks
+current block number is 23
+{"nBlocks":"0","currentBlockNumber":23}
+Done in 4.30s.
+
+DEBUG    root:test_utilities.py:121 
+execute shell command stderr:
+web3-shh package will be deprecated in version 1.3.5 and will no longer be supported.
+web3-bzz package will be deprecated in version 1.3.5 and will no longer be supported.
+INFO     root:test_ebrelayer_replay.py:43 stopping ebrelayer
+DEBUG    root:test_utilities.py:115 execute shell command:
+pkill -9 ebrelayer || true
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+
+
+DEBUG    root:test_utilities.py:115 execute shell command:
+uuidgen
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+9C340742-BD72-455B-BCFB-BD0217BD2F7C
+
+DEBUG    root:test_utilities.py:115 execute shell command:
+ sifnodecli keys add 9C340742-BD72-455B-BCFB-BD0217BD2F7C --home /Users/kevindegraaf/.sifnodecli --keyring-backend test -o json 2>&1
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+{"name":"9C340742-BD72-455B-BCFB-BD0217BD2F7C","type":"local","address":"sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27","pubkey":"sifpub1addwnpepqgwalllfg2gkfzh5vkp56nagcaltncw8lhcxut7y3zgtnfsccgjzx422ckw","mnemonic":"present payment flock report soccer creek pond lock mansion program expose funny tumble drive jeans become business sleep expand impose engine swift bottom poem"}
+
+INFO     root:test_ebrelayer_replay.py:46 (no transactions should happen without a relayer)
+INFO     root:test_ebrelayer_replay.py:48 send 9.0 eth (9000000000000000000 wei) to sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27
+DEBUG    root:test_utilities.py:115 execute shell command:
+yarn -s --cwd /Users/kevindegraaf/sifnode/smart-contracts integrationtest:sendLockTx --sifchain_address sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27 --symbol eth --amount 9000000000000000000 --bridgebank_address 0x30753E4A8aad7F8597332E813735Def5dD395028 --ethereum_address 0x627306090abab3a6e1400e9345bc60c78a8bef57 --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" --json_path /Users/kevindegraaf/sifnode/smart-contracts/build/contracts --gas estimate 
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+> Warning: possible unsupported (undocumented in help) command line option: --sifchain_address,--symbol,--amount,--bridgebank_address,--ethereum_address,--ethereum_private_key_env_var,--json_path,--gas
+Using network 'ganache'.
+
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "9000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/Users/kevindegraaf/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "/Users/kevindegraaf/sifnode/smart-contracts/node_modules/.bin/truffle"
+}
+{"tx":"0xaa9883db60ec2904d6beef61ec1b0550fed05a6aee4a6681a14978467e938880","receipt":{"transactionHash":"0xaa9883db60ec2904d6beef61ec1b0550fed05a6aee4a6681a14978467e938880","transactionIndex":0,"blockHash":"0xac9cfdbf41e837a2ba70fc6762f4ce20ee25c364c69b1e1c6c33dd4aa882adba","blockNumber":24,"from":"0x627306090abab3a6e1400e9345bc60c78a8bef57","to":"0x30753e4a8aad7f8597332e813735def5dd395028","gasUsed":78840,"cumulativeGasUsed":78840,"contractAddress":null,"logs":[{"logIndex":0,"transactionIndex":0,"transactionHash":"0xaa9883db60ec2904d6beef61ec1b0550fed05a6aee4a6681a14978467e938880","blockHash":"0xac9cfdbf41e837a2ba70fc6762f4ce20ee25c364c69b1e1c6c33dd4aa882adba","blockNumber":24,"address":"0x30753E4A8aad7F8597332E813735Def5dD395028","type":"mined","id":"log_471ec2c3","event":"LogLock","args":{"0":"0x627306090abaB3A6e1400e9345bC60c78a8BEf57","1":"0x736966313937716763616e386e72306e373639756766736776706764376e653530713672363838753237","2":"0x0000000000000000000000000000000000000000","3":"eth","4":"7ce66c50e2840000","5":"1","__length__":6,"_from":"0x627306090abaB3A6e1400e9345bC60c78a8BEf57","_to":"0x736966313937716763616e386e72306e373639756766736776706764376e653530713672363838753237","_token":"0x0000000000000000000000000000000000000000","_symbol":"eth","_value":"7ce66c50e2840000","_nonce":"1"}}],"status":true,"logsBloom":"0x00000000000010000000000000000000000004000000000000000000000000000000000008000000000000000000000000000000000000000000000001004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","rawLogs":[{"logIndex":0,"transactionIndex":0,"transactionHash":"0xaa9883db60ec2904d6beef61ec1b0550fed05a6aee4a6681a14978467e938880","blockHash":"0xac9cfdbf41e837a2ba70fc6762f4ce20ee25c364c69b1e1c6c33dd4aa882adba","blockNumber":24,"address":"0x30753E4A8aad7F8597332E813735Def5dD395028","data":"0x000000000000000000000000627306090abab3a6e1400e9345bc60c78a8bef5700000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000007ce66c50e28400000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000002a736966313937716763616e386e72306e373639756766736776706764376e6535307136723638387532370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000036574680000000000000000000000000000000000000000000000000000000000","topics":["0x374449c83a37309524754bbdfc5b8306d3694b5d14609b8fbb1b50cc5c0319a7"],"type":"mined","id":"log_471ec2c3"}]},"logs":[{"logIndex":0,"transactionIndex":0,"transactionHash":"0xaa9883db60ec2904d6beef61ec1b0550fed05a6aee4a6681a14978467e938880","blockHash":"0xac9cfdbf41e837a2ba70fc6762f4ce20ee25c364c69b1e1c6c33dd4aa882adba","blockNumber":24,"address":"0x30753E4A8aad7F8597332E813735Def5dD395028","type":"mined","id":"log_471ec2c3","event":"LogLock","args":{"0":"0x627306090abaB3A6e1400e9345bC60c78a8BEf57","1":"0x736966313937716763616e386e72306e373639756766736776706764376e653530713672363838753237","2":"0x0000000000000000000000000000000000000000","3":"eth","4":"7ce66c50e2840000","5":"1","__length__":6,"_from":"0x627306090abaB3A6e1400e9345bC60c78a8BEf57","_to":"0x736966313937716763616e386e72306e373639756766736776706764376e653530713672363838753237","_token":"0x0000000000000000000000000000000000000000","_symbol":"eth","_value":"7ce66c50e2840000","_nonce":"1"}}]}
+
+DEBUG    root:test_utilities.py:121 
+execute shell command stderr:
+web3-shh package will be deprecated in version 1.3.5 and will no longer be supported.
+web3-bzz package will be deprecated in version 1.3.5 and will no longer be supported.
+INFO     root:test_ebrelayer_replay.py:52 replay blocks using ebrelayer replayEthereum
+DEBUG    root:test_utilities.py:115 execute shell command:
+yarn --cwd /Users/kevindegraaf/sifnode/smart-contracts advance 0
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+yarn run v1.22.10
+$ npx truffle exec scripts/advanceBlock.js 0
+Using network 'ganache'.
+
+Expected usage: 
+ truffle exec scripts/advanceBlock.js 50
+Advanced 0 blocks
+current block number is 24
+{"nBlocks":"0","currentBlockNumber":24}
+Done in 4.38s.
+
+DEBUG    root:test_utilities.py:121 
+execute shell command stderr:
+web3-shh package will be deprecated in version 1.3.5 and will no longer be supported.
+web3-bzz package will be deprecated in version 1.3.5 and will no longer be supported.
+DEBUG    root:test_utilities.py:115 execute shell command:
+ebrelayer replayEthereum tcp://0.0.0.0:26657 ws://localhost:7545/ 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a icy-rain 'garage quality credit foam distance coyote siren more jar step sight rotate divert divorce student indoor rotate leopard spoil blur cheese yellow oppose label' 23 25 1 2 --chain-id localnet --gas 5000000000000   --gas-prices 0.5rowan
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+RunReplayEthereumCmd rpcURL is 
+ I[2021-03-11|14:26:55.663] ethereum replay for 23 block to 25 block
+    
+I[2021-03-11|14:26:55.663] Replay get all ethereum bridge claim from block 1 to block 2
+ 
+I[2021-03-11|14:26:55.663] Starting WSEvents service                    impl=WSEvents
+I[2021-03-11|14:26:55.664] Replay start to process block 2              
+I[2021-03-11|14:26:55.664] Stopping WSEvents service                    impl=WSEvents
+I[2021-03-11|14:26:55.664] found out 0 bridgeClaims
+                    
+I[2021-03-11|14:26:55.692] 
+Chain ID: 5777
+Bridge contract address: 0x30753E4A8aad7F8597332E813735Def5dD395028
+Token symbol: eth
+Token contract address: 0x0000000000000000000000000000000000000000
+Sender: 0x627306090abaB3A6e1400e9345bC60c78a8BEf57
+Recipient: sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27
+Value: 9000000000000000000
+Nonce: 1
+Claim type: lock 
+I[2021-03-11|14:26:55.692] found out a burn lock event
+                 
+prophecyClaims length:  1
+height: 0
+txhash: 999893614A1C624888BC2A7CC8A16794E54C547683C15CE0A405238461B04E43
+codespace: ""
+code: 0
+data: ""
+rawlog: ""
+logs: []
+info: ""
+gaswanted: 0
+gasused: 0
+tx: null
+timestamp: ""
+
+DEBUG    root:test_utilities.py:121 
+execute shell command stderr:
+relayToCosmos.go:27: ebrelayer RelayToCosmos with 1 claims
+relayToCosmos.go:28: ebrelayer RelayToCosmos nextSequenceNumber is 0
+relayToCosmos.go:51: ebrelayer RelayToCosmos sequenceNumber is 1 from tx builder
+relayToCosmos.go:59: building and signing
+relayToCosmos.go:67: built tx, now broadcasting
+relayToCosmos.go:74: Broadcasted tx without error
+relayToCosmos.go:80: printed tx output
+relayToCosmos.go:88: ebrelayer RelayToCosmos nextSequenceNumber is 2 after tx
+INFO     root:test_ebrelayer_replay.py:63 check the ending balance of sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27 after replaying blocks
+DEBUG    root:test_utilities.py:115 execute shell command:
+sifnodecli q auth account --node tcp://localhost:26657 sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27 -o json
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+{"type":"cosmos-sdk/Account","value":{"address":"sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27","coins":[{"denom":"ceth","amount":"9000000000000000000"}],"public_key":null,"account_number":"7","sequence":"0"}}
+
+DEBUG    root:test_utilities.py:115 execute shell command:
+ebrelayer replayEthereum tcp://0.0.0.0:26657 ws://localhost:7545/ 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a icy-rain 'garage quality credit foam distance coyote siren more jar step sight rotate divert divorce student indoor rotate leopard spoil blur cheese yellow oppose label' 23 25 1 2 --chain-id localnet --gas 5000000000000   --gas-prices 0.5rowan
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+RunReplayEthereumCmd rpcURL is 
+ I[2021-03-11|14:27:21.403] ethereum replay for 23 block to 25 block
+    
+I[2021-03-11|14:27:21.403] Replay get all ethereum bridge claim from block 1 to block 2
+ 
+I[2021-03-11|14:27:21.403] Starting WSEvents service                    impl=WSEvents
+I[2021-03-11|14:27:21.404] Replay start to process block 2              
+I[2021-03-11|14:27:21.404] Stopping WSEvents service                    impl=WSEvents
+I[2021-03-11|14:27:21.405] found out 0 bridgeClaims
+                    
+I[2021-03-11|14:27:21.436] 
+Chain ID: 5777
+Bridge contract address: 0x30753E4A8aad7F8597332E813735Def5dD395028
+Token symbol: eth
+Token contract address: 0x0000000000000000000000000000000000000000
+Sender: 0x627306090abaB3A6e1400e9345bC60c78a8BEf57
+Recipient: sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27
+Value: 9000000000000000000
+Nonce: 1
+Claim type: lock 
+I[2021-03-11|14:27:21.436] found out a burn lock event
+                 
+prophecyClaims length:  1
+height: 0
+txhash: F0C54465A75BAA51A99FE07E1ED49552BFB9E010E4A8942B74767969EDD75B31
+codespace: ""
+code: 0
+data: ""
+rawlog: ""
+logs: []
+info: ""
+gaswanted: 0
+gasused: 0
+tx: null
+timestamp: ""
+
+DEBUG    root:test_utilities.py:121 
+execute shell command stderr:
+relayToCosmos.go:27: ebrelayer RelayToCosmos with 1 claims
+relayToCosmos.go:28: ebrelayer RelayToCosmos nextSequenceNumber is 0
+relayToCosmos.go:51: ebrelayer RelayToCosmos sequenceNumber is 2 from tx builder
+relayToCosmos.go:59: building and signing
+relayToCosmos.go:67: built tx, now broadcasting
+relayToCosmos.go:74: Broadcasted tx without error
+relayToCosmos.go:80: printed tx output
+relayToCosmos.go:88: ebrelayer RelayToCosmos nextSequenceNumber is 3 after tx
+DEBUG    root:test_utilities.py:115 execute shell command:
+sifnodecli q auth account --node tcp://localhost:26657 sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27 -o json
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+{"type":"cosmos-sdk/Account","value":{"address":"sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27","coins":[{"denom":"ceth","amount":"9000000000000000000"}],"public_key":null,"account_number":"7","sequence":"0"}}
+
+DEBUG    root:test_utilities.py:115 execute shell command:
+yarn --cwd /Users/kevindegraaf/sifnode/smart-contracts advance 51
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+yarn run v1.22.10
+$ npx truffle exec scripts/advanceBlock.js 51
+Using network 'ganache'.
+
+Expected usage: 
+ truffle exec scripts/advanceBlock.js 50
+Advanced 51 blocks
+current block number is 75
+{"nBlocks":"51","currentBlockNumber":75}
+Done in 4.77s.
+
+DEBUG    root:test_utilities.py:121 
+execute shell command stderr:
+web3-shh package will be deprecated in version 1.3.5 and will no longer be supported.
+web3-bzz package will be deprecated in version 1.3.5 and will no longer be supported.
+DEBUG    root:test_utilities.py:115 execute shell command:
+/Users/kevindegraaf/sifnode/test/integration/sifchain_start_ebrelayer.sh
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+
+
+DEBUG    root:test_utilities.py:121 
+execute shell command stderr:
+
+. $(dirname $0)/vagrantenv.sh
+dirname $0
+export ETHEREUM_PRIVATE_KEY="c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3"
+export OWNER="0x627306090abaB3A6e1400e9345bC60c78a8BEf57"
+export PAUSER="0x627306090abaB3A6e1400e9345bC60c78a8BEf57"
+export BASEDIR="/Users/kevindegraaf/sifnode"
+export SIFCHAIN_BIN="/Users/kevindegraaf/sifnode/cmd"
+export envexportfile="/Users/kevindegraaf/sifnode/test/integration/vagrantenv.sh"
+export TEST_INTEGRATION_DIR="/Users/kevindegraaf/sifnode/test/integration"
+export TEST_INTEGRATION_PY_DIR="/Users/kevindegraaf/sifnode/test/integration/src/py"
+export SMART_CONTRACTS_DIR="/Users/kevindegraaf/sifnode/smart-contracts"
+export datadir="/Users/kevindegraaf/sifnode/test/integration/vagrant/data"
+export CONTAINER_NAME="integration_sifnode1_1"
+export NETWORKDIR="/Users/kevindegraaf/sifnode/deploy/networks"
+export GANACHE_DB_DIR="/tmp/ganachedb.Ewo4"
+export ETHEREUM_WEBSOCKET_ADDRESS="ws://localhost:7545/"
+export CHAINNET="localnet"
+export GANACHE_LOG="/Users/kevindegraaf/sifnode/test/integration/vagrant/data/logs/ganache.2021-03-11-14-25-48-N.txt"
+export GANACHE_KEYS_JSON="/Users/kevindegraaf/sifnode/test/integration/vagrant/data/ganachekeys.json"
+export EBRELAYER_ETHEREUM_ADDR="0x5aeda56215b167893e80b4fe645ba6d5bab767de"
+export EBRELAYER_ETHEREUM_PRIVATE_KEY="8d5366123cb560bb606379f90a0bfd4769eecc0557f1b362dcae9012b548b1e5"
+# BRIDGE_REGISTRY_ADDRESS and ETHEREUM_CONTRACT_ADDRESS are synonyms
+export BRIDGE_REGISTRY_ADDRESS="0xf204a4Ef082f5c04bB89F7D5E6568B796096735a"
+export BRIDGE_TOKEN_ADDRESS="0x82D50AD3C1091866E258Fd0f1a7cC9674609D254"
+export BRIDGE_BANK_ADDRESS="0x30753E4A8aad7F8597332E813735Def5dD395028"
+export NETDEF="/Users/kevindegraaf/sifnode/deploy/networks/network-definition.yml"
+export NETDEF_JSON="/Users/kevindegraaf/sifnode/test/integration/vagrant/data/netdef.json"
+export MONIKER="icy-rain"
+export VALIDATOR1_PASSWORD="IVoWdb3gpHQGfCTxqUh6kcJOLvn4ts87"
+export VALIDATOR1_ADDR="sif1ykfg5q780r50n25f2qe5dec5y5ex8ya0yglzq5"
+export MNEMONIC="garage quality credit foam distance coyote siren more jar step sight rotate divert divorce student indoor rotate leopard spoil blur cheese yellow oppose label"
+export CHAINDIR="/Users/kevindegraaf/sifnode/deploy/networks/validators/localnet/icy-rain"
+export SIFNODED_LOG="/Users/kevindegraaf/sifnode/test/integration/vagrant/data/logs/sifnoded.log"
+export SIFNODED_PID="47492"
+export REST_SERVER_PID="47493"
+export EBRELAYER_LOG="/Users/kevindegraaf/sifnode/test/integration/vagrant/data/logs/ebrelayer.2021-03-11-14-26-14-N.log"
+export EBRELAYER_PID="47503"
+. ${TEST_INTEGRATION_DIR}/shell_utilities.sh
+#!/bin/bash
+# must run from the root directory of the sifnode tree
+
+# add 18 zeros to a number
+to_wei () { echo "${1}000000000000000000" ; }
+to_json () { ruby -ryaml -rjson -e "puts YAML::load(STDIN.read).to_json"; }
+fullpath () { ruby -e "puts File.expand_path(\"$1\")"; }
+logecho () {
+  date=$(date +I\[%Y-%m-%d\|%H:%M:%S.%N\])
+  echo $date $*
+}
+filenamedate () { date +%Y-%m-%d-%H-%M-%S-%N; }
+# sets an environment variable and writes it to the file
+set_persistant_env_var () {
+  if [[ "$4" = 'required' && -z "$2" ]]; then
+    echo environment variable $1 cannot be empty
+    exit 1
+  fi
+  export $1=$2
+  echo "export $1=\"$2\"" >> $3
+}
+
+set -x
+
+pkill -9 ebrelayer || true
++ pkill -9 ebrelayer
++ true
+
+mkdir -p $datadir/logs
++ mkdir -p /Users/kevindegraaf/sifnode/test/integration/vagrant/data/logs
+set_persistant_env_var EBRELAYER_LOG $datadir/logs/ebrelayer.$(filenamedate).log $envexportfile
+filenamedate
+++ filenamedate
+++ date +%Y-%m-%d-%H-%M-%S-%N
++ set_persistant_env_var EBRELAYER_LOG /Users/kevindegraaf/sifnode/test/integration/vagrant/data/logs/ebrelayer.2021-03-11-14-27-41-N.log /Users/kevindegraaf/sifnode/test/integration/vagrantenv.sh
++ [[ '' = \r\e\q\u\i\r\e\d ]]
++ export EBRELAYER_LOG=/Users/kevindegraaf/sifnode/test/integration/vagrant/data/logs/ebrelayer.2021-03-11-14-27-41-N.log
++ EBRELAYER_LOG=/Users/kevindegraaf/sifnode/test/integration/vagrant/data/logs/ebrelayer.2021-03-11-14-27-41-N.log
++ echo 'export EBRELAYER_LOG="/Users/kevindegraaf/sifnode/test/integration/vagrant/data/logs/ebrelayer.2021-03-11-14-27-41-N.log"'
+
+nohup $TEST_INTEGRATION_DIR/sifchain_run_ebrelayer.sh < /dev/null > $EBRELAYER_LOG 2>&1 &
+set_persistant_env_var EBRELAYER_PID $! $envexportfile
++ set_persistant_env_var EBRELAYER_PID 47563 /Users/kevindegraaf/sifnode/test/integration/vagrantenv.sh
++ [[ '' = \r\e\q\u\i\r\e\d ]]
++ export EBRELAYER_PID=47563
++ EBRELAYER_PID=47563
++ echo 'export EBRELAYER_PID="47563"'
+
+# fail and add timeout to the check.
+#timeout 30s grep -m 1 'Started Ethereum websocket with provider' <(tail -n +1 -f $EBRELAYER_LOG & ) || exit 1
+#sleep 5
+#echo "ebrelayer output:"
++ nohup /Users/kevindegraaf/sifnode/test/integration/sifchain_run_ebrelayer.sh
+#tail $EBRELAYER_LOG
+#( tail -n +1 -F $EBRELAYER_LOG & ) | grep -m 1 "Started Ethereum websocket with provider"
+DEBUG    root:burn_lock_functions.py:39 transfer_ethereum_to_sifchain {"sifchain_address": "sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27", "sifchain_destination_address": "", "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57", "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY", "sifchain_symbol": "ceth", "ethereum_symbol": "eth", "ethereum_network": "", "amount": 9000000000000000000, "ceth_amount": 20000000000000000, "sifchain_fees": "", "smart_contracts_dir": "/Users/kevindegraaf/sifnode/smart-contracts", "ethereum_chain_id": "5777", "chain_id": "localnet", "manual_block_advance": true, "n_wait_blocks": 50, "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028", "bridgetoken_address": "", "sifnodecli_node": "tcp://localhost:26657", "solidity_json_path": "/Users/kevindegraaf/sifnode/smart-contracts/build/contracts", "check_wait_blocks": false}
+DEBUG    root:test_utilities.py:115 execute shell command:
+yarn -s --cwd /Users/kevindegraaf/sifnode/smart-contracts integrationtest:sendLockTx --sifchain_address sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27 --symbol eth --amount 9000000000000000000 --bridgebank_address 0x30753E4A8aad7F8597332E813735Def5dD395028 --ethereum_address 0x627306090abab3a6e1400e9345bc60c78a8bef57 --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" --json_path /Users/kevindegraaf/sifnode/smart-contracts/build/contracts --gas estimate 
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+> Warning: possible unsupported (undocumented in help) command line option: --sifchain_address,--symbol,--amount,--bridgebank_address,--ethereum_address,--ethereum_private_key_env_var,--json_path,--gas
+Using network 'ganache'.
+
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "9000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/Users/kevindegraaf/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "/Users/kevindegraaf/sifnode/smart-contracts/node_modules/.bin/truffle"
+}
+{"tx":"0x3da6a76f83ed992b9990dc3ca189d9519a0df64f43c936cffb21a36a59c751b8","receipt":{"transactionHash":"0x3da6a76f83ed992b9990dc3ca189d9519a0df64f43c936cffb21a36a59c751b8","transactionIndex":0,"blockHash":"0xd41cb05e6e791f1b9c69c4e817257cf7372b7ef2f883be7302f1f353fb2cec47","blockNumber":76,"from":"0x627306090abab3a6e1400e9345bc60c78a8bef57","to":"0x30753e4a8aad7f8597332e813735def5dd395028","gasUsed":48840,"cumulativeGasUsed":48840,"contractAddress":null,"logs":[{"logIndex":0,"transactionIndex":0,"transactionHash":"0x3da6a76f83ed992b9990dc3ca189d9519a0df64f43c936cffb21a36a59c751b8","blockHash":"0xd41cb05e6e791f1b9c69c4e817257cf7372b7ef2f883be7302f1f353fb2cec47","blockNumber":76,"address":"0x30753E4A8aad7F8597332E813735Def5dD395028","type":"mined","id":"log_76415fbf","event":"LogLock","args":{"0":"0x627306090abaB3A6e1400e9345bC60c78a8BEf57","1":"0x736966313937716763616e386e72306e373639756766736776706764376e653530713672363838753237","2":"0x0000000000000000000000000000000000000000","3":"eth","4":"7ce66c50e2840000","5":"2","__length__":6,"_from":"0x627306090abaB3A6e1400e9345bC60c78a8BEf57","_to":"0x736966313937716763616e386e72306e373639756766736776706764376e653530713672363838753237","_token":"0x0000000000000000000000000000000000000000","_symbol":"eth","_value":"7ce66c50e2840000","_nonce":"2"}}],"status":true,"logsBloom":"0x00000000000010000000000000000000000004000000000000000000000000000000000008000000000000000000000000000000000000000000000001004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","rawLogs":[{"logIndex":0,"transactionIndex":0,"transactionHash":"0x3da6a76f83ed992b9990dc3ca189d9519a0df64f43c936cffb21a36a59c751b8","blockHash":"0xd41cb05e6e791f1b9c69c4e817257cf7372b7ef2f883be7302f1f353fb2cec47","blockNumber":76,"address":"0x30753E4A8aad7F8597332E813735Def5dD395028","data":"0x000000000000000000000000627306090abab3a6e1400e9345bc60c78a8bef5700000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000007ce66c50e28400000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000002a736966313937716763616e386e72306e373639756766736776706764376e6535307136723638387532370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000036574680000000000000000000000000000000000000000000000000000000000","topics":["0x374449c83a37309524754bbdfc5b8306d3694b5d14609b8fbb1b50cc5c0319a7"],"type":"mined","id":"log_76415fbf"}]},"logs":[{"logIndex":0,"transactionIndex":0,"transactionHash":"0x3da6a76f83ed992b9990dc3ca189d9519a0df64f43c936cffb21a36a59c751b8","blockHash":"0xd41cb05e6e791f1b9c69c4e817257cf7372b7ef2f883be7302f1f353fb2cec47","blockNumber":76,"address":"0x30753E4A8aad7F8597332E813735Def5dD395028","type":"mined","id":"log_76415fbf","event":"LogLock","args":{"0":"0x627306090abaB3A6e1400e9345bC60c78a8BEf57","1":"0x736966313937716763616e386e72306e373639756766736776706764376e653530713672363838753237","2":"0x0000000000000000000000000000000000000000","3":"eth","4":"7ce66c50e2840000","5":"2","__length__":6,"_from":"0x627306090abaB3A6e1400e9345bC60c78a8BEf57","_to":"0x736966313937716763616e386e72306e373639756766736776706764376e653530713672363838753237","_token":"0x0000000000000000000000000000000000000000","_symbol":"eth","_value":"7ce66c50e2840000","_nonce":"2"}}]}
+
+DEBUG    root:test_utilities.py:121 
+execute shell command stderr:
+web3-shh package will be deprecated in version 1.3.5 and will no longer be supported.
+web3-bzz package will be deprecated in version 1.3.5 and will no longer be supported.
+DEBUG    root:burn_lock_functions.py:135 transfer_ethereum_to_sifchain completed {"action": "transfer_ethereum_to_sifchain", "sifchain_starting_balance": 9000000000000000000, "transfer_request": {"sifchain_address": "sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27", "sifchain_destination_address": "", "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57", "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY", "sifchain_symbol": "ceth", "ethereum_symbol": "eth", "ethereum_network": "", "amount": 9000000000000000000, "ceth_amount": 20000000000000000, "sifchain_fees": "", "smart_contracts_dir": "/Users/kevindegraaf/sifnode/smart-contracts", "ethereum_chain_id": "5777", "chain_id": "localnet", "manual_block_advance": true, "n_wait_blocks": 50, "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028", "bridgetoken_address": "", "sifnodecli_node": "tcp://localhost:26657", "solidity_json_path": "/Users/kevindegraaf/sifnode/smart-contracts/build/contracts", "check_wait_blocks": false}, "sifchain_ending_balance": 18000000000000000000}
+DEBUG    root:test_utilities.py:115 execute shell command:
+sifnodecli q auth account --node tcp://localhost:26657 sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27 -o json
+DEBUG    root:test_utilities.py:119 execute shell command stdout:
+{"type":"cosmos-sdk/Account","value":{"address":"sif197qgcan8nr0n769ugfsgvpgd7ne50q6r688u27","coins":[{"denom":"ceth","amount":"18000000000000000000"}],"public_key":null,"account_number":"7","sequence":"0"}}
+
+INFO     root:conftest.py:256 restart ebrelayer after advancing wait blocks - avoids any interaction with replaying blocks

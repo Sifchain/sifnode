@@ -1,0 +1,203 @@
+DEBUG    root:conftest.py:88 using ETHEREUM_ADDRESS provided for source_ethereum_address
+DEBUG    root:test_utilities.py:113 execute shell command:
+uuidgen
+DEBUG    root:test_utilities.py:117 execute shell command stdout:
+91AE5702-6C08-4BFF-A0DD-B10C45094967
+
+INFO     root:test_random_currency_roundtrip.py:26 create new currency
+DEBUG    root:test_utilities.py:113 execute shell command:
+yarn --cwd /Users/kevindegraaf/sifnode/smart-contracts integrationtest:enableNewToken --bridgebank_address 0x30753E4A8aad7F8597332E813735Def5dD395028 --symbol a91A --amount 9000000000000000000 --limit_amount 9000000000000000000
+DEBUG    root:test_utilities.py:117 execute shell command stdout:
+yarn run v1.22.10
+$ npx truffle exec scripts/test/enableNewToken.js --bridgebank_address 0x30753E4A8aad7F8597332E813735Def5dD395028 --symbol a91A --amount 9000000000000000000 --limit_amount 9000000000000000000
+> Warning: possible unsupported (undocumented in help) command line option: --bridgebank_address,--symbol,--amount,--limit_amount
+Using network 'ganache'.
+
+info: bridgeBankContract.updateEthWhiteList 0x4e71920b7330515faf5EA0c690f1aD06a85fB60c, true, from 0x627306090abaB3A6e1400e9345bC60c78a8BEf57
+info: bridgeBankContract.updateEthWhiteList result {"tx":"0x444a1be43d948d46f768d0356fd41465a972b2a810033367cfb0dae006a80fd7","receipt":{"transactionHash":"0x444a1be43d948d46f768d0356fd41465a972b2a810033367cfb0dae006a80fd7","transactionIndex":0,"blockHash":"0xfa62a43e272c84431591634e919c5bc3ed76aa95d6352c5d80b9cd71e4c407e2","blockNumber":591,"from":"0x627306090abab3a6e1400e9345bc60c78a8bef57","to":"0x30753e4a8aad7f8597332e813735def5dd395028","gasUsed":76676,"cumulativeGasUsed":76676,"contractAddress":null,"logs":[{"logIndex":0,"transactionIndex":0,"transactionHash":"0x444a1be43d948d46f768d0356fd41465a972b2a810033367cfb0dae006a80fd7","blockHash":"0xfa62a43e272c84431591634e919c5bc3ed76aa95d6352c5d80b9cd71e4c407e2","blockNumber":591,"address":"0x30753E4A8aad7F8597332E813735Def5dD395028","type":"mined","id":"log_16fe9c03","event":"LogWhiteListUpdate","args":{"0":"0x4e71920b7330515faf5EA0c690f1aD06a85fB60c","1":true,"__length__":2,"_token":"0x4e71920b7330515faf5EA0c690f1aD06a85fB60c","_value":true}}],"status":true,"logsBloom":"0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001004042000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","rawLogs":[{"logIndex":0,"transactionIndex":0,"transactionHash":"0x444a1be43d948d46f768d0356fd41465a972b2a810033367cfb0dae006a80fd7","blockHash":"0xfa62a43e272c84431591634e919c5bc3ed76aa95d6352c5d80b9cd71e4c407e2","blockNumber":591,"address":"0x30753E4A8aad7F8597332E813735Def5dD395028","data":"0x0000000000000000000000004e71920b7330515faf5ea0c690f1ad06a85fb60c0000000000000000000000000000000000000000000000000000000000000001","topics":["0xbabeec6613676f4972214f70ddf47c77eb8360e09b54278f21d6f999faf7c15c"],"type":"mined","id":"log_16fe9c03"}]},"logs":[{"logIndex":0,"transactionIndex":0,"transactionHash":"0x444a1be43d948d46f768d0356fd41465a972b2a810033367cfb0dae006a80fd7","blockHash":"0xfa62a43e272c84431591634e919c5bc3ed76aa95d6352c5d80b9cd71e4c407e2","blockNumber":591,"address":"0x30753E4A8aad7F8597332E813735Def5dD395028","type":"mined","id":"log_16fe9c03","event":"LogWhiteListUpdate","args":{"0":"0x4e71920b7330515faf5EA0c690f1aD06a85fB60c","1":true,"__length__":2,"_token":"0x4e71920b7330515faf5EA0c690f1aD06a85fB60c","_value":true}}]}
+{"destination":"0x627306090abaB3A6e1400e9345bC60c78a8BEf57","amount":"9000000000000000000","newtoken_address":"0x4e71920b7330515faf5EA0c690f1aD06a85fB60c","newtoken_symbol":"a91A"}
+Done in 7.23s.
+
+INFO     root:test_random_currency_roundtrip.py:34 create test account to use with new currency a91A
+DEBUG    root:test_utilities.py:113 execute shell command:
+uuidgen
+DEBUG    root:test_utilities.py:117 execute shell command stdout:
+6F1457CC-8638-44AC-822B-3CB477CCF77C
+
+DEBUG    root:test_utilities.py:113 execute shell command:
+ sifnodecli keys add 6F1457CC-8638-44AC-822B-3CB477CCF77C --home /Users/kevindegraaf/.sifnodecli --keyring-backend test -o json 2>&1
+DEBUG    root:test_utilities.py:117 execute shell command stdout:
+{"name":"6F1457CC-8638-44AC-822B-3CB477CCF77C","type":"local","address":"sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm","pubkey":"sifpub1addwnpepqd5slxw6xk6t46l5vvh2kzscz6syfm457lc4czylw7yyyj2v6g4g7h4ncaq","mnemonic":"exit blood super copper clown toddler image galaxy diamond album empower design luxury obscure flight emotion mass cause remain debate blossom resemble affair about"}
+
+DEBUG    root:test_utilities.py:113 execute shell command:
+sifnodecli q auth account  sif1dlgcjncq929m9gfd3wlhzrmnpqqqndqg0ytl8u -o json
+DEBUG    root:test_utilities.py:117 execute shell command stdout:
+{"type":"cosmos-sdk/Account","value":{"address":"sif1dlgcjncq929m9gfd3wlhzrmnpqqqndqg0ytl8u","coins":[{"denom":"ca8e2c2f","amount":"9000000000000000000"},{"denom":"rowan","amount":"997999962999972499999000000"}],"public_key":{"type":"tendermint/PubKeySecp256k1","value":"A6JbOvgBykiArkWy16NlVcIdxUMv4gG77QH0WeGHHgVf"},"account_number":"3","sequence":"22"}}
+
+DEBUG    root:pytest_utilities.py:59 transfer 1000000000000000000 to sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm from sif1dlgcjncq929m9gfd3wlhzrmnpqqqndqg0ytl8u
+DEBUG    root:test_utilities.py:287 send_from_sifchain_to_sifchain EthereumToSifchainTransferRequest(sifchain_address='sif1dlgcjncq929m9gfd3wlhzrmnpqqqndqg0ytl8u', sifchain_destination_address='sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm', ethereum_address='', ethereum_private_key_env_var='ETHEREUM_PRIVATE_KEY', sifchain_symbol='rowan', ethereum_symbol='eth', ethereum_network='', amount=1000000000000000000, ceth_amount=18332015000000000, sifchain_fees='100000rowan', smart_contracts_dir='/Users/kevindegraaf/sifnode/smart-contracts', ethereum_chain_id='5777', chain_id='localnet', manual_block_advance=True, n_wait_blocks=4, bridgebank_address='0x30753E4A8aad7F8597332E813735Def5dD395028', bridgetoken_address='0x82D50AD3C1091866E258Fd0f1a7cC9674609D254', sifnodecli_node=None, check_wait_blocks=False)
+DEBUG    root:test_utilities.py:113 execute shell command:
+yes tS9Gf20gPwUbQ3znARVZlsWOFujL1qoM |  sifnodecli tx send sif1dlgcjncq929m9gfd3wlhzrmnpqqqndqg0ytl8u sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm --keyring-backend file --chain-id localnet  1000000000000000000rowan --fees 100000rowan --home /Users/kevindegraaf/sifnode/deploy/networks/validators/localnet/still-dream/.sifnodecli  -y
+DEBUG    root:test_utilities.py:117 execute shell command stdout:
+height: 0
+txhash: 520679806D821B515339659D45A629A37144EC5F480DFCF38BF5722C7B2CC2D0
+codespace: ""
+code: 0
+data: ""
+rawlog: '[]'
+logs: []
+info: ""
+gaswanted: 0
+gasused: 0
+tx: null
+timestamp: ""
+
+DEBUG    root:pytest_utilities.py:68 transfer 100000000000000000 eth to sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm from 0xf17f52151EbEF6C7334FAD080c5704D77216b732
+DEBUG    root:burn_lock_functions.py:37 transfer_ethereum_to_sifchain {"sifchain_address": "sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm", "sifchain_destination_address": "", "ethereum_address": "0xf17f52151EbEF6C7334FAD080c5704D77216b732", "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY", "sifchain_symbol": "ceth", "ethereum_symbol": "eth", "ethereum_network": "", "amount": 100000000000000000, "ceth_amount": 18332015000000000, "sifchain_fees": "100000rowan", "smart_contracts_dir": "/Users/kevindegraaf/sifnode/smart-contracts", "ethereum_chain_id": "5777", "chain_id": "localnet", "manual_block_advance": true, "n_wait_blocks": 4, "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028", "bridgetoken_address": "0x82D50AD3C1091866E258Fd0f1a7cC9674609D254", "sifnodecli_node": null, "check_wait_blocks": false}
+DEBUG    root:test_utilities.py:113 execute shell command:
+yarn -s --cwd /Users/kevindegraaf/sifnode/smart-contracts integrationtest:sendLockTx --sifchain_address sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm --symbol eth --amount 100000000000000000 --bridgebank_address 0x30753E4A8aad7F8597332E813735Def5dD395028 --ethereum_address 0xf17f52151EbEF6C7334FAD080c5704D77216b732 --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" --gas estimate 
+DEBUG    root:test_utilities.py:117 execute shell command stdout:
+> Warning: possible unsupported (undocumented in help) command line option: --sifchain_address,--symbol,--amount,--bridgebank_address,--ethereum_address,--ethereum_private_key_env_var,--gas
+Using network 'ganache'.
+
+info: sendLockTx: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "100000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0xf17f52151EbEF6C7334FAD080c5704D77216b732",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "json_path": "../build/contracts",
+  "$0": "node_modules/.bin/truffle"
+}
+info: getting estimate
+debug: bridgeBankContract.lock: {
+  "tx": "0x817715dc86d4e56d283d92cba898918d93b955de5a54ebd81d15c333464b7c5f",
+  "receipt": {
+    "transactionHash": "0x817715dc86d4e56d283d92cba898918d93b955de5a54ebd81d15c333464b7c5f",
+    "transactionIndex": 0,
+    "blockHash": "0xa75428ed558bc9aa2d5f0d24862def5aea1dd9a52af07bed3e084e373520f940",
+    "blockNumber": 595,
+    "from": "0xf17f52151ebef6c7334fad080c5704d77216b732",
+    "to": "0x30753e4a8aad7f8597332e813735def5dd395028",
+    "gasUsed": 48873,
+    "cumulativeGasUsed": 48873,
+    "contractAddress": null,
+    "logs": [
+      {
+        "logIndex": 0,
+        "transactionIndex": 0,
+        "transactionHash": "0x817715dc86d4e56d283d92cba898918d93b955de5a54ebd81d15c333464b7c5f",
+        "blockHash": "0xa75428ed558bc9aa2d5f0d24862def5aea1dd9a52af07bed3e084e373520f940",
+        "blockNumber": 595,
+        "address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+        "type": "mined",
+        "id": "log_f1d0d62e",
+        "event": "LogLock",
+        "args": {
+          "0": "0xf17f52151EbEF6C7334FAD080c5704D77216b732",
+          "1": "0x7369663135376c3467663374356a72746d786579376672747871716133336e327265646d66386471646d",
+          "2": "0x0000000000000000000000000000000000000000",
+          "3": "eth",
+          "4": "16345785d8a0000",
+          "5": "c",
+          "__length__": 6,
+          "_from": "0xf17f52151EbEF6C7334FAD080c5704D77216b732",
+          "_to": "0x7369663135376c3467663374356a72746d786579376672747871716133336e327265646d66386471646d",
+          "_token": "0x0000000000000000000000000000000000000000",
+          "_symbol": "eth",
+          "_value": "16345785d8a0000",
+          "_nonce": "c"
+        }
+      }
+    ],
+    "status": true,
+    "logsBloom": "0x00000000000010000000000000000000000004000000000000000000000000000000000008000000000000000000000000000000000000000000000001004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "rawLogs": [
+      {
+        "logIndex": 0,
+        "transactionIndex": 0,
+        "transactionHash": "0x817715dc86d4e56d283d92cba898918d93b955de5a54ebd81d15c333464b7c5f",
+        "blockHash": "0xa75428ed558bc9aa2d5f0d24862def5aea1dd9a52af07bed3e084e373520f940",
+        "blockNumber": 595,
+        "address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+        "data": "0x000000000000000000000000f17f52151ebef6c7334fad080c5704d77216b73200000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000002a7369663135376c3467663374356a72746d786579376672747871716133336e327265646d66386471646d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000036574680000000000000000000000000000000000000000000000000000000000",
+        "topics": [
+          "0x374449c83a37309524754bbdfc5b8306d3694b5d14609b8fbb1b50cc5c0319a7"
+        ],
+        "type": "mined",
+        "id": "log_f1d0d62e"
+      }
+    ]
+  },
+  "logs": [
+    {
+      "logIndex": 0,
+      "transactionIndex": 0,
+      "transactionHash": "0x817715dc86d4e56d283d92cba898918d93b955de5a54ebd81d15c333464b7c5f",
+      "blockHash": "0xa75428ed558bc9aa2d5f0d24862def5aea1dd9a52af07bed3e084e373520f940",
+      "blockNumber": 595,
+      "address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+      "type": "mined",
+      "id": "log_f1d0d62e",
+      "event": "LogLock",
+      "args": {
+        "0": "0xf17f52151EbEF6C7334FAD080c5704D77216b732",
+        "1": "0x7369663135376c3467663374356a72746d786579376672747871716133336e327265646d66386471646d",
+        "2": "0x0000000000000000000000000000000000000000",
+        "3": "eth",
+        "4": "16345785d8a0000",
+        "5": "c",
+        "__length__": 6,
+        "_from": "0xf17f52151EbEF6C7334FAD080c5704D77216b732",
+        "_to": "0x7369663135376c3467663374356a72746d786579376672747871716133336e327265646d66386471646d",
+        "_token": "0x0000000000000000000000000000000000000000",
+        "_symbol": "eth",
+        "_value": "16345785d8a0000",
+        "_nonce": "c"
+      }
+    }
+  ]
+}
+{"tx":"0x817715dc86d4e56d283d92cba898918d93b955de5a54ebd81d15c333464b7c5f","receipt":{"transactionHash":"0x817715dc86d4e56d283d92cba898918d93b955de5a54ebd81d15c333464b7c5f","transactionIndex":0,"blockHash":"0xa75428ed558bc9aa2d5f0d24862def5aea1dd9a52af07bed3e084e373520f940","blockNumber":595,"from":"0xf17f52151ebef6c7334fad080c5704d77216b732","to":"0x30753e4a8aad7f8597332e813735def5dd395028","gasUsed":48873,"cumulativeGasUsed":48873,"contractAddress":null,"logs":[{"logIndex":0,"transactionIndex":0,"transactionHash":"0x817715dc86d4e56d283d92cba898918d93b955de5a54ebd81d15c333464b7c5f","blockHash":"0xa75428ed558bc9aa2d5f0d24862def5aea1dd9a52af07bed3e084e373520f940","blockNumber":595,"address":"0x30753E4A8aad7F8597332E813735Def5dD395028","type":"mined","id":"log_f1d0d62e","event":"LogLock","args":{"0":"0xf17f52151EbEF6C7334FAD080c5704D77216b732","1":"0x7369663135376c3467663374356a72746d786579376672747871716133336e327265646d66386471646d","2":"0x0000000000000000000000000000000000000000","3":"eth","4":"16345785d8a0000","5":"c","__length__":6,"_from":"0xf17f52151EbEF6C7334FAD080c5704D77216b732","_to":"0x7369663135376c3467663374356a72746d786579376672747871716133336e327265646d66386471646d","_token":"0x0000000000000000000000000000000000000000","_symbol":"eth","_value":"16345785d8a0000","_nonce":"c"}}],"status":true,"logsBloom":"0x00000000000010000000000000000000000004000000000000000000000000000000000008000000000000000000000000000000000000000000000001004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","rawLogs":[{"logIndex":0,"transactionIndex":0,"transactionHash":"0x817715dc86d4e56d283d92cba898918d93b955de5a54ebd81d15c333464b7c5f","blockHash":"0xa75428ed558bc9aa2d5f0d24862def5aea1dd9a52af07bed3e084e373520f940","blockNumber":595,"address":"0x30753E4A8aad7F8597332E813735Def5dD395028","data":"0x000000000000000000000000f17f52151ebef6c7334fad080c5704d77216b73200000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000002a7369663135376c3467663374356a72746d786579376672747871716133336e327265646d66386471646d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000036574680000000000000000000000000000000000000000000000000000000000","topics":["0x374449c83a37309524754bbdfc5b8306d3694b5d14609b8fbb1b50cc5c0319a7"],"type":"mined","id":"log_f1d0d62e"}]},"logs":[{"logIndex":0,"transactionIndex":0,"transactionHash":"0x817715dc86d4e56d283d92cba898918d93b955de5a54ebd81d15c333464b7c5f","blockHash":"0xa75428ed558bc9aa2d5f0d24862def5aea1dd9a52af07bed3e084e373520f940","blockNumber":595,"address":"0x30753E4A8aad7F8597332E813735Def5dD395028","type":"mined","id":"log_f1d0d62e","event":"LogLock","args":{"0":"0xf17f52151EbEF6C7334FAD080c5704D77216b732","1":"0x7369663135376c3467663374356a72746d786579376672747871716133336e327265646d66386471646d","2":"0x0000000000000000000000000000000000000000","3":"eth","4":"16345785d8a0000","5":"c","__length__":6,"_from":"0xf17f52151EbEF6C7334FAD080c5704D77216b732","_to":"0x7369663135376c3467663374356a72746d786579376672747871716133336e327265646d66386471646d","_token":"0x0000000000000000000000000000000000000000","_symbol":"eth","_value":"16345785d8a0000","_nonce":"c"}}]}
+
+DEBUG    root:burn_lock_functions.py:65 send_from_ethereum_to_sifchain ethereum block number: 595
+DEBUG    root:burn_lock_functions.py:129 transfer_ethereum_to_sifchain completed {'action': 'transfer_ethereum_to_sifchain', 'sifchain_starting_balance': 0, 'transfer_request': {'sifchain_address': 'sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm', 'sifchain_destination_address': '', 'ethereum_address': '0xf17f52151EbEF6C7334FAD080c5704D77216b732', 'ethereum_private_key_env_var': 'ETHEREUM_PRIVATE_KEY', 'sifchain_symbol': 'ceth', 'ethereum_symbol': 'eth', 'ethereum_network': '', 'amount': 100000000000000000, 'ceth_amount': 18332015000000000, 'sifchain_fees': '100000rowan', 'smart_contracts_dir': '/Users/kevindegraaf/sifnode/smart-contracts', 'ethereum_chain_id': '5777', 'chain_id': 'localnet', 'manual_block_advance': True, 'n_wait_blocks': 4, 'bridgebank_address': '0x30753E4A8aad7F8597332E813735Def5dD395028', 'bridgetoken_address': '0x82D50AD3C1091866E258Fd0f1a7cC9674609D254', 'sifnodecli_node': None, 'check_wait_blocks': False}, 'sifchain_ending_balance': 100000000000000000}
+DEBUG    root:test_utilities.py:113 execute shell command:
+sifnodecli q auth account  sif1dlgcjncq929m9gfd3wlhzrmnpqqqndqg0ytl8u -o json
+DEBUG    root:test_utilities.py:117 execute shell command stdout:
+{"type":"cosmos-sdk/Account","value":{"address":"sif1dlgcjncq929m9gfd3wlhzrmnpqqqndqg0ytl8u","coins":[{"denom":"ca8e2c2f","amount":"9000000000000000000"},{"denom":"rowan","amount":"997999961999969999998900000"}],"public_key":{"type":"tendermint/PubKeySecp256k1","value":"A6JbOvgBykiArkWy16NlVcIdxUMv4gG77QH0WeGHHgVf"},"account_number":"3","sequence":"24"}}
+
+INFO     root:pytest_utilities.py:80 created sifchain addr sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm with (100000000000000000 | 0.1) ceth and (1000000000000000000 | 1.0) rowan
+INFO     root:test_random_currency_roundtrip.py:44 transfer some of the new currency a91A to the test sifchain address
+DEBUG    root:burn_lock_functions.py:37 transfer_ethereum_to_sifchain {"sifchain_address": "sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm", "sifchain_destination_address": "", "ethereum_address": "0xf17f52151EbEF6C7334FAD080c5704D77216b732", "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY", "sifchain_symbol": "ca91a", "ethereum_symbol": "0x4e71920b7330515faf5EA0c690f1aD06a85fB60c", "ethereum_network": "", "amount": 39000, "ceth_amount": 18332015000000000, "sifchain_fees": "100000rowan", "smart_contracts_dir": "/Users/kevindegraaf/sifnode/smart-contracts", "ethereum_chain_id": "5777", "chain_id": "localnet", "manual_block_advance": true, "n_wait_blocks": 4, "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028", "bridgetoken_address": "0x82D50AD3C1091866E258Fd0f1a7cC9674609D254", "sifnodecli_node": null, "check_wait_blocks": false}
+DEBUG    root:test_utilities.py:113 execute shell command:
+yarn -s --cwd /Users/kevindegraaf/sifnode/smart-contracts integrationtest:sendLockTx --sifchain_address sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm --symbol 0x4e71920b7330515faf5EA0c690f1aD06a85fB60c --amount 39000 --bridgebank_address 0x30753E4A8aad7F8597332E813735Def5dD395028 --ethereum_address 0xf17f52151EbEF6C7334FAD080c5704D77216b732 --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" --gas estimate 
+DEBUG    root:test_utilities.py:117 execute shell command stdout:
+> Warning: possible unsupported (undocumented in help) command line option: --sifchain_address,--symbol,--amount,--bridgebank_address,--ethereum_address,--ethereum_private_key_env_var,--gas
+Using network 'ganache'.
+
+info: sendLockTx: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif157l4gf3t5jrtmxey7frtxqqa33n2redmf8dqdm",
+  "symbol": "0x4e71920b7330515faf5EA0c690f1aD06a85fB60c",
+  "amount": 39000,
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0xf17f52151EbEF6C7334FAD080c5704D77216b732",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "json_path": "../build/contracts",
+  "$0": "node_modules/.bin/truffle"
+}
+info: getting estimate
+
