@@ -54,11 +54,6 @@ beforeEach(() => {
   });
 });
 
-test("Calls disconnect", async () => {
-  await ethWalletActions.disconnectWallet();
-  expect(mockEthereumService.disconnect).toHaveBeenCalled();
-});
-
 test("Calls transfer correctly", async () => {
   await ethWalletActions.transferEthWallet(
     123,

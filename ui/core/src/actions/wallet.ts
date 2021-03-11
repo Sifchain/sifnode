@@ -43,10 +43,6 @@ export default ({
         api.NotificationService.notify({ type: "ErrorEvent", payload: error });
       }
     },
-
-    async disconnectWallet() {
-      await api.SifService.disconnect();
-    },
   };
 
   effect(() => {
