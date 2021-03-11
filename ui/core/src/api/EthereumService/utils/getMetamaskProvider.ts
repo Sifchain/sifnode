@@ -1,7 +1,6 @@
 import detectMetaMaskProvider from "@metamask/detect-provider";
 import Web3 from "web3";
 import { AbstractProvider, provider } from "web3-core";
-// import notify from "../../utils/Notifications"
 
 type MetaMaskProvider = AbstractProvider & {
   request?: (a: any) => Promise<void>;
