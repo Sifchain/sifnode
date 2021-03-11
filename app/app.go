@@ -489,13 +489,3 @@ func ExportAppState(name string, app *SifchainApp, ctx sdk.Context) {
 		ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %s", err.Error()))
 	}
 }
-
-//rake keys:generate:mnemonic
-//account already picnic earn curious gift dance wood assist arch sugar nurse clarify right tuition winter pilot escape final van educate gain insane they
-//{
-//"name": "my-node",
-//"type": "local",
-//"address": "sif12dzcwupljmzhhn88q000a9dx59e83kclm5n6rt",
-//"pubkey": "sifpub1addwnpepqftut3cfz5hr9lysfuv79jrwaftr6ljsnp6gv3z6zuan64klz8f3khkj9f7"
-//}
-//sifnodecli q auth account sif12dzcwupljmzhhn88q000a9dx59e83kclm5n6rt --node tcp://35.160.89.251:26657 --chain-id merry-go-round

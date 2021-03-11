@@ -85,11 +85,3 @@ func GetCmdAddCoins(cdc *codec.Codec) *cobra.Command {
 	}
 	return cmd
 }
-
-//sif17s95c5jpc6x2l3edwh4dm8yhac68yru7a7kr3x
-//sif1d0q6q6afvzk3whu6cy338yth64vau78r43fsuh
-
-//sif1d0q6q6afvzk3whu6cy338yth64vau78r43fsuh
-//sif1r8x7m7u8ttwn6ue4z2krstrp62qdvcw2myg0xz
-//sif1rlt8svkn4h4vyqmklgzfgcvfeamdce2cwxntsq
-//sif18xt24a5psswl6a838ngtr2x29qp8626rkd32uf
