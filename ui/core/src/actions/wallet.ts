@@ -39,8 +39,13 @@ export default ({
         await api.SifService.connect();
         store.wallet.sif.isConnected = true;
       } catch (error) {
-        // to the ui??
-        api.EventBusService.dispatch({ type: "ErrorEvent", payload: error });
+        api.EventBusService.dispatch({
+          type: "WalletConnectionErrorEvent",
+          payload: {
+            walletType: "sif",
+            message: "Failed to connect to Keplr.",
+          },
+        });
       }
     },
   };

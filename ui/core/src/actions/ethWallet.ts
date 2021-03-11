@@ -34,7 +34,7 @@ export default ({
           type: "WalletConnectionErrorEvent",
           payload: {
             walletType: "eth",
-            message: "Metamask not found.",
+            message: "Failed to connect to Metamask.",
           },
         });
       }

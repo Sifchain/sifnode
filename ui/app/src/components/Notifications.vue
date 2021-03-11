@@ -78,6 +78,14 @@ function parseEventToNotifications(event: AppEvent): Notification | null {
     };
   }
 
+  if (event.type === "ErrorEvent") {
+    return {
+      type: "error",
+      message: event.payload.message,
+      detail: event.payload.detail,
+    };
+  }
+
   if (event.type === "WalletConnectionErrorEvent") {
     return {
       type: "error",
