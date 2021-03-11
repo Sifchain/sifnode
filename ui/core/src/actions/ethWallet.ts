@@ -10,6 +10,16 @@ export default ({
   "EthereumService" | "EventBusService",
   "wallet" | "asset"
 >) => {
+  api.EthereumService.onProviderNotFound(() => {
+    api.EventBusService.dispatch({
+      type: "WalletConnectionErrorEvent",
+      payload: {
+        walletType: "eth",
+        message: "Metamask not found.",
+      },
+    });
+  });
+
   const etheriumState = api.EthereumService.getState();
 
   const actions = {

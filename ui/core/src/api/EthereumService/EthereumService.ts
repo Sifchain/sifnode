@@ -44,12 +44,15 @@ const initState = {
   log: "unset",
 };
 
+// TODO: Refactor to be Module pattern with constructor function ie. `EthereumService()`
+
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
   private supportedTokens: Asset[] = [];
   private blockSubscription: any;
   private provider: provider | undefined;
   private providerPromise: Promise<provider>;
+  private reportProviderNotFound = () => {};
 
   // This is shared reactive state
   private state: {
@@ -67,7 +70,9 @@ export class EthereumService implements IWalletService {
     this.providerPromise
       .then(provider => {
         if (!provider) {
-          return (this.provider = null);
+          this.provider = null;
+          this.reportProviderNotFound();
+          return;
         }
         if (isEventEmittingProvider(provider)) {
           provider.on("chainChanged", () => window.location.reload());
@@ -81,6 +86,10 @@ export class EthereumService implements IWalletService {
       .catch(error => {
         console.log("error", error);
       });
+  }
+
+  onProviderNotFound(handler: () => void) {
+    this.reportProviderNotFound = handler;
   }
 
   getState() {
@@ -233,7 +242,7 @@ export class EthereumService implements IWalletService {
 
   async signAndBroadcast() {}
 
-  async setPhrase() {
+  async setPhrase(args: string) {
     // We currently delegate auth to metamask so this is irrelavent
     return "";
   }
@@ -245,7 +254,7 @@ export class EthereumService implements IWalletService {
   static create({
     getWeb3Provider,
     assets,
-  }: EthereumServiceContext): IWalletService {
+  }: EthereumServiceContext): EthereumService {
     return new EthereumService(getWeb3Provider, assets);
   }
 }
