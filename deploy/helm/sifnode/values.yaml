@@ -33,7 +33,6 @@ sifnode:
     govMaxDepositPeriod: "10800000000000"
     govVotingPeriod: "10800000000000"
     clpConfigURL: ""
-    enableRPC: false
   env:
     daemonHome: "/root/.sifnoded"
     daemonName: "sifnoded"

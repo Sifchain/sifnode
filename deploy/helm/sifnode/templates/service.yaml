@@ -15,10 +15,8 @@ spec:
     - port: 26656
       protocol: TCP
       name: p2p
-    {{- if .Values.sifnode.args.enableRPC }}
     - port: 26657
       protocol: TCP
       name: rpc
-    {{- end }}
   selector:
     {{- include "sifnode.selectorLabels" . | nindent 4 }}
