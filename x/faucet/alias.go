@@ -21,7 +21,7 @@ var (
 	GetFaucetModuleAddress      = types.GetFaucetModuleAddress
 	NewMsgRequestCoins          = types.NewMsgRequestCoins
 	NewMsgAddCoins              = types.NewMsgAddCoins
-	NewRemoveFaucetFeeDecorator = types.NewRemoveFacuetFeeDecorator
+	NewRemoveFaucetFeeDecorator = types.NewRemoveFaucetFeeDecorator
 )
 
 type (

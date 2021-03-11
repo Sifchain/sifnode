@@ -9,7 +9,7 @@ import (
 
 type RemoveFaucetFeeDecorator struct{}
 
-func NewRemoveFacuetFeeDecorator() RemoveFaucetFeeDecorator {
+func NewRemoveFaucetFeeDecorator() RemoveFaucetFeeDecorator {
 	return RemoveFaucetFeeDecorator{}
 }
 
