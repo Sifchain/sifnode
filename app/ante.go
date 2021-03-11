@@ -32,6 +32,7 @@ func NewAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper) sdk.AnteHandle
 			)
 		case clp.SwapType:
 			anteHandler = sdk.ChainAnteDecorators(
+				clp.NewSwapFeeChangeDecorator(),
 				ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 				ante.NewMempoolFeeDecorator(),
 				ante.NewValidateBasicDecorator(),

@@ -36,6 +36,7 @@ var (
 	NewPool                     = types.NewPool
 	CalculateWithdrawal         = keeper.CalculateWithdrawal
 	CalculatePoolUnits          = keeper.CalculatePoolUnits
+	NewSwapFeeChangeDecorator   = types.NewSwapFeeChangeDecorator
 )
 
 type (
