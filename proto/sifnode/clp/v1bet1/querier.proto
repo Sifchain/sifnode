@@ -1,0 +1,59 @@
+syntax = "proto3";
+package sifchain.clp.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "sifnode/proto/clp/v1bet1/types.proto";
+
+option go_package = "github.com/sifchain/sifnode/x/clp/types";
+
+service Query {
+  rpc GetPool(QueryReqGetPoolRequest) returns (QueryReqGetPoolResponse) {
+    option (google.api.http).get = "/sifnode/clp/v1beta1/pool/{symbol}";
+  }
+  rpc LiquidityProvider(QueryReqLiquidityProviderRequest) returns (QueryReqLiquidityProviderResponse) {
+    option (google.api.http).get = "/sifnode/clp/v1beta1/pool/{symbol}/{lp_address}";
+  }
+  rpc GetAssetList(QueryReqGetAssetListRequest) returns (QueryReqGetAssetListResponse) {
+    option (google.api.http).get = "/sifnode/clp/v1beta1/asset_list/{lp_address}";
+  }
+  rpc GetLiquidityProviderList(QueryReqGetLiquidityProviderListRequest) returns (QueryReqGetLiquidityProviderListResponse) {
+    option (google.api.http).get = "/sifnode/clp/v1beta1/liquidity_provider/{symbol}";
+  }
+}
+
+message QueryReqGetPoolRequest {
+  option (gogoproto.equal)           = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string symbol = 1;
+}
+
+message QueryReqGetPoolResponse {}
+
+message QueryReqLiquidityProviderRequest {
+  option (gogoproto.equal)           = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string Symbol     = 1;
+  string lp_address = 2;
+}
+
+message QueryReqLiquidityProviderResponse {}
+
+message QueryReqGetAssetListRequest {
+  option (gogoproto.equal)           = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string lp_address = 1;
+}
+
+message QueryReqGetAssetListResponse {}
+
+message QueryReqGetLiquidityProviderListRequest {
+  option (gogoproto.equal)           = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string Symbol = 1;
+}
+
+message QueryReqGetLiquidityProviderListResponse {}

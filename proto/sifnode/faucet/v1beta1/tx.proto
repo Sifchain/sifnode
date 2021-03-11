@@ -1,0 +1,33 @@
+syntax = "proto3";
+package sifchain.faucet.v1beta1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/sifchain/sifnode/x/faucet/types";
+
+service Msg {
+  rpc RequestCoins(MsgRequestCoins) returns (MsgRequestCoinsResponse);
+  rpc AddCoins(MsgAddCoins) returns (MsgAddCoinsResponse);
+}
+
+message MsgRequestCoins {
+  string coins = 1 [
+    (gogoproto.moretags) = "yaml:\"coins\""
+  ];
+  string requester = 2 [
+    (gogoproto.moretags) = "yaml:\"requester\""
+  ];
+}
+message MsgRequestCoinsResponse {}
+
+message MsgAddCoins {
+  string signer = 1 [
+    (gogoproto.moretags) = "yaml:\"signer\""
+  ];
+  string coins = 2 [
+    (gogoproto.moretags) = "yaml:\"coins\""
+  ];
+  ;
+}
+
+message MsgAddCoinsResponse {}

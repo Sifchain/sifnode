@@ -22,3 +22,19 @@ func init() {
 	codec.RegisterCrypto(ModuleCdc)
 	ModuleCdc.Seal()
 }
+
+// func RegisterInterfaces(registry types.InterfaceRegistry) {
+// 	registry.RegisterImplementations(
+// 		(*sdk.Msg)(nil),
+// 		&MsgWithdrawDelegatorReward{},
+// 		&MsgWithdrawValidatorCommission{},
+// 		&MsgSetWithdrawAddress{},
+// 		&MsgFundCommunityPool{},
+// 	)
+// 	registry.RegisterImplementations(
+// 		(*govtypes.Content)(nil),
+// 		&CommunityPoolSpendProposal{},
+// 	)
+
+// 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
+// }

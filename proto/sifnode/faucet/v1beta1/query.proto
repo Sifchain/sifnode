@@ -1,0 +1,21 @@
+syntax = "proto3";
+package sifchain.faucet.v1beta1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/sifchain/sifnode/x/faucet/types";
+
+service Query {
+  rpc GetFaucetBalance(QueryReqGetFaucetBalanceRequest) returns (QueryReqGetFaucetBalanceResponse) {
+    option (google.api.http).get = "/sifnode/faucet/v1beta1/balance/{denom}";
+  }
+}
+
+message QueryReqGetFaucetBalanceRequest {
+  option (gogoproto.equal)           = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string denom = 1;
+}
+
+message QueryReqGetFaucetBalanceResponse {}

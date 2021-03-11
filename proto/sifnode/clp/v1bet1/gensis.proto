@@ -1,0 +1,16 @@
+syntax = "proto3";
+package sifchain.clp.v1beta1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/sifchain/sifnode/x/clp/types";
+
+import "sifnode/proto/clp/v1bet1/params.proto";
+import "sifnode/proto/clp/v1bet1/types.proto";
+
+message GenesisState {
+  sifchain.clp.v1beta1.Params params                                  = 1;
+  repeated string             address_whitelist                       = 2;
+  repeated sifchain.clp.v1beta1.Pools pool_list                       = 3;
+  repeated sifchain.clp.v1beta1.LiquidityProvider liquidity_providers = 4;
+}

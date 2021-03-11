@@ -1,0 +1,7 @@
+syntax = "proto3";
+package sifchain.faucet.v1beta1;
+
+option go_package = "github.com/sifchain/sifnode/x/faucet/types";
+
+// GenesisState - all faucet state that must be provided at genesis
+message GenesisState {}
