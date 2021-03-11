@@ -7,7 +7,6 @@ import {
 } from "../../entities";
 import { ActionContext } from "..";
 import { PoolStore } from "../../store/pools";
-import notify from "../../api/utils/Notifications";
 import { effect } from "@vue/reactivity";
 import JSBI from "jsbi";
 
@@ -15,7 +14,7 @@ export default ({
   api,
   store,
 }: ActionContext<
-  "SifService" | "ClpService",
+  "SifService" | "ClpService" | "EventBusService",
   "pools" | "wallet" | "accountpools"
 >) => {
   const state = api.SifService.getState();
@@ -70,13 +69,9 @@ export default ({
   syncPools().then(() => {
     effect(() => {
       if (Object.keys(store.pools).length === 0) {
-        notify({
-          type: "error",
-          message: "No Liquidity Pools Found",
-          detail: {
-            type: "info",
-            message: "Create liquidity pool to swap.",
-          },
+        api.EventBusService.dispatch({
+          type: "NoLiquidityPoolsFoundEvent",
+          payload: {},
         });
       }
     });
@@ -86,17 +81,6 @@ export default ({
 
   api.SifService.onNewBlock(async () => {
     await syncPools();
-  });
-
-  api.SifService.onSocketError(instance => {
-    notify({
-      type: "error",
-      message: "Websocket Not Connected",
-      detail: {
-        type: "websocket",
-        message: instance.target.url,
-      },
-    });
   });
 
   function findPool(pools: PoolStore, a: string, b: string) {
@@ -129,9 +113,12 @@ export default ({
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        notify({
-          type: "error",
-          message: txStatus.memo || "There was an error with your swap",
+        api.EventBusService.dispatch({
+          type: "TransactionErrorEvent",
+          payload: {
+            txStatus,
+            message: txStatus.memo || "There was an error with your swap",
+          },
         });
       }
 
@@ -161,9 +148,12 @@ export default ({
 
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
       if (txStatus.state !== "accepted") {
-        notify({
-          type: "error",
-          message: txStatus.memo || "There was an error adding liquidity",
+        api.EventBusService.dispatch({
+          type: "TransactionErrorEvent",
+          payload: {
+            txStatus,
+            message: txStatus.memo || "There was an error with your swap",
+          },
         });
       }
       return txStatus;
@@ -184,9 +174,12 @@ export default ({
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        notify({
-          type: "error",
-          message: txStatus.memo || "There was an error removing liquidity",
+        api.EventBusService.dispatch({
+          type: "TransactionErrorEvent",
+          payload: {
+            txStatus,
+            message: txStatus.memo || "There was an error removing liquidity",
+          },
         });
       }
 
