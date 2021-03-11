@@ -1,11 +1,9 @@
 package app
 
 import (
-	"fmt"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/faucet"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -14,13 +12,10 @@ import (
 func NewAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, sim bool) (newCtx sdk.Context, err error) {
 		var anteHandler sdk.AnteHandler
-		t, ok := tx.(faucet.MsgRequestCoins)
-		if ok {
-			fmt.Println(t.Type())
-		}
-		switch tx.(type) {
-		case faucet.MsgRequestCoins:
-			fmt.Println("Executing AnteHandler For RequestCoins")
+		// We do not have multi message transactions
+		msg := tx.GetMsgs()[0]
+		switch msg.Type() {
+		case faucet.RequestCoinsType:
 			anteHandler = sdk.ChainAnteDecorators(
 				faucet.NewRemoveFacuetFeeDecorator(),
 				ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
@@ -35,23 +30,7 @@ func NewAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper) sdk.AnteHandle
 				ante.NewSigVerificationDecorator(ak),
 				ante.NewIncrementSequenceDecorator(ak),
 			)
-		case auth.StdTx:
-			fmt.Println("Executing AnteHandler For stdTX")
-			anteHandler = sdk.ChainAnteDecorators(
-				ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
-				ante.NewMempoolFeeDecorator(),
-				ante.NewValidateBasicDecorator(),
-				ante.NewValidateMemoDecorator(ak),
-				ante.NewConsumeGasForTxSizeDecorator(ak),
-				ante.NewSetPubKeyDecorator(ak), // SetPubKeyDecorator must be called before all signature verification decorators
-				ante.NewValidateSigCountDecorator(ak),
-				ante.NewDeductFeeDecorator(ak, sk),
-				ante.NewSigGasConsumeDecorator(ak, auth.DefaultSigVerificationGasConsumer),
-				ante.NewSigVerificationDecorator(ak),
-				ante.NewIncrementSequenceDecorator(ak),
-			)
-		case clp.MsgSwap:
-			fmt.Println("Executing AnteHandler For swap")
+		case clp.SwapType:
 			anteHandler = sdk.ChainAnteDecorators(
 				ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 				ante.NewMempoolFeeDecorator(),
@@ -67,7 +46,19 @@ func NewAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper) sdk.AnteHandle
 			)
 
 		default:
-			return ctx, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "invalid transaction type: %T", tx)
+			anteHandler = sdk.ChainAnteDecorators(
+				ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
+				ante.NewMempoolFeeDecorator(),
+				ante.NewValidateBasicDecorator(),
+				ante.NewValidateMemoDecorator(ak),
+				ante.NewConsumeGasForTxSizeDecorator(ak),
+				ante.NewSetPubKeyDecorator(ak), // SetPubKeyDecorator must be called before all signature verification decorators
+				ante.NewValidateSigCountDecorator(ak),
+				ante.NewDeductFeeDecorator(ak, sk),
+				ante.NewSigGasConsumeDecorator(ak, auth.DefaultSigVerificationGasConsumer),
+				ante.NewSigVerificationDecorator(ak),
+				ante.NewIncrementSequenceDecorator(ak),
+			)
 		}
 
 		return anteHandler(ctx, tx, sim)

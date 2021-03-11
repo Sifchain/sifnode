@@ -17,9 +17,10 @@ const (
 	// QuerierRoute to be used for querier msgs
 	QuerierRoute = ModuleName
 
-	FaucetToken = "rowan"
-	MAINNET     = "mainnet"
-	TESTNET     = "testnet"
+	FaucetToken      = "rowan"
+	MAINNET          = "mainnet"
+	TESTNET          = "testnet"
+	RequestCoinsType = "request_coins"
 )
 
 const (

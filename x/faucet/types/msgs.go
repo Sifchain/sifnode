@@ -8,8 +8,7 @@ import (
 )
 
 var (
-	_ sdk.Tx = (*MsgRequestCoins)(nil)
-	//_ sdk.Tx = &MsgRequestCoins{}
+	_ sdk.Msg = &MsgRequestCoins{}
 	_ sdk.Msg = &MsgAddCoins{}
 )
 
@@ -31,7 +30,7 @@ func (msg MsgRequestCoins) Route() string {
 }
 
 func (msg MsgRequestCoins) Type() string {
-	return "request_coins"
+	return RequestCoinsType
 }
 
 func (msg MsgRequestCoins) ValidateBasic() error {

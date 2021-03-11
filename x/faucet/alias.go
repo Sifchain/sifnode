@@ -13,6 +13,7 @@ const (
 	DefaultParamspace = types.DefaultParamspace
 	TESTNET           = types.TESTNET
 	MAINNET           = types.MAINNET
+	RequestCoinsType  = types.RequestCoinsType
 )
 
 var (
