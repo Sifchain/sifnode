@@ -18,6 +18,7 @@ import {
   transferAsset,
 } from "./utils/ethereumUtils";
 import { isToken } from "../../entities/utils/isToken";
+import { Msg } from "@cosmjs/launchpad";
 
 type Address = string;
 type Balances = AssetAmount[];
@@ -240,7 +241,7 @@ export class EthereumService implements IWalletService {
     return await transferAsset(this.web3, from, recipient, amount, asset);
   }
 
-  async signAndBroadcast() {}
+  async signAndBroadcast(msg: Msg, mmo?: string) {}
 
   async setPhrase(args: string) {
     // We currently delegate auth to metamask so this is irrelavent
@@ -254,7 +255,7 @@ export class EthereumService implements IWalletService {
   static create({
     getWeb3Provider,
     assets,
-  }: EthereumServiceContext): EthereumService {
+  }: EthereumServiceContext): IWalletService {
     return new EthereumService(getWeb3Provider, assets);
   }
 }

@@ -1,8 +1,9 @@
 import createActions from "./ethWallet";
-import { IWalletService } from "../api/IWalletService";
+
 import { Address, Asset, Network, Token, TxParams } from "../entities";
 import { Msg } from "@cosmjs/launchpad";
-let mockEthereumService: IWalletService;
+import { IWalletService } from "../api/IWalletService";
+let mockEthereumService: IWalletService & {};
 let mockEventBusService: any;
 let ethWalletActions: ReturnType<typeof createActions>;
 let dispatch = jest.fn();
@@ -25,6 +26,7 @@ beforeEach(() => {
     signAndBroadcast: async (msg: Msg, memo?: string) => {},
     setPhrase: async (phrase: string) => "",
     purgeClient: () => {},
+    onProviderNotFound: () => {},
   };
 
   mockEventBusService = {
