@@ -120,9 +120,9 @@ proto-swagger-gen:
 .PHONY: proto-swagger-gen
 
 proto-lint:
-	$(DOCKER_BUF) check lint --error-format=json
+	$(DOCKER_BUF) lint --error-format=json
 .PHONY: proto-lint
 
 proto-check-breaking:
-	@$(DOCKER_BUF) check breaking --against-input $(HTTPS_GIT)#branch=master
+	@$(DOCKER_BUF) breaking --against-input $(HTTPS_GIT)#branch=master
 .PHONY: proto-check-breaking
