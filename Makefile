@@ -5,6 +5,7 @@ NOW=$(shell date +'%Y-%m-%d_%T')
 COMMIT:=$(shell git log -1 --format='%H')
 VERSION:=$(shell cat version)
 HTTPS_GIT := https://github.com/sifchain/sifnode.git
+DOCKER := $(shell which docker)
 DOCKER_BUF := $(DOCKER) run --rm -v $(CURDIR):/workspace --workdir /workspace bufbuild/buf
 
 ifeq (mainnet,${CHAINNET})
@@ -119,7 +120,7 @@ proto-swagger-gen:
 .PHONY: proto-swagger-gen
 
 proto-lint:
-	@$(DOCKER_BUF) check lint --error-format=json
+	$(DOCKER_BUF) check lint --error-format=json
 .PHONY: proto-lint
 
 proto-check-breaking:
