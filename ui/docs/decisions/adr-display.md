@@ -1,3 +1,5 @@
+```
+
 // import DisplayAmount from "@core/DisplayAmount";
 
 interface Asset {} // Re-used
@@ -44,3 +46,4 @@ balance = DisplayAmount(asset, amount, Type.absolute, { commas: true });
 
 balance = DisplayAmount(asset, amount, Type.fixed, { precision: 3, padding: 2 });
 // e.g. amount = 1000.001 returns 1000.00100;
+```
