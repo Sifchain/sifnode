@@ -8,13 +8,18 @@ import (
 )
 
 var (
-	_ sdk.Msg = &MsgRequestCoins{}
+	_ sdk.Tx = (*MsgRequestCoins)(nil)
+	//_ sdk.Tx = &MsgRequestCoins{}
 	_ sdk.Msg = &MsgAddCoins{}
 )
 
 type MsgRequestCoins struct {
 	Coins     sdk.Coins
 	Requester sdk.AccAddress
+}
+
+func (msg MsgRequestCoins) GetMsgs() []sdk.Msg {
+	return []sdk.Msg{msg}
 }
 
 func NewMsgRequestCoins(requester sdk.AccAddress, coins sdk.Coins) MsgRequestCoins {

@@ -15,6 +15,7 @@ const (
 	MaxWbasis         = types.MaxWbasis
 	PoolThrehold      = types.PoolThrehold
 	PoolUnitsMinValue = types.PoolUnitsMinValue
+	SwapType          = types.SwapType
 )
 
 var (

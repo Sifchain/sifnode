@@ -25,6 +25,7 @@ var (
 )
 
 type (
-	Keeper       = keeper.Keeper
-	GenesisState = types.GenesisState
+	Keeper          = keeper.Keeper
+	GenesisState    = types.GenesisState
+	MsgRequestCoins = types.MsgRequestCoins
 )

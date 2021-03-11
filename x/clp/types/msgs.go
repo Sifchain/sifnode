@@ -58,6 +58,10 @@ type MsgSwap struct {
 	MinReceivingAmount sdk.Uint
 }
 
+func (m MsgSwap) GetMsgs() []sdk.Msg {
+	return []sdk.Msg{m}
+}
+
 func NewMsgSwap(signer sdk.AccAddress, sentAsset Asset, receivedAsset Asset, sentAmount sdk.Uint, minReceivingAmount sdk.Uint) MsgSwap {
 	return MsgSwap{Signer: signer, SentAsset: sentAsset, ReceivedAsset: receivedAsset, SentAmount: sentAmount, MinReceivingAmount: minReceivingAmount}
 }
@@ -67,7 +71,7 @@ func (m MsgSwap) Route() string {
 }
 
 func (m MsgSwap) Type() string {
-	return "swap"
+	return SwapType
 }
 
 func (m MsgSwap) ValidateBasic() error {

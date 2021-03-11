@@ -18,6 +18,7 @@ const (
 	QuerierRoute = ModuleName
 
 	NativeSymbol      = "rowan"
+	SwapType          = "swap"
 	PoolThrehold      = "1000000000000000000"
 	PoolUnitsMinValue = "1000000000"
 
