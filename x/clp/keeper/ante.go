@@ -1,14 +1,19 @@
-package types
+package keeper
 
 import (
 	"fmt"
+	clpTypes "github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/types"
 )
 
-type SwapFeeChangeDecorator struct{}
+type SwapFeeChangeDecorator struct {
+	ck Keeper
+}
 
-func NewSwapFeeChangeDecorator() SwapFeeChangeDecorator {
-	return SwapFeeChangeDecorator{}
+func NewSwapFeeChangeDecorator(ck Keeper) SwapFeeChangeDecorator {
+	return SwapFeeChangeDecorator{
+		ck: ck,
+	}
 }
 
 var _ types.AnteDecorator = SwapFeeChangeDecorator{}
@@ -16,8 +21,8 @@ var _ types.AnteDecorator = SwapFeeChangeDecorator{}
 func (r SwapFeeChangeDecorator) AnteHandle(ctx types.Context, tx types.Tx, simulate bool, next types.AnteHandler) (newCtx types.Context, err error) {
 	msg := tx.GetMsgs()[0]
 	switch msg := msg.(type) {
-	case MsgSwap:
-		currentGasPrice := ctx.MinGasPrices().AmountOf(GetSettlementAsset().Symbol)
+	case clpTypes.MsgSwap:
+		currentGasPrice := ctx.MinGasPrices().AmountOf(clpTypes.GetSettlementAsset().Symbol)
 		multiplier, _ := types.NewDecFromStr("0.001")
 		currentGasPrice = currentGasPrice.Mul(multiplier)
 		fmt.Println("Current Gas Price in rowan", currentGasPrice)

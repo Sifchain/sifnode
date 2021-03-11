@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
-func NewAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper) sdk.AnteHandler {
+func NewAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper, ck clp.Keeper) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, sim bool) (newCtx sdk.Context, err error) {
 		var anteHandler sdk.AnteHandler
 		// We do not have multi message transactions
@@ -32,7 +32,7 @@ func NewAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper) sdk.AnteHandle
 			)
 		case clp.SwapType:
 			anteHandler = sdk.ChainAnteDecorators(
-				clp.NewSwapFeeChangeDecorator(),
+				clp.NewSwapFeeChangeDecorator(ck),
 				ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 				ante.NewMempoolFeeDecorator(),
 				ante.NewValidateBasicDecorator(),

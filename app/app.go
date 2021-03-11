@@ -308,7 +308,7 @@ func NewInitApp(
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
-	app.SetAnteHandler(NewAnteHandler(app.AccountKeeper, app.SupplyKeeper))
+	app.SetAnteHandler(NewAnteHandler(app.AccountKeeper, app.SupplyKeeper, app.clpKeeper))
 	app.MountKVStores(keys)
 	app.MountTransientStores(tKeys)
 
