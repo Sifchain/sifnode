@@ -3,9 +3,9 @@ import { IWalletService } from "../api/IWalletService";
 import { Address, Asset, Network, Token, TxParams } from "../entities";
 import { Msg } from "@cosmjs/launchpad";
 let mockEthereumService: IWalletService;
-let mockEventsService: any;
+let mockEventBusService: any;
 let ethWalletActions: ReturnType<typeof createActions>;
-let notify = jest.fn();
+let dispatch = jest.fn();
 
 beforeEach(() => {
   mockEthereumService = {
@@ -27,14 +27,14 @@ beforeEach(() => {
     purgeClient: () => {},
   };
 
-  mockEventsService = {
-    notify: notify,
+  mockEventBusService = {
+    dispatch: dispatch,
   };
 
   ethWalletActions = createActions({
     api: {
       EthereumService: mockEthereumService,
-      EventsService: mockEventsService,
+      EventBusService: mockEventBusService,
     },
     store: {
       asset: { topTokens: [] },

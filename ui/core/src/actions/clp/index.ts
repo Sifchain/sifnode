@@ -14,7 +14,7 @@ export default ({
   api,
   store,
 }: ActionContext<
-  "SifService" | "ClpService" | "EventsService",
+  "SifService" | "ClpService" | "EventBusService",
   "pools" | "wallet" | "accountpools"
 >) => {
   const state = api.SifService.getState();
@@ -69,7 +69,7 @@ export default ({
   syncPools().then(() => {
     effect(() => {
       if (Object.keys(store.pools).length === 0) {
-        api.EventsService.notify({
+        api.EventBusService.dispatch({
           type: "NoLiquidityPoolsFoundEvent",
           payload: {},
         });
@@ -113,7 +113,7 @@ export default ({
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        api.EventsService.notify({
+        api.EventBusService.dispatch({
           type: "TransactionErrorEvent",
           payload: {
             txStatus,
@@ -148,7 +148,7 @@ export default ({
 
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
       if (txStatus.state !== "accepted") {
-        api.EventsService.notify({
+        api.EventBusService.dispatch({
           type: "TransactionErrorEvent",
           payload: {
             txStatus,
@@ -174,7 +174,7 @@ export default ({
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        api.EventsService.notify({
+        api.EventBusService.dispatch({
           type: "TransactionErrorEvent",
           payload: {
             txStatus,

@@ -23,7 +23,7 @@ export default ({
 }: ActionContext<
   // Once we have moved all interactors to their own files this can be
   // ActionContext<any,any> or renamed to InteractorContext<any,any>
-  "SifService" | "EthbridgeService" | "EventsService" | "EthereumService", // Select the services you want to access
+  "SifService" | "EthbridgeService" | "EventBusService" | "EthereumService", // Select the services you want to access
   "wallet" | "tx" // Select the store keys you want to access
 >) => {
   const config: PegConfig = {
@@ -103,7 +103,7 @@ export default ({
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        api.EventsService.notify({
+        api.EventBusService.dispatch({
           type: "PegTransactionErrorEvent",
           payload: {
             txStatus,
