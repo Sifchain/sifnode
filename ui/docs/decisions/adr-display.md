@@ -1,4 +1,4 @@
-```
+```js
 
 // import DisplayAmount from "@core/DisplayAmount";
 
