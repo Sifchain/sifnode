@@ -18,6 +18,8 @@ const (
 	QuerierRoute = ModuleName
 
 	FaucetToken = "rowan"
+	MAINNET     = "mainnet"
+	TESTNET     = "testnet"
 )
 
 const (

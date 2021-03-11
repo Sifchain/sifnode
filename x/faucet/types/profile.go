@@ -1,6 +1,6 @@
 // +build !testnet
 
-package faucet
+package types
 
 // Faucet should not be added in mainnet version
-const profile = MAINNET
+const Profile = MAINNET

@@ -1,13 +1,12 @@
 package types
 
 import (
-	"fmt"
+	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 )
 
-// fee grants.
 type RemoveFaucetFeeDecorator struct{}
 
 func NewRemoveFacuetFeeDecorator() RemoveFaucetFeeDecorator {
@@ -22,16 +21,11 @@ func (r RemoveFaucetFeeDecorator) AnteHandle(ctx types.Context, tx types.Tx, sim
 		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "invalid transaction type")
 	}
 	msgs := sigTx.GetMsgs()
-	fmt.Println("Executing ante Handler")
 	for _, msg := range msgs {
-		if msg.Type() == "request_coins" {
-			//limit := ctx.GasMeter().Limit()
-			fmt.Println("Inside Request coins")
-			newDecCoin := types.NewDecCoinFromDec("rowan", types.NewDec(0))
+		if msg.Type() == "request_coins" && ctx.ChainID() != "sifchain" && Profile == TESTNET {
+			newDecCoin := types.NewDecCoinFromDec(clp.GetSettlementAsset().Symbol, types.NewDec(0))
 			ctx = ctx.WithMinGasPrices(types.NewDecCoins(newDecCoin))
 		}
 	}
 	return next(ctx, tx, simulate)
 }
-
-// NewRejectFeeGranterDecorator returns a new RejectFeeGranterDecorator.

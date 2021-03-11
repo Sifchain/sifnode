@@ -1,6 +1,6 @@
 // +build testnet
 
-package faucet
+package types
 
 // faucet should only be added to testnet.
-const profile = TESTNET
+const Profile = TESTNET

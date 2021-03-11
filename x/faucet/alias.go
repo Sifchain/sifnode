@@ -11,9 +11,8 @@ const (
 	StoreKey          = types.StoreKey
 	QuerierRoute      = types.QuerierRoute
 	DefaultParamspace = types.DefaultParamspace
-
-	MAINNET = "mainnet"
-	TESTNET = "testnet"
+	TESTNET           = types.TESTNET
+	MAINNET           = types.MAINNET
 )
 
 var (
