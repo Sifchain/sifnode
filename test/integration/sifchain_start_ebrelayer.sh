@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ev
+set -e
 
 . $(dirname $0)/vagrantenv.sh
 . ${TEST_INTEGRATION_DIR}/shell_utilities.sh
