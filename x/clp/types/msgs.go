@@ -16,13 +16,13 @@ var (
 	_ sdk.Msg = &MsgDecommissionPool{}
 )
 
-type MsgDecommissionPool struct {
-	Signer sdk.AccAddress `json:"signer"`
-	Symbol string         `json:"symbol"`
-}
+// type MsgDecommissionPool struct {
+// 	Signer sdk.AccAddress `json:"signer"`
+// 	Symbol string         `json:"symbol"`
+// }
 
 func NewMsgDecommissionPool(signer sdk.AccAddress, symbol string) MsgDecommissionPool {
-	return MsgDecommissionPool{Signer: signer, Symbol: symbol}
+	return MsgDecommissionPool{Signer: signer.String(), Symbol: symbol}
 }
 
 func (m MsgDecommissionPool) Route() string {
@@ -34,8 +34,8 @@ func (m MsgDecommissionPool) Type() string {
 }
 
 func (m MsgDecommissionPool) ValidateBasic() error {
-	if m.Signer.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
 	if !VerifyRange(len(strings.TrimSpace(m.Symbol)), 0, MaxSymbolLength) {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, m.Symbol)
@@ -48,19 +48,15 @@ func (m MsgDecommissionPool) GetSignBytes() []byte {
 }
 
 func (m MsgDecommissionPool) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.Signer}
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
 }
 
-// type MsgSwap struct {
-// 	Signer             sdk.AccAddress
-// 	SentAsset          Asset
-// 	ReceivedAsset      Asset
-// 	SentAmount         sdk.Uint
-// 	MinReceivingAmount sdk.Uint
-// }
-
 func NewMsgSwap(signer sdk.AccAddress, sentAsset Asset, receivedAsset Asset, sentAmount sdk.Uint, minReceivingAmount sdk.Uint) MsgSwap {
-	return MsgSwap{Signer: signer, SentAsset: sentAsset, ReceivedAsset: receivedAsset, SentAmount: sentAmount, MinReceivingAmount: minReceivingAmount}
+	return MsgSwap{Signer: signer.String(), SentAsset: &sentAsset, ReceivedAsset: &receivedAsset, SentAmount: sentAmount, MinReceivingAmount: minReceivingAmount}
 }
 
 func (m MsgSwap) Route() string {
@@ -72,8 +68,8 @@ func (m MsgSwap) Type() string {
 }
 
 func (m MsgSwap) ValidateBasic() error {
-	if m.Signer.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
 	if !m.SentAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.SentAsset.Symbol)
@@ -96,18 +92,15 @@ func (m MsgSwap) GetSignBytes() []byte {
 }
 
 func (m MsgSwap) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.Signer}
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
 }
 
-// type MsgRemoveLiquidity struct {
-// 	Signer        sdk.AccAddress
-// 	ExternalAsset Asset
-// 	WBasisPoints  sdk.Int
-// 	Asymmetry     sdk.Int
-// }
-
 func NewMsgRemoveLiquidity(signer sdk.AccAddress, externalAsset Asset, wBasisPoints sdk.Int, asymmetry sdk.Int) MsgRemoveLiquidity {
-	return MsgRemoveLiquidity{Signer: signer, ExternalAsset: externalAsset, WBasisPoints: wBasisPoints, Asymmetry: asymmetry}
+	return MsgRemoveLiquidity{Signer: signer.String(), ExternalAsset: &externalAsset, WBasisPoints: wBasisPoints, Asymmetry: asymmetry}
 }
 
 func (m MsgRemoveLiquidity) Route() string {
@@ -119,8 +112,8 @@ func (m MsgRemoveLiquidity) Type() string {
 }
 
 func (m MsgRemoveLiquidity) ValidateBasic() error {
-	if m.Signer.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
@@ -139,18 +132,15 @@ func (m MsgRemoveLiquidity) GetSignBytes() []byte {
 }
 
 func (m MsgRemoveLiquidity) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.Signer}
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
 }
 
-// type MsgAddLiquidity struct {
-// 	Signer              sdk.AccAddress
-// 	ExternalAsset       Asset
-// 	NativeAssetAmount   sdk.Uint
-// 	ExternalAssetAmount sdk.Uint
-// }
-
 func NewMsgAddLiquidity(signer sdk.AccAddress, externalAsset Asset, nativeAssetAmount sdk.Uint, externalAssetAmount sdk.Uint) MsgAddLiquidity {
-	return MsgAddLiquidity{Signer: signer, ExternalAsset: externalAsset, NativeAssetAmount: nativeAssetAmount, ExternalAssetAmount: externalAssetAmount}
+	return MsgAddLiquidity{Signer: signer.String(), ExternalAsset: &externalAsset, NativeAssetAmount: nativeAssetAmount, ExternalAssetAmount: externalAssetAmount}
 }
 
 func (m MsgAddLiquidity) Route() string {
@@ -162,13 +152,13 @@ func (m MsgAddLiquidity) Type() string {
 }
 
 func (m MsgAddLiquidity) ValidateBasic() error {
-	if m.Signer.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
 	}
-	if m.ExternalAsset == GetSettlementAsset() {
+	if m.ExternalAsset.Equals(GetSettlementAsset()) {
 		return sdkerrors.Wrap(ErrInValidAsset, "External asset cannot be rowan")
 	}
 	if !(m.NativeAssetAmount.GTE(sdk.ZeroUint())) && (m.ExternalAssetAmount.GTE(sdk.ZeroUint())) {
@@ -183,18 +173,22 @@ func (m MsgAddLiquidity) GetSignBytes() []byte {
 }
 
 func (m MsgAddLiquidity) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.Signer}
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
 }
 
-type MsgCreatePool struct {
-	Signer              sdk.AccAddress
-	ExternalAsset       Asset
-	NativeAssetAmount   sdk.Uint
-	ExternalAssetAmount sdk.Uint
-}
+// type MsgCreatePool struct {
+// 	Signer              sdk.AccAddress
+// 	ExternalAsset       Asset
+// 	NativeAssetAmount   sdk.Uint
+// 	ExternalAssetAmount sdk.Uint
+// }
 
 func NewMsgCreatePool(signer sdk.AccAddress, externalAsset Asset, nativeAssetAmount sdk.Uint, externalAssetAmount sdk.Uint) MsgCreatePool {
-	return MsgCreatePool{Signer: signer, ExternalAsset: externalAsset, NativeAssetAmount: nativeAssetAmount, ExternalAssetAmount: externalAssetAmount}
+	return MsgCreatePool{Signer: signer.String(), ExternalAsset: &externalAsset, NativeAssetAmount: nativeAssetAmount, ExternalAssetAmount: externalAssetAmount}
 }
 
 func (m MsgCreatePool) Route() string {
@@ -206,13 +200,13 @@ func (m MsgCreatePool) Type() string {
 }
 
 func (m MsgCreatePool) ValidateBasic() error {
-	if m.Signer.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
+	if len(m.Signer) == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer)
 	}
 	if !m.ExternalAsset.Validate() {
 		return sdkerrors.Wrap(ErrInValidAsset, m.ExternalAsset.Symbol)
 	}
-	if m.ExternalAsset == GetSettlementAsset() {
+	if m.ExternalAsset.Equals(GetSettlementAsset()) {
 		return sdkerrors.Wrap(ErrInValidAsset, "External Asset cannot be rowan")
 	}
 	if !(m.NativeAssetAmount.GT(sdk.ZeroUint())) {
@@ -229,5 +223,9 @@ func (m MsgCreatePool) GetSignBytes() []byte {
 }
 
 func (m MsgCreatePool) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.Signer}
+	addr, err := sdk.AccAddressFromBech32(m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{addr}
 }

@@ -1,16 +1,11 @@
 package types
 
 import (
-	"fmt"
 	"strings"
 
 	authtypes "github.com/cosmos/comsos-sdk/x/auth/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
-
-type Asset struct {
-	Symbol string `json:"symbol"`
-}
 
 type Assets []Asset
 
@@ -19,12 +14,6 @@ func NewAsset(symbol string) Asset {
 	return Asset{
 		Symbol: symbol,
 	}
-}
-
-// implement fmt.Stringer
-func (a Asset) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`
-Symbol: %s`, a.Symbol))
 }
 
 func (a Asset) Validate() bool {

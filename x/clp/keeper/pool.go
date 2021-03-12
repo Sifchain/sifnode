@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) error {
+func (k Keeper) SetPool(ctx sdk.Context, pool *types.Pool) error {
 	if !pool.Validate() {
 		return types.ErrUnableToSetPool
 	}

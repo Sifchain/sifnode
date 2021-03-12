@@ -38,3 +38,7 @@ message LiquidityProvider {
   ];
   string liquidity_provider_address = 3;
 }
+
+message WhiteList {
+  repeated string validator_list = 1;
+}

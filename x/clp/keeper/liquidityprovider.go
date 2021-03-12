@@ -5,12 +5,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) SetLiquidityProvider(ctx sdk.Context, lp types.LiquidityProvider) {
+func (k Keeper) SetLiquidityProvider(ctx sdk.Context, lp *types.LiquidityProvider) {
 	if !lp.Validate() {
 		return
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetLiquidityProviderKey(lp.Asset.Symbol, lp.LiquidityProviderAddress.String())
+	key := types.GetLiquidityProviderKey(lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	store.Set(key, k.cdc.MustMarshalBinaryBare(lp))
 }
 
@@ -52,8 +52,8 @@ func (k Keeper) GetAssetsForLiquidityProvider(ctx sdk.Context, lpAddress sdk.Add
 		var lp types.LiquidityProvider
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
-		if lp.LiquidityProviderAddress.Equals(lpAddress) {
-			assetList = append(assetList, lp.Asset)
+		if lp.LiquidityProviderAddress == lpAddress.String() {
+			assetList = append(assetList, *lp.Asset) //todo: test nil panics
 		}
 	}
 	return assetList
@@ -76,7 +76,7 @@ func (k Keeper) GetLiquidityProvidersForAsset(ctx sdk.Context, asset types.Asset
 		var lp types.LiquidityProvider
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &lp)
-		if lp.Asset == asset {
+		if lp.Asset.Equals(asset) {
 			lpList = append(lpList, lp)
 		}
 	}

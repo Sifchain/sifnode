@@ -1,25 +1,8 @@
 package types
 
 import (
-	"fmt"
-	"strings"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
-
-type Pool struct {
-	ExternalAsset        Asset    `json:"external_asset"`
-	NativeAssetBalance   sdk.Uint `json:"native_asset_balance"`
-	ExternalAssetBalance sdk.Uint `json:"external_asset_balance"`
-	PoolUnits            sdk.Uint `json:"pool_units"`
-}
-
-func (p Pool) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`ExternalAsset: %s
-	ExternalAssetBalance: %s
-	NativeAssetBalance: %s
-	PoolUnits : %s`, p.ExternalAsset, p.ExternalAssetBalance, p.NativeAssetBalance, p.PoolUnits))
-}
 
 func (p Pool) Validate() bool {
 	if !p.ExternalAsset.Validate() {
@@ -29,7 +12,7 @@ func (p Pool) Validate() bool {
 }
 
 // NewPool returns a new Pool
-func NewPool(externalAsset Asset, nativeAssetBalance, externalAssetBalance, poolUnits sdk.Uint) (Pool, error) {
+func NewPool(externalAsset *Asset, nativeAssetBalance, externalAssetBalance, poolUnits sdk.Uint) (Pool, error) {
 	pool := Pool{ExternalAsset: externalAsset,
 		NativeAssetBalance:   nativeAssetBalance,
 		ExternalAssetBalance: externalAssetBalance,
@@ -41,17 +24,11 @@ func NewPool(externalAsset Asset, nativeAssetBalance, externalAssetBalance, pool
 type Pools []Pool
 type LiquidityProviders []LiquidityProvider
 
-type LiquidityProvider struct {
-	Asset                    Asset          `json:"asset"`
-	LiquidityProviderUnits   sdk.Uint       `json:"liquidity_provider_units"`
-	LiquidityProviderAddress sdk.AccAddress `json:"liquidity_provider_address"`
-}
-
-func (l LiquidityProvider) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`ExternalAsset: %s
-	LiquidityProviderUnits: %s
-	liquidityOroviderAddress: %s`, l.Asset, l.LiquidityProviderUnits, l.LiquidityProviderAddress))
-}
+// type LiquidityProvider struct {
+// 	Asset                    Asset          `json:"asset"`
+// 	LiquidityProviderUnits   sdk.Uint       `json:"liquidity_provider_units"`
+// 	LiquidityProviderAddress sdk.AccAddress `json:"liquidity_provider_address"`
+// }
 
 func (l LiquidityProvider) Validate() bool {
 
@@ -62,8 +39,8 @@ func (l LiquidityProvider) Validate() bool {
 }
 
 // NewLiquidityProvider returns a new LiquidityProvider
-func NewLiquidityProvider(asset Asset, liquidityProviderUnits sdk.Uint, liquidityProviderAddress sdk.AccAddress) LiquidityProvider {
-	return LiquidityProvider{Asset: asset, LiquidityProviderUnits: liquidityProviderUnits, LiquidityProviderAddress: liquidityProviderAddress}
+func NewLiquidityProvider(asset *Asset, liquidityProviderUnits sdk.Uint, liquidityProviderAddress sdk.AccAddress) LiquidityProvider {
+	return LiquidityProvider{Asset: asset, LiquidityProviderUnits: liquidityProviderUnits, LiquidityProviderAddress: liquidityProviderAddress.String()}
 }
 
 // ----------------------------------------------------------------------------

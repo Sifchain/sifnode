@@ -9,8 +9,8 @@ import (
 
 // Default parameter namespace
 const (
-	DefaultParamspace                  = ModuleName
-	DefaultMinCreatePoolThreshold uint = 100
+	DefaultParamspace                    = ModuleName
+	DefaultMinCreatePoolThreshold uint64 = 100
 )
 
 // Parameter store keys
@@ -25,23 +25,16 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params object
-func NewParams(minThreshold uint) Params {
+func NewParams(minThreshold uint64) Params {
 	return Params{
 		MinCreatePoolThreshold: minThreshold,
 	}
 }
 
-// String implements the stringer interface for Params
-func (p Params) String() string {
-	return fmt.Sprintf(`
-	MinCreatePoolThreshold : %d
-	`, p.MinCreatePoolThreshold)
-}
-
 // ParamSetPairs - Implements params.ParamSet
-func (p *Params) ParamSetPairs() params.ParamSetPairs {
-	return params.ParamSetPairs{
-		params.NewParamSetPair(KeyMinCreatePoolThreshold, &p.MinCreatePoolThreshold, validateMinCreatePoolThreshold),
+func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
+	return paramtypes.ParamSetPairs{
+		paramtypes.NewParamSetPair(KeyMinCreatePoolThreshold, &p.MinCreatePoolThreshold, validateMinCreatePoolThreshold),
 	}
 }
 

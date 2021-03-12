@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/clp/test"
@@ -24,7 +25,7 @@ func TestKeeper_Errors(t *testing.T) {
 	lp := test.GenerateRandomLP(1)[0]
 	lp.Asset.Symbol = ""
 	keeper.SetLiquidityProvider(ctx, lp)
-	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress.String())
+	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.Error(t, err)
 	assert.NotEqual(t, getlp, lp)
 	assert.NotNil(t, test.GenerateAddress("A58856F0FD53BF058B4909A21AEC019107BA7"))
@@ -75,10 +76,10 @@ func TestKeeper_SetLiquidityProvider(t *testing.T) {
 	lp := test.GenerateRandomLP(1)[0]
 	ctx, keeper := test.CreateTestAppClp(false)
 	keeper.SetLiquidityProvider(ctx, lp)
-	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress.String())
+	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.NoError(t, err, "Error in get liquidityProvider")
 	assert.Equal(t, getlp, lp)
-	lpList := keeper.GetLiquidityProvidersForAsset(ctx, lp.Asset)
+	lpList := keeper.GetLiquidityProvidersForAsset(ctx, *lp.Asset)
 	assert.Equal(t, lp, lpList[0])
 }
 
@@ -86,15 +87,15 @@ func TestKeeper_DestroyLiquidityProvider(t *testing.T) {
 	lp := test.GenerateRandomLP(1)[0]
 	ctx, keeper := test.CreateTestAppClp(false)
 	keeper.SetLiquidityProvider(ctx, lp)
-	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress.String())
+	getlp, err := keeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.NoError(t, err, "Error in get liquidityProvider")
 	assert.Equal(t, getlp, lp)
 	assert.True(t, keeper.GetLiquidityProviderIterator(ctx).Valid())
-	keeper.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress.String())
-	_, err = keeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress.String())
+	keeper.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
+	_, err = keeper.GetLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.Error(t, err, "LiquidityProvider has been deleted")
 	// This should do nothing
-	keeper.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress.String())
+	keeper.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	assert.False(t, keeper.GetLiquidityProviderIterator(ctx).Valid())
 }
 
@@ -119,13 +120,16 @@ func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 	for _, lp := range lpList {
 		keeper.SetLiquidityProvider(ctx, lp)
 	}
-	assetList := keeper.GetAssetsForLiquidityProvider(ctx, lpList[0].LiquidityProviderAddress)
+
+	lpaddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
+	require.NoError(t, err)
+	assetList := keeper.GetAssetsForLiquidityProvider(ctx, lpaddr)
 	assert.LessOrEqual(t, len(assetList), len(lpList))
 }
 
 func TestKeeper_GetModuleAccount(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
-	moduleAccount := keeper.GetSupplyKeeper().GetModuleAccount(ctx, clp.ModuleName)
+	moduleAccount := keeper.GetAuthKeeper().GetModuleAccount(ctx, clp.ModuleName)
 	assert.Equal(t, moduleAccount.GetName(), clp.ModuleName)
 	assert.Equal(t, moduleAccount.GetPermissions(), []string{authtypes.Burner, authtypes.Minter})
 }

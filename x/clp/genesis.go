@@ -2,6 +2,7 @@ package clp
 
 import (
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pkg/errors"
@@ -19,7 +20,7 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res [
 			panic(fmt.Sprintf("Pool could not be set : %s", pool.String()))
 		}
 	}
-	for _, lp := range data.LiquidityProviderList {
+	for _, lp := range data.LiquidityProviders {
 		keeper.SetLiquidityProvider(ctx, lp)
 	}
 	return []abci.ValidatorUpdate{}
@@ -31,10 +32,10 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
 	liquidityProviders := keeper.GetLiquidityProviders(ctx)
 	whiteList := keeper.GetClpWhiteList(ctx)
 	return GenesisState{
-		Params:                params,
-		AddressWhitelist:      whiteList,
-		PoolList:              poolList,
-		LiquidityProviderList: liquidityProviders,
+		Params:             params,
+		AddressWhitelist:   whiteList,
+		PoolList:           poolList,
+		LiquidityProviders: liquidityProviders,
 	}
 }
 
@@ -48,7 +49,7 @@ func ValidateGenesis(data GenesisState) error {
 			return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Pool is invalid : %s", pool.String()))
 		}
 	}
-	for _, lp := range data.LiquidityProviderList {
+	for _, lp := range data.LiquidityProviders {
 		if !lp.Validate() {
 			return errors.Wrap(types.ErrInvalid, fmt.Sprintf("LiquidityProvider is invalid : %s", lp.String()))
 		}

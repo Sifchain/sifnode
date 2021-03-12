@@ -23,6 +23,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Params - used for initializing default parameter for clp at genesis
 type Params struct {
 	MinCreatePoolThreshold uint64 `protobuf:"varint,1,opt,name=min_create_pool_threshold,json=minCreatePoolThreshold,proto3" json:"min_create_pool_threshold,omitempty"`
 }

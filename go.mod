@@ -60,6 +60,7 @@ require (
 	github.com/yelinaung/go-haikunator v0.0.0-20150320004105-1249cae259af
 	golang.org/x/sys v0.0.0-20201126233918-771906719818 // indirect
 	golang.org/x/text v0.3.4 // indirect
+	google.golang.org/grpc v1.35.0 // indirect
 	gopkg.in/ini.v1 v1.61.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/olebedev/go-duktape.v3 v3.0.0-20200619000410-60c24ae608a6 // indirect

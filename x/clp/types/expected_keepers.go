@@ -20,13 +20,13 @@ type BankKeeper interface {
 	AddCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) (sdk.Coins, error)
 	GetCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 	HasCoins(ctx sdk.Context, addr sdk.AccAddress, amt sdk.Coins) bool
-}
-
-type SupplyKeeper interface {
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	MintCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
+}
+
+type AuthKeeper interface {
 	SetModuleAccount(sdk.Context, authtypes.ModuleAccountI)
 	GetModuleAccount(ctx sdk.Context, moduleName string) authtypes.ModuleAccountI
 }
