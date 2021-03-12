@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 echo "Creating pools ceth and cdash"
-sifnodecli tx clp create-pool --from sif --symbol ceth --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --yes
+sifnodecli tx clp create-pool --from sif --symbol ceth --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --yes -
 
 sleep 5
 sifnodecli tx clp create-pool --from sif --symbol cdash --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --yes
