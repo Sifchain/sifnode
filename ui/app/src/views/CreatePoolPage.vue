@@ -8,6 +8,9 @@ import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSi
 import Modal from "@/components/shared/Modal.vue";
 import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
+
+import { slipAdjustment } from "../../../core/src/entities/formulae";
+import { Fraction } from "../../../core/src/entities";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
 import FatInfoTable from "@/components/shared/FatInfoTable.vue";
@@ -99,6 +102,22 @@ export default defineComponent({
       );
     });
 
+    const riskFactor = computed(() => {
+      const rFactor = new Fraction("1");
+      if (!tokenAFieldAmount.value || !tokenBFieldAmount.value || !poolAmounts.value) {
+        return rFactor;
+      }
+      const nativeBalance = poolAmounts?.value[0];
+      const externalBalance = poolAmounts?.value[1];
+      const slipAdjustmentCalc = slipAdjustment(
+        tokenBFieldAmount.value,
+        tokenAFieldAmount.value,
+        nativeBalance,
+        externalBalance,
+        new Fraction(totalPoolUnits.value)
+      );
+      return rFactor.subtract(slipAdjustmentCalc);
+    });
 
     const {
       aPerBRatioMessage,
@@ -107,6 +126,8 @@ export default defineComponent({
       bPerARatioProjectedMessage,
       shareOfPoolPercent,
       totalLiquidityProviderUnits,
+      totalPoolUnits,
+      poolAmounts,
       tokenAFieldAmount,
       tokenBFieldAmount,
       preExistingPool,
@@ -196,6 +217,7 @@ export default defineComponent({
         selectedField.value = "to";
         next();
       },
+
       handleSelectClosed(data: string) {
         if (typeof data !== "string") {
           return;
@@ -257,6 +279,19 @@ export default defineComponent({
       shareOfPoolPercent,
       formatNumber,
       poolUnits: totalLiquidityProviderUnits,
+      riskFactorStatus: computed(() => {
+        // TODO - These cutoffs need discussion
+        let status = "danger";
+        // TODO - Needs to us IFraction
+        if (Number(riskFactor.value.toFixed(8)) <= 0.2) {
+          status = "warning";
+        } else if (Number(riskFactor.value.toFixed(8)) <= 0.1) {
+          status = "bad";
+        } else if (Number(riskFactor.value.toFixed(8)) <= 0.01) {
+          status = '';
+        }
+        return status;
+      }),
     };
   },
 });
@@ -299,7 +334,9 @@ export default defineComponent({
     </Modal>
 
     <FatInfoTable :show="nextStepAllowed">
-      <template #header>Pool Token Prices</template>
+      <template #header
+        >Pool Token Prices</template
+      >
       <template #body>
         <FatInfoTableCell>
           <span class="number">{{
@@ -342,12 +379,15 @@ export default defineComponent({
       </template>
     </FatInfoTable>
 
-    <FatInfoTable :warning="warning" :show="nextStepAllowed">
+    <FatInfoTable :status="riskFactorStatus" :show="nextStepAllowed">
       <template #header>
         <div class="pool-ratio-label">
-          <span>Prices after pooling and pool share</span>
-          <Tooltip message="This is the current price of 1 TKN in USDT.">
-            <Icon icon="info-box-black" />
+          <span>Est. prices after pooling & pool share</span>
+          <Tooltip>
+            <template #message>
+              This is an asymmetric liquidity add that has an estimated large impact on this pool, and therefore a significant slip adjustment. Please be aware of how this works by reading our documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool#asymmetric-liquidity-pool" target="_blank">here</a>.
+            </template>
+            <Icon v-bind:class="{ [`icon-risk-status-${riskFactorStatus}`]: true }" icon="exclaimation" />
           </Tooltip>
         </div>
       </template>
@@ -436,5 +476,21 @@ export default defineComponent({
 .pool-ratio-label {
   display: flex;
   justify-content: space-between;
+}
+
+.icon-risk-status-bad::v-deep {
+  path, circle, rect {
+    fill: yellow !important;
+  }
+}
+.icon-risk-status-warning::v-deep {
+  path, circle, rect {
+    fill: orange !important;
+  }
+}
+.icon-risk-status-danger::v-deep {
+  path, circle, rect {
+    fill: red !important;
+  }
 }
 </style>
