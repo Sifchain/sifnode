@@ -3,7 +3,7 @@ name: Node.js CI
 on: [pull_request]
 
 jobs:
-  test:
+  test0:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -67,3 +67,4 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./ui/core/coverage
           flags: ui
+          verbose: true
