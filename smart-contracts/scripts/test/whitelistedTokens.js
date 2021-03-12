@@ -22,19 +22,28 @@ module.exports = async (cb) => {
 
     const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging, "BridgeBank", argv.bridgebank_address);
 
-    const whitelistUpdates = await bridgeBankContract.getPastEvents("LogWhiteListUpdate", {fromBlock: 1, toBlock: 'latest'});
+    const whitelistUpdates = await bridgeBankContract.getPastEvents("LogWhiteListUpdate", {
+        fromBlock: 1,
+        toBlock: 'latest'
+    });
 
+    const promises = [];
     for (let x of whitelistUpdates) {
         let token = x.returnValues["_token"];
-        const tokenContract = await contractUtilites.buildContract(this, argv, logging, "BridgeToken", token);
-        const item = {
-            token,
-            value: x.returnValues["_value"],
-            symbol: await tokenContract.symbol(),
-            name: await tokenContract.name(),
-        }
-        console.log(JSON.stringify(item));
+        const promise = contractUtilites.buildContract(this, argv, logging, "BridgeToken", token)
+            .then(async tokenContract => {
+                const item = {
+                    token,
+                    value: x.returnValues["_value"],
+                    symbol: await tokenContract.symbol(),
+                    name: await tokenContract.name(),
+                    decimals: await tokenContract.decimals(),
+                }
+                return item;
+            });
+        promises.push(promise)
     }
-
+    const result = await Promise.all(promises);
+    console.log(JSON.stringify(result));
     return cb();
 };
