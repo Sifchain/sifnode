@@ -17,6 +17,8 @@ const (
 	lockGasCost = 160000000000 * 338000
 )
 
+var _, _, _ sdk.Msg = &MsgLock{}, &MsgBurn{}, &MsgCreateEthBridgeClaim{}
+
 // MsgLock defines a message for locking coins and triggering a related event
 type MsgLock struct {
 	CosmosSender     sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`

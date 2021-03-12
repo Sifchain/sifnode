@@ -23,11 +23,11 @@ func NewHandler(
 		switch msg := msg.(type) {
 		case types.MsgCreateEthBridgeClaim:
 			return handleMsgCreateEthBridgeClaim(ctx, cdc, bridgeKeeper, msg)
-		case MsgBurn:
+		case types.MsgBurn:
 			return handleMsgBurn(ctx, cdc, accountKeeper, bridgeKeeper, msg)
-		case MsgLock:
+		case types.MsgLock:
 			return handleMsgLock(ctx, cdc, accountKeeper, bridgeKeeper, msg)
-		case MsgUpdateWhiteListValidator:
+		case types.MsgUpdateWhiteListValidator:
 			return handleMsgUpdateWhiteListValidator(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized ethbridge message type: %v", msg.Type())
