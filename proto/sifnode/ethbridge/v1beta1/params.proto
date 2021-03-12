@@ -1,6 +1,0 @@
-syntax = "proto3";
-package sifchain.ethbridge.v1beta1;
-
-import "gogoproto/gogo.proto";
-
-option go_package = "github.com/sifchain/sifnode/x/ethbridge/types";

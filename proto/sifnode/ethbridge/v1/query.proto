@@ -1,0 +1,33 @@
+syntax = "proto3";
+package sifnode.ethbridge.v1;
+
+// import "gogoproto/gogo.proto";
+// import "sifnode/ethbridge/v1/types.proto";
+// import "sifnode/oracle/v1/types.proto";
+
+option go_package = "github.com/sifchain/sifnode/x/ethbridge/types";
+
+// Not sure how this works
+// service Query {
+//   rpc QueryEthProphecy(QueryEthProphecyParamsResponse) returns (QueryEthProphecyResponse)
+// }
+
+// // QueryEthProphecyParams defines the params for the following queries:
+// // - 'custom/ethbridge/prophecies/'
+// message QueryEthProphecyParamsRequest {
+//   int64  ethereum_chain_id       = 1;
+//   string bridge_contract_address = 2;
+//   int64  nonce                   = 3;
+//   string symbol                  = 4;
+//   string token_contract_address  = 5;
+//   string ethereum_sender         = 6;
+// }
+
+// message QueryEthProphecyParamsResponse {}
+
+// // QueryEthProphecyResponse defines the result payload for an eth prophecy query
+// message QueryEthProphecyResponse {
+//   string                        id                         = 1;
+//   sifnode.oracle.v1beta1.Status status                     = 2;
+//   repeated sifnode.ethbridge.v1beta1.EthBridgeClaim claims = 3;
+// }

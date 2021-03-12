@@ -4,7 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/Sifchain/sifnode/x/oracle"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 // AccountKeeper defines the expected account keeper
@@ -23,7 +23,7 @@ type BankKeeper interface {
 
 // OracleKeeper defines the expected oracle keeper
 type OracleKeeper interface {
-	ProcessClaim(ctx sdk.Context, claim oracle.Claim) (oracle.Status, error)
-	GetProphecy(ctx sdk.Context, id string) (oracle.Prophecy, bool)
+	ProcessClaim(ctx sdk.Context, claim oracletypes.Claim) (oracletypes.Status, error)
+	GetProphecy(ctx sdk.Context, id string) (oracletypes.Prophecy, bool)
 	ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error
 }

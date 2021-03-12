@@ -1,5 +1,5 @@
 syntax = "proto3";
-package sifchain.oracle.v1beta1;
+package sifnode.oracle.v1;
 
 import "gogoproto/gogo.proto";
 

@@ -3,7 +3,8 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/x/params"
+
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 // Default parameter namespace
@@ -16,16 +17,11 @@ const (
 var (
 	KeyMinCreatePoolThreshold = []byte("MinCreatePoolThreshold")
 )
-var _ params.ParamSet = (*Params)(nil)
+var _ paramtypes.ParamSet = (*Params)(nil)
 
 // ParamKeyTable for clp module
-func ParamKeyTable() params.KeyTable {
-	return params.NewKeyTable().RegisterParamSet(&Params{})
-}
-
-// Params - used for initializing default parameter for clp at genesis
-type Params struct {
-	MinCreatePoolThreshold uint `json:"min_create_pool_threshold"`
+func ParamKeyTable() paramtypes.KeyTable {
+	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
 // NewParams creates a new Params object

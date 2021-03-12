@@ -2,9 +2,10 @@ package types
 
 import (
 	"fmt"
+	"strings"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"strings"
 )
 
 var (
@@ -50,13 +51,13 @@ func (m MsgDecommissionPool) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{m.Signer}
 }
 
-type MsgSwap struct {
-	Signer             sdk.AccAddress
-	SentAsset          Asset
-	ReceivedAsset      Asset
-	SentAmount         sdk.Uint
-	MinReceivingAmount sdk.Uint
-}
+// type MsgSwap struct {
+// 	Signer             sdk.AccAddress
+// 	SentAsset          Asset
+// 	ReceivedAsset      Asset
+// 	SentAmount         sdk.Uint
+// 	MinReceivingAmount sdk.Uint
+// }
 
 func NewMsgSwap(signer sdk.AccAddress, sentAsset Asset, receivedAsset Asset, sentAmount sdk.Uint, minReceivingAmount sdk.Uint) MsgSwap {
 	return MsgSwap{Signer: signer, SentAsset: sentAsset, ReceivedAsset: receivedAsset, SentAmount: sentAmount, MinReceivingAmount: minReceivingAmount}
@@ -98,12 +99,12 @@ func (m MsgSwap) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{m.Signer}
 }
 
-type MsgRemoveLiquidity struct {
-	Signer        sdk.AccAddress
-	ExternalAsset Asset
-	WBasisPoints  sdk.Int
-	Asymmetry     sdk.Int
-}
+// type MsgRemoveLiquidity struct {
+// 	Signer        sdk.AccAddress
+// 	ExternalAsset Asset
+// 	WBasisPoints  sdk.Int
+// 	Asymmetry     sdk.Int
+// }
 
 func NewMsgRemoveLiquidity(signer sdk.AccAddress, externalAsset Asset, wBasisPoints sdk.Int, asymmetry sdk.Int) MsgRemoveLiquidity {
 	return MsgRemoveLiquidity{Signer: signer, ExternalAsset: externalAsset, WBasisPoints: wBasisPoints, Asymmetry: asymmetry}
@@ -141,12 +142,12 @@ func (m MsgRemoveLiquidity) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{m.Signer}
 }
 
-type MsgAddLiquidity struct {
-	Signer              sdk.AccAddress
-	ExternalAsset       Asset
-	NativeAssetAmount   sdk.Uint
-	ExternalAssetAmount sdk.Uint
-}
+// type MsgAddLiquidity struct {
+// 	Signer              sdk.AccAddress
+// 	ExternalAsset       Asset
+// 	NativeAssetAmount   sdk.Uint
+// 	ExternalAssetAmount sdk.Uint
+// }
 
 func NewMsgAddLiquidity(signer sdk.AccAddress, externalAsset Asset, nativeAssetAmount sdk.Uint, externalAssetAmount sdk.Uint) MsgAddLiquidity {
 	return MsgAddLiquidity{Signer: signer, ExternalAsset: externalAsset, NativeAssetAmount: nativeAssetAmount, ExternalAssetAmount: externalAssetAmount}

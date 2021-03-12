@@ -1,6 +1,6 @@
 
 syntax = "proto3";
-package sifchain.clp.v1beta1;
+package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
 

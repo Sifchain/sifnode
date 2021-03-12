@@ -1,10 +1,11 @@
 syntax = "proto3";
-package sifchain.clp.v1beta1;
+package sifnode.clp.v1;
 
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/sifchain/sifnode/x/clp/types";
 
+// Params - used for initializing default parameter for clp at genesis
 message Params {
   uint64 min_create_pool_threshold = 1;
 }
