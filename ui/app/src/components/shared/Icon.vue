@@ -10,17 +10,37 @@ import Back from "./icons/Back.vue";
 import Plus from "./icons/Plus.vue";
 import InfoBoxBlack from "./icons/InfoBoxBlack.vue";
 import InfoBoxWhite from "./icons/InfoBoxWhite.vue";
+import Bang from "./icons/Bang.vue";
 
 export default defineComponent({
   props: {
     icon: {
       type: String as PropType<
-        "arrows" | "back" | "circle-half" | "pool" | "plus" | "down" | "tick" | "cross" |
-        "info-box-black" | "info-box-white"
+        | "arrows"
+        | "back"
+        | "circle-half"
+        | "pool"
+        | "plus"
+        | "down"
+        | "tick"
+        | "cross"
+        | "info-box-black"
+        | "info-box-white"
       >,
     },
   },
-  components: { Cross, Tick, DownArrow, CircleArrows, CircleHalf, PoolIcon, Back, Plus, InfoBoxBlack, InfoBoxWhite },
+  components: {
+    Cross,
+    Tick,
+    DownArrow,
+    CircleArrows,
+    CircleHalf,
+    PoolIcon,
+    Back,
+    Plus,
+    InfoBoxBlack,
+    InfoBoxWhite,
+  },
 });
 </script>
 
