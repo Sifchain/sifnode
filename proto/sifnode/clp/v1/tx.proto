@@ -11,6 +11,7 @@ service Msg {
   rpc CreatePool(MsgCreatePool) returns (MsgCreatePoolResponse);
   rpc AddLiquidity(MsgAddLiquidity) returns (MsgAddLiquidityResponse);
   rpc Swap(MsgSwap) returns (MsgSwapResponse);
+  rpc DecommissionPool(MsgDecommissionPool) returns (MsgDecommissionPoolResponse);
 }
 
 message MsgRemoveLiquidity {
