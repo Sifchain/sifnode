@@ -271,6 +271,8 @@ export default defineComponent({
           status = "warning";
         } else if (Number(riskFactor.value.toFixed(8)) <= 0.1) {
           status = "bad";
+        } else if (Number(riskFactor.value.toFixed(8)) <= 0.01) {
+          status = '';
         }
         return status;
       }),
@@ -366,7 +368,7 @@ export default defineComponent({
             <template #message>
               This is an asymmetric liquidity add that has an estimated large impact on this pool, and therefore a significant slip adjustment. Please be aware of how this works by reading our documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool#asymmetric-liquidity-pool" target="_blank">here</a>.
             </template>
-            <Icon icon="exclaimation" />
+            <Icon v-bind:class="{ [`icon-risk-status-${riskFactorStatus}`]: true }" icon="exclaimation" />
           </Tooltip>
         </div>
       </template>
@@ -455,5 +457,21 @@ export default defineComponent({
 .pool-ratio-label {
   display: flex;
   justify-content: space-between;
+}
+
+.icon-risk-status-bad::v-deep {
+  path, circle, rect {
+    fill: yellow !important;
+  }
+}
+.icon-risk-status-warning::v-deep {
+  path, circle, rect {
+    fill: orange !important;
+  }
+}
+.icon-risk-status-danger::v-deep {
+  path, circle, rect {
+    fill: red !important;
+  }
 }
 </style>
