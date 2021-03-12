@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -12,6 +13,7 @@ import (
 
 func TestCalculatePoolUnits(t *testing.T) {
 	type TestCase struct {
+		Symbol           string `json:"symbol"`
 		NativeAdded      string `json:"r"`
 		ExternalAdded    string `json:"a"`
 		NativeBalance    string `json:"R"`
@@ -22,7 +24,7 @@ func TestCalculatePoolUnits(t *testing.T) {
 	type Test struct {
 		TestType []TestCase `json:"PoolUnits"`
 	}
-	file, err := ioutil.ReadFile("../../../test/test-tables/pool_units.json")
+	file, err := ioutil.ReadFile("../../../test/test-tables/pool_units_after_upgrade.json")
 	assert.NoError(t, err)
 
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
@@ -34,7 +36,7 @@ func TestCalculatePoolUnits(t *testing.T) {
 	errCount := 0
 	for _, test := range testcases {
 		_, stakeUnits, _ := CalculatePoolUnits(
-			"cusdt",
+			test.Symbol,
 			sdk.NewUintFromString(test.PoolUnitsBalance),
 			sdk.NewUintFromString(test.NativeBalance),
 			sdk.NewUintFromString(test.ExternalBalance),
@@ -42,6 +44,7 @@ func TestCalculatePoolUnits(t *testing.T) {
 			sdk.NewUintFromString(test.ExternalAdded),
 		)
 		if !stakeUnits.Equal(sdk.NewUintFromString(test.Expected)) {
+			fmt.Printf("Pool_Units | Expected : %s | Got : %s \n", test.Expected, stakeUnits.String())
 			errCount++
 		}
 	}
@@ -74,6 +77,7 @@ func TestCalculateSwapResult(t *testing.T) {
 			sdk.NewUintFromString(test.Xx),
 			sdk.NewUintFromString(test.Y))
 		if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
+			fmt.Printf("SingleSwap-Result | Expected : %s | Got : %s \n", test.Expected, Yy.String())
 			errCount++
 		}
 	}
@@ -106,6 +110,7 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 			sdk.NewUintFromString(test.Xx),
 			sdk.NewUintFromString(test.Y))
 		if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
+			fmt.Printf("SingleSwap-Liquidityfees | Expected : %s | Got : %s \n", test.Expected, Yy.String())
 			errCount++
 		}
 	}
@@ -147,6 +152,46 @@ func TestCalculateDoubleSwapResult(t *testing.T) {
 			sdk.NewUintFromString(test.BY))
 
 		if !By.Equal(sdk.NewUintFromString(test.Expected)) {
+			fmt.Printf("Doubleswap_Result | Expected : %s | Got : %s \n", test.Expected, By.String())
+			errCount++
+		}
+	}
+}
+
+func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
+	type TestCase struct {
+		Symbol           string `json:"symbol"`
+		NativeAdded      string `json:"r"`
+		ExternalAdded    string `json:"a"`
+		NativeBalance    string `json:"R"`
+		ExternalBalance  string `json:"A"`
+		PoolUnitsBalance string `json:"P"`
+		Expected         string `json:"expected"`
+	}
+	type Test struct {
+		TestType []TestCase `json:"PoolUnitsAfterUpgrade"`
+	}
+	file, err := ioutil.ReadFile("../../../test/test-tables/pool_units_after_upgrade.json")
+	assert.NoError(t, err)
+
+	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
+	var test Test
+	err = json.Unmarshal(file, &test)
+	assert.NoError(t, err)
+
+	testcases := test.TestType
+	errCount := 0
+	for _, test := range testcases {
+		_, stakeUnits, _ := CalculatePoolUnits(
+			test.Symbol,
+			sdk.NewUintFromString(test.PoolUnitsBalance),
+			sdk.NewUintFromString(test.NativeBalance),
+			sdk.NewUintFromString(test.ExternalBalance),
+			sdk.NewUintFromString(test.NativeAdded),
+			sdk.NewUintFromString(test.ExternalAdded),
+		)
+		if !stakeUnits.Equal(sdk.NewUintFromString(test.Expected)) {
+			fmt.Printf("Pool_Units_After_Upgrade | Expected : %s | Got : %s \n", test.Expected, stakeUnits.String())
 			errCount++
 		}
 	}

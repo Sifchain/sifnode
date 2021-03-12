@@ -1,4 +1,4 @@
-# Connecting to the Sifchain BetaNet. 
+# Connecting to the Sifchain BetaNet.
 
 ## Prerequisites / Dependencies:
 
@@ -31,7 +31,7 @@ rake "keys:generate:mnemonic"
 4. Boot your node:
 
 ```
-rake "genesis:sifnode:mainnet:boot[<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>]"
+rake "genesis:sifnode:boot[mainnet,<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>,'<flags>']"
 ```
 
 Where:
@@ -42,6 +42,7 @@ Where:
 |`<mnemonic>`|The mnemonic phrase generated in the previous step.|
 |`<gas_price>`|The minimum gas price (e.g.: 0.5rowan).|
 |`<bind_ip_address>`|The IP Address to bind to (*Important:* this is what your node will advertise to the rest of the network). This should be the public IP of the host.|
+|`<flags>`|Optional. Docker compose run flags (see [here](https://docs.docker.com/compose/reference/run/)).|
 
 and your node will start synchronizing with the network. Please note that this may take several hours or more.
 
@@ -50,7 +51,7 @@ and your node will start synchronizing with the network. Please note that this m
 You can verify that you're connected by running:
 
 ```
-sifnodecli q tendermint-validator-set --node tcp://44.235.108.41:26657 --trust-node
+sifnodecli q tendermint-validator-set --node tcp://rpc.sifchain.finance:80 --trust-node
 ```
 
 and you should see the following primary validator node/s for Sifchain:
@@ -132,14 +133,14 @@ sifnodecli tx staking create-validator \
     --gas-prices="0.5rowan" \
     --from=<moniker> \
     --keyring-backend=file \
-    --node tcp://44.235.108.41:26657
+    --node tcp://rpc.sifchain.finance:80
 ```
 
 Where:
 
 |Param|Description|
 |-----|----------|
-|`<amount>`|The amount of rowan you wish to stake (the more the better).|
+|`<amount>`|The amount of rowan you wish to stake (the more the better). The precision used is 1e18.|
 |`<pub_key>`|The public key of your node, that you got in the previous step.|
 |`<moniker>`|The moniker (name) of your node.|
 
@@ -158,7 +159,7 @@ sifnodecli tx staking create-validator \
     --gas-prices="0.5rowan" \
     --from=my-node \
     --keyring-backend=file \
-    --node tcp://44.235.108.41:26657
+    --node tcp://rpc.sifchain.finance:80
 ```
 
 ## Additional Resources
