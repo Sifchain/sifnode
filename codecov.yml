@@ -10,18 +10,27 @@ coverage:
 
   status:
     # Learn more at https://docs.codecov.io/docs/commit-status
+    default_rules:
+      flag_coverage_not_uploaded_behavior: exclude # don't send status checks that don't have flag coverage uploaded
+    patch: off
     project:
-      default: false
+      default:
+        flags:
+          - server
+          - ui
       server:
         target: 50%
-        flags: server
+        flags:
+          - server
         paths:
           - "x/"
           - "!x/**/client/" # ignore client package
       ui:
         target: 70%
-        flags: ui
-        paths: "ui/core/src"
+        flags:
+          - ui
+        paths:
+          - "ui/core/src"
     changes: false
 
 comment:
@@ -34,9 +43,11 @@ flags:
     paths:
       - "x/"
       - "!x/**/client/" # ignore client package
+    carryforward: true
   ui:
     paths:
       - "ui/core/src"
+    carryforward: true
 
 ignore:
   - "docs"
