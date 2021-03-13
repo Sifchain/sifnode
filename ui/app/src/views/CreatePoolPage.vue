@@ -293,7 +293,7 @@ export default defineComponent({
         } else if (Number(riskFactor.value.toFixed(8)) <= 0.01) {
           status = '';
         }
-        return asyncPooling ? '' : status;
+        return asyncPooling.value ? '' : status;
       }),
     };
   },
