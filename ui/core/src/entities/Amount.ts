@@ -20,11 +20,15 @@ export type IAmount = {
   subtract(other: IAmount | string): IAmount;
 };
 
-type _IAmount = IAmount & { _toFraction(): IFraction };
+// exported ONLY to be shared with AssetAmount!
+export type _ExposeInternal<T extends IAmount> = T & {
+  _toInternal(): IFraction;
+};
 
 function toFraction(a: IAmount | string): IFraction | string {
+  type _IAmount = _ExposeInternal<IAmount>;
   if (typeof a === "string") return a;
-  return (a as _IAmount)._toFraction();
+  return (a as _IAmount)._toInternal();
 }
 
 function toBig(fraction: Fraction) {
@@ -36,6 +40,8 @@ function toAmount(a: IFraction) {
 }
 
 export function Amount(source: JSBI | bigint | string | IAmount): IAmount {
+  type _IAmount = _ExposeInternal<IAmount>;
+
   if (
     !(source instanceof JSBI) &&
     typeof source !== "bigint" &&
@@ -97,7 +103,7 @@ export function Amount(source: JSBI | bigint | string | IAmount): IAmount {
       return Amount(string);
     },
 
-    _toFraction() {
+    _toInternal() {
       return fraction;
     },
   };
