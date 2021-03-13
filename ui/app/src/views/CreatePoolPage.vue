@@ -50,7 +50,7 @@ export default defineComponent({
     const transactionState = ref<ConfirmState | string>("selecting");
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
-    let asyncPooling = ref<boolean>(false);
+    let asyncPooling = ref<boolean>(true);
     const router = useRouter();
     const route = useRoute();
 
@@ -281,7 +281,10 @@ export default defineComponent({
       poolUnits: totalLiquidityProviderUnits,
       riskFactorStatus: computed(() => {
         // TODO - These cutoffs need discussion
+        // TODO - This will need a refactor, not a great solution
+
         let status = "danger";
+
         // TODO - Needs to us IFraction
         if (Number(riskFactor.value.toFixed(8)) <= 0.2) {
           status = "warning";
@@ -290,7 +293,7 @@ export default defineComponent({
         } else if (Number(riskFactor.value.toFixed(8)) <= 0.01) {
           status = '';
         }
-        return status;
+        return asyncPooling ? '' : status;
       }),
     };
   },
@@ -383,7 +386,7 @@ export default defineComponent({
       <template #header>
         <div class="pool-ratio-label">
           <span>Est. prices after pooling & pool share</span>
-          <Tooltip>
+          <Tooltip v-if="!asyncPooling">
             <template #message>
               This is an asymmetric liquidity add that has an estimated large impact on this pool, and therefore a significant slip adjustment. Please be aware of how this works by reading our documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool#asymmetric-liquidity-pool" target="_blank">here</a>.
             </template>
