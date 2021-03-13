@@ -87,16 +87,10 @@ function buildContract(context, argv, logging, name, address) {
 async function setAllowance(context, coinDenom, amount, argv, logging, requestParameters) {
     const sifchainUtilities = context.require('./sifchainUtilities');
 
-    logging.info(`coinDenomis: ${coinDenom}`);
     if (coinDenom != sifchainUtilities.NULL_ADDRESS) {
         const newToken = await buildContract(context, argv, logging, "BridgeToken", coinDenom);
         const currentAllowance = await newToken.allowance(argv.ethereum_address, argv.bridgebank_address, requestParameters);
         logging.info(`currentAllowance is ${currentAllowance}, amount is ${amount}, ${amount.toString(10)}`);
-        if (new BN("0").lt(new BN("10"))) {
-            logging.info("islt");
-        } else {
-            logging.info("isgt");
-        }
         if (new BN(currentAllowance).lt(new BN(amount))) {
             const approveResult = await newToken.approve(argv.bridgebank_address, sifchainUtilities.SOLIDITY_MAX_INT, requestParameters);
             logging.info(`approve result is ${JSON.stringify(approveResult)}`);
