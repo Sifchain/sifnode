@@ -46,7 +46,7 @@ module.exports = async cb => {
             token_address: newToken.address,
             symbol: await newToken.symbol(),
             name: await newToken.name(),
-            decimals: await newToken.decimals(),
+            decimals: (await newToken.decimals()).toString(10),
         }
 
         console.log(JSON.stringify(result));

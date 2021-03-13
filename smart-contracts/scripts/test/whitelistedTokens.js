@@ -37,7 +37,7 @@ module.exports = async (cb) => {
                     value: x.returnValues["_value"],
                     symbol: await tokenContract.symbol(),
                     name: await tokenContract.name(),
-                    decimals: await tokenContract.decimals(),
+                    decimals: (await tokenContract.decimals()).toString(10),
                 }
                 return item;
             });
