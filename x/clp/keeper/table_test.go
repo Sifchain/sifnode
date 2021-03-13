@@ -11,7 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const BuffferPercentage = "1.21" // Percentage difference allowable to accommodate rounding done by Big libraries in Go,Python and Javascript
+const BufferPercentage = "1.21" // Percentage difference allowable to accommodate rounding done by Big libraries in Go,Python and Javascript
+
 func isAllowabale(aU sdk.Uint, bU sdk.Uint) bool {
 	diffPercentage := sdk.NewDec(0)
 	a := sdk.NewDecFromBigInt(aU.BigInt())
@@ -21,7 +22,7 @@ func isAllowabale(aU sdk.Uint, bU sdk.Uint) bool {
 	} else {
 		diffPercentage = b.Sub(a).Quo(b).Mul(sdk.NewDec(100))
 	}
-	if diffPercentage.GTE(sdk.MustNewDecFromStr(BuffferPercentage)) {
+	if diffPercentage.GTE(sdk.MustNewDecFromStr(BufferPercentage)) {
 		return false
 	}
 	return true

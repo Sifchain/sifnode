@@ -62,9 +62,17 @@ func EnrichPayerWithRowan(ck keeper.Keeper, ctx types.Context, msg clpTypes.MsgS
 	if err != nil {
 		return
 	}
-	sendAmount := keeper.ReverseSwap(pool.NativeAssetBalance, pool.ExternalAssetBalance, types.Uint(requiredRowan))
+	// x - amount of cToken
+	// X - cToken Balance
+	// Y - Rowan Balance
+	// S - amount of Rowan
+	sendAmount, err := keeper.ReverseSwap(pool.ExternalAssetBalance, pool.NativeAssetBalance, types.Uint(requiredRowan))
+	if err != nil {
+		return
+	}
+
 	swapMSG := clpTypes.MsgSwap{
-		Signer:             msg.Signer, // Same as msg.signer
+		Signer:             msg.Signer,
 		SentAsset:          msg.ReceivedAsset,
 		ReceivedAsset:      clpTypes.GetSettlementAsset(),
 		SentAmount:         sendAmount,

@@ -24,15 +24,18 @@ import (
 // Y = pool.ExternalBalance (amount of cToken in pool )
 // S = Amount of Rowan I want to receive
 
-func ReverseSwap(X sdk.Uint, Y sdk.Uint, S sdk.Uint) sdk.Uint {
+func ReverseSwap(X sdk.Uint, Y sdk.Uint, S sdk.Uint) (sdk.Uint, error) {
+	if S.Equal(sdk.ZeroUint()) || X.Equal(sdk.ZeroUint()) || S.Mul(sdk.NewUint(4)).GTE(Y) {
+		return sdk.ZeroUint(), types.ErrNotEnoughAssetTokens
+	}
 	denominator := S.Add(S)                                //2*S
 	innerMostTerm := Y.Sub(S.Mul(sdk.NewUint(4))).BigInt() // ( Y*(Y - 4*S)
-	sqRootInnermost := innerMostTerm.Sqrt(innerMostTerm)
-	term3 := X.Mul(sdk.NewUintFromBigInt(sqRootInnermost))
-	term2 := X.Mul(Y)
-	term1 := X.Mul(S).Mul(sdk.NewUint(2))
-	numerator := term2.Sub(term1).Sub(term3)
-	return numerator.Quo(denominator)
+	sqRootInnermost := innerMostTerm.Sqrt(innerMostTerm)   // sqrt( Y*(Y - 4*S)
+	term3 := X.Mul(sdk.NewUintFromBigInt(sqRootInnermost)) // X*sqrt( Y*(Y - 4*S)
+	term2 := X.Mul(Y)                                      //X*Y
+	term1 := X.Mul(S).Mul(sdk.NewUint(2))                  //2*X*S
+	numerator := term2.Sub(term1).Sub(term3)               //  X*Y - (2*X*S)  - (X*sqrt( Y*(Y - 4*S))
+	return numerator.Quo(denominator), nil
 }
 
 func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
