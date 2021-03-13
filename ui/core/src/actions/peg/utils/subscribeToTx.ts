@@ -1,11 +1,13 @@
 import { reactive } from "@vue/reactivity";
+import { ActionContext } from "../..";
 import { PegTxEventEmitter } from "../../../api/EthbridgeService/PegTxEventEmitter";
-import notify from "../../../api/utils/Notifications";
 import { TransactionStatus } from "../../../entities";
-import { WithStore } from "../../../store";
 
 // Using PascalCase to signify this is a factory
-export function SubscribeToTx({ store }: WithStore<"tx" | "wallet">) {
+export function SubscribeToTx({
+  api,
+  store,
+}: ActionContext<"EventBusService", "wallet" | "tx">) {
   // Helper to set store tx status
   // Should this live behind a store service API?
   function storeSetTxStatus(
@@ -38,14 +40,11 @@ export function SubscribeToTx({ store }: WithStore<"tx" | "wallet">) {
         symbol: tx.symbol,
       });
 
-      notify({
-        type: "info",
-        message: "Pegged Transaction Pending",
-        detail: {
-          type: "etherscan",
-          message: txHash,
+      api.EventBusService.dispatch({
+        type: "PegTransactionPendingEvent",
+        payload: {
+          hash: txHash,
         },
-        loader: true,
       });
     });
 
@@ -56,9 +55,11 @@ export function SubscribeToTx({ store }: WithStore<"tx" | "wallet">) {
         state: "completed",
       });
 
-      notify({
-        type: "success",
-        message: `Transfer ${txHash} has succeded.`,
+      api.EventBusService.dispatch({
+        type: "PegTransactionCompletedEvent",
+        payload: {
+          hash: txHash,
+        },
       });
 
       // tx is complete so we can unsubscribe
@@ -67,11 +68,22 @@ export function SubscribeToTx({ store }: WithStore<"tx" | "wallet">) {
 
     tx.onError(err => {
       storeSetTxStatus(tx.hash, {
-        hash: tx.hash!, // wont matter if tx.hash doesnt exist
+        hash: tx.hash || "",
         memo: "Transaction Failed",
         state: "failed",
       });
-      notify({ type: "error", message: err.payload.memo! });
+
+      api.EventBusService.dispatch({
+        type: "PegTransactionErrorEvent",
+        payload: {
+          txStatus: {
+            hash: tx.hash || "",
+            memo: "Transaction Error",
+            state: "failed",
+          },
+          message: err.payload.memo!,
+        },
+      });
     });
 
     // HACK: Trigger all hashHandlers
