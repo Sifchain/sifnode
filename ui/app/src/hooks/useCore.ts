@@ -19,7 +19,7 @@ const poolFinder = createPoolFinder(store);
 
 // expose store on window so it is easy to inspect
 Object.defineProperty(window, "store", {
-  get: function() {
+  get: function () {
     // Gives us `store` for in console inspection
     // Gives us `store.dump()` for string representation
     // Gives us `store.dumpTab()` for string representation

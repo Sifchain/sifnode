@@ -66,10 +66,10 @@ export class EthereumService implements IWalletService {
 
   constructor(getWeb3Provider: () => Promise<provider>, assets: Asset[]) {
     this.state = reactive({ ...initState });
-    this.supportedTokens = assets.filter(t => t.network === Network.ETHEREUM);
+    this.supportedTokens = assets.filter((t) => t.network === Network.ETHEREUM);
     this.providerPromise = getWeb3Provider();
     this.providerPromise
-      .then(provider => {
+      .then((provider) => {
         if (!provider) {
           this.provider = null;
           this.reportProviderNotFound();
@@ -84,7 +84,7 @@ export class EthereumService implements IWalletService {
         this.addWeb3Subscription();
         this.updateData();
       })
-      .catch(error => {
+      .catch((error) => {
         console.log("error", error);
       });
   }
@@ -210,7 +210,7 @@ export class EthereumService implements IWalletService {
       balances = await Promise.all([
         getEtheriumBalance(web3, addr),
         ...supportedTokens
-          .filter(t => t.symbol !== "eth")
+          .filter((t) => t.symbol !== "eth")
           .map((token: Asset) => {
             if (isToken(token)) return getTokenBalance(web3, addr, token);
             return AssetAmount(token, "0");

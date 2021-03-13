@@ -207,7 +207,7 @@ export default function createEthbridgeService({
         });
       }
 
-      (async function() {
+      (async function () {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
 
@@ -242,7 +242,7 @@ export default function createEthbridgeService({
             console.log("lockToSifchain: bridgeBankContract.lock ERROR", err);
             handleError(err);
           });
-      })().catch(err => {
+      })().catch((err) => {
         handleError(err);
       });
 
@@ -326,7 +326,7 @@ export default function createEthbridgeService({
         });
       }
 
-      (async function() {
+      (async function () {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
 
@@ -356,7 +356,7 @@ export default function createEthbridgeService({
             console.log("burnToSifchain: bridgeBankContract.burn ERROR", err);
             handleError(err);
           });
-      })().catch(err => {
+      })().catch((err) => {
         handleError(err);
       });
 

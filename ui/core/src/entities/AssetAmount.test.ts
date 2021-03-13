@@ -46,9 +46,7 @@ test("Formatted", () => {
 test("To base units", () => {
   expect(AssetAmount(ETH, "10").toString()).toBe("10.000000000000000000 ETH");
 
-  expect(
-    AssetAmount(ETH, "10")
-      .toBaseUnits()
-      .toString()
-  ).toBe("10000000000000000000");
+  expect(AssetAmount(ETH, "10").toBaseUnits().toString()).toBe(
+    "10000000000000000000"
+  );
 });

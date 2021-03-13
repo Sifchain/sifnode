@@ -100,7 +100,11 @@ export default defineComponent({
 
     const riskFactor = computed(() => {
       const rFactor = new Fraction("1");
-      if (!tokenAFieldAmount.value || !tokenBFieldAmount.value || !poolAmounts.value) {
+      if (
+        !tokenAFieldAmount.value ||
+        !tokenBFieldAmount.value ||
+        !poolAmounts.value
+      ) {
         return rFactor;
       }
       const nativeBalance = poolAmounts?.value[0];
@@ -272,7 +276,7 @@ export default defineComponent({
         } else if (Number(riskFactor.value.toFixed(8)) <= 0.1) {
           status = "bad";
         } else if (Number(riskFactor.value.toFixed(8)) <= 0.01) {
-          status = '';
+          status = "";
         }
         return status;
       }),
@@ -315,9 +319,7 @@ export default defineComponent({
     </Modal>
 
     <FatInfoTable :show="nextStepAllowed">
-      <template #header
-        >Pool Token Prices</template
-      >
+      <template #header>Pool Token Prices</template>
       <template #body>
         <FatInfoTableCell>
           <span class="number">{{
@@ -366,9 +368,19 @@ export default defineComponent({
           <span>Est. prices after pooling & pool share</span>
           <Tooltip>
             <template #message>
-              This is an asymmetric liquidity add that has an estimated large impact on this pool, and therefore a significant slip adjustment. Please be aware of how this works by reading our documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool#asymmetric-liquidity-pool" target="_blank">here</a>.
+              This is an asymmetric liquidity add that has an estimated large
+              impact on this pool, and therefore a significant slip adjustment.
+              Please be aware of how this works by reading our documentation
+              <a
+                href="https://docs.sifchain.finance/core-concepts/liquidity-pool#asymmetric-liquidity-pool"
+                target="_blank"
+                >here</a
+              >.
             </template>
-            <Icon v-bind:class="{ [`icon-risk-status-${riskFactorStatus}`]: true }" icon="exclaimation" />
+            <Icon
+              v-bind:class="{ [`icon-risk-status-${riskFactorStatus}`]: true }"
+              icon="exclaimation"
+            />
           </Tooltip>
         </div>
       </template>
@@ -460,17 +472,23 @@ export default defineComponent({
 }
 
 .icon-risk-status-bad::v-deep {
-  path, circle, rect {
+  path,
+  circle,
+  rect {
     fill: yellow !important;
   }
 }
 .icon-risk-status-warning::v-deep {
-  path, circle, rect {
+  path,
+  circle,
+  rect {
     fill: orange !important;
   }
 }
 .icon-risk-status-danger::v-deep {
-  path, circle, rect {
+  path,
+  circle,
+  rect {
     fill: red !important;
   }
 }

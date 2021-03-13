@@ -54,7 +54,10 @@
               </p>
               <br />
               <p class="sub">
-                <a class="anchor" target="_blank" :href="getBlockExplorerUrl(chainId, transactionHash)"
+                <a
+                  class="anchor"
+                  target="_blank"
+                  :href="getBlockExplorerUrl(chainId, transactionHash)"
                   >View transaction on Block Explorer</a
                 >
               </p>
@@ -76,7 +79,7 @@ import { defineComponent } from "vue";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { useCore } from "@/hooks/useCore";
-import { getBlockExplorerUrl } from "../shared/utils"
+import { getBlockExplorerUrl } from "../shared/utils";
 
 export default defineComponent({
   components: { Loader, SifButton },
@@ -100,7 +103,7 @@ export default defineComponent({
       _toAmount: props.toAmount,
       _toToken: props.toToken,
       chainId: config.sifChainId,
-      getBlockExplorerUrl
+      getBlockExplorerUrl,
     };
   },
 });

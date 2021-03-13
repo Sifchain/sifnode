@@ -1,5 +1,3 @@
-
-
 <template>
   <div class="field-wrappers">
     <CurrencyField
