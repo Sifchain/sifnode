@@ -17,13 +17,6 @@ module.exports = {
       gas: 6721975, // Truffle default development block gas limit
       gasPrice: 200000000000
     },
-    localgeth: {
-      host: "localhost",
-      port: 8545, // Match default network 'ganache'
-      network_id: 3,
-      gas: 6721975, // Truffle default development block gas limit
-      gasPrice: 200000000000
-    },
     develop: {
       host: "localhost",
       port: 7545, // Match default network 'ganache'
