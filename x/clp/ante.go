@@ -32,14 +32,19 @@ func (r SwapFeeChangeDecorator) AnteHandle(ctx types.Context, tx types.Tx, simul
 	case clpTypes.MsgSwap:
 		feeInRowan := feeTx.GetFee()
 		payer := feeTx.FeePayer()
+		fmt.Println("Balance Before : ", r.ck.GetBankKeeper().GetCoins(ctx, payer))
 		coinsBalance := r.ck.GetBankKeeper().GetCoins(ctx, payer)
-		payerHasRowan := true
+		payerHasRowan := false
 		if coinsBalance.AmountOf(clpTypes.GetSettlementAsset().Symbol).IsZero() {
 			payerHasRowan = false
 		}
 		if !payerHasRowan {
-			_ = EnrichPayerWithRowan(r.ck, ctx, msg, payer, feeInRowan)
+			err = EnrichPayerWithRowan(r.ck, ctx, msg, payer, feeInRowan)
+			if err != nil {
+				fmt.Println("Error :", err)
+			}
 		}
+		fmt.Println("Balance After : ", r.ck.GetBankKeeper().GetCoins(ctx, payer))
 	default:
 		fmt.Println("Unreachable code :")
 	}
@@ -53,18 +58,20 @@ func EnrichPayerWithRowan(ck keeper.Keeper, ctx types.Context, msg clpTypes.MsgS
 		return
 	}
 	requiredRowan := feeInRowan.AmountOf(clpTypes.GetSettlementAsset().Symbol)
-	payerAccAddress, err := types.AccAddressFromHex(payer.String())
+	pool, err := ck.GetPool(ctx, msg.ReceivedAsset.Symbol)
 	if err != nil {
 		return
 	}
+	sendAmount := keeper.ReverseSwap(pool.NativeAssetBalance, pool.ExternalAssetBalance, types.Uint(requiredRowan))
 	swapMSG := clpTypes.MsgSwap{
-		Signer:             payerAccAddress, // Same as msg.signer
+		Signer:             msg.Signer, // Same as msg.signer
 		SentAsset:          msg.ReceivedAsset,
 		ReceivedAsset:      clpTypes.GetSettlementAsset(),
-		SentAmount:         types.Uint{},
+		SentAmount:         sendAmount,
 		MinReceivingAmount: types.NewUintFromBigInt(requiredRowan.BigInt()),
 	}
-	_, err = handleMsgSwap(ctx, ck, swapMSG)
+	res, err := handleMsgSwap(ctx, ck, swapMSG)
+	fmt.Println("Swap Result :", res, err)
 	if err != nil {
 		return
 	}

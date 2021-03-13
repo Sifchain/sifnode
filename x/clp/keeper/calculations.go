@@ -11,6 +11,30 @@ import (
 //------------------------------------------------------------------------------------------------------------------
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
+
+// Reverse Formula: x = ( -2*X*S + X*Y - X*sqrt( Y*(Y - 4*S) ) ) / 2*S
+
+// Objective :  I want to send cToken and receive Rowan , I already have the amount of rowan I require (S) . The below formula should
+// Tell me the amount of cToken I need to send to receive that much rowan
+
+// if x = reverse swap result ( amount of cToken to send to get S amount of rowan)
+
+// pool = cToken:rowan pool
+// X = pool.NativeBalance   (amount of rowan in pool )
+// Y = pool.ExternalBalance (amount of cToken in pool )
+// S = Amount of Rowan I want to receive
+
+func ReverseSwap(X sdk.Uint, Y sdk.Uint, S sdk.Uint) sdk.Uint {
+	denominator := S.Add(S)                                //2*S
+	innerMostTerm := Y.Sub(S.Mul(sdk.NewUint(4))).BigInt() // ( Y*(Y - 4*S)
+	sqRootInnermost := innerMostTerm.Sqrt(innerMostTerm)
+	term3 := X.Mul(sdk.NewUintFromBigInt(sqRootInnermost))
+	term2 := X.Mul(Y)
+	term1 := X.Mul(S).Mul(sdk.NewUint(2))
+	numerator := term2.Sub(term1).Sub(term3)
+	return numerator.Quo(denominator)
+}
+
 func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
 	var X sdk.Uint
 	var Y sdk.Uint

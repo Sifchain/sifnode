@@ -11,9 +11,25 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const BuffferPercentage = "1.21" // Percentage difference allowable to accommodate rounding done by Big libraries in Go,Python and Javascript
+func isAllowabale(aU sdk.Uint, bU sdk.Uint) bool {
+	diffPercentage := sdk.NewDec(0)
+	a := sdk.NewDecFromBigInt(aU.BigInt())
+	b := sdk.NewDecFromBigInt(bU.BigInt())
+	if a.GTE(b) {
+		diffPercentage = a.Sub(b).Quo(a).Mul(sdk.NewDec(100))
+	} else {
+		diffPercentage = b.Sub(a).Quo(b).Mul(sdk.NewDec(100))
+	}
+	if diffPercentage.GTE(sdk.MustNewDecFromStr(BuffferPercentage)) {
+		return false
+	}
+	return true
+}
+
 func TestCalculatePoolUnits(t *testing.T) {
 	type TestCase struct {
-	    Symbol           string `json:"symbol"`
+		Symbol           string `json:"symbol"`
 		NativeAdded      string `json:"r"`
 		ExternalAdded    string `json:"a"`
 		NativeBalance    string `json:"R"`
@@ -33,7 +49,6 @@ func TestCalculatePoolUnits(t *testing.T) {
 	assert.NoError(t, err)
 
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
 		_, stakeUnits, _ := CalculatePoolUnits(
 			test.Symbol,
@@ -44,10 +59,13 @@ func TestCalculatePoolUnits(t *testing.T) {
 			sdk.NewUintFromString(test.ExternalAdded),
 		)
 		if !stakeUnits.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("Pool_Units | Expected : %s | Got : %s \n", test.Expected, stakeUnits.String())
-			errCount++
+			if !isAllowabale(stakeUnits, sdk.NewUintFromString(test.Expected)) {
+				assert.True(t, false, "")
+			}
+			fmt.Printf("Pool_Units | Expected : %s | Got : %s | Within Allowable Percentage Diff \n", test.Expected, stakeUnits.String())
 		}
 	}
+
 }
 
 func TestCalculateSwapResult(t *testing.T) {
@@ -69,7 +87,6 @@ func TestCalculateSwapResult(t *testing.T) {
 	assert.NoError(t, err)
 
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
 		Yy, _ := calcSwapResult("cusdt",
 			true,
@@ -77,8 +94,10 @@ func TestCalculateSwapResult(t *testing.T) {
 			sdk.NewUintFromString(test.Xx),
 			sdk.NewUintFromString(test.Y))
 		if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("SingleSwap-Result | Expected : %s | Got : %s \n", test.Expected, Yy.String())
-			errCount++
+			if !isAllowabale(Yy, sdk.NewUintFromString(test.Expected)) {
+				assert.True(t, false, "")
+			}
+			fmt.Printf("SingleSwap-Result | Expected : %s | Got : %s  | Within Allowable Percentage Diff \n", test.Expected, Yy.String())
 		}
 	}
 }
@@ -102,7 +121,6 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 	assert.NoError(t, err)
 
 	testcases := test.TestType
-	errCount := 0
 	for _, test := range testcases {
 		Yy, _ := calcLiquidityFee("ceth",
 			true,
@@ -110,8 +128,10 @@ func TestCalculateSwapLiquidityFee(t *testing.T) {
 			sdk.NewUintFromString(test.Xx),
 			sdk.NewUintFromString(test.Y))
 		if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("SingleSwap-Liquidityfees | Expected : %s | Got : %s \n", test.Expected, Yy.String())
-			errCount++
+			if !isAllowabale(Yy, sdk.NewUintFromString(test.Expected)) {
+				assert.True(t, false, "")
+			}
+			fmt.Printf("SingleSwap-Liquidityfees | Expected : %s | Got : %s | Within Allowable Percentage Diff \n", test.Expected, Yy.String())
 		}
 	}
 }
@@ -152,7 +172,10 @@ func TestCalculateDoubleSwapResult(t *testing.T) {
 			sdk.NewUintFromString(test.BY))
 
 		if !By.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("Doubleswap_Result | Expected : %s | Got : %s \n", test.Expected, By.String())
+			if !isAllowabale(By, sdk.NewUintFromString(test.Expected)) {
+				assert.True(t, false, "")
+			}
+			fmt.Printf("Doubleswap_Result | Expected : %s | Got : %s | Within Allowable Percentage Diff \n", test.Expected, By.String())
 			errCount++
 		}
 	}
@@ -191,7 +214,7 @@ func TestCalculatePoolUnitsAfterUpgrade(t *testing.T) {
 			sdk.NewUintFromString(test.ExternalAdded),
 		)
 		if !stakeUnits.Equal(sdk.NewUintFromString(test.Expected)) {
-			fmt.Printf("Pool_Units_After_Upgrade | Expected : %s | Got : %s \n", test.Expected, stakeUnits.String())
+			fmt.Printf("Pool_Units_After_Upgrade | Expected : %s | Got : %s | Within Allowable Percentage Diff \n", test.Expected, stakeUnits.String())
 			errCount++
 		}
 	}
