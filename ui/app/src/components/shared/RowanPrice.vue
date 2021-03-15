@@ -1,26 +1,30 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 
+
 export default defineComponent({
-  components: {},
-  async setup() {
-
-    function isNumeric(s: any) {
-      return (s - 0) == s && (''+s).trim().length > 0;
-    }
-
-    const data = await fetch("https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/tokenstats");
-    const json = await data.json();
-    const rowanPriceInUSDT = json.body ? json.body.rowanUSD : "";
-
-    let rowanUSD = "";
-    if (isNumeric(rowanPriceInUSDT)) {
-      rowanUSD = "ROWAN: $" + parseFloat(rowanPriceInUSDT).toPrecision(6);
-    }
-
+  data() {
     return {
-      rowanUSD
+      rowanUSD: ""
+  }},
+  methods: {
+    async pollData () {
+      function isNumeric(s: any) {
+        return (s - 0) == s && (''+s).trim().length > 0;
+      }
+      const data = await fetch("https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/tokenstats");
+      const json = await data.json();
+      const rowanPriceInUSDT = json.body ? json.body.rowanUSD : "";
+
+      console.log('rowanPriceInUSDT')
+      if (isNumeric(rowanPriceInUSDT)) {
+        this.rowanUSD = "ROWAN: $" + parseFloat(rowanPriceInUSDT).toPrecision(6);
+      }   
     }
+  },
+  created() {
+    this.pollData()
+    setInterval(() => this.pollData(), 10000)
   }
 });
 </script>
