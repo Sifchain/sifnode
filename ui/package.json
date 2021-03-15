@@ -5,7 +5,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "app:serve": "cd ./app && yarn serve",
-    "app:build": "cd ./app && yarn build",
+    "app:build": "cd ./app && prettier -c && yarn build",
     "app:serve:all": "concurrently -r -k -s first \"yarn chain:start:all\" \"yarn chain:migrate && yarn app:serve\" ",
     "chain:sif:build": "cd ./chains/cosmos && ./build.sh",
     "chain:sif": "cd ./chains/cosmos && ./run.sh",
