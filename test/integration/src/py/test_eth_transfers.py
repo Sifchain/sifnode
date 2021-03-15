@@ -53,7 +53,7 @@ def test_eth_to_ceth_and_back_to_eth(
     logging.info("send erowan back to ethereum chain, saving 100k for ceth transfer fees")
     request.sifchain_symbol = "rowan"
     request.ethereum_symbol = bridgetoken_address
-    request.amount = rowan_amount - 200000
+    request.amount = rowan_amount - 400000
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
     test_utilities.get_eth_balance(request)
 
