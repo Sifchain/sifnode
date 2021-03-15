@@ -22,8 +22,10 @@ const (
 	PoolThrehold      = "1000000000000000000"
 	PoolUnitsMinValue = "1000000000"
 
-	MaxSymbolLength = 10
-	MaxWbasis       = 10000
+	MaxSymbolLength   = 10
+	MaxWbasis         = 10000
+	MaxTokenPrecision = 18
+	MinTokenPrecision = 6
 )
 
 var (
