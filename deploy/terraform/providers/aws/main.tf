@@ -27,6 +27,7 @@ data "aws_iam_role" "cluster" {
   name = module.eks.worker_iam_role_name
 }
 
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
 
@@ -49,13 +50,16 @@ module "vpc" {
     "kubernetes.io/role/elb" = "1"
   }
 }
+locals {
 
+node_final_name = "${var.cluster_name}-node-group"
+}
 module "eks" {
   source       = "terraform-aws-modules/eks/aws"
   cluster_name = var.cluster_name
   subnets      = module.vpc.public_subnets
   vpc_id       = module.vpc.vpc_id
-  tags         = merge({ "Name" = var.cluster_name }, k8s.io/cluster-autoscaler/enabled, var.tags)
+  tags         = merge({ "Name" = var.cluster_name }, var.tags)
   version      = "13.2.1"
 
   node_groups_defaults = {
@@ -65,7 +69,7 @@ module "eks" {
 
   node_groups = {
     main = {
-      name = var.node_group_name
+      name = var.customize_node_group_name == "yes" ? var.node_group_name : local.node_final_name
       desired_capacity = var.desired_capacity
       max_capacity     = var.max_capacity
       min_capacity     = var.min_capacity
@@ -129,4 +133,3 @@ locals {
   subnet_ids_list   = split(",", local.subnet_ids_string)
   depends_on        = [module.vpc]
 }
-

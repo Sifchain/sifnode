@@ -103,7 +103,12 @@ variable "profile" {
   default = "default"
 }
 
-variable "node_group_name" {
+ variable "node_group_name" {
   description = "The name of the node_group name for the eks cluster"
-  type     = string
+  type = string
+}
+
+variable "customize_node_group_name" {
+type = string
+default = "no"
 }
