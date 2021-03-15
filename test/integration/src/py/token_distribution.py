@@ -29,10 +29,10 @@ def test_token_distribution(
 
     for t in tokens:
         try:
+            logging.info(f"sending: {t}")
             destination_symbol = "c" + t["symbol"]
             if t["symbol"] == "erowan":
                 destination_symbol = "rowan"
-            logging.info(f"sending {t}")
             request.amount = int(amount_in_tokens * (10 ** int(t["decimals"])))
             request.ethereum_symbol = t["token"]
             request.sifchain_symbol = destination_symbol
