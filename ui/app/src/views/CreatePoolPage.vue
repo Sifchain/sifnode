@@ -50,7 +50,7 @@ export default defineComponent({
     const transactionState = ref<ConfirmState | string>("selecting");
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
-    let asyncPooling = ref<boolean>(false);
+    let asyncPooling = ref<boolean>(true);
     const router = useRouter();
     const route = useRoute();
 
