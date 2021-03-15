@@ -34,6 +34,10 @@ export function usePoolCalculator(input: {
   const tokenAField = useField(input.tokenAAmount, input.tokenASymbol);
   const tokenBField = useField(input.tokenBAmount, input.tokenBSymbol);
   const balanceMap = useBalances(input.balances);
+<<<<<<< HEAD
+=======
+
+>>>>>>> develop
   const preExistingPool = computed(() => {
     if (!tokenAField.asset.value || !tokenBField.asset.value) {
       return null;
@@ -63,15 +67,13 @@ export function usePoolCalculator(input: {
   });
 
   const tokenABalance = computed(() => {
-    if (
-      !tokenAField.fieldAmount.value ||
-      !tokenAField.asset.value
-    ) {
+    if (!tokenAField.fieldAmount.value || !tokenAField.asset.value) {
       return null;
     }
     if (preExistingPool.value) {
       return input.tokenASymbol.value
-        ? balanceMap.value.get(input.tokenASymbol.value) ?? AssetAmount(tokenAField.asset.value, "0")
+        ? balanceMap.value.get(input.tokenASymbol.value) ??
+            AssetAmount(tokenAField.asset.value, "0")
         : null;
     } else {
       return input.tokenASymbol.value
@@ -86,7 +88,6 @@ export function usePoolCalculator(input: {
   });
 
   const fromBalanceOverdrawn = computed(() => {
-
     return !tokenABalance.value?.greaterThanOrEqual(
       tokenAField.fieldAmount.value || "0"
     );
@@ -98,8 +99,6 @@ export function usePoolCalculator(input: {
         tokenBField.fieldAmount.value || "0"
       )
   );
-
-
 
   const liquidityPool = computed(() => {
     if (preExistingPool.value) {
@@ -122,7 +121,11 @@ export function usePoolCalculator(input: {
 
   // pool units for this prospective transaction [total, newUnits]
   const provisionedPoolUnitsArray = computed(() => {
-    if (!liquidityPool.value || !tokenBField.fieldAmount.value || !tokenAField.fieldAmount.value) {
+    if (
+      !liquidityPool.value ||
+      !tokenBField.fieldAmount.value ||
+      !tokenAField.fieldAmount.value
+    ) {
       return [new Fraction("0"), new Fraction("0")];
     }
 
@@ -192,7 +195,6 @@ export function usePoolCalculator(input: {
   });
 
   const aPerBRatioMessage = computed(() => {
-
     if (!aPerBRatio.value) {
       return "N/A";
     }
@@ -321,6 +323,7 @@ export function usePoolCalculator(input: {
     preExistingPool,
     totalLiquidityProviderUnits,
     totalPoolUnits,
+    poolAmounts,
     tokenAFieldAmount: tokenAField.fieldAmount,
     tokenBFieldAmount: tokenBField.fieldAmount,
   };
