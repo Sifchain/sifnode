@@ -32,5 +32,6 @@ export function getMockWalletService(
       msg: { type: string; value: any },
       memo?: string
     ) => {},
+    onProviderNotFound: () => {},
   };
 }
