@@ -1,0 +1,20 @@
+name: Prettier
+on: push
+jobs:
+  run-linters:
+    name: Run Prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+      uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+        node-version: 12
+      - name: Change to UI folder
+        run: cd ui
+      # ESLint and Prettier must be in `package.json`
+      - name: Install Node.js dependencies
+        run: yarn
+      - name: Run linters
+        run: prettier --check "**/*.js"
