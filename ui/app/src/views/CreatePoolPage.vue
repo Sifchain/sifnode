@@ -8,6 +8,9 @@ import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSi
 import Modal from "@/components/shared/Modal.vue";
 import { PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
+
+import { slipAdjustment } from "../../../core/src/entities/formulae";
+import { Fraction } from "../../../core/src/entities";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
 import FatInfoTable from "@/components/shared/FatInfoTable.vue";
@@ -19,6 +22,8 @@ import { ConfirmState } from "@/types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
 import { formatNumber } from "@/components/shared/utils";
+import Tooltip from "@/components/shared/Tooltip.vue";
+import Icon from "@/components/shared/Icon.vue";
 
 export default defineComponent({
   components: {
@@ -31,6 +36,8 @@ export default defineComponent({
     DetailsPanelPool,
     FatInfoTable,
     FatInfoTableCell,
+    Tooltip,
+    Icon,
   },
   props: ["title"],
   setup() {
@@ -70,9 +77,7 @@ export default defineComponent({
       toAmount.value = "0.0";
     }
 
-    const { connected, connectedText } = useWalletButton({
-      addrLen: 8,
-    });
+    const { connected } = useWalletButton();
 
     const { balances } = useWallet(store);
     const liquidityProvider = computed(() => {
@@ -93,6 +98,23 @@ export default defineComponent({
       );
     });
 
+    const riskFactor = computed(() => {
+      const rFactor = new Fraction("1");
+      if (!tokenAFieldAmount.value || !tokenBFieldAmount.value || !poolAmounts.value) {
+        return rFactor;
+      }
+      const nativeBalance = poolAmounts?.value[0];
+      const externalBalance = poolAmounts?.value[1];
+      const slipAdjustmentCalc = slipAdjustment(
+        tokenBFieldAmount.value,
+        tokenAFieldAmount.value,
+        nativeBalance,
+        externalBalance,
+        new Fraction(totalPoolUnits.value)
+      );
+      return rFactor.subtract(slipAdjustmentCalc);
+    });
+
     const {
       aPerBRatioMessage,
       bPerARatioMessage,
@@ -100,6 +122,8 @@ export default defineComponent({
       bPerARatioProjectedMessage,
       shareOfPoolPercent,
       totalLiquidityProviderUnits,
+      totalPoolUnits,
+      poolAmounts,
       tokenAFieldAmount,
       tokenBFieldAmount,
       preExistingPool,
@@ -182,6 +206,7 @@ export default defineComponent({
         selectedField.value = "to";
         next();
       },
+
       handleSelectClosed(data: string) {
         if (typeof data !== "string") {
           return;
@@ -197,7 +222,7 @@ export default defineComponent({
         selectedField.value = null;
       },
 
-      backlink: window.history.state.back || '/pool',
+      backlink: window.history.state.back || "/pool",
 
       handleNextStepClicked,
 
@@ -236,10 +261,21 @@ export default defineComponent({
         toAmount.value = accountBalance.toFixed();
       },
       shareOfPoolPercent,
-      connectedText,
       formatNumber,
-
       poolUnits: totalLiquidityProviderUnits,
+      riskFactorStatus: computed(() => {
+        // TODO - These cutoffs need discussion
+        let status = "danger";
+        // TODO - Needs to us IFraction
+        if (Number(riskFactor.value.toFixed(8)) <= 0.2) {
+          status = "warning";
+        } else if (Number(riskFactor.value.toFixed(8)) <= 0.1) {
+          status = "bad";
+        } else if (Number(riskFactor.value.toFixed(8)) <= 0.01) {
+          status = '';
+        }
+        return status;
+      }),
     };
   },
 });
@@ -279,33 +315,71 @@ export default defineComponent({
     </Modal>
 
     <FatInfoTable :show="nextStepAllowed">
-      <template #header>Pool Token Prices</template>
+      <template #header
+        >Pool Token Prices</template
+      >
       <template #body>
         <FatInfoTableCell>
-          <span class="number">{{ formatNumber(aPerBRatioMessage === 'N/A' ? '0' : aPerBRatioMessage) }}</span
+          <span class="number">{{
+            formatNumber(aPerBRatioMessage === "N/A" ? "0" : aPerBRatioMessage)
+          }}</span
           ><br />
           <span
-            >{{ fromSymbol.toLowerCase().includes("rowan") ? fromSymbol.toUpperCase() : "c" + fromSymbol.slice(1).toUpperCase() }} per
-            {{ toSymbol.toLowerCase().includes("rowan") ? toSymbol.toUpperCase() : "c" + toSymbol.slice(1).toUpperCase() }}</span
+            >{{
+              fromSymbol.toLowerCase().includes("rowan")
+                ? fromSymbol.toUpperCase()
+                : "c" + fromSymbol.slice(1).toUpperCase()
+            }}
+            per
+            {{
+              toSymbol.toLowerCase().includes("rowan")
+                ? toSymbol.toUpperCase()
+                : "c" + toSymbol.slice(1).toUpperCase()
+            }}</span
           >
         </FatInfoTableCell>
         <FatInfoTableCell>
-          <span class="number">{{ formatNumber(bPerARatioMessage === 'N/A' ? '0' : bPerARatioMessage) }}</span
+          <span class="number">{{
+            formatNumber(bPerARatioMessage === "N/A" ? "0" : bPerARatioMessage)
+          }}</span
           ><br />
           <span
-            >{{ toSymbol.toLowerCase().includes("rowan") ? toSymbol.toUpperCase() : "c" + toSymbol.slice(1).toUpperCase() }} per
-            {{ fromSymbol.toLowerCase().includes("rowan") ? fromSymbol.toUpperCase() : "c" + fromSymbol.slice(1).toUpperCase() }}</span
+            >{{
+              toSymbol.toLowerCase().includes("rowan")
+                ? toSymbol.toUpperCase()
+                : "c" + toSymbol.slice(1).toUpperCase()
+            }}
+            per
+            {{
+              fromSymbol.toLowerCase().includes("rowan")
+                ? fromSymbol.toUpperCase()
+                : "c" + fromSymbol.slice(1).toUpperCase()
+            }}</span
           > </FatInfoTableCell
         ><FatInfoTableCell />
       </template>
     </FatInfoTable>
 
-    <FatInfoTable :show="nextStepAllowed">
-      <template #header>Prices after pooling and pool share</template>
+    <FatInfoTable :status="riskFactorStatus" :show="nextStepAllowed">
+      <template #header>
+        <div class="pool-ratio-label">
+          <span>Est. prices after pooling & pool share</span>
+          <Tooltip>
+            <template #message>
+              This is an asymmetric liquidity add that has an estimated large impact on this pool, and therefore a significant slip adjustment. Please be aware of how this works by reading our documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool#asymmetric-liquidity-pool" target="_blank">here</a>.
+            </template>
+            <Icon v-bind:class="{ [`icon-risk-status-${riskFactorStatus}`]: true }" icon="exclaimation" />
+          </Tooltip>
+        </div>
+      </template>
       <template #body>
         <FatInfoTableCell>
           <span class="number">{{
-            formatNumber(aPerBRatioProjectedMessage === 'N/A' ? '0' : aPerBRatioProjectedMessage)
+            formatNumber(
+              aPerBRatioProjectedMessage === "N/A"
+                ? "0"
+                : aPerBRatioProjectedMessage
+            )
           }}</span
           ><br />
           <span
@@ -315,7 +389,11 @@ export default defineComponent({
         </FatInfoTableCell>
         <FatInfoTableCell>
           <span class="number">{{
-            formatNumber(bPerARatioProjectedMessage === 'N/A' ? '0' : bPerARatioProjectedMessage)
+            formatNumber(
+              bPerARatioProjectedMessage === "N/A"
+                ? "0"
+                : bPerARatioProjectedMessage
+            )
           }}</span
           ><br />
           <span
@@ -375,5 +453,25 @@ export default defineComponent({
 .number {
   font-size: 16px;
   font-weight: bold;
+}
+.pool-ratio-label {
+  display: flex;
+  justify-content: space-between;
+}
+
+.icon-risk-status-bad::v-deep {
+  path, circle, rect {
+    fill: yellow !important;
+  }
+}
+.icon-risk-status-warning::v-deep {
+  path, circle, rect {
+    fill: orange !important;
+  }
+}
+.icon-risk-status-danger::v-deep {
+  path, circle, rect {
+    fill: red !important;
+  }
 }
 </style>

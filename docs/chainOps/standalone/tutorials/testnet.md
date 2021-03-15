@@ -1,4 +1,4 @@
-# Connecting to the Sifchain BetaNet.
+# Connecting to the Sifchain TestNet.
 
 ## Prerequisites / Dependencies:
 
@@ -31,7 +31,7 @@ rake "keys:generate:mnemonic"
 4. Boot your node:
 
 ```
-rake "genesis:sifnode:boot[testnet,<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>]"
+rake "genesis:sifnode:boot[testnet,<moniker>,'<mnemonic>',<gas_price>,<bind_ip_address>,'<flags>']"
 ```
 
 Where:
@@ -42,6 +42,7 @@ Where:
 |`<mnemonic>`|The mnemonic phrase generated in the previous step.|
 |`<gas_price>`|The minimum gas price (e.g.: 0.5rowan).|
 |`<bind_ip_address>`|The IP Address to bind to (*Important:* this is what your node will advertise to the rest of the network). This should be the public IP of the host.|
+|`<flags>`|Optional. Docker compose run flags (see [here](https://docs.docker.com/compose/reference/run/)).|
 
 and your node will start synchronizing with the network. Please note that this may take several hours or more.
 
@@ -50,28 +51,28 @@ and your node will start synchronizing with the network. Please note that this m
 You can verify that you're connected by running:
 
 ```
-sifnodecli q tendermint-validator-set --node tcp://100.20.201.226:26657 --trust-node
+sifnodecli q tendermint-validator-set --node tcp://rpc-merry-go-round.sifchain.finance:80 --trust-node
 ```
 
 and you should see the following primary validator node/s for Sifchain:
 
 ```
 validators:
-- address: sifvalcons1g4jce0n7d0zjrckkcysqya4q76yzls7xnhwsx0
-  pubkey: sifvalconspub1zcjduepq08swr6w2q2c6utx5j2wm8xfezy3ayluq683dqwj4w358zr3qd95sfaq99k
-  proposerpriority: -207656
-  votingpower: 1000000
-- address: sifvalcons1f9z0jnz96f63enn2c980a6qjwvtxjsmczafk9n
-  pubkey: sifvalconspub1zcjduepqquanx4sm7wf07lm76fv5sqwawsl4tnw7ny9m86kmhw7ekkutjrwq8qw8my
-  proposerpriority: 1107281
-  votingpower: 1000000
-- address: sifvalcons1c7rdw0kuqt89s5p4nywczpxraregz3lgsv77g8
-  pubkey: sifvalconspub1zcjduepq9nhfkyft4fcvtuac8we7f9hyqxtf70hjyfzwwj6h6g23pdyjg4rsd369d2
-  proposerpriority: 232906
-  votingpower: 1000000
-- address: sifvalcons1c75nmvdge0sxdg4ep3v3l60rrmj5dm9vurpv47
-  pubkey: sifvalconspub1zcjduepq03aglq7ux9e5q8sqezhnjrfekslgqhwypzh9myy83wapt7h2ckus5wzvjs
-  proposerpriority: -1132531
+- address: sifvalcons19vn3vtccx7amdgfk07ne4x2jj87fpsgwusrpcm
+  pubkey: sifvalconspub1zcjduepqrczw0kfj0rm3u094lvk7le4u6enrdtm5wtjn8k207gnvtwerlcmshk3lvk
+  proposerpriority: -1125
+  votingpower: 1000
+- address: sifvalcons10mmxf7rmtw2u8lr0d4efzjk4s9q4u8pepn9r95
+  pubkey: sifvalconspub1zcjduepq2h0eupzq25g7g6s4uwwrwqaex0m37mhfdc9gh3rtxae0aylg7scq3r93et
+  proposerpriority: 125
+  votingpower: 1000
+- address: sifvalcons1sm9s7f0arcmveuqfx6jtjjhhedj58q3syjf68z
+  pubkey: sifvalconspub1zcjduepq98kugnwx40hfjy895n40ex6dwaj02zh06pj6zdjash0nj3wy4v0qhq9x2l
+  proposerpriority: 625
+  votingpower: 1000
+- address: sifvalcons15mnhwsqlkyaacjthmax5zn69ukpvg0wr7hhh87
+  pubkey: sifvalconspub1zcjduepq2kd405jrgsjtjmjmx038er8t4l0mcw808z8ka4a2t8q5d6dfxuqsrmdhux
+  proposerpriority: 375
   votingpower: 1000
 ```
 
@@ -116,7 +117,7 @@ sifnodecli tx staking create-validator \
     --gas-prices="0.5rowan" \
     --from=<moniker> \
     --keyring-backend=file \
-    --node tcp://100.20.201.226:26657
+    --node tcp://rpc-merry-go-round.sifchain.finance:80
 ```
 
 Where:
@@ -142,7 +143,7 @@ sifnodecli tx staking create-validator \
     --gas-prices="0.5rowan" \
     --from=my-node \
     --keyring-backend=file \
-    --node tcp://100.20.201.226:26657
+    --node tcp://rpc-merry-go-round.sifchain.finance:80
 ```
 
 ## Additional Resources
