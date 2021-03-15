@@ -118,7 +118,7 @@ func handleMsgBurn(
 ) (*sdk.Result, error) {
 	if !bridgeKeeper.ExistsPeggyToken(ctx, msg.Symbol) {
 		sugaredLogger.Errorw("Native token can't be burn.",
-			"token symbol", msg.Symbol)
+			"tokenSymbol", msg.Symbol)
 		return nil, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
 	}
 
@@ -176,7 +176,7 @@ func handleMsgLock(
 	bridgeKeeper Keeper, msg MsgLock, sugaredLogger *zap.SugaredLogger,
 ) (*sdk.Result, error) {
 	if bridgeKeeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		sugaredLogger.Errorw("pegged token can't be lock.", "token symbol", msg.Symbol)
+		sugaredLogger.Errorw("pegged token can't be lock.", "tokenSymbol", msg.Symbol)
 		return nil, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
 	}
 

@@ -28,8 +28,8 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	var messages []sdk.Msg
 
 	sugaredLogger.Infow("relay prophecies to cosmos.",
-		"claim amount", len(claims),
-		"next sequence number", nextSequenceNumber)
+		"claimAmount", len(claims),
+		"nextSequenceNumber", nextSequenceNumber)
 
 	for _, claim := range claims {
 		// Packages the claim as a Tendermint message
@@ -50,12 +50,12 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	if err != nil {
 		sugaredLogger.Errorw("failed to get tx builder.",
 			errorMessageKey, err.Error(),
-			"transaction builder", txBldr)
+			"transactionBuilder", txBldr)
 		return err
 	}
 
 	sugaredLogger.Infow("relay sequenceNumber from builder.",
-		"next sequence number", txBldr.Sequence())
+		"nextSequenceNumber", txBldr.Sequence())
 
 	// If we start to control sequence
 	if nextSequenceNumber > 0 {
@@ -95,7 +95,7 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 		incrementNextSequenceNumber()
 	}
 	sugaredLogger.Infow("relay next sequenceNumber from memory.",
-		"next sequence number", nextSequenceNumber)
+		"nextSequenceNumber", nextSequenceNumber)
 
 	return nil
 }

@@ -98,7 +98,7 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	time.Sleep(transactionInterval)
 
 	nonce, err := client.PendingNonceAt(context.Background(), sender)
-	sugaredLogger.Infow("Current eth operator at pending nonce.", "pending nonce", nonce)
+	sugaredLogger.Infow("Current eth operator at pending nonce.", "pendingNonce", nonce)
 
 	if err != nil {
 		sugaredLogger.Errorw("failed to broadcast transaction.",
@@ -118,7 +118,7 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 
 	sugaredLogger.Infow("ethereum tx current nonce from client api.",
 		"nonce", nonce,
-		"suggested gas price", gasPrice)
+		"suggestedGasPrice", gasPrice)
 
 	gasPrice = gasPrice.Mul(gasPrice, big.NewInt(2))
 
@@ -127,7 +127,7 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 
 	gasPrice.Sub(gasPrice, quarterGasPrice)
 	sugaredLogger.Infow("final gas price after adjustment.",
-		"final gas price", gasPrice)
+		"finalGasPrice", gasPrice)
 
 	transactOptsAuth.Nonce = big.NewInt(int64(nonce))
 	transactOptsAuth.Value = big.NewInt(0) // in wei

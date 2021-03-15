@@ -92,7 +92,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim, sugaredLogger *
 
 	activeValidator := k.checkActiveValidator(ctx, claim.ValidatorAddress)
 	if !activeValidator {
-		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim validator no active.")
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim validator not active.")
 		return types.Status{}, types.ErrInvalidValidator
 	}
 
