@@ -2,6 +2,7 @@ import { calculateExternalExternalSwapResult } from "./formulae";
 import { Fraction, TEN } from "./fraction/Fraction";
 import tests from "../../../../test/test-tables/doubleswap_result.json";
 import B from "./utils/B";
+// @ts-ignore
 import JSBI from "jsbi";
 
 tests.DoubleSwap.forEach(({ ax, aX, aY, bX, bY, expected }: any) => {

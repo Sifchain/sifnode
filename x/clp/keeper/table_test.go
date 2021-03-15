@@ -66,7 +66,40 @@ func TestCalculatePoolUnits(t *testing.T) {
 			fmt.Printf("Pool_Units | Expected : %s | Got : %s | Within Allowable Percentage Diff \n", test.Expected, stakeUnits.String())
 		}
 	}
+}
 
+func TestCalculateReverseSwapResult(t *testing.T) {
+	type TestCase struct {
+		S        string `json:"S"`
+		X        string `json:"X"`
+		Y        string `json:"Y"`
+		Expected string `json:"expected"`
+	}
+	type Test struct {
+		TestType []TestCase `json:"SingleSwap"`
+	}
+	file, err := ioutil.ReadFile("../../../test/test-tables/reverse_single_swap_result.json")
+	assert.NoError(t, err)
+
+	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
+	var test Test
+	err = json.Unmarshal(file, &test)
+	assert.NoError(t, err)
+
+	testcases := test.TestType
+	for _, test := range testcases {
+		Yy, _ := ReverseSwap(
+			sdk.NewUintFromString(test.X),
+			sdk.NewUintFromString(test.Y),
+			sdk.NewUintFromString(test.S))
+		fmt.Printf("ReverseSwap-Result | Expected : %s | Got : %s  \n ", test.Expected, Yy.String())
+		//if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
+		//	if !isAllowabale(Yy, sdk.NewUintFromString(test.Expected)) {
+		//		assert.True(t, false, "")
+		//	}
+		//	fmt.Printf("ReverseSwap-Result | Expected : %s | Got : %s  | Within Allowable Percentage Diff \n", test.Expected, Yy.String())
+		//}
+	}
 }
 
 func TestCalculateSwapResult(t *testing.T) {
