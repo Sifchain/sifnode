@@ -34,10 +34,7 @@ export function usePoolCalculator(input: {
   const tokenAField = useField(input.tokenAAmount, input.tokenASymbol);
   const tokenBField = useField(input.tokenBAmount, input.tokenBSymbol);
   const balanceMap = useBalances(input.balances);
-<<<<<<< HEAD
-=======
 
->>>>>>> develop
   const preExistingPool = computed(() => {
     if (!tokenAField.asset.value || !tokenBField.asset.value) {
       return null;
