@@ -5,6 +5,10 @@
 // output of yarn integrationtest:whitelistedTokens to get the current addresses.
 // (this will be obsolete when the frontend just gets it from the smart contracts
 // directly)
+//
+// For example:
+// 
+//   node scripts/test/updateAddresses.js scripts/test/updateAddresses.js $BASEDIR/ui/core/src/tokenwhitelist.sandpit.json $BASEDIR/ui/core/src/assets.ethereum.ropsten.json
 
 const fs = require('fs')
 

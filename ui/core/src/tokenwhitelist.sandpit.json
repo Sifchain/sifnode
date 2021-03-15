@@ -1,0 +1,387 @@
+[
+  {
+    "token": "xx",
+    "value": true,
+    "symbol": "erowan",
+    "name": "erowan",
+    "decimals": "12"
+  },
+  {
+    "token": "0xfA8fC9C22C33FE62BabD5D92DD38Aa27B730d562",
+    "value": true,
+    "symbol": "dtoken",
+    "name": "dtoken",
+    "decimals": "12"
+  },
+  {
+    "token": "0x64C4f2e91288FFA7661514eb9e1eb55D3b4013dC",
+    "value": true,
+    "symbol": "ctoken",
+    "name": "ctoken",
+    "decimals": "12"
+  },
+  {
+    "token": "0x7cd621B1B092628F67591005AbDa07E27AC036d4",
+    "value": true,
+    "symbol": "btoken",
+    "name": "btoken",
+    "decimals": "12"
+  },
+  {
+    "token": "0x9e8bD20374898F61B4e5BD32b880b7fE198E44a1",
+    "value": true,
+    "symbol": "acoin",
+    "name": "acoin",
+    "decimals": "12"
+  },
+  {
+    "token": "0x91e115BC3AdAeCF4c0Cb382528632fA7afC78bF0",
+    "value": true,
+    "symbol": "ab6e71311120741e",
+    "name": "ab6e71311120741e",
+    "decimals": "12"
+  },
+  {
+    "token": "0x3F2caf02263820Ad800Dfd83BD4b84D0Fc2893ee",
+    "value": true,
+    "symbol": "ab6e71311120741e",
+    "name": "ab6e71311120741e",
+    "decimals": "12"
+  },
+  {
+    "token": "0x4Bc457EA26EA0387FdBAe7cDFF461819761b859e",
+    "value": true,
+    "symbol": "aabd763b9a6774e4",
+    "name": "aabd763b9a6774e4",
+    "decimals": "12"
+  },
+  {
+    "token": "0xDd9009e2bE0cd6F60E9fbEA5D763249476135564",
+    "value": true,
+    "symbol": "af7f4c45901584ce",
+    "name": "af7f4c45901584ce",
+    "decimals": "12"
+  },
+  {
+    "token": "0x69e85F11e188010c8417d7ecD10D745512eCB78c",
+    "value": true,
+    "symbol": "aed4c56140d114e1",
+    "name": "aed4c56140d114e1",
+    "decimals": "12"
+  },
+  {
+    "token": "0x65EC96C92052da3343Fe31bf762a3CD98E657223",
+    "value": true,
+    "symbol": "a6e39b063aefa450",
+    "name": "a6e39b063aefa450",
+    "decimals": "12"
+  },
+  {
+    "token": "0xF64A099e16E2b21f73729094C2311F4946C775A7",
+    "value": true,
+    "symbol": "aa63d02fcea7444c",
+    "name": "aa63d02fcea7444c",
+    "decimals": "12"
+  },
+  {
+    "token": "0x67EB27780d7D9C2a43C175d1D663E4E5Dace4785",
+    "value": true,
+    "symbol": "a08bca99d1fc",
+    "name": "a08bca99d1fc",
+    "decimals": "12"
+  },
+  {
+    "token": "0xC62964B97b88852bC58E50b4d3782edd3b42a76B",
+    "value": true,
+    "symbol": "a12e728",
+    "name": "a12e728",
+    "decimals": "12"
+  },
+  {
+    "token": "0x015450D32145d502066B103683370629AEF0B8e4",
+    "value": true,
+    "symbol": "a534854408ae",
+    "name": "a534854408ae",
+    "decimals": "12"
+  },
+  {
+    "token": "0x37bb91E37970449D1068c97b39e8110d216B1F0c",
+    "value": true,
+    "symbol": "aB18F71C",
+    "name": "aB18F71C",
+    "decimals": "12"
+  },
+  {
+    "token": "0x66Cf623418Dba9f79c347d81C75e754DDaF788eF",
+    "value": true,
+    "symbol": "usdt",
+    "name": "Tether USDT",
+    "decimals": "6"
+  },
+  {
+    "token": "0xCabe79B8805246125339bB989e6fC9D155D2291b",
+    "value": true,
+    "symbol": "bat",
+    "name": "Basic Attention Token",
+    "decimals": "12"
+  },
+  {
+    "token": "0x9675038de082a2cb6E69e935c64F6daCd7A11555",
+    "value": true,
+    "symbol": "ant",
+    "name": "Aragon",
+    "decimals": "12"
+  },
+  {
+    "token": "0x872B7372016Bc46154d84d73B775FCea8d197e84",
+    "value": true,
+    "symbol": "bnt",
+    "name": "Bancor Network Toke",
+    "decimals": "12"
+  },
+  {
+    "token": "0x45A7F3bdC25568855a7386066E10c503cE73E681",
+    "value": true,
+    "symbol": "zrx",
+    "name": null,
+    "decimals": "12"
+  },
+  {
+    "token": "0x6840a8F76015cc37729Fc94Ac96B97D7a4216705",
+    "value": true,
+    "symbol": "link",
+    "name": "Chainlink",
+    "decimals": "12"
+  },
+  {
+    "token": "0x25Be489c461AfFe1A7962c8a14F3529826B7b034",
+    "value": true,
+    "symbol": "mana",
+    "name": "Decentraland",
+    "decimals": "12"
+  },
+  {
+    "token": "0x79715a42772fAF369C3f38D2B772A41Dc7629fdd",
+    "value": true,
+    "symbol": "lrc",
+    "name": "Loopring",
+    "decimals": "12"
+  },
+  {
+    "token": "0x2198f2bC87a9c754E19E44D0B87Fce06c0754C73",
+    "value": true,
+    "symbol": "enj",
+    "name": "Enjin Coin",
+    "decimals": "12"
+  },
+  {
+    "token": "0x0669B909e854D9Ace8c77120Af30E13274f4ae6A",
+    "value": true,
+    "symbol": "snx",
+    "name": "Synthetix Network Token",
+    "decimals": "12"
+  },
+  {
+    "token": "0x42D9886e02D3C5f8B61150EC59a928d83F2fb2Cf",
+    "value": true,
+    "symbol": "tusd",
+    "name": "TrueUSD",
+    "decimals": "12"
+  },
+  {
+    "token": "0x8261124b214C69835329475A2B76A12604892A3D",
+    "value": true,
+    "symbol": "ocean",
+    "name": "Ocean Protocol",
+    "decimals": "12"
+  },
+  {
+    "token": "0x9f2d3130e72A4B05EB9336Ef386cE74C3dCc79B9",
+    "value": true,
+    "symbol": "ftm",
+    "name": "Fantom",
+    "decimals": "12"
+  },
+  {
+    "token": "0x9dEb14f8Ce16Ff4Cbf571bFAc51c7997f15362f2",
+    "value": true,
+    "symbol": "susd",
+    "name": "sUSD",
+    "decimals": "12"
+  },
+  {
+    "token": "0x00F23E80602D86C5345FbEEfD2b81ED149f6937c",
+    "value": true,
+    "symbol": "usdc",
+    "name": "USD Coin",
+    "decimals": "6"
+  },
+  {
+    "token": "0xFC17c1a7901b519abb1323d1ba49A0B491dc5bb1",
+    "value": true,
+    "symbol": "cro",
+    "name": "Crypto com Coin",
+    "decimals": "8"
+  },
+  {
+    "token": "0x204509e8Cf5dfde20B5Ff52822E3AcAF4F2a6e37",
+    "value": true,
+    "symbol": "wbtc",
+    "name": "Wrapped Bitcoin",
+    "decimals": "8"
+  },
+  {
+    "token": "0x5d8bf49218943cD43c225F5560A5287DeA1240ab",
+    "value": true,
+    "symbol": "sxp",
+    "name": "Swipe",
+    "decimals": "12"
+  },
+  {
+    "token": "0x762C1427567ffe0b538F70fCa6011Af0D6fD775c",
+    "value": true,
+    "symbol": "band",
+    "name": "Band Protocol",
+    "decimals": "12"
+  },
+  {
+    "token": "0x27BAD820b58A0000aab1216fb1620E8717aA74fB",
+    "value": true,
+    "symbol": "dai",
+    "name": "Dai Stablecoin",
+    "decimals": "12"
+  },
+  {
+    "token": "0x0C417288B6e0AdCcd375CEE2DFF3dc89B6D8F959",
+    "value": true,
+    "symbol": "comp",
+    "name": "Compound",
+    "decimals": "12"
+  },
+  {
+    "token": "0x7cC9797e524d71b17697e6F45871858cE7127199",
+    "value": true,
+    "symbol": "uma",
+    "name": "UMA",
+    "decimals": "12"
+  },
+  {
+    "token": "0xC1A0CB74894A4a3Cf880B2Cf1250D9cC40A83e37",
+    "value": true,
+    "symbol": "bal",
+    "name": "Balancer",
+    "decimals": "12"
+  },
+  {
+    "token": "0xeB44f3Aa4c6f3c7a40d0E692e108523fB395b7B5",
+    "value": true,
+    "symbol": "yfi",
+    "name": "yearn finance",
+    "decimals": "12"
+  },
+  {
+    "token": "0x327A86EF63B375516cC9Dd851E34f8e24E79e8AB",
+    "value": true,
+    "symbol": "srm",
+    "name": "Serum",
+    "decimals": "6"
+  },
+  {
+    "token": "0x6e8D691a56fA1E402eAAC8e7eBaBf9B1B1E321dc",
+    "value": true,
+    "symbol": "cream",
+    "name": "Cream",
+    "decimals": "12"
+  },
+  {
+    "token": "0xc1Ff27196F6052120e9caA9da1bDC8ead67CaB24",
+    "value": true,
+    "symbol": "sand",
+    "name": "SAND",
+    "decimals": "12"
+  },
+  {
+    "token": "0xBA54ba36890D77aE0aF6E9Ff7C44319973d4aEcd",
+    "value": true,
+    "symbol": "sushi",
+    "name": "Sushi",
+    "decimals": "12"
+  },
+  {
+    "token": "0xc1C422514DcA320A231fFf3262E6170B87D4281f",
+    "value": true,
+    "symbol": "esd",
+    "name": "Empty Set Dollar",
+    "decimals": "12"
+  },
+  {
+    "token": "0x4dEd11B3735A87618A6E545bB92bf4BCf52D75d0",
+    "value": true,
+    "symbol": "uni",
+    "name": "Uniswap",
+    "decimals": "12"
+  },
+  {
+    "token": "0xaC5706958911c0d47963399AEDCD08aa2DfC7Ef9",
+    "value": true,
+    "symbol": "aave",
+    "name": "Aave",
+    "decimals": "12"
+  },
+  {
+    "token": "0xad9c82BA9bb66E318c7179C085D972323251B58C",
+    "value": true,
+    "symbol": "bond",
+    "name": "BarnBridge",
+    "decimals": "12"
+  },
+  {
+    "token": "0x1D6B88354146a42a368FA5a442f4bdce18aB64d7",
+    "value": true,
+    "symbol": "wfil",
+    "name": "Wrapped Filecoin",
+    "decimals": "12"
+  },
+  {
+    "token": "0x195bF374857595E90A4f2ace0B34622a9e519704",
+    "value": true,
+    "symbol": "grt",
+    "name": "The Graph",
+    "decimals": "12"
+  },
+  {
+    "token": "0x3e43c33dBC06026f7396006D524eB293BF8d8990",
+    "value": true,
+    "symbol": "lon",
+    "name": "Tokenlon",
+    "decimals": "12"
+  },
+  {
+    "token": "0x7e5EAd4740EdE4401F50A69F0B9CEca2DC42a500",
+    "value": true,
+    "symbol": "1inch",
+    "name": "1inch",
+    "decimals": "12"
+  },
+  {
+    "token": "0xc77DD8eF5E900FaF1A75398bb2C03121435C513c",
+    "value": true,
+    "symbol": "rune",
+    "name": "THORChain ERC20",
+    "decimals": "12"
+  },
+  {
+    "token": "0xFe924F26D4C818CbbeA3B4820d8893B83b1461c6",
+    "value": true,
+    "symbol": "wscrt",
+    "name": "Secret ERC20",
+    "decimals": "6"
+  },
+  {
+    "token": "0x181c05d2FAC3E7FBCedbc585bB4Ae5a153179337",
+    "value": true,
+    "symbol": "reef",
+    "name": "Reef Finance",
+    "decimals": "12"
+  }
+]
