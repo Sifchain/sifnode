@@ -53,10 +53,6 @@ func (r SwapFeeChangeDecorator) AnteHandle(ctx types.Context, tx types.Tx, simul
 }
 
 func EnrichPayerWithRowan(ck keeper.Keeper, ctx types.Context, msg clpTypes.MsgSwap, payer types.Address, feeInRowan types.Coins) (err error) {
-	_, err = ck.GetLiquidityProvider(ctx, msg.ReceivedAsset.Symbol, payer.String())
-	if err != nil {
-		return
-	}
 	requiredRowan := feeInRowan.AmountOf(clpTypes.GetSettlementAsset().Symbol)
 	pool, err := ck.GetPool(ctx, msg.ReceivedAsset.Symbol)
 	if err != nil {
@@ -66,7 +62,7 @@ func EnrichPayerWithRowan(ck keeper.Keeper, ctx types.Context, msg clpTypes.MsgS
 	// X - cToken Balance
 	// Y - Rowan Balance
 	// S - amount of Rowan
-	sendAmount, err := keeper.ReverseSwap(pool.ExternalAssetBalance, pool.NativeAssetBalance, types.Uint(requiredRowan))
+	sendAmount, err := keeper.ReverseSwap(msg.ReceivedAsset.Symbol, pool.ExternalAssetBalance, pool.NativeAssetBalance, types.Uint(requiredRowan))
 	if err != nil {
 		return
 	}

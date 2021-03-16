@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -24,18 +23,40 @@ import (
 // Y = pool.ExternalBalance (amount of cToken in pool )
 // S = Amount of Rowan I want to receive
 
-func ReverseSwap(X sdk.Uint, Y sdk.Uint, S sdk.Uint) (sdk.Uint, error) {
+// x - amount of cToken
+// X - cToken Balance
+// Y - Rowan Balance
+// S - amount of Rowan
+func ReverseSwap(symbol string, X sdk.Uint, Y sdk.Uint, S sdk.Uint) (sdk.Uint, error) {
 	if S.Equal(sdk.ZeroUint()) || X.Equal(sdk.ZeroUint()) || S.Mul(sdk.NewUint(4)).GTE(Y) {
 		return sdk.ZeroUint(), types.ErrNotEnoughAssetTokens
 	}
-	denominator := S.Add(S)                                //2*S
-	innerMostTerm := Y.Sub(S.Mul(sdk.NewUint(4))).BigInt() // ( Y*(Y - 4*S)
-	sqRootInnermost := innerMostTerm.Sqrt(innerMostTerm)   // sqrt( Y*(Y - 4*S)
-	term3 := X.Mul(sdk.NewUintFromBigInt(sqRootInnermost)) // X*sqrt( Y*(Y - 4*S)
-	term2 := X.Mul(Y)                                      //X*Y
-	term1 := X.Mul(S).Mul(sdk.NewUint(2))                  //2*X*S
-	numerator := term2.Sub(term1).Sub(term3)               //  X*Y - (2*X*S)  - (X*sqrt( Y*(Y - 4*S))
-	return numerator.Quo(denominator), nil
+	normalizationFactor, adjustExternalToken := GetNormalizationFactor(symbol)
+	if adjustExternalToken {
+		X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+	} else {
+		Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+		S = S.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+	}
+	minLen := int64(types.MinTokenPrecision)
+
+	Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
+	Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
+	Sd := ReducePrecision(sdk.NewDecFromBigInt(S.BigInt()), minLen)
+	denominator := Sd.Add(Sd)                                       //2*S
+	innerMostTerm := Yd.Mul(Yd.Sub(Sd.Mul(sdk.NewDec(4)))).BigInt() // ( Y*(Y - 4*S)
+	fmt.Println(innerMostTerm)
+	innerMostTerm.Sqrt(innerMostTerm)                    // sqrt( Y*(Y - 4*S)
+	term3 := Xd.Mul(sdk.NewDecFromBigInt(innerMostTerm)) // X*sqrt( Y*(Y - 4*S)
+	term2 := Xd.Mul(Yd)                                  //X*Y
+	term1 := Xd.Mul(Sd).Mul(sdk.NewDec(2))
+	numerator := term2.Sub(term1).Sub(term3)
+	numerator = IncreasePrecision(numerator, minLen)
+	denominator = IncreasePrecision(denominator, minLen)
+	fmt.Println(term2, term3)
+	result := numerator.Quo(denominator)
+	fmt.Println(result) //  X*Y - (2*X*S)  - (X*sqrt( Y*(Y - 4*S))
+	return sdk.NewUintFromBigInt(result.RoundInt().BigInt()), nil
 }
 
 func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
