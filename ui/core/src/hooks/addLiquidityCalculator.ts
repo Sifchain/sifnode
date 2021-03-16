@@ -1,6 +1,6 @@
 // TODO remove refs dependency and move to `actions/clp/calculateAddLiquidity`
 
-import { computed, Ref } from "@vue/reactivity";
+import { computed, effect, Ref } from "@vue/reactivity";
 import {
   Asset,
   AssetAmount,
@@ -28,6 +28,8 @@ export function usePoolCalculator(input: {
   balances: Ref<IAssetAmount[]>;
   liquidityProvider: Ref<LiquidityProvider | null>;
   poolFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
+  asyncPooling: Ref<boolean>;
+  lastFocusedTokenField: Ref<'A' | 'B' | null>;
 }) {
   const tokenAField = useField(input.tokenAAmount, input.tokenASymbol);
   const tokenBField = useField(input.tokenBAmount, input.tokenBSymbol);
@@ -47,6 +49,20 @@ export function usePoolCalculator(input: {
     return pool?.value || null;
   });
 
+  const assetA = computed(() => {
+    if (!input.tokenASymbol.value) {
+      return null;
+    }
+    return Asset.get(input.tokenASymbol.value);
+  });
+
+  const assetB = computed(() => {
+    if (!input.tokenBSymbol.value) {
+      return null;
+    }
+    return Asset.get(input.tokenBSymbol.value);
+  });
+
   const tokenABalance = computed(() => {
     if (!tokenAField.fieldAmount.value || !tokenAField.asset.value) {
       return null;
@@ -62,7 +78,6 @@ export function usePoolCalculator(input: {
         : null;
     }
   });
-
   const tokenBBalance = computed(() => {
     return input.tokenBSymbol.value
       ? balanceMap.value.get(input.tokenBSymbol.value) ?? null
@@ -171,7 +186,7 @@ export function usePoolCalculator(input: {
 
   // external_balance / native_balance
   const aPerBRatio = computed(() => {
-    if (!poolAmounts.value) return null;
+    if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
     return external.divide(native);
   });
@@ -186,7 +201,7 @@ export function usePoolCalculator(input: {
 
   // native_balance / external_balance
   const bPerARatio = computed(() => {
-    if (!poolAmounts.value) return null;
+    if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
     return native.divide(external);
   });
@@ -246,6 +261,25 @@ export function usePoolCalculator(input: {
     }
 
     return bPerARatioProjected.value.toFixed(8);
+  });
+
+  effect(() => {
+    // if in guided mode
+    // calculate the price ratio of A / B
+    if (input.asyncPooling.value && input.lastFocusedTokenField.value !== null) {
+      if (bPerARatio === null || aPerBRatio === null || !assetA.value || !assetB.value) {
+        return null;
+      }
+      const assetAmountA = AssetAmount(assetA.value, tokenAField.fieldAmount?.value || 0);
+      const assetAmountB = AssetAmount(assetB.value, tokenBField.fieldAmount?.value || 0);
+      if (input.lastFocusedTokenField.value === 'A') {
+
+        input.tokenBAmount.value = assetAmountA.multiply(bPerARatio.value || '0').toFixed(5);
+      } else if (input.lastFocusedTokenField.value === 'B') {
+        input.tokenAAmount.value = assetAmountB.multiply(aPerBRatio.value || '0').toFixed(5);
+      }
+    }
+
   });
 
   const state = computed(() => {
