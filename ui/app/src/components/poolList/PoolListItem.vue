@@ -23,7 +23,7 @@ export default defineComponent({
     const fromSymbol = computed(() =>
       props.accountPool?.pool.amounts[1].asset
         ? getAssetLabel(props.accountPool?.pool.amounts[1].asset)
-        : ""
+        : "",
     );
 
     const handleClick = () => {

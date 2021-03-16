@@ -139,7 +139,7 @@ test("parseConfig", () => {
         network: Network.ETHEREUM,
         symbol: "erowan",
       },
-    ])
+    ]),
   ).toMatchObject(expected);
 
   expect(() => {

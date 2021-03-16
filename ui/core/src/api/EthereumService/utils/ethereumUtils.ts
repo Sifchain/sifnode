@@ -19,7 +19,7 @@ export function getTokenContract(web3: Web3, asset: Token) {
 export async function getTokenBalance(
   web3: Web3,
   address: Address,
-  asset: Token
+  asset: Token,
 ) {
   const contract = getTokenContract(web3, asset);
   let tokenBalance = "0";
@@ -32,7 +32,7 @@ export async function getTokenBalance(
 }
 
 export function isEventEmittingProvider(
-  provider?: provider
+  provider?: provider,
 ): provider is WebsocketProvider | IpcProvider {
   if (!provider || typeof provider === "string") return false;
   return typeof (provider as any).on === "function";
@@ -44,7 +44,7 @@ export async function transferAsset(
   fromAddress: Address,
   toAddress: Address,
   amount: JSBI,
-  asset?: Asset
+  asset?: Asset,
 ) {
   if (isToken(asset)) {
     return await transferToken(web3, fromAddress, toAddress, amount, asset);
@@ -59,7 +59,7 @@ export async function transferToken(
   fromAddress: Address,
   toAddress: Address,
   amount: JSBI,
-  asset: Token
+  asset: Token,
 ) {
   const contract = getTokenContract(web3, asset);
   return new Promise<string>((resolve, reject) => {
@@ -92,7 +92,7 @@ export async function transferEther(
   web3: Web3,
   fromAddress: Address,
   toAddress: Address,
-  amount: JSBI
+  amount: JSBI,
 ) {
   return new Promise<string>((resolve, reject) => {
     let hash: string;
@@ -133,6 +133,6 @@ export async function getEtheriumBalance(web3: Web3, address: Address) {
       name: "Ethereum",
       network: Network.ETHEREUM,
     },
-    web3.utils.fromWei(ethBalance)
+    web3.utils.fromWei(ethBalance),
   );
 }

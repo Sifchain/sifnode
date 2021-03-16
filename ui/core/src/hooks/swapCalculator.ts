@@ -112,14 +112,14 @@ export function useSwapCalculator(input: {
       selectedField === "to"
     ) {
       reverseSwapResult.value = pool.value.calcReverseSwapResult(
-        toField.fieldAmount.value
+        toField.fieldAmount.value,
       );
 
       // Internally trigger calulations based off swapResult as this is how we
       // work out priceImpact, providerFee, minimumReceived
 
       swapResult.value = pool.value.calcSwapResult(
-        reverseSwapResult.value as IAssetAmount
+        reverseSwapResult.value as IAssetAmount,
       );
 
       input.fromAmount.value = trimZeros(reverseSwapResult.value.toFixed());
@@ -157,7 +157,7 @@ export function useSwapCalculator(input: {
 
     return calculateFormattedPriceImpact(
       pool.value as IPool,
-      fromField.fieldAmount.value
+      fromField.fieldAmount.value,
     );
   });
 
@@ -172,7 +172,7 @@ export function useSwapCalculator(input: {
 
     return calculateFormattedProviderFee(
       pool.value as IPool,
-      fromField.fieldAmount.value
+      fromField.fieldAmount.value,
     );
   });
 
@@ -196,10 +196,10 @@ export function useSwapCalculator(input: {
     // SwapState.INSUFFICIENT_LIQUIDITY is probably better here
     if (!pool.value) return SwapState.SELECT_TOKENS;
     const fromTokenLiquidity = (pool.value as IPool).amounts.find(
-      amount => amount.asset.symbol === fromField.asset.value?.symbol
+      amount => amount.asset.symbol === fromField.asset.value?.symbol,
     );
     const toTokenLiquidity = (pool.value as IPool).amounts.find(
-      amount => amount.asset.symbol === toField.asset.value?.symbol
+      amount => amount.asset.symbol === toField.asset.value?.symbol,
     );
 
     if (

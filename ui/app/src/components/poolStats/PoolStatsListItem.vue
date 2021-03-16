@@ -33,19 +33,19 @@ export default defineComponent({
     });
 
     const priceToken = formatNumberString(
-      parseFloat(props.pool?.priceToken).toFixed(2)
+      parseFloat(props.pool?.priceToken).toFixed(2),
     );
     const poolDepth = formatNumberString(
-      parseFloat(props.pool?.poolDepth).toFixed(2)
+      parseFloat(props.pool?.poolDepth).toFixed(2),
     );
     const volume = formatNumberString(
-      parseFloat(props.pool?.volume).toFixed(1)
+      parseFloat(props.pool?.volume).toFixed(1),
     );
     const poolAPY = formatNumberString(
       (
         (parseFloat(props.pool?.volume) / parseFloat(props.pool?.poolDepth)) *
         100
-      ).toFixed(1)
+      ).toFixed(1),
     );
 
     return {
@@ -101,7 +101,7 @@ export default defineComponent({
         <span
           >{{
             formatNumberString(
-              (parseFloat(poolAPY) + parseFloat(liqAPY)).toFixed(1)
+              (parseFloat(poolAPY) + parseFloat(liqAPY)).toFixed(1),
             )
           }}%</span
         >

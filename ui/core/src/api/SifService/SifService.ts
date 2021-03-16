@@ -71,14 +71,14 @@ export default function createSifService({
   const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl);
 
   const supportedTokens = assets.filter(
-    asset => asset.network === Network.SIFCHAIN
+    asset => asset.network === Network.SIFCHAIN,
   );
 
   async function createSifClientFromMnemonic(mnemonic: string) {
     const wallet = await Secp256k1HdWallet.fromMnemonic(
       mnemonic,
       makeCosmoshubPath(0),
-      sifAddrPrefix
+      sifAddrPrefix,
     );
     const accounts = await wallet.getAccounts();
 
@@ -133,7 +133,7 @@ export default function createSifService({
       }
     },
     100,
-    { leading: true }
+    { leading: true },
   );
 
   const instance = {
@@ -153,7 +153,7 @@ export default function createSifService({
         return;
       }
       const offlineSigner = keplrProvider.getOfflineSigner(
-        keplrChainConfig.chainId
+        keplrChainConfig.chainId,
       );
       const accounts = await offlineSigner.getAccounts();
       const address = accounts.length > 0 ? accounts[0].address : "";
@@ -165,7 +165,7 @@ export default function createSifService({
         address,
         offlineSigner,
         sifWsUrl,
-        sifRpcUrl
+        sifRpcUrl,
       );
     },
 
@@ -256,7 +256,7 @@ export default function createSifService({
           .filter(balance => supportedTokenSymbols.includes(balance.denom))
           .map(({ amount, denom }) => {
             const asset = supportedTokens.find(
-              token => token.symbol === denom
+              token => token.symbol === denom,
             )!; // will be found because of filter above
             return AssetAmount(asset, amount, { inBaseUnit: true });
           })
@@ -307,7 +307,7 @@ export default function createSifService({
 
     async signAndBroadcast(
       msg: Msg | Msg[],
-      memo?: string
+      memo?: string,
     ): Promise<TransactionStatus> {
       if (!client) {
         throw "No client. Please sign in.";

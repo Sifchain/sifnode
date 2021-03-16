@@ -13,7 +13,7 @@ export default defineComponent({
     }
 
     const data = await fetch(
-      "https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/tokenstats"
+      "https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/tokenstats",
     );
     const json = await data.json();
     const pools = json.body ? json.body.pools : "";

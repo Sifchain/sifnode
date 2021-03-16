@@ -15,7 +15,7 @@ export default defineComponent({
   },
   async mounted() {
     const data = await fetch(
-      "https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/liqvalrewards"
+      "https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/liqvalrewards",
     );
     const json = await data.json();
     this.data = json.body;

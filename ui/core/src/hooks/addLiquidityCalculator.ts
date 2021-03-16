@@ -43,7 +43,7 @@ export function usePoolCalculator(input: {
     // Find pool from poolFinder
     const pool = input.poolFinder(
       tokenAField.asset.value.symbol,
-      tokenBField.asset.value.symbol
+      tokenBField.asset.value.symbol,
     );
 
     return pool?.value || null;
@@ -86,15 +86,15 @@ export function usePoolCalculator(input: {
 
   const fromBalanceOverdrawn = computed(() => {
     return !tokenABalance.value?.greaterThanOrEqual(
-      tokenAField.fieldAmount.value || "0"
+      tokenAField.fieldAmount.value || "0",
     );
   });
 
   const toBalanceOverdrawn = computed(
     () =>
       !tokenBBalance.value?.greaterThanOrEqual(
-        tokenBField.fieldAmount.value || "0"
-      )
+        tokenBField.fieldAmount.value || "0",
+      ),
   );
 
   const liquidityPool = computed(() => {
@@ -112,7 +112,7 @@ export function usePoolCalculator(input: {
 
     return Pool(
       AssetAmount(tokenAField.asset.value, "0"),
-      AssetAmount(tokenBField.asset.value, "0")
+      AssetAmount(tokenBField.asset.value, "0"),
     );
   });
 
@@ -128,7 +128,7 @@ export function usePoolCalculator(input: {
 
     return liquidityPool.value.calculatePoolUnits(
       tokenBField.fieldAmount.value,
-      tokenAField.fieldAmount.value
+      tokenAField.fieldAmount.value,
     );
   });
 
@@ -148,11 +148,11 @@ export function usePoolCalculator(input: {
   });
 
   const totalPoolUnits = computed(() =>
-    liquidityProviderPoolUnitsArray.value[0].toFixed(0)
+    liquidityProviderPoolUnitsArray.value[0].toFixed(0),
   );
 
   const totalLiquidityProviderUnits = computed(() =>
-    liquidityProviderPoolUnitsArray.value[1].toFixed(0)
+    liquidityProviderPoolUnitsArray.value[1].toFixed(0),
   );
 
   const shareOfPool = computed(() => {
@@ -178,7 +178,7 @@ export function usePoolCalculator(input: {
     }
     if (!preExistingPool.value.contains(tokenAField.asset.value)) return null;
     const externalBalance = preExistingPool.value.getAmount(
-      tokenAField.asset.value
+      tokenAField.asset.value,
     );
     const nativeBalance = preExistingPool.value.getAmount("rowan");
     return [nativeBalance, externalBalance];
@@ -280,11 +280,11 @@ export function usePoolCalculator(input: {
       }
       const assetAmountA = AssetAmount(
         assetA.value,
-        tokenAField.fieldAmount?.value || 0
+        tokenAField.fieldAmount?.value || 0,
       );
       const assetAmountB = AssetAmount(
         assetB.value,
-        tokenBField.fieldAmount?.value || 0
+        tokenBField.fieldAmount?.value || 0,
       );
       if (input.lastFocusedTokenField.value === "A") {
         input.tokenBAmount.value = assetAmountA

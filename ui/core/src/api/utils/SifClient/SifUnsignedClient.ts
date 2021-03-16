@@ -21,13 +21,13 @@ type CustomLcdClient = LcdClient &
 
 function createLcdClient(
   apiUrl: string,
-  broadcastMode: BroadcastMode | undefined
+  broadcastMode: BroadcastMode | undefined,
 ): CustomLcdClient {
   return LcdClient.withExtensions(
     { apiUrl: apiUrl, broadcastMode: broadcastMode },
     setupAuthExtension,
     setupClpExtension,
-    setupEthbridgeExtension
+    setupEthbridgeExtension,
   );
 }
 
@@ -43,7 +43,7 @@ export class SifUnSignedClient extends CosmosClient
     apiUrl: string,
     wsUrl = "ws://localhost:26657/websocket",
     rpcUrl = "http://localhost:26657",
-    broadcastMode?: BroadcastMode
+    broadcastMode?: BroadcastMode,
   ) {
     super(apiUrl, broadcastMode);
     this.lcdClient = createLcdClient(apiUrl, broadcastMode);

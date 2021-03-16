@@ -26,7 +26,7 @@
             <SifButton
               :to="
                 `/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
-                  asset.asset.symbol
+                  asset.asset.symbol,
                 )}`
               "
               primary
@@ -153,7 +153,7 @@ export default defineComponent({
           ({ symbol }) =>
             symbol
               .toLowerCase()
-              .indexOf(searchText.value.toLowerCase().trim()) > -1
+              .indexOf(searchText.value.toLowerCase().trim()) > -1,
         )
         .map(asset => {
           const amount = balances.find(({ asset: { symbol } }) => {
@@ -165,7 +165,7 @@ export default defineComponent({
             ? pegList.filter(
                 txStatus =>
                   txStatus.symbol?.toLowerCase() ===
-                  getUnpeggedSymbol(asset.symbol.toLowerCase())
+                  getUnpeggedSymbol(asset.symbol.toLowerCase()),
               )
             : [];
 

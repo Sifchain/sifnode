@@ -58,7 +58,7 @@ export default defineComponent({
     const toSymbol = ref("rowan");
     const isFromMaxActive = computed(() => {
       const accountBalance = balances.value.find(
-        balance => balance.asset.symbol === fromSymbol.value
+        balance => balance.asset.symbol === fromSymbol.value,
       );
       if (!accountBalance) return;
       return fromAmount.value === accountBalance.toFixed();
@@ -66,7 +66,7 @@ export default defineComponent({
 
     const isToMaxActive = computed(() => {
       const accountBalance = balances.value.find(
-        balance => balance.asset.symbol === toSymbol.value
+        balance => balance.asset.symbol === toSymbol.value,
       );
       if (!accountBalance) return;
       return toAmount.value === accountBalance.toFixed();
@@ -118,7 +118,7 @@ export default defineComponent({
         tokenAFieldAmount.value,
         nativeBalance,
         externalBalance,
-        new Fraction(totalPoolUnits.value)
+        new Fraction(totalPoolUnits.value),
       );
       return rFactor.subtract(slipAdjustmentCalc);
     });
@@ -165,7 +165,7 @@ export default defineComponent({
       transactionState.value = "signing";
       const tx = await actions.clp.addLiquidity(
         tokenBFieldAmount.value,
-        tokenAFieldAmount.value
+        tokenAFieldAmount.value,
       );
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
@@ -266,7 +266,7 @@ export default defineComponent({
       handleFromMaxClicked() {
         selectedField.value = "from";
         const accountBalance = balances.value.find(
-          balance => balance.asset.symbol === fromSymbol.value
+          balance => balance.asset.symbol === fromSymbol.value,
         );
         if (!accountBalance) return;
         fromAmount.value = accountBalance.toFixed();
@@ -274,7 +274,7 @@ export default defineComponent({
       handleToMaxClicked() {
         selectedField.value = "to";
         const accountBalance = balances.value.find(
-          balance => balance.asset.symbol === toSymbol.value
+          balance => balance.asset.symbol === toSymbol.value,
         );
         if (!accountBalance) return;
         toAmount.value = accountBalance.toFixed();
@@ -411,7 +411,7 @@ export default defineComponent({
             formatNumber(
               aPerBRatioProjectedMessage === "N/A"
                 ? "0"
-                : aPerBRatioProjectedMessage
+                : aPerBRatioProjectedMessage,
             )
           }}</span
           ><br />
@@ -425,7 +425,7 @@ export default defineComponent({
             formatNumber(
               bPerARatioProjectedMessage === "N/A"
                 ? "0"
-                : bPerARatioProjectedMessage
+                : bPerARatioProjectedMessage,
             )
           }}</span
           ><br />
