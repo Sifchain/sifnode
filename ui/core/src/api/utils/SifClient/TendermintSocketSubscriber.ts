@@ -67,7 +67,7 @@ export function TendermintSocketSubscriber({ wsUrl }: { wsUrl: string }) {
               params: {
                 query: `tm.event='${event}'`,
               },
-            })
+            }),
           );
         });
       }

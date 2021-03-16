@@ -8,7 +8,7 @@ export default defineComponent({
     },
   },
 
-  data: function () {
+  data: function() {
     return {
       opened: false,
       containerLocation: { left: 0, bottom: 0 },

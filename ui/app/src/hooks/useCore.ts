@@ -9,7 +9,7 @@ import {
 const config = getConfig(
   process.env.VUE_APP_DEPLOYMENT_TAG,
   process.env.VUE_APP_SIFCHAIN_ASSET_TAG,
-  process.env.VUE_APP_ETHEREUM_ASSET_TAG
+  process.env.VUE_APP_ETHEREUM_ASSET_TAG,
 );
 
 const api = createApi(config);
@@ -39,7 +39,7 @@ Object.defineProperty(window, "store", {
 
         return value;
       },
-      2
+      2,
     );
 
     const storeSafe = JSON.parse(storeString);

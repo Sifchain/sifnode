@@ -27,7 +27,7 @@ test("Shorthand", () => {
   expect(AssetAmount(USD, "100.12").toFixed()).toBe("100.12");
   expect(AssetAmount(USD, "100").toFixed()).toBe("100.00");
   expect(AssetAmount(ETH, "10.1234567").toFixed()).toBe(
-    "10.123456700000000000"
+    "10.123456700000000000",
   );
   expect(AssetAmount(ETH, "10.1234567").toFixed(0)).toBe("10");
 });
@@ -49,6 +49,6 @@ test("To base units", () => {
   expect(
     AssetAmount(ETH, "10")
       .toBaseUnits()
-      .toString()
+      .toString(),
   ).toBe("10000000000000000000");
 });

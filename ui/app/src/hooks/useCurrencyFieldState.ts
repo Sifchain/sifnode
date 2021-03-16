@@ -22,7 +22,6 @@ export function useCurrencyFieldState(): CurrencyFieldState {
   const fromAmount = ref<string>("0");
   const toAmount = ref<string>("0");
 
-
   // Update global state whenchanges occur as sideeffects
   effect(() => (globalState.fromSymbol.value = fromSymbol.value));
   effect(() => (globalState.toSymbol.value = toSymbol.value));
