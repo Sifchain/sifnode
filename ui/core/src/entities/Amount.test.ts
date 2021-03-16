@@ -12,7 +12,7 @@ describe("Amount", () => {
 
     // Supports Negative Numbers
     expect(JSBI.equal(JSBI.BigInt("-1234"), Amount("-1234").toBigInt())).toBe(
-      true
+      true,
     );
 
     expect(JSBI.equal(JSBI.BigInt("1"), Amount("2").toBigInt())).toBe(false);
@@ -26,7 +26,7 @@ describe("Amount", () => {
     expect(
       Amount("1000")
         .add(Amount("1000"))
-        .equalTo(Amount("2000"))
+        .equalTo(Amount("2000")),
     ).toBe(true);
   });
 
@@ -35,12 +35,12 @@ describe("Amount", () => {
       expect(
         Amount("10")
           .divide(Amount("5"))
-          .equalTo(Amount("2"))
+          .equalTo(Amount("2")),
       ).toBe(true);
       expect(
         Amount("30")
           .divide(Amount("15"))
-          .equalTo(Amount("2"))
+          .equalTo(Amount("2")),
       ).toBe(true);
     });
 
@@ -48,13 +48,13 @@ describe("Amount", () => {
       expect(
         Amount("30")
           .divide(Amount("20"))
-          .equalTo(Amount("1"))
+          .equalTo(Amount("1")),
       ).toBe(true);
 
       expect(
         Amount("30")
           .divide(Amount("40"))
-          .equalTo(Amount("0"))
+          .equalTo(Amount("0")),
       ).toBe(true);
     });
   });
@@ -92,7 +92,7 @@ describe("Amount", () => {
     expect(
       Amount("12345678")
         .multiply(Amount("10"))
-        .equalTo(Amount("123456780"))
+        .equalTo(Amount("123456780")),
     ).toBe(true);
   });
 
@@ -100,20 +100,20 @@ describe("Amount", () => {
     expect(
       Amount("15241383936")
         .sqrt()
-        .equalTo(Amount("123456"))
+        .equalTo(Amount("123456")),
     ).toBe(true);
 
     expect(
       Amount("15241578750190521")
         .sqrt()
-        .equalTo(Amount("123456789"))
+        .equalTo(Amount("123456789")),
     ).toBe(true);
 
     // Floor
     expect(
       Amount("20")
         .sqrt()
-        .equalTo(Amount("4"))
+        .equalTo(Amount("4")),
     ).toBe(true);
   });
 
@@ -121,7 +121,7 @@ describe("Amount", () => {
     expect(
       Amount("12345678")
         .subtract(Amount("2345678"))
-        .equalTo(Amount("10000000"))
+        .equalTo(Amount("10000000")),
     ).toBe(true);
   });
 });

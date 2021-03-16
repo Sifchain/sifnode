@@ -23,7 +23,7 @@ export function Asset(assetOrSymbol: IAsset | string): ReadonlyAsset {
   if (isAsset(assetOrSymbol)) {
     assetMap.set(
       assetOrSymbol.symbol.toLowerCase(),
-      assetOrSymbol as ReadonlyAsset
+      assetOrSymbol as ReadonlyAsset,
     );
     return assetOrSymbol;
   }
@@ -34,7 +34,7 @@ export function Asset(assetOrSymbol: IAsset | string): ReadonlyAsset {
     : false;
   if (!found) {
     throw new Error(
-      `Attempt to retrieve the asset with key "${assetOrSymbol}" before it had been cached.`
+      `Attempt to retrieve the asset with key "${assetOrSymbol}" before it had been cached.`,
     );
   }
 
