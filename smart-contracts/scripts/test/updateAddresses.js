@@ -6,25 +6,45 @@
 // (this will be obsolete when the frontend just gets it from the smart contracts
 // directly)
 //
-// For example:
+// For example, to get the sifchain version:
 // 
-//   node scripts/test/updateAddresses.js scripts/test/updateAddresses.js $BASEDIR/ui/core/src/tokenwhitelist.sandpit.json $BASEDIR/ui/core/src/assets.ethereum.ropsten.json
+//   node scripts/test/updateAddresses.js $BASEDIR/ui/core/src/tokenwhitelist.sandpit.json $BASEDIR/ui/core/src/assets.ethereum.ropsten.json | jq .sifchain
+//
+//
 
 const fs = require('fs')
 
-const addressFileContents = fs.readFileSync(process.argv[3], 'utf8')
-const targetFileContents = fs.readFileSync(process.argv[4], 'utf8')
+const addressFileContents = fs.readFileSync(process.argv[2], 'utf8')
+const targetFileContents = fs.readFileSync(process.argv[3], 'utf8')
 
+// Build a map of symbols (like usdt) to hex addresses
 const addresses = JSON.parse(addressFileContents);
 
-const symbolToToken = {};
+const symbolToHexAddress = {};
 for (let x of addresses) {
-    symbolToToken[x["symbol"]] = x["token"];
+    symbolToHexAddress[x["symbol"]] = x["token"];
 }
+
 const targets = JSON.parse(targetFileContents);
-const assets = [];
-for (let t of targets["assets"]) {
-    t.address = symbolToToken[t["symbol"]];
-    assets.push(t);
+
+const assets = targets["assets"].map(t => {
+    const newElement = {
+        ...t,
+        address: symbolToHexAddress[t["symbol"].toLowerCase()],
+    }
+    return newElement;
+});
+
+const sifchainAssets = assets.map(t => {
+    return {
+        ...t,
+        symbol: (t.symbol === "erowan") ? "rowan" : `c${t.symbol}`,
+    }
+});
+
+const result = {
+    ethereum: {assets},
+    sifchain: {assets: sifchainAssets},
 }
-console.log(JSON.stringify({assets: assets}))
+
+console.log(JSON.stringify(result))
