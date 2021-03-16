@@ -12,7 +12,7 @@ export function SubscribeToTx({
   // Should this live behind a store service API?
   function storeSetTxStatus(
     hash: string | undefined,
-    state: TransactionStatus
+    state: TransactionStatus,
   ) {
     if (!hash || !store.wallet.eth.address) return;
 

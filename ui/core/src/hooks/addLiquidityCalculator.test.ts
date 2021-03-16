@@ -24,7 +24,7 @@ describe("addLiquidityCalculator", () => {
   const tokenBAmount: Ref<string> = ref("0");
   const tokenBSymbol: Ref<string | null> = ref(null);
   const asyncPooling: Ref<boolean> = ref(false);
-  const lastFocusedTokenField: Ref<'A' | 'B' | null> = ref(null);
+  const lastFocusedTokenField: Ref<"A" | "B" | null> = ref(null);
   const balances = ref([]) as Ref<IAssetAmount[]>;
   const selectedField: Ref<"from" | "to" | null> = ref("from");
   const poolFinder = jest.fn<Ref<Pool> | null, any>(() => null);
@@ -40,7 +40,7 @@ describe("addLiquidityCalculator", () => {
   let shareOfPoolPercent: Ref<string>;
   let state: Ref<PoolState>;
   let liquidityProvider = ref(
-    LiquidityProvider(ATK, ZERO, akasha.address, ZERO, ZERO)
+    LiquidityProvider(ATK, ZERO, akasha.address, ZERO, ZERO),
   ) as Ref<LiquidityProvider | null>; // ? not sure why we need to cast
 
   beforeEach(() => {
@@ -245,7 +245,7 @@ describe("addLiquidityCalculator", () => {
         preexistingLiquidity,
         expected,
       },
-      index
+      index,
     ) => {
       test(`Ratios #${index + 1}`, () => {
         balances.value = [
@@ -255,18 +255,18 @@ describe("addLiquidityCalculator", () => {
         liquidityProvider.value = !preexistingLiquidity
           ? null
           : LiquidityProvider(
-            ATK,
-            new Fraction(preexistingLiquidity.units),
-            akasha.address,
-            new Fraction(preexistingLiquidity.native),
-            new Fraction(preexistingLiquidity.external)
-          );
+              ATK,
+              new Fraction(preexistingLiquidity.units),
+              akasha.address,
+              new Fraction(preexistingLiquidity.native),
+              new Fraction(preexistingLiquidity.external),
+            );
 
         poolFinder.mockImplementation(() => {
           const pool = Pool(
             AssetAmount(Asset.get(externalSymbol), poolExternal),
             AssetAmount(ROWAN, poolNative),
-            new Fraction(poolUnits)
+            new Fraction(poolUnits),
           );
 
           return ref(pool) as Ref<Pool>;
@@ -279,23 +279,23 @@ describe("addLiquidityCalculator", () => {
         expect(aPerBRatioMessage.value).toBe(expected.aPerBRatioMessage);
         expect(bPerARatioMessage.value).toBe(expected.bPerARatioMessage);
         expect(aPerBRatioProjectedMessage.value).toBe(
-          expected.aPerBRatioProjectedMessage
+          expected.aPerBRatioProjectedMessage,
         );
         expect(bPerARatioProjectedMessage.value).toBe(
-          expected.bPerARatioProjectedMessage
+          expected.bPerARatioProjectedMessage,
         );
         expect(shareOfPoolPercent.value).toBe(expected.shareOfPool);
         expect(state.value).toBe(expected.state);
       });
-    }
+    },
   );
 
   test("poolCalculator ratio messages", () => {
     poolFinder.mockImplementation(
       () =>
         ref(
-          Pool(AssetAmount(ATK, "2000000"), AssetAmount(ROWAN, "1000000"))
-        ) as Ref<Pool>
+          Pool(AssetAmount(ATK, "2000000"), AssetAmount(ROWAN, "1000000")),
+        ) as Ref<Pool>,
     );
 
     tokenAAmount.value = "100000";
@@ -318,9 +318,9 @@ describe("addLiquidityCalculator", () => {
           Pool(
             AssetAmount(ATK, "1000000"),
             AssetAmount(ROWAN, "1000000"),
-            new Fraction("1000000")
-          )
-        ) as Ref<Pool>
+            new Fraction("1000000"),
+          ),
+        ) as Ref<Pool>,
     );
 
     // Liquidity provider already owns 1000 pool units (1000000 from another investor)
@@ -329,7 +329,7 @@ describe("addLiquidityCalculator", () => {
       new Fraction("500000"),
       akasha.address,
       new Fraction("500000"),
-      new Fraction("500000")
+      new Fraction("500000"),
     );
 
     // Add 1000 of both tokens
@@ -360,9 +360,9 @@ describe("addLiquidityCalculator", () => {
           Pool(
             AssetAmount(ATK, "1000000"),
             AssetAmount(ROWAN, "1000000"),
-            new Fraction("1000000")
-          )
-        ) as Ref<Pool>
+            new Fraction("1000000"),
+          ),
+        ) as Ref<Pool>,
     );
 
     // Liquidity provider is null
@@ -432,8 +432,8 @@ describe("addLiquidityCalculator", () => {
     poolFinder.mockImplementation(
       () =>
         ref(
-          Pool(AssetAmount(ATK, "1000000"), AssetAmount(ROWAN, "1000000"))
-        ) as Ref<Pool>
+          Pool(AssetAmount(ATK, "1000000"), AssetAmount(ROWAN, "1000000")),
+        ) as Ref<Pool>,
     );
     tokenAAmount.value = "1000";
     tokenBAmount.value = "0";
@@ -451,8 +451,8 @@ describe("addLiquidityCalculator", () => {
     poolFinder.mockImplementation(
       () =>
         ref(
-          Pool(AssetAmount(ATK, "1000000"), AssetAmount(ROWAN, "1000000"))
-        ) as Ref<Pool>
+          Pool(AssetAmount(ATK, "1000000"), AssetAmount(ROWAN, "1000000")),
+        ) as Ref<Pool>,
     );
     tokenAAmount.value = "0";
     tokenBAmount.value = "1000";

@@ -1,8 +1,6 @@
 <template>
   <div class="wrapper">
-    <div class="icon-button" :class="classes">
-
-    </div>
+    <div class="icon-button" :class="classes"></div>
     <div class="label" v-if="label">
       {{ label }}
     </div>
@@ -13,27 +11,27 @@
 export default {
   props: {
     label: {
-      type: String
+      type: String,
     },
     active: {
       type: Boolean,
-      default: false
+      default: false,
     },
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
   },
 
   data() {
     return {
       classes: {
-        'disabled': this.disabled,
-        'active': this.active,
-      }
-    }
-  }
-}
+        disabled: this.disabled,
+        active: this.active,
+      },
+    };
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -57,7 +55,7 @@ export default {
     width: 75px;
     height: 75px;
     position: absolute;
-    background: linear-gradient(to bottom, #3D3D3D 0%, #7A7A7A 100%);
+    background: linear-gradient(to bottom, #3d3d3d 0%, #7a7a7a 100%);
     transform: rotate(45deg);
     top: 10px;
     left: 17px;
@@ -103,11 +101,11 @@ export default {
     }
 
     &::after {
-      background: linear-gradient(to bottom, #61A5F6 0%, #A0CAF9 100%);
+      background: linear-gradient(to bottom, #61a5f6 0%, #a0caf9 100%);
     }
 
     &::before {
-      background: linear-gradient(to bottom, #8BBEF8 0%, #90C2F9 100%);
+      background: linear-gradient(to bottom, #8bbef8 0%, #90c2f9 100%);
     }
   }
 }

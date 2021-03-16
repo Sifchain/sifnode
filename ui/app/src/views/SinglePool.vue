@@ -45,7 +45,7 @@ export default defineComponent({
     const fromSymbol = computed(() =>
       accountPool?.value?.pool.amounts[1].asset
         ? getAssetLabel(accountPool?.value.pool.amounts[1].asset)
-        : ""
+        : "",
     );
     const fromAsset = useAssetItem(fromSymbol);
     const fromToken = fromAsset.token;
@@ -57,13 +57,13 @@ export default defineComponent({
     });
 
     const fromTotalValue = computed(() =>
-      accountPool?.value?.pool.amounts[1].toFixed(DECIMALS)
+      accountPool?.value?.pool.amounts[1].toFixed(DECIMALS),
     );
 
     const toSymbol = computed(() =>
       accountPool?.value?.pool.amounts[0].asset
         ? getAssetLabel(accountPool.value.pool.amounts[0].asset)
-        : ""
+        : "",
     );
     const toAsset = useAssetItem(toSymbol);
     const toToken = toAsset.token;
@@ -75,11 +75,11 @@ export default defineComponent({
     });
 
     const toTotalValue = computed(() =>
-      accountPool?.value?.pool.amounts[0].toFixed(DECIMALS)
+      accountPool?.value?.pool.amounts[0].toFixed(DECIMALS),
     );
 
     const poolUnitsAsFraction = computed(
-      () => accountPool?.value?.lp.units || new Fraction("0")
+      () => accountPool?.value?.lp.units || new Fraction("0"),
     );
 
     const myPoolShare = computed(() => {
@@ -92,7 +92,7 @@ export default defineComponent({
       return `${perc} %`;
     });
     const myPoolUnits = computed(() =>
-      poolUnitsAsFraction.value.toFixed(DECIMALS)
+      poolUnitsAsFraction.value.toFixed(DECIMALS),
     );
     return {
       accountPool,

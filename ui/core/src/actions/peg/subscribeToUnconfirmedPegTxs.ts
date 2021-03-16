@@ -15,7 +15,7 @@ export const SubscribeToUnconfirmedPegTxs = ({
   async function getSubscriptions() {
     const pendingTxs = await api.EthbridgeService.fetchUnconfirmedLockBurnTxs(
       store.wallet.eth.address,
-      config.ethConfirmations
+      config.ethConfirmations,
     );
 
     return pendingTxs.map(subscribeToTx);
@@ -27,7 +27,7 @@ export const SubscribeToUnconfirmedPegTxs = ({
   // Return unsubscribe synchronously
   return () => {
     subscriptionsPromise.then(subscriptions =>
-      subscriptions.forEach(unsubscribe => unsubscribe())
+      subscriptions.forEach(unsubscribe => unsubscribe()),
     );
   };
 };
