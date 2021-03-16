@@ -1,8 +1,19 @@
 import Text from "./Text.vue";
-
+import format from "../../../../../core/src/utils/format";
+import { AssetAmount } from "../../../../../core/src/entities/AssetAmount";
+import JSBI from "jsbi";
+import { Network } from "../../../../../core/src/entities/Network";
+import { Coin } from "../../../../../core/src/entities/Coin";
+// /home/ajax/repos/sifchain/sifnode/ui/core/src/utils/format.ts
 // TODO - This is just a place holder to practise with the new format/amount lib
 //        Though we should investigate the idea of having a typography system
 //        Will push to work with the new designer to build a design language
+const USD = Coin({
+  symbol: "USD",
+  decimals: 2,
+  name: "US Dollar",
+  network: Network.ETHEREUM,
+});
 
 function numberWithCommas(n) {
   var parts = n.toString().split(".");
@@ -56,7 +67,10 @@ const Template = (args, { argTypes }) => ({
   components: { Text },
   setup: () => {
     const { amount, decimals, commas, padding } = args;
-    const formattedAmount = formatAmount(amount, { decimals, commas, padding });
+    // const formattedAmount = formatAmount(amount, { decimals, commas, padding });
+    const aAmount = AssetAmount(USD, JSBI.BigInt("10012"));
+    const formattedAmount = format(aAmount);
+    console.log("adsad", aAmount);
     return { formattedAmount };
   },
   template: "<text>{{ formattedAmount }}</text>",
