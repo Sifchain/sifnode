@@ -1,6 +1,5 @@
 import { ActionContext } from "..";
 import { Address, Asset, AssetAmount, TransactionStatus } from "../../entities";
-import notify from "../../api/utils/Notifications";
 import JSBI from "jsbi";
 import { SubscribeToUnconfirmedPegTxs } from "./subscribeToUnconfirmedPegTxs";
 import { SubscribeToTx } from "./utils/subscribeToTx";
@@ -24,7 +23,7 @@ export default ({
 }: ActionContext<
   // Once we have moved all interactors to their own files this can be
   // ActionContext<any,any> or renamed to InteractorContext<any,any>
-  "SifService" | "EthbridgeService" | "EthereumService", // Select the services you want to access
+  "SifService" | "EthbridgeService" | "EventBusService" | "EthereumService", // Select the services you want to access
   "wallet" | "tx" // Select the store keys you want to access
 >) => {
   const config: PegConfig = {
@@ -98,23 +97,27 @@ export default ({
         assetAmount,
         store.wallet.eth.address,
         store.wallet.sif.address,
-        feeAmount
+        feeAmount,
       );
 
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        notify({
-          type: "error",
-          message: txStatus.memo || "There was an error while unpegging",
+        api.EventBusService.dispatch({
+          type: "PegTransactionErrorEvent",
+          payload: {
+            txStatus,
+            message: txStatus.memo || "There was an error while unpegging",
+          },
         });
       }
+
       console.log(
         "unpeg txStatus.state",
         txStatus.state,
         txStatus.memo,
         txStatus.code,
-        tx.value.msg
+        tx.value.msg,
       );
 
       return txStatus;
@@ -126,7 +129,7 @@ export default ({
     async approve(address: Address, assetAmount: AssetAmount) {
       return await api.EthbridgeService.approveBridgeBankSpend(
         address,
-        assetAmount
+        assetAmount,
       );
     },
 
@@ -141,7 +144,7 @@ export default ({
         const pegTx = lockOrBurnFn(
           store.wallet.sif.address,
           assetAmount,
-          config.ethConfirmations
+          config.ethConfirmations,
         );
 
         subscribeToTx(pegTx);

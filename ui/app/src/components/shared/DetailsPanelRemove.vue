@@ -1,15 +1,15 @@
 <template>
   <div class="details">
     <div class="details-header">
-        <h4 class="text--left">You Should Receive:</h4>
+      <h4 class="text--left">You Should Receive:</h4>
 
       <div class="details-row">
-          <AssetItem :symbol="nativeAssetSymbol" /> {{ nativeAssetAmount }}
+        <AssetItem :symbol="nativeAssetSymbol" /> {{ nativeAssetAmount }}
       </div>
-      <div class="details-row">    
-          <AssetItem :symbol="externalAssetSymbol" /> {{ externalAssetAmount }}
-        </div>
+      <div class="details-row">
+        <AssetItem :symbol="externalAssetSymbol" /> {{ externalAssetAmount }}
       </div>
+    </div>
   </div>
 </template>
 
@@ -59,10 +59,10 @@ export default defineComponent({
     AssetItem,
   },
   props: {
-    nativeAssetSymbol: { type: String, default: ""},
-    nativeAssetAmount: { type: String, default: ""},
-    externalAssetAmount: { type: String, default: ""},
-    externalAssetSymbol: { type: String, default: ""},
+    nativeAssetSymbol: { type: String, default: "" },
+    nativeAssetAmount: { type: String, default: "" },
+    externalAssetAmount: { type: String, default: "" },
+    externalAssetSymbol: { type: String, default: "" },
   },
 });
 </script>

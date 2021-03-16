@@ -6,16 +6,16 @@ export const SubscribeToUnconfirmedPegTxs = ({
   api,
   store,
   config,
-}: ActionContext<"EthbridgeService", "tx" | "wallet"> & {
+}: ActionContext<"EthbridgeService" | "EventBusService", "tx" | "wallet"> & {
   config: PegConfig;
 }) => () => {
   // Update a tx state in the store
-  const subscribeToTx = SubscribeToTx({ store });
+  const subscribeToTx = SubscribeToTx({ store, api });
 
   async function getSubscriptions() {
     const pendingTxs = await api.EthbridgeService.fetchUnconfirmedLockBurnTxs(
       store.wallet.eth.address,
-      config.ethConfirmations
+      config.ethConfirmations,
     );
 
     return pendingTxs.map(subscribeToTx);
@@ -27,7 +27,7 @@ export const SubscribeToUnconfirmedPegTxs = ({
   // Return unsubscribe synchronously
   return () => {
     subscriptionsPromise.then(subscriptions =>
-      subscriptions.forEach(unsubscribe => unsubscribe())
+      subscriptions.forEach(unsubscribe => unsubscribe()),
     );
   };
 };
