@@ -41,7 +41,9 @@ export default defineComponent({
             >Validator Subsidy</a
           >:
           <span v-if="data.liqValRewards === ''">TBD</span>
-          <span v-else> {{parseFloat(data.liqValRewards).toFixed(2)}} % APY </span>
+          <span v-else>
+            {{ parseFloat(data.liqValRewards).toFixed(2) }} % APY
+          </span>
         </p>
         <p class="mb-8">
           2.
