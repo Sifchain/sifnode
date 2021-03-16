@@ -1,3 +1,4 @@
 core/lib
 app/dist
 node_modules
+chains/ethereum/build/contracts
