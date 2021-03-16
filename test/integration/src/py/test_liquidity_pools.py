@@ -16,6 +16,8 @@ smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
 bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
 bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
 
+sifchain_fees = 200000  # Should probably make this a constant
+
 
 def get_faucet_balance(sifnodecli_node):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
@@ -308,7 +310,6 @@ def test_create_pools(
 
     pools = get_pools(basic_transfer_request.sifnodecli_node)
     change_amount = 10 ** 18
-    sifchain_fees = 100000  # Should probably make this a constant
     basic_transfer_request.amount = change_amount
     basic_transfer_request.sifchain_symbol = "ceth"
     basic_transfer_request.sifchain_address = sifaddress
@@ -382,7 +383,6 @@ def test_pools(
     burn_lock_functions.transfer_ethereum_to_sifchain(request)
 
     sifaddress = request.sifchain_address
-    sifchain_fees = 100000  # Should probably make this a constant
     # wait for balance
     test_utilities.wait_for_sifchain_addr_balance(sifaddress, "rowan", target_rowan_balance, basic_transfer_request.sifnodecli_node)
     test_utilities.wait_for_sifchain_addr_balance(sifaddress, sifchain_symbol, target_new_currency_balance, basic_transfer_request.sifnodecli_node)
