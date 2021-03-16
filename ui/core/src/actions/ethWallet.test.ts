@@ -66,7 +66,7 @@ test("Calls transfer correctly", async () => {
       address: "abcdefg",
       decimals: 18,
       symbol: "ceth",
-    })
+    }),
   );
   expect(mockEthereumService.transfer).toHaveBeenCalled();
 });

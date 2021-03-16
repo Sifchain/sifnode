@@ -1,6 +1,6 @@
 <template>
   <div class="sif-switch" @click="toggle">
-    <div class="element" :class="{ 'checked': modelValue }"></div>
+    <div class="element" :class="{ checked: modelValue }"></div>
     <label for="" class="label">{{ label }}</label>
   </div>
 </template>
@@ -14,9 +14,9 @@ export default {
   methods: {
     toggle: function() {
       this.$emit("update:modelValue", !this.modelValue);
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -37,7 +37,7 @@ export default {
     transition: all $trans_fast;
 
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       top: 0px;
       left: 0;
@@ -54,7 +54,7 @@ export default {
       background: $c_gold;
 
       &::after {
-        content: '';
+        content: "";
         left: 28px;
       }
     }

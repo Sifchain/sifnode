@@ -39,7 +39,7 @@ export default defineComponent({
     const wBasisPoints = ref("0");
     const nativeAssetSymbol = ref("rowan");
     const externalAssetSymbol = ref<string | null>(
-      route.params.externalAsset ? route.params.externalAsset.toString() : null
+      route.params.externalAsset ? route.params.externalAsset.toString() : null,
     );
     const { connected } = useWalletButton();
 
@@ -53,7 +53,7 @@ export default defineComponent({
       api.ClpService.getLiquidityProvider({
         symbol: externalAssetSymbol.value,
         lpAddress: store.wallet.sif.address,
-      }).then((liquidityProviderResult) => {
+      }).then(liquidityProviderResult => {
         liquidityProvider.value = liquidityProviderResult;
       });
     });
@@ -123,7 +123,7 @@ export default defineComponent({
         const tx = await actions.clp.removeLiquidity(
           Asset.get(externalAssetSymbol.value),
           wBasisPoints.value,
-          asymmetry.value
+          asymmetry.value,
         );
         transactionHash.value = tx.hash;
         transactionState.value = toConfirmState(tx.state); // TODO: align states
