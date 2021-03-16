@@ -1,6 +1,5 @@
 <template>
   <div class="field-wrappers">
-
     <CurrencyField
       :label="tokenALabel"
       tabindex="1"
@@ -99,7 +98,7 @@ export default defineComponent({
     "update:fromAmount",
     "update:fromSymbol",
     "handleToggle",
-    "toggleAsyncPooling"
+    "toggleAsyncPooling",
   ],
   setup(props, context) {
     function handleFromUpdateAmount(amount: string) {

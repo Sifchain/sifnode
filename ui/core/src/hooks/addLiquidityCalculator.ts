@@ -29,7 +29,7 @@ export function usePoolCalculator(input: {
   liquidityProvider: Ref<LiquidityProvider | null>;
   poolFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
   asyncPooling: Ref<boolean>;
-  lastFocusedTokenField: Ref<'A' | 'B' | null>;
+  lastFocusedTokenField: Ref<"A" | "B" | null>;
 }) {
   const tokenAField = useField(input.tokenAAmount, input.tokenASymbol);
   const tokenBField = useField(input.tokenBAmount, input.tokenBSymbol);
@@ -266,20 +266,36 @@ export function usePoolCalculator(input: {
   effect(() => {
     // if in guided mode
     // calculate the price ratio of A / B
-    if (input.asyncPooling.value && input.lastFocusedTokenField.value !== null) {
-      if (bPerARatio === null || aPerBRatio === null || !assetA.value || !assetB.value) {
+    if (
+      input.asyncPooling.value &&
+      input.lastFocusedTokenField.value !== null
+    ) {
+      if (
+        bPerARatio === null ||
+        aPerBRatio === null ||
+        !assetA.value ||
+        !assetB.value
+      ) {
         return null;
       }
-      const assetAmountA = AssetAmount(assetA.value, tokenAField.fieldAmount?.value || 0);
-      const assetAmountB = AssetAmount(assetB.value, tokenBField.fieldAmount?.value || 0);
-      if (input.lastFocusedTokenField.value === 'A') {
-
-        input.tokenBAmount.value = assetAmountA.multiply(bPerARatio.value || '0').toFixed(5);
-      } else if (input.lastFocusedTokenField.value === 'B') {
-        input.tokenAAmount.value = assetAmountB.multiply(aPerBRatio.value || '0').toFixed(5);
+      const assetAmountA = AssetAmount(
+        assetA.value,
+        tokenAField.fieldAmount?.value || 0
+      );
+      const assetAmountB = AssetAmount(
+        assetB.value,
+        tokenBField.fieldAmount?.value || 0
+      );
+      if (input.lastFocusedTokenField.value === "A") {
+        input.tokenBAmount.value = assetAmountA
+          .multiply(bPerARatio.value || "0")
+          .toFixed(5);
+      } else if (input.lastFocusedTokenField.value === "B") {
+        input.tokenAAmount.value = assetAmountB
+          .multiply(aPerBRatio.value || "0")
+          .toFixed(5);
       }
     }
-
   });
 
   const state = computed(() => {
