@@ -24,7 +24,7 @@
     "core:test": "cd core && yarn test",
     "core:compile": "cd core && yarn compile",
     "core:watch": "cd core && yarn watch",
-    "core:build": "cd core && prettier -c '**/*.ts' yarn build",
+    "core:build": "cd core && yarn build",
     "core:test:all": "yarn core:compile && concurrently -r -k -s first \"yarn chain:start:all\" \"sleep 5 && yarn chain:migrate && yarn core:test:with-peggy\"",
     "stack": "./scripts/run-stack.sh",
     "lint": "yarn prettier --config .prettierrc -c '**/*.{vue,ts,json}'",
