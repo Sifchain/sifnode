@@ -7,7 +7,7 @@ import { Asset, IAssetAmount } from "../../entities";
 const assets = [...localethereumassets.assets, ...localsifassets.assets];
 
 export function getTestingToken(tokenSymbol: string) {
-  const supportedTokens = parseAssets(assets as any[]).map((asset) => {
+  const supportedTokens = parseAssets(assets as any[]).map(asset => {
     Asset.set(asset.symbol, asset);
     return asset;
   });

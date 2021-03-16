@@ -71,7 +71,7 @@ export default function createSifService({
   const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl);
 
   const supportedTokens = assets.filter(
-    (asset) => asset.network === Network.SIFCHAIN
+    asset => asset.network === Network.SIFCHAIN
   );
 
   async function createSifClientFromMnemonic(mnemonic: string) {
@@ -114,7 +114,12 @@ export default function createSifService({
         state.accounts = await client.getAccounts();
         state.balances = await instance.getBalance(client.senderAddress);
       } catch (e) {
-        if (!e.toString().toLowerCase().includes("no address found on chain")) {
+        if (
+          !e
+            .toString()
+            .toLowerCase()
+            .includes("no address found on chain")
+        ) {
           state.connected = false;
           state.address = "";
           state.balances = [];
@@ -246,16 +251,16 @@ export default function createSifService({
         if (!account) {
           throw "No Address found on chain";
         } // todo handle this better
-        const supportedTokenSymbols = supportedTokens.map((s) => s.symbol);
+        const supportedTokenSymbols = supportedTokens.map(s => s.symbol);
         return account.balance
-          .filter((balance) => supportedTokenSymbols.includes(balance.denom))
+          .filter(balance => supportedTokenSymbols.includes(balance.denom))
           .map(({ amount, denom }) => {
             const asset = supportedTokens.find(
-              (token) => token.symbol === denom
+              token => token.symbol === denom
             )!; // will be found because of filter above
             return AssetAmount(asset, amount, { inBaseUnit: true });
           })
-          .filter((balance) => {
+          .filter(balance => {
             // If an aseet is supplied filter for it
             if (!asset) {
               return true;

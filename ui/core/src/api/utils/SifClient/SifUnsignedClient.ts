@@ -35,8 +35,7 @@ type IClpApi = ClpExtension["clp"];
 type IEthbridgeApi = EthbridgeExtension["ethbridge"];
 
 type HandlerFn<T> = (a: T) => void;
-export class SifUnSignedClient
-  extends CosmosClient
+export class SifUnSignedClient extends CosmosClient
   implements IClpApi, IEthbridgeApi {
   protected readonly lcdClient: CustomLcdClient;
   private subscriber: TendermintSocketPoll | undefined;

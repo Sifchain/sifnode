@@ -50,12 +50,12 @@ export default defineComponent({
   setup(props, context) {
     const localAmount = computed({
       get: () => props.amount,
-      set: (amount) => context.emit("update:amount", amount),
+      set: amount => context.emit("update:amount", amount),
     });
 
     const localSymbol = computed({
       get: () => props.symbol,
-      set: (symbol) => context.emit("update:symbol", symbol),
+      set: symbol => context.emit("update:symbol", symbol),
     });
 
     return { localSymbol, localAmount };
@@ -101,7 +101,7 @@ export default defineComponent({
         block
         @click="$emit('selectsymbol')"
       >
-        <span><AssetItem :symbol="localSymbol" /></span>
+        <span><AssetItem :symbol="localSymbol"/></span>
         <span><Caret /></span>
       </SifButton>
       <div v-if="localSymbol !== null && symbolFixed">

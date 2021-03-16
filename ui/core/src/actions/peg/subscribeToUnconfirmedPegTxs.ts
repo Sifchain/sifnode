@@ -26,8 +26,8 @@ export const SubscribeToUnconfirmedPegTxs = ({
 
   // Return unsubscribe synchronously
   return () => {
-    subscriptionsPromise.then((subscriptions) =>
-      subscriptions.forEach((unsubscribe) => unsubscribe())
+    subscriptionsPromise.then(subscriptions =>
+      subscriptions.forEach(unsubscribe => unsubscribe())
     );
   };
 };

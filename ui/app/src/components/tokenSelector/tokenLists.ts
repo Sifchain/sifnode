@@ -69,7 +69,7 @@ export function disableSelected({
 }) {
   return computed(
     () =>
-      list.value?.map((item) =>
+      list.value?.map(item =>
         selectedTokens.includes(item.symbol)
           ? { disabled: true, ...item }
           : item

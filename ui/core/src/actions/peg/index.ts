@@ -140,7 +140,7 @@ export default ({
         ? api.EthbridgeService.burnToSifchain
         : api.EthbridgeService.lockToSifchain;
 
-      return await new Promise<TransactionStatus>((done) => {
+      return await new Promise<TransactionStatus>(done => {
         const pegTx = lockOrBurnFn(
           store.wallet.sif.address,
           assetAmount,
@@ -149,7 +149,7 @@ export default ({
 
         subscribeToTx(pegTx);
 
-        pegTx.onTxHash((hash) => {
+        pegTx.onTxHash(hash => {
           done({
             hash: hash.txHash,
             memo: "Transaction Accepted",

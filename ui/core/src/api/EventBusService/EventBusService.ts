@@ -27,7 +27,7 @@ export default function createEventBusService({}: EventBusServiceContext) {
      */
     on(eventType: AppEventType | AppEventTypes, handler: EventHandler) {
       const types = !Array.isArray(eventType) ? [eventType] : eventType;
-      types.forEach((type) => {
+      types.forEach(type => {
         emitter.on(type, handler);
       });
     },

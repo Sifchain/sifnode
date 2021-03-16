@@ -77,7 +77,7 @@ describe("EthbridgeService", () => {
     const amountToLock = AssetAmount(ETH, "3");
 
     // Send funds to the smart contract
-    await new Promise<void>(async (done) => {
+    await new Promise<void>(async done => {
       EthbridgeService.lockToSifchain(getSifAddress(), amountToLock, 100)
         .onTxHash(() => {
           advanceBlock(100);
@@ -85,7 +85,7 @@ describe("EthbridgeService", () => {
         .onComplete(async () => {
           done();
         })
-        .onError((err) => {
+        .onError(err => {
           throw err.payload;
         });
     });
@@ -234,7 +234,7 @@ describe("EthbridgeService", () => {
         .onComplete(async () => {
           done();
         })
-        .onError((err) => {
+        .onError(err => {
           reject(err);
         });
     });

@@ -55,7 +55,7 @@ export default defineComponent({
   setup(props, context) {
     const localSlippage = computed({
       get: () => props.slippage,
-      set: (amount) => handleUpdateSlippage(amount),
+      set: amount => handleUpdateSlippage(amount),
     });
 
     function handleUpdateSlippage(amount: string) {
