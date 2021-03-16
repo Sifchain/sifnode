@@ -34,9 +34,11 @@ export default defineComponent({
       <SifButton connect disabled>
         <img class="image" src="../../assets/keplr.jpg" />
         Keplr Connected
-      </SifButton>      
+      </SifButton>
     </div>
-    <SifButton connect v-else @click="handleConnectClicked">Connect Keplr</SifButton>
+    <SifButton connect v-else @click="handleConnectClicked"
+      >Connect Keplr</SifButton
+    >
   </div>
 </template>
 
@@ -45,5 +47,6 @@ export default defineComponent({
   height: 100%;
   width: 20px;
   margin-right: 16px;
+  margin-top: 2px;
 }
 </style>

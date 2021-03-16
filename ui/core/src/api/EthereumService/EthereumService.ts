@@ -112,7 +112,7 @@ export class EthereumService implements IWalletService {
       this.state.balances = await this.getBalance();
     },
     100,
-    { leading: true }
+    { leading: true },
   );
 
   getAddress(): Address {
@@ -158,7 +158,7 @@ export class EthereumService implements IWalletService {
         } else {
           this.state.log = error.message;
         }
-      }
+      },
     );
   }
 
@@ -184,7 +184,7 @@ export class EthereumService implements IWalletService {
 
   async getBalance(
     address?: Address,
-    asset?: Asset | Token
+    asset?: Asset | Token,
   ): Promise<Balances> {
     const supportedTokens = this.getSupportedTokens();
     const addr = address || this.state.address;
@@ -225,7 +225,7 @@ export class EthereumService implements IWalletService {
     // TODO: validate params!!
     if (!this.web3) {
       throw new Error(
-        "Cannot do transfer because there is not yet a connection to Ethereum."
+        "Cannot do transfer because there is not yet a connection to Ethereum.",
       );
     }
 
@@ -234,7 +234,7 @@ export class EthereumService implements IWalletService {
 
     if (!from) {
       throw new Error(
-        "Transaction attempted but 'from' address cannot be determined!"
+        "Transaction attempted but 'from' address cannot be determined!",
       );
     }
 
