@@ -18,7 +18,7 @@ import {
   transferAsset,
 } from "./utils/ethereumUtils";
 import { isToken } from "../../entities/utils/isToken";
-import notify from "../utils/Notifications";
+import { Msg } from "@cosmjs/launchpad";
 
 type Address = string;
 type Balances = AssetAmount[];
@@ -45,12 +45,15 @@ const initState = {
   log: "unset",
 };
 
+// TODO: Refactor to be Module pattern with constructor function ie. `EthereumService()`
+
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
   private supportedTokens: Asset[] = [];
   private blockSubscription: any;
   private provider: provider | undefined;
   private providerPromise: Promise<provider>;
+  private reportProviderNotFound = () => {};
 
   // This is shared reactive state
   private state: {
@@ -63,20 +66,31 @@ export class EthereumService implements IWalletService {
 
   constructor(getWeb3Provider: () => Promise<provider>, assets: Asset[]) {
     this.state = reactive({ ...initState });
-    this.supportedTokens = assets.filter((t) => t.network === Network.ETHEREUM);
+    this.supportedTokens = assets.filter(t => t.network === Network.ETHEREUM);
     this.providerPromise = getWeb3Provider();
     this.providerPromise
-      .then((provider) => {
-        if (!provider) return (this.provider = null);
+      .then(provider => {
+        if (!provider) {
+          this.provider = null;
+          this.reportProviderNotFound();
+          return;
+        }
         if (isEventEmittingProvider(provider)) {
           provider.on("chainChanged", () => window.location.reload());
           provider.on("accountsChanged", () => this.updateData());
         }
+        this.web3 = new Web3(provider);
         this.provider = provider;
+        this.addWeb3Subscription();
+        this.updateData();
       })
-      .catch((error) => {
+      .catch(error => {
         console.log("error", error);
       });
+  }
+
+  onProviderNotFound(handler: () => void) {
+    this.reportProviderNotFound = handler;
   }
 
   getState() {
@@ -98,7 +112,7 @@ export class EthereumService implements IWalletService {
       this.state.balances = await this.getBalance();
     },
     100,
-    { leading: true }
+    { leading: true },
   );
 
   getAddress(): Address {
@@ -126,11 +140,11 @@ export class EthereumService implements IWalletService {
         }
       }
       this.addWeb3Subscription();
-      notify({ type: "success", message: "Connected to Metamask" });
       await this.updateData();
     } catch (err) {
-      console.log(err);
       this.web3 = null;
+      this.removeWeb3Subscription();
+      throw err;
     }
   }
 
@@ -144,7 +158,7 @@ export class EthereumService implements IWalletService {
         } else {
           this.state.log = error.message;
         }
-      }
+      },
     );
   }
 
@@ -170,7 +184,7 @@ export class EthereumService implements IWalletService {
 
   async getBalance(
     address?: Address,
-    asset?: Asset | Token
+    asset?: Asset | Token,
   ): Promise<Balances> {
     const supportedTokens = this.getSupportedTokens();
     const addr = address || this.state.address;
@@ -196,7 +210,7 @@ export class EthereumService implements IWalletService {
       balances = await Promise.all([
         getEtheriumBalance(web3, addr),
         ...supportedTokens
-          .filter((t) => t.symbol !== "eth")
+          .filter(t => t.symbol !== "eth")
           .map((token: Asset) => {
             if (isToken(token)) return getTokenBalance(web3, addr, token);
             return AssetAmount(token, "0");
@@ -211,7 +225,7 @@ export class EthereumService implements IWalletService {
     // TODO: validate params!!
     if (!this.web3) {
       throw new Error(
-        "Cannot do transfer because there is not yet a connection to Ethereum."
+        "Cannot do transfer because there is not yet a connection to Ethereum.",
       );
     }
 
@@ -220,16 +234,16 @@ export class EthereumService implements IWalletService {
 
     if (!from) {
       throw new Error(
-        "Transaction attempted but 'from' address cannot be determined!"
+        "Transaction attempted but 'from' address cannot be determined!",
       );
     }
 
     return await transferAsset(this.web3, from, recipient, amount, asset);
   }
 
-  async signAndBroadcast() {}
+  async signAndBroadcast(msg: Msg, mmo?: string) {}
 
-  async setPhrase() {
+  async setPhrase(args: string) {
     // We currently delegate auth to metamask so this is irrelavent
     return "";
   }

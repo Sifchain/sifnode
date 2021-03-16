@@ -26,17 +26,32 @@ namespace :validator do
     system(cmd)
   end
 
-  desc "Expose operations"
-  namespace :expose do
-    desc "Expose the Sifnode validator public key"
-    task :pub_key, [:cluster, :provider, :namespace] do |t, args|
+  desc "Key operations"
+  namespace :keys do
+    desc "Print the validator public key"
+    task :public, [:cluster, :provider, :namespace] do |t, args|
       pod_name = pod_name(args)
       if pod_name.nil?
-        puts "Please check the supplied moniker; unable to find any pods!"
+        puts "Unable to find any pods!"
         exit(1)
       end
 
       cmd = %Q{kubectl exec --stdin --tty #{pod_name} -n #{args[:namespace]} -- cosmovisor tendermint show-validator}
+      system({"KUBECONFIG" => kubeconfig(args)}, cmd)
+    end
+  end
+
+  desc "Backup operations"
+  namespace :backup do
+    desc "Backup the validator config"
+    task :config, [:cluster, :provider, :namespace, :save_path] do |t, args|
+      pod_name = pod_name(args)
+      if pod_name.nil?
+        puts "Unable to find any pods!"
+        exit(1)
+      end
+
+      cmd = %Q{kubectl cp #{args[:namespace]}/#{pod_name}:/root/.sifnoded/config #{args[:save_path]}}
       system({"KUBECONFIG" => kubeconfig(args)}, cmd)
     end
   end

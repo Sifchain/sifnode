@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
-	tmLog "github.com/tendermint/tendermint/libs/log"
+	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
@@ -71,6 +71,7 @@ func init() {
 		generateBindingsCmd(),
 		replayEthereumCmd(),
 		replayCosmosCmd(),
+		listMissedCosmosEventCmd(),
 	)
 }
 
@@ -155,18 +156,31 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	validatorMoniker := args[3]
 	mnemonic := args[4]
 
-	// Universal logger
-	logger := tmLog.NewTMLogger(tmLog.NewSyncWriter(os.Stdout))
+	logConfig := zap.NewDevelopmentConfig()
+	logConfig.Sampling = nil
+	logger, err := logConfig.Build()
+
+	if err != nil {
+		log.Fatalln("failed to init zap logging")
+	}
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			log.Println("failed to sync zap logging")
+		}
+	}()
+
+	sugaredLogger := logger.Sugar()
+	zap.RedirectStdLog(sugaredLogger.Desugar())
 
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
 	ethSub, err := relayer.NewEthereumSub(inBuf, rpcURL, cdc, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, mnemonic, logger)
+		contractAddress, privateKey, mnemonic, sugaredLogger)
 	if err != nil {
 		return err
 	}
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, logger)
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)
@@ -202,7 +216,7 @@ func replayEthereumCmd() *cobra.Command {
 		Use:     "replayEthereum [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [validatorMoniker] [validatorMnemonic] [fromBlock] [toBlock] [sifFromBlock] [sifEndBlock]",
 		Short:   "replay missed ethereum events",
 		Args:    cobra.ExactArgs(9),
-		Example: "replayEthereum tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic --chain-id=peggy",
+		Example: "replayEthereum tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 validator mnemonic 100 200 100 200 --chain-id=peggy",
 		RunE:    RunReplayEthereumCmd,
 	}
 
@@ -215,11 +229,24 @@ func replayCosmosCmd() *cobra.Command {
 		Use:     "replayCosmos [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [fromBlock] [toBlock] [ethFromBlock] [ethToBlock]",
 		Short:   "replay missed cosmos events",
 		Args:    cobra.ExactArgs(7),
-		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 100 200 --chain-id=peggy",
+		Example: "replayCosmos tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 100 200 100 200",
 		RunE:    RunReplayCosmosCmd,
 	}
 
 	return replayCosmosCmd
+}
+
+func listMissedCosmosEventCmd() *cobra.Command {
+	//nolint:lll
+	listMissedCosmosEventCmd := &cobra.Command{
+		Use:     "listMissedCosmosEventCmd [tendermintNode] [web3Provider] [bridgeRegistryContractAddress] [ebrelayerEthereumAddress] [days]",
+		Short:   "replay missed cosmos events",
+		Args:    cobra.ExactArgs(5),
+		Example: "listMissedCosmosEventCmd tcp://localhost:26657 ws://localhost:7545/ 0x30753E4A8aad7F8597332E813735Def5dD395028 0x627306090abaB3A6e1400e9345bC60c78a8BEf57 1",
+		RunE:    RunListMissedCosmosEventCmd,
+	}
+
+	return listMissedCosmosEventCmd
 }
 
 func main() {

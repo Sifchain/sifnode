@@ -229,10 +229,10 @@ tests.forEach(({ name, only, skip, input, expected }) => {
       nativeAssetBalance: new Fraction(input.nativeAssetBalance),
     });
     expect(output.withdrawExternalAssetAmount.toFixed(0)).toEqual(
-      expected.withdrawExternalAssetAmount
+      expected.withdrawExternalAssetAmount,
     );
     expect(output.withdrawNativeAssetAmount.toFixed(0)).toEqual(
-      expected.withdrawNativeAssetAmount
+      expected.withdrawNativeAssetAmount,
     );
   });
 });
