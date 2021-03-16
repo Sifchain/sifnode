@@ -8,7 +8,7 @@ import timeMachine from "ganache-time-traveler";
  */
 export async function getWeb3Provider() {
   return new Web3.providers.HttpProvider(
-    process.env.WEB3_PROVIDER || "http://localhost:7545"
+    process.env.WEB3_PROVIDER || "http://localhost:7545",
   );
 }
 

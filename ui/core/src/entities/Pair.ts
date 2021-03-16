@@ -11,7 +11,7 @@ export function Pair(a: AssetAmount, b: AssetAmount) {
 
     otherAsset(asset: Asset) {
       const otherAsset = amounts.find(
-        amount => amount.asset.symbol !== asset.symbol
+        amount => amount.asset.symbol !== asset.symbol,
       );
       if (!otherAsset) throw new Error("Asset doesnt exist in pair");
       return otherAsset.asset;

@@ -31,7 +31,7 @@ export default defineComponent({
     symbolFixed: { type: Boolean, default: false },
     toggleLabel: { type: String, default: null },
     asyncPooling: { type: Boolean, default: null },
-    handleToggle: { type: Function, default: null}
+    handleToggle: { type: Function, default: null },
   },
   inheritAttrs: false,
   emits: [
@@ -58,27 +58,32 @@ export default defineComponent({
   setup(props, context) {
     const localAmount = computed({
       get: () => props.amount,
-      set: (amount) => context.emit("update:amount", amount),
+      set: amount => context.emit("update:amount", amount),
     });
 
     const localSymbol = computed({
       get: () => props.symbol,
-      set: (symbol) => context.emit("update:symbol", symbol),
+      set: symbol => context.emit("update:symbol", symbol),
     });
 
     return { localSymbol, localAmount };
   },
   methods: {
-    onClickChild (value: string) {
-      this.handleToggle()
-    }
-  }
+    onClickChild(value: string) {
+      this.handleToggle();
+    },
+  },
 });
 </script>
 
 <template>
   <RaisedPanel>
-    <Checkbox @clicked="onClickChild" v-if="toggleLabel" :toggleLabel="toggleLabel" :checked="asyncPooling" />
+    <Checkbox
+      @clicked="onClickChild"
+      v-if="toggleLabel"
+      :toggleLabel="toggleLabel"
+      :checked="asyncPooling"
+    />
     <RaisedPanelRow>
       <RaisedPanelColumn class="left">
         <Label>{{ label }}</Label>
@@ -115,7 +120,7 @@ export default defineComponent({
           block
           @click="$emit('selectsymbol')"
         >
-          <span><AssetItem :symbol="localSymbol" /></span>
+          <span><AssetItem :symbol="localSymbol"/></span>
           <span><Caret /></span>
         </SifButton>
         <div v-if="localSymbol !== null && symbolFixed">

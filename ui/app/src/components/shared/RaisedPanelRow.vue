@@ -5,7 +5,6 @@
 </template>
 <style lang="scss" scoped>
 .raised-panel-row {
-
   display: flex;
 }
 </style>
