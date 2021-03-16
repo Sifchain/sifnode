@@ -16,7 +16,6 @@ export default defineComponent({
       const json = await data.json();
       const rowanPriceInUSDT = json.body ? json.body.rowanUSD : "";
 
-      console.log('rowanPriceInUSDT')
       if (isNumeric(rowanPriceInUSDT)) {
         this.rowanUSD = "ROWAN: $" + parseFloat(rowanPriceInUSDT).toPrecision(6);
       }   
@@ -24,7 +23,10 @@ export default defineComponent({
   },
   created() {
     this.pollData()
-    setInterval(() => this.pollData(), 10000)
+    this.polling = setInterval(() => this.pollData(), 10000)
+  },
+  unmounted() {
+    clearInterval(this.polling)
   }
 });
 </script>
