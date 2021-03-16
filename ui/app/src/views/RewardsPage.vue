@@ -38,11 +38,12 @@ export default defineComponent({
             class="ul"
             href="https://medium.com/sifchain-finance/uses-for-rowan-the-polyvalent-token-for-omni-chain-decentralized-exchange-dex-3207e7f70f02?source=collection_home---4------10-----------------------"
             target="_blank"
-            >Liquidity Mining</a
+            >Validator Subsidy</a
           >:
-
           <span v-if="data.liqValRewards === ''">TBD</span>
-          <span v-else> {{ data.liqValRewards }} % APY </span>
+          <span v-else>
+            {{ parseFloat(data.liqValRewards).toFixed(2) }} % APY
+          </span>
         </p>
         <p class="mb-8">
           2.
