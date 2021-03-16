@@ -26,19 +26,19 @@ type Keplr = {
     chainId: string,
     txBytes: Uint8Array,
     mode: "sync" | "async" | "commit",
-    isRestAPI: boolean
+    isRestAPI: boolean,
   ): Promise<void>;
 
   requestTxWithResult(
     chainId: string,
     txBytes: Uint8Array,
     mode: "sync" | "async" | "commit",
-    isRestAPI: boolean
+    isRestAPI: boolean,
   ): Promise<any>;
 
   getSecret20ViewingKey(
     chainId: string,
-    contractAddress: string
+    contractAddress: string,
   ): Promise<string>;
 
   getOfflineSigner: (chainId?: string) => OfflineSigner;

@@ -4,7 +4,7 @@
       {{ poolUnits }}
     </div>
     <div class="pool-asset">
-      <AssetItemPool 
+      <AssetItemPool
         :tokenASymbol="fromSymbol"
         :tokenBSymbol="toSymbol"
         inline
@@ -29,8 +29,8 @@ export default {
     poolUnits: String,
     fromSymbol: String,
     toSymbol: String,
-  }
-}
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -42,7 +42,7 @@ export default {
     font-style: normal !important;
     text-align: left;
   }
-  
+
   &-label {
     text-align: left;
     font-weight: 400;

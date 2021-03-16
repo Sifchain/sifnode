@@ -49,7 +49,7 @@ export function getAssetLabel(t: Asset) {
 
 export function useAssetItem(symbol: Ref<string | undefined>) {
   const token = computed(() =>
-    symbol.value ? Asset.get(symbol.value) : undefined
+    symbol.value ? Asset.get(symbol.value) : undefined,
   );
 
   const tokenLabel = computed(() => {

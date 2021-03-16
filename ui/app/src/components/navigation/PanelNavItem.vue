@@ -50,7 +50,7 @@ export default defineComponent({
   methods: {
     subPageIsActive(input: string) {
       const paths = [input];
-      return paths.some((path) => {
+      return paths.some(path => {
         return this.$route.path.indexOf(path) === 0; // current path starts with this path string
       });
     },
