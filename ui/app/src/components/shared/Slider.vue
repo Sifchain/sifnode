@@ -12,13 +12,19 @@
     />
     <div class="row">
       <div>
-        <label class="label" @click="$emit('leftclicked')">{{ leftLabel }}</label>
+        <label class="label" @click="$emit('leftclicked')">{{
+          leftLabel
+        }}</label>
       </div>
       <div>
-        <label class="label" @click="$emit('middleclicked')">{{ middleLabel }}</label>
+        <label class="label" @click="$emit('middleclicked')">{{
+          middleLabel
+        }}</label>
       </div>
       <div>
-        <label class="label" @click="$emit('rightclicked')">{{ rightLabel }}</label>
+        <label class="label" @click="$emit('rightclicked')">{{
+          rightLabel
+        }}</label>
       </div>
     </div>
   </div>
@@ -43,7 +49,7 @@ export default defineComponent({
   setup(props, context) {
     const localValue = computed({
       get: () => props.modelValue,
-      set: (value) => context.emit("update:modelValue", value),
+      set: value => context.emit("update:modelValue", value),
     });
     return { localValue };
   },

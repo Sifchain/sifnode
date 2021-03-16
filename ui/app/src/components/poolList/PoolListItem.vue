@@ -3,7 +3,7 @@ import { computed, ref } from "@vue/reactivity";
 import { defineComponent, PropType } from "vue";
 import { getAssetLabel, useAssetItem } from "@/components/shared/utils";
 import { LiquidityProvider, Pool } from "ui-core";
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router";
 import AssetItemPool from "@/components/shared/AssetItemPool.vue";
 
 export default defineComponent({
@@ -19,16 +19,16 @@ export default defineComponent({
 
   setup(props) {
     const router = useRouter();
-    
+
     const fromSymbol = computed(() =>
       props.accountPool?.pool.amounts[1].asset
         ? getAssetLabel(props.accountPool?.pool.amounts[1].asset)
-        : ""
+        : "",
     );
 
     const handleClick = () => {
-      router.push(`/pool/${fromSymbol.value.toLowerCase()}`)
-    }
+      router.push(`/pool/${fromSymbol.value.toLowerCase()}`);
+    };
 
     return {
       handleClick,
@@ -39,9 +39,7 @@ export default defineComponent({
 
 <template>
   <div class="pool-list-item" @click="handleClick">
-    <AssetItemPool 
-      :pool="accountPool"
-    />
+    <AssetItemPool :pool="accountPool" />
     <div class="button">Manage</div>
   </div>
 </template>

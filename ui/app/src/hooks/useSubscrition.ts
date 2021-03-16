@@ -11,7 +11,7 @@ import { Ref, watch } from "@vue/runtime-core";
  */
 export function useSubscription(
   sources: Ref<any> | Ref<any>[],
-  subscriber: () => () => void
+  subscriber: () => () => void,
 ) {
   watch(sources, (_value, _oldValue, onInvalidateEffect) => {
     const unsubscribe = subscriber();

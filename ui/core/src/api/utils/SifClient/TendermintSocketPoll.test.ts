@@ -4,7 +4,7 @@ import { TendermintSocketPoll, BlockData } from "./TendermintSocketPoll";
 // Simulate a fake block result from the server
 function fakeBlockResult(
   height: number,
-  txs: string[] | null = null
+  txs: string[] | null = null,
 ): BlockData {
   return {
     result: {
