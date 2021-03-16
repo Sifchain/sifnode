@@ -4,6 +4,7 @@ import { defineComponent } from "vue";
 export default defineComponent({
   data() {
     return {
+      polling: undefined as ReturnType<typeof setTimeout> | undefined,
       rowanUSD: "",
     };
   },
@@ -29,6 +30,7 @@ export default defineComponent({
     this.polling = setInterval(() => this.pollData(), 10000);
   },
   unmounted() {
+    if (!this.polling) return;
     clearInterval(this.polling);
   },
 });
