@@ -9,6 +9,8 @@ import Caret from "@/components/shared/Caret.vue";
 import RaisedPanel from "@/components/shared/RaisedPanel.vue";
 import Label from "@/components/shared/Label.vue";
 import RaisedPanelColumn from "@/components/shared/RaisedPanelColumn.vue";
+import RaisedPanelRow from "@/components/shared/RaisedPanelRow.vue";
+import Checkbox from "@/components/shared/Checkbox.vue";
 
 export type BalanceShape = {
   symbol: string;
@@ -27,6 +29,9 @@ export default defineComponent({
     max: { type: Boolean, default: false },
     isMaxActive: { type: Boolean, default: false },
     symbolFixed: { type: Boolean, default: false },
+    toggleLabel: { type: String, default: null },
+    asyncPooling: { type: Boolean, default: null },
+    handleToggle: { type: Function, default: null },
   },
   inheritAttrs: false,
   emits: [
@@ -35,10 +40,12 @@ export default defineComponent({
     "selectsymbol",
     "update:amount",
     "update:symbol",
+    "handleToggle",
     "maxclicked",
   ],
   components: {
     RaisedPanelColumn,
+    RaisedPanelRow,
     RaisedPanel,
     BalanceField,
     AssetItem,
@@ -46,78 +53,91 @@ export default defineComponent({
     Caret,
     SifInput,
     Label,
+    Checkbox,
   },
   setup(props, context) {
     const localAmount = computed({
       get: () => props.amount,
-      set: amount => context.emit("update:amount", amount),
+      set: (amount) => context.emit("update:amount", amount),
     });
 
     const localSymbol = computed({
       get: () => props.symbol,
-      set: symbol => context.emit("update:symbol", symbol),
+      set: (symbol) => context.emit("update:symbol", symbol),
     });
 
     return { localSymbol, localAmount };
+  },
+  methods: {
+    onClickChild(value: string) {
+      this.handleToggle();
+    },
   },
 });
 </script>
 
 <template>
   <RaisedPanel>
-    <RaisedPanelColumn class="left">
-      <Label>{{ label }}</Label>
-      <SifInput
-        bold
-        v-bind="$attrs"
-        type="number"
-        v-model="localAmount"
-        :disabled="inputDisabled"
-        @focus="$emit('focus', $event.target)"
-        @blur="$emit('blur', $event.target)"
-        @click="$event.target.select()"
-        ><template v-slot:end
-          ><SifButton
-            v-if="max && !isMaxActive"
-            @click="$emit('maxclicked')"
-            small
-            ghost
-            primary
-            >MAX</SifButton
-          ></template
-        ></SifInput
-      >
-    </RaisedPanelColumn>
+    <Checkbox
+      @clicked="onClickChild"
+      v-if="toggleLabel"
+      :toggleLabel="toggleLabel"
+      :checked="asyncPooling"
+    />
+    <RaisedPanelRow>
+      <RaisedPanelColumn class="left">
+        <Label>{{ label }}</Label>
+        <SifInput
+          bold
+          v-bind="$attrs"
+          type="number"
+          v-model="localAmount"
+          :disabled="inputDisabled"
+          @focus="$emit('focus', $event.target)"
+          @blur="$emit('blur', $event.target)"
+          @click="$event.target.select()"
+          ><template v-slot:end
+            ><SifButton
+              v-if="max && !isMaxActive"
+              @click="$emit('maxclicked')"
+              small
+              ghost
+              primary
+              >MAX</SifButton
+            ></template
+          ></SifInput
+        >
+      </RaisedPanelColumn>
+      <RaisedPanelColumn class="right">
+        <Label>
+          <BalanceField :symbol="localSymbol" />
+        </Label>
 
-    <RaisedPanelColumn class="right">
-      <Label>
-        <BalanceField :symbol="localSymbol" />
-      </Label>
+        <SifButton
+          nocase
+          v-if="localSymbol !== null && !symbolFixed"
+          secondary
+          block
+          @click="$emit('selectsymbol')"
+        >
+          <span><AssetItem :symbol="localSymbol" /></span>
+          <span><Caret /></span>
+        </SifButton>
+        <div v-if="localSymbol !== null && symbolFixed">
+          <AssetItem :symbol="localSymbol" />
+        </div>
 
-      <SifButton
-        nocase
-        v-if="localSymbol !== null && !symbolFixed"
-        secondary
-        block
-        @click="$emit('selectsymbol')"
-      >
-        <span><AssetItem :symbol="localSymbol"/></span>
-        <span><Caret /></span>
-      </SifButton>
-      <div v-if="localSymbol !== null && symbolFixed">
-        <AssetItem :symbol="localSymbol" />
-      </div>
-
-      <SifButton
-        :disabled="!selectable"
-        v-if="localSymbol === null"
-        primary
-        block
-        @click="$emit('selectsymbol')"
-      >
-        <span>Select</span>
-      </SifButton>
-    </RaisedPanelColumn>
+        <SifButton
+          :disabled="!selectable"
+          v-if="localSymbol === null"
+          primary
+          block
+          @click="$emit('selectsymbol')"
+        >
+          <span>Select</span>
+        </SifButton>
+      </RaisedPanelColumn>
+    </RaisedPanelRow>
   </RaisedPanel>
 </template>
 
