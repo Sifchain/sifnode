@@ -3,11 +3,6 @@ package clp
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sifchain/sifnode/x/clp/client/cli"
-	"github.com/Sifchain/sifnode/x/clp/client/rest"
-	"github.com/Sifchain/sifnode/x/clp/types"
-	"github.com/gorilla/mux"
-	"github.com/spf13/cobra"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -16,6 +11,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+
+	"github.com/Sifchain/sifnode/x/clp/client/cli"
+	"github.com/Sifchain/sifnode/x/clp/client/rest"
+	"github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/gorilla/mux"
+	"github.com/spf13/cobra"
 )
 
 // Type check to ensure the interface is properly implemented
@@ -59,8 +60,8 @@ func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router
 }
 
 // GetTxCmd returns the root tx command for the clp module.
-func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	return cli.GetTxCmd(cdc)
+func (AppModuleBasic) GetTxCmd() *cobra.Command {
+	return cli.GetTxCmd()
 }
 
 // GetQueryCmd returns no root query command for the clp module.
@@ -74,18 +75,16 @@ func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper       keeper.Keeper
-	bankKeeper   types.BankKeeper
-	supplyKeeper types.SupplyKeeper
+	keeper     keeper.Keeper
+	bankKeeper types.BankKeeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper, supplyKeeper types.SupplyKeeper) AppModule {
+func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         k,
 		bankKeeper:     bankKeeper,
-		supplyKeeper:   supplyKeeper,
 	}
 }
 

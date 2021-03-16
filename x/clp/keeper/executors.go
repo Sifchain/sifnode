@@ -1,14 +1,20 @@
 package keeper
 
 import (
+	"errors"
 	"strconv"
 
-	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
-func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg types.MsgCreatePool) (*types.Pool, error) {
+func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg *types.MsgCreatePool) (*types.Pool, error) {
+	// Defensive programming
+	if msg == nil {
+		return nil, errors.New("MsgCreatePool can not be nil")
+	}
 	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
@@ -31,7 +37,7 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg types.MsgCre
 	}
 	pool, err := types.NewPool(msg.ExternalAsset, msg.NativeAssetAmount, msg.ExternalAssetAmount, poolUints)
 	if err != nil {
-		return nil, errors.Wrap(types.ErrUnableToCreatePool, err.Error())
+		return nil, sdkerrors.Wrap(types.ErrUnableToCreatePool, err.Error())
 	}
 	// Send coins from user to pool
 
@@ -40,20 +46,20 @@ func (k Keeper) CreatePool(ctx sdk.Context, poolUints sdk.Uint, msg types.MsgCre
 		return nil, err
 	}
 	// Pool creator becomes the first LP
-	err = k.SetPool(ctx, pool)
+	err = k.SetPool(ctx, &pool)
 	if err != nil {
-		return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
+		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
 	return &pool, nil
 }
 
 func (k Keeper) CreateLiquidityProvider(ctx sdk.Context, asset *types.Asset, lpunits sdk.Uint, lpaddress sdk.AccAddress) types.LiquidityProvider {
 	lp := types.NewLiquidityProvider(asset, lpunits, lpaddress)
-	k.SetLiquidityProvider(ctx, lp)
+	k.SetLiquidityProvider(ctx, &lp)
 	return lp
 }
 
-func (k Keeper) AddLiquidity(ctx sdk.Context, msg types.MsgAddLiquidity, pool types.Pool, newPoolUnits sdk.Uint, lpUnits sdk.Uint) (*types.LiquidityProvider, error) {
+func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity, pool types.Pool, newPoolUnits sdk.Uint, lpUnits sdk.Uint) (*types.LiquidityProvider, error) {
 
 	// Verify user has coins to add liquidiy
 	extInt, ok := k.ParseToInt(msg.ExternalAssetAmount.String())
@@ -107,12 +113,12 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg types.MsgAddLiquidity, pool ty
 	}
 	lp.LiquidityProviderUnits = lp.LiquidityProviderUnits.Add(lpUnits)
 	// Save new pool balances
-	err = k.SetPool(ctx, pool)
+	err = k.SetPool(ctx, &pool)
 	if err != nil {
-		return nil, errors.Wrap(types.ErrUnableToSetPool, err.Error())
+		return nil, sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
 	// Save LP
-	k.SetLiquidityProvider(ctx, lp)
+	k.SetLiquidityProvider(ctx, &lp)
 	return &lp, err
 }
 
@@ -124,7 +130,7 @@ func (k Keeper) RemoveLiquidityProvider(ctx sdk.Context, coins sdk.Coins, lp typ
 
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, lpaddr, coins)
 	if err != nil {
-		return errors.Wrap(types.ErrUnableToAddBalance, err.Error())
+		return sdkerrors.Wrap(types.ErrUnableToAddBalance, err.Error())
 	}
 	k.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	return nil
@@ -133,7 +139,7 @@ func (k Keeper) RemoveLiquidityProvider(ctx sdk.Context, coins sdk.Coins, lp typ
 func (k Keeper) DecommissionPool(ctx sdk.Context, pool types.Pool) error {
 	err := k.DestroyPool(ctx, pool.ExternalAsset.Symbol)
 	if err != nil {
-		return errors.Wrap(types.ErrUnableToDestroyPool, err.Error())
+		return sdkerrors.Wrap(types.ErrUnableToDestroyPool, err.Error())
 	}
 	return nil
 }
@@ -155,11 +161,11 @@ func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetC
 	}
 	// Verify if Swap makes the pool too shallow in one of the assets
 	if externalAssetCoin.Amount.GTE(sdk.Int(poolOriginalEB)) || nativeAssetCoin.Amount.GTE(sdk.Int(poolOriginalNB)) {
-		return errors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil after adjusting asymmetry")
+		return sdkerrors.Wrap(types.ErrPoolTooShallow, "Pool Balance nil after adjusting asymmetry")
 	}
-	err = k.SetPool(ctx, pool)
+	err = k.SetPool(ctx, &pool)
 	if err != nil {
-		return errors.Wrap(types.ErrUnableToSetPool, err.Error())
+		return sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
 	// Send coins from pool to user
 	if !sendCoins.Empty() {
@@ -176,7 +182,7 @@ func (k Keeper) RemoveLiquidity(ctx sdk.Context, pool types.Pool, externalAssetC
 		k.DestroyLiquidityProvider(ctx, lp.Asset.Symbol, lp.LiquidityProviderAddress)
 	} else {
 		lp.LiquidityProviderUnits = lpUnitsLeft
-		k.SetLiquidityProvider(ctx, lp)
+		k.SetLiquidityProvider(ctx, &lp)
 	}
 	return nil
 }
@@ -193,9 +199,9 @@ func (k Keeper) InitiateSwap(ctx sdk.Context, sentCoin sdk.Coin, swapper sdk.Acc
 
 }
 func (k Keeper) FinalizeSwap(ctx sdk.Context, sentAmount string, finalPool types.Pool, msg types.MsgSwap) error {
-	err := k.SetPool(ctx, finalPool)
+	err := k.SetPool(ctx, &finalPool)
 	if err != nil {
-		return errors.Wrap(types.ErrUnableToSetPool, err.Error())
+		return sdkerrors.Wrap(types.ErrUnableToSetPool, err.Error())
 	}
 	sentAmountInt, ok := k.ParseToInt(sentAmount)
 	if !ok {

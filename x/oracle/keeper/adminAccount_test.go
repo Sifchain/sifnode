@@ -8,7 +8,7 @@ import (
 )
 
 func TestKeeper_SetAdminAccount(t *testing.T) {
-	ctx, keeper, _, _, _, _, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	ctx, keeper, _, _, _, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
 	addresses, _ := oracleKeeper.CreateTestAddrs(2)
 	keeper.SetAdminAccount(ctx, addresses[0])
 	adminAccount := keeper.GetAdminAccount(ctx)
@@ -16,7 +16,7 @@ func TestKeeper_SetAdminAccount(t *testing.T) {
 }
 
 func TestKeeper_IsAdminAccount(t *testing.T) {
-	ctx, keeper, _, _, _, _, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	ctx, keeper, _, _, _, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
 	addresses, _ := oracleKeeper.CreateTestAddrs(2)
 	keeper.SetAdminAccount(ctx, addresses[0])
 	assert.True(t, keeper.IsAdminAccount(ctx, addresses[0]))

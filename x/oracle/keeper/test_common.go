@@ -6,26 +6,28 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
-
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	dbm "github.com/tendermint/tm-db"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
+	bankKeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
+	dbm "github.com/tendermint/tm-db"
 
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
@@ -40,14 +42,14 @@ const (
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
 func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (
-	sdk.Context, Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, []sdk.ValAddress, sdk.StoreKey) {
+	sdk.Context, Keeper, bankKeeper.Keeper, authkeeper.AccountKeeper, []sdk.ValAddress, sdk.StoreKey) {
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
 	tkeyStaking := sdk.NewTransientStoreKey(stakingtypes.TStoreKey)
-	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keyParams := sdk.NewKVStoreKey(params.StoreKey)
-	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
-	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
+	keyAcc := sdk.NewKVStoreKey(authtypes.StoreKey)
+	keyParams := sdk.NewKVStoreKey(paramtypes.StoreKey)
+	tkeyParams := sdk.NewTransientStoreKey(paramtypes.TStoreKey)
+	keySupply := sdk.NewKVStoreKey(banktypes.StoreKey)
 	keyOracle := sdk.NewKVStoreKey(types.StoreKey)
 	keyEthBridge := sdk.NewKVStoreKey(extraMaccPerm)
 
@@ -75,9 +77,9 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ctx = ctx.WithLogger(log.NewNopLogger())
 	cdc := MakeTestCodec()
 
-	feeCollectorAcc := supply.NewEmptyModuleAccount(auth.FeeCollectorName)
-	notBondedPool := supply.NewEmptyModuleAccount(stakingtypes.NotBondedPoolName, supply.Burner, supply.Staking)
-	bondPool := supply.NewEmptyModuleAccount(stakingtypes.BondedPoolName, supply.Burner, supply.Staking)
+	feeCollectorAcc := authtypes.NewEmptyModuleAccount(authtypes.FeeCollectorName)
+	notBondedPool := authtypes.NewEmptyModuleAccount(stakingtypes.NotBondedPoolName, authtypes.Burner, authtypes.Staking)
+	bondPool := authtypes.NewEmptyModuleAccount(stakingtypes.BondedPoolName, authtypes.Burner, authtypes.Staking)
 
 	blacklistedAddrs := make(map[string]bool)
 	blacklistedAddrs[feeCollectorAcc.GetAddress().String()] = true
@@ -100,13 +102,13 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	)
 
 	maccPerms := map[string][]string{
-		auth.FeeCollectorName:          nil,
-		stakingtypes.NotBondedPoolName: {supply.Burner, supply.Staking},
-		stakingtypes.BondedPoolName:    {supply.Burner, supply.Staking},
+		authtypes.FeeCollectorName:     nil,
+		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
+		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 	}
 
 	if extraMaccPerm != "" {
-		maccPerms[extraMaccPerm] = []string{supply.Burner, supply.Minter}
+		maccPerms[extraMaccPerm] = []string{authtypes.Burner, authtypes.Minter}
 	}
 
 	supplyKeeper := supply.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
@@ -116,7 +118,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	supplyKeeper.SetSupply(ctx, supply.NewSupply(totalSupply))
 
-	stakingKeeper := staking.NewKeeper(cdc, keyStaking, supplyKeeper, paramsKeeper.Subspace(staking.DefaultParamspace))
+	stakingKeeper := stakingkeeper.NewKeeper(cdc, keyStaking, supplyKeeper, paramsKeeper.Subspace(staking.DefaultParamspace))
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
 	oracleKeeper := NewKeeper(cdc, keyOracle, stakingKeeper, consensusNeeded)
 
@@ -194,7 +196,7 @@ func NewPubKey(pk string) (res crypto.PubKey) {
 		panic(err)
 	}
 	//res, err = crypto.PubKeyFromBytes(pkBytes)
-	var pkEd ed25519.PubKeyEd25519
+	var pkEd ed25519.PubKey
 	copy(pkEd[:], pkBytes)
 	return pkEd
 }
