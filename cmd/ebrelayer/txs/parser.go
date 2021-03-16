@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	tmKv "github.com/tendermint/tendermint/libs/kv"
+	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
 	ethbridge "github.com/Sifchain/sifnode/x/ethbridge/types"
@@ -128,7 +129,7 @@ func CosmosMsgToProphecyClaim(event types.CosmosMsg) ProphecyClaim {
 }
 
 // BurnLockEventToCosmosMsg parses data from a Burn/Lock event witnessed on Cosmos into a CosmosMsg struct
-func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (types.CosmosMsg, error) {
+func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair, sugaredLogger *zap.SugaredLogger) (types.CosmosMsg, error) {
 	var cosmosSender []byte
 	var cosmosSenderSequence *big.Int
 	var ethereumReceiver common.Address
@@ -151,14 +152,17 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 			tempSequence := new(big.Int)
 			tempSequence, ok := tempSequence.SetString(val, 10)
 			if !ok {
-				log.Println("Invalid account sequence:", val)
+				// log.Println("Invalid account sequence:", val)
+				sugaredLogger.Errorw("Invalid account sequence", "account sequence", val)
 				return types.CosmosMsg{}, errors.New("invalid account sequence: " + val)
 			}
 			cosmosSenderSequence = tempSequence
 		case types.EthereumReceiver.String():
 			attributeNumber++
 			if !common.IsHexAddress(val) {
-				log.Printf("Invalid recipient address: %v", val)
+				// log.Printf("Invalid recipient address: %v", val)
+				sugaredLogger.Errorw("Invalid recipient address", "recipient address", val)
+
 				return types.CosmosMsg{}, errors.New("invalid recipient address: " + val)
 			}
 			ethereumReceiver = common.HexToAddress(val)
@@ -166,7 +170,8 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 			attributeNumber++
 			if claimType == types.MsgBurn {
 				if !strings.Contains(val, defaultSifchainPrefix) {
-					log.Printf("Can only relay burns of '%v' prefixed coins", defaultSifchainPrefix)
+					// log.Printf("Can only relay burns of '%v' prefixed coins", defaultSifchainPrefix)
+					sugaredLogger.Errorw("only relay burns prefixed coins", "coin symbol", val)
 					return types.CosmosMsg{}, errors.New("can only relay burns of '%v' prefixed coins" + defaultSifchainPrefix)
 				}
 				res := strings.SplitAfter(val, defaultSifchainPrefix)
@@ -178,7 +183,9 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 			attributeNumber++
 			tempAmount, ok := sdk.NewIntFromString(val)
 			if !ok {
-				log.Println("Invalid amount:", val)
+				// log.Println("Invalid amount:", val)
+				sugaredLogger.Errorw("Invalid amount", "amount", val)
+
 				return types.CosmosMsg{}, errors.New("invalid amount:" + val)
 			}
 			amount = tempAmount
@@ -186,6 +193,7 @@ func BurnLockEventToCosmosMsg(claimType types.Event, attributes []tmKv.Pair) (ty
 	}
 
 	if attributeNumber < 5 {
+		sugaredLogger.Errorw("message not complete", "attributeNumber", attributeNumber)
 		return types.CosmosMsg{}, errors.New("message not complete")
 	}
 	return types.NewCosmosMsg(claimType, cosmosSender, cosmosSenderSequence, ethereumReceiver, symbol, amount), nil
