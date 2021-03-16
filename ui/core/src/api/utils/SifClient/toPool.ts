@@ -9,7 +9,7 @@ function getAssetOrNull(symbol: string): Asset | null {
   }
 }
 export const toPool = (nativeAsset: Coin) => (
-  poolData: RawPool
+  poolData: RawPool,
 ): Pool | null => {
   const externalAssetSymbol = poolData.external_asset.symbol;
   const externalAsset = getAssetOrNull(externalAssetSymbol);
@@ -25,6 +25,6 @@ export const toPool = (nativeAsset: Coin) => (
     AssetAmount(externalAsset, poolData.external_asset_balance, {
       inBaseUnit: true,
     }),
-    new Fraction(poolData.pool_units)
+    new Fraction(poolData.pool_units),
   );
 };

@@ -14,7 +14,7 @@ tables.PoolUnits.forEach(({ r, a, R, A, P, expected }, index) => {
         new Fraction(a),
         new Fraction(R),
         new Fraction(A),
-        new Fraction(P)
+        new Fraction(P),
       );
 
       expect(output.toFixed(0)).toBe(expected);

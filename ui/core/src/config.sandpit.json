@@ -11,7 +11,7 @@
     "chainName": "SifchainSandpit",
     "chainId": "",
     "rpc": "",
-    "rest": "", 
+    "rest": "",
     "stakeCurrency": {
       "coinDenom": "ROWAN",
       "coinMinimalDenom": "rowan",

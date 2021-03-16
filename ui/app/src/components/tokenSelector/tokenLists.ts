@@ -28,7 +28,7 @@ export function generateTokenSearchLists({
       new Set([
         ...walletTokens.slice(0, walletLimit),
         ...topTokens.slice(0, tokenLimit),
-      ])
+      ]),
     );
   });
 
@@ -52,7 +52,7 @@ export function filterTokenList({
           ({ symbol }) =>
             symbol
               .toLowerCase()
-              .indexOf(searchText.value.toLowerCase().trim()) > -1
+              .indexOf(searchText.value.toLowerCase().trim()) > -1,
         )
       : (displayList || tokens).value;
 
@@ -69,10 +69,10 @@ export function disableSelected({
 }) {
   return computed(
     () =>
-      list.value?.map((item) =>
+      list.value?.map(item =>
         selectedTokens.includes(item.symbol)
           ? { disabled: true, ...item }
-          : item
-      ) ?? []
+          : item,
+      ) ?? [],
   );
 }

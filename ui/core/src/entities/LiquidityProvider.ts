@@ -6,7 +6,7 @@ export function LiquidityProvider(
   units: IFraction,
   address: string,
   nativeAmount: IFraction,
-  externalAmount: IFraction
+  externalAmount: IFraction,
 ) {
   return { asset, units, address, nativeAmount, externalAmount };
 }

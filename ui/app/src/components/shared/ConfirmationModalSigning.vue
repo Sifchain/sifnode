@@ -59,7 +59,7 @@
               <p class="sub">
                 <!-- To the todo point above, we need to be able to control this better, hence isSifTxHash() -->
                 <a
-                  v-if="transactionHash?.substring(0,2) !== '0x'"
+                  v-if="transactionHash?.substring(0, 2) !== '0x'"
                   class="anchor"
                   target="_blank"
                   :href="getBlockExplorerUrl(chainId, transactionHash)"
@@ -107,7 +107,7 @@ export default defineComponent({
 
     return {
       chainId: config.sifChainId,
-      getBlockExplorerUrl
+      getBlockExplorerUrl,
     };
   },
 });

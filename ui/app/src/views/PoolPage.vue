@@ -35,7 +35,7 @@ export default defineComponent({
         return [];
 
       return Object.entries(
-        store.accountpools[store.wallet.sif.address] ?? {}
+        store.accountpools[store.wallet.sif.address] ?? {},
       ).map(([poolName, accountPool]) => {
         return {
           ...accountPool,
@@ -85,9 +85,7 @@ export default defineComponent({
         />
       </PoolList>
     </div>
-    <ActionsPanel
-      connectType="connectToSif"
-    />
+    <ActionsPanel connectType="connectToSif" />
   </Layout>
 </template>
 

@@ -129,7 +129,7 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
 
       getLiquidityProvider: async ({ symbol, lpAddress }) => {
         return await base.get(
-          `/clp/getLiquidityProvider?symbol=${symbol}&lpAddress=${lpAddress}`
+          `/clp/getLiquidityProvider?symbol=${symbol}&lpAddress=${lpAddress}`,
         );
       },
 

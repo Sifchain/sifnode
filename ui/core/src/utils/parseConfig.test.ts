@@ -87,7 +87,7 @@ const expected = {
         coinDecimals: 12,
         coinDenom: "rowan",
         coinMinimalDenom: "rowan",
-      }
+      },
     ],
     feeCurrencies: [
       {
@@ -139,7 +139,7 @@ test("parseConfig", () => {
         network: Network.ETHEREUM,
         symbol: "erowan",
       },
-    ])
+    ]),
   ).toMatchObject(expected);
 
   expect(() => {

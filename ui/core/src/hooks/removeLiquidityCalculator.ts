@@ -53,7 +53,7 @@ export function useRemoveLiquidityCalculator(input: {
     if (!liquidityPool) return null;
     return (
       liquidityPool.amounts.find(
-        (a) => a.asset.symbol === input.nativeAssetSymbol.value
+        a => a.asset.symbol === input.nativeAssetSymbol.value,
       ) ?? null
     );
   })();
@@ -62,7 +62,7 @@ export function useRemoveLiquidityCalculator(input: {
     if (!liquidityPool) return null;
     return (
       liquidityPool.amounts.find(
-        (a) => a.asset.symbol === input.externalAssetSymbol.value
+        a => a.asset.symbol === input.externalAssetSymbol.value,
       ) ?? null
     );
   })();
@@ -107,11 +107,11 @@ export function useRemoveLiquidityCalculator(input: {
       hasLiquidity,
       withdrawExternalAssetAmount: AssetAmount(
         externalAsset,
-        withdrawExternalAssetAmount
+        withdrawExternalAssetAmount,
       ),
       withdrawNativeAssetAmount: AssetAmount(
         nativeAsset,
-        withdrawNativeAssetAmount
+        withdrawNativeAssetAmount,
       ),
     };
   })();

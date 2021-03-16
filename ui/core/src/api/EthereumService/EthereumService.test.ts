@@ -71,11 +71,11 @@ describe("EthereumService", () => {
 
     const account0NewAtkAmount = getBalance(
       await EthereumService.getBalance(),
-      "atk"
+      "atk",
     ).amount;
     const account1NewAtkAmount = getBalance(
       await EthereumService.getBalance(state.accounts[1]),
-      "atk"
+      "atk",
     ).amount;
 
     expect(account0NewAtkAmount.toString()).toEqual("9999999999999990000000");
@@ -102,7 +102,7 @@ describe("EthereumService", () => {
   it("should not do anything with phase and purgingClient", async () => {
     // TODO: We probably don't need this right now because we delegate to metamask
     expect(await EthereumService.setPhrase("testing one two three")).toEqual(
-      ""
+      "",
     );
     expect(EthereumService.purgeClient()).toBe(undefined);
   });

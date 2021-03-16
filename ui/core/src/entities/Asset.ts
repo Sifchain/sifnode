@@ -18,10 +18,10 @@ export const Asset = {
         "Available keys: " +
           Array.from(assetMap.keys())
             .sort()
-            .join(",")
+            .join(","),
       );
       throw new Error(
-        `Attempt to retrieve the asset with key ${key} before it had been created.`
+        `Attempt to retrieve the asset with key ${key} before it had been created.`,
       );
     }
     return found;

@@ -108,7 +108,7 @@ export default defineComponent({
     const { api } = useCore();
     const notifications = reactive<Notification[]>([]);
 
-    api.EventBusService.onAny((event) => {
+    api.EventBusService.onAny(event => {
       const notification = parseEventToNotifications(event);
       if (notification !== null) notifications.unshift(notification);
     });
