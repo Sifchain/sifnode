@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/ecdsa"
-	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -114,7 +113,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		log.Println("Error getting the last cosmos block from level db", err)
 		lastProcessedBlock = 0
 	} else {
-		lastProcessedBlock = int64(binary.BigEndian.Uint64(data))
+		lastProcessedBlock = new(big.Int).SetBytes(data).Int64()
 	}
 
 	for {
@@ -168,11 +167,8 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 					}
 				}
 
-				b := make([]byte, 8)
-				binary.BigEndian.PutUint64(b, uint64(blockNumber))
 				lastProcessedBlock = blockNumber
-
-				err = sub.DB.Put([]byte(cosmosLevelDBKey), b, nil)
+				err = sub.DB.Put([]byte(cosmosLevelDBKey), big.NewInt(lastProcessedBlock).Bytes(), nil)
 				if err != nil {
 					// if you can't write to leveldb, then error out as something is seriously amiss
 					log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
