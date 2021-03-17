@@ -1,4 +1,5 @@
 import { AssetAmount, IAssetAmount } from "../entities/AssetAmount";
+import numeral from "numeral";
 
 export default function format(amount: IAssetAmount): string {
   return amount.toFormatted();
