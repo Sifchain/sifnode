@@ -69,5 +69,3 @@ export default defineComponent({
     @closerequested="requestClose"
   />
 </template>
-
-

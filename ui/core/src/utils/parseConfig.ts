@@ -92,11 +92,11 @@ export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
 
   if (!nativeAsset)
     throw new Error(
-      "No nativeAsset defined for chain config:" + JSON.stringify(config)
+      "No nativeAsset defined for chain config:" + JSON.stringify(config),
     );
 
   const bridgetokenContractAddress = (assets.find(
-    token => token.symbol === "erowan"
+    token => token.symbol === "erowan",
   ) as Token).address;
 
   const sifAssets = assets

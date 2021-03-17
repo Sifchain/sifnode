@@ -26,9 +26,9 @@ import (
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/syndtr/goleveldb/leveldb"
-	tmLog "github.com/tendermint/tendermint/libs/log"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	tmTypes "github.com/tendermint/tendermint/types"
+	"go.uber.org/zap"
 )
 
 const (
@@ -36,6 +36,7 @@ const (
 )
 
 // TODO: Move relay functionality out of CosmosSub into a new Relayer parent struct
+const errorMessageKey = "errorMessage"
 
 // CosmosSub defines a Cosmos listener that relays events to Ethereum and Cosmos
 type CosmosSub struct {
@@ -43,20 +44,20 @@ type CosmosSub struct {
 	EthProvider             string
 	RegistryContractAddress common.Address
 	PrivateKey              *ecdsa.PrivateKey
-	Logger                  tmLog.Logger
 	DB                      *leveldb.DB
+	SugaredLogger           *zap.SugaredLogger
 }
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common.Address,
-	privateKey *ecdsa.PrivateKey, logger tmLog.Logger, db *leveldb.DB) CosmosSub {
+	privateKey *ecdsa.PrivateKey, db *leveldb.DB, sugaredLogger *zap.SugaredLogger) CosmosSub {
 	return CosmosSub{
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
 		PrivateKey:              privateKey,
-		Logger:                  logger,
 		DB:                      db,
+		SugaredLogger:           sugaredLogger,
 	}
 }
 
@@ -66,15 +67,16 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	time.Sleep(time.Second)
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
-		sub.Logger.Error("failed to initialize a client", "err", err)
+		sub.SugaredLogger.Errorw("failed to initialize a sifchain client.",
+			errorMessageKey, err.Error())
 		completionEvent.Add(1)
 		go sub.Start(completionEvent)
 		return
 	}
-	client.SetLogger(sub.Logger)
 
 	if err := client.Start(); err != nil {
-		sub.Logger.Error("failed to start a client", "err", err)
+		sub.SugaredLogger.Errorw("failed to start a sifchain client.",
+			errorMessageKey, err.Error())
 		completionEvent.Add(1)
 		go sub.Start(completionEvent)
 		return
@@ -86,7 +88,9 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	query := "tm.event = 'NewBlock'"
 	results, err := client.Subscribe(context.Background(), "test", query, 1000)
 	if err != nil {
-		sub.Logger.Error("failed to subscribe to query", "err", err, "query", query)
+		sub.SugaredLogger.Errorw("sifchain client failed to subscribe to query.",
+			errorMessageKey, err.Error(),
+			"query", query)
 		completionEvent.Add(1)
 		go sub.Start(completionEvent)
 		return
@@ -94,7 +98,8 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 	defer func() {
 		if err := client.Unsubscribe(context.Background(), "test", query); err != nil {
-			sub.Logger.Error("Unsubscribe failed: ", err.Error())
+			sub.SugaredLogger.Errorw("sifchain client failed to unsubscribe query.",
+				errorMessageKey, err.Error())
 		}
 	}()
 
@@ -121,7 +126,8 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		case e := <-results:
 			data, ok := e.Data.(tmTypes.EventDataNewBlock)
 			if !ok {
-				fmt.Println("we have an error")
+				sub.SugaredLogger.Errorw("sifchain client failed to extract event data from new tx.",
+					errorMessageKey, err.Error())
 			}
 			blockHeight := data.Block.Height
 
@@ -129,6 +135,7 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 			if lastProcessedBlock == 0 {
 				lastProcessedBlock = blockHeight
 			}
+			sub.SugaredLogger.Infow("new transaction witnessed in sifchain client.")
 
 			startBlockHeight := lastProcessedBlock + 1
 			fmt.Printf("cosmos process events from block %d to %d\n", startBlockHeight, blockHeight)
@@ -138,7 +145,8 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 				block, err := client.BlockResults(&tmpBlockNumber)
 
 				if err != nil {
-					sub.Logger.Error(fmt.Sprintf("failed to get a block %s", err))
+					sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
+						errorMessageKey, err.Error())
 					continue
 				}
 
@@ -149,10 +157,11 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 						switch claimType {
 						case types.MsgBurn, types.MsgLock:
-							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
+							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
 							if err != nil {
-								fmt.Println(err)
-								break
+								sub.SugaredLogger.Errorw("sifchain client failed in get message from event.",
+									errorMessageKey, err.Error())
+								continue
 							}
 							sub.handleBurnLockMsg(cosmosMsg, claimType)
 						}
@@ -298,17 +307,16 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 
 	ProphecyClaims := GetAllProphecyClaim(ethClient, mySender, ethFromBlock, ethToBlock)
 
-	fmt.Printf("found out %d prophecy claims I sent from %d to %d block", len(ProphecyClaims), ethFromBlock, ethToBlock)
+	log.Printf("found out %d prophecy claims I sent from %d to %d block\n", len(ProphecyClaims), ethFromBlock, ethToBlock)
 
 	client, err := tmClient.New(sub.TmProvider, "/websocket")
 	if err != nil {
-		sub.Logger.Error("failed to initialize a client", "err", err)
+		log.Printf("failed to initialize a client, error as %s\n", err)
 		return
 	}
-	client.SetLogger(sub.Logger)
 
 	if err := client.Start(); err != nil {
-		sub.Logger.Error("failed to start a client", "err", err)
+		log.Printf("failed to start a client, error as %s\n", err)
 		return
 	}
 
@@ -318,33 +326,33 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 		tmpBlockNumber := blockNumber
 		block, err := client.BlockResults(&tmpBlockNumber)
 		blockNumber++
-		sub.Logger.Info(fmt.Sprintf("Replay start to process block %d", blockNumber))
+		log.Printf("Replay start to process block %d\n", blockNumber)
 
 		if err != nil {
-			sub.Logger.Error(fmt.Sprintf("failed to start a client %s", err))
+			log.Printf("failed to start a client %s\n", err.Error())
 			continue
 		}
 
-		for _, log := range block.TxsResults {
-			for _, event := range log.Events {
+		for _, ethLog := range block.TxsResults {
+			for _, event := range ethLog.Events {
 
 				claimType := getOracleClaimType(event.GetType())
 
 				switch claimType {
 				case types.MsgBurn, types.MsgLock:
-					sub.Logger.Info(fmt.Sprintf("found out a lock burn message\n"))
+					log.Println("found out a lock burn message")
 
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes())
+					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
 					if err != nil {
 						fmt.Println(err)
 						continue
 					}
-					sub.Logger.Info(fmt.Sprintf("found out a lock burn message%s\n", cosmosMsg.String()))
+					log.Printf("found out a lock burn message%s\n", cosmosMsg.String())
 
 					if !MessageProcessed(cosmosMsg, ProphecyClaims) {
 						sub.handleBurnLockMsg(cosmosMsg, claimType)
 					} else {
-						sub.Logger.Info(fmt.Sprintf("lock burn message already processed by me\n"))
+						log.Println("lock burn message already processed by me")
 					}
 				}
 			}
@@ -368,11 +376,17 @@ func getOracleClaimType(eventType string) types.Event {
 
 // Parses event data from the msg, event, builds a new ProphecyClaim, and relays it to Ethereum
 func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType types.Event) {
-	sub.Logger.Info(cosmosMsg.String())
+	sub.SugaredLogger.Infow("handle burn lock message.",
+		"cosmosMessage", cosmosMsg.String())
 
 	prophecyClaim := txs.CosmosMsgToProphecyClaim(cosmosMsg)
+
+	sub.SugaredLogger.Infow("get the prophecy claim.",
+		"CosmosSender", prophecyClaim.CosmosSender,
+		"CosmosSenderSequence", prophecyClaim.CosmosSenderSequence)
+
 	err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
-		claimType, prophecyClaim, sub.PrivateKey)
+		claimType, prophecyClaim, sub.PrivateKey, sub.SugaredLogger)
 	if err != nil {
 		fmt.Println(err)
 	}

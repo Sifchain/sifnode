@@ -104,7 +104,7 @@ where:
 e.g.:
 
 ```
-rake "cluster:sifnode:deploy:peer[my-cluster,merry-go-round,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',f214ec6828b85793289fcb0b025bc260747983f0@100.20.201.226:26656,https://rpc-merry-go-round.sifchain.finance/genesis]"
+rake "cluster:sifnode:deploy:peer[my-cluster,merry-go-round,aws,sifnode,sifchain/sifnoded,testnet-genesis,my-node,'my mnemonic',169d512e28d142962f9e0aa51c1bd1f6b9d0bed8@35.160.89.251:26656,https://rpc-merry-go-round.sifchain.finance/genesis]"
 ```
 
 _Please note: the image tag *must* be `testnet-genesis`._

@@ -4,7 +4,7 @@ import { Asset, Token, AssetAmount, IPool, Pool } from "../entities";
 export function assetPriceMessage(
   amount: AssetAmount | null,
   pair: IPool | null,
-  decimals: number = -1
+  decimals: number = -1,
 ) {
   if (!pair || !amount || amount.equalTo("0")) return "";
   const swapResult = pair.calcSwapResult(amount);

@@ -8,7 +8,7 @@ export default defineComponent({
     },
   },
 
-  data: function () {
+  data: function() {
     return {
       opened: false,
       containerLocation: { left: 0, bottom: 0 },
@@ -16,9 +16,7 @@ export default defineComponent({
   },
   methods: {
     close() {
-      console.log("close tool tips");
       this.opened = false;
-      document.body.removeEventListener("mousedown", this.close);
     },
     open() {
       const element = this.$refs.trigger;
@@ -32,8 +30,6 @@ export default defineComponent({
       this.containerLocation.left = `${leftPos}px`;
 
       this.opened = true;
-      // add click handler to whole page to close tooltip
-      document.body.addEventListener("mousedown", this.close);
     },
   },
 });
@@ -42,8 +38,8 @@ export default defineComponent({
 <template>
   <span v-on:click="open()">
     <teleport to="#tooltip-target">
-      <div class="tooltip-background" v-if="opened">
-        <div class="tooltip-positioner" :style="containerLocation">
+      <div class="tooltip-background" v-if="opened" @click="close">
+        <div class="tooltip-positioner" :style="containerLocation" @click.stop>
           <div class="tooltip-container">
             <div class="tooltip-inner">
               {{ message }}
@@ -53,7 +49,7 @@ export default defineComponent({
         </div>
       </div>
     </teleport>
-    <span ref="trigger">
+    <span class="trigger" ref="trigger">
       <slot></slot>
     </span>
   </span>
@@ -90,5 +86,8 @@ export default defineComponent({
     border-bottom-left-radius: 0;
     padding: 1rem;
   }
+}
+.trigger {
+  cursor: pointer;
 }
 </style>
