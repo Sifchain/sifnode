@@ -58,7 +58,7 @@ export default defineComponent({
     const toSymbol = ref("rowan");
     const isFromMaxActive = computed(() => {
       const accountBalance = balances.value.find(
-        (balance) => balance.asset.symbol === fromSymbol.value,
+        balance => balance.asset.symbol === fromSymbol.value,
       );
       if (!accountBalance) return;
       return fromAmount.value === accountBalance.toFixed();
@@ -66,7 +66,7 @@ export default defineComponent({
 
     const isToMaxActive = computed(() => {
       const accountBalance = balances.value.find(
-        (balance) => balance.asset.symbol === toSymbol.value,
+        balance => balance.asset.symbol === toSymbol.value,
       );
       if (!accountBalance) return;
       return toAmount.value === accountBalance.toFixed();
@@ -267,7 +267,7 @@ export default defineComponent({
         selectedField.value = "from";
         lastFocusedTokenField.value = "A";
         const accountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === fromSymbol.value,
+          balance => balance.asset.symbol === fromSymbol.value,
         );
 
         if (!accountBalance) return;
@@ -277,7 +277,7 @@ export default defineComponent({
         selectedField.value = "to";
         lastFocusedTokenField.value = "B";
         const accountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === toSymbol.value,
+          balance => balance.asset.symbol === toSymbol.value,
         );
         if (!accountBalance) return;
         toAmount.value = accountBalance.toFixed();
