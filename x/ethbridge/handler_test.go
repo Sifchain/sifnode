@@ -249,11 +249,8 @@ func TestBurnEthFail(t *testing.T) {
 }
 
 func TestBurnEthSuccess(t *testing.T) {
-	ctx, _, bankKeeper, supplyKeeper, _, validatorAddresses, handler := CreateTestHandler(t, 0.5, []int64{5})
+	ctx, _, bankKeeper, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.5, []int64{5})
 	valAddressVal1Pow5 := validatorAddresses[0]
-
-	moduleAccount := supplyKeeper.GetModuleAccount(ctx, ModuleName)
-	moduleAccountAddress := moduleAccount.GetAddress()
 
 	// Initial message to mint some eth
 	coinsToMintAmount := sdk.NewInt(7)
@@ -316,15 +313,17 @@ func TestBurnEthSuccess(t *testing.T) {
 	eventEthereumReceiver := ""
 	eventAmount := ""
 	eventSymbol := ""
-	eventCoins := ""
+	eventCethAmount := sdk.NewInt(0)
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			switch key := string(attribute.Key); key {
 			case senderString:
-				require.Equal(t, value, senderAddress.String())
+				// multiple recipient in burn, skip the comparison
+				// require.Equal(t, value, senderAddress.String())
 			case "recipient":
-				require.Equal(t, value, moduleAccountAddress.String())
+				// multiple recipient in burn, skip the comparison
+				// require.Equal(t, value, TestAddress)
 			case moduleString:
 				require.Equal(t, value, ModuleName)
 			case "ethereum_chain_id":
@@ -339,8 +338,10 @@ func TestBurnEthSuccess(t *testing.T) {
 				eventAmount = value
 			case "symbol":
 				eventSymbol = value
-			case "coins":
-				eventCoins = value
+			case "ceth_amount":
+				var ok bool
+				eventCethAmount, ok = sdk.NewIntFromString(value)
+				require.Equal(t, ok, true)
 			default:
 				require.Fail(t, fmt.Sprintf("unrecognized event %s", key))
 			}
@@ -352,7 +353,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
 	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
-	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin("ceth", sdk.NewInt(65000000000*300000)), sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
+	require.Equal(t, eventCethAmount, sdk.NewInt(65000000000*300000))
 
 	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
 	coinsToMintSymbol = "eth"

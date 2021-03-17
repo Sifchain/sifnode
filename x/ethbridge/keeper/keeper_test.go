@@ -199,77 +199,40 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 	require.Equal(t, "20stake", receiverCoins.String())
 }
 
-// func TestProcessBurn(t *testing.T) {
-// 	ctx, keeper, _, supplyKeeper, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+func TestProcessBurn(t *testing.T) {
+	ctx, keeper, bankKeeper, supplyKeeper, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
-// 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, "stake", sdk.NewInt(1))
-// 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
-// 	supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
-// 	supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
+	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
+	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
+	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-// 	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], msg, sugaredLogger)
-// 	require.NoError(t, err)
+	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], msg, sugaredLogger)
+	require.NoError(t, err)
 
-//process successful claim to get stake
+	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins.String(), string(""))
+}
 
-// claimType, err := types.StringToClaimType("burn")
-// require.NoError(t, err)
-// claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
+func TestProcessLock(t *testing.T) {
+	ctx, keeper, bankKeeper, supplyKeeper, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
-// claimBytes, err := json.Marshal(claimContent)
-// require.NoError(t, err)
-// claimString := string(claimBytes)
-// err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
-// require.NoError(t, err)
+	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins, sdk.Coins{})
 
-// claimContent = types.NewOracleClaimContent(cosmosReceivers[0], amount, types.CethSymbol, tokenContractAddress, claimType)
+	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 
-// claimBytes, err = json.Marshal(claimContent)
-// require.NoError(t, err)
-// claimString = string(claimBytes)
-// err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
-// require.NoError(t, err)
+	err := keeper.ProcessLock(ctx, cosmosReceivers[0], msg, sugaredLogger)
+	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
-// err = keeper.ProcessBurn(ctx, cosmosReceivers[0], msg, sugaredLogger)
-// require.NoError(t, err)
-// lock stake
+	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
+	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-// receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
-// require.Equal(t, receiverCoins.String(), string(""))
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], msg, sugaredLogger)
+	require.NoError(t, err)
 
-// }
+	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins.String(), string(""))
 
-// func TestProcessLock(t *testing.T) {
-
-// 	ctx, keeper, bankKeeper, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
-
-// 	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
-// 	require.Equal(t, receiverCoins, sdk.Coins{})
-
-// 	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", sdk.NewInt(0))
-
-// 	err := keeper.ProcessLock(ctx, cosmosReceivers[0], msg, sugaredLogger)
-// 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
-
-// 	//process successful claim to get stake
-
-// 	claimType, err := types.StringToClaimType("burn")
-// 	require.NoError(t, err)
-// 	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
-
-// 	claimBytes, err := json.Marshal(claimContent)
-// 	require.NoError(t, err)
-// 	claimString := string(claimBytes)
-// 	err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
-// 	require.NoError(t, err)
-
-// 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
-// 	require.Equal(t, receiverCoins.String(), "10stake")
-
-// 	err = keeper.ProcessLock(ctx, cosmosReceivers[0], msg, sugaredLogger)
-// 	require.NoError(t, err)
-
-// 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
-// 	require.Equal(t, receiverCoins.String(), string(""))
-
-// }
+}
