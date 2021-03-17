@@ -33,7 +33,7 @@ export default defineComponent({
   border: 1px solid orange;
 }
 .status-bad {
-  border: 1px solid yellow;
+  border: 1px solid #caa93b;
 }
 
 .pool-share {
