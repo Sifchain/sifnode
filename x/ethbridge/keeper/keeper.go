@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/tendermint/tendermint/libs/log"
@@ -95,30 +96,89 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string, sugaredLog
 }
 
 // ProcessBurn processes the burn of bridged coins from the given sender
-func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins, sugaredLogger *zap.SugaredLogger) error {
-	if err := k.supplyKeeper.SendCoinsFromAccountToModule(
-		ctx, cosmosSender, types.ModuleName, amount,
-	); err != nil {
-		sugaredLogger.Errorw("failed to process burn.",
+func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg types.MsgBurn, sugaredLogger *zap.SugaredLogger) error {
+	var coins sdk.Coins
+
+	if msg.Symbol == types.CethSymbol {
+		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount.Add(msg.Amount)))
+	} else {
+		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+	}
+
+	err := k.supplyKeeper.SendCoinsFromAccountToModule(
+		ctx, cosmosSender, types.ModuleName, coins,
+	)
+
+	if err != nil {
+		sugaredLogger.Errorw("failed to send coin from account to module.",
 			errorMessageKey, err.Error())
 		return err
 	}
 
-	if err := k.supplyKeeper.BurnCoins(ctx, types.ModuleName, amount); err != nil {
-		panic(err)
+	coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+	err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
+	if err != nil {
+		sugaredLogger.Errorw("failed to send ceth from module to account.",
+			errorMessageKey, err.Error())
+		return err
+	}
+
+	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+	err = k.supplyKeeper.BurnCoins(ctx, types.ModuleName, coins)
+	if err != nil {
+		sugaredLogger.Errorw("failed to burn locked coin.",
+			errorMessageKey, err.Error())
+		return err
 	}
 
 	return nil
 }
 
 // ProcessLock processes the lockup of cosmos coins from the given sender
-func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, amount sdk.Coins) error {
-	return k.supplyKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, amount)
+func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg types.MsgLock, sugaredLogger *zap.SugaredLogger) error {
+	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+
+	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
+
+	if err != nil {
+		sugaredLogger.Errorw("failed to transfer coin from account to module.",
+			errorMessageKey, err.Error())
+		return err
+	}
+
+	coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+	err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
+	if err != nil {
+		sugaredLogger.Errorw("failed to transfer ceth from module to account.",
+			errorMessageKey, err.Error())
+		return err
+	}
+
+	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
+	err = k.supplyKeeper.BurnCoins(ctx, types.ModuleName, coins)
+	if err != nil {
+		sugaredLogger.Errorw("failed to burn burned coin.",
+			errorMessageKey, err.Error())
+		return err
+	}
+	return nil
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
 func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
 	return k.oracleKeeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender, validator, operationtype, sugaredLogger)
+}
+
+// ProcessUpdateCethReceiverAccount processes the update whitelist validator from admin
+func (k Keeper) ProcessUpdateCethReceiverAccount(ctx sdk.Context, cosmosSender sdk.AccAddress, cethReceiverAccount sdk.AccAddress, sugaredLogger *zap.SugaredLogger) error {
+
+	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
+		sugaredLogger.Errorw("cosmos sender is not admin account.")
+		return errors.New("only admin account can update ceth receiver account")
+	}
+
+	k.SetCethReceiverAccount(ctx, cethReceiverAccount)
+	return nil
 }
 
 // Exists chec if the key existed in db.

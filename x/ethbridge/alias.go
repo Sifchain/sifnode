@@ -43,17 +43,20 @@ var (
 	CreateTestEthMsg                   = types.CreateTestEthMsg
 	CreateTestEthClaim                 = types.CreateTestEthClaim
 	CreateTestQueryEthProphecyResponse = types.CreateTestQueryEthProphecyResponse
+	GetGenesisStateFromAppState        = types.GetGenesisStateFromAppState
+	CethReceiverAccountPrefix          = types.CethReceiverAccountPrefix
 )
 
 type (
-	Keeper                      = keeper.Keeper
-	EthBridgeClaim              = types.EthBridgeClaim //nolint:golint
-	OracleClaimContent          = types.OracleClaimContent
-	EthereumAddress             = types.EthereumAddress
-	MsgCreateEthBridgeClaim     = types.MsgCreateEthBridgeClaim
-	MsgBurn                     = types.MsgBurn
-	MsgLock                     = types.MsgLock
-	MsgUpdateWhiteListValidator = types.MsgUpdateWhiteListValidator
-	QueryEthProphecyParams      = types.QueryEthProphecyParams
-	QueryEthProphecyResponse    = types.QueryEthProphecyResponse
+	Keeper                       = keeper.Keeper
+	EthBridgeClaim               = types.EthBridgeClaim //nolint:golint
+	OracleClaimContent           = types.OracleClaimContent
+	EthereumAddress              = types.EthereumAddress
+	MsgCreateEthBridgeClaim      = types.MsgCreateEthBridgeClaim
+	MsgBurn                      = types.MsgBurn
+	MsgLock                      = types.MsgLock
+	MsgUpdateWhiteListValidator  = types.MsgUpdateWhiteListValidator
+	MsgUpdateCethReceiverAccount = types.MsgUpdateCethReceiverAccount
+	QueryEthProphecyParams       = types.QueryEthProphecyParams
+	QueryEthProphecyResponse     = types.QueryEthProphecyResponse
 )

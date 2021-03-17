@@ -226,6 +226,54 @@ func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
 }
 
+// MsgUpdateCethReceiverAccount add or remove validator from whitelist
+type MsgUpdateCethReceiverAccount struct {
+	CosmosSender        sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
+	CethReceiverAccount sdk.AccAddress `json:"ceth_receiver_account" yaml:"ceth_receiver_account"`
+}
+
+// NewMsgUpdateCethReceiverAccount is a constructor function for MsgUpdateCethReceiverAccount
+func NewMsgUpdateCethReceiverAccount(cosmosSender sdk.AccAddress,
+	cethReceiverAccount sdk.AccAddress) MsgUpdateCethReceiverAccount {
+	return MsgUpdateCethReceiverAccount{
+		CosmosSender:        cosmosSender,
+		CethReceiverAccount: cethReceiverAccount,
+	}
+}
+
+// Route should return the name of the module
+func (msg MsgUpdateCethReceiverAccount) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgUpdateCethReceiverAccount) Type() string { return "update_ceth_receiver_account" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgUpdateCethReceiverAccount) ValidateBasic() error {
+	if msg.CosmosSender.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	}
+
+	if msg.CethReceiverAccount.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CethReceiverAccount.String())
+	}
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgUpdateCethReceiverAccount) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgUpdateCethReceiverAccount) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.CosmosSender}
+}
+
 // MsgUpdateWhiteListValidator add or remove validator from whitelist
 type MsgUpdateWhiteListValidator struct {
 	CosmosSender  sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`

@@ -112,7 +112,7 @@ func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 		Short: "burn cETH or cERC20 on the Cosmos chain",
 		Long: `This should be used to burn cETH or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
 		It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the withdrawal of the original ETH/ERC20 to you from the Ethereum contract!`,
-		Args:  cobra.ExactArgs(5),
+		Args: cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -253,6 +253,38 @@ func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
 			}
 
 			msg := types.NewMsgUpdateWhiteListValidator(cosmosSender, validatorAddress, operationType)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
+
+// GetCmdUpdateCethReceiverAccount is the CLI command for update the validator whitelist
+func GetCmdUpdateCethReceiverAccount(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "update_ceth_receiver_account [cosmos-sender-address] [ceth_receiver_account] --node [node-address]",
+		Short: "This should be used to set the ceth receiver account.",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			cosmosSender, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			cethReceiverAccount, err := sdk.AccAddressFromBech32(args[1])
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgUpdateCethReceiverAccount(cosmosSender, cethReceiverAccount)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
