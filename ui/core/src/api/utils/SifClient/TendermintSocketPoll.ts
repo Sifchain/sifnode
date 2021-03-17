@@ -46,7 +46,7 @@ export function TendermintSocketPoll({
     const txs = blockData.result.block.data.txs;
 
     if (txs) {
-      txs.forEach(tx => {
+      txs.forEach((tx) => {
         // TODO: Not sure if we should/can add more tx information here as all we have is the encoded tx - can we decode it? need to look into it
         emitter.emit("Tx", tx);
       });
@@ -57,7 +57,7 @@ export function TendermintSocketPoll({
   }
 
   function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**

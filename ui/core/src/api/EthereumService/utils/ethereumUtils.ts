@@ -112,7 +112,7 @@ export async function transferEther(
         hash = _hash;
         resolvePromise();
       })
-      .on("receipt", _receipt => {
+      .on("receipt", (_receipt) => {
         receipt = _receipt;
         resolvePromise();
       })
