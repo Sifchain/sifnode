@@ -27,36 +27,66 @@ import (
 // X - cToken Balance
 // Y - Rowan Balance
 // S - amount of Rowan
+//{
+//"S": "100000000000000000",
+//"X": "1000000",
+//"Y": "500000000000000000",
+//"expected": "0.200000080000040000"
+//},
+
+// sq 800
+
+// (sq 80) * 10
 func ReverseSwap(symbol string, X sdk.Uint, Y sdk.Uint, S sdk.Uint) (sdk.Uint, error) {
+	// cudt ,1000000 , 500000000000000000,  100000000000000000
 	if S.Equal(sdk.ZeroUint()) || X.Equal(sdk.ZeroUint()) || S.Mul(sdk.NewUint(4)).GTE(Y) {
 		return sdk.ZeroUint(), types.ErrNotEnoughAssetTokens
 	}
-	normalizationFactor, adjustExternalToken := GetNormalizationFactor(symbol)
-	if adjustExternalToken {
-		X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-	} else {
-		Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-		S = S.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-	}
-	minLen := int64(types.MinTokenPrecision)
+	//normalizationFactor, adjustExternalToken := GetNormalizationFactor(symbol)
+	//if adjustExternalToken {
+	//	X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+	//} else {
+	//	Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+	//	S = S.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+	//}
+	//fmt.Println(X,Y,S)
+	//1000000000000000000 500000000000000000 100000000000000000
+	//minLen := int64(types.MinTokenPrecision)
+	//Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
+	//Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
+	//Sd := ReducePrecision(sdk.NewDecFromBigInt(S.BigInt()), minLen)
+	denominator := S.Add(S)                                       //2*S
+	innerMostTerm := Y.Mul(Y.Sub(S.Mul(sdk.NewUint(4)))).BigInt() // ( Y*(Y - 4*S)
+	//fmt.Println(innerMostTerm)
+	innerMostTerm.Sqrt(innerMostTerm)
+	//fmt.Println(innerMostTerm)
 
-	Xd := ReducePrecision(sdk.NewDecFromBigInt(X.BigInt()), minLen)
-	Yd := ReducePrecision(sdk.NewDecFromBigInt(Y.BigInt()), minLen)
-	Sd := ReducePrecision(sdk.NewDecFromBigInt(S.BigInt()), minLen)
-	denominator := Sd.Add(Sd)                                       //2*S
-	innerMostTerm := Yd.Mul(Yd.Sub(Sd.Mul(sdk.NewDec(4)))).BigInt() // ( Y*(Y - 4*S)
-	fmt.Println(innerMostTerm)
-	innerMostTerm.Sqrt(innerMostTerm)                    // sqrt( Y*(Y - 4*S)
-	term3 := Xd.Mul(sdk.NewDecFromBigInt(innerMostTerm)) // X*sqrt( Y*(Y - 4*S)
-	term2 := Xd.Mul(Yd)                                  //X*Y
-	term1 := Xd.Mul(Sd).Mul(sdk.NewDec(2))
-	numerator := term2.Sub(term1).Sub(term3)
-	numerator = IncreasePrecision(numerator, minLen)
-	denominator = IncreasePrecision(denominator, minLen)
-	fmt.Println(term2, term3)
+	//X*sqrt(Y*(Y - 4*S) :  29279993169398110363350800000000000.000000000000000000
+	//X*Y :  29300000000000000000000000.000000000000000000
+	//2*X*S :  20000000000000000000000.000000000000000000
+
+	// 774596669241483377035853079956479922166584341058318165  - Py
+	// 774596669241483377035853079956000000000000000000000  - Go
+
+	// 200000000000000000000000000000000000000000000000000000
+	// 200000000000000000000000000000000000000000
+
+	term3 := X.Mul(sdk.NewUintFromBigInt(innerMostTerm))
+	//fmt.Println(term3)
+	//fmt.Println("X*sqrt(Y*(Y - 4*S) : ",term3)// X*sqrt(Y*(Y - 4*S)
+	term2 := X.Mul(Y)
+	//fmt.Println("2X*Y : ",term2)// X*Y
+	term1 := X.Mul(S).Mul(sdk.NewUint(2)) // 2*X*S
+	//fmt.Println("2*X*S : ",term1)
+	numerator := term2.Sub(term1).Sub(term3) // X*Y -(2*X*S) - (X*sqrt(Y*(Y - 4*S))
+	//fmt.Println("Numerator :" , numerator)
+	//numerator = IncreasePrecision(numerator, minLen)
+	//denominator = IncreasePrecision(denominator, minLen)
+	//fmt.Println(term2, term3)
 	result := numerator.Quo(denominator)
-	fmt.Println(result) //  X*Y - (2*X*S)  - (X*sqrt( Y*(Y - 4*S))
-	return sdk.NewUintFromBigInt(result.RoundInt().BigInt()), nil
+	//result = result.Mul(sdk.NewDec(-1))
+	//fmt.Println("Result :" ,result) //  X*Y - (2*X*S)  - (X*sqrt( Y*(Y - 4*S))
+	return sdk.NewUintFromBigInt(result.BigInt()), nil
 }
 
 func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {

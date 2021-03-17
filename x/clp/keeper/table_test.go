@@ -88,11 +88,11 @@ func TestCalculateReverseSwapResult(t *testing.T) {
 
 	testcases := test.TestType
 	for _, test := range testcases {
-		Yy, _ := ReverseSwap(
+		Yy, _ := ReverseSwap("ceth",
 			sdk.NewUintFromString(test.X),
 			sdk.NewUintFromString(test.Y),
 			sdk.NewUintFromString(test.S))
-		fmt.Printf("ReverseSwap-Result | Expected : %s | Got : %s  \n ", test.Expected, Yy.String())
+		fmt.Printf("ReverseSwap-Result | Expected : %s | Got : %s  \n ", test.Expected, Yy)
 		//if !Yy.Equal(sdk.NewUintFromString(test.Expected)) {
 		//	if !isAllowabale(Yy, sdk.NewUintFromString(test.Expected)) {
 		//		assert.True(t, false, "")

@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	"github.com/pkg/errors"
 )
 
 type SwapFeeChangeDecorator struct {
@@ -30,52 +31,71 @@ func (r SwapFeeChangeDecorator) AnteHandle(ctx types.Context, tx types.Tx, simul
 	msg := feeTx.GetMsgs()[0]
 	switch msg := msg.(type) {
 	case clpTypes.MsgSwap:
-		feeInRowan := feeTx.GetFee()
 		payer := feeTx.FeePayer()
-		fmt.Println("Balance Before : ", r.ck.GetBankKeeper().GetCoins(ctx, payer))
+		if !payer.Equals(msg.Signer) {
+			return types.Context{}, errors.New("Fee Payer and MSG Signer are not the same ")
+		}
+		feeInRowan := feeTx.GetFee() // --fees 2000000rowan
+		requiredRowan := feeInRowan.AmountOf(clpTypes.GetSettlementAsset().Symbol)
 		coinsBalance := r.ck.GetBankKeeper().GetCoins(ctx, payer)
-		payerHasRowan := false
-		if coinsBalance.AmountOf(clpTypes.GetSettlementAsset().Symbol).IsZero() {
+		userRowan := coinsBalance.AmountOf(clpTypes.GetSettlementAsset().Symbol)
+		fmt.Println("Balance Before : ", r.ck.GetBankKeeper().GetCoins(ctx, payer))
+
+		payerHasRowan := true
+		if userRowan.LT(requiredRowan) {
+			requiredRowan = requiredRowan.Sub(userRowan)
 			payerHasRowan = false
+			fmt.Printf("User Does not have enough rowan , trying to swap  :%s rowan ", requiredRowan.String())
 		}
 		if !payerHasRowan {
-			err = EnrichPayerWithRowan(r.ck, ctx, msg, payer, feeInRowan)
+			err = EnrichPayerWithRowan(r.ck, ctx, msg, requiredRowan)
 			if err != nil {
 				fmt.Println("Error :", err)
+				return types.Context{}, err
 			}
+			ctx.Logger().Info(fmt.Sprintf("Enriched user %s with %s rowan : ", payer.String(), requiredRowan.String()))
 		}
 		fmt.Println("Balance After : ", r.ck.GetBankKeeper().GetCoins(ctx, payer))
 	default:
-		fmt.Println("Unreachable code :")
+		return types.Context{}, errors.New("Unknown Swap type")
 	}
 
 	return next(ctx, tx, simulate)
 }
 
-func EnrichPayerWithRowan(ck keeper.Keeper, ctx types.Context, msg clpTypes.MsgSwap, payer types.Address, feeInRowan types.Coins) (err error) {
-	requiredRowan := feeInRowan.AmountOf(clpTypes.GetSettlementAsset().Symbol)
+func EnrichPayerWithRowan(ck keeper.Keeper, ctx types.Context, msg clpTypes.MsgSwap, requiredRowan types.Int) (err error) {
 	pool, err := ck.GetPool(ctx, msg.ReceivedAsset.Symbol)
 	if err != nil {
 		return
 	}
-	// x - amount of cToken
-	// X - cToken Balance
-	// Y - Rowan Balance
-	// S - amount of Rowan
-	sendAmount, err := keeper.ReverseSwap(msg.ReceivedAsset.Symbol, pool.ExternalAssetBalance, pool.NativeAssetBalance, types.Uint(requiredRowan))
-	if err != nil {
-		return
-	}
-
-	swapMSG := clpTypes.MsgSwap{
-		Signer:             msg.Signer,
-		SentAsset:          msg.ReceivedAsset,
-		ReceivedAsset:      clpTypes.GetSettlementAsset(),
-		SentAmount:         sendAmount,
-		MinReceivingAmount: types.NewUintFromBigInt(requiredRowan.BigInt()),
-	}
-	res, err := handleMsgSwap(ctx, ck, swapMSG)
-	fmt.Println("Swap Result :", res, err)
+	ex := pool.ExternalAssetBalance
+	na := pool.NativeAssetBalance
+	//priceMultiplier := ex.Quo(na)
+	//// Send to module account priceMultiplier * requiredRowan amount of cToken
+	//// Send to user from module account requiredRowan of rowan
+	//
+	//
+	//// subtract ceth
+	//// add rowan
+	//
+	//// x - amount of cToken
+	//// X - cToken Balance
+	//// Y - Rowan Balance
+	//// S - amount of Rowan
+	//sendAmount, err := keeper.ReverseSwap(msg.ReceivedAsset.Symbol, pool.ExternalAssetBalance, pool.NativeAssetBalance, types.Uint(requiredRowan))
+	//if err != nil {
+	//	return
+	//}
+	//
+	//swapMSG := clpTypes.MsgSwap{
+	//	Signer:             msg.Signer,
+	//	SentAsset:          msg.ReceivedAsset,
+	//	ReceivedAsset:      clpTypes.GetSettlementAsset(),
+	//	SentAmount:         sendAmount,
+	//	MinReceivingAmount: types.NewUintFromBigInt(requiredRowan.BigInt()),
+	//}
+	//res, err := handleMsgSwap(ctx, ck, swapMSG)
+	//fmt.Println("Swap Result :", res, err)
 	if err != nil {
 		return
 	}

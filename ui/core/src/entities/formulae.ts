@@ -192,11 +192,11 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
   if (S.eq("0") || X.eq("0") || S.times(4).gt(Y)) {
     return Big("0");
   }
-  const term1 = Big(-2).times(X).times(S);
+  const term1 = Big(-2).times(X).times(S); // 2XS
   const term2 = X.times(Y);
   const underRoot = Y.times(Y.minus(S.times(4)));
   const term3 = X.times(underRoot.sqrt());
-  const numerator = term1.plus(term2).minus(term3);
+  const numerator = term1.plus(term2).minus(term3);  //t2-t1-t3
   const denominator = S.times(2);
   const x = numerator.div(denominator);
   return x.gte(Big("0")) ? x : Big("0");

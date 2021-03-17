@@ -17,12 +17,11 @@ const (
 )
 
 var (
-	NewKeeper                   = keeper.NewKeeper
-	NewQuerier                  = keeper.NewQuerier
-	GetFaucetModuleAddress      = types.GetFaucetModuleAddress
-	NewMsgRequestCoins          = types.NewMsgRequestCoins
-	NewMsgAddCoins              = types.NewMsgAddCoins
-	NewRemoveFacuetFeeDecorator = types.NewRemoveFacuetFeeDecorator
+	NewKeeper              = keeper.NewKeeper
+	NewQuerier             = keeper.NewQuerier
+	GetFaucetModuleAddress = types.GetFaucetModuleAddress
+	NewMsgRequestCoins     = types.NewMsgRequestCoins
+	NewMsgAddCoins         = types.NewMsgAddCoins
 )
 
 type (
