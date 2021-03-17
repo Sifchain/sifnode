@@ -59,7 +59,7 @@ var (
 		upgrade.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
-		faucet.AppModuleBasic{},
+		//faucet.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 	)
 
@@ -77,7 +77,6 @@ var (
 
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
-
 	ModuleBasics.RegisterCodec(cdc)
 	vesting.RegisterCodec(cdc) // Need to verify if we need this
 	sdk.RegisterCodec(cdc)
