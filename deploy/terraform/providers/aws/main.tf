@@ -27,6 +27,7 @@ data "aws_iam_role" "cluster" {
   name = module.eks.worker_iam_role_name
 }
 
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
 
@@ -49,7 +50,10 @@ module "vpc" {
     "kubernetes.io/role/elb" = "1"
   }
 }
+locals {
 
+node_final_name = "${var.cluster_name}-node-group"
+}
 module "eks" {
   source       = "terraform-aws-modules/eks/aws"
   cluster_name = var.cluster_name
@@ -65,6 +69,7 @@ module "eks" {
 
   node_groups = {
     main = {
+      name = var.customize_node_group_name == "yes" ? var.node_group_name : local.node_final_name
       desired_capacity = var.desired_capacity
       max_capacity     = var.max_capacity
       min_capacity     = var.min_capacity

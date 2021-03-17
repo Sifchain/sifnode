@@ -32,15 +32,8 @@ def test_eth_to_ceth_and_back_to_eth(
         ceth_amount,
         bridgetoken_address,
 ):
-    # logging.info("shark")
-    # x = 4.9908339925e+18
-    # s = "{:d}".format(int(x))
-    # logging.info(f"xiss: {s}")
-    # logging.info(f"xiss: {x}")
-    # assert False
     basic_transfer_request.ethereum_address = source_ethereum_address
     basic_transfer_request.check_wait_blocks = True
-    logging.info(f"rq: {basic_transfer_request}")
     request, credentials = generate_test_account(
         basic_transfer_request,
         rowan_source_integrationtest_env_transfer_request,
@@ -60,7 +53,7 @@ def test_eth_to_ceth_and_back_to_eth(
     logging.info("send erowan back to ethereum chain, saving 100k for ceth transfer fees")
     request.sifchain_symbol = "rowan"
     request.ethereum_symbol = bridgetoken_address
-    request.amount = rowan_amount - 200000
+    request.amount = rowan_amount - 400000
     burn_lock_functions.transfer_sifchain_to_ethereum(request, credentials)
     test_utilities.get_eth_balance(request)
 
