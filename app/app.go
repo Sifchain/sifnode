@@ -59,7 +59,7 @@ var (
 		upgrade.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
-		//faucet.AppModuleBasic{},
+		faucet.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 	)
 
