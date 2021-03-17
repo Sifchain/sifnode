@@ -14,12 +14,7 @@ export const Asset = {
     key = typeof key == "string" ? key : key.symbol;
     const found = key ? assetMap.get(key.toLowerCase()) : false;
     if (!found) {
-      console.log(
-        "Available keys: " +
-          Array.from(assetMap.keys())
-            .sort()
-            .join(","),
-      );
+      console.log("Unrecognized token in wallet balance:", key);
       throw new Error(
         `Attempt to retrieve the asset with key ${key} before it had been created.`,
       );
