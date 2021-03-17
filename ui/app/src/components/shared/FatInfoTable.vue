@@ -1,5 +1,8 @@
 <template>
-  <div v-if="show" class="price-calculation">
+  <div
+    v-if="show"
+    v-bind:class="{ [`status-${status}`]: true, 'price-calculation': true }"
+  >
     <div class="pool-share">
       <h4 class="pool-share-title text--left"><slot name="header"></slot></h4>
       <div class="pool-share-details">
@@ -12,7 +15,7 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  props: ["show"],
+  props: ["show", "status"],
 });
 </script>
 <style lang="scss" scoped>
@@ -22,6 +25,17 @@ export default defineComponent({
   background: $c_white;
   overflow-y: auto;
 }
+
+.status-danger {
+  border: 1px solid red;
+}
+.status-warning {
+  border: 1px solid orange;
+}
+.status-bad {
+  border: 1px solid yellow;
+}
+
 .pool-share {
   font-size: 12px;
   font-weight: 400;

@@ -5,15 +5,13 @@
 </template>
 
 <script>
-export default {
-
-}
+export default {};
 </script>
 
 <style scoped lang="scss">
 .pool-list {
   height: 175px;
-  overflow-y: auto; 
+  overflow-y: auto;
   background: $c_white;
   border-radius: $br_sm;
 }

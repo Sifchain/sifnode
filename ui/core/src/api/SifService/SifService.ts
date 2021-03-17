@@ -71,14 +71,14 @@ export default function createSifService({
   const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl);
 
   const supportedTokens = assets.filter(
-    (asset) => asset.network === Network.SIFCHAIN
+    asset => asset.network === Network.SIFCHAIN,
   );
 
   async function createSifClientFromMnemonic(mnemonic: string) {
     const wallet = await Secp256k1HdWallet.fromMnemonic(
       mnemonic,
       makeCosmoshubPath(0),
-      sifAddrPrefix
+      sifAddrPrefix,
     );
     const accounts = await wallet.getAccounts();
 
@@ -114,7 +114,12 @@ export default function createSifService({
         state.accounts = await client.getAccounts();
         state.balances = await instance.getBalance(client.senderAddress);
       } catch (e) {
-        if (!e.toString().toLowerCase().includes("no address found on chain")) {
+        if (
+          !e
+            .toString()
+            .toLowerCase()
+            .includes("no address found on chain")
+        ) {
           state.connected = false;
           state.address = "";
           state.balances = [];
@@ -128,7 +133,7 @@ export default function createSifService({
       }
     },
     100,
-    { leading: true }
+    { leading: true },
   );
 
   const instance = {
@@ -148,7 +153,7 @@ export default function createSifService({
         return;
       }
       const offlineSigner = keplrProvider.getOfflineSigner(
-        keplrChainConfig.chainId
+        keplrChainConfig.chainId,
       );
       const accounts = await offlineSigner.getAccounts();
       const address = accounts.length > 0 ? accounts[0].address : "";
@@ -160,7 +165,7 @@ export default function createSifService({
         address,
         offlineSigner,
         sifWsUrl,
-        sifRpcUrl
+        sifRpcUrl,
       );
     },
 
@@ -246,16 +251,16 @@ export default function createSifService({
         if (!account) {
           throw "No Address found on chain";
         } // todo handle this better
-        const supportedTokenSymbols = supportedTokens.map((s) => s.symbol);
+        const supportedTokenSymbols = supportedTokens.map(s => s.symbol);
         return account.balance
-          .filter((balance) => supportedTokenSymbols.includes(balance.denom))
+          .filter(balance => supportedTokenSymbols.includes(balance.denom))
           .map(({ amount, denom }) => {
             const asset = supportedTokens.find(
-              (token) => token.symbol === denom
+              token => token.symbol === denom,
             )!; // will be found because of filter above
             return AssetAmount(asset, amount, { inBaseUnit: true });
           })
-          .filter((balance) => {
+          .filter(balance => {
             // If an aseet is supplied filter for it
             if (!asset) {
               return true;
@@ -302,7 +307,7 @@ export default function createSifService({
 
     async signAndBroadcast(
       msg: Msg | Msg[],
-      memo?: string
+      memo?: string,
     ): Promise<TransactionStatus> {
       if (!client) {
         throw "No client. Please sign in.";

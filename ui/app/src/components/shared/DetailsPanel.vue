@@ -65,7 +65,10 @@ export default defineComponent({
         <span
           >{{ formatNumber(minimumReceived) }}
           <span>{{
-            toToken.toString().toLowerCase().includes("rowan")
+            toToken
+              .toString()
+              .toLowerCase()
+              .includes("rowan")
               ? toToken.toString().toUpperCase()
               : "c" + toToken.slice(1).toUpperCase()
           }}</span>
@@ -94,7 +97,10 @@ export default defineComponent({
         <span
           >{{ showProviderFee(providerFee) }}
           <span>{{
-            toToken.toString().toLowerCase().includes("rowan")
+            toToken
+              .toString()
+              .toLowerCase()
+              .includes("rowan")
               ? toToken.toString().toUpperCase()
               : "c" + toToken.slice(1).toUpperCase()
           }}</span>

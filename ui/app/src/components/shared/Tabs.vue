@@ -63,7 +63,7 @@ export default defineComponent({
     const slots = (context.slots.default && context.slots.default()) ?? [];
     const tabs = slots.map((s: any) => ({ name: (s.props as any).title }));
     const selectedTitle = ref<string | undefined>(
-      tabs[selectedIndex.value].name
+      tabs[selectedIndex.value].name,
     );
 
     function tabSelected(index: number) {
