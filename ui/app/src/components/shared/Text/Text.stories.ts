@@ -56,6 +56,7 @@ const formatAmount = (amount, { decimals, commas, padding }) => {
   if (decimals > 0) {
     formattedAmount = Number(formattedAmount).toFixed(decimals);
   }
+  // .split('.') and regex etc
   if (commas) {
     formattedAmount = numberWithCommas(formattedAmount);
   }
@@ -70,7 +71,6 @@ const Template = (args, { argTypes }) => ({
     // const formattedAmount = formatAmount(amount, { decimals, commas, padding });
     const aAmount = AssetAmount(USD, JSBI.BigInt("10012"));
     const formattedAmount = format(aAmount);
-    console.log("adsad", aAmount);
     return { formattedAmount };
   },
   template: "<text>{{ formattedAmount }}</text>",

@@ -85,10 +85,14 @@ export default defineComponent({
     const myPoolShare = computed(() => {
       if (!accountPool?.value?.pool?.poolUnits) return null;
 
-      const perc = poolUnitsAsFraction.value
-        .divide(accountPool?.value?.pool?.poolUnits)
-        .multiply("100")
-        .toSignificant(3);
+      const perc = formatt(
+        poolUnitsAsFraction.value
+          .divide(accountPool?.value?.pool?.poolUnits)
+          .multiply("100"),
+        { strat: "signicant_3" },
+      );
+      // .toSignificant(3);
+
       return `${perc} %`;
     });
     const myPoolUnits = computed(() =>

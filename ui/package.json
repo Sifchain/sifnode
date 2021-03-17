@@ -64,6 +64,7 @@
   },
   "dependencies": {
     "codecov": "^3.8.0",
+    "numbro": "^2.3.2",
     "numeral": "^2.0.6",
     "tsconfig-paths-webpack-plugin": "^3.3.0"
   }
