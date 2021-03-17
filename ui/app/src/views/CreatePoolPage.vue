@@ -58,7 +58,7 @@ export default defineComponent({
     const toSymbol = ref("rowan");
     const isFromMaxActive = computed(() => {
       const accountBalance = balances.value.find(
-        balance => balance.asset.symbol === fromSymbol.value,
+        (balance) => balance.asset.symbol === fromSymbol.value,
       );
       if (!accountBalance) return;
       return fromAmount.value === accountBalance.toFixed();
@@ -66,7 +66,7 @@ export default defineComponent({
 
     const isToMaxActive = computed(() => {
       const accountBalance = balances.value.find(
-        balance => balance.asset.symbol === toSymbol.value,
+        (balance) => balance.asset.symbol === toSymbol.value,
       );
       if (!accountBalance) return;
       return toAmount.value === accountBalance.toFixed();
@@ -265,16 +265,19 @@ export default defineComponent({
       },
       handleFromMaxClicked() {
         selectedField.value = "from";
+        lastFocusedTokenField.value = "A";
         const accountBalance = balances.value.find(
-          balance => balance.asset.symbol === fromSymbol.value,
+          (balance) => balance.asset.symbol === fromSymbol.value,
         );
+
         if (!accountBalance) return;
         fromAmount.value = accountBalance.toFixed();
       },
       handleToMaxClicked() {
         selectedField.value = "to";
+        lastFocusedTokenField.value = "B";
         const accountBalance = balances.value.find(
-          balance => balance.asset.symbol === toSymbol.value,
+          (balance) => balance.asset.symbol === toSymbol.value,
         );
         if (!accountBalance) return;
         toAmount.value = accountBalance.toFixed();
@@ -287,6 +290,9 @@ export default defineComponent({
         let status = "danger";
         // TODO - Needs to us IFraction
         // TODO - This conditional needs rethinking
+        if (asyncPooling.value) {
+          return "";
+        }
         if (Number(riskFactor.value.toFixed(8)) <= 0.2) {
           status = "warning";
         }
