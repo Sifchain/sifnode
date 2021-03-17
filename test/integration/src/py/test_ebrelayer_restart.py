@@ -28,7 +28,7 @@ def test_ebrelayer_restart(
     assert balance == test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node, "ceth")
 
 
-def test_bulk_transfers(
+def test_ethereum_transactions_with_offline_relayer(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         smart_contracts_dir,
         source_ethereum_address,
