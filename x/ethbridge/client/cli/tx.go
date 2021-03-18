@@ -2,7 +2,6 @@ package cli
 
 import (
 	"bufio"
-	"fmt"
 	"regexp"
 	"strconv"
 
@@ -78,7 +77,6 @@ func GetCmdCreateEthBridgeClaim(cdc *codec.Codec) *cobra.Command {
 
 			bigIntAmount, ok := sdk.NewIntFromString(args[6])
 			if !ok {
-				fmt.Println("SetString: error")
 				return types.ErrInvalidAmount
 			}
 

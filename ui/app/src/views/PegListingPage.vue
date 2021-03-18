@@ -12,9 +12,9 @@
       <Tab title="External Tokens">
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
-            :to="
-              `/peg/${asset.asset.symbol}/${peggedSymbol(asset.asset.symbol)}`
-            "
+            :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
+              asset.asset.symbol,
+            )}`"
             primary
             >Peg</SifButton
           >
@@ -24,11 +24,9 @@
         <AssetList :items="assetList">
           <template #default="{ asset }">
             <SifButton
-              :to="
-                `/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
-                  asset.asset.symbol,
-                )}`
-              "
+              :to="`/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
+                asset.asset.symbol,
+              )}`"
               primary
               >Unpeg</SifButton
             >
@@ -155,7 +153,7 @@ export default defineComponent({
               .toLowerCase()
               .indexOf(searchText.value.toLowerCase().trim()) > -1,
         )
-        .map(asset => {
+        .map((asset) => {
           const amount = balances.find(({ asset: { symbol } }) => {
             return asset.symbol.toLowerCase() === symbol.toLowerCase();
           });
@@ -163,7 +161,7 @@ export default defineComponent({
           // Get pegTxs for asset
           const pegTxs = pegList
             ? pegList.filter(
-                txStatus =>
+                (txStatus) =>
                   txStatus.symbol?.toLowerCase() ===
                   getUnpeggedSymbol(asset.symbol.toLowerCase()),
               )
