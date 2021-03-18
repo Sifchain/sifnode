@@ -19,7 +19,7 @@ type IFormatOptionsMantissa = IFormatOptionsBase & {
 };
 
 type IFormatOptionsShorthandTotalLength = IFormatOptionsBase & {
-  average: true;
+  shorthand: true;
   totalLength?: number; // This will give us significant digits using abbreviations eg. `1.234k` it will override anything in mantissa
 };
 
