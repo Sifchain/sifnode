@@ -11,7 +11,7 @@ import (
 
 func NewAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper, ck clp.Keeper) sdk.AnteHandler {
 	return func(ctx sdk.Context, tx sdk.Tx, sim bool) (newCtx sdk.Context, err error) {
-		var anteHandler sdk.AnteHandler
+		anteHandler := GetDefaultHandler(ak, sk)
 		for _, msg := range tx.GetMsgs() {
 			switch msg.Type() {
 			case faucet.RequestCoinsType:
@@ -44,23 +44,26 @@ func NewAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper, ck clp.Keeper)
 					ante.NewSigVerificationDecorator(ak),
 					ante.NewIncrementSequenceDecorator(ak),
 				)
-
 			default:
-				anteHandler = sdk.ChainAnteDecorators(
-					ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
-					ante.NewMempoolFeeDecorator(),
-					ante.NewValidateBasicDecorator(),
-					ante.NewValidateMemoDecorator(ak),
-					ante.NewConsumeGasForTxSizeDecorator(ak),
-					ante.NewSetPubKeyDecorator(ak), // SetPubKeyDecorator must be called before all signature verification decorators
-					ante.NewValidateSigCountDecorator(ak),
-					ante.NewDeductFeeDecorator(ak, sk),
-					ante.NewSigGasConsumeDecorator(ak, auth.DefaultSigVerificationGasConsumer),
-					ante.NewSigVerificationDecorator(ak),
-					ante.NewIncrementSequenceDecorator(ak),
-				)
+				anteHandler = GetDefaultHandler(ak, sk)
 			}
 		}
 		return anteHandler(ctx, tx, sim)
 	}
+}
+
+func GetDefaultHandler(ak auth.AccountKeeper, sk types.SupplyKeeper) sdk.AnteHandler {
+	return sdk.ChainAnteDecorators(
+		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
+		ante.NewMempoolFeeDecorator(),
+		ante.NewValidateBasicDecorator(),
+		ante.NewValidateMemoDecorator(ak),
+		ante.NewConsumeGasForTxSizeDecorator(ak),
+		ante.NewSetPubKeyDecorator(ak), // SetPubKeyDecorator must be called before all signature verification decorators
+		ante.NewValidateSigCountDecorator(ak),
+		ante.NewDeductFeeDecorator(ak, sk),
+		ante.NewSigGasConsumeDecorator(ak, auth.DefaultSigVerificationGasConsumer),
+		ante.NewSigVerificationDecorator(ak),
+		ante.NewIncrementSequenceDecorator(ak),
+	)
 }
