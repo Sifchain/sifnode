@@ -75,6 +75,7 @@ func EnrichPayerWithRowan(ck keeper.Keeper, ctx types.Context, msg clpTypes.MsgS
 	cTokenSendCoin := types.NewCoins(types.NewCoin(msg.SentAsset.Symbol, priceMultiplier.Mul(requiredRowan)))
 	rowanReceiveCoin := types.NewCoins(types.NewCoin(GetSettlementAsset().Symbol, requiredRowan))
 	// Send to module first to avoid deficit
+	// This state transition is free for now
 	err = ck.GetSupplyKeeper().SendCoinsFromAccountToModule(ctx, msg.Signer, ModuleName, cTokenSendCoin)
 	if err != nil {
 		return
