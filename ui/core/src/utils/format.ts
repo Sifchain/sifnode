@@ -42,42 +42,52 @@ export function format(
 ): string {
   const numbroConfig = createNumbroConfig(options);
   const significand = amount.toBigInt().toString();
-  const exponent =
-    -1 *
-    calculateExponent(
-      options.mode === "percent",
-      options.exponent,
-      (amount as IAssetAmount).decimals,
-    );
 
-  const mantissa = extractMantissa(significand, exponent);
+  const exponentShift = calculateExponentShift(
+    options.mode === "percent",
+    options.exponent,
+    (amount as IAssetAmount).decimals,
+  );
 
-  const characteristic =
-    exponent !== 0 ? significand.slice(0, exponent) : significand;
-  const adjusted = [characteristic, mantissa].join(".");
+  const adjusted = exponentiateString(significand, exponentShift);
 
   return numbro(adjusted).format(numbroConfig);
 }
 
-function extractMantissa(significand: string, exponent: number) {
-  if (exponent !== 0) {
-    const sliced = significand.slice(exponent);
-    const diff = -1 * exponent;
+function exponentiateString(
+  significand: string,
+  exponentShift: number,
+): string {
+  const mantissa = extractMantissa(significand, exponentShift);
+  const characteristic = extractCharacteristic(significand, exponentShift);
+  return [characteristic, mantissa].join(".");
+}
+
+function extractMantissa(significand: string, exponentShift: number) {
+  if (exponentShift !== 0) {
+    const sliced = significand.slice(exponentShift);
+    const diff = -1 * exponentShift;
     const padded = sliced.padStart(diff, "0"); // TODO: ES2017 do we need to polyfill?
     return padded;
   }
   return "";
 }
 
-function calculateExponent(
+function extractCharacteristic(significand: string, exponentShift: number) {
+  return exponentShift !== 0
+    ? significand.slice(0, exponentShift)
+    : significand;
+}
+
+function calculateExponentShift(
   isPercent: boolean,
   optionsExponent: number | undefined,
   amountDecimals: number | undefined,
 ): number {
   if (isPercent) {
-    return (optionsExponent ?? 2) + 2;
+    return -1 * ((optionsExponent ?? 2) + 2);
   }
-  return optionsExponent ?? amountDecimals ?? 0;
+  return -1 * (optionsExponent ?? amountDecimals ?? 0);
 }
 
 function isShorthandWithTotalLength(
