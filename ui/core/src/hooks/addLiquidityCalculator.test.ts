@@ -2,7 +2,6 @@ import { ref, Ref } from "@vue/reactivity";
 import {
   Asset,
   AssetAmount,
-  Coin,
   IAssetAmount,
   LiquidityProvider,
   Network,

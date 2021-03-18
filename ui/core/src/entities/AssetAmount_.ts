@@ -1,5 +1,5 @@
 import { IAmount, Amount, _ExposeInternal } from "./Amount";
-import { IAsset, Asset } from "./Asset_";
+import { IAsset, Asset } from "./Asset";
 
 export type IAssetAmount = Readonly<IAsset> & IAmount;
 

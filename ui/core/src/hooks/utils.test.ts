@@ -1,4 +1,4 @@
-import { AssetAmount, Pool, Coin, Network } from "../entities";
+import { AssetAmount, Pool, Network, Asset } from "../entities";
 import { getTestingTokens } from "../test/utils/getTestingToken";
 import { assetPriceMessage } from "./utils";
 
@@ -32,17 +32,19 @@ describe("assets with decimals", () => {
 });
 describe("assets with zero decimals", () => {
   const ASSETS = {
-    atk: Coin({
+    atk: Asset({
       symbol: "catk",
       name: "Atk",
       network: Network.SIFCHAIN,
       decimals: 0,
+      label: "cATK",
     }),
-    btk: Coin({
+    btk: Asset({
       symbol: "cbtk",
       name: "Btk",
       network: Network.SIFCHAIN,
       decimals: 0,
+      label: "cBTK",
     }),
   };
   test("with 1 as an amount", () => {

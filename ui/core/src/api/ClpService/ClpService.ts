@@ -1,7 +1,6 @@
 import {
   Asset,
   AssetAmount,
-  Coin,
   LiquidityProvider,
   Network,
   Pool,
@@ -161,8 +160,9 @@ export default function createClpService({
       try {
         asset = Asset.get(symbol);
       } catch (err) {
-        asset = Coin({
+        asset = Asset({
           name: symbol,
+          label: symbol,
           symbol,
           network: Network.SIFCHAIN,
           decimals: 18,

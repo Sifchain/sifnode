@@ -1,5 +1,5 @@
 import createEthbridgeService from ".";
-import { Asset, AssetAmount, Token } from "../../entities";
+import { Asset, AssetAmount } from "../../entities";
 import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { advanceBlock } from "../../test/utils/advanceBlock";
 import { juniper, akasha, ethAccounts } from "../../test/utils/accounts";
@@ -33,7 +33,7 @@ describe("EthbridgeService", () => {
       sifRpcUrl: "http://localhost:26657",
       sifChainId: "sifchain",
       bridgebankContractAddress: config.bridgebankContractAddress,
-      bridgetokenContractAddress: (EROWAN as Token).address,
+      bridgetokenContractAddress: EROWAN.address!,
       getWeb3Provider,
     });
   });

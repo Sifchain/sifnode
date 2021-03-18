@@ -1,18 +1,20 @@
 import { AssetAmount } from "./AssetAmount";
 import { Network } from "./Network";
-import { Coin } from "./Coin";
+import { Asset } from "./Asset";
 import JSBI from "jsbi";
 import { Fraction } from "./fraction/Fraction";
 
-const USD = Coin({
+const USD = Asset({
   symbol: "USD",
+  label: "USD",
   decimals: 2,
   name: "US Dollar",
   network: Network.ETHEREUM,
 });
 
-const ETH = Coin({
+const ETH = Asset({
   symbol: "ETH",
+  label: "ETH",
   decimals: 18,
   name: "Ethereum",
   network: Network.ETHEREUM,

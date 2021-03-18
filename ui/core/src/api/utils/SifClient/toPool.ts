@@ -1,4 +1,4 @@
-import { Asset, AssetAmount, Coin, Fraction, Pool } from "../../../entities";
+import { Asset, AssetAmount, Fraction, Pool } from "../../../entities";
 import { RawPool } from "./x/clp";
 
 function getAssetOrNull(symbol: string): Asset | null {
@@ -8,7 +8,7 @@ function getAssetOrNull(symbol: string): Asset | null {
     return null;
   }
 }
-export const toPool = (nativeAsset: Coin) => (
+export const toPool = (nativeAsset: Asset) => (
   poolData: RawPool,
 ): Pool | null => {
   const externalAssetSymbol = poolData.external_asset.symbol;

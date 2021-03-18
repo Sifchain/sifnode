@@ -1,6 +1,6 @@
 import createActions from "./ethWallet";
 
-import { Address, Asset, Network, Token, TxParams } from "../entities";
+import { Address, Asset, Network, TxParams } from "../entities";
 import { Msg } from "@cosmjs/launchpad";
 import { IWalletService } from "../api/IWalletService";
 let mockEthereumService: IWalletService & {};
@@ -22,7 +22,7 @@ beforeEach(() => {
     connect: async () => {},
     disconnect: jest.fn(async () => {}),
     transfer: jest.fn(async (params: TxParams) => ""),
-    getBalance: async (address: Address, asset?: Asset | Token) => [],
+    getBalance: async (address: Address, asset?: Asset) => [],
     signAndBroadcast: async (msg: Msg, memo?: string) => {},
     setPhrase: async (phrase: string) => "",
     purgeClient: () => {},
@@ -60,8 +60,9 @@ test("Calls transfer correctly", async () => {
   await ethWalletActions.transferEthWallet(
     123,
     "abcdef",
-    Token({
+    Asset({
       name: "Ethereum",
+      label: "ETH",
       network: Network.SIFCHAIN,
       address: "abcdefg",
       decimals: 18,

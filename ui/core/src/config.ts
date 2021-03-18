@@ -24,8 +24,7 @@ type AssetMap = { [s: string]: Asset[] };
 
 // Save assets for sync lookup throughout the app via Asset.get('symbol')
 function cacheAsset(asset: Asset) {
-  Asset.set(asset.symbol, asset);
-  return asset;
+  return Asset(asset);
 }
 
 export type AppConfig = ApiContext; // Will include other injectables
