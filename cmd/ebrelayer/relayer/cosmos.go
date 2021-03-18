@@ -104,8 +104,8 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 		case result := <-out:
 			tx, ok := result.Data.(tmTypes.EventDataTx)
 			if !ok {
-				sub.SugaredLogger.Errorw("sifchain client failed to extract event data from new tx.",
-					errorMessageKey, err.Error())
+				sub.SugaredLogger.Errorw("sifchain client failed to extract event data from new block.",
+					"EventDataNewBlock", fmt.Sprintf("%v", result.Data))
 			}
 
 			sub.SugaredLogger.Infow("new transaction witnessed in sifchain client.")
