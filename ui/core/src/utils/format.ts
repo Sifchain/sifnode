@@ -87,38 +87,22 @@ function isShorthandWithTotalLength(
 }
 
 function createNumbroConfig(options: IFormatOptions) {
-  const {
-    forceSign = false,
-    mode = "number",
-    separator = false,
-    space = false,
-    prefix = "",
-    postfix = "",
-  } = options;
-
-  if (isShorthandWithTotalLength(options)) {
-    const { shorthand = false, totalLength = undefined } = options;
-    return {
-      forceSign: !!forceSign,
-      output: mode,
-      thousandSeparated: separator,
-      spaceSeparated: space,
-      average: shorthand,
-      prefix,
-      postfix,
-      totalLength,
-    };
-  }
-  const { shorthand = false, mantissa = 0, trimMantissa = false } = options;
   return {
-    forceSign: !!forceSign,
-    output: mode,
-    thousandSeparated: separator,
-    spaceSeparated: space,
-    average: shorthand,
-    prefix,
-    postfix,
-    mantissa,
-    trimMantissa,
+    forceSign: options.forceSign ?? false,
+    output: options.mode ?? "number",
+    thousandSeparated: options.separator ?? false,
+    spaceSeparated: options.space ?? false,
+    prefix: options.prefix ?? "",
+    postfix: options.postfix ?? "",
+    ...(isShorthandWithTotalLength(options)
+      ? {
+          average: options.shorthand ?? false,
+          totalLength: options.totalLength,
+        }
+      : {
+          average: options.shorthand ?? false,
+          mantissa: options.mantissa ?? 0,
+          trimMantissa: options.trimMantissa ?? false,
+        }),
   };
 }
