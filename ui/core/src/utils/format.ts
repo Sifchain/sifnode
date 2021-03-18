@@ -49,12 +49,12 @@ export function format(
     (amount as IAssetAmount).decimals,
   );
 
-  const adjusted = exponentiateString(significand, exponentShift);
+  const withPoint = exponentiateString(significand, exponentShift);
 
-  return numbro(adjusted).format(numbroConfig);
+  return numbro(withPoint).format(numbroConfig);
 }
 
-function exponentiateString(
+export function exponentiateString(
   significand: string,
   exponentShift: number,
 ): string {
