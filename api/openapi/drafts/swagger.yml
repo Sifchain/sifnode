@@ -17,6 +17,8 @@
       description: Stake module APIs
     - name: Slashing
       description: Slashing module APIs
+    - name: Mint
+      description: Block reward module APIs
     - name: Distribution
       description: Fee distribution module APIs
     - name: Supply

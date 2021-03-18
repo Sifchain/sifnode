@@ -175,6 +175,20 @@ type StakingParams struct {
 	BondDenom         string `json:"bond_denom"`
 }
 
+type Mint struct {
+	Minter interface{} `json:"minter" yaml:"minter"`
+	Params MintParams  `json:"params" yaml:"params"`
+}
+
+type MintParams struct {
+	MintDenom           string      `json:"mint_denom" yaml:"mint_denom"`
+	InflationRateChange interface{} `json:"inflation_rate_change" yaml:"inflation_rate_change"`
+	InflationMax        interface{} `json:"inflation_max" yaml:"inflation_max"`
+	InflationMin        interface{} `json:"inflation_min" yaml:"inflation_min"`
+	GoalBonded          interface{} `json:"goal_bonded" yaml:"goal_bonded"`
+	BlocksPerYear       interface{} `json:"blocks_per_year" yaml:"blocks_per_year"`
+}
+
 type Distribution struct {
 	Params                          DistributionParams `json:"params" yaml:"params"`
 	FeePool                         interface{}        `json:"fee_pool" yaml:"fee_pool"`
@@ -225,6 +239,7 @@ type AppState struct {
 	Gov          Gov          `json:"gov"`
 	Auth         Auth         `json:"auth"`
 	Slashing     Slashing     `json:"slashing"`
+	Mint         Mint         `json:"mint"`
 	Distribution Distribution `json:"distribution"`
 	Faucet       Faucet       `json:"faucet"`
 }

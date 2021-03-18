@@ -3,11 +3,12 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"math/big"
+
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/tendermint/tendermint/libs/log"
-	"io/ioutil"
-	"math/big"
 
 	tmos "github.com/tendermint/tendermint/libs/os"
 
@@ -33,6 +34,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
+	"github.com/cosmos/cosmos-sdk/x/mint"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
@@ -51,6 +53,7 @@ var (
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		staking.AppModuleBasic{},
+		mint.AppModuleBasic{},
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(
 			upgradeclient.ProposalHandler,
@@ -68,6 +71,7 @@ var (
 	maccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
 		distr.ModuleName:          nil,
+		mint.ModuleName:           {supply.Minter},
 		staking.BondedPoolName:    {supply.Burner, supply.Staking},
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		gov.ModuleName:            {supply.Burner, supply.Staking},
@@ -111,6 +115,7 @@ type SifchainApp struct {
 	bankKeeper     bank.Keeper
 	stakingKeeper  staking.Keeper
 	slashingKeeper slashing.Keeper
+	mintKeeper     mint.Keeper
 	distrKeeper    distr.Keeper
 	SupplyKeeper   supply.Keeper
 
@@ -148,6 +153,7 @@ func NewInitApp(
 		clp.StoreKey,
 		gov.StoreKey,
 		faucet.StoreKey,
+		mint.StoreKey,
 		distr.StoreKey,
 		slashing.StoreKey,
 	)
@@ -167,6 +173,7 @@ func NewInitApp(
 	app.subspaces[auth.ModuleName] = app.paramsKeeper.Subspace(auth.DefaultParamspace)
 	app.subspaces[bank.ModuleName] = app.paramsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.paramsKeeper.Subspace(staking.DefaultParamspace)
+	app.subspaces[mint.ModuleName] = app.paramsKeeper.Subspace(mint.DefaultParamspace)
 	app.subspaces[clp.ModuleName] = app.paramsKeeper.Subspace(clp.DefaultParamspace)
 	app.subspaces[gov.ModuleName] = app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	app.subspaces[distr.ModuleName] = app.paramsKeeper.Subspace(distr.DefaultParamspace)
@@ -199,6 +206,14 @@ func NewInitApp(
 		app.SupplyKeeper,
 		app.subspaces[staking.ModuleName],
 	)
+
+	app.mintKeeper = mint.NewKeeper(
+		app.cdc,
+		keys[mint.StoreKey],
+		mintSubspace,
+		&stakingKeeper,
+		app.supplyKeeper,
+		auth.FeeCollectorName)
 
 	app.distrKeeper = distr.NewKeeper(app.cdc, keys[distr.StoreKey], app.subspaces[distr.ModuleName], &stakingKeeper,
 		app.SupplyKeeper, auth.FeeCollectorName, app.ModuleAccountAddrs())
@@ -323,6 +338,7 @@ func NewInitApp(
 		bank.NewAppModule(app.bankKeeper, app.AccountKeeper),
 		supply.NewAppModule(app.SupplyKeeper, app.AccountKeeper),
 		distr.NewAppModule(app.distrKeeper, app.AccountKeeper, app.SupplyKeeper, app.stakingKeeper),
+		mint.NewAppModule(app.mintKeeper),
 		slashing.NewAppModule(app.slashingKeeper, app.AccountKeeper, app.stakingKeeper),
 		staking.NewAppModule(app.stakingKeeper, app.AccountKeeper, app.SupplyKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
@@ -336,7 +352,8 @@ func NewInitApp(
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
-	app.mm.SetOrderBeginBlockers(distr.ModuleName,
+	app.mm.SetOrderBeginBlockers(mint.ModuleName,
+		distr.ModuleName,
 		slashing.ModuleName,
 		faucet.ModuleName,
 		upgrade.ModuleName)
@@ -354,6 +371,7 @@ func NewInitApp(
 		auth.ModuleName,
 		bank.ModuleName,
 		slashing.ModuleName,
+		mint.ModuleName,
 		supply.ModuleName,
 		genutil.ModuleName,
 		oracle.ModuleName,
