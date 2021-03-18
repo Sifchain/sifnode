@@ -19,6 +19,7 @@ var (
 	ErrUnableToSetPool                 = sdkerrors.Register(ModuleName, 12, "Unable to set pool")
 	ErrUnableToDestroyPool             = sdkerrors.Register(ModuleName, 13, "Unable to destroy pool")
 	ErrUnableToCreatePool              = sdkerrors.Register(ModuleName, 14, "Unable to create pool")
+	ErrUnableEnrichUser                = sdkerrors.Register(ModuleName, 15, "Unable to add rowan balance to user")
 	ErrBalanceNotAvailable             = sdkerrors.Register(ModuleName, 18, "user does not have enough balance of the required coin")
 	ErrUnableToAddBalance              = sdkerrors.Register(ModuleName, 20, "unable to add balance")
 	ErrNotEnoughLiquidity              = sdkerrors.Register(ModuleName, 21, "pool does not have sufficient balance")
