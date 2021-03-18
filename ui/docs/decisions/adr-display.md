@@ -31,13 +31,16 @@ function format(
 
 # Examples
 
-| BigInt             | (as IAssetAmount).decimals | IFormatOptions                                          | output               |
-| ------------------ | -------------------------- | ------------------------------------------------------- | -------------------- |
-| 100000000000       | undefined                  | { mantissa: 2, separator: true }                        | `100,000,000,000.00` |
-| 990000000000000000 | 18                         | { mantissa: 6 }                                         | `0.990000`           |
-| 990000000000000000 | 18                         | { mantissa: 6, trimMantissa: true }                     | `0.99`               |
-| 999999800000000000 | 18                         | { mantissa: 8 }                                         | `0.9999998`          |
-| 100                | undefined                  | { mode:"percent", mantissa: 1 }                         | `1.0%`               |
-| 1000               | undefined                  | { mode:"percent", mantissa: 2 }                         | `10.00%`             |
-| 12345              | undefined                  | { mode:"percent", mantissa: 3, exponent: 3}             | `12.345%`            |
-| 12345              | undefined                  | { mode:"percent", mantissa: 3, exponent: 3, space:true} | `12.345 %`           |
+| BigInt              | (as IAssetAmount).decimals | IFormatOptions                                          | output               |
+| ------------------- | -------------------------- | ------------------------------------------------------- | -------------------- |
+| 100000000000        | undefined                  | { mantissa: 2, separator: true }                        | `100,000,000,000.00` |
+| 990000000000000000  | 18                         | { mantissa: 6 }                                         | `0.990000`           |
+| 990000000000000000  | 18                         | { mantissa: 6, trimMantissa: true }                     | `0.99`               |
+| 999999800000000000  | 18                         | { mantissa: 8 }                                         | `0.9999998`          |
+| 100                 | undefined                  | { mode:"percent", mantissa: 1 }                         | `1.0%`               |
+| 1000                | undefined                  | { mode:"percent", mantissa: 2 }                         | `10.00%`             |
+| 12345               | undefined                  | { mode:"percent", mantissa: 3, exponent: 3}             | `12.345%`            |
+| 12345               | undefined                  | { mode:"percent", mantissa: 3, exponent: 3, space:true} | `12.345 %`           |
+| -990000000000000000 | 18                         | { mantissa: 6, trimMantissa: true }                     | `-0.99`              |
+| 999999800000000000  | 18                         | { mantissa: 8, forceSign:true }                         | `+0.9999998`         |
+| 999999800000000000  | 18                         | { mantissa: 8, forceSign:true, space:true }             | `+ 0.9999998`        |
