@@ -1,5 +1,5 @@
 import { computed, Ref } from "@vue/reactivity";
-import { Asset, Token, AssetAmount, IPool, Pool } from "../entities";
+import { Asset, AssetAmount, IPool, Pool } from "../entities";
 
 export function assetPriceMessage(
   amount: AssetAmount | null,

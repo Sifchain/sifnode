@@ -1,5 +1,5 @@
 import { ref, Ref } from "@vue/reactivity";
-import { Asset, IAssetAmount, Network, Token } from "../entities";
+import { Asset, IAssetAmount, Network } from "../entities";
 import { getTestingToken } from "../test/utils/getTestingToken";
 import { useField } from "./useField";
 

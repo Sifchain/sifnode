@@ -1,6 +1,6 @@
 import JSBI from "jsbi";
 import { AssetAmount } from "./AssetAmount_";
-import { Asset } from "./Asset_";
+import { Asset } from "./Asset";
 import { Amount } from "./Amount";
 import { Network } from "./Network";
 

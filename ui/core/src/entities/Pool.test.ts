@@ -1,4 +1,5 @@
 import { getTestingTokens } from "../test/utils/getTestingToken";
+import { Asset } from "./Asset";
 import { AssetAmount } from "./AssetAmount";
 import { Coin } from "./Coin";
 import { Network } from "./Network";
@@ -262,30 +263,34 @@ describe("Pool", () => {
 
     test("copmosite pair reverseswap", () => {
       const TOKENS = {
-        atk: Token({
+        atk: Asset({
           decimals: 18,
           symbol: "atk",
+          label: "ATK",
           name: "AppleToken",
           address: "123",
           network: Network.ETHEREUM,
         }),
-        btk: Token({
+        btk: Asset({
           decimals: 18,
           symbol: "btk",
+          label: "BTK",
           name: "BananaToken",
           address: "1234",
           network: Network.ETHEREUM,
         }),
-        rowan: Token({
+        rowan: Asset({
           decimals: 18,
           symbol: "rowan",
+          label: "ROWAN",
           name: "Rowan",
           address: "1234",
           network: Network.ETHEREUM,
         }),
-        eth: Token({
+        eth: Asset({
           decimals: 18,
           symbol: "eth",
+          label: "ETH",
           name: "Ethereum",
           address: "1234",
           network: Network.ETHEREUM,

@@ -2,7 +2,7 @@ import { provider } from "web3-core";
 import Web3 from "web3";
 import { getBridgeBankContract } from "./bridgebankContract";
 import { getTokenContract } from "./tokenContract";
-import { AssetAmount, Token } from "../../entities";
+import { AssetAmount } from "../../entities";
 import {
   createPegTxEventEmitter,
   PegTxEventEmitter,
@@ -125,10 +125,7 @@ export default function createEthbridgeService({
     async approveBridgeBankSpend(account: string, amount: AssetAmount) {
       // This will popup an approval request in metamask
       const web3 = await ensureWeb3();
-      const tokenContract = await getTokenContract(
-        web3,
-        (amount.asset as Token).address,
-      );
+      const tokenContract = await getTokenContract(web3, amount.asset.address!);
       const sendArgs = {
         from: account,
         value: 0,
@@ -170,8 +167,7 @@ export default function createEthbridgeService({
     }) {
       const web3 = await ensureWeb3();
       const ethereumChainId = await web3.eth.net.getId();
-      const tokenAddress =
-        (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
+      const tokenAddress = params.assetAmount.asset.address ?? ETH_ADDRESS;
       console.log("burnToEthereum: start: ", tokenAddress);
 
       const txReceipt = await sifUnsignedClient.burn({
@@ -216,7 +212,7 @@ export default function createEthbridgeService({
           bridgebankContractAddress,
         );
         const accounts = await web3.eth.getAccounts();
-        const coinDenom = (assetAmount.asset as Token).address ?? ETH_ADDRESS;
+        const coinDenom = assetAmount.asset.address ?? ETH_ADDRESS;
         const amount = assetAmount.numerator.toString();
         const fromAddress = accounts[0];
 
@@ -257,8 +253,7 @@ export default function createEthbridgeService({
     }) {
       const web3 = await ensureWeb3();
       const ethereumChainId = await web3.eth.net.getId();
-      const tokenAddress =
-        (params.assetAmount.asset as Token).address ?? ETH_ADDRESS;
+      const tokenAddress = params.assetAmount.asset.address ?? ETH_ADDRESS;
 
       const lockParams = {
         ethereum_receiver: params.ethereumRecipient,
@@ -335,7 +330,7 @@ export default function createEthbridgeService({
           bridgebankContractAddress,
         );
         const accounts = await web3.eth.getAccounts();
-        const coinDenom = (assetAmount.asset as Token).address;
+        const coinDenom = assetAmount.asset.address;
         const amount = assetAmount.numerator.toString();
         const fromAddress = account || accounts[0];
 

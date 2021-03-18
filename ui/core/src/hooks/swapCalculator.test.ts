@@ -1,5 +1,5 @@
 import { Ref, ref } from "@vue/reactivity";
-import { AssetAmount, IAssetAmount, Network, Pool, Token } from "../entities";
+import { AssetAmount, IAssetAmount, Network, Pool } from "../entities";
 import { getTestingTokens } from "../test/utils/getTestingToken";
 import { SwapState, useSwapCalculator } from "./swapCalculator";
 

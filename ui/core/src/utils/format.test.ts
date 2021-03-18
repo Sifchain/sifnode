@@ -1,7 +1,7 @@
 import { Network } from "../entities";
 import { Amount } from "../entities/Amount";
 import { AssetAmount } from "../entities/AssetAmount_";
-import { Asset } from "../entities/Asset_";
+import { Asset } from "../entities/Asset";
 import { exponentiateString, format, IFormatOptions } from "./format";
 
 type Test = {

@@ -156,7 +156,7 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
     amounts: amounts as [IAssetAmount, IAssetAmount],
 
     getAmount: (asset: Asset | string) => {
-      if (Asset.get(asset).symbol === nativeSymbol) {
+      if (Asset(asset).symbol === nativeSymbol) {
         throw new Error(`Asset ${nativeSymbol} doesnt exist in pair`);
       }
 

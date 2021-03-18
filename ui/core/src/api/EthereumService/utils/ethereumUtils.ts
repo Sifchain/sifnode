@@ -7,19 +7,19 @@ import {
   WebsocketProvider,
 } from "web3-core";
 
-import { Address, Asset, AssetAmount, Network, Token } from "../../../entities";
+import { Address, Asset, AssetAmount, Network } from "../../../entities";
 import B from "../../../entities/utils/B";
-import { isToken } from "../../../entities/utils/isToken";
+
 import erc20TokenAbi from "./erc20TokenAbi";
 
-export function getTokenContract(web3: Web3, asset: Token) {
+export function getTokenContract(web3: Web3, asset: Asset) {
   return new web3.eth.Contract(erc20TokenAbi, asset.address);
 }
 
 export async function getTokenBalance(
   web3: Web3,
   address: Address,
-  asset: Token,
+  asset: Asset,
 ) {
   const contract = getTokenContract(web3, asset);
   let tokenBalance = "0";
@@ -46,7 +46,7 @@ export async function transferAsset(
   amount: JSBI,
   asset?: Asset,
 ) {
-  if (isToken(asset)) {
+  if (asset?.address) {
     return await transferToken(web3, fromAddress, toAddress, amount, asset);
   }
 
@@ -59,7 +59,7 @@ export async function transferToken(
   fromAddress: Address,
   toAddress: Address,
   amount: JSBI,
-  asset: Token,
+  asset: Asset,
 ) {
   const contract = getTokenContract(web3, asset);
   return new Promise<string>((resolve, reject) => {
@@ -128,6 +128,7 @@ export async function getEtheriumBalance(web3: Web3, address: Address) {
   return AssetAmount(
     {
       symbol: "eth",
+      label: "ETH",
       address: "",
       decimals: 18,
       name: "Ethereum",
