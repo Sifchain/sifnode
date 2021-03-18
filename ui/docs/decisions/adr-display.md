@@ -4,7 +4,7 @@
 type IFormatOptionsBase = {
   exponent?: number; // display = (amount * 10^-exponent) when undefined exponent will be set by (amount as IAssetAmount).decimals ?? 0 - defaults to 2 for percent mode
   forceSign?: boolean; // Ensure we have a + sign at the start of the value default false
-  mode?: "number" | "percent"; // defines the rendering strategy
+  mode?: "number" | "percent"; // defines the rendering strategy default "number"
   separator?: boolean; // Add thousand separators eg. 1,000 default false
   space?: boolean; // separate prefix and suffix with spaces default false
   prefix?: string; // Add a prefix
