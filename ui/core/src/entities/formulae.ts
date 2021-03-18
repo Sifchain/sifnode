@@ -167,10 +167,7 @@ export function calculateSwapResult(x: IFraction, X: IFraction, Y: IFraction) {
     return new Fraction("0");
   }
   const xPlusX = x.add(X);
-  return x
-    .multiply(X)
-    .multiply(Y)
-    .divide(xPlusX.multiply(xPlusX));
+  return x.multiply(X).multiply(Y).divide(xPlusX.multiply(xPlusX));
 }
 
 export function calculateExternalExternalSwapResult(
@@ -195,9 +192,7 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
   if (S.eq("0") || X.eq("0") || S.times(4).gt(Y)) {
     return Big("0");
   }
-  const term1 = Big(-2)
-    .times(X)
-    .times(S);
+  const term1 = Big(-2).times(X).times(S);
   const term2 = X.times(Y);
   const underRoot = Y.times(Y.minus(S.times(4)));
   const term3 = X.times(underRoot.sqrt());
@@ -219,10 +214,7 @@ export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
     return new Fraction("0");
   }
   const xPlusX = x.add(X);
-  return x
-    .multiply(x)
-    .multiply(Y)
-    .divide(xPlusX.multiply(xPlusX));
+  return x.multiply(x).multiply(Y).divide(xPlusX.multiply(xPlusX));
 }
 
 /**

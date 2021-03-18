@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"net/url"
 	"strconv"
@@ -35,7 +34,6 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 
 	// Parse flag --rpc-url
 	rpcURL := viper.GetString(FlagRPCURL)
-	fmt.Printf("RunReplayEthereumCmd rpcURL is %s\n ", rpcURL)
 	if rpcURL != "" {
 		_, err := url.Parse(rpcURL)
 		if rpcURL != "" && err != nil {
