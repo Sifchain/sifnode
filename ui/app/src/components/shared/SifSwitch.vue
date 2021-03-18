@@ -12,7 +12,7 @@ export default {
     label: String,
   },
   methods: {
-    toggle: function() {
+    toggle: function () {
       this.$emit("update:modelValue", !this.modelValue);
     },
   },
