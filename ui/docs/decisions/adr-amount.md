@@ -12,7 +12,7 @@ We need to standardize how we handle amounts throughout the frontend. We started
 
 - Standardize how we treat amounts throughout the app.
 - Use big integers to store and work with amounts in base units (ie. wei/satoshi) and remove reference to amounts in native format (ie. ether)
-- Only convert upon display within a standard companion display lib which will be addressed in another spec
+- Only convert upon display within a [standard companion display](adr-display.md) lib which will be addressed in another spec
 - Focus on erganomics and using sensible memorable shorthands
 
 ## Amount
