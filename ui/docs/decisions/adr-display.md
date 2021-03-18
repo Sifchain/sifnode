@@ -13,12 +13,12 @@ type IFormatOptionsBase = {
 };
 
 type IFormatOptionsMantissa = IFormatOptionsBase & {
-  average?: boolean;
+  shorthand?: boolean;
   mantissa?: number; // number of decimals after point default is exponent
   trimMantissa?: boolean; // Remove 0s from the mantissa default false
 };
 
-type IFormatOptionsAverageTotalLength = IFormatOptionsBase & {
+type IFormatOptionsShorthandTotalLength = IFormatOptionsBase & {
   average: true;
   totalLength?: number; // This will give us significant digits using abbreviations eg. `1.234k` it will override anything in mantissa
 };
@@ -38,8 +38,8 @@ function format(
 | BigInt              | (as IAssetAmount).decimals | IFormatOptions                                          | output               |
 | ------------------- | -------------------------- | ------------------------------------------------------- | -------------------- |
 | 100000000000        | undefined                  | { mantissa: 2, separator: true }                        | `100,000,000,000.00` |
-| 100000000000        | undefined                  | { average: true }                                       | `100b`               |
-| 100000000000        | undefined                  | { average: true, mantissa:6 }                           | `100.000000b`        |
+| 100000000000        | undefined                  | { shorthand: true }                                         | `100b`               |
+| 100000000000        | undefined                  | { shorthand: true, mantissa:6 }                             | `100.000000b`        |
 | 990000000000000000  | 18                         | { mantissa: 6 }                                         | `0.990000`           |
 | 990000000000000000  | 18                         | { mantissa: 6, trimMantissa: true }                     | `0.99`               |
 | 999999800000000000  | 18                         | { mantissa: 8 }                                         | `0.9999998`          |
