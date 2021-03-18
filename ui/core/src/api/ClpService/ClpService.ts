@@ -174,7 +174,7 @@ export default function createClpService({
         new Fraction(liquidity_provider_units),
         liquidity_provider_address,
         new Fraction(native_asset_balance),
-        new Fraction(external_asset_balance)
+        new Fraction(external_asset_balance),
       );
     },
 

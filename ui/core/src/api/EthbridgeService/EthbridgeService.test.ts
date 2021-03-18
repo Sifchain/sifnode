@@ -77,7 +77,7 @@ describe("EthbridgeService", () => {
     const amountToLock = AssetAmount(ETH, "3");
 
     // Send funds to the smart contract
-    await new Promise<void>(async done => {
+    await new Promise<void>(async (done) => {
       EthbridgeService.lockToSifchain(getSifAddress(), amountToLock, 100)
         .onTxHash(() => {
           advanceBlock(100);
@@ -85,20 +85,20 @@ describe("EthbridgeService", () => {
         .onComplete(async () => {
           done();
         })
-        .onError(err => {
+        .onError((err) => {
           throw err.payload;
         });
     });
 
     const expectedCethAmount = JSBI.add(
       cethBalance,
-      amountToLock.toBaseUnits()
+      amountToLock.toBaseUnits(),
     );
 
     await waitFor(
       async () => await getCethBalance(),
       expectedCethAmount,
-      "expectedCethAmount"
+      "expectedCethAmount",
     );
 
     ////////////////////////
@@ -110,7 +110,7 @@ describe("EthbridgeService", () => {
     const amountToSend = AssetAmount(CETH, "2");
     const feeAmount = AssetAmount(
       Asset.get("ceth"),
-      JSBI.BigInt("58560000000000000")
+      JSBI.BigInt("58560000000000000"),
     );
 
     const message = await EthbridgeService.burnToEthereum({
@@ -140,13 +140,13 @@ describe("EthbridgeService", () => {
 
     const expectedEthAmount = JSBI.add(
       recipientBalanceBefore,
-      JSBI.BigInt("2000000000000000000")
+      JSBI.BigInt("2000000000000000000"),
     ).toString();
 
     await waitFor(
       async () => await getEthBalance(),
       expectedEthAmount,
-      "expectedEthAmount"
+      "expectedEthAmount",
     );
 
     ////////////////////////
@@ -175,7 +175,7 @@ describe("EthbridgeService", () => {
       ethereumRecipient: getEthAddress(),
       feeAmount: AssetAmount(
         Asset.get("ceth"),
-        JSBI.BigInt("54080000000000000")
+        JSBI.BigInt("54080000000000000"),
       ),
     });
 
@@ -199,13 +199,13 @@ describe("EthbridgeService", () => {
 
     const expectedERowanBalance = JSBI.add(
       startingERowanBalance,
-      sendRowanAmount.toBaseUnits()
+      sendRowanAmount.toBaseUnits(),
     );
 
     await waitFor(
       async () => await getERowanBalance(),
       expectedERowanBalance,
-      "expectedERowanBalance"
+      "expectedERowanBalance",
     );
 
     ////////////////////////
@@ -217,7 +217,7 @@ describe("EthbridgeService", () => {
 
     await EthbridgeService.approveBridgeBankSpend(
       getEthAddress(),
-      sendERowanAmount
+      sendERowanAmount,
     );
 
     // Burn eRowan to Rowan
@@ -226,7 +226,7 @@ describe("EthbridgeService", () => {
         getSifAddress(),
         sendERowanAmount,
         50,
-        getEthAddress()
+        getEthAddress(),
       )
         .onTxHash(() => {
           advanceBlock(52);
@@ -234,7 +234,7 @@ describe("EthbridgeService", () => {
         .onComplete(async () => {
           done();
         })
-        .onError(err => {
+        .onError((err) => {
           reject(err);
         });
     });
@@ -244,13 +244,13 @@ describe("EthbridgeService", () => {
     // wait for the balance to change
     const expectedRowanBalance = JSBI.add(
       startingRowanBalance,
-      sendERowanAmount.toBaseUnits()
+      sendERowanAmount.toBaseUnits(),
     );
 
     await waitFor(
       async () => await getRowanBalance(),
       expectedRowanBalance,
-      "expectedRowanBalance"
+      "expectedRowanBalance",
     );
   });
 });

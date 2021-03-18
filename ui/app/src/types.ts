@@ -1,5 +1,5 @@
 export type ConfirmState =
-    "approving"
+  | "approving"
   | "selecting"
   | "confirming"
   | "signing"

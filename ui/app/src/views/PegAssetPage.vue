@@ -70,7 +70,9 @@ export default defineComponent({
 
     const amount = ref("0.0");
     const address = computed(() =>
-      mode.value === "peg" ? store.wallet.sif.address : store.wallet.eth.address
+      mode.value === "peg"
+        ? store.wallet.sif.address
+        : store.wallet.eth.address,
     );
 
     const isMaxActive = computed(() => {
@@ -85,7 +87,7 @@ export default defineComponent({
         try {
           await actions.peg.approve(
             store.wallet.eth.address,
-            AssetAmount(asset, amount.value)
+            AssetAmount(asset, amount.value),
           );
         } catch (err) {
           return (transactionState.value = "rejected");
@@ -104,7 +106,7 @@ export default defineComponent({
       transactionState.value = "signing";
 
       const tx = await actions.peg.unpeg(
-        AssetAmount(Asset.get(symbol.value), amount.value)
+        AssetAmount(Asset.get(symbol.value), amount.value),
       );
 
       transactionHash.value = tx.hash;

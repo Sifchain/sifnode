@@ -2,10 +2,10 @@
 import mainnnetconfig from "./config.mainnet.json";
 import localnetconfig from "./config.localnet.json";
 import sandpitconfig from "./config.sandpit.json";
-import testnetconfig from "./config.testnet.json"
+import testnetconfig from "./config.testnet.json";
 import assetsEthereumLocalnet from "./assets.ethereum.localnet.json";
 import assetsEthereumMainnet from "./assets.ethereum.mainnet.json";
-import assetsEthereumRopsten from "./assets.ethereum.ropsten.json";
+import assetsEthereumSandpit from "./assets.ethereum.sandpit.json";
 import assetsSifchainLocalnet from "./assets.sifchain.localnet.json";
 import assetsSifchainMainnet from "./assets.sifchain.mainnet.json";
 import assetsSifchainSandpit from "./assets.sifchain.sandpit.json";
@@ -33,26 +33,26 @@ export type AppConfig = ApiContext; // Will include other injectables
 export function getConfig(
   config = "localnet",
   sifchainAssetTag = "sifchain.localnet",
-  ethereumAssetTag = "ethereum.localnet"
+  ethereumAssetTag = "ethereum.localnet",
 ): AppConfig {
   const assetMap: AssetMap = {
     "sifchain.localnet": parseAssets(
-      assetsSifchainLocalnet.assets as AssetConfig[]
+      assetsSifchainLocalnet.assets as AssetConfig[],
     ),
     "sifchain.mainnet": parseAssets(
-      assetsSifchainMainnet.assets as AssetConfig[]
+      assetsSifchainMainnet.assets as AssetConfig[],
     ),
     "sifchain.sandpit": parseAssets(
-      assetsSifchainSandpit.assets as AssetConfig[]
+      assetsSifchainSandpit.assets as AssetConfig[],
     ),
     "ethereum.localnet": parseAssets(
-      assetsEthereumLocalnet.assets as AssetConfig[]
+      assetsEthereumLocalnet.assets as AssetConfig[],
     ),
     "ethereum.ropsten": parseAssets(
-      assetsEthereumRopsten.assets as AssetConfig[]
+      assetsEthereumSandpit.assets as AssetConfig[],
     ),
     "ethereum.mainnet": parseAssets(
-      assetsEthereumMainnet.assets as AssetConfig[]
+      assetsEthereumMainnet.assets as AssetConfig[],
     ),
   };
 
