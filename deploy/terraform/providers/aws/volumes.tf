@@ -2,7 +2,7 @@ data "aws_region" "current" {}
 
 
 resource "aws_iam_role" "dlm_lifecycle_role" {
-  name = "dlm-lifecycle-role-${data.aws_region.current.name}"
+  name = "dlm-lifecycle-role-${var.cluster_name}"
 
   assume_role_policy = <<EOF
 {
@@ -22,7 +22,7 @@ EOF
 }
 
 resource "aws_iam_role_policy" "dlm_lifecycle" {
-  name = "dlm-lifecycle-policy-${data.aws_region.current.name}"
+  name = "dlm-lifecycle-policy-${var.cluster_name}"
   role = aws_iam_role.dlm_lifecycle_role.id
 
   policy = <<EOF
@@ -106,6 +106,3 @@ resource "aws_dlm_lifecycle_policy" "snapshot" {
     }
   }
 }
-
-
-
