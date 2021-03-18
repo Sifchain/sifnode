@@ -14,6 +14,7 @@ import { Fraction } from "../../../core/src/entities";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
 import FatInfoTable from "@/components/shared/FatInfoTable.vue";
+import Checkbox from "@/components/shared/Checkbox.vue";
 import FatInfoTableCell from "@/components/shared/FatInfoTableCell.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
@@ -36,6 +37,7 @@ export default defineComponent({
     DetailsPanelPool,
     FatInfoTable,
     FatInfoTableCell,
+    Checkbox,
     Tooltip,
     Icon,
   },
@@ -43,18 +45,20 @@ export default defineComponent({
   setup() {
     const { actions, poolFinder, store } = useCore();
     const selectedField = ref<"from" | "to" | null>(null);
+    const lastFocusedTokenField = ref<"A" | "B" | null>(null);
+
     const transactionState = ref<ConfirmState | string>("selecting");
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
+    let asyncPooling = ref<boolean>(true);
     const router = useRouter();
     const route = useRoute();
 
     const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
-
     const toSymbol = ref("rowan");
     const isFromMaxActive = computed(() => {
       const accountBalance = balances.value.find(
-        (balance) => balance.asset.symbol === fromSymbol.value
+        (balance) => balance.asset.symbol === fromSymbol.value,
       );
       if (!accountBalance) return;
       return fromAmount.value === accountBalance.toFixed();
@@ -62,7 +66,7 @@ export default defineComponent({
 
     const isToMaxActive = computed(() => {
       const accountBalance = balances.value.find(
-        (balance) => balance.asset.symbol === toSymbol.value
+        (balance) => balance.asset.symbol === toSymbol.value,
       );
       if (!accountBalance) return;
       return toAmount.value === accountBalance.toFixed();
@@ -100,7 +104,11 @@ export default defineComponent({
 
     const riskFactor = computed(() => {
       const rFactor = new Fraction("1");
-      if (!tokenAFieldAmount.value || !tokenBFieldAmount.value || !poolAmounts.value) {
+      if (
+        !tokenAFieldAmount.value ||
+        !tokenBFieldAmount.value ||
+        !poolAmounts.value
+      ) {
         return rFactor;
       }
       const nativeBalance = poolAmounts?.value[0];
@@ -110,7 +118,7 @@ export default defineComponent({
         tokenAFieldAmount.value,
         nativeBalance,
         externalBalance,
-        new Fraction(totalPoolUnits.value)
+        new Fraction(totalPoolUnits.value),
       );
       return rFactor.subtract(slipAdjustmentCalc);
     });
@@ -136,6 +144,8 @@ export default defineComponent({
       tokenBSymbol: toSymbol,
       poolFinder,
       liquidityProvider,
+      asyncPooling,
+      lastFocusedTokenField,
     });
 
     function handleNextStepClicked() {
@@ -155,7 +165,7 @@ export default defineComponent({
       transactionState.value = "signing";
       const tx = await actions.clp.addLiquidity(
         tokenBFieldAmount.value,
-        tokenAFieldAmount.value
+        tokenAFieldAmount.value,
       );
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
@@ -169,6 +179,10 @@ export default defineComponent({
       } else {
         transactionState.value = "selecting";
       }
+    }
+
+    function toggleAsyncPooling() {
+      asyncPooling.value = !asyncPooling.value;
     }
 
     return {
@@ -222,6 +236,16 @@ export default defineComponent({
         selectedField.value = null;
       },
 
+      // TODO - The other selectedField variable does a few things
+      // And trying to remove the idea of to/from so slightly reinventing here
+      handleTokenAFocused() {
+        selectedField.value = "from";
+        lastFocusedTokenField.value = "A";
+      },
+      handleTokenBFocused() {
+        selectedField.value = "to";
+        lastFocusedTokenField.value = "B";
+      },
       backlink: window.history.state.back || "/pool",
 
       handleNextStepClicked,
@@ -234,20 +258,15 @@ export default defineComponent({
 
       transactionState,
       transactionStateMsg,
-
+      toggleAsyncPooling,
+      asyncPooling,
       handleBlur() {
         selectedField.value = null;
-      },
-      handleFromFocused() {
-        selectedField.value = "from";
-      },
-      handleToFocused() {
-        selectedField.value = "to";
       },
       handleFromMaxClicked() {
         selectedField.value = "from";
         const accountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === fromSymbol.value
+          (balance) => balance.asset.symbol === fromSymbol.value,
         );
         if (!accountBalance) return;
         fromAmount.value = accountBalance.toFixed();
@@ -255,7 +274,7 @@ export default defineComponent({
       handleToMaxClicked() {
         selectedField.value = "to";
         const accountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === toSymbol.value
+          (balance) => balance.asset.symbol === toSymbol.value,
         );
         if (!accountBalance) return;
         toAmount.value = accountBalance.toFixed();
@@ -267,12 +286,15 @@ export default defineComponent({
         // TODO - These cutoffs need discussion
         let status = "danger";
         // TODO - Needs to us IFraction
+        // TODO - This conditional needs rethinking
         if (Number(riskFactor.value.toFixed(8)) <= 0.2) {
           status = "warning";
-        } else if (Number(riskFactor.value.toFixed(8)) <= 0.1) {
+        }
+        if (Number(riskFactor.value.toFixed(8)) <= 0.1) {
           status = "bad";
-        } else if (Number(riskFactor.value.toFixed(8)) <= 0.01) {
-          status = '';
+        }
+        if (Number(riskFactor.value.toFixed(8)) <= 0.01) {
+          status = "";
         }
         return status;
       }),
@@ -288,7 +310,7 @@ export default defineComponent({
         <CurrencyPairPanel
           v-model:fromAmount="fromAmount"
           v-model:fromSymbol="fromSymbol"
-          @fromfocus="handleFromFocused"
+          @fromfocus="handleTokenAFocused"
           @fromblur="handleBlur"
           @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
           :fromSymbolSelectable="connected"
@@ -297,13 +319,16 @@ export default defineComponent({
           :isFromMaxActive="isFromMaxActive"
           v-model:toAmount="toAmount"
           v-model:toSymbol="toSymbol"
-          @tofocus="handleToFocused"
+          @tofocus="handleTokenBFocused"
           @toblur="handleBlur"
           :toMax="true"
           @tomaxclicked="handleToMaxClicked"
           :isToMaxActive="isToMaxActive"
           toSymbolFixed
           canSwapIcon="plus"
+          toggleLabel="Pool Equally"
+          :asyncPooling="asyncPooling"
+          @toggleAsyncPooling="toggleAsyncPooling"
       /></template>
       <template v-slot:default="{ requestClose }">
         <SelectTokenDialogSif
@@ -315,9 +340,7 @@ export default defineComponent({
     </Modal>
 
     <FatInfoTable :show="nextStepAllowed">
-      <template #header
-        >Pool Token Prices</template
-      >
+      <template #header>Pool Token Prices</template>
       <template #body>
         <FatInfoTableCell>
           <span class="number">{{
@@ -364,11 +387,21 @@ export default defineComponent({
       <template #header>
         <div class="pool-ratio-label">
           <span>Est. prices after pooling & pool share</span>
-          <Tooltip>
+          <Tooltip v-if="!asyncPooling && riskFactorStatus !== ''">
             <template #message>
-              This is an asymmetric liquidity add that has an estimated large impact on this pool, and therefore a significant slip adjustment. Please be aware of how this works by reading our documentation <a href="https://docs.sifchain.finance/core-concepts/liquidity-pool#asymmetric-liquidity-pool" target="_blank">here</a>.
+              This is an asymmetric liquidity add that has an estimated large
+              impact on this pool, and therefore a significant slip adjustment.
+              Please be aware of how this works by reading our documentation
+              <a
+                href="https://docs.sifchain.finance/core-concepts/liquidity-pool#asymmetric-liquidity-pool"
+                target="_blank"
+                >here</a
+              >.
             </template>
-            <Icon v-bind:class="{ [`icon-risk-status-${riskFactorStatus}`]: true }" icon="exclaimation" />
+            <Icon
+              v-bind:class="{ [`icon-risk-status-${riskFactorStatus}`]: true }"
+              icon="exclaimation"
+            />
           </Tooltip>
         </div>
       </template>
@@ -378,7 +411,7 @@ export default defineComponent({
             formatNumber(
               aPerBRatioProjectedMessage === "N/A"
                 ? "0"
-                : aPerBRatioProjectedMessage
+                : aPerBRatioProjectedMessage,
             )
           }}</span
           ><br />
@@ -392,7 +425,7 @@ export default defineComponent({
             formatNumber(
               bPerARatioProjectedMessage === "N/A"
                 ? "0"
-                : bPerARatioProjectedMessage
+                : bPerARatioProjectedMessage,
             )
           }}</span
           ><br />
@@ -460,17 +493,23 @@ export default defineComponent({
 }
 
 .icon-risk-status-bad::v-deep {
-  path, circle, rect {
+  path,
+  circle,
+  rect {
     fill: yellow !important;
   }
 }
 .icon-risk-status-warning::v-deep {
-  path, circle, rect {
+  path,
+  circle,
+  rect {
     fill: orange !important;
   }
 }
 .icon-risk-status-danger::v-deep {
-  path, circle, rect {
+  path,
+  circle,
+  rect {
     fill: red !important;
   }
 }
