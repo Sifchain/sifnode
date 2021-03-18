@@ -122,9 +122,6 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 		}
 	}()
 
-	tmpRPCURL := viper.GetString(FlagRPCURL)
-	fmt.Printf("rpcRUL is  %v \n", tmpRPCURL)
-
 	// Load the validator's Ethereum private key from environment variables
 	privateKey, err := txs.LoadPrivateKey()
 	if err != nil {

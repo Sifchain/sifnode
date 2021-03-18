@@ -47,7 +47,7 @@ export default defineComponent({
   setup(props, context) {
     const localValue = computed({
       get: () => props.modelValue,
-      set: value => context.emit("update:modelValue", value),
+      set: (value) => context.emit("update:modelValue", value),
     });
     return {
       localValue,

@@ -228,7 +228,7 @@ func GetAllProphecyClaim(client *ethclient.Client, ethereumAddress common.Addres
 			// decode data via a hardcode method since the abi unpack failed
 			prophecyClaim, err := MyDecode(tx.Data()[4:])
 			if err != nil {
-				fmt.Printf("decode prophecy claim failed with %s \n", err.Error())
+				log.Printf("decode prophecy claim failed with %s \n", err.Error())
 				continue
 			}
 
@@ -252,14 +252,10 @@ func MyDecode(data []byte) (types.ProphecyClaimUnique, error) {
 
 	sequence, err := strconv.ParseUint(string(dst), 16, 32)
 	if err != nil {
-		fmt.Printf("Decode data failed with %s \n", err.Error())
 		return types.ProphecyClaimUnique{}, err
 	}
-	fmt.Printf("CosmosSenderSequence is %d \n", sequence)
 
 	// the length of sifnode acc account is 42
-	cosmosSender := string(data[32*7 : 32*7+42])
-	fmt.Printf("CosmosSender is %s \n", cosmosSender)
 
 	return types.ProphecyClaimUnique{
 		CosmosSenderSequence: big.NewInt(int64(sequence)),
@@ -340,7 +336,7 @@ func (sub CosmosSub) Replay(fromBlock int64, toBlock int64, ethFromBlock int64, 
 
 					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
 					if err != nil {
-						fmt.Println(err)
+						log.Println(err)
 						continue
 					}
 					log.Printf("found out a lock burn message%s\n", cosmosMsg.String())
@@ -384,6 +380,6 @@ func (sub CosmosSub) handleBurnLockMsg(cosmosMsg types.CosmosMsg, claimType type
 	err := txs.RelayProphecyClaimToEthereum(sub.EthProvider, sub.RegistryContractAddress,
 		claimType, prophecyClaim, sub.PrivateKey, sub.SugaredLogger)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 }

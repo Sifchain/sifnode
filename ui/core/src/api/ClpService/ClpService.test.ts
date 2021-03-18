@@ -19,7 +19,7 @@ beforeEach(() => {
 test("getPools()", async () => {
   const pools = await service.getPools();
 
-  expect(pools.map(pool => pool.toString())).toEqual([
+  expect(pools.map((pool) => pool.toString())).toEqual([
     "10000000.000000000000000000 ROWAN | 10000000.000000000000000000 CATK",
     "10000000.000000000000000000 ROWAN | 10000000.000000000000000000 CBTK",
     "10000000.000000000000000000 ROWAN | 8300.000000000000000000 CETH",
