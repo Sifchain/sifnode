@@ -16,6 +16,7 @@ const (
 	PoolThrehold      = types.PoolThrehold
 	PoolUnitsMinValue = types.PoolUnitsMinValue
 	SwapType          = types.SwapType
+	TxFeeMultiplier   = types.TxFeeMultiplier
 )
 
 var (

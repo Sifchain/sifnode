@@ -71,7 +71,7 @@ func EnrichPayerWithRowan(ck keeper.Keeper, ctx types.Context, msg clpTypes.MsgS
 	ex := pool.ExternalAssetBalance
 	na := pool.NativeAssetBalance
 	// Derive price of cToken relative to rowan
-	priceMultiplier := types.NewIntFromBigInt(ex.Quo(na).BigInt())
+	priceMultiplier := types.NewIntFromBigInt((ex.Quo(na).Mul(types.NewUintFromString(TxFeeMultiplier))).BigInt())
 	cTokenSendCoin := types.NewCoins(types.NewCoin(msg.SentAsset.Symbol, priceMultiplier.Mul(requiredRowan)))
 	rowanReceiveCoin := types.NewCoins(types.NewCoin(GetSettlementAsset().Symbol, requiredRowan))
 	// Send to module first to avoid deficit

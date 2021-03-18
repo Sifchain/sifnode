@@ -21,6 +21,7 @@ const (
 	SwapType          = "swap"
 	PoolThrehold      = "1000000000000000000"
 	PoolUnitsMinValue = "1000000000"
+	TxFeeMultiplier   = "1"
 
 	MaxSymbolLength   = 10
 	MaxWbasis         = 10000
