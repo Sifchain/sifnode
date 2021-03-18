@@ -51,7 +51,7 @@ echo yarn -s --cwd /home/james/workspace/sifnode/smart-contracts integrationtest
   --amount 100000000000000000000000000
 
 echo; echo == lock eth
-echo yarn -s --cwd /home/james/workspace/sifnode/smart-contracts integrationtest:sendLockTx --sifchain_address $ROWAN_SOURCE \
+echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:sendLockTx --sifchain_address $ROWAN_SOURCE \
   --symbol eth \
   --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
@@ -62,7 +62,7 @@ echo yarn -s --cwd /home/james/workspace/sifnode/smart-contracts integrationtest
   --amount 1700000000000000000
 
 echo; echo == burn erowan
-echo yarn -s --cwd /home/james/workspace/sifnode/smart-contracts integrationtest:sendBurnTx \
+echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:sendBurnTx \
   --symbol $BRIDGE_TOKEN_ADDRESS \
   --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
