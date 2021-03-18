@@ -1,18 +1,26 @@
 # Amount Display API
 
 ```ts
-type IFormatOptions = {
+type IFormatOptionsBase = {
   exponent?: number; // display = (amount * 10^-exponent) when undefined exponent will be set by (amount as IAssetAmount).decimals ?? 0 - defaults to 2 for percent mode
   forceSign?: boolean; // Ensure we have a + sign at the start of the value default false
-  mantissa?: number; // number of decimals after point default is exponent
-  mode?: "number" | "percent";
+  mode?: "number" | "percent"; // defines the rendering strategy
   separator?: boolean; // Add thousand separators eg. 1,000 default false
-  significant?: number; // When not undefined this will give us significant digits using abbreviations eg. `1.234k`. default undefined
   space?: boolean; // separate prefix and suffix with spaces default false
   prefix?: string; // Add a prefix
   postfix?: string; // Add a postfix
+};
+
+type IFormatOptionsMantissa = IFormatOptionsBase & {
+  mantissa: number; // number of decimals after point default is exponent
   trimMantissa?: boolean; // Remove 0s from the mantissa default false
 };
+
+type IFormatOptionsSignificant = IFormatOptionsBase & {
+  significant: number; // When not undefined this will give us significant digits using abbreviations eg. `1.234k`. default undefined
+};
+
+type IFormatOptions = IFormatOptionsMantissa | IFormatOptionsSignificant;
 ```
 
 ```ts
