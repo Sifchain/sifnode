@@ -1,7 +1,9 @@
 # Create a display API to universally display values throughout frontend
 
 Status: proposed
+
 Deciders: Michael Pierce, Thomas Davis, Rudi Yardley
+
 Date: 2020-03-18
 
 # Amount Display API
