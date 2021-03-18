@@ -13,7 +13,7 @@ export default defineComponent({
   emits: ["tokenselected"],
   setup(_, context) {
     const { displayList, fullSearchList } = generateTokenSearchLists({
-      walletTokens: useCore().store.wallet.eth.balances.map(tok => tok.asset),
+      walletTokens: useCore().store.wallet.eth.balances.map((tok) => tok.asset),
     });
 
     function selectToken(symbol: string) {

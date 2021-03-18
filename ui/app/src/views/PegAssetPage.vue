@@ -119,7 +119,7 @@ export default defineComponent({
         mode.value === "peg"
           ? store.wallet.eth.balances
           : store.wallet.sif.balances;
-      return balances.find(balance => {
+      return balances.find((balance) => {
         return (
           balance.asset.symbol.toLowerCase() === symbol.value.toLowerCase()
         );

@@ -15,7 +15,7 @@ export default defineComponent({
 
     const available = computed(() => {
       const found = balances.value.find(
-        bal => bal.asset.symbol === props.symbol,
+        (bal) => bal.asset.symbol === props.symbol,
       );
       if (!found) return "0";
 
