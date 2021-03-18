@@ -56,7 +56,7 @@ export default defineComponent({
 
     const getAccountBalance = () => {
       return balances.value.find(
-        balance => balance.asset.symbol === fromSymbol.value,
+        (balance) => balance.asset.symbol === fromSymbol.value,
       );
     };
 
