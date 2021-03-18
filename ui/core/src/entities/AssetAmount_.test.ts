@@ -165,9 +165,7 @@ describe("AssetAmount", () => {
 
     // Floor
     expect(
-      AssetAmount("eth", "20")
-        .sqrt()
-        .equalTo(AssetAmount("eth", "4")),
+      AssetAmount("eth", "20").sqrt().equalTo(AssetAmount("eth", "4")),
     ).toBe(true);
   });
 

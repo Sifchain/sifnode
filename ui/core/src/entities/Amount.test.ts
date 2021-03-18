@@ -23,39 +23,21 @@ describe("Amount", () => {
   });
 
   test("#add", () => {
-    expect(
-      Amount("1000")
-        .add(Amount("1000"))
-        .equalTo(Amount("2000")),
-    ).toBe(true);
+    expect(Amount("1000").add(Amount("1000")).equalTo(Amount("2000"))).toBe(
+      true,
+    );
   });
 
   describe("#divide", () => {
     test("basic division", () => {
-      expect(
-        Amount("10")
-          .divide(Amount("5"))
-          .equalTo(Amount("2")),
-      ).toBe(true);
-      expect(
-        Amount("30")
-          .divide(Amount("15"))
-          .equalTo(Amount("2")),
-      ).toBe(true);
+      expect(Amount("10").divide(Amount("5")).equalTo(Amount("2"))).toBe(true);
+      expect(Amount("30").divide(Amount("15")).equalTo(Amount("2"))).toBe(true);
     });
 
     test("floors remainder", () => {
-      expect(
-        Amount("30")
-          .divide(Amount("20"))
-          .equalTo(Amount("1")),
-      ).toBe(true);
+      expect(Amount("30").divide(Amount("20")).equalTo(Amount("1"))).toBe(true);
 
-      expect(
-        Amount("30")
-          .divide(Amount("40"))
-          .equalTo(Amount("0")),
-      ).toBe(true);
+      expect(Amount("30").divide(Amount("40")).equalTo(Amount("0"))).toBe(true);
     });
   });
 
@@ -90,31 +72,19 @@ describe("Amount", () => {
 
   test("#multiply", () => {
     expect(
-      Amount("12345678")
-        .multiply(Amount("10"))
-        .equalTo(Amount("123456780")),
+      Amount("12345678").multiply(Amount("10")).equalTo(Amount("123456780")),
     ).toBe(true);
   });
 
   test("#sqrt", () => {
-    expect(
-      Amount("15241383936")
-        .sqrt()
-        .equalTo(Amount("123456")),
-    ).toBe(true);
+    expect(Amount("15241383936").sqrt().equalTo(Amount("123456"))).toBe(true);
 
     expect(
-      Amount("15241578750190521")
-        .sqrt()
-        .equalTo(Amount("123456789")),
+      Amount("15241578750190521").sqrt().equalTo(Amount("123456789")),
     ).toBe(true);
 
     // Floor
-    expect(
-      Amount("20")
-        .sqrt()
-        .equalTo(Amount("4")),
-    ).toBe(true);
+    expect(Amount("20").sqrt().equalTo(Amount("4"))).toBe(true);
   });
 
   test("#subtract", () => {
