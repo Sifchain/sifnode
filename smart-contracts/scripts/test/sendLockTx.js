@@ -13,36 +13,29 @@ module.exports = async (cb) => {
         ...sifchainUtilities.transactionYargOptions
     });
 
-    logging.debug(`sendLockTx arguments: ${JSON.stringify(argv, undefined, 2)}`);
+    try {
+        logging.debug(`sendLockTx arguments: ${JSON.stringify(argv, undefined, 2)}`);
 
-    const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging, "BridgeBank", argv.bridgebank_address);
+        const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging, "BridgeBank", argv.bridgebank_address);
 
-    let cosmosRecipient = Web3.utils.utf8ToHex(argv.sifchain_address);
-    let coinDenom = argv.symbol;
-    let amount = new BN(argv.amount);
+        let cosmosRecipient = Web3.utils.utf8ToHex(argv.sifchain_address);
+        let coinDenom = argv.symbol;
+        let amount = new BN(argv.amount);
 
-    let request = {
-        from: argv.ethereum_address,
-        value: coinDenom === sifchainUtilities.NULL_ADDRESS ? amount : 0,
-        gasPrice: 400000000000,
-    };
+        let transactionParameters = {
+            from: argv.ethereum_address,
+            value: coinDenom === sifchainUtilities.NULL_ADDRESS ? amount : 0,
+        };
 
-    if (argv.gas === 'estimate') {
-        const estimate = await bridgeBankContract.lock.estimateGas(
-            cosmosRecipient,
-            coinDenom,
-            amount,
-            request,
-        );
-        // increase by 10%
-        request.gas = new BN(estimate).mul(new BN(11)).div(new BN(10));
-    } else {
-        request.gas = argv.gas;
+        await contractUtilites.setAllowance(this, argv.symbol, argv.amount, argv, logging, transactionParameters);
+
+        const lockResult = await bridgeBankContract.lock(cosmosRecipient, coinDenom, amount, transactionParameters);
+
+        console.log(JSON.stringify(lockResult, undefined, 0))
+    } catch (e) {
+        console.error(`lock error: ${e} ${e.message}`);
+        throw(e);
     }
-
-    const lockResult = await bridgeBankContract.lock(cosmosRecipient, coinDenom, amount, request);
-
-    console.log(JSON.stringify(lockResult, undefined, 0))
 
     return cb();
 };

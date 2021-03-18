@@ -36,7 +36,6 @@ export function parseTxFailure(txFailure: {
     };
   }
 
-
   if (txFailure.rawLog.toLowerCase().includes("insufficient funds")) {
     return {
       code: ErrorCode.INSUFFICIENT_FUNDS,

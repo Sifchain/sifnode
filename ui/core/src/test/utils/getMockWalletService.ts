@@ -10,7 +10,7 @@ export function getMockWalletService(
     log: string;
   },
   walletBalances: AssetAmount[],
-  service: Partial<IWalletService> = {}
+  service: Partial<IWalletService> = {},
 ): IWalletService {
   return {
     setPhrase: async () => "",
@@ -30,7 +30,8 @@ export function getMockWalletService(
     ...service,
     signAndBroadcast: async (
       msg: { type: string; value: any },
-      memo?: string
+      memo?: string,
     ) => {},
+    onProviderNotFound: () => {},
   };
 }

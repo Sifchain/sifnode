@@ -26,27 +26,25 @@ type Keplr = {
     chainId: string,
     txBytes: Uint8Array,
     mode: "sync" | "async" | "commit",
-    isRestAPI: boolean
+    isRestAPI: boolean,
   ): Promise<void>;
 
   requestTxWithResult(
     chainId: string,
     txBytes: Uint8Array,
     mode: "sync" | "async" | "commit",
-    isRestAPI: boolean
+    isRestAPI: boolean,
   ): Promise<any>;
 
   getSecret20ViewingKey(
     chainId: string,
-    contractAddress: string
+    contractAddress: string,
   ): Promise<string>;
 
   getOfflineSigner: (chainId?: string) => OfflineSigner;
 };
 
-// Todo
 type provider = Keplr;
-
 let numChecks = 0;
 
 // Detect mossible keplr provider from browser
@@ -68,8 +66,6 @@ export default async function getKeplrProvider(): Promise<provider | null> {
     return getKeplrProvider();
   }
 
-  // assign offline signer (they use __proto__ for some reason), so this is not as pretty as i'd like)
-  Object.getPrototypeOf(win.keplr).getOfflineSigner = win.getOfflineSigner;
   console.log("Keplr wallet bootstraped");
   return win.keplr as Keplr;
 }

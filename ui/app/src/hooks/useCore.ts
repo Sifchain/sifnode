@@ -9,7 +9,7 @@ import {
 const config = getConfig(
   process.env.VUE_APP_DEPLOYMENT_TAG,
   process.env.VUE_APP_SIFCHAIN_ASSET_TAG,
-  process.env.VUE_APP_ETHEREUM_ASSET_TAG
+  process.env.VUE_APP_ETHEREUM_ASSET_TAG,
 );
 
 const api = createApi(config);
@@ -19,7 +19,7 @@ const poolFinder = createPoolFinder(store);
 
 // expose store on window so it is easy to inspect
 Object.defineProperty(window, "store", {
-  get: function() {
+  get: function () {
     // Gives us `store` for in console inspection
     // Gives us `store.dump()` for string representation
     // Gives us `store.dumpTab()` for string representation
@@ -39,7 +39,7 @@ Object.defineProperty(window, "store", {
 
         return value;
       },
-      2
+      2,
     );
 
     const storeSafe = JSON.parse(storeString);
