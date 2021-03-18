@@ -9,18 +9,21 @@ type IFormatOptionsBase = {
   space?: boolean; // separate prefix and suffix with spaces default false
   prefix?: string; // Add a prefix
   postfix?: string; // Add a postfix
+  zeroFormat?: string; // could be something like `N/A`
 };
 
 type IFormatOptionsMantissa = IFormatOptionsBase & {
-  mantissa: number; // number of decimals after point default is exponent
+  average?: boolean;
+  mantissa?: number; // number of decimals after point default is exponent
   trimMantissa?: boolean; // Remove 0s from the mantissa default false
 };
 
-type IFormatOptionsSignificant = IFormatOptionsBase & {
-  significant: number; // When not undefined this will give us significant digits using abbreviations eg. `1.234k`. default undefined
+type IFormatOptionsAverageTotalLength = IFormatOptionsBase & {
+  average: true;
+  totalLength?: number; // This will give us significant digits using abbreviations eg. `1.234k` it will override anything in mantissa
 };
 
-type IFormatOptions = IFormatOptionsMantissa | IFormatOptionsSignificant;
+type IFormatOptions = IFormatOptionsMantissa | IFormatOptionsAverageTotalLength;
 ```
 
 ```ts
@@ -35,6 +38,8 @@ function format(
 | BigInt              | (as IAssetAmount).decimals | IFormatOptions                                          | output               |
 | ------------------- | -------------------------- | ------------------------------------------------------- | -------------------- |
 | 100000000000        | undefined                  | { mantissa: 2, separator: true }                        | `100,000,000,000.00` |
+| 100000000000        | undefined                  | { average: true }                                       | `100b`               |
+| 100000000000        | undefined                  | { average: true, mantissa:6 }                           | `100.000000b`        |
 | 990000000000000000  | 18                         | { mantissa: 6 }                                         | `0.990000`           |
 | 990000000000000000  | 18                         | { mantissa: 6, trimMantissa: true }                     | `0.99`               |
 | 999999800000000000  | 18                         | { mantissa: 8 }                                         | `0.9999998`          |
