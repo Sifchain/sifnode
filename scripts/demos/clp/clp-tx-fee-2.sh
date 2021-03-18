@@ -4,7 +4,7 @@ echo "Creating pools ceth and cdash"
 sifnodecli tx clp create-pool --from sif --symbol ceth --nativeAmount 100000000000000000000 --externalAmount 100000000000000000000  --yes --fees 20000000rowan
 
 sleep 5
-sifnodecli tx clp create-pool --from sif --symbol cdash --nativeAmount 100000000000000000000 --externalAmount 100000000000000000000  --yes --fees 20000000rowan
+sifnodecli tx clp create-pool --from sif --symbol cdash --nativeAmount 100000000000000000000 --externalAmount 100000000000000000000  --yes --fees 200000rowan
 
 echo "swap"
 sleep 8
