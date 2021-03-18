@@ -210,9 +210,9 @@ func NewInitApp(
 	app.mintKeeper = mint.NewKeeper(
 		app.cdc,
 		keys[mint.StoreKey],
-		mintSubspace,
+		app.subspaces[mint.ModuleName],
 		&stakingKeeper,
-		app.supplyKeeper,
+		app.SupplyKeeper,
 		auth.FeeCollectorName)
 
 	app.distrKeeper = distr.NewKeeper(app.cdc, keys[distr.StoreKey], app.subspaces[distr.ModuleName], &stakingKeeper,
