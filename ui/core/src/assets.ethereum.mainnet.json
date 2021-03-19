@@ -454,7 +454,7 @@
       "imageUrl": "https://assets.coingecko.com/coins/images/12782/small/logocircle.png?1611944557",
       "name": "DAOfi",
       "network": "ethereum",
-      "priceUsd": 1.0500,
+      "priceUsd": 1.05,
       "symbol": "daofi",
       "transferLimit": "99999999999999999999999"
     },
@@ -494,7 +494,7 @@
       "imageUrl": "https://assets.coingecko.com/coins/images/3328/small/Akropolis.png?1547037929",
       "name": "Akropolis",
       "network": "ethereum",
-      "priceUsd": 0.0670,
+      "priceUsd": 0.067,
       "symbol": "akro",
       "transferLimit": "99999999999999999999999"
     },
@@ -514,9 +514,9 @@
       "imageUrl": "https://assets.coingecko.com/coins/images/12843/small/image.png?1611212077",
       "name": "Rally",
       "network": "ethereum",
-      "priceUsd": 1.1100,
+      "priceUsd": 1.11,
       "symbol": "rly",
       "transferLimit": "99999999999999999999999"
-    }        
+    }
   ]
 }

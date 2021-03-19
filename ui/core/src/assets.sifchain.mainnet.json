@@ -320,50 +320,49 @@
       "imageUrl": "https://assets.coingecko.com/coins/images/12782/small/logocircle.png?1611944557",
       "name": "DAOfi",
       "network": "sifchain",
-      "symbol": "daofi",
+      "symbol": "daofi"
     },
     {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/12509/small/linear.jpg?1606884470",
       "name": "Linear",
       "network": "sifchain",
-      "symbol": "lina",
+      "symbol": "lina"
     },
     {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/9351/small/12ships.png?1566485390",
       "name": "12Ships",
       "network": "sifchain",
-      "symbol": "tshp",
+      "symbol": "tshp"
     },
     {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/13803/small/b20.png?1611996305",
       "name": "B.20",
       "network": "sifchain",
-      "symbol": "b20",
+      "symbol": "b20"
     },
     {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/3328/small/Akropolis.png?1547037929",
       "name": "Akropolis",
       "network": "sifchain",
-      "symbol": "akro",
+      "symbol": "akro"
     },
     {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/12623/small/RFUEL_SQR.png?1602481093",
       "name": "Rio Fuel Token",
       "network": "sifchain",
-      "symbol": "rfuel",
+      "symbol": "rfuel"
     },
     {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/12843/small/image.png?1611212077",
       "name": "Rally",
       "network": "sifchain",
-      "symbol": "rly",
-
-    } 
+      "symbol": "rly"
+    }
   ]
 }
