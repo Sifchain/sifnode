@@ -29,6 +29,7 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
+	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
 
@@ -42,7 +43,7 @@ const (
 
 // CreateTestKeepers greates an Mock App, OracleKeeper, bankKeeper and ValidatorAddresses to be used for test input
 func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts []int64, extraMaccPerm string) (
-	sdk.Context, Keeper, bankKeeper.Keeper, authkeeper.AccountKeeper, []sdk.ValAddress, sdk.StoreKey) {
+	sdk.Context, keeper.Keeper, bankKeeper.Keeper, authkeeper.AccountKeeper, []sdk.ValAddress, sdk.StoreKey) {
 	PKs := CreateTestPubKeys(500)
 	keyStaking := sdk.NewKVStoreKey(stakingtypes.StoreKey)
 	tkeyStaking := sdk.NewTransientStoreKey(stakingtypes.TStoreKey)
@@ -88,11 +89,11 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	paramsKeeper := params.NewKeeper(cdc, keyParams, tkeyParams)
 
-	accountKeeper := auth.NewAccountKeeper(
+	accountKeeper := authkeeper.NewAccountKeeper(
 		cdc,    // amino codec
 		keyAcc, // target store
 		paramsKeeper.Subspace(auth.DefaultParamspace),
-		auth.ProtoBaseAccount, // prototype
+		authtypes.ProtoBaseAccount, // prototype
 	)
 
 	bankKeeper := bank.NewBaseKeeper(
