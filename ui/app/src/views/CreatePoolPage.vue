@@ -209,6 +209,9 @@ export default defineComponent({
             return preExistingPool.value ? "Add liquidity" : "Create Pool";
         }
       }),
+      toggleLabel: computed(() => {
+        return !preExistingPool.value ? null : "Pool Equally";
+      }),
       nextStepAllowed: computed(() => {
         return state.value === PoolState.VALID_INPUT;
       }),
@@ -332,7 +335,7 @@ export default defineComponent({
           :isToMaxActive="isToMaxActive"
           toSymbolFixed
           canSwapIcon="plus"
-          toggleLabel="Pool Equally"
+          :toggleLabel="toggleLabel"
           :asyncPooling="asyncPooling"
           @toggleAsyncPooling="toggleAsyncPooling"
       /></template>
