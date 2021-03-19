@@ -44,7 +44,7 @@ func (m MsgDecommissionPool) ValidateBasic() error {
 }
 
 func (m MsgDecommissionPool) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
 func (m MsgDecommissionPool) GetSigners() []sdk.AccAddress {
@@ -88,7 +88,7 @@ func (m MsgSwap) ValidateBasic() error {
 }
 
 func (m MsgSwap) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
 func (m MsgSwap) GetSigners() []sdk.AccAddress {
@@ -128,7 +128,7 @@ func (m MsgRemoveLiquidity) ValidateBasic() error {
 }
 
 func (m MsgRemoveLiquidity) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
 func (m MsgRemoveLiquidity) GetSigners() []sdk.AccAddress {
@@ -169,7 +169,7 @@ func (m MsgAddLiquidity) ValidateBasic() error {
 }
 
 func (m MsgAddLiquidity) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
 func (m MsgAddLiquidity) GetSigners() []sdk.AccAddress {
@@ -219,7 +219,7 @@ func (m MsgCreatePool) ValidateBasic() error {
 }
 
 func (m MsgCreatePool) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
 func (m MsgCreatePool) GetSigners() []sdk.AccAddress {

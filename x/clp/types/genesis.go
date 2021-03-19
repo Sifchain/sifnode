@@ -22,9 +22,10 @@ func DefaultGenesisState() GenesisState {
 	}
 }
 
-func GetGenesisStateFromAppState(cdc *codec.JSONMarshaler, appState map[string]json.RawMessage) GenesisState {
+func GetGenesisStateFromAppState(cdc codec.Marshaler, appState map[string]json.RawMessage) GenesisState {
 	var genesisState GenesisState
 	if appState[ModuleName] != nil {
+
 		cdc.MustUnmarshalJSON(appState[ModuleName], &genesisState)
 	}
 	return genesisState

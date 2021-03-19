@@ -3,8 +3,8 @@ package types
 import (
 	"strings"
 
-	authtypes "github.com/cosmos/comsos-sdk/x/auth/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 type Assets []Asset
