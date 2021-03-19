@@ -137,7 +137,8 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 			sub.SugaredLogger.Infow("new transaction witnessed in sifchain client.")
 
 			startBlockHeight := lastProcessedBlock + 1
-			fmt.Printf("cosmos process events from block %d to %d\n", startBlockHeight, blockHeight)
+			sub.SugaredLogger.Infow("cosmos process events for blocks.",
+				"startingBlockHeight", startBlockHeight, "currentBlockHeight", blockHeight)
 
 			for blockNumber := startBlockHeight; blockNumber <= blockHeight; {
 				tmpBlockNumber := blockNumber
