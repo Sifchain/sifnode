@@ -27,6 +27,26 @@ data "aws_iam_role" "cluster" {
   name = module.eks.worker_iam_role_name
 }
 
+data "aws_subnet_ids" "a" {
+  vpc_id = module.vpc.vpc_id
+    tags = {
+    Name = "${var.cluster_name}-public-${var.region}a"
+  } 
+}
+
+data "aws_subnet_ids" "b" {
+  vpc_id = module.vpc.vpc_id
+    tags = {
+    Name = "${var.cluster_name}-public-${var.region}b"
+  } 
+}
+
+data "aws_subnet_ids" "c" {
+  vpc_id = module.vpc.vpc_id
+    tags = {
+    Name = "${var.cluster_name}-public-${var.region}c"
+  } 
+}
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
@@ -50,10 +70,7 @@ module "vpc" {
     "kubernetes.io/role/elb" = "1"
   }
 }
-locals {
 
-node_final_name = "${var.cluster_name}-node-group"
-}
 module "eks" {
   source       = "terraform-aws-modules/eks/aws"
   cluster_name = var.cluster_name
@@ -68,18 +85,42 @@ module "eks" {
   }
 
   node_groups = {
-    main = {
-      name = var.customize_node_group_name == "yes" ? var.node_group_name : local.node_final_name
-      desired_capacity = var.desired_capacity
+    main_a = {
+      name = var.node_group_name_a
+      desired_capacity = var.desired_capacity_a
       max_capacity     = var.max_capacity
-      min_capacity     = var.min_capacity
-      instance_type    = var.instance_type
-
+      min_capacity     = var.min_capacity_a
+      instance_type    = var.upgrade_instance_type
+      subnets = data.aws_subnet_ids.a.ids
       k8s_labels = {
         Environment = "${var.cluster_name}-${var.region}"
       }
       additional_tags = var.tags
-    }
+    },
+      main_b = {
+      name = var.node_group_name_b
+      desired_capacity = var.desired_capacity_b
+      max_capacity     = var.max_capacity
+      min_capacity     = var.min_capacity_b
+      instance_type    = var.upgrade_instance_type
+      subnets = data.aws_subnet_ids.b.ids
+      k8s_labels = {
+        Environment = "${var.cluster_name}-${var.region}"
+      }
+      additional_tags = var.tags
+    },
+      main_c = {
+      name = var.node_group_name_c
+      desired_capacity = var.desired_capacity_c
+      max_capacity     = var.max_capacity
+      min_capacity     = var.min_capacity_c
+      instance_type    = var.upgrade_instance_type
+      subnets = data.aws_subnet_ids.c.ids
+      k8s_labels = {
+        Environment = "${var.cluster_name}-${var.region}"
+      }
+      additional_tags = var.tags
+    },
   }
 
   cluster_version  = var.cluster_version
