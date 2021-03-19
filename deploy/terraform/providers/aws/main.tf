@@ -85,18 +85,6 @@ module "eks" {
   }
 
   node_groups = {
-    # main = {
-    #   name = var.customize_node_group_name == "yes" ? var.node_group_name : local.node_final_name
-    #   desired_capacity = var.desired_capacity
-    #   max_capacity     = var.max_capacity
-    #   min_capacity     = var.min_capacity
-    #   instance_type    = var.instance_type
-
-    #   k8s_labels = {
-    #     Environment = "${var.cluster_name}-${var.region}"
-    #   }
-    #   additional_tags = var.tags
-    # },
     main_a = {
       name = var.node_group_name_a
       desired_capacity = var.desired_capacity_a
