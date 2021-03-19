@@ -24,9 +24,14 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/syndtr/goleveldb/leveldb"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"go.uber.org/zap"
+)
+
+const (
+	cosmosLevelDBKey = "cosmosLastProcessedBlock"
 )
 
 // TODO: Move relay functionality out of CosmosSub into a new Relayer parent struct
@@ -38,17 +43,19 @@ type CosmosSub struct {
 	EthProvider             string
 	RegistryContractAddress common.Address
 	PrivateKey              *ecdsa.PrivateKey
+	DB                      *leveldb.DB
 	SugaredLogger           *zap.SugaredLogger
 }
 
 // NewCosmosSub initializes a new CosmosSub
 func NewCosmosSub(tmProvider, ethProvider string, registryContractAddress common.Address,
-	privateKey *ecdsa.PrivateKey, sugaredLogger *zap.SugaredLogger) CosmosSub {
+	privateKey *ecdsa.PrivateKey, db *leveldb.DB, sugaredLogger *zap.SugaredLogger) CosmosSub {
 	return CosmosSub{
 		TmProvider:              tmProvider,
 		EthProvider:             ethProvider,
 		RegistryContractAddress: registryContractAddress,
 		PrivateKey:              privateKey,
+		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}
 }
@@ -76,9 +83,9 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 
 	defer client.Stop() //nolint:errcheck
 
-	// Subscribe to all tendermint transactions
-	query := "tm.event = 'Tx'"
-	out, err := client.Subscribe(context.Background(), "test", query, 1000)
+	// Subscribe to all new blocks
+	query := "tm.event = 'NewBlock'"
+	results, err := client.Subscribe(context.Background(), "test", query, 1000)
 	if err != nil {
 		sub.SugaredLogger.Errorw("sifchain client failed to subscribe to query.",
 			errorMessageKey, err.Error(),
@@ -99,35 +106,76 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	defer close(quit)
 
+	var lastProcessedBlock int64
+
+	data, err := sub.DB.Get([]byte(cosmosLevelDBKey), nil)
+	if err != nil {
+		log.Println("Error getting the last cosmos block from level db", err)
+		lastProcessedBlock = 0
+	} else {
+		lastProcessedBlock = new(big.Int).SetBytes(data).Int64()
+	}
+
 	for {
 		select {
-		case result := <-out:
-			tx, ok := result.Data.(tmTypes.EventDataTx)
+		case <-quit:
+			log.Println("we receive the quit signal and exit")
+			return
+
+		case e := <-results:
+			data, ok := e.Data.(tmTypes.EventDataNewBlock)
 			if !ok {
 				sub.SugaredLogger.Errorw("sifchain client failed to extract event data from new block.",
-					"EventDataNewBlock", fmt.Sprintf("%v", result.Data))
+					"EventDataNewBlock", fmt.Sprintf("%v", e.Data))
 			}
+			blockHeight := data.Block.Height
 
+			// Just start from current block number if never process any block before
+			if lastProcessedBlock == 0 {
+				lastProcessedBlock = blockHeight
+			}
 			sub.SugaredLogger.Infow("new transaction witnessed in sifchain client.")
 
-			// Iterate over each event in the transaction
-			for _, event := range tx.Result.Events {
-				claimType := getOracleClaimType(event.GetType())
+			startBlockHeight := lastProcessedBlock + 1
+			sub.SugaredLogger.Infow("cosmos process events for blocks.",
+				"startingBlockHeight", startBlockHeight, "currentBlockHeight", blockHeight)
 
-				switch claimType {
-				case types.MsgBurn, types.MsgLock:
-					cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
-					if err != nil {
-						sub.SugaredLogger.Errorw("sifchain client failed in get message from event.",
-							errorMessageKey, err.Error())
-						continue
-					}
-					// Parse event data, then package it as a ProphecyClaim and relay to the Ethereum Network
-					sub.handleBurnLockMsg(cosmosMsg, claimType)
+			for blockNumber := startBlockHeight; blockNumber <= blockHeight; {
+				tmpBlockNumber := blockNumber
+				block, err := client.BlockResults(&tmpBlockNumber)
+
+				if err != nil {
+					sub.SugaredLogger.Errorw("sifchain client failed to get a block.",
+						errorMessageKey, err.Error())
+					continue
 				}
+
+				for _, log := range block.TxsResults {
+					for _, event := range log.Events {
+
+						claimType := getOracleClaimType(event.GetType())
+
+						switch claimType {
+						case types.MsgBurn, types.MsgLock:
+							cosmosMsg, err := txs.BurnLockEventToCosmosMsg(claimType, event.GetAttributes(), sub.SugaredLogger)
+							if err != nil {
+								sub.SugaredLogger.Errorw("sifchain client failed in get message from event.",
+									errorMessageKey, err.Error())
+								continue
+							}
+							sub.handleBurnLockMsg(cosmosMsg, claimType)
+						}
+					}
+				}
+
+				lastProcessedBlock = blockNumber
+				err = sub.DB.Put([]byte(cosmosLevelDBKey), big.NewInt(lastProcessedBlock).Bytes(), nil)
+				if err != nil {
+					// if you can't write to leveldb, then error out as something is seriously amiss
+					log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
+				}
+				blockNumber++
 			}
-		case <-quit:
-			return
 		}
 	}
 }

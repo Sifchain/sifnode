@@ -115,12 +115,14 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 		return err
 	}
 
-	coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
-	err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
-	if err != nil {
-		sugaredLogger.Errorw("failed to send ceth from module to account.",
-			errorMessageKey, err.Error())
-		return err
+	if k.IsCethReceiverAccountSet(ctx) {
+		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+		err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
+		if err != nil {
+			sugaredLogger.Errorw("failed to send ceth from module to account.",
+				errorMessageKey, err.Error())
+			return err
+		}
 	}
 
 	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
@@ -146,12 +148,14 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 		return err
 	}
 
-	coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
-	err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
-	if err != nil {
-		sugaredLogger.Errorw("failed to transfer ceth from module to account.",
-			errorMessageKey, err.Error())
-		return err
+	if k.IsCethReceiverAccountSet(ctx) {
+		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+		err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
+		if err != nil {
+			sugaredLogger.Errorw("failed to transfer ceth from module to account.",
+				errorMessageKey, err.Error())
+			return err
+		}
 	}
 
 	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))

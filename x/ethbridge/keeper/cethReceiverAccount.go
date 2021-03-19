@@ -18,6 +18,11 @@ func (k Keeper) IsCethReceiverAccount(ctx sdk.Context, cethReceiverAccount sdk.A
 	return bytes.Equal(account, cethReceiverAccount)
 }
 
+func (k Keeper) IsCethReceiverAccountSet(ctx sdk.Context) bool {
+	account := k.GetCethReceiverAccount(ctx)
+	return len(account) != 0
+}
+
 func (k Keeper) GetCethReceiverAccount(ctx sdk.Context) (cethReceiverAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.CethReceiverAccountPrefix
