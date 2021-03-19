@@ -7,10 +7,10 @@ import "sifnode/clp/v1/types.proto";
 option go_package = "github.com/sifchain/sifnode/x/clp/types";
 
 service Query {
-  rpc GetPool(QueryReqGetPoolRequest) returns (QueryReqGetPoolResponse);
-  rpc LiquidityProvider(QueryReqLiquidityProviderRequest) returns (QueryReqLiquidityProviderResponse);
-  rpc GetAssetList(QueryReqGetAssetListRequest) returns (QueryReqGetAssetListResponse);
-  rpc GetLiquidityProviderList(QueryReqGetLiquidityProviderListRequest) returns (QueryReqGetLiquidityProviderListResponse);
+  rpc QueryGetPool(QueryReqGetPoolRequest) returns (QueryReqGetPoolResponse);
+  rpc QueryLiquidityProvider(QueryReqLiquidityProviderRequest) returns (QueryReqLiquidityProviderResponse);
+  rpc QueryGetAssetList(QueryReqGetAssetListRequest) returns (QueryReqGetAssetListResponse);
+  rpc QueryGetLiquidityProviderList(QueryReqGetLiquidityProviderListRequest) returns (QueryReqGetLiquidityProviderListResponse);
 }
 
 message QueryReqGetPoolRequest {

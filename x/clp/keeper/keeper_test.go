@@ -129,7 +129,7 @@ func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 
 func TestKeeper_GetModuleAccount(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
-	moduleAccount := keeper.GetAuthKeeper().GetModuleAccount(ctx, clp.ModuleName)
+	moduleAccount := keeper.GetAuthKeeper().GetModuleAccount(ctx, types.ModuleName)
 	assert.Equal(t, moduleAccount.GetName(), types.ModuleName)
 	assert.Equal(t, moduleAccount.GetPermissions(), []string{authtypes.Burner, authtypes.Minter})
 }

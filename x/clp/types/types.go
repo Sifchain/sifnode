@@ -57,12 +57,12 @@ func NewPoolResponse(pool Pool, height int64, address string) PoolResponse {
 }
 
 type PoolsResponse struct {
-	Pools
-	ClpModuleAddress string `json:"clp_module_address"`
-	Height           int64  `json:"height"`
+	Pools            []*Pool `json:"pools"`
+	ClpModuleAddress string  `json:"clp_module_address"`
+	Height           int64   `json:"height"`
 }
 
-func NewPoolsResponse(pools Pools, height int64, address string) PoolsResponse {
+func NewPoolsResponse(pools []*Pool, height int64, address string) PoolsResponse {
 	return PoolsResponse{Pools: pools, Height: height, ClpModuleAddress: address}
 }
 
