@@ -3,10 +3,13 @@
 #
 FROM golang:1.15 AS build
 
+ARG chainnet
+
 ENV GOBIN=/go/bin
 ENV GOPATH=/go
 ENV CGO_ENABLED=0
 ENV GOOS=linux
+ENV CHAINNET=$chainnet
 
 # Empty dir for the db data
 RUN mkdir /data
@@ -17,7 +20,7 @@ RUN go mod download
 
 COPY . .
 
-RUN make install
+RUN CHAINNET=$CHAINNET make install
 
 #
 # Main

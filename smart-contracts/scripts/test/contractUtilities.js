@@ -1,3 +1,5 @@
+const BN = require('bn.js');
+
 function buildProvider(context, argv, logging) {
     const HDWalletProvider = context.require("@truffle/hdwallet-provider");
     const Web3 = context.require("web3");
@@ -82,4 +84,18 @@ function buildContract(context, argv, logging, name, address) {
     return contract.at(address);
 }
 
-module.exports = {buildProvider, buildContract, buildBaseContract, buildWeb3};
+async function setAllowance(context, coinDenom, amount, argv, logging, requestParameters) {
+    const sifchainUtilities = context.require('./sifchainUtilities');
+
+    if (coinDenom != sifchainUtilities.NULL_ADDRESS) {
+        const newToken = await buildContract(context, argv, logging, "BridgeToken", coinDenom);
+        const currentAllowance = await newToken.allowance(argv.ethereum_address, argv.bridgebank_address, requestParameters);
+        logging.info(`currentAllowance is ${currentAllowance}, amount is ${amount}, ${amount.toString(10)}`);
+        if (new BN(currentAllowance).lt(new BN(amount))) {
+            const approveResult = await newToken.approve(argv.bridgebank_address, sifchainUtilities.SOLIDITY_MAX_INT, requestParameters);
+            logging.info(`approve result is ${JSON.stringify(approveResult)}`);
+        }
+    }
+}
+
+module.exports = {buildProvider, buildContract, buildBaseContract, buildWeb3, setAllowance};

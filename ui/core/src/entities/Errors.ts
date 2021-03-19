@@ -4,7 +4,7 @@ export enum ErrorCode {
   USER_REJECTED,
   UNKNOWN_FAILURE,
   INSUFFICIENT_FUNDS,
-  TX_FAILED_OUT_OF_GAS
+  TX_FAILED_OUT_OF_GAS,
 }
 
 const ErrorMessages = {

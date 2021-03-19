@@ -7,11 +7,14 @@ assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Current behavior**
+Please describe the issue you are facing.
 
-**Bug Reproduction Steps**
-A clear and concise description of what you expected to happen and what actually occurred
+**Expected behavior**
+Please describe what you were expecting to happen when performing your operation.
+
+**Steps to reproduce**
+Please provide an itemized list of steps we can take in order to reproduce the issue
 
 Identify exact point in reproduction steps where expectation is violated
 
@@ -24,9 +27,17 @@ But D occurs instead
 
 It is implied that fixing the issue means C will have occur after A and B.  
 
+**What tokens are you interacting with when this issue occurs?**
+Please list the "From" and "To" tokens (eg. From: cETH, To: Rowan
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
+
+**Ethereum (If applicable) : Please provide relevant info**
+Eg. Your Ethereum address, tx hash (EtherScan link)
+
+**Sifchain (If applicable) : Please provide relevant info**
+Eg. Your Sifchain address, link to tx on block explorer
 
 **Additional context**
 Add any other context about the problem here.
@@ -43,8 +54,6 @@ Add a clear title that includes a relevant area of the code (for example: [Peggy
 
 Format issue in markdown
 
-Include links to relevant code on Github for easy search or copy code snippets
+Where possible, include links to relevant code on Github for easy search or copy code snippets
 
-Include code snippets from the command line to easily search
-
-Do not include irrelevant code snippets from the code or the command line so an issue solver can focus more clearly
+Where possible, include code snippets from the command line to easily search
