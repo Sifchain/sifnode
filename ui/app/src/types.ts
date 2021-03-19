@@ -5,4 +5,5 @@ export type ConfirmState =
   | "signing"
   | "confirmed"
   | "rejected"
+  | "out_of_gas"
   | "failed";

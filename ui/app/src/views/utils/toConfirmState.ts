@@ -15,5 +15,6 @@ export function toConfirmState(tx: TransactionStatus["state"]): ConfirmState {
     rejected: "rejected" as const,
     completed: "confirmed" as const,
     failed: "failed" as const,
+    out_of_gas: "out_of_gas" as const,
   }[tx];
 }
