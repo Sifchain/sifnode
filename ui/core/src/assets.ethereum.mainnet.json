@@ -447,6 +447,76 @@
       "priceUsd": 0.4111,
       "symbol": "ogn",
       "transferLimit": "99999999999999999999999"
-    }
+    },
+    {
+      "address": "0xd82bb924a1707950903e2c0a619824024e254cd1",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12782/small/logocircle.png?1611944557",
+      "name": "DAOfi",
+      "network": "ethereum",
+      "priceUsd": 1.0500,
+      "symbol": "daofi",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0x3e9bc21c9b189c09df3ef1b824798658d5011937",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12509/small/linear.jpg?1606884470",
+      "name": "Linear",
+      "network": "ethereum",
+      "priceUsd": 0.1706,
+      "symbol": "lina",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0x525794473f7ab5715c81d06d10f52d11cc052804",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/9351/small/12ships.png?1566485390",
+      "name": "12Ships",
+      "network": "ethereum",
+      "priceUsd": 0.0318,
+      "symbol": "tshp",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0xc4de189abf94c57f396bd4c52ab13b954febefd8",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/13803/small/b20.png?1611996305",
+      "name": "B.20",
+      "network": "ethereum",
+      "priceUsd": 9.0934,
+      "symbol": "b20",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0x8ab7404063ec4dbcfd4598215992dc3f8ec853d7",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/3328/small/Akropolis.png?1547037929",
+      "name": "Akropolis",
+      "network": "ethereum",
+      "priceUsd": 0.0670,
+      "symbol": "akro",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0xaf9f549774ecedbd0966c52f250acc548d3f36e5",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12623/small/RFUEL_SQR.png?1602481093",
+      "name": "Rio Fuel Token",
+      "network": "ethereum",
+      "priceUsd": 0.1596,
+      "symbol": "rfuel",
+      "transferLimit": "99999999999999999999999"
+    },
+    {
+      "address": "0xf1f955016ecbcd7321c7266bccfb96c68ea5e49b",
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12843/small/image.png?1611212077",
+      "name": "Rally",
+      "network": "ethereum",
+      "priceUsd": 1.1100,
+      "symbol": "rly",
+      "transferLimit": "99999999999999999999999"
+    }        
   ]
 }
