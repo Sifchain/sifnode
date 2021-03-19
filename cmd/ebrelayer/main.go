@@ -9,6 +9,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Sifchain/sifnode/app"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
+	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -16,13 +20,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/tendermint/tendermint/libs/cli"
 	"go.uber.org/zap"
-
-	"github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/relayer"
-	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 )
 
 var cdc *codec.Codec
@@ -31,7 +31,8 @@ const (
 	// FlagRPCURL defines the URL for the tendermint RPC connection
 	FlagRPCURL = "rpc-url"
 	// EnvPrefix defines the environment prefix for the root cmd
-	EnvPrefix = "EBRELAYER"
+	EnvPrefix   = "EBRELAYER"
+	levelDbFile = "relayerdb"
 )
 
 func init() {
@@ -110,8 +111,16 @@ func generateBindingsCmd() *cobra.Command {
 
 // RunInitRelayerCmd executes initRelayerCmd
 func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
-	tmpRPCURL := viper.GetString(FlagRPCURL)
-	fmt.Printf("rpcRUL is  %v \n", tmpRPCURL)
+	// Open the level db
+	db, err := leveldb.OpenFile(levelDbFile, nil)
+	if err != nil {
+		log.Fatal("Error opening leveldb: ", err)
+	}
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Println("db.Close filed: ", err.Error())
+		}
+	}()
 
 	// Load the validator's Ethereum private key from environment variables
 	privateKey, err := txs.LoadPrivateKey()
@@ -175,12 +184,12 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
 	ethSub, err := relayer.NewEthereumSub(inBuf, rpcURL, cdc, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, mnemonic, sugaredLogger)
+		contractAddress, privateKey, mnemonic, db, sugaredLogger)
 	if err != nil {
 		return err
 	}
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, db, sugaredLogger)
 
 	waitForAll := sync.WaitGroup{}
 	waitForAll.Add(2)

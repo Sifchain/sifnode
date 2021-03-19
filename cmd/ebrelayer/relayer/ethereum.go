@@ -41,7 +41,7 @@ import (
 const (
 	transactionInterval = 10 * time.Second
 	trailingBlocks      = 50
-	levelDbFile         = "relayerdb"
+	ethLevelDBKey       = "ethereumLastProcessedBlock"
 )
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
@@ -57,6 +57,7 @@ type EthereumSub struct {
 	PrivateKey              *ecdsa.PrivateKey
 	TempPassword            string
 	EventsBuffer            types.EthEventBuffer
+	DB                      *leveldb.DB
 	SugaredLogger           *zap.SugaredLogger
 }
 
@@ -74,7 +75,7 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keys.Keybase, keys
 
 // NewEthereumSub initializes a new EthereumSub
 func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorMoniker, chainID, ethProvider string,
-	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
+	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
 
 	tempPassword, _ := password.Generate(32, 5, 0, false, false)
 	keybase, info, err := NewKeybase(validatorMoniker, mnemonic, tempPassword)
@@ -109,6 +110,7 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorM
 		PrivateKey:              privateKey,
 		TempPassword:            tempPassword,
 		EventsBuffer:            types.NewEthEventBuffer(),
+		DB:                      db,
 		SugaredLogger:           sugaredLogger,
 	}, nil
 }
@@ -190,32 +192,15 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 	}
 	defer subHead.Unsubscribe()
 
-	db, err := leveldb.OpenFile(levelDbFile, nil)
-	if err != nil {
-		sub.SugaredLogger.Errorw("failed to open level db.",
-			errorMessageKey, err.Error())
-		return
-	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			sub.SugaredLogger.Errorw("failed to close level db.",
-				errorMessageKey, err.Error())
-		}
-	}()
-
-	ethLevelDBKey := "ethereumLastProcessedBlock"
 	var lastProcessedBlock *big.Int
 
-	var catchUpNeeded bool
-	data, err := db.Get([]byte(ethLevelDBKey), nil)
+	data, err := sub.DB.Get([]byte(ethLevelDBKey), nil)
 	if err != nil {
 		sub.SugaredLogger.Errorw("failed to get the last ethereum block from level db.",
 			errorMessageKey, err.Error())
 		lastProcessedBlock = big.NewInt(0)
-		catchUpNeeded = false
 	} else {
 		lastProcessedBlock = new(big.Int).SetBytes(data)
-		catchUpNeeded = true
 	}
 
 	for {
@@ -247,11 +232,6 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			// If the last processed block is the default (0), then go and set it to the difference of ending block minus 1
 			// The user who starts this must provide a valid last processed block
 			if lastProcessedBlock.Cmp(big.NewInt(0)) == 0 {
-				lastProcessedBlock.Sub(endingBlock, big.NewInt(1))
-			} else if catchUpNeeded {
-				// if we need to catch up, then do that and let the relayer know that we don't need to catch up again
-				catchUpNeeded = false
-			} else {
 				lastProcessedBlock = endingBlock
 			}
 
@@ -307,11 +287,12 @@ func (sub EthereumSub) Start(completionEvent *sync.WaitGroup) {
 			// add 1 to the current block so we don't reprocess it
 			endingBlock = endingBlock.Add(endingBlock, big.NewInt(1))
 			// save the current ending block + 1 to the lastprocessed block to ensure we keep reading blocks sequentially and don't repeat blocks
-			err = db.Put([]byte(ethLevelDBKey), endingBlock.Bytes(), nil)
+			err = sub.DB.Put([]byte(ethLevelDBKey), endingBlock.Bytes(), nil)
 			if err != nil {
 				// if you can't write to leveldb, then error out as something is seriously amiss
 				log.Fatalf("Error saving lastProcessedBlock to leveldb: %v", err)
 			}
+			lastProcessedBlock = endingBlock
 		}
 	}
 }

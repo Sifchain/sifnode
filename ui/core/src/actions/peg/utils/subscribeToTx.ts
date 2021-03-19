@@ -66,7 +66,7 @@ export function SubscribeToTx({
       unsubscribe();
     });
 
-    tx.onError(err => {
+    tx.onError((err) => {
       storeSetTxStatus(tx.hash, {
         hash: tx.hash || "",
         memo: "Transaction Failed",
