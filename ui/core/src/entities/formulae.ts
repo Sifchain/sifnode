@@ -196,7 +196,7 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
   const term2 = X.times(Y);
   const underRoot = Y.times(Y.minus(S.times(4)));
   const term3 = X.times(underRoot.sqrt());
-  const numerator = term1.plus(term2).minus(term3);  //t2-t1-t3
+  const numerator = term1.plus(term2).minus(term3); //t2-t1-t3
   const denominator = S.times(2);
   const x = numerator.div(denominator);
   return x.gte(Big("0")) ? x : Big("0");
