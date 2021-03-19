@@ -265,14 +265,17 @@ export default defineComponent({
       },
       handleFromMaxClicked() {
         selectedField.value = "from";
+        lastFocusedTokenField.value = "A";
         const accountBalance = balances.value.find(
           (balance) => balance.asset.symbol === fromSymbol.value,
         );
+
         if (!accountBalance) return;
         fromAmount.value = accountBalance.toFixed();
       },
       handleToMaxClicked() {
         selectedField.value = "to";
+        lastFocusedTokenField.value = "B";
         const accountBalance = balances.value.find(
           (balance) => balance.asset.symbol === toSymbol.value,
         );
@@ -287,6 +290,9 @@ export default defineComponent({
         let status = "danger";
         // TODO - Needs to us IFraction
         // TODO - This conditional needs rethinking
+        if (asyncPooling.value) {
+          return "";
+        }
         if (Number(riskFactor.value.toFixed(8)) <= 0.2) {
           status = "warning";
         }
@@ -496,7 +502,7 @@ export default defineComponent({
   path,
   circle,
   rect {
-    fill: yellow !important;
+    fill: #cccc0e !important;
   }
 }
 .icon-risk-status-warning::v-deep {
