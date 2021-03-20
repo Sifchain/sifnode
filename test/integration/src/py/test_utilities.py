@@ -274,7 +274,7 @@ def wait_for_balance(balance_fn, target_balance, max_seconds=80, debug_prefix=""
             else:
                 difference = target_balance - balance
                 logging.debug(
-                    f"waiting for target balance {debug_prefix}: {target_balance}, current balance is {balance}, difference is {difference} ({difference / 10 ** 18})"
+                    f"waiting for target balance {debug_prefix} balance: {target_balance}, current balance is {balance}, difference is {difference} ({difference / 10 ** 18}), remaining time: {done_at_time - time.time()}"
                 )
                 time.sleep(1)
 
@@ -283,7 +283,8 @@ def wait_for_eth_balance(transfer_request: EthereumToSifchainTransferRequest, ta
     wait_for_balance(
         lambda: get_eth_balance(transfer_request),
         int(target_balance),
-        max_seconds
+        max_seconds,
+        f"wait_for_eth_balance address: {transfer_request.ethereum_address} symbol: {transfer_request.ethereum_symbol}"
     )
 
 
