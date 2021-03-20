@@ -9,7 +9,7 @@ import {
 import Big from "big.js";
 import { useField } from "./useField";
 import { assetPriceMessage, trimZeros, useBalances } from "./utils";
-
+import { format } from "../utils/format";
 export enum SwapState {
   SELECT_TOKENS,
   ZERO_AMOUNTS,
@@ -20,7 +20,7 @@ export enum SwapState {
 }
 
 function calculateFormattedPriceImpact(pair: IPool, amount: AssetAmount) {
-  return trimZeros(pair.calcPriceImpact(amount).toFixed(18));
+  return trimZeros(format(pair.calcPriceImpact(amount), { mantissa: 18 }));
 }
 
 function calculateFormattedProviderFee(pair: IPool, amount: AssetAmount) {

@@ -1,16 +1,17 @@
 import Big from "big.js";
-import { Fraction, IFraction } from "./fraction/Fraction";
+// import { IAmount, Fraction } from "./fraction/Fraction";
+import { Amount, IAmount } from "./Amount";
 
 export function slipAdjustment(
-  r: IFraction, // Native amount added
-  a: IFraction, // External amount added
-  R: IFraction, // Native Balance (before)
-  A: IFraction, // External Balance (before)
-  P: IFraction, // existing Pool Units
-) {
+  r: IAmount, // Native amount added
+  a: IAmount, // External amount added
+  R: IAmount, // Native Balance (before)
+  A: IAmount, // External Balance (before)
+  P: IAmount, // existing Pool Units
+): IAmount {
   // slipAdjustment = ((R a - r A)/((r + R) (a + A)))
   const slipAdjDenominator = r.add(R).multiply(a.add(A));
-  let slipAdjustmentReciprocal: IFraction;
+  let slipAdjustmentReciprocal: IAmount;
   if (R.multiply(a).greaterThan(r.multiply(A))) {
     slipAdjustmentReciprocal = R.multiply(a)
       .subtract(r.multiply(A))
@@ -21,9 +22,8 @@ export function slipAdjustment(
       .subtract(R.multiply(a))
       .divide(slipAdjDenominator);
   }
-  console.log("slipAdjustmentReciprocal", slipAdjustmentReciprocal.toFixed(4));
   // (1 - ABS((R a - r A)/((2 r + R) (a + A))))
-  return new Fraction("1").subtract(slipAdjustmentReciprocal);
+  return Amount("1").subtract(slipAdjustmentReciprocal);
 }
 
 /**
@@ -36,37 +36,37 @@ export function slipAdjustment(
  * @returns
  */
 export function calculatePoolUnits(
-  r: IFraction, // Native amount added
-  a: IFraction, // External amount added
-  R: IFraction, // Native Balance (before)
-  A: IFraction, // External Balance (before)
-  P: IFraction, // existing Pool Units
+  r: IAmount, // Native amount added
+  a: IAmount, // External amount added
+  R: IAmount, // Native Balance (before)
+  A: IAmount, // External Balance (before)
+  P: IAmount, // existing Pool Units
 ) {
   if (A.equalTo("0") || R.equalTo("0") || P.equalTo("0")) {
     return r;
   }
 
   if (a.equalTo("0") && r.equalTo("0")) {
-    return new Fraction("0");
+    return Amount("0");
   }
 
   const slipAdjustmentCalc = slipAdjustment(r, a, R, A, P);
 
   // ((P (a R + A r))
   const numerator = P.multiply(a.multiply(R).add(A.multiply(r)));
-  const denominator = new Fraction("2").multiply(A).multiply(R);
+  const denominator = Amount("2").multiply(A).multiply(R);
 
   return numerator.divide(denominator).multiply(slipAdjustmentCalc);
 }
 
-function abs(num: Fraction) {
+function abs(num: IAmount) {
   if (num.lessThan("0")) {
     return num.multiply("-1");
   }
   return num;
 }
 
-const TEN_THOUSAND = new Fraction("10000");
+const TEN_THOUSAND = Amount("10000");
 
 export function calculateWithdrawal({
   poolUnits,
@@ -76,25 +76,25 @@ export function calculateWithdrawal({
   wBasisPoints,
   asymmetry,
 }: {
-  poolUnits: IFraction;
-  nativeAssetBalance: IFraction;
-  externalAssetBalance: IFraction;
-  lpUnits: IFraction;
-  wBasisPoints: IFraction;
-  asymmetry: IFraction;
+  poolUnits: IAmount;
+  nativeAssetBalance: IAmount;
+  externalAssetBalance: IAmount;
+  lpUnits: IAmount;
+  wBasisPoints: IAmount;
+  asymmetry: IAmount;
 }) {
-  let unitsToClaim = new Fraction("0");
+  let unitsToClaim = Amount("0");
   if (!wBasisPoints.equalTo("0")) {
     unitsToClaim = lpUnits.divide(TEN_THOUSAND.divide(wBasisPoints));
   }
 
-  let poolUnitsOverUnitsToClaim = new Fraction("0");
+  let poolUnitsOverUnitsToClaim = Amount("0");
   if (!unitsToClaim.equalTo("0")) {
     poolUnitsOverUnitsToClaim = poolUnits.divide(unitsToClaim);
   }
 
-  let withdrawExternalAssetAmountPreSwap = new Fraction("0");
-  let withdrawNativeAssetAmountPreSwap = new Fraction("0");
+  let withdrawExternalAssetAmountPreSwap = Amount("0");
+  let withdrawNativeAssetAmountPreSwap = Amount("0");
   if (!poolUnitsOverUnitsToClaim.equalTo("0")) {
     withdrawExternalAssetAmountPreSwap = externalAssetBalance.divide(
       poolUnitsOverUnitsToClaim,
@@ -109,7 +109,7 @@ export function calculateWithdrawal({
 
   const swapAmount = abs(
     asymmetry.equalTo("0")
-      ? new Fraction("0")
+      ? Amount("0")
       : asymmetry.lessThan("0")
       ? externalAssetBalance.divide(
           poolUnits.divide(unitsToClaim.divide(TEN_THOUSAND.divide(asymmetry))),
@@ -162,9 +162,9 @@ export function calculateWithdrawal({
  * @param Y Native Balance
  * @returns swapAmount
  */
-export function calculateSwapResult(x: IFraction, X: IFraction, Y: IFraction) {
+export function calculateSwapResult(x: IAmount, X: IAmount, Y: IAmount) {
   if (x.equalTo("0") || X.equalTo("0") || Y.equalTo("0")) {
-    return new Fraction("0");
+    return Amount("0");
   }
   const xPlusX = x.add(X);
   return x.multiply(X).multiply(Y).divide(xPlusX.multiply(xPlusX));
@@ -172,12 +172,12 @@ export function calculateSwapResult(x: IFraction, X: IFraction, Y: IFraction) {
 
 export function calculateExternalExternalSwapResult(
   // External -> Native pool
-  ax: IFraction, // Swap Amount
-  aX: IFraction, // External Balance
-  aY: IFraction, // Native Balance
+  ax: IAmount, // Swap Amount
+  aX: IAmount, // External Balance
+  aY: IAmount, // Native Balance
   // Native -> External pool
-  bX: IFraction, // External Balance
-  bY: IFraction, // Native Balance
+  bX: IAmount, // External Balance
+  bY: IAmount, // Native Balance
 ) {
   const ay = calculateSwapResult(ax, aX, aY);
   return calculateSwapResult(ay, bX, bY);
@@ -209,9 +209,9 @@ export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
  * @param Y Native Balance
  * @returns providerFee
  */
-export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
+export function calculateProviderFee(x: IAmount, X: IAmount, Y: IAmount) {
   if (x.equalTo("0") || X.equalTo("0") || Y.equalTo("0")) {
-    return new Fraction("0");
+    return Amount("0");
   }
   const xPlusX = x.add(X);
   return x.multiply(x).multiply(Y).divide(xPlusX.multiply(xPlusX));
@@ -223,9 +223,9 @@ export function calculateProviderFee(x: IFraction, X: IFraction, Y: IFraction) {
  * @param X External Balance
  * @returns
  */
-export function calculatePriceImpact(x: IFraction, X: IFraction) {
+export function calculatePriceImpact(x: IAmount, X: IAmount) {
   if (x.equalTo("0")) {
-    return new Fraction("0");
+    return Amount("0");
   }
   const denominator = x.add(X);
   return x.divide(denominator);

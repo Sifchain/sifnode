@@ -87,6 +87,12 @@ describe("format", () => {
       options: { mantissa: 7, shorthand: true, forceSign: true },
       expected: `+0.9999998`,
     },
+    {
+      input: "100000000000000000000",
+      decimals: 18,
+      options: { mantissa: 18 },
+      expected: `100.000000000000000000`,
+    },
   ];
 
   tests.forEach(({ only, skip, decimals, options, expected, input }) => {

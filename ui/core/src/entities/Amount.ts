@@ -5,7 +5,7 @@ import Big from "big.js";
 export type IAmount = {
   // for use by display lib and in testing
   toBigInt(): JSBI;
-  toString(): string;
+  toString(detailed?: boolean): string;
 
   // for use elsewhere
   add(other: IAmount | string): IAmount;
@@ -23,8 +23,11 @@ export type IAmount = {
 // exported ONLY to be shared with AssetAmount!
 export type _ExposeInternal<T extends IAmount> = T & {
   _toInternal(): IFraction;
+  _fromInternal(fraction: IFraction): IAmount;
 };
 
+function toFraction(a: string): string;
+function toFraction(a: IAmount | string): IFraction;
 function toFraction(a: IAmount | string): IFraction | string {
   type _IAmount = _ExposeInternal<IAmount>;
   if (typeof a === "string") return a;
@@ -36,7 +39,8 @@ function toBig(fraction: Fraction) {
 }
 
 function toAmount(a: IFraction) {
-  return Amount(a.quotient);
+  type _IAmount = _ExposeInternal<IAmount>;
+  return (Amount("0") as _IAmount)._fromInternal(a);
 }
 
 export function Amount(source: JSBI | bigint | string | IAmount): IAmount {
@@ -50,14 +54,14 @@ export function Amount(source: JSBI | bigint | string | IAmount): IAmount {
     return source;
   }
 
-  const fraction = new Fraction(source);
+  let fraction = new Fraction(source);
   const instance: _IAmount = {
     toBigInt() {
-      return fraction.quotient;
+      return getQuotientWithBankersRounding(fraction);
     },
 
-    toString() {
-      return fraction.toFixed(0);
+    toString(detailed?: boolean) {
+      return fraction.toFixed(detailed ? 18 : 0);
     },
 
     add(other) {
@@ -103,10 +107,53 @@ export function Amount(source: JSBI | bigint | string | IAmount): IAmount {
       return Amount(string);
     },
 
+    _fromInternal(_fraction: IFraction) {
+      fraction = _fraction;
+      return instance;
+    },
+
     _toInternal() {
       return fraction;
     },
   };
 
   return instance;
+}
+
+// quotient needs to use bankers rounding so we follow this example for bankers rounding in BigInt and apply to JSBI
+//https://stackoverflow.com/questions/53752370/ecmascript-bigint-round-to-even
+function getQuotientWithBankersRounding(fraction: IFraction): JSBI {
+  const a = fraction.numerator;
+  const b = fraction.denominator;
+
+  const aAbs = JSBI.greaterThan(a, JSBI.BigInt("0"))
+    ? a
+    : JSBI.multiply(JSBI.BigInt("-1"), a);
+
+  const bAbs = JSBI.greaterThan(b, JSBI.BigInt("0"))
+    ? b
+    : JSBI.multiply(JSBI.BigInt("-1"), b);
+
+  let result = JSBI.divide(aAbs, bAbs);
+
+  const rem = JSBI.remainder(aAbs, bAbs);
+
+  if (JSBI.greaterThan(JSBI.multiply(rem, JSBI.BigInt("2")), bAbs)) {
+    result = JSBI.add(result, JSBI.BigInt("1"));
+  } else if (JSBI.equal(JSBI.multiply(rem, JSBI.BigInt("2")), bAbs)) {
+    if (
+      JSBI.equal(JSBI.remainder(result, JSBI.BigInt("2")), JSBI.BigInt("1"))
+    ) {
+      result = JSBI.add(result, JSBI.BigInt("1"));
+    }
+  }
+
+  if (
+    JSBI.greaterThan(a, JSBI.BigInt("0")) !==
+    JSBI.greaterThan(b, JSBI.BigInt("0"))
+  ) {
+    return JSBI.multiply(JSBI.BigInt("-1"), result);
+  } else {
+    return result;
+  }
 }
