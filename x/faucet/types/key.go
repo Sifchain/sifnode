@@ -21,6 +21,7 @@ const (
 	MAINNET          = "mainnet"
 	TESTNET          = "testnet"
 	RequestCoinsType = "request_coins"
+	AddCoinsType     = "add_coins"
 )
 
 const (

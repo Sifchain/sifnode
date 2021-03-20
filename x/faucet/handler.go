@@ -67,8 +67,8 @@ func handleMsgRequestCoins(ctx sdk.Context, keeper Keeper, msg types.MsgRequestC
 // Handle the add coins message and send coins from the signers account to the module account.
 func handleMsgAddCoins(ctx sdk.Context, keeper Keeper, msg types.MsgAddCoins) (*sdk.Result, error) {
 	if ctx.ChainID() != "sifchain" {
-		bank := keeper.GetBankKeeper()
-		err := bank.SendCoins(ctx, msg.Signer, types.GetFaucetModuleAddress(), msg.Coins)
+		supply := keeper.GetSupplyKeeper()
+		err := supply.SendCoinsFromAccountToModule(ctx, msg.Signer, types.ModuleName, msg.Coins)
 		if err != nil {
 			return nil, errors.Wrap(err, types.ErrorAddingTokens.Error())
 		}

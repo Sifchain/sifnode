@@ -37,12 +37,12 @@ func (r SwapFeeChangeDecorator) AnteHandle(ctx types.Context, tx types.Tx, simul
 		}
 		// User is sending rowan , that means they already have rowan balance
 		if msg.SentAsset.Equals(GetSettlementAsset()) {
-			return types.Context{}, nil
+			return next(ctx, tx, simulate)
 		}
 		// The amount of Fee user agreed to pay
 		feeInRowan := feeTx.GetFee()
 		requiredRowan := feeInRowan.AmountOf(clpTypes.GetSettlementAsset().Symbol)
-		coinsBalance := r.ck.GetBankKeeper().GetCoins(ctx, payer)
+		coinsBalance := r.ck.GetBankKeeper().GetCoins(ctx, msg.Signer)
 		userRowan := coinsBalance.AmountOf(clpTypes.GetSettlementAsset().Symbol)
 
 		// Check if user does not have enough

@@ -68,7 +68,7 @@ func (msg MsgAddCoins) Route() string {
 }
 
 func (msg MsgAddCoins) Type() string {
-	return "add_coins"
+	return AddCoinsType
 }
 
 func (msg MsgAddCoins) ValidateBasic() error {

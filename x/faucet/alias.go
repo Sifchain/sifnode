@@ -14,6 +14,7 @@ const (
 	TESTNET           = types.TESTNET
 	MAINNET           = types.MAINNET
 	RequestCoinsType  = types.RequestCoinsType
+	AddCoinsType      = types.AddCoinsType
 )
 
 var (
