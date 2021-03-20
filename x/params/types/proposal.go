@@ -5,20 +5,19 @@ import (
 )
 
 const (
-	// ProposalTypeChange defines the type for a ParameterChangeProposal
+	// ProposalTypeAcceptDistribute defines the type for a AcceptDistributionProposal
 	ProposalTypeAcceptDistribute = "AcceptDistributionProposal"
 )
 
-// Assert ParameterChangeProposal implements govtypes.Content at compile-time
 var _ govtypes.Content = AcceptDistributionProposal{}
 
 func init() {
 	govtypes.RegisterProposalType(ProposalTypeAcceptDistribute)
-	govtypes.RegisterProposalTypeCodec(AcceptDistributionProposal{}, "cosmos-sdk/ParameterChangeProposal")
+	govtypes.RegisterProposalTypeCodec(AcceptDistributionProposal{}, "cosmos-sdk/AcceptDistributionProposal")
 }
 
-// ParameterChangeProposal defines a proposal which contains multiple parameter
-// changes.
+// AcceptDistributionProposal defines a proposal ,the resultof which would be distribution of mining rewards
+
 type AcceptDistributionProposal struct {
 	Title       string `json:"title" yaml:"title"`
 	Description string `json:"description" yaml:"description"`
@@ -29,23 +28,23 @@ func (adp AcceptDistributionProposal) String() string {
 	return adp.Title
 }
 
-func NewParameterChangeProposal(title, description string, changes string) AcceptDistributionProposal {
+func NewAcceptDistributionProposal(title, description string, changes string) AcceptDistributionProposal {
 	return AcceptDistributionProposal{title, description, changes}
 }
 
-// GetTitle returns the title of a parameter change proposal.
+// GetTitle returns the title of aAcceptDistributionProposal
 func (adp AcceptDistributionProposal) GetTitle() string { return adp.Title }
 
-// GetDescription returns the description of a parameter change proposal.
+// GetDescription returns the description of a AcceptDistributionProposal
 func (adp AcceptDistributionProposal) GetDescription() string { return adp.Description }
 
-// ProposalRoute returns the routing key of a parameter change proposal.
+// ProposalRoute returns the routing key of a AcceptDistributionProposal
 func (adp AcceptDistributionProposal) ProposalRoute() string { return RouterKey }
 
-// ProposalType returns the type of a parameter change proposal.
+// ProposalType returns the type of a AcceptDistributionProposal
 func (adp AcceptDistributionProposal) ProposalType() string { return ProposalTypeAcceptDistribute }
 
-// ValidateBasic validates the parameter change proposal
+// ValidateBasic validates the AcceptDistributionProposal
 func (adp AcceptDistributionProposal) ValidateBasic() error {
 	return nil
 }
