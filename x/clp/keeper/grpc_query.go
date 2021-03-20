@@ -8,19 +8,19 @@ import (
 
 var _ types.QueryServer = Keeper{}
 
-func (q Keeper) QueryGetPool(ctx context.Context, req *types.QueryReqGetPoolRequest) (*types.QueryReqGetPoolResponse, error) {
+func (q Keeper) QueryGetPool(ctx context.Context, req *types.QueryGetPoolRequest) (*types.QueryGetPoolResponse, error) {
 	return nil, nil
 }
 
-func (q Keeper) QueryLiquidityProvider(ctx context.Context, req *types.QueryReqLiquidityProviderRequest) (*types.QueryReqLiquidityProviderResponse, error) {
+func (q Keeper) QueryLiquidityProvider(ctx context.Context, req *types.QueryLiquidityProviderRequest) (*types.QueryLiquidityProviderResponse, error) {
 
 	return nil, nil
 }
 
-func (q Keeper) QueryGetAssetList(ctx context.Context, req *types.QueryReqGetAssetListRequest) (*types.QueryReqGetAssetListResponse, error) {
+func (q Keeper) QueryGetAssetList(ctx context.Context, req *types.QueryGetAssetListRequest) (*types.QueryGetAssetListResponse, error) {
 	return nil, nil
 }
 
-func (q Keeper) QueryGetLiquidityProviderList(ctx context.Context, req *types.QueryReqGetLiquidityProviderListRequest) (*types.QueryReqGetLiquidityProviderListResponse, error) {
+func (q Keeper) QueryGetLiquidityProviderList(ctx context.Context, req *types.QueryGetLiquidityProviderListRequest) (*types.QueryGetLiquidityProviderListResponse, error) {
 	return nil, nil
 }
