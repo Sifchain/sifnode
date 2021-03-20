@@ -72,18 +72,20 @@ describe("AssetAmount", () => {
       ).toBe(true);
     });
 
-    test("floors remainder", () => {
+    test("bankers rounding", () => {
       expect(
         AssetAmount("eth", "30")
           .divide(AssetAmount("eth", "20"))
-          .equalTo(AssetAmount("eth", "1")),
-      ).toBe(true);
+          .toBigInt()
+          .toString(),
+      ).toBe("2");
 
       expect(
         AssetAmount("eth", "30")
           .divide(AssetAmount("eth", "40"))
-          .equalTo(AssetAmount("eth", "0")),
-      ).toBe(true);
+          .toBigInt()
+          .toString(),
+      ).toBe("1");
     });
   });
 

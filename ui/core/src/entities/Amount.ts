@@ -35,7 +35,7 @@ function toFraction(a: IAmount | string): IFraction | string {
 }
 
 function toBig(fraction: Fraction) {
-  return Big(fraction.toFixed(0));
+  return Big(fraction.toFixed(18));
 }
 
 function toAmount(a: IFraction) {
@@ -56,6 +56,7 @@ export function Amount(source: JSBI | bigint | string | IAmount): IAmount {
 
   let fraction = new Fraction(source);
   const instance: _IAmount = {
+    // We only loose precision and round when we move to BigInt for display
     toBigInt() {
       return getQuotientWithBankersRounding(fraction);
     },

@@ -1,5 +1,6 @@
 import { IAmount, Amount, _ExposeInternal } from "./Amount";
 import { IAsset, Asset } from "./Asset";
+import { IFraction } from "./fraction/Fraction";
 
 export type IAssetAmount = Readonly<IAsset> & IAmount;
 
@@ -91,6 +92,10 @@ export function AssetAmount(
 
     _toInternal() {
       return (_amount as _ExposeInternal<IAmount>)._toInternal();
+    },
+
+    _fromInternal(internal: IFraction) {
+      return (_amount as _ExposeInternal<IAmount>)._fromInternal(internal);
     },
   };
   return instance;
