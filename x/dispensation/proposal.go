@@ -1,4 +1,4 @@
-package types
+package dispensation
 
 import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"

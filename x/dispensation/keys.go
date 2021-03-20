@@ -1,4 +1,4 @@
-package types
+package dispensation
 
 const (
 	// ModuleName defines the name of the module
