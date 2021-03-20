@@ -31,13 +31,13 @@ export default ({
     // Update lp pools
     if (state.address) {
       const accountPoolSymbols = await api.ClpService.getPoolSymbolsByLiquidityProvider(
-        state.address
+        state.address,
       );
 
       // This is a hot method when there are a heap of pools
       // Ideally we would have a better rest endpoint design
 
-      accountPoolSymbols.forEach(async symbol => {
+      accountPoolSymbols.forEach(async (symbol) => {
         const lp = await api.ClpService.getLiquidityProvider({
           symbol,
           lpAddress: state.address,
@@ -51,14 +51,14 @@ export default ({
       });
 
       // Delete accountpools
-      const currentPoolIds = accountPoolSymbols.map(id => `${id}_rowan`);
+      const currentPoolIds = accountPoolSymbols.map((id) => `${id}_rowan`);
       if (store.accountpools[state.address]) {
         const existingPoolIds = Object.keys(store.accountpools[state.address]);
         const disjunctiveIds = existingPoolIds.filter(
-          id => !currentPoolIds.includes(id)
+          (id) => !currentPoolIds.includes(id),
         );
 
-        disjunctiveIds.forEach(poolToRemove => {
+        disjunctiveIds.forEach((poolToRemove) => {
           delete store.accountpools[state.address][poolToRemove];
         });
       }
@@ -99,7 +99,7 @@ export default ({
     async swap(
       sentAmount: AssetAmount,
       receivedAsset: Asset,
-      minimumReceived: AssetAmount
+      minimumReceived: AssetAmount,
     ) {
       if (!state.address) throw "No from address provided for swap";
 
@@ -127,13 +127,13 @@ export default ({
 
     async addLiquidity(
       nativeAssetAmount: AssetAmount,
-      externalAssetAmount: AssetAmount
+      externalAssetAmount: AssetAmount,
     ) {
       if (!state.address) throw "No from address provided for swap";
       const hasPool = !!findPool(
         store.pools,
         nativeAssetAmount.asset.symbol,
-        externalAssetAmount.asset.symbol
+        externalAssetAmount.asset.symbol,
       );
 
       const provideLiquidity = hasPool
@@ -162,7 +162,7 @@ export default ({
     async removeLiquidity(
       asset: Asset,
       wBasisPoints: string,
-      asymmetry: string
+      asymmetry: string,
     ) {
       const tx = await api.ClpService.removeLiquidity({
         fromAddress: state.address,

@@ -78,4 +78,3 @@ export default defineComponent({
   padding-top: 4rem; /* take into account header for centering */
 }
 </style>
-

@@ -1,5 +1,8 @@
 <template>
-  <div v-if="show" v-bind:class="{ [`status-${status}`]: true, 'price-calculation': true }">
+  <div
+    v-if="show"
+    v-bind:class="{ [`status-${status}`]: true, 'price-calculation': true }"
+  >
     <div class="pool-share">
       <h4 class="pool-share-title text--left"><slot name="header"></slot></h4>
       <div class="pool-share-details">
@@ -30,7 +33,7 @@ export default defineComponent({
   border: 1px solid orange;
 }
 .status-bad {
-  border: 1px solid yellow;
+  border: 1px solid #cccc0e;
 }
 
 .pool-share {

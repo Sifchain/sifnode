@@ -85,7 +85,13 @@ This creates a new sifchain account with 120000000000 tokens of each of the toke
 
 Use the test/integration/distribute_tokens.sh script.
 
+### Update the UI json files
+
+When you have an environment set up as above, the build_ui_token_files.sh script will update the appropriate files in 
+$BASEDIR/ui/core/src/assets.*.json.
+
 where ROWAN_SOURCE is a sifnode address with sufficient tokens to distribute.
+
 ## Github actions
 
 See [the github action file](../../.github/workflows/integrationtest.yml) for the description of what's executed in the integration test environment.

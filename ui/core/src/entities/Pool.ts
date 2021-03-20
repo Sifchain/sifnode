@@ -17,7 +17,7 @@ export type IPool = Omit<Pool, "poolUnits" | "calculatePoolUnits">;
 export function Pool(
   a: AssetAmount, // native asset
   b: AssetAmount, // external asset
-  poolUnits?: Fraction
+  poolUnits?: Fraction,
 ) {
   const pair = Pair(a, b);
   const amounts: [IAssetAmount, IAssetAmount] = pair.amounts;
@@ -36,7 +36,7 @@ export function Pool(
         b,
         new Fraction("0"),
         new Fraction("0"),
-        new Fraction("0")
+        new Fraction("0"),
       ),
     priceAsset(asset: Asset) {
       return this.calcSwapResult(AssetAmount(asset, "1"));
@@ -48,7 +48,7 @@ export function Pool(
         throw new Error(
           `Sent amount with symbol ${
             x.asset.symbol
-          } does not exist in this pair: ${this.toString()}`
+          } does not exist in this pair: ${this.toString()}`,
         );
       const Y = amounts.find((a) => a.asset.symbol !== x.asset.symbol);
       if (!Y) throw new Error("Pool does not have an opposite asset."); // For Typescript's sake will probably never happen
@@ -62,7 +62,7 @@ export function Pool(
         throw new Error(
           `Sent amount with symbol ${
             x.asset.symbol
-          } does not exist in this pair: ${this.toString()}`
+          } does not exist in this pair: ${this.toString()}`,
         );
       return calculatePriceImpact(x, X).multiply("100");
     },
@@ -75,7 +75,7 @@ export function Pool(
         throw new Error(
           `Sent amount with symbol ${
             x.asset.symbol
-          } does not exist in this pair: ${this.toString()}`
+          } does not exist in this pair: ${this.toString()}`,
         );
       const Y = amounts.find((a) => a.asset.symbol !== x.asset.symbol);
       if (!Y) throw new Error("Pool does not have an opposite asset."); // For Typescript's sake will probably never happen
@@ -89,7 +89,7 @@ export function Pool(
         throw new Error(
           `Sent amount with symbol ${
             Sa.asset.symbol
-          } does not exist in this pair: ${this.toString()}`
+          } does not exist in this pair: ${this.toString()}`,
         );
       const Xa = amounts.find((a) => a.asset.symbol !== Sa.asset.symbol);
       if (!Xa) throw new Error("Pool does not have an opposite asset."); // For Typescript's sake will probably never happen
@@ -110,7 +110,7 @@ export function Pool(
 
     calculatePoolUnits(
       nativeAssetAmount: AssetAmount,
-      externalAssetAmount: AssetAmount
+      externalAssetAmount: AssetAmount,
     ) {
       const [nativeBalanceBefore, externalBalanceBefore] = amounts;
 
@@ -120,7 +120,7 @@ export function Pool(
         externalAssetAmount,
         nativeBalanceBefore,
         externalBalanceBefore,
-        this.poolUnits
+        this.poolUnits,
       );
       const newTotalPoolUnits = lpUnits.add(this.poolUnits);
 
@@ -137,7 +137,7 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
 
   if (!nativeSymbol) {
     throw new Error(
-      "Cannot create composite pair because pairs do not share a common symbol"
+      "Cannot create composite pair because pairs do not share a common symbol",
     );
   }
 
@@ -148,7 +148,7 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
 
   if (amounts.length !== 2) {
     throw new Error(
-      "Cannot create composite pair because pairs do not share a common symbol"
+      "Cannot create composite pair because pairs do not share a common symbol",
     );
   }
 
@@ -174,7 +174,7 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
 
     otherAsset(asset: Asset) {
       const otherAsset = amounts.find(
-        (amount) => amount.asset.symbol !== asset.symbol
+        (amount) => amount.asset.symbol !== asset.symbol,
       );
       if (!otherAsset) throw new Error("Asset doesnt exist in pair");
       return otherAsset.asset;
@@ -203,7 +203,7 @@ export function CompositePool(pair1: IPool, pair2: IPool): IPool {
       const firstSwapFeeInOutputAsset = second.calcSwapResult(firstSwapFee);
       return AssetAmount(
         second.otherAsset(firstSwapFee.asset),
-        firstSwapFeeInOutputAsset.add(secondSwapFee)
+        firstSwapFeeInOutputAsset.add(secondSwapFee),
       );
     },
 
