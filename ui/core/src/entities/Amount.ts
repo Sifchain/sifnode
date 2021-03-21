@@ -1,6 +1,7 @@
 import JSBI from "jsbi";
 import { Fraction, IFraction } from "./fraction/Fraction";
 import Big from "big.js";
+import { isAssetAmount } from "./AssetAmount";
 
 export type IAmount = {
   // for use by display lib and in testing
@@ -20,30 +21,9 @@ export type IAmount = {
   subtract(other: IAmount | string): IAmount;
 };
 
-// exported ONLY to be shared with AssetAmount!
-export type _ExposeInternal<T extends IAmount> = T & {
-  _toInternal(): IFraction;
-  _fromInternal(fraction: IFraction): IAmount;
-};
-
-function toFraction(a: string): string;
-function toFraction(a: IAmount | string): IFraction;
-function toFraction(a: IAmount | string): IFraction | string {
-  type _IAmount = _ExposeInternal<IAmount>;
-  if (typeof a === "string") return a;
-  return (a as _IAmount)._toInternal();
-}
-
-function toBig(fraction: Fraction) {
-  return Big(fraction.toFixed(18));
-}
-
-function toAmount(a: IFraction) {
-  type _IAmount = _ExposeInternal<IAmount>;
-  return (Amount("0") as _IAmount)._fromInternal(a);
-}
-
-export function Amount(source: JSBI | bigint | string | IAmount): IAmount {
+export function Amount(
+  source: JSBI | bigint | string | IAmount,
+): Readonly<IAmount> {
   type _IAmount = _ExposeInternal<IAmount>;
 
   if (
@@ -51,6 +31,9 @@ export function Amount(source: JSBI | bigint | string | IAmount): IAmount {
     typeof source !== "bigint" &&
     typeof source !== "string"
   ) {
+    if (isAssetAmount(source)) {
+      return source.amount;
+    }
     return source;
   }
 
@@ -104,10 +87,13 @@ export function Amount(source: JSBI | bigint | string | IAmount): IAmount {
     sqrt() {
       // TODO: test against rounding errors
       const big = toBig(fraction);
-      const string = toFraction(big.sqrt().toFixed(0)) as string;
-      return Amount(string);
+      const string = toFraction(big.sqrt().times(1000000).toFixed(0)) as string;
+      return Amount(string).divide("1000000");
     },
 
+    // Internal methods need to be exposed here
+    // so they can be used by another Amount in
+    // toFraction and toAmount
     _fromInternal(_fraction: IFraction) {
       fraction = _fraction;
       return instance;
@@ -157,4 +143,38 @@ function getQuotientWithBankersRounding(fraction: IFraction): JSBI {
   } else {
     return result;
   }
+}
+
+// exported ONLY to be shared with AssetAmount!
+export type _ExposeInternal<T extends IAmount> = T & {
+  // Private method to expose internal representation
+  _toInternal(): IFraction;
+
+  // Private method to populate IAmount value from internal representation
+  _fromInternal(fraction: IFraction): IAmount;
+};
+
+// Helper for extracting a fraction out of an amount.
+// This uses a private API and should not be exposed
+// outside of Amount
+function toFraction(a: string): string;
+function toFraction(a: IAmount | string): IFraction;
+function toFraction(a: IAmount | string): IFraction | string {
+  type _IAmount = _ExposeInternal<IAmount>;
+  if (typeof a === "string") return a; // If we get passed a string fraction can handle a string to return it
+  return (a as _IAmount)._toInternal();
+}
+
+// Internal helper convert to Big.js for calculating sqrts
+// NOTE this looses precision to 1e24
+function toBig(fraction: Fraction) {
+  return Big(fraction.toFixed(24));
+}
+
+// Helper for converting a fraction to an amount.
+// This uses a private API and should not be exposed
+// outside of Amount
+function toAmount(a: IFraction) {
+  type _IAmount = _ExposeInternal<IAmount>;
+  return (Amount("0") as _IAmount)._fromInternal(a);
 }

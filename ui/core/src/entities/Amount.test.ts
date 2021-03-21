@@ -76,14 +76,12 @@ describe("Amount", () => {
   });
 
   test("#sqrt", () => {
-    expect(Amount("15241383936").sqrt().equalTo(Amount("123456"))).toBe(true);
+    expect(Amount("15241383936").sqrt().toString()).toBe("123456");
 
-    expect(
-      Amount("15241578750190521").sqrt().equalTo(Amount("123456789")),
-    ).toBe(true);
+    expect(Amount("15241578750190521").sqrt().toString()).toBe("123456789");
 
     // Floor
-    expect(Amount("20").sqrt().equalTo(Amount("4"))).toBe(true);
+    expect(Amount("20").sqrt().toString()).toBe("4");
   });
 
   test("#subtract", () => {

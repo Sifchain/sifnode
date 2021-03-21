@@ -1,5 +1,3 @@
-import Big from "big.js";
-// import { IAmount, Fraction } from "./fraction/Fraction";
 import { Amount, IAmount } from "./Amount";
 
 export function slipAdjustment(
@@ -187,19 +185,23 @@ export function calculateExternalExternalSwapResult(
 // Reverse Formula: x = ( -2*X*S + X*Y - X*sqrt( Y*(Y - 4*S) ) ) / 2*S
 // Need to use Big.js for sqrt calculation
 // Ok to accept a little precision loss as reverse swap amount can be rough
-export function calculateReverseSwapResult(S: Big, X: Big, Y: Big) {
+export function calculateReverseSwapResult(S: IAmount, X: IAmount, Y: IAmount) {
   // Adding a check here because sqrt of a negative number will throw an exception
-  if (S.eq("0") || X.eq("0") || S.times(4).gt(Y)) {
-    return Big("0");
+  if (
+    S.equalTo("0") ||
+    X.equalTo("0") ||
+    S.multiply(Amount("4")).greaterThan(Y)
+  ) {
+    return Amount("0");
   }
-  const term1 = Big(-2).times(X).times(S);
-  const term2 = X.times(Y);
-  const underRoot = Y.times(Y.minus(S.times(4)));
-  const term3 = X.times(underRoot.sqrt());
-  const numerator = term1.plus(term2).minus(term3);
-  const denominator = S.times(2);
-  const x = numerator.div(denominator);
-  return x.gte(Big("0")) ? x : Big("0");
+  const term1 = Amount("-2").multiply(X).multiply(S);
+  const term2 = X.multiply(Y);
+  const underRoot = Y.multiply(Y.subtract(S.multiply(Amount("4"))));
+  const term3 = X.multiply(underRoot.sqrt());
+  const numerator = term1.add(term2).subtract(term3);
+  const denominator = S.multiply(Amount("2"));
+  const x = numerator.divide(denominator);
+  return x.greaterThanOrEqual(Amount("0")) ? x : Amount("0");
 }
 
 /**
