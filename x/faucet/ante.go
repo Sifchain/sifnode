@@ -2,7 +2,7 @@ package faucet
 
 import (
 	"github.com/Sifchain/sifnode/x/clp"
-	types2 "github.com/Sifchain/sifnode/x/faucet/types"
+	ftypes "github.com/Sifchain/sifnode/x/faucet/types"
 	"github.com/cosmos/cosmos-sdk/types"
 )
 
