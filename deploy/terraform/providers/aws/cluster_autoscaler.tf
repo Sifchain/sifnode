@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
 
 resource "kubernetes_service_account" "cluster_autoscaler" {
   metadata {
-    name      = "cluster-autoscaler"
+    name      = "cluster-autoscaler-${var.cluster_name}"
     namespace = "kube-system"
     labels = {
       k8s-addon = "cluster-autoscaler.addons.k8s.io"
@@ -63,7 +63,7 @@ resource "kubernetes_service_account" "cluster_autoscaler" {
 
 resource "kubernetes_cluster_role" "cluster_autoscaler" {
   metadata {
-    name = "cluster-autoscaler"
+    name = "cluster-autoscaler-${var.cluster_name}"
     labels = {
       k8s-addon = "cluster-autoscaler.addons.k8s.io"
       k8s-app   = "cluster-autoscaler"
@@ -153,7 +153,7 @@ resource "kubernetes_cluster_role" "cluster_autoscaler" {
 
 resource "kubernetes_role" "cluster_autoscaler" {
   metadata {
-    name      = "cluster-autoscaler"
+    name      = "cluster-autoscaler-${var.cluster_name}"
     namespace = "kube-system"
     labels = {
       k8s-addon = "cluster-autoscaler.addons.k8s.io"
@@ -177,7 +177,7 @@ resource "kubernetes_role" "cluster_autoscaler" {
 
 resource "kubernetes_cluster_role_binding" "auto_scaler" {
   metadata {
-    name = "cluster-autoscaler"
+    name = "cluster-autoscaler-${var.cluster_name}"
     labels = {
       k8s-addon = "cluster-autoscaler.addons.k8s.io"
       k8s-app   = "cluster-autoscaler"
@@ -199,7 +199,7 @@ resource "kubernetes_cluster_role_binding" "auto_scaler" {
 
 resource "kubernetes_role_binding" "auto_scaler" {
   metadata {
-    name      = "cluster-autoscaler"
+    name      = "cluster-autoscaler-${var.cluster_name}"
     namespace = "kube-system"
     labels = {
       k8s-addon = "cluster-autoscaler.addons.k8s.io"
@@ -222,7 +222,7 @@ resource "kubernetes_role_binding" "auto_scaler" {
 
 resource "kubernetes_deployment" "cluster_autoscaler" {
   metadata {
-    name      = "cluster-autoscaler"
+    name      = "cluster-autoscaler-${var.cluster_name}"
     namespace = "kube-system"
     labels = {
       app = "cluster-autoscaler"
