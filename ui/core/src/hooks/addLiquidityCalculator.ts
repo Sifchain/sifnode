@@ -15,6 +15,7 @@ import { useBalances } from "./utils";
 export enum PoolState {
   SELECT_TOKENS,
   ZERO_AMOUNTS,
+  ZERO_AMOUNTS_NEW_POOL,
   INSUFFICIENT_FUNDS,
   VALID_INPUT,
   NO_LIQUIDITY,
@@ -266,8 +267,10 @@ export function usePoolCalculator(input: {
   effect(() => {
     // if in guided mode
     // calculate the price ratio of A / B
+    // Only activates when it is a preexisting pool
     if (
       input.asyncPooling.value &&
+      preExistingPool.value &&
       input.lastFocusedTokenField.value !== null
     ) {
       if (
@@ -311,6 +314,13 @@ export function usePoolCalculator(input: {
     const bAmount = tokenBField.fieldAmount.value;
     const aAmountIsZeroOrFalsy = !aAmount || aAmount.equalTo("0");
     const bAmountIsZeroOrFalsy = !bAmount || bAmount.equalTo("0");
+
+    if (
+      !preExistingPool.value &&
+      (aAmountIsZeroOrFalsy || bAmountIsZeroOrFalsy)
+    ) {
+      return PoolState.ZERO_AMOUNTS_NEW_POOL;
+    }
 
     if (aAmountIsZeroOrFalsy && bAmountIsZeroOrFalsy) {
       return PoolState.ZERO_AMOUNTS;

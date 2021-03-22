@@ -203,6 +203,8 @@ export default defineComponent({
             return "Select Tokens";
           case PoolState.ZERO_AMOUNTS:
             return "Please enter an amount";
+          case PoolState.ZERO_AMOUNTS_NEW_POOL:
+            return "Pool initialization requires 2-sided inputs";
           case PoolState.INSUFFICIENT_FUNDS:
             return "Insufficient Funds";
           case PoolState.VALID_INPUT:
