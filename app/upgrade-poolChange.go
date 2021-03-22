@@ -33,8 +33,14 @@ func GetPoolChangeFunc(app *SifchainApp) func(ctx sdk.Context, plan upgrade.Plan
 				  sdk.NewUint(clp.MaxWbasis).String(), 
 				  sdk.NewInt(0),
 				)
-				newLpUnits, lpUnits, err := clp.CalculatePoolUnits(pool.ExternalAsset.Symbol, temp, tempNative, tempExternal,
-					withdrawNativeAssetAmount, withdrawExternalAssetAmount)
+				newLpUnits, lpUnits, err := clp.CalculatePoolUnits(
+				  pool.ExternalAsset.Symbol,
+				   temp,
+				    tempNative,
+				     tempExternal,
+				  withdrawNativeAssetAmount,
+				  withdrawExternalAssetAmount,
+				  )
 				if err != nil {
 					hasError = true
 					ctx.Logger().Error(fmt.Sprintf("failed to calculate pool units for | Pool : %s | LP %s ", pool.String(), lp.String()))
