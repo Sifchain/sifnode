@@ -35,3 +35,9 @@ func TestIsCethReceiverAccount(t *testing.T) {
 
 	assert.False(t, keeper.IsCethReceiverAccount(ctx, testCosmosAddress))
 }
+
+func TestIsCethReceiverAccountSet(t *testing.T) {
+	ctx, keeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	accountSet := keeper.IsCethReceiverAccountSet(ctx)
+	require.Equal(t, accountSet, true)
+}
