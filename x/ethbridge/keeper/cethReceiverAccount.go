@@ -20,13 +20,16 @@ func (k Keeper) IsCethReceiverAccount(ctx sdk.Context, cethReceiverAccount sdk.A
 
 func (k Keeper) IsCethReceiverAccountSet(ctx sdk.Context) bool {
 	account := k.GetCethReceiverAccount(ctx)
-	return len(account) != 0
+	return account != nil
 }
 
 func (k Keeper) GetCethReceiverAccount(ctx sdk.Context) (cethReceiverAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.CethReceiverAccountPrefix
 	bz := store.Get(key)
+	if len(bz) == 0 {
+		return nil
+	}
 	k.cdc.MustUnmarshalBinaryBare(bz, &cethReceiverAccount)
 	return
 }
