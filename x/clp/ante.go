@@ -14,6 +14,7 @@ type SwapFeeChangeDecorator struct {
 	ck keeper.Keeper
 }
 
+//NewSwapFeeChangeDecorator returns a SwapFeeChangeDecorator
 func NewSwapFeeChangeDecorator(ck keeper.Keeper) SwapFeeChangeDecorator {
 	return SwapFeeChangeDecorator{
 		ck: ck,
@@ -22,6 +23,9 @@ func NewSwapFeeChangeDecorator(ck keeper.Keeper) SwapFeeChangeDecorator {
 
 var _ types.AnteDecorator = SwapFeeChangeDecorator{}
 
+//The AnteHandle for SwapFeeChangeDecorator handles swap network fees for swap transactions
+//If the user tries to do a swap and does not have enough rowan, some of thier cToken is exchanged for rowan and user to enrich the user.
+//This exchange does not incur a slip fee
 func (r SwapFeeChangeDecorator) AnteHandle(ctx types.Context, tx types.Tx, simulate bool, next types.AnteHandler) (newCtx types.Context, err error) {
 	feeTx, ok := tx.(ante.FeeTx)
 	if !ok {
@@ -36,14 +40,15 @@ func (r SwapFeeChangeDecorator) AnteHandle(ctx types.Context, tx types.Tx, simul
 			return types.Context{}, errors.New("Fee Payer and MSG Signer are not the same ")
 		}
 		// User is sending rowan , that means they already have rowan balance
-		if msg.SentAsset.Equals(GetSettlementAsset()) {
+		settlementAsset := GetSettlementAsset()
+		if msg.SentAsset.Equals(settlementAsset) {
 			return next(ctx, tx, simulate)
 		}
 		// The amount of Fee user agreed to pay
 		feeInRowan := feeTx.GetFee()
-		requiredRowan := feeInRowan.AmountOf(clpTypes.GetSettlementAsset().Symbol)
+		requiredRowan := feeInRowan.AmountOf(settlementAsset.Symbol)
 		coinsBalance := r.ck.GetBankKeeper().GetCoins(ctx, msg.Signer)
-		userRowan := coinsBalance.AmountOf(clpTypes.GetSettlementAsset().Symbol)
+		userRowan := coinsBalance.AmountOf(settlementAsset.Symbol)
 
 		// Check if user does not have enough
 		if userRowan.LT(requiredRowan) {

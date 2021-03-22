@@ -26,6 +26,7 @@ func NewAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper, ck clp.Keeper)
 	}
 }
 
+// GetDefaultAnteHandler returns the default antehandle for all transactions on sifchain
 func GetDefaultAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
@@ -42,6 +43,7 @@ func GetDefaultAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper) sdk.Ant
 	)
 }
 
+//GetFaucetAnteHandler adds a new decorator NewRemoveFacuetFeeDecorator to the default antehandler
 func GetFaucetAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
 		faucet.NewRemoveFacuetFeeDecorator(),
@@ -59,6 +61,7 @@ func GetFaucetAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper) sdk.Ante
 	)
 }
 
+//GetSwapAnteHandler adds a new decorator NewSwapFeeChangeDecorator to the default antehandler
 func GetSwapAnteHandler(ak auth.AccountKeeper, sk types.SupplyKeeper, ck clp.Keeper) sdk.AnteHandler {
 	return sdk.ChainAnteDecorators(
 		clp.NewSwapFeeChangeDecorator(ck),
