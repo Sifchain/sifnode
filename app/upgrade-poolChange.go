@@ -25,8 +25,14 @@ func GetPoolChangeFunc(app *SifchainApp) func(ctx sdk.Context, plan upgrade.Plan
 			tempExternal := sdk.ZeroUint()
 			tempNative := sdk.ZeroUint()
 			for _, lp := range lpList {
-				withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, _ := clp.CalculateWithdrawal(pool.PoolUnits, pool.NativeAssetBalance.String(),
-					pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), sdk.NewUint(clp.MaxWbasis).String(), sdk.NewInt(0))
+				withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, _ := clp.CalculateWithdrawal(
+				  pool.PoolUnits, 
+				  pool.NativeAssetBalance.String(),
+				  pool.ExternalAssetBalance.String(), 
+				  lp.LiquidityProviderUnits.String(), 
+				  sdk.NewUint(clp.MaxWbasis).String(), 
+				  sdk.NewInt(0),
+				)
 				newLpUnits, lpUnits, err := clp.CalculatePoolUnits(pool.ExternalAsset.Symbol, temp, tempNative, tempExternal,
 					withdrawNativeAssetAmount, withdrawExternalAssetAmount)
 				if err != nil {
