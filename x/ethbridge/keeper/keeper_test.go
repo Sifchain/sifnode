@@ -279,7 +279,7 @@ func TestProcessBurnCethWithReceiver(t *testing.T) {
 	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, types.CethSymbol, amount)
-	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, double_amount))
+	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, doubleAmount))
 	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
