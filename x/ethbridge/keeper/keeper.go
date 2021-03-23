@@ -175,7 +175,6 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sd
 
 // ProcessUpdateCethReceiverAccount processes the update whitelist validator from admin
 func (k Keeper) ProcessUpdateCethReceiverAccount(ctx sdk.Context, cosmosSender sdk.AccAddress, cethReceiverAccount sdk.AccAddress, sugaredLogger *zap.SugaredLogger) error {
-
 	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
 		sugaredLogger.Errorw("cosmos sender is not admin account.")
 		return errors.New("only admin account can update ceth receiver account")

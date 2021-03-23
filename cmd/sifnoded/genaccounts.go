@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/faucet"
 	"github.com/Sifchain/sifnode/x/oracle"
 
@@ -443,76 +442,6 @@ func SetGenesisOracleAdminCmd(
 			}
 
 			appState[oracle.ModuleName] = oracleGenStateBz
-
-			appStateJSON, err := cdc.MarshalJSON(appState)
-			if err != nil {
-				return fmt.Errorf("failed to marshal application genesis state: %w", err)
-			}
-
-			genDoc.AppState = appStateJSON
-			return genutil.ExportGenesisFile(genDoc, genFile)
-		},
-	}
-
-	cmd.Flags().String(cli.HomeFlag, defaultNodeHome, "node's home directory")
-	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
-	cmd.Flags().String(flagClientHome, defaultClientHome, "client's home directory")
-
-	return cmd
-}
-
-// SetGenesisCethReceiverAccount set the ceth transfer account
-func SetGenesisCethReceiverAccount(
-	ctx *server.Context, cdc *codec.Codec, defaultNodeHome, defaultClientHome string,
-) *cobra.Command {
-
-	cmd := &cobra.Command{
-		Use:   "set-genesis-ceth-receiver-account [address_or_key_name]",
-		Short: "Set a genesis ceth receiver account to genesis.json",
-		Long: `Set a genesis ceth receiver account to genesis.json. The account will receive the ceth fee for lock/burn.
-`,
-		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			config := ctx.Config
-			config.SetRoot(viper.GetString(cli.HomeFlag))
-
-			addr, err := sdk.AccAddressFromBech32(args[0])
-			inBuf := bufio.NewReader(cmd.InOrStdin())
-			if err != nil {
-				// attempt to lookup address from Keybase if no address was provided
-				kb, err := keys.NewKeyring(
-					sdk.KeyringServiceName(),
-					viper.GetString(flags.FlagKeyringBackend),
-					viper.GetString(flagClientHome),
-					inBuf,
-				)
-				if err != nil {
-					return err
-				}
-
-				info, err := kb.Get(args[0])
-				if err != nil {
-					return fmt.Errorf("failed to get address from Keybase: %w", err)
-				}
-
-				addr = info.GetAddress()
-			}
-
-			genFile := config.GenesisFile()
-			appState, genDoc, err := genutil.GenesisStateFromGenFile(cdc, genFile)
-			if err != nil {
-				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
-			}
-
-			ethbridgeGenState := ethbridge.GetGenesisStateFromAppState(cdc, appState)
-			ethbridgeGenState.CethAccount = addr
-
-			ethbridgeGenStateBz, err := cdc.MarshalJSON(ethbridgeGenState)
-			if err != nil {
-				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
-			}
-
-			appState[oracle.ModuleName] = ethbridgeGenStateBz
 
 			appStateJSON, err := cdc.MarshalJSON(appState)
 			if err != nil {
