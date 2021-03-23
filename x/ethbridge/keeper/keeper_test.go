@@ -16,7 +16,7 @@ import (
 var (
 	cosmosReceivers, _ = CreateTestAddrs(1)
 	amount             = sdk.NewInt(10)
-	double_amount      = sdk.NewInt(20)
+	doubleAmount       = sdk.NewInt(20)
 
 	symbol                                     = "stake"
 	tokenContractAddress                       = types.NewEthereumAddress("0xbbbbca6a901c926f240b89eacb641d8aec7aeafd")
@@ -220,7 +220,7 @@ func TestProcessBurnCeth(t *testing.T) {
 	ctx, keeper, bankKeeper, supplyKeeper, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, types.CethSymbol, amount)
-	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, double_amount))
+	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, doubleAmount))
 	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
