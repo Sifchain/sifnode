@@ -320,6 +320,10 @@ func TestProcessUpdateCethReceiverAccount(t *testing.T) {
 	ctx, keeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
+
+	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender, sugaredLogger)
+	require.Equal(t, err.Error(), "only admin account can update ceth receiver account")
+
 	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
 	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender, sugaredLogger)
