@@ -2,8 +2,36 @@ import JSBI from "jsbi";
 import { Amount } from "./Amount";
 
 describe("Amount", () => {
-  test("construction", () => {
-    expect(() => Amount("1234.1234")).toThrow();
+  test("construction from decimal", () => {
+    expect(Amount("1.5").toString()).toBe("1.500000000000000000");
+  });
+
+  test("construction from negative decimal", () => {
+    expect(Amount("-1.5").toString()).toBe("-1.500000000000000000");
+  });
+
+  test("construction from negative integer", () => {
+    expect(Amount("-5").toString()).toBe("-5.000000000000000000");
+  });
+
+  test("construction from decimal with no leading zero", () => {
+    expect(Amount(".5").toString()).toBe("0.500000000000000000");
+  });
+
+  test("construction from integer", () => {
+    expect(Amount("15").toString()).toBe("15.000000000000000000");
+  });
+
+  test("construction with garbage input should throw", () => {
+    expect(() => {
+      Amount("1.5.34");
+    }).toThrow();
+  });
+
+  test("construction with garbage input should throw", () => {
+    expect(() => {
+      Amount("..534");
+    }).toThrow();
   });
 
   test("#toBigInt", () => {
@@ -19,7 +47,7 @@ describe("Amount", () => {
   });
 
   test("#toString", () => {
-    expect(Amount("12345678").toString()).toBe("12345678");
+    expect(Amount("12345678").toString()).toBe("12345678.000000000000000000");
   });
 
   test("#add", () => {
@@ -76,12 +104,14 @@ describe("Amount", () => {
   });
 
   test("#sqrt", () => {
-    expect(Amount("15241383936").sqrt().toString()).toBe("123456");
+    expect(Amount("15241383936").sqrt().toBigInt().toString()).toBe("123456");
 
-    expect(Amount("15241578750190521").sqrt().toString()).toBe("123456789");
+    expect(Amount("15241578750190521").sqrt().toBigInt().toString()).toBe(
+      "123456789",
+    );
 
     // Floor
-    expect(Amount("20").sqrt().toString()).toBe("4");
+    expect(Amount("20").sqrt().toString()).toBe("4.472136000000000000");
   });
 
   test("#subtract", () => {

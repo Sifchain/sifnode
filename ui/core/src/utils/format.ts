@@ -1,6 +1,8 @@
-import { IAmount } from "../entities/Amount";
-import { IAssetAmount } from "../entities/AssetAmount_";
+import { Amount, IAmount } from "../entities/Amount";
+import { IAssetAmount } from "../entities/AssetAmount";
 import numbro from "numbro";
+import { IAsset } from "../entities";
+import { decimalShift } from "./decimalShift";
 
 type IFormatOptionsBase = {
   exponent?: number; // display = (amount * 10^-exponent) when undefined exponent will be set by (amount as IAssetAmount).decimals ?? 0 - defaults to 2 for percent mode
@@ -11,6 +13,7 @@ type IFormatOptionsBase = {
   prefix?: string; // Add a prefix
   postfix?: string; // Add a postfix
   zeroFormat?: string; // could be something like `N/A`
+  float?: boolean; // consider as floating point number default false
 };
 
 type IFormatOptionsMantissa = IFormatOptionsBase & {
@@ -28,66 +31,80 @@ export type IFormatOptions =
   | IFormatOptionsMantissa
   | IFormatOptionsShorthandTotalLength;
 
+function isAsset(val: any): val is IAsset {
+  return typeof val?.symbol === "string";
+}
+
 export function format(
-  amount: IAmount | IAssetAmount,
-  options: IFormatOptionsMantissa,
-): string;
-export function format(
-  amount: IAmount | IAssetAmount,
-  options: IFormatOptionsShorthandTotalLength,
-): string;
-export function format(
-  amount: IAmount | IAssetAmount,
+  amount: Exclude<IAmount, IAssetAmount>,
   options: IFormatOptions,
+): string;
+export function format(
+  amount: Exclude<IAmount, IAssetAmount>,
+  asset: Exclude<IAsset, IAssetAmount>,
+  options: IFormatOptions,
+): string;
+export function format(
+  _amount: Exclude<IAmount, IAssetAmount>,
+  _asset: Exclude<IAsset, IAssetAmount> | IFormatOptions,
+  _options?: IFormatOptions,
 ): string {
-  const numbroConfig = createNumbroConfig(options);
-  const significand = amount.toBigInt().toString();
+  const amount = _amount;
+  const options = isAsset(_asset) ? _options! : _asset;
+  const asset = isAsset(_asset) ? _asset : undefined;
 
-  const exponentShift = calculateExponentShift(
-    options.mode === "percent",
-    options.exponent,
-    (amount as IAssetAmount).decimals,
+  let decimal = asset
+    ? decimalShift(amount.toBigInt().toString(), -1 * asset.decimals)
+    : amount.toString();
+
+  let postfix = "";
+  let prefix = "";
+  let space = "";
+
+  if (options.shorthand) {
+    return numbro(decimal).format(createNumbroConfig(options));
+  }
+
+  if (options.space) {
+    space = " ";
+  }
+
+  if (options.mode === "percent") {
+    decimal = decimalShift(decimal, 2);
+    postfix = "%";
+  }
+
+  if (typeof options.mantissa === "number") {
+    decimal = applyMantissa(decimal, options.mantissa);
+  }
+
+  if (options.trimMantissa) {
+    decimal = trimMantissa(decimal);
+  }
+
+  if (options.separator) {
+    decimal = applySeparator(decimal);
+  }
+
+  return `${prefix}${decimal}${space}${postfix}`;
+}
+
+function trimMantissa(decimal: string) {
+  return decimal.replace(/0+$/, "");
+}
+
+function applySeparator(decimal: string) {
+  const [char, mant] = decimal.split(".");
+  return [char.replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ","), mant].join(".");
+}
+
+function applyMantissa(decimal: string, mantissa: number) {
+  return decimal.replace(
+    new RegExp("(\\.\\d{" + mantissa + "}).*", "g"),
+    (a: string, b: string) => {
+      return b ? b + "" : a;
+    },
   );
-
-  const withPoint = exponentiateString(significand, exponentShift);
-
-  return numbro(withPoint).format(numbroConfig);
-}
-
-export function exponentiateString(
-  significand: string,
-  exponentShift: number,
-): string {
-  const mantissa = extractMantissa(significand, exponentShift);
-  const characteristic = extractCharacteristic(significand, exponentShift);
-  return [characteristic, mantissa].join(".");
-}
-
-function extractMantissa(significand: string, exponentShift: number) {
-  if (exponentShift !== 0) {
-    const sliced = significand.slice(exponentShift);
-    const diff = -1 * exponentShift;
-    const padded = sliced.padStart(diff, "0"); // TODO: ES2017 do we need to polyfill?
-    return padded;
-  }
-  return "";
-}
-
-function extractCharacteristic(significand: string, exponentShift: number) {
-  return exponentShift !== 0
-    ? significand.slice(0, exponentShift)
-    : significand;
-}
-
-function calculateExponentShift(
-  isPercent: boolean,
-  optionsExponent: number | undefined,
-  amountDecimals: number | undefined,
-): number {
-  if (isPercent) {
-    return -1 * ((optionsExponent ?? 2) + 2);
-  }
-  return -1 * (optionsExponent ?? amountDecimals ?? 0);
 }
 
 function isShorthandWithTotalLength(

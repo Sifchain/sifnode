@@ -10,7 +10,6 @@ import {
 import { calculateWithdrawal } from "../entities/formulae";
 import { format } from "../utils/format";
 import { PoolState } from "./addLiquidityCalculator";
-import { buildAsset } from "./utils";
 
 export function useRemoveLiquidityCalculator(input: {
   externalAssetSymbol: Ref<string | null>;
@@ -24,12 +23,12 @@ export function useRemoveLiquidityCalculator(input: {
   // this function needs to be refactored so
   const externalAsset = (() => {
     if (!input.externalAssetSymbol.value) return null;
-    return buildAsset(input.externalAssetSymbol.value);
+    return Asset(input.externalAssetSymbol.value);
   })();
 
   const nativeAsset = (() => {
     if (!input.nativeAssetSymbol.value) return null;
-    return buildAsset(input.nativeAssetSymbol.value);
+    return Asset(input.nativeAssetSymbol.value);
   })();
 
   const liquidityPool = (() => {
@@ -137,12 +136,14 @@ export function useRemoveLiquidityCalculator(input: {
   })();
 
   const withdrawExternalAssetAmountMessage = (() => {
+    if (!withdrawalAmounts) return "";
     return format(withdrawalAmounts?.withdrawExternalAssetAmount, {
       mantissa: 6,
     });
   })();
 
   const withdrawNativeAssetAmountMessage = (() => {
+    if (!withdrawalAmounts) return "";
     return format(withdrawalAmounts?.withdrawNativeAssetAmount, {
       mantissa: 6,
     });

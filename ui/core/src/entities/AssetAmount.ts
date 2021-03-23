@@ -1,6 +1,7 @@
 import { IAmount, Amount, _ExposeInternal } from "./Amount";
 import { IAsset, Asset } from "./Asset";
 import { IFraction } from "./fraction/Fraction";
+import Big from "big.js";
 
 export type IAssetAmount = Readonly<IAsset> &
   IAmount & {
@@ -60,20 +61,20 @@ export function AssetAmount(
       return _amount.toBigInt();
     },
 
-    toString() {
-      return `${_amount.toString()} ${_asset.symbol.toUpperCase()}`;
+    toString(detailed?: boolean) {
+      return `${_amount.toString(detailed)} ${_asset.symbol.toUpperCase()}`;
     },
 
     add(other) {
-      return AssetAmount(_asset, _amount.add(other));
+      return _amount.add(other);
     },
 
     divide(other) {
-      return AssetAmount(_asset, _amount.divide(other));
+      return _amount.divide(other);
     },
 
     equalTo(other) {
-      return _amount.equalTo(other); // TODO: do we care about assets? Suspect not.
+      return _amount.equalTo(other);
     },
 
     greaterThan(other) {
@@ -93,15 +94,15 @@ export function AssetAmount(
     },
 
     multiply(other) {
-      return AssetAmount(_asset, _amount.multiply(other));
+      return _amount.multiply(other);
     },
 
     sqrt() {
-      return AssetAmount(_asset, _amount.sqrt());
+      return _amount.sqrt();
     },
 
     subtract(other) {
-      return AssetAmount(_asset, _amount.subtract(other));
+      return _amount.subtract(other);
     },
 
     // Internal methods need to be proxied here so this can be used as an Amount

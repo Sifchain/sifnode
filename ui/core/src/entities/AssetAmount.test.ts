@@ -29,10 +29,6 @@ describe("AssetAmount", () => {
     expect(bal.address).toBe("1234568");
   });
 
-  test("construction", () => {
-    expect(() => AssetAmount("eth", "1234.1234")).toThrow();
-  });
-
   test("Parse to Amount", () => {
     expect(Amount(AssetAmount("eth", "1234")).equalTo(Amount("1234"))).toBe(
       true,
@@ -47,7 +43,9 @@ describe("AssetAmount", () => {
   });
 
   test("#toString", () => {
-    expect(AssetAmount("eth", "12345678").toString()).toBe("12345678 ETH");
+    expect(AssetAmount("eth", "12345678").toString()).toBe(
+      "12345678.000000000000000000 ETH",
+    );
   });
 
   test("#add", () => {
@@ -97,15 +95,9 @@ describe("AssetAmount", () => {
   });
 
   test("#greaterThan", () => {
-    expect(
-      AssetAmount("eth", "100").greaterThan(AssetAmount("eth", "99")),
-    ).toBe(true);
-    expect(
-      AssetAmount("eth", "100").greaterThan(AssetAmount("eth", "100")),
-    ).toBe(false);
-    expect(
-      AssetAmount("eth", "100").greaterThan(AssetAmount("eth", "101")),
-    ).toBe(false);
+    expect(AssetAmount("eth", "100").greaterThan(Amount("99"))).toBe(true);
+    expect(AssetAmount("eth", "100").greaterThan(Amount("100"))).toBe(false);
+    expect(AssetAmount("eth", "100").greaterThan(Amount("101"))).toBe(false);
   });
 
   test("#greaterThanOrEqual", () => {
@@ -166,7 +158,9 @@ describe("AssetAmount", () => {
     ).toBe(true);
 
     // Floor
-    expect(AssetAmount("eth", "20").sqrt().toString()).toBe("4 ETH");
+    expect(AssetAmount("eth", "20").sqrt().toString()).toBe(
+      "4.472136000000000000",
+    );
   });
 
   test("#subtract", () => {

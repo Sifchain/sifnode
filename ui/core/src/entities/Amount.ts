@@ -2,6 +2,7 @@ import JSBI from "jsbi";
 import { Fraction, IFraction } from "./fraction/Fraction";
 import Big from "big.js";
 import { isAssetAmount } from "./AssetAmount";
+import { decimalShift, floorDecimal } from "../utils/decimalShift";
 
 export type IAmount = {
   // for use by display lib and in testing
@@ -26,6 +27,10 @@ export function Amount(
 ): Readonly<IAmount> {
   type _IAmount = _ExposeInternal<IAmount>;
 
+  if (typeof source === "string" && source.match(/^[+-]?\s?(\d+)?\.\d+$/)) {
+    return getAmountFromDecimal(source);
+  }
+
   if (
     !(source instanceof JSBI) &&
     typeof source !== "bigint" &&
@@ -44,8 +49,8 @@ export function Amount(
       return getQuotientWithBankersRounding(fraction);
     },
 
-    toString(detailed?: boolean) {
-      return fraction.toFixed(detailed ? 18 : 0);
+    toString() {
+      return fraction.toFixed(18);
     },
 
     add(other) {
@@ -143,6 +148,12 @@ function getQuotientWithBankersRounding(fraction: IFraction): JSBI {
   } else {
     return result;
   }
+}
+
+function getAmountFromDecimal(decimal: string): IAmount {
+  return Amount(floorDecimal(decimalShift(decimal, 18))).divide(
+    "1000000000000000000",
+  );
 }
 
 // exported ONLY to be shared with AssetAmount!

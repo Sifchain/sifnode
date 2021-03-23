@@ -8,7 +8,9 @@ import {
   LiquidityProvider,
   Pool,
 } from "../entities";
-import { Fraction } from "../entities";
+// import { Fraction } from "../entities";
+import { Amount } from "../entities";
+import { format } from "../utils/format";
 import { useField } from "./useField";
 import { useBalances } from "./utils";
 
@@ -123,7 +125,7 @@ export function usePoolCalculator(input: {
       !tokenBField.fieldAmount.value ||
       !tokenAField.fieldAmount.value
     ) {
-      return [new Fraction("0"), new Fraction("0")];
+      return [Amount("0"), Amount("0")];
     }
 
     return liquidityPool.value.calculatePoolUnits(
@@ -134,8 +136,7 @@ export function usePoolCalculator(input: {
 
   // pool units from the perspective of the liquidity provider
   const liquidityProviderPoolUnitsArray = computed(() => {
-    if (!provisionedPoolUnitsArray.value)
-      return [new Fraction("0"), new Fraction("0")];
+    if (!provisionedPoolUnitsArray.value) return [Amount("0"), Amount("0")];
 
     const [totalPoolUnits, newUnits] = provisionedPoolUnitsArray.value;
 
@@ -148,39 +149,44 @@ export function usePoolCalculator(input: {
   });
 
   const totalPoolUnits = computed(() =>
-    liquidityProviderPoolUnitsArray.value[0].toFixed(0),
+    liquidityProviderPoolUnitsArray.value[0].toString(),
   );
 
   const totalLiquidityProviderUnits = computed(() =>
-    liquidityProviderPoolUnitsArray.value[1].toFixed(0),
+    liquidityProviderPoolUnitsArray.value[1].toString(),
   );
 
   const shareOfPool = computed(() => {
-    if (!liquidityProviderPoolUnitsArray.value) return new Fraction("0");
+    if (!liquidityProviderPoolUnitsArray.value) return Amount("0");
 
     const [units, lpUnits] = liquidityProviderPoolUnitsArray.value;
 
     // shareOfPool should be 0 if units and lpUnits are zero
-    if (units.equalTo("0") && lpUnits.equalTo("0")) return new Fraction("0");
+    if (units.equalTo("0") && lpUnits.equalTo("0")) return Amount("0");
 
     // if no units lp owns 100% of pool
-    return units.equalTo("0") ? new Fraction("1") : lpUnits.divide(units);
+    return units.equalTo("0") ? Amount("1") : lpUnits.divide(units);
   });
 
   const shareOfPoolPercent = computed(() => {
     if (shareOfPool.value.multiply("10000").lessThan("1")) return "< 0.01%";
-    return `${shareOfPool.value.multiply("100").toFixed(2)}%`;
+    return `${format(shareOfPool.value.multiply("10000"), {
+      mantissa: 2,
+      mode: "percent",
+    })}`;
   });
 
   const poolAmounts = computed(() => {
     if (!preExistingPool.value || !tokenAField.asset.value) {
       return null;
     }
+
     if (!preExistingPool.value.contains(tokenAField.asset.value)) return null;
     const externalBalance = preExistingPool.value.getAmount(
       tokenAField.asset.value,
     );
     const nativeBalance = preExistingPool.value.getAmount("rowan");
+
     return [nativeBalance, externalBalance];
   });
 
@@ -188,7 +194,7 @@ export function usePoolCalculator(input: {
   const aPerBRatio = computed(() => {
     if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
-    return external.divide(native);
+    return Amount(external.divide(native));
   });
 
   const aPerBRatioMessage = computed(() => {
@@ -196,14 +202,15 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return aPerBRatio.value.toFixed(8);
+    return format(aPerBRatio.value, { mantissa: 8, float: true });
   });
 
   // native_balance / external_balance
   const bPerARatio = computed(() => {
     if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
-    return native.divide(external);
+
+    return Amount(native.divide(external));
   });
 
   const bPerARatioMessage = computed(() => {
@@ -211,7 +218,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return bPerARatio.value.toFixed(8);
+    return format(bPerARatio.value, { mantissa: 8, float: true });
   });
 
   // Price Impact and Pool Share:
@@ -228,7 +235,7 @@ export function usePoolCalculator(input: {
     const externalAdded = tokenAField.fieldAmount.value;
     const nativeAdded = tokenBField.fieldAmount.value;
 
-    return external.add(externalAdded).divide(native.add(nativeAdded));
+    return Amount(external.add(externalAdded).divide(native.add(nativeAdded)));
   });
 
   const aPerBRatioProjectedMessage = computed(() => {
@@ -236,7 +243,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return aPerBRatioProjected.value.toFixed(8);
+    return format(aPerBRatioProjected.value, { float: true, mantissa: 8 });
   });
 
   // Price Impact and Pool Share:
@@ -252,7 +259,7 @@ export function usePoolCalculator(input: {
     const [native, external] = poolAmounts.value;
     const externalAdded = tokenAField.fieldAmount.value;
     const nativeAdded = tokenBField.fieldAmount.value;
-    return native.add(nativeAdded).divide(external.add(externalAdded));
+    return Amount(native.add(nativeAdded).divide(external.add(externalAdded)));
   });
 
   const bPerARatioProjectedMessage = computed(() => {
@@ -260,7 +267,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return bPerARatioProjected.value.toFixed(8);
+    return format(bPerARatioProjected.value, { float: true, mantissa: 8 });
   });
 
   effect(() => {
@@ -280,20 +287,22 @@ export function usePoolCalculator(input: {
       }
       const assetAmountA = AssetAmount(
         assetA.value,
-        tokenAField.fieldAmount?.value || 0,
+        tokenAField.fieldAmount?.value || "0",
       );
       const assetAmountB = AssetAmount(
         assetB.value,
-        tokenBField.fieldAmount?.value || 0,
+        tokenBField.fieldAmount?.value || "0",
       );
       if (input.lastFocusedTokenField.value === "A") {
-        input.tokenBAmount.value = assetAmountA
-          .multiply(bPerARatio.value || "0")
-          .toFixed(5);
+        input.tokenBAmount.value = format(
+          assetAmountA.multiply(bPerARatio.value || "0"),
+          { mantissa: 5 },
+        );
       } else if (input.lastFocusedTokenField.value === "B") {
-        input.tokenAAmount.value = assetAmountB
-          .multiply(aPerBRatio.value || "0")
-          .toFixed(5);
+        input.tokenAAmount.value = format(
+          assetAmountB.multiply(aPerBRatio.value || "0"),
+          { mantissa: 5 },
+        );
       }
     }
   });

@@ -1,20 +1,22 @@
 import { ref, Ref } from "@vue/reactivity";
 import {
+  Amount,
   Asset,
   AssetAmount,
+  IAmount,
   IAssetAmount,
   LiquidityProvider,
   Network,
   Pool,
 } from "../entities";
-import { Fraction, IFraction } from "../entities/fraction/Fraction";
+// import { Fraction, IFraction } from "../entities/fraction/Fraction";
 import { akasha } from "../test/utils/accounts";
 import { getTestingTokens } from "../test/utils/getTestingToken";
 import { PoolState, usePoolCalculator } from "./addLiquidityCalculator";
 
 const [ATK, ROWAN] = getTestingTokens(["ATK", "ROWAN"]);
 
-const ZERO = new Fraction("0");
+const ZERO = Amount("0");
 
 describe("addLiquidityCalculator", () => {
   // input
@@ -31,7 +33,7 @@ describe("addLiquidityCalculator", () => {
   // output
   let aPerBRatioMessage: Ref<string>;
   let bPerARatioMessage: Ref<string>;
-  let shareOfPool: Ref<Fraction>;
+  let shareOfPool: Ref<IAmount>;
   let aPerBRatioProjectedMessage: Ref<string>;
   let bPerARatioProjectedMessage: Ref<string>;
   let totalLiquidityProviderUnits: Ref<string>;
@@ -76,8 +78,31 @@ describe("addLiquidityCalculator", () => {
     poolFinder.mockReset();
     liquidityProvider.value = null;
   });
-
-  const ratios = [
+  type Test = {
+    only?: boolean;
+    skip?: boolean;
+    poolExternal: string;
+    poolNative: string;
+    poolUnits: string;
+    addedExternal: string;
+    addedNative: string;
+    externalSymbol: string;
+    nativeSymbol: string;
+    preexistingLiquidity?: {
+      native: string;
+      external: string;
+      units: string;
+    };
+    expected: {
+      aPerBRatioMessage: string;
+      bPerARatioMessage: string;
+      aPerBRatioProjectedMessage: string;
+      bPerARatioProjectedMessage: string;
+      shareOfPool: string;
+      state: PoolState;
+    };
+  };
+  const ratios: Test[] = [
     {
       poolExternal: "1000000000",
       poolNative: "1000000000",
@@ -225,7 +250,7 @@ describe("addLiquidityCalculator", () => {
         aPerBRatioMessage: "1.00000000", // 100000000 / 100000000
         bPerARatioMessage: "1.00000000",
         aPerBRatioProjectedMessage: "1000000.98999999", // 100100000000/100000001
-        bPerARatioProjectedMessage: "0.00000100",
+        bPerARatioProjectedMessage: "0.00000099",
         shareOfPool: "33.55%",
         state: PoolState.INSUFFICIENT_FUNDS,
       },
@@ -234,6 +259,8 @@ describe("addLiquidityCalculator", () => {
   ratios.forEach(
     (
       {
+        only = false,
+        skip = false,
         poolExternal,
         poolNative,
         poolUnits,
@@ -246,7 +273,8 @@ describe("addLiquidityCalculator", () => {
       },
       index,
     ) => {
-      test(`Ratios #${index + 1}`, () => {
+      const tester = only ? test.only : skip ? test.skip : test;
+      tester(`Ratios #${index + 1}`, () => {
         balances.value = [
           AssetAmount(ATK, "100000000000"),
           AssetAmount(ROWAN, "100000000000"),
@@ -255,17 +283,17 @@ describe("addLiquidityCalculator", () => {
           ? null
           : LiquidityProvider(
               ATK,
-              new Fraction(preexistingLiquidity.units),
+              Amount(preexistingLiquidity.units),
               akasha.address,
-              new Fraction(preexistingLiquidity.native),
-              new Fraction(preexistingLiquidity.external),
+              Amount(preexistingLiquidity.native),
+              Amount(preexistingLiquidity.external),
             );
 
         poolFinder.mockImplementation(() => {
           const pool = Pool(
             AssetAmount(Asset.get(externalSymbol), poolExternal),
             AssetAmount(ROWAN, poolNative),
-            new Fraction(poolUnits),
+            Amount(poolUnits),
           );
 
           return ref(pool) as Ref<Pool>;
@@ -317,7 +345,7 @@ describe("addLiquidityCalculator", () => {
           Pool(
             AssetAmount(ATK, "1000000"),
             AssetAmount(ROWAN, "1000000"),
-            new Fraction("1000000"),
+            Amount("1000000"),
           ),
         ) as Ref<Pool>,
     );
@@ -325,10 +353,10 @@ describe("addLiquidityCalculator", () => {
     // Liquidity provider already owns 1000 pool units (1000000 from another investor)
     liquidityProvider.value = LiquidityProvider(
       ATK,
-      new Fraction("500000"),
+      Amount("500000"),
       akasha.address,
-      new Fraction("500000"),
-      new Fraction("500000"),
+      Amount("500000"),
+      Amount("500000"),
     );
 
     // Add 1000 of both tokens
@@ -359,7 +387,7 @@ describe("addLiquidityCalculator", () => {
           Pool(
             AssetAmount(ATK, "1000000"),
             AssetAmount(ROWAN, "1000000"),
-            new Fraction("1000000"),
+            Amount("1000000"),
           ),
         ) as Ref<Pool>,
     );
