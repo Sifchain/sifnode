@@ -167,13 +167,31 @@ export default defineComponent({
               )
             : [];
 
-          if (!amount) return { amount: 0, asset, pegTxs };
+          if (!amount) {
+            return { amount: 0, asset, pegTxs };
+          }
 
           return {
             amount,
             asset,
             pegTxs,
           };
+        })
+        .sort(function (a, b) {
+          // sort alphabetically
+          if (a.asset.symbol < b.asset.symbol) {
+            return -1;
+          }
+          if (a.asset.symbol > b.asset.symbol) {
+            return 1;
+          }
+          return 0;
+        })
+        .sort(function (a, b) {
+          // sort by balance
+          return (
+            parseFloat(b.amount.toFixed()) - parseFloat(a.amount.toFixed())
+          );
         });
     });
 
