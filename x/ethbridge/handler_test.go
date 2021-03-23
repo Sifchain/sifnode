@@ -386,3 +386,20 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, res)
 }
+
+func TestUpdateCethReceiverAccountMsg(t *testing.T) {
+	ctx, oracleKeeper, bankKeeper, _, _, _, handler := CreateTestHandler(t, 0.5, []int64{5})
+	coins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(10000)))
+
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	_, _ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
+
+	testUpdateCethReceiverAccountMsg := types.CreateTestUpdateCethReceiverAccountMsg(
+		t, types.TestAddress, types.TestAddress)
+
+	res, err := handler(ctx, testUpdateCethReceiverAccountMsg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+}
