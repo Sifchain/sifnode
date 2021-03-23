@@ -30,4 +30,5 @@ type OracleKeeper interface {
 	ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error
 	IsAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress) bool
 	GetAdminAccount(ctx sdk.Context) sdk.AccAddress
+	SetAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress)
 }
