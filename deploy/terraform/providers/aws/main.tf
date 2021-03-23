@@ -32,6 +32,7 @@ data "aws_subnet_ids" "a" {
     tags = {
     Name = "${var.cluster_name}-public-${var.region}a"
   } 
+ depends_on = [ module.vpc ]
 }
 
 data "aws_subnet_ids" "b" {
@@ -39,6 +40,7 @@ data "aws_subnet_ids" "b" {
     tags = {
     Name = "${var.cluster_name}-public-${var.region}b"
   } 
+ depends_on = [ module.vpc ]
 }
 
 data "aws_subnet_ids" "c" {
@@ -46,6 +48,7 @@ data "aws_subnet_ids" "c" {
     tags = {
     Name = "${var.cluster_name}-public-${var.region}c"
   } 
+ depends_on = [ module.vpc ]
 }
 
 module "vpc" {
@@ -122,7 +125,7 @@ module "eks" {
       additional_tags = var.tags
     },
   }
-
+ depends_on = [ module.vpc ]
   cluster_version  = var.cluster_version
   write_kubeconfig = true
 }
