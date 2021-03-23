@@ -315,3 +315,13 @@ func TestProcessLockWithReceiver(t *testing.T) {
 	require.Equal(t, receiverCoins.String(), string(""))
 
 }
+
+func TestProcessUpdateCethReceiverAccount(t *testing.T) {
+	ctx, keeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+
+	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender, sugaredLogger)
+	require.NoError(t, err)
+}
