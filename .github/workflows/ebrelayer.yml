@@ -59,8 +59,6 @@ jobs:
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
           set +x
-          cat ~/.aws/config
-          cat ~/.aws/credentials
 
           export PATH=$(pwd):${PATH}
           aws eks update-kubeconfig --name sifchain-aws-swing-set-us --region us-west-2 --profile swing-set --kubeconfig kubeconfig
@@ -69,6 +67,7 @@ jobs:
           export image_tag=testnet-genesis
           export env=swing-set
           export app_name=ebrelayer
+
           echo "======"
           rake "cluster:vault:login[]"
           #rake "cluster:vault:createpolicy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
