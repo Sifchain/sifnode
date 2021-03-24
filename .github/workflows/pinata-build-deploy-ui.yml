@@ -24,14 +24,14 @@ jobs:
           if [[ $GITHUB_REF == 'refs/heads/develop' ]]; then
               echo "Config set for DevNet deployment"
               echo "VUE_APP_DEPLOYMENT_TAG=devnet" >> "$GITHUB_ENV"
-              echo "VUE_APP_ETHEREUM_ASSET_TAG=ethereum.mainnet" >> "$GITHUB_ENV"
+              echo "VUE_APP_ETHEREUM_ASSET_TAG=ethereum.devnet" >> "$GITHUB_ENV"
               echo "VUE_APP_SIFCHAIN_ASSET_TAG=sifchain.mainnet" >> "$GITHUB_ENV"
           fi
 
           if [[ $GITHUB_REF == 'refs/heads/testnet' ]]; then
               echo "Config set for TestNet deployment"
               echo "VUE_APP_DEPLOYMENT_TAG=testnet" >> "$GITHUB_ENV"
-              echo "VUE_APP_ETHEREUM_ASSET_TAG=ethereum.mainnet" >> "$GITHUB_ENV"
+              echo "VUE_APP_ETHEREUM_ASSET_TAG=ethereum.testnet" >> "$GITHUB_ENV"
               echo "VUE_APP_SIFCHAIN_ASSET_TAG=sifchain.mainnet" >> "$GITHUB_ENV"
           fi
 
@@ -50,7 +50,7 @@ jobs:
         id: pinata
         uses: anantaramdas/ipfs-pinata-deploy-action@v1.6.4
         with:
-          pin-name: 'Sifchain ${{ github.sha }}-${{ env.GITHUB_REF }}'
+          pin-name: 'Sifchain ${{ env.VUE_APP_DEPLOYMENT_TAG }} - ${{ github.sha }}-${{ env.GITHUB_REF }}'
           path: './ui/app/dist'
           pinata-api-key: ${{ secrets.PINATA_API_KEY }}
           pinata-secret-api-key: ${{ secrets.PINATA_SECRET_KEY }}
