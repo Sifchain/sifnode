@@ -66,8 +66,8 @@ jobs:
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
           set +x
-          cat ~/.aws/credentials
           export PATH=$(pwd):${PATH}
+          aws-iam-authenticator
           export app_namespace=ebrelayer
           export image=sifchain/ebrelayer
           export image_tag=testnet-genesis
