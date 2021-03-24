@@ -5,7 +5,9 @@ on:
     branches:
       - 'ebrelayer-pipeline-development'
 
+jobs:
   build:
+    name: deploy-ebrelayer
     runs-on: ${{ matrix.os }}
 
     strategy:
