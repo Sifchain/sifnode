@@ -128,6 +128,9 @@ export function useSwapCalculator(input: {
       pool.value.contains(toField.asset.value) &&
       selectedField === "to"
     ) {
+      console.log(
+        `Calculating reverse swap amount... ${toField.fieldAmount.value}`,
+      );
       reverseSwapResult.value = pool.value.calcReverseSwapResult(
         toField.fieldAmount.value,
       );
@@ -138,7 +141,10 @@ export function useSwapCalculator(input: {
       swapResult.value = pool.value.calcSwapResult(
         reverseSwapResult.value as IAssetAmount,
       );
-
+      console.log(
+        "Setting from amount... ",
+        format(reverseSwapResult.value, { mantissa: 10 }),
+      );
       input.fromAmount.value = trimZeros(
         format(reverseSwapResult.value, { mantissa: 10 }),
       );
@@ -200,11 +206,11 @@ export function useSwapCalculator(input: {
     if (!input.slippage.value || !toField.asset.value || !swapResult.value)
       return null;
 
-    const slippage = Amount.fromDecimal(input.slippage.value);
-    const amount = swapResult.value;
+    const slippage = Amount(input.slippage.value);
+
     const minAmount = Amount("1")
       .subtract(slippage.divide(Amount("100")))
-      .multiply(amount);
+      .multiply(swapResult.value);
 
     return AssetAmount(toField.asset.value, minAmount);
   });
