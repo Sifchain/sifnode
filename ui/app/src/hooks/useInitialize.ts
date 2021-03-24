@@ -7,6 +7,6 @@ export function useInitialize() {
   // initialize subscriptions
   useSubscription(
     computed(() => store.wallet.eth.address), // Needs a ref
-    actions.peg.subscribeToUnconfirmedPegTxs
+    actions.peg.subscribeToUnconfirmedPegTxs,
   );
 }
