@@ -369,14 +369,6 @@ func NewInitApp(
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
-	app.SetAnteHandler(
-		auth.NewAnteHandler(
-			app.AccountKeeper,
-			app.SupplyKeeper,
-			auth.DefaultSigVerificationGasConsumer,
-		),
-	)
-
 	app.MountKVStores(keys)
 	app.MountTransientStores(tKeys)
 
