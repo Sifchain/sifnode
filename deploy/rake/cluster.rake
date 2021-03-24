@@ -155,7 +155,7 @@ namespace :cluster do
         set +x
         echo "$KUBECONFIG" | base64 --decode > ./kubeconfig_tmp
         kubectl exec --kubeconfig=./kubeconfig_tmp -n vault get pods
-        
+
         kubectl exec --kubeconfig=./kubeconfig_tmp -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
         rm -rf ./kubeconfig_tmp
         echo "Vault Ready"
