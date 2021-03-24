@@ -24,7 +24,7 @@ func NewSwapFeeChangeDecorator(ck keeper.Keeper) SwapFeeChangeDecorator {
 var _ types.AnteDecorator = SwapFeeChangeDecorator{}
 
 //The AnteHandle for SwapFeeChangeDecorator handles swap network fees for swap transactions
-//If the user tries to do a swap and does not have enough rowan, some of thier cToken is exchanged for rowan and user to enrich the user.
+//If the user tries to do a swap and does not have enough rowan, some of their cToken is exchanged for rowan and user to enrich the user.
 //This exchange does not incur a slip fee
 func (r SwapFeeChangeDecorator) AnteHandle(ctx types.Context, tx types.Tx, simulate bool, next types.AnteHandler) (newCtx types.Context, err error) {
 	feeTx, ok := tx.(ante.FeeTx)
