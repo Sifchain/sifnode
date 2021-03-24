@@ -57,9 +57,6 @@ jobs:
           export image_tag=testnet-genesis
           export env=swing-set
           export app_name=ebrelayer
-          printenv
-          ls -lah $(pwd)
-          pwd
           echo "======"
           rake "cluster:vault:login[]"
           #rake "cluster:vault:createpolicy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"

@@ -153,11 +153,9 @@ namespace :cluster do
     task :login, [] do |t, args|
       cluster_automation = %Q{
         set +x
-        printenv
-        echo $KUBECONFIG
-        echo "$KUBECONFIG" | base64 --decode
-
         echo "$KUBECONFIG" | base64 --decode > ./kubeconfig_tmp
+        kubectl exec --kubeconfig=./kubeconfig_tmp -n vault get pods
+        
         kubectl exec --kubeconfig=./kubeconfig_tmp -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
         rm -rf ./kubeconfig_tmp
         echo "Vault Ready"
@@ -172,7 +170,7 @@ namespace :cluster do
     task :createpolicy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       cluster_automation = %Q{
         set +x
-        echo -e "$KUBECONFIG" | base64 --decode > ./kubeconfig_tmp
+        echo "$KUBECONFIG" | base64 --decode > ./kubeconfig_tmp
         echo "
 path \"#{args[:env]}/#{args[:app_name]}\" {
     capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]
@@ -230,7 +228,7 @@ path \"+/sys/internal/counters/activity\" {
     task :enablekubernetes, [] do |t, args|
       cluster_automation = %Q{
         set +x
-        echo -e "$KUBECONFIG" | base64 --decode > ./kubeconfig_tmp
+        echo "$KUBECONFIG" | base64 --decode > ./kubeconfig_tmp
         echo "APPLY VAULT AUTH ENABLE KUBERNETES"
         check_installed=`kubectl exec --kubeconfig=./kubeconfig_tmp -n vault -it vault-0 -- vault auth list | grep kubernetes`
         [ -z "$check_installed" ] && kubectl exec --kubeconfig=./kubeconfig_tmp -n vault -it vault-0 -- vault auth enable kubernetes || echo "Kubernetes Already Enabled"
@@ -246,7 +244,7 @@ path \"+/sys/internal/counters/activity\" {
     task :configureapplication, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       cluster_automation = %Q{
         set +x
-        echo -e "$KUBECONFIG" | base64 --decode > ./kubeconfig_tmp
+        echo "$KUBECONFIG" | base64 --decode > ./kubeconfig_tmp
         echo "
 apiVersion: v1
 kind: ServiceAccount
@@ -277,7 +275,7 @@ metadata:
     task :deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       cluster_automation = %Q{
         set +x
-        echo -e "$KUBECONFIG" | base64 --decode > ./kubeconfig_tmp
+        echo "$KUBECONFIG" | base64 --decode > ./kubeconfig_tmp
         helm upgrade #{args[:app_name]} ../repos/sifnode/deploy/helm/#{args[:app_name]} \
             --install -n #{args[:app_namespace]} \
             --create-namespace \
