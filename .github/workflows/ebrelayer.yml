@@ -61,15 +61,12 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_PROFILE: "swing-set"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
           set +x
           export PATH=$(pwd):${PATH}
-          aws-iam-authenticator
-          aws eks update-kubeconfig --name sifchain-aws-swing-set-us --region us-west-2 --profile swing-set --kubeconfig ./kubeconfig
-          cat ./kubeconfig
+          aws eks update-kubeconfig --name sifchain-aws-swing-set-us --region us-west-2 --profile swing-set
           export app_namespace=ebrelayer
           export image=sifchain/ebrelayer
           export image_tag=testnet-genesis
