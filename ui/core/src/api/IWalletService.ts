@@ -17,6 +17,7 @@ export type IWalletService = {
     balances: AssetAmount[];
     log: string;
   };
+  onProviderNotFound(handler: () => void): void;
   isConnected(): boolean;
   getSupportedTokens: () => Asset[];
   connect(): Promise<void>;

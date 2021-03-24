@@ -314,6 +314,55 @@
       "name": "Origin Protocol",
       "network": "sifchain",
       "symbol": "cogn"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12782/small/logocircle.png?1611944557",
+      "name": "DAOfi",
+      "network": "sifchain",
+      "symbol": "cdaofi"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12509/small/linear.jpg?1606884470",
+      "name": "Linear",
+      "network": "sifchain",
+      "symbol": "clina"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/9351/small/12ships.png?1566485390",
+      "name": "12Ships",
+      "network": "sifchain",
+      "symbol": "ctshp"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/13803/small/b20.png?1611996305",
+      "name": "B.20",
+      "network": "sifchain",
+      "symbol": "cb20"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/3328/small/Akropolis.png?1547037929",
+      "name": "Akropolis",
+      "network": "sifchain",
+      "symbol": "cakro"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12623/small/RFUEL_SQR.png?1602481093",
+      "name": "Rio Fuel Token",
+      "network": "sifchain",
+      "symbol": "crfuel"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/12843/small/image.png?1611212077",
+      "name": "Rally",
+      "network": "sifchain",
+      "symbol": "crly"
     }
   ]
 }

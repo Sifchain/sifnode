@@ -70,7 +70,7 @@ test("removeLiquidity", async () => {
   await clp.removeLiquidity(removeLiquidityParams);
   expect(base.post).toHaveBeenCalledWith(
     "/clp/removeLiquidity",
-    removeLiquidityParams
+    removeLiquidityParams,
   );
 });
 
@@ -102,6 +102,6 @@ test("createPool", async () => {
 test("getLiquidityProvider", async () => {
   await clp.getLiquidityProvider(getLiquidityProvider);
   expect(base.get).toHaveBeenCalledWith(
-    `/clp/getLiquidityProvider?symbol=foo&lpAddress=bar`
+    `/clp/getLiquidityProvider?symbol=foo&lpAddress=bar`,
   );
 });

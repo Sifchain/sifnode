@@ -3,7 +3,6 @@ package types
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
@@ -108,10 +107,7 @@ func inWhiteList(validator staking.Validator, whiteListValidatorAddresses []sdk.
 // all claims and returns the highest claim, power for that claim, total power claimed on the prophecy overall.
 // and the total power of all whitelist validators.
 func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKeeper, whiteListValidatorAddresses []sdk.ValAddress) (string, int64, int64, int64) {
-	fmt.Println("sifnode oracle prophecy FindHighestClaim")
 	validators := stakeKeeper.GetBondedValidatorsByPower(ctx)
-
-	fmt.Printf("sifnode oracle prophecy FindHighestClaim validators length is %d\n", len(validators))
 
 	// Compute the total power of white list validators
 	totalPower := int64(0)
@@ -120,8 +116,6 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 			totalPower += validator.GetConsensusPower()
 		}
 	}
-
-	fmt.Printf("sifnode oracle prophecy FindHighestClaim totalPower is %d\n", totalPower)
 
 	//Index the validators by address for looking when scanning through claims
 	validatorsByAddress := make(map[string]staking.Validator)
@@ -137,8 +131,6 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 		claimPower := int64(0)
 
 		for _, validatorAddr := range validatorAddrs {
-			fmt.Printf("sifnode oracle prophecy FindHighestClaim validator is %s\n", validatorAddr.String())
-
 			validator, found := validatorsByAddress[validatorAddr.String()]
 			if found {
 				// Note: If claim validator is not found in the current validator set, we assume it is no longer
@@ -147,8 +139,6 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 			}
 		}
 		totalClaimsPower += claimPower
-		fmt.Printf("sifnode oracle prophecy FindHighestClaim totalClaimsPower is %d\n", totalClaimsPower)
-		fmt.Printf("sifnode oracle prophecy FindHighestClaim claimPower is %d\n", claimPower)
 
 		if claimPower > highestClaimPower {
 			highestClaimPower = claimPower
