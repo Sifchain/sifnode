@@ -60,6 +60,7 @@ jobs:
           printenv
           ls -lah $(pwd)
           pwd
+          echo "======"
           rake "cluster:vault:login[]"
           #rake "cluster:vault:createpolicy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
           #rake "cluster:vault:enablekubernetes[]"
