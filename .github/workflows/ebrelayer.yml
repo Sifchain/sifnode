@@ -68,6 +68,8 @@ jobs:
           set +x
           export PATH=$(pwd):${PATH}
           aws-iam-authenticator
+          aws eks update-kubeconfig --name sifchain-aws-swing-set-us --region us-west-2 --profile swing-set --kubeconfig ./kubeconfig
+          cat ./kubeconfig
           export app_namespace=ebrelayer
           export image=sifchain/ebrelayer
           export image_tag=testnet-genesis
