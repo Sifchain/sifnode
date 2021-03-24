@@ -12,7 +12,7 @@ export function SubscribeToTx({
   // Should this live behind a store service API?
   function storeSetTxStatus(
     hash: string | undefined,
-    state: TransactionStatus
+    state: TransactionStatus,
   ) {
     if (!hash || !store.wallet.eth.address) return;
 
@@ -66,7 +66,7 @@ export function SubscribeToTx({
       unsubscribe();
     });
 
-    tx.onError(err => {
+    tx.onError((err) => {
       storeSetTxStatus(tx.hash, {
         hash: tx.hash || "",
         memo: "Transaction Failed",

@@ -1,8 +1,9 @@
 export type ConfirmState =
-    "approving"
+  | "approving"
   | "selecting"
   | "confirming"
   | "signing"
   | "confirmed"
   | "rejected"
+  | "out_of_gas"
   | "failed";

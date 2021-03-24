@@ -111,29 +111,29 @@ export function setupClpExtension(base: LcdClient): ClpExtension {
         return (await base.get(`/clp/getPools`)).result?.Pools;
       },
 
-      getAssets: async address => {
+      getAssets: async (address) => {
         return (await base.get(`/clp/getAssets?lpAddress=${address}`)).result;
       },
 
-      swap: async params => {
+      swap: async (params) => {
         return await base.post(`/clp/swap`, params);
       },
 
-      addLiquidity: async params => {
+      addLiquidity: async (params) => {
         return await base.post(`/clp/addLiquidity`, params);
       },
 
-      createPool: async params => {
+      createPool: async (params) => {
         return await base.post(`/clp/createPool`, params);
       },
 
       getLiquidityProvider: async ({ symbol, lpAddress }) => {
         return await base.get(
-          `/clp/getLiquidityProvider?symbol=${symbol}&lpAddress=${lpAddress}`
+          `/clp/getLiquidityProvider?symbol=${symbol}&lpAddress=${lpAddress}`,
         );
       },
 
-      removeLiquidity: async params => {
+      removeLiquidity: async (params) => {
         return await base.post(`/clp/removeLiquidity`, params);
       },
 

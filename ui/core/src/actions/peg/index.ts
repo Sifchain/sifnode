@@ -97,7 +97,7 @@ export default ({
         assetAmount,
         store.wallet.eth.address,
         store.wallet.sif.address,
-        feeAmount
+        feeAmount,
       );
 
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
@@ -117,7 +117,7 @@ export default ({
         txStatus.state,
         txStatus.memo,
         txStatus.code,
-        tx.value.msg
+        tx.value.msg,
       );
 
       return txStatus;
@@ -129,7 +129,7 @@ export default ({
     async approve(address: Address, assetAmount: AssetAmount) {
       return await api.EthbridgeService.approveBridgeBankSpend(
         address,
-        assetAmount
+        assetAmount,
       );
     },
 
@@ -140,16 +140,16 @@ export default ({
         ? api.EthbridgeService.burnToSifchain
         : api.EthbridgeService.lockToSifchain;
 
-      return await new Promise<TransactionStatus>(done => {
+      return await new Promise<TransactionStatus>((done) => {
         const pegTx = lockOrBurnFn(
           store.wallet.sif.address,
           assetAmount,
-          config.ethConfirmations
+          config.ethConfirmations,
         );
 
         subscribeToTx(pegTx);
 
-        pegTx.onTxHash(hash => {
+        pegTx.onTxHash((hash) => {
           done({
             hash: hash.txHash,
             memo: "Transaction Accepted",

@@ -2,7 +2,6 @@ package cli
 
 import (
 	"bufio"
-	"fmt"
 	"regexp"
 	"strconv"
 
@@ -78,7 +77,6 @@ func GetCmdCreateEthBridgeClaim(cdc *codec.Codec) *cobra.Command {
 
 			bigIntAmount, ok := sdk.NewIntFromString(args[6])
 			if !ok {
-				fmt.Println("SetString: error")
 				return types.ErrInvalidAmount
 			}
 
@@ -112,7 +110,7 @@ func GetCmdBurn(cdc *codec.Codec) *cobra.Command {
 		Short: "burn cETH or cERC20 on the Cosmos chain",
 		Long: `This should be used to burn cETH or cERC20. It will burn your coins on the Cosmos Chain, removing them from your account and deducting them from the supply.
 		It will also trigger an event on the Cosmos Chain for relayers to watch so that they can trigger the withdrawal of the original ETH/ERC20 to you from the Ethereum contract!`,
-		Args:  cobra.ExactArgs(5),
+		Args: cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)

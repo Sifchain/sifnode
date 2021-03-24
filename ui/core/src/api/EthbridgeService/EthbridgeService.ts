@@ -57,7 +57,7 @@ export default function createEthbridgeService({
   function createPegTx(
     confirmations: number,
     symbol?: string,
-    txHash?: string
+    txHash?: string,
   ): PegTxEventEmitter {
     const emitter = createPegTxEventEmitter(txHash, symbol);
 
@@ -91,7 +91,7 @@ export default function createEthbridgeService({
     address: string,
     contract: Contract,
     eventList: string[],
-    blockRange: number
+    blockRange: number,
   ) {
     const web3 = await ensureWeb3();
     const latest = await web3.eth.getBlockNumber();
@@ -127,7 +127,7 @@ export default function createEthbridgeService({
       const web3 = await ensureWeb3();
       const tokenContract = await getTokenContract(
         web3,
-        (amount.asset as Token).address
+        (amount.asset as Token).address,
       );
       const sendArgs = {
         from: account,
@@ -144,13 +144,13 @@ export default function createEthbridgeService({
       if (
         JSBI.lessThanOrEqual(
           amount.toBaseUnits(),
-          JSBI.BigInt(hasAlreadyApprovedSpend)
+          JSBI.BigInt(hasAlreadyApprovedSpend),
         )
       ) {
         // dont request approve again
         console.log(
           "approveBridgeBankSpend: spend already approved",
-          hasAlreadyApprovedSpend
+          hasAlreadyApprovedSpend,
         );
         return;
       }
@@ -195,7 +195,7 @@ export default function createEthbridgeService({
     lockToSifchain(
       sifRecipient: string,
       assetAmount: AssetAmount,
-      confirmations: number
+      confirmations: number,
     ) {
       const pegTx = createPegTx(confirmations, assetAmount.asset.symbol);
 
@@ -207,13 +207,13 @@ export default function createEthbridgeService({
         });
       }
 
-      (async function() {
+      (async function () {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
 
         const bridgeBankContract = await getBridgeBankContract(
           web3,
-          bridgebankContractAddress
+          bridgebankContractAddress,
         );
         const accounts = await web3.eth.getAccounts();
         const coinDenom = (assetAmount.asset as Token).address ?? ETH_ADDRESS;
@@ -228,7 +228,7 @@ export default function createEthbridgeService({
 
         console.log(
           "lockToSifchain: bridgeBankContract.lock",
-          JSON.stringify({ cosmosRecipient, coinDenom, amount, sendArgs })
+          JSON.stringify({ cosmosRecipient, coinDenom, amount, sendArgs }),
         );
 
         bridgeBankContract.methods
@@ -242,7 +242,7 @@ export default function createEthbridgeService({
             console.log("lockToSifchain: bridgeBankContract.lock ERROR", err);
             handleError(err);
           });
-      })().catch(err => {
+      })().catch((err) => {
         handleError(err);
       });
 
@@ -289,24 +289,24 @@ export default function createEthbridgeService({
      */
     async fetchUnconfirmedLockBurnTxs(
       address: string,
-      confirmations: number
+      confirmations: number,
     ): Promise<PegTxEventEmitter[]> {
       const web3 = await ensureWeb3();
 
       const bridgeBankContract = await getBridgeBankContract(
         web3,
-        bridgebankContractAddress
+        bridgebankContractAddress,
       );
 
       const txs = await getEventTxsInBlockrangeFromAddress(
         address,
         bridgeBankContract,
         ["LogBurn", "LogLock"],
-        confirmations
+        confirmations,
       );
 
       return txs.map(({ hash, symbol }) =>
-        createPegTx(confirmations, symbol, hash)
+        createPegTx(confirmations, symbol, hash),
       );
     },
 
@@ -314,7 +314,7 @@ export default function createEthbridgeService({
       sifRecipient: string,
       assetAmount: AssetAmount,
       confirmations: number,
-      account?: string
+      account?: string,
     ) {
       const pegTx = createPegTx(confirmations, assetAmount.asset.symbol);
 
@@ -326,13 +326,13 @@ export default function createEthbridgeService({
         });
       }
 
-      (async function() {
+      (async function () {
         const web3 = await ensureWeb3();
         const cosmosRecipient = Web3.utils.utf8ToHex(sifRecipient);
 
         const bridgeBankContract = await getBridgeBankContract(
           web3,
-          bridgebankContractAddress
+          bridgebankContractAddress,
         );
         const accounts = await web3.eth.getAccounts();
         const coinDenom = (assetAmount.asset as Token).address;
@@ -356,7 +356,7 @@ export default function createEthbridgeService({
             console.log("burnToSifchain: bridgeBankContract.burn ERROR", err);
             handleError(err);
           });
-      })().catch(err => {
+      })().catch((err) => {
         handleError(err);
       });
 

@@ -88,20 +88,20 @@ export function parseAssets(configAssets: AssetConfig[]): Asset[] {
 }
 
 export function parseConfig(config: ChainConfig, assets: Asset[]): ApiContext {
-  const nativeAsset = assets.find(a => a.symbol === config.nativeAsset);
+  const nativeAsset = assets.find((a) => a.symbol === config.nativeAsset);
 
   if (!nativeAsset)
     throw new Error(
-      "No nativeAsset defined for chain config:" + JSON.stringify(config)
+      "No nativeAsset defined for chain config:" + JSON.stringify(config),
     );
 
   const bridgetokenContractAddress = (assets.find(
-    token => token.symbol === "erowan"
+    (token) => token.symbol === "erowan",
   ) as Token).address;
 
   const sifAssets = assets
-    .filter(asset => asset.network === "sifchain")
-    .map(sifAsset => {
+    .filter((asset) => asset.network === "sifchain")
+    .map((sifAsset) => {
       return {
         coinDenom: sifAsset.symbol,
         coinDecimals: sifAsset.decimals,
