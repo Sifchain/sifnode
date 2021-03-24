@@ -260,7 +260,7 @@ func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-// GetCmdUpdateCethReceiverAccount is the CLI command for update the validator whitelist
+// GetCmdUpdateCethReceiverAccount is the CLI command to update the sifchain account that receives the ceth proceeds
 func GetCmdUpdateCethReceiverAccount(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "update_ceth_receiver_account [cosmos-sender-address] [ceth_receiver_account] --node [node-address]",

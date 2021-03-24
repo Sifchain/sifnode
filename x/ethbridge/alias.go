@@ -43,7 +43,6 @@ var (
 	CreateTestEthMsg                   = types.CreateTestEthMsg
 	CreateTestEthClaim                 = types.CreateTestEthClaim
 	CreateTestQueryEthProphecyResponse = types.CreateTestQueryEthProphecyResponse
-	GetGenesisStateFromAppState        = types.GetGenesisStateFromAppState
 	CethReceiverAccountPrefix          = types.CethReceiverAccountPrefix
 )
 
