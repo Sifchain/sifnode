@@ -204,7 +204,7 @@ export default defineComponent({
           case PoolState.ZERO_AMOUNTS:
             return "Please enter an amount";
           case PoolState.ZERO_AMOUNTS_NEW_POOL:
-            return "Both inputs needed to create a pool";
+            return "Both inputs required";
           case PoolState.INSUFFICIENT_FUNDS:
             return "Insufficient Funds";
           case PoolState.VALID_INPUT:
