@@ -13,16 +13,19 @@ export async function importKeplrAccount(page, options) {
 }
 
 export async function connectKeplrAccount(page, browserContext) {
-  await page.click('button:has-text("Connect Wallet")');
+  // await page.click('button:has-text("Connect Wallet")');
   const [newPage] = await Promise.all([
     browserContext.waitForEvent("page"),
-    page.click('button:has-text("Connect Keplr")'),
+    // page.click('button:has-text("Connect Keplr")'),
+    
   ]);
   await newPage.waitForLoadState();
+  await newPage.pause()
+
   await newPage.click("text=Approve");
   await newPage.waitForLoadState();
   const [popup] = await Promise.all([browserContext.waitForEvent("page")]);
   await popup.waitForLoadState();
   await popup.click("text=Approve");
-  await page.click("text=×");
+  // await page.click("text=×");
 }

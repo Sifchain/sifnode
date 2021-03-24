@@ -5,7 +5,6 @@
   - Peg, unpeg, happy path
   - Cleanup
 */
-
 import "@babel/polyfill";
 const path = require("path");
 const fs = require("fs");
@@ -14,8 +13,7 @@ const { chromium } = require("playwright");
 const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 const { extractFile } = require("./utils");
 
-const DEX_TARGET =
-  "https://gateway.pinata.cloud/ipfs/QmV7XdW4VTiaiyDJuHcqoLj67foxLuoequtTax8f7kgJAf";
+const DEX_TARGET = "localhost:8080";
 
 const KEPLR_EXT_ID = "dmkamcknogkgcdfhhbddcghachkejeap";
 const KEPLR_VERSION = "0.8.1_0";
@@ -62,9 +60,11 @@ describe("connect to page", () => {
     const dexPage = await browserContext.newPage();
     await dexPage.goto(DEX_TARGET);
     await connectKeplrAccount(dexPage, browserContext);
-    await dexPage.waitForSelector(".wallet-connect-container", {
-      state: "detached",
-    });
+    // await dexPage.waitForSelector(".wallet-connect-container", {
+    //   state: "detached",
+    // });
+    await dexPage.pause()
+
     expect(
       await dexPage.innerText(
         "#app > div > div.layout > div > div.body > div:nth-child(3) > div:nth-child(2) > div > div:nth-child(3) > div.amount"
