@@ -1,14 +1,14 @@
 {
   "sifAddrPrefix": "sif",
-  "sifApiUrl": "https://api-testnet.sifchain.finance",
-  "sifWsUrl": "ws://api-testnet.sifchain.finance:26657/websocket",
-  "sifChainId": "testnet",
+  "sifApiUrl": "https://api-devnet.sifchain.finance",
+  "sifWsUrl": "ws://api-devnet.sifchain.finance:26657/websocket",
+  "sifChainId": "devnet",
   "web3Provider": "metamask",
   "nativeAsset": "rowan",
   "bridgebankContractAddress": "",
   "keplrChainConfig": {
-    "chainName": "Sifchain - TestNet",
-    "chainId": "testnet",
+    "chainName": "Sifchain - DevNet",
+    "chainId": "devnet",
     "rpc": "",
     "rest": "",
     "stakeCurrency": {
