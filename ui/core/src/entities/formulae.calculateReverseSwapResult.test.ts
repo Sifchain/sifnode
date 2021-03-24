@@ -1,7 +1,4 @@
-import { Fraction, TEN } from "./fraction/Fraction";
 import tests from "../../../../test/test-tables/reverse_single_swap_result.json";
-import B from "./utils/B";
-import JSBI from "jsbi";
 import { calculateReverseSwapResult } from "./formulae";
 import Big from "big.js";
 
