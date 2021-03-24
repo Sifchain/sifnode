@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/tendermint/tendermint/libs/log"
@@ -77,6 +78,7 @@ var (
 
 func MakeCodec() *codec.Codec {
 	var cdc = codec.New()
+
 	ModuleBasics.RegisterCodec(cdc)
 	vesting.RegisterCodec(cdc) // Need to verify if we need this
 	sdk.RegisterCodec(cdc)
@@ -367,7 +369,14 @@ func NewInitApp(
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
-	app.SetAnteHandler(NewAnteHandler(app.AccountKeeper, app.SupplyKeeper, app.clpKeeper))
+	app.SetAnteHandler(
+		auth.NewAnteHandler(
+			app.AccountKeeper,
+			app.SupplyKeeper,
+			auth.DefaultSigVerificationGasConsumer,
+		),
+	)
+
 	app.MountKVStores(keys)
 	app.MountTransientStores(tKeys)
 
