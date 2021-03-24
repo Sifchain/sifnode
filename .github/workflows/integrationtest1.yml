@@ -3,6 +3,7 @@ on:
   push:
     paths-ignore:
       - "ui/**"
+      - "ebrelayer-pipeline-development"
 jobs:
   test:
     timeout-minutes: 40

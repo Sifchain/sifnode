@@ -28,7 +28,7 @@ jobs:
           set +x
           curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator
           chmod +x ./aws-iam-authenticator
-          export PATH=$(cwd):${PATH}
+          export PATH=$(pwd):${PATH}
           mkdir -p ~/.aws
           touch ~/.aws/config
           echo "[profile swing-set]" > ~/.aws/config
