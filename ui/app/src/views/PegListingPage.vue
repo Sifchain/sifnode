@@ -177,8 +177,10 @@ export default defineComponent({
             pegTxs,
           };
         })
-        .sort(function (a, b) {
-          // sort alphabetically
+        .sort((a, b) => {
+          // TODO - This could be more succint
+          // A good refactor candidate when we go to use it in another place
+          // Sort alphabetically
           if (a.asset.symbol < b.asset.symbol) {
             return -1;
           }
@@ -187,11 +189,19 @@ export default defineComponent({
           }
           return 0;
         })
-        .sort(function (a, b) {
-          // sort by balance
+        .sort((a, b) => {
+          // Next sort by balance
           return (
             parseFloat(b.amount.toFixed()) - parseFloat(a.amount.toFixed())
           );
+        })
+        .sort((a, b) => {
+          // Finally, sort and move rowan, erowan to the top
+          if (["rowan", "erowan"].includes(a.asset.symbol.toLowerCase())) {
+            return -1;
+          } else {
+            return 1;
+          }
         });
     });
 
