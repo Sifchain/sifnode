@@ -23,15 +23,34 @@ jobs:
 
       - name: Setup AWS Profile
         shell: bash
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG_SWINGSET_US }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_PROFILE: "swing-set"
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
           set +x
           curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator
           chmod +x ./aws-iam-authenticator
+
           export PATH=$(pwd):${PATH}
+
+          ./aws-iam-authenticator
+          
           mkdir -p ~/.aws
           touch ~/.aws/config
+          touch ~/.aws/credetntials
+
+          echo "[sifchain-base]" > ~/.aws/credetntials
+          echo "aws_access_key_id = ${AWS_ACCESS_KEY_ID}" >> ~/.aws/credetntials
+          echo "aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credetntials
+          echo "region=us-west-2" >> ~/.aws/credetntials
+
           echo "[profile swing-set]" > ~/.aws/config
+          echo "source_profile = sifchain-base" >> ~/.aws/config
           echo "role_arn = arn:aws:iam::983740309645:role/OrganizationAccountAccessRole" >> ~/.aws/config
           echo "color = 83000a" >> ~/.aws/config
           echo "role_session_name = elk_stack" >> ~/.aws/config
@@ -53,6 +72,7 @@ jobs:
         run: |
           set +x
           cat ~/.aws/config
+          cat ~/.aws/credentials
           export app_namespace=ebrelayer
           export image=sifchain/ebrelayer
           export image_tag=testnet-genesis
