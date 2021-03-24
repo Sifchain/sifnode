@@ -20,6 +20,13 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
       "autoscaling:DescribeLaunchConfigurations",
       "autoscaling:DescribeTags",
       "ec2:DescribeLaunchTemplateVersions",
+                "autoscaling:DescribeInstances",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "ec2:DescribeLaunchTemplateVersions",
+      "autoscaling:SetDesiredCapacity",
+      "autoscaling:UpdateAutoScalingGroup",
+                "ec2:DescribeInstanceTypes"
     ]
 
     resources = ["*"]
@@ -253,7 +260,7 @@ resource "kubernetes_deployment" "cluster_autoscaler" {
         automount_service_account_token = true
         service_account_name            = "cluster-autoscaler"
         container {
-          image             = "k8s.gcr.io/cluster-autoscaler:v1.18.0"
+          image             = "k8s.gcr.io/autoscaling/cluster-autoscaler:v1.20.0"
           image_pull_policy = "Always"
           name              = "cluster-autoscaler"
           command = [
@@ -276,7 +283,7 @@ resource "kubernetes_deployment" "cluster_autoscaler" {
           resources {
             limits = {
               cpu    = "0.1"
-              memory = "300Mi"
+              memory = "500Mi"
             }
             requests = {
               cpu    = "0.1"
