@@ -123,6 +123,7 @@ namespace :cluster do
     end
   end
 
+
   desc "ebrelayer Operations"
   namespace :ebrelayer do
     desc "Deploy a new ebrelayer to an existing cluster"
@@ -143,6 +144,165 @@ namespace :cluster do
       }
 
       system({"KUBECONFIG" => kubeconfig(args)}, cmd)
+    end
+  end
+
+  desc "Vault Login"
+  namespace :vault do
+    desc "Ensure vault-0 pod has been successfully logged into with token. "
+    task :login, [] do |t, args|
+      cluster_automation = %Q{
+        set +x
+        echo -e "$KUBECONFIG" > ./kubeconfig_tmp
+        kubectl exec --kubeconfig=./kubeconfig_tmp -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
+        rm -rf ./kubeconfig_tmp
+        echo "Vault Ready"
+      }
+    end
+  end
+
+  desc "Vault Create Policy"
+  namespace :vault do
+    desc "Create vault policy for application to read secrets."
+    task :createpolicy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+      cluster_automation = %Q{
+        set +x
+        echo -e "$KUBECONFIG" > ./kubeconfig_tmp
+
+        echo "Create VAULT Policy"
+        echo "
+path \"#{args[:env]}/#{args[:app_name]}\" {
+    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]
+}
+path \"#{args[:env]}/#{args[:app_name]}/*\" {
+    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]
+}
+path \"/#{args[:env]}/#{args[:app_name]}\" {
+    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]
+}
+path \"/#{args[:env]}/#{args[:app_name]}/*\" {
+    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]
+}
+path \"*\" {
+    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]
+}
+path \"sys/internal/counters/activity\" {
+  capabilities = [\"read\"]
+}
+path \"sys/internal/counters/config\" {
+  capabilities = [\"read\", \"update\"]
+}
+path \"sys/namespaces\" {
+  capabilities = [\"list\", \"read\", \"update\"]
+}
+path \"sys/internal/ui/namespaces\" {
+  capabilities = [\"read\", \"list\", \"update\", \"sudo\"]
+}
+path \"sys/internal/ui/mounts\" {
+  capabilities = [\"read\", \"sudo\"]
+}
+path \"+/sys/internal/counters/config\" {
+  capabilities = [\"read\", \"update\"]
+}
+path \"+/sys/internal/counters/activity\" {
+  capabilities = [\"read\"]
+}
+        " > #{args[:app_name]}-policy.hcl
+
+        echo "COPY VAULT POLICY TO POD"
+        kubectl cp --kubeconfig=./kubeconfig_tmp #{args[:app_name]}-policy.hcl vault-0:/home/vault/#{args[:app_name]}-policy.hcl -n vault
+
+        echo "APPLY VAULT HCL POLICY"
+        kubectl exec --kubeconfig=./kubeconfig_tmp -n vault -it vault-0 -- vault policy delete #{args[:app_name]}
+
+        kubectl exec --kubeconfig=./kubeconfig_tmp -n vault -it vault-0 -- vault policy write #{args[:app_name]} /home/vault/#{args[:app_name]}-policy.hcl
+
+        kubectl exec --kubeconfig=./kubeconfig_tmp -n vault -it vault-0 -- vault write sys/internal/counters/config enabled=enable
+
+        echo "CLEAN UP VAULT POLICY FILE"
+        rm -rf #{args[:app_name]}-policy.hcl
+
+        echo "Clean up temp kubeconfig"
+        rm -rf ./kubeconfig_tmp
+      }
+    end
+  end
+
+  desc "Vault Enable Kubernetes"
+  namespace :vault do
+    desc "Enable Application and Vault to Talk to Kubernetes."
+    task :enablekubernetes, [] do |t, args|
+      cluster_automation = %Q{
+        set +x
+        echo -e "$KUBECONFIG" > ./kubeconfig_tmp
+        echo "APPLY VAULT AUTH ENABLE KUBERNETES"
+        check_installed=`kubectl exec --kubeconfig=./kubeconfig_tmp -n vault -it vault-0 -- vault auth list | grep kubernetes`
+        [ -z "$check_installed" ] && kubectl exec --kubeconfig=./kubeconfig_tmp -n vault -it vault-0 -- vault auth enable kubernetes || echo "Kubernetes Already Enabled"
+        rm -rf ./kubeconfig_tmp
+      }
+    end
+  end
+
+  desc "Vault Configure Kubernetes for Application"
+  namespace :vault do
+    desc "Setup Service Account, and Vault Security Connections for Application."
+    task :configureapplication, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+      cluster_automation = %Q{
+        set +x
+        echo -e "$KUBECONFIG" > ./kubeconfig_tmp
+
+        echo "CREATE SERVICE ACCOUNT"
+        echo "
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: #{args[:app_name]}
+  namespace: #{args[:app_namespace]}
+  labels:
+    app: #{args[:app_name]}
+        " > service_account.yaml
+
+        kubectl apply --kubeconfig=./kubeconfig_tmp -f service_account.yaml -n #{args[:app_namespace]}
+
+        rm -rf service_account.yaml
+
+        token=`kubectl exec --kubeconfig=./kubeconfig_tmp -n vault -it vault-0 -- cat /var/run/secrets/kubernetes.io/serviceaccount/token`
+
+        kubernetes_cluster_ip=`kubectl exec --kubeconfig=./kubeconfig_tmp -it vault-0 -n vault -- printenv | grep KUBERNETES_PORT_443_TCP_ADDR | cut -d '=' -f 2 | tr -d '\n' | tr -d '\r'`
+
+        kubectl exec --kubeconfig=./kubeconfig_tmp -n vault \
+            -it vault-0 -- vault write auth/kubernetes/config token_reviewer_jwt="$token" kubernetes_host="https://$kubernetes_cluster_ip:443" kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+        kubectl exec --kubeconfig=./kubeconfig_tmp -n vault -it vault-0 -- vault write auth/kubernetes/role/#{args[:app_name]} bound_service_account_names=#{args[:app_name]} bound_service_account_namespaces=#{args[:app_namespace]} policies=#{args[:app_name]} ttl=1h
+
+        rm -rf ./kubeconfig_tmp
+      }
+    end
+  end
+
+  desc "Vault ebrelayer Operations"
+  namespace :vault do
+    desc "Deploy a new ebrelayer to an existing cluster"
+    task :deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+
+      cluster_automation = %Q{
+        set +x
+        echo -e "$KUBECONFIG" > ./kubeconfig_tmp
+        helm upgrade #{args[:app_name]} ../repos/sifnode/deploy/helm/#{args[:app_name]} \
+            --install -n #{args[:app_namespace]} \
+            --create-namespace \
+            --set image.repository=#{args[:image]} \
+            --set image.tag=#{args[:image_tag]} \
+            --kubeconfig=./kubeconfig_tmp
+
+        kubectl rollout status \
+            --kubeconfig=./kubeconfig_tmp deployment/#{args[:app_name]} \
+            -n #{args[:app_namespace]}
+
+        rm -rf ./kubeconfig_tmp
+      }
+
     end
   end
 

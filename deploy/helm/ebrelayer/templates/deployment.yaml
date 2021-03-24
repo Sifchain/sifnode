@@ -32,20 +32,10 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "ebrelayer init {{ .Values.ebrelayer.args.nodeHost }} {{ .Values.ebrelayer.args.ethWebsocketAddress }} {{ .Values.ebrelayer.args.ethBridgeRegistryAddress }} $MONIKER \"{{ .Values.ebrelayer.args.mnemonic }}\" --chain-id $CHAINNET --rpc-url {{ .Values.ebrelayer.args.nodeHost }} --gas {{ .Values.ebrelayer.args.gas }} --gas-prices {{ .Values.ebrelayer.args.gasPrices }}"]
+          args: ["-c", "source /vault/secrets/ebrelayer && ebrelayer init $nodeHost $ethWebsocketAddress $ethBridgeRegistryAddress $moniker \"$mnemonic\" --chain-id $chainnet --rpc-url $nodeHost --gas $gas --gas-prices $gasPrices"]
           volumeMounts:
             - name: data
               mountPath: /relayerdb
-          env:
-            - name: MONIKER
-              value: {{ .Values.ebrelayer.env.moniker }}
-            - name: CHAINNET
-              value: {{ .Values.ebrelayer.env.chainnet }}
-            - name: ETHEREUM_PRIVATE_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "ebrelayer.fullname" . }}
-                  key: ethPrivateKey
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:

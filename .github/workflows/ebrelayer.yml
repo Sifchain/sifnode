@@ -1,0 +1,47 @@
+name: Deploy EBRELAYER Swingset
+
+on:
+  push:
+    branches:
+      - 'ebrelayer-pipeline-development'
+
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install dependencies
+        run: gem install rake
+
+      - name: Deploy ebrelayer on Swing-Set
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG_SWINGSET }}
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          export app_namespace=ebrelayer
+          export image=sifchain/ebrelayer
+          export image_tag=testnet-genesis
+          export env=swing-set
+          export app_name=ebrelayer
+          printenv
+          ls -lah $(pwd)
+          pwd
+          rake "cluster:vault:login[]"
+          rake "cluster:vault:createpolicy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+          rake "cluster:vault:enablekubernetes[]"
+          rake "cluster:vault:configureapplication[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+          rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+
