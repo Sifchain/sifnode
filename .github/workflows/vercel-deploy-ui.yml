@@ -1,7 +1,9 @@
 name: Deploy UI to Vercel
 
 on: 
-  push:
+  pull_request:
+    branch:
+      - develop
     paths: 
       - 'ui/**'
 
