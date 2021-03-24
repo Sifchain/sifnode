@@ -154,10 +154,10 @@ namespace :cluster do
       cluster_automation = %Q{
         set +x
         #echo "$KUBECONFIG" | base64 --decode > ./kubeconfig_tmp
-        kubectl exec -n vault get pods
-        kubectl exec -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
+        kubectl exec --kubeconfig=./kubeconfig -n vault get pods
+        kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
         #rm -rf ./kubeconfig_tmp
-        #rm -rf ./kubeconfig
+        rm -rf ./kubeconfig
         echo "Vault Ready"
       }
       system(cluster_automation) or exit 1
