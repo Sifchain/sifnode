@@ -1,5 +1,5 @@
 name: Deploy UI to Vercel
-
+# run run on pull request into develop (feature/fixes)
 on: 
   pull_request:
     branch:

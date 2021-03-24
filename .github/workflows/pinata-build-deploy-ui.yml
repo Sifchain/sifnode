@@ -2,6 +2,8 @@ name: Build then Deploy to Pinata
 # run run on merge
 on: 
   push:
+    branches:
+      - [develop,testnet,master]
     paths:
       - 'ui/**'
 
