@@ -1,6 +1,5 @@
 import { calculatePoolUnits } from "./formulae";
 import { Fraction } from "./fraction/Fraction";
-
 import tables from "../../../../test/test-tables/pool_units.json";
 
 // Use this list to only run specific tests
