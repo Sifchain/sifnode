@@ -33,21 +33,16 @@ jobs:
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
           set +x
-          curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator
+          curl -s -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator
           chmod +x ./aws-iam-authenticator
 
           export PATH=$(pwd):${PATH}
-
-          ./aws-iam-authenticator
-          
           mkdir -p ~/.aws
-          touch ~/.aws/config
-          touch ~/.aws/credetntials
 
-          echo "[sifchain-base]" > ~/.aws/credetntials
-          echo "aws_access_key_id = ${AWS_ACCESS_KEY_ID}" >> ~/.aws/credetntials
-          echo "aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credetntials
-          echo "region=us-west-2" >> ~/.aws/credetntials
+          echo "[sifchain-base]" > ~/.aws/credentials
+          echo "aws_access_key_id = ${AWS_ACCESS_KEY_ID}" >> ~/.aws/credentials
+          echo "aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
+          echo "region=us-west-2" >> ~/.aws/credentials
 
           echo "[profile swing-set]" > ~/.aws/config
           echo "source_profile = sifchain-base" >> ~/.aws/config
@@ -71,8 +66,8 @@ jobs:
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
           set +x
-          cat ~/.aws/config
           cat ~/.aws/credentials
+          export PATH=$(pwd):${PATH}
           export app_namespace=ebrelayer
           export image=sifchain/ebrelayer
           export image_tag=testnet-genesis
