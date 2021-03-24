@@ -15,10 +15,10 @@ import { useBalances } from "./utils";
 export enum PoolState {
   SELECT_TOKENS,
   ZERO_AMOUNTS,
-  ZERO_AMOUNTS_NEW_POOL,
   INSUFFICIENT_FUNDS,
   VALID_INPUT,
   NO_LIQUIDITY,
+  ZERO_AMOUNTS_NEW_POOL,
 }
 
 export function usePoolCalculator(input: {
