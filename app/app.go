@@ -370,11 +370,10 @@ func NewInitApp(
 	app.SetEndBlocker(app.EndBlocker)
 
 	app.SetAnteHandler(
-		auth.NewAnteHandler(
+		NewAnteHandler(
 			app.AccountKeeper,
 			app.SupplyKeeper,
-			auth.DefaultSigVerificationGasConsumer,
-		),
+			app.clpKeeper),
 	)
 
 	app.MountKVStores(keys)
