@@ -3,7 +3,9 @@ name: Build then Deploy to Pinata
 on: 
   push:
     branches:
-      - [develop,testnet,master]
+      - 'develop'
+      - 'testnet'
+      - 'master'
     paths:
       - 'ui/**'
 
