@@ -48,28 +48,25 @@ def test_can_create_a_new_token_and_peg_it(
     request.ethereum_address = source_ethereum_address
     amount_in_tokens = 10 ** 9  # one billion of the token; note that this is not 1/(10 **18) of a token
 
+    existing_whitelist = test_utilities.get_whitelisted_tokens(request)
+    logging.info(f"existing whitelist: {existing_whitelist}")
+    existing_tokens = set(map(lambda w: "c" + w["symbol"], existing_whitelist))
+    logging.info(f"requested tokens: {tokens}")
     for t in tokens["assets"]:
-        if t["symbol"] == "rowan" or t["symbol"] == 'ceth':
+        if t["symbol"] in existing_tokens or t["symbol"] == "rowan":
+            logging.info(f"token {t} already whitelisted, skipping")
             continue
-        logging.info(f"token is: {t}")
-        try:
-            decimals_int = int(t["decimals"])
-            amount_in_fractions_of_a_token = amount_in_tokens * (10 ** decimals_int)
-            new_currency = create_new_currency(
-                amount=amount_in_fractions_of_a_token,
-                symbol=t["symbol"][1:],
-                token_name=t["name"],
-                decimals=decimals_int,
-                smart_contracts_dir=smart_contracts_dir,
-                bridgebank_address=bridgebank_address,
-                solidity_json_path=solidity_json_path,
-                operator_address=operator_address,
-                ethereum_network=ethereum_network
-            )
-            request.amount = amount_in_fractions_of_a_token
-            request.ethereum_symbol = new_currency["newtoken_address"]
-            request.sifchain_symbol = "c" + new_currency["newtoken_symbol"]
-            burn_lock_functions.send_from_ethereum_to_sifchain(request)
-        except Exception as e:
-            # it might already exist, so do nothing
-            logging.info(f"failed to create token {t}, error was {e}")
+        logging.info(f"whitelisting token {t}")
+        decimals_int = int(t["decimals"])
+        amount_in_fractions_of_a_token = amount_in_tokens * (10 ** decimals_int)
+        create_new_currency(
+            amount=amount_in_fractions_of_a_token,
+            symbol=t["symbol"][1:],
+            token_name=t["name"],
+            decimals=decimals_int,
+            smart_contracts_dir=smart_contracts_dir,
+            bridgebank_address=bridgebank_address,
+            solidity_json_path=solidity_json_path,
+            operator_address=operator_address,
+            ethereum_network=ethereum_network
+        )

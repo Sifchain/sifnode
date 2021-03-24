@@ -1,8 +1,8 @@
 import copy
 import logging
+import time
 
 import pytest
-import time
 
 import burn_lock_functions
 import test_utilities
@@ -24,7 +24,10 @@ def create_new_sifaddr_and_key():
     return new_addr["address"], new_addr["name"]
 
 
-@pytest.mark.skipif(not test_utilities.get_optional_env_var("NTRANSFERS", None), reason="run by hand and specify NTRANSFERS")
+@pytest.mark.skipif(
+    not test_utilities.get_optional_env_var("NTRANSFERS", None),
+    reason="run by hand and specify NTRANSFERS"
+)
 def test_bulk_transfers_from_sifchain(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
@@ -37,51 +40,38 @@ def test_bulk_transfers_from_sifchain(
         bridgetoken_address,
         ethereum_network,
 ):
+    tokens = test_utilities.get_required_env_var("TOKENS", "ceth,rowan").split(",")
+    logging.info("create new ethereum and sifchain addresses")
     basic_transfer_request.ethereum_address = source_ethereum_address
-    logging.info(f"transfer_request: {basic_transfer_request}")
-    # account_with_ceth, credentials_for_account_with_ceth = generate_test_account(
-    #     base_transfer_request=basic_transfer_request,
-    #     rowan_source_integrationtest_env_transfer_request=rowan_source_integrationtest_env_transfer_request,
-    #     rowan_source_integrationtest_env_credentials=rowan_source_integrationtest_env_credentials,
-    #     target_ceth_balance=5 * 10 ** 18,
-    #     target_rowan_balance=50 * 10 ** 18
-    # )
     n_transfers = int(test_utilities.get_optional_env_var("NTRANSFERS", 2))
     amount = "{:d}".format(5 * test_utilities.highest_gas_cost)
     new_addresses_and_keys = list(map(lambda x: create_new_sifaddr_and_key(), range(n_transfers)))
-    logging.info(f"aandk: {new_addresses_and_keys}")
+    logging.debug(f"new_addresses_and_keys: {new_addresses_and_keys}")
     new_addresses = list(map(lambda a: a[0], new_addresses_and_keys))
-    logging.debug(f"new_addresses: {new_addresses}")
-    new_eth_addrs = test_utilities.create_ethereum_addresses(smart_contracts_dir,
-                                                             basic_transfer_request.ethereum_network,
-                                                             len(new_addresses))
-    logging.info(f"new eth addrs: {new_eth_addrs}")
-    request: EthereumToSifchainTransferRequest = copy.deepcopy(basic_transfer_request)
-    requests = list(map(lambda addr: {
-        "amount": amount,
-        "symbol": test_utilities.NULL_ADDRESS,
-        "sifchain_address": addr
-    }, new_addresses))
-    request.amount = 5 * test_utilities.highest_gas_cost
+    new_eth_addrs = test_utilities.create_ethereum_addresses(
+        smart_contracts_dir,
+        basic_transfer_request.ethereum_network,
+        len(new_addresses)
+    )
+    logging.debug(f"new eth addrs: {new_eth_addrs}")
     credentials_for_account_with_ceth = SifchaincliCredentials(from_key=rowan_source_key)
-    for r in requests:
-        request.ethereum_address = source_ethereum_address
-        request.sifchain_address = rowan_source
-        request.sifchain_destination_address = r["sifchain_address"]
-        request.sifchain_symbol = "ceth"
-        request.ethereum_symbol = "eth"
-        logging.warning(f"requestis: {request}")
-        test_utilities.send_from_sifchain_to_sifchain(request, credentials_for_account_with_ceth)
-        time.sleep(3)
-        request.sifchain_symbol = "rowan"
-        request.ethereum_symbol = bridgetoken_address
-        test_utilities.send_from_sifchain_to_sifchain(request, credentials_for_account_with_ceth)
-        time.sleep(3)
+    request: EthereumToSifchainTransferRequest = copy.deepcopy(basic_transfer_request)
+    request.amount = (len(tokens) + 1) * test_utilities.highest_gas_cost
+    request.ethereum_address = source_ethereum_address
+    request.sifchain_address = rowan_source
+    for a in new_addresses:
+        for t in tokens:
+            request.sifchain_destination_address = a
+            request.sifchain_symbol = t
+            logging.info(f"send {t} to {a}, request is {request}")
+            test_utilities.send_from_sifchain_to_sifchain(request, credentials_for_account_with_ceth)
+            time.sleep(3)
 
     for a in new_addresses:
-        test_utilities.wait_for_sif_account(a, basic_transfer_request.sifnodecli_node, 90)
-        test_utilities.wait_for_sifchain_addr_balance(a, "ceth", amount, basic_transfer_request.sifnodecli_node, 180)
-        test_utilities.wait_for_sifchain_addr_balance(a, "rowan", amount, basic_transfer_request.sifnodecli_node, 180)
+        for t in tokens:
+            test_utilities.wait_for_sif_account(a, basic_transfer_request.sifnodecli_node, 90)
+            test_utilities.wait_for_sifchain_addr_balance(a, t, amount, basic_transfer_request.sifnodecli_node, 180)
+
     text_file = open("pfile.cmds", "w")
     simple_credentials = SifchaincliCredentials(
         keyring_passphrase=None,
