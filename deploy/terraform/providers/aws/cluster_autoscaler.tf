@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
 
 resource "kubernetes_service_account" "cluster_autoscaler" {
   metadata {
-    name      = "cluster-autoscaler-${var.cluster_name}"
+    name      = "cluster-autoscaler"
     namespace = "kube-system"
     labels = {
       k8s-addon = "cluster-autoscaler.addons.k8s.io"
@@ -63,7 +63,7 @@ resource "kubernetes_service_account" "cluster_autoscaler" {
 
 resource "kubernetes_cluster_role" "cluster_autoscaler" {
   metadata {
-    name = "cluster-autoscaler-${var.cluster_name}"
+    name = "cluster-autoscaler"
     labels = {
       k8s-addon = "cluster-autoscaler.addons.k8s.io"
       k8s-app   = "cluster-autoscaler"
@@ -153,7 +153,7 @@ resource "kubernetes_cluster_role" "cluster_autoscaler" {
 
 resource "kubernetes_role" "cluster_autoscaler" {
   metadata {
-    name      = "cluster-autoscaler-${var.cluster_name}"
+    name      = "cluster-autoscaler"
     namespace = "kube-system"
     labels = {
       k8s-addon = "cluster-autoscaler.addons.k8s.io"
@@ -177,7 +177,7 @@ resource "kubernetes_role" "cluster_autoscaler" {
 
 resource "kubernetes_cluster_role_binding" "auto_scaler" {
   metadata {
-    name = "cluster-autoscaler-${var.cluster_name}"
+    name = "cluster-autoscaler"
     labels = {
       k8s-addon = "cluster-autoscaler.addons.k8s.io"
       k8s-app   = "cluster-autoscaler"
@@ -199,7 +199,7 @@ resource "kubernetes_cluster_role_binding" "auto_scaler" {
 
 resource "kubernetes_role_binding" "auto_scaler" {
   metadata {
-    name      = "cluster-autoscaler-${var.cluster_name}"
+    name      = "cluster-autoscaler"
     namespace = "kube-system"
     labels = {
       k8s-addon = "cluster-autoscaler.addons.k8s.io"
@@ -251,7 +251,7 @@ resource "kubernetes_deployment" "cluster_autoscaler" {
 
       spec {
         automount_service_account_token = true
-        service_account_name            = "cluster-autoscaler-${var.cluster_name}"
+        service_account_name            = "cluster-autoscaler"
         container {
           image             = "k8s.gcr.io/cluster-autoscaler:v1.18.0"
           image_pull_policy = "Always"
@@ -274,11 +274,11 @@ resource "kubernetes_deployment" "cluster_autoscaler" {
           }
 
           resources {
-            limits {
+            limits = {
               cpu    = "0.1"
               memory = "300Mi"
             }
-            requests {
+            requests = {
               cpu    = "0.1"
               memory = "300Mi"
             }
