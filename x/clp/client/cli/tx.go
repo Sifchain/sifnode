@@ -11,6 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -32,6 +33,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 		GetCmdRemoveLiquidity(cdc),
 		GetCmdSwap(cdc),
 		GetCmdDecommissionPool(cdc),
+		MultiSendTxCmd(cdc),
 	)...)
 
 	return clpTxCmd
@@ -190,16 +192,59 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().AddFlagSet(FsMinReceivingAmount)
 
 	if err := cmd.MarkFlagRequired(FlagSentAssetSymbol); err != nil {
-		log.Println("MarkFlagRequired failed: ", err.Error() )
+		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagReceivedAssetSymbol); err != nil {
-		log.Println("MarkFlagRequired failed: ", err.Error() )
+		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagAmount); err != nil {
-		log.Println("MarkFlagRequired failed: ", err.Error() )
+		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagMinimumReceivingAmount); err != nil {
-		log.Println("MarkFlagRequired failed: ", err.Error() )
+		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
+	return cmd
+}
+
+func MultiSendTxCmd(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "multi-send [from1] [from2] [to_address] [amount1] [amount2]",
+		Short: "Create and sign a send tx",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+
+			to, err := sdk.AccAddressFromBech32(args[2])
+			if err != nil {
+				return err
+			}
+
+			// parse coins trying to be sent
+			coins1, err := sdk.ParseCoins(args[3])
+			if err != nil {
+				return err
+			}
+			coins2, err := sdk.ParseCoins(args[4])
+			if err != nil {
+				return err
+			}
+			from1, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+			from2, err := sdk.AccAddressFromBech32(args[1])
+			if err != nil {
+				return err
+			}
+			// build and sign the transaction, then broadcast to Tendermint
+			inputs := []bank.Input{bank.NewInput(from1, coins1), bank.NewInput(from2, coins2)}
+			outputs := []bank.Output{bank.NewOutput(to, coins1.Add(coins2...))}
+			msg := bank.NewMsgMultiSend(inputs, outputs)
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+
 	return cmd
 }
