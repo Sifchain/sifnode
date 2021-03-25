@@ -6,7 +6,7 @@ on:
       - 'ebrelayer-pipeline-development'
 
 jobs:
-  build:
+  deploy_swing_set_ebrelayer:
     name: deploy-ebrelayer
     runs-on: ${{ matrix.os }}
 
