@@ -123,6 +123,7 @@ jobs:
           export PATH=$(pwd):${PATH}
           echo "======"
           docker pull ${image}:${image_tag}
+          echo "look for anchore file"
           ls -lah | grep anchore
           curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -p -b ./.anchore-policy.json "${image}:${image_tag}"
 
