@@ -1,0 +1,300 @@
+{
+    "description": "",
+    "name": "anchore-policy-blog",
+    "policies": [
+      {
+        "comment": "",
+        "name": "General Checks",
+        "rules": [
+          {
+            "action": "WARN",
+            "comment": "Warn on image size",
+            "gate": "metadata",
+            "params": [
+              {
+                "name": "attribute",
+                "value": "size"
+              },
+              {
+                "name": "check",
+                "value": ">"
+              },
+              {
+                "name": "value",
+                "value": "125000"
+              }
+            ],
+            "trigger": "attribute"
+          },
+          {
+            "action": "WARN",
+            "comment": "Warn on presence of unapproved licenses",
+            "gate": "licenses",
+            "params": [
+              {
+                "name": "licenses",
+                "value": "GPLv2+, GPL-3+"
+              }
+            ],
+            "trigger": "blacklist_exact_match"
+          }
+        ],
+        "version": "1_0"
+      },
+      {
+        "comment": "",
+        "name": "File System Checks",
+        "rules": [
+          {
+            "action": "STOP",
+            "comment": "Remove setuid and setgid permissions in the images",
+            "gate": "files",
+            "params": [],
+            "trigger": "suid_or_guid_set"
+          },
+          {
+            "action": "STOP",
+            "comment": "Blacklist ssh package",
+            "gate": "packages",
+            "params": [
+              {
+                "name": "name",
+                "value": "openssh-server"
+              }
+            ],
+            "trigger": "blacklist"
+          },
+          {
+            "action": "STOP",
+            "comment": "Blacklist ssh package",
+            "gate": "packages",
+            "params": [
+              {
+                "name": "name",
+                "value": "libssh2"
+              }
+            ],
+            "trigger": "blacklist"
+          },
+          {
+            "action": "STOP",
+            "comment": "Blacklist ssh package",
+            "gate": "packages",
+            "params": [
+              {
+                "name": "name",
+                "value": "libssh"
+              }
+            ],
+            "trigger": "blacklist"
+          },
+          {
+            "action": "WARN",
+            "comment": "Ensure openssh configuration files are absent from image",
+            "gate": "packages",
+            "params": [
+              {
+                "name": "only_packages",
+                "value": "ssh"
+              },
+              {
+                "name": "only_directories",
+                "value": "/etc/sshd"
+              },
+              {
+                "name": "check",
+                "value": "missing"
+              }
+            ],
+            "trigger": "verify"
+          },
+          {
+            "action": "STOP",
+            "comment": "Enforce PID Limits",
+            "gate": "retrieved_files",
+            "params": [
+              {
+                "name": "path",
+                "value": "/proc/sys/kernel/pid_max"
+              },
+              {
+                "name": "check",
+                "value": "match"
+              },
+              {
+                "name": "regex",
+                "value": "256"
+              }
+            ],
+            "trigger": "content_regex"
+          }
+        ],
+        "version": "1_0"
+      },
+      {
+        "comment": "Blacklist vulnerable packages",
+        "name": "Vulnerable Packages",
+        "rules": [
+          {
+            "action": "STOP",
+            "comment": "Django 1.11 before 1.11.29, 2.2 before 2.2.11, and 3.0 before 3.0.4 allows SQL Injection if untrusted data is used as a tolerance parameter in GIS functions and aggregates on Oracle.",
+            "gate": "packages",
+            "params": [
+              {
+                "name": "name",
+                "value": "Django"
+              },
+              {
+                "name": "version",
+                "value": "2.2.3"
+              }
+            ],
+            "trigger": "blacklist"
+          },
+          {
+            "action": "STOP",
+            "comment": "A flaw was found in Mercurial before 4.9. It was possible to use symlinks and subrepositories to defeat Mercurial's path-checking logic and write files outside a repository",
+            "gate": "packages",
+            "params": [
+              {
+                "name": "name",
+                "value": "mercurial"
+              },
+              {
+                "name": "version",
+                "value": "4.8.2"
+              }
+            ],
+            "trigger": "blacklist"
+          },
+          {
+            "action": "STOP",
+            "comment": "Python 2.7.x through 2.7.16 and 3.x through 3.7.2 is affected by: Improper Handling of Unicode Encoding (with an incorrect netloc) during NFKC normalization",
+            "gate": "packages",
+            "params": [
+              {
+                "name": "name",
+                "value": "Python"
+              },
+              {
+                "name": "version",
+                "value": "2.7.16"
+              }
+            ],
+            "trigger": "blacklist"
+          }
+        ],
+        "version": "1_0"
+      },
+      {
+        "comment": "Blacklist malicious package types",
+        "name": "Malicious Packages",
+        "rules": [
+          {
+            "action": "STOP",
+            "comment": "Malicious library discovered [11.29.2019] typosquatting \"jellyfish\"",
+            "gate": "packages",
+            "params": [
+              {
+                "name": "name",
+                "value": "jeIlyfish"
+              }
+            ],
+            "trigger": "blacklist"
+          },
+          {
+            "action": "STOP",
+            "comment": "Malicious library discovered [11.29.2019] typosquatting python-dateutil",
+            "gate": "packages",
+            "params": [
+              {
+                "name": "name",
+                "value": "python3-dateutil"
+              }
+            ],
+            "trigger": "blacklist"
+          }
+        ],
+        "version": "1_0"
+      },
+      {
+        "comment": "Dockerfile security checks",
+        "name": "Dockerfile Checks",
+        "rules": [
+          {
+            "action": "STOP",
+            "comment": "The \"COPY\" instruction should be used instead of \"ADD\"",
+            "gate": "dockerfile",
+            "params": [
+              {
+                "name": "instruction",
+                "value": "ADD"
+              },
+              {
+                "name": "check",
+                "value": "exists"
+              },
+              {
+                "name": "actual_dockerfile_only",
+                "value": "false"
+              }
+            ],
+            "trigger": "instruction"
+          },
+          {
+            "action": "STOP",
+            "comment": "Blacklist SSH & Telnet ports",
+            "gate": "dockerfile",
+            "params": [
+              {
+                "name": "ports",
+                "value": "22,23"
+              },
+              {
+                "name": "type",
+                "value": "blacklist"
+              },
+              {
+                "name": "actual_dockerfile_only",
+                "value": "false"
+              }
+            ],
+            "trigger": "exposed_ports"
+          },
+          {
+            "action": "STOP",
+            "comment": "Ensure dockerfile is provided during analysis",
+            "gate": "dockerfile",
+            "params": [],
+            "trigger": "no_dockerfile_provided"
+          },
+          {
+            "action": "STOP",
+            "comment": "Ensure a minimal base image is used",
+            "gate": "dockerfile",
+            "params": [
+              {
+                "name": "instruction",
+                "value": "FROM"
+              },
+              {
+                "name": "check",
+                "value": "!="
+              },
+              {
+                "name": "value",
+                "value": "node:stretch-slim"
+              },
+              {
+                "name": "actual_dockerfile_only",
+                "value": "false"
+              }
+            ],
+            "trigger": "instruction"
+          }
+        ],
+        "version": "1_0"
+      }
+    ],
+    "version": "1_0"
+}
