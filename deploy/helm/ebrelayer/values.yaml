@@ -39,7 +39,7 @@ image:
 
 ebrelayer:
   env:
-    unused: "notused2"
+    unused: "notused 2 this is a test"
 
 persistence:
   enabled: true
