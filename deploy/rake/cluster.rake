@@ -153,7 +153,6 @@ namespace :cluster do
     task :login, [] do |t, args|
       cluster_automation = %Q{
         set +x
-        kubectl get pods --kubeconfig=./kubeconfig -n vault
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
         echo "Vault Ready"
       }

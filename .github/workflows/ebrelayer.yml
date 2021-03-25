@@ -70,7 +70,7 @@ jobs:
 
           echo "======"
           rake "cluster:vault:login[]"
-          #rake "cluster:vault:createpolicy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+          rake "cluster:vault:createpolicy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
           #rake "cluster:vault:enablekubernetes[]"
           #rake "cluster:vault:configureapplication[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
           #rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
