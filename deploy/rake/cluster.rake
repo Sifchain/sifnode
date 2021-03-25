@@ -267,7 +267,7 @@ metadata:
     task :deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       cluster_automation = %Q{
         set +x
-        helm upgrade #{args[:app_name]} ../repos/sifnode/deploy/helm/#{args[:app_name]} \
+        helm upgrade #{args[:app_name]} deploy/helm/#{args[:app_name]} \
             --install -n #{args[:app_namespace]} \
             --create-namespace \
             --set image.repository=#{args[:image]} \
