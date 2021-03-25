@@ -39,7 +39,7 @@ image:
 
 ebrelayer:
   env:
-    unused: "notused 2 this is a test"
+    updateforce: "force_update_change_this"
 
 persistence:
   enabled: true

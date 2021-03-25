@@ -30,6 +30,11 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          env:
+          {{- range $key, $val := .Values.ebrelayer.env }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
           args: ["-c", "source /vault/secrets/ebrelayer && ebrelayer init $nodeHost $ethWebsocketAddress $ethBridgeRegistryAddress $moniker \"$mnemonic\" --chain-id $chainnet --rpc-url $nodeHost --gas $gas --gas-prices $gasPrices"]
