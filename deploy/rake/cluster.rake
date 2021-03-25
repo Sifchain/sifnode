@@ -283,6 +283,48 @@ metadata:
     end
   end
 
+  desc "Anchore Security Docker Vulnerability Scan"
+  namespace :anchore do
+    desc "Deploy a new ebrelayer to an existing cluster"
+    task :scan, [:image, :image_tag, :app_name] do |t, args|
+      cluster_automation = %Q{
+        set +x
+        curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -f -r -d cmd/#{args[:app_name]}/Dockerfile -p "#{args[:image]}:#{args[:image_tag]}"
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+  desc "Setup AWS Profile for Automation Pipelines"
+  namespace :automation do
+    desc "Deploy a new ebrelayer to an existing cluster"
+    task :configure_aws_kube_profile, [:app_env, :aws_access_key_id, :aws_secret_access_key, :aws_region, :aws_role, :cluster_name] do |t, args|
+      cluster_automation = %Q{
+        set +x
+          set +x
+          curl -s -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator
+          chmod +x ./aws-iam-authenticator
+          export PATH=$(pwd):${PATH}
+          mkdir -p ~/.aws
+
+          echo "[sifchain-base]" > ~/.aws/credentials
+          echo "aws_access_key_id = #{args[:aws_access_key_id]}" >> ~/.aws/credentials
+          echo "aws_secret_access_key = #{args[:aws_secret_access_key]}" >> ~/.aws/credentials
+          echo "region = #{args[:aws_region]}" >> ~/.aws/credentials
+
+          echo "[profile #{args[:app_env]}]" > ~/.aws/config
+          echo "source_profile = sifchain-base" >> ~/.aws/config
+          echo "role_arn = #{args[:aws_role]}" >> ~/.aws/config
+          echo "color = 83000a" >> ~/.aws/config
+          echo "role_session_name = elk_stack" >> ~/.aws/config
+          echo "region = #{args[:aws_region]}" >> ~/.aws/config
+
+          aws eks update-kubeconfig --name #{args[:cluster_name]} --region #{args[:aws_region]} --profile #{args[:app_env]} --kubeconfig ./kubeconfig
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
   desc "Block Explorer"
   namespace :blockexplorer do
     desc "Deploy a Block Explorer to an existing cluster"
