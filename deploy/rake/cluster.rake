@@ -224,8 +224,6 @@ path \\"+/sys/internal/counters/activity\\" {
     task :enablekubernetes, [] do |t, args|
       cluster_automation = %Q{
         set +x
-        aws eks update-kubeconfig --name sifchain-aws-swing-set-us --region us-west-2 --profile swing-set --kubeconfig ./kubeconfig
-        ls -lah
         echo "APPLY VAULT AUTH ENABLE KUBERNETES"
         check_installed=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth list | grep kubernetes`
         [ -z "$check_installed" ] && kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth enable kubernetes || echo "Kubernetes Already Enabled"

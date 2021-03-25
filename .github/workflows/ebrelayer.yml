@@ -58,11 +58,6 @@ jobs:
       - name: Login to Vault on Swing-Set
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          app_namespace: "ebrelayer"
-          image: "sifchain/ebrelayer"
-          image_tag: "testnet-genesis"
-          env: "swing-set"
-          app_name: "ebrelayer"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -72,7 +67,7 @@ jobs:
           rake "cluster:vault:login[]"
 
 
-      - name: Deploy ebrelayer on Swing-Set
+      - name: Setup Vault Policy on Swing-Set
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
           app_namespace: "ebrelayer"
@@ -87,8 +82,31 @@ jobs:
           export PATH=$(pwd):${PATH}
           echo "======"
           rake "cluster:vault:createpolicy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
-          #rake "cluster:vault:enablekubernetes[]"
-          #rake "cluster:vault:configureapplication[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Enable Kubernetes Vault Communication If Not Enabled
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "======"
+          rake "cluster:vault:enablekubernetes[]"
+
+      - name: Configure Vault to Mount Secrets To Application
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
+          app_namespace: "ebrelayer"
+          image: "sifchain/ebrelayer"
+          image_tag: "testnet-genesis"
+          env: "swing-set"
+          app_name: "ebrelayer"
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "======"
+          rake "cluster:vault:configureapplication[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
           #rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
-
-
