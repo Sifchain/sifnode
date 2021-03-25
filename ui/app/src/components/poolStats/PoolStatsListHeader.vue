@@ -26,9 +26,10 @@ export default defineComponent({
       </span>
     </div>
 
-    <div class="col-lg">
-      <span>Arbitrage Opportunity</span>
+    <div class="col-md">
+      <span>Arbitrage</span>
       <span>
+        Opportunity
         <Tooltip
           message="This is the arbitrage opportunity available based on a differential between the price of this token on Sifchain and its price on Coinmarketcap."
         >

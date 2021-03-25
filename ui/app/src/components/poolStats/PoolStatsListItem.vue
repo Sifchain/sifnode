@@ -83,7 +83,7 @@ export default defineComponent({
       <div class="col-lg">
         <span>${{ priceToken }}</span>
       </div>
-      <div class="col-lg">
+      <div class="col-md">
         <span>{{ arb }}</span>
       </div>
       <div class="col-sm">
