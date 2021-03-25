@@ -34,7 +34,10 @@ export default defineComponent({
       <ArrowIconButton left :enabled="false" />
       <AssetItemLarge :amount="toAmount" :symbol="toToken" />
     </div>
-    <div class="estimate">Output is estimated.</div>
+    <div class="estimate">
+      Output is estimated. If you do not have any ROWAN to pay for the gas fee,
+      it will be deducted from your output amount.
+    </div>
     <DetailsPanel
       class="details"
       :priceMessage="priceMessage"
