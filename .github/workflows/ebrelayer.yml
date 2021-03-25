@@ -49,26 +49,43 @@ jobs:
           echo "role_session_name = elk_stack" >> ~/.aws/config
           echo "region = ap-southeast-2" >> ~/.aws/config
 
-      - name: Install dependencies
+          aws eks update-kubeconfig --name sifchain-aws-swing-set-us --region us-west-2 --profile swing-set --kubeconfig ./kubeconfig
+
+
+      - name: Install Rake
         run: gem install rake
 
-      - name: Deploy ebrelayer on Swing-Set
+      - name: Login to Vault on Swing-Set
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
+          app_namespace: "ebrelayer"
+          image: "sifchain/ebrelayer"
+          image_tag: "testnet-genesis"
+          env: "swing-set"
+          app_name: "ebrelayer"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
           set +x
-
           export PATH=$(pwd):${PATH}
-          export app_namespace=ebrelayer
-          export image=sifchain/ebrelayer
-          export image_tag=testnet-genesis
-          export env=swing-set
-          export app_name=ebrelayer
-
           echo "======"
           rake "cluster:vault:login[]"
+
+
+      - name: Deploy ebrelayer on Swing-Set
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
+          app_namespace: "ebrelayer"
+          image: "sifchain/ebrelayer"
+          image_tag: "testnet-genesis"
+          env: "swing-set"
+          app_name: "ebrelayer"
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "======"
           rake "cluster:vault:createpolicy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
           #rake "cluster:vault:enablekubernetes[]"
           #rake "cluster:vault:configureapplication[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"

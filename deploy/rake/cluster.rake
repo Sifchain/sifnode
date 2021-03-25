@@ -166,7 +166,6 @@ namespace :cluster do
     task :createpolicy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       cluster_automation = %Q{
         set +x
-        echo "$KUBECONFIG" | base64 --decode > ./kubeconfig
         echo "
 path \"#{args[:env]}/#{args[:app_name]}\" {
     capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]
