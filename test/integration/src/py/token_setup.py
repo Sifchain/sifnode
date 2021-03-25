@@ -51,6 +51,8 @@ def test_can_create_a_new_token_and_peg_it(
     existing_whitelist = test_utilities.get_whitelisted_tokens(request)
     logging.info(f"existing whitelist: {existing_whitelist}")
     existing_tokens = set(map(lambda w: "c" + w["symbol"], existing_whitelist))
+    # ceth is special since we can't just mint it or create an ERC20 contract for it
+    existing_tokens.add("ceth")
     logging.info(f"requested tokens: {tokens}")
     for t in tokens["assets"]:
         if t["symbol"] in existing_tokens or t["symbol"] == "rowan":
