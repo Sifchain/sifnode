@@ -123,7 +123,8 @@ jobs:
           export PATH=$(pwd):${PATH}
           echo "======"
           docker pull ${image}:${image_tag}
-          curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -p -b .anchore-policy.json "${image}:${image_tag}"
+          ls -lah | grep anchore
+          curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -p -b ./.anchore-policy.json "${image}:${image_tag}"
 
       - name: Deploy Ebrelayer to Kubernetes Via Helm.
         env:
