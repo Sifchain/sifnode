@@ -25,10 +25,9 @@ jobs:
         shell: bash
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          KUBECONFIG: ${{ secrets.KUBECONFIG_SWINGSET_US }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_REGION: "us-west-2"
           AWS_CLUSTER_NAME: "sifchain-aws-swing-set-us"
           AWS_ROLE: "arn:aws:iam::983740309645:role/OrganizationAccountAccessRole"
           APP_ENV: "swing-set"
@@ -36,6 +35,22 @@ jobs:
         run: |
           set +x
           rake "cluster:automation:configure_aws_kube_profile[${APP_ENV}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${AWS_REGION}, ${AWS_ROLE}, ${AWS_CLUSTER_NAME}]"
+
+          #curl -s -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator
+          #chmod +x ./aws-iam-authenticator
+          #export PATH=$(pwd):${PATH}
+          #mkdir -p ~/.aws
+          #echo "[sifchain-base]" > ~/.aws/credentials
+          #echo "aws_access_key_id = ${AWS_ACCESS_KEY_ID}" >> ~/.aws/credentials
+          #echo "aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
+          #echo "region = us-west-2" >> ~/.aws/credentials
+          #echo "[profile swing-set]" > ~/.aws/config
+          #echo "source_profile = sifchain-base" >> ~/.aws/config
+          #echo "role_arn = arn:aws:iam::983740309645:role/OrganizationAccountAccessRole" >> ~/.aws/config
+          #echo "color = 83000a" >> ~/.aws/config
+          #echo "role_session_name = elk_stack" >> ~/.aws/config
+          #echo "region = ap-southeast-2" >> ~/.aws/config
+          #aws eks update-kubeconfig --name sifchain-aws-swing-set-us --region us-west-2 --profile swing-set --kubeconfig ./kubeconfig
 
       - name: Install Rake
         run: gem install rake

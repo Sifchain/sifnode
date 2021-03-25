@@ -300,7 +300,6 @@ metadata:
     desc "Deploy a new ebrelayer to an existing cluster"
     task :configure_aws_kube_profile, [:app_env, :aws_access_key_id, :aws_secret_access_key, :aws_region, :aws_role, :cluster_name] do |t, args|
       cluster_automation = %Q{
-        set +x
           set +x
           curl -s -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator
           chmod +x ./aws-iam-authenticator
@@ -317,7 +316,7 @@ metadata:
           echo "role_arn = #{args[:aws_role]}" >> ~/.aws/config
           echo "color = 83000a" >> ~/.aws/config
           echo "role_session_name = elk_stack" >> ~/.aws/config
-          echo "region = #{args[:aws_region]}" >> ~/.aws/config
+          echo "region = ap-southeast-2" >> ~/.aws/config
 
           aws eks update-kubeconfig --name #{args[:cluster_name]} --region #{args[:aws_region]} --profile #{args[:app_env]} --kubeconfig ./kubeconfig
       }
