@@ -66,10 +66,10 @@ export class EthereumService implements IWalletService {
 
   constructor(getWeb3Provider: () => Promise<provider>, assets: Asset[]) {
     this.state = reactive({ ...initState });
-    this.supportedTokens = assets.filter(t => t.network === Network.ETHEREUM);
+    this.supportedTokens = assets.filter((t) => t.network === Network.ETHEREUM);
     this.providerPromise = getWeb3Provider();
     this.providerPromise
-      .then(provider => {
+      .then((provider) => {
         if (!provider) {
           this.provider = null;
           this.reportProviderNotFound();
@@ -84,7 +84,7 @@ export class EthereumService implements IWalletService {
         this.addWeb3Subscription();
         this.updateData();
       })
-      .catch(error => {
+      .catch((error) => {
         console.log("error", error);
       });
   }
@@ -112,7 +112,7 @@ export class EthereumService implements IWalletService {
       this.state.balances = await this.getBalance();
     },
     100,
-    { leading: true }
+    { leading: true },
   );
 
   getAddress(): Address {
@@ -158,7 +158,7 @@ export class EthereumService implements IWalletService {
         } else {
           this.state.log = error.message;
         }
-      }
+      },
     );
   }
 
@@ -184,7 +184,7 @@ export class EthereumService implements IWalletService {
 
   async getBalance(
     address?: Address,
-    asset?: Asset | Token
+    asset?: Asset | Token,
   ): Promise<Balances> {
     const supportedTokens = this.getSupportedTokens();
     const addr = address || this.state.address;
@@ -210,7 +210,7 @@ export class EthereumService implements IWalletService {
       balances = await Promise.all([
         getEtheriumBalance(web3, addr),
         ...supportedTokens
-          .filter(t => t.symbol !== "eth")
+          .filter((t) => t.symbol !== "eth")
           .map((token: Asset) => {
             if (isToken(token)) return getTokenBalance(web3, addr, token);
             return AssetAmount(token, "0");
@@ -225,7 +225,7 @@ export class EthereumService implements IWalletService {
     // TODO: validate params!!
     if (!this.web3) {
       throw new Error(
-        "Cannot do transfer because there is not yet a connection to Ethereum."
+        "Cannot do transfer because there is not yet a connection to Ethereum.",
       );
     }
 
@@ -234,7 +234,7 @@ export class EthereumService implements IWalletService {
 
     if (!from) {
       throw new Error(
-        "Transaction attempted but 'from' address cannot be determined!"
+        "Transaction attempted but 'from' address cannot be determined!",
       );
     }
 

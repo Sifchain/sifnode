@@ -56,6 +56,7 @@ require (
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/wsddn/go-ecdh v0.0.0-20161211032359-48726bab9208 // indirect
 	github.com/yelinaung/go-haikunator v0.0.0-20150320004105-1249cae259af
+	go.uber.org/zap v1.13.0
 	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
 	golang.org/x/sys v0.0.0-20201126233918-771906719818 // indirect
 	golang.org/x/text v0.3.4 // indirect

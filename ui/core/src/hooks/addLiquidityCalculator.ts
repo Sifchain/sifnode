@@ -1,6 +1,6 @@
 // TODO remove refs dependency and move to `actions/clp/calculateAddLiquidity`
 
-import { computed, Ref } from "@vue/reactivity";
+import { computed, effect, Ref } from "@vue/reactivity";
 import {
   Asset,
   AssetAmount,
@@ -28,11 +28,12 @@ export function usePoolCalculator(input: {
   balances: Ref<IAssetAmount[]>;
   liquidityProvider: Ref<LiquidityProvider | null>;
   poolFinder: (a: Asset | string, b: Asset | string) => Ref<Pool> | null;
+  asyncPooling: Ref<boolean>;
+  lastFocusedTokenField: Ref<"A" | "B" | null>;
 }) {
   const tokenAField = useField(input.tokenAAmount, input.tokenASymbol);
   const tokenBField = useField(input.tokenBAmount, input.tokenBSymbol);
   const balanceMap = useBalances(input.balances);
-
 
   const preExistingPool = computed(() => {
     if (!tokenAField.asset.value || !tokenBField.asset.value) {
@@ -42,22 +43,34 @@ export function usePoolCalculator(input: {
     // Find pool from poolFinder
     const pool = input.poolFinder(
       tokenAField.asset.value.symbol,
-      tokenBField.asset.value.symbol
+      tokenBField.asset.value.symbol,
     );
 
     return pool?.value || null;
   });
 
+  const assetA = computed(() => {
+    if (!input.tokenASymbol.value) {
+      return null;
+    }
+    return Asset.get(input.tokenASymbol.value);
+  });
+
+  const assetB = computed(() => {
+    if (!input.tokenBSymbol.value) {
+      return null;
+    }
+    return Asset.get(input.tokenBSymbol.value);
+  });
+
   const tokenABalance = computed(() => {
-    if (
-      !tokenAField.fieldAmount.value ||
-      !tokenAField.asset.value
-    ) {
+    if (!tokenAField.fieldAmount.value || !tokenAField.asset.value) {
       return null;
     }
     if (preExistingPool.value) {
       return input.tokenASymbol.value
-        ? balanceMap.value.get(input.tokenASymbol.value) ?? AssetAmount(tokenAField.asset.value, "0")
+        ? balanceMap.value.get(input.tokenASymbol.value) ??
+            AssetAmount(tokenAField.asset.value, "0")
         : null;
     } else {
       return input.tokenASymbol.value
@@ -65,7 +78,6 @@ export function usePoolCalculator(input: {
         : null;
     }
   });
-
   const tokenBBalance = computed(() => {
     return input.tokenBSymbol.value
       ? balanceMap.value.get(input.tokenBSymbol.value) ?? null
@@ -73,20 +85,17 @@ export function usePoolCalculator(input: {
   });
 
   const fromBalanceOverdrawn = computed(() => {
-
     return !tokenABalance.value?.greaterThanOrEqual(
-      tokenAField.fieldAmount.value || "0"
+      tokenAField.fieldAmount.value || "0",
     );
   });
 
   const toBalanceOverdrawn = computed(
     () =>
       !tokenBBalance.value?.greaterThanOrEqual(
-        tokenBField.fieldAmount.value || "0"
-      )
+        tokenBField.fieldAmount.value || "0",
+      ),
   );
-
-
 
   const liquidityPool = computed(() => {
     if (preExistingPool.value) {
@@ -103,19 +112,23 @@ export function usePoolCalculator(input: {
 
     return Pool(
       AssetAmount(tokenAField.asset.value, "0"),
-      AssetAmount(tokenBField.asset.value, "0")
+      AssetAmount(tokenBField.asset.value, "0"),
     );
   });
 
   // pool units for this prospective transaction [total, newUnits]
   const provisionedPoolUnitsArray = computed(() => {
-    if (!liquidityPool.value || !tokenBField.fieldAmount.value || !tokenAField.fieldAmount.value) {
+    if (
+      !liquidityPool.value ||
+      !tokenBField.fieldAmount.value ||
+      !tokenAField.fieldAmount.value
+    ) {
       return [new Fraction("0"), new Fraction("0")];
     }
 
     return liquidityPool.value.calculatePoolUnits(
       tokenBField.fieldAmount.value,
-      tokenAField.fieldAmount.value
+      tokenAField.fieldAmount.value,
     );
   });
 
@@ -135,11 +148,11 @@ export function usePoolCalculator(input: {
   });
 
   const totalPoolUnits = computed(() =>
-    liquidityProviderPoolUnitsArray.value[0].toFixed(0)
+    liquidityProviderPoolUnitsArray.value[0].toFixed(0),
   );
 
   const totalLiquidityProviderUnits = computed(() =>
-    liquidityProviderPoolUnitsArray.value[1].toFixed(0)
+    liquidityProviderPoolUnitsArray.value[1].toFixed(0),
   );
 
   const shareOfPool = computed(() => {
@@ -165,7 +178,7 @@ export function usePoolCalculator(input: {
     }
     if (!preExistingPool.value.contains(tokenAField.asset.value)) return null;
     const externalBalance = preExistingPool.value.getAmount(
-      tokenAField.asset.value
+      tokenAField.asset.value,
     );
     const nativeBalance = preExistingPool.value.getAmount("rowan");
     return [nativeBalance, externalBalance];
@@ -173,13 +186,12 @@ export function usePoolCalculator(input: {
 
   // external_balance / native_balance
   const aPerBRatio = computed(() => {
-    if (!poolAmounts.value) return null;
+    if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
     return external.divide(native);
   });
 
   const aPerBRatioMessage = computed(() => {
-
     if (!aPerBRatio.value) {
       return "N/A";
     }
@@ -189,7 +201,7 @@ export function usePoolCalculator(input: {
 
   // native_balance / external_balance
   const bPerARatio = computed(() => {
-    if (!poolAmounts.value) return null;
+    if (!poolAmounts.value) return 0;
     const [native, external] = poolAmounts.value;
     return native.divide(external);
   });
@@ -251,6 +263,41 @@ export function usePoolCalculator(input: {
     return bPerARatioProjected.value.toFixed(8);
   });
 
+  effect(() => {
+    // if in guided mode
+    // calculate the price ratio of A / B
+    if (
+      input.asyncPooling.value &&
+      input.lastFocusedTokenField.value !== null
+    ) {
+      if (
+        bPerARatio === null ||
+        aPerBRatio === null ||
+        !assetA.value ||
+        !assetB.value
+      ) {
+        return null;
+      }
+      const assetAmountA = AssetAmount(
+        assetA.value,
+        tokenAField.fieldAmount?.value || 0,
+      );
+      const assetAmountB = AssetAmount(
+        assetB.value,
+        tokenBField.fieldAmount?.value || 0,
+      );
+      if (input.lastFocusedTokenField.value === "A") {
+        input.tokenBAmount.value = assetAmountA
+          .multiply(bPerARatio.value || "0")
+          .toFixed(5);
+      } else if (input.lastFocusedTokenField.value === "B") {
+        input.tokenAAmount.value = assetAmountB
+          .multiply(aPerBRatio.value || "0")
+          .toFixed(5);
+      }
+    }
+  });
+
   const state = computed(() => {
     // Select Tokens
     const aSymbolNotSelected = !input.tokenASymbol.value;
@@ -289,6 +336,7 @@ export function usePoolCalculator(input: {
     preExistingPool,
     totalLiquidityProviderUnits,
     totalPoolUnits,
+    poolAmounts,
     tokenAFieldAmount: tokenAField.fieldAmount,
     tokenBFieldAmount: tokenBField.fieldAmount,
   };
