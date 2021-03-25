@@ -167,41 +167,41 @@ namespace :cluster do
       cluster_automation = %Q{
         set +x
         echo "
-path \"#{args[:env]}/#{args[:app_name]}\" {
-    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]
+path \\"#{args[:env]}/#{args[:app_name]}\\" {
+    capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
 }
-path \"#{args[:env]}/#{args[:app_name]}/*\" {
-    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]
+path \\"#{args[:env]}/#{args[:app_name]}/*\\" {
+    capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
 }
-path \"/#{args[:env]}/#{args[:app_name]}\" {
-    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]
+path \\"/#{args[:env]}/#{args[:app_name]}\\" {
+    capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
 }
-path \"/#{args[:env]}/#{args[:app_name]}/*\" {
-    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]
+path \\"/#{args[:env]}/#{args[:app_name]}/*\\" {
+    capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
 }
-path \"*\" {
-    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]
+path \\"*\\" {
+    capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
 }
-path \"sys/internal/counters/activity\" {
-  capabilities = [\"read\"]
+path \\"sys/internal/counters/activity\\" {
+  capabilities = [\\"read\\"]
 }
-path \"sys/internal/counters/config\" {
-  capabilities = [\"read\", \"update\"]
+path \\"sys/internal/counters/config\\" {
+  capabilities = [\\"read\\", \\"update\\"]
 }
-path \"sys/namespaces\" {
-  capabilities = [\"list\", \"read\", \"update\"]
+path \\"sys/namespaces\\" {
+  capabilities = [\\"list\\", \\"read\\", \\"update\\"]
 }
-path \"sys/internal/ui/namespaces\" {
-  capabilities = [\"read\", \"list\", \"update\", \"sudo\"]
+path \\"sys/internal/ui/namespaces\\" {
+  capabilities = [\\"read\\", \\"list\\", \\"update\\", \\"sudo\\"]
 }
-path \"sys/internal/ui/mounts\" {
-  capabilities = [\"read\", \"sudo\"]
+path \\"sys/internal/ui/mounts\\" {
+  capabilities = [\\"read\\", \\"sudo\\"]
 }
-path \"+/sys/internal/counters/config\" {
-  capabilities = [\"read\", \"update\"]
+path \\"+/sys/internal/counters/config\\" {
+  capabilities = [\\"read\\", \\"update\\"]
 }
-path \"+/sys/internal/counters/activity\" {
-  capabilities = [\"read\"]
+path \\"+/sys/internal/counters/activity\\" {
+  capabilities = [\\"read\\"]
 }
         " > #{args[:app_name]}-policy.hcl
 
