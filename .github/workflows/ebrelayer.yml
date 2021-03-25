@@ -124,7 +124,7 @@ jobs:
           echo "======"
           docker pull ${image}:${image_tag}
           ls -lah
-          curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -p "${image}:${image_tag}" -b .anchore/anchore-policy.json
+          curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -p -b .anchore/anchore-policy.json "${image}:${image_tag}"
 
       - name: Deploy Ebrelayer to Kubernetes Via Helm.
         env:
