@@ -46,5 +46,5 @@ def test_can_mint_token_and_peg_it_for_everything_in_whitelist(
             # try to get as many tokens across the bridge as you can,
             # don't stop if one of them fails
             logging.info(f"failed to mint and send for {t}, error was {e}")
-    logging.info(f"sent new batch of tokens to {destination_symbol}")
-    test_utilities.get_sifchain_addr_balance(destination_symbol, request.sifnodecli_node, "rowan")
+    logging.info(f"sent new batch of tokens to {rowan_source}")
+    test_utilities.get_sifchain_addr_balance(rowan_source, request.sifnodecli_node, "rowan")

@@ -44,7 +44,6 @@ def test_bulk_transfers_from_sifchain(
     logging.info("create new ethereum and sifchain addresses")
     basic_transfer_request.ethereum_address = source_ethereum_address
     n_transfers = int(test_utilities.get_optional_env_var("NTRANSFERS", 2))
-    amount = "{:d}".format(5 * test_utilities.highest_gas_cost)
     new_addresses_and_keys = list(map(lambda x: create_new_sifaddr_and_key(), range(n_transfers)))
     logging.debug(f"new_addresses_and_keys: {new_addresses_and_keys}")
     new_addresses = list(map(lambda a: a[0], new_addresses_and_keys))
@@ -56,11 +55,21 @@ def test_bulk_transfers_from_sifchain(
     logging.debug(f"new eth addrs: {new_eth_addrs}")
     credentials_for_account_with_ceth = SifchaincliCredentials(from_key=rowan_source_key)
     request: EthereumToSifchainTransferRequest = copy.deepcopy(basic_transfer_request)
-    request.amount = (len(tokens) + 1) * test_utilities.highest_gas_cost
+    n_transfers = (len(tokens) + 1)
+    ceth_amount = n_transfers * (test_utilities.highest_gas_cost + 100)
+    request.amount = ceth_amount
     request.ethereum_address = source_ethereum_address
     request.sifchain_address = rowan_source
+    amounts = {}
     for a in new_addresses:
         for t in tokens:
+            if t == "ceth":
+                amounts[t] = ceth_amount
+            elif t == "rowan":
+                amounts[t] = n_transfers * (200000 + 100)
+            else:
+                amounts[t] = n_transfers * 100
+            request.amount = amounts[t]
             request.sifchain_destination_address = a
             request.sifchain_symbol = t
             logging.info(f"send {t} to {a}, request is {request}")
@@ -70,7 +79,7 @@ def test_bulk_transfers_from_sifchain(
     for a in new_addresses:
         for t in tokens:
             test_utilities.wait_for_sif_account(a, basic_transfer_request.sifnodecli_node, 90)
-            test_utilities.wait_for_sifchain_addr_balance(a, t, amount, basic_transfer_request.sifnodecli_node, 180)
+            test_utilities.wait_for_sifchain_addr_balance(a, t, amounts[t], basic_transfer_request.sifnodecli_node, 180)
 
     text_file = open("pfile.cmds", "w")
     simple_credentials = SifchaincliCredentials(
@@ -80,14 +89,16 @@ def test_bulk_transfers_from_sifchain(
         sifnodecli_homedir=None
     )
     logging.info(f"all accounts are on sifchain and have the correct balance")
-    for sifaddr, ethaddr in zip(new_addresses_and_keys, new_eth_addrs):
-        r = copy.deepcopy(basic_transfer_request)
-        r.sifchain_address = sifaddr[0]
-        r.ethereum_address = ethaddr["address"]
-        r.amount = 100
-        simple_credentials.from_key = sifaddr[1]
-        c = test_utilities.send_from_sifchain_to_ethereum_cmd(r, simple_credentials)
-        text_file.write(f"{c}\n")
+    for t in tokens:
+        for sifaddr, ethaddr in zip(new_addresses_and_keys, new_eth_addrs):
+            r = copy.deepcopy(basic_transfer_request)
+            r.sifchain_symbol = t
+            r.sifchain_address = sifaddr[0]
+            r.ethereum_address = ethaddr["address"]
+            r.amount = 100
+            simple_credentials.from_key = sifaddr[1]
+            c = test_utilities.send_from_sifchain_to_ethereum_cmd(r, simple_credentials)
+            text_file.write(f"{c}\n")
     text_file.close()
     test_utilities.get_shell_output("cat pfile.cmds | parallel --trim lr -v {}")
     test_utilities.advance_n_ethereum_blocks(test_utilities.n_wait_blocks, smart_contracts_dir)
