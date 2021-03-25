@@ -109,7 +109,6 @@ jobs:
           export PATH=$(pwd):${PATH}
           echo "======"
           rake "cluster:vault:configureapplication[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
-          #rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
 
       - name: Anchore Image Scan
         env:
@@ -125,18 +124,9 @@ jobs:
           set +x
           export PATH=$(pwd):${PATH}
           echo "======"
-
           docker pull ${image}:${image_tag}
-          scan_output=$(curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -p "${image}:${image_tag}")
-          scan_grep_output=`echo $scan_output | grep "CRITICAL"`
-          if [ -z "$scan_grep_output" ]; then
-            echo "no high vulnerabilities found"
-            echo $scan_grep_output
-          else
-            echo $scan_grep_output
-            echo "fix critical vulnerabilities before proceeding see log output"
-            exit 2
-          fi
+          curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -p "${image}:${image_tag}"
+
 
       - name: Deploy Ebrelayer to Kubernetes Via Helm.
         env:
