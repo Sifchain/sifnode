@@ -68,13 +68,13 @@ jobs:
           if [[ $GITHUB_REF == 'refs/heads/develop' ]]; then
             echo "Config set for DevNet deployment"
             echo "RECORD_DOMAIN=sifchain.finance" >> $GITHUB_ENV
-            echo "RECORD_NAME=_dnslink.devNet" >> $GITHUB_ENV
+            echo "RECORD_NAME=_dnslink.devnet" >> $GITHUB_ENV
           fi
 
           if [[ $GITHUB_REF == 'refs/heads/testnet' ]]; then
             echo "Config set for TestNet deployment"
             echo "RECORD_DOMAIN=sifchain.finance" >> $GITHUB_ENV
-            echo "RECORD_NAME=_dnslink.devNet" >> $GITHUB_ENV
+            echo "RECORD_NAME=_dnslink.testnet" >> $GITHUB_ENV
           fi
 
           if [[ $GITHUB_REF == 'refs/heads/master' ]]; then
