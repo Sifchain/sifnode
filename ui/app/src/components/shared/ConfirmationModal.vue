@@ -34,6 +34,9 @@
         <template v-slot:failed>
           <slot :name="!!this.$slots.signing ? 'failed' : 'common'"></slot>
         </template>
+        <template v-slot:out_of_gas>
+          <slot :name="!!this.$slots.signing ? 'out_of_gas' : 'common'"></slot>
+        </template>
       </ConfirmationModalSigning>
     </div>
   </ModalView>
@@ -77,6 +80,7 @@ export default defineComponent({
         "failed",
         "rejected",
         "confirmed",
+        "out_of_gas",
       ].includes(props.state);
     });
 

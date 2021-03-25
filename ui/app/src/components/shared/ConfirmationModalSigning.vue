@@ -5,7 +5,9 @@
         <Loader
           black
           :success="state === 'confirmed'"
-          :failed="state === 'rejected' || state === 'failed'"
+          :failed="
+            state === 'rejected' || state === 'failed' || state === 'out_of_gas'
+          "
         /><br />
         <div class="text-wrapper">
           <!-- 
@@ -52,6 +54,14 @@
           </transition>
 
           <transition name="swipe">
+            <div class="text" v-if="state === 'out_of_gas'">
+              <p>Transaction Failed - Out of Gas</p>
+              <br />
+              <p class="sub">Please try to increase the gas limit.</p>
+            </div>
+          </transition>
+
+          <transition name="swipe">
             <div class="text" v-if="state === 'confirmed'">
               <p>Transaction Submitted</p>
               <slot name="confirmed"></slot>
@@ -59,7 +69,7 @@
               <p class="sub">
                 <!-- To the todo point above, we need to be able to control this better, hence isSifTxHash() -->
                 <a
-                  v-if="transactionHash?.substring(0,2) !== '0x'"
+                  v-if="transactionHash?.substring(0, 2) !== '0x'"
                   class="anchor"
                   target="_blank"
                   :href="getBlockExplorerUrl(chainId, transactionHash)"
@@ -107,7 +117,7 @@ export default defineComponent({
 
     return {
       chainId: config.sifChainId,
-      getBlockExplorerUrl
+      getBlockExplorerUrl,
     };
   },
 });

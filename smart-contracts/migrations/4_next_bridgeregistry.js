@@ -80,9 +80,11 @@ module.exports = function(deployer, network, accounts) {
       return console.log("Network is mainnet, not going to deploy token");
     }
 
-    await cosmosBridge.setBridgeBank(bridgeBank.address, 
-      setTxSpecifications(600000, accounts[0])
-    );
+    if (!network.includes('fork')) {
+      await cosmosBridge.setBridgeBank(bridgeBank.address,
+          setTxSpecifications(600000, accounts[0])
+      );
+    }
 
     const erowan = await deployer.deploy(eRowan, "erowan", setTxSpecifications(4612388, operator));
 

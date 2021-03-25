@@ -13,9 +13,9 @@ describe("assets with decimals", () => {
       AssetAmount(ASSETS.atk, "100"),
       Pool(
         AssetAmount(ASSETS.atk, "1000000"),
-        AssetAmount(ASSETS.btk, "2000000")
+        AssetAmount(ASSETS.btk, "2000000"),
       ),
-      4
+      4,
     );
 
     expect(msg).toBe("1.9996 cBTK per cATK");
@@ -25,7 +25,7 @@ describe("assets with decimals", () => {
     const msg = assetPriceMessage(
       AssetAmount(ASSETS.atk, "0"),
       Pool(AssetAmount(ASSETS.atk, "1"), AssetAmount(ASSETS.btk, "1")),
-      4
+      4,
     );
     expect(msg).toBe("");
   });
@@ -50,8 +50,8 @@ describe("assets with zero decimals", () => {
       AssetAmount(ASSETS.atk, "1"),
       Pool(
         AssetAmount(ASSETS.atk, "1000000"),
-        AssetAmount(ASSETS.btk, "1000000")
-      )
+        AssetAmount(ASSETS.btk, "1000000"),
+      ),
     );
     expect(msg).toBe("1 cBTK per cATK");
   });
@@ -61,9 +61,9 @@ describe("assets with zero decimals", () => {
       AssetAmount(ASSETS.atk, "12"),
       Pool(
         AssetAmount(ASSETS.atk, "1000000"),
-        AssetAmount(ASSETS.btk, "1000000")
+        AssetAmount(ASSETS.btk, "1000000"),
       ),
-      4
+      4,
     );
     expect(msg).toBe("1.0000 cBTK per cATK");
   });
