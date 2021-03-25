@@ -25,6 +25,17 @@ export default defineComponent({
         </Tooltip>
       </span>
     </div>
+
+    <div class="col-sm">
+      <span>Arbitrage Opportunity</span>
+      <span>
+        <Tooltip
+          message="This is the arbitrage opportunity available based on a differential between the price of this token on Sifchain and its price on Coinmarketcap."
+        >
+          <Icon icon="info-box-white" />
+        </Tooltip>
+      </span>
+    </div>
     <div class="col-sm">
       <span>Pool Depth</span>
       <span>
