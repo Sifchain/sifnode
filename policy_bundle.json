@@ -1,6 +1,6 @@
 {
-    "description": "",
-    "name": "anchore-policy-blog",
+    "description": "Relayer Poliucy Bundle",
+    "name": "anchore-policy-ebrelayer",
     "policies": [
       {
         "comment": "",
