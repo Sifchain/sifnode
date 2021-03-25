@@ -205,6 +205,8 @@ path \"+/sys/internal/counters/activity\" {
 }
         " > #{args[:app_name]}-policy.hcl
 
+        cat #{args[:app_name]}-policy.hcl
+
         kubectl cp --kubeconfig=./kubeconfig #{args[:app_name]}-policy.hcl vault-0:/home/vault/#{args[:app_name]}-policy.hcl -n vault
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault policy delete #{args[:app_name]}
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault policy write #{args[:app_name]} /home/vault/#{args[:app_name]}-policy.hcl
