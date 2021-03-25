@@ -30,8 +30,18 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "desired_capacity" {
-  description = "Desired nodes per cluster"
+variable "desired_capacity_0" {
+  description = "Desired nodes per cluster for node group main-0"
+  default     = 1
+}
+
+variable "desired_capacity_1" {
+  description = "Desired nodes per cluster for node group main-1"
+  default     = 1
+}
+
+variable "desired_capacity_2" {
+  description = "Desired nodes per cluster for node group main-2"
   default     = 1
 }
 
@@ -40,8 +50,18 @@ variable "max_capacity" {
   default     = 3
 }
 
-variable "min_capacity" {
-  description = "Min nodes per cluster"
+variable "min_capacity_0" {
+  description = "Min nodes per cluster for node group main-0"
+  default     = 1
+}
+
+variable "min_capacity_1" {
+  description = "Min nodes per cluster for node group main-1"
+  default     = 1
+}
+
+variable "min_capacity_2" {
+  description = "Min nodes per cluster for node group main-2"
   default     = 1
 }
 
