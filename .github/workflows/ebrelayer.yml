@@ -111,6 +111,33 @@ jobs:
           rake "cluster:vault:configureapplication[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
           #rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
 
+      - name: Anchore Image Scan
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
+          app_namespace: "ebrelayer"
+          image: "sifchain/ebrelayer"
+          image_tag: "testnet-genesis"
+          env: "swing-set"
+          app_name: "ebrelayer"
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "======"
+
+          docker pull ${image}:${image_tag}
+          scan_output=$(curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -p "${image}:${image_tag}")
+          scan_grep_output=`echo $scan_output | grep "CRITICAL"`
+          if [ -z "$scan_grep_output" ]; then
+            echo "no high vulnerabilities found"
+            echo $scan_grep_output
+          else
+            echo $scan_grep_output
+            echo "fix critical vulnerabilities before proceeding see log output"
+            exit 2
+          fi
+
       - name: Deploy Ebrelayer to Kubernetes Via Helm.
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
