@@ -36,9 +36,9 @@ export default defineComponent({
       parseFloat(props.pool?.priceToken).toFixed(2),
     );
     const arb =
-      props.pool?.arb === ""
-        ? "N/A"
-        : formatNumberString(parseFloat(props.pool?.arb).toFixed(2)) + "%";
+      props.pool?.arb !== ""
+        ? formatNumberString(parseFloat(props.pool?.arb).toFixed(2)) + "%"
+        : "N/A";
     const poolDepth = formatNumberString(
       parseFloat(props.pool?.poolDepth).toFixed(2),
     );
@@ -80,10 +80,10 @@ export default defineComponent({
           }}</span>
         </div>
       </div>
-      <div class="col-sm">
+      <div class="col-lg">
         <span>${{ priceToken }}</span>
       </div>
-      <div class="col-sm">
+      <div class="col-lg">
         <span>{{ arb }}</span>
       </div>
       <div class="col-sm">

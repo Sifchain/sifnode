@@ -16,7 +16,7 @@ export default defineComponent({
     <div class="col-sm">
       <span>Token</span>
     </div>
-    <div class="col-sm">
+    <div class="col-lg">
       <span>Price of Token</span>
       <span>
         (USD)
@@ -26,7 +26,7 @@ export default defineComponent({
       </span>
     </div>
 
-    <div class="col-sm">
+    <div class="col-lg">
       <span>Arbitrage Opportunity</span>
       <span>
         <Tooltip
