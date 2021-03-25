@@ -122,7 +122,11 @@ jobs:
           set +x
           export PATH=$(pwd):${PATH}
           echo "======"
-          curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -f -d cmd/ebrelayer/Dockerfile -p "${image}:${image_tag}"
+
+          curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -f -r -d cmd/ebrelayer/Dockerfile -p "${image}:${image_tag}"
+          cat ebrelayer_testnet-genesis-policy.json
+
+
 
       - name: Deploy Ebrelayer to Kubernetes Via Helm.
         env:
