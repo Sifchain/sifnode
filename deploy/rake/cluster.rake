@@ -223,7 +223,7 @@ path \"+/sys/internal/counters/activity\" {
     task :enablekubernetes, [] do |t, args|
       cluster_automation = %Q{
         set +x
-        echo "$KUBECONFIG" | base64 --decode > ./kubeconfig
+        aws eks update-kubeconfig --name sifchain-aws-swing-set-us --region us-west-2 --profile swing-set --kubeconfig kubeconfig
         echo "APPLY VAULT AUTH ENABLE KUBERNETES"
         check_installed=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth list | grep kubernetes`
         [ -z "$check_installed" ] && kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth enable kubernetes || echo "Kubernetes Already Enabled"
@@ -238,7 +238,7 @@ path \"+/sys/internal/counters/activity\" {
     task :configureapplication, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       cluster_automation = %Q{
         set +x
-        echo "$KUBECONFIG" | base64 --decode > ./kubeconfig
+        aws eks update-kubeconfig --name sifchain-aws-swing-set-us --region us-west-2 --profile swing-set --kubeconfig kubeconfig
         echo "
 apiVersion: v1
 kind: ServiceAccount
