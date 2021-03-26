@@ -19,6 +19,7 @@ jobs:
       image_tag: "testnet-genesis"
       env: "swing-set"
       app_name: "ebrelayer"
+      app_env: "swing-set"
 
     strategy:
       matrix:
@@ -63,10 +64,6 @@ jobs:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: "us-west-2"
-          aws_cluster_name: "sifchain-aws-swing-set-us"
-          aws_role: "arn:aws:iam::983740309645:role/OrganizationAccountAccessRole"
-          app_env: "swing-set"
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
           set +x
@@ -87,11 +84,6 @@ jobs:
       - name: Setup Vault Policy on Swing-Set
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          app_namespace: "ebrelayer"
-          image: "sifchain/ebrelayer"
-          image_tag: "testnet-genesis"
-          env: "swing-set"
-          app_name: "ebrelayer"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -114,11 +106,6 @@ jobs:
       - name: Configure Vault to Mount Secrets To Application
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          app_namespace: "ebrelayer"
-          image: "sifchain/ebrelayer"
-          image_tag: "testnet-genesis"
-          env: "swing-set"
-          app_name: "ebrelayer"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -130,11 +117,6 @@ jobs:
       - name: Anchore Image Scan
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          app_namespace: "ebrelayer"
-          image: "sifchain/ebrelayer"
-          image_tag: "testnet-genesis"
-          env: "swing-set"
-          app_name: "ebrelayer"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -146,11 +128,6 @@ jobs:
       - name: Deploy Ebrelayer to Kubernetes Via Helm.
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          app_namespace: "ebrelayer"
-          image: "sifchain/ebrelayer"
-          image_tag: "testnet-genesis"
-          env: "swing-set"
-          app_name: "ebrelayer"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -162,7 +139,6 @@ jobs:
       - name: Execute ebrelayer Integration Tests
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          VAULT_TEST_SETTINGS_PATH: "kv-v2/swing-set/ebrelayer-smoke-test"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
