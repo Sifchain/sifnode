@@ -22,7 +22,8 @@ jobs:
       image_tag: "testnet-genesis"
       env: "swing-set"
       app_name: "ebrelayer"
-
+      app_env: "swing-set"
+      
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
