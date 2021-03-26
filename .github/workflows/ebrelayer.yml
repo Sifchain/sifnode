@@ -148,7 +148,6 @@ jobs:
           echo "This deploys a helm application configured to utilize vault secrets."
           rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
 
-
       - name: Execute ebrelayer Integration Tests
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
@@ -158,9 +157,9 @@ jobs:
         run: |
           set +x
           export PATH=$(pwd):${PATH}
+          export BASEDIR=$(pwd)
           echo "This will source the vaulte secrets as environment variables defined at the path and execute the tests accordingly."
           rake "cluster:vault:generate_vault_tmp_var_source_file[${VAULT_TEST_SETTINGS_PATH}]"
-          ls -lah
           source ./tmp_secrets
           bash test/integration/environment_setup.sh
 
