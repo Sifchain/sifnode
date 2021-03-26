@@ -133,6 +133,6 @@ export async function getEtheriumBalance(web3: Web3, address: Address) {
       name: "Ethereum",
       network: Network.ETHEREUM,
     },
-    web3.utils.fromWei(ethBalance),
+    ethBalance,
   );
 }
