@@ -160,6 +160,178 @@ namespace :cluster do
     end
   end
 
+  desc "Install Cert-Manager If Not Exists"
+  namespace :certmanager do
+    desc "Install Cert-Manager Into Kubernetes"
+    task :install, [] do |t, args|
+      cluster_automation = %Q{
+#!/usr/bin/env bash
+set +x
+
+echo "===================STAGE INIT - GLOBAL REQUIREMENT CHECKS==================="
+check_created=`kubectl get namespaces --kubeconfig=./kubeconfig | grep cert-manager`
+[ -z "$check_created" ] && kubectl create namespace --kubeconfig=./kubeconfig cert-manager || echo "Namespace Exists"
+
+echo "===================STAGE 2 - SETUP & UPDATE HELM==================="
+check_created=`helm repo list --kubeconfig=./kubeconfig | grep jetstack`
+[ -z "$check_created" ] && helm repo add jetstack https://charts.jetstack.io --kubeconfig=./kubeconfig && helm repo update --kubeconfig=./kubeconfig || echo "Helm Repo Already Added For Cert-Manager"
+
+echo "===================STAGE 3 - INSTALL CERT MANAGER==================="
+echo "Install Cert Manager"
+check_installed=`kubectl get deployment -n cert-manager --kubeconfig=./kubeconfig | grep cert-manager`
+[ -z "$check_installed" ] && helm install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.2.0 --kubeconfig=./kubeconfig --set installCRDs=true || echo "CERT-MANAGER already seems to be installed."
+
+echo "===================STAGE 4 - CHECK CERT-MANAGER ROLLOUT STATUS ==================="
+echo "Use KUBECTL roll out to check status"
+kubectl rollout status deployment/cert-manager -n cert-manager  --kubeconfig=./kubeconfig
+
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+  desc "Install Vault If Not Exists"
+  namespace :vault do
+    desc "Install Vault into Kubernetes Env Configured"
+    task :install, [:env] do |t, args|
+      cluster_automation = %Q{
+#!/usr/bin/env bash
+set +x
+
+echo "===================STAGE INIT - GLOBAL REQUIREMENT CHECKS==================="
+APP_NAME=vault
+APP_NAMESPACE=vault
+POD=vault-0
+SERVICE=vault-internal
+export CSR_NAME=vault-csr-${ENV}
+NAMESPACE=${APP_NAMESPACE}
+SECRET_NAME=${APP_NAME}-${POD}-tls
+TMPDIR=/tmp
+
+echo "ENSURE NAMESPACE EXISTS"
+check_secret=`kubectl get namespaces --kubeconfig=./kubeconfig | grep vault | grep -v grep`
+[ -z "$check_secret" ] && kubectl create namespace --kubeconfig=./kubeconfig vault || echo "Namespace Exists"
+
+echo "Check to see if VAULT AWS SECRET EXISTS IF NOT CREATE."
+check_created=`kubectl get secret -n vault --kubeconfig=./kubeconfig | grep vault-eks-creds`
+[ -z "$check_created" ] && kubectl create secret generic --kubeconfig=./kubeconfig vault-eks-creds --from-literal=AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" --from-literal=AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" -n vault || echo "Vault EKS Secret Already Created"
+
+echo "===================STAGE 1 - GENERATE CA AND TLS KEY AND CERT==================="
+openssl genrsa -out ${TMPDIR}/vault.key 2048
+
+cat <<EOF >${TMPDIR}/csr.conf
+[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = ${SERVICE}
+DNS.2 = ${SERVICE}.${NAMESPACE}
+DNS.3 = ${SERVICE}.${NAMESPACE}.svc
+DNS.4 = ${SERVICE}.${NAMESPACE}.svc.cluster.local
+
+DNS.5 = vault-0.${SERVICE}
+DNS.6 = vault-0.${SERVICE}.${NAMESPACE}
+DNS.7 = vault-0.${SERVICE}.${NAMESPACE}.svc
+DNS.8 = vault-0.${SERVICE}.${NAMESPACE}.svc.cluster.local
+
+DNS.9 = vault-1.${SERVICE}
+DNS.10 = vault-1.${SERVICE}.${NAMESPACE}
+DNS.11 = vault-1.${SERVICE}.${NAMESPACE}.svc
+DNS.12 = vault-1.${SERVICE}.${NAMESPACE}.svc.cluster.local
+
+DNS.13 = vault-2.${SERVICE}
+DNS.14 = vault-2.${SERVICE}.${NAMESPACE}
+DNS.15 = vault-2.${SERVICE}.${NAMESPACE}.svc
+DNS.16 = vault-2.${SERVICE}.${NAMESPACE}.svc.cluster.local
+
+IP.1 = 127.0.0.1
+EOF
+
+openssl req -new -key ${TMPDIR}/vault.key -subj "/CN=${SERVICE}.${NAMESPACE}.svc" -config ${TMPDIR}/csr.conf -out ${TMPDIR}/server.csr
+
+cat <<EOF >${TMPDIR}/csr.yaml
+apiVersion: certificates.k8s.io/v1beta1
+kind: CertificateSigningRequest
+metadata:
+  name: ${CSR_NAME}
+  namespace: ${NAMESPACE}
+spec:
+  groups:
+  - system:authenticated
+  request: $(cat ${TMPDIR}/server.csr | base64 | tr -d '\n')
+  usages:
+  - digital signature
+  - key encipherment
+  - server auth
+EOF
+
+kubectl apply --kubeconfig=./kubeconfig -f ${TMPDIR}/csr.yaml
+kubectl certificate approve --kubeconfig=./kubeconfig ${CSR_NAME}
+serverCert=$(kubectl get csr --kubeconfig=./kubeconfig ${CSR_NAME} -o jsonpath='{.status.certificate}')
+echo "${serverCert}" | openssl base64 -d -A -out ${TMPDIR}/vault.crt
+kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > ${TMPDIR}/vault.ca
+vault_ca_base64=$(kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}')
+
+kubectl create secret generic --kubeconfig=./kubeconfig ${SECRET_NAME} \
+        --namespace ${NAMESPACE} \
+        --from-file=vault.key=${TMPDIR}/vault.key \
+        --from-file=vault.crt=${TMPDIR}/vault.crt \
+        --from-file=vault.ca=${TMPDIR}/vault.ca \
+        --from-file=vault.ca.key=${TMPDIR}/vault.key
+
+echo "Clean up files"
+rm -rf ${TMPDIR}/csr.conf
+rm -rf ${TMPDIR}/csr.yaml
+rm -rf ${TMPDIR}/vault.ca
+rm -rf ${TMPDIR}/vault.key
+rm -rf ${TMPDIR}/vault.crt
+rm -rf ${TMPDIR}/vault.key
+
+echo "===================STAGE 2 - SETUP and UPDATE VAULT REPO ==================="
+check_created=`helm repo list --kubeconfig=./kubeconfig | grep hashicorp`
+[ -z "$check_created" ] && helm repo add hashicorp https://helm.releases.hashicorp.com --kubeconfig=./kubeconfig && helm repo update --kubeconfig=./kubeconfig || echo "Helm Repo Already Added For Cert-Manager"
+
+echo "===================STAGE 3 - INSTALL VAULT ==================="
+check_created=`kubectl get statefulsets -n vault --kubeconfig=./kubeconfig | grep vault`
+[ -z "$check_created" ] && helm install vault hashicorp/vault --namespace vault -f override-values.yaml --kubeconfig=./kubeconfig || echo "Vault Already Installed"
+
+echo "sleep for 2 min to let vault start up"
+sleep 180
+
+check_deployment=`kubectl get pod --kubeconfig=./kubeconfig -n vault | grep vault`
+[ -z "$check_deployment" ] && echo "Something Went Wrong" || echo "Vault Deployed ${check_deployment}"
+
+vault_init_output=`kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault operator init -n 1 -t 1`
+echo -e ${vault_init_output} > vault_output
+echo "sleep for 30 seconds to let vault init."
+sleep 30
+export VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
+
+aws s3 cp ./vault_output s3://sifchain-vault-master-keys/#{args[:env]}/vault-master-keys.backup
+
+./vault_login > /dev/null
+
+echo "create kv v2 engine"
+kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault secrets enable kv-v2
+
+echo "create test secret"
+kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv put kv-v2/staging/test username=test123 password=foobar123
+
+echo "validate secret made it in vault."
+get_secrets=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv get kv-v2/staging/test | grep "test123"`
+[ -z "$get_secrets" ] && echo "present ${get_secrets}" || echo "Secret not present ${get_secrets} && exit 1"
+
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
   desc "Vault Create Policy"
   namespace :vault do
     desc "Create vault policy for application to read secrets."
@@ -246,7 +418,7 @@ import urllib3
 http = urllib3.PoolManager()
 import subprocess
 print("Starting to Pull Secrets")
-result = subprocess.Popen(["kubectl exec -n vault -it vault-0 -- vault kv get -format json #{args[:path]}"], stdout=subprocess.PIPE, shell=True)
+result = subprocess.Popen(["kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv get -format json #{args[:path]}"], stdout=subprocess.PIPE, shell=True)
 output,error = result.communicate()
 vars_return = json.loads(output.decode('utf-8'))["data"]["data"]
 print("Opening temporary secrets file for writing secrets")
