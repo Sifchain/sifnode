@@ -50,6 +50,13 @@ type AmountNotAssetAmount<T extends IAmount> = T extends IAssetAmount
 
 export function format<T extends IAmount>(
   amount: AmountNotAssetAmount<T>,
+): string;
+export function format<T extends IAmount>(
+  amount: AmountNotAssetAmount<T>,
+  asset: Exclude<IAsset, IAssetAmount>,
+): string;
+export function format<T extends IAmount>(
+  amount: AmountNotAssetAmount<T>,
   options: IFormatOptions,
 ): string;
 export function format<T extends IAmount>(
@@ -59,11 +66,11 @@ export function format<T extends IAmount>(
 ): string;
 export function format<T extends IAmount>(
   _amount: AmountNotAssetAmount<T>,
-  _asset: Exclude<IAsset, IAssetAmount> | IFormatOptions,
+  _asset?: Exclude<IAsset, IAssetAmount> | IFormatOptions,
   _options?: IFormatOptions,
 ): string {
   const amount = _amount;
-  const options = isAsset(_asset) ? _options! : _asset;
+  const options = isAsset(_asset) ? _options! : _asset || {};
   const asset = isAsset(_asset) ? _asset : undefined;
 
   let decimal = asset

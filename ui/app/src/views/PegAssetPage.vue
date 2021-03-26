@@ -24,6 +24,7 @@ import {
 import { toConfirmState } from "./utils/toConfirmState";
 import { ConfirmState } from "../types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
+import { format } from "ui-core/src/utils/format";
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -76,7 +77,11 @@ export default defineComponent({
     );
 
     const isMaxActive = computed(() => {
-      return amount.value === accountBalance.value?.toFixed();
+      if (!accountBalance.value) return false;
+      return (
+        amount.value ===
+        format(accountBalance.value.amount, accountBalance.value.asset)
+      );
     });
 
     async function handlePegRequested() {
@@ -128,7 +133,10 @@ export default defineComponent({
 
     const nextStepAllowed = computed(() => {
       const amountNum = new BigNumber(amount.value);
-      const balance = accountBalance.value?.toFixed() ?? "0.0";
+      const balance =
+        (accountBalance.value &&
+          format(accountBalance.value.amount, accountBalance.value.asset)) ??
+        "0.0";
       return (
         amountNum.isGreaterThan("0.0") &&
         address.value !== "" &&
@@ -169,7 +177,9 @@ export default defineComponent({
             : accountBalance.value;
         amount.value = afterMaxValue.lessThan("0")
           ? "0.0"
-          : afterMaxValue.toFixed(decimals);
+          : format(afterMaxValue, accountBalance.value.asset, {
+              mantissa: decimals,
+            });
       },
       handleAmountUpdated: (newAmount: string) => {
         amount.value = newAmount;

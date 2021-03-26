@@ -8,9 +8,10 @@ import {
   getBlockExplorerUrl,
   useAssetItem,
 } from "@/components/shared/utils";
-import { Fraction } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 import { useRoute } from "vue-router";
+import { format } from "ui-core/src/utils/format";
+import { Amount } from "ui-core";
 
 const DECIMALS = 5;
 
@@ -56,9 +57,11 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    const fromTotalValue = computed(() =>
-      accountPool?.value?.pool.amounts[1].toFixed(DECIMALS),
-    );
+    const fromTotalValue = computed(() => {
+      const aAmount = accountPool?.value?.pool.amounts[1];
+      if (!aAmount) return "";
+      return format(aAmount.amount, aAmount.asset, { mantissa: DECIMALS });
+    });
 
     const toSymbol = computed(() =>
       accountPool?.value?.pool.amounts[0].asset
@@ -74,26 +77,31 @@ export default defineComponent({
       return t.imageUrl;
     });
 
-    const toTotalValue = computed(() =>
-      accountPool?.value?.pool.amounts[0].toFixed(DECIMALS),
-    );
+    const toTotalValue = computed(() => {
+      const aAmount = accountPool?.value?.pool.amounts[0];
+      if (!aAmount) return "";
+      return format(aAmount.amount, aAmount.asset, { mantissa: DECIMALS });
+    });
 
     const poolUnitsAsFraction = computed(
-      () => accountPool?.value?.lp.units || new Fraction("0"),
+      () => accountPool?.value?.lp.units || Amount("0"),
     );
 
     const myPoolShare = computed(() => {
       if (!accountPool?.value?.pool?.poolUnits) return null;
 
-      const perc = poolUnitsAsFraction.value
-        .divide(accountPool?.value?.pool?.poolUnits)
-        .multiply("100")
-        .toSignificant(3);
+      const perc = format(
+        poolUnitsAsFraction.value
+          .divide(accountPool?.value?.pool?.poolUnits)
+          .multiply("100"),
+        { mantissa: 3 },
+      );
+
       return `${perc} %`;
     });
-    const myPoolUnits = computed(() =>
-      poolUnitsAsFraction.value.toFixed(DECIMALS),
-    );
+    const myPoolUnits = computed(() => {
+      return format(poolUnitsAsFraction.value, { mantissa: DECIMALS });
+    });
     return {
       accountPool,
       fromToken,

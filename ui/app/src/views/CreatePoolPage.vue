@@ -6,11 +6,10 @@ import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
-import { PoolState, usePoolCalculator } from "ui-core";
+import { Amount, PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 
 import { slipAdjustment } from "../../../core/src/entities/formulae";
-import { Fraction } from "../../../core/src/entities";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
 import FatInfoTable from "@/components/shared/FatInfoTable.vue";
@@ -25,6 +24,7 @@ import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
 import { formatNumber } from "@/components/shared/utils";
 import Tooltip from "@/components/shared/Tooltip.vue";
 import Icon from "@/components/shared/Icon.vue";
+import { format } from "ui-core/src/utils/format";
 
 export default defineComponent({
   components: {
@@ -37,7 +37,6 @@ export default defineComponent({
     DetailsPanelPool,
     FatInfoTable,
     FatInfoTableCell,
-    Checkbox,
     Tooltip,
     Icon,
   },
@@ -61,7 +60,9 @@ export default defineComponent({
         (balance) => balance.asset.symbol === fromSymbol.value,
       );
       if (!accountBalance) return;
-      return fromAmount.value === accountBalance.toFixed();
+      return (
+        fromAmount.value === format(accountBalance.amount, accountBalance.asset)
+      );
     });
 
     const isToMaxActive = computed(() => {
@@ -69,7 +70,9 @@ export default defineComponent({
         (balance) => balance.asset.symbol === toSymbol.value,
       );
       if (!accountBalance) return;
-      return toAmount.value === accountBalance.toFixed();
+      return (
+        toAmount.value === format(accountBalance.amount, accountBalance.asset)
+      );
     });
 
     fromSymbol.value = route.params.externalAsset
@@ -103,7 +106,7 @@ export default defineComponent({
     });
 
     const riskFactor = computed(() => {
-      const rFactor = new Fraction("1");
+      const rFactor = Amount("1");
       if (
         !tokenAFieldAmount.value ||
         !tokenBFieldAmount.value ||
@@ -118,7 +121,7 @@ export default defineComponent({
         tokenAFieldAmount.value,
         nativeBalance,
         externalBalance,
-        new Fraction(totalPoolUnits.value),
+        Amount(totalPoolUnits.value),
       );
       return rFactor.subtract(slipAdjustmentCalc);
     });
@@ -269,7 +272,7 @@ export default defineComponent({
           (balance) => balance.asset.symbol === fromSymbol.value,
         );
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.toFixed();
+        fromAmount.value = format(accountBalance.amount, accountBalance.asset);
       },
       handleToMaxClicked() {
         selectedField.value = "to";
@@ -277,23 +280,18 @@ export default defineComponent({
           (balance) => balance.asset.symbol === toSymbol.value,
         );
         if (!accountBalance) return;
-        toAmount.value = accountBalance.toFixed();
+        toAmount.value = format(accountBalance.amount, accountBalance.asset);
       },
       shareOfPoolPercent,
       formatNumber,
       poolUnits: totalLiquidityProviderUnits,
       riskFactorStatus: computed(() => {
-        // TODO - These cutoffs need discussion
         let status = "danger";
-        // TODO - Needs to us IFraction
-        // TODO - This conditional needs rethinking
-        if (Number(riskFactor.value.toFixed(8)) <= 0.2) {
+        if (riskFactor.value.lessThanOrEqual("0.2")) {
           status = "warning";
-        }
-        if (Number(riskFactor.value.toFixed(8)) <= 0.1) {
+        } else if (riskFactor.value.lessThanOrEqual("0.1")) {
           status = "bad";
-        }
-        if (Number(riskFactor.value.toFixed(8)) <= 0.01) {
+        } else if (riskFactor.value.lessThanOrEqual("0.01")) {
           status = "";
         }
         return status;
