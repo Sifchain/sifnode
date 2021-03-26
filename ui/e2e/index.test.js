@@ -11,7 +11,10 @@ const fs = require("fs");
 const { chromium } = require("playwright");
 
 const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
+const keplrConfig = require("../core/src/config.localnet.json");
+
 const { extractFile } = require("./utils");
+const { getSifchainBalances } = require("./sifchain.js");
 
 const DEX_TARGET = "localhost:8080";
 
@@ -19,6 +22,7 @@ const KEPLR_EXT_ID = "dmkamcknogkgcdfhhbddcghachkejeap";
 const KEPLR_VERSION = "0.8.1_0";
 const KEPLR_PATH = `./extensions/${KEPLR_EXT_ID}/${KEPLR_VERSION}`;
 const KEPLR_OPTIONS = {
+  address: "sif1m625hcmnkc84cgmef6upzzyfu6mxd4jkpnfwwl",
   name: "juniper",
   mnemonic:
     "clump genre baby drum canvas uncover firm liberty verb moment access draft erupt fog alter gadget elder elephant divide biology choice sentence oppose avoid",
@@ -47,7 +51,7 @@ describe("connect to page", () => {
     });
     const keplrPage = await browserContext.newPage();
     await keplrPage.goto(
-      "chrome-extension://dmkamcknogkgcdfhhbddcghachkejeap/popup.html#/register"
+      "chrome-extension://dmkamcknogkgcdfhhbddcghachkejeap/popup.html#/register",
     );
     await importKeplrAccount(keplrPage, KEPLR_OPTIONS);
   });
@@ -57,18 +61,22 @@ describe("connect to page", () => {
   });
 
   it("connect to keplr, check balance", async () => {
+    const keplrcEthBalance = await getSifchainBalances(
+      keplrConfig.sifApiUrl,
+      KEPLR_OPTIONS.address,
+      "ceth",
+    ); //"100.000000"; // Fetch balance
     const dexPage = await browserContext.newPage();
-    await dexPage.goto(DEX_TARGET);
-    await connectKeplrAccount(dexPage, browserContext);
-    // await dexPage.waitForSelector(".wallet-connect-container", {
-    //   state: "detached",
-    // });
-    await dexPage.pause()
+    await dexPage.goto(DEX_TARGET, { waitUntil: "domcontentloaded" });
 
+    await connectKeplrAccount(dexPage, browserContext);
+    await dexPage.waitForTimeout(1000);
+    // await dexPage.pause();
     expect(
       await dexPage.innerText(
-        "#app > div > div.layout > div > div.body > div:nth-child(3) > div:nth-child(2) > div > div:nth-child(3) > div.amount"
-      )
-    ).toBe("10.00000");
+        // cETH
+        "#app > div > div.layout > div > div.body > div:nth-child(3) > div:nth-child(2) > div > div:nth-child(2) > div.amount",
+      ),
+    ).toBe(keplrcEthBalance);
   });
 });
