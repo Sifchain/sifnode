@@ -23,7 +23,7 @@ jobs:
       env: "swing-set"
       app_name: "ebrelayer"
       app_env: "swing-set"
-      
+
     strategy:
       matrix:
         os: [ 'ubuntu-latest' ]
@@ -62,13 +62,28 @@ jobs:
 
 
       - name: Setup AWS Profile and KUBECONFIG
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: "us-west-2"
+          aws_cluster_name: "sifchain-aws-swing-set-us"
+          aws_role: "arn:aws:iam::983740309645:role/OrganizationAccountAccessRole"
+          VAULT_TEST_SETTINGS_PATH: "kv-v2/swing-set/ebrelayer-smoke-test"
+          app_namespace: "ebrelayer"
+          image: "sifchain/ebrelayer"
+          image_tag: "testnet-genesis"
+          env: "swing-set"
+          app_name: "ebrelayer"
+          app_env: "swing-set"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
-          rake "cluster:automation:configure_aws_kube_profile[${env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
           cat ~/.aws/config
+          kubectl get nodes --kubeconfig=kubeconfig
 
       - name: Login to Vault on Swing-Set
         shell: bash
