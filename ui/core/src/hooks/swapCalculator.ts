@@ -100,7 +100,6 @@ export function useSwapCalculator(input: {
 
     return `${format(swapResult.divide(amount), {
       mantissa: 6,
-      float: true,
     })} ${swapResult.label} per ${amount.label}`;
   });
 

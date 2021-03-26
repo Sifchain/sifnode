@@ -57,12 +57,12 @@ describe("EthbridgeService", () => {
 
     async function getEthBalance() {
       const [bal] = await ethService.getBalance(getEthAddress(), ETH);
-      return bal.toBaseUnits();
+      return bal.toBigInt();
     }
 
     async function getCethBalance() {
       const [bal] = await sifService.getBalance(getSifAddress(), CETH);
-      return bal.toBaseUnits();
+      return bal.toBigInt();
     }
 
     const web3 = new Web3(await getWeb3Provider());
@@ -90,10 +90,7 @@ describe("EthbridgeService", () => {
         });
     });
 
-    const expectedCethAmount = JSBI.add(
-      cethBalance,
-      amountToLock.toBaseUnits(),
-    );
+    const expectedCethAmount = JSBI.add(cethBalance, amountToLock.toBigInt());
 
     await waitFor(
       async () => await getCethBalance(),
@@ -108,10 +105,7 @@ describe("EthbridgeService", () => {
     const recipientBalanceBefore = await getEthBalance();
 
     const amountToSend = AssetAmount(CETH, "2");
-    const feeAmount = AssetAmount(
-      Asset.get("ceth"),
-      JSBI.BigInt("58560000000000000"),
-    );
+    const feeAmount = AssetAmount(Asset.get("ceth"), "58560000000000000");
 
     const message = await EthbridgeService.burnToEthereum({
       fromAddress: getSifAddress(),
@@ -155,12 +149,12 @@ describe("EthbridgeService", () => {
 
     async function getERowanBalance() {
       const bals = await ethService.getBalance(getEthAddress(), EROWAN);
-      return bals[0].toBaseUnits();
+      return bals[0].toBigInt();
     }
 
     async function getRowanBalance() {
       const bals = await sifService.getBalance(getSifAddress(), ROWAN);
-      return bals[0].toBaseUnits();
+      return bals[0].toBigInt();
     }
 
     // First get balance in ethereum
@@ -173,10 +167,7 @@ describe("EthbridgeService", () => {
       fromAddress: getSifAddress(),
       assetAmount: sendRowanAmount,
       ethereumRecipient: getEthAddress(),
-      feeAmount: AssetAmount(
-        Asset.get("ceth"),
-        JSBI.BigInt("54080000000000000"),
-      ),
+      feeAmount: AssetAmount(Asset.get("ceth"), "54080000000000000"),
     });
 
     expect(msg.value.msg).toEqual([
@@ -199,7 +190,7 @@ describe("EthbridgeService", () => {
 
     const expectedERowanBalance = JSBI.add(
       startingERowanBalance,
-      sendRowanAmount.toBaseUnits(),
+      sendRowanAmount.toBigInt(),
     );
 
     await waitFor(
@@ -244,7 +235,7 @@ describe("EthbridgeService", () => {
     // wait for the balance to change
     const expectedRowanBalance = JSBI.add(
       startingRowanBalance,
-      sendERowanAmount.toBaseUnits(),
+      sendERowanAmount.toBigInt(),
     );
 
     await waitFor(

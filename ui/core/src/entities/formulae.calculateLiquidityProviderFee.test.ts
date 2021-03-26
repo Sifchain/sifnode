@@ -1,5 +1,4 @@
 import { calculateProviderFee } from "./formulae";
-import { Fraction, TEN } from "./fraction/Fraction";
 import tests from "../../../../test/test-tables/singleswap_liquidityfees.json";
 
 import { Amount } from "./Amount";

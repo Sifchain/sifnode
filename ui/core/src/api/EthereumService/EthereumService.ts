@@ -3,7 +3,14 @@ import Web3 from "web3";
 import { provider, WebsocketProvider } from "web3-core";
 import { IWalletService } from "../IWalletService";
 import { debounce } from "lodash";
-import { TxHash, TxParams, Asset, AssetAmount, Network } from "../../entities";
+import {
+  TxHash,
+  TxParams,
+  Asset,
+  AssetAmount,
+  Network,
+  IAssetAmount,
+} from "../../entities";
 import {
   getEtheriumBalance,
   getTokenBalance,
@@ -14,7 +21,7 @@ import {
 import { Msg } from "@cosmjs/launchpad";
 
 type Address = string;
-type Balances = AssetAmount[];
+type Balances = IAssetAmount[];
 
 export type EthereumServiceContext = {
   getWeb3Provider: () => Promise<provider>;
@@ -53,7 +60,7 @@ export class EthereumService implements IWalletService {
     connected: boolean;
     address: Address;
     accounts: Address[];
-    balances: AssetAmount[];
+    balances: IAssetAmount[];
     log: string;
   };
 

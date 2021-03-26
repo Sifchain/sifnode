@@ -1,7 +1,6 @@
 import { IAmount, Amount, _ExposeInternal } from "./Amount";
 import { IAsset, Asset } from "./Asset";
 import { IFraction } from "./fraction/Fraction";
-import Big from "big.js";
 import JSBI from "jsbi";
 
 export type IAssetAmount = Readonly<IAsset> & {

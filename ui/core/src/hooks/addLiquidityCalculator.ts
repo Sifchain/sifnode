@@ -8,7 +8,6 @@ import {
   LiquidityProvider,
   Pool,
 } from "../entities";
-// import { Fraction } from "../entities";
 import { Amount } from "../entities";
 import { format } from "../utils/format";
 import { useField } from "./useField";

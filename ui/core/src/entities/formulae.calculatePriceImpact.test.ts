@@ -1,5 +1,4 @@
 import { calculatePriceImpact } from "./formulae";
-// import { Fraction, TEN } from "./fraction/Fraction";
 import { SingleSwapStandardSlip } from "../../../../test/test-tables/singleswap_standardslip.json";
 import { Amount } from "./Amount";
 

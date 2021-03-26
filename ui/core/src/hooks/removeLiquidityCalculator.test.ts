@@ -1,7 +1,6 @@
 import { ref, Ref } from "@vue/reactivity";
 
 import { Amount, AssetAmount, LiquidityProvider, Pool } from "../entities";
-// import { Fraction, IFraction } from "../entities/fraction/Fraction";
 import { getTestingTokens } from "../test/utils/getTestingToken";
 import { PoolState } from "./addLiquidityCalculator";
 import { useRemoveLiquidityCalculator } from "./removeLiquidityCalculator";

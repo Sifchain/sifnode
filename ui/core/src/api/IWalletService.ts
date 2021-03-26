@@ -1,4 +1,4 @@
-import { TxHash, TxParams, Address, Asset, AssetAmount } from "../entities";
+import { TxHash, TxParams, Address, Asset, IAssetAmount } from "../entities";
 
 type Msg = { type: string; value: any }; // make entity
 
@@ -7,7 +7,7 @@ export type IWalletService = {
     address: Address;
     accounts: Address[];
     connected: boolean;
-    balances: AssetAmount[];
+    balances: IAssetAmount[];
     log: string;
   };
   onProviderNotFound(handler: () => void): void;
@@ -16,7 +16,7 @@ export type IWalletService = {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   transfer(params: TxParams): Promise<TxHash>;
-  getBalance(address?: Address, asset?: Asset): Promise<AssetAmount[]>;
+  getBalance(address?: Address, asset?: Asset): Promise<IAssetAmount[]>;
   signAndBroadcast(msg: Msg, memo?: string): Promise<any>;
   setPhrase(phrase: string): Promise<Address>;
   purgeClient(): void;

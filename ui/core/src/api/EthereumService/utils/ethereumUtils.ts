@@ -8,7 +8,6 @@ import {
 } from "web3-core";
 
 import { Address, Asset, AssetAmount, Network } from "../../../entities";
-import B from "../../../entities/utils/B";
 
 import erc20TokenAbi from "./erc20TokenAbi";
 
@@ -28,7 +27,7 @@ export async function getTokenBalance(
   } catch (err) {
     console.log(`Error fetching balance for ${asset.symbol}`);
   }
-  return AssetAmount(asset, B(tokenBalance, 0));
+  return AssetAmount(asset, tokenBalance);
 }
 
 export function isEventEmittingProvider(

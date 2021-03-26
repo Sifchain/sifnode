@@ -8,4 +8,3 @@ export * from "./Pair";
 export * from "./Pool";
 export * from "./Transaction";
 export * from "./Wallet";
-// export * from "./fraction/Fraction";
