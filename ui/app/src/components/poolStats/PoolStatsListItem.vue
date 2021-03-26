@@ -83,13 +83,13 @@ export default defineComponent({
       <div class="col-lg">
         <span>${{ priceToken }}</span>
       </div>
-      <div class="col-md">
+      <div class="col-lg">
         <span>{{ arb }}</span>
       </div>
-      <div class="col-sm">
+      <div class="col-lg">
         <span>${{ poolDepth }}</span>
       </div>
-      <div class="col-sm">
+      <div class="col-lg">
         <span>${{ volume }}</span>
       </div>
       <div class="col-sm">
@@ -159,7 +159,7 @@ export default defineComponent({
 
   .col-sm-s {
     padding-left: 12px;
-    min-width: 102px;
+    min-width: 112px;
     width: 10%;
     display: flex;
     justify-content: start;
@@ -183,6 +183,7 @@ export default defineComponent({
     min-width: 168px;
     font-size: $fs_md;
     color: $c_text;
+    text-align: center;
   }
 }
 </style>

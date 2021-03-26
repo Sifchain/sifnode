@@ -26,7 +26,7 @@ export default defineComponent({
       </span>
     </div>
 
-    <div class="col-md">
+    <div class="col-lg">
       <span>Arbitrage</span>
       <span>
         Opportunity
@@ -37,7 +37,7 @@ export default defineComponent({
         </Tooltip>
       </span>
     </div>
-    <div class="col-sm">
+    <div class="col-lg">
       <span>Pool Depth</span>
       <span>
         (USD)
@@ -48,7 +48,7 @@ export default defineComponent({
         </Tooltip>
       </span>
     </div>
-    <div class="col-sm">
+    <div class="col-lg">
       <span>Trade Volume</span>
       <span>(24h)</span>
     </div>
