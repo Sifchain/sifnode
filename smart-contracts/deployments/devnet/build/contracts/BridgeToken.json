@@ -1064,12 +1064,12 @@
         }
       },
       "links": {},
-      "address": "0x6bcb715CB89BCCb0A11261Ca60987B9afDCd0380",
-      "transactionHash": "0x1db26c21573f78c1af1d3b47f21f66e127f4fa635cf1eb09172aaf9e87c050dd"
+      "address": "0x3Bd967148B089d8a2FbdEF302e506c74ACD6c960",
+      "transactionHash": "0x56bf8d02749a8c62caed1d925472654f21ae0078506336f6b926fc36622f665a"
     }
   },
   "schemaVersion": "3.3.2",
-  "updatedAt": "2021-03-24T07:18:45.357Z",
+  "updatedAt": "2021-03-26T01:25:07.356Z",
   "networkType": "ethereum",
   "devdoc": {
     "details": "Mintable, ERC20Burnable, ERC20 compatible BankToken for use by BridgeBank*",

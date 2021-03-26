@@ -1091,7 +1091,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.2",
-  "updatedAt": "2021-03-24T07:09:07.437Z",
+  "updatedAt": "2021-03-26T01:12:44.020Z",
   "devdoc": {
     "details": "Mintable, ERC20Burnable, ERC20 compatible token for use in sifchain integration tests*",
     "methods": {
