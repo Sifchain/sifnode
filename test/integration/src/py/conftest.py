@@ -185,7 +185,7 @@ def sifchain_fees(sifchain_fees_int):
 
 @pytest.fixture
 def sifchain_fees_int():
-    return "200000"
+    return 200000
 
 
 @pytest.fixture
