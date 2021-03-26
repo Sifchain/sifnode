@@ -3,7 +3,7 @@
   "sifApiUrl": "https://api-testnet.sifchain.finance/",
   "sifWsUrl": "wss://rpc-testnet.sifchain.finance/websocket",
   "sifRpcUrl": "https://rpc-testnet.sifchain.finance/",
-  "sifChainId": "sandpit",
+  "sifChainId": "sifchain",
   "web3Provider": "metamask",
   "nativeAsset": "rowan",
   "bridgebankContractAddress": "0x1E234d1747ff8F4D365acA9b61bd7fd3F585B2ce",
