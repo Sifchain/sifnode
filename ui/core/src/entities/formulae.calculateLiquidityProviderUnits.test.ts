@@ -7,6 +7,8 @@ import { Amount, IAmount } from "./Amount";
 const filterList: number[] = [];
 
 // The following copies how the backend tests against rounding
+// Backend appears to loose precision and the increase precision to avoid panic errors. Our Fraction system appears to avoid this by using integer Fractions to store values
+// This sidesteps the issue though as it might be possible for us to run into trouble if numerators or denominator get too big
 // See https://github.com/Sifchain/sifnode/blob/b4a18903319ba3dd5349deb4d6182140e720b163/x/clp/keeper/table_test.go#L14
 const BUFFER_PERCENTAGE = "1.21"; // Percentage difference allowable to accommodate rounding done by Big libraries in Go,Python and Javascript
 
