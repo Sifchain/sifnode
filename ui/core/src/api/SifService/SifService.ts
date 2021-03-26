@@ -67,11 +67,12 @@ export default function createSifService({
   let keplrProvider: any;
   let client: SifClient | null = null;
   let polling: any;
+  let connecting: boolean = false;
 
   const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl);
 
   const supportedTokens = assets.filter(
-    (asset) => asset.network === Network.SIFCHAIN,
+    asset => asset.network === Network.SIFCHAIN,
   );
 
   async function createSifClientFromMnemonic(mnemonic: string) {
@@ -114,7 +115,12 @@ export default function createSifService({
         state.accounts = await client.getAccounts();
         state.balances = await instance.getBalance(client.senderAddress);
       } catch (e) {
-        if (!e.toString().toLowerCase().includes("no address found on chain")) {
+        if (
+          !e
+            .toString()
+            .toLowerCase()
+            .includes("no address found on chain")
+        ) {
           state.connected = false;
           state.address = "";
           state.balances = [];
@@ -147,10 +153,22 @@ export default function createSifService({
       if (!keplrProvider) {
         return;
       }
+      console.log('setClient')
+      if (connecting || state.connected) { return }
+      connecting = true
+      /* 
+        Only load dev env keplr configs.
+        Will need to change chain id in devnet, testnet so keplr asks to add experimental chain. 
+        Otherwise, if sifchain, auto maps to production chain per keplr code.
+      */
+      if (!state.connected && keplrChainConfig.chainId !== "sifchain") {
+        await this.connect();
+      }
       const offlineSigner = keplrProvider.getOfflineSigner(
         keplrChainConfig.chainId,
       );
       const accounts = await offlineSigner.getAccounts();
+      console.log('account', accounts)
       const address = accounts.length > 0 ? accounts[0].address : "";
       if (!address) {
         throw "No address on sif account";
@@ -162,6 +180,7 @@ export default function createSifService({
         sifWsUrl,
         sifRpcUrl,
       );
+      connecting = false
     },
 
     async initProvider() {
@@ -246,16 +265,16 @@ export default function createSifService({
         if (!account) {
           throw "No Address found on chain";
         } // todo handle this better
-        const supportedTokenSymbols = supportedTokens.map((s) => s.symbol);
+        const supportedTokenSymbols = supportedTokens.map(s => s.symbol);
         return account.balance
-          .filter((balance) => supportedTokenSymbols.includes(balance.denom))
+          .filter(balance => supportedTokenSymbols.includes(balance.denom))
           .map(({ amount, denom }) => {
             const asset = supportedTokens.find(
-              (token) => token.symbol === denom,
+              token => token.symbol === denom,
             )!; // will be found because of filter above
             return AssetAmount(asset, amount, { inBaseUnit: true });
           })
-          .filter((balance) => {
+          .filter(balance => {
             // If an aseet is supplied filter for it
             if (!asset) {
               return true;
