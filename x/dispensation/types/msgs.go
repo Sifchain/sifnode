@@ -32,6 +32,10 @@ func (m MsgAirdrop) ValidateBasic() error {
 	if m.Signer.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
 	}
+	err := bank.ValidateInputsOutputs(m.Input, m.Output)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

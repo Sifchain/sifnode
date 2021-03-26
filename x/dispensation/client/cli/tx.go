@@ -45,7 +45,6 @@ func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			multisigInfo, err := kb.Get(args[0])
 			if err != nil {
 				return err
