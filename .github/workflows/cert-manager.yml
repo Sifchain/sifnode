@@ -63,7 +63,7 @@ jobs:
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
           rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
-          kubectl get pods --all-namespaces --kubeconfig=./kubeconfig
+          kubectl get nodes --kubeconfig=./kubeconfig
 
       - name: Setup AWS Profile and KUBECONFIG devnet US
         shell: bash
@@ -148,7 +148,7 @@ jobs:
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
           rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
-
+          kubectl get nodes --kubeconfig=./kubeconfig
 
       - name: Setup AWS Profile and KUBECONFIG devnet EU
         shell: bash
@@ -237,6 +237,7 @@ jobs:
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
           rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+          kubectl get nodes --kubeconfig=./kubeconfig
 
 
       - name: Setup AWS Profile and KUBECONFIG devnet AU
@@ -323,6 +324,7 @@ jobs:
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
           rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+          kubectl get nodes --kubeconfig=./kubeconfig
 
 
       - name: Setup AWS Profile and KUBECONFIG devnet SG
