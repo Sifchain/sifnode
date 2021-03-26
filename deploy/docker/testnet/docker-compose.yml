@@ -7,11 +7,11 @@ services:
       - 26656:26656
       - 26657:26657
     environment:
-      CHAINNET: merry-go-round
+      CHAINNET: testnet
       MONIKER: ${MONIKER}
       MNEMONIC: ${MNEMONIC}
-      PEER_ADDRESSES: 169d512e28d142962f9e0aa51c1bd1f6b9d0bed8@35.160.89.251:26656,deb4712ec91d71f196a26f636048ccb6ac82a06d@34.250.10.199:26656,51dc0dd3bd4ba0d80794ee611f47912805c5fcc5@13.55.157.40:26656,076d74aa7f3786576d520eae4ef825ff77e960ce@13.228.119.148:26656
-      GENESIS_URL: https://rpc-merry-go-round.sifchain.finance/genesis
+      PEER_ADDRESSES: c3daf4bdd3c559c2526c623a645527eddecd6f9b@23.22.36.176:26656,d6d42f91bc929e558bf91244817020b7bb32f805@34.255.13.11:26656,c52bd4220f26ffc288ab71cea679475cbf5dceb4@13.211.185.78:26656,3498e30c1efc4641fd69899b669e20ae08356743@18.139.47.203:26656
+      GENESIS_URL: https://rpc-testnet.sifchain.finance/genesis
       GAS_PRICE: ${GAS_PRICE}
       BIND_IP_ADDRESS: ${BIND_IP_ADDRESS}
       DAEMON_NAME: sifnoded
