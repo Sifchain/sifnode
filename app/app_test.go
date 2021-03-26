@@ -1,15 +1,16 @@
 package app
 
 import (
-	"github.com/stretchr/testify/assert"
+	"encoding/json"
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tm-db"
+	db "github.com/tendermint/tm-db"
 
-	"github.com/cosmos/cosmos-sdk/codec"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -28,13 +29,15 @@ func TestBlackListedAddrs(t *testing.T) {
 	app := NewInitApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, 0)
 
 	for acc := range maccPerms {
-		require.True(t, app.bankKeeper.BlacklistedAddr(app.SupplyKeeper.GetModuleAddress(acc)))
+		require.True(t, app.BankKeeper.BlacklistedAddr(app.SupplyKeeper.GetModuleAddress(acc)))
 	}
 }
 
 func setGenesis(app *SifchainApp) error {
-	genesisState := NewDefaultGenesisState()
-	stateBytes, err := codec.MarshalJSONIndent(app.cdc, genesisState)
+	encCfg := MakeTestEncodingConfig()
+
+	genesisState := NewDefaultGenesisState(encCfg.Marshaler)
+	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	if err != nil {
 		return err
 	}

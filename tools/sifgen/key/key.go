@@ -1,12 +1,12 @@
 package key
 
 import (
-	"github.com/Sifchain/sifnode/app"
-
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tyler-smith/go-bip39"
+
+	"github.com/Sifchain/sifnode/app"
 )
 
 var (
