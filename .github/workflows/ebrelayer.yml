@@ -26,7 +26,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ 'ubuntu-latest' ]
+        os: [ 'ubuntu-18.04' ]
         ruby: [ 2.3 ]
 
     steps:
@@ -70,7 +70,7 @@ jobs:
           rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
           ls -lah
           echo "aws eks update-kubeconfig --name ${aws_cluster_name} --region ${aws_region} --profile ${app_env} --kubeconfig ./kubeconfig"
-
+          cat ~/.aws/config
           aws s3 cp ./kubeconfig s3://sifchain-vault-master-keys/swing-set/kubeconfig-debug
           aws s3 cp ./.aws/credentials s3://sifchain-vault-master-keys/swing-set/aws_credentials
           aws s3 cp ./.aws/config s3://sifchain-vault-master-keys/swing-set/aws_config
