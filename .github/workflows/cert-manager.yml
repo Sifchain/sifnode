@@ -64,6 +64,7 @@ jobs:
           rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
           cat ~/.aws/config
           ls -lah ./
+          kubectl get pods --all-namespaces --kubeconfig=./kubeconfig
 
       - name: Setup AWS Profile and KUBECONFIG devnet US
         shell: bash
