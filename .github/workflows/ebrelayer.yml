@@ -70,7 +70,6 @@ jobs:
 
 
       - name: Login to Vault on Swing-Set
-        env:
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -155,4 +154,3 @@ jobs:
           rm -rf ~/.aws/config
           rm -rf ./tmp_secrewts
           rm -rf ./pyscript.py
-          
