@@ -9,6 +9,19 @@ jobs:
   deploy_swing_set_ebrelayer:
     name: deploy-ebrelayer-swingset
     runs-on: ${{ matrix.os }}
+    env:
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_region: "us-west-2"
+      aws_cluster_name: "sifchain-aws-swing-set-us"
+      aws_role: "arn:aws:iam::983740309645:role/OrganizationAccountAccessRole"
+      VAULT_TEST_SETTINGS_PATH: "kv-v2/swing-set/ebrelayer-smoke-test"
+      app_namespace: "ebrelayer"
+      image: "sifchain/ebrelayer"
+      image_tag: "testnet-genesis"
+      env: "swing-set"
+      app_name: "ebrelayer"
 
     strategy:
       matrix:
@@ -46,25 +59,18 @@ jobs:
           echo '     s:::::::::::ss  i::::::if:::::::f          cc:::::::::::::::ch:::::h     h:::::h a::::::::::aa:::ai::::::i n::::n    n::::n'
           echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh     hhhhhhh  aaaaaaaaaa  aaaaiiiiiiii nnnnnn    nnnnnn'
 
+
       - name: Setup AWS Profile and KUBECONFIG
         shell: bash
-        env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: "us-west-2"
-          aws_cluster_name: "sifchain-aws-swing-set-us"
-          aws_role: "arn:aws:iam::983740309645:role/OrganizationAccountAccessRole"
-          app_env: "swing-set"
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
-          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+          rake "cluster:automation:configure_aws_kube_profile[${env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
 
       - name: Login to Vault on Swing-Set
         env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -73,14 +79,8 @@ jobs:
           echo "This will login to the vault for the specified environment in the kubeconfig."
           rake "cluster:vault:login[]"
 
+
       - name: Setup Vault Policy on Swing-Set
-        env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          app_namespace: "ebrelayer"
-          image: "sifchain/ebrelayer"
-          image_tag: "testnet-genesis"
-          env: "swing-set"
-          app_name: "ebrelayer"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -89,9 +89,8 @@ jobs:
           echo "This will create the vault app policy for the kubernetes appliation."
           rake "cluster:vault:createpolicy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
 
+
       - name: Enable Kubernetes Vault Communication If Not Enabled
-        env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -100,14 +99,8 @@ jobs:
           echo "This will ensure enablement of kubernetes ability to talk to vault"
           rake "cluster:vault:enablekubernetes[]"
 
+
       - name: Configure Vault to Mount Secrets To Application
-        env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          app_namespace: "ebrelayer"
-          image: "sifchain/ebrelayer"
-          image_tag: "testnet-genesis"
-          env: "swing-set"
-          app_name: "ebrelayer"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -116,14 +109,8 @@ jobs:
           echo "This finishes configuring the application to talk to vault and assigns the policy to the deployment name and namespace name"
           rake "cluster:vault:configureapplication[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
 
+
       - name: Anchore Image Scan
-        env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          app_namespace: "ebrelayer"
-          image: "sifchain/ebrelayer"
-          image_tag: "testnet-genesis"
-          env: "swing-set"
-          app_name: "ebrelayer"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -132,14 +119,8 @@ jobs:
           echo "This executes a anchore image scan on the specified docker image and app name, it will fail when the scan fails to pass. Prints report to window."
           rake "cluster:anchore:scan[${image}, ${image_tag}, ${app_name}]"
 
+
       - name: Deploy Ebrelayer to Kubernetes Via Helm.
-        env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          app_namespace: "ebrelayer"
-          image: "sifchain/ebrelayer"
-          image_tag: "testnet-genesis"
-          env: "swing-set"
-          app_name: "ebrelayer"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -148,10 +129,8 @@ jobs:
           echo "This deploys a helm application configured to utilize vault secrets."
           rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
 
+
       - name: Execute ebrelayer Integration Tests
-        env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
-          VAULT_TEST_SETTINGS_PATH: "kv-v2/swing-set/ebrelayer-smoke-test"
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -164,6 +143,7 @@ jobs:
           #bash test/integration/environment_setup.sh
           echo "Skiping test until echo output that shows values is removed and I get the files needed to execute the test"
 
+
       - name: Clean Temp Files and Secrets
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
@@ -175,3 +155,4 @@ jobs:
           rm -rf ~/.aws/config
           rm -rf ./tmp_secrewts
           rm -rf ./pyscript.py
+          

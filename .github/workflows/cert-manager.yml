@@ -6,6 +6,7 @@ on:
       - 'ebrelayer-pipeline-development'
 
 jobs:
+  #Cert-Manager DevNet US Deployment
   deploy_devnet_certmanager_us:
     name: cert-manager-deployment-automation-us-devnet
     runs-on: ${{ matrix.os }}
@@ -62,8 +63,6 @@ jobs:
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
           rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
-          cat ~/.aws/config
-          ls -lah ./
           kubectl get pods --all-namespaces --kubeconfig=./kubeconfig
 
       - name: Setup AWS Profile and KUBECONFIG devnet US
@@ -91,6 +90,7 @@ jobs:
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
 
+  #Cert-Manager DevNet EU Deployment
   deploy_devnet_certmanager_eu:
     name: cert-manager-deployment-automation-eu-devnet
     runs-on: ${{ matrix.os }}
@@ -177,6 +177,7 @@ jobs:
           rm -rf ~/.aws/config
 
 
+  #Cert-Manager DevNet AU Deployment
   deploy_devnet_certmanager_au:
     name: cert-manager-deployment-automation-au-devnet
     runs-on: ${{ matrix.os }}
@@ -264,6 +265,7 @@ jobs:
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
 
+  #Cert-Manager DevNet SG Deployment
   deploy_devnet_certmanager_sg:
     name: cert-manager-deployment-automation-sg-devnet
     runs-on: ${{ matrix.os }}
