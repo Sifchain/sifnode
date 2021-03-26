@@ -1,4 +1,4 @@
-name: Deploy EBRELAYER Swingset
+name: ebrelayer deployment automation
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy_swing_set_ebrelayer:
-    name: deploy-ebrelayer
+    name: deploy-ebrelayer-swingset
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -148,7 +148,23 @@ jobs:
           echo "This deploys a helm application configured to utilize vault secrets."
           rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
 
-      - name: Clean Temp Files and Secrets
+
+      - name: Execute ebrelayer Integration Tests
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
+          VAULT_TEST_SETTINGS_PATH: "kv-v2/swing-set/ebrelayer-smoke-test"
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will source the vaulte secrets as environment variables defined at the path and execute the tests accordingly."
+          rake "cluster:vault:generate_vault_tmp_var_source_file[${VAULT_TEST_SETTINGS_PATH}]"
+          source ./tmp_secrets
+          bash test/integration/environment_setup.sh
+
+
+    - name: Clean Temp Files and Secrets
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
@@ -157,3 +173,4 @@ jobs:
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
+          rm -rf ./tmp_secrewts
