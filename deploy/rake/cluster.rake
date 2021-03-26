@@ -237,23 +237,26 @@ path \\"+/sys/internal/counters/activity\\" {
     desc "Generate tmp_secrets file with vault secrest to source and remove in your automations."
     task :generate_vault_tmp_var_source_file, [:path] do |t, args|
       cluster_automation = %Q{
-        #!/usr/bin/env bash
-        set +x
-        cat << EOF > pyscript.py
-        #!/usr/bin/env python
-        import json
-        import urllib3
-        http = urllib3.PoolManager()
-        import subprocess
-        result = subprocess.Popen(["kubectl exec -n vault -it vault-0 -- vault kv get -format json #{args[:path]}"], stdout=subprocess.PIPE, shell=True)
-        output,error = result.communicate()
-        vars_return = json.loads(output.decode('utf-8'))["data"]["data"]
-        temp_secrets = open("tmp_secrets", "w")
-        for var in vars_return:
-                temp_secrets.write("export {key}={values} \n".format(key=var, values=vars_return[var]))
-        temp_secrets.close()
-        EOF
-        python pyscript.py
+#!/usr/bin/env bash
+set +x
+cat << EOF > pyscript.py
+#!/usr/bin/env python
+import json
+import urllib3
+http = urllib3.PoolManager()
+import subprocess
+print("Starting to Pull Secrets")
+result = subprocess.Popen(["kubectl exec -n vault -it vault-0 -- vault kv get -format json #{args[:path]}"], stdout=subprocess.PIPE, shell=True)
+output,error = result.communicate()
+vars_return = json.loads(output.decode('utf-8'))["data"]["data"]
+print("Opening temporary secrets file for writing secrets")
+temp_secrets = open("tmp_secrets", "w")
+for var in vars_return:
+    temp_secrets.write("export {key}={values} \\n".format(key=var, values=vars_return[var]))
+temp_secrets.close()
+print("secrets written.")
+EOF
+python pyscript.py
       }
       system(cluster_automation) or exit 1
     end
