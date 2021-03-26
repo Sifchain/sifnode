@@ -18,6 +18,8 @@ export type IAmount = {
   lessThan(other: IAmount | string): boolean;
   lessThanOrEqual(other: IAmount | string): boolean;
   multiply(other: IAmount | string): IAmount;
+  powerInt(other: IAmount | string): IAmount;
+  expInt(other: IAmount | string): IAmount;
   sqrt(): IAmount;
   subtract(other: IAmount | string): IAmount;
 };
@@ -49,8 +51,8 @@ export function Amount(
       return getQuotientWithBankersRounding(fraction);
     },
 
-    toString() {
-      return fraction.toFixed(18);
+    toString(detailed: boolean = true) {
+      return fraction.toFixed(detailed ? 18 : 0);
     },
 
     add(other) {
@@ -89,11 +91,37 @@ export function Amount(
       return toAmount(fraction.subtract(toFraction(other)));
     },
 
+    powerInt(other) {
+      const exp = parseInt(Amount(other).toBigInt().toString());
+
+      if (exp === 0) {
+        if (fraction.greaterThan("0")) return Amount("1");
+        return Amount("-1");
+      }
+
+      let fr = fraction;
+      for (let i = Math.abs(exp); i > 1; --i) {
+        fr = fr.multiply(fraction);
+      }
+      if (exp >= 0) {
+        return toAmount(fr);
+      }
+
+      return toAmount(new Fraction("1").divide(fr));
+    },
+
+    expInt(other) {
+      // TODO: use decimalShift for speed - but this might loose precision?
+      return instance.multiply(Amount("10").powerInt(other));
+    },
+
     sqrt() {
       // TODO: test against rounding errors
       const big = toBig(fraction);
-      const string = toFraction(big.sqrt().times(1000000).toFixed(0)) as string;
-      return Amount(string).divide("1000000");
+      const string = toFraction(
+        big.sqrt().times("100000000000000000000000").toFixed(0),
+      ) as string;
+      return Amount(string).divide("100000000000000000000000");
     },
 
     // Internal methods need to be exposed here

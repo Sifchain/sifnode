@@ -228,10 +228,10 @@ tests.forEach(({ name, only, skip, input, expected }) => {
       externalAssetBalance: Amount(input.externalAssetBalance),
       nativeAssetBalance: Amount(input.nativeAssetBalance),
     });
-    expect(output.withdrawExternalAssetAmount.toString()).toEqual(
+    expect(output.withdrawExternalAssetAmount.toBigInt().toString()).toEqual(
       expected.withdrawExternalAssetAmount,
     );
-    expect(output.withdrawNativeAssetAmount.toString()).toEqual(
+    expect(output.withdrawNativeAssetAmount.toBigInt().toString()).toEqual(
       expected.withdrawNativeAssetAmount,
     );
   });

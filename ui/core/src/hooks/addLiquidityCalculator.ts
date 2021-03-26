@@ -69,6 +69,7 @@ export function usePoolCalculator(input: {
     if (!tokenAField.fieldAmount.value || !tokenAField.asset.value) {
       return null;
     }
+
     if (preExistingPool.value) {
       return input.tokenASymbol.value
         ? balanceMap.value.get(input.tokenASymbol.value) ??
@@ -149,11 +150,11 @@ export function usePoolCalculator(input: {
   });
 
   const totalPoolUnits = computed(() =>
-    liquidityProviderPoolUnitsArray.value[0].toString(),
+    liquidityProviderPoolUnitsArray.value[0].toBigInt().toString(),
   );
 
   const totalLiquidityProviderUnits = computed(() =>
-    liquidityProviderPoolUnitsArray.value[1].toString(),
+    liquidityProviderPoolUnitsArray.value[1].toBigInt().toString(),
   );
 
   const shareOfPool = computed(() => {
@@ -170,7 +171,7 @@ export function usePoolCalculator(input: {
 
   const shareOfPoolPercent = computed(() => {
     if (shareOfPool.value.multiply("10000").lessThan("1")) return "< 0.01%";
-    return `${format(shareOfPool.value.multiply("10000"), {
+    return `${format(shareOfPool.value, {
       mantissa: 2,
       mode: "percent",
     })}`;
@@ -202,7 +203,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return format(aPerBRatio.value, { mantissa: 8, float: true });
+    return format(aPerBRatio.value, { mantissa: 8 });
   });
 
   // native_balance / external_balance
@@ -218,7 +219,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return format(bPerARatio.value, { mantissa: 8, float: true });
+    return format(bPerARatio.value, { mantissa: 8 });
   });
 
   // Price Impact and Pool Share:
@@ -243,7 +244,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return format(aPerBRatioProjected.value, { float: true, mantissa: 8 });
+    return format(aPerBRatioProjected.value, { mantissa: 8 });
   });
 
   // Price Impact and Pool Share:
@@ -267,7 +268,7 @@ export function usePoolCalculator(input: {
       return "N/A";
     }
 
-    return format(bPerARatioProjected.value, { float: true, mantissa: 8 });
+    return format(bPerARatioProjected.value, { mantissa: 8 });
   });
 
   effect(() => {

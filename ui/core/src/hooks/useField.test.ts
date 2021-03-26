@@ -24,8 +24,12 @@ describe("useField", () => {
     amount.value = "12";
 
     expect(asset.value?.symbol).toBe("atk");
-    expect(fieldAmount.value?.toFixed()).toBe("12.000000000000000000");
+    expect(fieldAmount.value?.toBigInt().toString()).toBe(
+      "12000000000000000000",
+    );
     amount.value = "123.123123";
-    expect(fieldAmount.value?.toFixed()).toBe("123.123123000000000000");
+    expect(fieldAmount.value?.toBigInt().toString()).toBe(
+      "123123123000000000000",
+    );
   });
 });

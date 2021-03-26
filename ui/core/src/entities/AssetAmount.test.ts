@@ -43,9 +43,7 @@ describe("AssetAmount", () => {
   });
 
   test("#toString", () => {
-    expect(AssetAmount("eth", "12345678").toString()).toBe(
-      "12345678.000000000000000000 ETH",
-    );
+    expect(AssetAmount("eth", "12345678").toString()).toBe("12345678 ETH");
   });
 
   test("#add", () => {
@@ -159,7 +157,7 @@ describe("AssetAmount", () => {
 
     // Floor
     expect(AssetAmount("eth", "20").sqrt().toString()).toBe(
-      "4.472136000000000000",
+      "4.472135954999579393",
     );
   });
 

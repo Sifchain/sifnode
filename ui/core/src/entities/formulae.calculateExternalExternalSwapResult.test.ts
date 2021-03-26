@@ -13,6 +13,6 @@ tests.DoubleSwap.forEach(({ ax, aX, aY, bX, bY, expected }: any) => {
       Amount(bX), // External Balance
       Amount(bY), // Native Balance
     );
-    expect(output.toString()).toBe(expected);
+    expect(output.toBigInt().toString()).toBe(expected);
   });
 });

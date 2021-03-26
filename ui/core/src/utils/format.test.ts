@@ -1,14 +1,11 @@
-import { Network } from "../entities";
+import { AssetAmount, Network } from "../entities";
 import { Amount } from "../entities/Amount";
 import { Asset } from "../entities/Asset";
-import { format, IFormatOptions } from "./format";
+import { round, format, IFormatOptions } from "./format";
 
 type Test = {
   only?: boolean;
   skip?: boolean;
-  // input: string;
-  // decimals?: number;
-  // options: IFormatOptions;
   input: string;
   expected: string;
 };
@@ -23,6 +20,12 @@ function mockAsset(decimals: number) {
     network: Network.ETHEREUM,
   });
 }
+
+describe("round", () => {
+  test("rounding", () => {
+    expect(round("1.23456789", 4)).toBe("1.2346");
+  });
+});
 
 describe("format", () => {
   const tests: Test[] = [
@@ -95,6 +98,34 @@ describe("format", () => {
       expected: `+0.9999998`,
     },
     {
+      input: format(Amount("1.000000"), { mantissa: 6, trimMantissa: true }),
+      expected: `1.0`,
+    },
+    {
+      input: format(Amount("1.100000"), { mantissa: 6, trimMantissa: true }),
+      expected: `1.1`,
+    },
+    {
+      input: format(Amount("1.12300000"), { mantissa: 6, trimMantissa: true }),
+      expected: `1.123`,
+    },
+
+    {
+      input: format(Amount("1.1234567800000"), {
+        mantissa: 6,
+        trimMantissa: true,
+      }),
+      expected: `1.123457`,
+    },
+    {
+      input: format(Amount("0"), {
+        mantissa: 6,
+        zeroFormat: "N/A",
+        trimMantissa: true,
+      }),
+      expected: `N/A`,
+    },
+    {
       input: format(Amount("100000000000000000000"), mockAsset(18), {
         mantissa: 18,
       }),
@@ -108,8 +139,8 @@ describe("format", () => {
   });
 
   test("float mode", () => {
-    expect(
-      format(Amount("100").divide(Amount("3")), { float: true, mantissa: 18 }),
-    ).toBe("33.333333333333333333"); // Precision loss because of numbro - should we remove it?
+    expect(format(Amount("100").divide(Amount("3")), { mantissa: 18 })).toBe(
+      "33.333333333333333333",
+    );
   });
 });

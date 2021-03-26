@@ -54,6 +54,7 @@ describe("assets with zero decimals", () => {
         AssetAmount(ASSETS.atk, "1000000"),
         AssetAmount(ASSETS.btk, "1000000"),
       ),
+      0,
     );
     expect(msg).toBe("1 cBTK per cATK");
   });

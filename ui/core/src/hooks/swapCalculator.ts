@@ -7,7 +7,7 @@ import {
   IAssetAmount,
   Amount,
 } from "../entities";
-import Big from "big.js";
+
 import { useField } from "./useField";
 import { trimZeros, useBalances } from "./utils";
 import { format } from "../utils/format";
@@ -21,11 +21,18 @@ export enum SwapState {
 }
 
 function calculateFormattedPriceImpact(pair: IPool, amount: IAssetAmount) {
-  return format(pair.calcPriceImpact(amount), { mantissa: 18 });
+  return format(pair.calcPriceImpact(amount), {
+    mantissa: 6,
+    trimMantissa: true,
+  });
 }
 
 function calculateFormattedProviderFee(pair: IPool, amount: IAssetAmount) {
-  return trimZeros(format(pair.calcProviderFee(amount), { mantissa: 18 }));
+  return format(
+    pair.calcProviderFee(amount).amount,
+    pair.calcProviderFee(amount).asset,
+    { mantissa: 5, trimMantissa: true },
+  );
 }
 
 // TODO: make swap calculator only generate Fractions/Amounts that get stringified in the view
@@ -77,20 +84,20 @@ export function useSwapCalculator(input: {
 
   // Create a price message eg. 10.123 ATK per BTK
   const priceMessage = computed(() => {
-    if (!fromField.fieldAmount.value || !pool.value) {
+    if (
+      !fromField.fieldAmount.value ||
+      fromField.fieldAmount.value.equalTo("0") ||
+      !pool.value
+    ) {
       return "";
     }
 
     const amount = fromField.fieldAmount.value;
+
     const pair = pool.value;
 
     const swapResult = pair.calcSwapResult(amount);
 
-    console.log(
-      `swapResult:${swapResult}  amount:${amount} = ${swapResult
-        .divide(amount)
-        .toString(true)}`,
-    );
     return `${format(swapResult.divide(amount), {
       mantissa: 6,
       float: true,
@@ -112,9 +119,17 @@ export function useSwapCalculator(input: {
       selectedField === "from"
     ) {
       swapResult.value = pool.value.calcSwapResult(fromField.fieldAmount.value);
-      input.toAmount.value = trimZeros(
-        format(swapResult.value, { mantissa: 10 }),
+
+      const toAmountValue = format(
+        swapResult.value.amount,
+        swapResult.value.asset,
+        {
+          mantissa: 10,
+          trimMantissa: true,
+        },
       );
+
+      input.toAmount.value = toAmountValue;
     }
   });
 
@@ -128,9 +143,6 @@ export function useSwapCalculator(input: {
       pool.value.contains(toField.asset.value) &&
       selectedField === "to"
     ) {
-      console.log(
-        `Calculating reverse swap amount... ${toField.fieldAmount.value}`,
-      );
       reverseSwapResult.value = pool.value.calcReverseSwapResult(
         toField.fieldAmount.value,
       );
@@ -141,12 +153,11 @@ export function useSwapCalculator(input: {
       swapResult.value = pool.value.calcSwapResult(
         reverseSwapResult.value as IAssetAmount,
       );
-      console.log(
-        "Setting from amount... ",
-        format(reverseSwapResult.value, { mantissa: 10 }),
-      );
+
       input.fromAmount.value = trimZeros(
-        format(reverseSwapResult.value, { mantissa: 10 }),
+        format(reverseSwapResult.value.amount, reverseSwapResult.value.asset, {
+          mantissa: 8,
+        }),
       );
     }
   });

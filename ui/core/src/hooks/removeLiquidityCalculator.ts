@@ -137,14 +137,16 @@ export function useRemoveLiquidityCalculator(input: {
 
   const withdrawExternalAssetAmountMessage = (() => {
     if (!withdrawalAmounts) return "";
-    return format(withdrawalAmounts?.withdrawExternalAssetAmount, {
+    const assetAmount = withdrawalAmounts?.withdrawExternalAssetAmount;
+    return format(assetAmount.amount, assetAmount.asset, {
       mantissa: 6,
     });
   })();
 
   const withdrawNativeAssetAmountMessage = (() => {
     if (!withdrawalAmounts) return "";
-    return format(withdrawalAmounts?.withdrawNativeAssetAmount, {
+    const assetAmount = withdrawalAmounts?.withdrawNativeAssetAmount;
+    return format(assetAmount.amount, assetAmount.asset, {
       mantissa: 6,
     });
   })();

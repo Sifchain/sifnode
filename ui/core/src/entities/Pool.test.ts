@@ -167,7 +167,7 @@ describe("Pool", () => {
         AssetAmount(BTK, "1000000"),
       );
 
-      expect(pool.poolUnits.toString()).toBe("1000000");
+      expect(pool.poolUnits.toString(false)).toBe("1000000");
     });
 
     test("addLiquidity:calculate pool units", () => {
@@ -179,8 +179,10 @@ describe("Pool", () => {
         AssetAmount(ATK, "10000"),
         AssetAmount(BTK, "14000"),
       );
-      expect(units.toString()).toBe("1011953");
-      expect(lpunits.divide(units).multiply("10000").toString()).toBe("118");
+      expect(units.toString(false)).toBe("1011953");
+      expect(lpunits.divide(units).multiply("10000").toString(false)).toBe(
+        "118",
+      );
     });
   });
 
@@ -345,7 +347,7 @@ describe("Pool", () => {
             AssetAmount(TOKENS.btk, "50000000000000000000"),
           )
           .toString(),
-      ).toEqual("100000000019999999998 ATK");
+      ).toEqual("100000000020000000005 ATK");
     });
   });
 });

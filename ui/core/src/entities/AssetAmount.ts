@@ -2,12 +2,29 @@ import { IAmount, Amount, _ExposeInternal } from "./Amount";
 import { IAsset, Asset } from "./Asset";
 import { IFraction } from "./fraction/Fraction";
 import Big from "big.js";
+import JSBI from "jsbi";
 
-export type IAssetAmount = Readonly<IAsset> &
-  IAmount & {
-    readonly asset: IAsset;
-    readonly amount: IAmount;
-  };
+export type IAssetAmount = Readonly<IAsset> & {
+  readonly asset: IAsset;
+  readonly amount: IAmount;
+  // for use by display lib and in testing
+  toBigInt(): JSBI;
+  toString(detailed?: boolean): string;
+
+  // for use elsewhere
+  add(other: IAmount | string): IAmount;
+  divide(other: IAmount | string): IAmount;
+  equalTo(other: IAmount | string): boolean;
+  greaterThan(other: IAmount | string): boolean;
+  greaterThanOrEqual(other: IAmount | string): boolean;
+  lessThan(other: IAmount | string): boolean;
+  lessThanOrEqual(other: IAmount | string): boolean;
+  multiply(other: IAmount | string): IAmount;
+  powerInt(other: IAmount | string): IAmount;
+  expInt(other: IAmount | string): IAmount;
+  sqrt(): IAmount;
+  subtract(other: IAmount | string): IAmount;
+};
 
 export function AssetAmount(
   asset: IAsset | string,
@@ -61,8 +78,8 @@ export function AssetAmount(
       return _amount.toBigInt();
     },
 
-    toString(detailed?: boolean) {
-      return `${_amount.toString(detailed)} ${_asset.symbol.toUpperCase()}`;
+    toString() {
+      return `${_amount.toString(false)} ${_asset.symbol.toUpperCase()}`;
     },
 
     add(other) {
@@ -103,6 +120,14 @@ export function AssetAmount(
 
     subtract(other) {
       return _amount.subtract(other);
+    },
+
+    powerInt(other) {
+      return _amount.powerInt(other);
+    },
+
+    expInt(other) {
+      return _amount.expInt(other);
     },
 
     // Internal methods need to be proxied here so this can be used as an Amount

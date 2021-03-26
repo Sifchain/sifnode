@@ -13,7 +13,6 @@ type IFormatOptionsBase = {
   prefix?: string; // Add a prefix
   postfix?: string; // Add a postfix
   zeroFormat?: string; // could be something like `N/A`
-  float?: boolean; // consider as floating point number default false
 };
 
 type IFormatOptionsMantissa = IFormatOptionsBase & {
@@ -35,17 +34,31 @@ function isAsset(val: any): val is IAsset {
   return typeof val?.symbol === "string";
 }
 
-export function format(
-  amount: Exclude<IAmount, IAssetAmount>,
+export function round(decimal: string, places: number) {
+  return decimalShift(
+    Amount(decimal)
+      .multiply(Amount(decimalShift("1", places)))
+      .toBigInt() // apply rounding
+      .toString(),
+    -1 * places,
+  );
+}
+
+type AmountNotAssetAmount<T extends IAmount> = T extends IAssetAmount
+  ? never
+  : T;
+
+export function format<T extends IAmount>(
+  amount: AmountNotAssetAmount<T>,
   options: IFormatOptions,
 ): string;
-export function format(
-  amount: Exclude<IAmount, IAssetAmount>,
+export function format<T extends IAmount>(
+  amount: AmountNotAssetAmount<T>,
   asset: Exclude<IAsset, IAssetAmount>,
   options: IFormatOptions,
 ): string;
-export function format(
-  _amount: Exclude<IAmount, IAssetAmount>,
+export function format<T extends IAmount>(
+  _amount: AmountNotAssetAmount<T>,
   _asset: Exclude<IAsset, IAssetAmount> | IFormatOptions,
   _options?: IFormatOptions,
 ): string {
@@ -57,9 +70,13 @@ export function format(
     ? decimalShift(amount.toBigInt().toString(), -1 * asset.decimals)
     : amount.toString();
 
-  let postfix = "";
-  let prefix = "";
+  let postfix = options.prefix ?? "";
+  let prefix = options.postfix ?? "";
   let space = "";
+
+  if (options.zeroFormat && amount.equalTo("0")) {
+    return options.zeroFormat;
+  }
 
   if (options.shorthand) {
     return numbro(decimal).format(createNumbroConfig(options));
@@ -90,7 +107,7 @@ export function format(
 }
 
 function trimMantissa(decimal: string) {
-  return decimal.replace(/0+$/, "");
+  return decimal.replace(/(0+)$/, "").replace(/\.$/, ".0");
 }
 
 function applySeparator(decimal: string) {
@@ -99,12 +116,7 @@ function applySeparator(decimal: string) {
 }
 
 function applyMantissa(decimal: string, mantissa: number) {
-  return decimal.replace(
-    new RegExp("(\\.\\d{" + mantissa + "}).*", "g"),
-    (a: string, b: string) => {
-      return b ? b + "" : a;
-    },
-  );
+  return round(decimal, mantissa);
 }
 
 function isShorthandWithTotalLength(
