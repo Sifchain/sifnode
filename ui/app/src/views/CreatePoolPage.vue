@@ -268,14 +268,17 @@ export default defineComponent({
       },
       handleFromMaxClicked() {
         selectedField.value = "from";
+        lastFocusedTokenField.value = "A";
         const accountBalance = balances.value.find(
           (balance) => balance.asset.symbol === fromSymbol.value,
         );
+
         if (!accountBalance) return;
         fromAmount.value = format(accountBalance.amount, accountBalance.asset);
       },
       handleToMaxClicked() {
         selectedField.value = "to";
+        lastFocusedTokenField.value = "B";
         const accountBalance = balances.value.find(
           (balance) => balance.asset.symbol === toSymbol.value,
         );
@@ -287,6 +290,10 @@ export default defineComponent({
       poolUnits: totalLiquidityProviderUnits,
       riskFactorStatus: computed(() => {
         let status = "danger";
+
+        if (asyncPooling.value) {
+          return "";
+        }
         if (riskFactor.value.lessThanOrEqual("0.2")) {
           status = "warning";
         } else if (riskFactor.value.lessThanOrEqual("0.1")) {
@@ -494,7 +501,7 @@ export default defineComponent({
   path,
   circle,
   rect {
-    fill: yellow !important;
+    fill: #cccc0e !important;
   }
 }
 .icon-risk-status-warning::v-deep {
