@@ -1,25 +1,23 @@
 package types
 
 import (
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
+	"github.com/cosmos/cosmos-sdk/x/bank"
 )
 
 var (
 	_ sdk.Msg = &MsgAirdrop{}
 )
 
-
 type MsgAirdrop struct {
-	Signer              sdk.AccAddress
-	NativeAssetAmount   sdk.Uint
-	ExternalAssetAmount sdk.Uint
+	Signer sdk.AccAddress
+	Input  []bank.Input
+	Output []bank.Output
 }
 
-func NewMsgAirdrop(signer sdk.AccAddress, nativeAssetAmount sdk.Uint, externalAssetAmount sdk.Uint) MsgAirdrop {
-	return MsgAirdrop{Signer: signer, NativeAssetAmount: nativeAssetAmount, ExternalAssetAmount: externalAssetAmount}
+func NewMsgAirdrop(signer sdk.AccAddress, input []bank.Input, output []bank.Output) MsgAirdrop {
+	return MsgAirdrop{Signer: signer, Input: input, Output: output}
 }
 
 func (m MsgAirdrop) Route() string {

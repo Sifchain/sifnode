@@ -6,7 +6,6 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-
 // NewHandler creates an sdk.Handler for all the clp type messages
 func NewHandler(k Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
@@ -22,5 +21,7 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgAirdrop(ctx sdk.Context, keeper Keeper, msg MsgAirdrop) (*sdk.Result, error) {
+	fmt.Println("Reached handler Input  : ", msg.Input[0].Address.String())
+	fmt.Println("Reached handler Output : ", msg.Output[0].Address.String())
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }

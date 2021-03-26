@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/Sifchain/sifnode/x/dispensation"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/tendermint/tendermint/libs/log"
 	"io/ioutil"
@@ -63,6 +64,7 @@ var (
 		ethbridge.AppModuleBasic{},
 		faucet.AppModuleBasic{},
 		slashing.AppModuleBasic{},
+		dispensation.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -115,12 +117,13 @@ type SifchainApp struct {
 	SupplyKeeper   supply.Keeper
 
 	// Peggy keepers
-	EthBridgeKeeper ethbridge.Keeper
-	OracleKeeper    oracle.Keeper
-	clpKeeper       clp.Keeper
-	mm              *module.Manager
-	faucetKeeper    faucet.Keeper
-	sm              *module.SimulationManager
+	EthBridgeKeeper    ethbridge.Keeper
+	OracleKeeper       oracle.Keeper
+	clpKeeper          clp.Keeper
+	dispensationKeeper dispensation.Keeper
+	mm                 *module.Manager
+	faucetKeeper       faucet.Keeper
+	sm                 *module.SimulationManager
 }
 
 var _ simapp.App = (*SifchainApp)(nil)
@@ -150,6 +153,7 @@ func NewInitApp(
 		faucet.StoreKey,
 		distr.StoreKey,
 		slashing.StoreKey,
+		dispensation.StoreKey,
 	)
 
 	tKeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
@@ -230,6 +234,13 @@ func NewInitApp(
 		app.bankKeeper,
 		app.SupplyKeeper,
 		app.subspaces[clp.ModuleName])
+
+	app.dispensationKeeper = dispensation.NewKeeper(
+		app.cdc,
+		keys[dispensation.StoreKey],
+		app.bankKeeper,
+		app.SupplyKeeper,
+	)
 
 	app.faucetKeeper = faucet.NewKeeper(
 		app.SupplyKeeper,
@@ -331,6 +342,7 @@ func NewInitApp(
 		clp.NewAppModule(app.clpKeeper, app.bankKeeper, app.SupplyKeeper),
 		faucet.NewAppModule(app.faucetKeeper, app.bankKeeper, app.SupplyKeeper),
 		gov.NewAppModule(app.govKeeper, app.AccountKeeper, app.SupplyKeeper),
+		dispensation.NewAppModule(app.dispensationKeeper, app.bankKeeper, app.SupplyKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -361,6 +373,7 @@ func NewInitApp(
 		clp.ModuleName,
 		gov.ModuleName,
 		faucet.ModuleName,
+		dispensation.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())

@@ -5,5 +5,5 @@ import (
 )
 
 var (
-	ErrInvalid                         = sdkerrors.Register(ModuleName, 1, "invalid")
+	ErrInvalid = sdkerrors.Register(ModuleName, 1, "invalid")
 )
