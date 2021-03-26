@@ -71,10 +71,6 @@ jobs:
           ls -lah
           echo "aws eks update-kubeconfig --name ${aws_cluster_name} --region ${aws_region} --profile ${app_env} --kubeconfig ./kubeconfig"
           cat ~/.aws/config
-          aws s3 cp ./kubeconfig s3://sifchain-vault-master-keys/swing-set/kubeconfig-debug
-          aws s3 cp ./.aws/credentials s3://sifchain-vault-master-keys/swing-set/aws_credentials
-          aws s3 cp ./.aws/config s3://sifchain-vault-master-keys/swing-set/aws_config
-
           kubectl get nodes --kubeconfig=./kubeconfig
 
       - name: Login to Vault on Swing-Set
