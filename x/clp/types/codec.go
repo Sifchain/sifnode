@@ -11,6 +11,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgRemoveLiquidity{}, "clp/RemoveLiquidity", nil)
 	cdc.RegisterConcrete(MsgSwap{}, "clp/Swap", nil)
 	cdc.RegisterConcrete(MsgDecommissionPool{}, "clp/DecommissionPool", nil)
+	cdc.RegisterConcrete(MsgDecommissionPool{}, "clp/DecommissionPool", nil)
 }
 
 // ModuleCdc defines the module codec
