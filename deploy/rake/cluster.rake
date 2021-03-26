@@ -511,7 +511,7 @@ metadata:
           echo "[sifchain-base]" > ~/.aws/credentials
           echo "aws_access_key_id = #{args[:aws_access_key_id]}" >> ~/.aws/credentials
           echo "aws_secret_access_key = #{args[:aws_secret_access_key]}" >> ~/.aws/credentials
-          echo "region = #{args[:aws_region]}" >> ~/.aws/credentials
+          echo "region = us-west-2" >> ~/.aws/credentials
 
           echo "[profile #{args[:app_env]}]" > ~/.aws/config
           echo "source_profile = sifchain-base" >> ~/.aws/config
