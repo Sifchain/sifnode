@@ -507,7 +507,6 @@ metadata:
           chmod +x ./aws-iam-authenticator
           export PATH=$(pwd):${PATH}
           mkdir -p ~/.aws
-
           echo "[sifchain-base]" > ~/.aws/credentials
           echo "aws_access_key_id = #{args[:aws_access_key_id]}" >> ~/.aws/credentials
           echo "aws_secret_access_key = #{args[:aws_secret_access_key]}" >> ~/.aws/credentials
@@ -518,8 +517,7 @@ metadata:
           echo "role_arn = #{args[:aws_role]}" >> ~/.aws/config
           echo "color = 83000a" >> ~/.aws/config
           echo "role_session_name = elk_stack" >> ~/.aws/config
-          echo "region = #{args[:aws_region]}" >> ~/.aws/config
-
+          echo "region = ap-southeast-2" >> ~/.aws/config
           aws eks update-kubeconfig --name #{args[:cluster_name]} --region #{args[:aws_region]} --profile #{args[:app_env]} --kubeconfig ./kubeconfig
       }
       system(cluster_automation) or exit 1
