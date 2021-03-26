@@ -89,7 +89,7 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 	inBuf := bufio.NewReader(cmd.InOrStdin())
 
 	ethSub, err := relayer.NewEthereumSub(inBuf, tendermintNode, cdc, validatorMoniker, chainID, web3Provider,
-		contractAddress, privateKey, mnemonic, sugaredLogger)
+		contractAddress, privateKey, mnemonic, nil, sugaredLogger)
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func RunReplayCosmosCmd(cmd *cobra.Command, args []string) error {
 	sugaredLogger := logger.Sugar()
 
 	// Initialize new Cosmos event listener
-	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, sugaredLogger)
+	cosmosSub := relayer.NewCosmosSub(tendermintNode, web3Provider, contractAddress, privateKey, nil, sugaredLogger)
 
 	cosmosSub.Replay(fromBlock, toBlock, ethFromBlock, ethToBlock)
 

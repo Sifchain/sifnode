@@ -5,7 +5,9 @@
         <Loader
           black
           :success="state === 'confirmed'"
-          :failed="state === 'rejected' || state === 'failed'"
+          :failed="
+            state === 'rejected' || state === 'failed' || state === 'out_of_gas'
+          "
         /><br />
         <div class="text-wrapper">
           <!-- 
@@ -48,6 +50,14 @@
               <slot name="failed"></slot>
               <br />
               <p class="sub">{{ transactionStateMsg }}</p>
+            </div>
+          </transition>
+
+          <transition name="swipe">
+            <div class="text" v-if="state === 'out_of_gas'">
+              <p>Transaction Failed - Out of Gas</p>
+              <br />
+              <p class="sub">Please try to increase the gas limit.</p>
             </div>
           </transition>
 
