@@ -307,6 +307,7 @@ open("#{args[:path]}override-values.yaml", "w").write(vaules_yaml)
 EOF
 python helmvaulereplace.py
 
+cat #{args[:path]}override-values.yaml
 echo "...."
 
 echo "===================STAGE 3 - INSTALL VAULT ==================="
