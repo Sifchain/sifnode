@@ -144,15 +144,11 @@ jobs:
         run: |
           set +x
           export PATH=$(pwd):${PATH}
-          export BASEDIRECTORY=$(pwd)
           echo "This will source the vaulte secrets as environment variables defined at the path and execute the tests accordingly."
           rake "cluster:vault:generate_vault_tmp_var_source_file[${VAULT_TEST_SETTINGS_PATH}]"
           source ./tmp_secrets
-          echo ${BASEDIRECTORY}
-          ls -lah
-          ls -lah test
-          ls -lah test/integration/
-          echo $(pwd)
+          mkdir -p /home/runner/workspace/prsifnode
+          cp -r smart-contracts/* /home/runner/workspace/prsifnode/smart-contracts/
           bash test/integration/environment_setup.sh
 
           echo "Skiping test until echo output that shows values is removed and I get the files needed to execute the test"
