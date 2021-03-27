@@ -19,8 +19,6 @@ export type IAssetAmount = Readonly<IAsset> & {
   lessThan(other: IAmount | string): boolean;
   lessThanOrEqual(other: IAmount | string): boolean;
   multiply(other: IAmount | string): IAmount;
-  powerInt(other: IAmount | string): IAmount;
-  expInt(other: IAmount | string): IAmount;
   sqrt(): IAmount;
   subtract(other: IAmount | string): IAmount;
 };
@@ -119,14 +117,6 @@ export function AssetAmount(
 
     subtract(other) {
       return _amount.subtract(other);
-    },
-
-    powerInt(other) {
-      return _amount.powerInt(other);
-    },
-
-    expInt(other) {
-      return _amount.expInt(other);
     },
 
     // Internal methods need to be proxied here so this can be used as an Amount

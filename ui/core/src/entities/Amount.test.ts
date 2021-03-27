@@ -116,23 +116,6 @@ describe("Amount", () => {
     expect(Amount("20").sqrt().toString()).toBe("4.472135954999579393");
   });
 
-  test("#expInt", () => {
-    expect(Amount("2").expInt("18").toBigInt().toString()).toBe(
-      "2000000000000000000",
-    );
-    expect(Amount("2").expInt("-18").toString()).toBe("0.000000000000000002");
-  });
-
-  test("#powerInt", () => {
-    expect(Amount("2").powerInt("-3").toString()).toBe("0.125000000000000000");
-    expect(Amount("2").powerInt("-2").toString()).toBe("0.250000000000000000");
-    expect(Amount("2").powerInt("-1").toString()).toBe("0.500000000000000000");
-    expect(Amount("2").powerInt("0").toBigInt().toString()).toBe("1");
-    expect(Amount("2").powerInt("1").toBigInt().toString()).toBe("2");
-    expect(Amount("2").powerInt("6").toBigInt().toString()).toBe("64");
-    expect(Amount("2").powerInt("8").toBigInt().toString()).toBe("256");
-  });
-
   test("#subtract", () => {
     expect(
       Amount("12345678")

@@ -18,8 +18,6 @@ export type IAmount = {
   lessThan(other: IAmount | string): boolean;
   lessThanOrEqual(other: IAmount | string): boolean;
   multiply(other: IAmount | string): IAmount;
-  powerInt(other: IAmount | string): IAmount;
-  expInt(other: IAmount | string): IAmount;
   sqrt(): IAmount;
   subtract(other: IAmount | string): IAmount;
 };
@@ -89,30 +87,6 @@ export function Amount(
 
     subtract(other) {
       return toAmount(fraction.subtract(toFraction(other)));
-    },
-
-    powerInt(other) {
-      const exp = parseInt(Amount(other).toBigInt().toString());
-
-      if (exp === 0) {
-        if (fraction.greaterThan("0")) return Amount("1");
-        return Amount("-1");
-      }
-
-      let fr = fraction;
-      for (let i = Math.abs(exp); i > 1; --i) {
-        fr = fr.multiply(fraction);
-      }
-      if (exp >= 0) {
-        return toAmount(fr);
-      }
-
-      return toAmount(new Fraction("1").divide(fr));
-    },
-
-    expInt(other) {
-      // TODO: use decimalShift for speed - but this might loose precision?
-      return instance.multiply(Amount("10").powerInt(other));
     },
 
     sqrt() {
