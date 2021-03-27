@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
@@ -11,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
@@ -46,19 +48,10 @@ func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Println("trying to get keys", args[0])
-			fmt.Println("KB ", kb)
-			fmt.Println("Flags ", viper.GetString(flags.FlagKeyringBackend), viper.GetString(flags.FlagHome))
 
 			multisigInfo, err := kb.Get(args[0])
 			if err != nil {
 				return err
-			}
-
-			multisigPub := multisigInfo.GetPubKey().(multisig.PubKeyMultisigThreshold)
-			pubkeys := multisigPub.PubKeys
-			for _, p := range pubkeys {
-				fmt.Println(p.Address().String())
 			}
 
 			ko, err := keys.Bech32KeyOutput(multisigInfo)
@@ -80,8 +73,18 @@ func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			multisigPub := multisigInfo.GetPubKey().(multisig.PubKeyMultisigThreshold)
 			for _, i := range inputList {
-				fmt.Println("Inputs : ", i.Address.String())
+				addressFound := false
+				for _, signPubKeys := range multisigPub.PubKeys {
+					if bytes.Equal(signPubKeys.Address().Bytes(), i.Address.Bytes()) {
+						addressFound = true
+						continue
+					}
+				}
+				if !addressFound {
+					return errors.New("dispensation", 3, fmt.Sprintf("Address in input list is not part of multi sig key %s", i.Address.String()))
+				}
 			}
 
 			msg := types.NewMsgAirdrop(cliCtx.GetFromAddress(), inputList, outputlist)
