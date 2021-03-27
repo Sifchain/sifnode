@@ -473,9 +473,9 @@ set +x
 cat << EOF > helmvaulereplace.py
 #!/usr/bin/env python
 vaules_yaml = open("#{args[:path]}values.yaml", "r").read()
-vaules_yaml = vaules_yaml.replace("-=app_name=-", #{args[:app_name]} )
-vaules_yaml = vaules_yaml.replace("-=region=-", #{args[:region]} )
-vaules_yaml = vaules_yaml.replace("-=env=-", #{args[:env]} )
+vaules_yaml = vaules_yaml.replace("-=app_name=-", "#{args[:app_name]}" )
+vaules_yaml = vaules_yaml.replace("-=region=-", "#{args[:region]}" )
+vaules_yaml = vaules_yaml.replace("-=env=-", "#{args[:env]}" )
 print(vaules_yaml)
 open("#{args[:path]}/values.yaml", "w").write(vaules_yaml)
 EOF
