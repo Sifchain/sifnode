@@ -144,11 +144,11 @@ jobs:
         run: |
           set +x
           export PATH=$(pwd):${PATH}
-          export BASEDIR=$(pwd)
+          export BASEDIRECTORY=$(pwd)
           echo "This will source the vaulte secrets as environment variables defined at the path and execute the tests accordingly."
           rake "cluster:vault:generate_vault_tmp_var_source_file[${VAULT_TEST_SETTINGS_PATH}]"
           source ./tmp_secrets
-          echo ${BASEDIR}
+          echo ${BASEDIRECTORY}
           ls -lah
           ls -lah test
           ls -lah test/integration/
