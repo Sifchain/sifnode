@@ -300,7 +300,7 @@ check_created=`helm repo list --kubeconfig=./kubeconfig | grep hashicorp`
 
 echo "===================STAGE 3 - INSTALL VAULT ==================="
 check_created=`kubectl get statefulsets -n vault --kubeconfig=./kubeconfig | grep vault`
-[ -z "$check_created" ] && helm install vault hashicorp/vault --namespace vault -f override-values.yaml --kubeconfig=./kubeconfig || echo "Vault Already Installed"
+[ -z "$check_created" ] && helm install vault hashicorp/vault --namespace vault -f deploy/helm/vault/override-values.yaml --kubeconfig=./kubeconfig || echo "Vault Already Installed"
 
 echo "sleep for 2 min to let vault start up"
 sleep 180
