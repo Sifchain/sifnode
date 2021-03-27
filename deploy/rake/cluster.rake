@@ -325,7 +325,7 @@ export VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
 
 aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.backup --region us-west-2
 
-kubectl exec -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
+kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
 
 echo "create kv v2 engine"
 kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault secrets enable kv-v2
@@ -540,7 +540,12 @@ python helmvaulereplace.py
           export PATH=$(pwd):${PATH}
           mkdir -p ~/.aws
 
-          echo "[sifchain-base]" > ~/.aws/credentials
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id = #{args[:aws_access_key_id]}" >> ~/.aws/credentials
+          echo "aws_secret_access_key = #{args[:aws_secret_access_key]}" >> ~/.aws/credentials
+          echo "region = #{args[:aws_region]}" >> ~/.aws/credentials
+
+          echo "[sifchain-base]" >> ~/.aws/credentials
           echo "aws_access_key_id = #{args[:aws_access_key_id]}" >> ~/.aws/credentials
           echo "aws_secret_access_key = #{args[:aws_secret_access_key]}" >> ~/.aws/credentials
           echo "region = #{args[:aws_region]}" >> ~/.aws/credentials
