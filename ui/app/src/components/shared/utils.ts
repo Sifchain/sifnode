@@ -27,12 +27,11 @@ export function formatNumber(displayNumber: string) {
 }
 
 export function formatAssetAmount(value: IAssetAmount) {
-  console.log(value.toString());
   if (!value || value.equalTo("0")) return "0";
   const { amount, asset } = value;
   return amount.greaterThan("100000000000000000000000")
-    ? format(amount, asset, { mantissa: 6 })
-    : format(amount, asset, { mantissa: 2 });
+    ? format(amount, asset, { mantissa: 2 })
+    : format(amount, asset, { mantissa: 6 });
 }
 
 // TODO: These could be replaced with a look up table

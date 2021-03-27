@@ -200,7 +200,9 @@ function toFraction(a: string): string;
 function toFraction(a: IAmount | string): IFraction;
 function toFraction(a: IAmount | string): IFraction | string {
   type _IAmount = _ExposeInternal<IAmount>;
-  if (typeof a === "string") return a; // If we get passed a string fraction can handle a string to return it
+  if (typeof a === "string") {
+    return a.indexOf(".") < 0 ? a : (Amount(a) as _IAmount)._toInternal();
+  }
   return (a as _IAmount)._toInternal();
 }
 

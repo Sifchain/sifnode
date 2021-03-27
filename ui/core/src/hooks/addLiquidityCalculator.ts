@@ -274,6 +274,8 @@ export function usePoolCalculator(input: {
     // if in guided mode
     // calculate the price ratio of A / B
     if (
+      assetA.value &&
+      assetB.value &&
       input.asyncPooling.value &&
       input.lastFocusedTokenField.value !== null
     ) {
@@ -296,11 +298,13 @@ export function usePoolCalculator(input: {
       if (input.lastFocusedTokenField.value === "A") {
         input.tokenBAmount.value = format(
           assetAmountA.multiply(bPerARatio.value || "0"),
+          assetA.value,
           { mantissa: 5 },
         );
       } else if (input.lastFocusedTokenField.value === "B") {
         input.tokenAAmount.value = format(
           assetAmountB.multiply(aPerBRatio.value || "0"),
+          assetB.value,
           { mantissa: 5 },
         );
       }

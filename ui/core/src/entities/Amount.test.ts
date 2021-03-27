@@ -95,6 +95,8 @@ describe("Amount", () => {
     expect(Amount("100").lessThanOrEqual(Amount("99"))).toBe(false);
     expect(Amount("100").lessThanOrEqual(Amount("100"))).toBe(true);
     expect(Amount("100").lessThanOrEqual(Amount("101"))).toBe(true);
+    expect(Amount("100").lessThanOrEqual(Amount("100.2"))).toBe(true);
+    expect(Amount("100").lessThanOrEqual("100.2")).toBe(true);
   });
 
   test("#multiply", () => {

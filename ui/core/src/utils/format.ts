@@ -31,7 +31,7 @@ export type IFormatOptions =
   | IFormatOptionsShorthandTotalLength;
 
 function isAsset(val: any): val is IAsset {
-  return typeof val?.symbol === "string";
+  return !!val && typeof val?.symbol === "string";
 }
 
 export function round(decimal: string, places: number) {
@@ -70,7 +70,7 @@ export function format<T extends IAmount>(
   _options?: IFormatOptions,
 ): string {
   const amount = _amount;
-  const options = isAsset(_asset) ? _options! : _asset || {};
+  const options = (isAsset(_asset) ? _options : _asset) || {};
   const asset = isAsset(_asset) ? _asset : undefined;
 
   let decimal = asset

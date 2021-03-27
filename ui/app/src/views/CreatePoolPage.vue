@@ -289,6 +289,8 @@ export default defineComponent({
       formatNumber,
       poolUnits: totalLiquidityProviderUnits,
       riskFactorStatus: computed(() => {
+        if (!riskFactor.value) return "";
+
         let status = "danger";
 
         if (asyncPooling.value) {

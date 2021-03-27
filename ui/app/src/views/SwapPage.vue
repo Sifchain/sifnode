@@ -192,7 +192,11 @@ export default defineComponent({
       fromAmount,
       toAmount,
       fromSymbol,
-      minimumReceived,
+      minimumReceived: computed(() => {
+        if (!minimumReceived.value) return "";
+        const { amount, asset } = minimumReceived.value;
+        return format(amount, asset, { mantissa: 18 });
+      }),
       toSymbol,
       priceMessage,
       priceImpact,
