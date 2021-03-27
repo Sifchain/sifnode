@@ -542,6 +542,7 @@ python helmvaulereplace.py
           echo "role_session_name = elk_stack" >> ~/.aws/config
           echo "region = #{args[:aws_region]}" >> ~/.aws/config
 
+          aws eks update-kubeconfig --name #{args[:cluster_name]} --region #{args[:aws_region]} --profile #{args[:app_env]} --kubeconfig ./kubeconfig_test
           aws eks update-kubeconfig --name #{args[:cluster_name]} --region #{args[:aws_region]} --profile #{args[:app_env]} --kubeconfig ./kubeconfig
       }
       system(cluster_automation) or exit 1
