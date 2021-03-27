@@ -193,7 +193,7 @@ kubectl rollout status deployment/cert-manager -n cert-manager  --kubeconfig=./k
   desc "Install Vault If Not Exists"
   namespace :vault do
     desc "Install Vault into Kubernetes Env Configured"
-    task :install, [:env] do |t, args|
+    task :install, [:env, :region] do |t, args|
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
@@ -264,12 +264,13 @@ metadata:
 spec:
   groups:
   - system:authenticated
-  request: $(cat ${TMPDIR}/server.csr | base64 | tr -d '\n')
+  request: $(cat ${TMPDIR}/server.csr | base64 | tr -d '\\n')
   usages:
   - digital signature
   - key encipherment
   - server auth
 EOF
+
 
 kubectl apply --kubeconfig=./kubeconfig -f ${TMPDIR}/csr.yaml
 kubectl certificate approve --kubeconfig=./kubeconfig ${CSR_NAME}
@@ -313,9 +314,9 @@ echo "sleep for 30 seconds to let vault init."
 sleep 30
 export VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
 
-aws s3 cp ./vault_output s3://sifchain-vault-master-keys/#{args[:env]}/vault-master-keys.backup
+aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.backup --region us-west-2
 
-./vault_login > /dev/null
+kubectl exec -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
 
 echo "create kv v2 engine"
 kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault secrets enable kv-v2

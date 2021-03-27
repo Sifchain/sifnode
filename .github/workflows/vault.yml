@@ -1,0 +1,170 @@
+name: vault deployment pipeline
+
+on:
+  push:
+    branches:
+      - 'ebrelayer-pipeline-development'
+
+jobs:
+  #deploy vault to us swing-set environment
+  deploy_swing_set_vault_us:
+    name: deploy-vault-swingset-us
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "us-west-2"
+      aws_cluster_name: "sifchain-aws-swing-set-us"
+      aws_role: "arn:aws:iam::983740309645:role/OrganizationAccountAccessRole"
+      env: "swing-set"
+      app_namespace: "vault"
+      app_name: "vault"
+      app_env: "swing-set"
+      app_region: "us"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
+          echo '                      i::::i   f::::::::::::::::f                h:::::h                                i::::i'
+          echo '                       iiii   f::::::::::::::::::f               h:::::h                                 iiii'
+          echo '                              f::::::fffffff:::::f               h:::::h'
+          echo '        ssssssssss   iiiiiii  f:::::f       ffffffcccccccccccccccch::::h hhhhh         aaaaaaaaaaaaa   iiiiiiinnnn  nnnnnnnn'
+          echo '      ss::::::::::s  i:::::i  f:::::f           cc:::::::::::::::ch::::hh:::::hhh      a::::::::::::a  i:::::in:::nn::::::::nn'
+          echo '    ss:::::::::::::s  i::::i f:::::::ffffff    c:::::::::::::::::ch::::::::::::::hh    aaaaaaaaa:::::a  i::::in::::::::::::::nn'
+          echo '    s::::::ssss:::::s i::::i f::::::::::::f   c:::::::cccccc:::::ch:::::::hhh::::::h            a::::a  i::::inn:::::::::::::::n'
+          echo '     s:::::s  ssssss  i::::i f::::::::::::f   c::::::c     ccccccch::::::h   h::::::h    aaaaaaa:::::a  i::::i  n:::::nnnn:::::n'
+          echo '       s::::::s       i::::i f:::::::ffffff   c:::::c             h:::::h     h:::::h  aa::::::::::::a  i::::i  n::::n    n::::n'
+          echo '          s::::::s    i::::i  f:::::f         c:::::c             h:::::h     h:::::h a::::aaaa::::::a  i::::i  n::::n    n::::n'
+          echo '    ssssss   s:::::s  i::::i  f:::::f         c::::::c     ccccccch:::::h     h:::::ha::::a    a:::::a  i::::i  n::::n    n::::n'
+          echo '    s:::::ssss::::::si::::::if:::::::f        c:::::::cccccc:::::ch:::::h     h:::::ha::::a    a:::::a i::::::i n::::n    n::::n'
+          echo '    s::::::::::::::s i::::::if:::::::f         c:::::::::::::::::ch:::::h     h:::::ha:::::aaaa::::::a i::::::i n::::n    n::::n'
+          echo '     s:::::::::::ss  i::::::if:::::::f          cc:::::::::::::::ch:::::h     h:::::h a::::::::::aa:::ai::::::i n::::n    n::::n'
+          echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh     hhhhhhh  aaaaaaaaaa  aaaaiiiiiiii nnnnnn    nnnnnn'
+
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Install Vault
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          echo "Install Cert-Manager"
+          rake "cluster:vault:install[${app_env}, ${app_region}]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+
+  #deploy vault to eu swing-set environment
+  deploy_swing_set_vault_eu:
+    name: deploy-vault-swingset-eu
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "eu-west-1"
+      aws_cluster_name: "sifchain-aws-swing-set-eu"
+      aws_role: "arn:aws:iam::983740309645:role/OrganizationAccountAccessRole"
+      env: "swing-set"
+      app_namespace: "vault"
+      app_name: "vault"
+      app_env: "swing-set"
+      app_region: "eu"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
+          echo '                      i::::i   f::::::::::::::::f                h:::::h                                i::::i'
+          echo '                       iiii   f::::::::::::::::::f               h:::::h                                 iiii'
+          echo '                              f::::::fffffff:::::f               h:::::h'
+          echo '        ssssssssss   iiiiiii  f:::::f       ffffffcccccccccccccccch::::h hhhhh         aaaaaaaaaaaaa   iiiiiiinnnn  nnnnnnnn'
+          echo '      ss::::::::::s  i:::::i  f:::::f           cc:::::::::::::::ch::::hh:::::hhh      a::::::::::::a  i:::::in:::nn::::::::nn'
+          echo '    ss:::::::::::::s  i::::i f:::::::ffffff    c:::::::::::::::::ch::::::::::::::hh    aaaaaaaaa:::::a  i::::in::::::::::::::nn'
+          echo '    s::::::ssss:::::s i::::i f::::::::::::f   c:::::::cccccc:::::ch:::::::hhh::::::h            a::::a  i::::inn:::::::::::::::n'
+          echo '     s:::::s  ssssss  i::::i f::::::::::::f   c::::::c     ccccccch::::::h   h::::::h    aaaaaaa:::::a  i::::i  n:::::nnnn:::::n'
+          echo '       s::::::s       i::::i f:::::::ffffff   c:::::c             h:::::h     h:::::h  aa::::::::::::a  i::::i  n::::n    n::::n'
+          echo '          s::::::s    i::::i  f:::::f         c:::::c             h:::::h     h:::::h a::::aaaa::::::a  i::::i  n::::n    n::::n'
+          echo '    ssssss   s:::::s  i::::i  f:::::f         c::::::c     ccccccch:::::h     h:::::ha::::a    a:::::a  i::::i  n::::n    n::::n'
+          echo '    s:::::ssss::::::si::::::if:::::::f        c:::::::cccccc:::::ch:::::h     h:::::ha::::a    a:::::a i::::::i n::::n    n::::n'
+          echo '    s::::::::::::::s i::::::if:::::::f         c:::::::::::::::::ch:::::h     h:::::ha:::::aaaa::::::a i::::::i n::::n    n::::n'
+          echo '     s:::::::::::ss  i::::::if:::::::f          cc:::::::::::::::ch:::::h     h:::::h a::::::::::aa:::ai::::::i n::::n    n::::n'
+          echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh     hhhhhhh  aaaaaaaaaa  aaaaiiiiiiii nnnnnn    nnnnnn'
+
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Install Vault
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          echo "Install Cert-Manager"
+          rake "cluster:vault:install[${app_env}, ${app_region}]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+
