@@ -19,7 +19,7 @@ jobs:
       app_namespace: "vault"
       app_name: "vault"
       app_env: "swing-set"
-      app_region: "us"
+      app_region: "us-west-2"
 
     strategy:
       matrix:
@@ -101,7 +101,7 @@ jobs:
       app_namespace: "vault"
       app_name: "vault"
       app_env: "swing-set"
-      app_region: "eu"
+      app_region: "eu-west-1"
 
     strategy:
       matrix:
