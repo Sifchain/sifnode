@@ -271,6 +271,7 @@ spec:
   - server auth
 EOF
 
+echo "..."
 
 kubectl apply --kubeconfig=./kubeconfig -f ${TMPDIR}/csr.yaml
 kubectl certificate approve --kubeconfig=./kubeconfig ${CSR_NAME}
