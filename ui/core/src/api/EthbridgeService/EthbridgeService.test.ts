@@ -74,7 +74,7 @@ describe("EthbridgeService", () => {
     // Check the balance
     const cethBalance = await getCethBalance();
 
-    const amountToLock = AssetAmount(ETH, "3");
+    const amountToLock = AssetAmount(ETH, "3000000000000000000");
 
     // Send funds to the smart contract
     await new Promise<void>(async (done) => {
@@ -161,7 +161,7 @@ describe("EthbridgeService", () => {
     const startingERowanBalance = await getERowanBalance();
 
     // lock Rowan to eRowan
-    const sendRowanAmount = AssetAmount(ROWAN, "100");
+    const sendRowanAmount = AssetAmount(ROWAN, "100000000000000000000");
 
     const msg = await EthbridgeService.lockToEthereum({
       fromAddress: getSifAddress(),
@@ -204,7 +204,7 @@ describe("EthbridgeService", () => {
     ////////////////////////
     const startingRowanBalance = await getRowanBalance();
 
-    const sendERowanAmount = AssetAmount(EROWAN, "10");
+    const sendERowanAmount = AssetAmount(EROWAN, "10000000000000000000");
 
     await EthbridgeService.approveBridgeBankSpend(
       getEthAddress(),
