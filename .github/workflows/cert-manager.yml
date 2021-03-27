@@ -3,7 +3,7 @@ name: cert-manager-deployment-automation
 on:
   push:
     branches:
-      - 'ebrelayer-pipeline-developments'
+      - 'ebrelayer-pipeline-development'
 
 jobs:
   #Cert-Manager DevNet US Deployment
