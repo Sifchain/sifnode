@@ -81,7 +81,7 @@ jobs:
         run: |
           set +x
           echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
-          rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, 'deploy/helm/'${app_name}'/']"
+          rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
 
       - name: Login to Vault on Swing-Set
         env:
