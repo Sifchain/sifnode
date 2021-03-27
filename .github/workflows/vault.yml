@@ -76,7 +76,7 @@ jobs:
         run: |
           set +x
           echo "Install Vault"
-          rake "cluster:vault:install[${app_env}, ${app_region}, 'deploy/helm/vault/', ${kmskey}]"
+          rake "cluster:vault:install[${app_env}, ${app_region}, deploy/helm/vault/, ${kmskey}]"
 
       - name: Clean Temp Files and Secrets
         shell: bash
@@ -158,7 +158,7 @@ jobs:
         run: |
           set +x
           echo "Install Vault"
-          rake "cluster:vault:install[${app_env}, ${app_region}, 'deploy/helm/vault/', ${kmskey}]"
+          rake "cluster:vault:install[${app_env}, ${app_region}, deploy/helm/vault/, ${kmskey}]"
 
       - name: Clean Temp Files and Secrets
         shell: bash
