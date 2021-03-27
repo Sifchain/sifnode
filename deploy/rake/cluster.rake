@@ -310,7 +310,9 @@ python helmvaulereplace.py
 echo "...."
 
 echo "===================STAGE 3 - INSTALL VAULT ==================="
-helm upgrade vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig
+check_deployment=`kubectl get statefulsets --kubeconfig=./kubeconfig -n vault | grep vault`
+[ -z "$check_deployment" ] && helm install vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig || helm upgrade vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig
+
 
 echo "sleep for 2 min to let vault start up"
 sleep 180
