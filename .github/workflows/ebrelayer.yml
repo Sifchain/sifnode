@@ -149,6 +149,9 @@ jobs:
           rake "cluster:vault:generate_vault_tmp_var_source_file[${VAULT_TEST_SETTINGS_PATH}]"
           source ./tmp_secrets
           echo ${BASEDIR}
+          ls -lah
+          ls -lah test
+          ls -lah test/integration/
           bash $BASEDIR/test/integration/environment_setup.sh
 
           echo "Skiping test until echo output that shows values is removed and I get the files needed to execute the test"
