@@ -193,7 +193,7 @@ kubectl rollout status deployment/cert-manager -n cert-manager  --kubeconfig=./k
   desc "Install Vault If Not Exists"
   namespace :vault do
     desc "Install Vault into Kubernetes Env Configured"
-    task :install, [:env, :region] do |t, args|
+    task :install, [:env, :region, :path, :kmskey] do |t, args|
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
@@ -298,9 +298,18 @@ echo "===================STAGE 2 - SETUP and UPDATE VAULT REPO =================
 check_created=`helm repo list --kubeconfig=./kubeconfig | grep hashicorp`
 [ -z "$check_created" ] && helm repo add hashicorp https://helm.releases.hashicorp.com --kubeconfig=./kubeconfig && helm repo update --kubeconfig=./kubeconfig || echo "Helm Repo Already Added For Cert-Manager"
 
+cat << EOF > helmvaulereplace.py
+#!/usr/bin/env python
+vaules_yaml = open("#{args[:path]}override-values.yaml", "r").read()
+vaules_yaml = vaules_yaml.replace("-=region=-", "#{args[:region]}" )
+vaules_yaml = vaules_yaml.replace("-=kmskey=-", "#{args[:kmskey]}" )
+open("#{args[:path]}override-values.yaml", "w").write(vaules_yaml)
+EOF
+python helmvaulereplace.py
+
 echo "===================STAGE 3 - INSTALL VAULT ==================="
 check_created=`kubectl get statefulsets -n vault --kubeconfig=./kubeconfig | grep vault`
-[ -z "$check_created" ] && helm install vault hashicorp/vault --namespace vault -f deploy/helm/vault/override-values.yaml --kubeconfig=./kubeconfig || echo "Vault Already Installed"
+[ -z "$check_created" ] && helm install vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig || echo "Vault Already Installed"
 
 echo "sleep for 2 min to let vault start up"
 sleep 180
