@@ -335,20 +335,20 @@ get_secrets=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vaul
   desc "Vault Create Policy"
   namespace :vault do
     desc "Create vault policy for application to read secrets."
-    task :createpolicy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+    task :createpolicy, [:region, :app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
       cluster_automation = %Q{
         set +x
         echo "
-path \\"#{args[:env]}/#{args[:app_name]}\\" {
+path \\"#{args[:region]}/#{args[:env]}/#{args[:app_name]}\\" {
     capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
 }
-path \\"#{args[:env]}/#{args[:app_name]}/*\\" {
+path \\"#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*\\" {
     capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
 }
-path \\"/#{args[:env]}/#{args[:app_name]}\\" {
+path \\"/#{args[:region]}/#{args[:env]}/#{args[:app_name]}\\" {
     capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
 }
-path \\"/#{args[:env]}/#{args[:app_name]}/*\\" {
+path \\"/#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*\\" {
     capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
 }
 path \\"*\\" {
@@ -458,6 +458,28 @@ metadata:
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write auth/kubernetes/role/#{args[:app_name]} bound_service_account_names=#{args[:app_name]} bound_service_account_namespaces=#{args[:app_namespace]} policies=#{args[:app_name]} ttl=1h
 
         rm -rf service_account.yaml
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+  desc "Update Dynamic Variables For Helm Values"
+  namespace :ebrelayer do
+    desc "Update Dynamic Variables For Helm Values"
+    task :update_helm_values, [:region, :env, :app_name, :path] do |t, args|
+      cluster_automation = %Q{
+#!/usr/bin/env bash
+set +x
+cat << EOF > helmvaulereplace.py
+#!/usr/bin/env python
+vaules_yaml = open(\\"#{args[:path]}/values.yaml\\", \\"r\\").read().decode("utf-8")
+vaules_yaml = vaules_yaml.replace("-=app_name=-", #{args[:app_name]} )
+vaules_yaml = vaules_yaml.replace("-=region=-", #{args[:region]} )
+vaules_yaml = vaules_yaml.replace("-=env=-", #{args[:env]} )
+print(vaules_yaml)
+open(\\"#{args[:path]}/values.yaml\\", \\"w\\").write(vaules_yaml)
+EOF
+python helmvaulereplace.py
       }
       system(cluster_automation) or exit 1
     end

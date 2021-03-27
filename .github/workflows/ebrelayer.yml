@@ -6,20 +6,21 @@ on:
       - 'ebrelayer-pipeline-development'
 
 jobs:
-  deploy_swing_set_ebrelayer:
-    name: deploy-ebrelayer-swingset
+  deploy_swing_set_ebrelayer_us:
+    name: deploy-ebrelayer-swingset-us
     runs-on: ${{ matrix.os }}
     env:
       aws_region: "us-west-2"
       aws_cluster_name: "sifchain-aws-swing-set-us"
       aws_role: "arn:aws:iam::983740309645:role/OrganizationAccountAccessRole"
-      VAULT_TEST_SETTINGS_PATH: "kv-v2/swing-set/ebrelayer-smoke-test"
+      VAULT_TEST_SETTINGS_PATH: "kv-v2/us/swing-set/ebrelayer-smoke-test"
       app_namespace: "ebrelayer"
       image: "sifchain/ebrelayer"
       image_tag: "testnet-genesis"
       env: "swing-set"
       app_name: "ebrelayer"
       app_env: "swing-set"
+      app_region: "us"
 
     strategy:
       matrix:
@@ -70,6 +71,18 @@ jobs:
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
           rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
 
+      - name: Setup Helm Values with Variable Details
+        shell: bash
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
+          rake "cluster:ebrelayer:update_helm_values[${app_region}, ${app_env}, ${env}, ${app_name}, "deploy/helm/${app_name}/"]"
+
       - name: Login to Vault on Swing-Set
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
@@ -102,6 +115,7 @@ jobs:
           export PATH=$(pwd):${PATH}
           echo "This will ensure enablement of kubernetes ability to talk to vault"
           rake "cluster:vault:enablekubernetes[]"
+
 
       - name: Configure Vault to Mount Secrets To Application
         env:
