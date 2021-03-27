@@ -155,6 +155,13 @@ export default defineComponent({
     const feeAmount = computed(() => {
       return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
     });
+
+    const feeDisplayAmount = computed(() => {
+      if (!feeAmount.value) return "";
+      return format(feeAmount.value.amount, feeAmount.value.asset, {
+        mantissa: 8,
+      });
+    });
     const pageState = {
       mode,
       modeLabel: computed(() => capitalize(mode.value)),
@@ -197,6 +204,7 @@ export default defineComponent({
       transactionHash,
       nextStepAllowed,
       isMaxActive,
+      feeDisplayAmount,
       nextStepMessage: computed(() => {
         return mode.value === "peg" ? "Peg" : "Unpeg";
       }),
@@ -245,9 +253,9 @@ export default defineComponent({
         }"
         :rows="[
           {
-            show: !!feeAmount,
+            show: !!feeDisplayAmount,
             label: 'Transaction Fee',
-            data: `${feeAmount.toFixed(8)} cETH`,
+            data: `${feeDisplayAmount} cETH`,
             tooltipMessage: `This is a fixed fee amount. This is a temporary solution as we are working towards improving this amount in upcoming versions of the network.`,
           },
         ]"
@@ -324,9 +332,9 @@ export default defineComponent({
               data: `${formatSymbol(symbol)} → ${formatSymbol(oppositeSymbol)}`,
             },
             {
-              show: !!feeAmount,
+              show: !!feeDisplayAmount,
               label: 'Transaction Fee',
-              data: `${feeAmount.toFixed(8)} cETH`,
+              data: `${feeDisplayAmount} cETH`,
             },
           ]"
         />

@@ -83,7 +83,7 @@ import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";
 import { computed } from "@vue/reactivity";
 import { getUnpeggedSymbol } from "../components/shared/utils";
-import { TransactionStatus } from "ui-core";
+import { AssetAmount, TransactionStatus } from "ui-core";
 
 export default defineComponent({
   components: {
@@ -167,7 +167,8 @@ export default defineComponent({
               )
             : [];
 
-          if (!amount) return { amount: 0, asset, pegTxs };
+          if (!amount)
+            return { amount: AssetAmount(asset, "0"), asset, pegTxs };
 
           return {
             amount,
