@@ -307,6 +307,8 @@ open("#{args[:path]}override-values.yaml", "w").write(vaules_yaml)
 EOF
 python helmvaulereplace.py
 
+echo "...."
+
 echo "===================STAGE 3 - INSTALL VAULT ==================="
 helm upgrade vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig
 
