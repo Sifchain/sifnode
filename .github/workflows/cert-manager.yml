@@ -75,3 +75,22 @@ jobs:
         run: |
           set +x
           kubectl get namespaces --kubeconfig=./kubeconfig
+
+      - name: Install Cert-Manager
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          echo "Install Cert-Manager"
+          rake "cluster:certmanager:install[]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+
