@@ -193,7 +193,7 @@ kubectl rollout status deployment/cert-manager -n cert-manager  --kubeconfig=./k
   desc "Install Vault If Not Exists"
   namespace :vault do
     desc "Install Vault into Kubernetes Env Configured"
-    task :install, [:env, :region, :path, :kmskey] do |t, args|
+    task :install, [:env, :region, :path, :kmskey, :aws_role] do |t, args|
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
@@ -303,6 +303,7 @@ cat << EOF > helmvaulereplace.py
 vaules_yaml = open("#{args[:path]}override-values.yaml", "r").read()
 vaules_yaml = vaules_yaml.replace("-=region=-", "#{args[:region]}" )
 vaules_yaml = vaules_yaml.replace("-=kmskey=-", "#{args[:kmskey]}" )
+vaules_yaml = vaules_yaml.replace("-=role_arn=-", "#{args[:aws_role]}" )
 open("#{args[:path]}override-values.yaml", "w").write(vaules_yaml)
 EOF
 python helmvaulereplace.py

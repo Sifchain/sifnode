@@ -91,6 +91,7 @@ server:
         seal "awskms" {
           region     = "-=region=-"
           kms_key_id = "-=kmskey=-"
+          role_arn = "-=role_arn=-"
         }
 
         storage "raft" {
