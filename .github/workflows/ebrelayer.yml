@@ -148,6 +148,7 @@ jobs:
           rake "cluster:vault:generate_vault_tmp_var_source_file[${VAULT_TEST_SETTINGS_PATH}]"
           source ./tmp_secrets
           mkdir -p /home/runner/workspace/prsifnode
+          mkdir -p /home/runner/workspace/prsifnode/smart-contracts/
           cp -r smart-contracts/* /home/runner/workspace/prsifnode/smart-contracts/
           bash test/integration/environment_setup.sh
 
