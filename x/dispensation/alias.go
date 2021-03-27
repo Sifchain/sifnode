@@ -6,22 +6,22 @@ import (
 )
 
 const (
-	ModuleName        = types.ModuleName
-	RouterKey         = types.RouterKey
-	StoreKey          = types.StoreKey
-	QuerierRoute      = types.QuerierRoute
+	ModuleName   = types.ModuleName
+	RouterKey    = types.RouterKey
+	StoreKey     = types.StoreKey
+	QuerierRoute = types.QuerierRoute
 )
 
 var (
-	NewKeeper                   = keeper.NewKeeper
-	NewQuerier                  = keeper.NewQuerier
-	RegisterCodec               = types.RegisterCodec
-	DefaultGenesisState         = types.DefaultGenesisState
-	ModuleCdc                   = types.ModuleCdc
+	NewKeeper           = keeper.NewKeeper
+	NewQuerier          = keeper.NewQuerier
+	RegisterCodec       = types.RegisterCodec
+	DefaultGenesisState = types.DefaultGenesisState
+	ModuleCdc           = types.ModuleCdc
 )
 
 type (
-	Keeper              = keeper.Keeper
-	GenesisState        = types.GenesisState
-	MsgAirdrop 			= types.MsgAirdrop
+	Keeper       = keeper.Keeper
+	GenesisState = types.GenesisState
+	MsgAirdrop   = types.MsgAirdrop
 )

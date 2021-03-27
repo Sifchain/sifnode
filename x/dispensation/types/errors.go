@@ -5,5 +5,6 @@ import (
 )
 
 var (
-	ErrInvalid = sdkerrors.Register(ModuleName, 1, "invalid")
+	ErrInvalid      = sdkerrors.Register(ModuleName, 1, "invalid")
+	ErrFileNotFound = sdkerrors.Register(ModuleName, 2, "File not found")
 )

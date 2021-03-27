@@ -11,9 +11,9 @@ var (
 )
 
 type MsgAirdrop struct {
-	Signer sdk.AccAddress
-	Input  []bank.Input
-	Output []bank.Output
+	Signer sdk.AccAddress `json:"Signer"`
+	Input  []bank.Input   `json:"Input"`
+	Output []bank.Output  `json:"Output"`
 }
 
 func NewMsgAirdrop(signer sdk.AccAddress, input []bank.Input, output []bank.Output) MsgAirdrop {
