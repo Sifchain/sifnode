@@ -13,8 +13,6 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/Sifchain/sifnode/app"
-
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -24,6 +22,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/staking"
+
+	"github.com/Sifchain/sifnode/app"
 )
 
 const flagInvCheckPeriod = "inv-check-period"
@@ -48,19 +48,18 @@ func main() {
 	rootCmd.AddCommand(
 		genutilcli.GenTxCmd(
 			ctx, cdc, app.ModuleBasics, staking.AppModuleBasic{},
-			auth.GenesisAccountIterator{}, app.DefaultNodeHome, app.DefaultCLIHome,
-		),
+			auth.GenesisAccountIterator{}, app.DefaultNodeHome),
 	)
-	rootCmd.AddCommand(genutilcli.ValidateGenesisCmd(ctx, cdc, app.ModuleBasics))
-	rootCmd.AddCommand(AddGenesisAccountCmd(ctx, cdc, app.DefaultNodeHome, app.DefaultCLIHome))
-	rootCmd.AddCommand(AddGenesisCLPAdminCmd(ctx, cdc, app.DefaultNodeHome, app.DefaultCLIHome))
-	rootCmd.AddCommand(AddFaucetBalance(ctx, cdc, app.DefaultNodeHome, app.DefaultCLIHome))
-	rootCmd.AddCommand(AddGenesisValidatorCmd(ctx, cdc, app.DefaultNodeHome, app.DefaultCLIHome))
-	rootCmd.AddCommand(SetGenesisOracleAdminCmd(ctx, cdc, app.DefaultNodeHome, app.DefaultCLIHome))
+	rootCmd.AddCommand(genutilcli.ValidateGenesisCmd(app.ModuleBasics))
+	rootCmd.AddCommand(AddGenesisAccountCmd(ctx, cdc, app.DefaultNodeHome))
+	rootCmd.AddCommand(AddGenesisCLPAdminCmd(ctx, cdc, app.DefaultNodeHome))
+	rootCmd.AddCommand(AddFaucetBalance(ctx, cdc, app.DefaultNodeHome))
+	rootCmd.AddCommand(AddGenesisValidatorCmd(ctx, cdc, app.DefaultNodeHome))
+	rootCmd.AddCommand(SetGenesisOracleAdminCmd(ctx, cdc, app.DefaultNodeHome))
 	rootCmd.AddCommand(flags.NewCompletionCmd(rootCmd, true))
 	rootCmd.AddCommand(debug.Cmd(cdc))
 
-	server.AddCommands(ctx, cdc, rootCmd, newApp, exportAppStateAndTMValidators)
+	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, exportAppStateAndTMValidators)
 
 	// prepare and add flags
 	executor := cli.PrepareBaseCmd(rootCmd, "AU", app.DefaultNodeHome)
