@@ -2,7 +2,6 @@ package cli
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
@@ -12,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
@@ -69,22 +67,14 @@ func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			outputlist, err := dispensationUtils.ParseOutput(args[2])
+			multisigPub := multisigInfo.GetPubKey().(multisig.PubKeyMultisigThreshold)
+			err = dispensationUtils.VerifyInputList(inputList, multisigPub.PubKeys)
 			if err != nil {
 				return err
 			}
-			multisigPub := multisigInfo.GetPubKey().(multisig.PubKeyMultisigThreshold)
-			for _, i := range inputList {
-				addressFound := false
-				for _, signPubKeys := range multisigPub.PubKeys {
-					if bytes.Equal(signPubKeys.Address().Bytes(), i.Address.Bytes()) {
-						addressFound = true
-						continue
-					}
-				}
-				if !addressFound {
-					return errors.New("dispensation", 3, fmt.Sprintf("Address in input list is not part of multi sig key %s", i.Address.String()))
-				}
+			outputlist, err := dispensationUtils.ParseOutput(args[2])
+			if err != nil {
+				return err
 			}
 
 			msg := types.NewMsgAirdrop(cliCtx.GetFromAddress(), inputList, outputlist)
