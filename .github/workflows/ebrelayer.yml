@@ -103,7 +103,7 @@ jobs:
           set +x
           export PATH=$(pwd):${PATH}
           echo "This will create the vault app policy for the kubernetes appliation."
-          rake "cluster:vault:createpolicy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+          rake "cluster:vault:createpolicy[${app_region},${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
 
       - name: Enable Kubernetes Vault Communication If Not Enabled
         env:
