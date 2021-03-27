@@ -279,7 +279,7 @@ echo "${serverCert}" | openssl base64 -d -A -out ${TMPDIR}/vault.crt
 kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > ${TMPDIR}/vault.ca
 vault_ca_base64=$(kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}')
 
-kubectl apply secret generic --kubeconfig=./kubeconfig ${SECRET_NAME} \
+kubectl create secret generic --kubeconfig=./kubeconfig ${SECRET_NAME} \
         --namespace ${NAMESPACE} \
         --from-file=vault.key=${TMPDIR}/vault.key \
         --from-file=vault.crt=${TMPDIR}/vault.crt \
@@ -307,7 +307,6 @@ open("#{args[:path]}override-values.yaml", "w").write(vaules_yaml)
 EOF
 python helmvaulereplace.py
 
-cat #{args[:path]}override-values.yaml
 echo "...."
 
 echo "===================STAGE 3 - INSTALL VAULT ==================="
