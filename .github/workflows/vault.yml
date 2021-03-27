@@ -96,7 +96,7 @@ jobs:
       aws_region: "eu-west-1"
       aws_cluster_name: "sifchain-aws-swing-set-eu"
       aws_role: "arn:aws:iam::983740309645:role/OrganizationAccountAccessRole"
-      kmskey: "97ebad76-8c8c-4b6e-af13-7cd267c89d48"
+      kmskey: "ae70cea3-ff3c-45fc-9b6e-279a5305a645"
       env: "swing-set"
       app_namespace: "vault"
       app_name: "vault"
