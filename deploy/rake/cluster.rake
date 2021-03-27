@@ -279,7 +279,7 @@ echo "${serverCert}" | openssl base64 -d -A -out ${TMPDIR}/vault.crt
 kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > ${TMPDIR}/vault.ca
 vault_ca_base64=$(kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}')
 
-kubectl create secret generic --kubeconfig=./kubeconfig ${SECRET_NAME} \
+kubectl apply secret generic --kubeconfig=./kubeconfig ${SECRET_NAME} \
         --namespace ${NAMESPACE} \
         --from-file=vault.key=${TMPDIR}/vault.key \
         --from-file=vault.crt=${TMPDIR}/vault.crt \
@@ -308,8 +308,7 @@ EOF
 python helmvaulereplace.py
 
 echo "===================STAGE 3 - INSTALL VAULT ==================="
-check_created=`kubectl get statefulsets -n vault --kubeconfig=./kubeconfig | grep vault`
-[ -z "$check_created" ] && helm install vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig || echo "Vault Already Installed"
+helm upgrade vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig
 
 echo "sleep for 2 min to let vault start up"
 sleep 180
