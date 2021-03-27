@@ -337,7 +337,7 @@ jobs:
     name: deploy-certmanager-devnet-us
     runs-on: ${{ matrix.os }}
     env:
-      aws_region: "us-west-2"
+      aws_region: "us-east-1"
       aws_cluster_name: "sifchain-aws-devnet-us"
       aws_role: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
       env: "devnet"
