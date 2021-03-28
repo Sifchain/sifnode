@@ -1,21 +1,18 @@
 package rest
 
-// The packages below are commented out at first to prevent an error if this file isn't initially saved.
 import (
-	// "bytes"
-	// "net/http"
-
-	"github.com/Sifchain/sifnode/x/clp/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/rest"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
-	"github.com/gorilla/mux"
 	"net/http"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/gorilla/mux"
+
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
-func registerTxRoutes(cliCtx context.CLIContext, r *mux.Router) {
+func registerTxRoutes(cliCtx client.Context, r *mux.Router) {
 	r.HandleFunc(
 		"/clp/createPool",
 		createPooHandler(cliCtx),
@@ -80,7 +77,7 @@ type (
 //   wallet  < - > abci <-mempool-> tendermint
 //   storage > tx
 //   /tx hash= []
-func createPooHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func createPooHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req CreatePoolReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
@@ -102,11 +99,11 @@ func createPooHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
 	}
 }
 
-func decommissionPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func decommissionPoolHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req DecommissionPoolReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
@@ -128,11 +125,11 @@ func decommissionPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
 	}
 }
 
-func addLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func addLiquidityHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req AddLiquidityReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
@@ -154,11 +151,11 @@ func addLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
 	}
 }
 
-func removeLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func removeLiquidityHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req RemoveLiquidityReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
@@ -180,11 +177,11 @@ func removeLiquidityHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
 	}
 }
 
-func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func swapHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req SwapReq
 		if !rest.ReadRESTReq(w, r, cliCtx.Codec, &req) {
@@ -206,6 +203,6 @@ func swapHandler(cliCtx context.CLIContext) http.HandlerFunc {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		utils.WriteGenerateStdTxResponse(w, cliCtx, baseReq, []sdk.Msg{msg})
+		tx.WriteGeneratedTxResponse(cliCtx, w, req.BaseReq, msg)
 	}
 }

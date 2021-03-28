@@ -3,21 +3,22 @@ package cli
 import (
 	"bufio"
 	"fmt"
+	"log"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
 )
 
 // GetTxCmd returns the transaction commands for this module
-func GetTxCmd(cdc *codec.Codec) *cobra.Command {
+func GetTxCmd() *cobra.Command {
 	clpTxCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("%s transactions subcommands", types.ModuleName),
@@ -27,17 +28,17 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	}
 
 	clpTxCmd.AddCommand(flags.PostCommands(
-		GetCmdCreatePool(cdc),
-		GetCmdAddLiquidity(cdc),
-		GetCmdRemoveLiquidity(cdc),
-		GetCmdSwap(cdc),
-		GetCmdDecommissionPool(cdc),
+		GetCmdCreatePool(),
+		GetCmdAddLiquidity(),
+		GetCmdRemoveLiquidity(),
+		GetCmdSwap(),
+		GetCmdDecommissionPool(),
 	)...)
 
 	return clpTxCmd
 }
 
-func GetCmdCreatePool(cdc *codec.Codec) *cobra.Command {
+func GetCmdCreatePool() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create-pool --from [key] --symbol [asset-symbol] --nativeAmount [amount] --externalAmount [amount]",
 		Short: "Create new liquidity pool",
@@ -50,7 +51,7 @@ func GetCmdCreatePool(cdc *codec.Codec) *cobra.Command {
 			nativeAmount := viper.GetString(FlagNativeAssetAmount)
 			signer := cliCtx.GetFromAddress()
 			msg := types.NewMsgCreatePool(signer, asset, sdk.NewUintFromString(nativeAmount), sdk.NewUintFromString(externalAmount))
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
 		},
 	}
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
@@ -69,7 +70,7 @@ func GetCmdCreatePool(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-func GetCmdDecommissionPool(cdc *codec.Codec) *cobra.Command {
+func GetCmdDecommissionPool() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "decommission-pool",
 		Short: "decommission liquidity pool",
@@ -80,7 +81,7 @@ func GetCmdDecommissionPool(cdc *codec.Codec) *cobra.Command {
 			symbol := viper.GetString(FlagAssetSymbol)
 			signer := cliCtx.GetFromAddress()
 			msg := types.NewMsgDecommissionPool(signer, symbol)
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
 		},
 	}
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
@@ -91,7 +92,7 @@ func GetCmdDecommissionPool(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-func GetCmdAddLiquidity(cdc *codec.Codec) *cobra.Command {
+func GetCmdAddLiquidity() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add-liquidity",
 		Short: "Add liquidity to a pool",
@@ -105,7 +106,7 @@ func GetCmdAddLiquidity(cdc *codec.Codec) *cobra.Command {
 			signer := cliCtx.GetFromAddress()
 			msg := types.NewMsgAddLiquidity(signer, externalAsset, sdk.NewUintFromString(nativeAmount), sdk.NewUintFromString(externalAmount))
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
 		},
 	}
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
@@ -125,7 +126,7 @@ func GetCmdAddLiquidity(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-func GetCmdRemoveLiquidity(cdc *codec.Codec) *cobra.Command {
+func GetCmdRemoveLiquidity() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove-liquidity",
 		Short: "Remove liquidity from a pool",
@@ -147,7 +148,7 @@ func GetCmdRemoveLiquidity(cdc *codec.Codec) *cobra.Command {
 			}
 			msg := types.NewMsgRemoveLiquidity(signer, externalAsset, wBasis, asymmetry)
 
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
 		},
 	}
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
@@ -166,7 +167,7 @@ func GetCmdRemoveLiquidity(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
+func GetCmdSwap() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "swap",
 		Short: "Swap tokens using liquidity pools",
@@ -180,7 +181,7 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 			minReceivingAmount := viper.GetString(FlagMinimumReceivingAmount)
 			signer := cliCtx.GetFromAddress()
 			msg := types.NewMsgSwap(signer, sentAsset, receivedAsset, sdk.NewUintFromString(sentAmount), sdk.NewUintFromString(minReceivingAmount))
-			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
 		},
 	}
 
@@ -190,16 +191,16 @@ func GetCmdSwap(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().AddFlagSet(FsMinReceivingAmount)
 
 	if err := cmd.MarkFlagRequired(FlagSentAssetSymbol); err != nil {
-		log.Println("MarkFlagRequired failed: ", err.Error() )
+		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagReceivedAssetSymbol); err != nil {
-		log.Println("MarkFlagRequired failed: ", err.Error() )
+		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagAmount); err != nil {
-		log.Println("MarkFlagRequired failed: ", err.Error() )
+		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
 	if err := cmd.MarkFlagRequired(FlagMinimumReceivingAmount); err != nil {
-		log.Println("MarkFlagRequired failed: ", err.Error() )
+		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
 	return cmd
 }

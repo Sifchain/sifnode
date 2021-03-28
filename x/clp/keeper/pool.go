@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) SetPool(ctx sdk.Context, pool types.Pool) error {
+func (k Keeper) SetPool(ctx sdk.Context, pool *types.Pool) error {
 	if !pool.Validate() {
 		return types.ErrUnableToSetPool
 	}
@@ -51,15 +51,15 @@ func (k Keeper) ExistsPool(ctx sdk.Context, symbol string) bool {
 	return k.Exists(ctx, key)
 }
 
-func (k Keeper) GetPools(ctx sdk.Context) types.Pools {
-	var poolList types.Pools
+func (k Keeper) GetPools(ctx sdk.Context) []*types.Pool {
+	var poolList []*types.Pool
 	iterator := k.GetPoolsIterator(ctx)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var pool types.Pool
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &pool)
-		poolList = append(poolList, pool)
+		poolList = append(poolList, &pool)
 	}
 	return poolList
 }

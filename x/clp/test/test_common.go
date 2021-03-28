@@ -3,23 +3,24 @@ package test
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/Sifchain/sifnode/simapp"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/Sifchain/sifnode/x/clp/types"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
 
+	"github.com/Sifchain/sifnode/x/clp/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -37,7 +38,6 @@ func MakeTestCodec() *codec.Codec {
 	bank.RegisterCodec(cdc)
 	staking.RegisterCodec(cdc)
 	auth.RegisterCodec(cdc)
-	supply.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 
@@ -51,7 +51,6 @@ func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
 	ctx := app.BaseApp.NewContext(isCheckTx, abci.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000)
-	app.SupplyKeeper.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	_ = simapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }
