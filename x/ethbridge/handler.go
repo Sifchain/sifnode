@@ -3,7 +3,6 @@ package ethbridge
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"sync"
 
@@ -11,26 +10,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
-	"go.uber.org/zap"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 )
-
-var sugaredLogger = NewZapLogger()
-
-const errorMessageKey = "errorMessage"
-
-// NewZapLogger initialize a new instance of SugaredLogger
-func NewZapLogger() *zap.SugaredLogger {
-	logConfig := zap.NewDevelopmentConfig()
-	logConfig.Sampling = nil
-	logger, err := logConfig.Build()
-	if err != nil {
-		log.Fatalln("failed to init zap logging")
-	}
-	return logger.Sugar()
-}
 
 // NewHandler returns a handler for "ethbridge" type messages.
 func NewHandler(
@@ -40,13 +23,13 @@ func NewHandler(
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
 		case MsgCreateEthBridgeClaim:
-			return handleMsgCreateEthBridgeClaim(ctx, cdc, bridgeKeeper, msg, sugaredLogger)
+			return handleMsgCreateEthBridgeClaim(ctx, cdc, bridgeKeeper, msg)
 		case MsgBurn:
-			return handleMsgBurn(ctx, cdc, accountKeeper, bridgeKeeper, msg, sugaredLogger)
+			return handleMsgBurn(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		case MsgLock:
-			return handleMsgLock(ctx, cdc, accountKeeper, bridgeKeeper, msg, sugaredLogger)
+			return handleMsgLock(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		case MsgUpdateWhiteListValidator:
-			return handleMsgUpdateWhiteListValidator(ctx, cdc, accountKeeper, bridgeKeeper, msg, sugaredLogger)
+			return handleMsgUpdateWhiteListValidator(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized ethbridge message type: %v", msg.Type())
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
@@ -56,28 +39,30 @@ func NewHandler(
 
 // Handle a message to create a bridge claim
 func handleMsgCreateEthBridgeClaim(
-	ctx sdk.Context, cdc *codec.Codec, bridgeKeeper Keeper, msg MsgCreateEthBridgeClaim, sugaredLogger *zap.SugaredLogger,
+	ctx sdk.Context, cdc *codec.Codec, bridgeKeeper Keeper, msg MsgCreateEthBridgeClaim,
 ) (*sdk.Result, error) {
+
+	logger := bridgeKeeper.Logger(ctx)
 	var mutex = &sync.RWMutex{}
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	status, err := bridgeKeeper.ProcessClaim(ctx, types.EthBridgeClaim(msg), sugaredLogger)
+	status, err := bridgeKeeper.ProcessClaim(ctx, types.EthBridgeClaim(msg))
 	if err != nil {
-		sugaredLogger.Errorw("bridge keeper failed to process claim.",
-			errorMessageKey, err.Error())
+		logger.Error("bridge keeper failed to process claim.",
+			"error:", err.Error())
 		return nil, err
 	}
 	if status.Text == oracle.SuccessStatusText {
-		if err = bridgeKeeper.ProcessSuccessfulClaim(ctx, status.FinalClaim, sugaredLogger); err != nil {
-			sugaredLogger.Errorw("bridge keeper failed to process successful claim.",
-				errorMessageKey, err.Error())
+		if err = bridgeKeeper.ProcessSuccessfulClaim(ctx, status.FinalClaim); err != nil {
+			logger.Error("bridge keeper failed to process successful claim.",
+				"error:", err.Error())
 			return nil, err
 		}
 	}
 	// set mutex lock to false
 
-	sugaredLogger.Infow("sifnode emit create event.",
+	logger.Info("sifnode emit create event.",
 		"CosmosSender", msg.ValidatorAddress.String(),
 		"EthereumSender", msg.EthereumSender.String(),
 		"EthereumSenderNonce", strconv.Itoa(msg.Nonce),
@@ -114,17 +99,19 @@ func handleMsgCreateEthBridgeClaim(
 
 func handleMsgBurn(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
-	bridgeKeeper Keeper, msg MsgBurn, sugaredLogger *zap.SugaredLogger,
+	bridgeKeeper Keeper, msg MsgBurn,
 ) (*sdk.Result, error) {
+	logger := bridgeKeeper.Logger(ctx)
+
 	if !bridgeKeeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		sugaredLogger.Errorw("Native token can't be burn.",
+		logger.Error("Native token can't be burn.",
 			"tokenSymbol", msg.Symbol)
 		return nil, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
 	}
 
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
-		sugaredLogger.Errorw("account is nil.", "CosmosSender", msg.CosmosSender.String())
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender.String())
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
@@ -135,12 +122,12 @@ func handleMsgBurn(
 	} else {
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 	}
-	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, coins, sugaredLogger); err != nil {
-		sugaredLogger.Errorw("bridge keeper failed to process burn.", errorMessageKey, err.Error())
+	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, coins); err != nil {
+		logger.Error("bridge keeper failed to process burn.", "error:", err.Error())
 		return nil, err
 	}
 
-	sugaredLogger.Infow("sifnode emit burn event.",
+	logger.Info("sifnode emit burn event.",
 		"EthereumChainID", strconv.Itoa(msg.EthereumChainID),
 		"CosmosSender", msg.CosmosSender.String(),
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
@@ -173,26 +160,27 @@ func handleMsgBurn(
 
 func handleMsgLock(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
-	bridgeKeeper Keeper, msg MsgLock, sugaredLogger *zap.SugaredLogger,
+	bridgeKeeper Keeper, msg MsgLock,
 ) (*sdk.Result, error) {
+	logger := bridgeKeeper.Logger(ctx)
 	if bridgeKeeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		sugaredLogger.Errorw("pegged token can't be lock.", "tokenSymbol", msg.Symbol)
+		logger.Error("pegged token can't be lock.", "tokenSymbol", msg.Symbol)
 		return nil, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
 	}
 
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
-		sugaredLogger.Errorw("account is nil.", "CosmosSender", msg.CosmosSender.String())
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender.String())
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
 	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 	if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, coins); err != nil {
-		sugaredLogger.Errorw("bridge keeper failed to process lock.", errorMessageKey, err.Error())
+		logger.Error("bridge keeper failed to process lock.", "error:", err.Error())
 		return nil, err
 	}
 
-	sugaredLogger.Infow("sifnode emit lock event.",
+	logger.Info("sifnode emit lock event.",
 		"EthereumChainID", strconv.Itoa(msg.EthereumChainID),
 		"CosmosSender", msg.CosmosSender.String(),
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
@@ -225,21 +213,22 @@ func handleMsgLock(
 
 func handleMsgUpdateWhiteListValidator(
 	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
-	bridgeKeeper Keeper, msg MsgUpdateWhiteListValidator, sugaredLogger *zap.SugaredLogger,
+	bridgeKeeper Keeper, msg MsgUpdateWhiteListValidator,
 ) (*sdk.Result, error) {
+	logger := bridgeKeeper.Logger(ctx)
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
-		sugaredLogger.Errorw("account is nil.", "CosmosSender", msg.CosmosSender.String())
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender.String())
 
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	if err := bridgeKeeper.ProcessUpdateWhiteListValidator(ctx, msg.CosmosSender, msg.Validator, msg.OperationType, sugaredLogger); err != nil {
-		sugaredLogger.Errorw("bridge keeper failed to process update validator.", errorMessageKey, err.Error())
+	if err := bridgeKeeper.ProcessUpdateWhiteListValidator(ctx, msg.CosmosSender, msg.Validator, msg.OperationType); err != nil {
+		logger.Error("bridge keeper failed to process update validator.", "error:", err.Error())
 		return nil, err
 	}
 
-	sugaredLogger.Infow("sifnode emit update whitelist validators event.",
+	logger.Info("sifnode emit update whitelist validators event.",
 		"CosmosSender", msg.CosmosSender.String(),
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"Validator", msg.Validator.String(),
