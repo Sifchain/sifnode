@@ -21,7 +21,21 @@ func NewHandler(k Keeper) sdk.Handler {
 }
 
 func handleMsgAirdrop(ctx sdk.Context, keeper Keeper, msg MsgAirdrop) (*sdk.Result, error) {
-	fmt.Println("Reached handler Input  : ", msg.Input[0].Address.String())
-	fmt.Println("Reached handler Output : ", msg.Output[0].Address.String())
+	// Verify if airdrop already exists
+	err := keeper.VerifyAirdrop(ctx, msg.AirdropName)
+	if err != nil {
+		return nil, err
+	}
+	//Accumulate all Drops into the ModuleAccount
+	err = keeper.AccumulateDrops(ctx, msg.Input)
+	if err != nil {
+		return nil, err
+	}
+	//Distribute rewards and Store Historical Data
+	// TODO Break create and Distribute in two different steps so that distribute can be moved to the Block beginner
+	err = keeper.CreateAndDistributeDrops(ctx, msg.Output, msg.AirdropName)
+	if err != nil {
+		return nil, err
+	}
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }

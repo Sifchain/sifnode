@@ -37,7 +37,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 
 func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "airdrop [address] [input] [output]",
+		Use:   "airdrop [address] [airdropName] [input] [output]",
 		Short: "Create new airdrop",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
@@ -63,7 +63,7 @@ func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, ko.Address).WithCodec(cdc)
 
-			inputList, err := dispensationUtils.ParseInput(args[1])
+			inputList, err := dispensationUtils.ParseInput(args[2])
 			if err != nil {
 				return err
 			}
@@ -72,12 +72,12 @@ func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			outputlist, err := dispensationUtils.ParseOutput(args[2])
+			outputlist, err := dispensationUtils.ParseOutput(args[3])
 			if err != nil {
 				return err
 			}
-
-			msg := types.NewMsgAirdrop(cliCtx.GetFromAddress(), inputList, outputlist)
+			airDropName := args[1]
+			msg := types.NewMsgAirdrop(cliCtx.GetFromAddress(), airDropName, inputList, outputlist)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}

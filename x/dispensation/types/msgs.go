@@ -11,13 +11,14 @@ var (
 )
 
 type MsgAirdrop struct {
-	Signer sdk.AccAddress `json:"Signer"`
-	Input  []bank.Input   `json:"Input"`
-	Output []bank.Output  `json:"Output"`
+	Signer      sdk.AccAddress `json:"Signer"`
+	AirdropName string         `json:"airdrop_name"`
+	Input       []bank.Input   `json:"Input"`
+	Output      []bank.Output  `json:"Output"`
 }
 
-func NewMsgAirdrop(signer sdk.AccAddress, input []bank.Input, output []bank.Output) MsgAirdrop {
-	return MsgAirdrop{Signer: signer, Input: input, Output: output}
+func NewMsgAirdrop(signer sdk.AccAddress, name string, input []bank.Input, output []bank.Output) MsgAirdrop {
+	return MsgAirdrop{Signer: signer, AirdropName: name, Input: input, Output: output}
 }
 
 func (m MsgAirdrop) Route() string {
@@ -25,12 +26,15 @@ func (m MsgAirdrop) Route() string {
 }
 
 func (m MsgAirdrop) Type() string {
-	return "create_pool"
+	return "airdrop"
 }
 
 func (m MsgAirdrop) ValidateBasic() error {
 	if m.Signer.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
+	}
+	if m.AirdropName == "" {
+		return sdkerrors.Wrap(ErrInvalid, "Name cannot be empty")
 	}
 	err := bank.ValidateInputsOutputs(m.Input, m.Output)
 	if err != nil {
