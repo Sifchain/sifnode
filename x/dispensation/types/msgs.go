@@ -7,33 +7,33 @@ import (
 )
 
 var (
-	_ sdk.Msg = &MsgAirdrop{}
+	_ sdk.Msg = &MsgDistribution{}
 )
 
-type MsgAirdrop struct {
-	Signer      sdk.AccAddress `json:"Signer"`
-	AirdropName string         `json:"airdrop_name"`
-	Input       []bank.Input   `json:"Input"`
-	Output      []bank.Output  `json:"Output"`
+type MsgDistribution struct {
+	Signer           sdk.AccAddress `json:"Signer"`
+	DistributionName string         `json:"distribution_name"`
+	Input            []bank.Input   `json:"Input"`
+	Output           []bank.Output  `json:"Output"`
 }
 
-func NewMsgAirdrop(signer sdk.AccAddress, name string, input []bank.Input, output []bank.Output) MsgAirdrop {
-	return MsgAirdrop{Signer: signer, AirdropName: name, Input: input, Output: output}
+func NewMsgDistribution(signer sdk.AccAddress, name string, input []bank.Input, output []bank.Output) MsgDistribution {
+	return MsgDistribution{Signer: signer, DistributionName: name, Input: input, Output: output}
 }
 
-func (m MsgAirdrop) Route() string {
+func (m MsgDistribution) Route() string {
 	return RouterKey
 }
 
-func (m MsgAirdrop) Type() string {
+func (m MsgDistribution) Type() string {
 	return "airdrop"
 }
 
-func (m MsgAirdrop) ValidateBasic() error {
+func (m MsgDistribution) ValidateBasic() error {
 	if m.Signer.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, m.Signer.String())
 	}
-	if m.AirdropName == "" {
+	if m.DistributionName == "" {
 		return sdkerrors.Wrap(ErrInvalid, "Name cannot be empty")
 	}
 	err := bank.ValidateInputsOutputs(m.Input, m.Output)
@@ -43,10 +43,10 @@ func (m MsgAirdrop) ValidateBasic() error {
 	return nil
 }
 
-func (m MsgAirdrop) GetSignBytes() []byte {
+func (m MsgDistribution) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
 }
 
-func (m MsgAirdrop) GetSigners() []sdk.AccAddress {
+func (m MsgDistribution) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{m.Signer}
 }

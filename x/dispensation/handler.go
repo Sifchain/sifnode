@@ -11,8 +11,8 @@ func NewHandler(k Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
-		case MsgAirdrop:
-			return handleMsgAirdrop(ctx, k, msg)
+		case MsgDistribution:
+			return handleMsgDistribution(ctx, k, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized %s message type: %T", ModuleName, msg)
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
@@ -20,9 +20,9 @@ func NewHandler(k Keeper) sdk.Handler {
 	}
 }
 
-func handleMsgAirdrop(ctx sdk.Context, keeper Keeper, msg MsgAirdrop) (*sdk.Result, error) {
+func handleMsgDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribution) (*sdk.Result, error) {
 	// Verify if airdrop already exists
-	err := keeper.VerifyAirdrop(ctx, msg.AirdropName)
+	err := keeper.VerifyDistribution(ctx, msg.DistributionName)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func handleMsgAirdrop(ctx sdk.Context, keeper Keeper, msg MsgAirdrop) (*sdk.Resu
 	}
 	//Distribute rewards and Store Historical Data
 	// TODO Break create and Distribute in two different steps so that distribute can be moved to the Block beginner
-	err = keeper.CreateAndDistributeDrops(ctx, msg.Output, msg.AirdropName)
+	err = keeper.CreateAndDistributeDrops(ctx, msg.Output, msg.DistributionName)
 	if err != nil {
 		return nil, err
 	}

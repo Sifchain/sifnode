@@ -6,20 +6,20 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (k Keeper) SetAirdropRecord(ctx sdk.Context, ar types.AirdropRecord) error {
+func (k Keeper) SetAirdropRecord(ctx sdk.Context, ar types.DistributionList) error {
 	if !ar.Validate() {
 		return errors.Wrapf(types.ErrInvalid, "Record Details : %s", ar.String())
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetAirdropRecordKey(ar.AirdropName)
+	key := types.GetAirdropRecordKey(ar.DistributionName)
 	store.Set(key, k.cdc.MustMarshalBinaryBare(ar))
 	return nil
 }
 
-func (k Keeper) GetAirdropRecord(ctx sdk.Context, airdropName string) (types.AirdropRecord, error) {
-	var ar types.AirdropRecord
+func (k Keeper) GetAirdropRecord(ctx sdk.Context, name string) (types.DistributionList, error) {
+	var ar types.DistributionList
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetAirdropRecordKey(airdropName)
+	key := types.GetAirdropRecordKey(name)
 	if !k.Exists(ctx, key) {
 		return ar, errors.Wrapf(types.ErrInvalid, "Record Does not Exist : %s", ar.String())
 	}
@@ -28,8 +28,8 @@ func (k Keeper) GetAirdropRecord(ctx sdk.Context, airdropName string) (types.Air
 	return ar, nil
 }
 
-func (k Keeper) ExistsAirdrop(ctx sdk.Context, airdropName string) bool {
-	key := types.GetAirdropRecordKey(airdropName)
+func (k Keeper) ExistsAirdrop(ctx sdk.Context, name string) bool {
+	key := types.GetAirdropRecordKey(name)
 	if k.Exists(ctx, key) {
 		return true
 	}

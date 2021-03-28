@@ -7,15 +7,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (k Keeper) CreateAndDistributeDrops(ctx sdk.Context, output []bank.Output, airDropName string) error {
+func (k Keeper) CreateAndDistributeDrops(ctx sdk.Context, output []bank.Output, name string) error {
 	for _, receiver := range output {
 		err := k.GetSupplyKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver.Address, receiver.Coins)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", receiver.Address.String())
 		}
-		distributionRecord := types.NewDistributionRecord(airDropName, receiver.Address, receiver.Coins)
-		if k.ExistsDistributionRecord(ctx, airDropName, receiver.Address.String()) {
-			oldRecord, err := k.GetDistributionRecord(ctx, airDropName, receiver.Address.String())
+		distributionRecord := types.NewDistributionRecord(name, receiver.Address, receiver.Coins)
+		if k.ExistsDistributionRecord(ctx, name, receiver.Address.String()) {
+			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address.String())
 			if err != nil {
 				return errors.Wrapf(types.ErrAirdrop, "failed appending record for : %s", distributionRecord.Address)
 			}
@@ -39,13 +39,13 @@ func (k Keeper) AccumulateDrops(ctx sdk.Context, input []bank.Input) error {
 	return nil
 }
 
-func (k Keeper) VerifyAirdrop(ctx sdk.Context, airDropName string) error {
-	if k.ExistsAirdrop(ctx, airDropName) {
-		return errors.Wrapf(types.ErrAirdrop, "airdrop with same name already exists : %s ", airDropName)
+func (k Keeper) VerifyDistribution(ctx sdk.Context, name string) error {
+	if k.ExistsAirdrop(ctx, name) {
+		return errors.Wrapf(types.ErrAirdrop, "airdrop with same name already exists : %s ", name)
 	}
-	err := k.SetAirdropRecord(ctx, types.NewAirdropRecord(airDropName))
+	err := k.SetAirdropRecord(ctx, types.NewAirdropRecord(name))
 	if err != nil {
-		return errors.Wrapf(types.ErrAirdrop, "unable to set airdrop :  %s ", airDropName)
+		return errors.Wrapf(types.ErrAirdrop, "unable to set airdrop :  %s ", name)
 
 	}
 	return nil

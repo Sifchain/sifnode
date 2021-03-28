@@ -11,7 +11,7 @@ func (k Keeper) SetDistributionRecord(ctx sdk.Context, dr types.DistributionReco
 		return errors.Wrapf(types.ErrInvalid, "unable to set record : %s", dr.String())
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionRecordKey(dr.AirdropName, dr.Address.String())
+	key := types.GetDistributionRecordKey(dr.DistributionName, dr.Address.String())
 	store.Set(key, k.cdc.MustMarshalBinaryBare(dr))
 	return nil
 }

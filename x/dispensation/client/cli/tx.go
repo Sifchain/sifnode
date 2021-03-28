@@ -36,6 +36,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 }
 
 func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
+	// The cmd is called airdrop now , but can be generalized to create any distribution list
 	cmd := &cobra.Command{
 		Use:   "airdrop [address] [airdropName] [input] [output]",
 		Short: "Create new airdrop",
@@ -77,7 +78,7 @@ func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 			airDropName := args[1]
-			msg := types.NewMsgAirdrop(cliCtx.GetFromAddress(), airDropName, inputList, outputlist)
+			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), airDropName, inputList, outputlist)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}
