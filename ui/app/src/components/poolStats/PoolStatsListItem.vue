@@ -74,9 +74,16 @@ export default defineComponent({
         <div class="placeholder" v-else></div>
         <div class="icon">
           <span>{{
-            symbol.toString().toLowerCase().includes("rowan")
+            symbol
+              .toString()
+              .toLowerCase()
+              .includes("rowan")
               ? symbol.toString().toUpperCase()
-              : "c" + symbol.toString().slice(1).toUpperCase()
+              : "c" +
+                symbol
+                  .toString()
+                  .slice(1)
+                  .toUpperCase()
           }}</span>
         </div>
       </div>
