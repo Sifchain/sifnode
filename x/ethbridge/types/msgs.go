@@ -300,7 +300,6 @@ func (msg MsgRescueCeth) ValidateBasic() error {
 	if msg.CosmosSender.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
-
 	if msg.CosmosReceiver.Empty() {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosReceiver.String())
 	}

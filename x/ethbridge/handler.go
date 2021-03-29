@@ -302,34 +302,17 @@ func handleMsgRescueCeth(
 	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
 	if account == nil {
 		sugaredLogger.Errorw("account is nil.", "CosmosSender", msg.CosmosSender.String())
-
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
-
 	if err := bridgeKeeper.ProcessRescueCeth(ctx, msg, sugaredLogger); err != nil {
 		sugaredLogger.Errorw("keeper failed to process rescue ceth message.", errorMessageKey, err.Error())
 		return nil, err
 	}
-
 	sugaredLogger.Infow("sifnode emit rescue ceth event.",
 		"CosmosSender", msg.CosmosSender.String(),
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"CosmosReceiver", msg.CosmosReceiver.String(),
 		"CethAmount", msg.CethAmount.String())
-
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender.String()),
-		),
-		sdk.NewEvent(
-			types.EventTypeLock,
-			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender.String()),
-			sdk.NewAttribute(types.AttributeKeyCethReceiverAccount, msg.CosmosReceiver.String()),
-			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
-		),
-	})
 
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
