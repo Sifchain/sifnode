@@ -184,6 +184,24 @@ func (k Keeper) ProcessUpdateCethReceiverAccount(ctx sdk.Context, cosmosSender s
 	return nil
 }
 
+// ProcessRescueCeth transfer ceth from ethbridge module to an account
+func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg types.MsgRescueCeth, sugaredLogger *zap.SugaredLogger) error {
+	if !k.oracleKeeper.IsAdminAccount(ctx, msg.CosmosSender) {
+		sugaredLogger.Errorw("cosmos sender is not admin account.")
+		return errors.New("only admin account can call rescue ceth")
+	}
+
+	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
+	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, msg.CosmosReceiver, coins)
+
+	if err != nil {
+		sugaredLogger.Errorw("failed to transfer coin from module to account.",
+			errorMessageKey, err.Error())
+		return err
+	}
+	return nil
+}
+
 // Exists chec if the key existed in db.
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)

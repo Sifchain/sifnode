@@ -403,3 +403,26 @@ func TestUpdateCethReceiverAccountMsg(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 }
+
+func TestRescueCethMsg(t *testing.T) {
+	ctx, oracleKeeper, bankKeeper, supplyKeeper, _, _, handler := CreateTestHandler(t, 0.5, []int64{5})
+	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, sdk.NewInt(10000)))
+	err := supplyKeeper.MintCoins(ctx, ModuleName, coins)
+	require.NoError(t, err)
+
+	testRescueCethMsg := types.CreateTestRescueCethMsg(
+		t, types.TestAddress, types.TestAddress, sdk.NewInt(10000))
+
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+
+	_, err = handler(ctx, testRescueCethMsg)
+	require.Error(t, err)
+
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	_, _ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
+
+	res, err := handler(ctx, testRescueCethMsg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+}
