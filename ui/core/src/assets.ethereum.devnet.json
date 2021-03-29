@@ -1,30 +1,30 @@
 {
   "assets": [
     {
-      "symbol": "rowan",
+      "symbol": "erowan",
       "decimals": 18,
       "name": "Rowan",
       "imageUrl": "./images/siflogo.png",
-      "address": "0xA3D31ee81Ec2a898B4CF7A67a0851086e4Da7af3",
-      "network": "sifchain"
+      "address": "0x6bcb715CB89BCCb0A11261Ca60987B9afDCd0380",
+      "network": "ethereum"
     },
     {
       "address": "0x66Cf623418Dba9f79c347d81C75e754DDaF788eF",
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707",
       "name": "Tether USDT",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.999153,
-      "symbol": "cusdt",
+      "symbol": "USDT",
       "transferLimit": "5004238590"
     },
     {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
       "name": "Ethereum",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 1145,
-      "symbol": "ceth",
+      "symbol": "eth",
       "transferLimit": "4381237787299667968"
     },
     {
@@ -32,9 +32,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/677/thumb/basic-attention-token.png?1547034427",
       "name": "Basic Attention Token",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.309639,
-      "symbol": "cbat",
+      "symbol": "BAT",
       "transferLimit": "16147836674320740909056"
     },
     {
@@ -42,9 +42,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/681/thumb/JelZ58cv_400x400.png?1601449653",
       "name": "Aragon",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 3.83,
-      "symbol": "cant",
+      "symbol": "ANT",
       "transferLimit": "1305483028720626696192"
     },
     {
@@ -52,9 +52,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/736/thumb/bancor.png?1547034477",
       "name": "Bancor Network Token",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 1.94,
-      "symbol": "cbnt",
+      "symbol": "BNT",
       "transferLimit": "2577319587628866076672"
     },
     {
@@ -62,9 +62,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/863/thumb/0x.png?1547034672",
       "name": "0x",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.61159,
-      "symbol": "czrx",
+      "symbol": "ZRX",
       "transferLimit": "8175411631975670218752"
     },
     {
@@ -72,9 +72,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/877/thumb/chainlink-new-logo.png?1547034700",
       "name": "Chainlink",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 23.32,
-      "symbol": "clink",
+      "symbol": "LINK",
       "transferLimit": "214408233276157788160"
     },
     {
@@ -82,9 +82,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/878/thumb/decentraland-mana.png?1550108745",
       "name": "Decentraland",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.158751,
-      "symbol": "cmana",
+      "symbol": "MANA",
       "transferLimit": "31495864592978940002304"
     },
     {
@@ -92,9 +92,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/913/thumb/LRC.png?1572852344",
       "name": "Loopring",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.465068,
-      "symbol": "clrc",
+      "symbol": "LRC",
       "transferLimit": "10751115965837254590464"
     },
     {
@@ -102,9 +102,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/1102/thumb/enjin-coin-logo.png?1547035078",
       "name": "Enjin Coin",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.367884,
-      "symbol": "cenj",
+      "symbol": "ENJ",
       "transferLimit": "13591240717182590517248"
     },
     {
@@ -112,9 +112,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/3406/thumb/SNX.png?1598631139",
       "name": "Synthetix Network Token",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 17.31,
-      "symbol": "csnx",
+      "symbol": "SNX",
       "transferLimit": "288850375505488150528"
     },
     {
@@ -122,9 +122,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/3449/thumb/TUSD.png?1559172762",
       "name": "TrueUSD",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.999831,
-      "symbol": "ctusd",
+      "symbol": "TUSD",
       "transferLimit": "5000845142829138182144"
     },
     {
@@ -132,9 +132,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/3687/thumb/ocean-protocol-logo.jpg?1547038686",
       "name": "Ocean Protocol",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.568633,
-      "symbol": "cocean",
+      "symbol": "OCEAN",
       "transferLimit": "8793017640551988592640"
     },
     {
@@ -142,9 +142,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/4001/thumb/Fantom.png?1558015016",
       "name": "Fantom",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.145596,
-      "symbol": "cftm",
+      "symbol": "FTM",
       "transferLimit": "34341602791285476818944"
     },
     {
@@ -152,9 +152,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/5013/thumb/sUSD.png?1562212426",
       "name": "sUSD",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 1.01,
-      "symbol": "csusd",
+      "symbol": "SUSD",
       "transferLimit": "4950495049504951107584"
     },
     {
@@ -162,9 +162,9 @@
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
       "name": "USD Coin",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 1,
-      "symbol": "cusdc",
+      "symbol": "USDC",
       "transferLimit": "5000000000"
     },
     {
@@ -172,9 +172,9 @@
       "decimals": 8,
       "imageUrl": "https://assets.coingecko.com/coins/images/7310/thumb/cypto.png?1547043960",
       "name": "Crypto com Coin",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.070311,
-      "symbol": "ccro",
+      "symbol": "CRO",
       "transferLimit": "7111262818051"
     },
     {
@@ -182,9 +182,9 @@
       "decimals": 8,
       "imageUrl": "https://assets.coingecko.com/coins/images/7598/thumb/wrapped_bitcoin_wbtc.png?1548822744",
       "name": "Wrapped Bitcoin",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 33982,
-      "symbol": "cwbtc",
+      "symbol": "WBTC",
       "transferLimit": "14713671"
     },
     {
@@ -192,9 +192,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/9368/thumb/swipe.png?1566792311",
       "name": "Swipe",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 1.21,
-      "symbol": "csxp",
+      "symbol": "SXP",
       "transferLimit": "4132231404958677729280"
     },
     {
@@ -202,9 +202,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/9545/thumb/band-protocol.png?1568730326",
       "name": "Band Protocol",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 9,
-      "symbol": "cband",
+      "symbol": "BAND",
       "transferLimit": "555555555555555540992"
     },
     {
@@ -212,9 +212,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/9956/thumb/dai-multi-collateral-mcd.png?1574218774",
       "name": "Dai Stablecoin",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.997605,
-      "symbol": "cdai",
+      "symbol": "DAI",
       "transferLimit": "5012003748978804916224"
     },
     {
@@ -222,9 +222,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/10775/thumb/COMP.png?1592625425",
       "name": "Compound",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 257.26,
-      "symbol": "ccomp",
+      "symbol": "COMP",
       "transferLimit": "19435590453237972992"
     },
     {
@@ -232,9 +232,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/10951/thumb/UMA.png?1586307916",
       "name": "UMA",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 10.86,
-      "symbol": "cuma",
+      "symbol": "UMA",
       "transferLimit": "460405156537753272320"
     },
     {
@@ -242,9 +242,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/11683/thumb/Balancer.png?1592792958",
       "name": "Balancer",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 23.76,
-      "symbol": "cbal",
+      "symbol": "BAL",
       "transferLimit": "210437710437710430208"
     },
     {
@@ -252,9 +252,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/11849/thumb/yfi-192x192.png?1598325330",
       "name": "yearn finance",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 30163,
-      "symbol": "cyfi",
+      "symbol": "YFI",
       "transferLimit": "165766004707754528"
     },
     {
@@ -262,9 +262,9 @@
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/11970/thumb/serum-logo.png?1597121577",
       "name": "Serum",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 1.92,
-      "symbol": "csrm",
+      "symbol": "SRM",
       "transferLimit": "2604166666"
     },
     {
@@ -272,9 +272,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/11976/thumb/Cream.png?1596593418",
       "name": "Cream",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 152.33,
-      "symbol": "ccream",
+      "symbol": "CREAM",
       "transferLimit": "32823475349570011136"
     },
     {
@@ -282,9 +282,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/12129/thumb/sandbox_logo.jpg?1597397942",
       "name": "SAND",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.090036,
-      "symbol": "csand",
+      "symbol": "SAND",
       "transferLimit": "55533342218668080103424"
     },
     {
@@ -292,9 +292,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/12271/thumb/512x512_Logo_no_chop.png?1606986688",
       "name": "Sushi",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 8.39,
-      "symbol": "csushi",
+      "symbol": "SUSHI",
       "transferLimit": "595947556615017725952"
     },
     {
@@ -302,9 +302,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/12440/thumb/esd_logo_circle.png?1603676421",
       "name": "Empty Set Dollar",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.213968,
-      "symbol": "cesd",
+      "symbol": "ESD",
       "transferLimit": "23367980258730274979840"
     },
     {
@@ -312,9 +312,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/12504/thumb/uniswap-uni.png?1600306604",
       "name": "Uniswap",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 15.38,
-      "symbol": "cuni",
+      "symbol": "UNI",
       "transferLimit": "325097529258777640960"
     },
     {
@@ -322,9 +322,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/12645/thumb/AAVE.png?1601374110",
       "name": "Aave",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 301.33,
-      "symbol": "caave",
+      "symbol": "AAVE",
       "transferLimit": "16593103906016661504"
     },
     {
@@ -332,9 +332,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/12811/thumb/barnbridge.jpg?1602728853",
       "name": "BarnBridge",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 49.83,
-      "symbol": "cbond",
+      "symbol": "BOND",
       "transferLimit": "100341159943808942080"
     },
     {
@@ -342,9 +342,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/13238/thumb/WFIL-Icon.png?1606630561",
       "name": "Wrapped Filecoin",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 28.04,
-      "symbol": "cwfil",
+      "symbol": "WFIL",
       "transferLimit": "178316690442225385472"
     },
     {
@@ -352,9 +352,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/13397/thumb/Graph_Token.png?1608145566",
       "name": "The Graph",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.624661,
-      "symbol": "cgrt",
+      "symbol": "GRT",
       "transferLimit": "8004341554859355406336"
     },
     {
@@ -362,9 +362,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/13454/thumb/lon_logo.png?1608701720",
       "name": "Tokenlon",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 6.68,
-      "symbol": "clon",
+      "symbol": "LON",
       "transferLimit": "748502994011976105984"
     },
     {
@@ -372,9 +372,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/13469/thumb/1inch-token.png?1608803028",
       "name": "1inch",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 3.16,
-      "symbol": "c1inch",
+      "symbol": "1INCH",
       "transferLimit": "1582278481012658274304"
     },
     {
@@ -382,9 +382,9 @@
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/13677/thumb/BrMhBTr8_400x400.jpg?1610723303",
       "name": "THORChain ERC20",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 3.23,
-      "symbol": "crune",
+      "symbol": "RUNE",
       "transferLimit": "1547987616099071164416"
     },
     {
@@ -392,55 +392,55 @@
       "decimals": 6,
       "imageUrl": "https://assets.coingecko.com/coins/images/13767/thumb/Secret_S_Black_Coingecko.png?1611667298",
       "name": "Secret ERC20 ",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 1.12,
-      "symbol": "cwscrt",
+      "symbol": "WSCRT",
       "transferLimit": "4464285714"
     },
     {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/3334/small/iotex-logo.png?1547037941",
       "name": "IoTeX",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.0109,
-      "symbol": "ciotx",
+      "symbol": "IOTX",
       "transferLimit": "458715596330000000000000"
     },
     {
       "address": "0x181c05d2FAC3E7FBCedbc585bB4Ae5a153179337",
       "name": "Reef Finance",
-      "symbol": "creef",
+      "symbol": "REEF",
       "decimals": 18,
       "priceUsd": 0.01802738,
       "transferLimit": "277355888654000000000000",
-      "network": "sifchain",
+      "network": "ethereum",
       "imageUrl": "https://assets.coingecko.com/coins/images/13504/small/Group_10572.png?1610534130"
     },
     {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/4932/thumb_2x/_QPpjoUi_400x400.jpg?1566430520",
       "name": "COCOS BCX",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.92712,
-      "symbol": "ccocos",
+      "symbol": "cocos",
       "transferLimit": "99999999999999999999999"
     },
     {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/3373/small/IuNzUb5b_400x400.jpg?1589526336",
       "name": "Keep Network",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.3684,
-      "symbol": "ckeep",
+      "symbol": "keep",
       "transferLimit": "99999999999999999999999"
     },
     {
       "decimals": 18,
       "imageUrl": "https://assets.coingecko.com/coins/images/3296/small/op.jpg?1547037878",
       "name": "Origin Protocol",
-      "network": "sifchain",
+      "network": "ethereum",
       "priceUsd": 0.4111,
-      "symbol": "cogn",
+      "symbol": "ogn",
       "transferLimit": "99999999999999999999999"
     }
   ]

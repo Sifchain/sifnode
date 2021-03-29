@@ -69,7 +69,7 @@ namespace :cluster do
   namespace :sifnode do
     namespace :deploy do
       desc "Deploy a single standalone sifnode on to your cluster"
-      task :standalone, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :moniker, :mnemonic, :admin_clp_addresses, :admin_oracle_address, :minimum_gas_prices, :clp_config_url] do |t, args|
+      task :standalone, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :moniker, :mnemonic, :admin_clp_addresses, :admin_oracle_address, :minimum_gas_prices] do |t, args|
         check_args(args)
 
         cmd = %Q{helm upgrade sifnode #{cwd}/../../deploy/helm/sifnode \
@@ -79,7 +79,6 @@ namespace :cluster do
           --set sifnode.args.adminCLPAddresses=#{args[:admin_clp_addresses]} \
           --set sifnode.args.adminOracleAddress=#{args[:admin_oracle_address]} \
           --set sifnode.args.minimumGasPrices=#{args[:minimum_gas_prices]} \
-          --set sifnode.args.clpConfigURL=#{args[:clp_config_url]} \
           --install -n #{ns(args)} --create-namespace \
           --set image.tag=#{image_tag(args)} \
           --set image.repository=#{image_repository(args)}

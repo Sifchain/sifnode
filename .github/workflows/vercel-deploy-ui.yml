@@ -1,9 +1,14 @@
 name: Deploy UI to Vercel
-
-on: 
+# run run on pull request into develop (feature/fixes)
+on:
   push:
-    paths: 
-      - 'ui/**'
+    branches:
+      - "**"
+      - "!develop"
+      - "!testnet"
+      - "!master"
+    paths:
+      - "ui/**"
 
 jobs:
   deploy:
@@ -19,4 +24,4 @@ jobs:
           vercel-project-id: ${{ secrets.PROJECT_ID}}
           working-directory: .
           alias-domains: |
-           {{BRANCH}}.sifchain.vercel.app
+            {{BRANCH}}.sifchain.vercel.app
