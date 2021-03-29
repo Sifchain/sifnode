@@ -291,7 +291,7 @@ export default function createSifService({
 
         const fee = {
           amount: coins(0, params.asset.symbol),
-          gas: "300000", // TODO - see if "auto" setting
+          gas: "500000", // TODO - see if "auto" setting
         };
 
         return await client.signAndBroadcast([msg], fee, params.memo);
@@ -310,7 +310,7 @@ export default function createSifService({
       try {
         const fee = {
           amount: coins(0, "rowan"),
-          gas: "300000", // TODO - see if "auto" setting
+          gas: "500000", // TODO - see if "auto" setting
         };
 
         const msgArr = Array.isArray(msg) ? msg : [msg];
