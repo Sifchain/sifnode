@@ -329,3 +329,22 @@ func TestProcessUpdateCethReceiverAccount(t *testing.T) {
 	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender, sugaredLogger)
 	require.NoError(t, err)
 }
+
+func TestProcessRescueCeth(t *testing.T) {
+	ctx, keeper, _, supplyKeeper, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+
+	cethAmount := sdk.NewInt(100)
+	supplyKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(types.CethSymbol, cethAmount)))
+
+	msg := types.NewMsgRescueCeth(cosmosSender, cosmosSender, cethAmount)
+
+	err = keeper.ProcessRescueCeth(ctx, msg, sugaredLogger)
+	require.Equal(t, err.Error(), "only admin account can call rescue ceth")
+
+	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+
+	err = keeper.ProcessRescueCeth(ctx, msg, sugaredLogger)
+	require.NoError(t, err)
+}
