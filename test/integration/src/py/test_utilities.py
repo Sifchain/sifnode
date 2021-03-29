@@ -196,6 +196,16 @@ def get_whitelisted_tokens(transfer_request: EthereumToSifchainTransferRequest):
     return run_yarn_command(command_line)
 
 
+def get_token_ethereum_address(
+        token: str,
+        whitelist
+):
+    for token_in_whitelist in whitelist:
+        if token_in_whitelist["symbol"] == token:
+            return token_in_whitelist["token"]
+    return None
+
+
 def mint_tokens(transfer_request: EthereumToSifchainTransferRequest, operator_address):
     network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
@@ -624,3 +634,12 @@ def ganache_private_key(ganache_private_keys_file: str, address):
     keys = read_json_file(ganache_private_keys_file)
     pks = keys["private_keys"]
     return pks[address]
+
+
+def sifchain_symbol_to_ethereum_symbol(s: str):
+    if s == "rowan":
+        return "erowan"
+    elif s == "ceth":
+        return NULL_ADDRESS
+    else:
+        return s[1:]
