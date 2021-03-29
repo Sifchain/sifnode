@@ -13,7 +13,7 @@ export default defineComponent({
 
 <template>
   <div class="header">
-    <div class="col-sm">
+    <div class="col-sm col-sm-s">
       <span>Token</span>
     </div>
     <div class="col-lg">
@@ -107,6 +107,10 @@ export default defineComponent({
   color: $c_gray_400;
   display: flex;
   flex-direction: column;
+  &.col-sm-s {
+    min-width: 112px;
+    padding-left: 12px;
+  }
   span {
     display: flex;
     justify-content: center;
