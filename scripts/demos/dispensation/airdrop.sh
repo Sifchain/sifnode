@@ -5,6 +5,7 @@
 
 # create airdrop
 # mkey = multisig key
+# ar1 = name for airdrop , needs to be unique for every airdrop . If not the tx gets rejected
 # input.json list of funding addresses  -  Input address must be part of the multisig key
 # output.json list of airdrop receivers.
 sifnodecli tx dispensation airdrop mkey ar1 input.json output.json --generate-only >> offlinetx.json
@@ -18,5 +19,4 @@ sifnodecli tx multisign offlinetx.json mkey sig1.json sig2.json >> signedtx.json
 sifnodecli tx broadcast signedtx.json
 rm -rf offlinetx.json sig1.json sig2.json signedtx.json
 
-#rm -rf ../../../offlinetx.json ../../../sig1.json ../../../sig2.json ../../../signedtx.json
 
