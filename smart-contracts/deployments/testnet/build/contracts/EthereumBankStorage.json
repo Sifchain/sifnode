@@ -1,0 +1,502 @@
+{
+  "contractName": "EthereumBankStorage",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "lockBurnNonce",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "lockedFunds",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "name": "lockedTokenList",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[],\"name\":\"lockBurnNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"lockedFunds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"lockedTokenList\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol\":\"EthereumBankStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":1000},\"remappings\":[]},\"sources\":{\"/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol\":{\"keccak256\":\"0x24e82ea4799f5dc6a9732a43a988e8e19a9aecde88b5a113c5f818be80f8523f\",\"urls\":[\"bzz-raw://2a53793f59aea4c787e181297465fead5c10349fd738a64abae480d8d0a261ab\",\"dweb:/ipfs/QmYjdArY2ZwWXMCrTinKZzx2KvLUhAubwWdv2XxMbQsv4S\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506101e2806100206000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c80631deed3bb14610046578063b86247d714610060578063f24a590a14610093575b600080fd5b61004e610162565b60408051918252519081900360200190f35b61004e6004803603602081101561007657600080fd5b503573ffffffffffffffffffffffffffffffffffffffff16610168565b610139600480360360208110156100a957600080fd5b8101906020810181356401000000008111156100c457600080fd5b8201836020820111156100d657600080fd5b803590602001918460018302840111640100000000831117156100f857600080fd5b91908080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525092955061017a945050505050565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b60005481565b60016020526000908152604090205481565b805160208183018101805160028252928201919093012091525473ffffffffffffffffffffffffffffffffffffffff168156fea265627a7a72315820a4de36cd64c806091bd916ed94a00abce5c19dc091f9fb111b5dcb4c91047b8364736f6c63430005100032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c80631deed3bb14610046578063b86247d714610060578063f24a590a14610093575b600080fd5b61004e610162565b60408051918252519081900360200190f35b61004e6004803603602081101561007657600080fd5b503573ffffffffffffffffffffffffffffffffffffffff16610168565b610139600480360360208110156100a957600080fd5b8101906020810181356401000000008111156100c457600080fd5b8201836020820111156100d657600080fd5b803590602001918460018302840111640100000000831117156100f857600080fd5b91908080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201919091525092955061017a945050505050565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b60005481565b60016020526000908152604090205481565b805160208183018101805160028252928201919093012091525473ffffffffffffffffffffffffffffffffffffffff168156fea265627a7a72315820a4de36cd64c806091bd916ed94a00abce5c19dc091f9fb111b5dcb4c91047b8364736f6c63430005100032",
+  "sourceMap": "25:484:8:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:484:8;;;;;;;",
+  "deployedSourceMap": "25:484:8:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:484:8;;;;;;;;;;;;;;;;;;;;;;;;;;;;;121:28;;;:::i;:::-;;;;;;;;;;;;;;;;234:46;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;234:46:8;;;;:::i;358:49::-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;358:49:8;;;;;;;;21:11:-1;5:28;;2:2;;;46:1;43;36:12;2:2;358:49:8;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;358:49:8;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;358:49:8;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;30:3:-1;22:6;14;1:33;99:1;81:16;;74:27;;;;-1:-1;358:49:8;;-1:-1:-1;358:49:8;;-1:-1:-1;;;;;358:49:8:i;:::-;;;;;;;;;;;;;;;;;;;121:28;;;;:::o;234:46::-;;;;;;;;;;;;;:::o;358:49::-;22:14:-1;;169:4;143:32;;;;;198:20;;358:49:8;224:31:-1;;156:18;;;283;;;;273:49;328:32;;358:49:8;;;;:::o",
+  "source": "pragma solidity 0.5.16;\n\ncontract EthereumBankStorage {\n\n    /**\n    * @notice current lock and or burn nonce\n    */\n    uint256 public lockBurnNonce;\n\n    /**\n    * @notice how much funds we have stored of a certain token\n    */\n    mapping(address => uint256) public lockedFunds;\n\n    /**\n    * @notice map the token symbol to the token address\n    */\n    mapping(string => address) public lockedTokenList;\n\n    /**\n    * @notice gap of storage for future upgrades\n    */\n    uint256[100] private ____gap;\n}",
+  "sourcePath": "/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol",
+  "ast": {
+    "absolutePath": "/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol",
+    "exportedSymbols": {
+      "EthereumBankStorage": [
+        1325
+      ]
+    },
+    "id": 1326,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1310,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".16"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:8"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 1325,
+        "linearizedBaseContracts": [
+          1325
+        ],
+        "name": "EthereumBankStorage",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 1312,
+            "name": "lockBurnNonce",
+            "nodeType": "VariableDeclaration",
+            "scope": 1325,
+            "src": "121:28:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 1311,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "121:7:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1316,
+            "name": "lockedFunds",
+            "nodeType": "VariableDeclaration",
+            "scope": 1325,
+            "src": "234:46:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
+              "typeString": "mapping(address => uint256)"
+            },
+            "typeName": {
+              "id": 1315,
+              "keyType": {
+                "id": 1313,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "242:7:8",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "234:27:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
+                "typeString": "mapping(address => uint256)"
+              },
+              "valueType": {
+                "id": 1314,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "253:7:8",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1320,
+            "name": "lockedTokenList",
+            "nodeType": "VariableDeclaration",
+            "scope": 1325,
+            "src": "358:49:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_string_memory_$_t_address_$",
+              "typeString": "mapping(string => address)"
+            },
+            "typeName": {
+              "id": 1319,
+              "keyType": {
+                "id": 1317,
+                "name": "string",
+                "nodeType": "ElementaryTypeName",
+                "src": "366:6:8",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "358:26:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_string_memory_$_t_address_$",
+                "typeString": "mapping(string => address)"
+              },
+              "valueType": {
+                "id": 1318,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "376:7:8",
+                "stateMutability": "nonpayable",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1324,
+            "name": "____gap",
+            "nodeType": "VariableDeclaration",
+            "scope": 1325,
+            "src": "478:28:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_array$_t_uint256_$100_storage",
+              "typeString": "uint256[100]"
+            },
+            "typeName": {
+              "baseType": {
+                "id": 1321,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "478:7:8",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 1323,
+              "length": {
+                "argumentTypes": null,
+                "hexValue": "313030",
+                "id": 1322,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "486:3:8",
+                "subdenomination": null,
+                "typeDescriptions": {
+                  "typeIdentifier": "t_rational_100_by_1",
+                  "typeString": "int_const 100"
+                },
+                "value": "100"
+              },
+              "nodeType": "ArrayTypeName",
+              "src": "478:12:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
+                "typeString": "uint256[100]"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          }
+        ],
+        "scope": 1326,
+        "src": "25:484:8"
+      }
+    ],
+    "src": "0:509:8"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/bjmcd/Documents/Development/Clients/sifchain/sifnode/smart-contracts/contracts/BridgeBank/EthereumBankStorage.sol",
+    "exportedSymbols": {
+      "EthereumBankStorage": [
+        1325
+      ]
+    },
+    "id": 1326,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1310,
+        "literals": [
+          "solidity",
+          "0.5",
+          ".16"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:8"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 1325,
+        "linearizedBaseContracts": [
+          1325
+        ],
+        "name": "EthereumBankStorage",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 1312,
+            "name": "lockBurnNonce",
+            "nodeType": "VariableDeclaration",
+            "scope": 1325,
+            "src": "121:28:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 1311,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "121:7:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1316,
+            "name": "lockedFunds",
+            "nodeType": "VariableDeclaration",
+            "scope": 1325,
+            "src": "234:46:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
+              "typeString": "mapping(address => uint256)"
+            },
+            "typeName": {
+              "id": 1315,
+              "keyType": {
+                "id": 1313,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "242:7:8",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "234:27:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_uint256_$",
+                "typeString": "mapping(address => uint256)"
+              },
+              "valueType": {
+                "id": 1314,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "253:7:8",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1320,
+            "name": "lockedTokenList",
+            "nodeType": "VariableDeclaration",
+            "scope": 1325,
+            "src": "358:49:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_string_memory_$_t_address_$",
+              "typeString": "mapping(string => address)"
+            },
+            "typeName": {
+              "id": 1319,
+              "keyType": {
+                "id": 1317,
+                "name": "string",
+                "nodeType": "ElementaryTypeName",
+                "src": "366:6:8",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "358:26:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_string_memory_$_t_address_$",
+                "typeString": "mapping(string => address)"
+              },
+              "valueType": {
+                "id": 1318,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "376:7:8",
+                "stateMutability": "nonpayable",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1324,
+            "name": "____gap",
+            "nodeType": "VariableDeclaration",
+            "scope": 1325,
+            "src": "478:28:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_array$_t_uint256_$100_storage",
+              "typeString": "uint256[100]"
+            },
+            "typeName": {
+              "baseType": {
+                "id": 1321,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "478:7:8",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 1323,
+              "length": {
+                "argumentTypes": null,
+                "hexValue": "313030",
+                "id": 1322,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "486:3:8",
+                "subdenomination": null,
+                "typeDescriptions": {
+                  "typeIdentifier": "t_rational_100_by_1",
+                  "typeString": "int_const 100"
+                },
+                "value": "100"
+              },
+              "nodeType": "ArrayTypeName",
+              "src": "478:12:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$100_storage_ptr",
+                "typeString": "uint256[100]"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          }
+        ],
+        "scope": 1326,
+        "src": "25:484:8"
+      }
+    ],
+    "src": "0:509:8"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.3.2",
+  "updatedAt": "2021-03-24T06:48:19.915Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
