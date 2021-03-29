@@ -17,7 +17,7 @@ variable "vpc_cidr" {
 variable "cluster_version" {
   description = "EKS cluster version"
   type        = string
-  default     = 1.18
+  default     = 1.19
 }
 
 variable "cluster_name" {
@@ -32,21 +32,17 @@ variable "tags" {
 
 variable "desired_capacity" {
   description = "Desired nodes per cluster"
-  default = 2
+  default     = 1
 }
 
 variable "max_capacity" {
   description = "Max nodes per cluster"
-  default = 5
+  default     = 3
 }
 
 variable "min_capacity" {
   description = "Min nodes per cluster"
-  default = 2
-}
-
-variable "instance_type" {
-  default = "t2.xlarge"
+  default     = 1
 }
 
 variable "ami_type" {
@@ -100,5 +96,11 @@ variable "efs_pv_capacity" {
 
 variable "profile" {
   description = "AWS profile settings"
-  default = "default"
+  default     = "default"
+}
+
+variable "instance_type" {
+  description = "The instance_type of the node_group for the eks cluster"
+  type        = string
+  default   = "m5.2xlarge"
 }

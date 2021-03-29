@@ -3,12 +3,14 @@ import { validateMnemonic } from "bip39";
 import { Mnemonic } from "../entities/Wallet";
 import { ActionContext } from ".";
 import { effect } from "@vue/reactivity";
-import notify from "../api/utils/Notifications";
 
 export default ({
   api,
   store,
-}: ActionContext<"SifService" | "ClpService", "wallet">) => {
+}: ActionContext<
+  "SifService" | "ClpService" | "EventBusService",
+  "wallet"
+>) => {
   const state = api.SifService.getState();
 
   const actions = {
@@ -37,8 +39,13 @@ export default ({
         await api.SifService.connect();
         store.wallet.sif.isConnected = true;
       } catch (error) {
-        // to the ui??
-        notify({ type: "error", ...error });
+        api.EventBusService.dispatch({
+          type: "WalletConnectionErrorEvent",
+          payload: {
+            walletType: "sif",
+            message: "Failed to connect to Keplr.",
+          },
+        });
       }
     },
   };
@@ -47,13 +54,12 @@ export default ({
     if (store.wallet.sif.isConnected !== state.connected) {
       store.wallet.sif.isConnected = state.connected;
       if (store.wallet.sif.isConnected) {
-        notify({
-          type: "success",
-          message: "Sif Account connected",
-          detail: {
-            type: 'info',
-            message: store.wallet.sif.address,
-          }
+        api.EventBusService.dispatch({
+          type: "WalletConnectedEvent",
+          payload: {
+            walletType: "sif",
+            address: store.wallet.sif.address,
+          },
         });
       }
     }

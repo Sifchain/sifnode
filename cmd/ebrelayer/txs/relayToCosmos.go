@@ -13,19 +13,23 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"go.uber.org/zap"
 )
 
 var (
 	nextSequenceNumber uint64 = 0
+	errorMessageKey           = "errorMessage"
 )
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
 func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.EthBridgeClaim, cliCtx context.CLIContext,
-	txBldr authtypes.TxBuilder) error {
+	txBldr authtypes.TxBuilder, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
-	log.Printf("ebrelayer RelayToCosmos with %d claims\n", len(claims))
-	log.Printf("ebrelayer RelayToCosmos nextSequenceNumber is %d\n", nextSequenceNumber)
+
+	sugaredLogger.Infow("relay prophecies to cosmos.",
+		"claimAmount", len(claims),
+		"nextSequenceNumber", nextSequenceNumber)
 
 	for _, claim := range claims {
 		// Packages the claim as a Tendermint message
@@ -33,7 +37,8 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 
 		err := msg.ValidateBasic()
 		if err != nil {
-			log.Println("failed to get message from claim with:", err.Error())
+			sugaredLogger.Errorw("failed to get message from claim.",
+				errorMessageKey, err.Error())
 			continue
 		} else {
 			messages = append(messages, msg)
@@ -43,41 +48,45 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	// Prepare tx
 	txBldr, err := utils.PrepareTxBuilder(txBldr, cliCtx)
 	if err != nil {
-		log.Println("error building tx: ", err)
-		log.Println("tx buidler response on error: ", txBldr)
+		sugaredLogger.Errorw("failed to get tx builder.",
+			errorMessageKey, err.Error(),
+			"transactionBuilder", txBldr)
 		return err
 	}
 
-	log.Printf("ebrelayer RelayToCosmos sequenceNumber is %d from tx builder\n", txBldr.Sequence())
+	sugaredLogger.Infow("relay sequenceNumber from builder.",
+		"nextSequenceNumber", txBldr.Sequence())
 
 	// If we start to control sequence
 	if nextSequenceNumber > 0 {
 		txBldr.WithSequence(nextSequenceNumber)
-		log.Println("txBldr.WithSequence(nextSequenceNumber) passed")
+		sugaredLogger.Infow("txBldr.WithSequence(nextSequenceNumber) passed")
 	}
-	
+
 	log.Println("building and signing")
 	// Build and sign the transaction
 	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)
 	if err != nil {
-		log.Printf("ebrelayer RelayToCosmos error 1 is %s\n", err.Error())
+		sugaredLogger.Errorw("failed to sign transaction.",
+			errorMessageKey, err.Error())
 		return err
 	}
-	
+
 	log.Println("built tx, now broadcasting")
 	// Broadcast to a Tendermint node
 	res, err := cliCtx.BroadcastTxAsync(txBytes)
 	if err != nil {
-		log.Printf("ebrelayer RelayToCosmos error 2 is %s\n", err.Error())
+		sugaredLogger.Errorw("failed to broadcast tx to sifchain.",
+			errorMessageKey, err.Error())
 		return err
 	}
 	log.Println("Broadcasted tx without error")
 
 	if err = cliCtx.PrintOutput(res); err != nil {
-		log.Printf("ebrelayer RelayToCosmos error 3 is %s\n", err.Error())
+		sugaredLogger.Errorw("failed to print out result.",
+			errorMessageKey, err.Error())
 		return err
 	}
-	log.Println("printed tx output")
 
 	// start to control sequence number after first successful tx
 	if nextSequenceNumber == 0 {
@@ -85,7 +94,9 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 	} else {
 		incrementNextSequenceNumber()
 	}
-	log.Printf("ebrelayer RelayToCosmos nextSequenceNumber is %d after tx\n", nextSequenceNumber)
+	sugaredLogger.Infow("relay next sequenceNumber from memory.",
+		"nextSequenceNumber", nextSequenceNumber)
+
 	return nil
 }
 

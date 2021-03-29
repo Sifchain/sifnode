@@ -56,7 +56,7 @@ export default defineComponent({
 
     const getAccountBalance = () => {
       return balances.value.find(
-        (balance) => balance.asset.symbol === fromSymbol.value
+        (balance) => balance.asset.symbol === fromSymbol.value,
       );
     };
 
@@ -112,7 +112,7 @@ export default defineComponent({
       const tx = await actions.clp.swap(
         fromFieldAmount.value,
         toFieldAmount.value.asset,
-        minimumReceived.value
+        minimumReceived.value,
       );
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
@@ -211,6 +211,7 @@ export default defineComponent({
           "failed",
           "rejected",
           "confirmed",
+          "out_of_gas",
         ].includes(transactionState.value);
       }),
       requestTransactionModalClose,
