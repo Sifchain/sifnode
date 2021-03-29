@@ -75,6 +75,7 @@ var (
 		gov.ModuleName:            {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
 		clp.ModuleName:            {supply.Burner, supply.Minter},
+		dispensation.ModuleName:   {supply.Burner, supply.Minter},
 		faucet.ModuleName:         {supply.Minter},
 	}
 )
@@ -175,6 +176,7 @@ func NewInitApp(
 	app.subspaces[gov.ModuleName] = app.paramsKeeper.Subspace(gov.DefaultParamspace).WithKeyTable(gov.ParamKeyTable())
 	app.subspaces[distr.ModuleName] = app.paramsKeeper.Subspace(distr.DefaultParamspace)
 	app.subspaces[slashing.ModuleName] = app.paramsKeeper.Subspace(slashing.DefaultParamspace)
+	app.subspaces[dispensation.ModuleName] = app.paramsKeeper.Subspace(dispensation.DefaultParamspace)
 
 	app.AccountKeeper = auth.NewAccountKeeper(
 		app.cdc,

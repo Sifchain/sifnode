@@ -38,7 +38,7 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
 	// The cmd is called airdrop now , but can be generalized to create any distribution list
 	cmd := &cobra.Command{
-		Use:   "airdrop [address] [airdropName] [input] [output]",
+		Use:   "airdrop [multiSigKeyName] [DropName] [Input JSON File Path] [Output JSON File Path]",
 		Short: "Create new airdrop",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
@@ -77,8 +77,8 @@ func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			airDropName := args[1]
-			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), airDropName, inputList, outputlist)
+			dropName := args[1]
+			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), dropName, inputList, outputlist)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}

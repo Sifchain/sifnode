@@ -13,7 +13,8 @@ const (
 	RouterKey = ModuleName
 
 	// QuerierRoute to be used for querier msgs
-	QuerierRoute = ModuleName
+	QuerierRoute      = ModuleName
+	DefaultParamspace = ModuleName
 )
 
 var (

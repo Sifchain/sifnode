@@ -6,10 +6,11 @@ import (
 )
 
 const (
-	ModuleName   = types.ModuleName
-	RouterKey    = types.RouterKey
-	StoreKey     = types.StoreKey
-	QuerierRoute = types.QuerierRoute
+	ModuleName        = types.ModuleName
+	RouterKey         = types.RouterKey
+	StoreKey          = types.StoreKey
+	QuerierRoute      = types.QuerierRoute
+	DefaultParamspace = types.DefaultParamspace
 )
 
 var (
