@@ -336,7 +336,8 @@ func TestProcessRescueCeth(t *testing.T) {
 	require.NoError(t, err)
 
 	cethAmount := sdk.NewInt(100)
-	supplyKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(types.CethSymbol, cethAmount)))
+	err = supplyKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(types.CethSymbol, cethAmount)))
+	require.NoError(t, err)
 
 	msg := types.NewMsgRescueCeth(cosmosSender, cosmosSender, cethAmount)
 
