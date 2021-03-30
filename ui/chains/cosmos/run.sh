@@ -22,13 +22,13 @@ parallelizr() {
 rm -rf ~/.sifnoded
 rm -rf ~/.sifnodecli
 
-sifnoded init test --chain-id=sifchain
+sifnoded init test --chain-id=sifchain-local
 cp ./config.toml ~/.sifnoded/config
 
 sifnodecli config output json
 sifnodecli config indent true
 sifnodecli config trust-node true
-sifnodecli config chain-id sifchain
+sifnodecli config chain-id sifchain-local
 sifnodecli config keyring-backend test
 
 echo "Generating deterministic account - ${SHADOWFIEND_NAME}"
