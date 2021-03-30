@@ -463,6 +463,7 @@ metadata:
     app: #{args[:app_name]} " > service_account.yaml
 
         kubectl create --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}
+        kubectl apply --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}
 
         token=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- cat /var/run/secrets/kubernetes.io/serviceaccount/token`
         kubernetes_cluster_ip=`kubectl exec --kubeconfig=./kubeconfig -it vault-0 -n vault -- printenv | grep KUBERNETES_PORT_443_TCP_ADDR | cut -d '=' -f 2 | tr -d '\n' | tr -d '\r'`
