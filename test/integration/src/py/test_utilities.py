@@ -643,3 +643,56 @@ def sifchain_symbol_to_ethereum_symbol(s: str):
         return NULL_ADDRESS
     else:
         return s[1:]
+
+
+def update_ceth_receiver_account(
+        receiver_account: str,
+        operator_account: str,
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials
+):
+    cmd = build_sifchain_command(
+        f"sifnodecli tx ethbridge update_ceth_receiver_account {operator_account} {receiver_account}",
+        transfer_request=transfer_request,
+        credentials=credentials
+    )
+    result = get_shell_output(cmd)
+    logging.critical(f"update_ceth_receiver_account result: {result}")
+
+
+def rescue_ceth(
+        receiver_account: str,
+        operator_account: str,
+        amount: int,
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials
+):
+    cmd = build_sifchain_command(
+        f"sifnodecli tx ethbridge rescue_ceth {operator_account} {receiver_account} {amount:d}",
+        transfer_request=transfer_request,
+        credentials=credentials
+    )
+    result = get_shell_output(cmd)
+    logging.critical(f"rescue_ceth result: {result}")
+
+
+def build_sifchain_command(
+        command_contents: str,
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials
+):
+    yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
+    keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
+    chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
+    node_entry = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
+    home_entry = f"--home {credentials.sifnodecli_homedir}" if credentials.sifnodecli_homedir else ""
+    from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
+    return " ".join([
+        yes_entry,
+        command_contents,
+        keyring_backend_entry,
+        chain_id_entry,
+        node_entry,
+        home_entry,
+        from_entry
+    ])
