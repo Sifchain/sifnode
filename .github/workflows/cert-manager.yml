@@ -570,7 +570,7 @@ jobs:
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
         run: |
           set +x
-          echo "Clean up all temporary files that were generated..."
+          echo "Clean up all temporary files that were generated...."
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
