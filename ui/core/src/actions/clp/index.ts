@@ -110,7 +110,9 @@ export default ({
         minimumReceived,
       });
 
-      const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
+      // Sign and broadcast transaction sequentially to enable fees 2.0 for swaps.
+      const stdTx = await api.SifService.sign(tx.value.msg);
+      const txStatus = await api.SifService.broadcast(stdTx);
 
       if (txStatus.state !== "accepted") {
         api.EventBusService.dispatch({

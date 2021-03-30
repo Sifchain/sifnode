@@ -47,7 +47,7 @@ type Keplr = {
 type provider = Keplr;
 let numChecks = 0;
 
-// Detect mossible keplr provider from browser
+// Detect possible keplr provider from browser
 export default async function getKeplrProvider(): Promise<provider | null> {
   const win = window as WindowWithPossibleKeplr;
 

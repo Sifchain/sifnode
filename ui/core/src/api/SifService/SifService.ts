@@ -1,28 +1,23 @@
 import {
+  Account,
   coins,
   isBroadcastTxFailure,
   makeCosmoshubPath,
+  makeSignDoc,
   Msg,
+  OfflineSigner,
   Secp256k1HdWallet,
+  StdTx,
 } from "@cosmjs/launchpad";
-import { reactive } from "@vue/reactivity";
-import { debounce } from "lodash";
-import {
-  Address,
-  Asset,
-  AssetAmount,
-  Network,
-  TransactionStatus,
-  TxParams,
-} from "../../entities";
+import {reactive} from "@vue/reactivity";
+import {debounce} from "lodash";
+import {Address, Asset, AssetAmount, Mnemonic, Network, TransactionStatus, TxParams,} from "../../entities";
 
-import { Mnemonic } from "../../entities";
-
-import { SifClient, SifUnSignedClient } from "../utils/SifClient";
-import { ensureSifAddress } from "./utils";
+import {SifClient, SifUnSignedClient} from "../utils/SifClient";
+import {ensureSifAddress} from "./utils";
 import getKeplrProvider from "./getKeplrProvider";
-import { KeplrChainConfig } from "../../utils/parseConfig";
-import { parseTxFailure } from "./parseTxFailure";
+import {KeplrChainConfig} from "../../utils/parseConfig";
+import {parseTxFailure} from "./parseTxFailure";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
@@ -52,11 +47,13 @@ export default function createSifService({
   const state: {
     connected: boolean;
     address: Address;
+    account: Account | undefined;
     accounts: Address[];
     balances: AssetAmount[];
     log: string; // latest transaction hash
   } = reactive({
     connected: false,
+    account: undefined,
     accounts: [],
     address: "",
     balances: [],
@@ -67,6 +64,7 @@ export default function createSifService({
   let keplrProvider: any;
   let client: SifClient | null = null;
   let polling: any;
+  let offlineSigner: OfflineSigner | null = null;
 
   const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl);
 
@@ -111,6 +109,7 @@ export default function createSifService({
 
         state.connected = !!client;
         state.address = client.senderAddress;
+        state.account = await client.getAccount(client.senderAddress);
         state.accounts = await client.getAccounts();
         state.balances = await instance.getBalance(client.senderAddress);
       } catch (e) {
@@ -147,9 +146,12 @@ export default function createSifService({
       if (!keplrProvider) {
         return;
       }
-      const offlineSigner = keplrProvider.getOfflineSigner(
+      offlineSigner = keplrProvider.getOfflineSigner(
         keplrChainConfig.chainId,
       );
+      if (!offlineSigner) {
+        throw "No offlineSigner";
+      }
       const accounts = await offlineSigner.getAccounts();
       const address = accounts.length > 0 ? accounts[0].address : "";
       if (!address) {
@@ -256,7 +258,7 @@ export default function createSifService({
             return AssetAmount(asset, amount, { inBaseUnit: true });
           })
           .filter((balance) => {
-            // If an aseet is supplied filter for it
+            // If an asset is supplied filter for it
             if (!asset) {
               return true;
             }
@@ -331,6 +333,34 @@ export default function createSifService({
         return parseTxFailure({ transactionHash: "", rawLog: err.message });
       }
     },
+
+    async sign(msg: Msg | Msg[]): Promise<StdTx> {
+      if (!client || !offlineSigner || !state.account) {
+        throw "No client. Please sign in.";
+      }
+      const fee = { amount: coins(0, "rowan"), gas: "300000", };
+      const msgArr = Array.isArray(msg) ? msg : [msg];
+      const signDoc = makeSignDoc(msgArr, fee, keplrChainConfig.chainId, "", state.account.accountNumber, state.account.sequence);
+      const signResult = await offlineSigner.sign(state.address, signDoc);
+      return {
+        msg: signResult.signed.msgs,
+        memo: signResult.signed.memo,
+        fee: signResult.signed.fee,
+        signatures: [signResult.signature]
+      };
+    },
+
+    async broadcast(stdTx: StdTx): Promise<TransactionStatus> {
+      if (!client) {
+        throw "No client. Please sign in.";
+      }
+      const broadcastResult = await client.broadcastTx(stdTx);
+      return {
+        hash: broadcastResult.transactionHash,
+        memo: "",
+        state: "accepted",
+      };
+    }
   };
 
   instance.initProvider();
