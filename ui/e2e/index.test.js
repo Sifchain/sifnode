@@ -19,8 +19,11 @@ const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 const keplrConfig = require("../core/src/config.localnet.json");
 
 const { getSifchainBalances } = require("./sifchain.js");
+const { getEthBalance } = require("./ethereum.js")
+
 const { extractFile } = require("./utils");
-const { MetaMask } = require("./metamask.js")
+const { MetaMask, connectMmAccount } = require("./metamask.js")
+
 const DEX_TARGET = "localhost:8080";
 
 const KEPLR_CONFIG = {
@@ -43,6 +46,11 @@ const MM_CONFIG = {
   get path() {
     return `./extensions/${this.id}/${this.ver}`
   },
+  network: {
+    name: "mm-e2e",
+    port: "7545",
+    chainId: "1337"
+  },
   options: {
     address: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
     mnemonic: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
@@ -51,10 +59,12 @@ const MM_CONFIG = {
 }
 
 let browserContext;
+let dexPage;
 
 describe("connect to page", () => {
   beforeAll(async () => {
 
+    // extract extension zips
     await extractExtensionPackages();
     const pathToKeplrExtension = path.join(__dirname, KEPLR_CONFIG.path);
     const pathToMmExtension = path.join(__dirname, MM_CONFIG.path);
@@ -73,6 +83,7 @@ describe("connect to page", () => {
       ],
     });
     
+    // setup metamask
     const MM = new MetaMask(browserContext, MM_CONFIG)
     await MM.setup(browserContext)
 
@@ -83,8 +94,9 @@ describe("connect to page", () => {
     // );
     // await importKeplrAccount(keplrPage, KEPLR_CONFIG.options);
     
-    // setup metamask account
 
+    dexPage = await browserContext.newPage();
+    await dexPage.goto(DEX_TARGET, { waitUntil: "domcontentloaded" });
   });
 
   afterAll(async () => {
@@ -92,13 +104,11 @@ describe("connect to page", () => {
   });
 
   it.skip("connect to keplr, check balance", async () => {
-    const keplrcEthBalance = await getSifchainBalances(
+    const cEthBalance = await getSifchainBalances(
       keplrConfig.sifApiUrl,
       KEPLR_CONFIG.options.address,
       "ceth",
     ); //"100.000000"; // Fetch balance
-    const dexPage = await browserContext.newPage();
-    await dexPage.goto(DEX_TARGET, { waitUntil: "domcontentloaded" });
 
     await connectKeplrAccount(dexPage, browserContext);
     await dexPage.waitForTimeout(1000); // this is only necessary bc popup
@@ -106,11 +116,14 @@ describe("connect to page", () => {
     expect(
       await dexPage.innerText("[data-handle='ceth-row-amount']",
       ),
-    ).toBe(keplrcEthBalance);
+    ).toBe(cEthBalance);
   });
 
   it("connects to metamask, check balance", async () => {
-    // import account
+    const mmEthBalance = await getEthBalance(MM_CONFIG.options.address)
+    await dexPage.waitForTimeout(1000); // this is only necessary bc popup
+    // connect wallet
+    await connectMmAccount(dexPage, browserContext)
     // see https://github.com/NodeFactoryIo/dappeteer/blob/master/src/index.ts#L57
 
   })
