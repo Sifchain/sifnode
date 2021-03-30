@@ -15,6 +15,8 @@ import (
 	"github.com/Sifchain/sifnode/x/oracle"
 )
 
+const errorMessageKey = "errorMessage"
+
 // NewHandler returns a handler for "ethbridge" type messages.
 func NewHandler(
 	accountKeeper types.AccountKeeper, bridgeKeeper Keeper,
@@ -50,13 +52,13 @@ func handleMsgCreateEthBridgeClaim(
 	status, err := bridgeKeeper.ProcessClaim(ctx, types.EthBridgeClaim(msg))
 	if err != nil {
 		logger.Error("bridge keeper failed to process claim.",
-			"error:", err.Error())
+			errorMessageKey, err.Error())
 		return nil, err
 	}
 	if status.Text == oracle.SuccessStatusText {
 		if err = bridgeKeeper.ProcessSuccessfulClaim(ctx, status.FinalClaim); err != nil {
 			logger.Error("bridge keeper failed to process successful claim.",
-				"error:", err.Error())
+				errorMessageKey, err.Error())
 			return nil, err
 		}
 	}
@@ -123,7 +125,7 @@ func handleMsgBurn(
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 	}
 	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, coins); err != nil {
-		logger.Error("bridge keeper failed to process burn.", "error:", err.Error())
+		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
@@ -176,7 +178,7 @@ func handleMsgLock(
 
 	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 	if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, coins); err != nil {
-		logger.Error("bridge keeper failed to process lock.", "error:", err.Error())
+		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
@@ -224,7 +226,7 @@ func handleMsgUpdateWhiteListValidator(
 	}
 
 	if err := bridgeKeeper.ProcessUpdateWhiteListValidator(ctx, msg.CosmosSender, msg.Validator, msg.OperationType); err != nil {
-		logger.Error("bridge keeper failed to process update validator.", "error:", err.Error())
+		logger.Error("bridge keeper failed to process update validator.", errorMessageKey, err.Error())
 		return nil, err
 	}
 
