@@ -9,15 +9,23 @@ import {
   Secp256k1HdWallet,
   StdTx,
 } from "@cosmjs/launchpad";
-import {reactive} from "@vue/reactivity";
-import {debounce} from "lodash";
-import {Address, Asset, AssetAmount, Mnemonic, Network, TransactionStatus, TxParams,} from "../../entities";
+import { reactive } from "@vue/reactivity";
+import { debounce } from "lodash";
+import {
+  Address,
+  Asset,
+  AssetAmount,
+  Mnemonic,
+  Network,
+  TransactionStatus,
+  TxParams,
+} from "../../entities";
 
-import {SifClient, SifUnSignedClient} from "../utils/SifClient";
-import {ensureSifAddress} from "./utils";
+import { SifClient, SifUnSignedClient } from "../utils/SifClient";
+import { ensureSifAddress } from "./utils";
 import getKeplrProvider from "./getKeplrProvider";
-import {KeplrChainConfig} from "../../utils/parseConfig";
-import {parseTxFailure} from "./parseTxFailure";
+import { KeplrChainConfig } from "../../utils/parseConfig";
+import { parseTxFailure } from "./parseTxFailure";
 
 export type SifServiceContext = {
   sifAddrPrefix: string;
@@ -146,9 +154,7 @@ export default function createSifService({
       if (!keplrProvider) {
         return;
       }
-      offlineSigner = keplrProvider.getOfflineSigner(
-        keplrChainConfig.chainId,
-      );
+      offlineSigner = keplrProvider.getOfflineSigner(keplrChainConfig.chainId);
       if (!offlineSigner) {
         throw "No offlineSigner";
       }
@@ -338,15 +344,22 @@ export default function createSifService({
       if (!client || !offlineSigner || !state.account) {
         throw "No client. Please sign in.";
       }
-      const fee = { amount: coins(0, "rowan"), gas: "300000", };
+      const fee = { amount: coins(0, "rowan"), gas: "300000" };
       const msgArr = Array.isArray(msg) ? msg : [msg];
-      const signDoc = makeSignDoc(msgArr, fee, keplrChainConfig.chainId, "", state.account.accountNumber, state.account.sequence);
+      const signDoc = makeSignDoc(
+        msgArr,
+        fee,
+        keplrChainConfig.chainId,
+        "",
+        state.account.accountNumber,
+        state.account.sequence,
+      );
       const signResult = await offlineSigner.sign(state.address, signDoc);
       return {
         msg: signResult.signed.msgs,
         memo: signResult.signed.memo,
         fee: signResult.signed.fee,
-        signatures: [signResult.signature]
+        signatures: [signResult.signature],
       };
     },
 
@@ -360,7 +373,7 @@ export default function createSifService({
         memo: "",
         state: "accepted",
       };
-    }
+    },
   };
 
   instance.initProvider();
