@@ -1,9 +1,14 @@
 /* TODO
-  - Connect Metamask
-  - Different targets, local, sp, etc for deterministic addresses
-  - xvfb server for remote test run
+  - Connect Metamask https://github.com/NodeFactoryIo/dappeteer/blob/master/src/index.ts#L57
+  x Different targets, local, sp, etc for deterministic addresses
+  x xvfb server for remote test run
   - Peg, unpeg, happy path
   - Cleanup
+
+
+  TO RUN:
+  1. yarn stack
+  2. in second terminal: cd e2e && yarn test
 */
 import "@babel/polyfill";
 const path = require("path");
@@ -79,4 +84,15 @@ describe("connect to page", () => {
       ),
     ).toBe(keplrcEthBalance);
   });
+
+  it("connects to metamask, check balance", async () => {
+    // unzip downloads/nkbih...zip
+    // place into extensions folder
+    // load it on launch persistent context
+    // import account
+    // see https://github.com/NodeFactoryIo/dappeteer/blob/master/src/index.ts#L57
+
+  })
+  it("pegs", async () => {})
+
 });
