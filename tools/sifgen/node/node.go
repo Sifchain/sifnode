@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/Sifchain/sifnode/app"
-
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/genesis"
 	"github.com/Sifchain/sifnode/tools/sifgen/key"
