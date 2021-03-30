@@ -2,7 +2,7 @@
   <div class="asset-list">
     <div class="line" v-for="item in items" :key="item.asset.symbol">
       <AssetItem class="token" :symbol="item.asset.symbol" />
-      <div class="amount">
+      <div :data-handle="item.asset.symbol + '-row-amount'" class="amount">
         {{ formatNumber(item.amount) }}
         <slot name="annotation" v-bind="item"></slot>
       </div>
