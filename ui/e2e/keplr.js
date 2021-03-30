@@ -24,4 +24,3 @@ export async function connectKeplrAccount(page, browserContext) {
   await popup.waitForLoadState();
   await popup.click("text=Approve");
 }
-  
