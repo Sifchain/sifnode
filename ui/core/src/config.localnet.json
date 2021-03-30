@@ -8,7 +8,7 @@
   "nativeAsset": "rowan",
   "bridgebankContractAddress": "0x30753E4A8aad7F8597332E813735Def5dD395028",
   "keplrChainConfig": {
-    "chainName": "SifchainLocalnet",
+    "chainName": "SifchainLocal",
     "chainId": "",
     "rpc": "",
     "rest": "",
