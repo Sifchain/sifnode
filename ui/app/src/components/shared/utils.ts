@@ -75,11 +75,15 @@ export function useAssetItem(symbol: Ref<string | undefined>) {
 }
 
 export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {
-  if (chainId === "sifchain") {
-    if (!txHash) return "https://blockexplorer.sifchain.finance/";
-    return `https://blockexplorer.sifchain.finance/transactions/${txHash}`;
-  } else {
-    if (!txHash) return `https://blockexplorer-${chainId}.sifchain.finance/`;
-    return `https://blockexplorer-${chainId}.sifchain.finance/transactions/${txHash}`;
+  switch (chainId) {
+    case "sifchain":
+      if (!txHash) return "https://blockexplorer.sifchain.finance/";
+      return `https://blockexplorer.sifchain.finance/transactions/${txHash}`;
+    case "sifchain-testnet":
+      if (!txHash) return `https://blockexplorer-testnet.sifchain.finance/`;
+      return `https://blockexplorer-testnet.sifchain.finance/transactions/${txHash}`;
+    default:
+      if (!txHash) return "https://blockexplorer-devnet.sifchain.finance/";
+      return `https://blockexplorer-devnet.sifchain.finance/transactions/${txHash}`;
   }
 }
