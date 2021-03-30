@@ -263,7 +263,7 @@ func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
 // GetCmdUpdateCethReceiverAccount is the CLI command to update the sifchain account that receives the ceth proceeds
 func GetCmdUpdateCethReceiverAccount(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "update_ceth_receiver_account [cosmos-sender-address] [ceth_receiver_account] --node [node-address]",
+		Use:   "update_ceth_receiver_account [cosmos-sender-address] [ceth_receiver_account]",
 		Short: "This should be used to set the ceth receiver account.",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -295,7 +295,7 @@ func GetCmdUpdateCethReceiverAccount(cdc *codec.Codec) *cobra.Command {
 // GetCmdRescueCeth is the CLI command to send the message to transfer ceth from ethbridge module to account
 func GetCmdRescueCeth(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "rescue_ceth [cosmos-sender-address] [ceth_receiver_account] [ceth_amount] --node [node-address]",
+		Use:   "rescue_ceth [cosmos-sender-address] [ceth_receiver_account] [ceth_amount]",
 		Short: "This should be used to send ceth from ethbridge to an account.",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {

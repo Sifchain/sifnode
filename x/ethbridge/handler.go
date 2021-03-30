@@ -182,7 +182,6 @@ func handleMsgLock(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	// coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
 	if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, msg, sugaredLogger); err != nil {
 		sugaredLogger.Errorw("bridge keeper failed to process lock.", errorMessageKey, err.Error())
 		return nil, err
