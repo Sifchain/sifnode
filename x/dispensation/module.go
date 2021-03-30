@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/client/cli"
-	"github.com/Sifchain/sifnode/x/dispensation/client/rest"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -54,8 +53,7 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 }
 
 // RegisterRESTRoutes registers the REST routes for the clp module.
-func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	rest.RegisterRoutes(ctx, rtr)
+func (AppModuleBasic) RegisterRESTRoutes(_ context.CLIContext, _ *mux.Router) {
 }
 
 // GetTxCmd returns the root tx command for the clp module.

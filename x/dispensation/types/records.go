@@ -15,6 +15,7 @@ type DistributionRecord struct {
 	Address          sdk.AccAddress `json:"address" yaml:"address"`
 	Coins            sdk.Coins      `json:"coins" yaml:"coins"`
 }
+type DistributionRecords []DistributionRecord
 
 func NewDistributionRecord(name string, address sdk.AccAddress, coins sdk.Coins) DistributionRecord {
 	return DistributionRecord{DistributionName: name, Address: address, Coins: coins}
@@ -44,22 +45,28 @@ func (ar DistributionRecord) Add(ar2 DistributionRecord) DistributionRecord {
 	return ar
 }
 
-// DistributionList is created for every distribution
-type DistributionList struct {
-	DistributionName string `json:"airdrop_name"`
+// A Distribution object is created for every new distribution type
+type DistributionType int64
+
+const Airdrop DistributionType = 1
+
+type Distribution struct {
+	DistributionType DistributionType `json:"distribution_type"`
+	DistributionName string           `json:"distribution_name"`
+}
+type Distributions []Distribution
+
+func NewDistribution(t DistributionType, name string) Distribution {
+	return Distribution{DistributionType: t, DistributionName: name}
 }
 
-func NewDistributionList(name string) DistributionList {
-	return DistributionList{DistributionName: name}
-}
-
-func (ar DistributionList) Validate() bool {
+func (ar Distribution) Validate() bool {
 	if ar.DistributionName == "" {
 		return false
 	}
 	return true
 }
 
-func (ar DistributionList) String() string {
+func (ar Distribution) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s`, ar.DistributionName))
 }

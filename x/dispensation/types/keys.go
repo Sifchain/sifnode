@@ -19,14 +19,14 @@ const (
 
 var (
 	DistributionRecordPrefix = []byte{0x00} // key for storing DistributionRecords
-	AirdropRecordPrefix      = []byte{0x01} // key for storing airdropRecords
+	DistributionListPrefix   = []byte{0x01} // key for storing airdropRecords
 )
 
-func GetDistributionRecordKey(airdropName string, recipient string) []byte {
-	key := []byte(fmt.Sprintf("%s_%s", airdropName, recipient))
+func GetDistributionRecordKey(name string, recipient string) []byte {
+	key := []byte(fmt.Sprintf("%s_%s", name, recipient))
 	return append(DistributionRecordPrefix, key...)
 }
-func GetAirdropRecordKey(airdropName string) []byte {
-	key := []byte(fmt.Sprintf("%s", airdropName))
-	return append(AirdropRecordPrefix, key...)
+func GetDistributionListKey(name string) []byte {
+	key := []byte(fmt.Sprintf("%s", name))
+	return append(DistributionListPrefix, key...)
 }

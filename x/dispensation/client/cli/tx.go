@@ -38,7 +38,8 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 // GetCmdAirdrop adds a new command to the main dispensationTxCmd to create a new airdrop
 // Airdrop is a type of distribution on the network .
 func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
-	// The cmd is called airdrop now , but can be generalized to create any distribution list
+	// The cmd is called airdrop now , but can be generalized to create any distribution list.
+	// Note , only the command name is airdrop , throughout this package an airdrop is a type of of Distribution
 	cmd := &cobra.Command{
 		Use:   "airdrop [multiSigKeyName] [DropName] [Input JSON File Path] [Output JSON File Path]",
 		Short: "Create new airdrop",

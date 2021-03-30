@@ -38,3 +38,38 @@ func (k Keeper) ExistsDistributionRecord(ctx sdk.Context, airdropName string, re
 	}
 	return false
 }
+
+func (k Keeper) GetDistributionRecordsIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefix)
+}
+
+func (k Keeper) GetRecordsForName(ctx sdk.Context, name string) types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.DistributionName == name {
+			res = append(res, dr)
+		}
+	}
+	return res
+}
+
+func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recepient sdk.AccAddress) types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.Address.Equals(recepient) {
+			res = append(res, dr)
+		}
+	}
+	return res
+}

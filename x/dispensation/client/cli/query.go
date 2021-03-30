@@ -11,7 +11,7 @@ import (
 )
 
 func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
-	// Group clp queries under a subcommand
+	// Group dispensation queries under a subcommand
 	dispensationQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
@@ -19,7 +19,6 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	dispensationQueryCmd.AddCommand(flags.GetCommands(
-	)...)
+	dispensationQueryCmd.AddCommand(flags.GetCommands()...)
 	return dispensationQueryCmd
 }

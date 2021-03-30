@@ -45,10 +45,13 @@ func (k Keeper) AccumulateDrops(ctx sdk.Context, input []bank.Input) error {
 
 // Verify if the distribution is correct
 func (k Keeper) VerifyDistribution(ctx sdk.Context, name string) error {
-	if k.ExistsDistributionList(ctx, name) {
+	if k.ExistsDistribution(ctx, name) {
 		return errors.Wrapf(types.ErrAirdrop, "airdrop with same name already exists : %s ", name)
 	}
-	err := k.SetDistributionList(ctx, types.NewDistributionList(name))
+	// Only support for AIRDROP type right now . In the future might
+	// Take this as input from the the client
+	// Set it from cmd based on the command being used
+	err := k.SetDistribution(ctx, types.NewDistribution(types.Airdrop, name))
 	if err != nil {
 		return errors.Wrapf(types.ErrAirdrop, "unable to set airdrop :  %s ", name)
 
