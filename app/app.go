@@ -138,7 +138,7 @@ var (
 	_ servertypes.Application = (*SifchainApp)(nil)
 )
 
-func NewInitApp(
+func NewSifApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, skipUpgradeHeights map[int64]bool,
 	homePath string, invCheckPeriod uint, encodingConfig simappparams.EncodingConfig,
 	appOpts servertypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp),

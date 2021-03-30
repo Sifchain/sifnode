@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
@@ -29,9 +27,6 @@ the account address or key name. If a key name is given, the address will be loo
 `,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx := client.GetClientContextFromCmd(cmd)
-			depCdc := clientCtx.JSONMarshaler
-			cdc := depCdc.(codec.Marshaler)
 
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
@@ -49,7 +44,7 @@ the account address or key name. If a key name is given, the address will be loo
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 
-			oracleGenState := oracle.GetGenesisStateFromAppState(cdc, appState)
+			oracleGenState := oracle.GetGenesisStateFromAppState(appState)
 
 			for _, item := range oracleGenState.AddressWhitelist {
 				if bytes.Equal(item, addr) {

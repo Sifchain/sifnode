@@ -7,7 +7,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,8 +30,8 @@ func SetGenesisOracleAdminCmd(defaultNodeHome string) *cobra.Command {
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			depCdc := clientCtx.JSONMarshaler
-			cdc := depCdc.(codec.Marshaler)
+			// depCdc := clientCtx.JSONMarshaler //todo uncomment when the module is migrated
+			// cdc := depCdc.(codec.Marshaler)
 
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
@@ -67,7 +66,7 @@ func SetGenesisOracleAdminCmd(defaultNodeHome string) *cobra.Command {
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 
-			oracleGenState := oracle.GetGenesisStateFromAppState(cdc, appState)
+			oracleGenState := oracle.GetGenesisStateFromAppState(appState)
 			oracleGenState.AdminAddress = addr
 
 			oracleGenStateBz, err := json.Marshal(oracleGenState)
