@@ -31,7 +31,7 @@
     "lint-quick": "yarn pretty-quick --pattern 'ui/**/*.{vue,ts,json}'",
     "build": "yarn lint && yarn chain:compile:peggy && yarn core:build && yarn app:build",
     "test": "yarn core:test:all",
-    "prepare": "cd .. && husky install ./ui/.husky"
+    "prepare": "cd .. && husky install ./ui/.husky",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
 
