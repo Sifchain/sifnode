@@ -45,8 +45,18 @@ variable "desired_capacity_2" {
   default     = 1
 }
 
-variable "max_capacity" {
-  description = "Max nodes per cluster"
+variable "max_capacity_0" {
+  description = "Max nodes per cluster for node group main-0"
+  default     = 3
+}
+
+variable "max_capacity_1" {
+  description = "Max nodes per cluster for node group main-1"
+  default     = 3
+}
+
+variable "max_capacity_2" {
+  description = "Max nodes per cluster for node group main-2"
   default     = 3
 }
 

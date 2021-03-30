@@ -8,7 +8,7 @@ terraform {
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = ">= 1.13"
+      version = ">= 2.0"
     }
     helm = {
       source  = "hashicorp/helm"
@@ -110,7 +110,7 @@ module "eks" {
   node_groups = {
     main-0 = {
       desired_capacity  = var.desired_capacity_0
-      max_capacity      = var.max_capacity
+      max_capacity      = var.max_capacity_0
       min_capacity      = var.min_capacity_0
       instance_types    = [var.instance_type]
       subnets           = data.aws_subnet_ids.a.ids
@@ -121,7 +121,7 @@ module "eks" {
     },
     main-1 = {
       desired_capacity  = var.desired_capacity_1
-      max_capacity      = var.max_capacity
+      max_capacity      = var.max_capacity_1
       min_capacity      = var.min_capacity_1
       instance_types    = [var.instance_type]
       subnets           = data.aws_subnet_ids.b.ids
@@ -132,7 +132,7 @@ module "eks" {
     },
     main-2 = {
       desired_capacity  = var.desired_capacity_2
-      max_capacity      = var.max_capacity
+      max_capacity      = var.max_capacity_2
       min_capacity      = var.min_capacity_2
       instance_types    = [var.instance_type]
       subnets           = data.aws_subnet_ids.c.ids
