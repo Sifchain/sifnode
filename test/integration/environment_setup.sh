@@ -19,6 +19,8 @@ export BRIDGE_REGISTRY_ADDRESS=$(cat $SOLIDITY_JSON_PATH/BridgeRegistry.json | j
 export BRIDGE_TOKEN_ADDRESS=$(cat $SOLIDITY_JSON_PATH/BridgeToken.json | jq -r ".networks[\"$ETHEREUM_NETWORK_ID\"].address")
 export BRIDGE_BANK_ADDRESS=$(cat $SOLIDITY_JSON_PATH/BridgeBank.json | jq -r ".networks[\"$ETHEREUM_NETWORK_ID\"].address")
 
+cp $BASEDIR/smart-contracts/build/contracts/SifchainTestToken.json $SOLIDITY_JSON_PATH
+
 echo ========== Sample commands ==========
 
 echo; echo == erowan balance
