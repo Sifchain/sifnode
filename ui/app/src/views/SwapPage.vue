@@ -195,7 +195,7 @@ export default defineComponent({
       minimumReceived: computed(() => {
         if (!minimumReceived.value) return "";
         const { amount, asset } = minimumReceived.value;
-        return format(amount, asset, { mantissa: 18 });
+        return format(amount, asset, { mantissa: 18, trimMantissa: true });
       }),
       toSymbol,
       priceMessage,
@@ -207,6 +207,7 @@ export default defineComponent({
         if (!accountBalance) return;
         fromAmount.value = format(accountBalance.amount, accountBalance.asset, {
           mantissa: 18,
+          trimMantissa: true,
         });
       },
       nextStepAllowed: computed(() => {
