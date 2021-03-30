@@ -6,6 +6,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/errors"
 )
 
+// This package adds set and get operations for DistributionRecord
+// A distribution record is responsible for distributing funds to the recipients
+
 func (k Keeper) SetDistributionRecord(ctx sdk.Context, dr types.DistributionRecord) error {
 	if !dr.Validate() {
 		return errors.Wrapf(types.ErrInvalid, "unable to set record : %s", dr.String())

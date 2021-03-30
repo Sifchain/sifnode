@@ -7,6 +7,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+//CreateAndDistributeDrops creates new drop Records . These records are then used to facilitate distribution
+// Each Recipient and DropName generate a unique Record
+
 func (k Keeper) CreateAndDistributeDrops(ctx sdk.Context, output []bank.Output, name string) error {
 	for _, receiver := range output {
 		err := k.GetSupplyKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, receiver.Address, receiver.Coins)
@@ -29,6 +32,7 @@ func (k Keeper) CreateAndDistributeDrops(ctx sdk.Context, output []bank.Output, 
 	return nil
 }
 
+// Accumulate Drops from the sender accounts
 func (k Keeper) AccumulateDrops(ctx sdk.Context, input []bank.Input) error {
 	for _, fundingInput := range input {
 		err := k.GetSupplyKeeper().SendCoinsFromAccountToModule(ctx, fundingInput.Address, types.ModuleName, fundingInput.Coins)
@@ -39,11 +43,12 @@ func (k Keeper) AccumulateDrops(ctx sdk.Context, input []bank.Input) error {
 	return nil
 }
 
+// Verify if the distribution is correct
 func (k Keeper) VerifyDistribution(ctx sdk.Context, name string) error {
-	if k.ExistsAirdrop(ctx, name) {
+	if k.ExistsDistributionList(ctx, name) {
 		return errors.Wrapf(types.ErrAirdrop, "airdrop with same name already exists : %s ", name)
 	}
-	err := k.SetAirdropRecord(ctx, types.NewAirdropRecord(name))
+	err := k.SetDistributionList(ctx, types.NewDistributionList(name))
 	if err != nil {
 		return errors.Wrapf(types.ErrAirdrop, "unable to set airdrop :  %s ", name)
 

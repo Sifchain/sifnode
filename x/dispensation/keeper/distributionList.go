@@ -6,7 +6,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (k Keeper) SetAirdropRecord(ctx sdk.Context, ar types.DistributionList) error {
+// This package adds set and get operations for distribution lists
+
+func (k Keeper) SetDistributionList(ctx sdk.Context, ar types.DistributionList) error {
 	if !ar.Validate() {
 		return errors.Wrapf(types.ErrInvalid, "Record Details : %s", ar.String())
 	}
@@ -16,7 +18,7 @@ func (k Keeper) SetAirdropRecord(ctx sdk.Context, ar types.DistributionList) err
 	return nil
 }
 
-func (k Keeper) GetAirdropRecord(ctx sdk.Context, name string) (types.DistributionList, error) {
+func (k Keeper) GetDistributionList(ctx sdk.Context, name string) (types.DistributionList, error) {
 	var ar types.DistributionList
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetAirdropRecordKey(name)
@@ -28,7 +30,7 @@ func (k Keeper) GetAirdropRecord(ctx sdk.Context, name string) (types.Distributi
 	return ar, nil
 }
 
-func (k Keeper) ExistsAirdrop(ctx sdk.Context, name string) bool {
+func (k Keeper) ExistsDistributionList(ctx sdk.Context, name string) bool {
 	key := types.GetAirdropRecordKey(name)
 	if k.Exists(ctx, key) {
 		return true

@@ -20,6 +20,7 @@ func NewHandler(k Keeper) sdk.Handler {
 	}
 }
 
+// handleMsgDistribution is the top level function for calling all executors.
 func handleMsgDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribution) (*sdk.Result, error) {
 	// Verify if airdrop already exists
 	err := keeper.VerifyDistribution(ctx, msg.DistributionName)

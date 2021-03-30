@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+//This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
+
+// DistributionRecord is created for every recipient for a distribution
+// TODO add a claim status for the distribution record which can be used to break the Distribution into two different processes . Distribute and Claim
 type DistributionRecord struct {
 	DistributionName string         `json:"airdrop_name"`
 	Address          sdk.AccAddress `json:"address" yaml:"address"`
@@ -40,11 +44,12 @@ func (ar DistributionRecord) Add(ar2 DistributionRecord) DistributionRecord {
 	return ar
 }
 
+// DistributionList is created for every distribution
 type DistributionList struct {
 	DistributionName string `json:"airdrop_name"`
 }
 
-func NewAirdropRecord(name string) DistributionList {
+func NewDistributionList(name string) DistributionList {
 	return DistributionList{DistributionName: name}
 }
 

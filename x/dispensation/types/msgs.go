@@ -10,6 +10,8 @@ var (
 	_ sdk.Msg = &MsgDistribution{}
 )
 
+// Basic message type to create a new distribution
+// TODO modify this struct to keep adding more fields to identify different types of distributions
 type MsgDistribution struct {
 	Signer           sdk.AccAddress `json:"Signer"`
 	DistributionName string         `json:"distribution_name"`
