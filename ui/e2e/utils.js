@@ -30,3 +30,18 @@ export async function extractFile (downloadedFile, extractDestination) {
     }
     await zip.extract(null, extractDestination);
   }
+
+
+export async function getExtensionPage(browserContext, extensionRoute) {
+  return new Promise((resolve, reject) => {
+    browserContext.waitForEvent("page", async (page) => {
+      if (page.url().match(`chrome-extension://[a-z]+/${extensionRoute}`)) {
+        try {
+          resolve(page);
+        } catch (e) {
+          reject(e);
+        }
+      }
+    });
+  });
+}

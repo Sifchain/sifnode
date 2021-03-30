@@ -19,10 +19,10 @@ const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 const keplrConfig = require("../core/src/config.localnet.json");
 
 const { getSifchainBalances } = require("./sifchain.js");
-const { getEthBalance } = require("./ethereum.js")
+const { getEthBalance } = require("./ethereum.js");
 
 const { extractFile } = require("./utils");
-const { MetaMask, connectMmAccount } = require("./metamask.js")
+const { MetaMask, connectMmAccount } = require("./metamask.js");
 
 const DEX_TARGET = "localhost:8080";
 
@@ -30,40 +30,40 @@ const KEPLR_CONFIG = {
   id: "dmkamcknogkgcdfhhbddcghachkejeap",
   ver: "0.8.1_0",
   get path() {
-    return `./extensions/${this.id}/${this.ver}`
+    return `./extensions/${this.id}/${this.ver}`;
   },
   options: {
     address: "sif1m625hcmnkc84cgmef6upzzyfu6mxd4jkpnfwwl",
     name: "juniper",
     mnemonic:
       "clump genre baby drum canvas uncover firm liberty verb moment access draft erupt fog alter gadget elder elephant divide biology choice sentence oppose avoid",
-  }
-}
+  },
+};
 
 const MM_CONFIG = {
   id: "nkbihfbeogaeaoehlefnkodbefgpgknn",
   ver: "9.1.1_0",
   get path() {
-    return `./extensions/${this.id}/${this.ver}`
+    return `./extensions/${this.id}/${this.ver}`;
   },
   network: {
     name: "mm-e2e",
     port: "7545",
-    chainId: "1337"
+    chainId: "1337",
   },
   options: {
     address: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
-    mnemonic: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-    password: "coolguy21"
-  }
-}
+    mnemonic:
+      "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
+    password: "coolguy21",
+  },
+};
 
 let browserContext;
 let dexPage;
 
 describe("connect to page", () => {
   beforeAll(async () => {
-
     // extract extension zips
     await extractExtensionPackages();
     const pathToKeplrExtension = path.join(__dirname, KEPLR_CONFIG.path);
@@ -82,18 +82,17 @@ describe("connect to page", () => {
         `--load-extension=${pathToKeplrExtension},${pathToMmExtension}`,
       ],
     });
-    
+
     // setup metamask
-    const MM = new MetaMask(browserContext, MM_CONFIG)
-    await MM.setup(browserContext)
+    const MM = new MetaMask(browserContext, MM_CONFIG);
+    await MM.setup(browserContext);
 
     // setup keplr account
-    // const keplrPage = await browserContext.newPage();
-    // await keplrPage.goto(
-    //   "chrome-extension://dmkamcknogkgcdfhhbddcghachkejeap/popup.html#/register",
-    // );
-    // await importKeplrAccount(keplrPage, KEPLR_CONFIG.options);
-    
+    const keplrPage = await browserContext.newPage();
+    await keplrPage.goto(
+      "chrome-extension://dmkamcknogkgcdfhhbddcghachkejeap/popup.html#/register",
+    );
+    await importKeplrAccount(keplrPage, KEPLR_CONFIG.options);
 
     dexPage = await browserContext.newPage();
     await dexPage.goto(DEX_TARGET, { waitUntil: "domcontentloaded" });
@@ -103,36 +102,41 @@ describe("connect to page", () => {
     browserContext.close();
   });
 
-  it.skip("connect to keplr, check balance", async () => {
+  it("connect to keplr, check balance", async () => {
     const cEthBalance = await getSifchainBalances(
       keplrConfig.sifApiUrl,
       KEPLR_CONFIG.options.address,
       "ceth",
-    ); //"100.000000"; // Fetch balance
+    ); //"100.000000"; // Fetch balance TODO Amount()
 
     await connectKeplrAccount(dexPage, browserContext);
     await dexPage.waitForTimeout(1000); // this is only necessary bc popup
-    await dexPage.pause();
-    expect(
-      await dexPage.innerText("[data-handle='ceth-row-amount']",
-      ),
-    ).toBe(cEthBalance);
+    expect(await dexPage.innerText("[data-handle='ceth-row-amount']")).toBe(
+      cEthBalance,
+    );
   });
 
   it("connects to metamask, check balance", async () => {
-    const mmEthBalance = await getEthBalance(MM_CONFIG.options.address)
+    const mmEthBalance = await getEthBalance(MM_CONFIG.options.address);
     await dexPage.waitForTimeout(1000); // this is only necessary bc popup
     // connect wallet
-    await connectMmAccount(dexPage, browserContext)
-    // see https://github.com/NodeFactoryIo/dappeteer/blob/master/src/index.ts#L57
-
-  })
-  it("pegs", async () => {})
-
+    await connectMmAccount(dexPage, browserContext);
+    await dexPage.waitForTimeout(1000); // this is only necessary bc popup
+    // click external tokens tab
+    await dexPage.click("#app > div > div.layout > div > div.body > div.tab-header-holder > div > div:nth-child(1)")
+    // expect
+    expect(await dexPage.innerText("[data-handle='eth-row-amount']")).toBe(
+      mmEthBalance,
+    );
+  });
+  it("pegs", async () => {});
 });
 
 async function extractExtensionPackages() {
   await extractFile(`downloads/${KEPLR_CONFIG.id}.zip`, "./extensions");
   await extractFile(`downloads/${MM_CONFIG.id}.zip`, "./extensions");
-  return
-} 
+  return;
+}
+
+
+    // see https://github.com/NodeFactoryIo/dappeteer/blob/master/src/index.ts#L57
