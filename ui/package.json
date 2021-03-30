@@ -34,7 +34,6 @@
     "prepare": "cd .. && husky install ./ui/.husky",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
-
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^3.2.0",
