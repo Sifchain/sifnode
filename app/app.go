@@ -123,12 +123,6 @@ type SifchainApp struct {
 	SlashingKeeper slashingkeeper.Keeper
 	DistrKeeper    distrkeeper.Keeper
 
-	// Peggy keepers
-	// EthBridgeKeeper ethbridge.Keeper
-	// OracleKeeper    oracle.Keeper
-	// clpKeeper       clp.Keeper
-	// faucetKeeper    faucet.Keeper
-
 	mm *module.Manager
 	sm *module.SimulationManager
 }
@@ -211,33 +205,6 @@ func NewSifApp(
 	app.StakingKeeper = *stakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
-
-	// app.OracleKeeper = oracle.NewKeeper(
-	// 	appCodec,
-	// 	keys[oracle.StoreKey],
-	// 	app.StakingKeeper,
-	// 	oracle.DefaultConsensusNeeded,
-	// )
-
-	// app.EthBridgeKeeper = ethbridge.NewKeeper(
-	// 	appCodec,
-	// 	app.BankKeeper,
-	// 	app.OracleKeeper,
-	// 	keys[ethbridge.StoreKey],
-	// )
-
-	// app.clpKeeper = clp.NewKeeper(
-	// 	appCodec,
-	// 	keys[clp.StoreKey],
-	// 	app.BankKeeper,
-	// 	app.subspaces[clp.ModuleName])
-
-	// app.faucetKeeper = faucet.NewKeeper(
-	// 	app.SupplyKeeper,
-	// 	appCodec,
-	// 	keys[faucet.StoreKey],
-	// 	app.BankKeeper,
-	// )
 
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
@@ -363,11 +330,7 @@ func NewSifApp(
 		stakingtypes.ModuleName,
 		slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
-		// oracle.ModuleName,
-		// ethbridge.ModuleName,
-		// clp.ModuleName,
 		govtypes.ModuleName,
-		// faucet.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
