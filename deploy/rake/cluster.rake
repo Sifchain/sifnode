@@ -490,8 +490,8 @@ APP_NAMESPACE=#{args[:app_namespace]}
 APP_NAME=#{args[:app_name]}
 SEARCH_STRING=#{args[:search_string]}
 #ethereum.go:260: Successfully received bridgebank
-pod_name=$(kubectl get pods -n ${APP_NAMESPACE} | grep ${APP_NAME} | cut -d ' ' -f 1 | sed -e 's/ //g')
-logs_check=$(kubectl logs -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep "${SEARCH_STRING}")
+pod_name=$(kubectl get pods --kubeconfig=./kubeconfig -n ${APP_NAMESPACE} | grep ${APP_NAME} | cut -d ' ' -f 1 | sed -e 's/ //g')
+logs_check=$(kubectl logs --kubeconfig=./kubeconfig -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep "${SEARCH_STRING}")
 echo $logs_check
 max_check=50
 check_count=0
@@ -502,8 +502,8 @@ if [ -z "${logs_check}" ]; then
             echo "max count reached"
             break
         fi
-        pod_name=$(kubectl get pods -n ${APP_NAMESPACE} | grep ${APP_NAME} | cut -d ' ' -f 1 | sed -e 's/ //g')
-        logs_check_loop=$(kubectl logs -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep "${SEARCH_STRING}")
+        pod_name=$(kubectl get pods --kubeconfig=./kubeconfig -n ${APP_NAMESPACE} | grep ${APP_NAME} | cut -d ' ' -f 1 | sed -e 's/ //g')
+        logs_check_loop=$(kubectl logs --kubeconfig=./kubeconfig -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep "${SEARCH_STRING}")
         echo $logs_check_loop
         if [ -z "${logs_check_loop}" ]; then
             echo "sleep and wait for logs"
