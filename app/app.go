@@ -317,6 +317,7 @@ func NewInitApp(
 
 		ExportAppState("changePoolFormula-upgrade-post", app, ctx)
 	})
+	app.UpgradeKeeper.SetUpgradeHandler("release-20210324073200", func(ctx sdk.Context, plan upgrade.Plan) {})
 
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
