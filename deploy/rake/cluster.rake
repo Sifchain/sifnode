@@ -489,10 +489,8 @@ set +x
 APP_NAMESPACE=#{args[:app_namespace]}
 APP_NAME=#{args[:app_name]}
 SEARCH_STRING=#{args[:search_string]}
-#ethereum.go:260: Successfully received bridgebank
 pod_name=$(kubectl get pods --kubeconfig=./kubeconfig -n ${APP_NAMESPACE} | grep ${APP_NAME} | cut -d ' ' -f 1 | sed -e 's/ //g')
 logs_check=$(kubectl logs --kubeconfig=./kubeconfig -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep "${SEARCH_STRING}")
-echo $logs_check
 max_check=50
 check_count=0
 
