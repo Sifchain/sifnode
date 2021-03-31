@@ -647,12 +647,12 @@ def sifchain_symbol_to_ethereum_symbol(s: str):
 
 def update_ceth_receiver_account(
         receiver_account: str,
-        operator_account: str,
+        admin_account: str,
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials
 ):
     cmd = build_sifchain_command(
-        f"sifnodecli tx ethbridge update_ceth_receiver_account -y {operator_account} {receiver_account}",
+        f"sifnodecli tx ethbridge update_ceth_receiver_account -y {admin_account} {receiver_account}",
         transfer_request=transfer_request,
         credentials=credentials
     )
@@ -662,18 +662,17 @@ def update_ceth_receiver_account(
 
 def rescue_ceth(
         receiver_account: str,
-        operator_account: str,
+        admin_account: str,
         amount: int,
         transfer_request: EthereumToSifchainTransferRequest,
         credentials: SifchaincliCredentials
 ):
     cmd = build_sifchain_command(
-        f"sifnodecli tx ethbridge rescue_ceth -y {operator_account} {receiver_account} {amount:d}",
+        f"sifnodecli tx ethbridge rescue_ceth -y {admin_account} {receiver_account} {amount:d}",
         transfer_request=transfer_request,
         credentials=credentials
     )
-    result = get_shell_output(cmd)
-    logging.critical(f"rescue_ceth result: {result}")
+    return get_shell_output(cmd)
 
 
 def build_sifchain_command(

@@ -1,5 +1,4 @@
 import logging
-import time
 
 import pytest
 
@@ -11,7 +10,61 @@ from pytest_utilities import generate_test_account
 from test_utilities import SifchaincliCredentials
 
 
-def test_receiver(
+def test_rescue_ceth(
+        basic_transfer_request: EthereumToSifchainTransferRequest,
+        source_ethereum_address: str,
+        rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
+        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
+        sifchain_fees_int,
+        ethbridge_module_address,
+):
+    """
+    does a lock of rowan (using another test) that should result
+    in ceth being sent to a place it can be rescued from
+    """
+    admin_account = test_utilities.get_required_env_var("SIFCHAIN_ADMIN_ACCOUNT")
+    basic_transfer_request.ethereum_address = source_ethereum_address
+    admin_user_credentials = SifchaincliCredentials(
+        from_key="sifnodeadmin"
+    )
+    small_amount = 100
+    test_account_request, test_account_credentials = generate_test_account(
+        basic_transfer_request,
+        rowan_source_integrationtest_env_transfer_request=rowan_source_integrationtest_env_transfer_request,
+        rowan_source_integrationtest_env_credentials=rowan_source_integrationtest_env_credentials,
+        target_ceth_balance=test_utilities.burn_gas_cost + small_amount,
+        target_rowan_balance=sifchain_fees_int
+    )
+    test_account_request.amount = small_amount
+    burn_lock_functions.transfer_sifchain_to_ethereum(test_account_request, test_account_credentials)
+    logging.info(
+        f"test account {test_account_request.sifchain_address} should now have no ceth")
+    logging.info("ethbridge should have the fee that was paid")
+    test_utilities.wait_for_sifchain_addr_balance(
+        ethbridge_module_address,
+        "ceth",
+        test_utilities.burn_gas_cost,
+        test_account_request.sifnodecli_node
+    )
+    logging.info(f"now rescue ceth into {test_account_request.sifchain_address}")
+    test_utilities.rescue_ceth(
+        receiver_account=test_account_request.sifchain_address,
+        admin_account=admin_account,
+        amount=test_utilities.burn_gas_cost,
+        transfer_request=basic_transfer_request,
+        credentials=admin_user_credentials
+    )
+    test_utilities.wait_for_sifchain_addr_balance(
+        test_account_request.sifchain_address,
+        "ceth",
+        test_utilities.burn_gas_cost,
+        test_account_request.sifnodecli_node,
+        max_seconds=10,
+        debug_prefix="wait for rescue ceth"
+    )
+
+
+def test_ceth_receiver_account(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
@@ -21,16 +74,15 @@ def test_receiver(
         bridgetoken_address,
         validator_address,
 ):
-    sweep_account = "sif1l3dftf499u4gvdeuuzdl2pgv4f0xdtnuuwlzp8"
-    admin_user = test_utilities.get_required_env_var("SIFCHAIN_ADMIN_USER")
-    new_addr, new_addr_credentials = integration_env_credentials.create_new_sifaddr_and_credentials()
+    admin_account = test_utilities.get_required_env_var("SIFCHAIN_ADMIN_ACCOUNT")
+    ceth_rescue_account, ceth_rescue_account_credentials = integration_env_credentials.create_new_sifaddr_and_credentials()
     basic_transfer_request.sifchain_address = validator_address
     admin_user_credentials = SifchaincliCredentials(
         from_key="sifnodeadmin"
     )
     test_utilities.update_ceth_receiver_account(
-        receiver_account=new_addr,
-        operator_account=admin_user,
+        receiver_account=ceth_rescue_account,
+        admin_account=admin_account,
         transfer_request=basic_transfer_request,
         credentials=admin_user_credentials
     )
@@ -43,16 +95,9 @@ def test_receiver(
         smart_contracts_dir=smart_contracts_dir,
         bridgetoken_address=bridgetoken_address,
     )
-    test_utilities.rescue_ceth(
-        receiver_account=new_addr,
-        operator_account=admin_user,
-        amount=1,
-        transfer_request=basic_transfer_request,
-        credentials=admin_user_credentials
-    )
-    time.sleep(5)
-    new_addr_balance = test_utilities.get_sifchain_addr_balance(new_addr, basic_transfer_request.sifnodecli_node, "ceth")
-    assert new_addr_balance > 0
+    received_ceth_charges = test_utilities.get_sifchain_addr_balance(ceth_rescue_account,
+                                                                     basic_transfer_request.sifnodecli_node, "ceth")
+    assert received_ceth_charges == test_utilities.burn_gas_cost
 
 
 def test_fee_charged_to_transfer_rowan_to_erowan(
