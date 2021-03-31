@@ -652,7 +652,7 @@ def update_ceth_receiver_account(
         credentials: SifchaincliCredentials
 ):
     cmd = build_sifchain_command(
-        f"sifnodecli tx ethbridge update_ceth_receiver_account {operator_account} {receiver_account}",
+        f"sifnodecli tx ethbridge update_ceth_receiver_account -y {operator_account} {receiver_account}",
         transfer_request=transfer_request,
         credentials=credentials
     )
@@ -668,7 +668,7 @@ def rescue_ceth(
         credentials: SifchaincliCredentials
 ):
     cmd = build_sifchain_command(
-        f"sifnodecli tx ethbridge rescue_ceth {operator_account} {receiver_account} {amount:d}",
+        f"sifnodecli tx ethbridge rescue_ceth -y {operator_account} {receiver_account} {amount:d}",
         transfer_request=transfer_request,
         credentials=credentials
     )
@@ -687,6 +687,7 @@ def build_sifchain_command(
     node_entry = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
     home_entry = f"--home {credentials.sifnodecli_homedir}" if credentials.sifnodecli_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
     return " ".join([
         yes_entry,
         command_contents,
@@ -694,5 +695,6 @@ def build_sifchain_command(
         chain_id_entry,
         node_entry,
         home_entry,
-        from_entry
+        from_entry,
+        sifchain_fees_entry,
     ])
