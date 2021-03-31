@@ -1,5 +1,6 @@
 {
   "name": "e2e",
+  "version": "1.0.0",
   "devDependencies": {
     "@babel/core": "^7.12.3",
     "@babel/plugin-proposal-class-properties": "^7.10.4",

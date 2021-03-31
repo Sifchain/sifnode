@@ -262,7 +262,9 @@ export default function createSifService({
         if (!account) {
           throw "No Address found on chain";
         } // todo handle this better
+
         const supportedTokenSymbols = supportedTokens.map((s) => s.symbol);
+
         return account.balance
           .filter((balance) => supportedTokenSymbols.includes(balance.denom))
           .map(({ amount, denom }) => {

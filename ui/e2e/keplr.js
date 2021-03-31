@@ -13,9 +13,7 @@ export async function importKeplrAccount(page, options) {
 }
 
 export async function connectKeplrAccount(page, browserContext) {
-  const [newPage] = await Promise.all([
-    browserContext.waitForEvent("page"),
-  ]);
+  const [newPage] = await Promise.all([browserContext.waitForEvent("page")]);
   await newPage.waitForLoadState();
   await newPage.click("text=Approve");
   await newPage.waitForLoadState();

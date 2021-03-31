@@ -10,7 +10,7 @@
   1. yarn stack
   2. in second terminal: cd e2e && yarn test
 */
-import "@babel/polyfill";
+require("@babel/polyfill");
 const path = require("path");
 const fs = require("fs");
 const { chromium } = require("playwright");
@@ -24,7 +24,7 @@ const { getEthBalance } = require("./ethereum.js");
 const { extractFile } = require("./utils");
 const { MetaMask, connectMmAccount } = require("./metamask.js");
 
-const DEX_TARGET = "localhost:8080";
+const DEX_TARGET = "localhost:5000";
 
 const KEPLR_CONFIG = {
   id: "dmkamcknogkgcdfhhbddcghachkejeap",
@@ -123,7 +123,9 @@ describe("connect to page", () => {
     await connectMmAccount(dexPage, browserContext);
     await dexPage.waitForTimeout(1000); // this is only necessary bc popup
     // click external tokens tab
-    await dexPage.click("#app > div > div.layout > div > div.body > div.tab-header-holder > div > div:nth-child(1)")
+    await dexPage.click(
+      "#app > div > div.layout > div > div.body > div.tab-header-holder > div > div:nth-child(1)",
+    );
     // expect
     expect(await dexPage.innerText("[data-handle='eth-row-amount']")).toBe(
       mmEthBalance,
@@ -138,5 +140,4 @@ async function extractExtensionPackages() {
   return;
 }
 
-
-    // see https://github.com/NodeFactoryIo/dappeteer/blob/master/src/index.ts#L57
+// see https://github.com/NodeFactoryIo/dappeteer/blob/master/src/index.ts#L57

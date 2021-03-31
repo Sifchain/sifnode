@@ -7,19 +7,19 @@ function loadData(location) {
   return JSON.parse(
     fs.readFileSync(location, {
       encoding: "utf-8",
-    })
+    }),
   );
 }
 
 function saveData(location, data) {
-  const parsed = Buffer.from(JSON.stringify(data, null, 2));
+  const parsed = Buffer.from(JSON.stringify(data, null, 2) + "\n");
   fs.writeFileSync(location, parsed);
 }
 
 function updateERowan(asset) {
   const location = resolve(
     __dirname,
-    "../../../smart-contracts/build/contracts/BridgeToken.json"
+    "../../../smart-contracts/build/contracts/BridgeToken.json",
   );
 
   const {
@@ -34,7 +34,7 @@ function updateERowan(asset) {
 function updateToken(contractName, asset) {
   const location = resolve(
     __dirname,
-    `../../chains/ethereum/build/contracts/${contractName}.json`
+    `../../chains/ethereum/build/contracts/${contractName}.json`,
   );
 
   const {
@@ -49,7 +49,7 @@ function updateToken(contractName, asset) {
 
 const assetsEthereumLocation = resolve(
   __dirname,
-  "../src/assets.ethereum.localnet.json"
+  "../src/assets.ethereum.localnet.json",
 );
 
 const data = loadData(assetsEthereumLocation);
@@ -78,13 +78,13 @@ function updateBridgeBankLocation() {
   // update bridgeBank location
   const configLocalnetLocation = resolve(
     __dirname,
-    "../src/config.localnet.json"
+    "../src/config.localnet.json",
   );
 
   const configData = loadData(configLocalnetLocation);
   const bridgeBankLocation = resolve(
     __dirname,
-    "../../../smart-contracts/build/contracts/BridgeBank.json"
+    "../../../smart-contracts/build/contracts/BridgeBank.json",
   );
 
   const {
