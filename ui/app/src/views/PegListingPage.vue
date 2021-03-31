@@ -16,6 +16,7 @@
               asset.asset.symbol,
             )}`"
             primary
+            :data-handle="'peg-' + asset.asset.symbol"
             >Peg</SifButton
           >
         </AssetList>
@@ -28,6 +29,7 @@
                 asset.asset.symbol,
               )}`"
               primary
+              :data-handle="'unpeg-' + asset.asset.symbol"
               >Unpeg</SifButton
             >
           </template>
