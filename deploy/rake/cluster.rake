@@ -488,20 +488,29 @@ metadata:
 set +x
 APP_NAMESPACE=#{args[:app_namespace]}
 APP_NAME=#{args[:app_name]}
-SEARCH_STRING=#{args[:search_string]}
+echo "get pod name"
 pod_name=$(kubectl get pods --kubeconfig=./kubeconfig -n ${APP_NAMESPACE} | grep ${APP_NAME} | cut -d ' ' -f 1 | sed -e 's/ //g')
-logs_check=$(kubectl logs --kubeconfig=./kubeconfig -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep "${SEARCH_STRING}")
+echo "POD NAME ${pod_name}"
+echo "see if there is log output for the pod"
+logs_check=$(kubectl logs --kubeconfig=./kubeconfig -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep '#{args[:search_string]}')
+
+echo "set the max check loop and current count"
 max_check=50
 check_count=0
 
+echo "check if the logs output was empty"
 if [ -z "${logs_check}" ]; then
     while true; do
         if [ "${max_check}" == "${check_count}" ]; then
             echo "max count reached"
             break
         fi
+        echo "get pod name"
         pod_name=$(kubectl get pods --kubeconfig=./kubeconfig -n ${APP_NAMESPACE} | grep ${APP_NAME} | cut -d ' ' -f 1 | sed -e 's/ //g')
-        logs_check_loop=$(kubectl logs --kubeconfig=./kubeconfig -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep "${SEARCH_STRING}")
+        echo "POD NAME ${pod_name}"
+        echo "see if there is log output for the pod"
+        logs_check_loop=$(kubectl logs --kubeconfig=./kubeconfig -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep '#{args[:search_string]}')
+        echo "see if log check had data meaning search string found"
         if [ -z "${logs_check_loop}" ]; then
             echo "sleep and wait for logs"
             sleep 5
