@@ -157,7 +157,7 @@ rake "validator:keys:public[my-cluster,aws,sifnode]"
 3. Stake:
 
 ```
-rake "validator:stake[<chain_id>,<moniker>,<amount>,<public_key>,<node_rpc_address>]"
+rake "validator:stake[<chain_id>,<moniker>,<amount>,<gas>,<public_key>,<node_rpc_address>]"
 ```
 
 where:
