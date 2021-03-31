@@ -247,7 +247,6 @@ export default defineComponent({
             @fromblur="handleBlur"
             @fromsymbolclicked="handleFromSymbolClicked(requestOpen)"
             :fromSymbolSelectable="connected"
-            :canSwap="nextStepAllowed"
             @arrowclicked="handleArrowClicked"
             v-model:toAmount="toAmount"
             v-model:toSymbol="toSymbol"

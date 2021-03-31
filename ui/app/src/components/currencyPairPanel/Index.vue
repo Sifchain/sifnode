@@ -22,7 +22,7 @@
     />
     <ArrowIconButton
       @click="$emit('arrowclicked')"
-      :enabled="canSwap"
+      :enabled="true"
       v-if="canSwapIcon === 'arrow'"
     />
     <Icon icon="plus" v-if="canSwapIcon === 'plus'" />
@@ -66,7 +66,6 @@ export default defineComponent({
     tokenALabel: { type: String, default: "Input" },
     tokenBLabel: { type: String, default: "Input" },
     nextStepMessage: String,
-    canSwap: { type: Boolean, default: false },
     fromDisabled: { type: Boolean, default: false },
     toDisabled: { type: Boolean, default: false },
     canSwapIcon: { type: String, default: "arrow" },
