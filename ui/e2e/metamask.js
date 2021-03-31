@@ -1,11 +1,11 @@
 import { getExtensionPage } from "./utils.js";
-class MetaMask {
+export class MetaMask {
   constructor(page, config) {
     this.page = page;
     this.config = config;
   }
   async setup(browserContext) {
-    const mmPage = await getExtensionPage(browserContext, "home.html");
+    const mmPage = await getExtensionPage(browserContext, this.config.id);
     await confirmWelcomeScreen(mmPage);
     await importAccount(mmPage, this.config);
     await addNetwork(mmPage, this.config);
@@ -50,12 +50,12 @@ async function addNetwork(mmPage, config) {
   );
 }
 
-async function connectMmAccount(page, browserContext) {
+export async function connectMmAccount(page, browserContext, extensionId) {
   await page.click("[data-handle='button-connected']");
   await page.click("button:has-text('Connect Metamask')");
   const mmConnectPage = await getExtensionPage(
     browserContext,
-    "notification.html",
+    extensionId,
   );
   await mmConnectPage.click(
     "#app-content > div > div.main-container-wrapper > div > div.permissions-connect-choose-account > div.permissions-connect-choose-account__footer-container > div.permissions-connect-choose-account__bottom-buttons > button.button.btn-primary",
@@ -67,4 +67,20 @@ async function connectMmAccount(page, browserContext) {
   return;
 }
 
-module.exports = { MetaMask, connectMmAccount };
+export async function peg(page, browserContext, amount, extensionId) {
+  await page.click("[data-handle='peg-eth']");
+  await page.click('input[type="number"]');
+  await page.fill('input[type="number"]', amount);
+  await page.click('button:has-text("Peg")');
+  await page.click('button:has-text("Confirm Peg")');
+  // extension popup
+  const mmConnectPage = await getExtensionPage(
+    browserContext,
+    extensionId
+  );
+  await mmConnectPage.click("#app-content > div > div.main-container-wrapper > div > div.confirm-page-container-content > div.page-container__footer > footer > button.button.btn-primary.page-container__footer-button")
+  // haven't yet figured out how to capture close popup event
+  await page.waitForTimeout(1000)
+  await page.click("text=×")
+  return;
+}
