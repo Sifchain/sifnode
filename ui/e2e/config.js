@@ -1,4 +1,4 @@
-export const DEX_TARGET = "localhost:8080";
+export const DEX_TARGET = "localhost:5000";
 
 export const KEPLR_CONFIG = {
   id: "dmkamcknogkgcdfhhbddcghachkejeap",
