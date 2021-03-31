@@ -165,6 +165,15 @@ contract("CosmosBridge", function (accounts) {
       await this.bridgeBank.updateTokenLockBurnLimit(this.token.address, this.amount, {
         from: operator
       }).should.be.fulfilled;
+
+      await this.token.mint(operator, this.amount);
+      await this.token.approve(this.bridgeBank.address, this.amount);
+      await this.bridgeBank.lock(
+        this.cosmosRecipient,
+        this.token.address,
+        this.amount,
+        { from: operator}
+      );
     });
 
     it("should allow for the creation of new burn prophecy claims", async function () {
@@ -208,20 +217,20 @@ contract("CosmosBridge", function (accounts) {
       ).should.be.fulfilled;
     });
 
-    it("should not allow for the creation of a new burn prophecy claim over current amount locked", async function () {
+    it("should not allow for the creation of a new burn prophecy claim if there is no matching token", async function () {
       await expectRevert(
-          this.cosmosBridge.newProphecyClaim(
-              CLAIM_TYPE_BURN,
-              this.cosmosSender,
-              ++this.cosmosSenderSequence,
-              this.ethereumReceiver,
-              this.symbol,
-              1,
-              {
-                from: userOne
-              }
-          ),
-          "Not enough locked assets to complete the proposed prophecy"
+        this.cosmosBridge.newProphecyClaim(
+          CLAIM_TYPE_BURN,
+          this.cosmosSender,
+          ++this.cosmosSenderSequence,
+          this.ethereumReceiver,
+          this.symbol,
+          1,
+          {
+            from: userOne
+          }
+        ),
+        "Invalid token address"
       );
     });
 
@@ -290,7 +299,7 @@ contract("CosmosBridge", function (accounts) {
       Number(event.args._claimType).should.be.equal(CLAIM_TYPE_LOCK);
 
       event.args._ethereumReceiver.should.be.equal(this.ethereumReceiver);
-      event.args._symbol.should.be.equal(defaultTokenPrefix + this.symbol);
+      event.args._symbol.toLowerCase().should.be.equal((defaultTokenPrefix + this.symbol).toLowerCase());
       Number(event.args._amount).should.be.equal(this.amount);
     });
 

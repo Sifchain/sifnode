@@ -283,10 +283,10 @@ contract BridgeBank is BankStorage,
      */
     function unlock(
         address payable _recipient,
-        address tokenAddress,
+        string memory _symbol,
         uint256 _amount
-    ) external onlyCosmosBridge whenNotPaused {
-        // address tokenAddress = getExternalAddressByLowerCaseSymbol(_symbol);
+    ) public onlyCosmosBridge whenNotPaused {
+        address tokenAddress = getExternalAddressByLowerCaseSymbol(_symbol);
 
         unlockFunds(_recipient, tokenAddress, _amount);
     }
@@ -302,10 +302,10 @@ contract BridgeBank is BankStorage,
      */
     function mintBridgeTokens(
         address payable _intendedRecipient,
-        address _bridgeTokenAddress,
+        string memory _symbol,
         uint256 _amount
-    ) external onlyCosmosBridge whenNotPaused {
-        // address _bridgeTokenAddress = getBridgeTokenAddressByLowerCaseSymbol(_symbol);
+    ) public onlyCosmosBridge whenNotPaused {
+        address _bridgeTokenAddress = getBridgeTokenAddressByLowerCaseSymbol(_symbol);
         return
             mintNewBridgeTokens(
                 _intendedRecipient,

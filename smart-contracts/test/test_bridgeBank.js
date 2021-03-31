@@ -479,7 +479,7 @@ contract("BridgeBank", function (accounts) {
       const postLockedTokenBalance = await this.bridgeBank.lockedFunds(
         this.token.address
       );
-      Number(postLockedTokenBalance).should.be.bignumber.equal(this.amount);
+      Number(postLockedTokenBalance).should.be.bignumber.equal(0);
     });
   });
 
