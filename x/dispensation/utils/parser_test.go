@@ -39,7 +39,7 @@ func createInput(t *testing.T, filename string) {
 	inputList := []bank.Input{bank.NewInput(in, coin), bank.NewInput(out, coin)}
 	tempInput := TempInput{In: inputList}
 	file, _ := json.MarshalIndent(tempInput, "", " ")
-	_ = ioutil.WriteFile(filename, file, 0644)
+	_ = ioutil.WriteFile(filename, file, 0600)
 }
 
 func createOutput(t *testing.T, filename string) {
@@ -51,7 +51,7 @@ func createOutput(t *testing.T, filename string) {
 	inputList := []bank.Output{bank.NewOutput(in, coin), bank.NewOutput(out, coin)}
 	tempInput := TempOutput{Out: inputList}
 	file, _ := json.MarshalIndent(tempInput, "", " ")
-	_ = ioutil.WriteFile(filename, file, 0644)
+	_ = ioutil.WriteFile(filename, file, 0600)
 }
 
 func removeFile(t *testing.T, filename string) {

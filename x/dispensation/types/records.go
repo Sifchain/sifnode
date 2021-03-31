@@ -40,9 +40,9 @@ func (dr DistributionRecord) String() string {
 	Coins: %s`, dr.DistributionName, dr.RecipientAddress.String(), dr.Coins.String()))
 }
 
-func (ar DistributionRecord) Add(ar2 DistributionRecord) DistributionRecord {
-	ar.Coins = ar.Coins.Add(ar2.Coins...)
-	return ar
+func (dr DistributionRecord) Add(dr2 DistributionRecord) DistributionRecord {
+	dr.Coins = dr.Coins.Add(dr2.Coins...)
+	return dr
 }
 
 type DistributionType int64

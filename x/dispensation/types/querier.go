@@ -5,7 +5,7 @@ import sdk "github.com/cosmos/cosmos-sdk/types"
 const (
 	QueryAllDistributions   = "distributions"
 	QueryRecordsByDistrName = "records_by_name"
-	QueryRecordsByRecipient = "records_by_recepient"
+	QueryRecordsByRecipient = "records_by_recipient"
 )
 
 type QueryRecordsByDistributionName struct {
