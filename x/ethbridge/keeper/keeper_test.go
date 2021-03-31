@@ -239,7 +239,7 @@ func TestProcessLock(t *testing.T) {
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount))
 	err := keeper.ProcessLock(ctx, cosmosReceivers[0], coins)
-	require.NoError(t, err)
+	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
 	//process successful claim to get stake
@@ -262,5 +262,4 @@ func TestProcessLock(t *testing.T) {
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), string(""))
-
 }

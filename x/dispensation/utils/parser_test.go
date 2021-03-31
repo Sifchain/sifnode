@@ -58,21 +58,24 @@ func removeFile(t *testing.T, filename string) {
 	err := os.Remove(filename)
 	assert.NoError(t, err)
 }
-func TestParseInput(t *testing.T) {
+func init() {
 	SetConfig()
+}
+func TestParseInput(t *testing.T) {
+	//SetConfig()
 	filename := "input.json"
 	createInput(t, filename)
-	//defer removeFile(t,filename)
+	defer removeFile(t, filename)
 	inputs, err := ParseInput(filename)
 	assert.NoError(t, err)
 	assert.Equal(t, len(inputs), 2)
 }
 
 func TestParseOutput(t *testing.T) {
-	SetConfig()
+	//SetConfig()
 	filename := "output.json"
 	createOutput(t, filename)
-	//defer removeFile(t,filename)
+	defer removeFile(t, filename)
 	outputs, err := ParseOutput(filename)
 	assert.NoError(t, err)
 	assert.Equal(t, len(outputs), 2)
