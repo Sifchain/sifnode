@@ -32,10 +32,10 @@ export async function extractFile (downloadedFile, extractDestination) {
   }
 
 
-export async function getExtensionPage(browserContext, extensionRoute) {
+export async function getExtensionPage(browserContext, extensionId) {
   return new Promise((resolve, reject) => {
     browserContext.waitForEvent("page", async (page) => {
-      if (page.url().match(`chrome-extension://[a-z]+/${extensionRoute}`)) {
+      if (page.url().match(`chrome-extension://${extensionId}`)) {
         try {
           resolve(page);
         } catch (e) {
