@@ -328,7 +328,7 @@ echo -e ${vault_init_output} > vault_output
 
 export VAULT_TOKEN=$(echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2)
 
-aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.backup --region us-west-2
+aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.backup.$(date) --region us-west-2
 
 kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
 
@@ -474,6 +474,50 @@ metadata:
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write auth/kubernetes/role/#{args[:app_name]} bound_service_account_names=#{args[:app_name]} bound_service_account_namespaces=#{args[:app_namespace]} policies=#{args[:app_name]} ttl=1h
 
         rm -rf service_account.yaml
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+  desc "Check ebrelayer logs for service running serach string basically use logs to ensure events are processed."
+  namespace :ebrelayer do
+    desc "Check ebrelayer logs for service running serach string basically use logs to ensure events are processed."
+    task :check_deployment, [:app_name, :app_namespace, :search_string] do |t, args|
+      cluster_automation = %Q{
+#!/usr/bin/env bash
+set +x
+APP_NAMESPACE=#{args[:app_namespace]}
+APP_NAME=#{args[:app_name]}
+SEARCH_STRING=#{args[:search_string]}
+#ethereum.go:260: Successfully received bridgebank
+pod_name=$(kubectl get pods -n ${APP_NAMESPACE} | grep ${APP_NAME} | cut -d ' ' -f 1 | sed -e 's/ //g')
+logs_check=$(kubectl logs -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep "${SEARCH_STRING}")
+echo $logs_check
+max_check=50
+check_count=0
+
+if [ -z "${logs_check}" ]; then
+    while true; do
+        if [ "${max_check}" == "${check_count}" ]; then
+            echo "max count reached"
+            break
+        fi
+        pod_name=$(kubectl get pods -n ${APP_NAMESPACE} | grep ${APP_NAME} | cut -d ' ' -f 1 | sed -e 's/ //g')
+        logs_check_loop=$(kubectl logs -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep "${SEARCH_STRING}")
+        echo $logs_check_loop
+        if [ -z "${logs_check_loop}" ]; then
+            echo "sleep and wait for logs"
+            sleep 5
+        else
+            echo "service successfully started."
+            break
+        fi
+        check_count=$((check_count+1))
+        echo "${check_count} of ${max_check}"
+    done
+else
+    echo "service successfully started."
+fi
       }
       system(cluster_automation) or exit 1
     end

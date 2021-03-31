@@ -149,6 +149,14 @@ jobs:
           echo "This deploys a helm application configured to utilize vault secrets."
           rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
 
+      - name: Validate ebrelayer is running by searching logs.
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will check to ensure ebrelayer is running by searching the logs for specific string."
+          rake "cluster:ebrelayer:check_deployment[${app_name},${app_namespace}, Successfully received bridgebank ]"
 
       - name: Clean Temp Files and Secrets
         shell: bash
@@ -305,6 +313,17 @@ jobs:
           export PATH=$(pwd):${PATH}
           echo "This deploys a helm application configured to utilize vault secrets."
           rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+
+
+      - name: Validate ebrelayer is running by searching logs.
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will check to ensure ebrelayer is running by searching the logs for specific string."
+          rake "cluster:ebrelayer:check_deployment[${app_name},${app_namespace}, Successfully received bridgebank ]"
 
 
       - name: Clean Temp Files and Secrets
@@ -464,6 +483,16 @@ jobs:
           rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
 
 
+
+      - name: Validate ebrelayer is running by searching logs.
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will check to ensure ebrelayer is running by searching the logs for specific string."
+          rake "cluster:ebrelayer:check_deployment[${app_name},${app_namespace}, Successfully received bridgebank ]"
+
       - name: Clean Temp Files and Secrets
         shell: bash
         if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
@@ -622,6 +651,16 @@ jobs:
           echo "This deploys a helm application configured to utilize vault secrets."
           rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
 
+
+
+      - name: Validate ebrelayer is running by searching logs.
+        shell: bash
+        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will check to ensure ebrelayer is running by searching the logs for specific string."
+          rake "cluster:ebrelayer:check_deployment[${app_name},${app_namespace}, Successfully received bridgebank ]"
 
       - name: Clean Temp Files and Secrets
         shell: bash
