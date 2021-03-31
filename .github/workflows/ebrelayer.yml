@@ -490,7 +490,7 @@ jobs:
         run: |
           set +x
           export PATH=$(pwd):${PATH}
-          echo "This will check to ensure ebrelayer is running by searching the logs for specific string."
+          echo "This will check to ensure ebrelayer is running by searching the logs for specific string.."
           rake "cluster:ebrelayer:check_deployment[${app_name},${app_namespace}, Successfully received bridgebank ]"
 
       - name: Clean Temp Files and Secrets
