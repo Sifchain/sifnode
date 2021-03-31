@@ -21,7 +21,6 @@ contract CosmosBank is CosmosBankStorage, ToLower {
 
     event LogBridgeTokenMint(
         address _token,
-        string _symbol,
         uint256 _amount,
         address _beneficiary
     );
@@ -107,14 +106,8 @@ contract CosmosBank is CosmosBankStorage, ToLower {
     function mintNewBridgeTokens(
         address payable _intendedRecipient,
         address _bridgeTokenAddress,
-        string memory _symbol,
         uint256 _amount
     ) internal {
-        require(
-            controlledBridgeTokens[_symbol] == _bridgeTokenAddress,
-            "Token must be a controlled bridge token"
-        );
-
         // Mint bridge tokens
         require(
             BridgeToken(_bridgeTokenAddress).mint(_intendedRecipient, _amount),
@@ -123,7 +116,6 @@ contract CosmosBank is CosmosBankStorage, ToLower {
 
         emit LogBridgeTokenMint(
             _bridgeTokenAddress,
-            _symbol,
             _amount,
             _intendedRecipient
         );

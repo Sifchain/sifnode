@@ -76,10 +76,10 @@ contract Oracle is OracleStorage, Valset {
         );
 
         hasMadeClaim[_prophecyID][validatorAddress] = true;
-        // oracleClaimValidators[_prophecyID].push(validatorAddress);
         oracleClaimValidators[_prophecyID] = oracleClaimValidators[_prophecyID].add(
-            this.getValidatorPower(validatorAddress)
+            getValidatorPower(validatorAddress)
         );
+
         emit LogNewOracleClaim(
             _prophecyID,
             validatorAddress
@@ -102,17 +102,15 @@ contract Oracle is OracleStorage, Valset {
         view
         returns (bool, uint256, uint256)
     {
-        uint256 signedPower = 0;
+        uint256 signedPower = oracleClaimValidators[_prophecyID];
         uint256 totalPower = totalPower;
-
-        signedPower = oracleClaimValidators[_prophecyID];
 
         // Prophecy must reach total signed power % threshold in order to pass consensus
         uint256 prophecyPowerThreshold = totalPower.mul(consensusThreshold);
+
         // consensusThreshold is a decimal multiplied by 100, so signedPower must also be multiplied by 100
         uint256 prophecyPowerCurrent = signedPower.mul(100);
-        bool hasReachedThreshold = prophecyPowerCurrent >=
-            prophecyPowerThreshold;
+        bool hasReachedThreshold = prophecyPowerCurrent >= prophecyPowerThreshold;
 
         return (
             hasReachedThreshold,

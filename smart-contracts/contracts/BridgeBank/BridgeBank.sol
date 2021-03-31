@@ -210,30 +210,6 @@ contract BridgeBank is BankStorage,
     }
 
     /*
-     * @dev: Mints new BankTokens
-     *
-     * @param _cosmosSender: The sender's Cosmos address in bytes.
-     * @param _ethereumRecipient: The intended recipient's Ethereum address.
-     * @param _cosmosTokenAddress: The currency type
-     * @param _symbol: comsos token symbol
-     * @param _amount: number of comsos tokens to be minted
-     */
-    function mintBridgeTokens(
-        address payable _intendedRecipient,
-        address _bridgeTokenAddress,
-        string memory _symbol,
-        uint256 _amount
-    ) public onlyCosmosBridge whenNotPaused {
-        return
-            mintNewBridgeTokens(
-                _intendedRecipient,
-                _bridgeTokenAddress,
-                _symbol,
-                _amount
-            );
-    }
-
-    /*
      * @dev: Burns BridgeTokens representing native Cosmos assets.
      *
      * @param _recipient: bytes representation of destination address.
@@ -241,10 +217,10 @@ contract BridgeBank is BankStorage,
      * @param _amount: value of deposit
      */
     function burn(
-        bytes memory _recipient,
+        bytes calldata _recipient,
         address _token,
         uint256 _amount
-    ) public validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) whenNotPaused {
+    ) external validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) whenNotPaused {
         string memory symbol = BridgeToken(_token).symbol();
 
         if (_amount > maxTokenAmount[symbol]) {
@@ -263,10 +239,10 @@ contract BridgeBank is BankStorage,
      * @param _amount: value of deposit
      */
     function lock(
-        bytes memory _recipient,
+        bytes calldata _recipient,
         address _token,
         uint256 _amount
-    ) public payable onlyEthTokenWhiteList(_token) validSifAddress(_recipient) whenNotPaused {
+    ) external payable onlyEthTokenWhiteList(_token) validSifAddress(_recipient) whenNotPaused {
         string memory symbol;
 
         // Ethereum deposit
@@ -307,29 +283,54 @@ contract BridgeBank is BankStorage,
      */
     function unlock(
         address payable _recipient,
-        string memory _symbol,
+        address tokenAddress,
         uint256 _amount
-    ) public onlyCosmosBridge whenNotPaused {
-        // Confirm that the bank has sufficient locked balances of this token type
-        require(
-            getLockedFunds(_symbol) >= _amount,
-            "!Bank funds"
-        );
+    ) external onlyCosmosBridge whenNotPaused {
+        // address tokenAddress = getExternalAddressByLowerCaseSymbol(_symbol);
 
-        // Confirm that the bank holds sufficient balances to complete the unlock
-        address tokenAddress = lockedTokenList[_symbol];
-        if (tokenAddress == address(0)) {
-            require(
-                ((address(this)).balance) >= _amount,
-                "Insufficient ethereum balance for delivery."
+        unlockFunds(_recipient, tokenAddress, _amount);
+    }
+
+    /*
+     * @dev: Mints new BankTokens
+     *
+     * @param _cosmosSender: The sender's Cosmos address in bytes.
+     * @param _ethereumRecipient: The intended recipient's Ethereum address.
+     * @param _cosmosTokenAddress: The currency type
+     * @param _symbol: comsos token symbol
+     * @param _amount: number of comsos tokens to be minted
+     */
+    function mintBridgeTokens(
+        address payable _intendedRecipient,
+        address _bridgeTokenAddress,
+        uint256 _amount
+    ) external onlyCosmosBridge whenNotPaused {
+        // address _bridgeTokenAddress = getBridgeTokenAddressByLowerCaseSymbol(_symbol);
+        return
+            mintNewBridgeTokens(
+                _intendedRecipient,
+                _bridgeTokenAddress,
+                _amount
             );
-        } else {
-            require(
-                BridgeToken(tokenAddress).balanceOf(address(this)) >= _amount,
-                "Insufficient ERC20 token balance for delivery."
-            );
-        }
-        unlockFunds(_recipient, tokenAddress, _symbol, _amount);
+    }
+
+
+    function getExternalAddressByLowerCaseSymbol(string memory symbol)
+        public
+        view
+        returns (address)
+    {
+        symbol = safeLowerToUpperTokens(symbol);
+        return lockedTokenList[symbol];
+    }
+    
+    function getBridgeTokenAddressByLowerCaseSymbol(string memory symbol)
+        public
+        view
+        returns (address)
+    {
+        symbol = safeLowerToUpperTokens(symbol);
+        return controlledBridgeTokens[symbol];
     }
 
     /*

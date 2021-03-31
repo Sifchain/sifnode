@@ -36,7 +36,6 @@ contract EthereumBank is EthereumBankStorage {
     event LogUnlock(
         address _to,
         address _token,
-        string _symbol,
         uint256 _value
     );
 
@@ -51,19 +50,6 @@ contract EthereumBank is EthereumBankStorage {
         returns (address)
     {
         return lockedTokenList[_symbol];
-    }
-
-    /*
-     * @dev: Gets the amount of locked tokens by symbol.
-     *
-     * @param _symbol: The asset's symbol.
-     */
-    function getLockedFunds(string memory _symbol)
-        public
-        view
-        returns (uint256)
-    {
-        return lockedFunds[lockedTokenList[_symbol]];
     }
 
     /*
@@ -104,7 +90,6 @@ contract EthereumBank is EthereumBankStorage {
 
         // Increment locked funds by the amount of tokens to be locked
         lockedTokenList[_symbol] = _token;
-        lockedFunds[_token] = lockedFunds[_token].add(_amount);
 
         emit LogLock(_sender, _recipient, _token, _symbol, _amount, lockBurnNonce);
     }
@@ -121,12 +106,8 @@ contract EthereumBank is EthereumBankStorage {
     function unlockFunds(
         address payable _recipient,
         address _token,
-        string memory _symbol,
         uint256 _amount
     ) internal {
-        // Decrement locked funds mapping by the amount of tokens to be unlocked
-        lockedFunds[_token] = lockedFunds[_token].sub(_amount);
-
         // Transfer funds to intended recipient
         if (_token == address(0)) {
             (bool success,) = _recipient.call.value(_amount)("");
@@ -136,6 +117,6 @@ contract EthereumBank is EthereumBankStorage {
             tokenToTransfer.safeTransfer(_recipient, _amount);
         }
 
-        emit LogUnlock(_recipient, _token, _symbol, _amount);
+        emit LogUnlock(_recipient, _token, _amount);
     }
 }

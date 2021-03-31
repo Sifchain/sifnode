@@ -9,7 +9,7 @@ import "./CosmosBridgeStorage.sol";
 
 contract CosmosBridge is CosmosBridgeStorage, Oracle {
     using SafeMath for uint256;
-    
+
     bool private _initialized;
     uint256[100] private ___gap;
 
@@ -125,19 +125,16 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         if (oracleClaimValidators[_prophecyID] == 0) {
             string memory symbol;
             if (_claimType == ClaimType.Burn) {
-                symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
-                require(
-                    BridgeBank(bridgeBank).getLockedFunds(symbol) >= _amount,
-                    "Not enough locked assets to complete the proposed prophecy"
-                );
-                address tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(symbol);
-                if (tokenAddress == address(0) && uint256(keccak256(abi.encodePacked(symbol))) != uint256(keccak256("eth"))) {
-                    revert("Invalid token address");
+                address tokenAddress = BridgeBank(bridgeBank).getExternalAddressByLowerCaseSymbol(_symbol);
+                if (tokenAddress == address(0)) {
+                    require(
+                        uint256(keccak256(abi.encodePacked(_symbol))) == uint256(keccak256("eth")),
+                        "Invalid token address"
+                    );
                 }
             } else if (_claimType == ClaimType.Lock) {
                 symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol); // Add 'e' symbol prefix
-                symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(symbol);
-                address bridgeTokenAddress = BridgeBank(bridgeBank).getBridgeToken(symbol);
+                address bridgeTokenAddress = BridgeBank(bridgeBank).getBridgeTokenAddressByLowerCaseSymbol(symbol);
                 if (bridgeTokenAddress == address(0)) {
                     // First lock of this asset, deploy new contract and get new symbol/token address
                     BridgeBank(bridgeBank).createNewBridgeToken(symbol);
@@ -159,22 +156,28 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
 
         if (claimComplete) {
             address tokenAddress;
+
             if (_claimType == ClaimType.Lock) {
                 _symbol = concat(COSMOS_NATIVE_ASSET_PREFIX, _symbol);
-                _symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
-                tokenAddress = BridgeBank(bridgeBank).getBridgeToken(_symbol);
+                tokenAddress = BridgeBank(bridgeBank).getBridgeTokenAddressByLowerCaseSymbol(_symbol);
+
+                BridgeBank(bridgeBank).mintBridgeTokens(
+                    _ethereumReceiver,
+                    tokenAddress,
+                    // _symbol,
+                    _amount
+                );
             } else {
-                _symbol = BridgeBank(bridgeBank).safeLowerToUpperTokens(_symbol);
-                tokenAddress = BridgeBank(bridgeBank).getLockedTokenAddress(_symbol);
+                tokenAddress = BridgeBank(bridgeBank).getExternalAddressByLowerCaseSymbol(_symbol);
+                BridgeBank(bridgeBank).unlock(
+                    _ethereumReceiver,
+                    tokenAddress,
+                    // _symbol,
+                    _amount
+                );
             }
-            completeProphecyClaim(
-                _prophecyID,
-                tokenAddress,
-                _claimType,
-                _ethereumReceiver,
-                _symbol,
-                _amount
-            );
+
+            emit LogProphecyCompleted(_prophecyID, _claimType);
         }
     }
 
@@ -184,57 +187,57 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      *       Burn claims unlock tokens stored by BridgeBank.
      *       Lock claims mint BridgeTokens on BridgeBank's token whitelist.
      */
-    function completeProphecyClaim(
-        uint256 _prophecyID,
-        address tokenAddress,
-        ClaimType claimType,
-        address payable ethereumReceiver,
-        string memory symbol,
-        uint256 amount
-    ) internal {
+    // function completeProphecyClaim(
+    //     uint256 _prophecyID,
+    //     address tokenAddress,
+    //     ClaimType claimType,
+    //     address payable ethereumReceiver,
+    //     string memory symbol,
+    //     uint256 amount
+    // ) internal {
 
-        if (claimType == ClaimType.Burn) {
-            unlockTokens(ethereumReceiver, symbol, amount);
-        } else {
-            issueBridgeTokens(ethereumReceiver, tokenAddress, symbol, amount);
-        }
+    //     if (claimType == ClaimType.Burn) {
+    //         unlockTokens(ethereumReceiver, symbol, amount);
+    //     } else {
+    //         issueBridgeTokens(ethereumReceiver, tokenAddress, symbol, amount);
+    //     }
 
-        emit LogProphecyCompleted(_prophecyID, claimType);
-    }
+    //     emit LogProphecyCompleted(_prophecyID, claimType);
+    // }
 
     /*
      * @dev: issueBridgeTokens
      *       Issues a request for the BridgeBank to mint new BridgeTokens
      */
-    function issueBridgeTokens(
-        address payable ethereumReceiver,
-        address tokenAddress,
-        string memory symbol,
-        uint256 amount
-    ) internal {
-        BridgeBank(bridgeBank).mintBridgeTokens(
-            ethereumReceiver,
-            tokenAddress,
-            symbol,
-            amount
-        );
-    }
+    // function issueBridgeTokens(
+    //     address payable ethereumReceiver,
+    //     address tokenAddress,
+    //     string memory symbol,
+    //     uint256 amount
+    // ) internal {
+    //     BridgeBank(bridgeBank).mintBridgeTokens(
+    //         ethereumReceiver,
+    //         tokenAddress,
+    //         symbol,
+    //         amount
+    //     );
+    // }
 
     /*
      * @dev: unlockTokens
      *       Issues a request for the BridgeBank to unlock funds held on contract
      */
-    function unlockTokens(
-        address payable ethereumReceiver,
-        string memory symbol,
-        uint256 amount
-    ) internal {
-        BridgeBank(bridgeBank).unlock(
-            ethereumReceiver,
-            symbol,
-            amount
-        );
-    }
+    // function unlockTokens(
+    //     address payable ethereumReceiver,
+    //     string memory symbol,
+    //     uint256 amount
+    // ) internal {
+    //     // BridgeBank(bridgeBank).unlock(
+    //     //     ethereumReceiver,
+    //     //     symbol,
+    //     //     amount
+    //     // );
+    // }
 
     /*
      * @dev: Performs low gas-comsuption string concatenation
