@@ -41,7 +41,7 @@ func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 	// The cmd is called airdrop now , but can be generalized to create any distribution list.
 	// Note ,the command only creates a airdrop for now .
 	cmd := &cobra.Command{
-		Use:   "create [multiSigKeyName] [Name] [Input JSON File Path] [Output JSON File Path]",
+		Use:   "create [MultiSigKeyName] [DistributionName] [Input JSON File Path] [Output JSON File Path]",
 		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
