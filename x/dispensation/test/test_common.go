@@ -55,7 +55,7 @@ func GenerateOutputList(rowanamount string) []bank.Output {
 }
 
 func GenerateAddressList(addressList []string) []sdk.AccAddress {
-	var acclist [len(addressList)]sdk.AccAddress
+	acclist := []sdk.AccAddress{}
 	for _, key := range addressList {
 		var buffer bytes.Buffer
 		buffer.WriteString(key)

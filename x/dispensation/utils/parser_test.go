@@ -62,7 +62,6 @@ func init() {
 	SetConfig()
 }
 func TestParseInput(t *testing.T) {
-	//SetConfig()
 	filename := "input.json"
 	createInput(t, filename)
 	defer removeFile(t, filename)
@@ -72,7 +71,6 @@ func TestParseInput(t *testing.T) {
 }
 
 func TestParseOutput(t *testing.T) {
-	//SetConfig()
 	filename := "output.json"
 	createOutput(t, filename)
 	defer removeFile(t, filename)
