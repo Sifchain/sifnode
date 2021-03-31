@@ -328,7 +328,7 @@ echo -e ${vault_init_output} > vault_output
 
 export VAULT_TOKEN=$(echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2)
 
-aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.backup.$(date) --region us-west-2
+aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2
 
 kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
 
