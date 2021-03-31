@@ -112,11 +112,11 @@ describe("connect to page", () => {
 
     await connectKeplrAccount(dexPage, browserContext);
     await dexPage.waitForTimeout(2000); // this is only necessary bc popup
-    expect(await dexPage.innerText("[data-handle='ceth-row-amount']")).toBe(
-      cEthBalance,
-    );
+    expect(
+      (await dexPage.innerText("[data-handle='ceth-row-amount']")).trim(),
+    ).toBe(Number(cEthBalance).toFixed(6));
   });
-  const domExternalTokenTab = "text=External Tokens"
+  const domExternalTokenTab = "text=External Tokens";
 
   it("connects to metamask, check balance", async () => {
     const mmEthBalance = await getEthBalance(MM_CONFIG.options.address);
@@ -129,26 +129,24 @@ describe("connect to page", () => {
     );
     // expect
     expect(await dexPage.innerText("[data-handle='eth-row-amount']")).toBe(
-      mmEthBalance,
+      Number(mmEthBalance).toFixed(6),
     );
   });
 
-  it("pegs", async () => {
+  it.skip("pegs", async () => {
     // assumes wallets connected
-    const pegAmount = "10"
-    await peg(dexPage, browserContext, pegAmount)
+    const pegAmount = "10";
+    await peg(dexPage, browserContext, pegAmount);
 
-    
-    await dexPage.pause()
+    await dexPage.pause();
     // navigates to external asset tab
     // pegs amount
     // go through confirmation
     //#app-content > div > div.main-container-wrapper > div > div.confirm-page-container-content > div.page-container__footer > footer > button.button.btn-primary.page-container__footer-button
     // move chain forward
     // check balance in native asset
-    // 
+    //
   });
-
 });
 
 async function extractExtensionPackages() {
