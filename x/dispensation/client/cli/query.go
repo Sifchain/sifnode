@@ -3,10 +3,11 @@ package cli
 import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 )
 
@@ -19,6 +20,85 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	dispensationQueryCmd.AddCommand(flags.GetCommands()...)
+	dispensationQueryCmd.AddCommand(flags.GetCommands(
+		GetCmdDistributions(queryRoute, cdc),
+		GetCmdDistributionRecordForRecipient(queryRoute, cdc),
+		GetCmdDistributionRecordForDistName(queryRoute, cdc),
+	)...)
 	return dispensationQueryCmd
+}
+
+func GetCmdDistributions(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "distributions-all",
+		Short: "get a list of all distributions ",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryAllDistributions)
+			res, _, err := cliCtx.QueryWithData(route, nil)
+			if err != nil {
+				return err
+			}
+			var dr types.DistributionsResponse
+			cdc.MustUnmarshalJSON(res, &dr)
+			return cliCtx.PrintOutput(dr)
+		},
+	}
+}
+
+func GetCmdDistributionRecordForRecipient(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "records-by-addr [recipient address]",
+		Short: "get a list of all distribution records ",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			address := args[0]
+			recipientAddress, err := sdk.AccAddressFromBech32(address)
+			if err != nil {
+				return err
+			}
+			params := types.NewQueryRecordsByRecipientAddr(recipientAddress)
+			bz, err := cliCtx.Codec.MarshalJSON(params)
+			if err != nil {
+				return err
+			}
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByRecipient)
+			res, height, err := cliCtx.QueryWithData(route, bz)
+			if err != nil {
+				return err
+			}
+			var drs types.DistributionRecords
+			cdc.MustUnmarshalJSON(res, &drs)
+			out := types.NewDistributionRecordsResponse(drs, height)
+			return cliCtx.PrintOutput(out)
+		},
+	}
+}
+
+func GetCmdDistributionRecordForDistName(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "records-by-name [distribution name]",
+		Short: "get a list of all distribution records ",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			name := args[0]
+			params := types.NewQueryRecordsByDistributionName(name)
+			bz, err := cliCtx.Codec.MarshalJSON(params)
+			if err != nil {
+				return err
+			}
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
+			res, height, err := cliCtx.QueryWithData(route, bz)
+			if err != nil {
+				return err
+			}
+			var drs types.DistributionRecords
+			cdc.MustUnmarshalJSON(res, &drs)
+			out := types.NewDistributionRecordsResponse(drs, height)
+			return cliCtx.PrintOutput(out)
+		},
+	}
 }

@@ -20,7 +20,7 @@ func (k Keeper) CreateAndDistributeDrops(ctx sdk.Context, output []bank.Output, 
 		if k.ExistsDistributionRecord(ctx, name, receiver.Address.String()) {
 			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address.String())
 			if err != nil {
-				return errors.Wrapf(types.ErrAirdrop, "failed appending record for : %s", distributionRecord.Address)
+				return errors.Wrapf(types.ErrAirdrop, "failed appending record for : %s", distributionRecord.RecipientAddress)
 			}
 			distributionRecord.Add(oldRecord)
 		}
@@ -44,14 +44,12 @@ func (k Keeper) AccumulateDrops(ctx sdk.Context, input []bank.Input) error {
 }
 
 // Verify if the distribution is correct
-func (k Keeper) VerifyDistribution(ctx sdk.Context, name string) error {
+func (k Keeper) VerifyDistribution(ctx sdk.Context, name string, t types.DistributionType) error {
 	if k.ExistsDistribution(ctx, name) {
 		return errors.Wrapf(types.ErrAirdrop, "airdrop with same name already exists : %s ", name)
 	}
-	// Only support for AIRDROP type right now . In the future might
-	// Take this as input from the the client
-	// Set it from cmd based on the command being used
-	err := k.SetDistribution(ctx, types.NewDistribution(types.Airdrop, name))
+	// Create distribution only if a distribution with the same name does not exist
+	err := k.SetDistribution(ctx, types.NewDistribution(t, name))
 	if err != nil {
 		return errors.Wrapf(types.ErrAirdrop, "unable to set airdrop :  %s ", name)
 

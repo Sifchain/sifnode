@@ -12,11 +12,11 @@ func NewDistributionRecordsResponse(distributionRecords DistributionRecords, hei
 	return DistributionRecordsResponse{DistributionRecords: distributionRecords, Height: height}
 }
 
-type DistributionListsResponse struct {
+type DistributionsResponse struct {
 	Distributions
 	Height int64 `json:"height"`
 }
 
-func NewDistributionListsResponse(distributionLists Distributions, height int64) DistributionListsResponse {
-	return DistributionListsResponse{Distributions: distributionLists, Height: height}
+func NewDistributionsResponse(distributions Distributions, height int64) DistributionsResponse {
+	return DistributionsResponse{Distributions: distributions, Height: height}
 }

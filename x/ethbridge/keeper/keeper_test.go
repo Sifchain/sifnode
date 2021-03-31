@@ -20,7 +20,7 @@ var (
 	tokenContractAddress                       = types.NewEthereumAddress("0xbbbbca6a901c926f240b89eacb641d8aec7aeafd")
 	ethBridgeAddress     types.EthereumAddress = types.NewEthereumAddress(strings.ToLower("0x30753E4A8aad7F8597332E813735Def5dD395028"))
 	ethereumSender                             = types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57")
-	//BadValidatorAddress                        = sdk.ValAddress(CreateTestPubKeys(1)[0].Address().Bytes())
+	//BadValidatorAddress                        = sdk.ValAddress(CreateTestPubKeys(1)[0].RecipientAddress().Bytes())
 )
 
 var (
@@ -44,8 +44,8 @@ func TestProcessClaimLock(t *testing.T) {
 	nonce := 1
 	//invalid claim defaults to lock
 	claimType, err := types.StringToClaimType("lkfjdsk")
-	require.Equal(t, claimType.String(), "lock")
 	require.Error(t, err)
+	require.Equal(t, claimType.String(), "lock")
 
 	claimType, err = types.StringToClaimType("lock")
 	require.NoError(t, err)
@@ -239,6 +239,7 @@ func TestProcessLock(t *testing.T) {
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount))
 	err := keeper.ProcessLock(ctx, cosmosReceivers[0], coins)
+	require.NoError(t, err)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
 	//process successful claim to get stake

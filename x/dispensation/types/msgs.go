@@ -13,14 +13,15 @@ var (
 // Basic message type to create a new distribution
 // TODO modify this struct to keep adding more fields to identify different types of distributions
 type MsgDistribution struct {
-	Signer           sdk.AccAddress `json:"Signer"`
-	DistributionName string         `json:"distribution_name"`
-	Input            []bank.Input   `json:"Input"`
-	Output           []bank.Output  `json:"Output"`
+	Signer           sdk.AccAddress   `json:"Signer"`
+	DistributionName string           `json:"distribution_name"`
+	DistributionType DistributionType `json:"distribution_type"`
+	Input            []bank.Input     `json:"Input"`
+	Output           []bank.Output    `json:"Output"`
 }
 
-func NewMsgDistribution(signer sdk.AccAddress, name string, input []bank.Input, output []bank.Output) MsgDistribution {
-	return MsgDistribution{Signer: signer, DistributionName: name, Input: input, Output: output}
+func NewMsgDistribution(signer sdk.AccAddress, DistributionName string, DistributionType DistributionType, input []bank.Input, output []bank.Output) MsgDistribution {
+	return MsgDistribution{Signer: signer, DistributionName: DistributionName, DistributionType: DistributionType, Input: input, Output: output}
 }
 
 func (m MsgDistribution) Route() string {

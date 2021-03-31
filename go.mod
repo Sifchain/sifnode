@@ -19,7 +19,7 @@ require (
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/google/gofuzz v1.1.1-0.20200604201612-c04b05f3adfa // indirect
-	github.com/google/uuid v1.1.1 // indirect
+	github.com/google/uuid v1.1.1
 	github.com/gorilla/mux v1.8.0
 	github.com/huin/goupnp v1.0.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
@@ -50,7 +50,6 @@ require (
 	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/syndtr/goleveldb v1.0.1-0.20200815110645-5c35d600f0ca
-	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
 	github.com/tendermint/go-amino v0.16.0
 	github.com/tendermint/tendermint v0.33.9
 	github.com/tendermint/tm-db v0.5.1

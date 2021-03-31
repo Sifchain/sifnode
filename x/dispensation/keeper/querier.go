@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -32,9 +33,7 @@ func queryDistributionRecordsForName(ctx sdk.Context, req abci.RequestQuery, kee
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 	records := keeper.GetRecordsForName(ctx, params.DistributionName)
-	height := ctx.BlockHeight()
-	poolResponse := types.NewDistributionRecordsResponse(records, height)
-	res, err := codec.MarshalJSONIndent(keeper.cdc, poolResponse)
+	res, err := codec.MarshalJSONIndent(keeper.cdc, records)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -49,9 +48,7 @@ func queryDistributionRecordsForReceipient(ctx sdk.Context, req abci.RequestQuer
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 	records := keeper.GetRecordsForRecipient(ctx, params.Address)
-	height := ctx.BlockHeight()
-	poolResponse := types.NewDistributionRecordsResponse(records, height)
-	res, err := codec.MarshalJSONIndent(keeper.cdc, poolResponse)
+	res, err := codec.MarshalJSONIndent(keeper.cdc, records)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -61,7 +58,8 @@ func queryDistributionRecordsForReceipient(ctx sdk.Context, req abci.RequestQuer
 func queryAllDistributions(ctx sdk.Context, keeper Keeper) ([]byte, error) {
 	list := keeper.GetDistributions(ctx)
 	height := ctx.BlockHeight()
-	response := types.NewDistributionListsResponse(list, height)
+	fmt.Println(list)
+	response := types.NewDistributionsResponse(list, height)
 	res, err := codec.MarshalJSONIndent(keeper.cdc, response)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())

@@ -1,6 +1,10 @@
 package types
 
-import "fmt"
+import (
+	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/supply"
+)
 
 const (
 	// ModuleName is the name of the module
@@ -19,14 +23,18 @@ const (
 
 var (
 	DistributionRecordPrefix = []byte{0x00} // key for storing DistributionRecords
-	DistributionListPrefix   = []byte{0x01} // key for storing airdropRecords
+	DistributionsPrefix      = []byte{0x01} // key for storing airdropRecords
 )
 
 func GetDistributionRecordKey(name string, recipient string) []byte {
 	key := []byte(fmt.Sprintf("%s_%s", name, recipient))
 	return append(DistributionRecordPrefix, key...)
 }
-func GetDistributionListKey(name string) []byte {
+func GetDistributionsKey(name string) []byte {
 	key := []byte(fmt.Sprintf("%s", name))
-	return append(DistributionListPrefix, key...)
+	return append(DistributionsPrefix, key...)
+}
+
+func GetDistributionModuleAddress() sdk.AccAddress {
+	return supply.NewModuleAddress(ModuleName)
 }

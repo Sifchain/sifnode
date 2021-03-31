@@ -1,7 +1,9 @@
 package types
 
-// clp module event types
+// dispensation module event types
 
 const (
-	AttributeValueCategory           = ModuleName
+	AttributeValueCategory         = ModuleName
+	EventTypeDistributionCompleted = "distribution_complete"
+	AttributeKeyFromModuleAccount  = "module_account"
 )

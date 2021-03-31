@@ -29,20 +29,20 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 	}
 
 	dispensationTxCmd.AddCommand(flags.PostCommands(
-		GetCmdAirdrop(cdc),
+		GetCmdCreate(cdc),
 	)...)
 
 	return dispensationTxCmd
 }
 
-// GetCmdAirdrop adds a new command to the main dispensationTxCmd to create a new airdrop
+// GetCmdCreate adds a new command to the main dispensationTxCmd to create a new airdrop
 // Airdrop is a type of distribution on the network .
-func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
+func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 	// The cmd is called airdrop now , but can be generalized to create any distribution list.
-	// Note , only the command name is airdrop , throughout this package an airdrop is a type of of Distribution
+	// Note ,the command only creates a airdrop for now .
 	cmd := &cobra.Command{
-		Use:   "airdrop [multiSigKeyName] [DropName] [Input JSON File Path] [Output JSON File Path]",
-		Short: "Create new airdrop",
+		Use:   "create [multiSigKeyName] [Name] [Input JSON File Path] [Output JSON File Path]",
+		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			kb, err := keys.NewKeyring(sdk.KeyringServiceName(),
@@ -80,8 +80,8 @@ func GetCmdAirdrop(cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			dropName := args[1]
-			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), dropName, inputList, outputlist)
+			name := args[1]
+			msg := types.NewMsgDistribution(cliCtx.GetFromAddress(), name, types.Airdrop, inputList, outputlist)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
 		},
 	}

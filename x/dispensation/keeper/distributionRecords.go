@@ -14,7 +14,7 @@ func (k Keeper) SetDistributionRecord(ctx sdk.Context, dr types.DistributionReco
 		return errors.Wrapf(types.ErrInvalid, "unable to set record : %s", dr.String())
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionRecordKey(dr.DistributionName, dr.Address.String())
+	key := types.GetDistributionRecordKey(dr.DistributionName, dr.RecipientAddress.String())
 	store.Set(key, k.cdc.MustMarshalBinaryBare(dr))
 	return nil
 }
@@ -59,7 +59,7 @@ func (k Keeper) GetRecordsForName(ctx sdk.Context, name string) types.Distributi
 	return res
 }
 
-func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recepient sdk.AccAddress) types.DistributionRecords {
+func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient sdk.AccAddress) types.DistributionRecords {
 	var res types.DistributionRecords
 	iterator := k.GetDistributionRecordsIterator(ctx)
 	defer iterator.Close()
@@ -67,7 +67,7 @@ func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recepient sdk.AccAddress
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.Address.Equals(recepient) {
+		if dr.RecipientAddress.Equals(recipient) {
 			res = append(res, dr)
 		}
 	}
