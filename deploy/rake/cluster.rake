@@ -504,7 +504,6 @@ if [ -z "${logs_check}" ]; then
         fi
         pod_name=$(kubectl get pods --kubeconfig=./kubeconfig -n ${APP_NAMESPACE} | grep ${APP_NAME} | cut -d ' ' -f 1 | sed -e 's/ //g')
         logs_check_loop=$(kubectl logs --kubeconfig=./kubeconfig -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep "${SEARCH_STRING}")
-        echo $logs_check_loop
         if [ -z "${logs_check_loop}" ]; then
             echo "sleep and wait for logs"
             sleep 5
