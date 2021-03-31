@@ -5679,7 +5679,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.2",
-  "updatedAt": "2021-03-24T06:48:19.906Z",
+  "updatedAt": "2021-03-31T05:24:14.243Z",
   "devdoc": {
     "details": "Manages the deployment and minting of ERC20 compatible BridgeTokens     which represent assets based on the Cosmos blockchain.*",
     "methods": {},
