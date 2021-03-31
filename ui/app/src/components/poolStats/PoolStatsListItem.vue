@@ -33,18 +33,23 @@ export default defineComponent({
     });
 
     const priceToken = formatNumberString(
-      parseFloat(props.pool?.priceToken).toFixed(2)
+      parseFloat(props.pool?.priceToken).toFixed(2),
     );
+    const arb =
+      props.pool?.arb !== ""
+        ? formatNumberString(parseFloat(props.pool?.arb).toFixed(2)) + "%"
+        : "N/A";
     const poolDepth = formatNumberString(
-      parseFloat(props.pool?.poolDepth).toFixed(2)
+      parseFloat(props.pool?.poolDepth).toFixed(2),
     );
     const volume = formatNumberString(
-      parseFloat(props.pool?.volume).toFixed(1)
+      parseFloat(props.pool?.volume).toFixed(1),
     );
     const poolAPY = formatNumberString(
       (
-        parseFloat(props.pool?.volume) / parseFloat(props.pool?.poolDepth)
-      ).toFixed(1)
+        (parseFloat(props.pool?.volume) / parseFloat(props.pool?.poolDepth)) *
+        100
+      ).toFixed(1),
     );
 
     return {
@@ -55,6 +60,7 @@ export default defineComponent({
       volume,
       poolAPY,
       formatNumberString,
+      arb,
     };
   },
 });
@@ -74,13 +80,16 @@ export default defineComponent({
           }}</span>
         </div>
       </div>
-      <div class="col-sm">
+      <div class="col-lg">
         <span>${{ priceToken }}</span>
       </div>
-      <div class="col-sm">
+      <div class="col-lg">
+        <span>{{ arb }}</span>
+      </div>
+      <div class="col-lg">
         <span>${{ poolDepth }}</span>
       </div>
-      <div class="col-sm">
+      <div class="col-lg">
         <span>${{ volume }}</span>
       </div>
       <div class="col-sm">
@@ -93,7 +102,7 @@ export default defineComponent({
         <span
           >{{
             formatNumberString(
-              (parseFloat(poolAPY) + parseFloat(liqAPY)).toFixed(1)
+              (parseFloat(poolAPY) + parseFloat(liqAPY)).toFixed(1),
             )
           }}%</span
         >
@@ -150,7 +159,7 @@ export default defineComponent({
 
   .col-sm-s {
     padding-left: 12px;
-    min-width: 102px;
+    min-width: 112px;
     width: 10%;
     display: flex;
     justify-content: start;
@@ -174,6 +183,7 @@ export default defineComponent({
     min-width: 168px;
     font-size: $fs_md;
     color: $c_text;
+    text-align: center;
   }
 }
 </style>

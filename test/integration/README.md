@@ -72,6 +72,26 @@ after it sets up your environment.
 
 Don't mix this with vagrantenv.sh; use one or the other in a shell.
 
+## Distributing ropsten test tokens
+
+Set up your environment as if you were going to run tests, then run:
+```
+TOKEN_AMOUNT=120000000000 python3 -m pytest --color=yes -x -olog_cli=true -olog_level=DEBUG -v -olog_file=vagrant/data/pytest.log src/py/token_refresh.py
+```
+
+This creates a new sifchain account with 120000000000 tokens of each of the tokens in the whitelist.  
+
+### To set up all test accounts with tokens:
+
+Use the test/integration/distribute_tokens.sh script.
+
+### Update the UI json files
+
+When you have an environment set up as above, the build_ui_token_files.sh script will update the appropriate files in 
+$BASEDIR/ui/core/src/assets.*.json.
+
+where ROWAN_SOURCE is a sifnode address with sufficient tokens to distribute.
+
 ## Github actions
 
 See [the github action file](../../.github/workflows/integrationtest.yml) for the description of what's executed in the integration test environment.

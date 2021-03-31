@@ -140,12 +140,8 @@ def ceth_fee():
 
 @pytest.fixture
 def chain_id(is_ropsten_testnet):
-    result = test_utilities.get_optional_env_var("CHAINNET", None)
-    if result:
-        return result
-    else:
-        id = "swing-set" if is_ropsten_testnet else "localnet"
-        return id
+    result = test_utilities.get_optional_env_var("DEPLOYMENT_NAME", "localnet")
+    return result
 
 
 @pytest.fixture
@@ -182,8 +178,14 @@ def is_ganache(ethereum_network):
 
 
 @pytest.fixture
-def sifchain_fees():
-    return "100000rowan"
+def sifchain_fees(sifchain_fees_int):
+    """returns a string suitable for passing to sifnodecli"""
+    return f"{sifchain_fees_int}rowan"
+
+
+@pytest.fixture
+def sifchain_fees_int():
+    return 200000
 
 
 @pytest.fixture

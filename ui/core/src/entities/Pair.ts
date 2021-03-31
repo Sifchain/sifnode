@@ -11,7 +11,7 @@ export function Pair(a: AssetAmount, b: AssetAmount) {
 
     otherAsset(asset: Asset) {
       const otherAsset = amounts.find(
-        amount => amount.asset.symbol !== asset.symbol
+        (amount) => amount.asset.symbol !== asset.symbol,
       );
       if (!otherAsset) throw new Error("Asset doesnt exist in pair");
       return otherAsset.asset;
@@ -19,22 +19,22 @@ export function Pair(a: AssetAmount, b: AssetAmount) {
 
     symbol() {
       return amounts
-        .map(a => a.asset.symbol)
+        .map((a) => a.asset.symbol)
         .sort()
         .join("_");
     },
 
     contains(...assets: Asset[]) {
-      const local = amounts.map(a => a.asset.symbol);
+      const local = amounts.map((a) => a.asset.symbol);
 
-      const other = assets.map(a => a.symbol);
+      const other = assets.map((a) => a.symbol);
 
-      return !!local.find(s => other.includes(s));
+      return !!local.find((s) => other.includes(s));
     },
 
     getAmount(asset: Asset | string) {
       const assetSymbol = typeof asset === "string" ? asset : asset.symbol;
-      const found = this.amounts.find(amount => {
+      const found = this.amounts.find((amount) => {
         return amount.asset.symbol === assetSymbol;
       });
       if (!found) throw new Error(`Asset ${assetSymbol} doesnt exist in pair`);
@@ -42,7 +42,7 @@ export function Pair(a: AssetAmount, b: AssetAmount) {
     },
 
     toString() {
-      return amounts.map(a => a.toString()).join(" | ");
+      return amounts.map((a) => a.toString()).join(" | ");
     },
   };
 }

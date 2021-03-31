@@ -2,15 +2,15 @@ import json
 import logging
 import os
 import subprocess
+import time
 from dataclasses import dataclass
 from functools import lru_cache
-
-import time
 
 n_wait_blocks = 50  # number of blocks to wait for the relayer to act
 burn_gas_cost = 160000000000 * 366000  # see x/ethbridge/types/msgs.go for gas
 lock_gas_cost = 160000000000 * 338000
 highest_gas_cost = max(burn_gas_cost, lock_gas_cost)
+
 
 @dataclass
 class EthereumToSifchainTransferRequest:
@@ -181,6 +181,50 @@ def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
     return int(result["balanceWei"])
 
 
+def get_whitelisted_tokens(transfer_request: EthereumToSifchainTransferRequest):
+    network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
+    private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
+    command_line = " ".join(
+        [f"yarn -s --cwd {transfer_request.smart_contracts_dir}",
+         f"integrationtest:whitelistedTokens",
+         f"--bridgebank_address {transfer_request.bridgebank_address}",
+         f"--json_path {transfer_request.solidity_json_path}",
+         private_element,
+         network_element]
+    )
+    return run_yarn_command(command_line)
+
+
+def get_token_ethereum_address(
+        token: str,
+        whitelist
+):
+    for token_in_whitelist in whitelist:
+        if token_in_whitelist["symbol"] == token:
+            return token_in_whitelist["token"]
+    return None
+
+
+def mint_tokens(transfer_request: EthereumToSifchainTransferRequest, operator_address):
+    network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
+    private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
+    command_line = " ".join(
+        [f"yarn -s --cwd {transfer_request.smart_contracts_dir}",
+         f"integrationtest:mintTestnetTokens",
+         f"--bridgebank_address {transfer_request.bridgebank_address}",
+         f"--ethereum_address {transfer_request.ethereum_address}",
+         f"--json_path {transfer_request.solidity_json_path}",
+         f"--operator_address {operator_address}",
+         f"--amount {transfer_request.amount}",
+         private_element,
+         symbol_element,
+         network_element]
+    )
+    return run_yarn_command(command_line)
+
+
 def get_sifchain_addr_balance(sifaddress, sifnodecli_node, denom):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
     command_line = f"sifnodecli q auth account {node} {sifaddress} -o json"
@@ -240,7 +284,7 @@ def wait_for_balance(balance_fn, target_balance, max_seconds=80, debug_prefix=""
             else:
                 difference = target_balance - balance
                 logging.debug(
-                    f"waiting for target balance {debug_prefix}: {target_balance}, current balance is {balance}, difference is {difference} ({difference / 10 ** 18})"
+                    f"waiting for target balance {debug_prefix} balance: {target_balance}, current balance is {balance}, difference is {difference} ({difference / 10 ** 18}), remaining time: {done_at_time - time.time()}"
                 )
                 time.sleep(1)
 
@@ -249,7 +293,8 @@ def wait_for_eth_balance(transfer_request: EthereumToSifchainTransferRequest, ta
     wait_for_balance(
         lambda: get_eth_balance(transfer_request),
         int(target_balance),
-        max_seconds
+        max_seconds,
+        f"wait_for_eth_balance address: {transfer_request.ethereum_address} symbol: {transfer_request.ethereum_symbol}"
     )
 
 
@@ -307,7 +352,8 @@ def send_from_sifchain_to_sifchain_cmd(
         f"{transfer_request.amount}{transfer_request.sifchain_symbol}",
         sifchain_fees_entry,
         home_entry,
-        "-y -o json"
+        "--gas auto",
+        "-y -o json",
     ])
     return cmd
 
@@ -319,13 +365,13 @@ def send_from_sifchain_to_sifchain(
     cmd = send_from_sifchain_to_sifchain_cmd(transfer_request, credentials)
     result = get_shell_output_json(cmd)
     # detect_errors_in_sifnodecli_output(result)
-    time.sleep(2)
+    time.sleep(4)
     # get_transaction_result(result["txhash"], transfer_request.sifnodecli_node, transfer_request.chain_id)
     return result
 
 
 def send_from_sifchain_to_ethereum_cmd(transfer_request: EthereumToSifchainTransferRequest,
-                                   credentials: SifchaincliCredentials):
+                                       credentials: SifchaincliCredentials):
     assert transfer_request.amount > 0
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
@@ -588,3 +634,12 @@ def ganache_private_key(ganache_private_keys_file: str, address):
     keys = read_json_file(ganache_private_keys_file)
     pks = keys["private_keys"]
     return pks[address]
+
+
+def sifchain_symbol_to_ethereum_symbol(s: str):
+    if s == "rowan":
+        return "erowan"
+    elif s == "ceth":
+        return NULL_ADDRESS
+    else:
+        return s[1:]

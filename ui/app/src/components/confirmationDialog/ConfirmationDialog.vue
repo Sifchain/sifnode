@@ -31,7 +31,11 @@ export default defineComponent({
     });
 
     const failed = computed(() => {
-      return props.state === "failed" || props.state === "rejected";
+      return (
+        props.state === "failed" ||
+        props.state === "rejected" ||
+        props.state === "out_of_gas"
+      );
     });
 
     return {
@@ -69,5 +73,3 @@ export default defineComponent({
     @closerequested="requestClose"
   />
 </template>
-
-

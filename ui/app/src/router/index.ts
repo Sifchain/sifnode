@@ -37,24 +37,24 @@ const routes: Array<RouteRecordRaw> = [
     name: "Swap",
     component: Swap,
     meta: {
-      title: "Swap - Sifchain"
-    }
+      title: "Swap - Sifchain",
+    },
   },
   {
     path: "/pool",
     name: "Pool",
     component: Pool,
     meta: {
-      title: "Pool - Sifchain"
-    }
+      title: "Pool - Sifchain",
+    },
   },
   {
     path: "/pool/:externalAsset",
     name: "SinglePool",
     component: SinglePool,
     meta: {
-      title: "Single Pool - Sifchain"
-    }
+      title: "Single Pool - Sifchain",
+    },
   },
   {
     path: "/pool/add-liquidity/:externalAsset?",
@@ -64,8 +64,8 @@ const routes: Array<RouteRecordRaw> = [
       title: "Add Liquidity",
     },
     meta: {
-      title: "Add Liquidity - Sifchain"
-    }
+      title: "Add Liquidity - Sifchain",
+    },
   },
   {
     path: "/pool/create-pool",
@@ -75,40 +75,40 @@ const routes: Array<RouteRecordRaw> = [
       title: "Create Pair",
     },
     meta: {
-      title: "Create Pool - Sifchain"
-    }
+      title: "Create Pool - Sifchain",
+    },
   },
   {
     path: "/pool/remove-liquidity/:externalAsset?",
     name: "RemoveLiquidity",
     component: RemoveLiquidity,
     meta: {
-      title: "Remove Liquidity - Sifchain"
-    }
+      title: "Remove Liquidity - Sifchain",
+    },
   },
   {
     path: "/peg",
     name: "PegListingPage",
     component: PegListingPage,
     meta: {
-      title: "Peg Listing - Sifchain"
-    }
+      title: "Peg Listing - Sifchain",
+    },
   },
   {
     path: "/peg/:assetFrom/:assetTo",
     name: "PegAssetPage",
     component: PegAssetPage,
     meta: {
-      title: "Peg Asset - Sifchain"
-    }
+      title: "Peg Asset - Sifchain",
+    },
   },
   {
     path: "/peg/reverse/:assetFrom/:assetTo",
     name: "UnpegAssetPage",
     component: PegAssetPage,
     meta: {
-      title: "Unpeg Asset - Sifchain"
-    }
+      title: "Unpeg Asset - Sifchain",
+    },
   },
 ];
 
@@ -118,26 +118,34 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const win = window as any
-  if (!win.gtag) { return next() }
+  const win = window as any;
+  if (!win.gtag) {
+    return next();
+  }
   // Taken from https://www.digitalocean.com/community/tutorials/vuejs-vue-router-modify-head
   // This goes through the matched routes from last to first, finding the closest route with a title.
   // e.g., if we have `/some/deep/nested/route` and `/some`, `/deep`, and `/nested` have titles,
   // `/nested`'s will be chosen.
-  const nearestWithTitle = to.matched.slice().reverse().find(r => r.meta && r.meta.title);
+  const nearestWithTitle = to.matched
+    .slice()
+    .reverse()
+    .find((r) => r.meta && r.meta.title);
 
   // Find the nearest route element with meta tags.
-  const nearestWithMeta = to.matched.slice().reverse().find(r => r.meta && r.meta.metaTags);
+  const nearestWithMeta = to.matched
+    .slice()
+    .reverse()
+    .find((r) => r.meta && r.meta.metaTags);
 
   // If a route with a title was found, set the document (page) title to that value.
-  if(nearestWithTitle) {
+  if (nearestWithTitle) {
     document.title = nearestWithTitle.meta.title;
     // Let's log the page view to Google Analytics manually
-    (window as any).gtag('event', 'page_view', {
+    (window as any).gtag("event", "page_view", {
       page_title: nearestWithTitle.meta.title,
       page_location: window.location.href,
       page_path: window.location.pathname + window.location.hash,
-    })
+    });
   }
 
   next();
