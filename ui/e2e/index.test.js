@@ -25,8 +25,8 @@ const { MetaMask, connectMmAccount, peg } = require("./metamask.js");
 const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 
 // services
-const { getSifchainBalances, advanceEthBlocks } = require("./sifchain.js");
-const { getEthBalance } = require("./ethereum.js");
+const { getSifchainBalances } = require("./sifchain.js");
+const { getEthBalance, advanceEthBlocks } = require("./ethereum.js");
 
 const { extractFile } = require("./utils");
 
