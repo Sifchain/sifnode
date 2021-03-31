@@ -112,7 +112,7 @@ sifnodecli tx staking create-validator \
     --amount="<amount>" \
     --pubkey=<pub_key> \
     --moniker=<moniker> \
-    --chain-id=testnet \
+    --chain-id=sifchain-testnet \
     --min-self-delegation="1" \
     --gas-prices="0.5rowan" \
     --from=<moniker> \
@@ -138,7 +138,7 @@ sifnodecli tx staking create-validator \
     --amount="1000000000000000000000rowan" \
     --pubkey=thepublickeyofyournode \
     --moniker=my-node \
-    --chain-id=testnet \
+    --chain-id=sifchain-testnet \
     --min-self-delegation="1" \
     --gas-prices="0.5rowan" \
     --from=my-node \

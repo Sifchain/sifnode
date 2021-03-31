@@ -363,6 +363,34 @@
       "name": "Rally",
       "network": "sifchain",
       "symbol": "crly"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://etherscan.io/token/images/convergence_32.png",
+      "name": "Convergence",
+      "network": "sifchain",
+      "symbol": "cconv"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://etherscan.io/token/images/render_32.png",
+      "name": "Render Token",
+      "network": "sifchain",
+      "symbol": "crndr"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://etherscan.io/token/images/paidnetwork_32.png",
+      "name": "PAID Network",
+      "network": "sifchain",
+      "symbol": "cpaid"
+    },
+    {
+      "decimals": 18,
+      "imageUrl": "https://assets.coingecko.com/coins/images/14460/small/Tidal-mono.png?1616233894",
+      "name": "Tidal",
+      "network": "sifchain",
+      "symbol": "ctidal"
     }
   ]
 }
