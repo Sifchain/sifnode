@@ -1,8 +1,9 @@
 /* TODO
-  - Connect Metamask https://github.com/NodeFactoryIo/dappeteer/blob/master/src/index.ts#L57
+  x Connect Metamask https://github.com/NodeFactoryIo/dappeteer/blob/master/src/index.ts#L57
   x Different targets, local, sp, etc for deterministic addresses
   x xvfb server for remote test run
   - Peg, unpeg, happy path
+  - what's wrong w workflow big.js? (setup at ../ level ? )
   - Cleanup
 
 
@@ -110,15 +111,15 @@ describe("connect to page", () => {
     ); //"100.000000"; // Fetch balance TODO Amount()
 
     await connectKeplrAccount(dexPage, browserContext);
-    await dexPage.waitForTimeout(1000); // this is only necessary bc popup
+    await dexPage.waitForTimeout(2000); // this is only necessary bc popup
     expect(await dexPage.innerText("[data-handle='ceth-row-amount']")).toBe(
       cEthBalance,
     );
   });
+  const domExternalTokenTab = "text=External Tokens"
 
   it("connects to metamask, check balance", async () => {
     const mmEthBalance = await getEthBalance(MM_CONFIG.options.address);
-    await dexPage.waitForTimeout(1000); // this is only necessary bc popup
     // connect wallet
     await connectMmAccount(dexPage, browserContext);
     await dexPage.waitForTimeout(1000); // this is only necessary bc popup
@@ -129,7 +130,23 @@ describe("connect to page", () => {
       mmEthBalance,
     );
   });
-  it("pegs", async () => {});
+
+  it("pegs", async () => {
+    // assumes wallets connected
+    const pegAmount = "10"
+    await peg(dexPage, browserContext, pegAmount)
+
+    
+    await dexPage.pause()
+    // navigates to external asset tab
+    // pegs amount
+    // go through confirmation
+    //#app-content > div > div.main-container-wrapper > div > div.confirm-page-container-content > div.page-container__footer > footer > button.button.btn-primary.page-container__footer-button
+    // move chain forward
+    // check balance in native asset
+    // 
+  });
+
 });
 
 async function extractExtensionPackages() {
