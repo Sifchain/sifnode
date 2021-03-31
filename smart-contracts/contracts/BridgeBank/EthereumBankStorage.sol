@@ -8,7 +8,8 @@ contract EthereumBankStorage {
     uint256 public lockBurnNonce;
 
     /**
-    * @notice how much funds we have stored of a certain token
+    * @notice This mapping has been deprecated to save gas when unpegging
+    * @notice In the past, this was used to track how much funds we had of a certain token
     */
     mapping(address => uint256) public lockedFunds;
 
