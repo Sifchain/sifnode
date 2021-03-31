@@ -20,7 +20,7 @@ const { chromium } = require("playwright");
 const { DEX_TARGET, MM_CONFIG, KEPLR_CONFIG } = require("./config.js");
 const keplrConfig = require("../core/src/config.localnet.json");
 
-// extension 
+// extension
 const { MetaMask, connectMmAccount, peg } = require("./metamask.js");
 const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 
@@ -32,6 +32,10 @@ const { extractFile } = require("./utils");
 
 let browserContext;
 let dexPage;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 describe("connect to page", () => {
   beforeAll(async () => {
@@ -93,9 +97,7 @@ describe("connect to page", () => {
     await connectMmAccount(dexPage, browserContext, MM_CONFIG.id);
     await dexPage.waitForTimeout(1000); // todo capture out extension page close event
     // click external tokens tab
-    await dexPage.click(
-      "text=External Tokens",
-    );
+    await dexPage.click("text=External Tokens");
     // expect
     expect(await dexPage.innerText("[data-handle='eth-row-amount']")).toBe(
       Number(mmEthBalance).toFixed(6),
@@ -114,18 +116,19 @@ describe("connect to page", () => {
     const pegAmount = "1";
     await peg(dexPage, browserContext, pegAmount, MM_CONFIG.id);
     // move chain forward
-    await advanceEthBlocks(50) // NOTE: NOT ASYNC :(
-    await dexPage.waitForTimeout(10000);
-    
-    expect(await dexPage.innerText("[data-handle='ceth-row-amount']") + pegAmount).toBe(
-      Number(cEthBalance + pegAmount).toFixed(6) ,
+    await advanceEthBlocks(50); // NOTE: NOT ASYNC :(
+    await sleep(20000);
+
+    const rowAmount = await dexPage.innerText(
+      "[data-handle='ceth-row-amount']",
     );
+
+    const expected = (Number(cEthBalance) + Number(pegAmount)).toFixed(6);
+
+    expect(rowAmount).toBe(expected);
   });
 
-  it("swaps", async () => {
-
-
-  })
+  it("swaps", async () => {});
 });
 
 async function extractExtensionPackages() {
