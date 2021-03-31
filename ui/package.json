@@ -27,6 +27,9 @@
     "core:build": "cd core && yarn build",
     "core:test:all": "yarn core:compile && concurrently -r -k -s first \"yarn chain:start:all\" \"sleep 5 && yarn chain:migrate && yarn core:test:with-peggy\"",
     "stack": "./scripts/run-stack.sh",
+    "pw:stack": "./scripts/run-playwright-stack.sh",
+    "pw:test": "cd e2e && ./scripts/test.sh",
+    "pw:test:stack": "concurrently -r -k -s first \"yarn pw:stack\" \"wait-on http://localhost:5000 && yarn pw:test\"",
     "lint": "yarn prettier --config .prettierrc -c '**/*.{vue,ts,json}'",
     "lint-quick": "yarn pretty-quick --pattern 'ui/**/*.{vue,ts,json}'",
     "build": "yarn lint && yarn chain:compile:peggy && yarn core:build && yarn app:build",
@@ -47,6 +50,7 @@
     "ganache-cli": "^6.12.0",
     "husky": "^6.0.0",
     "lerna": "^3.22.1",
+    "serve": "^11.3.2",
     "pretty-quick": "^3.1.0",
     "truffle": "^5.1.48",
     "vercel": "^21.0.1",
@@ -58,6 +62,7 @@
     "packages": [
       "core",
       "app",
+      "e2e",
       "chains/etherium"
     ]
   },
