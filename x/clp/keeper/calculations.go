@@ -12,18 +12,7 @@ import (
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
-	var X sdk.Uint
-	var Y sdk.Uint
-	toRowan := true
-	if to == types.GetSettlementAsset() {
-		Y = pool.NativeAssetBalance
-		X = pool.ExternalAssetBalance
-	} else {
-		X = pool.NativeAssetBalance
-		Y = pool.ExternalAssetBalance
-		toRowan = false
-	}
-	x := sentAmount
+    X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
 	liquidityFee, err := calcLiquidityFee(pool.ExternalAsset.Symbol, toRowan, X, x, Y)
 	if err != nil {
 		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
@@ -50,19 +39,25 @@ func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.P
 	return swapResult, liquidityFee, priceImpact, pool, nil
 }
 
+func SetInputs(sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, bool) {
+    var X sdk.Uint
+    var Y sdk.Uint
+    toRowan := true
+    if to == types.GetSettlementAsset() {
+        Y = pool.NativeAssetBalance
+        X = pool.ExternalAssetBalance
+    } else {
+        X = pool.NativeAssetBalance
+        Y = pool.ExternalAssetBalance
+        toRowan = false
+    }
+    x := sentAmount
+
+    return X, x, Y, toRowan
+}
+
 func GetSwapFee(sentAmount sdk.Uint, to types.Asset, pool types.Pool) sdk.Uint {
-	var X sdk.Uint
-	var Y sdk.Uint
-	toRowan := true
-	if to == types.GetSettlementAsset() {
-		Y = pool.NativeAssetBalance
-		X = pool.ExternalAssetBalance
-	} else {
-		X = pool.NativeAssetBalance
-		Y = pool.ExternalAssetBalance
-		toRowan = false
-	}
-	x := sentAmount
+    X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
 	swapResult, err := calcSwapResult(pool.ExternalAsset.Symbol, toRowan, X, x, Y)
 	if err != nil {
 		return sdk.Uint{}
