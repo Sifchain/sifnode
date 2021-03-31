@@ -320,11 +320,13 @@ sleep 180
 check_deployment=`kubectl get pod --kubeconfig=./kubeconfig -n vault | grep vault`
 [ -z "$check_deployment" ] && echo "Something Went Wrong" || echo "Vault Deployed ${check_deployment}"
 
-vault_init_output=`kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault operator init -n 1 -t 1`
-echo -e ${vault_init_output} > vault_output
+vault_init_output=`kubectl exec --kubeconfig=./kubeconfig -n vault vault-0 -- vault operator init -n 1 -t 1`
 echo "sleep for 30 seconds to let vault init."
 sleep 30
-export VAULT_TOKEN=`echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2`
+
+echo -e ${vault_init_output} > vault_output
+
+export VAULT_TOKEN=$(echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2)
 
 aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.backup --region us-west-2
 
