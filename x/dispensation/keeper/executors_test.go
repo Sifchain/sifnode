@@ -46,3 +46,12 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 		assert.True(t, keeper.GetBankKeeper().HasCoins(ctx, out.Address, sdk.Coins{sdk.NewCoin("rowan", recipientBalance)}))
 	}
 }
+
+func TestKeeper_VerifyDistribution(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	err := keeper.VerifyDistribution(ctx, "AR1", types.Airdrop)
+	assert.NoError(t, err)
+	err = keeper.VerifyDistribution(ctx, "AR1", types.Airdrop)
+	assert.Error(t, err)
+}
