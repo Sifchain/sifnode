@@ -25,7 +25,7 @@ jobs:
       VAULT_TEST_SETTINGS_PATH: "kv-v2/us/devnet/ebrelayer-smoke-test"
       app_namespace: "ebrelayer"
       image: "sifchain/ebrelayer"
-      image_tag: "devnet-20210401000000"
+      image_tag: "${{ github.event.inputs.docker_image_tag }}"
       env: "devnet"
       app_name: "ebrelayer"
       app_env: "devnet"
@@ -36,7 +36,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
-    if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+    if: github.event.inputs.environment == 'devnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -156,7 +156,7 @@ jobs:
       VAULT_TEST_SETTINGS_PATH: "kv-v2/eu/devnet/ebrelayer-smoke-test"
       app_namespace: "ebrelayer"
       image: "sifchain/ebrelayer"
-      image_tag: "devnet-20210401000000"
+      image_tag: "${{ github.event.inputs.docker_image_tag }}"
       env: "devnet"
       app_name: "ebrelayer"
       app_env: "devnet"
@@ -167,7 +167,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
-    if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+    if: github.event.inputs.environment == 'devnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -287,7 +287,7 @@ jobs:
       VAULT_TEST_SETTINGS_PATH: "kv-v2/au/devnet/ebrelayer-smoke-test"
       app_namespace: "ebrelayer"
       image: "sifchain/ebrelayer"
-      image_tag: "devnet-20210401000000"
+      image_tag: "${{ github.event.inputs.docker_image_tag }}"
       env: "devnet"
       app_name: "ebrelayer"
       app_env: "devnet"
@@ -298,7 +298,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
-    if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+    if: github.event.inputs.environment == 'devnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -419,7 +419,7 @@ jobs:
       VAULT_TEST_SETTINGS_PATH: "kv-v2/sg/devnet/ebrelayer-smoke-test"
       app_namespace: "ebrelayer"
       image: "sifchain/ebrelayer"
-      image_tag: "devnet-20210401000000"
+      image_tag: "${{ github.event.inputs.docker_image_tag }}"
       env: "devnet"
       app_name: "ebrelayer"
       app_env: "devnet"
@@ -430,7 +430,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
-    if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+    if: github.event.inputs.environment == 'devnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
