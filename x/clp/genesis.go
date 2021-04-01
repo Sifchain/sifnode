@@ -10,9 +10,10 @@ import (
 
 func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 	keeper.SetParams(ctx, data.Params)
-	if data.AddressWhitelist != nil {
-		keeper.SetClpWhiteList(ctx, data.AddressWhitelist)
+	if data.AddressWhitelist == nil || len(data.AddressWhiteList) == 0 {
+	    panic(fmt.Sprintf("AddressWhiteList must be set."))
 	}
+	keeper.SetClpWhiteList(ctx, data.AddressWhitelist)
 	for _, pool := range data.PoolList {
 		err := keeper.SetPool(ctx, pool)
 		if err != nil {
