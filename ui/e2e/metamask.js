@@ -64,7 +64,12 @@ export async function connectMmAccount(page, browserContext, extensionId) {
   return;
 }
 
-export async function peg(page, browserContext, amount, extensionId) {
+export async function confirmTransaction(
+  page,
+  browserContext,
+  amount,
+  extensionId,
+) {
   // extension popup
   const mmConnectPage = await getExtensionPage(browserContext, extensionId);
   await mmConnectPage.click(

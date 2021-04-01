@@ -21,7 +21,11 @@ const { DEX_TARGET, MM_CONFIG, KEPLR_CONFIG } = require("./config.js");
 const keplrConfig = require("../core/src/config.localnet.json");
 
 // extension
-const { MetaMask, connectMmAccount, peg } = require("./metamask.js");
+const {
+  MetaMask,
+  connectMmAccount,
+  confirmTransaction,
+} = require("./metamask.js");
 const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 
 // services
@@ -122,7 +126,7 @@ describe("connect to page", () => {
     await dexPage.click('button:has-text("Peg")');
     await dexPage.click('button:has-text("Confirm Peg")');
 
-    await peg(dexPage, browserContext, pegAmount, MM_CONFIG.id);
+    await confirmTransaction(dexPage, browserContext, pegAmount, MM_CONFIG.id);
     // move chain forward
     await advanceEthBlocks(50); // NOTE: NOT ASYNC :(
     await sleep(20000);
