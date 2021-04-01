@@ -22,6 +22,7 @@ const (
 
 var (
 	UnregisteredValidatorAddress = sdk.ValAddress("cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq")
+	TestAccAddress               = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 )
 
 func TestBasicMsgs(t *testing.T) {
@@ -249,11 +250,8 @@ func TestBurnEthFail(t *testing.T) {
 }
 
 func TestBurnEthSuccess(t *testing.T) {
-	ctx, _, bankKeeper, supplyKeeper, _, validatorAddresses, handler := CreateTestHandler(t, 0.5, []int64{5})
+	ctx, _, bankKeeper, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.5, []int64{5})
 	valAddressVal1Pow5 := validatorAddresses[0]
-
-	moduleAccount := supplyKeeper.GetModuleAccount(ctx, ModuleName)
-	moduleAccountAddress := moduleAccount.GetAddress()
 
 	// Initial message to mint some eth
 	coinsToMintAmount := sdk.NewInt(7)
@@ -316,15 +314,17 @@ func TestBurnEthSuccess(t *testing.T) {
 	eventEthereumReceiver := ""
 	eventAmount := ""
 	eventSymbol := ""
-	eventCoins := ""
+	eventCethAmount := sdk.NewInt(0)
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			switch key := string(attribute.Key); key {
 			case senderString:
-				require.Equal(t, value, senderAddress.String())
+				// multiple recipient in burn, skip the comparison
+				// require.Equal(t, value, senderAddress.String())
 			case "recipient":
-				require.Equal(t, value, moduleAccountAddress.String())
+				// multiple recipient in burn, skip the comparison
+				// require.Equal(t, value, TestAddress)
 			case moduleString:
 				require.Equal(t, value, ModuleName)
 			case "ethereum_chain_id":
@@ -339,8 +339,10 @@ func TestBurnEthSuccess(t *testing.T) {
 				eventAmount = value
 			case "symbol":
 				eventSymbol = value
-			case "coins":
-				eventCoins = value
+			case "ceth_amount":
+				var ok bool
+				eventCethAmount, ok = sdk.NewIntFromString(value)
+				require.Equal(t, ok, true)
 			default:
 				require.Fail(t, fmt.Sprintf("unrecognized event %s", key))
 			}
@@ -352,7 +354,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	require.Equal(t, eventEthereumReceiver, ethereumReceiver.String())
 	require.Equal(t, eventAmount, coinsToBurnAmount.String())
 	require.Equal(t, eventSymbol, coinsToBurnSymbolPrefixed)
-	require.Equal(t, eventCoins, sdk.Coins{sdk.NewCoin("ceth", sdk.NewInt(65000000000*300000)), sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}.String())
+	require.Equal(t, eventCethAmount, sdk.NewInt(65000000000*300000))
 
 	coinsToMintAmount = sdk.NewInt(65000000000 * 300000)
 	coinsToMintSymbol = "eth"
@@ -383,4 +385,44 @@ func TestBurnEthSuccess(t *testing.T) {
 	res, err = handler(ctx, burnMsg)
 	require.Error(t, err)
 	require.Nil(t, res)
+}
+
+func TestUpdateCethReceiverAccountMsg(t *testing.T) {
+	ctx, oracleKeeper, bankKeeper, _, _, _, handler := CreateTestHandler(t, 0.5, []int64{5})
+	coins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(10000)))
+
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	_, _ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
+
+	testUpdateCethReceiverAccountMsg := types.CreateTestUpdateCethReceiverAccountMsg(
+		t, types.TestAddress, types.TestAddress)
+
+	res, err := handler(ctx, testUpdateCethReceiverAccountMsg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+}
+
+func TestRescueCethMsg(t *testing.T) {
+	ctx, oracleKeeper, bankKeeper, supplyKeeper, _, _, handler := CreateTestHandler(t, 0.5, []int64{5})
+	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, sdk.NewInt(10000)))
+	err := supplyKeeper.MintCoins(ctx, ModuleName, coins)
+	require.NoError(t, err)
+
+	testRescueCethMsg := types.CreateTestRescueCethMsg(
+		t, types.TestAddress, types.TestAddress, sdk.NewInt(10000))
+
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+
+	_, err = handler(ctx, testRescueCethMsg)
+	require.Error(t, err)
+
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+	_, _ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
+
+	res, err := handler(ctx, testRescueCethMsg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
 }

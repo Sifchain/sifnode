@@ -10,6 +10,9 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgBurn{}, "ethbridge/MsgBurn", nil)
 	cdc.RegisterConcrete(MsgLock{}, "ethbridge/MsgLock", nil)
 	cdc.RegisterConcrete(MsgUpdateWhiteListValidator{}, "ethbridge/MsgUpdateWhiteListValidator", nil)
+	cdc.RegisterConcrete(MsgUpdateCethReceiverAccount{}, "ethbridge/MsgUpdateCethReceiverAccount", nil)
+	cdc.RegisterConcrete(MsgRescueCeth{}, "ethbridge/MsgRescueCeth", nil)
+
 }
 
 // ModuleCdc defines the module codec

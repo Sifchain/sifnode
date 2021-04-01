@@ -178,8 +178,14 @@ def is_ganache(ethereum_network):
 
 
 @pytest.fixture
-def sifchain_fees():
-    return "200000rowan"
+def sifchain_fees(sifchain_fees_int):
+    """returns a string suitable for passing to sifnodecli"""
+    return f"{sifchain_fees_int}rowan"
+
+
+@pytest.fixture
+def sifchain_fees_int():
+    return 200000
 
 
 @pytest.fixture
@@ -320,3 +326,9 @@ def rowan_source_integrationtest_env_transfer_request(
     result.sifchain_address = rowan_source
     result.sifchain_symbol = "rowan"
     return result
+
+
+@pytest.fixture
+def ethbridge_module_address():
+    """The hardcoded address of the sifnode ethbridge module"""
+    return "sif1l3dftf499u4gvdeuuzdl2pgv4f0xdtnuuwlzp8"
