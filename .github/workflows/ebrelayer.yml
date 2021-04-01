@@ -9,6 +9,9 @@ on:
       docker_image_tag:
         description: devnet-version, testnet-version
         required: true
+  push:
+    branches:
+      - 'ebrelayer-pipeline-development'
 
 jobs:
   #US DEVNET DEPLOYMENT
@@ -22,7 +25,7 @@ jobs:
       VAULT_TEST_SETTINGS_PATH: "kv-v2/us/devnet/ebrelayer-smoke-test"
       app_namespace: "ebrelayer"
       image: "sifchain/ebrelayer"
-      image_tag: "${{ github.event.inputs.docker_image_tag }}"
+      image_tag: "devnet-20210324073200"
       env: "devnet"
       app_name: "ebrelayer"
       app_env: "devnet"
@@ -33,6 +36,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
+    if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -42,7 +46,6 @@ jobs:
         run: gem install rake
       - name: Sifchain Art
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -67,7 +70,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -78,7 +80,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
@@ -86,7 +87,6 @@ jobs:
 
       - name: Setup Vault Policy on Swing-Set
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           export PATH=$(pwd):${PATH}
@@ -95,7 +95,6 @@ jobs:
 
       - name: Enable Kubernetes Vault Communication If Not Enabled
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           export PATH=$(pwd):${PATH}
@@ -104,7 +103,6 @@ jobs:
 
       - name: Configure Vault to Mount Secrets To Application
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           export PATH=$(pwd):${PATH}
@@ -113,7 +111,6 @@ jobs:
 
       - name: Anchore Image Scan
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           export PATH=$(pwd):${PATH}
@@ -122,17 +119,14 @@ jobs:
 
       - name: Deploy Ebrelayer to Kubernetes Via Helm.
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           export PATH=$(pwd):${PATH}
           echo "This deploys a helm application configured to utilize vault secrets."
           rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
 
-
       - name: Validate ebrelayer is running by searching logs.
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           export PATH=$(pwd):${PATH}
@@ -141,7 +135,6 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
