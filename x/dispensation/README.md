@@ -93,7 +93,7 @@ Transfer events are emitted for each transfer . There are two type of transfers 
 ```
 
 
-A distribution complete event is emitted at the end of a distribution .
+- A distribution complete event is emitted at the end of a distribution .
 ```json
  {
   "type": "distribution_complete",
