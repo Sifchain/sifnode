@@ -271,13 +271,16 @@ spec:
   - server auth
 EOF
 
-echo "..."
-
 kubectl apply --kubeconfig=./kubeconfig -f ${TMPDIR}/csr.yaml
+
 kubectl certificate approve --kubeconfig=./kubeconfig ${CSR_NAME}
+
 serverCert=$(kubectl get csr --kubeconfig=./kubeconfig ${CSR_NAME} -o jsonpath='{.status.certificate}')
+
 echo "${serverCert}" | openssl base64 -d -A -out ${TMPDIR}/vault.crt
+
 kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > ${TMPDIR}/vault.ca
+
 vault_ca_base64=$(kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}')
 
 kubectl create secret generic --kubeconfig=./kubeconfig ${SECRET_NAME} \
@@ -313,7 +316,6 @@ echo "===================STAGE 3 - INSTALL VAULT ==================="
 check_deployment=`kubectl get statefulsets --kubeconfig=./kubeconfig -n vault | grep vault`
 [ -z "$check_deployment" ] && helm install vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig || helm upgrade vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig
 
-
 echo "sleep for 2 min to let vault start up"
 sleep 180
 
@@ -327,8 +329,14 @@ sleep 30
 echo -e ${vault_init_output} > vault_output
 export VAULT_TOKEN=$(echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2)
 
-check_vault_output=$(cat vault_output | grep 'Recovery Key')
-[ -z "$check_vault_output" ] && echo "Recovery Key Present Uploading" && aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2 || echo "Recovery Key Not Present Not Uploading"
+vault_output_wordcount=$(cat vault_output | wc | sed -e 's/ //g')
+
+echo "vault output word count ${vault_output_wordcount}"
+
+if [ "${vault_output_wordcount}" -ge "200" ]; then
+    aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2
+fi
+
 kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
 
 echo "create kv v2 engine"
@@ -391,11 +399,12 @@ path \\"+/sys/internal/counters/activity\\" {
 }
         " > #{args[:app_name]}-policy.hcl
 
-        cat #{args[:app_name]}-policy.hcl
-
         kubectl cp --kubeconfig=./kubeconfig #{args[:app_name]}-policy.hcl vault-0:/home/vault/#{args[:app_name]}-policy.hcl -n vault
+
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault policy delete #{args[:app_name]}
+
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault policy write #{args[:app_name]} /home/vault/#{args[:app_name]}-policy.hcl
+
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write sys/internal/counters/config enabled=enable
 
         rm -rf #{args[:app_name]}-policy.hcl
@@ -410,8 +419,11 @@ path \\"+/sys/internal/counters/activity\\" {
     task :enablekubernetes, [] do |t, args|
       cluster_automation = %Q{
         set +x
+
         echo "APPLY VAULT AUTH ENABLE KUBERNETES"
+
         check_installed=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth list | grep kubernetes`
+
         [ -z "$check_installed" ] && kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth enable kubernetes || echo "Kubernetes Already Enabled"
       }
       system(cluster_automation) or exit 1
@@ -463,14 +475,16 @@ metadata:
   labels:
     app: #{args[:app_name]} " > service_account.yaml
 
+        kubectl delete --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}
+
         kubectl create --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}
-        kubectl apply --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}
-        sleep 5
 
         token=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- cat /var/run/secrets/kubernetes.io/serviceaccount/token`
+
         kubernetes_cluster_ip=`kubectl exec --kubeconfig=./kubeconfig -it vault-0 -n vault -- printenv | grep KUBERNETES_PORT_443_TCP_ADDR | cut -d '=' -f 2 | tr -d '\n' | tr -d '\r'`
 
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write auth/kubernetes/config token_reviewer_jwt="$token" kubernetes_host="https://$kubernetes_cluster_ip:443" kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write auth/kubernetes/role/#{args[:app_name]} bound_service_account_names=#{args[:app_name]} bound_service_account_namespaces=#{args[:app_namespace]} policies=#{args[:app_name]} ttl=1h
 
         rm -rf service_account.yaml

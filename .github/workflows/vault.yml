@@ -6,7 +6,10 @@ on:
       environment:
         description: devnet, testnet
         required: true
-
+  push:
+    branches:
+      - 'ebrelayer-pipeline-development'
+    
 jobs:
   #deploy vault to us devnet environment
   deploy_devnet_vault_us:
@@ -27,7 +30,7 @@ jobs:
       matrix:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
-
+    if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -110,6 +113,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
+    if: github.event.inputs.environment == 'devnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -121,7 +125,6 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -147,7 +150,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -155,7 +157,6 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Install Vault"
@@ -163,16 +164,12 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
-
-
-
 
 
   #deploy vault to au devnet environment
@@ -195,6 +192,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
+    if: github.event.inputs.environment == 'devnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -206,7 +204,6 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -232,7 +229,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -240,7 +236,6 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Install Vault"
@@ -248,17 +243,12 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
-
-
-
-
 
 
   #deploy vault to sg devnet environment
@@ -281,6 +271,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
+    if: github.event.inputs.environment == 'devnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -292,7 +283,6 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -318,7 +308,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -326,7 +315,6 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Install Vault"
@@ -334,7 +322,6 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
@@ -364,6 +351,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
+    if: github.event.inputs.environment == 'testnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -375,7 +363,6 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -401,7 +388,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -409,7 +395,6 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Install Vault"
@@ -417,7 +402,6 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
@@ -446,6 +430,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
+    if: github.event.inputs.environment == 'testnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -457,7 +442,6 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -483,7 +467,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -491,7 +474,6 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Install Vault"
@@ -499,7 +481,6 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
@@ -531,6 +512,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
+    if: github.event.inputs.environment == 'testnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -542,7 +524,6 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -568,7 +549,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -576,7 +556,6 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Install Vault"
@@ -584,16 +563,12 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
-
-
-
 
 
 
@@ -617,6 +592,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
+    if: github.event.inputs.environment == 'testnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -628,7 +604,6 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -654,7 +629,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -662,7 +636,6 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Install Vault"
@@ -670,7 +643,6 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
