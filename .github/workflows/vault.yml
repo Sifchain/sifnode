@@ -9,7 +9,7 @@ on:
   push:
     branches:
       - 'ebrelayer-pipeline-development'
-    
+
 jobs:
   #deploy vault to us devnet environment
   deploy_devnet_vault_us:
@@ -42,7 +42,6 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -68,7 +67,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -76,7 +74,6 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Install Vault"
@@ -84,7 +81,6 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
