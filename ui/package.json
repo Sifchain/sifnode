@@ -31,7 +31,7 @@
     "pw:test": "cd e2e && ./scripts/test.sh",
     "pw:test:stack": "concurrently -r -k -s first \"yarn pw:stack\" \"wait-on http://localhost:5000 && yarn pw:test\"",
     "lint": "yarn prettier --config .prettierrc -c '**/*.{vue,ts,json}'",
-    "lint-quick": "yarn pretty-quick --pattern 'ui/**/*.{vue,ts,json}'",
+    "lint-quick": "yarn pretty-quick --staged --pattern 'ui/**/*.{vue,ts,js,json}'",
     "build": "yarn lint && yarn chain:compile:peggy && yarn core:build && yarn app:build",
     "test": "yarn core:test:all",
     "prepare": "cd .. && husky install ./ui/.husky",
