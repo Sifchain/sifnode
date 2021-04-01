@@ -25,7 +25,7 @@ jobs:
       VAULT_TEST_SETTINGS_PATH: "kv-v2/us/devnet/ebrelayer-smoke-test"
       app_namespace: "ebrelayer"
       image: "sifchain/ebrelayer"
-      image_tag: "${{ github.event.inputs.docker_image_tag }}"
+      image_tag: "devnet-20210401000000"
       env: "devnet"
       app_name: "ebrelayer"
       app_env: "devnet"
