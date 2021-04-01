@@ -89,3 +89,23 @@ func CreateTestQueryEthProphecyResponse(
 		ethBridgeClaims,
 	)
 }
+
+func CreateTestUpdateCethReceiverAccountMsg(t *testing.T, testCosmosSender string, testCethReceiverAccount string) MsgUpdateCethReceiverAccount {
+	accAddress1, err := sdk.AccAddressFromBech32(testCosmosSender)
+	require.NoError(t, err)
+	accAddress2, err := sdk.AccAddressFromBech32(testCethReceiverAccount)
+	require.NoError(t, err)
+
+	msgUpdateCethReceiverAccount := NewMsgUpdateCethReceiverAccount(accAddress1, accAddress2)
+	return msgUpdateCethReceiverAccount
+}
+
+func CreateTestRescueCethMsg(t *testing.T, testCosmosSender string, testCethReceiverAccount string, cethAmount sdk.Int) MsgRescueCeth {
+	accAddress1, err := sdk.AccAddressFromBech32(testCosmosSender)
+	require.NoError(t, err)
+	accAddress2, err := sdk.AccAddressFromBech32(testCethReceiverAccount)
+	require.NoError(t, err)
+
+	MsgRescueCeth := NewMsgRescueCeth(accAddress1, accAddress2, cethAmount)
+	return MsgRescueCeth
+}
