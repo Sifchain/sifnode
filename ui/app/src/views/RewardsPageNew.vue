@@ -1,16 +1,35 @@
 <script lang="ts">
-import { defineComponent } from "vue";
+import { computed, defineComponent, watch } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
+import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
+import { useCore } from "@/hooks/useCore";
+import { ref } from "@vue/reactivity";
 
 export default defineComponent({
   components: {
     Layout,
     SifButton,
     AssetItem,
+    ActionsPanel
   },
-  setup() {},
+  setup() {
+    const { store } = useCore();
+    const address = computed(() => store.wallet.sif.address);
+    let rewards = ref<Array<Object>>([])
+
+    watch(
+      address, 
+      async () => {
+        const data = await fetch(`https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`);
+        rewards.value = await data.json();
+      }
+    )
+    return {
+      rewards
+    }
+  },
 });
 </script>
 
@@ -29,22 +48,28 @@ export default defineComponent({
         >.
       </p>
     </div>
-    <div class="list-container">
+    <div class="list-container" 
+      v-for="reward in rewards" 
+      v-bind:key="reward.type"
+    >
       <div class="item">
         <div class="title">
-          Liquidity Mining
+          {{reward.type}}
         </div>
 
         <div class="detail">
           <!-- future: slot -->
           <div class="amount">
             <AssetItem symbol="Rowan" :label="false" />
-            <span class="mr-6">49.212</span>
+            <span class="mr-6">{{reward.amount}}</span>
           </div>
           <SifButton primary>Claim</SifButton>
         </div>
       </div>
     </div>
+    <ActionsPanel
+      connectType="connectToSif"
+    />
   </Layout>
 </template>
 
