@@ -54,10 +54,12 @@ export default defineComponent({
     const transactionState = ref<ConfirmState>("selecting");
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
-    const feeAmount = ref<any>()
+    const feeAmount = ref<any>();
 
-    onBeforeMount(async () => {  
-      feeAmount.value = await actions.peg.calculateUnpegFee(Asset.get(symbol.value));
+    onBeforeMount(async () => {
+      feeAmount.value = await actions.peg.calculateUnpegFee(
+        Asset.get(symbol.value),
+      );
     });
 
     // const symbol = ref<string | null>(null);
@@ -195,7 +197,7 @@ export default defineComponent({
         return mode.value === "peg" ? "Peg" : "Unpeg";
       }),
     };
-  }
+  },
 });
 </script>
 
@@ -303,7 +305,6 @@ export default defineComponent({
       title="Unpeg token from Sifchain"
     >
       <template v-slot:selecting>
-        {{feeAmount}}
         <DetailsTable
           :header="{
             show: amount !== '0.0',
