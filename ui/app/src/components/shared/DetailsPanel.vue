@@ -43,7 +43,7 @@ export default defineComponent({
     <div class="details-header">
       <div class="details-row">
         <span>Price</span>
-        <span>{{ priceMessage }}</span>
+        <span data-handle="details-price-message">{{ priceMessage }}</span>
       </div>
     </div>
     <div
@@ -62,7 +62,7 @@ export default defineComponent({
           </Tooltip>
         </span>
 
-        <span
+        <span data-handle="details-minimum-received"
           >{{ formatNumber(minimumReceived) }}
           <span>{{
             toToken.toString().toLowerCase().includes("rowan")
@@ -80,7 +80,9 @@ export default defineComponent({
             <Icon icon="info-box-black" />
           </Tooltip>
         </span>
-        <span>{{ formatPercentage(priceImpact) }}</span>
+        <span data-handle="details-price-impact">{{
+          formatPercentage(priceImpact)
+        }}</span>
       </div>
       <div v-if="providerFee && toToken" class="details-row">
         <span>
@@ -91,7 +93,7 @@ export default defineComponent({
             <Icon icon="info-box-black" />
           </Tooltip>
         </span>
-        <span
+        <span data-handle="details-liquidity-provider-fee"
           >{{ showProviderFee(providerFee) }}
           <span>{{
             toToken.toString().toLowerCase().includes("rowan")

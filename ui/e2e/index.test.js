@@ -44,8 +44,11 @@ const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 // services
 const { getSifchainBalances } = require("./sifchain.js");
 const { getEthBalance, advanceEthBlocks } = require("./ethereum.js");
-
 const { extractFile } = require("./utils");
+
+async function getInputValue(page, selector) {
+  return await page.evaluate((el) => el.value, await page.$(selector));
+}
 
 let browserContext;
 let dexPage;
@@ -118,6 +121,7 @@ describe("connect to page", () => {
   });
 
   it("pegs", async () => {
+    // XXX: This currently reuses the page from a previous test - this might be ok for now but we will probably want to provide that state some other way
     // assumes wallets connected
     const mmEthBalance = await getEthBalance(MM_CONFIG.options.address);
     const cEthBalance = await getSifchainBalances(
@@ -130,8 +134,8 @@ describe("connect to page", () => {
 
     await dexPage.click("[data-handle='external-tab']");
     await dexPage.click("[data-handle='peg-eth']");
-    await dexPage.click('input[type="number"]');
-    await dexPage.fill('input[type="number"]', pegAmount);
+    await dexPage.click('[data-handle="peg-input"]');
+    await dexPage.fill('[data-handle="peg-input"]', pegAmount);
     await dexPage.click('button:has-text("Peg")');
     await dexPage.click('button:has-text("Confirm Peg")');
 
@@ -148,7 +152,112 @@ describe("connect to page", () => {
     expect(rowAmount.trim()).toBe(expected);
   });
 
-  it("swaps", async () => {});
+  it("swaps", async () => {
+    // Navigate to swap page
+    await dexPage.goto(DEX_TARGET, {
+      waitUntil: "domcontentloaded",
+    });
+
+    await dexPage.click("[data-handle='swap-page-button']");
+
+    // Get values of token A and token B in account
+    // Select Token A
+    await dexPage.click("[data-handle='token-a-select-button']");
+    await dexPage.click("[data-handle='cusdc-select-button']");
+    // Select Token B
+    await dexPage.click("[data-handle='token-b-select-button']");
+    await dexPage.click("[data-handle='rowan-select-button']");
+    // Input amount A
+    await dexPage.click('[data-handle="token-a-input"]');
+    await dexPage.fill('[data-handle="token-a-input"]', "100");
+
+    expect(await getInputValue(dexPage, '[data-handle="token-b-input"]')).toBe(
+      "99.99800003",
+    );
+
+    // Check expected output (XXX: hmmm - might have to pull in formulae from core??)
+
+    // Input amount B
+    await dexPage.click('[data-handle="token-b-input"]');
+    await dexPage.fill('[data-handle="token-b-input"]', "100");
+
+    expect(await getInputValue(dexPage, '[data-handle="token-a-input"]')).toBe(
+      "100.00200005",
+    );
+
+    // Click max
+    await dexPage.click("[data-handle='token-a-max-button']");
+
+    // Check expected estimated values
+    expect(await getInputValue(dexPage, '[data-handle="token-a-input"]')).toBe(
+      "10000.000000000000000000", // TODO: trim mantissa
+    );
+    expect(await getInputValue(dexPage, '[data-handle="token-b-input"]')).toBe(
+      "9980.0299600499",
+    );
+    expect(
+      await dexPage.innerText("[data-handle='details-price-message']"),
+    ).toBe("0.998003 ROWAN per cUSDC");
+    expect(
+      await dexPage.innerText("[data-handle='details-minimum-received']"),
+    ).toBe("9880.229660 ROWAN");
+    expect(
+      await dexPage.innerText("[data-handle='details-price-impact']"),
+    ).toBe("0.10%");
+    expect(
+      await dexPage.innerText("[data-handle='details-liquidity-provider-fee']"),
+    ).toBe("9.9800 ROWAN");
+
+    // Input Amount A
+    await dexPage.click('[data-handle="token-a-input"]');
+    await dexPage.fill('[data-handle="token-a-input"]', "50");
+
+    expect(await getInputValue(dexPage, '[data-handle="token-b-input"]')).toBe(
+      "49.9995000037",
+    );
+    expect(
+      await dexPage.innerText("[data-handle='details-price-message']"),
+    ).toBe("0.999990 ROWAN per cUSDC");
+    expect(
+      await dexPage.innerText("[data-handle='details-minimum-received']"),
+    ).toBe("49.499505 ROWAN");
+    expect(
+      await dexPage.innerText("[data-handle='details-price-impact']"),
+    ).toBe("< 0.01%");
+    expect(
+      await dexPage.innerText("[data-handle='details-liquidity-provider-fee']"),
+    ).toBe("0.0002499975 ROWAN");
+
+    // Click Swap Button
+    await dexPage.click('button:has-text("Swap")');
+
+    // Confirm dialog shows the expected values
+    expect(
+      await dexPage.innerText(
+        "[data-handle='confirm-swap-modal'] [data-handle='details-price-message']",
+      ),
+    ).toBe("0.999990 ROWAN per cUSDC");
+    expect(
+      await dexPage.innerText(
+        "[data-handle='confirm-swap-modal'] [data-handle='details-minimum-received']",
+      ),
+    ).toBe("49.499505 ROWAN");
+    expect(
+      await dexPage.innerText(
+        "[data-handle='confirm-swap-modal'] [data-handle='details-price-impact']",
+      ),
+    ).toBe("< 0.01%");
+    expect(
+      await dexPage.innerText(
+        "[data-handle='confirm-swap-modal'] [data-handle='details-liquidity-provider-fee']",
+      ),
+    ).toBe("0.0002499975 ROWAN");
+
+    await dexPage.click('button:has-text("Confirm Swap")');
+
+    // Confirm transactioni popup
+    // Wait for balances to be the amounts expected
+  });
 });
 
 async function extractExtensionPackages() {
