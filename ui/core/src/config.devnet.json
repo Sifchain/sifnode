@@ -6,7 +6,7 @@
   "sifChainId": "sifchain-devnet",
   "web3Provider": "metamask",
   "nativeAsset": "rowan",
-  "bridgebankContractAddress": "0x3FA07beAB77235A3728eF3911A9983579882666D",
+  "bridgebankContractAddress": "0x96DC6f02C66Bbf2dfbA934b8DafE7B2c08715A73",
   "keplrChainConfig": {
     "chainName": "SifchainDevnet",
     "chainId": "",

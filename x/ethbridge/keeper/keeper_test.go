@@ -12,8 +12,10 @@ import (
 )
 
 var (
-	cosmosReceivers, _                         = CreateTestAddrs(1)
-	amount                                     = sdk.NewInt(10)
+	cosmosReceivers, _ = CreateTestAddrs(1)
+	amount             = sdk.NewInt(10)
+	doubleAmount       = sdk.NewInt(20)
+
 	symbol                                     = "stake"
 	tokenContractAddress                       = types.NewEthereumAddress("0xbbbbca6a901c926f240b89eacb641d8aec7aeafd")
 	ethBridgeAddress     types.EthereumAddress = types.NewEthereumAddress(strings.ToLower("0x30753E4A8aad7F8597332E813735Def5dD395028"))
@@ -183,68 +185,152 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, "20stake", receiverCoins.String())
 }
-func TestProcessBurn(t *testing.T) {
-	ctx, keeper, bankKeeper, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
-	coins := sdk.NewCoins(sdk.NewCoin("stake", amount))
+func TestProcessBurn(t *testing.T) {
+	ctx, keeper, bankKeeper, supplyKeeper, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
+	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
+	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
+
+	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], msg)
+	require.NoError(t, err)
+
+	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins.String(), string(""))
+}
+
+func TestProcessBurnCeth(t *testing.T) {
+	ctx, keeper, bankKeeper, supplyKeeper, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+
+	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, types.CethSymbol, amount)
+	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, doubleAmount))
+	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
+
+	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], msg)
+	require.NoError(t, err)
+
+	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins.String(), string(""))
+}
+
+func TestProcessLock(t *testing.T) {
+	ctx, keeper, bankKeeper, supplyKeeper, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
 
 	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
-	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], coins)
-	require.Error(t, err)
+
+	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
+
+	err := keeper.ProcessLock(ctx, cosmosReceivers[0], msg)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
-	//process successful claim to get stake
+	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
+	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	claimType, err := types.StringToClaimType("burn")
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], msg)
 	require.NoError(t, err)
-	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
-
-	claimBytes, err := json.Marshal(claimContent)
-	require.NoError(t, err)
-	claimString := string(claimBytes)
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
-	require.NoError(t, err)
-
-	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], coins)
-	require.NoError(t, err)
-	// lock stake
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), string(""))
 
 }
 
-func TestProcessLock(t *testing.T) {
+func TestProcessBurnWithReceiver(t *testing.T) {
+	ctx, keeper, bankKeeper, supplyKeeper, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
-	ctx, keeper, bankKeeper, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
+	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
+	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
+
+	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], msg)
+	require.NoError(t, err)
+
+	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins.String(), string(""))
+}
+
+func TestProcessBurnCethWithReceiver(t *testing.T) {
+	ctx, keeper, bankKeeper, supplyKeeper, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+
+	msg := types.NewMsgBurn(1, cosmosReceivers[0], ethereumSender, amount, types.CethSymbol, amount)
+	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, doubleAmount))
+	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
+
+	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], msg)
+	require.NoError(t, err)
+
+	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
+	require.Equal(t, receiverCoins.String(), string(""))
+}
+
+func TestProcessLockWithReceiver(t *testing.T) {
+	ctx, keeper, bankKeeper, supplyKeeper, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
 	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
 
-	coins := sdk.NewCoins(sdk.NewCoin("stake", amount))
-	err := keeper.ProcessLock(ctx, cosmosReceivers[0], coins)
+	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
+
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], msg)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
-	//process successful claim to get stake
+	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
+	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
+	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	claimType, err := types.StringToClaimType("burn")
-	require.NoError(t, err)
-	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
-
-	claimBytes, err := json.Marshal(claimContent)
-	require.NoError(t, err)
-	claimString := string(claimBytes)
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
-	require.NoError(t, err)
-
-	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
-	require.Equal(t, receiverCoins.String(), "10stake")
-
-	err = keeper.ProcessLock(ctx, cosmosReceivers[0], coins)
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], msg)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins.String(), string(""))
 
+}
+
+func TestProcessUpdateCethReceiverAccount(t *testing.T) {
+	ctx, keeper, _, _, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+
+	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender)
+	require.Equal(t, err.Error(), "only admin account can update ceth receiver account")
+
+	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+
+	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender)
+	require.NoError(t, err)
+}
+
+func TestProcessRescueCeth(t *testing.T) {
+	ctx, keeper, _, supplyKeeper, _, _ := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
+	require.NoError(t, err)
+
+	cethAmount := sdk.NewInt(100)
+	err = supplyKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(types.CethSymbol, cethAmount)))
+	require.NoError(t, err)
+
+	msg := types.NewMsgRescueCeth(cosmosSender, cosmosSender, cethAmount)
+
+	err = keeper.ProcessRescueCeth(ctx, msg)
+	require.Equal(t, err.Error(), "only admin account can call rescue ceth")
+
+	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+
+	err = keeper.ProcessRescueCeth(ctx, msg)
+	require.NoError(t, err)
 }

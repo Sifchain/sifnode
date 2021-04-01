@@ -19,8 +19,7 @@ const errorMessageKey = "errorMessage"
 
 // NewHandler returns a handler for "ethbridge" type messages.
 func NewHandler(
-	accountKeeper types.AccountKeeper, bridgeKeeper Keeper,
-	cdc *codec.Codec) sdk.Handler {
+	accountKeeper types.AccountKeeper, bridgeKeeper Keeper, cdc *codec.Codec) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
@@ -32,6 +31,10 @@ func NewHandler(
 			return handleMsgLock(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		case MsgUpdateWhiteListValidator:
 			return handleMsgUpdateWhiteListValidator(ctx, cdc, accountKeeper, bridgeKeeper, msg)
+		case MsgUpdateCethReceiverAccount:
+			return handleMsgUpdateCethReceiverAccount(ctx, cdc, accountKeeper, bridgeKeeper, msg)
+		case MsgRescueCeth:
+			return handleMsgRescueCeth(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		default:
 			errMsg := fmt.Sprintf("unrecognized ethbridge message type: %v", msg.Type())
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
@@ -117,14 +120,7 @@ func handleMsgBurn(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	var coins sdk.Coins
-
-	if msg.Symbol == CethSymbol {
-		coins = sdk.NewCoins(sdk.NewCoin(CethSymbol, msg.CethAmount.Add(msg.Amount)))
-	} else {
-		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
-	}
-	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, coins); err != nil {
+	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, msg); err != nil {
 		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
 		return nil, err
 	}
@@ -136,7 +132,7 @@ func handleMsgBurn(
 		"EthereumReceiver", msg.EthereumReceiver.String(),
 		"Amount", msg.Amount.String(),
 		"Symbol", msg.Symbol,
-		"Coins", coins.String())
+		"CethAmount", msg.CethAmount.String())
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -152,7 +148,7 @@ func handleMsgBurn(
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver.String()),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyCoins, coins.String()),
+			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
 		),
 	})
 
@@ -176,8 +172,7 @@ func handleMsgLock(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
 	}
 
-	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(CethSymbol, msg.CethAmount))
-	if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, coins); err != nil {
+	if err := bridgeKeeper.ProcessLock(ctx, msg.CosmosSender, msg); err != nil {
 		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
 		return nil, err
 	}
@@ -189,7 +184,7 @@ func handleMsgLock(
 		"EthereumReceiver", msg.EthereumReceiver.String(),
 		"Amount", msg.Amount.String(),
 		"Symbol", msg.Symbol,
-		"Coins", coins.String())
+		"CethAmount", msg.CethAmount.String())
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -205,7 +200,7 @@ func handleMsgLock(
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver.String()),
 			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
 			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyCoins, coins.String()),
+			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
 		),
 	})
 
@@ -249,6 +244,66 @@ func handleMsgUpdateWhiteListValidator(
 			sdk.NewAttribute(types.AttributeKeyOperationType, msg.OperationType),
 		),
 	})
+
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
+}
+
+func handleMsgUpdateCethReceiverAccount(
+	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
+	bridgeKeeper Keeper, msg MsgUpdateCethReceiverAccount,
+) (*sdk.Result, error) {
+	logger := bridgeKeeper.Logger(ctx)
+	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender.String())
+
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	}
+
+	if err := bridgeKeeper.ProcessUpdateCethReceiverAccount(ctx, msg.CosmosSender, msg.CethReceiverAccount); err != nil {
+		logger.Error("keeper failed to process update ceth receiver account.", errorMessageKey, err.Error())
+		return nil, err
+	}
+
+	logger.Info("sifnode emit update ceth receiver account event.",
+		"CosmosSender", msg.CosmosSender.String(),
+		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
+		"CethReceiverAccount", msg.CethReceiverAccount.String())
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender.String()),
+		),
+		sdk.NewEvent(
+			types.EventTypeLock,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender.String()),
+			sdk.NewAttribute(types.AttributeKeyCethReceiverAccount, msg.CethReceiverAccount.String()),
+		),
+	})
+
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
+}
+
+func handleMsgRescueCeth(
+	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
+	bridgeKeeper Keeper, msg MsgRescueCeth) (*sdk.Result, error) {
+	logger := bridgeKeeper.Logger(ctx)
+	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender.String())
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	}
+	if err := bridgeKeeper.ProcessRescueCeth(ctx, msg); err != nil {
+		logger.Error("keeper failed to process rescue ceth message.", errorMessageKey, err.Error())
+		return nil, err
+	}
+	logger.Info("sifnode emit rescue ceth event.",
+		"CosmosSender", msg.CosmosSender.String(),
+		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
+		"CosmosReceiver", msg.CosmosReceiver.String(),
+		"CethAmount", msg.CethAmount.String())
 
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
