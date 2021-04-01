@@ -5,6 +5,7 @@ package txs
 import (
 	"context"
 	"crypto/ecdsa"
+	"errors"
 	"math/big"
 	"time"
 
@@ -158,4 +159,24 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 
 	}
 	return client, transactOptsAuth, target, nil
+}
+
+// GetGasPrice set up Ethereum client, validator's transaction auth, and the target contract's address
+func GetGasPrice(provider string, sugaredLogger *zap.SugaredLogger) (*big.Int, error) {
+	// Start Ethereum client
+	client, err := ethclient.Dial(provider)
+	if err != nil {
+		sugaredLogger.Errorw("failed to connect ethereum node.",
+			errorMessageKey, err.Error())
+		return nil, errors.New("failed to connect ethereum node")
+	}
+
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		sugaredLogger.Errorw("failed to get gas price.",
+			errorMessageKey, err.Error())
+		return nil, errors.New("failed to get gas price")
+	}
+
+	return gasPrice, nil
 }

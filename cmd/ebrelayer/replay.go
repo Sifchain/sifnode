@@ -216,3 +216,64 @@ func RunListMissedCosmosEventCmd(cmd *cobra.Command, args []string) error {
 
 	return nil
 }
+
+// RunStartGasOracleCmd executes startGasOracleCmd
+func RunStartGasOracleCmd(cmd *cobra.Command, args []string) error {
+	// Load the validator's Ethereum private key from environment variables
+	privateKey, err := txs.LoadPrivateKey()
+	if err != nil {
+		return errors.Errorf("invalid [ETHEREUM_PRIVATE_KEY] environment variable")
+	}
+
+	// Parse flag --chain-id
+	chainID := viper.GetString(flags.FlagChainID)
+	if strings.TrimSpace(chainID) == "" {
+		return errors.Errorf("Must specify a 'chain-id'")
+	}
+
+	// Parse flag --rpc-url
+	rpcURL := viper.GetString(FlagRPCURL)
+	if rpcURL != "" {
+		_, err := url.Parse(rpcURL)
+		if rpcURL != "" && err != nil {
+			return errors.Wrapf(err, "invalid RPC URL: %v", rpcURL)
+		}
+	}
+
+	// if !relayer.IsWebsocketURL(args[0]) {
+	// 	return errors.Errorf("invalid [web3-provider]: %s", args[0])
+	// }
+
+	tendermintNode := args[0]
+	web3Provider := args[1]
+
+	if !common.IsHexAddress(args[2]) {
+		return errors.Errorf("invalid [bridge-registry-contract-address]: %s", args[1])
+	}
+	contractAddress := common.HexToAddress(args[2])
+
+	if len(strings.Trim(args[3], "")) == 0 {
+		return errors.Errorf("invalid [validator-moniker]: %s", args[2])
+	}
+	validatorMoniker := args[3]
+	mnemonic := args[4]
+
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalln("failed to init zap logging")
+	}
+	sugaredLogger := logger.Sugar()
+
+	// Initialize new Ethereum event listener
+	inBuf := bufio.NewReader(cmd.InOrStdin())
+
+	ethSub, err := relayer.NewEthereumSub(inBuf, tendermintNode, cdc, validatorMoniker, chainID, web3Provider,
+		contractAddress, privateKey, mnemonic, nil, sugaredLogger)
+	if err != nil {
+		return err
+	}
+
+	ethSub.StartGasOracle()
+
+	return nil
+}

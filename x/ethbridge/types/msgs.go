@@ -275,6 +275,52 @@ func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.CosmosSender}
 }
 
+// MsgUpdateGasPrice add or remove validator from whitelist
+type MsgUpdateGasPrice struct {
+	ValidatorAddress sdk.ValAddress `json:"validator_address" yaml:"validator_address"`
+	BlockNumber      sdk.Int        `json:"block_number" yaml:"block_number"`
+	GasPrice         sdk.Int        `json:"gas_price" yaml:"gas_price"`
+}
+
+// NewMsgUpdateGasPrice is a constructor function for MsgUpdateGasPrice
+func NewMsgUpdateGasPrice(validatorAddress sdk.ValAddress, blockNumber sdk.Int, gasPrice sdk.Int) MsgUpdateGasPrice {
+	return MsgUpdateGasPrice{
+		ValidatorAddress: validatorAddress,
+		BlockNumber:      blockNumber,
+		GasPrice:         gasPrice,
+	}
+}
+
+// Route should return the name of the module
+func (msg MsgUpdateGasPrice) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgUpdateGasPrice) Type() string { return "update_gas_price" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgUpdateGasPrice) ValidateBasic() error {
+	if msg.ValidatorAddress.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
+	}
+
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgUpdateGasPrice) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgUpdateGasPrice) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
+}
+
 // MapOracleClaimsToEthBridgeClaims maps a set of generic oracle claim data into EthBridgeClaim objects
 func MapOracleClaimsToEthBridgeClaims(
 	ethereumChainID int, bridgeContract EthereumAddress, nonce int, symbol string,

@@ -36,9 +36,10 @@ var (
 	ErrJSONMarshalling                = types.ErrJSONMarshalling
 	NewEthereumAddress                = types.NewEthereumAddress
 	NewMsgCreateEthBridgeClaim        = types.NewMsgCreateEthBridgeClaim
-	MapOracleClaimsToEthBridgeClaims  = types.MapOracleClaimsToEthBridgeClaims
-	NewQueryEthProphecyParams         = types.NewQueryEthProphecyParams
-	NewQueryEthProphecyResponse       = types.NewQueryEthProphecyResponse
+	NewMsgUpdateGasPrice              = types.NewMsgUpdateGasPrice
+	MapOracleClaimsToEthBridgeClaims = types.MapOracleClaimsToEthBridgeClaims
+	NewQueryEthProphecyParams        = types.NewQueryEthProphecyParams
+	NewQueryEthProphecyResponse      = types.NewQueryEthProphecyResponse
 
 	CreateTestEthMsg                   = types.CreateTestEthMsg
 	CreateTestEthClaim                 = types.CreateTestEthClaim

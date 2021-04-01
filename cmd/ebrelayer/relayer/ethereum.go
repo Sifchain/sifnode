@@ -481,3 +481,63 @@ func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
 
 	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
 }
+
+// StartGasOracle an Ethereum chain subscription
+func (sub EthereumSub) StartGasOracle() {
+	client, err := SetupWebsocketEthClient(sub.EthProvider)
+	if err != nil {
+		sub.SugaredLogger.Errorw("SetupWebsocketEthClient failed.",
+			errorMessageKey, err.Error())
+		return
+	}
+	defer client.Close()
+	sub.SugaredLogger.Infow("Started Ethereum websocket with provider:",
+		"Ethereum provider", sub.EthProvider)
+
+	// We will check logs for new events
+	logs := make(chan ctypes.Log)
+	defer close(logs)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	defer close(quit)
+
+	// Listen the new header
+	heads := make(chan *ctypes.Header)
+	defer close(heads)
+	subHead, err := client.SubscribeNewHead(context.Background(), heads)
+	if err != nil {
+		sub.SugaredLogger.Errorw("failed to subscribe new head.",
+			errorMessageKey, err.Error())
+		return
+	}
+	defer subHead.Unsubscribe()
+
+	for {
+		select {
+		// Handle any errors
+		case <-quit:
+			return
+		case err := <-subHead.Err():
+			sub.SugaredLogger.Errorw("failed to subscribe ethereum header.",
+				errorMessageKey, err.Error())
+			return
+		case newHead := <-heads:
+			sub.SugaredLogger.Infow("receive new ethereum header.",
+				"ethereum block number", newHead.Number,
+				"ethereum block hash", newHead.Hash())
+
+			gasPrice, err := txs.GetGasPrice(sub.EthProvider, sub.SugaredLogger)
+			if err != nil {
+				sub.SugaredLogger.Errorw("failed to get gas price.",
+					errorMessageKey, err.Error())
+
+			} else {
+				err := txs.SendGasPrice(sub.Cdc, sub.ValidatorName, sub.TempPassword, sub.ValidatorAddress,
+					sdk.NewIntFromBigInt(newHead.Number), sdk.NewIntFromBigInt(gasPrice), sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
+
+				sub.SugaredLogger.Errorw("failed to send gas price to cosmos.",
+					errorMessageKey, err.Error())
+			}
+		}
+	}
+}
