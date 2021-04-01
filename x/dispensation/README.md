@@ -54,7 +54,7 @@ sifnodecli tx multisign offlinetx.json mkey sig1.json sig2.json >> signedtx.json
 sifnodecli tx broadcast signedtx.json
 ```
 
-###Events Emitted 
+### Events Emitted 
 Transfer events are emitted for each transfer . There are two type of transfers in a distribution
 - Transfer for address in the input list to the Dispensation Module Address.
 
