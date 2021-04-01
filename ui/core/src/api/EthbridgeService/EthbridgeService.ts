@@ -122,6 +122,10 @@ export default function createEthbridgeService({
   }
 
   return {
+    async getEthGasPrice() {
+      const web3 = await ensureWeb3();
+      return await web3.eth.getGasPrice();
+    },
     async approveBridgeBankSpend(account: string, amount: AssetAmount) {
       // This will popup an approval request in metamask
       const web3 = await ensureWeb3();

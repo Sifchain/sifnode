@@ -38,6 +38,11 @@ describe("EthbridgeService", () => {
     });
   });
 
+  test("it should get gas price", async () => {
+    // is this constant?
+    expect(await EthbridgeService.getEthGasPrice()).toEqual("20000000000");
+  });
+
   // We need to only run one test on ebrelayer as we have not got the
   // infrastructure setup to retart it between tests
   // To fix this we would need to deterministically reset the state of both
