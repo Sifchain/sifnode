@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, onBeforeMount } from "vue";
 import Layout from "@/components/layout/Layout.vue";
 import { computed, ref, toRefs } from "@vue/reactivity";
 import { useCore } from "@/hooks/useCore";
@@ -54,6 +54,11 @@ export default defineComponent({
     const transactionState = ref<ConfirmState>("selecting");
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
+    const feeAmount = ref<any>()
+
+    onBeforeMount(async () => {  
+      feeAmount.value = await actions.peg.calculateUnpegFee(Asset.get(symbol.value));
+    });
 
     // const symbol = ref<string | null>(null);
     const symbol = computed(() => {
@@ -144,10 +149,8 @@ export default defineComponent({
         transactionState.value = "selecting";
       }
     }
-    const feeAmount = computed(() => {
-      return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
-    });
-    const pageState = {
+
+    return {
       mode,
       modeLabel: computed(() => capitalize(mode.value)),
       symbol,
@@ -162,6 +165,7 @@ export default defineComponent({
       handleSelectSymbol: () => {},
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
+        if (!feeAmount.value) return;
         const decimals = Asset.get(symbol.value).decimals;
         const afterMaxValue =
           symbol.value === "ceth"
@@ -191,9 +195,7 @@ export default defineComponent({
         return mode.value === "peg" ? "Peg" : "Unpeg";
       }),
     };
-    (window as any).pageState = pageState;
-    return pageState;
-  },
+  }
 });
 </script>
 
@@ -237,7 +239,7 @@ export default defineComponent({
           {
             show: !!feeAmount,
             label: 'Transaction Fee',
-            data: `${feeAmount.toFixed(8)} cETH`,
+            data: `${feeAmount}`,
             tooltipMessage: `This is a fixed fee amount. This is a temporary solution as we are working towards improving this amount in upcoming versions of the network.`,
           },
         ]"
@@ -301,6 +303,7 @@ export default defineComponent({
       title="Unpeg token from Sifchain"
     >
       <template v-slot:selecting>
+        {{feeAmount}}
         <DetailsTable
           :header="{
             show: amount !== '0.0',
@@ -316,7 +319,7 @@ export default defineComponent({
             {
               show: !!feeAmount,
               label: 'Transaction Fee',
-              data: `${feeAmount.toFixed(8)} cETH`,
+              data: `${feeAmount}`,
             },
           ]"
         />
