@@ -296,7 +296,6 @@ func (n *Network) generateTx(validator *Validator, validatorDir, outputDir strin
 		validator.Password,
 		n.BondAmount,
 		validatorDir,
-		validator.CLIHomeDir,
 		fmt.Sprintf("%s/%s.json", outputDir, validator.Moniker),
 		validator.NodeID,
 		validator.ValidatorAddress,

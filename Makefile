@@ -28,7 +28,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=sifchain \
 
 BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${BUILD_TAGS} -a
 
-BINARIES=./cmd/sifnodecli ./cmd/sifnoded ./cmd/sifgen ./cmd/sifcrg ./cmd/ebrelayer
+BINARIES=./cmd/sifnoded ./cmd/sifgen ./cmd/sifcrg ./cmd/ebrelayer
 
 all: lint install
 
@@ -55,6 +55,9 @@ lint-verbose: lint-pre
 
 install: go.sum
 	go install ${BUILD_FLAGS} ${BINARIES}
+
+build-sifd: go.sum
+	go build  ${BUILD_FLAGS} ./cmd/sifnoded
 
 clean-config:
 	@rm -rf ~/.sifnode*

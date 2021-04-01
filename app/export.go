@@ -2,38 +2,49 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
 
-	abci "github.com/tendermint/tendermint/abci/types"
-	tmtypes "github.com/tendermint/tendermint/types"
-
-	"github.com/cosmos/cosmos-sdk/codec"
+	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/slashing"
+	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 // ExportAppStateAndValidators exports the state of the application for a genesis
 // file.
 func (app *SifchainApp) ExportAppStateAndValidators(
-	forZeroHeight bool, jailWhiteList []string,
-) (appState json.RawMessage, validators []tmtypes.GenesisValidator, err error) {
+	forZeroHeight bool, jailAllowedAddrs []string,
+) (servertypes.ExportedApp, error) {
 
 	// as if they could withdraw from the start of the next block
-	ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()})
+	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
 
+	// We export at last height + 1, because that's the height at which
+	// Tendermint will start InitChain.
+	height := app.LastBlockHeight() + 1
 	if forZeroHeight {
-		app.prepForZeroHeightGenesis(ctx, jailWhiteList)
+		height = 0
+		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 	}
 
-	genState := app.mm.ExportGenesis(ctx)
-	appState, err = codec.MarshalJSONIndent(app.cdc, genState)
+	genState := app.mm.ExportGenesis(ctx, app.appCodec)
+	appState, err := json.MarshalIndent(genState, "", "  ")
 	if err != nil {
-		return nil, nil, err
+		return servertypes.ExportedApp{}, err
 	}
 
-	validators = staking.WriteValidators(ctx, app.stakingKeeper)
-	return appState, validators, nil
+	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
+
+	return servertypes.ExportedApp{
+		AppState:        appState,
+		Validators:      validators,
+		Height:          height,
+		ConsensusParams: app.BaseApp.GetConsensusParams(ctx),
+	}, err
 }
 
 // prepare for fresh start at zero height
@@ -60,46 +71,62 @@ func (app *SifchainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList 
 	/* Handle fee distribution state. */
 
 	// withdraw all validator commission
-	app.stakingKeeper.IterateValidators(ctx, func(_ int64, val staking.ValidatorI) (stop bool) {
-		_, _ = app.distrKeeper.WithdrawValidatorCommission(ctx, val.GetOperator())
+	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+		_, _ = app.DistrKeeper.WithdrawValidatorCommission(ctx, val.GetOperator())
 		return false
 	})
 
 	// withdraw all delegator rewards
-	dels := app.stakingKeeper.GetAllDelegations(ctx)
+	dels := app.StakingKeeper.GetAllDelegations(ctx)
 	for _, delegation := range dels {
-		_, _ = app.distrKeeper.WithdrawDelegationRewards(ctx, delegation.DelegatorAddress, delegation.ValidatorAddress)
+		valAddr, err := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
+		if err != nil {
+			panic(err)
+		}
+
+		delAddr, err := sdk.AccAddressFromBech32(delegation.DelegatorAddress)
+		if err != nil {
+			panic(err)
+		}
+
+		_, _ = app.DistrKeeper.WithdrawDelegationRewards(ctx, delAddr, valAddr)
 	}
 
 	// clear validator slash events
-	app.distrKeeper.DeleteAllValidatorSlashEvents(ctx)
+	app.DistrKeeper.DeleteAllValidatorSlashEvents(ctx)
 
 	// clear validator historical rewards
-	app.distrKeeper.DeleteAllValidatorHistoricalRewards(ctx)
+	app.DistrKeeper.DeleteAllValidatorHistoricalRewards(ctx)
 
 	// set context height to zero
 	height := ctx.BlockHeight()
 	ctx = ctx.WithBlockHeight(0)
 
 	// reinitialize all validators
-	app.stakingKeeper.IterateValidators(ctx, func(_ int64, val staking.ValidatorI) (stop bool) {
+	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
 
 		// donate any unwithdrawn outstanding reward fraction tokens to the community pool
-		scraps := app.distrKeeper.GetValidatorOutstandingRewards(ctx, val.GetOperator())
-		feePool := app.distrKeeper.GetFeePool(ctx)
-		for i := 0; i < len(scraps); i++ {
-			feePool.CommunityPool = feePool.CommunityPool.Add(scraps[i])
-		}
-		app.distrKeeper.SetFeePool(ctx, feePool)
+		scraps := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, val.GetOperator())
+		feePool := app.DistrKeeper.GetFeePool(ctx)
+		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
+		app.DistrKeeper.SetFeePool(ctx, feePool)
 
-		app.distrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
+		app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
 		return false
 	})
 
 	// reinitialize all delegations
 	for _, del := range dels {
-		app.distrKeeper.Hooks().BeforeDelegationCreated(ctx, del.DelegatorAddress, del.ValidatorAddress)
-		app.distrKeeper.Hooks().AfterDelegationModified(ctx, del.DelegatorAddress, del.ValidatorAddress)
+		valAddr, err := sdk.ValAddressFromBech32(del.ValidatorAddress)
+		if err != nil {
+			panic(err)
+		}
+		delAddr, err := sdk.AccAddressFromBech32(del.DelegatorAddress)
+		if err != nil {
+			panic(err)
+		}
+		app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, delAddr, valAddr)
+		app.DistrKeeper.Hooks().AfterDelegationModified(ctx, delAddr, valAddr)
 	}
 
 	// reset context height
@@ -108,32 +135,32 @@ func (app *SifchainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList 
 	/* Handle staking state. */
 
 	// iterate through redelegations, reset creation height
-	app.stakingKeeper.IterateRedelegations(ctx, func(_ int64, red staking.Redelegation) (stop bool) {
+	app.StakingKeeper.IterateRedelegations(ctx, func(_ int64, red stakingtypes.Redelegation) (stop bool) {
 		for i := range red.Entries {
 			red.Entries[i].CreationHeight = 0
 		}
-		app.stakingKeeper.SetRedelegation(ctx, red)
+		app.StakingKeeper.SetRedelegation(ctx, red)
 		return false
 	})
 
 	// iterate through unbonding delegations, reset creation height
-	app.stakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, ubd staking.UnbondingDelegation) (stop bool) {
+	app.StakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, ubd stakingtypes.UnbondingDelegation) (stop bool) {
 		for i := range ubd.Entries {
 			ubd.Entries[i].CreationHeight = 0
 		}
-		app.stakingKeeper.SetUnbondingDelegation(ctx, ubd)
+		app.StakingKeeper.SetUnbondingDelegation(ctx, ubd)
 		return false
 	})
 
 	// Iterate through validators by power descending, reset bond heights, and
 	// update bond intra-tx counters.
-	store := ctx.KVStore(app.keys[staking.StoreKey])
-	iter := sdk.KVStoreReversePrefixIterator(store, staking.ValidatorsKey)
+	store := ctx.KVStore(app.keys[stakingtypes.StoreKey])
+	iter := sdk.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
 	counter := int16(0)
 
 	for ; iter.Valid(); iter.Next() {
 		addr := sdk.ValAddress(iter.Key()[1:])
-		validator, found := app.stakingKeeper.GetValidator(ctx, addr)
+		validator, found := app.StakingKeeper.GetValidator(ctx, addr)
 		if !found {
 			panic("expected validator, not found")
 		}
@@ -143,23 +170,50 @@ func (app *SifchainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList 
 			validator.Jailed = true
 		}
 
-		app.stakingKeeper.SetValidator(ctx, validator)
+		app.StakingKeeper.SetValidator(ctx, validator)
 		counter++
 	}
 
 	iter.Close()
 
-	_ = app.stakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
+	_, _ = app.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
 
 	/* Handle slashing state. */
 
 	// reset start height on signing infos
-	app.slashingKeeper.IterateValidatorSigningInfos(
+	app.SlashingKeeper.IterateValidatorSigningInfos(
 		ctx,
-		func(addr sdk.ConsAddress, info slashing.ValidatorSigningInfo) (stop bool) {
+		func(addr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
 			info.StartHeight = 0
-			app.slashingKeeper.SetValidatorSigningInfo(ctx, addr, info)
+			app.SlashingKeeper.SetValidatorSigningInfo(ctx, addr, info)
 			return false
 		},
 	)
+}
+
+// ExportAppState exports the validator set and application state into two different files
+func ExportAppState(name string, app *SifchainApp, ctx sdk.Context) {
+	appState, err := app.ExportAppStateAndValidators(true, []string{})
+	if err != nil {
+		ctx.Logger().Error("failed to export app state", "error:", err)
+		return
+	}
+	appStateJSON, err := json.MarshalIndent(appState, "", " ")
+	if err != nil {
+		ctx.Logger().Error("failed to marshal application genesis state", "error:", err.Error())
+		return
+	}
+	valList, err := json.MarshalIndent(appState.Validators, "", " ")
+	if err != nil {
+		ctx.Logger().Error("failed to marshal application genesis state", "error:", err.Error())
+	}
+
+	err = ioutil.WriteFile(fmt.Sprintf("%v/%v-state.json", DefaultNodeHome, name), appStateJSON, 0600)
+	if err != nil {
+		ctx.Logger().Error("failed to write state to file", "err", err.Error())
+	}
+	err = ioutil.WriteFile(fmt.Sprintf("%v/%v-validator.json", DefaultNodeHome, name), valList, 0600)
+	if err != nil {
+		ctx.Logger().Error("failed to write Validator List to file", "err", err.Error())
+	}
 }

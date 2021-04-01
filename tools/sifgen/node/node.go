@@ -3,12 +3,12 @@ package node
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sifchain/sifnode/app"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 
+	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/genesis"
 	"github.com/Sifchain/sifnode/tools/sifgen/key"
@@ -188,7 +188,6 @@ func (n *Node) seedGenesis() error {
 		n.Password,
 		n.BondAmount,
 		common.DefaultNodeHome,
-		common.DefaultCLIHome,
 		outputFile,
 		strings.TrimSuffix(*nodeID, "\n"),
 		strings.TrimSuffix(*pubKey, "\n"),
@@ -248,7 +247,7 @@ func (n *Node) generatePassword() error {
 }
 
 func (n *Node) generateNodeKeyAddress() error {
-	output, err := n.CLI.AddKey(n.Moniker, n.Mnemonic, n.Password, common.DefaultCLIHome)
+	output, err := n.CLI.AddKey(n.Moniker, n.Mnemonic, n.Password, common.DefaultNodeHome)
 	if err != nil {
 		return err
 	}

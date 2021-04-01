@@ -15,7 +15,6 @@ type (
 
 var (
 	DefaultNodeHome = app.DefaultNodeHome
-	DefaultCLIHome  = app.DefaultCLIHome
 	StakeTokenDenom = types.StakeTokenDenom
 
 	P2PPort             = 26656

@@ -19,7 +19,6 @@ const (
 
 var (
 	DefaultNodeHome = app.DefaultNodeHome
-	DefaultCLIHome  = app.DefaultCLIHome
 )
 
 type CLIUtils interface {
@@ -155,7 +154,7 @@ func (c CLI) SetGenesisOracleAdmin(address, nodeDir string) (*string, error) {
 	return c.shellExec("sifnoded", "set-genesis-oracle-admin", address, "--home", nodeDir)
 }
 
-func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, cliDir, outputFile, nodeID, pubKey, ipV4Addr string) (*string, error) {
+func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, outputFile, nodeID, pubKey, ipV4Addr string) (*string, error) {
 	return c.shellExecInput("sifnoded",
 		[][]byte{[]byte(keyPassword + "\n"), []byte(keyPassword + "\n"), []byte(keyPassword + "\n")},
 		"gentx",
@@ -164,7 +163,6 @@ func (c CLI) GenerateGenesisTxn(name, keyPassword, bondAmount, nodeDir, cliDir, 
 		"--amount", bondAmount,
 		"--keyring-backend", "file",
 		"--home", nodeDir,
-		"--home-client", cliDir,
 		"--output-document", outputFile,
 		"--node-id", nodeID,
 		"--pubkey", pubKey,
