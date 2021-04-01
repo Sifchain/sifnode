@@ -77,6 +77,8 @@ jobs:
 
       - name: Setup Helm Values with Variable Details
         shell: bash
+        env:
+          BASEDIR: "/home/runner/workspace/prsifnode"
         run: |
           set +x
           export PATH=$(pwd):${PATH}
