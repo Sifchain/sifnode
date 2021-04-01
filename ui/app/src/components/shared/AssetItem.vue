@@ -11,8 +11,8 @@ export default defineComponent({
     inline: Boolean,
     label: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   setup(props) {
     const symbol = computed(() => props.symbol);

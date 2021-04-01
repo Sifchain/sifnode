@@ -11,7 +11,6 @@ import PegListingPage from "@/views/PegListingPage.vue";
 import PegAssetPage from "@/views/PegAssetPage.vue";
 import RewardsPageNew from "@/views/RewardsPageNew.vue";
 
-
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
@@ -31,7 +30,7 @@ const routes: Array<RouteRecordRaw> = [
     path: "/rewards-new",
     name: "RewardsPageNew",
     component: RewardsPageNew,
-  }, 
+  },
   {
     path: "/swap",
     name: "Swap",
