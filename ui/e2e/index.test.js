@@ -50,10 +50,6 @@ const { extractFile } = require("./utils");
 let browserContext;
 let dexPage;
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 describe("connect to page", () => {
   beforeAll(async () => {
     // extract extension zips
