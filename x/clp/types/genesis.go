@@ -17,6 +17,7 @@ type GenesisState struct {
 
 // NewGenesisState creates a new GenesisState instance
 func NewGenesisState(params Params) GenesisState {
+
 	return GenesisState{
 		Params: params,
 	}
@@ -24,8 +25,10 @@ func NewGenesisState(params Params) GenesisState {
 
 // DefaultGenesisState gets the raw genesis raw message for testing
 func DefaultGenesisState() GenesisState {
+	admin := GetDefaultCLPAdmin()
 	return GenesisState{
-		Params: DefaultParams(),
+		Params:           DefaultParams(),
+		AddressWhitelist: []sdk.AccAddress{admin},
 	}
 }
 
