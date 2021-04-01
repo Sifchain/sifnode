@@ -14,7 +14,6 @@ func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
 	return GenesisState{}
 }
 
-// ValidateGenesis validates the clp genesis parameters
 func ValidateGenesis(data GenesisState) error {
 	return nil
 }

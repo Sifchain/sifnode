@@ -17,6 +17,10 @@ sifnodecli tx sign --multisig $(sifnodecli keys show mkey -a) --from $(sifnodecl
 sifnodecli tx multisign offlinetx.json mkey sig1.json sig2.json >> signedtx.json
 # transaction broadcast , distribution happens
 sifnodecli tx broadcast signedtx.json
+sleep 8
+sifnodecli q dispensation distributions-all
+sifnodecli q dispensation records-by-name ar1
+sifnodecli q dispensation records-by-addr sif1cp23ye3h49nl5ty35vewrtvsgwnuczt03jwg00
 rm -rf offlinetx.json sig1.json sig2.json signedtx.json
 
 

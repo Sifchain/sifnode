@@ -32,6 +32,8 @@ func TestKeeper_GetRecordsForName(t *testing.T) {
 		record := types.NewDistributionRecord(name, rec.Address, rec.Coins)
 		err := keeper.SetDistributionRecord(ctx, record)
 		assert.NoError(t, err)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address.String())
+		assert.NoError(t, err)
 	}
 	list := keeper.GetRecordsForName(ctx, name)
 	assert.Len(t, list, 3)
@@ -45,6 +47,8 @@ func TestKeeper_GetRecordsForRecipient(t *testing.T) {
 	for _, rec := range outList {
 		record := types.NewDistributionRecord(name, rec.Address, rec.Coins)
 		err := keeper.SetDistributionRecord(ctx, record)
+		assert.NoError(t, err)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address.String())
 		assert.NoError(t, err)
 	}
 	list := keeper.GetRecordsForRecipient(ctx, outList[0].Address)

@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -57,10 +56,7 @@ func queryDistributionRecordsForReceipient(ctx sdk.Context, req abci.RequestQuer
 
 func queryAllDistributions(ctx sdk.Context, keeper Keeper) ([]byte, error) {
 	list := keeper.GetDistributions(ctx)
-	height := ctx.BlockHeight()
-	fmt.Println(list)
-	response := types.NewDistributionsResponse(list, height)
-	res, err := codec.MarshalJSONIndent(keeper.cdc, response)
+	res, err := codec.MarshalJSONIndent(keeper.cdc, list)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

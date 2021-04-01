@@ -36,13 +36,14 @@ func GetCmdDistributions(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryAllDistributions)
-			res, _, err := cliCtx.QueryWithData(route, nil)
+			res, height, err := cliCtx.QueryWithData(route, nil)
 			if err != nil {
 				return err
 			}
-			var dr types.DistributionsResponse
+			var dr types.Distributions
 			cdc.MustUnmarshalJSON(res, &dr)
-			return cliCtx.PrintOutput(dr)
+			out := types.NewDistributionsResponse(dr, height)
+			return cliCtx.PrintOutput(out)
 		},
 	}
 }
