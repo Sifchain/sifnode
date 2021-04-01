@@ -75,8 +75,8 @@ func (s Sifgen) KeyRecoverFromMnemonic(mnemonic string) {
 	}
 
 	fmt.Println(heredoc.Doc(`
-		RecipientAddress: ` + newKey.Address + `
-		Validator RecipientAddress: ` + newKey.ValidatorAddress + `
-		Consensus RecipientAddress: ` + newKey.ConsensusAddress + `
+		Address: ` + newKey.Address + `
+		Validator Address: ` + newKey.ValidatorAddress + `
+		Consensus Address: ` + newKey.ConsensusAddress + `
 	`))
 }

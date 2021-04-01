@@ -30,8 +30,8 @@ func GetDistributionRecordKey(name string, recipient string) []byte {
 	key := []byte(fmt.Sprintf("%s_%s", name, recipient))
 	return append(DistributionRecordPrefix, key...)
 }
-func GetDistributionsKey(name string) []byte {
-	key := []byte(fmt.Sprintf("%s", name))
+func GetDistributionsKey(name string, distributionType DistributionType) []byte {
+	key := []byte(fmt.Sprintf("%s_%d", name, distributionType))
 	return append(DistributionsPrefix, key...)
 }
 

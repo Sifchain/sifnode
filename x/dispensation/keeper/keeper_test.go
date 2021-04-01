@@ -16,7 +16,7 @@ func TestKeeper_GetDistributions(t *testing.T) {
 		distribution := types.NewDistribution(types.Airdrop, name)
 		err := keeper.SetDistribution(ctx, distribution)
 		assert.NoError(t, err)
-		_, err = keeper.GetDistribution(ctx, name)
+		_, err = keeper.GetDistribution(ctx, name, types.Airdrop)
 		assert.NoError(t, err)
 	}
 	list := keeper.GetDistributions(ctx)

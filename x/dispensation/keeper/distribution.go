@@ -13,15 +13,15 @@ func (k Keeper) SetDistribution(ctx sdk.Context, ar types.Distribution) error {
 		return errors.Wrapf(types.ErrInvalid, "Record Details : %s", ar.String())
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionsKey(ar.DistributionName)
+	key := types.GetDistributionsKey(ar.DistributionName, ar.DistributionType)
 	store.Set(key, k.cdc.MustMarshalBinaryBare(ar))
 	return nil
 }
 
-func (k Keeper) GetDistribution(ctx sdk.Context, name string) (types.Distribution, error) {
+func (k Keeper) GetDistribution(ctx sdk.Context, name string, distributionType types.DistributionType) (types.Distribution, error) {
 	var ar types.Distribution
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionsKey(name)
+	key := types.GetDistributionsKey(name, distributionType)
 	if !k.Exists(ctx, key) {
 		return ar, errors.Wrapf(types.ErrInvalid, "Record Does not Exist : %s", ar.String())
 	}
@@ -30,8 +30,8 @@ func (k Keeper) GetDistribution(ctx sdk.Context, name string) (types.Distributio
 	return ar, nil
 }
 
-func (k Keeper) ExistsDistribution(ctx sdk.Context, name string) bool {
-	key := types.GetDistributionsKey(name)
+func (k Keeper) ExistsDistribution(ctx sdk.Context, name string, distributionType types.DistributionType) bool {
+	key := types.GetDistributionsKey(name, distributionType)
 	if k.Exists(ctx, key) {
 		return true
 	}
