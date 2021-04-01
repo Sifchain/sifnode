@@ -11,6 +11,19 @@
   1. yarn stack
   2. in second terminal: cd e2e && yarn test
 */
+
+/**
+ * THIS IS PROTOTYPAL
+ *
+ * TODO
+ * ==============
+ * Playwright object models https://playwright.dev/docs/pom for maniplating windows
+ * - MetaMask class should represent the metamask popup
+ * - Keplr class should represent Keplr popup
+ * Clients for inspecting the blockchain
+ * - sifchainBlockchainAccount - class should represent sifchain blockain
+ * - ethereumBlockchainAccount - class should represent ethereumBlockchain
+ */
 require("@babel/polyfill");
 const path = require("path");
 const fs = require("fs");
@@ -128,8 +141,7 @@ describe("connect to page", () => {
 
     await confirmTransaction(dexPage, browserContext, pegAmount, MM_CONFIG.id);
     // move chain forward
-    await advanceEthBlocks(50); // NOTE: NOT ASYNC :(
-    await sleep(20000);
+    await advanceEthBlocks(50);
 
     const rowAmount = await dexPage.innerText(
       "[data-handle='ceth-row-amount']",
