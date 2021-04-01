@@ -167,7 +167,7 @@ export default defineComponent({
               )
             : [];
 
-          if (!amount)
+          if (!amount) {
             return { amount: AssetAmount(asset, "0"), asset, pegTxs };
           }
 
