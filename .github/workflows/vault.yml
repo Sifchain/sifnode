@@ -1,9 +1,11 @@
 name: vault deployment pipeline
 
 on:
-  push:
-    branches:
-      - 'ebrelayer-pipeline-development'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: devnet, testnet
+        required: true
 
 jobs:
   #deploy vault to us devnet environment
@@ -37,7 +39,7 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -61,10 +63,9 @@ jobs:
       - name: Setup AWS Profile and KUBECONFIG
         shell: bash
         env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -72,7 +73,7 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Install Vault"
@@ -80,7 +81,7 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
@@ -120,7 +121,7 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -144,10 +145,9 @@ jobs:
       - name: Setup AWS Profile and KUBECONFIG
         shell: bash
         env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -155,7 +155,7 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Install Vault"
@@ -163,7 +163,7 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
@@ -206,7 +206,7 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -230,10 +230,9 @@ jobs:
       - name: Setup AWS Profile and KUBECONFIG
         shell: bash
         env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -241,7 +240,7 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Install Vault"
@@ -249,7 +248,7 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
@@ -293,7 +292,7 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -317,10 +316,9 @@ jobs:
       - name: Setup AWS Profile and KUBECONFIG
         shell: bash
         env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -328,7 +326,7 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Install Vault"
@@ -336,7 +334,7 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'devnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
@@ -377,7 +375,7 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -401,10 +399,9 @@ jobs:
       - name: Setup AWS Profile and KUBECONFIG
         shell: bash
         env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -412,7 +409,7 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Install Vault"
@@ -420,7 +417,7 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
@@ -460,7 +457,7 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -484,10 +481,9 @@ jobs:
       - name: Setup AWS Profile and KUBECONFIG
         shell: bash
         env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -495,7 +491,7 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Install Vault"
@@ -503,7 +499,7 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
@@ -546,7 +542,7 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -570,10 +566,9 @@ jobs:
       - name: Setup AWS Profile and KUBECONFIG
         shell: bash
         env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -581,7 +576,7 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Install Vault"
@@ -589,7 +584,7 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"
@@ -633,7 +628,7 @@ jobs:
 
       - name: Sifchain Art
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
@@ -657,10 +652,9 @@ jobs:
       - name: Setup AWS Profile and KUBECONFIG
         shell: bash
         env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN_SWINGSET_US }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
@@ -668,7 +662,7 @@ jobs:
 
       - name: Install Vault
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Install Vault"
@@ -676,7 +670,7 @@ jobs:
 
       - name: Clean Temp Files and Secrets
         shell: bash
-        if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+        if: github.event.inputs.environment == 'testnet'
         run: |
           set +x
           echo "Clean up all temporary files that were generated"

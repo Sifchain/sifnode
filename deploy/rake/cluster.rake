@@ -339,7 +339,7 @@ kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv put kv-v
 
 echo "validate secret made it in vault."
 get_secrets=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv get kv-v2/staging/test | grep "test123"`
-[ -z "$get_secrets" ] && echo "present ${get_secrets}" || echo "Secret not present ${get_secrets} && exit 1"
+[ -z "$get_secrets" ] && echo "not present ${get_secrets}" && exit 1 || echo "Secre Present"
 
       }
       system(cluster_automation) or exit 1
