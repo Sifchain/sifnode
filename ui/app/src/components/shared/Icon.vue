@@ -11,7 +11,7 @@ import Plus from "./icons/Plus.vue";
 import InfoBoxBlack from "./icons/InfoBoxBlack.vue";
 import InfoBoxWhite from "./icons/InfoBoxWhite.vue";
 import Bang from "./icons/Bang.vue";
-import Sif from "./icons/Sif.vue"
+import Sif from "./icons/Sif.vue";
 import Exclaimation from "./icons/Exclaimation.vue";
 
 export default defineComponent({
@@ -44,7 +44,7 @@ export default defineComponent({
     Plus,
     InfoBoxBlack,
     InfoBoxWhite,
-    Sif
+    Sif,
     Exclaimation,
   },
 });

@@ -61,8 +61,13 @@
     "vue-loader": "^16.1.2"
   },
   "dependencies": {
+    "@storybook/preset-scss": "^1.0.3",
     "codecov": "^3.8.0",
+    "css-loader": "^5.2.0",
     "prettier": "^2.2.1",
+    "sass-loader": "^10.1.1",
+    "storybook-addon-designs": "^5.4.5",
+    "style-loader": "^2.0.0",
     "tsconfig-paths-webpack-plugin": "^3.3.0"
   }
 }
