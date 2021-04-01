@@ -9,7 +9,7 @@
       />
     </div>
     <Tabs :defaultIndex="1" @tabselected="onTabSelected">
-      <Tab title="External Tokens">
+      <Tab title="External Tokens" slug="external-tab">
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
             :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
@@ -21,7 +21,7 @@
           >
         </AssetList>
       </Tab>
-      <Tab title="Sifchain Native">
+      <Tab title="Sifchain Native" slug="native-tab">
         <AssetList :items="assetList">
           <template #default="{ asset }">
             <SifButton

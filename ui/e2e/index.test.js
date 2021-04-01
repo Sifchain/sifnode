@@ -114,6 +114,14 @@ describe("connect to page", () => {
     );
 
     const pegAmount = "1";
+
+    await dexPage.click("[data-handle='external-tab']");
+    await dexPage.click("[data-handle='peg-eth']");
+    await dexPage.click('input[type="number"]');
+    await dexPage.fill('input[type="number"]', pegAmount);
+    await dexPage.click('button:has-text("Peg")');
+    await dexPage.click('button:has-text("Confirm Peg")');
+
     await peg(dexPage, browserContext, pegAmount, MM_CONFIG.id);
     // move chain forward
     await advanceEthBlocks(50); // NOTE: NOT ASYNC :(
@@ -125,7 +133,7 @@ describe("connect to page", () => {
 
     const expected = (Number(cEthBalance) + Number(pegAmount)).toFixed(6);
 
-    expect(rowAmount).toBe(expected);
+    expect(rowAmount.trim()).toBe(expected);
   });
 
   it("swaps", async () => {});
