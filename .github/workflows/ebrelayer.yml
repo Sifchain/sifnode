@@ -36,7 +36,7 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
-    if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+    if: github.ref == 'refs/heads/ebrelayer-pipeline-developments'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
