@@ -107,7 +107,7 @@ A distribution complete event is emitted at the end of a distribution .
 ```
 
 
-###Queries supported
+### Queries supported
 ```shell
 #Query all distributions
 sifnodecli q dispensation distributions-all
