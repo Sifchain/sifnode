@@ -12,6 +12,8 @@ function isOriginallySifchainNativeToken(asset: Asset) {
 //       own files to manage complexity allow for team to grow and avoid refactoring
 //       subtle complexity of dependency injection to maintain testability is required passing in ctx below
 
+// TODO: Make ActionContext make sense.
+
 /**
  * Shared peg config for use throughout the peg feature
  */
@@ -67,11 +69,20 @@ export default ({
       return api.EthereumService.getSupportedTokens();
     },
 
-    calculateUnpegFee(asset: Asset) {
-      const feeNumber = isOriginallySifchainNativeToken(asset)
-        ? "100080000000000000"
-        : "100080000000000000";
+    // needs new amount api - very rough draft
+    async calculateUnpegFee(asset: Asset) {
+      // https://docs.google.com/document/d/18ss6WlmrgqsmKmZhhlROXQre0hxCh9MwZ4HFuWZ2dYA/edit#
+      const gasAmount = 393000;
+      let feeNumber = isOriginallySifchainNativeToken(asset)
+        ? "70000000000000000"
+        : "70000000000000000";
 
+      const gasPrice = await api.EthbridgeService.getEthGasPrice();
+      const highThreshold = +gasPrice * gasAmount * 1.5;
+
+      if (highThreshold > +feeNumber) {
+        feeNumber = highThreshold.toString();
+      }
       return AssetAmount(Asset.get("ceth"), JSBI.BigInt(feeNumber), {
         inBaseUnit: true,
       });
@@ -82,7 +93,7 @@ export default ({
         ? api.EthbridgeService.lockToEthereum
         : api.EthbridgeService.burnToEthereum;
 
-      const feeAmount = this.calculateUnpegFee(assetAmount.asset);
+      const feeAmount = await this.calculateUnpegFee(assetAmount.asset);
 
       const tx = await lockOrBurnFn({
         assetAmount,
