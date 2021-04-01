@@ -1,4 +1,4 @@
-name: ebrelayer deployment automation
+name: Deployment Pipeline ebrelayer
 
 on:
   workflow_dispatch:

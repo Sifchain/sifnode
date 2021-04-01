@@ -1,4 +1,4 @@
-name: vault deployment pipeline
+name: Hashicorp Vault Deployment Pipeline
 
 on:
   workflow_dispatch:
@@ -30,7 +30,8 @@ jobs:
       matrix:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
-    if: github.ref == 'refs/heads/ebrelayer-pipeline-development'
+
+    if: github.event.inputs.environment == 'devnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
@@ -87,7 +88,6 @@ jobs:
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
-
 
   #deploy vault to eu devnet environment
   deploy_devnet_vault_eu:
