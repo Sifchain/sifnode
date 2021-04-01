@@ -258,66 +258,7 @@ func NewInitApp(
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
 
-	app.UpgradeKeeper.SetUpgradeHandler("changePoolFormula", func(ctx sdk.Context, plan upgrade.Plan) {
-		ctx.Logger().Info("Starting to execute upgrade plan for pool re-balance")
-
-		ExportAppState("changePoolFormula-upgrade-pre", app, ctx)
-
-		allPools := app.clpKeeper.GetPools(ctx)
-		lps := clp.LiquidityProviders{}
-		poolList := clp.Pools{}
-		hasError := false
-		for _, pool := range allPools {
-			lpList := app.clpKeeper.GetLiquidityProvidersForAsset(ctx, pool.ExternalAsset)
-			temp := sdk.ZeroUint()
-			tempExternal := sdk.ZeroUint()
-			tempNative := sdk.ZeroUint()
-			for _, lp := range lpList {
-				withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, _ := clp.CalculateWithdrawal(pool.PoolUnits, pool.NativeAssetBalance.String(),
-					pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), sdk.NewUint(clp.MaxWbasis).String(), sdk.NewInt(0))
-				newLpUnits, lpUnits, err := clp.CalculatePoolUnits(pool.ExternalAsset.Symbol, temp, tempNative, tempExternal,
-					withdrawNativeAssetAmount, withdrawExternalAssetAmount)
-				if err != nil {
-					hasError = true
-					ctx.Logger().Error(fmt.Sprintf("failed to calculate pool units for | Pool : %s | LP %s ", pool.String(), lp.String()))
-					break
-				}
-				lp.LiquidityProviderUnits = lpUnits
-				if !lp.Validate() {
-					hasError = true
-					ctx.Logger().Error(fmt.Sprintf("Invalid | LP %s ", lp.String()))
-					break
-				}
-				lps = append(lps, lp)
-				tempExternal = tempExternal.Add(withdrawExternalAssetAmount)
-				tempNative = tempNative.Add(withdrawNativeAssetAmount)
-				temp = newLpUnits
-			}
-			pool.PoolUnits = temp
-			if !app.clpKeeper.ValidatePool(pool) {
-				hasError = true
-				ctx.Logger().Error(fmt.Sprintf("Invalid | Pool %s ", pool.String()))
-				break
-			}
-			poolList = append(poolList, pool)
-		}
-		// If we have error dont set state
-		if hasError {
-			ctx.Logger().Error("Failed to execute upgrade plan for pool re-balance")
-		}
-		// If we have no errors , Set state .
-		if !hasError {
-			for _, pool := range poolList {
-				_ = app.clpKeeper.SetPool(ctx, pool)
-			}
-			for _, l := range lps {
-				app.clpKeeper.SetLiquidityProvider(ctx, l)
-			}
-		}
-
-		ExportAppState("changePoolFormula-upgrade-post", app, ctx)
-	})
-	app.UpgradeKeeper.SetUpgradeHandler("release-20210324073200", func(ctx sdk.Context, plan upgrade.Plan) {})
+	app.UpgradeKeeper.SetUpgradeHandler("release-20210401000000", func(ctx sdk.Context, plan upgrade.Plan) {})
 
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
