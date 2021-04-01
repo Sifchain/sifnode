@@ -9,10 +9,10 @@ $c_green: #8cc63f;
 $c_pink: #f48394;
 $c_white: #ffffff;
 $c_gray_25: #fdfdfd;
-$c_gray_50: #fafafa;  // use for btn on white, use for non-white panels
+$c_gray_50: #fafafa; // use for btn on white, use for non-white panels
 $c_gray_75: #f7f7f7;
 $c_gray_100: #f4f4f4;
-$c_gray_150: #E8E8E8;
+$c_gray_150: #e8e8e8;
 $c_gray_200: #e6e6e6;
 $c_gray_300: #dedede;
 $c_gray_400: #ccc;
@@ -40,6 +40,14 @@ $g_gray_light: linear-gradient(180deg, $c_white 0%, $c_gray_150 100%);
 
 $bs_default: 0px 0px 35px rgba($c_black, 0.41);
 $bs_dropdown: 0px 3px 10px #00000033;
+
+/*
+ *  MARGINS:
+ */
+
+$margin_small: 10px;
+$margin_medium: 20px;
+$margin_large: 20px;
 
 /*
  *  BORDERS:

@@ -1,80 +1,103 @@
 <script lang="ts">
 import { computed, defineComponent, watch } from "vue";
+import { ref } from "@vue/reactivity";
+import { useCore } from "@/hooks/useCore";
 import Layout from "@/components/layout/Layout.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import AssetItem from "@/components/shared/AssetItem.vue";
+import Box from "@/components/shared/Box.vue";
+import { Copy, SubHeading } from "@/components/shared/Text";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
-import { useCore } from "@/hooks/useCore";
-import { ref } from "@vue/reactivity";
-
 export default defineComponent({
   components: {
     Layout,
     SifButton,
     AssetItem,
-    ActionsPanel
+    ActionsPanel,
+    Copy,
+    SubHeading,
+    Box,
   },
   setup() {
     const { store } = useCore();
     const address = computed(() => store.wallet.sif.address);
-    let rewards = ref<Array<Object>>([])
-
-    watch(
-      address, 
-      async () => {
-        const data = await fetch(`https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`);
-        rewards.value = await data.json();
-      }
-    )
+    let rewards = ref<Array<Object>>([
+      { type: "lm", multiplier: 0, start: "", amount: 12709.098861115788 },
+      { type: "lm", multiplier: 0, start: "", amount: 333.098861115788 },
+    ]);
+    //
+    // watch(address, async () => {
+    //   const data = await fetch(
+    //     `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
+    //   );
+    //   rewards.value = await data.json();
+    // });
     return {
-      rewards
-    }
+      rewards,
+    };
   },
 });
 </script>
 
 <template>
   <Layout :header="true" title="Rewards" backLink="/peg">
-    <div class="info mb-8" style="line-height: 1.4">
-      <h3 class="mb-2">Your Rewards</h3>
-      <p class="text--small mb-2">
-        Earn rewards by participating in of our rewards-earning programs. Please
-        see additional information of our current rewards programs and how to
-        become eligible for them
-        <a
-          target="_blank"
-          href="https://docs.sifchain.finance/resources/rewards-programs"
-          >here</a
-        >.
-      </p>
-    </div>
-    <div class="list-container" 
-      v-for="reward in rewards" 
-      v-bind:key="reward.type"
-    >
-      <div class="item">
-        <div class="title">
-          {{reward.type}}
-        </div>
-
-        <div class="detail">
-          <!-- future: slot -->
-          <div class="amount">
-            <AssetItem symbol="Rowan" :label="false" />
-            <span class="mr-6">{{reward.amount}}</span>
+    <Copy>
+      Earn rewards by participating in of our rewards-earning programs. Please
+      see additional information of our current rewards programs and how to
+      become eligible for them
+      <a
+        target="_blank"
+        href="https://docs.sifchain.finance/resources/rewards-programs"
+        >here</a
+      >.
+    </Copy>
+    <div class="rewards-container">
+      <Box v-for="reward in rewards" v-bind:key="reward.type">
+        <div class="reward-container">
+          <SubHeading>{{ reward.type }}</SubHeading>
+          <div class="details-container">
+            <div class="amount-container">
+              <AssetItem symbol="Rowan" :label="false" />
+              <span>{{ reward.amount }}</span>
+            </div>
+            <SifButton primary>Claim</SifButton>
           </div>
-          <SifButton primary>Claim</SifButton>
         </div>
-      </div>
+      </Box>
     </div>
-    <ActionsPanel
-      connectType="connectToSif"
-    />
+    <ActionsPanel connectType="connectToSif" />
   </Layout>
 </template>
 
 <style scoped lang="scss">
-/* this pattern is generic. for component lib */
+// TODO - Get variable margin/padding sizes in
+// TODO - Discuss how we should manage positioning
+
+.rewards-container {
+  display: flex;
+  flex-direction: column;
+  > :first-child {
+    margin-top: $margin_medium;
+  }
+  width: 100%;
+  > :nth-child(1) {
+    margin-bottom: $margin_medium;
+  }
+  .reward-container {
+    flex-direction: column;
+    .amount-container {
+      display: flex;
+      flex-direction: row;
+    }
+    .details-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+}
+
+/*
 .info {
   text-align: left;
   font-weight: 400;
@@ -110,4 +133,5 @@ export default defineComponent({
     }
   }
 }
+*/
 </style>
