@@ -196,6 +196,16 @@ def get_whitelisted_tokens(transfer_request: EthereumToSifchainTransferRequest):
     return run_yarn_command(command_line)
 
 
+def get_token_ethereum_address(
+        token: str,
+        whitelist
+):
+    for token_in_whitelist in whitelist:
+        if token_in_whitelist["symbol"] == token:
+            return token_in_whitelist["token"]
+    return None
+
+
 def mint_tokens(transfer_request: EthereumToSifchainTransferRequest, operator_address):
     network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
@@ -624,3 +634,66 @@ def ganache_private_key(ganache_private_keys_file: str, address):
     keys = read_json_file(ganache_private_keys_file)
     pks = keys["private_keys"]
     return pks[address]
+
+
+def sifchain_symbol_to_ethereum_symbol(s: str):
+    if s == "rowan":
+        return "erowan"
+    elif s == "ceth":
+        return NULL_ADDRESS
+    else:
+        return s[1:]
+
+
+def update_ceth_receiver_account(
+        receiver_account: str,
+        admin_account: str,
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials
+):
+    cmd = build_sifchain_command(
+        f"sifnodecli tx ethbridge update_ceth_receiver_account -y {admin_account} {receiver_account}",
+        transfer_request=transfer_request,
+        credentials=credentials
+    )
+    result = get_shell_output(cmd)
+    logging.critical(f"update_ceth_receiver_account result: {result}")
+
+
+def rescue_ceth(
+        receiver_account: str,
+        admin_account: str,
+        amount: int,
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials
+):
+    cmd = build_sifchain_command(
+        f"sifnodecli tx ethbridge rescue_ceth -y {admin_account} {receiver_account} {amount:d}",
+        transfer_request=transfer_request,
+        credentials=credentials
+    )
+    return get_shell_output(cmd)
+
+
+def build_sifchain_command(
+        command_contents: str,
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials
+):
+    yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
+    keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
+    chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
+    node_entry = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
+    home_entry = f"--home {credentials.sifnodecli_homedir}" if credentials.sifnodecli_homedir else ""
+    from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    return " ".join([
+        yes_entry,
+        command_contents,
+        keyring_backend_entry,
+        chain_id_entry,
+        node_entry,
+        home_entry,
+        from_entry,
+        sifchain_fees_entry,
+    ])
