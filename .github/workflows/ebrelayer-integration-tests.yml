@@ -91,6 +91,11 @@ jobs:
           mkdir -p /home/runner/workspace/prsifnode/test/integration
           cp -r test/integration/* /home/runner/workspace/prsifnode/test/integration
           cp -r smart-contracts/* /home/runner/workspace/prsifnode/smart-contracts/
+
+          ls -lah /home/runner/workspace/prsifnode/smart-contracts/
+          ls -lah /home/runner/workspace/prsifnode/smart-contracts/deployments
+          ls -lah /home/runner/workspace/prsifnode/smart-contracts/deployments/devnet
+
           bash /home/runner/workspace/prsifnode/test/integration/environment_setup.sh
           echo "Skiping test until echo output that shows values is removed and I get the files needed to execute the test"
 
