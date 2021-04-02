@@ -17,13 +17,19 @@ export class SifClient extends SigningCosmosClient {
     senderAddress: string,
     signer: OfflineSigner,
     wsUrl: string,
+    rpcUrl: string,
     gasPrice?: GasPrice,
     gasLimits?: Partial<GasLimits<CosmosFeeTable>>,
-    broadcastMode?: BroadcastMode
+    broadcastMode?: BroadcastMode,
   ) {
     super(apiUrl, senderAddress, signer, gasPrice, gasLimits, broadcastMode);
     this.wallet = signer;
-    this.unsignedClient = new SifUnSignedClient(apiUrl, wsUrl, broadcastMode);
+    this.unsignedClient = new SifUnSignedClient(
+      apiUrl,
+      wsUrl,
+      rpcUrl,
+      broadcastMode,
+    );
   }
 
   async getAccounts(): Promise<string[]> {

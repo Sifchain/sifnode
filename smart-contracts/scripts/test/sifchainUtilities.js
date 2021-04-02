@@ -1,4 +1,5 @@
 const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
+const SOLIDITY_MAX_INT = "115792089237316195423570985008687907853269984665640564039457584007913129639934"
 
 function getRequiredEnvironmentVariable(name) {
     const result = process.env[name];
@@ -10,6 +11,13 @@ function getRequiredEnvironmentVariable(name) {
 
 const bridgeBankAddressYargOptions = {
     'bridgebank_address': {
+        type: "string",
+        demandOption: true
+    },
+};
+
+const bridgeTokenAddressYargOptions = {
+    'bridgetoken_address': {
         type: "string",
         demandOption: true
     },
@@ -33,6 +41,7 @@ const ethereumAddressYargOption = {
 const amountYargOption = {
     'amount': {
         describe: 'an amount',
+        type: "string",
         demandOption: true
     },
 };
@@ -49,10 +58,6 @@ const transactionYargOptions = {
     ...ethereumAddressYargOption,
     ...symbolYargOption,
     ...ethereumNetworkYargOption,
-    'json_path': {
-        describe: 'path to the json files',
-        default: "../build/contracts",
-    },
     'bridgebank_address': {
         type: "string",
         demandOption: true
@@ -67,10 +72,15 @@ const sharedYargOptions = {
     ...ethereumNetworkYargOption,
     'ethereum_private_key_env_var': {
         describe: "an environment variable that holds a single private key for the sender\nnot used for localnet",
-        demandOption: false
+        demandOption: false,
+        default: "ETHEREUM_PRIVATE_KEY",
     },
     'gas': {
         default: 300000
+    },
+    'json_path': {
+        describe: 'path to the json files',
+        default: "../build/contracts",
     },
 };
 
@@ -113,8 +123,10 @@ module.exports = {
     configureLogging,
     transactionYargOptions,
     bridgeBankAddressYargOptions,
+    bridgeTokenAddressYargOptions,
     ethereumAddressYargOption,
     symbolYargOption,
     amountYargOption,
-    NULL_ADDRESS
+    NULL_ADDRESS,
+    SOLIDITY_MAX_INT,
 };

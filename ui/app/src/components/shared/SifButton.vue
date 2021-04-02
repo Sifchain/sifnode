@@ -204,11 +204,15 @@ export default defineComponent({
       color: $c_white;
       &:hover {
         background: $g_gray;
-        color: initial
+        color: initial;
       }
     }
+    &:disabled {
+      background: $g_gold !important;
+      color: $c_white !important;
+    }
   }
-  
+
   &.ghost {
     background: transparent;
     &.secondary {

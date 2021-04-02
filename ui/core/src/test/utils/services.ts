@@ -12,8 +12,9 @@ export async function createTestSifService(account?: TestSifAccount) {
     sifApiUrl: "http://localhost:1317",
     sifAddrPrefix: "sif",
     sifWsUrl: "ws://localhost:26657/websocket",
+    sifRpcUrl: "http://localhost:26657",
     assets: getTestingTokens(["CATK", "CBTK", "CETH", "ROWAN"]),
-    keplrChainConfig: {} as KeplrChainConfig
+    keplrChainConfig: {} as KeplrChainConfig,
   });
 
   if (account) {

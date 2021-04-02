@@ -5,10 +5,10 @@ type ToStringable = { toString: () => string };
 export async function waitFor(
   getter: () => Promise<ToStringable>,
   expected: ToStringable,
-  name: string
+  name: string,
 ) {
   console.log(
-    `Starting wait: "${name}" for value to be ${expected.toString()}`
+    `Starting wait: "${name}" for value to be ${expected.toString()}`,
   );
   let value: any;
   for (let i = 0; i < 100; i++) {
@@ -20,6 +20,6 @@ export async function waitFor(
     }
   }
   throw new Error(
-    `${value.toString()} never was ${expected.toString()} in wait: ${name}`
+    `${value.toString()} never was ${expected.toString()} in wait: ${name}`,
   );
 }

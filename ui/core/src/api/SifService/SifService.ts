@@ -1,5 +1,4 @@
 import {
-  BroadcastTxResult,
   coins,
   isBroadcastTxFailure,
   makeCosmoshubPath,
@@ -7,7 +6,7 @@ import {
   Secp256k1HdWallet,
 } from "@cosmjs/launchpad";
 import { reactive } from "@vue/reactivity";
-import { debounce, filter } from "lodash";
+import { debounce } from "lodash";
 import {
   Address,
   Asset,
@@ -17,7 +16,7 @@ import {
   TxParams,
 } from "../../entities";
 
-import { Mnemonic } from "../../entities/Wallet";
+import { Mnemonic } from "../../entities";
 
 import { SifClient, SifUnSignedClient } from "../utils/SifClient";
 import { ensureSifAddress } from "./utils";
@@ -29,12 +28,11 @@ export type SifServiceContext = {
   sifAddrPrefix: string;
   sifApiUrl: string;
   sifWsUrl: string;
+  sifRpcUrl: string;
   keplrChainConfig: KeplrChainConfig;
   assets: Asset[];
 };
 type HandlerFn<T> = (a: T) => void;
-
-export type ISifService = ReturnType<typeof createSifService>;
 
 /**
  * Constructor for SifService
@@ -45,13 +43,12 @@ export default function createSifService({
   sifAddrPrefix,
   sifApiUrl,
   sifWsUrl,
+  sifRpcUrl,
   keplrChainConfig,
   assets,
 }: SifServiceContext) {
   const {} = sifAddrPrefix;
 
-  // Reactive state for communicating state changes
-  // TODO this should be replaced with event handlers
   const state: {
     connected: boolean;
     address: Address;
@@ -67,22 +64,21 @@ export default function createSifService({
   });
 
   const keplrProviderPromise = getKeplrProvider();
-
+  let keplrProvider: any;
   let client: SifClient | null = null;
-  let closeUpdateListener = () => {};
+  let polling: any;
 
-  const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl);
+  const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl);
 
   const supportedTokens = assets.filter(
-    asset => asset.network === Network.SIFCHAIN
+    (asset) => asset.network === Network.SIFCHAIN,
   );
 
-  // TODO: deletion ?
   async function createSifClientFromMnemonic(mnemonic: string) {
     const wallet = await Secp256k1HdWallet.fromMnemonic(
       mnemonic,
       makeCosmoshubPath(0),
-      sifAddrPrefix
+      sifAddrPrefix,
     );
     const accounts = await wallet.getAccounts();
 
@@ -92,27 +88,47 @@ export default function createSifService({
       throw new Error("No address on sif account");
     }
 
-    return new SifClient(sifApiUrl, address, wallet, sifWsUrl);
+    return new SifClient(sifApiUrl, address, wallet, sifWsUrl, sifRpcUrl);
   }
 
   const triggerUpdate = debounce(
     async () => {
-      if (!client) {
-        state.connected = false;
-        state.address = "";
-        state.balances = [];
-        state.accounts = [];
-        state.log = "";
-        return;
-      }
+      try {
+        if (!polling) {
+          polling = setInterval(() => {
+            triggerUpdate();
+          }, 2000);
+        }
+        await instance.setClient();
+        if (!client) {
+          state.connected = false;
+          state.address = "";
+          state.balances = [];
+          state.accounts = [];
+          state.log = "";
+          return;
+        }
 
-      state.connected = !!client;
-      state.address = client.senderAddress;
-      state.accounts = await client.getAccounts();
-      state.balances = await instance.getBalance(client.senderAddress);
+        state.connected = !!client;
+        state.address = client.senderAddress;
+        state.accounts = await client.getAccounts();
+        state.balances = await instance.getBalance(client.senderAddress);
+      } catch (e) {
+        if (!e.toString().toLowerCase().includes("no address found on chain")) {
+          state.connected = false;
+          state.address = "";
+          state.balances = [];
+          state.accounts = [];
+          state.log = "";
+          if (polling) {
+            clearInterval(polling);
+            polling = null;
+          }
+        }
+      }
     },
     100,
-    { leading: true }
+    { leading: true },
   );
 
   const instance = {
@@ -127,53 +143,59 @@ export default function createSifService({
       return supportedTokens;
     },
 
-    async connect() {
-      const keplrProvider = await keplrProviderPromise;
-
-      // connect to Keplr
-      console.log("connect service", keplrChainConfig, keplrProvider);
+    async setClient() {
       if (!keplrProvider) {
-        throw {
-          message: "Keplr Not Found",
-          detail: "Check if extension enabled for this URL",
-        };
+        return;
+      }
+      const offlineSigner = keplrProvider.getOfflineSigner(
+        keplrChainConfig.chainId,
+      );
+      const accounts = await offlineSigner.getAccounts();
+      const address = accounts.length > 0 ? accounts[0].address : "";
+      if (!address) {
+        throw "No address on sif account";
+      }
+      client = new SifClient(
+        sifApiUrl,
+        address,
+        offlineSigner,
+        sifWsUrl,
+        sifRpcUrl,
+      );
+    },
+
+    async initProvider() {
+      try {
+        keplrProvider = await keplrProviderPromise;
+        if (!keplrProvider) {
+          return;
+        }
+        triggerUpdate();
+      } catch (e) {
+        console.log("initProvider", e);
+      }
+    },
+
+    async connect() {
+      if (!keplrProvider) {
+        keplrProvider = await keplrProviderPromise;
       }
       // open extension
       if (keplrProvider.experimentalSuggestChain) {
         try {
           await keplrProvider.experimentalSuggestChain(keplrChainConfig);
           await keplrProvider.enable(keplrChainConfig.chainId);
-
-          const offlineSigner = keplrProvider.getOfflineSigner(
-            keplrChainConfig.chainId
-          );
-          // https://github.com/chainapsis/keplr-extension/blob/960e50f1d9360d21d6935b974a0cb8b57c27d9d9/src/content-scripts/inject/cosmjs-offline-signer.ts
-          const accounts = await offlineSigner.getAccounts();
-
-          // get balances
-          const address = accounts.length > 0 ? accounts[0].address : "";
-
-          if (!address) {
-            throw "No address on sif account";
-          }
-
-          client = new SifClient(sifApiUrl, address, offlineSigner, sifWsUrl);
           triggerUpdate();
-          closeUpdateListener = client.getUnsignedClient().onNewBlock(() => {
-            triggerUpdate();
-          });
         } catch (error) {
           console.log(error);
           throw { message: "Failed to Suggest Chain" };
         }
       } else {
-        throw { message: "Keplr Outdated", detail: "Need at least 0.6.4" };
+        throw {
+          message: "Keplr Outdated",
+          detail: { type: "info", message: "Need at least 0.6.4" },
+        };
       }
-    },
-
-    async disconnect() {
-      // disconnect from Keplr
-      await this.purgeClient();
     },
 
     isConnected() {
@@ -192,17 +214,13 @@ export default function createSifService({
       unSignedClient.onNewBlock(handler);
     },
 
+    // Required solely for testing purposes
     async setPhrase(mnemonic: Mnemonic): Promise<Address> {
       try {
         if (!mnemonic) {
           throw "No mnemonic. Can't generate wallet.";
         }
         client = await createSifClientFromMnemonic(mnemonic);
-        client.getUnsignedClient().onNewBlock(() => {
-          triggerUpdate();
-        });
-        triggerUpdate();
-
         return client.senderAddress;
       } catch (error) {
         throw error;
@@ -210,49 +228,53 @@ export default function createSifService({
     },
 
     async purgeClient() {
-      client = null;
-      await triggerUpdate();
-      closeUpdateListener();
+      // We currently delegate auth to Keplr so this is irrelevant
     },
 
     async getBalance(address?: Address, asset?: Asset): Promise<AssetAmount[]> {
-      if (!client) throw "No client. Please sign in.";
-      if (!address) throw "Address undefined. Fail";
+      if (!client) {
+        throw "No client. Please sign in.";
+      }
+      if (!address) {
+        throw "Address undefined. Fail";
+      }
 
       ensureSifAddress(address);
 
       try {
         const account = await client.getAccount(address);
-        if (!account) throw "No Address found on chain"; // todo handle this better
-        const supportedTokenSymbols = supportedTokens.map(s => s.symbol);
-        const balances = account.balance
-          .filter(balance => supportedTokenSymbols.includes(balance.denom))
+        if (!account) {
+          throw "No Address found on chain";
+        } // todo handle this better
+        const supportedTokenSymbols = supportedTokens.map((s) => s.symbol);
+        return account.balance
+          .filter((balance) => supportedTokenSymbols.includes(balance.denom))
           .map(({ amount, denom }) => {
             const asset = supportedTokens.find(
-              token => token.symbol === denom
+              (token) => token.symbol === denom,
             )!; // will be found because of filter above
-
             return AssetAmount(asset, amount, { inBaseUnit: true });
           })
-          .filter(balance => {
+          .filter((balance) => {
             // If an aseet is supplied filter for it
             if (!asset) {
               return true;
             }
             return balance.asset.symbol === asset.symbol;
           });
-
-        return balances;
       } catch (error) {
         throw error;
       }
     },
 
     async transfer(params: TxParams): Promise<any> {
-      if (!client) throw "No client. Please sign in.";
-      if (!params.asset) throw "No asset.";
+      if (!client) {
+        throw "No client. Please sign in.";
+      }
+      if (!params.asset) {
+        throw "No asset.";
+      }
       try {
-        // https://github.com/tendermint/vue/blob/develop/src/store/cosmos.js#L91
         const msg = {
           type: "cosmos-sdk/MsgSend",
           value: {
@@ -269,14 +291,10 @@ export default function createSifService({
 
         const fee = {
           amount: coins(0, params.asset.symbol),
-          gas: "300000", // TODO - see if "auto" setting
+          gas: "500000", // TODO - see if "auto" setting
         };
 
-        const txHash = await client.signAndBroadcast([msg], fee, params.memo);
-
-        triggerUpdate();
-
-        return txHash;
+        return await client.signAndBroadcast([msg], fee, params.memo);
       } catch (err) {
         console.error(err);
       }
@@ -284,25 +302,24 @@ export default function createSifService({
 
     async signAndBroadcast(
       msg: Msg | Msg[],
-      memo?: string
+      memo?: string,
     ): Promise<TransactionStatus> {
-      if (!client) throw "No client. Please sign in.";
+      if (!client) {
+        throw "No client. Please sign in.";
+      }
       try {
         const fee = {
           amount: coins(0, "rowan"),
-          gas: "300000", // TODO - see if "auto" setting
+          gas: "500000", // TODO - see if "auto" setting
         };
 
         const msgArr = Array.isArray(msg) ? msg : [msg];
-
         const result = await client.signAndBroadcast(msgArr, fee, memo);
 
         if (isBroadcastTxFailure(result)) {
           /* istanbul ignore next */ // TODO: fix coverage
           return parseTxFailure(result);
         }
-
-        triggerUpdate();
 
         return {
           hash: result.transactionHash,
@@ -315,5 +332,8 @@ export default function createSifService({
       }
     },
   };
+
+  instance.initProvider();
+
   return instance;
 }

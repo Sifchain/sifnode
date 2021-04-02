@@ -12,6 +12,8 @@ module.exports = async () => {
         require("../build/contracts/BridgeBank.json")
     );
 
+    console.log("Expected usage: \n truffle exec scripts/hasLockedTokens.js --network ropsten eth");
+
     /*******************************************
      *** Constants
      ******************************************/
@@ -28,23 +30,25 @@ module.exports = async () => {
             process.env.ETHEREUM_PRIVATE_KEY,
             "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
         );
+        tokenSymbol = process.argv[6]
     } else {
         provider = new Web3.providers.HttpProvider(process.env.LOCAL_PROVIDER);
+        tokenSymbol = process.argv[4];
     }
 
     const web3 = new Web3(provider);
     contract.setProvider(web3.currentProvider);
     try {
         // TODO: move to arguments
-        const tokenSymbol = "TEST"
+        // const tokenSymbol = "TEST"
 
         /*******************************************
          *** Contract interaction
          ******************************************/
         await contract.deployed().then(async function (instance) {
-            const tokenAddress = await instance.hasLockedFunds(tokenSymbol, 1)
-            console.log("Symbol:", tokenAddress)
-            console.log("Token address:", tokenSymbol)
+            const tokenAddress = await instance.getLockedTokenAddress(tokenSymbol)
+            console.log("Symbol:", tokenSymbol)
+            console.log("Token address:", tokenAddress)
         })
     } catch (error) {
         console.error({ error })

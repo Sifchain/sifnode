@@ -7,9 +7,9 @@ import {
 } from "@cosmjs/launchpad";
 
 import {
-  createTendermintSocketSubscriber,
-  TendermintSocketSubscriber,
-} from "./TendermintSocketSubscriber";
+  createTendermintSocketPoll,
+  TendermintSocketPoll,
+} from "./TendermintSocketPoll";
 
 import { ClpExtension, setupClpExtension } from "./x/clp";
 import { EthbridgeExtension, setupEthbridgeExtension } from "./x/ethbridge";
@@ -21,13 +21,13 @@ type CustomLcdClient = LcdClient &
 
 function createLcdClient(
   apiUrl: string,
-  broadcastMode: BroadcastMode | undefined
+  broadcastMode: BroadcastMode | undefined,
 ): CustomLcdClient {
   return LcdClient.withExtensions(
     { apiUrl: apiUrl, broadcastMode: broadcastMode },
     setupAuthExtension,
     setupClpExtension,
-    setupEthbridgeExtension
+    setupEthbridgeExtension,
   );
 }
 
@@ -35,14 +35,16 @@ type IClpApi = ClpExtension["clp"];
 type IEthbridgeApi = EthbridgeExtension["ethbridge"];
 
 type HandlerFn<T> = (a: T) => void;
-export class SifUnSignedClient extends CosmosClient
+export class SifUnSignedClient
+  extends CosmosClient
   implements IClpApi, IEthbridgeApi {
   protected readonly lcdClient: CustomLcdClient;
-  private subscriber: TendermintSocketSubscriber | undefined;
+  private subscriber: TendermintSocketPoll | undefined;
   constructor(
     apiUrl: string,
-    wsUrl: string = "ws://localhost:26657/websocket",
-    broadcastMode?: BroadcastMode
+    wsUrl = "ws://localhost:26657/websocket",
+    rpcUrl = "http://localhost:26657",
+    broadcastMode?: BroadcastMode,
   ) {
     super(apiUrl, broadcastMode);
     this.lcdClient = createLcdClient(apiUrl, broadcastMode);
@@ -56,7 +58,7 @@ export class SifUnSignedClient extends CosmosClient
     this.getPool = this.lcdClient.clp.getPool;
     this.burn = this.lcdClient.ethbridge.burn;
     this.lock = this.lcdClient.ethbridge.lock;
-    if (wsUrl) this.subscriber = createTendermintSocketSubscriber(wsUrl);
+    this.subscriber = createTendermintSocketPoll(rpcUrl);
   }
 
   // Clp Extension

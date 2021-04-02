@@ -14,8 +14,8 @@ tests.SingleSwapLiquidityFee.forEach(({ x, X, Y, expected }: any) => {
     const output = calculateProviderFee(
       new Fraction(bigx, JSBI.exponentiate(TEN, JSBI.BigInt(18))), // Swap Amount
       new Fraction(bigX, JSBI.exponentiate(TEN, JSBI.BigInt(18))), // In Asset Pool Balance
-      new Fraction(bigY, JSBI.exponentiate(TEN, JSBI.BigInt(18))) // Out Asset Pool Balance
+      new Fraction(bigY, JSBI.exponentiate(TEN, JSBI.BigInt(18))), // Out Asset Pool Balance
     );
-    expect(output.toFixed(18)).toBe(expected);
+    expect(output.toFixed(0)).toBe(expected);
   });
 });

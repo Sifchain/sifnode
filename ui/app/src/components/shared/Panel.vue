@@ -22,10 +22,13 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+.panel::-webkit-scrollbar {
+  display: none;
+}
 .panel {
   width: 410px;
   border-radius: $br_lg;
-  overflow: hidden;
+  overflow: scroll;
   background: $c_white;
   position: relative;
 

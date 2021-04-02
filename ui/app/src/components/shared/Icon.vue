@@ -9,19 +9,41 @@ import Cross from "./icons/Cross.vue";
 import Back from "./icons/Back.vue";
 import Plus from "./icons/Plus.vue";
 import InfoBoxBlack from "./icons/InfoBoxBlack.vue";
-import InfoBoxGrey from "./icons/InfoBoxGrey.vue";
+import InfoBoxWhite from "./icons/InfoBoxWhite.vue";
+import Bang from "./icons/Bang.vue";
+import Exclaimation from "./icons/Exclaimation.vue";
 
 export default defineComponent({
   props: {
     icon: {
       type: String as PropType<
-        "arrows" | "back" | "circle-half" | "pool" | "plus" | "down" | "tick" | "cross" |
-        "info-box-black" | "info-box-grey"
+        | "arrows"
+        | "back"
+        | "circle-half"
+        | "pool"
+        | "plus"
+        | "down"
+        | "tick"
+        | "cross"
+        | "info-box-black"
+        | "info-box-white"
+        | "exclaimation"
       >,
     },
   },
-  components: { Cross, Tick, DownArrow, CircleArrows, CircleHalf, PoolIcon, Back, Plus,
-    InfoBoxBlack, InfoBoxGrey},
+  components: {
+    Cross,
+    Tick,
+    DownArrow,
+    CircleArrows,
+    CircleHalf,
+    PoolIcon,
+    Back,
+    Plus,
+    InfoBoxBlack,
+    InfoBoxWhite,
+    Exclaimation,
+  },
 });
 </script>
 
@@ -36,6 +58,7 @@ export default defineComponent({
     <Back v-if="icon === 'back'" />
     <Plus v-if="icon === 'plus'" />
     <InfoBoxBlack v-if="icon === 'info-box-black'" />
-    <InfoBoxGrey v-if="icon === 'info-box-grey'" />
+    <InfoBoxWhite v-if="icon === 'info-box-white'" />
+    <Exclaimation v-if="icon === 'exclaimation'" />
   </span>
 </template>

@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	burnGasCost = 65000000000 * 248692 // assuming 65gigawei gas prices
-	lockGasCost = 65000000000 * 282031
+	burnGasCost = 160000000000 * 366000 // assuming 160gigawei gas prices
+	lockGasCost = 160000000000 * 338000
 )
 
 // MsgLock defines a message for locking coins and triggering a related event
@@ -77,7 +77,6 @@ func (msg MsgLock) ValidateBasic() error {
 	if len(msg.Symbol) == 0 {
 		return ErrInvalidSymbol
 	}
-	fmt.Println("Validate basic succeeded for burn tx")
 	return nil
 }
 
@@ -224,6 +223,102 @@ func (msg MsgCreateEthBridgeClaim) GetSignBytes() []byte {
 // GetSigners defines whose signature is required
 func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
+}
+
+// MsgUpdateCethReceiverAccount add or remove validator from whitelist
+type MsgUpdateCethReceiverAccount struct {
+	CosmosSender        sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
+	CethReceiverAccount sdk.AccAddress `json:"ceth_receiver_account" yaml:"ceth_receiver_account"`
+}
+
+// NewMsgUpdateCethReceiverAccount is a constructor function for MsgUpdateCethReceiverAccount
+func NewMsgUpdateCethReceiverAccount(cosmosSender sdk.AccAddress,
+	cethReceiverAccount sdk.AccAddress) MsgUpdateCethReceiverAccount {
+	return MsgUpdateCethReceiverAccount{
+		CosmosSender:        cosmosSender,
+		CethReceiverAccount: cethReceiverAccount,
+	}
+}
+
+// Route should return the name of the module
+func (msg MsgUpdateCethReceiverAccount) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgUpdateCethReceiverAccount) Type() string { return "update_ceth_receiver_account" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgUpdateCethReceiverAccount) ValidateBasic() error {
+	if msg.CosmosSender.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	}
+
+	if msg.CethReceiverAccount.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CethReceiverAccount.String())
+	}
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgUpdateCethReceiverAccount) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgUpdateCethReceiverAccount) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.CosmosSender}
+}
+
+// MsgRescueCeth transfer the ceth from ethbridge module to an account
+type MsgRescueCeth struct {
+	CosmosSender   sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
+	CosmosReceiver sdk.AccAddress `json:"cosmos_receiver" yaml:"cosmos_receiver"`
+	CethAmount     sdk.Int        `json:"ceth_amount" yaml:"ceth_amount"`
+}
+
+// NewMsgRescueCeth is a constructor function for NewMsgRescueCeth
+func NewMsgRescueCeth(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, cethAmount sdk.Int) MsgRescueCeth {
+	return MsgRescueCeth{
+		CosmosSender:   cosmosSender,
+		CosmosReceiver: cosmosReceiver,
+		CethAmount:     cethAmount,
+	}
+}
+
+// Route should return the name of the module
+func (msg MsgRescueCeth) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgRescueCeth) Type() string { return "rescue_ceth" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgRescueCeth) ValidateBasic() error {
+	if msg.CosmosSender.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	}
+	if msg.CosmosReceiver.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosReceiver.String())
+	}
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgRescueCeth) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{msg.CosmosSender}
 }
 
 // MsgUpdateWhiteListValidator add or remove validator from whitelist

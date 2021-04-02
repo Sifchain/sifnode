@@ -38,7 +38,6 @@ export default defineComponent({
 });
 </script>
 
-
 <template>
   <div v-if="priceMessage" class="details">
     <div class="details-header">
@@ -56,20 +55,28 @@ export default defineComponent({
       <div v-if="minimumReceived && toToken" class="details-row">
         <span>
           Minimum Received
-          <Tooltip message="This is the minimum amount of the to token you will receive, taking into consideration the acceptable slippage percentage you are willing to take on. This amount also already takes into consideration liquidity provider fees as well. ">
+          <Tooltip
+            message="This is the minimum amount of the to token you will receive, taking into consideration the acceptable slippage percentage you are willing to take on. This amount also already takes into consideration liquidity provider fees as well. "
+          >
             <Icon icon="info-box-black" />
           </Tooltip>
         </span>
 
         <span
           >{{ formatNumber(minimumReceived) }}
-          <span>{{ toToken.toUpperCase().replace("C", "c") }}</span></span
-        >
+          <span>{{
+            toToken.toString().toLowerCase().includes("rowan")
+              ? toToken.toString().toUpperCase()
+              : "c" + toToken.slice(1).toUpperCase()
+          }}</span>
+        </span>
       </div>
       <div v-if="priceImpact" class="details-row">
         <span>
           Price Impact
-          <Tooltip message="This is the percentage impact to the amount of the 'to' token in the liquidity pool based upon how much you are swapping for.">
+          <Tooltip
+            message="This is the percentage impact to the amount of the 'to' token in the liquidity pool based upon how much you are swapping for."
+          >
             <Icon icon="info-box-black" />
           </Tooltip>
         </span>
@@ -78,14 +85,20 @@ export default defineComponent({
       <div v-if="providerFee && toToken" class="details-row">
         <span>
           Liquidity Provider Fee
-          <Tooltip message="This is the fee paid to the liquidity providers of this pool.">
+          <Tooltip
+            message="This is the fee paid to the liquidity providers of this pool."
+          >
             <Icon icon="info-box-black" />
           </Tooltip>
         </span>
         <span
           >{{ showProviderFee(providerFee) }}
-          <span>{{ toToken.toUpperCase().replace("C", "c") }}</span></span
-        >
+          <span>{{
+            toToken.toString().toLowerCase().includes("rowan")
+              ? toToken.toString().toUpperCase()
+              : "c" + toToken.slice(1).toUpperCase()
+          }}</span>
+        </span>
       </div>
     </div>
   </div>

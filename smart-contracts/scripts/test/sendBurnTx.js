@@ -6,50 +6,38 @@ module.exports = async (cb) => {
 
     const logging = sifchainUtilities.configureLogging(this);
 
-    const argv = sifchainUtilities.processArgs(this, {
-        ...sifchainUtilities.sharedYargOptions,
-        ...sifchainUtilities.transactionYargOptions,
-        'approve': {
-            type: 'boolean',
-            default: true,
-            describe: 'approve the amount before burning'
-        }
-    });
-
-    logging.info(`sendBurnTx: ${JSON.stringify(argv, undefined, 2)}`);
-
-    const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging, "BridgeBank", argv.bridgebank_address);
-
-    const result = {};
-
-    let gasLimit = argv.gas;
-    if (gasLimit === 'estimate') {
-        gasLimit = 6000000; // we don't do an actual estimate for burns, just locks
-    }
-
-    // see if the user asked to approve the amount first
-    if (argv.approve) {
-        const tokenContract = await contractUtilites.buildContract(this, argv, logging,"BridgeToken", argv.symbol);
-
-        result.approve = await tokenContract.approve(argv.bridgebank_address, argv.amount, {
-            from: argv.ethereum_address,
-            value: 0,
-            gas: gasLimit
+    try {
+        const argv = sifchainUtilities.processArgs(this, {
+            ...sifchainUtilities.sharedYargOptions,
+            ...sifchainUtilities.transactionYargOptions,
         });
-    }
 
-    result.burn = await bridgeBankContract.burn(
-        Web3.utils.utf8ToHex(argv.sifchain_address),
-        argv.symbol,
-        argv.amount,
-        {
+        logging.info(`sendBurnTx: ${JSON.stringify(argv, undefined, 2)}`);
+
+        const bridgeBankContract = await contractUtilites.buildContract(this, argv, logging, "BridgeBank", argv.bridgebank_address);
+
+        const result = {};
+
+        const transactionParameters = {
             from: argv.ethereum_address,
-            value: 0,
-            gas: gasLimit
         }
-    );
 
-    console.log(JSON.stringify(result, undefined, 0));
+        await contractUtilites.setAllowance(this, argv.symbol, argv.amount, argv, logging, transactionParameters);
+
+        logging.info(`sendBurnTx ${JSON.stringify(argv)}}`);
+
+        result.burn = await bridgeBankContract.burn(
+            Web3.utils.utf8ToHex(argv.sifchain_address),
+            argv.symbol,
+            argv.amount,
+            transactionParameters,
+        );
+
+        console.log(JSON.stringify(result, undefined, 0));
+    } catch (e) {
+        console.error(`sendBurnTx error: ${e} ${e.message}`);
+        throw(e);
+    }
 
     return cb();
 };

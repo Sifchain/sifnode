@@ -2,7 +2,7 @@ import { Ref } from "@vue/reactivity";
 
 import { Asset, AssetAmount, LiquidityProvider, Pool } from "../entities";
 import { calculateWithdrawal } from "../entities/formulae";
-import { Fraction, IFraction } from "../entities/fraction/Fraction";
+import { Fraction, IFraction } from "../entities";
 import { PoolState } from "./addLiquidityCalculator";
 import { buildAsset } from "./utils";
 
@@ -15,7 +15,6 @@ export function useRemoveLiquidityCalculator(input: {
   liquidityProvider: Ref<LiquidityProvider | null>;
   sifAddress: Ref<string>;
 }) {
-
   // this function needs to be refactored so
   const externalAsset = (() => {
     if (!input.externalAssetSymbol.value) return null;
@@ -54,7 +53,7 @@ export function useRemoveLiquidityCalculator(input: {
     if (!liquidityPool) return null;
     return (
       liquidityPool.amounts.find(
-        (a) => a.asset.symbol === input.nativeAssetSymbol.value
+        (a) => a.asset.symbol === input.nativeAssetSymbol.value,
       ) ?? null
     );
   })();
@@ -63,7 +62,7 @@ export function useRemoveLiquidityCalculator(input: {
     if (!liquidityPool) return null;
     return (
       liquidityPool.amounts.find(
-        (a) => a.asset.symbol === input.externalAssetSymbol.value
+        (a) => a.asset.symbol === input.externalAssetSymbol.value,
       ) ?? null
     );
   })();
@@ -108,11 +107,11 @@ export function useRemoveLiquidityCalculator(input: {
       hasLiquidity,
       withdrawExternalAssetAmount: AssetAmount(
         externalAsset,
-        withdrawExternalAssetAmount
+        withdrawExternalAssetAmount,
       ),
       withdrawNativeAssetAmount: AssetAmount(
         nativeAsset,
-        withdrawNativeAssetAmount
+        withdrawNativeAssetAmount,
       ),
     };
   })();
@@ -135,7 +134,7 @@ export function useRemoveLiquidityCalculator(input: {
     return (
       withdrawalAmounts?.withdrawExternalAssetAmount.toFormatted({
         decimals: 6,
-        symbol: false
+        symbol: false,
       }) || ""
     );
   })();
@@ -144,7 +143,7 @@ export function useRemoveLiquidityCalculator(input: {
     return (
       withdrawalAmounts?.withdrawNativeAssetAmount.toFormatted({
         decimals: 6,
-        symbol: false
+        symbol: false,
       }) || ""
     );
   })();

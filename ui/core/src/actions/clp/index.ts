@@ -1,7 +1,12 @@
-import {Asset, AssetAmount, Fraction, LiquidityProvider, Pool} from "../../entities";
+import {
+  Asset,
+  AssetAmount,
+  Fraction,
+  LiquidityProvider,
+  Pool,
+} from "../../entities";
 import { ActionContext } from "..";
 import { PoolStore } from "../../store/pools";
-import notify from "../../api/utils/Notifications";
 import { effect } from "@vue/reactivity";
 import JSBI from "jsbi";
 
@@ -9,7 +14,7 @@ export default ({
   api,
   store,
 }: ActionContext<
-  "SifService" | "ClpService",
+  "SifService" | "ClpService" | "EventBusService",
   "pools" | "wallet" | "accountpools"
 >) => {
   const state = api.SifService.getState();
@@ -26,20 +31,37 @@ export default ({
     // Update lp pools
     if (state.address) {
       const accountPoolSymbols = await api.ClpService.getPoolSymbolsByLiquidityProvider(
-        state.address
+        state.address,
       );
 
-      const accountPools: { lp: LiquidityProvider; pool: Pool }[] = [];
-      for (const symbol of accountPoolSymbols) {
+      // This is a hot method when there are a heap of pools
+      // Ideally we would have a better rest endpoint design
+
+      accountPoolSymbols.forEach(async (symbol) => {
         const lp = await api.ClpService.getLiquidityProvider({
           symbol,
           lpAddress: state.address,
         });
-        if (!lp) continue;
-        const pool = store.pools[`${symbol}_rowan`];
-        accountPools.push({ lp, pool });
+        if (!lp) return;
+        const pool = `${symbol}_rowan`;
+        store.accountpools[state.address] =
+          store.accountpools[state.address] || {};
+
+        store.accountpools[state.address][pool] = { lp, pool };
+      });
+
+      // Delete accountpools
+      const currentPoolIds = accountPoolSymbols.map((id) => `${id}_rowan`);
+      if (store.accountpools[state.address]) {
+        const existingPoolIds = Object.keys(store.accountpools[state.address]);
+        const disjunctiveIds = existingPoolIds.filter(
+          (id) => !currentPoolIds.includes(id),
+        );
+
+        disjunctiveIds.forEach((poolToRemove) => {
+          delete store.accountpools[state.address][poolToRemove];
+        });
       }
-      store.accountpools = accountPools;
     }
   }
 
@@ -47,10 +69,9 @@ export default ({
   syncPools().then(() => {
     effect(() => {
       if (Object.keys(store.pools).length === 0) {
-        notify({
-          type: "error",
-          message: "No Liquidity Pools Found",
-          detail: "Create liquidity pool to swap.",
+        api.EventBusService.dispatch({
+          type: "NoLiquidityPoolsFoundEvent",
+          payload: {},
         });
       }
     });
@@ -62,25 +83,23 @@ export default ({
     await syncPools();
   });
 
-  api.SifService.onSocketError(({ sifWsUrl }) => {
-    notify({
-      type: "error",
-      message: "Websocket Not Connected",
-      detail: `${sifWsUrl}`,
-    });
-  });
-
   function findPool(pools: PoolStore, a: string, b: string) {
     const key = [a, b].sort().join("_");
 
     return pools[key] ?? null;
   }
 
+  effect(() => {
+    // When sif address changes syncPools
+    store.wallet.sif.address;
+    syncPools();
+  });
+
   const actions = {
     async swap(
       sentAmount: AssetAmount,
       receivedAsset: Asset,
-      minimumReceived: AssetAmount
+      minimumReceived: AssetAmount,
     ) {
       if (!state.address) throw "No from address provided for swap";
 
@@ -94,9 +113,12 @@ export default ({
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        notify({
-          type: "error",
-          message: txStatus.memo || "There was an error with your swap",
+        api.EventBusService.dispatch({
+          type: "TransactionErrorEvent",
+          payload: {
+            txStatus,
+            message: txStatus.memo || "There was an error with your swap",
+          },
         });
       }
 
@@ -105,13 +127,13 @@ export default ({
 
     async addLiquidity(
       nativeAssetAmount: AssetAmount,
-      externalAssetAmount: AssetAmount
+      externalAssetAmount: AssetAmount,
     ) {
       if (!state.address) throw "No from address provided for swap";
       const hasPool = !!findPool(
         store.pools,
         nativeAssetAmount.asset.symbol,
-        externalAssetAmount.asset.symbol
+        externalAssetAmount.asset.symbol,
       );
 
       const provideLiquidity = hasPool
@@ -126,9 +148,12 @@ export default ({
 
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
       if (txStatus.state !== "accepted") {
-        notify({
-          type: "error",
-          message: txStatus.memo || "There was an error adding liquidity",
+        api.EventBusService.dispatch({
+          type: "TransactionErrorEvent",
+          payload: {
+            txStatus,
+            message: txStatus.memo || "There was an error with your swap",
+          },
         });
       }
       return txStatus;
@@ -137,9 +162,8 @@ export default ({
     async removeLiquidity(
       asset: Asset,
       wBasisPoints: string,
-      asymmetry: string
+      asymmetry: string,
     ) {
-
       const tx = await api.ClpService.removeLiquidity({
         fromAddress: state.address,
         asset,
@@ -150,9 +174,12 @@ export default ({
       const txStatus = await api.SifService.signAndBroadcast(tx.value.msg);
 
       if (txStatus.state !== "accepted") {
-        notify({
-          type: "error",
-          message: txStatus.memo || "There was an error removing liquidity",
+        api.EventBusService.dispatch({
+          type: "TransactionErrorEvent",
+          payload: {
+            txStatus,
+            message: txStatus.memo || "There was an error removing liquidity",
+          },
         });
       }
 

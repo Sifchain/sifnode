@@ -1,21 +1,19 @@
 <template>
   <div class="swap-progress">
     <div class="text"><span v-if="approving">Pending</span></div>
-    <SwapProgressLoader
-      :loading="approving"
-      :success="approved"
-    >1</SwapProgressLoader>
+    <SwapProgressLoader :loading="approving" :success="approved"
+      >1</SwapProgressLoader
+    >
     <div class="line"></div>
-    <SwapProgressLoader
-      :loading="confirming"
-      :success="confirmed"
-    >2</SwapProgressLoader>
+    <SwapProgressLoader :loading="confirming" :success="confirmed"
+      >2</SwapProgressLoader
+    >
     <div class="text"><span v-if="confirming">Pending</span></div>
   </div>
 </template>
 
 <script>
-import SwapProgressLoader from './SwapProgressLoader.vue';
+import SwapProgressLoader from "./SwapProgressLoader.vue";
 export default {
   components: { SwapProgressLoader },
   props: {
@@ -23,8 +21,8 @@ export default {
     approved: Boolean,
     confirming: Boolean,
     confirmed: Boolean,
-  }
-}
+  },
+};
 </script>
 
 <style scoped lang="scss">

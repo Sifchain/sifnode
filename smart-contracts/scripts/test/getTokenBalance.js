@@ -1,6 +1,6 @@
 module.exports = async (cb) => {
     const Web3 = require("web3");
-    const BigNumber = require("bignumber.js")
+    const BN = require('bn.js');
 
     const sifchainUtilities = require('./sifchainUtilities')
     const contractUtilites = require('./contractUtilities');
@@ -25,15 +25,15 @@ module.exports = async (cb) => {
             result.symbol = "eth";
         } else {
             const addr = argv.symbol;
-            const tokenContract = await contractUtilites.buildContract(this, argv, logging, "BridgeToken", argv.symbol.toString());
+            const tokenContract = await contractUtilites.buildContract(this, argv, logging, "BridgeToken", argv.symbol);
             result["symbol"] = await tokenContract.symbol();
-            balanceWei = new BigNumber(await tokenContract.balanceOf(argv.ethereum_address))
+            balanceWei = new BN(await tokenContract.balanceOf(argv.ethereum_address))
         }
         balanceEth = web3instance.utils.fromWei(balanceWei.toString());
         const finalResult = {
             ...result,
-            balanceWei,
-            balanceEth,
+            balanceWei: balanceWei.toString(10),
+            balanceEth: balanceEth.toString(10),
         }
 
         console.log(JSON.stringify(finalResult, undefined, 0));

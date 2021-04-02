@@ -1,4 +1,3 @@
-
 <script lang="ts">
 import ModalView from "./ModalView.vue";
 import { ref, defineComponent } from "vue";
@@ -30,4 +29,3 @@ export default defineComponent({
     ><slot :requestClose="requestClose"></slot
   ></ModalView>
 </template>
-

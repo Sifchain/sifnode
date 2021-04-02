@@ -70,7 +70,9 @@ export default defineComponent({
 
     const amount = ref("0.0");
     const address = computed(() =>
-      mode.value === "peg" ? store.wallet.sif.address : store.wallet.eth.address
+      mode.value === "peg"
+        ? store.wallet.sif.address
+        : store.wallet.eth.address,
     );
 
     const isMaxActive = computed(() => {
@@ -85,7 +87,7 @@ export default defineComponent({
         try {
           await actions.peg.approve(
             store.wallet.eth.address,
-            AssetAmount(asset, amount.value)
+            AssetAmount(asset, amount.value),
           );
         } catch (err) {
           return (transactionState.value = "rejected");
@@ -104,7 +106,7 @@ export default defineComponent({
       transactionState.value = "signing";
 
       const tx = await actions.peg.unpeg(
-        AssetAmount(Asset.get(symbol.value), amount.value)
+        AssetAmount(Asset.get(symbol.value), amount.value),
       );
 
       transactionHash.value = tx.hash;
@@ -160,11 +162,14 @@ export default defineComponent({
       handleSelectSymbol: () => {},
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
-        let realMaxAmount = Number(accountBalance.value.toFixed());
-        if (symbol.value === "ceth") {
-          realMaxAmount = realMaxAmount - Number(feeAmount.value.toFixed());
-        }
-        amount.value = realMaxAmount.toString();
+        const decimals = Asset.get(symbol.value).decimals;
+        const afterMaxValue =
+          symbol.value === "ceth"
+            ? accountBalance.value.subtract(feeAmount.value)
+            : accountBalance.value;
+        amount.value = afterMaxValue.lessThan("0")
+          ? "0.0"
+          : afterMaxValue.toFixed(decimals);
       },
       handleAmountUpdated: (newAmount: string) => {
         amount.value = newAmount;
@@ -233,6 +238,7 @@ export default defineComponent({
             show: !!feeAmount,
             label: 'Transaction Fee',
             data: `${feeAmount.toFixed(8)} cETH`,
+            tooltipMessage: `This is a fixed fee amount. This is a temporary solution as we are working towards improving this amount in upcoming versions of the network.`,
           },
         ]"
       />
