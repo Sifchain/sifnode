@@ -17,12 +17,12 @@ def test_rescue_ceth(
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
         sifchain_fees_int,
         ethbridge_module_address,
+        sifchain_admin_account
 ):
     """
     does a lock of rowan (using another test) that should result
     in ceth being sent to a place it can be rescued from
     """
-    admin_account = test_utilities.get_required_env_var("SIFCHAIN_ADMIN_ACCOUNT")
     basic_transfer_request.ethereum_address = source_ethereum_address
     admin_user_credentials = SifchaincliCredentials(
         from_key="sifnodeadmin"
@@ -35,6 +35,12 @@ def test_rescue_ceth(
         target_ceth_balance=test_utilities.burn_gas_cost + small_amount,
         target_rowan_balance=sifchain_fees_int
     )
+    logging.info("get the starting balance for the ethbridge module - that's where fees should be going")
+    ethbridge_module_balance = test_utilities.get_sifchain_addr_balance(
+        ethbridge_module_address,
+        basic_transfer_request.sifnodecli_node,
+        "ceth"
+    )
     test_account_request.amount = small_amount
     burn_lock_functions.transfer_sifchain_to_ethereum(test_account_request, test_account_credentials)
     logging.info(
@@ -43,13 +49,13 @@ def test_rescue_ceth(
     test_utilities.wait_for_sifchain_addr_balance(
         ethbridge_module_address,
         "ceth",
-        test_utilities.burn_gas_cost,
+        ethbridge_module_balance + test_utilities.burn_gas_cost,
         test_account_request.sifnodecli_node
     )
-    logging.info(f"now rescue ceth into {test_account_request.sifchain_address}")
+    logging.info(f"rescue ceth into {test_account_request.sifchain_address}")
     test_utilities.rescue_ceth(
         receiver_account=test_account_request.sifchain_address,
-        admin_account=admin_account,
+        admin_account=sifchain_admin_account,
         amount=test_utilities.burn_gas_cost,
         transfer_request=basic_transfer_request,
         credentials=admin_user_credentials
@@ -64,6 +70,7 @@ def test_rescue_ceth(
     )
 
 
+@pytest.mark.usefixtures("restore_default_rescue_location")
 def test_ceth_receiver_account(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
@@ -73,6 +80,7 @@ def test_ceth_receiver_account(
         smart_contracts_dir,
         bridgetoken_address,
         validator_address,
+        ethbridge_module_address,
 ):
     admin_account = test_utilities.get_required_env_var("SIFCHAIN_ADMIN_ACCOUNT")
     ceth_rescue_account, ceth_rescue_account_credentials = integration_env_credentials.create_new_sifaddr_and_credentials()
