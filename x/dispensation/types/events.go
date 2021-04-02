@@ -3,7 +3,7 @@ package types
 // dispensation module event types
 
 const (
-	AttributeValueCategory         = ModuleName
-	EventTypeDistributionCompleted = "distribution_complete"
-	AttributeKeyFromModuleAccount  = "module_account"
+	AttributeValueCategory        = ModuleName
+	EventTypeDistributionStarted  = "distribution_started"
+	AttributeKeyFromModuleAccount = "module_account"
 )

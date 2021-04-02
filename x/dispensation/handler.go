@@ -34,14 +34,13 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 		return nil, err
 	}
 	//Distribute rewards and Store Historical Data
-	// TODO Break create and distribute in two different steps so that distribute can be moved to the Block beginner
-	err = keeper.CreateAndDistributeDrops(ctx, msg.Output, msg.DistributionName)
+	err = keeper.CreateDrops(ctx, msg.Output, msg.DistributionName)
 	if err != nil {
 		return nil, err
 	}
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeDistributionCompleted,
+			types.EventTypeDistributionStarted,
 			sdk.NewAttribute(types.AttributeKeyFromModuleAccount, types.GetDistributionModuleAddress().String()),
 		),
 	})

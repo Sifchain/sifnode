@@ -8,9 +8,26 @@ import (
 
 //This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
 
+type ClaimStatus int64
+
+const Pending ClaimStatus = 1
+const Completed ClaimStatus = 2
+
+func (d ClaimStatus) String() string {
+	switch d {
+	case Pending:
+		return "Pending"
+	case Completed:
+		return "Completed"
+	default:
+		return "Invalid"
+	}
+}
+
 // DistributionRecord is created for every recipient for a distribution
 // TODO add a claim status for the distribution record which can be used to break the Distribution into two different processes . Distribute and Claim
 type DistributionRecord struct {
+	ClaimStatus
 	DistributionName string         `json:"distribution_name"`
 	RecipientAddress sdk.AccAddress `json:"recipient_address"`
 	Coins            sdk.Coins      `json:"coins"`

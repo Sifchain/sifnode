@@ -295,6 +295,7 @@ func NewInitApp(
 	app.mm.SetOrderBeginBlockers(distr.ModuleName,
 		slashing.ModuleName,
 		faucet.ModuleName,
+		dispensation.ModuleName,
 		upgrade.ModuleName)
 
 	app.mm.SetOrderEndBlockers(
