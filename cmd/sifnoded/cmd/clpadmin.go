@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/Sifchain/sifnode/x/clp"
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 )
 
 func AddGenesisCLPAdminCmd(defaultNodeHome string) *cobra.Command {
@@ -66,15 +66,15 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 
-			clpGenState := clp.GetGenesisStateFromAppState(appState)
-			clpGenState.AddressWhitelist = append(clpGenState.AddressWhitelist, addr)
+			clpGenState := clptypes.GetGenesisStateFromAppState(appState)
+			clpGenState.AddressWhitelist = append(clpGenState.AddressWhitelist, addr.String())
 
 			clpGenStateBz, err := json.Marshal(clpGenState)
 			if err != nil {
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
 			}
 
-			appState[clp.ModuleName] = clpGenStateBz
+			appState[clptypes.ModuleName] = clpGenStateBz
 
 			appStateJSON, err := json.Marshal(appState)
 			if err != nil {
