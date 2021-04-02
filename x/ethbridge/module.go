@@ -29,7 +29,7 @@ var (
 type AppModuleBasic struct{}
 
 func (b AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	panic("implement me")
+	types.RegisterInterfaces(registry)
 }
 
 var _ module.AppModuleBasic = AppModuleBasic{}
@@ -56,7 +56,8 @@ func (b AppModuleBasic) ValidateGenesis(marshaler codec.JSONMarshaler, config sd
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(c sdkclient.Context, serveMux *runtime.ServeMux) {
-	panic("implement me")
+	// TODO: Register grpc gateway
+	return
 }
 
 // RegisterRESTRoutes registers the REST routes for the ethbridge module.
@@ -91,44 +92,14 @@ type AppModule struct {
 	Codec         *codec.Marshaler
 }
 
-func (am AppModule) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
-	panic("implement me")
-}
-
-func (am AppModule) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	panic("implement me")
-}
-
-func (am AppModule) DefaultGenesis(marshaler codec.JSONMarshaler) json.RawMessage {
-	panic("implement me")
-}
-
-func (am AppModule) ValidateGenesis(marshaler codec.JSONMarshaler, config sdkclient.TxEncodingConfig, message json.RawMessage) error {
-	panic("implement me")
-}
-
-func (am AppModule) RegisterRESTRoutes(c sdkclient.Context, router *mux.Router) {
-	panic("implement me")
-}
-
-func (am AppModule) RegisterGRPCGatewayRoutes(c sdkclient.Context, serveMux *runtime.ServeMux) {
-	panic("implement me")
-}
-
-func (am AppModule) GetTxCmd() *cobra.Command {
-	panic("implement me")
-}
-
-func (am AppModule) GetQueryCmd() *cobra.Command {
-	panic("implement me")
-}
-
+// Deprecated: use RegisterServices
 func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
-	panic("implement me")
+	return nil
 }
 
-func (am AppModule) RegisterServices(configurator module.Configurator) {
-	panic("implement me")
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	// types.RegisterMsgServer(cfg.QueryServer(), am.OracleKeeper)
+	// types.RegisterQueryServer(cfg.MsgServer(), am.OracleKeeper)
 }
 
 // NewAppModule creates a new AppModule object
@@ -168,6 +139,7 @@ func (am AppModule) NewHandler() sdk.Handler {
 	return NewHandler(am.AccountKeeper, am.BridgeKeeper, am.Codec)
 }
 
+// Deprecated: use RegisterServices
 // QuerierRoute returns the ethbridge module's querier route name.
 func (AppModule) QuerierRoute() string {
 	return QuerierRoute
