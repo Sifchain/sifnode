@@ -143,4 +143,24 @@ describe("format", () => {
       "33.333333333333333333",
     );
   });
+
+  test("does not throw on undefined and null inputs", () => {
+    // because we are not using JSX there is a chance that we accidentally send undefined or null to format
+
+    expect(() => {
+      format(undefined as any, mockAsset(18));
+    }).not.toThrow();
+
+    expect(() => {
+      format(null as any, mockAsset(18));
+    }).not.toThrow();
+
+    expect(() => {
+      format(Amount("10"), undefined as any);
+    }).not.toThrow();
+
+    expect(() => {
+      format(null as any, undefined as any);
+    }).not.toThrow();
+  });
 });

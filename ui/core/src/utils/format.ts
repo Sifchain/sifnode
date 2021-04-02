@@ -73,6 +73,14 @@ export function format<T extends IAmount>(
   const options = (isAsset(_asset) ? _options : _asset) || {};
   const asset = isAsset(_asset) ? _asset : undefined;
 
+  if (!amount) {
+    // In theory this should not happen if we are using typescript correctly
+    // This might happen due to a service response not being runtime checked
+    // or in Vue because we are not using JSX templates
+    console.error(`Amount "${amount}" supplied to format function is falsey`);
+    return ""; // return empty string if there is an error
+  }
+
   let decimal = asset
     ? decimalShift(amount.toBigInt().toString(), -1 * asset.decimals)
     : amount.toString();
