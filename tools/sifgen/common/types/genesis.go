@@ -148,10 +148,6 @@ type CLP struct {
 	CLPModuleAddress      string      `json:"clp_module_address"`
 }
 
-type Faucet struct {
-	Value string `json:"value"`
-}
-
 type Supply struct {
 	Supply []interface{} `json:"supply"`
 }
@@ -226,7 +222,6 @@ type AppState struct {
 	Auth         Auth         `json:"auth"`
 	Slashing     Slashing     `json:"slashing"`
 	Distribution Distribution `json:"distribution"`
-	Faucet       Faucet       `json:"faucet"`
 }
 
 type Evidence struct {
