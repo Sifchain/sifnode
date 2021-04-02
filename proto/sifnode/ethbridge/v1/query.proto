@@ -1,0 +1,35 @@
+syntax = "proto3";
+package sifnode.ethbridge.v1;
+
+import "gogoproto/gogo.proto";
+import "sifnode/ethbridge/v1/types.proto";
+import "sifnode/oracle/v1/types.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
+
+// Query service for queries
+service Query {
+  // EthProphecy queries an EthProphecy
+  rpc EthProphecy(QueryEthProphecyRequest) returns (QueryEthProphecyResponse) {}
+}
+
+// TODO check rest property names
+// QueryEthProphecyRequest payload for EthProphecy rpc query
+message QueryEthProphecyRequest {
+  int64 ethereum_chain_id = 1;
+  // bridge_contract_address is an EthereumAddress
+  string bridge_contract_address = 2;
+  int64 nonce = 3;
+  string symbol = 4;
+  // token_contract_address is an EthereumAddress
+  string token_contract_address = 5;
+  // ethereum_sender is an EthereumAddress
+  string ethereum_sender = 6;
+}
+
+// QueryEthProphecyResponse payload for EthProphecy rpc query
+message QueryEthProphecyResponse {
+  string id = 1;
+  sifnode.oracle.v1.Status status = 2;
+  repeated EthBridgeClaim claims = 3;
+}

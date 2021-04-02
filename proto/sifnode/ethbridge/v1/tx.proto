@@ -1,0 +1,62 @@
+syntax = "proto3";
+package sifnode.ethbridge.v1;
+
+import "gogoproto/gogo.proto";
+import "sifnode/ethbridge/v1/types.proto";
+
+option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
+
+// Msg service for messages
+service Msg {
+  rpc Lock(MsgLock) returns (MsgLockResponse);
+  rpc Burn(MsgBurn) returns (MsgBurnResponse);
+  rpc CreateEthBridgeClaim(MsgCreateEthBridgeClaim) returns (MsgCreateEthBridgeClaimResponse);
+  rpc UpdateWhiteListValidator(MsgUpdateWhiteListValidator) returns (MsgUpdateWhiteListValidatorResponse);
+}
+
+// MsgLock defines a message for locking coins and triggering a related event
+message MsgLock {
+  string cosmos_sender     = 1;
+  string Amount            = 2 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable)   = false,
+    (gogoproto.moretags)   = "yaml:\"amount\""];
+  string symbol            = 3 [(gogoproto.moretags) = "yaml:\"symbol\""];
+  int64  ethereum_chain_id = 4 [(gogoproto.moretags) = "yaml:\"ethereum_chain_id\""];
+  string ethereum_receiver = 5 [(gogoproto.moretags) = "yaml:\"ethereum_receiver\""];
+  string ceth_amount       = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable)   = false,
+    (gogoproto.moretags)   = "yaml:\"ceth_amount\""];
+}
+
+message MsgLockResponse {}
+
+// MsgBurn defines a message for burning coins and triggering a related event
+message MsgBurn {
+  string cosmos_sender     = 1 [(gogoproto.moretags) = "yaml:\"cosmos_sender\""];
+  string amount            = 2 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable)   = false,
+    (gogoproto.moretags)   = "yaml:\"amount\""];
+  string symbol            = 3 [(gogoproto.moretags) = "yaml:\"symbol\""];
+  int64  ethereum_chain_id = 4 [(gogoproto.moretags) = "yaml:\"ethereum_chain_id\""];
+  string ethereum_receiver = 5 [(gogoproto.moretags) = "yaml:\"ethereum_receiver\""];
+  string ceth_amount       = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable)   = false,
+    (gogoproto.moretags)   = "yaml:\"ceth_amount\""];
+}
+
+message MsgBurnResponse {}
+
+message MsgCreateEthBridgeClaim {
+  EthBridgeClaim eth_bridge_claim = 1 [(gogoproto.moretags) = "yaml:\"eth_bridge_claim\""];
+}
+
+message MsgCreateEthBridgeClaimResponse {}
+
+// MsgUpdateWhiteListValidator add or remove validator from whitelist
+message MsgUpdateWhiteListValidator {
+  string cosmos_sender  = 1 [(gogoproto.moretags) = "yaml:\"cosmos_sender\""];
+  string validator      = 2 [(gogoproto.moretags) = "yaml:\"validator\""];
+  string operation_type = 3 [(gogoproto.moretags) = "yaml:\"operation_type\""];
+}
+
+message MsgUpdateWhiteListValidatorResponse {}
