@@ -1,0 +1,43 @@
+syntax = "proto3";
+package sifnode.oracle.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/sifchain/sifnode/x/oracle/types";
+
+// GenesisState - all clp state that must be provided at genesis
+//TODO: Add parameters to Genesis state ,such as minimum liquidity required to create a pool
+message GenesisState {
+  repeated string address_whitelist = 1;
+  string          admin_address     = 2;
+}
+
+// Claim contrains an arbitrary claim with arbitrary content made by a given validator
+message Claim {
+  string id                = 1;
+  string validator_address = 2;
+  string content           = 3;
+}
+
+// DBProphecy is what the prophecy becomes when being saved to the database.
+//  Tendermint/Amino does not support maps so we must serialize those variables into bytes.
+message DBProphecy {
+  string id               = 1;
+  Status status           = 2 [(gogoproto.nullable) = false];
+  bytes  claim_validators = 3;
+  bytes  validator_claims = 4;
+}
+
+// Status is a struct that contains the status of a given prophecy
+message Status {
+  StatusText text        = 1;
+  string     final_claim = 2;
+}
+
+// StatusText is an enum used to represent the status of the prophecy
+enum StatusText {
+  STATUS_TEXT_UNSPECIFIED = 0;
+  STATUS_TEXT_PEDNING     = 1;
+  STATUS_TEXT_SUCCESS     = 2;
+  STATUS_TEXT_FAILED      = 3;
+}

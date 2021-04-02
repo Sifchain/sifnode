@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/Sifchain/sifnode/x/oracle"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 // SetGenesisOracleAdminCmd set the admin address can update the whitelist validators
@@ -66,15 +66,15 @@ func SetGenesisOracleAdminCmd(defaultNodeHome string) *cobra.Command {
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 
-			oracleGenState := oracle.GetGenesisStateFromAppState(appState)
-			oracleGenState.AdminAddress = addr
+			oracleGenState := oracletypes.GetGenesisStateFromAppState(appState)
+			oracleGenState.AdminAddress = addr.String()
 
 			oracleGenStateBz, err := json.Marshal(oracleGenState)
 			if err != nil {
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
 			}
 
-			appState[oracle.ModuleName] = oracleGenStateBz
+			appState[oracletypes.ModuleName] = oracleGenStateBz
 
 			appStateJSON, err := json.Marshal(appState)
 			if err != nil {

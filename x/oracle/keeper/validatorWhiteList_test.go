@@ -8,7 +8,7 @@ import (
 )
 
 func TestKeeper_SetValidatorWhiteList(t *testing.T) {
-	ctx, keeper, _, _, _, _, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	ctx, keeper, _, _, _, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
 	_, addresses := oracleKeeper.CreateTestAddrs(2)
 	keeper.SetOracleWhiteList(ctx, addresses)
 	vList := keeper.GetOracleWhiteList(ctx)
@@ -17,7 +17,7 @@ func TestKeeper_SetValidatorWhiteList(t *testing.T) {
 }
 
 func TestKeeper_ValidateAddress(t *testing.T) {
-	ctx, keeper, _, _, _, _, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	ctx, keeper, _, _, _, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
 	_, addresses := oracleKeeper.CreateTestAddrs(2)
 	keeper.SetOracleWhiteList(ctx, addresses)
 	assert.True(t, keeper.ValidateAddress(ctx, addresses[0]))
