@@ -9,9 +9,6 @@ on:
       docker_image_tag:
         description: devnet-version, testnet-version
         required: true
-  push:
-    branches:
-      - 'ebrelayer-pipeline-development'
 
 jobs:
   #US DEVNET DEPLOYMENT
