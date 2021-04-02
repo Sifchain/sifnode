@@ -1,13 +1,3 @@
-<script>
-/*
-TODO - Experimental Text component
-Need to figure out best way to use it
-e.g. import Text from 'core/Text'
-<Text.Body>Something</Text.Body>
-or <Text type="heading"> etc
-*/
-</script>
-
 <template>
   <div class="container">
     <slot></slot>
@@ -16,8 +6,9 @@ or <Text type="heading"> etc
 
 <style lang="scss" scoped>
 .container {
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 12px; /* make $variable */
+  line-height: 14px; /* make $variable */
   text-align: left;
+  font-weight: 400; /* make $variable */
 }
 </style>

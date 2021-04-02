@@ -8,6 +8,15 @@ import AssetItem from "@/components/shared/AssetItem.vue";
 import Box from "@/components/shared/Box.vue";
 import { Copy, SubHeading } from "@/components/shared/Text";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
+
+const REWARD_INFO = {
+  lm: {
+    label: "Liquidity Minining",
+    description:
+      "Earn additional rewards by staking a node or delegating to a staked node.",
+  },
+};
+
 export default defineComponent({
   components: {
     Layout,
@@ -21,26 +30,25 @@ export default defineComponent({
   setup() {
     const { store } = useCore();
     const address = computed(() => store.wallet.sif.address);
-    let rewards = ref<Array<Object>>([
-      { type: "lm", multiplier: 0, start: "", amount: 12709.098861115788 },
-      { type: "lm", multiplier: 0, start: "", amount: 333.098861115788 },
-    ]);
-    //
-    // watch(address, async () => {
-    //   const data = await fetch(
-    //     `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
-    //   );
-    //   rewards.value = await data.json();
-    // });
+    let rewards = ref<Array<Object>>([]);
+
+    watch(address, async () => {
+      const data = await fetch(
+        `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
+      );
+      rewards.value = await data.json();
+    });
+
     return {
       rewards,
+      REWARD_INFO,
     };
   },
 });
 </script>
 
 <template>
-  <Layout :header="true" title="Rewards" backLink="/peg">
+  <Layout :header="true" title="Your Rewards">
     <Copy>
       Earn rewards by participating in of our rewards-earning programs. Please
       see additional information of our current rewards programs and how to
@@ -52,15 +60,22 @@ export default defineComponent({
       >.
     </Copy>
     <div class="rewards-container">
-      <Box v-for="reward in rewards" v-bind:key="reward.type">
+      <div v-if="rewards.length === 0" class="loader-container">
+        <div class="loader" />
+      </div>
+      <Box v-else v-for="reward in rewards" v-bind:key="reward.type">
         <div class="reward-container">
-          <SubHeading>{{ reward.type }}</SubHeading>
+          <SubHeading>{{ REWARD_INFO[reward.type].label }}</SubHeading>
+          <Copy>
+            Earn additional rewards by staking a node or delegating to a staked
+            node.
+          </Copy>
           <div class="details-container">
             <div class="amount-container">
               <AssetItem symbol="Rowan" :label="false" />
-              <span>{{ reward.amount }}</span>
+              <span>{{ reward.amount?.toFixed() }}</span>
             </div>
-            <SifButton primary>Claim</SifButton>
+            <a href="http://google.com">More Info</a>
           </div>
         </div>
       </Box>
@@ -85,8 +100,13 @@ export default defineComponent({
   }
   .reward-container {
     flex-direction: column;
+    > :nth-child(1),
+    > :nth-child(2) {
+      margin-bottom: $margin_small;
+    }
     .amount-container {
       display: flex;
+      align-items: center;
       flex-direction: row;
     }
     .details-container {
@@ -95,43 +115,33 @@ export default defineComponent({
       justify-content: space-between;
     }
   }
-}
 
-/*
-.info {
-  text-align: left;
-  font-weight: 400;
-}
-.list-container {
-  text-align: left;
-  color: $c_gray_700;
-  border-top: 1px solid $c_gray_400;
-  min-height: 145px;
-  background: white;
-  border-radius: 0 0 6px 6px;
-  padding-bottom: 60px;
-  .item {
-    padding: 14px 16px;
+  /* TODO - TEMP - Need to componentize our loaders */
+  .loader-container {
+    margin-top: $margin-large;
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    border-bottom: $divider;
+    justify-content: center;
     align-items: center;
-    &:hover {
-      cursor: pointer;
-      background: $c_gray_50;
+  }
+  .loader {
+    background: url("../../public/images/siflogo.png");
+    background-size: cover;
+    width: 64px;
+    height: 64px;
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 1);
+    transform: scale(1);
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0% {
+      transform: scale(0.85);
     }
-    .title {
-      color: $c_text;
+    70% {
+      transform: scale(1);
     }
-    .detail {
-      display: flex;
-      align-items: center;
-      .amount {
-        display: flex;
-      }
+    100% {
+      transform: scale(0.85);
     }
   }
 }
-*/
 </style>
