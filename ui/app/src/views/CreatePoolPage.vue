@@ -54,8 +54,14 @@ export default defineComponent({
     const router = useRouter();
     const route = useRoute();
 
-    const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
-    const toSymbol = ref("rowan");
+    const {
+      fromSymbol,
+      fromAmount,
+      toAmount,
+      toSymbol,
+    } = useCurrencyFieldState({
+      pooling: ref(true),
+    });
     const isFromMaxActive = computed(() => {
       const accountBalance = balances.value.find(
         (balance) => balance.asset.symbol === fromSymbol.value,
