@@ -8,7 +8,6 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -27,13 +26,13 @@ func GetTxCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	clpTxCmd.AddCommand(flags.PostCommands(
+	clpTxCmd.AddCommand(
 		GetCmdCreatePool(),
 		GetCmdAddLiquidity(),
 		GetCmdRemoveLiquidity(),
 		GetCmdSwap(),
 		GetCmdDecommissionPool(),
-	)...)
+	)
 
 	return clpTxCmd
 }
@@ -43,13 +42,17 @@ func GetCmdCreatePool() *cobra.Command {
 		Use:   "create-pool --from [key] --symbol [asset-symbol] --nativeAmount [amount] --externalAmount [amount]",
 		Short: "Create new liquidity pool",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			inBuf := bufio.NewReader(cmd.InOrStdin())
-			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags()).WithTxConfig(clientCtx.TxConfig).WithAccountRetriever(clientCtx.AccountRetriever)
+
 			asset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			externalAmount := viper.GetString(FlagExternalAssetAmount)
 			nativeAmount := viper.GetString(FlagNativeAssetAmount)
 			signer := cliCtx.GetFromAddress()
+
 			msg := types.NewMsgCreatePool(signer, asset, sdk.NewUintFromString(nativeAmount), sdk.NewUintFromString(externalAmount))
 			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
 		},

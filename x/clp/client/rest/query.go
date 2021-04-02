@@ -47,7 +47,7 @@ func getPoolHandler(cliCtx client.Context) http.HandlerFunc {
 		var params types.QueryReqGetPool
 		params.Symbol = r.URL.Query().Get("symbol")
 
-		bz, err := cliCtx.Codec.MarshalJSON(params)
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -79,7 +79,7 @@ func getLiquidityProviderHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 		params.LpAddress = lpAddess
-		bz, err := cliCtx.Codec.MarshalJSON(params)
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -130,7 +130,7 @@ func getAssetsHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 		params.LpAddress = lpAddess
-		bz, err := cliCtx.Codec.MarshalJSON(params)
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
@@ -157,7 +157,7 @@ func getLpListHandler(cliCtx client.Context) http.HandlerFunc {
 		var params types.QueryReqGetLiquidityProviderList
 		assetSymbol := r.URL.Query().Get("symbol")
 		params.Symbol = assetSymbol
-		bz, err := cliCtx.Codec.MarshalJSON(params)
+		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return

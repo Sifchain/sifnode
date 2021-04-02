@@ -3,24 +3,79 @@ package keeper
 import (
 	"context"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
 var _ types.QueryServer = Keeper{}
 
-func (q Keeper) QueryGetPool(ctx context.Context, req *types.QueryGetPoolRequest) (*types.QueryGetPoolResponse, error) {
+func (k Keeper) QueryGetPool(c context.Context, req *types.GetPoolReq) (*types.GetPoolRes, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(c)
+
+	pool, err := k.GetPool(ctx, req.Symbol)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "validator %s not found", req.Symbol)
+	}
+
+	return &types.GetPoolRes{
+		Pool:             &pool,
+		Height:           ctx.BlockHeight(),
+		ClpModuleAddress: types.GetCLPModuleAddress().String(),
+	}, nil
+}
+
+func (k Keeper) QueryGetPools(c context.Context, req *types.GetPoolsReq) (*types.GetPoolsRes, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(c)
+
+	pool := k.GetPools(ctx)
+
+	return &types.GetPoolsRes{
+		Pool:             &pool,
+		Height:           ctx.BlockHeight(),
+		ClpModuleAddress: types.GetCLPModuleAddress().String(),
+	}, nil
+}
+
+func (k Keeper) LiquidityProvider(c context.Context, req *types.LiquidityProviderReq) (*types.LiquidityProviderRes, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(c)
+	store := ctx.KVStore(k.storeKey)
+
 	return nil, nil
 }
 
-func (q Keeper) QueryLiquidityProvider(ctx context.Context, req *types.QueryLiquidityProviderRequest) (*types.QueryLiquidityProviderResponse, error) {
+func (k Keeper) GetAssetList(c context.Context, req *types.GetAssetListReq) (*types.GetAssetListRes, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(c)
+	store := ctx.KVStore(k.storeKey)
 
 	return nil, nil
 }
 
-func (q Keeper) QueryGetAssetList(ctx context.Context, req *types.QueryGetAssetListRequest) (*types.QueryGetAssetListResponse, error) {
-	return nil, nil
-}
+func (k Keeper) GetLiquidityProviderList(c context.Context, req *types.GetLiquidityProviderListReq) (*types.GetLiquidityProviderListRes, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
 
-func (q Keeper) QueryGetLiquidityProviderList(ctx context.Context, req *types.QueryGetLiquidityProviderListRequest) (*types.QueryGetLiquidityProviderListResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	store := ctx.KVStore(k.storeKey)
+
 	return nil, nil
 }

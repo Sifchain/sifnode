@@ -94,26 +94,31 @@ func GetCmdAssets(queryRoute string) *cobra.Command {
 		Short: "Get all assets for a liquidity provider ",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
 			lpAddressString := args[0]
 			lpAddress, err := sdk.AccAddressFromBech32(lpAddressString)
 			if err != nil {
 				return err
 			}
 			params := types.NewQueryReqGetAssetList(lpAddress)
-			bz, err := cliCtx.Codec.MarshalJSON(params)
+			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err
 			}
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryAssetList)
-			res, height, err := cliCtx.QueryWithData(route, bz)
+			res, height, err := clientCtx.QueryWithData(route, bz)
 			if err != nil {
 				return err
 			}
 			var assetList types.Assets
 			cdc.MustUnmarshalJSON(res, &assetList)
 			out := types.NewAssetListResponse(assetList, height)
-			return cliCtx.PrintOutput(out)
+
+			return clientCtx.PrintProto(out)
 		},
 	}
 }
@@ -131,7 +136,10 @@ $ %s pool ETH sif1h2zjknvr3xlpk22q4dnv396ahftzqhyeth7egd`,
 		),
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
 
 			symbol := args[0]
 			lpAddressString := args[1]
@@ -163,15 +171,19 @@ func GetCmdLpList(queryRoute string) *cobra.Command {
 		Short: "Get all liquidity providers for the asset ",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
 			assetSymbol := args[0]
 			params := types.NewQueryReqGetLiquidityProviderList(assetSymbol)
-			bz, err := cliCtx.Codec.MarshalJSON(params)
+			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
 			if err != nil {
 				return err
 			}
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryLPList)
-			res, height, err := cliCtx.QueryWithData(route, bz)
+			res, height, err := clientCtx.QueryWithData(route, bz)
 			if err != nil {
 				return err
 			}
@@ -189,16 +201,20 @@ func GetCmdAllLps(queryRoute string) *cobra.Command {
 		Short: "Get all liquidity providers on sifnode ",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryAllLP)
-			res, height, err := cliCtx.QueryWithData(route, nil)
+			res, height, err := clientCtx.QueryWithData(route, nil)
 			if err != nil {
 				return err
 			}
 			var lps types.LiquidityProviders
 			cdc.MustUnmarshalJSON(res, &lps)
 			out := types.NewLpListResponse(lps, height)
-			return cliCtx.PrintOutput(out)
+			return clientCtx.PrintProto(out)
 		},
 	}
 }

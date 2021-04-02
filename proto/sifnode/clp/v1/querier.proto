@@ -7,26 +7,35 @@ import "sifnode/clp/v1/types.proto";
 option go_package = "github.com/sifchain/sifnode/x/clp/types";
 
 service Query {
-  rpc GetPool(GetPoolRequest) returns (GetPoolResponse);
-  rpc LiquidityProvider(LiquidityProviderRequest) returns (LiquidityProviderResponse);
-  rpc GetAssetList(GetAssetListRequest) returns (GetAssetListResponse);
-  rpc GetLiquidityProviderList(GetLiquidityProviderListRequest) returns (GetLiquidityProviderListResponse);
+  rpc QueryGetPool(GetPoolReq) returns (GetPoolRes);
+  rpc QueryGetPools(GetPoolsReq) returns (GetPoolsRes);
+  rpc LiquidityProvider(LiquidityProviderReq) returns (LiquidityProviderRes);
+  rpc GetAssetList(GetAssetListReq) returns (GetAssetListRes);
+  rpc GetLiquidityProviderList(GetLiquidityProviderListReq) returns (GetLiquidityProviderListRes);
 }
 
-message GetPoolRequest {
+message GetPoolReq {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 
   string symbol = 1;
 }
 
-message GetPoolResponse {
+message GetPoolRes {
   sifnode.clp.v1.Pool pool               = 1;
   string              clp_module_address = 2;
   int64               height             = 3;
 }
 
-message LiquidityProviderRequest {
+message GetPoolsReq {
+}
+
+message GetPoolsRes {
+  repeated sifnode.clp.v1.Pool pool               = 1;
+  string                       clp_module_address = 2;
+  int64                        height             = 3;
+}
+message LiquidityProviderReq {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 
@@ -34,27 +43,27 @@ message LiquidityProviderRequest {
   string lp_address = 2;
 }
 
-message LiquidityProviderResponse {
+message LiquidityProviderRes {
   sifnode.clp.v1.LiquidityProvider liquidity_provider     = 1;
   string                           native_asset_balance   = 2;
   string                           external_asset_balance = 3;
   int64                            height                 = 4;
 }
 
-message GetAssetListRequest {
+message GetAssetListReq {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 
   string lp_address = 1;
 }
 
-message GetAssetListResponse {}
+message GetAssetListRes {}
 
-message GetLiquidityProviderListRequest {
+message GetLiquidityProviderListReq {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 
   string Symbol = 1;
 }
 
-message GetLiquidityProviderListResponse {}
+message GetLiquidityProviderListRes {}

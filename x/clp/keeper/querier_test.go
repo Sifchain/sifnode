@@ -1,14 +1,16 @@
 package keeper_test
 
 import (
-	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/Sifchain/sifnode/x/clp/test"
-	"github.com/Sifchain/sifnode/x/clp/types"
+	"testing"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"testing"
+
+	"github.com/Sifchain/sifnode/x/clp"
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	"github.com/Sifchain/sifnode/x/clp/test"
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
 func TestQueryErrorPool(t *testing.T) {
@@ -17,7 +19,7 @@ func TestQueryErrorPool(t *testing.T) {
 	keeper := app.ClpKeeper
 	//Set Data
 	pool, _, _ := SetData(keeper, ctx)
-	querier := clp.NewQuerier(keeper)
+	querier := clpkeeper.NewQuerier(keeper)
 	//Test Pool
 	queryPool := types.QueryReqGetPool{
 		Symbol: pool.ExternalAsset.Symbol,
@@ -52,7 +54,7 @@ func TestQueryGetPool(t *testing.T) {
 	}
 	//Set Data
 	pool, _, _ := SetData(keeper, ctx)
-	querier := clp.NewQuerier(keeper)
+	querier := clpkeeper.NewQuerier(keeper)
 	//Test Pool
 	queryPool := types.QueryReqGetPool{
 		Symbol: pool.ExternalAsset.Symbol,
@@ -75,7 +77,7 @@ func TestQueryErrorPools(t *testing.T) {
 		Path: "",
 		Data: []byte{},
 	}
-	querier := clp.NewQuerier(keeper)
+	querier := clpkeeper.NewQuerier(keeper)
 	query.Path = ""
 	query.Data = nil
 	//Test Pools
@@ -91,7 +93,7 @@ func TestQueryGetPools(t *testing.T) {
 	}
 	//Set Data
 	_, pools, _ := SetData(keeper, ctx)
-	querier := clp.NewQuerier(keeper)
+	querier := clpkeeper.NewQuerier(keeper)
 	query.Path = ""
 	query.Data = nil
 	//Test Pools
@@ -113,7 +115,7 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 		Path: "",
 		Data: []byte{},
 	}
-	querier := clp.NewQuerier(keeper)
+	querier := clpkeeper.NewQuerier(keeper)
 	_, err := querier(ctx, []string{types.QueryLiquidityProvider}, query)
 	assert.Error(t, err)
 	//Set Data
@@ -142,7 +144,7 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	}
 	//Set Data
 	_, _, lp := SetData(keeper, ctx)
-	querier := clp.NewQuerier(keeper)
+	querier := clpkeeper.NewQuerier(keeper)
 	//Test Get Liquidity Provider
 	queryLp := types.QueryReqLiquidityProvider{
 		Symbol:    lp.Asset.Symbol,
@@ -161,7 +163,7 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 
 }
 
-func SetData(keeper clp.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {
+func SetData(keeper clpkeeper.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {
 	pool := test.GenerateRandomPool(1)[0]
 	err := keeper.SetPool(ctx, pool)
 	if err != nil {

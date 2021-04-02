@@ -24,12 +24,6 @@ func NewPool(externalAsset *Asset, nativeAssetBalance, externalAssetBalance, poo
 type Pools []Pool
 type LiquidityProviders []LiquidityProvider
 
-// type LiquidityProvider struct {
-// 	Asset                    Asset          `json:"asset"`
-// 	LiquidityProviderUnits   sdk.Uint       `json:"liquidity_provider_units"`
-// 	LiquidityProviderAddress sdk.AccAddress `json:"liquidity_provider_address"`
-// }
-
 func (l LiquidityProvider) Validate() bool {
 
 	if !l.Asset.Validate() {
@@ -66,15 +60,15 @@ func NewPoolsResponse(pools []*Pool, height int64, address string) PoolsResponse
 	return PoolsResponse{Pools: pools, Height: height, ClpModuleAddress: address}
 }
 
-type LiquidityProviderResponse struct {
-	LiquidityProvider
-	NativeAssetBalance   string `json:"native_asset_balance"`
-	ExternalAssetBalance string `json:"external_asset_balance"`
-	Height               int64  `json:"height"`
-}
+// type LiquidityProviderResponse struct {
+// 	LiquidityProvider
+// 	NativeAssetBalance   string `json:"native_asset_balance"`
+// 	ExternalAssetBalance string `json:"external_asset_balance"`
+// 	Height               int64  `json:"height"`
+// }
 
 func NewLiquidityProviderResponse(liquidityProvider LiquidityProvider, height int64, nativeBalance string, externalBalance string) LiquidityProviderResponse {
-	return LiquidityProviderResponse{LiquidityProvider: liquidityProvider, Height: height, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
+	return LiquidityProviderResponse{LiquidityProvider: &liquidityProvider, Height: height, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
 }
 
 type AssetListResponse struct {

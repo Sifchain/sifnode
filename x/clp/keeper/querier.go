@@ -47,6 +47,7 @@ func queryPool(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Kee
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
+
 	return res, nil
 }
 
@@ -61,6 +62,7 @@ func queryPools(ctx sdk.Context, path []string, keeper Keeper, legacyQuerierCdc 
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
+
 	return res, nil
 }
 
@@ -85,6 +87,7 @@ func queryLiquidityProvider(ctx sdk.Context, path []string, req abci.RequestQuer
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
+
 	return res, nil
 }
 
@@ -99,6 +102,7 @@ func queryAssetList(ctx sdk.Context, path []string, req abci.RequestQuery, keepe
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
+
 	return res, nil
 }
 
@@ -114,6 +118,7 @@ func queryLPList(ctx sdk.Context, path []string, req abci.RequestQuery, keeper K
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
+
 	return res, nil
 }
 
@@ -123,5 +128,6 @@ func queryAllLP(ctx sdk.Context, path []string, keeper Keeper, legacyQuerierCdc 
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
+	
 	return res, nil
 }
