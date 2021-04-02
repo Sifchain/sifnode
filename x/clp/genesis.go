@@ -12,6 +12,9 @@ import (
 )
 
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
+	if data.AddressWhitelist == nil || len(data.AddressWhitelist) == 0 {
+		panic(fmt.Sprintf("AddressWhiteList must be set."))
+	}
 	keeper.SetParams(ctx, data.Params)
 	if data.AddressWhitelist != nil {
 		wl := make([]sdk.AccAddress, len(data.AddressWhitelist), 0)
@@ -25,6 +28,8 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 
 		keeper.SetClpWhiteList(ctx, wl)
 	}
+
+	keeper.SetClpWhiteList(ctx, data.AddressWhitelist)
 	for _, pool := range data.PoolList {
 		err := keeper.SetPool(ctx, pool)
 		if err != nil {

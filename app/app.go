@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"io"
 	"math/big"
 	"net/http"
@@ -43,7 +42,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -61,11 +59,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
-
-	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/Sifchain/sifnode/x/ethbridge"
-	"github.com/Sifchain/sifnode/x/faucet"
-	"github.com/Sifchain/sifnode/x/oracle"
 )
 
 const appName = "sifnode"
@@ -97,9 +90,9 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
-		ethbridge.ModuleName:           {authtypes.Burner, authtypes.Minter},
-		clp.ModuleName:                 {authtypes.Burner, authtypes.Minter},
-		faucet.ModuleName:              {authtypes.Minter},
+		// ethbridge.ModuleName:           {authtypes.Burner, authtypes.Minter},
+		// clp.ModuleName:                 {authtypes.Burner, authtypes.Minter},
+		// faucet.ModuleName:              {authtypes.Minter},
 	}
 )
 
@@ -129,12 +122,6 @@ type SifchainApp struct {
 	SlashingKeeper slashingkeeper.Keeper
 	DistrKeeper    distrkeeper.Keeper
 
-	// Peggy keepers
-	EthBridgeKeeper ethbridge.Keeper
-	OracleKeeper    oracle.Keeper
-	clpKeeper       clp.Keeper
-	faucetKeeper    faucet.Keeper
-
 	mm *module.Manager
 	sm *module.SimulationManager
 }
@@ -144,7 +131,7 @@ var (
 	_ servertypes.Application = (*SifchainApp)(nil)
 )
 
-func NewInitApp(
+func NewSifApp(
 	logger log.Logger, db dbm.DB, traceStore io.Writer, loadLatest bool, skipUpgradeHeights map[int64]bool,
 	homePath string, invCheckPeriod uint, encodingConfig simappparams.EncodingConfig,
 	appOpts servertypes.AppOptions, baseAppOptions ...func(*baseapp.BaseApp),
@@ -163,11 +150,11 @@ func NewInitApp(
 		stakingtypes.StoreKey,
 		paramstypes.StoreKey,
 		upgradetypes.StoreKey,
-		oracle.StoreKey,
-		ethbridge.StoreKey,
-		clp.StoreKey,
+		// oracle.StoreKey,
+		// ethbridge.StoreKey,
+		// clp.StoreKey,
 		govtypes.StoreKey,
-		faucet.StoreKey,
+		// faucet.StoreKey,
 		distrtypes.StoreKey,
 		slashingtypes.StoreKey,
 	)
@@ -218,109 +205,26 @@ func NewInitApp(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
-	app.OracleKeeper = oracle.NewKeeper(
-		appCodec,
-		keys[oracle.StoreKey],
-		app.StakingKeeper,
-		oracle.DefaultConsensusNeeded,
-	)
-
-	// app.EthBridgeKeeper = ethbridge.NewKeeper(
-	// 	appCodec,
-	// 	app.BankKeeper,
-	// 	app.OracleKeeper,
-	// 	keys[ethbridge.StoreKey],
-	// )
-
-	// app.clpKeeper = clp.NewKeeper(
-	// 	appCodec,
-	// 	keys[clp.StoreKey],
-	// 	app.BankKeeper,
-	// 	app.subspaces[clp.ModuleName])
-
-	// app.faucetKeeper = faucet.NewKeeper(
-	// 	app.SupplyKeeper,
-	// 	appCodec,
-	// 	keys[faucet.StoreKey],
-	// 	app.BankKeeper,
-	// )
-
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
 	// will be skipped even if we have a update proposal for it
 
-	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath)
+	skipUpgradeHeights[0] = true
+	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, DefaultNodeHome)
 
-	app.UpgradeKeeper.SetUpgradeHandler("changePoolFormula", func(ctx sdk.Context, plan upgradetypes.Plan) {
-		ctx.Logger().Info("Starting to execute upgrade plan for pool re-balance")
+	app.UpgradeKeeper.SetUpgradeHandler("release-20210401000000", func(ctx sdk.Context, plan upgradetypes.Plan) {})
 
-		ExportAppState("changePoolFormula-upgrade-pre", app, ctx)
-
-		allPools := app.clpKeeper.GetPools(ctx)
-		lps := clp.LiquidityProviders{}
-		poolList := clp.Pools{}
-		hasError := false
-		for _, pool := range allPools {
-			lpList := app.clpKeeper.GetLiquidityProvidersForAsset(ctx, pool.ExternalAsset)
-			temp := sdk.ZeroUint()
-			tempExternal := sdk.ZeroUint()
-			tempNative := sdk.ZeroUint()
-			for _, lp := range lpList {
-				withdrawNativeAssetAmount, withdrawExternalAssetAmount, _, _ := clp.CalculateWithdrawal(pool.PoolUnits, pool.NativeAssetBalance.String(),
-					pool.ExternalAssetBalance.String(), lp.LiquidityProviderUnits.String(), sdk.NewUint(clp.MaxWbasis).String(), sdk.NewInt(0))
-				newLpUnits, lpUnits, err := clp.CalculatePoolUnits(pool.ExternalAsset.Symbol, temp, tempNative, tempExternal,
-					withdrawNativeAssetAmount, withdrawExternalAssetAmount)
-				if err != nil {
-					hasError = true
-					ctx.Logger().Error(fmt.Sprintf("failed to calculate pool units for | Pool : %s | LP %s ", pool.String(), lp.String()))
-					break
-				}
-				lp.LiquidityProviderUnits = lpUnits
-				if !lp.Validate() {
-					hasError = true
-					ctx.Logger().Error(fmt.Sprintf("Invalid | LP %s ", lp.String()))
-					break
-				}
-				lps = append(lps, lp)
-				tempExternal = tempExternal.Add(withdrawExternalAssetAmount)
-				tempNative = tempNative.Add(withdrawNativeAssetAmount)
-				temp = newLpUnits
-			}
-			pool.PoolUnits = temp
-			if !app.clpKeeper.ValidatePool(pool) {
-				hasError = true
-				ctx.Logger().Error(fmt.Sprintf("Invalid | Pool %s ", pool.String()))
-				break
-			}
-			poolList = append(poolList, pool)
-		}
-		// If we have error dont set state
-		if hasError {
-			ctx.Logger().Error("Failed to execute upgrade plan for pool re-balance")
-		}
-		// If we have no errors , Set state .
-		if !hasError {
-			for _, pool := range poolList {
-				_ = app.clpKeeper.SetPool(ctx, pool)
-			}
-			for _, l := range lps {
-				app.clpKeeper.SetLiquidityProvider(ctx, l)
-			}
-		}
-
-		ExportAppState("changePoolFormula-upgrade-post", app, ctx)
-	})
-	app.UpgradeKeeper.SetUpgradeHandler("release-20210324073200", func(ctx sdk.Context, plan upgradetypes.Plan) {})
-
-	// register the proposal types
 	govRouter := govtypes.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
-		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
-		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
 	app.GovKeeper = govkeeper.NewKeeper(
-		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
-		&stakingKeeper, govRouter,
+		appCodec,
+		keys[govtypes.StoreKey],
+		app.GetSubspace(govtypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.StakingKeeper,
+		govRouter,
 	)
 
 	// NOTE: Any module instantiated in the module manager that is later modified
@@ -352,7 +256,7 @@ func NewInitApp(
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(distrtypes.ModuleName,
 		slashingtypes.ModuleName,
-		faucet.ModuleName,
+		// faucet.ModuleName,
 		upgradetypes.ModuleName)
 
 	app.mm.SetOrderEndBlockers(
@@ -369,11 +273,7 @@ func NewInitApp(
 		stakingtypes.ModuleName,
 		slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
-		oracle.ModuleName,
-		ethbridge.ModuleName,
-		clp.ModuleName,
 		govtypes.ModuleName,
-		faucet.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)

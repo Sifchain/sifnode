@@ -195,25 +195,25 @@ func (app *SifchainApp) prepForZeroHeightGenesis(ctx sdk.Context, jailWhiteList 
 func ExportAppState(name string, app *SifchainApp, ctx sdk.Context) {
 	appState, err := app.ExportAppStateAndValidators(true, []string{})
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("failed to export app state: %s", err))
+		ctx.Logger().Error("failed to export app state", "error:", err)
 		return
 	}
 	appStateJSON, err := json.MarshalIndent(appState, "", " ")
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
+		ctx.Logger().Error("failed to marshal application genesis state", "error:", err.Error())
 		return
 	}
 	valList, err := json.MarshalIndent(appState.Validators, "", " ")
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("failed to marshal application genesis state: %s", err.Error()))
+		ctx.Logger().Error("failed to marshal application genesis state", "error:", err.Error())
 	}
 
 	err = ioutil.WriteFile(fmt.Sprintf("%v/%v-state.json", DefaultNodeHome, name), appStateJSON, 0600)
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("failed to write state to file: %s", err.Error()))
+		ctx.Logger().Error("failed to write state to file", "err", err.Error())
 	}
 	err = ioutil.WriteFile(fmt.Sprintf("%v/%v-validator.json", DefaultNodeHome, name), valList, 0600)
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("failed to write Validator List to file: %s", err.Error()))
+		ctx.Logger().Error("failed to write Validator List to file", "err", err.Error())
 	}
 }
