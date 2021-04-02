@@ -59,6 +59,10 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
+
+	"github.com/Sifchain/sifnode/x/oracle"
+	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 const appName = "sifnode"
@@ -78,9 +82,8 @@ var (
 		params.AppModuleBasic{},
 		// clp.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
-		// oracle.AppModuleBasic{},
-		// ethbridge.AppModuleBasic{},
-		// faucet.AppModuleBasic{},
+		oracle.AppModuleBasic{},
+		// ethbridge.AppModuleBasic{}
 		slashing.AppModuleBasic{},
 	)
 
@@ -92,7 +95,6 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
 		// ethbridge.ModuleName:           {authtypes.Burner, authtypes.Minter},
 		// clp.ModuleName:                 {authtypes.Burner, authtypes.Minter},
-		// faucet.ModuleName:              {authtypes.Minter},
 	}
 )
 
@@ -122,6 +124,8 @@ type SifchainApp struct {
 	SlashingKeeper slashingkeeper.Keeper
 	DistrKeeper    distrkeeper.Keeper
 
+	OracleKeeper oraclekeeper.Keeper
+
 	mm *module.Manager
 	sm *module.SimulationManager
 }
@@ -150,13 +154,13 @@ func NewSifApp(
 		stakingtypes.StoreKey,
 		paramstypes.StoreKey,
 		upgradetypes.StoreKey,
-		// oracle.StoreKey,
-		// ethbridge.StoreKey,
-		// clp.StoreKey,
 		govtypes.StoreKey,
-		// faucet.StoreKey,
 		distrtypes.StoreKey,
 		slashingtypes.StoreKey,
+
+		// ethbridge.StoreKey,
+		// clp.StoreKey,
+		oracletypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -205,6 +209,19 @@ func NewSifApp(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
+	app.OracleKeeper = oraclekeeper.NewKeeper(
+		appCodec,
+		keys[oracletypes.StoreKey],
+		app.StakingKeeper,
+		oracletypes.DefaultConsensusNeeded,
+	)
+
+	// register the staking hooks
+	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
+	app.StakingKeeper = *stakingKeeper.SetHooks(
+		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
+	)
+
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
 	// will be skipped even if we have a update proposal for it
@@ -242,6 +259,7 @@ func NewSifApp(
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		params.NewAppModule(app.ParamsKeeper),
+		oracle.NewAppModule(app.OracleKeeper),
 	)
 
 	app.sm.RegisterStoreDecoders()
@@ -256,7 +274,6 @@ func NewSifApp(
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(distrtypes.ModuleName,
 		slashingtypes.ModuleName,
-		// faucet.ModuleName,
 		upgradetypes.ModuleName)
 
 	app.mm.SetOrderEndBlockers(
@@ -274,6 +291,8 @@ func NewSifApp(
 		slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		govtypes.ModuleName,
+
+		oracletypes.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
