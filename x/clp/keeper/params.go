@@ -11,7 +11,7 @@ func (k Keeper) MinCreatePoolThreshold(ctx sdk.Context) (res uint64) {
 	return res
 }
 
-func (k Keeper) GetParams(ctx sdk.Context) types.Params {
+func (k Keeper) GetParams(ctx sdk.Context) *types.Params {
 	return types.NewParams(k.MinCreatePoolThreshold(ctx))
 }
 

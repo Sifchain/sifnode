@@ -54,5 +54,5 @@ func GetCLPModuleAddress() sdk.AccAddress {
 }
 
 func GetDefaultCLPAdmin() sdk.AccAddress {
-	return supply.NewModuleAddress("ClpAdmin")
+	return authtypes.NewModuleAddress("ClpAdmin")
 }

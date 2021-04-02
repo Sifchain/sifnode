@@ -16,8 +16,8 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		panic(fmt.Sprintf("AddressWhiteList must be set."))
 	}
 	keeper.SetParams(ctx, data.Params)
+	wl := make([]sdk.AccAddress, len(data.AddressWhitelist), 0)
 	if data.AddressWhitelist != nil {
-		wl := make([]sdk.AccAddress, len(data.AddressWhitelist), 0)
 		for i, entry := range data.AddressWhitelist {
 			wlAddress, err := sdk.AccAddressFromBech32(entry)
 			if err != nil {
@@ -29,7 +29,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		keeper.SetClpWhiteList(ctx, wl)
 	}
 
-	keeper.SetClpWhiteList(ctx, data.AddressWhitelist)
+	keeper.SetClpWhiteList(ctx, wl)
 	for _, pool := range data.PoolList {
 		err := keeper.SetPool(ctx, pool)
 		if err != nil {
@@ -53,7 +53,7 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 	}
 
 	return types.GenesisState{
-		Params:             &params,
+		Params:             params,
 		AddressWhitelist:   wl,
 		PoolList:           poolList,
 		LiquidityProviders: liquidityProviders,

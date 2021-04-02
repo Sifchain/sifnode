@@ -25,8 +25,8 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params object
-func NewParams(minThreshold uint64) Params {
-	return Params{
+func NewParams(minThreshold uint64) *Params {
+	return &Params{
 		MinCreatePoolThreshold: minThreshold,
 	}
 }
@@ -39,7 +39,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 }
 
 // DefaultParams defines the parameters for this module
-func DefaultParams() Params {
+func DefaultParams() *Params {
 	return NewParams(DefaultMinCreatePoolThreshold)
 }
 
