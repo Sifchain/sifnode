@@ -202,6 +202,18 @@ func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg types.MsgRescueCeth, suga
 	return nil
 }
 
+// ProcessUpdateGasPrice to update gas price
+func (k Keeper) ProcessUpdateGasPrice(ctx sdk.Context, msg types.MsgUpdateGasPrice, sugaredLogger *zap.SugaredLogger) error {
+	if !k.oracleKeeper.IsAdminAccount(ctx, sdk.AccAddress(msg.ValidatorAddress)) {
+		sugaredLogger.Errorw("cosmos sender is not admin account.")
+		return errors.New("only admin account can update gas price")
+	}
+
+	k.SetEthGasPrice(ctx, msg.GasPrice)
+
+	return nil
+}
+
 // Exists chec if the key existed in db.
 func (k Keeper) Exists(ctx sdk.Context, key []byte) bool {
 	store := ctx.KVStore(k.storeKey)
