@@ -21,5 +21,6 @@ const (
 )
 
 var (
-	PeggyTokenKeyPrefix = []byte{0x00}
+	PeggyTokenKeyPrefix       = []byte{0x00}
+	CethReceiverAccountPrefix = []byte{0x01}
 )

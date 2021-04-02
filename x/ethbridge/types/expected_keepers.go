@@ -28,4 +28,7 @@ type OracleKeeper interface {
 	ProcessClaim(ctx sdk.Context, claim oracle.Claim, sugaredLogger *zap.SugaredLogger) (oracle.Status, error)
 	GetProphecy(ctx sdk.Context, id string) (oracle.Prophecy, bool)
 	ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error
+	IsAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress) bool
+	GetAdminAccount(ctx sdk.Context) sdk.AccAddress
+	SetAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress)
 }
