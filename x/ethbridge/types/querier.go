@@ -3,8 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/Sifchain/sifnode/x/oracle"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 // query endpoints supported by the oracle Querier
@@ -38,20 +37,11 @@ func NewQueryEthProphecyParams(
 	}
 }
 
-// QueryEthProphecyResponse defines the result payload for an eth prophecy query
-type QueryEthProphecyResponse struct {
-	ID     string           `json:"id"`
-	Status oracle.Status    `json:"status"`
-	Claims []EthBridgeClaim `json:"claims"`
-}
-
 // NewQueryEthProphecyResponse creates a new QueryEthProphecyResponse instance
-func NewQueryEthProphecyResponse(
-	id string, status oracle.Status, claims []EthBridgeClaim,
-) QueryEthProphecyResponse {
+func NewQueryEthProphecyResponse(id string, status oracletypes.Status, claims []*EthBridgeClaim) QueryEthProphecyResponse {
 	return QueryEthProphecyResponse{
-		ID:     id,
-		Status: status,
+		Id:     id,
+		Status: &status,
 		Claims: claims,
 	}
 }

@@ -92,11 +92,6 @@ type AppModule struct {
 	Codec         *codec.Marshaler
 }
 
-// Deprecated: use RegisterServices
-func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
-	return nil
-}
-
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	// types.RegisterMsgServer(cfg.QueryServer(), am.OracleKeeper)
 	// types.RegisterQueryServer(cfg.MsgServer(), am.OracleKeeper)
@@ -145,9 +140,9 @@ func (AppModule) QuerierRoute() string {
 	return QuerierRoute
 }
 
-// NewQuerierHandler returns the ethbridge module sdk.Querier.
-func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return NewQuerier(am.OracleKeeper, am.Codec)
+// Deprecated: LegacyQuerierHandler use RegisterServices
+func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
+	return NewQuerier(am.OracleKeeper, amino)
 }
 
 // InitGenesis performs genesis initialization for the ethbridge module. It returns

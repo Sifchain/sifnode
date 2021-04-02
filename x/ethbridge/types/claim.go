@@ -88,8 +88,12 @@ func CreateOracleClaimFromEthClaim(cdc *codec.Codec, ethClaim EthBridgeClaim) (o
 // CreateEthClaimFromOracleString converts a string
 // from any generic claim from the oracle module into an ethereum bridge specific claim.
 func CreateEthClaimFromOracleString(
-	ethereumChainID int, bridgeContract EthereumAddress, nonce int,
-	ethereumAddress EthereumAddress, validator sdk.ValAddress, oracleClaimString string,
+	ethereumChainID int64,
+	bridgeContract EthereumAddress,
+	nonce int64,
+	ethereumAddress EthereumAddress,
+	validator sdk.ValAddress,
+	oracleClaimString string,
 ) (EthBridgeClaim, error) {
 	oracleClaim, err := CreateOracleClaimFromOracleString(oracleClaimString)
 	if err != nil {
