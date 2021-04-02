@@ -141,7 +141,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 // ProcessLock processes the lockup of cosmos coins from the given sender
 func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg types.MsgLock) error {
 	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
-	logger := bridgeKeeper.Logger(ctx)
+	logger := k.Logger(ctx)
 
 	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
 
