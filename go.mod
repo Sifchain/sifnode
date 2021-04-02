@@ -21,6 +21,7 @@ require (
 	github.com/google/go-cmp v0.5.2 // indirect
 	github.com/google/gofuzz v1.1.1-0.20200604201612-c04b05f3adfa // indirect
 	github.com/gorilla/mux v1.8.0
+	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/huin/goupnp v1.0.0 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/joho/godotenv v1.3.0
@@ -38,6 +39,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/common v0.15.0 // indirect
 	github.com/rakyll/statik v0.1.7 // indirect
+	github.com/regen-network/cosmos-proto v0.3.1 // indirect
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	github.com/sethvargo/go-password v0.2.0
 	github.com/spf13/afero v1.4.0 // indirect
@@ -61,6 +63,7 @@ require (
 	go.uber.org/zap v1.13.0
 	golang.org/x/sys v0.0.0-20201126233918-771906719818 // indirect
 	golang.org/x/text v0.3.4 // indirect
+	google.golang.org/grpc v1.35.0 // indirect
 	gopkg.in/ini.v1 v1.61.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/olebedev/go-duktape.v3 v3.0.0-20200619000410-60c24ae608a6 // indirect

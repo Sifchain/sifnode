@@ -2,20 +2,20 @@ package cli
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
-	"strings"
 
 	//"github.com/Sifchain/sifnode/x/clp"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/spf13/cobra"
 )
 
-func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetQueryCmd(queryRoute string) *cobra.Command {
 	// Group clp queries under a subcommand
 	clpQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
@@ -25,17 +25,17 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 	clpQueryCmd.AddCommand(flags.GetCommands(
-		GetCmdPool(queryRoute, cdc),
-		GetCmdPools(queryRoute, cdc),
-		GetCmdAssets(queryRoute, cdc),
-		GetCmdLiquidityProvider(queryRoute, cdc),
-		GetCmdLpList(queryRoute, cdc),
-		GetCmdAllLps(queryRoute, cdc),
+		GetCmdPool(queryRoute),
+		GetCmdPools(queryRoute),
+		GetCmdAssets(queryRoute),
+		GetCmdLiquidityProvider(queryRoute),
+		GetCmdLpList(queryRoute),
+		GetCmdAllLps(queryRoute),
 	)...)
 	return clpQueryCmd
 }
 
-func GetCmdPool(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdPool(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "pool [External Asset symbol]",
 		Short: "Get Details for a pool",
@@ -68,7 +68,7 @@ $ %s pool ETH ROWAN`,
 	}
 }
 
-func GetCmdPools(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdPools(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "pools",
 		Short: "Get all pools",
@@ -88,7 +88,7 @@ func GetCmdPools(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-func GetCmdAssets(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdAssets(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "assets [lpAddress]",
 		Short: "Get all assets for a liquidity provider ",
@@ -118,7 +118,7 @@ func GetCmdAssets(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-func GetCmdLiquidityProvider(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdLiquidityProvider(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "lp [External Asset symbol] [lpAddress]",
 		Short: "Get Liquidity Provider",
@@ -157,7 +157,7 @@ $ %s pool ETH sif1h2zjknvr3xlpk22q4dnv396ahftzqhyeth7egd`,
 	}
 }
 
-func GetCmdLpList(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdLpList(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "lplist [symbol]",
 		Short: "Get all liquidity providers for the asset ",
@@ -183,7 +183,7 @@ func GetCmdLpList(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-func GetCmdAllLps(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdAllLps(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "all-lp",
 		Short: "Get all liquidity providers on sifnode ",

@@ -3,24 +3,19 @@ package test
 import (
 	"bytes"
 	"fmt"
-	"github.com/Sifchain/sifnode/simapp"
-	"github.com/Sifchain/sifnode/x/clp/keeper"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
-	"github.com/Sifchain/sifnode/x/clp/types"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
 
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/supply"
-	abci "github.com/tendermint/tendermint/abci/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	"github.com/Sifchain/sifnode/simapp"
+	"github.com/Sifchain/sifnode/x/clp/keeper"
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
 // Constants for test scripts only .
@@ -31,27 +26,12 @@ const (
 	AddressKey3 = "A58856F0FD53BF058B4909A21AEC019107BA9"
 )
 
-// create a codec used only for testing
-func MakeTestCodec() *codec.Codec {
-	var cdc = codec.New()
-	bank.RegisterCodec(cdc)
-	staking.RegisterCodec(cdc)
-	auth.RegisterCodec(cdc)
-	supply.RegisterCodec(cdc)
-	sdk.RegisterCodec(cdc)
-	codec.RegisterCrypto(cdc)
-
-	types.RegisterCodec(cdc) // distr
-	return cdc
-}
-
 //// returns context and app with params set on account keeper
 func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
 	app := simapp.Setup(isCheckTx)
-	ctx := app.BaseApp.NewContext(isCheckTx, abci.Header{})
+	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000)
-	app.SupplyKeeper.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
 	_ = simapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }
