@@ -211,6 +211,7 @@ export default defineComponent({
           "failed",
           "rejected",
           "confirmed",
+          "out_of_gas",
         ].includes(transactionState.value);
       }),
       requestTransactionModalClose,

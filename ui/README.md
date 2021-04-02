@@ -175,6 +175,14 @@ Hit import and select this account. Be sure to have this account selected. Reloa
 
 You should see the balances of your wallet in the application.
 
+### Component Library
+
+To view and develop components in isolation you can use Storybook.
+
+```
+yarn storybook
+```
+
 ### Testing stores
 
 Stores are created using factory functions so that their state can be set upon creation. The store is the state our view responds to. It makes sense to test the actions and resultant store effects together as a usecase as we require no further dependencies. We can supply stores to actions in a similar way to the way we supply apis.

@@ -16,8 +16,6 @@ smart_contracts_dir = get_required_env_var("SMART_CONTRACTS_DIR")
 bridgebank_address = get_required_env_var("BRIDGE_BANK_ADDRESS")
 bridgetoken_address = get_required_env_var("BRIDGE_TOKEN_ADDRESS")
 
-sifchain_fees = 200000  # Should probably make this a constant
-
 
 def get_faucet_balance(sifnodecli_node):
     node = f"--node {sifnodecli_node}" if sifnodecli_node else ""
@@ -289,7 +287,8 @@ def test_create_pools(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
-        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest
+        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
+        sifchain_fees_int
 ):
     basic_transfer_request.ethereum_address = source_ethereum_address
     basic_transfer_request.check_wait_blocks = True
@@ -321,7 +320,7 @@ def test_create_pools(
         create_pool(basic_transfer_request, credentials)
         get_pools(basic_transfer_request.sifnodecli_node)
         current_ceth_balance = current_ceth_balance - change_amount
-        current_rowan_balance = current_rowan_balance - change_amount - sifchain_fees
+        current_rowan_balance = current_rowan_balance - change_amount - sifchain_fees_int
         assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
         assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
 
@@ -329,7 +328,7 @@ def test_create_pools(
     txn = create_pool(basic_transfer_request, credentials)
     assert(txn["code"] == 14)
     get_pools(basic_transfer_request.sifnodecli_node)
-    current_rowan_balance = current_rowan_balance - sifchain_fees
+    current_rowan_balance = current_rowan_balance - sifchain_fees_int
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth") == current_ceth_balance)
 
@@ -345,7 +344,8 @@ def test_pools(
         solidity_json_path,
         operator_address,
         ethereum_network,
-        source_ethereum_address
+        source_ethereum_address,
+        sifchain_fees_int
 ):
     # max symbol length in clp is 10
     new_currency_symbol = ("a" + get_shell_output("uuidgen").replace("-", ""))[:8]
@@ -417,7 +417,7 @@ def test_pools(
     # Fail if amount is greater than user has
     txn = create_pool(basic_transfer_request, credentials)
     assert(txn["code"] == 12)
-    current_rowan_balance = current_rowan_balance - sifchain_fees
+    current_rowan_balance = current_rowan_balance - sifchain_fees_int
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
 
     change_amount = 10 ** 17
@@ -425,7 +425,7 @@ def test_pools(
     # Fail if amount is less than or equal to minimum
     txn = create_pool(basic_transfer_request, credentials)
     assert(txn["code"] == 7)
-    current_rowan_balance = current_rowan_balance - sifchain_fees
+    current_rowan_balance = current_rowan_balance - sifchain_fees_int
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
 
     change_amount = 10 ** 18
@@ -435,7 +435,7 @@ def test_pools(
     assert(txn.get("code", 0) == 0)
     get_pools(basic_transfer_request.sifnodecli_node)
     current_coin_balance = current_coin_balance - change_amount
-    current_rowan_balance = current_rowan_balance - change_amount - sifchain_fees
+    current_rowan_balance = current_rowan_balance - change_amount - sifchain_fees_int
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
 
@@ -443,7 +443,7 @@ def test_pools(
     txn = create_pool(basic_transfer_request, credentials)
     assert(txn["code"] == 14)
     get_pools(basic_transfer_request.sifnodecli_node)
-    current_rowan_balance = current_rowan_balance - sifchain_fees
+    current_rowan_balance = current_rowan_balance - sifchain_fees_int
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
 
@@ -452,7 +452,7 @@ def test_pools(
     assert(txn.get("code", 0) == 0)
     get_pools(basic_transfer_request.sifnodecli_node)
     current_coin_balance = current_coin_balance - change_amount
-    current_rowan_balance = current_rowan_balance - change_amount - sifchain_fees
+    current_rowan_balance = current_rowan_balance - change_amount - sifchain_fees_int
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
 
@@ -461,13 +461,13 @@ def test_pools(
     assert(txn.get("code", 0) == 0)
     get_pools(basic_transfer_request.sifnodecli_node)
     current_coin_balance = current_coin_balance + change_amount
-    current_rowan_balance = current_rowan_balance + change_amount - sifchain_fees
+    current_rowan_balance = current_rowan_balance + change_amount - sifchain_fees_int
 
     # check for failure if we try to remove more
     txn = remove_pool_liquidity(basic_transfer_request, credentials, 10000)
     assert(txn["code"] == 26)
     get_pools(basic_transfer_request.sifnodecli_node)
-    current_rowan_balance = current_rowan_balance - sifchain_fees
+    current_rowan_balance = current_rowan_balance - sifchain_fees_int
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
 
@@ -491,7 +491,7 @@ def test_pools(
     txn = add_pool_liquidity(basic_transfer_request, credentials)
     assert(txn["code"] == 25)
     get_pools(basic_transfer_request.sifnodecli_node)
-    current_rowan_balance = current_rowan_balance - sifchain_fees
+    current_rowan_balance = current_rowan_balance - sifchain_fees_int
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
 
@@ -500,7 +500,7 @@ def test_pools(
     txn = swap_pool(basic_transfer_request, "rowan", sifchain_symbol, credentials)
     assert(txn["code"] == 27)
     get_pools(basic_transfer_request.sifnodecli_node)
-    current_rowan_balance = current_rowan_balance - sifchain_fees
+    current_rowan_balance = current_rowan_balance - sifchain_fees_int
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
 
@@ -509,7 +509,7 @@ def test_pools(
     txn = swap_pool(basic_transfer_request, "rowan", sifchain_symbol, credentials)
     assert(txn["code"] == 31)
     get_pools(basic_transfer_request.sifnodecli_node)
-    current_rowan_balance = current_rowan_balance - sifchain_fees
+    current_rowan_balance = current_rowan_balance - sifchain_fees_int
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan") == current_rowan_balance)
     assert(test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, sifchain_symbol) == current_coin_balance)
 

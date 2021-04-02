@@ -17,7 +17,7 @@ variable "vpc_cidr" {
 variable "cluster_version" {
   description = "EKS cluster version"
   type        = string
-  default     = 1.18
+  default     = 1.19
 }
 
 variable "cluster_name" {
@@ -30,23 +30,49 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "desired_capacity" {
-  description = "Desired nodes per cluster"
-  default = 2
+variable "desired_capacity_0" {
+  description = "Desired nodes per cluster for node group main-0"
+  default     = 1
 }
 
-variable "max_capacity" {
-  description = "Max nodes per cluster"
-  default = 5
+variable "desired_capacity_1" {
+  description = "Desired nodes per cluster for node group main-1"
+  default     = 1
 }
 
-variable "min_capacity" {
-  description = "Min nodes per cluster"
-  default = 2
+variable "desired_capacity_2" {
+  description = "Desired nodes per cluster for node group main-2"
+  default     = 1
 }
 
-variable "instance_type" {
-  default = "t2.xlarge"
+variable "max_capacity_0" {
+  description = "Max nodes per cluster for node group main-0"
+  default     = 3
+}
+
+variable "max_capacity_1" {
+  description = "Max nodes per cluster for node group main-1"
+  default     = 3
+}
+
+variable "max_capacity_2" {
+  description = "Max nodes per cluster for node group main-2"
+  default     = 3
+}
+
+variable "min_capacity_0" {
+  description = "Min nodes per cluster for node group main-0"
+  default     = 1
+}
+
+variable "min_capacity_1" {
+  description = "Min nodes per cluster for node group main-1"
+  default     = 1
+}
+
+variable "min_capacity_2" {
+  description = "Min nodes per cluster for node group main-2"
+  default     = 1
 }
 
 variable "ami_type" {
@@ -100,15 +126,11 @@ variable "efs_pv_capacity" {
 
 variable "profile" {
   description = "AWS profile settings"
-  default = "default"
+  default     = "default"
 }
 
- variable "node_group_name" {
-  description = "The name of the node_group name for the eks cluster"
-  type = string
-}
-
-variable "customize_node_group_name" {
-type = string
-default = "no"
+variable "instance_type" {
+  description = "The instance_type of the node_group for the eks cluster"
+  type        = string
+  default   = "m5.2xlarge"
 }
