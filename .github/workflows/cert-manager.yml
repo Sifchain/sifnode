@@ -6,9 +6,6 @@ on:
       environment:
         description: devnet, testnet
         required: true
-  push:
-    branches:
-      - 'ebrelayer-pipeline-development'
 
 jobs:
   #deploy cert-manager to us devnet environment

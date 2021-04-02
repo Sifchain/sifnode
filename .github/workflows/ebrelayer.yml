@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: devnet, testnet
+        description: "devnet, testnet"
         required: true
       docker_image_tag:
-        description: devnet-version, testnet-version
+        description: "devnet-version, testnet-version"
         required: true
 
 jobs:
