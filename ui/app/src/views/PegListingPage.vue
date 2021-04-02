@@ -190,10 +190,9 @@ export default defineComponent({
           return 0;
         })
         .sort((a, b) => {
-          // Next sort by balance
-          return (
-            parseFloat(b.amount.toFixed()) - parseFloat(a.amount.toFixed())
-          );
+          if (b.amount.greaterThan(a.amount)) return 1;
+          if (b.amount.lessThan(a.amount)) return -1;
+          return 0;
         })
         .sort((a, b) => {
           // Finally, sort and move rowan, erowan to the top
