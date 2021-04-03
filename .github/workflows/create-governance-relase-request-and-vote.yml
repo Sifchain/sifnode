@@ -1,4 +1,4 @@
-name: CreateGovernanceRequestAndVote
+name: Create Governance Request
 
 on:
   workflow_dispatch:
@@ -27,6 +27,11 @@ on:
         description: how long until the upgrade takes palce
         required: true
         default: 3
+      aws_role:
+        description: aws account role
+        required: true
+        default: arn:aws:iam::346064283538:role/OrganizationAccountAccessRole
+
 jobs:
   create_governance_request_us:
     name: create_governance_request_us
@@ -34,15 +39,15 @@ jobs:
     env:
       aws_region: "us-east-1"
       aws_cluster_name: "sifchain-aws-${{ github.event.inputs.environment }}-us"
-      aws_role: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
+      aws_role: "${{ github.event.inputs.aws_role }}"
       env: "${{ github.event.inputs.environment }}"
       app_env: "${{ github.event.inputs.environment }}"
       block_time: "${{ github.event.inputs.block_time }}"
-      checksum: "${{ github.event.inputs.block_time }}"
-      deposit: "${{ github.event.inputs.block_time }}"
-      from: "devnet-us-1"
-      release_version: "${{ github.event.inputs.block_time }}"
-      chainnet: "sifchain-devnet"
+      checksum: "${{ github.event.inputs.checksum }}"
+      deposit: "${{ github.event.deposit }}"
+      from: "${{ github.event.inputs.environment }}-us-1"
+      release_version: "${{ github.event.inputs.release_version }}"
+      chainnet: "sifchain-${{ github.event.inputs.environment }}"
       rowan: "0.5rowan"
       upgrade_hours: "${{ github.event.inputs.upgrade_hours }}"
 
@@ -51,7 +56,6 @@ jobs:
         os: [ 'ubuntu-latest' ]
         ruby: [ 2.3 ]
 
-    if: github.event.inputs.environment == 'devnet'
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
