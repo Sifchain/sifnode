@@ -101,6 +101,8 @@ jobs:
           ls -lah $GOPATH/bin
           echo "======="
           ls -lah $GOPATH/
+          echo "======="
+          ls -lah ./cmd
           make CHAINNET=${chainnet} IMAGE_TAG=${env}-${release_version} BINARY=sifnodecli build-image
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
