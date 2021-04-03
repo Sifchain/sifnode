@@ -44,7 +44,7 @@ func getPoolHandler(cliCtx client.Context) http.HandlerFunc {
 		//Generate Router
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryPool)
 		//Generate Params
-		var params types.QueryReqGetPool
+		var params types.PoolReq
 		params.Symbol = r.URL.Query().Get("symbol")
 
 		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)

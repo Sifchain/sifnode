@@ -21,7 +21,7 @@ func TestQueryErrorPool(t *testing.T) {
 	pool, _, _ := SetData(keeper, ctx)
 	querier := clpkeeper.NewQuerier(keeper, cdc)
 	//Test Pool
-	queryPool := types.QueryReqGetPool{
+	queryPool := types.PoolReq{
 		Symbol: pool.ExternalAsset.Symbol,
 	}
 	qp, errRes := cdc.MarshalJSON(queryPool)
@@ -55,7 +55,7 @@ func TestQueryGetPool(t *testing.T) {
 	pool, _, _ := SetData(keeper, ctx)
 	querier := clpkeeper.NewQuerier(keeper, cdc)
 	//Test Pool
-	queryPool := types.QueryReqGetPool{
+	queryPool := types.PoolReq{
 		Symbol: pool.ExternalAsset.Symbol,
 	}
 	qp, errRes := cdc.MarshalJSON(queryPool)

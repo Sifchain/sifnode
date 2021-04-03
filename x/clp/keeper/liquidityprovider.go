@@ -46,8 +46,10 @@ func (k Keeper) GetLiquidityProviderIterator(ctx sdk.Context) sdk.Iterator {
 
 func (k Keeper) GetAssetsForLiquidityProvider(ctx sdk.Context, lpAddress sdk.Address) []types.Asset {
 	var assetList []types.Asset
+
 	iterator := k.GetLiquidityProviderIterator(ctx)
 	defer iterator.Close()
+
 	for ; iterator.Valid(); iterator.Next() {
 		var lp types.LiquidityProvider
 		bytesValue := iterator.Value()
@@ -56,6 +58,7 @@ func (k Keeper) GetAssetsForLiquidityProvider(ctx sdk.Context, lpAddress sdk.Add
 			assetList = append(assetList, *lp.Asset) //todo: test nil panics
 		}
 	}
+
 	return assetList
 }
 

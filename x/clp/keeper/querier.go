@@ -31,7 +31,7 @@ func NewQuerier(keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier 
 }
 
 func queryPool(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
-	var params types.QueryReqGetPool
+	var params types.PoolReq
 
 	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
@@ -128,6 +128,6 @@ func queryAllLP(ctx sdk.Context, path []string, keeper Keeper, legacyQuerierCdc 
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
-	
+
 	return res, nil
 }

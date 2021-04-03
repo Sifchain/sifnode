@@ -11,12 +11,8 @@ const (
 	QueryAllLP             = "allLp"
 )
 
-type QueryReqGetPool struct {
-	Symbol string `json:"symbol"`
-}
-
-func NewQueryReqGetPool(symbol string) QueryReqGetPool {
-	return QueryReqGetPool{Symbol: symbol}
+func NewQueryReqGetPool(symbol string) PoolReq {
+	return PoolReq{Symbol: symbol}
 }
 
 type QueryReqLiquidityProvider struct {

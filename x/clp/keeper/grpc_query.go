@@ -3,7 +3,10 @@ package keeper
 import (
 	"context"
 
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/query"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -53,9 +56,22 @@ func (k Keeper) LiquidityProvider(c context.Context, req *types.LiquidityProvide
 	}
 
 	ctx := sdk.UnwrapSDKContext(c)
-	store := ctx.KVStore(k.storeKey)
 
-	return nil, nil
+	lp, err := k.GetLiquidityProvider(ctx, req.Symbol, req.LpAddress)
+	if err != nil {
+		return nil, err
+	}
+	pool, err := k.GetPool(ctx, req.Symbol)
+	if err != nil {
+		return nil, err
+	}
+	native, external, _, _ := CalculateAllAssetsForLP(pool, lp)
+	lpResponse := types.NewLiquidityProviderResponse(lp, ctx.BlockHeight(), native.String(), external.String())
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+
+	return &lpResponse, nil
 }
 
 func (k Keeper) GetAssetList(c context.Context, req *types.AssetListReq) (*types.AssetListRes, error) {
@@ -65,8 +81,32 @@ func (k Keeper) GetAssetList(c context.Context, req *types.AssetListReq) (*types
 
 	ctx := sdk.UnwrapSDKContext(c)
 	store := ctx.KVStore(k.storeKey)
+	assetStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
 
-	return nil, nil
+	pageRes, err := query.FilteredPaginate(assetStore, req.Pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
+		// val, err := types.UnmarshalValidator(k.cdc, value)
+		// if err != nil {
+		// 	return false, err
+		// }
+
+		// if req.Status != "" && !strings.EqualFold(val.GetStatus().String(), req.Status) {
+		// 	return false, nil
+		// }
+
+		// if accumulate {
+		// 	validators = append(validators, val)
+		// }
+
+		return true, nil
+	})
+
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.AssetListRes{
+		Pagination: pageRes,
+	}, nil
 }
 
 func (k Keeper) GetLiquidityProviderList(c context.Context, req *types.LiquidityProviderListReq) (*types.LiquidityProviderListRes, error) {
@@ -76,6 +116,30 @@ func (k Keeper) GetLiquidityProviderList(c context.Context, req *types.Liquidity
 
 	ctx := sdk.UnwrapSDKContext(c)
 	store := ctx.KVStore(k.storeKey)
+	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
 
-	return nil, nil
+	pageRes, err := query.FilteredPaginate(lpStore, req.Pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
+		// val, err := types.UnmarshalValidator(k.cdc, value)
+		// if err != nil {
+		// 	return false, err
+		// }
+
+		// if req.Status != "" && !strings.EqualFold(val.GetStatus().String(), req.Status) {
+		// 	return false, nil
+		// }
+
+		// if accumulate {
+		// 	validators = append(validators, val)
+		// }
+
+		return true, nil
+	})
+
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.LiquidityProviderListRes{
+		Pagination: pageRes,
+	}, nil
 }

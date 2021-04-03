@@ -1,12 +1,11 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 
@@ -24,14 +23,14 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	clpQueryCmd.AddCommand(flags.GetCommands(
+	clpQueryCmd.AddCommand(
 		GetCmdPool(queryRoute),
 		GetCmdPools(queryRoute),
 		GetCmdAssets(queryRoute),
 		GetCmdLiquidityProvider(queryRoute),
 		GetCmdLpList(queryRoute),
 		GetCmdAllLps(queryRoute),
-	)...)
+	)
 	return clpQueryCmd
 }
 
@@ -40,30 +39,31 @@ func GetCmdPool(queryRoute string) *cobra.Command {
 		Use:   "pool [External Asset symbol]",
 		Short: "Get Details for a pool",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query details for a liquidity pool .
+			fmt.Sprintf(`Query details for a liquidity pool.
 Example:
 $ %s pool ETH ROWAN`,
-				version.ClientName,
+				version.AppName,
 			),
 		),
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
 
 			ticker := args[0]
 			params := types.NewQueryReqGetPool(ticker)
-			bz, err := cliCtx.Codec.MarshalJSON(params)
+
+			result, err := queryClient.QueryGetPool(context.Background(), &params)
+
 			if err != nil {
 				return err
 			}
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryPool)
-			res, _, err := cliCtx.QueryWithData(route, bz)
-			if err != nil {
-				return err
-			}
-			var pool types.PoolResponse
-			cdc.MustUnmarshalJSON(res, &pool)
-			return cliCtx.PrintOutput(pool)
+
+			return clientCtx.PrintProto(result)
 		},
 	}
 }
@@ -131,7 +131,7 @@ func GetCmdLiquidityProvider(queryRoute string) *cobra.Command {
 			fmt.Sprintf(`Query details for a liquidity provioder.
 Example:
 $ %s pool ETH sif1h2zjknvr3xlpk22q4dnv396ahftzqhyeth7egd`,
-				version.ClientName,
+				version.AppName,
 			),
 		),
 		Args: cobra.ExactArgs(2),
@@ -141,26 +141,23 @@ $ %s pool ETH sif1h2zjknvr3xlpk22q4dnv396ahftzqhyeth7egd`,
 				return err
 			}
 
+			queryClient := types.NewQueryClient(clientCtx)
+
 			symbol := args[0]
-			lpAddressString := args[1]
-			lpAddress, err := sdk.AccAddressFromBech32(lpAddressString)
-			if err != nil {
-				return err
+			lpAddress := args[1]
+
+			lpReq := types.LiquidityProviderReq{
+				Symbol:    symbol,
+				LpAddress: lpAddress,
 			}
-			params := types.NewQueryReqLiquidityProvider(symbol, lpAddress)
-			bz, err := cliCtx.Codec.MarshalJSON(params)
+
+			res, err := queryClient.LiquidityProvider(context.Background(), &lpReq)
 			if err != nil {
 				return err
 			}
 
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryLiquidityProvider)
-			res, _, err := cliCtx.QueryWithData(route, bz)
-			if err != nil {
-				return err
-			}
-			var lp types.LiquidityProviderResponse
-			cdc.MustUnmarshalJSON(res, &lp)
-			return cliCtx.PrintOutput(lp)
+			return clientCtx.PrintProto(res)
+
 		},
 	}
 }
