@@ -542,6 +542,102 @@ fi
     end
   end
 
+
+  desc "Create Release Governance Request."
+  namespace :release do
+    desc "Create Release Governance Request."
+    task :generate_governance_release_request, [:upgrade_hours, :block_time, :deposit, :rowan, :chainnet, :release_version, :from, :app_env, :checksum] do |t, args|
+
+      cluster_automation = %Q{
+#!/usr/bin/env bash
+set +x
+export CURRENT_HEIGHT=`curl -s http://rpc-devnet.sifchain.finance/abci_info? | jq --raw-output '.result.response.last_block_height'`
+cat << EOF > pyscript.py
+#!/usr/bin/env python
+import os
+current_height = float(os.environ["CURRENT_HEIGHT"])
+block_time=#{args[:block_time]}
+average_time = block_time / 60
+average_time = average_time * 60 * #{args[:upgrade_hours]}
+future_block_height= average_time + current_height
+print(future_block_height)
+EOF
+future_block_height=$(python pyscript.py)
+echo ${future_block_height}
+
+echo "sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+	--from #{args[:from]} \
+	--deposit #{args[:deposit]} \
+	--upgrade-height ${future_block_height} \
+	--info '{\\"binaries\\":{\\"linux/amd64\\":\\"https://github.com/Sifchain/sifnode/releases/download/devnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}\\"}}' \
+	--title release-#{args[:release_version]} \
+	--description release-#{args[:release_version]} \
+	--node tcp://rpc-devnet.sifchain.finance:80 \
+	--keyring-backend file \
+	--chain-id #{args[:chainnet]} \
+	--gas-prices \\"#{args[:rowan]}\\"
+	"
+
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+
+  desc "Create Release Governance Request Vote."
+  namespace :release do
+    desc "Create Release Governance Request Vote."
+    task :generate_vote, [:rowan, :chainnet, :from] do |t, args|
+
+      cluster_automation = %Q{
+#!/usr/bin/env bash
+set +x
+
+echo "sifnodecli tx gov vote 2 yes \
+    --from #{args[:from]} \
+    --keyring-backend file \
+    --chain-id #{args[:chainnet]}  \
+    --node tcp://rpc-devnet.sifchain.finance:80 \
+    --gas-prices \\"#{args[:rowan]}\\" -y"
+
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+  desc "Sifchain Art."
+  namespace :generate do
+    desc "Sifchain Art."
+    task :art, [] do |t, args|
+
+      cluster_automation = %Q{
+#!/usr/bin/env bash
+set +x
+echo '                       iiii     ffffffffffffffff                 hhhhhhh                                 iiii'
+echo '                      i::::i   f::::::::::::::::f                h:::::h                                i::::i'
+echo '                       iiii   f::::::::::::::::::f               h:::::h                                 iiii'
+echo '                              f::::::fffffff:::::f               h:::::h'
+echo '        ssssssssss   iiiiiii  f:::::f       ffffffcccccccccccccccch::::h hhhhh         aaaaaaaaaaaaa   iiiiiiinnnn  nnnnnnnn'
+echo '      ss::::::::::s  i:::::i  f:::::f           cc:::::::::::::::ch::::hh:::::hhh      a::::::::::::a  i:::::in:::nn::::::::nn'
+echo '    ss:::::::::::::s  i::::i f:::::::ffffff    c:::::::::::::::::ch::::::::::::::hh    aaaaaaaaa:::::a  i::::in::::::::::::::nn'
+echo '    s::::::ssss:::::s i::::i f::::::::::::f   c:::::::cccccc:::::ch:::::::hhh::::::h            a::::a  i::::inn:::::::::::::::n'
+echo '     s:::::s  ssssss  i::::i f::::::::::::f   c::::::c     ccccccch::::::h   h::::::h    aaaaaaa:::::a  i::::i  n:::::nnnn:::::n'
+echo '       s::::::s       i::::i f:::::::ffffff   c:::::c             h:::::h     h:::::h  aa::::::::::::a  i::::i  n::::n    n::::n'
+echo '          s::::::s    i::::i  f:::::f         c:::::c             h:::::h     h:::::h a::::aaaa::::::a  i::::i  n::::n    n::::n'
+echo '    ssssss   s:::::s  i::::i  f:::::f         c::::::c     ccccccch:::::h     h:::::ha::::a    a:::::a  i::::i  n::::n    n::::n'
+echo '    s:::::ssss::::::si::::::if:::::::f        c:::::::cccccc:::::ch:::::h     h:::::ha::::a    a:::::a i::::::i n::::n    n::::n'
+echo '    s::::::::::::::s i::::::if:::::::f         c:::::::::::::::::ch:::::h     h:::::ha:::::aaaa::::::a i::::::i n::::n    n::::n'
+echo '     s:::::::::::ss  i::::::if:::::::f          cc:::::::::::::::ch:::::h     h:::::h a::::::::::aa:::ai::::::i n::::n    n::::n'
+echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh     hhhhhhh  aaaaaaaaaa  aaaaiiiiiiii nnnnnn    nnnnnn'
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+
+
+
+
   desc "Update Dynamic Variables For Helm Values"
   namespace :ebrelayer do
     desc "Update Dynamic Variables For Helm Values"

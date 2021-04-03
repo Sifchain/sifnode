@@ -1,0 +1,134 @@
+name: Raise Governance Request and Vote on Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: devnet, testnet
+        required: true
+        default: devnet
+      block_time:
+        description: please get the block time from blockexplorer-devnet.sifchain.finance/
+        required: true
+        default: 5.56
+      rowan:
+        description: the ammount of rowan.
+        required: true
+        default: 0.5rowan
+      chainnet:
+        description: specify the chainnet
+        required: true
+        default: sifchain-devnet
+      release_version:
+        description: release version.
+        required: true
+        default: 20210401000000
+      from:
+        description: from
+        required: true
+        default: devnet-us-1
+      deposit:
+        description: the ammount of rowan.
+        required: true
+        default: 10000000000000000000rowan
+      checksum:
+        description: the checksum for the release
+        required: true
+        default: sha256:1fa3cce1785083c1bf99e8312ae3b5f830261be965dbfff19e147e82b1f0004d
+      aws_region:
+        description: the aws region
+        required: true
+        default: us-east-1
+      region:
+        description: the region
+        required: true
+        default: us
+      upgrade_hours:
+        description: how long until the upgrade takes palce
+        required: true
+        default: 3
+jobs:
+  create_governance_request_us:
+    name: create_governance_request_us
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "${{ github.event.inputs.aws_region }}"
+      aws_cluster_name: "sifchain-aws-${{ github.event.inputs.environment }}-${{ github.event.inputs.region }}"
+      aws_role: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
+      env: "${{ github.event.inputs.environment }}"
+      app_env: "${{ github.event.inputs.environment }}"
+      block_time: "${{ github.event.inputs.block_time }}"
+      checksum: "${{ github.event.inputs.block_time }}"
+      deposit: "${{ github.event.inputs.block_time }}"
+      from: "${{ github.event.inputs.block_time }}"
+      release_version: "${{ github.event.inputs.block_time }}"
+      chainnet: "${{ github.event.inputs.block_time }}"
+      rowan: "${{ github.event.inputs.block_time }}"
+      upgrade_hours: "${{ github.event.inputs.upgrade_hours }}"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    if: github.event.inputs.environment == 'devnet'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        run: |
+          rake "cluster:generate:art[]"
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File...."
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Get Keys
+        shell: bash
+        run: |
+          set +x
+          echo "Get Keys for Environment. Coming Soon..."
+
+      - name: Create Governance Release Request
+        shell: bash
+        run: |
+          set +x
+          echo "Create Governance Release Request"
+          rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}, ${checksum}]"
+
+      - name: Create Governance Vote 1
+        shell: bash
+        run: |
+          set +x
+          echo "Create Governance Release Request"
+          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}]"
+
+      - name: Create Governance Vote 2
+        shell: bash
+        run: |
+          set +x
+          echo "Create Governance Release Request"
+          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+
