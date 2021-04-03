@@ -80,7 +80,6 @@ var (
 		upgrade.AppModuleBasic{},
 		// oracle.AppModuleBasic{},
 		// ethbridge.AppModuleBasic{},
-		// faucet.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 	)
 
@@ -92,7 +91,6 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
 		// ethbridge.ModuleName:           {authtypes.Burner, authtypes.Minter},
 		// clp.ModuleName:                 {authtypes.Burner, authtypes.Minter},
-		// faucet.ModuleName:              {authtypes.Minter},
 	}
 )
 
@@ -154,7 +152,6 @@ func NewSifApp(
 		// ethbridge.StoreKey,
 		// clp.StoreKey,
 		govtypes.StoreKey,
-		// faucet.StoreKey,
 		distrtypes.StoreKey,
 		slashingtypes.StoreKey,
 	)
@@ -256,7 +253,6 @@ func NewSifApp(
 	// CanWithdrawInvariant invariant.
 	app.mm.SetOrderBeginBlockers(distrtypes.ModuleName,
 		slashingtypes.ModuleName,
-		// faucet.ModuleName,
 		upgradetypes.ModuleName)
 
 	app.mm.SetOrderEndBlockers(

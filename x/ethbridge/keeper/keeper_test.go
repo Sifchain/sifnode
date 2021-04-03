@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"encoding/json"
-	"log"
 	"strings"
 	"testing"
 
@@ -10,7 +9,6 @@ import (
 	"github.com/Sifchain/sifnode/x/oracle"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 var (
@@ -24,19 +22,6 @@ var (
 	ethereumSender                             = types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57")
 	//BadValidatorAddress                        = sdk.ValAddress(CreateTestPubKeys(1)[0].Address().Bytes())
 )
-
-var (
-	sugaredLogger = NewZapSugaredLogger()
-)
-
-func NewZapSugaredLogger() *zap.SugaredLogger {
-	logger, err := zap.NewProduction()
-	if err != nil {
-		log.Fatalln("failed to init zap logging")
-	}
-
-	return logger.Sugar()
-}
 
 func TestProcessClaimLock(t *testing.T) {
 	ctx, keeper, _, _, _, validatorAddresses := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
@@ -65,12 +50,12 @@ func TestProcessClaimLock(t *testing.T) {
 		claimType,
 	)
 
-	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim, sugaredLogger)
+	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim)
 
 	require.NoError(t, err)
 	require.Equal(t, status.Text, oracle.PendingStatusText)
 	// duplicate execution
-	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim, sugaredLogger)
+	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
 
@@ -88,7 +73,7 @@ func TestProcessClaimLock(t *testing.T) {
 		amount,
 		claimType,
 	)
-	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim, sugaredLogger)
+	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)
 	require.Equal(t, status.Text, oracle.SuccessStatusText)
 
@@ -117,12 +102,12 @@ func TestProcessClaimBurn(t *testing.T) {
 		claimType,
 	)
 
-	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim, sugaredLogger)
+	status, err := keeper.ProcessClaim(ctx, ethBridgeClaim)
 
 	require.NoError(t, err)
 	require.Equal(t, status.Text, oracle.PendingStatusText)
 
-	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim, sugaredLogger)
+	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
 
@@ -140,7 +125,7 @@ func TestProcessClaimBurn(t *testing.T) {
 		amount,
 		claimType,
 	)
-	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim, sugaredLogger)
+	status, err = keeper.ProcessClaim(ctx, ethBridgeClaim)
 	require.NoError(t, err)
 	require.Equal(t, status.Text, oracle.SuccessStatusText)
 
@@ -158,7 +143,7 @@ func TestProcessSuccessfulClaimLock(t *testing.T) {
 	claimBytes, err := json.Marshal(claimContent)
 	require.NoError(t, err)
 	claimString := string(claimBytes)
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -166,7 +151,7 @@ func TestProcessSuccessfulClaimLock(t *testing.T) {
 	require.Equal(t, receiverCoins.String(), "10cstake")
 
 	// duplicate processSuccessClaim
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -186,7 +171,7 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 	claimBytes, err := json.Marshal(claimContent)
 	require.NoError(t, err)
 	claimString := string(claimBytes)
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -194,7 +179,7 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 	require.Equal(t, receiverCoins.String(), "10stake")
 
 	// duplicate processSuccessClaim
-	err = keeper.ProcessSuccessfulClaim(ctx, claimString, sugaredLogger)
+	err = keeper.ProcessSuccessfulClaim(ctx, claimString)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -209,7 +194,7 @@ func TestProcessBurn(t *testing.T) {
 	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], msg, sugaredLogger)
+	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], msg)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -224,7 +209,7 @@ func TestProcessBurnCeth(t *testing.T) {
 	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], msg, sugaredLogger)
+	err := keeper.ProcessBurn(ctx, cosmosReceivers[0], msg)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -239,14 +224,14 @@ func TestProcessLock(t *testing.T) {
 
 	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 
-	err := keeper.ProcessLock(ctx, cosmosReceivers[0], msg, sugaredLogger)
+	err := keeper.ProcessLock(ctx, cosmosReceivers[0], msg)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
 	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err = keeper.ProcessLock(ctx, cosmosReceivers[0], msg, sugaredLogger)
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], msg)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -265,7 +250,7 @@ func TestProcessBurnWithReceiver(t *testing.T) {
 	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], msg, sugaredLogger)
+	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], msg)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -283,7 +268,7 @@ func TestProcessBurnCethWithReceiver(t *testing.T) {
 	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], msg, sugaredLogger)
+	err = keeper.ProcessBurn(ctx, cosmosReceivers[0], msg)
 	require.NoError(t, err)
 
 	receiverCoins := bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -301,14 +286,14 @@ func TestProcessLockWithReceiver(t *testing.T) {
 
 	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 
-	err = keeper.ProcessLock(ctx, cosmosReceivers[0], msg, sugaredLogger)
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], msg)
 	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
 	_ = supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
 	_ = supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceivers[0], coins)
 
-	err = keeper.ProcessLock(ctx, cosmosReceivers[0], msg, sugaredLogger)
+	err = keeper.ProcessLock(ctx, cosmosReceivers[0], msg)
 	require.NoError(t, err)
 
 	receiverCoins = bankKeeper.GetCoins(ctx, cosmosReceivers[0])
@@ -321,12 +306,12 @@ func TestProcessUpdateCethReceiverAccount(t *testing.T) {
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 
-	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender, sugaredLogger)
+	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender)
 	require.Equal(t, err.Error(), "only admin account can update ceth receiver account")
 
 	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
-	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender, sugaredLogger)
+	err = keeper.ProcessUpdateCethReceiverAccount(ctx, cosmosSender, cosmosSender)
 	require.NoError(t, err)
 }
 
@@ -341,11 +326,11 @@ func TestProcessRescueCeth(t *testing.T) {
 
 	msg := types.NewMsgRescueCeth(cosmosSender, cosmosSender, cethAmount)
 
-	err = keeper.ProcessRescueCeth(ctx, msg, sugaredLogger)
+	err = keeper.ProcessRescueCeth(ctx, msg)
 	require.Equal(t, err.Error(), "only admin account can call rescue ceth")
 
 	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 
-	err = keeper.ProcessRescueCeth(ctx, msg, sugaredLogger)
+	err = keeper.ProcessRescueCeth(ctx, msg)
 	require.NoError(t, err)
 }
