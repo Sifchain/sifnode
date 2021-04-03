@@ -570,7 +570,7 @@ EOF
 future_block_height=$(python pyscript.py)
 echo ${future_block_height}
 
-echo './cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+echo 'go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
 	--from #{args[:from]} \
 	--deposit #{args[:deposit]} \
 	--upgrade-height ${future_block_height} \
@@ -595,7 +595,7 @@ echo './cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:r
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
-echo "#{args[:mnemonic]}" | ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test=
+echo "#{args[:mnemonic]}" | go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test=
       }
       system(cluster_automation) or exit 1
     end
@@ -610,11 +610,11 @@ echo "#{args[:mnemonic]}" | ./cmd/sifnodecli keys add #{args[:moniker]} -i --rec
 #!/usr/bin/env bash
 set +x
 
-vote_id=$(./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
 
 echo "vote_id $vote_id"
 
-echo './cmd/sifnodecli tx gov vote 2 yes \
+echo 'go run ./cmd/sifnodecli tx gov vote 2 yes \
     --from #{args[:from]} \
     --keyring-backend test \
     --chain-id #{args[:chainnet]}  \
