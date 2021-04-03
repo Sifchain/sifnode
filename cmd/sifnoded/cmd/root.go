@@ -73,7 +73,6 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
 		AddGenesisAccountCmd(app.DefaultNodeHome),
 		AddGenesisCLPAdminCmd(app.DefaultNodeHome),
-		AddFaucetBalance(app.DefaultNodeHome),
 		AddGenesisValidatorCmd(app.DefaultNodeHome),
 		SetGenesisOracleAdminCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),

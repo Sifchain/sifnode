@@ -6,7 +6,6 @@ import (
 
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/ethbridge"
-	"github.com/Sifchain/sifnode/x/faucet"
 	"github.com/Sifchain/sifnode/x/oracle"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -51,7 +50,6 @@ var (
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		ethbridge.AppModuleBasic{},
-		faucet.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -61,7 +59,6 @@ var (
 		staking.NotBondedPoolName: {supply.Burner, supply.Staking},
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
 		clp.ModuleName:            {supply.Burner, supply.Minter},
-		faucet.ModuleName:         {supply.Burner, supply.Minter},
 	}
 )
 
@@ -100,7 +97,6 @@ type SimApp struct {
 	SupplyKeeper  supply.Keeper
 	StakingKeeper staking.Keeper
 	ParamsKeeper  params.Keeper
-	FaucetKeeper  faucet.Keeper
 	// Peggy keepers
 	EthBridgeKeeper ethbridge.Keeper
 	OracleKeeper    oracle.Keeper
@@ -128,7 +124,7 @@ func NewSimApp(
 	keys := sdk.NewKVStoreKeys(
 		bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
 		supply.StoreKey, params.StoreKey,
-		oracle.StoreKey, ethbridge.StoreKey, clp.StoreKey, faucet.StoreKey,
+		oracle.StoreKey, ethbridge.StoreKey, clp.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(params.TStoreKey)
 
@@ -147,20 +143,17 @@ func NewSimApp(
 	app.subspaces[bank.ModuleName] = app.ParamsKeeper.Subspace(bank.DefaultParamspace)
 	app.subspaces[staking.ModuleName] = app.ParamsKeeper.Subspace(staking.DefaultParamspace)
 	app.subspaces[clp.ModuleName] = app.ParamsKeeper.Subspace(clp.DefaultParamspace)
-	app.subspaces[faucet.ModuleName] = app.ParamsKeeper.Subspace(faucet.DefaultParamspace)
 
 	feeCollectorAcc := supply.NewEmptyModuleAccount(auth.FeeCollectorName)
 	notBondedPool := supply.NewEmptyModuleAccount(staking.NotBondedPoolName, supply.Burner, supply.Staking)
 	bondPool := supply.NewEmptyModuleAccount(staking.BondedPoolName, supply.Burner, supply.Staking)
 	distrAcc := supply.NewEmptyModuleAccount(clp.ModuleName)
-	faucetAcc := supply.NewEmptyModuleAccount(faucet.ModuleName)
 
 	blacklistedAddrs := make(map[string]bool)
 	blacklistedAddrs[feeCollectorAcc.GetAddress().String()] = true
 	blacklistedAddrs[notBondedPool.GetAddress().String()] = true
 	blacklistedAddrs[bondPool.GetAddress().String()] = true
 	blacklistedAddrs[distrAcc.GetAddress().String()] = true
-	blacklistedAddrs[faucetAcc.GetAddress().String()] = true
 
 	// add keepers
 	app.AccountKeeper = auth.NewAccountKeeper(
@@ -201,7 +194,6 @@ func NewSimApp(
 	app.StakingKeeper = *stakingKeeper.SetHooks(
 		staking.NewMultiStakingHooks(),
 	)
-	app.FaucetKeeper = faucet.NewKeeper(app.SupplyKeeper, app.cdc, keys[faucet.ModuleName], app.BankKeeper)
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 	app.mm = module.NewManager(
@@ -213,12 +205,10 @@ func NewSimApp(
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.SupplyKeeper, app.AccountKeeper, app.EthBridgeKeeper, app.cdc),
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper, app.SupplyKeeper),
-		faucet.NewAppModule(app.FaucetKeeper, app.BankKeeper, app.SupplyKeeper),
 	)
 
 	app.mm.SetOrderBeginBlockers(
 		staking.ModuleName,
-		faucet.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -233,7 +223,6 @@ func NewSimApp(
 		oracle.ModuleName,
 		ethbridge.ModuleName,
 		clp.ModuleName,
-		faucet.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
