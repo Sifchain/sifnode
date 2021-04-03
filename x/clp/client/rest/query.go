@@ -2,17 +2,17 @@ package rest
 
 import (
 	"fmt"
-	"github.com/Sifchain/sifnode/x/clp/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"net/http"
 
+	"github.com/cosmos/cosmos-sdk/client"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/rest"
 	"github.com/gorilla/mux"
 
-	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/types/rest"
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
-func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
+func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
 	r.HandleFunc(
 		"/clp/getPool",
 		getPoolHandler(cliCtx),
@@ -35,7 +35,7 @@ func registerQueryRoutes(cliCtx context.CLIContext, r *mux.Router) {
 	).Methods("GET")
 }
 
-func getPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getPoolHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
@@ -63,7 +63,7 @@ func getPoolHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func getLiquidityProviderHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getLiquidityProviderHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
@@ -95,7 +95,7 @@ func getLiquidityProviderHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func getPoolsHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getPoolsHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
@@ -115,7 +115,7 @@ func getPoolsHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func getAssetsHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getAssetsHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
@@ -146,7 +146,7 @@ func getAssetsHandler(cliCtx context.CLIContext) http.HandlerFunc {
 }
 
 //http://localhost:1317/clp/getLpList?symbol=catk
-func getLpListHandler(cliCtx context.CLIContext) http.HandlerFunc {
+func getLpListHandler(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {

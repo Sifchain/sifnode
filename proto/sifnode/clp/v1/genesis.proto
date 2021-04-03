@@ -1,0 +1,18 @@
+syntax = "proto3";
+package sifnode.clp.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/sifchain/sifnode/x/clp/types";
+
+import "sifnode/clp/v1/params.proto";
+import "sifnode/clp/v1/types.proto";
+
+// GenesisState - all clp state that must be provided at genesis
+//TODO: Add parameters to Genesis state ,such as minimum liquidity required to create a pool
+message GenesisState {
+  sifnode.clp.v1.Params params                                  = 1;
+  repeated string       address_whitelist                       = 2;
+  repeated sifnode.clp.v1.Pool pool_list                        = 3;
+  repeated sifnode.clp.v1.LiquidityProvider liquidity_providers = 4;
+}

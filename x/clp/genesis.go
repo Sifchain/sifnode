@@ -2,56 +2,77 @@ package clp
 
 import (
 	"fmt"
-	"github.com/Sifchain/sifnode/x/clp/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/pkg/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
+
+	"github.com/Sifchain/sifnode/x/clp/keeper"
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
-func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
-	keeper.SetParams(ctx, data.Params)
+func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 	if data.AddressWhitelist == nil || len(data.AddressWhitelist) == 0 {
-	    panic(fmt.Sprintf("AddressWhiteList must be set."))
+		panic(fmt.Sprintf("AddressWhiteList must be set."))
 	}
-	keeper.SetClpWhiteList(ctx, data.AddressWhitelist)
+	keeper.SetParams(ctx, data.Params)
+	wl := make([]sdk.AccAddress, len(data.AddressWhitelist), 0)
+	if data.AddressWhitelist != nil {
+		for i, entry := range data.AddressWhitelist {
+			wlAddress, err := sdk.AccAddressFromBech32(entry)
+			if err != nil {
+				// todo: panic?
+			}
+			wl[i] = wlAddress
+		}
+
+		keeper.SetClpWhiteList(ctx, wl)
+	}
+
+	keeper.SetClpWhiteList(ctx, wl)
 	for _, pool := range data.PoolList {
 		err := keeper.SetPool(ctx, pool)
 		if err != nil {
 			panic(fmt.Sprintf("Pool could not be set : %s", pool.String()))
 		}
 	}
-	for _, lp := range data.LiquidityProviderList {
+	for _, lp := range data.LiquidityProviders {
 		keeper.SetLiquidityProvider(ctx, lp)
 	}
 	return []abci.ValidatorUpdate{}
 }
 
-func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
+func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 	params := keeper.GetParams(ctx)
 	poolList := keeper.GetPools(ctx)
 	liquidityProviders := keeper.GetLiquidityProviders(ctx)
 	whiteList := keeper.GetClpWhiteList(ctx)
-	return GenesisState{
-		Params:                params,
-		AddressWhitelist:      whiteList,
-		PoolList:              poolList,
-		LiquidityProviderList: liquidityProviders,
+	wl := make([]string, 0, len(whiteList))
+	for i, entry := range whiteList {
+		wl[i] = entry.String()
+	}
+
+	return types.GenesisState{
+		Params:             params,
+		AddressWhitelist:   wl,
+		PoolList:           poolList,
+		LiquidityProviders: liquidityProviders,
 	}
 }
 
 // ValidateGenesis validates the clp genesis parameters
-func ValidateGenesis(data GenesisState) error {
+func ValidateGenesis(data types.GenesisState) error {
 	if !data.Params.Validate() {
-		return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Params are invalid : %s", data.Params.String()))
+		return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("Params are invalid : %s", data.Params.String()))
 	}
 	for _, pool := range data.PoolList {
 		if !pool.Validate() {
-			return errors.Wrap(types.ErrInvalid, fmt.Sprintf("Pool is invalid : %s", pool.String()))
+			return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("Pool is invalid : %s", pool.String()))
 		}
 	}
-	for _, lp := range data.LiquidityProviderList {
+	for _, lp := range data.LiquidityProviders {
 		if !lp.Validate() {
-			return errors.Wrap(types.ErrInvalid, fmt.Sprintf("LiquidityProvider is invalid : %s", lp.String()))
+			return sdkerrors.Wrap(types.ErrInvalid, fmt.Sprintf("LiquidityProvider is invalid : %s", lp.String()))
 		}
 	}
 	return nil

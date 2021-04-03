@@ -1,12 +1,15 @@
 package clp_test
 
 import (
-	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/Sifchain/sifnode/x/clp/test"
-	"github.com/Sifchain/sifnode/x/clp/types"
+	"testing"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
+
+	"github.com/Sifchain/sifnode/x/clp"
+	"github.com/Sifchain/sifnode/x/clp/keeper"
+	"github.com/Sifchain/sifnode/x/clp/test"
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
 func TestExportGenesis(t *testing.T) {
@@ -15,7 +18,7 @@ func TestExportGenesis(t *testing.T) {
 	poolscount, lpCount := CreateState(ctx, keeper, t)
 	state := clp.ExportGenesis(ctx, keeper)
 	assert.Equal(t, len(state.PoolList), poolscount)
-	assert.Equal(t, len(state.LiquidityProviderList), lpCount)
+	assert.Equal(t, len(state.LiquidityProviders), lpCount)
 
 }
 
@@ -26,10 +29,10 @@ func TestInitGenesis(t *testing.T) {
 	poolscount, lpCount := CreateState(ctx1, keeper1, t)
 	state := clp.ExportGenesis(ctx1, keeper1)
 	assert.Equal(t, len(state.PoolList), poolscount)
-	assert.Equal(t, len(state.LiquidityProviderList), lpCount)
+	assert.Equal(t, len(state.LiquidityProviders), lpCount)
 	state2 := clp.ExportGenesis(ctx2, keeper2)
 	assert.Equal(t, len(state2.PoolList), 0)
-	assert.Equal(t, len(state2.LiquidityProviderList), 0)
+	assert.Equal(t, len(state2.LiquidityProviders), 0)
 
 	valUpdates := clp.InitGenesis(ctx2, keeper2, state)
 	assert.Equal(t, len(valUpdates), 0)
@@ -48,16 +51,16 @@ func TestValidateGenesis(t *testing.T) {
 	poolscount, lpCount := CreateState(ctx, keeper, t)
 	state := clp.ExportGenesis(ctx, keeper)
 	assert.Equal(t, len(state.PoolList), poolscount)
-	assert.Equal(t, len(state.LiquidityProviderList), lpCount)
+	assert.Equal(t, len(state.LiquidityProviders), lpCount)
 	err := clp.ValidateGenesis(state)
 	assert.NoError(t, err)
 
 }
-func CreateState(ctx sdk.Context, keeper clp.Keeper, t *testing.T) (int, int) {
+func CreateState(ctx sdk.Context, keeper keeper.Keeper, t *testing.T) (int, int) {
 	// Setting Pools
 	pools := test.GenerateRandomPool(10)
 	for _, pool := range pools {
-		err := keeper.SetPool(ctx, pool)
+		err := keeper.SetPool(ctx, &pool)
 		assert.NoError(t, err)
 	}
 	getpools := keeper.GetPools(ctx)
@@ -69,11 +72,13 @@ func CreateState(ctx sdk.Context, keeper clp.Keeper, t *testing.T) (int, int) {
 	//Setting Liquidity providers
 	lpList := test.GenerateRandomLP(10)
 	for _, lp := range lpList {
-		keeper.SetLiquidityProvider(ctx, lp)
+		keeper.SetLiquidityProvider(ctx, &lp)
 	}
 	v1 := test.GenerateWhitelistAddress("")
 	keeper.SetClpWhiteList(ctx, []sdk.AccAddress{v1})
-	assetList := keeper.GetAssetsForLiquidityProvider(ctx, lpList[0].LiquidityProviderAddress)
+	accAddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
+	assert.NoError(t, err)
+	assetList := keeper.GetAssetsForLiquidityProvider(ctx, accAddr)
 	assert.LessOrEqual(t, len(assetList), len(lpList))
 	lpCount := len(assetList)
 	return poolscount, lpCount
