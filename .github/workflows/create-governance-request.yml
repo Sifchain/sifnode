@@ -102,7 +102,6 @@ jobs:
           echo "This will source the vaulte secrets as environment variables defined at the path and execute the tests accordingly."
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
-          #sifnodecli q gov proposals --node tcp://rpc-${env}.sifchain.finance:80 --trust-node -o json
           rake "cluster:release:generate_keyring[${moniker}, \"${mnemonic}\"]"
 
       - name: Create Governance Release Request
@@ -117,14 +116,14 @@ jobs:
         run: |
           set +x
           echo "Create Governance Release Request"
-          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}]"
+          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
 
       - name: Create Governance Vote 2
         shell: bash
         run: |
           set +x
           echo "Create Governance Release Request"
-          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}]"
+          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
 
       - name: Clean Temp Files and Secrets
         shell: bash

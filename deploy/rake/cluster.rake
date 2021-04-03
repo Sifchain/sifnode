@@ -604,11 +604,15 @@ echo "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover -
   desc "Create Release Governance Request Vote."
   namespace :release do
     desc "Create Release Governance Request Vote."
-    task :generate_vote, [:rowan, :chainnet, :from] do |t, args|
+    task :generate_vote, [:rowan, :chainnet, :from, :env] do |t, args|
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
+
+vote_id=$(sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+
+echo "vote_id $vote_id"
 
 echo 'sifnodecli tx gov vote 2 yes \
     --from #{args[:from]} \
