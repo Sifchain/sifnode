@@ -590,12 +590,12 @@ echo 'go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{
   desc "Generate Test Key Ring."
   namespace :release do
     desc "Generate Test Key Ring."
-    task :generate_keyring, [:moniker, :mnemonic] do |t, args|
+    task :generate_keyring, [:moniker] do |t, args|
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
-echo "#{args[:mnemonic]}" | go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
+go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test < mnemonic_file
       }
       system(cluster_automation) or exit 1
     end
