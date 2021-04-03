@@ -2,12 +2,13 @@ package clp
 
 import (
 	"fmt"
+	"strconv"
+
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
-	"strconv"
 )
 
 // NewHandler creates an sdk.Handler for all the clp type messages
@@ -288,6 +289,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 	var (
 		priceImpact sdk.Uint
 	)
+	logger := keeper.Logger(ctx)
 
 	liquidityFeeNative := sdk.ZeroUint()
 	liquidityFeeExternal := sdk.ZeroUint()
@@ -309,7 +311,7 @@ func handleMsgSwap(ctx sdk.Context, keeper Keeper, msg MsgSwap) (*sdk.Result, er
 			return nil, errors.Wrap(types.ErrPoolDoesNotExist, msg.SentAsset.String())
 		}
 	}
-	fmt.Println(err)
+	logger.Error("error:", err)
 	sentAmountInt, ok := keeper.ParseToInt(sentAmount.String())
 	if !ok {
 		return nil, types.ErrUnableToParseInt
