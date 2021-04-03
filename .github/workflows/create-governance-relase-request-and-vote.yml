@@ -1,4 +1,4 @@
-name: Raise Governance Request and Vote on Release
+name: CreateGovernanceRequestAndVote
 
 on:
   workflow_dispatch:
@@ -11,18 +11,10 @@ on:
         description: please get the block time from blockexplorer-devnet.sifchain.finance/
         required: true
         default: 5.56
-      chainnet:
-        description: specify the chainnet
-        required: true
-        default: sifchain-devnet
       release_version:
         description: release version.
         required: true
         default: 20210401000000
-      from:
-        description: from
-        required: true
-        default: devnet-us-1
       deposit:
         description: the ammount of rowan.
         required: true
@@ -31,10 +23,6 @@ on:
         description: the checksum for the release
         required: true
         default: sha256:1fa3cce1785083c1bf99e8312ae3b5f830261be965dbfff19e147e82b1f0004d
-      aws_region:
-        description: the aws region
-        required: true
-        default: us-east-1
       upgrade_hours:
         description: how long until the upgrade takes palce
         required: true
@@ -44,7 +32,7 @@ jobs:
     name: create_governance_request_us
     runs-on: ${{ matrix.os }}
     env:
-      aws_region: "${{ github.event.inputs.aws_region }}"
+      aws_region: "us-east-1"
       aws_cluster_name: "sifchain-aws-${{ github.event.inputs.environment }}-us"
       aws_role: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
       env: "${{ github.event.inputs.environment }}"
@@ -52,9 +40,9 @@ jobs:
       block_time: "${{ github.event.inputs.block_time }}"
       checksum: "${{ github.event.inputs.block_time }}"
       deposit: "${{ github.event.inputs.block_time }}"
-      from: "${{ github.event.inputs.block_time }}"
+      from: "devnet-us-1"
       release_version: "${{ github.event.inputs.block_time }}"
-      chainnet: "${{ github.event.inputs.block_time }}"
+      chainnet: "sifchain-devnet"
       rowan: "0.5rowan"
       upgrade_hours: "${{ github.event.inputs.upgrade_hours }}"
 
