@@ -11,14 +11,6 @@ import (
 	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
-const (
-	TestID                     = "oracleID"
-	AlternateTestID            = "altOracleID"
-	TestString                 = "{value: 5}"
-	AlternateTestString        = "{value: 7}"
-	AnotherAlternateTestString = "{value: 9}"
-)
-
 // nolint: unparam
 func CreateTestAddrs(numAddrs int) ([]sdk.AccAddress, []sdk.ValAddress) {
 	var addresses []sdk.AccAddress
