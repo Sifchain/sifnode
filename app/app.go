@@ -59,6 +59,10 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
+
+	"github.com/Sifchain/sifnode/x/clp"
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	clptypes "github.com/Sifchain/sifnode/x/clp/types"
 )
 
 const appName = "sifnode"
@@ -76,11 +80,12 @@ var (
 			upgradeclient.ProposalHandler,
 		),
 		params.AppModuleBasic{},
-		// clp.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
+		slashing.AppModuleBasic{},
+
+		clp.AppModuleBasic{},
 		// oracle.AppModuleBasic{},
 		// ethbridge.AppModuleBasic{},
-		slashing.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -89,8 +94,8 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
+		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
 		// ethbridge.ModuleName:           {authtypes.Burner, authtypes.Minter},
-		// clp.ModuleName:                 {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -120,6 +125,8 @@ type SifchainApp struct {
 	SlashingKeeper slashingkeeper.Keeper
 	DistrKeeper    distrkeeper.Keeper
 
+	ClpKeeper clpkeeper.Keeper
+
 	mm *module.Manager
 	sm *module.SimulationManager
 }
@@ -148,12 +155,13 @@ func NewSifApp(
 		stakingtypes.StoreKey,
 		paramstypes.StoreKey,
 		upgradetypes.StoreKey,
-		// oracle.StoreKey,
-		// ethbridge.StoreKey,
-		// clp.StoreKey,
 		govtypes.StoreKey,
 		distrtypes.StoreKey,
 		slashingtypes.StoreKey,
+
+		// oracle.StoreKey,
+		// ethbridge.StoreKey,
+		clptypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -202,10 +210,11 @@ func NewSifApp(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
+	app.ClpKeeper = clpkeeper.NewKeeper(appCodec, keys[clptypes.StoreKey], app.BankKeeper, app.AccountKeeper, app.GetSubspace(clptypes.ModuleName))
+
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
 	// will be skipped even if we have a update proposal for it
-
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, DefaultNodeHome)
 
@@ -239,6 +248,7 @@ func NewSifApp(
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		params.NewAppModule(app.ParamsKeeper),
+		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
 	)
 
 	app.sm.RegisterStoreDecoders()
@@ -270,6 +280,8 @@ func NewSifApp(
 		slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		govtypes.ModuleName,
+
+		clptypes.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
@@ -424,4 +436,12 @@ func initParamsKeeper(appCodec codec.BinaryMarshaler, legacyAmino *codec.LegacyA
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
 
 	return paramsKeeper
+}
+
+// AppCodec returns SimApp's app codec.
+//
+// NOTE: This is solely to be used for testing purposes as it may be desirable
+// for modules to register their own custom testing types.
+func (app *SifchainApp) AppCodec() codec.Marshaler {
+	return app.appCodec
 }

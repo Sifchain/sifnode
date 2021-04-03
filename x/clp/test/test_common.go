@@ -55,7 +55,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 		// initialize global pseudo random generator
 		externalToken := tokens[rand.Intn(len(tokens))]
 		externalAsset := types.NewAsset(trimFirstRune(externalToken))
-		pool, err := types.NewPool(externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
+		pool, err := types.NewPool(&externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
 		if err != nil {
 			fmt.Println("Error Generating new pool :", err)
 		}
@@ -72,7 +72,7 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 		externalToken := tokens[rand.Intn(len(tokens))]
 		asset := types.NewAsset(trimFirstRune(externalToken))
 		lpAddess, _ := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
-		lp := types.NewLiquidityProvider(asset, sdk.NewUint(1), lpAddess)
+		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(1), lpAddess)
 		lpList = append(lpList, lp)
 	}
 	return lpList

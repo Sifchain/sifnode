@@ -20,12 +20,12 @@ type Keeper struct {
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, supplyKeeper types.AuthKeeper, paramstore paramtypes.Subspace) Keeper {
+func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, paramstore paramtypes.Subspace) Keeper {
 	keeper := Keeper{
 		storeKey:   key,
 		cdc:        cdc,
 		bankKeeper: bankkeeper,
-		authKeeper: supplyKeeper,
+		authKeeper: accountKeeper,
 		paramstore: paramstore.WithKeyTable(types.ParamKeyTable()),
 	}
 	return keeper
@@ -57,6 +57,6 @@ func (k Keeper) SendCoins(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddres
 	return k.bankKeeper.SendCoins(ctx, from, to, coins)
 }
 
-func (k Keeper) HasCoins(ctx sdk.Context, user sdk.AccAddress, coins sdk.Coins) bool {
-	return k.bankKeeper.HasCoins(ctx, user, coins)
+func (k Keeper) HasBalance(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) bool {
+	return k.bankKeeper.HasBalance(ctx, addr, coin)
 }

@@ -7,31 +7,31 @@ import "sifnode/clp/v1/types.proto";
 option go_package = "github.com/sifchain/sifnode/x/clp/types";
 
 service Query {
-  rpc QueryGetPool(GetPoolReq) returns (GetPoolRes);
-  rpc QueryGetPools(GetPoolsReq) returns (GetPoolsRes);
+  rpc QueryGetPool(PoolReq) returns (PoolRes);
+  rpc QueryGetPools(PoolsReq) returns (PoolsRes);
   rpc LiquidityProvider(LiquidityProviderReq) returns (LiquidityProviderRes);
-  rpc GetAssetList(GetAssetListReq) returns (GetAssetListRes);
-  rpc GetLiquidityProviderList(GetLiquidityProviderListReq) returns (GetLiquidityProviderListRes);
+  rpc GetAssetList(AssetListReq) returns (AssetListRes);
+  rpc GetLiquidityProviderList(LiquidityProviderListReq) returns (LiquidityProviderListRes);
 }
 
-message GetPoolReq {
+message PoolReq {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 
   string symbol = 1;
 }
 
-message GetPoolRes {
+message PoolRes {
   sifnode.clp.v1.Pool pool               = 1;
   string              clp_module_address = 2;
   int64               height             = 3;
 }
 
-message GetPoolsReq {
+message PoolsReq {
 }
 
-message GetPoolsRes {
-  repeated sifnode.clp.v1.Pool pool               = 1;
+message PoolsRes {
+  repeated sifnode.clp.v1.Pool pools              = 1;
   string                       clp_module_address = 2;
   int64                        height             = 3;
 }
@@ -50,20 +50,23 @@ message LiquidityProviderRes {
   int64                            height                 = 4;
 }
 
-message GetAssetListReq {
+message AssetListReq {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 
   string lp_address = 1;
 }
 
-message GetAssetListRes {}
+message AssetListRes {
+  repeated sifnode.clp.v1.Asset assets = 1;
+  int64                         height = 2;
+}
 
-message GetLiquidityProviderListReq {
+message LiquidityProviderListReq {
   option (gogoproto.equal)           = false;
   option (gogoproto.goproto_getters) = false;
 
   string Symbol = 1;
 }
 
-message GetLiquidityProviderListRes {}
+message LiquidityProviderListRes {}

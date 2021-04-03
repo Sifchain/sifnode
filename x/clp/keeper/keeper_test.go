@@ -107,11 +107,11 @@ func TestKeeper_BankKeeper(t *testing.T) {
 	sendingBalance := sdk.NewUint(1000)
 	nativeCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(initialBalance))
 	sendingCoin := sdk.NewCoin(types.NativeSymbol, sdk.Int(sendingBalance))
-	_, err := keeper.GetBankKeeper().AddCoins(ctx, user1, sdk.Coins{nativeCoin})
+	err := keeper.GetBankKeeper().AddCoins(ctx, user1, sdk.Coins{nativeCoin})
 	assert.NoError(t, err)
-	assert.True(t, keeper.HasCoins(ctx, user1, sdk.Coins{nativeCoin}))
+	assert.True(t, keeper.HasBalance(ctx, user1, nativeCoin))
 	assert.NoError(t, keeper.SendCoins(ctx, user1, user2, sdk.Coins{sendingCoin}))
-	assert.True(t, keeper.HasCoins(ctx, user2, sdk.Coins{sendingCoin}))
+	assert.True(t, keeper.HasBalance(ctx, user2, sendingCoin))
 }
 
 func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {

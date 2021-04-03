@@ -60,24 +60,12 @@ func NewPoolsResponse(pools []*Pool, height int64, address string) PoolsResponse
 	return PoolsResponse{Pools: pools, Height: height, ClpModuleAddress: address}
 }
 
-// type LiquidityProviderResponse struct {
-// 	LiquidityProvider
-// 	NativeAssetBalance   string `json:"native_asset_balance"`
-// 	ExternalAssetBalance string `json:"external_asset_balance"`
-// 	Height               int64  `json:"height"`
-// }
-
-func NewLiquidityProviderResponse(liquidityProvider LiquidityProvider, height int64, nativeBalance string, externalBalance string) LiquidityProviderResponse {
-	return LiquidityProviderResponse{LiquidityProvider: &liquidityProvider, Height: height, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
+func NewLiquidityProviderResponse(liquidityProvider LiquidityProvider, height int64, nativeBalance string, externalBalance string) LiquidityProviderRes {
+	return LiquidityProviderRes{LiquidityProvider: &liquidityProvider, Height: height, NativeAssetBalance: nativeBalance, ExternalAssetBalance: externalBalance}
 }
 
-type AssetListResponse struct {
-	Assets
-	Height int64 `json:"height"`
-}
-
-func NewAssetListResponse(assets Assets, height int64) AssetListResponse {
-	return AssetListResponse{Assets: assets, Height: height}
+func NewAssetListResponse(assets []*Asset, height int64) AssetListRes {
+	return AssetListRes{Assets: assets, Height: height}
 }
 
 type LpListResponse struct {

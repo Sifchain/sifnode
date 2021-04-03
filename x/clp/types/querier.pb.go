@@ -28,22 +28,22 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type GetPoolReq struct {
+type PoolReq struct {
 	Symbol string `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
 }
 
-func (m *GetPoolReq) Reset()         { *m = GetPoolReq{} }
-func (m *GetPoolReq) String() string { return proto.CompactTextString(m) }
-func (*GetPoolReq) ProtoMessage()    {}
-func (*GetPoolReq) Descriptor() ([]byte, []int) {
+func (m *PoolReq) Reset()         { *m = PoolReq{} }
+func (m *PoolReq) String() string { return proto.CompactTextString(m) }
+func (*PoolReq) ProtoMessage()    {}
+func (*PoolReq) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5f4edede314ca3fd, []int{0}
 }
-func (m *GetPoolReq) XXX_Unmarshal(b []byte) error {
+func (m *PoolReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *GetPoolReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *PoolReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_GetPoolReq.Marshal(b, m, deterministic)
+		return xxx_messageInfo_PoolReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -53,36 +53,36 @@ func (m *GetPoolReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-func (m *GetPoolReq) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetPoolReq.Merge(m, src)
+func (m *PoolReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PoolReq.Merge(m, src)
 }
-func (m *GetPoolReq) XXX_Size() int {
+func (m *PoolReq) XXX_Size() int {
 	return m.Size()
 }
-func (m *GetPoolReq) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetPoolReq.DiscardUnknown(m)
+func (m *PoolReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_PoolReq.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GetPoolReq proto.InternalMessageInfo
+var xxx_messageInfo_PoolReq proto.InternalMessageInfo
 
-type GetPoolRes struct {
+type PoolRes struct {
 	Pool             *Pool  `protobuf:"bytes,1,opt,name=pool,proto3" json:"pool,omitempty"`
 	ClpModuleAddress string `protobuf:"bytes,2,opt,name=clp_module_address,json=clpModuleAddress,proto3" json:"clp_module_address,omitempty"`
 	Height           int64  `protobuf:"varint,3,opt,name=height,proto3" json:"height,omitempty"`
 }
 
-func (m *GetPoolRes) Reset()         { *m = GetPoolRes{} }
-func (m *GetPoolRes) String() string { return proto.CompactTextString(m) }
-func (*GetPoolRes) ProtoMessage()    {}
-func (*GetPoolRes) Descriptor() ([]byte, []int) {
+func (m *PoolRes) Reset()         { *m = PoolRes{} }
+func (m *PoolRes) String() string { return proto.CompactTextString(m) }
+func (*PoolRes) ProtoMessage()    {}
+func (*PoolRes) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5f4edede314ca3fd, []int{1}
 }
-func (m *GetPoolRes) XXX_Unmarshal(b []byte) error {
+func (m *PoolRes) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *GetPoolRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *PoolRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_GetPoolRes.Marshal(b, m, deterministic)
+		return xxx_messageInfo_PoolRes.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -92,54 +92,54 @@ func (m *GetPoolRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-func (m *GetPoolRes) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetPoolRes.Merge(m, src)
+func (m *PoolRes) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PoolRes.Merge(m, src)
 }
-func (m *GetPoolRes) XXX_Size() int {
+func (m *PoolRes) XXX_Size() int {
 	return m.Size()
 }
-func (m *GetPoolRes) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetPoolRes.DiscardUnknown(m)
+func (m *PoolRes) XXX_DiscardUnknown() {
+	xxx_messageInfo_PoolRes.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GetPoolRes proto.InternalMessageInfo
+var xxx_messageInfo_PoolRes proto.InternalMessageInfo
 
-func (m *GetPoolRes) GetPool() *Pool {
+func (m *PoolRes) GetPool() *Pool {
 	if m != nil {
 		return m.Pool
 	}
 	return nil
 }
 
-func (m *GetPoolRes) GetClpModuleAddress() string {
+func (m *PoolRes) GetClpModuleAddress() string {
 	if m != nil {
 		return m.ClpModuleAddress
 	}
 	return ""
 }
 
-func (m *GetPoolRes) GetHeight() int64 {
+func (m *PoolRes) GetHeight() int64 {
 	if m != nil {
 		return m.Height
 	}
 	return 0
 }
 
-type GetPoolsReq struct {
+type PoolsReq struct {
 }
 
-func (m *GetPoolsReq) Reset()         { *m = GetPoolsReq{} }
-func (m *GetPoolsReq) String() string { return proto.CompactTextString(m) }
-func (*GetPoolsReq) ProtoMessage()    {}
-func (*GetPoolsReq) Descriptor() ([]byte, []int) {
+func (m *PoolsReq) Reset()         { *m = PoolsReq{} }
+func (m *PoolsReq) String() string { return proto.CompactTextString(m) }
+func (*PoolsReq) ProtoMessage()    {}
+func (*PoolsReq) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5f4edede314ca3fd, []int{2}
 }
-func (m *GetPoolsReq) XXX_Unmarshal(b []byte) error {
+func (m *PoolsReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *GetPoolsReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *PoolsReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_GetPoolsReq.Marshal(b, m, deterministic)
+		return xxx_messageInfo_PoolsReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -149,36 +149,36 @@ func (m *GetPoolsReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) 
 		return b[:n], nil
 	}
 }
-func (m *GetPoolsReq) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetPoolsReq.Merge(m, src)
+func (m *PoolsReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PoolsReq.Merge(m, src)
 }
-func (m *GetPoolsReq) XXX_Size() int {
+func (m *PoolsReq) XXX_Size() int {
 	return m.Size()
 }
-func (m *GetPoolsReq) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetPoolsReq.DiscardUnknown(m)
+func (m *PoolsReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_PoolsReq.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GetPoolsReq proto.InternalMessageInfo
+var xxx_messageInfo_PoolsReq proto.InternalMessageInfo
 
-type GetPoolsRes struct {
-	Pool             []*Pool `protobuf:"bytes,1,rep,name=pool,proto3" json:"pool,omitempty"`
+type PoolsRes struct {
+	Pools            []*Pool `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools,omitempty"`
 	ClpModuleAddress string  `protobuf:"bytes,2,opt,name=clp_module_address,json=clpModuleAddress,proto3" json:"clp_module_address,omitempty"`
 	Height           int64   `protobuf:"varint,3,opt,name=height,proto3" json:"height,omitempty"`
 }
 
-func (m *GetPoolsRes) Reset()         { *m = GetPoolsRes{} }
-func (m *GetPoolsRes) String() string { return proto.CompactTextString(m) }
-func (*GetPoolsRes) ProtoMessage()    {}
-func (*GetPoolsRes) Descriptor() ([]byte, []int) {
+func (m *PoolsRes) Reset()         { *m = PoolsRes{} }
+func (m *PoolsRes) String() string { return proto.CompactTextString(m) }
+func (*PoolsRes) ProtoMessage()    {}
+func (*PoolsRes) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5f4edede314ca3fd, []int{3}
 }
-func (m *GetPoolsRes) XXX_Unmarshal(b []byte) error {
+func (m *PoolsRes) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *GetPoolsRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *PoolsRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_GetPoolsRes.Marshal(b, m, deterministic)
+		return xxx_messageInfo_PoolsRes.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -188,33 +188,33 @@ func (m *GetPoolsRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) 
 		return b[:n], nil
 	}
 }
-func (m *GetPoolsRes) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetPoolsRes.Merge(m, src)
+func (m *PoolsRes) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PoolsRes.Merge(m, src)
 }
-func (m *GetPoolsRes) XXX_Size() int {
+func (m *PoolsRes) XXX_Size() int {
 	return m.Size()
 }
-func (m *GetPoolsRes) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetPoolsRes.DiscardUnknown(m)
+func (m *PoolsRes) XXX_DiscardUnknown() {
+	xxx_messageInfo_PoolsRes.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GetPoolsRes proto.InternalMessageInfo
+var xxx_messageInfo_PoolsRes proto.InternalMessageInfo
 
-func (m *GetPoolsRes) GetPool() []*Pool {
+func (m *PoolsRes) GetPools() []*Pool {
 	if m != nil {
-		return m.Pool
+		return m.Pools
 	}
 	return nil
 }
 
-func (m *GetPoolsRes) GetClpModuleAddress() string {
+func (m *PoolsRes) GetClpModuleAddress() string {
 	if m != nil {
 		return m.ClpModuleAddress
 	}
 	return ""
 }
 
-func (m *GetPoolsRes) GetHeight() int64 {
+func (m *PoolsRes) GetHeight() int64 {
 	if m != nil {
 		return m.Height
 	}
@@ -327,22 +327,22 @@ func (m *LiquidityProviderRes) GetHeight() int64 {
 	return 0
 }
 
-type GetAssetListReq struct {
+type AssetListReq struct {
 	LpAddress string `protobuf:"bytes,1,opt,name=lp_address,json=lpAddress,proto3" json:"lp_address,omitempty"`
 }
 
-func (m *GetAssetListReq) Reset()         { *m = GetAssetListReq{} }
-func (m *GetAssetListReq) String() string { return proto.CompactTextString(m) }
-func (*GetAssetListReq) ProtoMessage()    {}
-func (*GetAssetListReq) Descriptor() ([]byte, []int) {
+func (m *AssetListReq) Reset()         { *m = AssetListReq{} }
+func (m *AssetListReq) String() string { return proto.CompactTextString(m) }
+func (*AssetListReq) ProtoMessage()    {}
+func (*AssetListReq) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5f4edede314ca3fd, []int{6}
 }
-func (m *GetAssetListReq) XXX_Unmarshal(b []byte) error {
+func (m *AssetListReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *GetAssetListReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *AssetListReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_GetAssetListReq.Marshal(b, m, deterministic)
+		return xxx_messageInfo_AssetListReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -352,33 +352,35 @@ func (m *GetAssetListReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return b[:n], nil
 	}
 }
-func (m *GetAssetListReq) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetAssetListReq.Merge(m, src)
+func (m *AssetListReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AssetListReq.Merge(m, src)
 }
-func (m *GetAssetListReq) XXX_Size() int {
+func (m *AssetListReq) XXX_Size() int {
 	return m.Size()
 }
-func (m *GetAssetListReq) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetAssetListReq.DiscardUnknown(m)
+func (m *AssetListReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_AssetListReq.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GetAssetListReq proto.InternalMessageInfo
+var xxx_messageInfo_AssetListReq proto.InternalMessageInfo
 
-type GetAssetListRes struct {
+type AssetListRes struct {
+	Assets []*Asset `protobuf:"bytes,1,rep,name=assets,proto3" json:"assets,omitempty"`
+	Height int64    `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
 }
 
-func (m *GetAssetListRes) Reset()         { *m = GetAssetListRes{} }
-func (m *GetAssetListRes) String() string { return proto.CompactTextString(m) }
-func (*GetAssetListRes) ProtoMessage()    {}
-func (*GetAssetListRes) Descriptor() ([]byte, []int) {
+func (m *AssetListRes) Reset()         { *m = AssetListRes{} }
+func (m *AssetListRes) String() string { return proto.CompactTextString(m) }
+func (*AssetListRes) ProtoMessage()    {}
+func (*AssetListRes) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5f4edede314ca3fd, []int{7}
 }
-func (m *GetAssetListRes) XXX_Unmarshal(b []byte) error {
+func (m *AssetListRes) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *GetAssetListRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *AssetListRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_GetAssetListRes.Marshal(b, m, deterministic)
+		return xxx_messageInfo_AssetListRes.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -388,34 +390,48 @@ func (m *GetAssetListRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, err
 		return b[:n], nil
 	}
 }
-func (m *GetAssetListRes) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetAssetListRes.Merge(m, src)
+func (m *AssetListRes) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AssetListRes.Merge(m, src)
 }
-func (m *GetAssetListRes) XXX_Size() int {
+func (m *AssetListRes) XXX_Size() int {
 	return m.Size()
 }
-func (m *GetAssetListRes) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetAssetListRes.DiscardUnknown(m)
+func (m *AssetListRes) XXX_DiscardUnknown() {
+	xxx_messageInfo_AssetListRes.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GetAssetListRes proto.InternalMessageInfo
+var xxx_messageInfo_AssetListRes proto.InternalMessageInfo
 
-type GetLiquidityProviderListReq struct {
+func (m *AssetListRes) GetAssets() []*Asset {
+	if m != nil {
+		return m.Assets
+	}
+	return nil
+}
+
+func (m *AssetListRes) GetHeight() int64 {
+	if m != nil {
+		return m.Height
+	}
+	return 0
+}
+
+type LiquidityProviderListReq struct {
 	Symbol string `protobuf:"bytes,1,opt,name=Symbol,proto3" json:"Symbol,omitempty"`
 }
 
-func (m *GetLiquidityProviderListReq) Reset()         { *m = GetLiquidityProviderListReq{} }
-func (m *GetLiquidityProviderListReq) String() string { return proto.CompactTextString(m) }
-func (*GetLiquidityProviderListReq) ProtoMessage()    {}
-func (*GetLiquidityProviderListReq) Descriptor() ([]byte, []int) {
+func (m *LiquidityProviderListReq) Reset()         { *m = LiquidityProviderListReq{} }
+func (m *LiquidityProviderListReq) String() string { return proto.CompactTextString(m) }
+func (*LiquidityProviderListReq) ProtoMessage()    {}
+func (*LiquidityProviderListReq) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5f4edede314ca3fd, []int{8}
 }
-func (m *GetLiquidityProviderListReq) XXX_Unmarshal(b []byte) error {
+func (m *LiquidityProviderListReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *GetLiquidityProviderListReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *LiquidityProviderListReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_GetLiquidityProviderListReq.Marshal(b, m, deterministic)
+		return xxx_messageInfo_LiquidityProviderListReq.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -425,33 +441,33 @@ func (m *GetLiquidityProviderListReq) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
-func (m *GetLiquidityProviderListReq) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetLiquidityProviderListReq.Merge(m, src)
+func (m *LiquidityProviderListReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LiquidityProviderListReq.Merge(m, src)
 }
-func (m *GetLiquidityProviderListReq) XXX_Size() int {
+func (m *LiquidityProviderListReq) XXX_Size() int {
 	return m.Size()
 }
-func (m *GetLiquidityProviderListReq) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetLiquidityProviderListReq.DiscardUnknown(m)
+func (m *LiquidityProviderListReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_LiquidityProviderListReq.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GetLiquidityProviderListReq proto.InternalMessageInfo
+var xxx_messageInfo_LiquidityProviderListReq proto.InternalMessageInfo
 
-type GetLiquidityProviderListRes struct {
+type LiquidityProviderListRes struct {
 }
 
-func (m *GetLiquidityProviderListRes) Reset()         { *m = GetLiquidityProviderListRes{} }
-func (m *GetLiquidityProviderListRes) String() string { return proto.CompactTextString(m) }
-func (*GetLiquidityProviderListRes) ProtoMessage()    {}
-func (*GetLiquidityProviderListRes) Descriptor() ([]byte, []int) {
+func (m *LiquidityProviderListRes) Reset()         { *m = LiquidityProviderListRes{} }
+func (m *LiquidityProviderListRes) String() string { return proto.CompactTextString(m) }
+func (*LiquidityProviderListRes) ProtoMessage()    {}
+func (*LiquidityProviderListRes) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5f4edede314ca3fd, []int{9}
 }
-func (m *GetLiquidityProviderListRes) XXX_Unmarshal(b []byte) error {
+func (m *LiquidityProviderListRes) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *GetLiquidityProviderListRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *LiquidityProviderListRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_GetLiquidityProviderListRes.Marshal(b, m, deterministic)
+		return xxx_messageInfo_LiquidityProviderListRes.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -461,70 +477,72 @@ func (m *GetLiquidityProviderListRes) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
-func (m *GetLiquidityProviderListRes) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetLiquidityProviderListRes.Merge(m, src)
+func (m *LiquidityProviderListRes) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LiquidityProviderListRes.Merge(m, src)
 }
-func (m *GetLiquidityProviderListRes) XXX_Size() int {
+func (m *LiquidityProviderListRes) XXX_Size() int {
 	return m.Size()
 }
-func (m *GetLiquidityProviderListRes) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetLiquidityProviderListRes.DiscardUnknown(m)
+func (m *LiquidityProviderListRes) XXX_DiscardUnknown() {
+	xxx_messageInfo_LiquidityProviderListRes.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GetLiquidityProviderListRes proto.InternalMessageInfo
+var xxx_messageInfo_LiquidityProviderListRes proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*GetPoolReq)(nil), "sifnode.clp.v1.GetPoolReq")
-	proto.RegisterType((*GetPoolRes)(nil), "sifnode.clp.v1.GetPoolRes")
-	proto.RegisterType((*GetPoolsReq)(nil), "sifnode.clp.v1.GetPoolsReq")
-	proto.RegisterType((*GetPoolsRes)(nil), "sifnode.clp.v1.GetPoolsRes")
+	proto.RegisterType((*PoolReq)(nil), "sifnode.clp.v1.PoolReq")
+	proto.RegisterType((*PoolRes)(nil), "sifnode.clp.v1.PoolRes")
+	proto.RegisterType((*PoolsReq)(nil), "sifnode.clp.v1.PoolsReq")
+	proto.RegisterType((*PoolsRes)(nil), "sifnode.clp.v1.PoolsRes")
 	proto.RegisterType((*LiquidityProviderReq)(nil), "sifnode.clp.v1.LiquidityProviderReq")
 	proto.RegisterType((*LiquidityProviderRes)(nil), "sifnode.clp.v1.LiquidityProviderRes")
-	proto.RegisterType((*GetAssetListReq)(nil), "sifnode.clp.v1.GetAssetListReq")
-	proto.RegisterType((*GetAssetListRes)(nil), "sifnode.clp.v1.GetAssetListRes")
-	proto.RegisterType((*GetLiquidityProviderListReq)(nil), "sifnode.clp.v1.GetLiquidityProviderListReq")
-	proto.RegisterType((*GetLiquidityProviderListRes)(nil), "sifnode.clp.v1.GetLiquidityProviderListRes")
+	proto.RegisterType((*AssetListReq)(nil), "sifnode.clp.v1.AssetListReq")
+	proto.RegisterType((*AssetListRes)(nil), "sifnode.clp.v1.AssetListRes")
+	proto.RegisterType((*LiquidityProviderListReq)(nil), "sifnode.clp.v1.LiquidityProviderListReq")
+	proto.RegisterType((*LiquidityProviderListRes)(nil), "sifnode.clp.v1.LiquidityProviderListRes")
 }
 
 func init() { proto.RegisterFile("sifnode/clp/v1/querier.proto", fileDescriptor_5f4edede314ca3fd) }
 
 var fileDescriptor_5f4edede314ca3fd = []byte{
-	// 549 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x54, 0xc1, 0x6e, 0xd3, 0x40,
-	0x10, 0x8d, 0x49, 0xa9, 0xe8, 0xb4, 0x05, 0x32, 0x8a, 0xaa, 0xc8, 0xa5, 0x4e, 0x89, 0x90, 0x88,
-	0x04, 0xb2, 0x69, 0xe1, 0xd4, 0x0b, 0x4a, 0x0f, 0x44, 0x48, 0x45, 0x0a, 0xe1, 0x80, 0xc4, 0xc5,
-	0x72, 0xec, 0x6d, 0xb2, 0xd2, 0x26, 0xeb, 0x78, 0x37, 0x51, 0x23, 0xc1, 0x9d, 0x23, 0x9f, 0xd0,
-	0x7f, 0xe1, 0xc2, 0xb1, 0x47, 0x8e, 0x28, 0xb9, 0xf4, 0x33, 0x90, 0xd7, 0x1b, 0xd5, 0x76, 0xe3,
-	0x16, 0x2e, 0xbd, 0x79, 0xf6, 0xbd, 0x99, 0x79, 0xfb, 0x76, 0x3c, 0xf0, 0x44, 0xd0, 0xd3, 0x11,
-	0x0f, 0x88, 0xe3, 0xb3, 0xd0, 0x99, 0x1e, 0x38, 0xe3, 0x09, 0x89, 0x28, 0x89, 0xec, 0x30, 0xe2,
-	0x92, 0xe3, 0x43, 0x8d, 0xda, 0x3e, 0x0b, 0xed, 0xe9, 0x81, 0x59, 0xed, 0xf3, 0x3e, 0x57, 0x90,
-	0x13, 0x7f, 0x25, 0x2c, 0xd3, 0xcc, 0xd5, 0x90, 0xb3, 0x90, 0x88, 0x04, 0x6b, 0xd8, 0x00, 0x6d,
-	0x22, 0x3b, 0x9c, 0xb3, 0x2e, 0x19, 0xe3, 0x0e, 0xac, 0x8b, 0xd9, 0xb0, 0xc7, 0x59, 0xcd, 0xd8,
-	0x37, 0x9a, 0x1b, 0x5d, 0x1d, 0x1d, 0x3d, 0xf8, 0x7e, 0x5e, 0x2f, 0x5d, 0x9e, 0xd7, 0x4b, 0x8d,
-	0xaf, 0x29, 0xbe, 0xc0, 0x26, 0xac, 0x85, 0x5c, 0xb3, 0x37, 0x0f, 0xab, 0x76, 0x56, 0x8e, 0xad,
-	0x68, 0x8a, 0x81, 0x2f, 0x01, 0x7d, 0x16, 0xba, 0x43, 0x1e, 0x4c, 0x18, 0x71, 0xbd, 0x20, 0x88,
-	0x88, 0x10, 0xb5, 0x7b, 0xaa, 0xcb, 0x63, 0x9f, 0x85, 0x1f, 0x14, 0xd0, 0x4a, 0xce, 0x63, 0x1d,
-	0x03, 0x42, 0xfb, 0x03, 0x59, 0x2b, 0xef, 0x1b, 0xcd, 0x72, 0x57, 0x47, 0x8d, 0x6d, 0xd8, 0xd4,
-	0xdd, 0x45, 0x97, 0x8c, 0x1b, 0xdf, 0xd2, 0x61, 0x5a, 0x4d, 0xf9, 0x4e, 0xd4, 0x7c, 0x86, 0xea,
-	0x09, 0x1d, 0x4f, 0x68, 0x40, 0xe5, 0xac, 0x13, 0xf1, 0x29, 0x0d, 0x48, 0xa4, 0x5d, 0xfc, 0x94,
-	0x71, 0x31, 0x89, 0x70, 0x0f, 0x80, 0x85, 0xb9, 0x6e, 0x1b, 0x2c, 0xd4, 0x6d, 0x52, 0x26, 0x5f,
-	0x1a, 0x2b, 0x2b, 0x0b, 0xec, 0x00, 0xb2, 0xe5, 0xb9, 0x1b, 0x6a, 0x40, 0xbb, 0xff, 0x34, 0x7f,
-	0xdf, 0xeb, 0x15, 0x2a, 0x2c, 0x7f, 0x84, 0xaf, 0xa0, 0x3a, 0xf2, 0x24, 0x9d, 0x12, 0xd7, 0x13,
-	0x82, 0x48, 0xb7, 0xe7, 0x31, 0x6f, 0xe4, 0x13, 0xad, 0x0e, 0x13, 0xac, 0x15, 0x43, 0xc7, 0x09,
-	0x82, 0x6f, 0x60, 0x87, 0x9c, 0x49, 0x12, 0x8d, 0x3c, 0x96, 0xcb, 0x29, 0xab, 0x9c, 0xea, 0x12,
-	0xcd, 0x64, 0x5d, 0x79, 0xb8, 0x96, 0xf1, 0xf0, 0x08, 0x1e, 0xb5, 0x89, 0x54, 0xd4, 0x13, 0x2a,
-	0x64, 0x6c, 0x5f, 0xd6, 0x26, 0xa3, 0xd8, 0xa6, 0x4a, 0x3e, 0x57, 0x34, 0xde, 0xc2, 0x6e, 0x3b,
-	0x8e, 0x72, 0xd7, 0x5c, 0x96, 0x2e, 0x78, 0x99, 0x54, 0xcd, 0xbd, 0x9b, 0x0a, 0x88, 0xc3, 0x9f,
-	0x65, 0xb8, 0xff, 0x71, 0x42, 0xa2, 0x19, 0xbe, 0x83, 0x2d, 0xf5, 0xa1, 0x07, 0x10, 0xcd, 0xbc,
-	0xfd, 0x57, 0xbf, 0x95, 0x59, 0x8c, 0x09, 0x7c, 0x0f, 0xdb, 0xe9, 0x3a, 0x02, 0x77, 0x0b, 0xc8,
-	0xf1, 0xc4, 0x9b, 0x37, 0x80, 0x02, 0x5d, 0xa8, 0x5c, 0x13, 0x8e, 0xcf, 0x6e, 0x1f, 0x0b, 0x32,
-	0x36, 0xff, 0x85, 0x15, 0x8f, 0xdf, 0x56, 0xda, 0x70, 0xac, 0xaf, 0x50, 0x93, 0x7e, 0x4a, 0xf3,
-	0x16, 0x82, 0x40, 0x09, 0xb5, 0x22, 0xbb, 0xf1, 0xc5, 0x8a, 0xe4, 0xa2, 0x97, 0x35, 0xff, 0x83,
-	0x2c, 0x8e, 0x5b, 0xbf, 0xe6, 0x96, 0x71, 0x31, 0xb7, 0x8c, 0x3f, 0x73, 0xcb, 0xf8, 0xb1, 0xb0,
-	0x4a, 0x17, 0x0b, 0xab, 0xf4, 0x7b, 0x61, 0x95, 0xbe, 0x3c, 0xef, 0x53, 0x39, 0x98, 0xf4, 0x6c,
-	0x9f, 0x0f, 0x1d, 0x41, 0x4f, 0xfd, 0x81, 0x47, 0x47, 0xce, 0x72, 0x7d, 0x9e, 0xa9, 0x05, 0xaa,
-	0xb6, 0x67, 0x6f, 0x5d, 0xad, 0xcf, 0xd7, 0x7f, 0x03, 0x00, 0x00, 0xff, 0xff, 0x7f, 0xf4, 0xac,
-	0x81, 0xa0, 0x05, 0x00, 0x00,
+	// 580 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0xcf, 0x6e, 0xd3, 0x4e,
+	0x10, 0x8e, 0x9b, 0xb6, 0xbf, 0x76, 0x7e, 0x01, 0xd1, 0x51, 0x28, 0x96, 0x55, 0xdc, 0x10, 0x21,
+	0x11, 0xf1, 0xc7, 0xa6, 0x05, 0x09, 0x09, 0x71, 0x20, 0xe5, 0x10, 0x09, 0x15, 0x29, 0x04, 0x21,
+	0x24, 0x2e, 0x96, 0x63, 0x6f, 0x93, 0x95, 0x36, 0x5e, 0xdb, 0xeb, 0x44, 0x8d, 0xc4, 0x03, 0x70,
+	0xe4, 0x11, 0x7a, 0xe7, 0x45, 0x38, 0xf6, 0xc8, 0x11, 0x25, 0x97, 0x3e, 0x06, 0xf2, 0xda, 0x2e,
+	0xb1, 0x13, 0xd3, 0x1e, 0xb8, 0xed, 0xec, 0xf7, 0xcd, 0xcc, 0xe7, 0x6f, 0xd6, 0x03, 0x7b, 0x82,
+	0x9e, 0x78, 0xdc, 0x25, 0xa6, 0xc3, 0x7c, 0x73, 0x72, 0x60, 0x06, 0x63, 0x12, 0x52, 0x12, 0x1a,
+	0x7e, 0xc8, 0x23, 0x8e, 0x37, 0x53, 0xd4, 0x70, 0x98, 0x6f, 0x4c, 0x0e, 0xb4, 0xfa, 0x80, 0x0f,
+	0xb8, 0x84, 0xcc, 0xf8, 0x94, 0xb0, 0x34, 0xad, 0x50, 0x23, 0x9a, 0xfa, 0x44, 0x24, 0x58, 0xf3,
+	0x11, 0xfc, 0xd7, 0xe5, 0x9c, 0xf5, 0x48, 0x80, 0xbb, 0xb0, 0x29, 0xa6, 0xa3, 0x3e, 0x67, 0xaa,
+	0xd2, 0x50, 0x5a, 0xdb, 0xbd, 0x34, 0x7a, 0xb9, 0xf5, 0xf5, 0x6c, 0xbf, 0x72, 0x71, 0xb6, 0x5f,
+	0x69, 0x4e, 0x33, 0xb2, 0xc0, 0x16, 0xac, 0xfb, 0x3c, 0xa5, 0xfe, 0x7f, 0x58, 0x37, 0xf2, 0x42,
+	0x0c, 0x49, 0x93, 0x0c, 0x7c, 0x0c, 0xe8, 0x30, 0xdf, 0x1a, 0x71, 0x77, 0xcc, 0x88, 0x65, 0xbb,
+	0x6e, 0x48, 0x84, 0x50, 0xd7, 0x64, 0x8b, 0x5b, 0x0e, 0xf3, 0xdf, 0x49, 0xa0, 0x9d, 0xdc, 0xc7,
+	0x22, 0x86, 0x84, 0x0e, 0x86, 0x91, 0x5a, 0x6d, 0x28, 0xad, 0x6a, 0x2f, 0x8d, 0x9a, 0x00, 0x5b,
+	0x71, 0x4d, 0xd1, 0x23, 0x41, 0xf3, 0xcb, 0xe5, 0x59, 0xe0, 0x43, 0xd8, 0x88, 0xbb, 0x08, 0x55,
+	0x69, 0x54, 0x4b, 0x85, 0x24, 0x94, 0x7f, 0xa4, 0xe4, 0x13, 0xd4, 0x8f, 0x69, 0x30, 0xa6, 0x2e,
+	0x8d, 0xa6, 0xdd, 0x90, 0x4f, 0xa8, 0x4b, 0xc2, 0xd4, 0xbe, 0x0f, 0x39, 0xfb, 0x92, 0x08, 0xef,
+	0x02, 0x30, 0xbf, 0xd0, 0x6d, 0x9b, 0xf9, 0x69, 0x9b, 0x05, 0x77, 0x2f, 0x94, 0x95, 0x95, 0x05,
+	0x76, 0x01, 0x59, 0x76, 0x6f, 0xf9, 0x29, 0x90, 0x3a, 0x7f, 0xaf, 0xf8, 0xc1, 0xcb, 0x15, 0x76,
+	0x58, 0xf1, 0x0a, 0x9f, 0x42, 0xdd, 0xb3, 0x23, 0x3a, 0x21, 0x96, 0x2d, 0x04, 0x89, 0xac, 0xbe,
+	0xcd, 0x6c, 0xcf, 0x21, 0xa9, 0x3a, 0x4c, 0xb0, 0x76, 0x0c, 0x1d, 0x25, 0x08, 0x3e, 0x87, 0x5d,
+	0x72, 0x1a, 0x91, 0xd0, 0xb3, 0x59, 0x21, 0xa7, 0x2a, 0x73, 0xea, 0x19, 0x9a, 0xcb, 0xfa, 0xe3,
+	0xe1, 0x7a, 0xce, 0xc3, 0x17, 0x50, 0x93, 0xbc, 0x63, 0x2a, 0xa2, 0xd8, 0xbb, 0xbc, 0x47, 0x4a,
+	0xb9, 0x47, 0x1f, 0x73, 0x89, 0x02, 0x9f, 0xc0, 0xa6, 0x54, 0x93, 0xcd, 0xff, 0x76, 0xd1, 0x0e,
+	0xc9, 0xee, 0xa5, 0xa4, 0x05, 0x3d, 0x6b, 0x39, 0x3d, 0xaf, 0x40, 0x5d, 0xf2, 0x2d, 0xd3, 0x56,
+	0x32, 0xd7, 0x05, 0x51, 0x5a, 0x69, 0xb6, 0x38, 0xfc, 0x5e, 0x85, 0x8d, 0xf7, 0x63, 0x12, 0x4e,
+	0xf1, 0x35, 0xd4, 0xe4, 0xa1, 0x43, 0xa2, 0xf8, 0x51, 0xe2, 0x9d, 0x95, 0x4f, 0x95, 0x04, 0x5a,
+	0x09, 0x20, 0xf0, 0x0d, 0xdc, 0x58, 0xac, 0x20, 0x50, 0x5d, 0xc5, 0x8c, 0x7f, 0x11, 0xad, 0x0c,
+	0x11, 0x68, 0xc1, 0xce, 0x92, 0x58, 0xbc, 0x7f, 0xf5, 0x2b, 0x22, 0x81, 0x76, 0x1d, 0x96, 0xc0,
+	0xb7, 0x50, 0xeb, 0x90, 0xe8, 0x72, 0x4a, 0xb8, 0xb7, 0x72, 0x24, 0xa9, 0xbb, 0xda, 0xdf, 0x50,
+	0x81, 0x1e, 0xa8, 0x9d, 0x38, 0x5a, 0x61, 0x2e, 0xb6, 0xae, 0x54, 0x93, 0xf5, 0xb8, 0x2e, 0x53,
+	0x1c, 0xb5, 0x7f, 0xcc, 0x74, 0xe5, 0x7c, 0xa6, 0x2b, 0xbf, 0x66, 0xba, 0xf2, 0x6d, 0xae, 0x57,
+	0xce, 0xe7, 0x7a, 0xe5, 0xe7, 0x5c, 0xaf, 0x7c, 0x7e, 0x30, 0xa0, 0xd1, 0x70, 0xdc, 0x37, 0x1c,
+	0x3e, 0x32, 0x05, 0x3d, 0x71, 0x86, 0x36, 0xf5, 0xcc, 0x6c, 0xaf, 0x9e, 0xca, 0xcd, 0x2a, 0xd7,
+	0x6a, 0x7f, 0x53, 0xee, 0xd5, 0x67, 0xbf, 0x03, 0x00, 0x00, 0xff, 0xff, 0x4f, 0x6e, 0x69, 0xf7,
+	0xb9, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -539,11 +557,11 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	QueryGetPool(ctx context.Context, in *GetPoolReq, opts ...grpc.CallOption) (*GetPoolRes, error)
-	QueryGetPools(ctx context.Context, in *GetPoolsReq, opts ...grpc.CallOption) (*GetPoolsRes, error)
+	QueryGetPool(ctx context.Context, in *PoolReq, opts ...grpc.CallOption) (*PoolRes, error)
+	QueryGetPools(ctx context.Context, in *PoolsReq, opts ...grpc.CallOption) (*PoolsRes, error)
 	LiquidityProvider(ctx context.Context, in *LiquidityProviderReq, opts ...grpc.CallOption) (*LiquidityProviderRes, error)
-	GetAssetList(ctx context.Context, in *GetAssetListReq, opts ...grpc.CallOption) (*GetAssetListRes, error)
-	GetLiquidityProviderList(ctx context.Context, in *GetLiquidityProviderListReq, opts ...grpc.CallOption) (*GetLiquidityProviderListRes, error)
+	GetAssetList(ctx context.Context, in *AssetListReq, opts ...grpc.CallOption) (*AssetListRes, error)
+	GetLiquidityProviderList(ctx context.Context, in *LiquidityProviderListReq, opts ...grpc.CallOption) (*LiquidityProviderListRes, error)
 }
 
 type queryClient struct {
@@ -554,8 +572,8 @@ func NewQueryClient(cc grpc1.ClientConn) QueryClient {
 	return &queryClient{cc}
 }
 
-func (c *queryClient) QueryGetPool(ctx context.Context, in *GetPoolReq, opts ...grpc.CallOption) (*GetPoolRes, error) {
-	out := new(GetPoolRes)
+func (c *queryClient) QueryGetPool(ctx context.Context, in *PoolReq, opts ...grpc.CallOption) (*PoolRes, error) {
+	out := new(PoolRes)
 	err := c.cc.Invoke(ctx, "/sifnode.clp.v1.Query/QueryGetPool", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -563,8 +581,8 @@ func (c *queryClient) QueryGetPool(ctx context.Context, in *GetPoolReq, opts ...
 	return out, nil
 }
 
-func (c *queryClient) QueryGetPools(ctx context.Context, in *GetPoolsReq, opts ...grpc.CallOption) (*GetPoolsRes, error) {
-	out := new(GetPoolsRes)
+func (c *queryClient) QueryGetPools(ctx context.Context, in *PoolsReq, opts ...grpc.CallOption) (*PoolsRes, error) {
+	out := new(PoolsRes)
 	err := c.cc.Invoke(ctx, "/sifnode.clp.v1.Query/QueryGetPools", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -581,8 +599,8 @@ func (c *queryClient) LiquidityProvider(ctx context.Context, in *LiquidityProvid
 	return out, nil
 }
 
-func (c *queryClient) GetAssetList(ctx context.Context, in *GetAssetListReq, opts ...grpc.CallOption) (*GetAssetListRes, error) {
-	out := new(GetAssetListRes)
+func (c *queryClient) GetAssetList(ctx context.Context, in *AssetListReq, opts ...grpc.CallOption) (*AssetListRes, error) {
+	out := new(AssetListRes)
 	err := c.cc.Invoke(ctx, "/sifnode.clp.v1.Query/GetAssetList", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -590,8 +608,8 @@ func (c *queryClient) GetAssetList(ctx context.Context, in *GetAssetListReq, opt
 	return out, nil
 }
 
-func (c *queryClient) GetLiquidityProviderList(ctx context.Context, in *GetLiquidityProviderListReq, opts ...grpc.CallOption) (*GetLiquidityProviderListRes, error) {
-	out := new(GetLiquidityProviderListRes)
+func (c *queryClient) GetLiquidityProviderList(ctx context.Context, in *LiquidityProviderListReq, opts ...grpc.CallOption) (*LiquidityProviderListRes, error) {
+	out := new(LiquidityProviderListRes)
 	err := c.cc.Invoke(ctx, "/sifnode.clp.v1.Query/GetLiquidityProviderList", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -601,30 +619,30 @@ func (c *queryClient) GetLiquidityProviderList(ctx context.Context, in *GetLiqui
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	QueryGetPool(context.Context, *GetPoolReq) (*GetPoolRes, error)
-	QueryGetPools(context.Context, *GetPoolsReq) (*GetPoolsRes, error)
+	QueryGetPool(context.Context, *PoolReq) (*PoolRes, error)
+	QueryGetPools(context.Context, *PoolsReq) (*PoolsRes, error)
 	LiquidityProvider(context.Context, *LiquidityProviderReq) (*LiquidityProviderRes, error)
-	GetAssetList(context.Context, *GetAssetListReq) (*GetAssetListRes, error)
-	GetLiquidityProviderList(context.Context, *GetLiquidityProviderListReq) (*GetLiquidityProviderListRes, error)
+	GetAssetList(context.Context, *AssetListReq) (*AssetListRes, error)
+	GetLiquidityProviderList(context.Context, *LiquidityProviderListReq) (*LiquidityProviderListRes, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
 type UnimplementedQueryServer struct {
 }
 
-func (*UnimplementedQueryServer) QueryGetPool(ctx context.Context, req *GetPoolReq) (*GetPoolRes, error) {
+func (*UnimplementedQueryServer) QueryGetPool(ctx context.Context, req *PoolReq) (*PoolRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryGetPool not implemented")
 }
-func (*UnimplementedQueryServer) QueryGetPools(ctx context.Context, req *GetPoolsReq) (*GetPoolsRes, error) {
+func (*UnimplementedQueryServer) QueryGetPools(ctx context.Context, req *PoolsReq) (*PoolsRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryGetPools not implemented")
 }
 func (*UnimplementedQueryServer) LiquidityProvider(ctx context.Context, req *LiquidityProviderReq) (*LiquidityProviderRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LiquidityProvider not implemented")
 }
-func (*UnimplementedQueryServer) GetAssetList(ctx context.Context, req *GetAssetListReq) (*GetAssetListRes, error) {
+func (*UnimplementedQueryServer) GetAssetList(ctx context.Context, req *AssetListReq) (*AssetListRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAssetList not implemented")
 }
-func (*UnimplementedQueryServer) GetLiquidityProviderList(ctx context.Context, req *GetLiquidityProviderListReq) (*GetLiquidityProviderListRes, error) {
+func (*UnimplementedQueryServer) GetLiquidityProviderList(ctx context.Context, req *LiquidityProviderListReq) (*LiquidityProviderListRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLiquidityProviderList not implemented")
 }
 
@@ -633,7 +651,7 @@ func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
 }
 
 func _Query_QueryGetPool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPoolReq)
+	in := new(PoolReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -645,13 +663,13 @@ func _Query_QueryGetPool_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: "/sifnode.clp.v1.Query/QueryGetPool",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).QueryGetPool(ctx, req.(*GetPoolReq))
+		return srv.(QueryServer).QueryGetPool(ctx, req.(*PoolReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Query_QueryGetPools_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPoolsReq)
+	in := new(PoolsReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -663,7 +681,7 @@ func _Query_QueryGetPools_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: "/sifnode.clp.v1.Query/QueryGetPools",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).QueryGetPools(ctx, req.(*GetPoolsReq))
+		return srv.(QueryServer).QueryGetPools(ctx, req.(*PoolsReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -687,7 +705,7 @@ func _Query_LiquidityProvider_Handler(srv interface{}, ctx context.Context, dec 
 }
 
 func _Query_GetAssetList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAssetListReq)
+	in := new(AssetListReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -699,13 +717,13 @@ func _Query_GetAssetList_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: "/sifnode.clp.v1.Query/GetAssetList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetAssetList(ctx, req.(*GetAssetListReq))
+		return srv.(QueryServer).GetAssetList(ctx, req.(*AssetListReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Query_GetLiquidityProviderList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetLiquidityProviderListReq)
+	in := new(LiquidityProviderListReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -717,7 +735,7 @@ func _Query_GetLiquidityProviderList_Handler(srv interface{}, ctx context.Contex
 		FullMethod: "/sifnode.clp.v1.Query/GetLiquidityProviderList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetLiquidityProviderList(ctx, req.(*GetLiquidityProviderListReq))
+		return srv.(QueryServer).GetLiquidityProviderList(ctx, req.(*LiquidityProviderListReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -751,7 +769,7 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 	Metadata: "sifnode/clp/v1/querier.proto",
 }
 
-func (m *GetPoolReq) Marshal() (dAtA []byte, err error) {
+func (m *PoolReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -761,12 +779,12 @@ func (m *GetPoolReq) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GetPoolReq) MarshalTo(dAtA []byte) (int, error) {
+func (m *PoolReq) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *GetPoolReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *PoolReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -781,7 +799,7 @@ func (m *GetPoolReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *GetPoolRes) Marshal() (dAtA []byte, err error) {
+func (m *PoolRes) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -791,12 +809,12 @@ func (m *GetPoolRes) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GetPoolRes) MarshalTo(dAtA []byte) (int, error) {
+func (m *PoolRes) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *GetPoolRes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *PoolRes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -828,7 +846,7 @@ func (m *GetPoolRes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *GetPoolsReq) Marshal() (dAtA []byte, err error) {
+func (m *PoolsReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -838,12 +856,12 @@ func (m *GetPoolsReq) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GetPoolsReq) MarshalTo(dAtA []byte) (int, error) {
+func (m *PoolsReq) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *GetPoolsReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *PoolsReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -851,7 +869,7 @@ func (m *GetPoolsReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *GetPoolsRes) Marshal() (dAtA []byte, err error) {
+func (m *PoolsRes) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -861,12 +879,12 @@ func (m *GetPoolsRes) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GetPoolsRes) MarshalTo(dAtA []byte) (int, error) {
+func (m *PoolsRes) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *GetPoolsRes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *PoolsRes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -883,10 +901,10 @@ func (m *GetPoolsRes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.Pool) > 0 {
-		for iNdEx := len(m.Pool) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.Pools) > 0 {
+		for iNdEx := len(m.Pools) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.Pool[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.Pools[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -991,7 +1009,7 @@ func (m *LiquidityProviderRes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *GetAssetListReq) Marshal() (dAtA []byte, err error) {
+func (m *AssetListReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1001,12 +1019,12 @@ func (m *GetAssetListReq) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GetAssetListReq) MarshalTo(dAtA []byte) (int, error) {
+func (m *AssetListReq) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *GetAssetListReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *AssetListReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1021,7 +1039,7 @@ func (m *GetAssetListReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *GetAssetListRes) Marshal() (dAtA []byte, err error) {
+func (m *AssetListRes) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1031,20 +1049,39 @@ func (m *GetAssetListRes) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GetAssetListRes) MarshalTo(dAtA []byte) (int, error) {
+func (m *AssetListRes) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *GetAssetListRes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *AssetListRes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
+	if m.Height != 0 {
+		i = encodeVarintQuerier(dAtA, i, uint64(m.Height))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Assets) > 0 {
+		for iNdEx := len(m.Assets) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Assets[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuerier(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
 	return len(dAtA) - i, nil
 }
 
-func (m *GetLiquidityProviderListReq) Marshal() (dAtA []byte, err error) {
+func (m *LiquidityProviderListReq) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1054,12 +1091,12 @@ func (m *GetLiquidityProviderListReq) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GetLiquidityProviderListReq) MarshalTo(dAtA []byte) (int, error) {
+func (m *LiquidityProviderListReq) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *GetLiquidityProviderListReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *LiquidityProviderListReq) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1074,7 +1111,7 @@ func (m *GetLiquidityProviderListReq) MarshalToSizedBuffer(dAtA []byte) (int, er
 	return len(dAtA) - i, nil
 }
 
-func (m *GetLiquidityProviderListRes) Marshal() (dAtA []byte, err error) {
+func (m *LiquidityProviderListRes) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1084,12 +1121,12 @@ func (m *GetLiquidityProviderListRes) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GetLiquidityProviderListRes) MarshalTo(dAtA []byte) (int, error) {
+func (m *LiquidityProviderListRes) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *GetLiquidityProviderListRes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *LiquidityProviderListRes) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1108,7 +1145,7 @@ func encodeVarintQuerier(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *GetPoolReq) Size() (n int) {
+func (m *PoolReq) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1121,7 +1158,7 @@ func (m *GetPoolReq) Size() (n int) {
 	return n
 }
 
-func (m *GetPoolRes) Size() (n int) {
+func (m *PoolRes) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1141,7 +1178,7 @@ func (m *GetPoolRes) Size() (n int) {
 	return n
 }
 
-func (m *GetPoolsReq) Size() (n int) {
+func (m *PoolsReq) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1150,14 +1187,14 @@ func (m *GetPoolsReq) Size() (n int) {
 	return n
 }
 
-func (m *GetPoolsRes) Size() (n int) {
+func (m *PoolsRes) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if len(m.Pool) > 0 {
-		for _, e := range m.Pool {
+	if len(m.Pools) > 0 {
+		for _, e := range m.Pools {
 			l = e.Size()
 			n += 1 + l + sovQuerier(uint64(l))
 		}
@@ -1213,7 +1250,7 @@ func (m *LiquidityProviderRes) Size() (n int) {
 	return n
 }
 
-func (m *GetAssetListReq) Size() (n int) {
+func (m *AssetListReq) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1226,16 +1263,25 @@ func (m *GetAssetListReq) Size() (n int) {
 	return n
 }
 
-func (m *GetAssetListRes) Size() (n int) {
+func (m *AssetListRes) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
+	if len(m.Assets) > 0 {
+		for _, e := range m.Assets {
+			l = e.Size()
+			n += 1 + l + sovQuerier(uint64(l))
+		}
+	}
+	if m.Height != 0 {
+		n += 1 + sovQuerier(uint64(m.Height))
+	}
 	return n
 }
 
-func (m *GetLiquidityProviderListReq) Size() (n int) {
+func (m *LiquidityProviderListReq) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1248,7 +1294,7 @@ func (m *GetLiquidityProviderListReq) Size() (n int) {
 	return n
 }
 
-func (m *GetLiquidityProviderListRes) Size() (n int) {
+func (m *LiquidityProviderListRes) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1263,7 +1309,7 @@ func sovQuerier(x uint64) (n int) {
 func sozQuerier(x uint64) (n int) {
 	return sovQuerier(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *GetPoolReq) Unmarshal(dAtA []byte) error {
+func (m *PoolReq) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1286,10 +1332,10 @@ func (m *GetPoolReq) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GetPoolReq: wiretype end group for non-group")
+			return fmt.Errorf("proto: PoolReq: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetPoolReq: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: PoolReq: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1345,7 +1391,7 @@ func (m *GetPoolReq) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GetPoolRes) Unmarshal(dAtA []byte) error {
+func (m *PoolRes) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1368,10 +1414,10 @@ func (m *GetPoolRes) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GetPoolRes: wiretype end group for non-group")
+			return fmt.Errorf("proto: PoolRes: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetPoolRes: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: PoolRes: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1482,7 +1528,7 @@ func (m *GetPoolRes) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GetPoolsReq) Unmarshal(dAtA []byte) error {
+func (m *PoolsReq) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1505,10 +1551,10 @@ func (m *GetPoolsReq) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GetPoolsReq: wiretype end group for non-group")
+			return fmt.Errorf("proto: PoolsReq: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetPoolsReq: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: PoolsReq: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -1532,7 +1578,7 @@ func (m *GetPoolsReq) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GetPoolsRes) Unmarshal(dAtA []byte) error {
+func (m *PoolsRes) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1555,15 +1601,15 @@ func (m *GetPoolsRes) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GetPoolsRes: wiretype end group for non-group")
+			return fmt.Errorf("proto: PoolsRes: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetPoolsRes: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: PoolsRes: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Pool", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Pools", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1590,8 +1636,8 @@ func (m *GetPoolsRes) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Pool = append(m.Pool, &Pool{})
-			if err := m.Pool[len(m.Pool)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.Pools = append(m.Pools, &Pool{})
+			if err := m.Pools[len(m.Pools)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1950,7 +1996,7 @@ func (m *LiquidityProviderRes) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GetAssetListReq) Unmarshal(dAtA []byte) error {
+func (m *AssetListReq) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1973,10 +2019,10 @@ func (m *GetAssetListReq) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GetAssetListReq: wiretype end group for non-group")
+			return fmt.Errorf("proto: AssetListReq: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetAssetListReq: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: AssetListReq: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2032,7 +2078,7 @@ func (m *GetAssetListReq) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GetAssetListRes) Unmarshal(dAtA []byte) error {
+func (m *AssetListRes) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2055,12 +2101,65 @@ func (m *GetAssetListRes) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GetAssetListRes: wiretype end group for non-group")
+			return fmt.Errorf("proto: AssetListRes: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetAssetListRes: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: AssetListRes: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Assets", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuerier
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuerier
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuerier
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Assets = append(m.Assets, &Asset{})
+			if err := m.Assets[len(m.Assets)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Height", wireType)
+			}
+			m.Height = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuerier
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Height |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuerier(dAtA[iNdEx:])
@@ -2082,7 +2181,7 @@ func (m *GetAssetListRes) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GetLiquidityProviderListReq) Unmarshal(dAtA []byte) error {
+func (m *LiquidityProviderListReq) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2105,10 +2204,10 @@ func (m *GetLiquidityProviderListReq) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GetLiquidityProviderListReq: wiretype end group for non-group")
+			return fmt.Errorf("proto: LiquidityProviderListReq: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetLiquidityProviderListReq: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: LiquidityProviderListReq: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2164,7 +2263,7 @@ func (m *GetLiquidityProviderListReq) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GetLiquidityProviderListRes) Unmarshal(dAtA []byte) error {
+func (m *LiquidityProviderListRes) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2187,10 +2286,10 @@ func (m *GetLiquidityProviderListRes) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GetLiquidityProviderListRes: wiretype end group for non-group")
+			return fmt.Errorf("proto: LiquidityProviderListRes: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GetLiquidityProviderListRes: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: LiquidityProviderListRes: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

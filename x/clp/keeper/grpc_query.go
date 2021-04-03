@@ -12,7 +12,7 @@ import (
 
 var _ types.QueryServer = Keeper{}
 
-func (k Keeper) QueryGetPool(c context.Context, req *types.GetPoolReq) (*types.GetPoolRes, error) {
+func (k Keeper) QueryGetPool(c context.Context, req *types.PoolReq) (*types.PoolRes, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -24,14 +24,14 @@ func (k Keeper) QueryGetPool(c context.Context, req *types.GetPoolReq) (*types.G
 		return nil, status.Errorf(codes.NotFound, "validator %s not found", req.Symbol)
 	}
 
-	return &types.GetPoolRes{
+	return &types.PoolRes{
 		Pool:             &pool,
 		Height:           ctx.BlockHeight(),
 		ClpModuleAddress: types.GetCLPModuleAddress().String(),
 	}, nil
 }
 
-func (k Keeper) QueryGetPools(c context.Context, req *types.GetPoolsReq) (*types.GetPoolsRes, error) {
+func (k Keeper) QueryGetPools(c context.Context, req *types.PoolsReq) (*types.PoolsRes, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -40,8 +40,8 @@ func (k Keeper) QueryGetPools(c context.Context, req *types.GetPoolsReq) (*types
 
 	pool := k.GetPools(ctx)
 
-	return &types.GetPoolsRes{
-		Pool:             &pool,
+	return &types.PoolsRes{
+		Pools:            pool,
 		Height:           ctx.BlockHeight(),
 		ClpModuleAddress: types.GetCLPModuleAddress().String(),
 	}, nil
@@ -58,7 +58,7 @@ func (k Keeper) LiquidityProvider(c context.Context, req *types.LiquidityProvide
 	return nil, nil
 }
 
-func (k Keeper) GetAssetList(c context.Context, req *types.GetAssetListReq) (*types.GetAssetListRes, error) {
+func (k Keeper) GetAssetList(c context.Context, req *types.AssetListReq) (*types.AssetListRes, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -69,7 +69,7 @@ func (k Keeper) GetAssetList(c context.Context, req *types.GetAssetListReq) (*ty
 	return nil, nil
 }
 
-func (k Keeper) GetLiquidityProviderList(c context.Context, req *types.GetLiquidityProviderListReq) (*types.GetLiquidityProviderListRes, error) {
+func (k Keeper) GetLiquidityProviderList(c context.Context, req *types.LiquidityProviderListReq) (*types.LiquidityProviderListRes, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
