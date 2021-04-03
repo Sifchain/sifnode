@@ -3,11 +3,12 @@ package node
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sifchain/sifnode/app"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/Sifchain/sifnode/app"
 
 	"github.com/Sifchain/sifnode/tools/sifgen/common"
 	"github.com/Sifchain/sifnode/tools/sifgen/genesis"
@@ -32,7 +33,6 @@ type Node struct {
 	Password                  string    `yaml:"password"`
 	BondAmount                string    `yaml:"-"`
 	MintAmount                string    `yaml:"-"`
-	FaucetAmount              string    `yaml:"-"`
 	MinCLPCreatePoolThreshold string    `yaml:"-"`
 	GovMaxDepositPeriod       string    `yaml:"-"`
 	GovVotingPeriod           string    `yaml:"-"`
@@ -149,13 +149,6 @@ func (n *Node) seedGenesis() error {
 	_, err := n.CLI.AddGenesisAccount(n.Address, common.DefaultNodeHome, []string{n.MintAmount})
 	if err != nil {
 		return err
-	}
-
-	if n.ChainID != "sifchain" {
-		_, err = n.CLI.AddFaucet(n.FaucetAmount)
-		if err != nil {
-			return err
-		}
 	}
 
 	for _, adminAddress := range n.AdminCLPAddresses {
