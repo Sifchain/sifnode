@@ -106,7 +106,7 @@ jobs:
           make CHAINNET=${chainnet} IMAGE_TAG=${env}-${release_version} BINARY=sifnodecli build-image
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
-          rake "cluster:release:generate_keyring[${moniker}, \"${mnemonic}\"]"
+          rake "cluster:release:generate_keyring[${moniker}, ${mnemonic}]"
 
       - name: Create Governance Release Request
         shell: bash
