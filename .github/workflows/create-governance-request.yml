@@ -31,13 +31,16 @@ on:
         description: aws account role
         required: true
         default: arn:aws:iam::346064283538:role/OrganizationAccountAccessRole
-
+      aws_region:
+        description: aws region
+        required: true
+        default: us-east-1
 jobs:
   create_governance_request_us:
     name: create_governance_request_us
     runs-on: ${{ matrix.os }}
     env:
-      aws_region: "us-east-1"
+      aws_region: "${{ github.event.inputs.aws_region }}"
       aws_cluster_name: "sifchain-aws-${{ github.event.inputs.environment }}-us"
       aws_role: "${{ github.event.inputs.aws_role }}"
       env: "${{ github.event.inputs.environment }}"
@@ -85,6 +88,10 @@ jobs:
         run: |
           set +x
           echo "Get Keys for Environment. Coming Soon..."
+          make CHAINNET=${chainnet} IMAGE_TAG=${env}-${release_version} BINARY=sifnodecli build-image
+          ls -lah ./
+          #rake "cluster:release:generate_vote[${moniker}, \"${mnemonic}\"]"
+
 
       - name: Create Governance Release Request
         shell: bash

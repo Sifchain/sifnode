@@ -67,7 +67,7 @@ jobs:
           echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
           rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
 
-      - name: Setup Vault Policy on Swing-Set
+      - name: Setup Vault Policy
         shell: bash
         run: |
           set +x
@@ -183,7 +183,7 @@ jobs:
           echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
           rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
 
-      - name: Setup Vault Policy on Swing-Set
+      - name: Setup Vault Policy
         shell: bash
         run: |
           set +x
@@ -299,7 +299,7 @@ jobs:
           echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
           rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
 
-      - name: Setup Vault Policy on Swing-Set
+      - name: Setup Vault Policy
         shell: bash
         run: |
           set +x
@@ -415,7 +415,7 @@ jobs:
           echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
           rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
 
-      - name: Setup Vault Policy on Swing-Set
+      - name: Setup Vault Policy
         shell: bash
         run: |
           set +x
@@ -532,7 +532,7 @@ jobs:
           echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
           rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
 
-      - name: Setup Vault Policy on Swing-Set
+      - name: Setup Vault Policy
         shell: bash
         run: |
           set +x
@@ -647,7 +647,7 @@ jobs:
           echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
           rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
 
-      - name: Setup Vault Policy on Swing-Set
+      - name: Setup Vault Policy
         shell: bash
         run: |
           set +x
@@ -764,7 +764,7 @@ jobs:
           echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
           rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
 
-      - name: Setup Vault Policy on Swing-Set
+      - name: Setup Vault Policy
         shell: bash
         run: |
           set +x
@@ -880,7 +880,7 @@ jobs:
           echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
           rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
 
-      - name: Setup Vault Policy on Swing-Set
+      - name: Setup Vault Policy
         shell: bash
         run: |
           set +x

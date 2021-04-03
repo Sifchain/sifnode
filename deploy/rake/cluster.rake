@@ -550,6 +550,11 @@ fi
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
+
+echo "Checking to see if the release version exist in app.go"
+check_exist=$(cat app/app.go | grep 'release-20210401000000')
+[ -z "$check_exist" ] && exit 1 || echo "release version exists."
+
 set +x
 export CURRENT_HEIGHT=`curl -s http://rpc-devnet.sifchain.finance/abci_info? | jq --raw-output '.result.response.last_block_height'`
 cat << EOF > pyscript.py
@@ -573,16 +578,28 @@ echo "sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release
 	--title release-#{args[:release_version]} \
 	--description release-#{args[:release_version]} \
 	--node tcp://rpc-devnet.sifchain.finance:80 \
-	--keyring-backend file \
+	--keyring-backend test \
 	--chain-id #{args[:chainnet]} \
 	--gas-prices \\"#{args[:rowan]}\\"
 	"
-
       }
       system(cluster_automation) or exit 1
     end
   end
 
+  desc "Generate Test Key Ring."
+  namespace :release do
+    desc "Generate Test Key Ring."
+    task :generate_keyring, [:moniker, :mnemonic] do |t, args|
+
+      cluster_automation = %Q{
+#!/usr/bin/env bash
+set +x
+echo "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test=
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
 
   desc "Create Release Governance Request Vote."
   namespace :release do
@@ -595,7 +612,7 @@ set +x
 
 echo "sifnodecli tx gov vote 2 yes \
     --from #{args[:from]} \
-    --keyring-backend file \
+    --keyring-backend test \
     --chain-id #{args[:chainnet]}  \
     --node tcp://rpc-devnet.sifchain.finance:80 \
     --gas-prices \\"#{args[:rowan]}\\" -y"
