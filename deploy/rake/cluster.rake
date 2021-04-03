@@ -570,18 +570,18 @@ EOF
 future_block_height=$(python pyscript.py)
 echo ${future_block_height}
 
-echo "sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+echo 'sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
 	--from #{args[:from]} \
 	--deposit #{args[:deposit]} \
 	--upgrade-height ${future_block_height} \
-	--info '{\\"binaries\\":{\\"linux/amd64\\":\\"https://github.com/Sifchain/sifnode/releases/download/devnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}\\"}}' \
+	--info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/devnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
 	--title release-#{args[:release_version]} \
 	--description release-#{args[:release_version]} \
 	--node tcp://rpc-devnet.sifchain.finance:80 \
 	--keyring-backend test \
 	--chain-id #{args[:chainnet]} \
-	--gas-prices \\"#{args[:rowan]}\\"
-	"
+	--gas-prices "#{args[:rowan]}"
+	'
       }
       system(cluster_automation) or exit 1
     end
@@ -610,12 +610,13 @@ echo "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover -
 #!/usr/bin/env bash
 set +x
 
-echo "sifnodecli tx gov vote 2 yes \
+echo 'sifnodecli tx gov vote 2 yes \
     --from #{args[:from]} \
     --keyring-backend test \
     --chain-id #{args[:chainnet]}  \
     --node tcp://rpc-devnet.sifchain.finance:80 \
-    --gas-prices \\"#{args[:rowan]}\\" -y"
+    --gas-prices "#{args[:rowan]}" -y
+    '
 
       }
       system(cluster_automation) or exit 1
