@@ -54,6 +54,7 @@ jobs:
       release_version: "${{ github.event.inputs.release_version }}"
       chainnet: "sifchain-${{ github.event.inputs.environment }}"
       rowan: "0.5rowan"
+      region: "us"
       upgrade_hours: "${{ github.event.inputs.upgrade_hours }}"
 
     strategy:
@@ -66,6 +67,11 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
+
+      - name: Set up Go 1.x
+          uses: actions/setup-go@v2
+          with:
+            go-version: ^1.15
 
       - name: Install Rake
         run: gem install rake
@@ -91,9 +97,12 @@ jobs:
           set +x
           echo "Get Keys for Environment. Coming Soon..."
           make CHAINNET=${chainnet} IMAGE_TAG=${env}-${release_version} BINARY=sifnodecli build-image
-          ls -lah ./
-          #rake "cluster:release:generate_vote[${moniker}, \"${mnemonic}\"]"
-
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will source the vaulte secrets as environment variables defined at the path and execute the tests accordingly."
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
+          rake "cluster:release:generate_keyring[${moniker}, \"${mnemonic}\"]"
 
       - name: Create Governance Release Request
         shell: bash
@@ -124,4 +133,5 @@ jobs:
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
+          rm -rf ./tmp_secrets
 

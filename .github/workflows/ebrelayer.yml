@@ -131,7 +131,7 @@ jobs:
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
-          rm -rf ./tmp_secrewts
+          rm -rf ./tmp_secrets
           rm -rf ./pyscript.py
 
 
@@ -247,7 +247,7 @@ jobs:
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
-          rm -rf ./tmp_secrewts
+          rm -rf ./tmp_secrets
           rm -rf ./pyscript.py
 
 
@@ -361,7 +361,7 @@ jobs:
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
-          rm -rf ./tmp_secrewts
+          rm -rf ./tmp_secrets
           rm -rf ./pyscript.py
 
 
@@ -477,5 +477,5 @@ jobs:
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
-          rm -rf ./tmp_secrewts
+          rm -rf ./tmp_secrets
           rm -rf ./pyscript.py
