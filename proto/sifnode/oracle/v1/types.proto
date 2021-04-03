@@ -36,8 +36,12 @@ message Status {
 
 // StatusText is an enum used to represent the status of the prophecy
 enum StatusText {
+  // Default value
   STATUS_TEXT_UNSPECIFIED = 0;
-  STATUS_TEXT_PEDNING     = 1;
-  STATUS_TEXT_SUCCESS     = 2;
-  STATUS_TEXT_FAILED      = 3;
+  // Pending status
+  STATUS_TEXT_PEDNING = 1;
+  // Success status
+  STATUS_TEXT_SUCCESS = 2;
+  // Failed status
+  STATUS_TEXT_FAILED = 3;
 }
