@@ -80,6 +80,7 @@ jobs:
         shell: bash
         run: |
           rake "cluster:generate:art[]"
+          apt-get install mlocate -y
 
       - name: Setup AWS Profile and KUBECONFIG
         shell: bash
