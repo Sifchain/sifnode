@@ -13,7 +13,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
-	"github.com/Sifchain/sifnode/simapp"
+	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/clp/keeper"
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
@@ -27,12 +27,12 @@ const (
 )
 
 //// returns context and app with params set on account keeper
-func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
-	app := simapp.Setup(isCheckTx)
+func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
+	app := sifapp.Setup(isCheckTx)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000)
-	_ = simapp.AddTestAddrs(app, ctx, 6, initTokens)
+	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }
 
@@ -41,7 +41,7 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, keeper.Keeper) {
 	return ctx, app.ClpKeeper
 }
 
-func GetSimApp(isCheckTx bool) (sdk.Context, *simapp.SimApp) {
+func GetSimApp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	app, ctx := CreateTestApp(isCheckTx)
 	return ctx, app
 
