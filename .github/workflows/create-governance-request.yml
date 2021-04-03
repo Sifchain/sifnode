@@ -102,7 +102,7 @@ jobs:
           source ./tmp_secrets
           echo "${mnemonic}" > mnemonic_file
           ls -lah
-          rake "cluster:release:generate_keyring[${moniker}]"
+          rake "cluster:release:generate_keyring[${moniker}, ${mnemonic}]"
 
       - name: Create Governance Release Request
         shell: bash
