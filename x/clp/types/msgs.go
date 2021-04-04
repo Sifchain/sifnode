@@ -16,11 +16,6 @@ var (
 	_ sdk.Msg = &MsgDecommissionPool{}
 )
 
-// type MsgDecommissionPool struct {
-// 	Signer sdk.AccAddress `json:"signer"`
-// 	Symbol string         `json:"symbol"`
-// }
-
 func NewMsgDecommissionPool(signer sdk.AccAddress, symbol string) MsgDecommissionPool {
 	return MsgDecommissionPool{Signer: signer.String(), Symbol: symbol}
 }
@@ -179,13 +174,6 @@ func (m MsgAddLiquidity) GetSigners() []sdk.AccAddress {
 	}
 	return []sdk.AccAddress{addr}
 }
-
-// type MsgCreatePool struct {
-// 	Signer              sdk.AccAddress
-// 	ExternalAsset       Asset
-// 	NativeAssetAmount   sdk.Uint
-// 	ExternalAssetAmount sdk.Uint
-// }
 
 func NewMsgCreatePool(signer sdk.AccAddress, externalAsset Asset, nativeAssetAmount sdk.Uint, externalAssetAmount sdk.Uint) MsgCreatePool {
 	return MsgCreatePool{Signer: signer.String(), ExternalAsset: &externalAsset, NativeAssetAmount: nativeAssetAmount, ExternalAssetAmount: externalAssetAmount}

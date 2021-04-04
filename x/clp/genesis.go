@@ -39,14 +39,19 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 	for _, lp := range data.LiquidityProviders {
 		keeper.SetLiquidityProvider(ctx, lp)
 	}
+
 	return []abci.ValidatorUpdate{}
 }
 
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 	params := keeper.GetParams(ctx)
+
 	poolList := keeper.GetPools(ctx)
+
 	liquidityProviders := keeper.GetLiquidityProviders(ctx)
+
 	whiteList := keeper.GetClpWhiteList(ctx)
+
 	wl := make([]string, 0, len(whiteList))
 	for i, entry := range whiteList {
 		wl[i] = entry.String()

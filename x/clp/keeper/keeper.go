@@ -3,11 +3,12 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/tendermint/tendermint/libs/log"
+
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
 // Keeper of the clp store
@@ -20,13 +21,13 @@ type Keeper struct {
 }
 
 // NewKeeper creates a clp keeper
-func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, paramstore paramtypes.Subspace) Keeper {
+func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, ps paramtypes.Subspace) Keeper {
 	keeper := Keeper{
 		storeKey:   key,
 		cdc:        cdc,
 		bankKeeper: bankkeeper,
 		authKeeper: accountKeeper,
-		paramstore: paramstore.WithKeyTable(types.ParamKeyTable()),
+		paramstore: ps,
 	}
 	return keeper
 }
