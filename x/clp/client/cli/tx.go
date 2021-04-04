@@ -1,17 +1,14 @@
 package cli
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 
 	"github.com/Sifchain/sifnode/x/clp/types"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -46,17 +43,20 @@ func GetCmdCreatePool() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags()).WithTxConfig(clientCtx.TxConfig).WithAccountRetriever(clientCtx.AccountRetriever)
 
 			asset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			externalAmount := viper.GetString(FlagExternalAssetAmount)
 			nativeAmount := viper.GetString(FlagNativeAssetAmount)
-			signer := cliCtx.GetFromAddress()
+			signer := clientCtx.GetFromAddress()
 
 			msg := types.NewMsgCreatePool(signer, asset, sdk.NewUintFromString(nativeAmount), sdk.NewUintFromString(externalAmount))
-			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
+
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
 	cmd.Flags().AddFlagSet(FsExternalAssetAmount)
 	cmd.Flags().AddFlagSet(FsNativeAssetAmount)
@@ -70,6 +70,9 @@ func GetCmdCreatePool() *cobra.Command {
 	if err := cmd.MarkFlagRequired(FlagNativeAssetAmount); err != nil {
 		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
 	return cmd
 }
 
@@ -78,13 +81,18 @@ func GetCmdDecommissionPool() *cobra.Command {
 		Use:   "decommission-pool",
 		Short: "decommission liquidity pool",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			inBuf := bufio.NewReader(cmd.InOrStdin())
-			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
 			symbol := viper.GetString(FlagAssetSymbol)
-			signer := cliCtx.GetFromAddress()
+			signer := clientCtx.GetFromAddress()
 			msg := types.NewMsgDecommissionPool(signer, symbol)
-			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
@@ -92,6 +100,7 @@ func GetCmdDecommissionPool() *cobra.Command {
 		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
 
+	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }
 
@@ -100,16 +109,21 @@ func GetCmdAddLiquidity() *cobra.Command {
 		Use:   "add-liquidity",
 		Short: "Add liquidity to a pool",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			inBuf := bufio.NewReader(cmd.InOrStdin())
-			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			externalAmount := viper.GetString(FlagExternalAssetAmount)
 			nativeAmount := viper.GetString(FlagNativeAssetAmount)
-			signer := cliCtx.GetFromAddress()
-			msg := types.NewMsgAddLiquidity(signer, externalAsset, sdk.NewUintFromString(nativeAmount), sdk.NewUintFromString(externalAmount))
+			signer := clientCtx.GetFromAddress()
 
-			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
+			msg := types.NewMsgAddLiquidity(signer, externalAsset, sdk.NewUintFromString(nativeAmount), sdk.NewUintFromString(externalAmount))
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
@@ -125,6 +139,8 @@ func GetCmdAddLiquidity() *cobra.Command {
 	if err := cmd.MarkFlagRequired(FlagNativeAssetAmount); err != nil {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
+
+	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
 }
@@ -134,13 +150,15 @@ func GetCmdRemoveLiquidity() *cobra.Command {
 		Use:   "remove-liquidity",
 		Short: "Remove liquidity from a pool",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			inBuf := bufio.NewReader(cmd.InOrStdin())
-			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
 			externalAsset := types.NewAsset(viper.GetString(FlagAssetSymbol))
 			wb := viper.GetString(FlagWBasisPoints)
 			as := viper.GetString(FlagAsymmetry)
-			signer := cliCtx.GetFromAddress()
+			signer := clientCtx.GetFromAddress()
 			wBasis, ok := sdk.NewIntFromString(wb)
 			if !ok {
 				return types.ErrOverFlow
@@ -149,9 +167,13 @@ func GetCmdRemoveLiquidity() *cobra.Command {
 			if !ok {
 				return types.ErrOverFlow
 			}
-			msg := types.NewMsgRemoveLiquidity(signer, externalAsset, wBasis, asymmetry)
 
-			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
+			msg := types.NewMsgRemoveLiquidity(signer, externalAsset, wBasis, asymmetry)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
 	cmd.Flags().AddFlagSet(FsAssetSymbol)
@@ -167,6 +189,8 @@ func GetCmdRemoveLiquidity() *cobra.Command {
 		log.Println("MarkFlagRequired  failed: ", err.Error())
 	}
 
+	flags.AddTxFlagsToCmd(cmd)
+
 	return cmd
 }
 
@@ -175,16 +199,25 @@ func GetCmdSwap() *cobra.Command {
 		Use:   "swap",
 		Short: "Swap tokens using liquidity pools",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			inBuf := bufio.NewReader(cmd.InOrStdin())
-			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithInput(inBuf).WithCodec(cdc)
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
 			sentAsset := types.NewAsset(viper.GetString(FlagSentAssetSymbol))
 			receivedAsset := types.NewAsset(viper.GetString(FlagReceivedAssetSymbol))
+
 			sentAmount := viper.GetString(FlagAmount)
 			minReceivingAmount := viper.GetString(FlagMinimumReceivingAmount)
-			signer := cliCtx.GetFromAddress()
+
+			signer := clientCtx.GetFromAddress()
+
 			msg := types.NewMsgSwap(signer, sentAsset, receivedAsset, sdk.NewUintFromString(sentAmount), sdk.NewUintFromString(minReceivingAmount))
-			return tx.GenerateOrBroadcastTxCLI(cliCtx, cmd.Flags(), svcMsgClientConn.GetMsgs()...)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
 		},
 	}
 
@@ -205,5 +238,8 @@ func GetCmdSwap() *cobra.Command {
 	if err := cmd.MarkFlagRequired(FlagMinimumReceivingAmount); err != nil {
 		log.Println("MarkFlagRequired failed: ", err.Error())
 	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
 	return cmd
 }

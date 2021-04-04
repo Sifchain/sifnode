@@ -1,7 +1,6 @@
 package clp
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 
@@ -68,7 +67,7 @@ func (AppModuleBasic) RegisterRESTRoutes(ctx client.Context, rtr *mux.Router) {
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the clp module.
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
-	types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+	// types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
 }
 
 // GetTxCmd returns the root tx command for the clp module.

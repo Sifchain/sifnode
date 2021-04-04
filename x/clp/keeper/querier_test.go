@@ -126,9 +126,9 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 	addr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
 	assert.Error(t, err)
 
-	queryLp := types.QueryReqLiquidityProvider{
+	queryLp := types.LiquidityProviderReq{
 		Symbol:    "", //lp.Asset.Ticker,
-		LpAddress: addr,
+		LpAddress: addr.String(),
 	}
 	qlp, errRes := cdc.MarshalJSON(queryLp)
 	require.NoError(t, errRes)
@@ -153,9 +153,9 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	addr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
 	assert.Error(t, err)
 
-	queryLp := types.QueryReqLiquidityProvider{
+	queryLp := types.LiquidityProviderReq{
 		Symbol:    lp.Asset.Symbol,
-		LpAddress: addr,
+		LpAddress: addr.String(),
 	}
 	qlp, errRes := cdc.MarshalJSON(queryLp)
 	require.NoError(t, errRes)

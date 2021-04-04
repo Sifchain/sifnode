@@ -182,8 +182,10 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	ok := keeper.HasCoins(ctx, signer, coins)
-	assert.True(t, ok, "")
+	for _, coin := range coins {
+		ok := keeper.HasBalance(ctx, signer, coin)
+		assert.True(t, ok, "")
+	}
 
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.NewInt(10000)
@@ -192,8 +194,10 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	ok = keeper.HasCoins(ctx, signer, coins)
-	assert.True(t, ok, "")
+	for _, coin := range coins {
+		ok := keeper.HasBalance(ctx, signer, coin)
+		assert.True(t, ok, "")
+	}
 
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.ZeroInt()
@@ -202,8 +206,10 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	ok = keeper.HasCoins(ctx, signer, coins)
-	assert.True(t, ok, "")
+	for _, coin := range coins {
+		ok := keeper.HasBalance(ctx, signer, coin)
+		assert.True(t, ok, "")
+	}
 
 	wBasis = sdk.NewInt(1000)
 	asymmetry = sdk.NewInt(-10000)
@@ -212,8 +218,10 @@ func TestRemoveLiquidity(t *testing.T) {
 	res, err = handler(ctx, &msg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	ok = keeper.HasCoins(ctx, signer, coins)
-	assert.True(t, ok, "")
+	for _, coin := range coins {
+		ok := keeper.HasBalance(ctx, signer, coin)
+		assert.True(t, ok, "")
+	}
 
 	wBasis = sdk.NewInt(10000)
 	asymmetry = sdk.ZeroInt()
