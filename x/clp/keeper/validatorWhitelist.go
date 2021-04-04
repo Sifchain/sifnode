@@ -10,11 +10,12 @@ import (
 func (k Keeper) SetClpWhiteList(ctx sdk.Context, validatorList []sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
-	valList := make([]string, 0, len(validatorList))
+	valList := make([]string, len(validatorList))
 	for i, entry := range validatorList {
 		valList[i] = entry.String()
 	}
-	store.Set(key, k.cdc.MustMarshalBinaryBare(&stakingtypes.ValAddresses{valList}))
+
+	store.Set(key, k.cdc.MustMarshalBinaryBare(&stakingtypes.ValAddresses{Addresses: valList}))
 }
 
 func (k Keeper) ExistsClpWhiteList(ctx sdk.Context) bool {
@@ -28,7 +29,7 @@ func (k Keeper) GetClpWhiteList(ctx sdk.Context) []sdk.AccAddress {
 	bz := store.Get(key)
 
 	valList := []string{}
-	k.cdc.MustUnmarshalBinaryBare(bz, &stakingtypes.ValAddresses{valList})
+	k.cdc.MustUnmarshalBinaryBare(bz, &stakingtypes.ValAddresses{Addresses: valList})
 
 	vl := make([]sdk.AccAddress, len(valList))
 	for i, entry := range valList {

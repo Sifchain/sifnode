@@ -18,7 +18,7 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res
 		panic(fmt.Sprintf("AddressWhiteList must be set."))
 	}
 
-	wl := make([]sdk.AccAddress, len(data.AddressWhitelist), 0)
+	wl := make([]sdk.AccAddress, len(data.AddressWhitelist))
 	if data.AddressWhitelist != nil {
 		for i, entry := range data.AddressWhitelist {
 			wlAddress, err := sdk.AccAddressFromBech32(entry)

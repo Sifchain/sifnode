@@ -22,6 +22,11 @@ type Keeper struct {
 
 // NewKeeper creates a clp keeper
 func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, accountKeeper types.AuthKeeper, ps paramtypes.Subspace) Keeper {
+	// set KeyTable if it has not already been set
+	if !ps.HasKeyTable() {
+		ps = ps.WithKeyTable(types.ParamKeyTable())
+	}
+
 	keeper := Keeper{
 		storeKey:   key,
 		cdc:        cdc,
