@@ -8,7 +8,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/x/oracle/keeper"
+	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
 
@@ -21,9 +21,10 @@ const (
 )
 
 func TestCreateGetProphecy(t *testing.T) {
-	_, validatorAddresses := keeper.CreateTestAddrs(2)
+	addresses := sifapp.CreateRandomAccounts(2)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
-	app := app.Setup(false)
+	app := sifapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	validator1Pow3 := validatorAddresses[0]
@@ -59,14 +60,15 @@ func TestBadConsensusForOracle(t *testing.T) {
 			t.Errorf("The code did not panic")
 		}
 	}()
-	app.Setup(false)
-	app.Setup(false)
+	sifapp.Setup(false)
+	sifapp.Setup(false)
 }
 
 func TestBadMsgs(t *testing.T) {
-	_, validatorAddresses := keeper.CreateTestAddrs(2)
+	addresses := sifapp.CreateRandomAccounts(2)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
-	app := app.Setup(false)
+	app := sifapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	validator1Pow3 := validatorAddresses[0]
@@ -98,9 +100,10 @@ func TestBadMsgs(t *testing.T) {
 }
 
 func TestSuccessfulProphecy(t *testing.T) {
-	_, validatorAddresses := keeper.CreateTestAddrs(3)
+	addresses := sifapp.CreateRandomAccounts(3)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
-	app := app.Setup(false)
+	app := sifapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	validator1Pow3 := validatorAddresses[0]
@@ -128,7 +131,8 @@ func TestSuccessfulProphecy(t *testing.T) {
 }
 
 func TestSuccessfulProphecyWithDisagreement(t *testing.T) {
-	_, validatorAddresses := keeper.CreateTestAddrs(2)
+	addresses := sifapp.CreateRandomAccounts(2)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
 	app := app.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
@@ -158,7 +162,8 @@ func TestSuccessfulProphecyWithDisagreement(t *testing.T) {
 }
 
 func TestFailedProphecy(t *testing.T) {
-	_, validatorAddresses := keeper.CreateTestAddrs(3)
+	addresses := sifapp.CreateRandomAccounts(3)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
 	app := app.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
@@ -190,7 +195,8 @@ func TestFailedProphecy(t *testing.T) {
 
 func TestPowerOverrule(t *testing.T) {
 	//Testing with 2 validators but one has high enough power to overrule
-	_, validatorAddresses := keeper.CreateTestAddrs(2)
+	addresses := sifapp.CreateRandomAccounts(2)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
 	app := app.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
@@ -213,7 +219,8 @@ func TestPowerOverrule(t *testing.T) {
 }
 func TestPowerAternate(t *testing.T) {
 	//Test alternate power setup with validators of 5/4/3/9 and total power 22 and 12/21 required
-	_, validatorAddresses := keeper.CreateTestAddrs(4)
+	addresses := sifapp.CreateRandomAccounts(4)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
 	app := app.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
@@ -251,7 +258,8 @@ func TestPowerAternate(t *testing.T) {
 
 func TestMultipleProphecies(t *testing.T) {
 	//Test multiple prophecies running in parallel work fine as expected
-	_, validatorAddresses := keeper.CreateTestAddrs(2)
+	addresses := sifapp.CreateRandomAccounts(2)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
 	app := app.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
@@ -292,7 +300,8 @@ func TestNonValidator(t *testing.T) {
 	app := app.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
-	_, testValidatorAddresses := keeper.CreateTestAddrs(10)
+	addresses := sifapp.CreateRandomAccounts(10)
+	testValidatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 	inActiveValidatorAddress := testValidatorAddresses[9]
 
 	//Test claim on first id with first validator

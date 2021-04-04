@@ -13,7 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/tendermint/tendermint/abci"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -88,6 +88,17 @@ func CreateTestPubKeys(numPubKeys int) []cryptotypes.PubKey {
 	return publicKeys
 }
 
+// ConvertAddrsToValAddrs converts the provided addresses to ValAddress.
+func ConvertAddrsToValAddrs(addrs []sdk.AccAddress) []sdk.ValAddress {
+	valAddrs := make([]sdk.ValAddress, len(addrs))
+
+	for i, addr := range addrs {
+		valAddrs[i] = sdk.ValAddress(addr)
+	}
+
+	return valAddrs
+}
+
 // NewPubKeyFromHex returns a PubKey from a hex string.
 func NewPubKeyFromHex(pk string) (res cryptotypes.PubKey) {
 	pkBytes, err := hex.DecodeString(pk)
@@ -111,7 +122,7 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 // AddTestAddrs constructs and returns accNum amount of accounts with an
 // initial balance of accAmt in random order
 func AddTestAddrs(app *SifchainApp, ctx sdk.Context, accNum int, accAmt sdk.Int) []sdk.AccAddress {
-	return addTestAddrs(app, ctx, accNum, accAmt, createRandomAccounts)
+	return addTestAddrs(app, ctx, accNum, accAmt, CreateRandomAccounts)
 }
 
 // AddTestAddrs constructs and returns accNum amount of accounts with an
@@ -153,8 +164,8 @@ func saveAccount(app *SifchainApp, ctx sdk.Context, addr sdk.AccAddress, initCoi
 
 type GenerateAccountStrategy func(int) []sdk.AccAddress
 
-// createRandomAccounts is a strategy used by addTestAddrs() in order to generated addresses in random order.
-func createRandomAccounts(accNum int) []sdk.AccAddress {
+// CreateRandomAccounts is a strategy used by addTestAddrs() in order to generated addresses in random order.
+func CreateRandomAccounts(accNum int) []sdk.AccAddress {
 	testAddrs := make([]sdk.AccAddress, accNum)
 	for i := 0; i < accNum; i++ {
 		pk := ed25519.GenPrivKey().PubKey()
