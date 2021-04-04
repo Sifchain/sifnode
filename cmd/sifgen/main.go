@@ -29,7 +29,6 @@ func main() {
 	_nodeCreateCmd.PersistentFlags().String("genesis-url", "", "genesis URL")
 	_nodeCreateCmd.PersistentFlags().String("bond-amount", "1000000000000000000000000rowan", "bond amount")
 	_nodeCreateCmd.PersistentFlags().String("mint-amount", "999000000000000000000000000rowan", "mint amount")
-	_nodeCreateCmd.PersistentFlags().String("faucet-amount", "1000000000000000000000000rowan", "faucet amount")
 	_nodeCreateCmd.PersistentFlags().String("min-clp-create-pool-threshold", "100", "minimum CLP create pool threshold")
 	_nodeCreateCmd.PersistentFlags().String("gov-max-deposit-period", "900000000000", "governance max deposit period")
 	_nodeCreateCmd.PersistentFlags().String("gov-voting-period", "900000000000", "governance voting period")
@@ -112,7 +111,6 @@ func nodeCreateCmd() *cobra.Command {
 			genesisURL, _ := cmd.Flags().GetString("genesis-url")
 			bondAmount, _ := cmd.Flags().GetString("bond-amount")
 			mintAmount, _ := cmd.Flags().GetString("mint-amount")
-			faucetAmount, _ := cmd.Flags().GetString("faucet-amount")
 			minCLPCreatePoolThreshold, _ := cmd.Flags().GetString("min-clp-create-pool-threshold")
 			govMaxDepositPeriod, _ := cmd.Flags().GetString("gov-max-deposit-period")
 			govVotingPeriod, _ := cmd.Flags().GetString("gov-voting-period")
@@ -130,7 +128,6 @@ func nodeCreateCmd() *cobra.Command {
 				node.AdminOracleAddress = adminOracleAddress
 				node.BondAmount = bondAmount
 				node.MintAmount = mintAmount
-				node.FaucetAmount = faucetAmount
 				node.MinCLPCreatePoolThreshold = minCLPCreatePoolThreshold
 				node.GovMaxDepositPeriod = govMaxDepositPeriod
 				node.GovVotingPeriod = govVotingPeriod
