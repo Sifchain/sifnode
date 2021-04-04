@@ -63,6 +63,9 @@ import (
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/Sifchain/sifnode/x/oracle"
+	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 const appName = "sifnode"
@@ -84,8 +87,7 @@ var (
 		slashing.AppModuleBasic{},
 
 		clp.AppModuleBasic{},
-		// oracle.AppModuleBasic{},
-		// ethbridge.AppModuleBasic{},
+		oracle.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -95,7 +97,6 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
 		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
-		// ethbridge.ModuleName:           {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -125,7 +126,8 @@ type SifchainApp struct {
 	SlashingKeeper slashingkeeper.Keeper
 	DistrKeeper    distrkeeper.Keeper
 
-	ClpKeeper clpkeeper.Keeper
+	ClpKeeper    clpkeeper.Keeper
+	OracleKeeper oraclekeeper.Keeper
 
 	mm *module.Manager
 	sm *module.SimulationManager
@@ -159,9 +161,9 @@ func NewSifApp(
 		distrtypes.StoreKey,
 		slashingtypes.StoreKey,
 
-		// oracle.StoreKey,
 		// ethbridge.StoreKey,
 		clptypes.StoreKey,
+		oracletypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -211,6 +213,12 @@ func NewSifApp(
 	)
 
 	app.ClpKeeper = clpkeeper.NewKeeper(appCodec, keys[clptypes.StoreKey], app.BankKeeper, app.AccountKeeper, app.GetSubspace(clptypes.ModuleName))
+	app.OracleKeeper = oraclekeeper.NewKeeper(
+		appCodec,
+		keys[oracletypes.StoreKey],
+		app.StakingKeeper,
+		oracletypes.DefaultConsensusNeeded,
+	)
 
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
@@ -249,6 +257,7 @@ func NewSifApp(
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
+		oracle.NewAppModule(appCodec, app.OracleKeeper),
 	)
 
 	app.sm.RegisterStoreDecoders()
@@ -282,6 +291,7 @@ func NewSifApp(
 		govtypes.ModuleName,
 
 		clptypes.ModuleName,
+		oracletypes.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)

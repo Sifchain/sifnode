@@ -3,25 +3,32 @@ package keeper_test
 import (
 	"testing"
 
-	oracleKeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	"github.com/stretchr/testify/assert"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	"github.com/Sifchain/sifnode/app"
+	oracleKeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 )
 
 func TestKeeper_SetValidatorWhiteList(t *testing.T) {
-	ctx, keeper, _, _, _, _, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	app := app.Setup(false)
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+
 	_, addresses := oracleKeeper.CreateTestAddrs(2)
-	keeper.SetOracleWhiteList(ctx, addresses)
-	vList := keeper.GetOracleWhiteList(ctx)
+	app.OracleKeeper.SetOracleWhiteList(ctx, addresses)
+	vList := app.OracleKeeper.GetOracleWhiteList(ctx)
 	assert.Equal(t, len(vList), 2)
-	assert.True(t, keeper.ExistsOracleWhiteList(ctx))
+	assert.True(t, app.OracleKeeper.ExistsOracleWhiteList(ctx))
 }
 
 func TestKeeper_ValidateAddress(t *testing.T) {
-	ctx, keeper, _, _, _, _, _ := oracleKeeper.CreateTestKeepers(t, 0.7, []int64{3, 7}, "")
+	app := app.Setup(false)
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+
 	_, addresses := oracleKeeper.CreateTestAddrs(2)
-	keeper.SetOracleWhiteList(ctx, addresses)
-	assert.True(t, keeper.ValidateAddress(ctx, addresses[0]))
-	assert.True(t, keeper.ValidateAddress(ctx, addresses[1]))
+	app.OracleKeeper.SetOracleWhiteList(ctx, addresses)
+	assert.True(t, app.OracleKeeper.ValidateAddress(ctx, addresses[0]))
+	assert.True(t, app.OracleKeeper.ValidateAddress(ctx, addresses[1]))
 	_, addresses = oracleKeeper.CreateTestAddrs(3)
-	assert.False(t, keeper.ValidateAddress(ctx, addresses[2]))
+	assert.False(t, app.OracleKeeper.ValidateAddress(ctx, addresses[2]))
 }

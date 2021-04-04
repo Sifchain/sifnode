@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -14,7 +13,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/libs/cli"
 
-	"github.com/Sifchain/sifnode/x/oracle"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 func AddGenesisValidatorCmd(defaultNodeHome string) *cobra.Command {
@@ -44,21 +43,21 @@ the account address or key name. If a key name is given, the address will be loo
 				return fmt.Errorf("failed to unmarshal genesis state: %w", err)
 			}
 
-			oracleGenState := oracle.GetGenesisStateFromAppState(appState)
+			oracleGenState := oracletypes.GetGenesisStateFromAppState(appState)
 
 			for _, item := range oracleGenState.AddressWhitelist {
-				if bytes.Equal(item, addr) {
+				if item == addr.String() {
 					return fmt.Errorf("address %s already in white list", addr)
 				}
 			}
-			oracleGenState.AddressWhitelist = append(oracleGenState.AddressWhitelist, addr)
+			oracleGenState.AddressWhitelist = append(oracleGenState.AddressWhitelist, addr.String())
 
 			oracleGenStateBz, err := json.Marshal(oracleGenState)
 			if err != nil {
 				return fmt.Errorf("failed to marshal auth genesis state: %w", err)
 			}
 
-			appState[oracle.ModuleName] = oracleGenStateBz
+			appState[oracletypes.ModuleName] = oracleGenStateBz
 
 			appStateJSON, err := json.Marshal(appState)
 			if err != nil {
