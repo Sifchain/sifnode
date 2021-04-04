@@ -80,11 +80,10 @@ var (
 			upgradeclient.ProposalHandler,
 		),
 		params.AppModuleBasic{},
-		// clp.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
-		oracle.AppModuleBasic{},
-		// ethbridge.AppModuleBasic{}
 		slashing.AppModuleBasic{},
+
+		oracle.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -93,8 +92,6 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
-		// ethbridge.ModuleName:           {authtypes.Burner, authtypes.Minter},
-		// clp.ModuleName:                 {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -158,8 +155,6 @@ func NewSifApp(
 		distrtypes.StoreKey,
 		slashingtypes.StoreKey,
 
-		// ethbridge.StoreKey,
-		// clp.StoreKey,
 		oracletypes.StoreKey,
 	)
 
