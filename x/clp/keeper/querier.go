@@ -67,13 +67,13 @@ func queryPools(ctx sdk.Context, path []string, keeper Keeper, legacyQuerierCdc 
 }
 
 func queryLiquidityProvider(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
-	var params types.QueryReqLiquidityProvider
+	var params types.LiquidityProviderReq
 
 	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	lp, err := keeper.GetLiquidityProvider(ctx, params.Symbol, params.LpAddress.String())
+	lp, err := keeper.GetLiquidityProvider(ctx, params.Symbol, params.LpAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -92,12 +92,18 @@ func queryLiquidityProvider(ctx sdk.Context, path []string, req abci.RequestQuer
 }
 
 func queryAssetList(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
-	var params types.QueryReqGetAssetList
+	var params types.AssetListReq
 	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	assetList := keeper.GetAssetsForLiquidityProvider(ctx, params.LpAddress)
+
+	addr, err := sdk.AccAddressFromBech32(params.LpAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	assetList := keeper.GetAssetsForLiquidityProvider(ctx, addr)
 	res, err := codec.MarshalJSONIndent(legacyQuerierCdc, assetList)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
@@ -107,7 +113,7 @@ func queryAssetList(ctx sdk.Context, path []string, req abci.RequestQuery, keepe
 }
 
 func queryLPList(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
-	var params types.QueryReqGetLiquidityProviderList
+	var params types.LiquidityProviderListReq
 	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())

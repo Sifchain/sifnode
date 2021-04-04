@@ -71,14 +71,14 @@ func getLiquidityProviderHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryLiquidityProvider)
-		var params types.QueryReqLiquidityProvider
+		var params types.LiquidityProviderReq
 		params.Symbol = r.URL.Query().Get("symbol")
 		addressString := r.URL.Query().Get("lpAddress")
 		lpAddess, err := sdk.AccAddressFromBech32(addressString)
 		if err != nil {
 			return
 		}
-		params.LpAddress = lpAddess
+		params.LpAddress = lpAddess.String()
 		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -123,23 +123,27 @@ func getAssetsHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryAssetList)
-		var params types.QueryReqGetAssetList
+		var params types.AssetListReq
 		addressString := r.URL.Query().Get("lpAddress")
+
 		lpAddess, err := sdk.AccAddressFromBech32(addressString)
 		if err != nil {
 			return
 		}
-		params.LpAddress = lpAddess
+
+		params.LpAddress = lpAddess.String()
 		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
+
 		res, height, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
 		}
+
 		cliCtx = cliCtx.WithHeight(height)
 		rest.PostProcessResponse(w, cliCtx, res)
 	}
@@ -154,14 +158,16 @@ func getLpListHandler(cliCtx client.Context) http.HandlerFunc {
 		}
 
 		route := fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryLPList)
-		var params types.QueryReqGetLiquidityProviderList
+		var params types.LiquidityProviderListReq
 		assetSymbol := r.URL.Query().Get("symbol")
 		params.Symbol = assetSymbol
+
 		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 			return
 		}
+
 		res, height, err := cliCtx.QueryWithData(route, bz)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
