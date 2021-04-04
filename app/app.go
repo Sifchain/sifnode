@@ -59,6 +59,10 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
+
+	"github.com/Sifchain/sifnode/x/oracle"
+	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 const appName = "sifnode"
@@ -76,11 +80,10 @@ var (
 			upgradeclient.ProposalHandler,
 		),
 		params.AppModuleBasic{},
-		// clp.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
-		// oracle.AppModuleBasic{},
-		// ethbridge.AppModuleBasic{},
 		slashing.AppModuleBasic{},
+
+		oracle.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -89,8 +92,6 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
-		// ethbridge.ModuleName:           {authtypes.Burner, authtypes.Minter},
-		// clp.ModuleName:                 {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -120,6 +121,8 @@ type SifchainApp struct {
 	SlashingKeeper slashingkeeper.Keeper
 	DistrKeeper    distrkeeper.Keeper
 
+	OracleKeeper oraclekeeper.Keeper
+
 	mm *module.Manager
 	sm *module.SimulationManager
 }
@@ -148,12 +151,11 @@ func NewSifApp(
 		stakingtypes.StoreKey,
 		paramstypes.StoreKey,
 		upgradetypes.StoreKey,
-		// oracle.StoreKey,
-		// ethbridge.StoreKey,
-		// clp.StoreKey,
 		govtypes.StoreKey,
 		distrtypes.StoreKey,
 		slashingtypes.StoreKey,
+
+		oracletypes.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -202,6 +204,13 @@ func NewSifApp(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
+	app.OracleKeeper = oraclekeeper.NewKeeper(
+		appCodec,
+		keys[oracletypes.StoreKey],
+		app.StakingKeeper,
+		oracletypes.DefaultConsensusNeeded,
+	)
+
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
 	// will be skipped even if we have a update proposal for it
@@ -239,6 +248,7 @@ func NewSifApp(
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		params.NewAppModule(app.ParamsKeeper),
+		oracle.NewAppModule(appCodec, app.OracleKeeper),
 	)
 
 	app.sm.RegisterStoreDecoders()
@@ -270,6 +280,8 @@ func NewSifApp(
 		slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		govtypes.ModuleName,
+
+		oracletypes.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
