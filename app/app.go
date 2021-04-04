@@ -248,7 +248,7 @@ func NewSifApp(
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		params.NewAppModule(app.ParamsKeeper),
-		oracle.NewAppModule(app.OracleKeeper),
+		oracle.NewAppModule(appCodec, app.OracleKeeper),
 	)
 
 	app.sm.RegisterStoreDecoders()
