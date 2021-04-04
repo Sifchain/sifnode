@@ -115,7 +115,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 		prophecy = types.NewProphecy(claim.Id)
 	}
 	switch prophecy.Status.Text {
-	case types.StatusText_PEDNING_STATUS_TEXT:
+	case types.StatusText_STATUS_TEXT_PEDNING:
 		// continue processing
 	default:
 		return types.Status{}, types.ErrProphecyFinalized
@@ -175,10 +175,10 @@ func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) type
 	highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower)
 
 	if highestConsensusRatio >= k.consensusNeeded {
-		prophecy.Status.Text = types.StatusText_SUCCESS_STATUS_TEXT
+		prophecy.Status.Text = types.StatusText_STATUS_TEXT_SUCCESS
 		prophecy.Status.FinalClaim = highestClaim
 	} else if highestPossibleConsensusRatio < k.consensusNeeded {
-		prophecy.Status.Text = types.StatusText_FAILED_STATUS_TEXT
+		prophecy.Status.Text = types.StatusText_STATUS_TEXT_FAILED
 	}
 
 	return prophecy

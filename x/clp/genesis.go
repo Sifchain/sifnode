@@ -11,33 +11,35 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
-func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
+func InitGenesis(ctx sdk.Context, k keeper.Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
+	k.SetParams(ctx, data.Params)
+
 	if data.AddressWhitelist == nil || len(data.AddressWhitelist) == 0 {
 		panic(fmt.Sprintf("AddressWhiteList must be set."))
 	}
-	keeper.SetParams(ctx, data.Params)
+
 	wl := make([]sdk.AccAddress, len(data.AddressWhitelist), 0)
 	if data.AddressWhitelist != nil {
 		for i, entry := range data.AddressWhitelist {
 			wlAddress, err := sdk.AccAddressFromBech32(entry)
 			if err != nil {
-				// todo: panic?
+				panic(err)
 			}
 			wl[i] = wlAddress
 		}
 
-		keeper.SetClpWhiteList(ctx, wl)
+		k.SetClpWhiteList(ctx, wl)
 	}
 
-	keeper.SetClpWhiteList(ctx, wl)
+	k.SetClpWhiteList(ctx, wl)
 	for _, pool := range data.PoolList {
-		err := keeper.SetPool(ctx, pool)
+		err := k.SetPool(ctx, pool)
 		if err != nil {
 			panic(fmt.Sprintf("Pool could not be set : %s", pool.String()))
 		}
 	}
 	for _, lp := range data.LiquidityProviders {
-		keeper.SetLiquidityProvider(ctx, lp)
+		k.SetLiquidityProvider(ctx, lp)
 	}
 
 	return []abci.ValidatorUpdate{}

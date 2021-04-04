@@ -152,7 +152,7 @@ func (prophecy Prophecy) FindHighestClaim(ctx sdk.Context, stakeKeeper StakingKe
 func NewProphecy(id string) Prophecy {
 	return Prophecy{
 		ID:              id,
-		Status:          NewStatus(StatusText_PEDNING_STATUS_TEXT, ""),
+		Status:          NewStatus(StatusText_STATUS_TEXT_PEDNING, ""),
 		ClaimValidators: make(map[string][]sdk.ValAddress),
 		ValidatorClaims: make(map[string]string),
 	}

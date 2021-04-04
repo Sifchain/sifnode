@@ -33,7 +33,7 @@ func TestCreateGetProphecy(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 
 	//Test bad Creation with blank id
 	oracleClaim = types.NewClaim("", validator1Pow3.String(), TestString)
@@ -49,7 +49,7 @@ func TestCreateGetProphecy(t *testing.T) {
 	prophecy, found := app.OracleKeeper.GetProphecy(ctx, TestID)
 	require.True(t, found)
 	require.Equal(t, prophecy.ID, TestID)
-	require.Equal(t, prophecy.Status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, prophecy.Status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 	require.Equal(t, prophecy.ClaimValidators[TestString][0], validator1Pow3)
 	require.Equal(t, prophecy.ValidatorClaims[validator1Pow3.String()], TestString)
 }
@@ -84,7 +84,7 @@ func TestBadMsgs(t *testing.T) {
 	oracleClaim = types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 
 	//Test duplicate message
 	oracleClaim = types.NewClaim(TestID, validator1Pow3.String(), TestString)
@@ -114,13 +114,13 @@ func TestSuccessfulProphecy(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 
 	//Test second claim completes and finalizes to success
 	oracleClaim = types.NewClaim(TestID, validator2Pow3.String(), TestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_SUCCESS_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_SUCCESS)
 	require.Equal(t, status.FinalClaim, TestString)
 
 	//Test third claim not possible
@@ -145,19 +145,19 @@ func TestSuccessfulProphecyWithDisagreement(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 
 	//Test second disagreeing claim processed fine
 	oracleClaim = types.NewClaim(TestID, validator2Pow3.String(), AlternateTestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 
 	//Test third claim agrees and finalizes to success
 	oracleClaim = types.NewClaim(TestID, validator3Pow4.String(), TestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_SUCCESS_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_SUCCESS)
 	require.Equal(t, status.FinalClaim, TestString)
 }
 
@@ -176,20 +176,20 @@ func TestFailedProphecy(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 
 	//Test second disagreeing claim processed fine
 	oracleClaim = types.NewClaim(TestID, validator2Pow3.String(), AlternateTestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 	require.Equal(t, status.FinalClaim, "")
 
 	//Test third disagreeing claim processed fine and prophecy fails
 	oracleClaim = types.NewClaim(TestID, validator3Pow4.String(), AnotherAlternateTestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_FAILED_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_FAILED)
 	require.Equal(t, status.FinalClaim, "")
 }
 
@@ -208,13 +208,13 @@ func TestPowerOverrule(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 
 	//Test second disagreeing claim processed fine and finalized to its bytes
 	oracleClaim = types.NewClaim(TestID, validator2Pow7.String(), AlternateTestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_SUCCESS_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_SUCCESS)
 	require.Equal(t, status.FinalClaim, AlternateTestString)
 }
 func TestPowerAternate(t *testing.T) {
@@ -234,25 +234,25 @@ func TestPowerAternate(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow5.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 
 	//Test claim by v2
 	oracleClaim = types.NewClaim(TestID, validator2Pow4.String(), TestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 
 	//Test alternate claim by v4
 	oracleClaim = types.NewClaim(TestID, validator4Pow9.String(), AlternateTestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 
 	//Test finalclaim by v3
 	oracleClaim = types.NewClaim(TestID, validator3Pow3.String(), TestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_SUCCESS_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_SUCCESS)
 	require.Equal(t, status.FinalClaim, TestString)
 }
 
@@ -271,20 +271,20 @@ func TestMultipleProphecies(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PEDNING)
 
 	//Test claim on second id with second validator
 	oracleClaim = types.NewClaim(AlternateTestID, validator2Pow7.String(), AlternateTestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_SUCCESS_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_SUCCESS)
 	require.Equal(t, status.FinalClaim, AlternateTestString)
 
 	//Test claim on first id with second validator
 	oracleClaim = types.NewClaim(TestID, validator2Pow7.String(), TestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_SUCCESS_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_SUCCESS)
 	require.Equal(t, status.FinalClaim, TestString)
 
 	//Test claim on second id with first validator

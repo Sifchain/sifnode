@@ -17,6 +17,7 @@ const (
 var (
 	KeyMinCreatePoolThreshold = []byte("MinCreatePoolThreshold")
 )
+
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 // ParamKeyTable for clp module
@@ -25,8 +26,8 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 // NewParams creates a new Params object
-func NewParams(minThreshold uint64) *Params {
-	return &Params{
+func NewParams(minThreshold uint64) Params {
+	return Params{
 		MinCreatePoolThreshold: minThreshold,
 	}
 }
@@ -39,7 +40,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 }
 
 // DefaultParams defines the parameters for this module
-func DefaultParams() *Params {
+func DefaultParams() Params {
 	return NewParams(DefaultMinCreatePoolThreshold)
 }
 
@@ -51,7 +52,7 @@ func (p Params) Validate() bool {
 }
 
 func validateMinCreatePoolThreshold(i interface{}) error {
-	v, ok := i.(uint)
+	v, ok := i.(uint64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
