@@ -19,6 +19,18 @@ def sifnode_base_dir():
 
 
 @pytest.fixture
+def sifchain_admin_account():
+    return test_utilities.get_required_env_var("SIFCHAIN_ADMIN_ACCOUNT")
+
+
+@pytest.fixture
+def sifchain_admin_account_credentials():
+    return test_utilities.SifchaincliCredentials(
+        from_key="sifnodeadmin"
+    )
+
+
+@pytest.fixture
 def smart_contract_artifact_dir(smart_contracts_dir):
     result = test_utilities.get_optional_env_var("SMART_CONTRACT_ARTIFACT_DIR", None)
     return result if result else os.path.join(smart_contracts_dir, "build/contracts")
@@ -244,14 +256,6 @@ def ganache_timed_blocks(integration_dir):
 
 
 @pytest.fixture(scope="function")
-def no_whitelisted_validators(integration_dir):
-    """restart sifchain with no whitelisted validators, execute test, then restart with validators"""
-    yield test_utilities.get_shell_output(f"ADD_VALIDATOR_TO_WHITELIST= bash {integration_dir}/setup_sifchain.sh")
-    test_utilities.get_shell_output(
-        f". {integration_dir}/vagrantenv.sh; ADD_VALIDATOR_TO_WHITELIST=true bash {integration_dir}/setup_sifchain.sh")
-
-
-@pytest.fixture(scope="function")
 def ensure_relayer_restart(integration_dir, smart_contracts_dir):
     """restarts relayer after the test function completes.  Used by tests that need to stop the relayer."""
     yield None
@@ -332,3 +336,20 @@ def rowan_source_integrationtest_env_transfer_request(
 def ethbridge_module_address():
     """The hardcoded address of the sifnode ethbridge module"""
     return "sif1l3dftf499u4gvdeuuzdl2pgv4f0xdtnuuwlzp8"
+
+
+@pytest.fixture(scope="function")
+def restore_default_rescue_location(
+        ethbridge_module_address,
+        sifchain_admin_account,
+        sifchain_admin_account_credentials,
+        basic_transfer_request
+):
+    """Restores the ethbridge module as the destination for ceth fees"""
+    yield None
+    test_utilities.update_ceth_receiver_account(
+        receiver_account=ethbridge_module_address,
+        admin_account=sifchain_admin_account,
+        transfer_request=basic_transfer_request,
+        credentials=sifchain_admin_account_credentials
+    )
