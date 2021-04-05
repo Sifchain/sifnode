@@ -25,7 +25,7 @@ func (d ClaimStatus) String() string {
 }
 
 // DistributionRecord is created for every recipient for a distribution
-// (From : Jedi2002) Should we add distribution start height and completion height to this record.
+// TODO : Remove ClaimStatus from this struct and use it as prefix.
 type DistributionRecord struct {
 	ClaimStatus
 	DistributionName            string         `json:"distribution_name"`
