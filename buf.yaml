@@ -23,6 +23,8 @@ lint:
     - RPC_RESPONSE_STANDARD_NAME
   ignore:
     - gogoproto
+    - google
+    - cosmos
 
 breaking:
   use:
