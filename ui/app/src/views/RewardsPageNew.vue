@@ -33,6 +33,7 @@ export default defineComponent({
     let rewards = ref<Array<Object>>([]);
 
     watch(address, async () => {
+      console.log("address change", address);
       const data = await fetch(
         `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
       );
@@ -48,16 +49,16 @@ export default defineComponent({
 </script>
 
 <template>
-  <Layout :header="true" title="Your Rewards">
+  <Layout :header="true" title="Rewards">
     <Copy>
       Earn rewards by participating in of our rewards-earning programs. Please
-      see additional information of our current rewards programs and how to
-      become eligible for them
+      see additional information of our
       <a
         target="_blank"
         href="https://docs.sifchain.finance/resources/rewards-programs"
-        >here</a
-      >.
+        >current rewards program</a
+      >
+      and how to become eligible.
     </Copy>
     <div class="rewards-container">
       <div v-if="rewards.length === 0" class="loader-container">

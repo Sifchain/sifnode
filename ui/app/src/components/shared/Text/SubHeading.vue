@@ -1,13 +1,3 @@
-<script>
-/*
-TODO - Experimental Text component
-Need to figure out best way to use it
-e.g. import Text from 'core/Text'
-<Text.Body>Something</Text.Body>
-or <Text type="heading"> etc
-*/
-</script>
-
 <template>
   <div class="container">
     <slot></slot>

@@ -23,11 +23,6 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: "/rewards",
-    name: "RewardsPage",
-    component: RewardsPage,
-  },
-  {
-    path: "/rewards-new",
     name: "RewardsPageNew",
     component: RewardsPageNew,
   },
