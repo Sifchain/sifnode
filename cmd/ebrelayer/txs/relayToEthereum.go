@@ -161,7 +161,7 @@ func initRelayConfig(provider string, registry common.Address, event types.Event
 	return client, transactOptsAuth, target, nil
 }
 
-// GetGasPrice set up Ethereum client, validator's transaction auth, and the target contract's address
+// GetGasPrice set up Ethereum client, validator's transaction auth, and suggested gas price from geth.
 func GetGasPrice(provider string, sugaredLogger *zap.SugaredLogger) (*big.Int, error) {
 	// Start Ethereum client
 	client, err := ethclient.Dial(provider)
