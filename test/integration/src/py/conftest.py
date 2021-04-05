@@ -83,12 +83,6 @@ def n_sifchain_accounts():
 
 
 @pytest.fixture
-def ceth_amount():
-    """the meaning of ceth_amount is determined by the test using it"""
-    return int(int(test_utilities.get_optional_env_var("CETH_AMOUNT", 10 ** 18)))
-
-
-@pytest.fixture
 def rowan_amount():
     """the meaning of rowan_amount is determined by the test using it"""
     return int(int(test_utilities.get_optional_env_var("ROWAN_AMOUNT", 10 ** 18)))
@@ -143,11 +137,6 @@ def sifnodecli_node():
 @pytest.fixture
 def basedir():
     return test_utilities.get_required_env_var("BASEDIR")
-
-
-@pytest.fixture
-def ceth_fee():
-    return max(test_utilities.burn_gas_cost, test_utilities.lock_gas_cost)
 
 
 @pytest.fixture
@@ -272,7 +261,6 @@ def basic_transfer_request(
         bridgebank_address,
         bridgetoken_address,
         ethereum_network,
-        ceth_fee,
         sifnodecli_node,
         chain_id,
         sifchain_fees,
@@ -288,7 +276,6 @@ def basic_transfer_request(
         bridgebank_address=bridgebank_address,
         bridgetoken_address=bridgetoken_address,
         ethereum_network=ethereum_network,
-        ceth_amount=ceth_fee,
         sifnodecli_node=sifnodecli_node,
         manual_block_advance=is_ganache,
         chain_id=chain_id,
