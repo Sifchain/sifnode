@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -12,7 +13,7 @@ import (
 
 func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string) error {
 	for _, receiver := range output {
-		distributionRecord := types.NewDistributionRecord(name, receiver.Address, receiver.Coins)
+		distributionRecord := types.NewDistributionRecord(name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1)
 		if k.ExistsDistributionRecord(ctx, name, receiver.Address.String()) {
 			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address.String())
 			if err != nil {
@@ -29,7 +30,7 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string) 
 	return nil
 }
 
-func (k Keeper) DistributeDrops(ctx sdk.Context) error {
+func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 	pendingRecords := k.GetPendingRecordsLimited(ctx, 10)
 	for _, record := range pendingRecords {
 		err := k.GetSupplyKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, record.RecipientAddress, record.Coins)
@@ -37,10 +38,12 @@ func (k Keeper) DistributeDrops(ctx sdk.Context) error {
 			return errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", record.RecipientAddress.String())
 		}
 		record.ClaimStatus = types.Completed
+		record.DistributionCompletedHeight = height
 		err = k.SetDistributionRecord(ctx, record)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", record.String())
 		}
+		ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress.String(), height, record.Coins.String()))
 	}
 	return nil
 }

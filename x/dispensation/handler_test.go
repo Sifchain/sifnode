@@ -5,6 +5,7 @@ import (
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -14,9 +15,11 @@ func TestNewHandler(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
 	handler := dispensation.NewHandler(keeper)
-	inputList := test.GenerateInputList("15000000000000000000")
-	outputList := test.GenerateOutputList("10000000000000000000")
-
+	recipients := 3000
+	inputList := test.CreatInputList(2, "15000000000000000000000")
+	outputList := test.CreatOutputList(recipients, "10000000000000000000")
+	err := bank.ValidateInputsOutputs(inputList, outputList)
+	assert.NoError(t, err)
 	for _, in := range inputList {
 		_, err := keeper.GetBankKeeper().AddCoins(ctx, in.Address, in.Coins)
 		assert.NoError(t, err)
@@ -26,8 +29,6 @@ func TestNewHandler(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
-	for _, out := range outputList {
-		ok := keeper.GetBankKeeper().HasCoins(ctx, out.Address, out.Coins)
-		assert.True(t, ok)
-	}
+	dr := keeper.GetRecordsForNameAll(ctx, "AR1")
+	assert.Len(t, dr, recipients)
 }

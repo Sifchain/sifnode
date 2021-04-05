@@ -17,7 +17,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 		case types.QueryRecordsByDistrName:
 			return queryDistributionRecordsForName(ctx, req, keeper)
 		case types.QueryRecordsByRecipient:
-			return queryDistributionRecordsForReceipient(ctx, req, keeper)
+			return queryDistributionRecordsForRecipient(ctx, req, keeper)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown dispensation query endpoint")
 		}
@@ -31,7 +31,18 @@ func queryDistributionRecordsForName(ctx sdk.Context, req abci.RequestQuery, kee
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	records := keeper.GetRecordsForName(ctx, params.DistributionName)
+	var f = func(sdk.Context, string) types.DistributionRecords {
+		return types.DistributionRecords{}
+	}
+	switch params.Status {
+	case types.Pending:
+		f = keeper.GetRecordsForNamePending
+	case types.Completed:
+		f = keeper.GetRecordsForNameCompleted
+	default:
+		f = keeper.GetRecordsForNameAll
+	}
+	records := f(ctx, params.DistributionName)
 	res, err := codec.MarshalJSONIndent(keeper.cdc, records)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
@@ -39,7 +50,7 @@ func queryDistributionRecordsForName(ctx sdk.Context, req abci.RequestQuery, kee
 	return res, nil
 }
 
-func queryDistributionRecordsForReceipient(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, error) {
+func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery, keeper Keeper) ([]byte, error) {
 	var params types.QueryRecordsByRecipientAddr
 
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)

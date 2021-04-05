@@ -6,5 +6,5 @@ import (
 )
 
 func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k Keeper) {
-	_ = k.DistributeDrops(ctx)
+	_ = k.DistributeDrops(ctx, req.Header.Height)
 }
