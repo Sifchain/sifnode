@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/tendermint/tendermint/libs/log"
+	"go.uber.org/zap"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -73,8 +74,7 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 }
 
 // ProcessClaim ...
-func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, error) {
-	fmt.Println("sifnode oracle keeper ProcessClaim")
+func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim, sugaredLogger *zap.SugaredLogger) (types.Status, error) {
 	inWhiteList := false
 	// Check if claim from whitelist validators
 	for _, address := range k.GetOracleWhiteList(ctx) {
@@ -86,24 +86,23 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	}
 
 	if !inWhiteList {
-		fmt.Println("sifnode oracle keeper ProcessClaim validator no in whitelist")
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim validator no in whitelist.")
 		return types.Status{}, types.ErrValidatorNotInWhiteList
 	}
 
 	activeValidator := k.checkActiveValidator(ctx, claim.ValidatorAddress)
 	if !activeValidator {
-		fmt.Println("sifnode oracle keeper ProcessClaim validator not active")
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim validator not active.")
 		return types.Status{}, types.ErrInvalidValidator
 	}
 
 	if claim.ID == "" {
-		fmt.Printf("sifnode oracle keeper ProcessClaim wrong claim id %s\n", claim.ID)
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim wrong claim id.", "claimID", claim.ID)
 		return types.Status{}, types.ErrInvalidIdentifier
 	}
 
 	if claim.Content == "" {
-		fmt.Println("sifnode oracle keeper ProcessClaim claim content is empty")
-
+		sugaredLogger.Errorw("sifnode oracle keeper ProcessClaim claim content is empty.")
 		return types.Status{}, types.ErrInvalidClaim
 	}
 
@@ -111,7 +110,6 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	if !found {
 		prophecy = types.NewProphecy(claim.ID)
 	}
-
 	switch prophecy.Status.Text {
 	case types.PendingStatusText:
 		// continue processing
@@ -120,8 +118,6 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 	}
 
 	if prophecy.ValidatorClaims[claim.ValidatorAddress.String()] != "" {
-		fmt.Println("sifnode oracle keeper ProcessClaim claim content is duplicated")
-
 		return types.Status{}, types.ErrDuplicateMessage
 	}
 
@@ -142,8 +138,9 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error {
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
 	if !k.IsAdminAccount(ctx, cosmosSender) {
+		sugaredLogger.Errorw("cosmos sender is not admin account.")
 		return types.ErrNotAdminAccount
 	}
 
@@ -165,34 +162,19 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sd
 // will never be able to become successful due to not enough validation power being
 // left to push it over the threshold required for consensus.
 func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) types.Prophecy {
-	fmt.Println("sifnode oracle keeper processCompletion")
 	highestClaim, highestClaimPower, totalClaimsPower, totalPower := prophecy.FindHighestClaim(ctx, k.stakeKeeper, k.GetOracleWhiteList(ctx))
-
-	fmt.Printf("sifnode oracle keeper processCompletion highestClaim is %s\n", highestClaim)
-	fmt.Printf("sifnode oracle keeper processCompletion highestClaimPower is %d\n", highestClaimPower)
-	fmt.Printf("sifnode oracle keeper processCompletion totalClaimsPower is %d\n", totalClaimsPower)
-	fmt.Printf("sifnode oracle keeper processCompletion totalPower is %d\n", totalPower)
 
 	highestConsensusRatio := float64(highestClaimPower) / float64(totalPower)
 	remainingPossibleClaimPower := totalPower - totalClaimsPower
 	highestPossibleClaimPower := highestClaimPower + remainingPossibleClaimPower
 	highestPossibleConsensusRatio := float64(highestPossibleClaimPower) / float64(totalPower)
 
-	fmt.Printf("sifnode oracle keeper processCompletion highestConsensusRatio is %f\n", highestConsensusRatio)
-	fmt.Printf("sifnode oracle keeper processCompletion remainingPossibleClaimPower is %d\n", remainingPossibleClaimPower)
-	fmt.Printf("sifnode oracle keeper processCompletion highestPossibleClaimPower is %d\n", highestPossibleClaimPower)
-	fmt.Printf("sifnode oracle keeper processCompletion highestPossibleConsensusRatio is %f\n", highestPossibleConsensusRatio)
-
 	if highestConsensusRatio >= k.consensusNeeded {
 		prophecy.Status.Text = types.SuccessStatusText
 		prophecy.Status.FinalClaim = highestClaim
-		fmt.Printf("sifnode oracle keeper processCompletion success FinalClaim is %s\n", highestClaim)
-
 	} else if highestPossibleConsensusRatio < k.consensusNeeded {
-		fmt.Printf("sifnode oracle keeper processCompletion failed with %s\n", types.FailedStatusText)
 		prophecy.Status.Text = types.FailedStatusText
 	}
-	fmt.Printf("sifnode oracle keeper processCompletion end with %s\n", prophecy.Status.Text)
 
 	return prophecy
 }

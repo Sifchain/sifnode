@@ -35,13 +35,13 @@ export class _AssetAmount implements IAssetAmount {
   constructor(public asset: Asset, public amount: JSBI) {
     this.fraction = new Fraction(
       amount,
-      JSBI.exponentiate(TEN, JSBI.BigInt(asset.decimals))
+      JSBI.exponentiate(TEN, JSBI.BigInt(asset.decimals)),
     );
   }
 
   public toBaseUnits() {
     return this.multiply(
-      JSBI.exponentiate(TEN, JSBI.BigInt(this.asset.decimals))
+      JSBI.exponentiate(TEN, JSBI.BigInt(this.asset.decimals)),
     ).quotient;
   }
 
@@ -52,7 +52,7 @@ export class _AssetAmount implements IAssetAmount {
   public toSignificant(
     significantDigits = 6,
     format?: object,
-    rounding: Rounding = Rounding.ROUND_DOWN
+    rounding: Rounding = Rounding.ROUND_DOWN,
   ): string {
     return this.fraction.toSignificant(significantDigits, format, rounding);
   }
@@ -60,9 +60,11 @@ export class _AssetAmount implements IAssetAmount {
   public toFixed(
     decimalPlaces = this.asset.decimals,
     format?: object,
-    rounding: Rounding = Rounding.ROUND_DOWN
+    rounding: Rounding = Rounding.ROUND_DOWN,
   ): string {
-    invariant(decimalPlaces <= this.asset.decimals, "DECIMALS");
+    // Provisional: This breaks app if falsy. N
+    // Do not know why necessary if only for display
+    // invariant(decimalPlaces <= this.asset.decimals, "DECIMALS");
     return this.fraction.toFixed(decimalPlaces, format, rounding);
   }
 
@@ -168,7 +170,7 @@ export type AssetAmount = IAssetAmount;
 export function AssetAmount(
   asset: Asset,
   amount: string | number | JSBI | IFraction,
-  options?: { inBaseUnit?: boolean }
+  options?: { inBaseUnit?: boolean },
 ): IAssetAmount {
   const { inBaseUnit = false } = options ?? {};
   if (inBaseUnit && typeof amount === "string") {

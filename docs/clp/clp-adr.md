@@ -59,7 +59,7 @@ liquidityOroviderAddress: sif15tyrwghfcjszj7sckxvqh0qpzprup9mhksmuzm
       R = Native Balance (before)
       A = External Balance (before)
       P = existing Pool Units
-      slipAdjustment = (1 - ABS((R a - r A)/((2 r + R) (a + A))))
+      slipAdjustment = (1 - ABS((R a - r A)/((r + R) (a + A))))
       units = ((P (a R + A r))/(2 A R))*slipAdjustment
    ````
     ***Consequences***
@@ -173,21 +173,21 @@ liquidityOroviderAddress: sif15tyrwghfcjszj7sckxvqh0qpzprup9mhksmuzm
    calcLiquidityFee(X, x, Y): calculates liquidity fee per Thorchain's CLP model
    
    {
-     return (x * x * Y ) / ((x + X) * (x + X))
+     return (x * x * Y) / ((x + X) * (x + X))
    }
    
    
-   calcTradeSlip(X, x): calculates trade slip per Thorchain's CLP model
+   calcPriceImpact(X, x): calculates price impact per Thorchain's CLP model
    
    {
-     return x * (2 * X + x) / (X * X)
+     return x / (x + X)
    }
    
    
    calcSwapResult(X, x, Y): calculates final swap received token amount
    
    {
-     return ( x * X * Y ) / ((x + X) * (x + X))
+     return (x * X * Y) / ((x + X) * (x + X))
    }
    ````
    ***Consequences***

@@ -1,7 +1,6 @@
 import detectMetaMaskProvider from "@metamask/detect-provider";
 import Web3 from "web3";
 import { AbstractProvider, provider } from "web3-core";
-import notify from "../../utils/Notifications"
 
 type MetaMaskProvider = AbstractProvider & {
   request?: (a: any) => Promise<void>;
@@ -16,11 +15,9 @@ type WindowWithPossibleMetaMask = typeof window & {
 export const getMetamaskProvider = async (): Promise<provider> => {
   const mmp = await detectMetaMaskProvider();
   const win = window as WindowWithPossibleMetaMask;
-  if (!mmp) {
-    notify({type: "error", message: "Metamask not found.", detail: "Check if extension enabled for this URL."})
-    return null
-  }
-  if (!win) return null;
+
+  if (!mmp || !win) return null;
+
   if (mmp) {
     return mmp as provider;
   }

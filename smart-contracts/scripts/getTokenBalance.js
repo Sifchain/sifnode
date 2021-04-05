@@ -14,6 +14,8 @@ module.exports = async () => {
       require("../build/contracts/BridgeToken.json")
     );
   
+    console.log("Expected usage: \n truffle exec scripts/getTokenBalance.js 0x627306090abaB3A6e1400e9345bC60c78a8BEf57 0xdDA6327139485221633A1FcD65f4aC932E60A2e1");
+
     /*******************************************
      *** Constants
      ******************************************/

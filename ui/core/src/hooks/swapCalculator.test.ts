@@ -26,15 +26,15 @@ describe("swapCalculator", () => {
     const pool1 = ref(
       Pool(
         AssetAmount(ATK, "2000000000000"),
-        AssetAmount(ROWAN, "1000000000000")
-      )
+        AssetAmount(ROWAN, "1000000000000"),
+      ),
     ) as Ref<Pool | null>;
 
     const pool2 = ref(
       Pool(
         AssetAmount(BTK, "1000000000000"),
-        AssetAmount(ROWAN, "1000000000000")
-      )
+        AssetAmount(ROWAN, "1000000000000"),
+      ),
     ) as Ref<Pool | null>;
 
     const poolFinder: any = jest.fn((a: string, b: string) => {
@@ -89,7 +89,7 @@ describe("swapCalculator", () => {
     // Check background update
     pool1.value = Pool(
       AssetAmount(ATK, "1000000000000"),
-      AssetAmount(ROWAN, "1000000000000")
+      AssetAmount(ROWAN, "1000000000000"),
     );
 
     selectedField.value = "from";
@@ -100,7 +100,7 @@ describe("swapCalculator", () => {
 
     pool1.value = Pool(
       AssetAmount(ATK, "2000000000000"),
-      AssetAmount(ROWAN, "1000000000000")
+      AssetAmount(ROWAN, "1000000000000"),
     );
 
     selectedField.value = "from";
@@ -122,18 +122,18 @@ describe("swapCalculator", () => {
 
     expect(state.value).toBe(SwapState.INSUFFICIENT_FUNDS);
     expect(toAmount.value).toBe("4999.9999");
-    expect(priceMessage.value).toBe("0.500000 BTK per ATK");
+    expect(priceMessage.value).toBe("0.500000 cTK per cTK");
     expect(priceImpact.value).toBe("0.000001");
     expect(providerFee.value).toBe("0.00005");
   });
 
   test("Avoid division by zero", () => {
     const pool1 = ref(
-      Pool(AssetAmount(ATK, "1000000"), AssetAmount(ROWAN, "1000000"))
+      Pool(AssetAmount(ATK, "1000000"), AssetAmount(ROWAN, "1000000")),
     ) as Ref<Pool | null>;
 
     const pool2 = ref(
-      Pool(AssetAmount(BTK, "2000000"), AssetAmount(ROWAN, "1000000"))
+      Pool(AssetAmount(BTK, "2000000"), AssetAmount(ROWAN, "1000000")),
     ) as Ref<Pool | null>;
 
     const poolFinder: any = jest.fn((a: string, b: string) => {

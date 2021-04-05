@@ -1,20 +1,122 @@
 <script lang="ts">
 import { computed, defineComponent } from "vue";
-import { ref, Ref } from "@vue/reactivity"; /* eslint-disable-line */
+import { reactive, ref, Ref } from "@vue/reactivity"; /* eslint-disable-line */
 import { useCore } from "@/hooks/useCore";
+import { AppEvent } from "ui-core/src/api/EventBusService";
+
+// Message?
+type Notification = {
+  id?: string; // id would be used to remove timeout, may only need to be local type
+  type: "error" | "success" | "info";
+  message: string;
+  detail?: {
+    type: "etherscan" | "websocket" | "info";
+    message: string;
+  };
+  loader?: boolean;
+};
+
+// Visual Notifications are a view level system here we work out which ones are displayed to the user
+function parseEventToNotifications(event: AppEvent): Notification | null {
+  if (event.type === "NoLiquidityPoolsFoundEvent") {
+    return {
+      type: "error",
+      message: "No Liquidity Pools Found",
+      detail: {
+        type: "info",
+        message: "Create liquidity pool to swap.",
+      },
+    };
+  }
+
+  if (event.type === "TransactionErrorEvent") {
+    return {
+      type: "error",
+      message: event.payload.message,
+    };
+  }
+
+  if (event.type === "PegTransactionPendingEvent") {
+    return {
+      type: "info",
+      message: "Pegged Transaction Pending",
+      detail: {
+        type: "etherscan",
+        message: event.payload.hash,
+      },
+      loader: true,
+    };
+  }
+
+  if (event.type === "PegTransactionErrorEvent") {
+    return {
+      type: "error",
+      message: event.payload.message,
+    };
+  }
+
+  if (event.type === "PegTransactionCompletedEvent") {
+    return {
+      type: "success",
+      message: `Transfer ${event.payload.hash} has succeded.`,
+    };
+  }
+
+  if (event.type === "WalletConnectedEvent") {
+    const message = {
+      sif: "Sif Account Connected",
+      eth: "Connected to Metamask",
+    }[event.payload.walletType];
+
+    return {
+      type: "success",
+      message,
+      detail: {
+        type: "info",
+        message: event.payload.address,
+      },
+    };
+  }
+
+  if (event.type === "ErrorEvent") {
+    return {
+      type: "error",
+      message: event.payload.message,
+      detail: event.payload.detail,
+    };
+  }
+
+  if (event.type === "WalletConnectionErrorEvent") {
+    return {
+      type: "error",
+      message: event.payload.message,
+      detail: {
+        type: "info",
+        message: "Check if extension enabled for this URL.",
+      },
+    };
+  }
+
+  console.error("Have not captured event", JSON.stringify(event));
+  return null;
+}
 
 export default defineComponent({
   name: "Notifications",
   components: {},
   setup() {
-    const { store, actions } = useCore();
-    // @ts-ignore ??
-    const notifications = computed(() => store.notifications);
+    const { api } = useCore();
+    const notifications = reactive<Notification[]>([]);
+
+    api.EventBusService.onAny((event) => {
+      const notification = parseEventToNotifications(event);
+      if (notification !== null) notifications.unshift(notification);
+    });
 
     return {
       notifications,
       removeItem(index: any) {
-        store.notifications.splice(index, 1);
+        notifications.splice(index, 1);
       },
     };
   },
@@ -37,8 +139,19 @@ export default defineComponent({
             <div class="circle" v-if="item.type !== 'info'"></div>
             <div>{{ item.message }}</div>
           </div>
-          <div class="detail" v-if="item.detail">
-            {{ item.detail }}
+          <div class="detail" v-show="item.detail">
+            <div v-if="item.detail?.type === 'etherscan'">
+              Check on
+              <a
+                target="_blank"
+                :href="`https://etherscan.io/tx/${item.detail?.message}`"
+                @click.stop
+                >Block Explorer</a
+              >
+            </div>
+            <div v-else-if="item.detail?.type === 'info'">
+              {{ item.detail.message }}
+            </div>
           </div>
         </div>
       </div>

@@ -18,6 +18,19 @@
             </div>
           </transition>
           <transition name="swipe">
+            <div class="text" v-if="state === 'out_of_gas'">
+              <p>Transaction Failed</p>
+              <p class="thin">
+                Failed to swap
+                <span class="thick">{{ _fromAmount }} {{ _fromToken }}</span>
+                for
+                <span class="thick">{{ _toAmount }} {{ _toToken }}</span>
+              </p>
+              <br />
+              <p class="sub">Please try to increase the gas limit.</p>
+            </div>
+          </transition>
+          <transition name="swipe">
             <div class="text" v-if="state === 'rejected'">
               <p>Transaction Rejected</p>
               <p class="thin">
@@ -54,7 +67,10 @@
               </p>
               <br />
               <p class="sub">
-                <a class="anchor" target="_blank" :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
+                <a
+                  class="anchor"
+                  target="_blank"
+                  :href="getBlockExplorerUrl(chainId, transactionHash)"
                   >View transaction on Block Explorer</a
                 >
               </p>
@@ -76,6 +92,7 @@ import { defineComponent } from "vue";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import { useCore } from "@/hooks/useCore";
+import { getBlockExplorerUrl } from "../shared/utils";
 
 export default defineComponent({
   components: { Loader, SifButton },
@@ -99,6 +116,7 @@ export default defineComponent({
       _toAmount: props.toAmount,
       _toToken: props.toToken,
       chainId: config.sifChainId,
+      getBlockExplorerUrl,
     };
   },
 });
@@ -107,20 +125,21 @@ export default defineComponent({
 <style lang="scss" scoped>
 .confirmation {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 50vh;
+  justify-content: start;
+  align-items: start;
+  min-height: 40vh;
   padding: 15px 20px;
 }
 .message {
   width: 100%;
-  font-size: 16px;
+  font-size: 18px;
+  margin-top: 3em;
 }
 .text-wrapper {
+  margin-top: 0.5em;
   position: relative;
   display: flex;
   width: 100%;
-  height: 88px;
 }
 .text {
   position: absolute;
@@ -130,6 +149,9 @@ export default defineComponent({
   color: $c_black;
 }
 .thin {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  font-size: 15px;
   font-weight: normal;
 }
 .thick {

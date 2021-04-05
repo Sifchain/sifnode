@@ -100,12 +100,11 @@ module.exports = async (cb) => {
 
     // Send lock transaction
     console.log("Connected to contract, sending lock...");
-    console.log("accounts[0]: ", accounts[0]);
     let str = (await web3.eth.getTransactionCount(accounts[0])).toString()
     let nonceVal = Number(str);
     console.log("starting nonce: ", nonceVal)
     let numIterations = Number(process.env.COUNT)
-    for (let x = 0; x < 3; x++) {
+    for (let x = 0; x < 1; x++) {
       const promises = [];
       for (let i = 0; i < numIterations; i++) {
         txResultPromise = bank.lock(cosmosRecipient, coinDenom, amount, {
@@ -113,7 +112,7 @@ module.exports = async (cb) => {
           value: coinDenom === NULL_ADDRESS ? amount : 0,
           gas: 200000, // 300,000 Gwei,
           nonce: nonceVal,
-          gasPrice: 1
+          gasPrice: 2110000000
         });
         promises.push(txResultPromise);
         nonceVal++;

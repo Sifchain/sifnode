@@ -1,7 +1,7 @@
 import { calculatePoolUnits } from "./formulae";
 import { Fraction } from "./fraction/Fraction";
 
-import tables from "../../../../test/test-tables/sample_pool_units.json";
+import tables from "../../../../test/test-tables/pool_units.json";
 
 // Use this list to only run specific tests
 const filterList: number[] = [];
@@ -14,7 +14,7 @@ tables.PoolUnits.forEach(({ r, a, R, A, P, expected }, index) => {
         new Fraction(a),
         new Fraction(R),
         new Fraction(A),
-        new Fraction(P)
+        new Fraction(P),
       );
 
       expect(output.toFixed(0)).toBe(expected);

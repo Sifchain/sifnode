@@ -1,6 +1,6 @@
 import { computed, Ref } from "@vue/reactivity";
 import ColorHash from "color-hash";
-import { Asset, Network } from "ui-core";
+import { Asset, Network, TxHash } from "ui-core";
 
 export function formatSymbol(symbol: string) {
   if (symbol.indexOf("c") === 0) {
@@ -16,9 +16,10 @@ export function formatPercentage(amount: string) {
 }
 // TODO: make this work for AssetAmounts and Fractions / Amounts
 export function formatNumber(displayNumber: string) {
+  if (!displayNumber) return "0";
   const amount = parseFloat(displayNumber);
   if (amount < 100000) {
-    return amount.toFixed(5);
+    return amount.toFixed(6);
   } else {
     return amount.toFixed(2);
   }
@@ -26,11 +27,11 @@ export function formatNumber(displayNumber: string) {
 
 // TODO: These could be replaced with a look up table
 export function getPeggedSymbol(symbol: string) {
-  if (symbol === "erowan") return "rowan";
-  return "c" + symbol;
+  if (symbol.toLowerCase() === "erowan") return "ROWAN";
+  return "c" + symbol.toUpperCase();
 }
 export function getUnpeggedSymbol(symbol: string) {
-  if (symbol === "rowan") return "erowan";
+  if (symbol.toLowerCase() === "rowan") return "eROWAN";
   return symbol.indexOf("c") === 0 ? symbol.slice(1) : symbol;
 }
 
@@ -48,7 +49,7 @@ export function getAssetLabel(t: Asset) {
 
 export function useAssetItem(symbol: Ref<string | undefined>) {
   const token = computed(() =>
-    symbol.value ? Asset.get(symbol.value) : undefined
+    symbol.value ? Asset.get(symbol.value) : undefined,
   );
 
   const tokenLabel = computed(() => {
@@ -66,11 +67,23 @@ export function useAssetItem(symbol: Ref<string | undefined>) {
     return `background: ${color};`;
   });
 
-  const asset = {
+  return {
     token: token,
     label: tokenLabel,
     background: backgroundStyle,
   };
+}
 
-  return asset;
+export function getBlockExplorerUrl(chainId: string, txHash?: TxHash): string {
+  switch (chainId) {
+    case "sifchain":
+      if (!txHash) return "https://blockexplorer.sifchain.finance/";
+      return `https://blockexplorer.sifchain.finance/transactions/${txHash}`;
+    case "sifchain-testnet":
+      if (!txHash) return `https://blockexplorer-testnet.sifchain.finance/`;
+      return `https://blockexplorer-testnet.sifchain.finance/transactions/${txHash}`;
+    default:
+      if (!txHash) return "https://blockexplorer-devnet.sifchain.finance/";
+      return `https://blockexplorer-devnet.sifchain.finance/transactions/${txHash}`;
+  }
 }

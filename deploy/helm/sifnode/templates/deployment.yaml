@@ -37,11 +37,12 @@ spec:
               value: {{ .Values.sifnode.env.moniker }}
         - name: sifgen
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
           {{- if .Values.sifnode.args.peerAddress }}
           args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" --bind-ip-address $EXTERNAL_IP --peer-address {{ .Values.sifnode.args.peerAddress }} --genesis-url {{ .Values.sifnode.args.genesisURL }} --with-cosmovisor"]
           {{- else }}
-          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" --admin-clp-addresses \"{{ .Values.sifnode.args.adminCLPAddresses }}\" --admin-oracle-address {{ .Values.sifnode.args.adminOracleAddress }} --bind-ip-address $EXTERNAL_IP --standalone --with-cosmovisor"]
+          args: ["-c", "sifgen node create $CHAINNET $MONIKER \"{{ .Values.sifnode.args.mnemonic }}\" --mint-amount {{ .Values.sifnode.args.mintAmount }} --bond-amount {{ .Values.sifnode.args.bondAmount }} --admin-clp-addresses \"{{ .Values.sifnode.args.adminCLPAddresses }}\" --admin-oracle-address {{ .Values.sifnode.args.adminOracleAddress }} --bind-ip-address $EXTERNAL_IP --gov-max-deposit-period {{ .Values.sifnode.args.govMaxDepositPeriod }} --gov-voting-period {{ .Values.sifnode.args.govVotingPeriod }} --standalone --with-cosmovisor"]
           {{- end }}
           volumeMounts:
             - name: data
@@ -85,12 +86,12 @@ spec:
               value: "{{ .Values.sifnode.env.daemonRestartAfterUpgrade }}"
           livenessProbe:
             tcpSocket:
-              port: 26657
+              port: 26656
             initialDelaySeconds: 5
             periodSeconds: 10
           readinessProbe:
             tcpSocket:
-              port: 26657
+              port: 26656
             initialDelaySeconds: 5
             periodSeconds: 10
           resources:

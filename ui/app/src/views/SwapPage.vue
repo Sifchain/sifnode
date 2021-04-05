@@ -44,9 +44,7 @@ export default defineComponent({
     const transactionState = ref<ConfirmState>("selecting");
     const transactionHash = ref<string | null>(null);
     const selectedField = ref<"from" | "to" | null>(null);
-    const { connected, connectedText } = useWalletButton({
-      addrLen: 8,
-    });
+    const { connected } = useWalletButton();
 
     function requestTransactionModalClose() {
       transactionState.value = "selecting";
@@ -54,6 +52,18 @@ export default defineComponent({
 
     const balances = computed(() => {
       return store.wallet.sif.balances;
+    });
+
+    const getAccountBalance = () => {
+      return balances.value.find(
+        (balance) => balance.asset.symbol === fromSymbol.value,
+      );
+    };
+
+    const isFromMaxActive = computed(() => {
+      const accountBalance = getAccountBalance();
+      if (!accountBalance) return false;
+      return fromAmount.value === accountBalance.toFixed();
     });
 
     const {
@@ -102,7 +112,7 @@ export default defineComponent({
       const tx = await actions.clp.swap(
         fromFieldAmount.value,
         toFieldAmount.value.asset,
-        minimumReceived.value
+        minimumReceived.value,
       );
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
@@ -110,6 +120,9 @@ export default defineComponent({
     }
 
     function swapInputs() {
+      selectedField.value === "to"
+        ? (selectedField.value = "from")
+        : (selectedField.value = "to");
       const fromAmountValue = fromAmount.value;
       const fromSymbolValue = fromSymbol.value;
       fromAmount.value = toAmount.value;
@@ -120,7 +133,6 @@ export default defineComponent({
 
     return {
       connected,
-      connectedText,
       nextStepMessage: computed(() => {
         switch (state.value) {
           case SwapState.SELECT_TOKENS:
@@ -131,6 +143,8 @@ export default defineComponent({
             return "Insufficient Funds";
           case SwapState.INSUFFICIENT_LIQUIDITY:
             return "Insufficient Liquidity";
+          case SwapState.INVALID_AMOUNT:
+            return "Invalid Amount";
           case SwapState.VALID_INPUT:
             return "Swap";
         }
@@ -168,6 +182,7 @@ export default defineComponent({
       },
       handleNextStepClicked,
       handleBlur() {
+        if (isFromMaxActive) return;
         selectedField.value = null;
       },
       slippage,
@@ -181,9 +196,7 @@ export default defineComponent({
       providerFee,
       handleFromMaxClicked() {
         selectedField.value = "from";
-        const accountBalance = balances.value.find(
-          (balance) => balance.asset.symbol === fromSymbol.value
-        );
+        const accountBalance = getAccountBalance();
         if (!accountBalance) return;
         fromAmount.value = accountBalance.toFixed(18);
       },
@@ -198,6 +211,7 @@ export default defineComponent({
           "failed",
           "rejected",
           "confirmed",
+          "out_of_gas",
         ].includes(transactionState.value);
       }),
       requestTransactionModalClose,
@@ -209,6 +223,8 @@ export default defineComponent({
       },
       handleAskConfirmClicked,
       transactionHash,
+      isFromMaxActive,
+      selectedField,
     };
   },
 });
@@ -223,6 +239,7 @@ export default defineComponent({
             v-model:fromAmount="fromAmount"
             v-model:fromSymbol="fromSymbol"
             :fromMax="!!fromSymbol"
+            :isFromMaxActive="isFromMaxActive"
             :fromDisabled="disableInputFields"
             :toDisabled="disableInputFields"
             @frommaxclicked="handleFromMaxClicked"
@@ -246,6 +263,7 @@ export default defineComponent({
           <SelectTokenDialogSif
             :selectedTokens="[fromSymbol, toSymbol].filter(Boolean)"
             @tokenselected="requestClose"
+            :mode="selectedField"
           />
         </template>
       </Modal>

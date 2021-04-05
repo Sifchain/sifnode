@@ -73,6 +73,11 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
     }
 
+    function changeOperator(address _newOperator) public onlyOperator {
+        require(_newOperator != address(0), "invalid address");
+        operator = _newOperator;
+    }
+
     /*
      * @dev: setBridgeBank
      */

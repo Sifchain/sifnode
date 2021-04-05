@@ -6,10 +6,10 @@ test("parseTxFailure", () => {
     parseTxFailure({
       transactionHash: "123",
       rawLog: "",
-    })
+    }),
   ).toMatchObject({
     hash: "123",
-    memo: "There was an unknown failiure",
+    memo: "There was an unknown failure",
     state: "failed",
   });
 
@@ -17,7 +17,7 @@ test("parseTxFailure", () => {
     parseTxFailure({
       transactionHash: "123",
       rawLog: "something was below expected",
-    })
+    }),
   ).toMatchObject({
     hash: "123",
     memo: "Your transaction has failed - Received amount is below expected",
@@ -28,7 +28,7 @@ test("parseTxFailure", () => {
     parseTxFailure({
       transactionHash: "123",
       rawLog: "yegads swap_failed!",
-    })
+    }),
   ).toMatchObject({
     hash: "123",
     memo: "Your transaction has failed",
@@ -39,7 +39,7 @@ test("parseTxFailure", () => {
     parseTxFailure({
       transactionHash: "123",
       rawLog: "your Request rejected!",
-    })
+    }),
   ).toMatchObject({
     hash: "123",
     memo: "You have rejected the transaction",

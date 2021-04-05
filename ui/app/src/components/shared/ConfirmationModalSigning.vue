@@ -5,7 +5,9 @@
         <Loader
           black
           :success="state === 'confirmed'"
-          :failed="state === 'rejected' || state === 'failed'"
+          :failed="
+            state === 'rejected' || state === 'failed' || state === 'out_of_gas'
+          "
         /><br />
         <div class="text-wrapper">
           <!-- 
@@ -17,6 +19,13 @@
 
             Perhaps we could use render functions to accomplish this?
           -->
+          <transition name="swipe">
+            <div class="text" v-if="state === 'approving'">
+              <p>Waiting for approval</p>
+              <br />
+              <p class="sub">Confirm this transaction in your wallet</p>
+            </div>
+          </transition>
           <transition name="swipe">
             <div class="text" v-if="state === 'signing'">
               <p>Waiting for confirmation</p>
@@ -45,6 +54,14 @@
           </transition>
 
           <transition name="swipe">
+            <div class="text" v-if="state === 'out_of_gas'">
+              <p>Transaction Failed - Out of Gas</p>
+              <br />
+              <p class="sub">Please try to increase the gas limit.</p>
+            </div>
+          </transition>
+
+          <transition name="swipe">
             <div class="text" v-if="state === 'confirmed'">
               <p>Transaction Submitted</p>
               <slot name="confirmed"></slot>
@@ -52,10 +69,10 @@
               <p class="sub">
                 <!-- To the todo point above, we need to be able to control this better, hence isSifTxHash() -->
                 <a
-                  v-if="transactionHash?.substring(0,2) !== '0x'"
+                  v-if="transactionHash?.substring(0, 2) !== '0x'"
                   class="anchor"
                   target="_blank"
-                  :href="`https://blockexplorer-${chainId}.sifchain.finance/transactions/${transactionHash}`"
+                  :href="getBlockExplorerUrl(chainId, transactionHash)"
                   >View transaction on Block Explorer</a
                 >
                 <a
@@ -84,6 +101,7 @@ import { defineComponent } from "vue";
 import { useCore } from "@/hooks/useCore";
 import Loader from "@/components/shared/Loader.vue";
 import SifButton from "@/components/shared/SifButton.vue";
+import { getBlockExplorerUrl } from "./utils";
 
 export default defineComponent({
   inheritAttrs: false,
@@ -99,6 +117,7 @@ export default defineComponent({
 
     return {
       chainId: config.sifChainId,
+      getBlockExplorerUrl,
     };
   },
 });

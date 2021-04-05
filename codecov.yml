@@ -10,43 +10,51 @@ coverage:
 
   status:
     # Learn more at https://docs.codecov.io/docs/commit-status
+    default_rules:
+      flag_coverage_not_uploaded_behavior: exclude # don't send status checks that don't have flag coverage uploaded
+    patch: off
     project:
       default:
-        threshold: 1% # allow this much decrease on project
-      app:
+        flags:
+          - server
+          - ui
+      server:
+        target: 50%
+        flags:
+          - server
+        paths:
+          - "x/"
+          - "!x/**/client/" # ignore client package
+      ui:
         target: 70%
-        flags: app
-      modules:
-        target: 70%
-        flags: modules
-      client:
-        flags: client
+        flags:
+          - ui
+        paths:
+          - "ui/core/src"
     changes: false
 
 comment:
-  layout: "reach, diff, files"
+  layout: "reach, diff, flags, files"
   behavior: default # update if exists else create new
   require_changes: true
 
 flags:
-  app:
-    paths:
-      - "app/"
-      - "baseapp/"
-  modules:
+  server:
     paths:
       - "x/"
       - "!x/**/client/" # ignore client package
-  client:
+    carryforward: true
+  ui:
     paths:
-      - "client/"
-      - "x/**/client/"
+      - "ui/core/src"
+    carryforward: true
 
 ignore:
   - "docs"
   - "*.md"
   - "*.rst"
   - "**/test_common.go"
+  - "**/test_helpers.go"
   - "**/module.go"
   - "**/genesis.go"
   - "scripts/"

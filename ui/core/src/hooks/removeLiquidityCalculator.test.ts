@@ -51,7 +51,7 @@ describe("useRemoveLiquidityCalculator", () => {
       new Fraction("100000") as IFraction,
       "sif123456876512341234",
       ZERO,
-      ZERO
+      ZERO,
     );
 
     poolFinder.mockImplementation(
@@ -60,9 +60,9 @@ describe("useRemoveLiquidityCalculator", () => {
           Pool(
             AssetAmount(CATK, "1000000"),
             AssetAmount(ROWAN, "1000000"),
-            new Fraction("1000000")
-          )
-        ) as Ref<Pool>
+            new Fraction("1000000"),
+          ),
+        ) as Ref<Pool>,
     );
 
     expect(state.value).toBe(PoolState.SELECT_TOKENS);

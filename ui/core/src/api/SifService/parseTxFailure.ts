@@ -36,6 +36,24 @@ export function parseTxFailure(txFailure: {
     };
   }
 
+  if (txFailure.rawLog.toLowerCase().includes("out of gas")) {
+    return {
+      code: ErrorCode.TX_FAILED_OUT_OF_GAS,
+      hash: txFailure.transactionHash,
+      memo: getErrorMessage(ErrorCode.TX_FAILED_OUT_OF_GAS),
+      state: "out_of_gas",
+    };
+  }
+
+  if (txFailure.rawLog.toLowerCase().includes("insufficient funds")) {
+    return {
+      code: ErrorCode.INSUFFICIENT_FUNDS,
+      hash: txFailure.transactionHash,
+      memo: getErrorMessage(ErrorCode.INSUFFICIENT_FUNDS),
+      state: "failed",
+    };
+  }
+
   return {
     code: ErrorCode.UNKNOWN_FAILURE,
     hash: txFailure.transactionHash,

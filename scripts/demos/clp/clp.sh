@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 echo "Creating pools ceth and cdash"
-sifnodecli tx clp create-pool --from sif --symbol ceth --nativeAmount 200 --externalAmount 200  --yes
+sifnodecli tx clp create-pool --from sif --symbol ceth --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --yes
 
 sleep 5
-sifnodecli tx clp create-pool --from sif --symbol cdash --nativeAmount 100 --externalAmount 100  --yes
+sifnodecli tx clp create-pool --from sif --symbol cdash --nativeAmount 1000000000000000000 --externalAmount 1000000000000000000  --yes
 
 echo "Query all pools"
 sleep 8
@@ -24,7 +24,7 @@ sifnodecli tx clp add-liquidity --from sif --symbol ceth --nativeAmount 1 --exte
 
 echo "swap"
 sleep 8
-sifnodecli tx clp swap --from sif --sentSymbol ceth --receivedSymbol cdash --sentAmount 20 --minReceivingAmount 0 --yes
+sifnodecli tx clp swap --from sif --sentSymbol ceth --receivedSymbol cdash --sentAmount 1000000000000000000 --minReceivingAmount 0 --yes
 
 echo "removing Liquidity"
 sleep 8
@@ -40,3 +40,6 @@ sifnodecli tx clp decommission-pool --from sif --symbol ceth --yes
 
 echo "sifnodecli query clp pools "
 echo "Should list only 1 pool , user has been added as admin"
+
+
+

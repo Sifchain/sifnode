@@ -1,9 +1,0 @@
-{
-  "sifAddrPrefix": "sif",
-  "sifApiUrl": "https://api-monkeybars.sifchain.finance",
-  "sifWsUrl": "ws://api-monkeybars.sifchain.finance:26657/websocket",
-  "sifChainId": "monkey-bars",
-  "web3Provider": "metamask",
-  "nativeAsset": "rowan",
-  "bridgebankContractAddress": "0xa5658e85bc7AC7F0388E60E58BEd5aFB41143330"
-}

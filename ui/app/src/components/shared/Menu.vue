@@ -4,25 +4,27 @@
       <router-link class="logo" to="/">S</router-link>
     </div>
     <div class="item">
-      <a class="link" target="_blank" href="https://docs.sifchain.finance/resources/sifchain-dex-ui"
+      <a
+        class="link"
+        target="_blank"
+        href="https://docs.sifchain.finance/resources/sifchain-dex-ui"
         >Discover</a
       >
     </div>
     <div class="item">
-      <a class="link" target="_blank" href="https://docs.sifchain.finance/resources/faq#how-can-i-acquire-rowan-and-or-erowan"
+      <a
+        class="link"
+        target="_blank"
+        href="https://docs.sifchain.finance/resources/faq#how-can-i-acquire-rowan-and-or-erowan"
         >Get Rowan</a
       >
     </div>
-    <!-- 
     <div class="item">
-      <router-link class="link" to="/">New wallet</router-link>
+      <router-link class="link" to="/stats">Pool Stats</router-link>
     </div>
     <div class="item">
-      <router-link class="link" to="/">Convert</router-link>
+      <router-link class="link" to="/rewards">Stake & Delegate</router-link>
     </div>
-    <div class="item">
-      <router-link class="link" to="/">Deposit</router-link>
-    </div> -->
   </div>
 </template>
 

@@ -1,6 +1,3 @@
-// These have mostly come off the API VOs and we may or may not need them
-// As we flesh out API calls within the interface we can specify this further
-
 import JSBI from "jsbi";
 import { Address } from "./Address";
 import { Asset } from "./Asset";
@@ -8,8 +5,15 @@ import { Asset } from "./Asset";
 export type TransactionStatus = {
   code?: number;
   hash: string;
-  state: "requested" | "accepted" | "failed" | "rejected";
+  state:
+    | "requested"
+    | "accepted"
+    | "failed"
+    | "rejected"
+    | "out_of_gas"
+    | "completed"; // Do we need to differentiate between failed and rejected here?
   memo?: string;
+  symbol?: string;
 };
 
 export type TxParams = {

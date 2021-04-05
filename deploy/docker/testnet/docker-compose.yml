@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  sifnode:
+    image: sifchain/sifnoded:testnet-genesis
+    ports:
+      - 26656:26656
+      - 26657:26657
+    environment:
+      CHAINNET: sifchain-testnet
+      MONIKER: ${MONIKER}
+      MNEMONIC: ${MNEMONIC}
+      PEER_ADDRESSES: b4caebe07ab25126e4e6053bf955833198f18ed0@54.216.30.38:26656,b6f113a30e7019b034e8b31cd2541aebebaacb60@54.66.212.111:26656,ffcc2fab592d512eca7f903fd494d85a93e19cfe@122.248.219.121:26656,a2864737f01d3977211e2ea624dd348595dd4f73@3.222.8.87:26656
+      GENESIS_URL: https://rpc-testnet.sifchain.finance/genesis
+      GAS_PRICE: ${GAS_PRICE}
+      BIND_IP_ADDRESS: ${BIND_IP_ADDRESS}
+      DAEMON_NAME: sifnoded
+      DAEMON_HOME: /root/.sifnoded
+      DAEMON_ALLOW_DOWNLOAD_BINARIES: "true"
+      DAEMON_RESTART_AFTER_UPGRADE: "true"
+    volumes:
+      - .:/root:Z
+      - ../scripts:/root/scripts:Z
+    command: /root/scripts/entrypoint.sh

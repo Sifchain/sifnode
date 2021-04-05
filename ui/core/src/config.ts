@@ -1,13 +1,16 @@
 // TODO - Conditional load or build-time tree shake
 import localnetconfig from "./config.localnet.json";
-import sandpitconfig from "./config.sandpit.json";
-import monkeybarsconfig from "./config.monkeybars.json"
+import devnetconfig from "./config.devnet.json";
+import testnetconfig from "./config.testnet.json";
+import mainnnetconfig from "./config.mainnet.json";
+
 import assetsEthereumLocalnet from "./assets.ethereum.localnet.json";
+import assetsEthereumDevnet from "./assets.ethereum.sifchain-devnet.json";
+import assetsEthereumTestnet from "./assets.ethereum.sifchain-testnet.json";
 import assetsEthereumMainnet from "./assets.ethereum.mainnet.json";
-import assetsEthereumRopsten from "./assets.ethereum.ropsten.json";
+
 import assetsSifchainLocalnet from "./assets.sifchain.localnet.json";
 import assetsSifchainMainnet from "./assets.sifchain.mainnet.json";
-import assetsSifchainSandpit from "./assets.sifchain.sandpit.json";
 
 import {
   parseConfig,
@@ -32,26 +35,26 @@ export type AppConfig = ApiContext; // Will include other injectables
 export function getConfig(
   config = "localnet",
   sifchainAssetTag = "sifchain.localnet",
-  ethereumAssetTag = "ethereum.localnet"
+  ethereumAssetTag = "ethereum.localnet",
 ): AppConfig {
   const assetMap: AssetMap = {
     "sifchain.localnet": parseAssets(
-      assetsSifchainLocalnet.assets as AssetConfig[]
+      assetsSifchainLocalnet.assets as AssetConfig[],
     ),
     "sifchain.mainnet": parseAssets(
-      assetsSifchainMainnet.assets as AssetConfig[]
-    ),
-    "sifchain.sandpit": parseAssets(
-      assetsSifchainSandpit.assets as AssetConfig[]
+      assetsSifchainMainnet.assets as AssetConfig[],
     ),
     "ethereum.localnet": parseAssets(
-      assetsEthereumLocalnet.assets as AssetConfig[]
+      assetsEthereumLocalnet.assets as AssetConfig[],
     ),
-    "ethereum.ropsten": parseAssets(
-      assetsEthereumRopsten.assets as AssetConfig[]
+    "ethereum.devnet": parseAssets(
+      assetsEthereumDevnet.assets as AssetConfig[],
+    ),
+    "ethereum.testnet": parseAssets(
+      assetsEthereumTestnet.assets as AssetConfig[],
     ),
     "ethereum.mainnet": parseAssets(
-      assetsEthereumMainnet.assets as AssetConfig[]
+      assetsEthereumMainnet.assets as AssetConfig[],
     ),
   };
 
@@ -61,8 +64,9 @@ export function getConfig(
 
   const configMap: ConfigMap = {
     localnet: parseConfig(localnetconfig as ChainConfig, allAssets),
-    monkeybars: parseConfig(monkeybarsconfig as ChainConfig, allAssets),
-    sandpit: parseConfig(sandpitconfig as ChainConfig, allAssets),
+    devnet: parseConfig(devnetconfig as ChainConfig, allAssets),
+    testnet: parseConfig(testnetconfig as ChainConfig, allAssets),
+    mainnet: parseConfig(mainnnetconfig as ChainConfig, allAssets),
   };
 
   return configMap[config.toLowerCase()];

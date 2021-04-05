@@ -31,7 +31,33 @@ const approveFn = {
   type: "function",
 };
 
-const abi = [approveFn];
+// https://ethereumdev.io/abi-for-erc20-contract-on-ethereum/
+const allowanceFn = {
+  constant: true,
+  inputs: [
+    {
+      name: "_owner",
+      type: "address",
+    },
+    {
+      name: "_spender",
+      type: "address",
+    },
+  ],
+  name: "allowance",
+  outputs: [
+    {
+      name: "",
+      type: "uint256",
+    },
+  ],
+  payable: false,
+  stateMutability: "view",
+  type: "function",
+};
+
+// todo allowance function
+const abi = [approveFn, allowanceFn];
 
 export async function getTokenContract(web3: Web3, address: string) {
   return new web3.eth.Contract(abi as AbiItem[], address);

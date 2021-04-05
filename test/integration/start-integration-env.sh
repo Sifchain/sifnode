@@ -31,7 +31,6 @@ set_persistant_env_var NETWORKDIR $BASEDIR/deploy/networks $envexportfile
 set_persistant_env_var GANACHE_DB_DIR $(mktemp -d /tmp/ganachedb.XXXX) $envexportfile
 set_persistant_env_var ETHEREUM_WEBSOCKET_ADDRESS ws://localhost:7545/ $envexportfile
 set_persistant_env_var CHAINNET localnet $envexportfile
-
 mkdir -p $datadir
 
 make -C ${TEST_INTEGRATION_DIR}
@@ -43,23 +42,28 @@ yarn --cwd $BASEDIR/smart-contracts install
 
 # Startup ganache-cli (https://github.com/trufflesuite/ganache)
 #   Uses GANACHE_DB_DIR for the --db argument to the chain
-bash ${TEST_INTEGRATION_DIR}/ganache_start.sh
+bash ${TEST_INTEGRATION_DIR}/ganache_start.sh && . ${TEST_INTEGRATION_DIR}/vagrantenv.sh
+
+# Arbitrarily pick key #9 as the key for the relayer to use
+addr=$(cat $GANACHE_KEYS_JSON | jq -r '.private_keys | keys_unsorted | .[9]')
+pk=$(cat $GANACHE_KEYS_JSON | jq -r ".private_keys[\"$addr\"]")
+set_persistant_env_var EBRELAYER_ETHEREUM_ADDR $addr $envexportfile
+set_persistant_env_var EBRELAYER_ETHEREUM_PRIVATE_KEY $pk $envexportfile
 
 # https://www.trufflesuite.com/docs/truffle/overview
 # and note that truffle migrate and truffle deploy are the same command
-npx truffle deploy --network develop --reset
+INITIAL_VALIDATOR_ADDRESSES=$EBRELAYER_ETHEREUM_ADDR npx truffle deploy --network develop --reset
 
 # ETHEREUM_CONTRACT_ADDRESS is used for the BridgeRegistry address in many places, so we
 # set it and BRIDGE_REGISTRY_ADDRESS to the same value
 echo "# BRIDGE_REGISTRY_ADDRESS and ETHEREUM_CONTRACT_ADDRESS are synonyms">> $envexportfile
 set_persistant_env_var BRIDGE_REGISTRY_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeRegistry.json | jq -r '.networks["5777"].address') $envexportfile required
 set_persistant_env_var BRIDGE_TOKEN_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeToken.json | jq -r '.networks["5777"].address') $envexportfile required
-set_persistant_env_var ETHEREUM_CONTRACT_ADDRESS $BRIDGE_REGISTRY_ADDRESS $envexportfile required
 
 set_persistant_env_var BRIDGE_BANK_ADDRESS $(cat $BASEDIR/smart-contracts/build/contracts/BridgeBank.json | jq -r '.networks["5777"].address') $envexportfile required
 
 rm -rf $SMART_CONTRACTS_DIR/relayerdb
-ADD_VALIDATOR_TO_WHITELIST=true bash ${BASEDIR}/test/integration/setup_sifchain.sh && . $envexportfile
+bash ${BASEDIR}/test/integration/setup_sifchain.sh && . $envexportfile
 
 UPDATE_ADDRESS=0x0000000000000000000000000000000000000000 npx truffle exec scripts/setTokenLockBurnLimit.js 31000000000000000000
 UPDATE_ADDRESS=$BRIDGE_TOKEN_ADDRESS npx truffle exec scripts/setTokenLockBurnLimit.js 10000000000000000000000000

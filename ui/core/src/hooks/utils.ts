@@ -4,7 +4,7 @@ import { Asset, Token, AssetAmount, IPool, Pool } from "../entities";
 export function assetPriceMessage(
   amount: AssetAmount | null,
   pair: IPool | null,
-  decimals: number = -1
+  decimals: number = -1,
 ) {
   if (!pair || !amount || amount.equalTo("0")) return "";
   const swapResult = pair.calcSwapResult(amount);
@@ -13,10 +13,14 @@ export function assetPriceMessage(
     swapResult
       .divide(amount)
       .toFixed(decimals > -1 ? decimals : amount.asset.decimals),
-    swapResult.asset.symbol.toUpperCase(),
+    swapResult.asset.symbol.toLowerCase().includes("rowan")
+      ? swapResult.asset.symbol.toUpperCase()
+      : "c" + swapResult.asset.symbol.slice(1).toUpperCase(),
   ].join(" ");
 
-  const formattedPerSymbol = amount.asset.symbol.toUpperCase();
+  const formattedPerSymbol = amount.asset.symbol.toLowerCase().includes("rowan")
+    ? amount.asset.symbol.toUpperCase()
+    : "c" + amount.asset.symbol.slice(1).toUpperCase();
 
   return `${assetPriceStr} per ${formattedPerSymbol}`;
 }

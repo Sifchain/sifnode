@@ -36,6 +36,7 @@ type Node struct {
 	MinCLPCreatePoolThreshold string    `yaml:"-"`
 	GovMaxDepositPeriod       string    `yaml:"-"`
 	GovVotingPeriod           string    `yaml:"-"`
+	CLPConfigURL              string    `yaml:"-"`
 	PeerAddress               string    `yaml:"-"`
 	GenesisURL                string    `yaml:"-"`
 	Key                       *key.Key  `yaml:"-"`
@@ -150,9 +151,11 @@ func (n *Node) seedGenesis() error {
 		return err
 	}
 
-	_, err = n.CLI.AddFaucet(n.FaucetAmount)
-	if err != nil {
-		return err
+	if n.ChainID != "sifchain" {
+		_, err = n.CLI.AddFaucet(n.FaucetAmount)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, adminAddress := range n.AdminCLPAddresses {
@@ -217,6 +220,12 @@ func (n *Node) seedGenesis() error {
 
 	if err = genesis.ReplaceGovVotingParamsVotingPeriod(common.DefaultNodeHome, n.GovVotingPeriod); err != nil {
 		return err
+	}
+
+	if n.CLPConfigURL != "" {
+		if err = genesis.InitializeCLP(common.DefaultNodeHome, n.CLPConfigURL); err != nil {
+			return err
+		}
 	}
 
 	err = n.replaceConfig()

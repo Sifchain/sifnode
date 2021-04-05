@@ -15,6 +15,7 @@ import JSBI from "jsbi";
 export type ClpServiceContext = {
   nativeAsset: Asset;
   sifApiUrl: string;
+  sifRpcUrl: string;
   sifWsUrl: string;
   sifChainId: string;
   sifUnsignedClient?: SifUnSignedClient;
@@ -51,12 +52,18 @@ type IClpService = {
   }) => any;
 };
 
+// TS not null type guard
+function notNull<T>(val: T | null): val is T {
+  return val !== null;
+}
+
 export default function createClpService({
   sifApiUrl,
   nativeAsset,
   sifChainId,
   sifWsUrl,
-  sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl),
+  sifRpcUrl,
+  sifUnsignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl),
 }: ClpServiceContext): IClpService {
   const client = sifUnsignedClient;
 
@@ -64,7 +71,12 @@ export default function createClpService({
     async getPools() {
       try {
         const rawPools = await client.getPools();
-        return rawPools.map(toPool(nativeAsset));
+        return (
+          rawPools
+            .map(toPool(nativeAsset))
+            // toPool can return a null pool for invalid pools lets filter them out
+            .filter(notNull)
+        );
       } catch (error) {
         return [];
       }
@@ -90,7 +102,9 @@ export default function createClpService({
           symbol: params.externalAssetAmount.asset.symbol,
           ticker: params.externalAssetAmount.asset.symbol,
         },
-        external_asset_amount: params.externalAssetAmount.toBaseUnits().toString(),
+        external_asset_amount: params.externalAssetAmount
+          .toBaseUnits()
+          .toString(),
         native_asset_amount: params.nativeAssetAmount.toBaseUnits().toString(),
         signer: params.fromAddress,
       });
@@ -160,7 +174,7 @@ export default function createClpService({
         new Fraction(liquidity_provider_units),
         liquidity_provider_address,
         new Fraction(native_asset_balance),
-        new Fraction(external_asset_balance)
+        new Fraction(external_asset_balance),
       );
     },
 

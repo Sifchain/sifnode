@@ -13,6 +13,8 @@ const (
 	DefaultParamspace = types.DefaultParamspace
 	NativeSymbol      = types.NativeSymbol
 	MaxWbasis         = types.MaxWbasis
+	PoolThrehold      = types.PoolThrehold
+	PoolUnitsMinValue = types.PoolUnitsMinValue
 )
 
 var (
@@ -29,6 +31,10 @@ var (
 	ModuleCdc                   = types.ModuleCdc
 	GetSettlementAsset          = types.GetSettlementAsset
 	GetGenesisStateFromAppState = types.GetGenesisStateFromAppState
+	GetNormalizationMap         = types.GetNormalizationMap
+	NewPool                     = types.NewPool
+	CalculateWithdrawal         = keeper.CalculateWithdrawal
+	CalculatePoolUnits          = keeper.CalculatePoolUnits
 )
 
 type (
@@ -42,4 +48,6 @@ type (
 	LiquidityProvider   = types.LiquidityProvider
 	Asset               = types.Asset
 	GenesisState        = types.GenesisState
+	LiquidityProviders  = types.LiquidityProviders
+	Pools               = types.Pools
 )

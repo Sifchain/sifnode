@@ -17,6 +17,7 @@ export default defineComponent({
   emits: ["tokenselected"],
   props: {
     selectedTokens: Array as PropType<string[]>,
+    forceShowAllATokens: { type: Boolean, default: false },
     displayList: { type: Object as PropType<Asset[]>, default: ref([]) },
     fullSearchList: {
       type: Object as PropType<Asset[]>,
@@ -25,16 +26,16 @@ export default defineComponent({
   },
   setup(props, context) {
     const { actions } = useCore();
-
+    const { forceShowAllATokens } = props;
     const searchText = ref("");
     const selectedTokens = props.selectedTokens || [];
-
+    const allSifTokens = ref(actions.peg.getSifTokens());
     const { fullSearchList, displayList } = toRefs(props);
 
     const list = filterTokenList({
       searchText,
-      tokens: fullSearchList,
-      displayList,
+      tokens: forceShowAllATokens ? allSifTokens : fullSearchList,
+      displayList: forceShowAllATokens ? allSifTokens : displayList,
     });
 
     const tokens = disableSelected({ list, selectedTokens });

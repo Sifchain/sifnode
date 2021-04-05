@@ -5,9 +5,7 @@
 </template>
 
 <script>
-export default {
-
-}
+export default {};
 </script>
 
 <style lang="scss" scoped>
@@ -19,7 +17,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: url('../../assets/World_Background_opt.jpg');
+  background: url("../../assets/World_Background_opt.jpg");
   background-size: cover;
   background-position: bottom center;
 }

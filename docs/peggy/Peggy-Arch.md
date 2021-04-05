@@ -37,7 +37,7 @@ Consensus threshold: The percent of validators power that must sign off on a pro
 
 Peggy is a cross chain bridge that currently moves assets from ethereum to sifchain, and from sifchain to ethereum. 
 
-To move assets from ethereum to sifchain, the relayer subscribes to the BridgeBank smart contract deployed on ethereum and listens for the LogLock and LogBurn messages. When the relayer receives lock or burn messages, it waits 30 blocks to ensure that the transaction is still valid, then submits new prophecy claims to sifchain. Other relayers then sign off on that prophecy claim and then once enough relayers have approved the prophecy claim, the assets are minted and sent to that sifchain recipient.
+To move assets from ethereum to sifchain, the relayer subscribes to the BridgeBank smart contract deployed on ethereum and listens for the LogLock and LogBurn messages. When the relayer receives lock or burn messages, it waits 50 blocks to ensure that the transaction is still valid, then submits new prophecy claims to sifchain. Other relayers then sign off on that prophecy claim and then once enough relayers have approved the prophecy claim, the assets are minted and sent to that sifchain recipient.
 
 To move assets from sifchain to ethereum, the relayer subscribes to the cosmos chain and listens for MsgLock and MsgBurn event. Once that event is heard, a new ProphecyClaim is submitted to the ethereum CosmosBridge smart contract. Once enough validators sign off on the prophecy claim such that the consensus threshold is met, the funds are unlocked or minted on the ethereum side.
 

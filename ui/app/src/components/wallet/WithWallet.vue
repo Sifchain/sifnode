@@ -1,4 +1,3 @@
-
 <template>
   <Modal class="with-wallet-container">
     <template v-slot:activator="{ requestOpen }">
@@ -15,17 +14,14 @@
         name="connected"
         :connectedToEth="connectedToEth"
         :connectedToSif="connectedToSif"
-        :connectedText="connectedText"
         :requestDialog="requestOpen"
         :connectCta="connectCta"
       ></slot>
     </template>
     <template v-slot:default>
       <div class="wallet-connect-container">
-        <div class="pt-12">
-          Connect Wallet
-        </div>
-      
+        <div class="top" />
+
         <div class="vstack">
           <EtheriumWalletPanel />
           <KeplrWalletPanel />
@@ -55,17 +51,14 @@ export default defineComponent({
       connected,
       connectedToEth,
       connectedToSif,
-      connectedText,
       connectCta,
     } = useWalletButton({
-      addrLen: 10,
       connectType: props.connectType,
     });
     return {
       connected,
       connectedToEth,
       connectedToSif,
-      connectedText,
       connectCta,
     };
   },
@@ -74,7 +67,11 @@ export default defineComponent({
 <style lang="scss" scoped>
 .wallet-connect-container {
   background: $c_gray_100;
-  color: $c_gray_800
+  color: $c_gray_800;
+}
+.top {
+  padding-top: 16px;
+  padding-bottom: 16px;
 }
 .vstack {
   display: flex;
