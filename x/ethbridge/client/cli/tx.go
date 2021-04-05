@@ -328,3 +328,40 @@ func GetCmdRescueCeth(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 }
+
+// GetCmdUpdateGasPrice is the CLI command to send the message to update gas price
+func GetCmdUpdateGasPrice(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "update_gas_price [cosmos-sender-address] [block_number] [gas_price]",
+		Short: "This should be used to send gas price to sifnode.",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			cosmosSender, err := sdk.ValAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			blockNumber, err := strconv.Atoi(args[1])
+			if err != nil {
+				return err
+			}
+
+			gasPrice, err := strconv.Atoi(args[2])
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgUpdateGasPrice(cosmosSender, sdk.NewInt(int64(blockNumber)), sdk.NewInt(int64(gasPrice)))
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
