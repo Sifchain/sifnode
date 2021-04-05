@@ -441,7 +441,8 @@ func TestUpdateGasPriceMsg(t *testing.T) {
 	_, err = handler(ctx, testUpdatePriceMsg)
 	require.Error(t, err)
 
-	supplyKeeper.SendCoinsFromModuleToAccount(ctx, ModuleName, cosmosSender, coins)
+	err = supplyKeeper.SendCoinsFromModuleToAccount(ctx, ModuleName, cosmosSender, coins)
+	require.NoError(t, err)
 
 	_, err = handler(ctx, testUpdatePriceMsg)
 	require.Error(t, err)
