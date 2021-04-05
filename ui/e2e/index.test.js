@@ -266,13 +266,11 @@ describe("connect to page", () => {
     // haven't yet figured out how to capture close popup event
     await dexPage.waitForTimeout(1000);
     await dexPage.click("text=×");
-
+    await dexPage.waitForTimeout(10000); // wait for blockchain to update...
     // Wait for balances to be the amounts expected
     expect(await dexPage.innerText('[data-handle="swap-message"]')).toBe(
-      "Swapped 0.0 cusdc for 0.0 rowan", // This is incorrect
+      "Swapped 50 cusdc for 49.9995000037 rowan",
     );
-
-    await dexPage.pause();
   });
 });
 
