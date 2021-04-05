@@ -13,6 +13,7 @@ log/*.log
 .env
 .backups
 .ssh
+anchore-reports
 
 .vercel
 nohup.out
