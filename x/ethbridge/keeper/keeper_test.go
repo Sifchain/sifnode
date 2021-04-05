@@ -349,3 +349,21 @@ func TestProcessRescueCeth(t *testing.T) {
 	err = keeper.ProcessRescueCeth(ctx, msg, sugaredLogger)
 	require.NoError(t, err)
 }
+
+func TestProcessUpdateGasPrice(t *testing.T) {
+	ctx, keeper, _, _, _, validatorAddresses := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	validatorAddress := validatorAddresses[0]
+	cosmosSender := sdk.AccAddress(validatorAddress)
+
+	testBlockNumber := sdk.NewInt(100)
+	testGasPrice := sdk.NewInt(10000000)
+	msg := types.NewMsgUpdateGasPrice(validatorAddress, testBlockNumber, testGasPrice)
+
+	err := keeper.ProcessUpdateGasPrice(ctx, msg, sugaredLogger)
+	require.Equal(t, err.Error(), "only admin account can update gas price")
+
+	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+
+	err = keeper.ProcessUpdateGasPrice(ctx, msg, sugaredLogger)
+	require.NoError(t, err)
+}

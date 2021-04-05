@@ -434,13 +434,14 @@ func TestUpdateGasPriceMsg(t *testing.T) {
 	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, sdk.NewInt(10000)))
 	err := supplyKeeper.MintCoins(ctx, ModuleName, coins)
 	require.NoError(t, err)
-
-	supplyKeeper.SendCoinsFromModuleToAccount(ctx, ModuleName, cosmosSender, coins)
-
 	testBlockNumber := sdk.NewInt(100)
 	testGasPrice := sdk.NewInt(10000000)
-
 	testUpdatePriceMsg := types.NewMsgUpdateGasPrice(cosmosValidatorAddress, testBlockNumber, testGasPrice)
+
+	_, err = handler(ctx, testUpdatePriceMsg)
+	require.Error(t, err)
+
+	supplyKeeper.SendCoinsFromModuleToAccount(ctx, ModuleName, cosmosSender, coins)
 
 	_, err = handler(ctx, testUpdatePriceMsg)
 	require.Error(t, err)
