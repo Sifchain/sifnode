@@ -31,18 +31,15 @@ func queryDistributionRecordsForName(ctx sdk.Context, req abci.RequestQuery, kee
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	var f = func(sdk.Context, string) types.DistributionRecords {
-		return types.DistributionRecords{}
-	}
+	records := new(types.DistributionRecords)
 	switch params.Status {
 	case types.Pending:
-		f = keeper.GetRecordsForNamePending
+		*records = keeper.GetRecordsForNamePending(ctx, params.DistributionName)
 	case types.Completed:
-		f = keeper.GetRecordsForNameCompleted
+		*records = keeper.GetRecordsForNameCompleted(ctx, params.DistributionName)
 	default:
-		f = keeper.GetRecordsForNameAll
+		*records = keeper.GetRecordsForNameAll(ctx, params.DistributionName)
 	}
-	records := f(ctx, params.DistributionName)
 	res, err := codec.MarshalJSONIndent(keeper.cdc, records)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
