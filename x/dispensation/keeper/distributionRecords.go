@@ -109,6 +109,8 @@ func (k Keeper) GetPendingRecordsLimited(ctx sdk.Context, limit int) types.Distr
 	iterator := k.GetDistributionRecordsIterator(ctx)
 	count := 0
 	defer iterator.Close()
+	// Todo : Change the set completed from BlockBeginner to move the records to a different prefix (Or Prune it ? ).So that we can avoid extra iterations.
+	// Todo : Extra iteration might be a major issue later .
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
