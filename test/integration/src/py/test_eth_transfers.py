@@ -11,7 +11,6 @@ from test_utilities import EthereumToSifchainTransferRequest, SifchaincliCredent
 def test_eth_to_ceth(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
-        ceth_amount,
 ):
     basic_transfer_request.ethereum_address = source_ethereum_address
     logging.info(f"transfer_request: {basic_transfer_request}")

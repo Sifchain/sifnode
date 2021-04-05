@@ -144,7 +144,7 @@ def test_fee_charged_to_transfer_rowan_to_erowan(
     ending_ceth_balance = test_utilities.get_sifchain_addr_balance(request.sifchain_address, request.sifnodecli_node,
                                                                    "ceth")
     fee = starting_ceth_balance - ending_ceth_balance
-    assert fee == request.ceth_amount
+    assert fee == test_utilities.lock_gas_cost
 
 
 def test_do_not_transfer_if_fee_allowed_is_too_low(
