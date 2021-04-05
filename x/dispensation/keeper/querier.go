@@ -34,11 +34,11 @@ func queryDistributionRecordsForName(ctx sdk.Context, req abci.RequestQuery, kee
 	records := new(types.DistributionRecords)
 	switch params.Status {
 	case types.Pending:
-		*records = keeper.GetRecordsForNamePending(ctx, params.DistributionName)
+		*records = keeper.GetRecordsForName(ctx, params.DistributionName, types.Pending)
 	case types.Completed:
-		*records = keeper.GetRecordsForNameCompleted(ctx, params.DistributionName)
+		*records = keeper.GetRecordsForName(ctx, params.DistributionName, types.Completed)
 	default:
-		*records = keeper.GetRecordsForNameAll(ctx, params.DistributionName)
+		*records = append(keeper.GetRecordsForName(ctx, params.DistributionName, types.Pending), keeper.GetRecordsForName(ctx, params.DistributionName, types.Completed)...)
 	}
 	res, err := codec.MarshalJSONIndent(keeper.cdc, records)
 	if err != nil {

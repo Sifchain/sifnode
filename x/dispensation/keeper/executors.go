@@ -13,9 +13,9 @@ import (
 
 func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string) error {
 	for _, receiver := range output {
-		distributionRecord := types.NewDistributionRecord(name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1)
-		if k.ExistsDistributionRecord(ctx, name, receiver.Address.String()) {
-			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address.String())
+		distributionRecord := types.NewDistributionRecord(types.Pending, name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1)
+		if k.ExistsDistributionRecord(ctx, name, receiver.Address.String(), types.Pending) {
+			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address.String(), types.Pending)
 			if err != nil {
 				return errors.Wrapf(types.ErrDistribution, "failed appending record for : %s", distributionRecord.RecipientAddress)
 			}
@@ -31,7 +31,7 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string) 
 }
 
 func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
-	pendingRecords := k.GetPendingRecordsLimited(ctx, 10)
+	pendingRecords := k.GetRecordsLimited(ctx, types.Pending)
 	for _, record := range pendingRecords {
 		err := k.GetSupplyKeeper().SendCoinsFromModuleToAccount(ctx, types.ModuleName, record.RecipientAddress, record.Coins)
 		if err != nil {
@@ -43,6 +43,7 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", record.String())
 		}
+		err = k.DeleteDistributionRecord(ctx, record.DistributionName, record.RecipientAddress.String(), types.Pending) // Delete the record in the pending prefix so the iteration is cheaper.
 		ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress.String(), height, record.Coins.String()))
 	}
 	return nil

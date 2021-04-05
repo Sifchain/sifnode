@@ -27,7 +27,7 @@ func (d ClaimStatus) String() string {
 // DistributionRecord is created for every recipient for a distribution
 // TODO : Remove ClaimStatus from this struct and use it as prefix.
 type DistributionRecord struct {
-	ClaimStatus
+	ClaimStatus                 ClaimStatus
 	DistributionName            string         `json:"distribution_name"`
 	RecipientAddress            sdk.AccAddress `json:"recipient_address"`
 	Coins                       sdk.Coins      `json:"coins"`
@@ -36,8 +36,8 @@ type DistributionRecord struct {
 }
 type DistributionRecords []DistributionRecord
 
-func NewDistributionRecord(distributionName string, recipientAddress sdk.AccAddress, coins sdk.Coins, start int64, end int64) DistributionRecord {
-	return DistributionRecord{DistributionName: distributionName, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
+func NewDistributionRecord(status ClaimStatus, distributionName string, recipientAddress sdk.AccAddress, coins sdk.Coins, start int64, end int64) DistributionRecord {
+	return DistributionRecord{ClaimStatus: status, DistributionName: distributionName, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
 }
 
 func (dr DistributionRecord) Validate() bool {

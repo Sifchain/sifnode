@@ -29,6 +29,6 @@ func TestNewHandler(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
-	dr := keeper.GetRecordsForNameAll(ctx, "AR1")
+	dr := append(keeper.GetRecordsForName(ctx, "AR1", types.Pending), keeper.GetRecordsForName(ctx, "AR1", types.Completed)...)
 	assert.Len(t, dr, recipients)
 }

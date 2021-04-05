@@ -23,7 +23,7 @@ func GenerateQueryData(app *simapp.SimApp, ctx sdk.Context, name string, outList
 	}
 
 	for _, rec := range outList {
-		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		record := types.NewDistributionRecord(types.Pending, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
 		_ = keeper.SetDistributionRecord(ctx, record)
 
 	}

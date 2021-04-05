@@ -14,15 +14,15 @@ func (k Keeper) SetDistributionRecord(ctx sdk.Context, dr types.DistributionReco
 		return errors.Wrapf(types.ErrInvalid, "unable to set record : %s", dr.String())
 	}
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionRecordKey(dr.DistributionName, dr.RecipientAddress.String())
+	key := types.GetDistributionRecordKey(dr.ClaimStatus, dr.DistributionName, dr.RecipientAddress.String())
 	store.Set(key, k.cdc.MustMarshalBinaryBare(dr))
 	return nil
 }
 
-func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string) (types.DistributionRecord, error) {
+func (k Keeper) GetDistributionRecord(ctx sdk.Context, distributionName string, recipientAddress string, status types.ClaimStatus) (types.DistributionRecord, error) {
 	var dr types.DistributionRecord
 	store := ctx.KVStore(k.storeKey)
-	key := types.GetDistributionRecordKey(airdropName, recipientAddress)
+	key := types.GetDistributionRecordKey(status, distributionName, recipientAddress)
 	if !k.Exists(ctx, key) {
 		return dr, errors.Wrapf(types.ErrInvalid, "record Does not exist : %s", dr.String())
 	}
@@ -31,22 +31,40 @@ func (k Keeper) GetDistributionRecord(ctx sdk.Context, airdropName string, recip
 	return dr, nil
 }
 
-func (k Keeper) ExistsDistributionRecord(ctx sdk.Context, airdropName string, recipientAddress string) bool {
-	key := types.GetDistributionRecordKey(airdropName, recipientAddress)
+func (k Keeper) DeleteDistributionRecord(ctx sdk.Context, distributionName string, recipientAddress string, status types.ClaimStatus) error {
+	var dr types.DistributionRecord
+	store := ctx.KVStore(k.storeKey)
+	key := types.GetDistributionRecordKey(status, distributionName, recipientAddress)
+	if !k.Exists(ctx, key) {
+		return errors.Wrapf(types.ErrInvalid, "record Does not exist : %s", dr.String())
+	}
+	store.Delete(key)
+	return nil
+}
+
+func (k Keeper) ExistsDistributionRecord(ctx sdk.Context, distributionName string, recipientAddress string, status types.ClaimStatus) bool {
+	key := types.GetDistributionRecordKey(status, distributionName, recipientAddress)
 	if k.Exists(ctx, key) {
 		return true
 	}
 	return false
 }
 
-func (k Keeper) GetDistributionRecordsIterator(ctx sdk.Context) sdk.Iterator {
+func (k Keeper) GetDistributionRecordsIterator(ctx sdk.Context, status types.ClaimStatus) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
-	return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefix)
+	switch status {
+	case types.Pending:
+		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixPending)
+	case types.Completed:
+		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixCompleted)
+	default:
+		return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefixCompleted) // Have not decided to return completed or pending here
+	}
 }
 
-func (k Keeper) GetRecordsForNameAll(ctx sdk.Context, name string) types.DistributionRecords {
+func (k Keeper) GetRecordsForName(ctx sdk.Context, name string, status types.ClaimStatus) types.DistributionRecords {
 	var res types.DistributionRecords
-	iterator := k.GetDistributionRecordsIterator(ctx)
+	iterator := k.GetDistributionRecordsIterator(ctx, status)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
@@ -59,39 +77,19 @@ func (k Keeper) GetRecordsForNameAll(ctx sdk.Context, name string) types.Distrib
 	return res
 }
 
-func (k Keeper) GetRecordsForNamePending(ctx sdk.Context, name string) types.DistributionRecords {
-	var res types.DistributionRecords
-	iterator := k.GetDistributionRecordsIterator(ctx)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var dr types.DistributionRecord
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.DistributionName == name && dr.ClaimStatus == types.Pending {
-			res = append(res, dr)
-		}
-	}
-	return res
-}
-
-func (k Keeper) GetRecordsForNameCompleted(ctx sdk.Context, name string) types.DistributionRecords {
-	var res types.DistributionRecords
-	iterator := k.GetDistributionRecordsIterator(ctx)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var dr types.DistributionRecord
-		bytesValue := iterator.Value()
-		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
-		if dr.DistributionName == name && dr.ClaimStatus == types.Completed {
-			res = append(res, dr)
-		}
-	}
-	return res
-}
-
 func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient sdk.AccAddress) types.DistributionRecords {
 	var res types.DistributionRecords
-	iterator := k.GetDistributionRecordsIterator(ctx)
+	iterator := k.GetDistributionRecordsIterator(ctx, types.Pending)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.RecipientAddress.Equals(recipient) {
+			res = append(res, dr)
+		}
+	}
+	iterator = k.GetDistributionRecordsIterator(ctx, types.Completed)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
@@ -104,13 +102,11 @@ func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient sdk.AccAddress
 	return res
 }
 
-func (k Keeper) GetPendingRecordsLimited(ctx sdk.Context, limit int) types.DistributionRecords {
+func (k Keeper) GetRecordsLimited(ctx sdk.Context, status types.ClaimStatus) types.DistributionRecords {
 	var res types.DistributionRecords
-	iterator := k.GetDistributionRecordsIterator(ctx)
+	iterator := k.GetDistributionRecordsIterator(ctx, status)
 	count := 0
 	defer iterator.Close()
-	// Todo : Change the set completed from BlockBeginner to move the records to a different prefix (Or Prune it ? ).So that we can avoid extra iterations.
-	// Todo : Extra iteration might be a major issue later .
 	for ; iterator.Valid(); iterator.Next() {
 		var dr types.DistributionRecord
 		bytesValue := iterator.Value()
@@ -119,7 +115,7 @@ func (k Keeper) GetPendingRecordsLimited(ctx sdk.Context, limit int) types.Distr
 			res = append(res, dr)
 			count++
 		}
-		if count == limit {
+		if count == types.MAX_RECORDS_PER_BLOCK {
 			break
 		}
 	}
