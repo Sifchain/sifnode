@@ -595,11 +595,10 @@ echo 'go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
-cat mnemonic_file | go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
-echo "#{args[:mnemonic]}" | go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
-go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test < mnemonic_file
-go run ./cmd/sifnodecli help
-go run ./cmd/sifnodecli --help
+#cat mnemonic_file | go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test
+echo "#{args[:mnemonic]}" | go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test --trace
+#go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test < mnemonic_file
+
 
       }
       system(cluster_automation) or exit 1
