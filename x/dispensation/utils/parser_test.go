@@ -71,7 +71,7 @@ func TestParseOutput(t *testing.T) {
 	filename := "output.json"
 	count := 3000
 	createOutput(filename, count)
-	//defer removeFile(t, filename)
+	defer removeFile(t, filename)
 	outputs, err := utils.ParseOutput(filename)
 	assert.NoError(t, err)
 	assert.Equal(t, len(outputs), count)
