@@ -8,7 +8,7 @@ import (
 
 var StatusTextToString = [...]string{"pending", "success", "failed"}
 var StringToStatusText = map[string]StatusText{
-	"pending": StatusText_STATUS_TEXT_PEDNING,
+	"pending": StatusText_STATUS_TEXT_PENDING,
 	"success": StatusText_STATUS_TEXT_SUCCESS,
 	"failed":  StatusText_STATUS_TEXT_FAILED,
 }

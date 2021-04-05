@@ -115,7 +115,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim) (types.Status, 
 		prophecy = types.NewProphecy(claim.Id)
 	}
 	switch prophecy.Status.Text {
-	case types.StatusText_STATUS_TEXT_PEDNING:
+	case types.StatusText_STATUS_TEXT_PENDING:
 		// continue processing
 	default:
 		return types.Status{}, types.ErrProphecyFinalized

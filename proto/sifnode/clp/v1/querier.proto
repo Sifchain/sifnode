@@ -4,15 +4,26 @@ package sifnode.clp.v1;
 import "gogoproto/gogo.proto";
 import "sifnode/clp/v1/types.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/sifchain/sifnode/x/clp/types";
 
 service Query {
-  rpc QueryGetPool(PoolReq) returns (PoolRes);
-  rpc QueryGetPools(PoolsReq) returns (PoolsRes);
-  rpc LiquidityProvider(LiquidityProviderReq) returns (LiquidityProviderRes);
-  rpc GetAssetList(AssetListReq) returns (AssetListRes);
-  rpc GetLiquidityProviderList(LiquidityProviderListReq) returns (LiquidityProviderListRes);
+  rpc QueryGetPool(PoolReq) returns (PoolRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/pool/{symbol}";
+  };
+  rpc QueryGetPools(PoolsReq) returns (PoolsRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/pools";
+  };
+  rpc LiquidityProvider(LiquidityProviderReq) returns (LiquidityProviderRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/liquidity_provider/{symbol}/{lp_address}";
+  };
+  rpc GetAssetList(AssetListReq) returns (AssetListRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/asset_list/{lp_address}";
+  };
+  rpc GetLiquidityProviderList(LiquidityProviderListReq) returns (LiquidityProviderListRes) {
+    option (google.api.http).get = "/sifchain/clp/v1/liquidity_provider_list/{symbol}";
+  };
 }
 
 message PoolReq {
