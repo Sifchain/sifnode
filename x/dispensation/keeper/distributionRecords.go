@@ -44,7 +44,7 @@ func (k Keeper) GetDistributionRecordsIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStorePrefixIterator(store, types.DistributionRecordPrefix)
 }
 
-func (k Keeper) GetRecordsForName(ctx sdk.Context, name string) types.DistributionRecords {
+func (k Keeper) GetRecordsForNameAll(ctx sdk.Context, name string) types.DistributionRecords {
 	var res types.DistributionRecords
 	iterator := k.GetDistributionRecordsIterator(ctx)
 	defer iterator.Close()
@@ -53,6 +53,36 @@ func (k Keeper) GetRecordsForName(ctx sdk.Context, name string) types.Distributi
 		bytesValue := iterator.Value()
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
 		if dr.DistributionName == name {
+			res = append(res, dr)
+		}
+	}
+	return res
+}
+
+func (k Keeper) GetRecordsForNamePending(ctx sdk.Context, name string) types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.DistributionName == name && dr.ClaimStatus == types.Pending {
+			res = append(res, dr)
+		}
+	}
+	return res
+}
+
+func (k Keeper) GetRecordsForNameCompleted(ctx sdk.Context, name string) types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.DistributionName == name && dr.ClaimStatus == types.Completed {
 			res = append(res, dr)
 		}
 	}
@@ -69,6 +99,28 @@ func (k Keeper) GetRecordsForRecipient(ctx sdk.Context, recipient sdk.AccAddress
 		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
 		if dr.RecipientAddress.Equals(recipient) {
 			res = append(res, dr)
+		}
+	}
+	return res
+}
+
+func (k Keeper) GetPendingRecordsLimited(ctx sdk.Context, limit int) types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx)
+	count := 0
+	defer iterator.Close()
+	// Todo : Change the set completed from BlockBeginner to move the records to a different prefix (Or Prune it ? ).So that we can avoid extra iterations.
+	// Todo : Extra iteration might be a major issue later .
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		if dr.ClaimStatus == types.Pending {
+			res = append(res, dr)
+			count++
+		}
+		if count == limit {
+			break
 		}
 	}
 	return res

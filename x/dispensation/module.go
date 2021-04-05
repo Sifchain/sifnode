@@ -132,7 +132,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
 
 // BeginBlock returns the begin blocker for the clp module.
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
-	//BeginBlocker(ctx, req, am.keeper)
+	BeginBlocker(ctx, req, am.keeper)
 }
 
 // EndBlock returns the end blocker for the clp module. It returns no validator

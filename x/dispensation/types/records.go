@@ -8,17 +8,36 @@ import (
 
 //This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
 
+type ClaimStatus int64
+
+const Pending ClaimStatus = 1
+const Completed ClaimStatus = 2
+
+func (d ClaimStatus) String() string {
+	switch d {
+	case Pending:
+		return "Pending"
+	case Completed:
+		return "Completed"
+	default:
+		return "All"
+	}
+}
+
 // DistributionRecord is created for every recipient for a distribution
-// TODO add a claim status for the distribution record which can be used to break the Distribution into two different processes . Distribute and Claim
+// TODO : Remove ClaimStatus from this struct and use it as prefix.
 type DistributionRecord struct {
-	DistributionName string         `json:"distribution_name"`
-	RecipientAddress sdk.AccAddress `json:"recipient_address"`
-	Coins            sdk.Coins      `json:"coins"`
+	ClaimStatus
+	DistributionName            string         `json:"distribution_name"`
+	RecipientAddress            sdk.AccAddress `json:"recipient_address"`
+	Coins                       sdk.Coins      `json:"coins"`
+	DistributionStartHeight     int64          `json:"distribution_start_height"`
+	DistributionCompletedHeight int64          `json:"distribution_completed_height"`
 }
 type DistributionRecords []DistributionRecord
 
-func NewDistributionRecord(distributionName string, recipientAddress sdk.AccAddress, coins sdk.Coins) DistributionRecord {
-	return DistributionRecord{DistributionName: distributionName, RecipientAddress: recipientAddress, Coins: coins}
+func NewDistributionRecord(distributionName string, recipientAddress sdk.AccAddress, coins sdk.Coins, start int64, end int64) DistributionRecord {
+	return DistributionRecord{DistributionName: distributionName, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
 }
 
 func (dr DistributionRecord) Validate() bool {

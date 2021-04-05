@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/crypto"
 	"strconv"
 )
 
@@ -84,4 +85,34 @@ func GenerateAddressList(addressList []string) []sdk.AccAddress {
 		acclist = append(acclist, res)
 	}
 	return acclist
+}
+
+func CreatOutputList(count int, rowanAmount string) []bank.Output {
+	outputList := make([]bank.Output, count)
+	amount, ok := sdk.NewIntFromString(rowanAmount)
+	if !ok {
+		panic("Unable to generate rowan amount")
+	}
+	coin := sdk.Coins{sdk.NewCoin("rowan", amount)}
+	for i := 0; i < count; i++ {
+		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
+		out := bank.NewOutput(address, coin)
+		outputList[i] = out
+	}
+	return outputList
+}
+
+func CreatInputList(count int, rowanAmount string) []bank.Input {
+	list := make([]bank.Input, count)
+	amount, ok := sdk.NewIntFromString(rowanAmount)
+	if !ok {
+		panic("Unable to generate rowan amount")
+	}
+	coin := sdk.Coins{sdk.NewCoin("rowan", amount)}
+	for i := 0; i < count; i++ {
+		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
+		out := bank.NewInput(address, coin)
+		list[i] = out
+	}
+	return list
 }

@@ -39,12 +39,8 @@ func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	moduleBalance, _ := sdk.NewIntFromString("30000000000000000000")
 	assert.True(t, keeper.GetBankKeeper().HasCoins(ctx, types.GetDistributionModuleAddress(), sdk.Coins{sdk.NewCoin("rowan", moduleBalance)}))
 
-	err = keeper.CreateAndDistributeDrops(ctx, outputList, "ar1")
+	err = keeper.CreateDrops(ctx, outputList, "ar1")
 	assert.NoError(t, err)
-	recipientBalance, _ := sdk.NewIntFromString("10000000000000000000")
-	for _, out := range outputList {
-		assert.True(t, keeper.GetBankKeeper().HasCoins(ctx, out.Address, sdk.Coins{sdk.NewCoin("rowan", recipientBalance)}))
-	}
 }
 
 func TestKeeper_VerifyDistribution(t *testing.T) {
