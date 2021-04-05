@@ -435,7 +435,7 @@ func TestUpdateGasPriceMsg(t *testing.T) {
 	err := supplyKeeper.MintCoins(ctx, ModuleName, coins)
 	require.NoError(t, err)
 	testBlockNumber := sdk.NewInt(100)
-	testGasPrice := sdk.NewInt(10000000)
+	testGasPrice := sdk.NewInt(1000000000000)
 	testUpdatePriceMsg := types.NewMsgUpdateGasPrice(cosmosValidatorAddress, testBlockNumber, testGasPrice)
 
 	_, err = handler(ctx, testUpdatePriceMsg)

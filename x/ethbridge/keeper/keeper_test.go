@@ -356,7 +356,7 @@ func TestProcessUpdateGasPrice(t *testing.T) {
 	cosmosSender := sdk.AccAddress(validatorAddress)
 
 	testBlockNumber := sdk.NewInt(100)
-	testGasPrice := sdk.NewInt(10000000)
+	testGasPrice := sdk.NewInt(1000000000000)
 	msg := types.NewMsgUpdateGasPrice(validatorAddress, testBlockNumber, testGasPrice)
 
 	err := keeper.ProcessUpdateGasPrice(ctx, msg, sugaredLogger)
