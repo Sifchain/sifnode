@@ -270,6 +270,14 @@ describe("connect to page", () => {
     );
 
     await dexPage.click("[data-handle='modal-view-close']");
+
+    expect(await dexPage.innerText('[data-handle="cusdc-balance-label"]')).toBe(
+      "Balance: 9,950.00 cUSDC",
+    );
+
+    expect(await dexPage.innerText('[data-handle="cusdc-balance-label"]')).toBe(
+      "Balance: 10,049.99 ROWAN",
+    );
   });
 });
 
