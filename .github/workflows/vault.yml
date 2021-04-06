@@ -1,0 +1,494 @@
+name: Hashicorp Vault Deployment Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: devnet, testnet
+        required: true
+
+jobs:
+  #deploy vault to us devnet environment
+  deploy_devnet_vault_us:
+    name: deploy-vault-devnet-us
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "us-east-1"
+      aws_cluster_name: "sifchain-aws-devnet-us"
+      aws_role: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
+      env: "devnet"
+      kmskey: "8f61a1de-6cdb-4e8e-a1f5-a3611d48b570"
+      app_namespace: "vault"
+      app_name: "vault"
+      app_env: "devnet"
+      app_region: "us-east-1"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    if: github.event.inputs.environment == 'devnet'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        run: |
+          rake "cluster:generate:art[]"
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Install Vault
+        shell: bash
+        run: |
+          set +x
+          echo "Install Vault"
+          rake "cluster:vault:install[${app_env}, ${app_region}, deploy/helm/vault/, ${kmskey}, ${aws_role}]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+
+  #deploy vault to eu devnet environment
+  deploy_devnet_vault_eu:
+    name: deploy-vault-devnet-eu
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "eu-west-1"
+      aws_cluster_name: "sifchain-aws-devnet-eu"
+      aws_role: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
+      kmskey: "f8beaa0c-36e5-4757-b29b-a77ebe529570"
+      env: "devnet"
+      app_namespace: "vault"
+      app_name: "vault"
+      app_env: "devnet"
+      app_region: "eu-west-1"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    if: github.event.inputs.environment == 'devnet'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        run: |
+          rake "cluster:generate:art[]"
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Install Vault
+        shell: bash
+        run: |
+          set +x
+          echo "Install Vault"
+          rake "cluster:vault:install[${app_env}, ${app_region}, deploy/helm/vault/, ${kmskey}, ${aws_role}]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+
+
+  #deploy vault to au devnet environment
+  deploy_devnet_vault_au:
+    name: deploy-vault-devnet-au
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "ap-southeast-2"
+      aws_cluster_name: "sifchain-aws-devnet-au"
+      aws_role: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
+      kmskey: "24c836ec-9b01-4f9a-b82f-c4f54361dcc9"
+      env: "devnet"
+      app_namespace: "vault"
+      app_name: "vault"
+      app_env: "devnet"
+      app_region: "ap-southeast-2"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    if: github.event.inputs.environment == 'devnet'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        run: |
+          rake "cluster:generate:art[]"
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Install Vault
+        shell: bash
+        run: |
+          set +x
+          echo "Install Vault"
+          rake "cluster:vault:install[${app_env}, ${app_region}, deploy/helm/vault/, ${kmskey}, ${aws_role}]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+
+
+  #deploy vault to sg devnet environment
+  deploy_devnet_vault_sg:
+    name: deploy-vault-devnet-sg
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "ap-southeast-1"
+      aws_cluster_name: "sifchain-aws-devnet-sg"
+      aws_role: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
+      kmskey: "10f2326c-5793-4d22-8c94-c757ffd56302"
+      env: "devnet"
+      app_namespace: "vault"
+      app_name: "vault"
+      app_env: "devnet"
+      app_region: "ap-southeast-1"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    if: github.event.inputs.environment == 'devnet'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        run: |
+          rake "cluster:generate:art[]"
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Install Vault
+        shell: bash
+        run: |
+          set +x
+          echo "Install Vault"
+          rake "cluster:vault:install[${app_env}, ${app_region}, deploy/helm/vault/, ${kmskey}, ${aws_role}]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+
+  #deploy vault to us testnet environment
+  deploy_testnet_vault_us:
+    name: deploy-vault-testnet-us
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "us-east-1"
+      aws_cluster_name: "sifchain-aws-testnet-us"
+      aws_role: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
+      env: "testnet"
+      kmskey: "a815a082-7d34-41fd-a169-ef6f08ff56b5"
+      app_namespace: "vault"
+      app_name: "vault"
+      app_env: "testnet"
+      app_region: "us-east-1"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    if: github.event.inputs.environment == 'testnet'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Install Vault
+        shell: bash
+        run: |
+          set +x
+          echo "Install Vault"
+          rake "cluster:vault:install[${app_env}, ${app_region}, deploy/helm/vault/, ${kmskey}, ${aws_role}]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+
+
+  #deploy vault to eu testnet environment
+  deploy_testnet_vault_eu:
+    name: deploy-vault-testnet-eu
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "eu-west-1"
+      aws_cluster_name: "sifchain-aws-testnet-eu"
+      aws_role: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
+      kmskey: "8134808d-4bac-40b1-b741-e225ad210ec8"
+      env: "testnet"
+      app_namespace: "vault"
+      app_name: "vault"
+      app_env: "testnet"
+      app_region: "eu-west-1"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    if: github.event.inputs.environment == 'testnet'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Install Vault
+        shell: bash
+        run: |
+          set +x
+          echo "Install Vault"
+          rake "cluster:vault:install[${app_env}, ${app_region}, deploy/helm/vault/, ${kmskey}, ${aws_role}]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+
+
+  #deploy vault to au testnet environment
+  deploy_testnet_vault_au:
+    name: deploy-vault-testnet-au
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "ap-southeast-2"
+      aws_cluster_name: "sifchain-aws-testnet-au"
+      aws_role: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
+      kmskey: "b861d0b2-03af-4194-b69d-83b1939abeb0"
+      env: "testnet"
+      app_namespace: "vault"
+      app_name: "vault"
+      app_env: "testnet"
+      app_region: "ap-southeast-2"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    if: github.event.inputs.environment == 'testnet'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        run: |
+          rake "cluster:generate:art[]"
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Install Vault
+        shell: bash
+        run: |
+          set +x
+          echo "Install Vault"
+          rake "cluster:vault:install[${app_env}, ${app_region}, deploy/helm/vault/, ${kmskey}, ${aws_role}]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+
+
+
+  #deploy vault to sg testnet environment
+  deploy_testnet_vault_sg:
+    name: deploy-vault-testnet-sg
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "ap-southeast-1"
+      aws_cluster_name: "sifchain-aws-testnet-sg"
+      aws_role: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
+      kmskey: "e9cb76ba-6366-40c1-8a27-134efeb72de5"
+      env: "testnet"
+      app_namespace: "vault"
+      app_name: "vault"
+      app_env: "testnet"
+      app_region: "ap-southeast-1"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    if: github.event.inputs.environment == 'testnet'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        run: |
+          rake "cluster:generate:art[]"
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Install Vault
+        shell: bash
+        run: |
+          set +x
+          echo "Install Vault"
+          rake "cluster:vault:install[${app_env}, ${app_region}, deploy/helm/vault/, ${kmskey}, ${aws_role}]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+
