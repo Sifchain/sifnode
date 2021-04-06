@@ -564,8 +564,8 @@ current_height = float(os.environ["CURRENT_HEIGHT"])
 block_time=#{args[:block_time]}
 average_time = block_time / 60
 average_time = average_time * 60 * #{args[:upgrade_hours]}
-future_block_height= average_time + current_height
-print(future_block_height)
+future_block_height = average_time + current_height + 100
+print(round(future_block_height,0))
 EOF
 future_block_height=$(python pyscript.py)
 echo ${future_block_height}
