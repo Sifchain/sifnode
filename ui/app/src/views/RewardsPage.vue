@@ -38,16 +38,17 @@ export default defineComponent({
   setup() {
     const { store } = useCore();
     const address = computed(() => store.wallet.sif.address);
-    let rewards = ref<Array<Object>>([]);
+    let rewards = ref<Array<Object>>([
+      { type: "lm", multiplier: 0, start: "", amount: null },
+    ]);
 
-    watch(address, async () => {
-      console.log("address change", address);
-      rewards.value = await getRewardsData(address);
-    });
-
-    onMounted(async () => {
-      rewards.value = await getRewardsData(address);
-    });
+    // watch(address, async () => {
+    //   rewards.value = await getRewardsData(address);
+    // });
+    //
+    // onMounted(async () => {
+    //   rewards.value = await getRewardsData(address);
+    // });
 
     return {
       rewards,
@@ -84,7 +85,7 @@ export default defineComponent({
             <div class="amount-container w50 jcsb">
               <div class="df fdr">
                 <AssetItem symbol="Rowan" :label="false" />
-                <span>{{ reward.amount?.toFixed() }}</span>
+                <span>{{ reward.amount ? reward.amount?.toFixed() : 0 }}</span>
               </div>
               <span>ROWAN</span>
             </div>
