@@ -167,12 +167,11 @@ func (msg MsgBurn) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.CosmosSender}
 }
 
-// MsgCreateEthBridgeClaim defines a message for creating claims on the ethereum bridge
-type MsgCreateEthBridgeClaim EthBridgeClaim
-
 // NewMsgCreateEthBridgeClaim is a constructor function for MsgCreateBridgeClaim
-func NewMsgCreateEthBridgeClaim(ethBridgeClaim EthBridgeClaim) MsgCreateEthBridgeClaim {
-	return MsgCreateEthBridgeClaim(ethBridgeClaim)
+func NewMsgCreateEthBridgeClaim(ethBridgeClaim *EthBridgeClaim) MsgCreateEthBridgeClaim {
+	return MsgCreateEthBridgeClaim{
+		EthBridgeClaim: ethBridgeClaim,
+	}
 }
 
 // Route should return the name of the module
@@ -183,31 +182,35 @@ func (msg MsgCreateEthBridgeClaim) Type() string { return "create_bridge_claim" 
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgCreateEthBridgeClaim) ValidateBasic() error {
-	if msg.CosmosReceiver.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosReceiver.String())
+	if msg.EthBridgeClaim.CosmosReceiver == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.EthBridgeClaim.CosmosReceiver)
 	}
 
-	if msg.ValidatorAddress.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
+	if msg.EthBridgeClaim.ValidatorAddress == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.EthBridgeClaim.ValidatorAddress)
 	}
 
-	if msg.Nonce < 0 {
+	if msg.EthBridgeClaim.Nonce < 0 {
 		return ErrInvalidEthNonce
 	}
 
-	if !gethCommon.IsHexAddress(msg.EthereumSender.String()) {
+	if !gethCommon.IsHexAddress(msg.EthBridgeClaim.EthereumSender) {
 		return ErrInvalidEthAddress
 	}
-	if !gethCommon.IsHexAddress(msg.BridgeContractAddress.String()) {
+
+	if !gethCommon.IsHexAddress(msg.EthBridgeClaim.BridgeContractAddress) {
 		return ErrInvalidEthAddress
 	}
-	if !gethCommon.IsHexAddress(msg.TokenContractAddress.String()) {
+
+	if !gethCommon.IsHexAddress(msg.EthBridgeClaim.TokenContractAddress) {
 		return ErrInvalidEthAddress
 	}
-	if strings.ToLower(msg.Symbol) == "eth" &&
-		msg.TokenContractAddress != NewEthereumAddress("0x0000000000000000000000000000000000000000") {
+
+	if strings.ToLower(msg.EthBridgeClaim.Symbol) == "eth" &&
+		msg.EthBridgeClaim.TokenContractAddress != "0x0000000000000000000000000000000000000000" {
 		return ErrInvalidEthSymbol
 	}
+
 	return nil
 }
 

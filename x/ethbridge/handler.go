@@ -4,7 +4,6 @@ package ethbridge
 import (
 	"fmt"
 	"strconv"
-	"sync"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,19 +11,22 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	"github.com/Sifchain/sifnode/x/oracle"
+	"github.com/Sifchain/sifnode/x/ethbridge/keeper"
 )
 
 const errorMessageKey = "errorMessage"
 
 // NewHandler returns a handler for "ethbridge" type messages.
-func NewHandler(
-	accountKeeper types.AccountKeeper, bridgeKeeper Keeper, cdc *codec.Codec) sdk.Handler {
+func NewHandler(k Keeper) sdk.Handler {
+	msgServer := keeper.NewMsgServerImpl(k)
+
 	return func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
-		case MsgCreateEthBridgeClaim:
-			return handleMsgCreateEthBridgeClaim(ctx, cdc, bridgeKeeper, msg)
+		case *types.MsgCreateEthBridgeClaim:
+			res, err := msgServer.CreateEthBridgeClaim(sdk.WrapSDKContext(ctx), msg)
+
+			return sdk.WrapServiceResult(ctx, res, err)
 		case MsgBurn:
 			return handleMsgBurn(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		case MsgLock:
@@ -40,66 +42,6 @@ func NewHandler(
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
 		}
 	}
-}
-
-// Handle a message to create a bridge claim
-func handleMsgCreateEthBridgeClaim(
-	ctx sdk.Context, cdc *codec.Codec, bridgeKeeper Keeper, msg MsgCreateEthBridgeClaim,
-) (*sdk.Result, error) {
-
-	logger := bridgeKeeper.Logger(ctx)
-	var mutex = &sync.RWMutex{}
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	status, err := bridgeKeeper.ProcessClaim(ctx, types.EthBridgeClaim(msg))
-	if err != nil {
-		logger.Error("bridge keeper failed to process claim.",
-			errorMessageKey, err.Error())
-		return nil, err
-	}
-	if status.Text == oracle.SuccessStatusText {
-		if err = bridgeKeeper.ProcessSuccessfulClaim(ctx, status.FinalClaim); err != nil {
-			logger.Error("bridge keeper failed to process successful claim.",
-				errorMessageKey, err.Error())
-			return nil, err
-		}
-	}
-	// set mutex lock to false
-
-	logger.Info("sifnode emit create event.",
-		"CosmosSender", msg.ValidatorAddress.String(),
-		"EthereumSender", msg.EthereumSender.String(),
-		"EthereumSenderNonce", strconv.Itoa(msg.Nonce),
-		"CosmosReceiver", msg.CosmosReceiver.String(),
-		"Amount", msg.Amount.String(),
-		"Symbol", msg.Symbol,
-		"ClaimType", msg.ClaimType.String())
-
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.ValidatorAddress.String()),
-		),
-		sdk.NewEvent(
-			types.EventTypeCreateClaim,
-			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.ValidatorAddress.String()),
-			sdk.NewAttribute(types.AttributeKeyEthereumSender, msg.EthereumSender.String()),
-			sdk.NewAttribute(types.AttributeKeyEthereumSenderNonce, strconv.Itoa(msg.Nonce)),
-			sdk.NewAttribute(types.AttributeKeyCosmosReceiver, msg.CosmosReceiver.String()),
-			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
-			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyTokenContract, msg.TokenContractAddress.String()),
-			sdk.NewAttribute(types.AttributeKeyClaimType, msg.ClaimType.String()),
-		),
-		sdk.NewEvent(
-			types.EventTypeProphecyStatus,
-			sdk.NewAttribute(types.AttributeKeyStatus, status.Text.String()),
-		),
-	})
-
-	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }
 
 func handleMsgBurn(

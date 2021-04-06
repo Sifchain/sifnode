@@ -65,7 +65,7 @@ func NewOracleClaimContent(
 // must be created in a deterministic way that all validators can follow.
 // For this, we use the Nonce an Ethereum Sender provided,
 // as all validators will see this same data from the smart contract.
-func CreateOracleClaimFromEthClaim(cdc codec.BinaryMarshaler, ethClaim EthBridgeClaim) (oracletypes.Claim, error) {
+func CreateOracleClaimFromEthClaim(cdc codec.BinaryMarshaler, ethClaim *EthBridgeClaim) (oracletypes.Claim, error) {
 	oracleID := strconv.FormatInt(ethClaim.EthereumChainId, 10) + strconv.FormatInt(ethClaim.Nonce, 10) +
 		ethClaim.EthereumSender
 	claimContent := NewOracleClaimContent(sdk.AccAddress(ethClaim.CosmosReceiver), ethClaim.Amount,

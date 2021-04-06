@@ -132,7 +132,7 @@ func (am AppModule) Route() sdk.Route {
 
 // NewHandler returns an sdk.Handler for the ethbridge module.
 func (am AppModule) NewHandler() sdk.Handler {
-	return NewHandler(am.AccountKeeper, am.BridgeKeeper, am.Codec)
+	return NewHandler(am.BridgeKeeper)
 }
 
 // QuerierRoute returns the ethbridge module's querier route name.

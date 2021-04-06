@@ -30,7 +30,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // MsgLock defines a message for locking coins and triggering a related event
-type MsgLockRequest struct {
+type MsgLock struct {
 	CosmosSender     string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
 	Amount           github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=Amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"Amount" yaml:"amount"`
 	Symbol           string                                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty" yaml:"symbol"`
@@ -39,18 +39,18 @@ type MsgLockRequest struct {
 	CethAmount       github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=ceth_amount,json=cethAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"ceth_amount" yaml:"ceth_amount"`
 }
 
-func (m *MsgLockRequest) Reset()         { *m = MsgLockRequest{} }
-func (m *MsgLockRequest) String() string { return proto.CompactTextString(m) }
-func (*MsgLockRequest) ProtoMessage()    {}
-func (*MsgLockRequest) Descriptor() ([]byte, []int) {
+func (m *MsgLock) Reset()         { *m = MsgLock{} }
+func (m *MsgLock) String() string { return proto.CompactTextString(m) }
+func (*MsgLock) ProtoMessage()    {}
+func (*MsgLock) Descriptor() ([]byte, []int) {
 	return fileDescriptor_44d60f3dabe1980f, []int{0}
 }
-func (m *MsgLockRequest) XXX_Unmarshal(b []byte) error {
+func (m *MsgLock) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgLockRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgLock) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgLockRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgLock.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -60,40 +60,40 @@ func (m *MsgLockRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 		return b[:n], nil
 	}
 }
-func (m *MsgLockRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgLockRequest.Merge(m, src)
+func (m *MsgLock) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgLock.Merge(m, src)
 }
-func (m *MsgLockRequest) XXX_Size() int {
+func (m *MsgLock) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgLockRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgLockRequest.DiscardUnknown(m)
+func (m *MsgLock) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgLock.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgLockRequest proto.InternalMessageInfo
+var xxx_messageInfo_MsgLock proto.InternalMessageInfo
 
-func (m *MsgLockRequest) GetCosmosSender() string {
+func (m *MsgLock) GetCosmosSender() string {
 	if m != nil {
 		return m.CosmosSender
 	}
 	return ""
 }
 
-func (m *MsgLockRequest) GetSymbol() string {
+func (m *MsgLock) GetSymbol() string {
 	if m != nil {
 		return m.Symbol
 	}
 	return ""
 }
 
-func (m *MsgLockRequest) GetEthereumChainId() int64 {
+func (m *MsgLock) GetEthereumChainId() int64 {
 	if m != nil {
 		return m.EthereumChainId
 	}
 	return 0
 }
 
-func (m *MsgLockRequest) GetEthereumReceiver() string {
+func (m *MsgLock) GetEthereumReceiver() string {
 	if m != nil {
 		return m.EthereumReceiver
 	}
@@ -137,7 +137,7 @@ func (m *MsgLockResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgLockResponse proto.InternalMessageInfo
 
 // MsgBurn defines a message for burning coins and triggering a related event
-type MsgBurnRequest struct {
+type MsgBurn struct {
 	CosmosSender     string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty" yaml:"cosmos_sender"`
 	Amount           github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=amount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"amount" yaml:"amount"`
 	Symbol           string                                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty" yaml:"symbol"`
@@ -146,18 +146,18 @@ type MsgBurnRequest struct {
 	CethAmount       github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=ceth_amount,json=cethAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"ceth_amount" yaml:"ceth_amount"`
 }
 
-func (m *MsgBurnRequest) Reset()         { *m = MsgBurnRequest{} }
-func (m *MsgBurnRequest) String() string { return proto.CompactTextString(m) }
-func (*MsgBurnRequest) ProtoMessage()    {}
-func (*MsgBurnRequest) Descriptor() ([]byte, []int) {
+func (m *MsgBurn) Reset()         { *m = MsgBurn{} }
+func (m *MsgBurn) String() string { return proto.CompactTextString(m) }
+func (*MsgBurn) ProtoMessage()    {}
+func (*MsgBurn) Descriptor() ([]byte, []int) {
 	return fileDescriptor_44d60f3dabe1980f, []int{2}
 }
-func (m *MsgBurnRequest) XXX_Unmarshal(b []byte) error {
+func (m *MsgBurn) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgBurnRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgBurn) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgBurnRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgBurn.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -167,40 +167,40 @@ func (m *MsgBurnRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 		return b[:n], nil
 	}
 }
-func (m *MsgBurnRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgBurnRequest.Merge(m, src)
+func (m *MsgBurn) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgBurn.Merge(m, src)
 }
-func (m *MsgBurnRequest) XXX_Size() int {
+func (m *MsgBurn) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgBurnRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgBurnRequest.DiscardUnknown(m)
+func (m *MsgBurn) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgBurn.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgBurnRequest proto.InternalMessageInfo
+var xxx_messageInfo_MsgBurn proto.InternalMessageInfo
 
-func (m *MsgBurnRequest) GetCosmosSender() string {
+func (m *MsgBurn) GetCosmosSender() string {
 	if m != nil {
 		return m.CosmosSender
 	}
 	return ""
 }
 
-func (m *MsgBurnRequest) GetSymbol() string {
+func (m *MsgBurn) GetSymbol() string {
 	if m != nil {
 		return m.Symbol
 	}
 	return ""
 }
 
-func (m *MsgBurnRequest) GetEthereumChainId() int64 {
+func (m *MsgBurn) GetEthereumChainId() int64 {
 	if m != nil {
 		return m.EthereumChainId
 	}
 	return 0
 }
 
-func (m *MsgBurnRequest) GetEthereumReceiver() string {
+func (m *MsgBurn) GetEthereumReceiver() string {
 	if m != nil {
 		return m.EthereumReceiver
 	}
@@ -243,22 +243,22 @@ func (m *MsgBurnResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgBurnResponse proto.InternalMessageInfo
 
-type MsgCreateEthBridgeClaimRequest struct {
+type MsgCreateEthBridgeClaim struct {
 	EthBridgeClaim *EthBridgeClaim `protobuf:"bytes,1,opt,name=eth_bridge_claim,json=ethBridgeClaim,proto3" json:"eth_bridge_claim,omitempty" yaml:"eth_bridge_claim"`
 }
 
-func (m *MsgCreateEthBridgeClaimRequest) Reset()         { *m = MsgCreateEthBridgeClaimRequest{} }
-func (m *MsgCreateEthBridgeClaimRequest) String() string { return proto.CompactTextString(m) }
-func (*MsgCreateEthBridgeClaimRequest) ProtoMessage()    {}
-func (*MsgCreateEthBridgeClaimRequest) Descriptor() ([]byte, []int) {
+func (m *MsgCreateEthBridgeClaim) Reset()         { *m = MsgCreateEthBridgeClaim{} }
+func (m *MsgCreateEthBridgeClaim) String() string { return proto.CompactTextString(m) }
+func (*MsgCreateEthBridgeClaim) ProtoMessage()    {}
+func (*MsgCreateEthBridgeClaim) Descriptor() ([]byte, []int) {
 	return fileDescriptor_44d60f3dabe1980f, []int{4}
 }
-func (m *MsgCreateEthBridgeClaimRequest) XXX_Unmarshal(b []byte) error {
+func (m *MsgCreateEthBridgeClaim) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgCreateEthBridgeClaimRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgCreateEthBridgeClaim) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgCreateEthBridgeClaimRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgCreateEthBridgeClaim.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -268,19 +268,19 @@ func (m *MsgCreateEthBridgeClaimRequest) XXX_Marshal(b []byte, deterministic boo
 		return b[:n], nil
 	}
 }
-func (m *MsgCreateEthBridgeClaimRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgCreateEthBridgeClaimRequest.Merge(m, src)
+func (m *MsgCreateEthBridgeClaim) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgCreateEthBridgeClaim.Merge(m, src)
 }
-func (m *MsgCreateEthBridgeClaimRequest) XXX_Size() int {
+func (m *MsgCreateEthBridgeClaim) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgCreateEthBridgeClaimRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgCreateEthBridgeClaimRequest.DiscardUnknown(m)
+func (m *MsgCreateEthBridgeClaim) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgCreateEthBridgeClaim.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgCreateEthBridgeClaimRequest proto.InternalMessageInfo
+var xxx_messageInfo_MsgCreateEthBridgeClaim proto.InternalMessageInfo
 
-func (m *MsgCreateEthBridgeClaimRequest) GetEthBridgeClaim() *EthBridgeClaim {
+func (m *MsgCreateEthBridgeClaim) GetEthBridgeClaim() *EthBridgeClaim {
 	if m != nil {
 		return m.EthBridgeClaim
 	}
@@ -324,24 +324,24 @@ func (m *MsgCreateEthBridgeClaimResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgCreateEthBridgeClaimResponse proto.InternalMessageInfo
 
 // MsgUpdateWhiteListValidator add or remove validator from whitelist
-type MsgUpdateWhiteListValidatorRequest struct {
+type MsgUpdateWhiteListValidator struct {
 	CosmosSender  string `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty" yaml:"cosmos_sender"`
 	Validator     string `protobuf:"bytes,2,opt,name=validator,proto3" json:"validator,omitempty" yaml:"validator"`
 	OperationType string `protobuf:"bytes,3,opt,name=operation_type,json=operationType,proto3" json:"operation_type,omitempty" yaml:"operation_type"`
 }
 
-func (m *MsgUpdateWhiteListValidatorRequest) Reset()         { *m = MsgUpdateWhiteListValidatorRequest{} }
-func (m *MsgUpdateWhiteListValidatorRequest) String() string { return proto.CompactTextString(m) }
-func (*MsgUpdateWhiteListValidatorRequest) ProtoMessage()    {}
-func (*MsgUpdateWhiteListValidatorRequest) Descriptor() ([]byte, []int) {
+func (m *MsgUpdateWhiteListValidator) Reset()         { *m = MsgUpdateWhiteListValidator{} }
+func (m *MsgUpdateWhiteListValidator) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateWhiteListValidator) ProtoMessage()    {}
+func (*MsgUpdateWhiteListValidator) Descriptor() ([]byte, []int) {
 	return fileDescriptor_44d60f3dabe1980f, []int{6}
 }
-func (m *MsgUpdateWhiteListValidatorRequest) XXX_Unmarshal(b []byte) error {
+func (m *MsgUpdateWhiteListValidator) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgUpdateWhiteListValidatorRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgUpdateWhiteListValidator) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgUpdateWhiteListValidatorRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgUpdateWhiteListValidator.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -351,33 +351,33 @@ func (m *MsgUpdateWhiteListValidatorRequest) XXX_Marshal(b []byte, deterministic
 		return b[:n], nil
 	}
 }
-func (m *MsgUpdateWhiteListValidatorRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgUpdateWhiteListValidatorRequest.Merge(m, src)
+func (m *MsgUpdateWhiteListValidator) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateWhiteListValidator.Merge(m, src)
 }
-func (m *MsgUpdateWhiteListValidatorRequest) XXX_Size() int {
+func (m *MsgUpdateWhiteListValidator) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgUpdateWhiteListValidatorRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgUpdateWhiteListValidatorRequest.DiscardUnknown(m)
+func (m *MsgUpdateWhiteListValidator) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateWhiteListValidator.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgUpdateWhiteListValidatorRequest proto.InternalMessageInfo
+var xxx_messageInfo_MsgUpdateWhiteListValidator proto.InternalMessageInfo
 
-func (m *MsgUpdateWhiteListValidatorRequest) GetCosmosSender() string {
+func (m *MsgUpdateWhiteListValidator) GetCosmosSender() string {
 	if m != nil {
 		return m.CosmosSender
 	}
 	return ""
 }
 
-func (m *MsgUpdateWhiteListValidatorRequest) GetValidator() string {
+func (m *MsgUpdateWhiteListValidator) GetValidator() string {
 	if m != nil {
 		return m.Validator
 	}
 	return ""
 }
 
-func (m *MsgUpdateWhiteListValidatorRequest) GetOperationType() string {
+func (m *MsgUpdateWhiteListValidator) GetOperationType() string {
 	if m != nil {
 		return m.OperationType
 	}
@@ -421,62 +421,62 @@ func (m *MsgUpdateWhiteListValidatorResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgUpdateWhiteListValidatorResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*MsgLockRequest)(nil), "sifnode.ethbridge.v1.MsgLockRequest")
+	proto.RegisterType((*MsgLock)(nil), "sifnode.ethbridge.v1.MsgLock")
 	proto.RegisterType((*MsgLockResponse)(nil), "sifnode.ethbridge.v1.MsgLockResponse")
-	proto.RegisterType((*MsgBurnRequest)(nil), "sifnode.ethbridge.v1.MsgBurnRequest")
+	proto.RegisterType((*MsgBurn)(nil), "sifnode.ethbridge.v1.MsgBurn")
 	proto.RegisterType((*MsgBurnResponse)(nil), "sifnode.ethbridge.v1.MsgBurnResponse")
-	proto.RegisterType((*MsgCreateEthBridgeClaimRequest)(nil), "sifnode.ethbridge.v1.MsgCreateEthBridgeClaimRequest")
+	proto.RegisterType((*MsgCreateEthBridgeClaim)(nil), "sifnode.ethbridge.v1.MsgCreateEthBridgeClaim")
 	proto.RegisterType((*MsgCreateEthBridgeClaimResponse)(nil), "sifnode.ethbridge.v1.MsgCreateEthBridgeClaimResponse")
-	proto.RegisterType((*MsgUpdateWhiteListValidatorRequest)(nil), "sifnode.ethbridge.v1.MsgUpdateWhiteListValidatorRequest")
+	proto.RegisterType((*MsgUpdateWhiteListValidator)(nil), "sifnode.ethbridge.v1.MsgUpdateWhiteListValidator")
 	proto.RegisterType((*MsgUpdateWhiteListValidatorResponse)(nil), "sifnode.ethbridge.v1.MsgUpdateWhiteListValidatorResponse")
 }
 
 func init() { proto.RegisterFile("sifnode/ethbridge/v1/tx.proto", fileDescriptor_44d60f3dabe1980f) }
 
 var fileDescriptor_44d60f3dabe1980f = []byte{
-	// 670 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x55, 0xcd, 0x6e, 0xd3, 0x40,
-	0x10, 0x8e, 0x49, 0x89, 0xd4, 0x2d, 0xfd, 0x5b, 0x05, 0x61, 0x02, 0xd8, 0x65, 0x4b, 0x51, 0x39,
-	0x34, 0x51, 0x0b, 0x48, 0x80, 0x84, 0x00, 0x17, 0x04, 0x95, 0x9a, 0x8b, 0x0b, 0x54, 0xe2, 0x62,
-	0x39, 0xf6, 0xd6, 0x5e, 0x35, 0xf6, 0x06, 0xef, 0x26, 0x6a, 0xcf, 0x9c, 0x11, 0xbc, 0x0c, 0xcf,
-	0x40, 0x6f, 0xf4, 0x08, 0x1c, 0x2c, 0xd4, 0xbe, 0x81, 0x9f, 0x00, 0xd9, 0xbb, 0x4e, 0x1d, 0x35,
-	0x49, 0x55, 0xd4, 0x23, 0xa7, 0xc4, 0x33, 0xdf, 0x7c, 0x3b, 0x3b, 0xdf, 0xcc, 0x2c, 0xb8, 0xc5,
-	0xc8, 0x4e, 0x48, 0x5d, 0xdc, 0xc0, 0xdc, 0x6f, 0x45, 0xc4, 0xf5, 0x70, 0xa3, 0xb7, 0xda, 0xe0,
-	0x7b, 0xf5, 0x4e, 0x44, 0x39, 0x85, 0x55, 0xe9, 0xae, 0xf7, 0xdd, 0xf5, 0xde, 0x6a, 0xad, 0xea,
-	0x51, 0x8f, 0x66, 0x80, 0x46, 0xfa, 0x4f, 0x60, 0x6b, 0x0b, 0xc3, 0xa9, 0xf6, 0x3b, 0x98, 0x09,
-	0x04, 0xfa, 0x56, 0x06, 0x33, 0x4d, 0xe6, 0x6d, 0x52, 0x67, 0xd7, 0xc4, 0x1f, 0xbb, 0x98, 0x71,
-	0xb8, 0x08, 0xa6, 0x1d, 0xca, 0x02, 0xca, 0x2c, 0x86, 0x43, 0x17, 0x47, 0xaa, 0xb2, 0xa0, 0x2c,
-	0x4f, 0x9a, 0x57, 0x84, 0x71, 0x2b, 0xb3, 0xc1, 0x6d, 0x50, 0x79, 0x11, 0xd0, 0x6e, 0xc8, 0xd5,
-	0x4b, 0xa9, 0xd7, 0x78, 0x76, 0x10, 0xeb, 0xa5, 0xdf, 0xb1, 0x7e, 0xd7, 0x23, 0xdc, 0xef, 0xb6,
-	0xea, 0x0e, 0x0d, 0x1a, 0x22, 0x40, 0xfe, 0xac, 0x30, 0x77, 0x57, 0x9e, 0xbc, 0x11, 0xf2, 0x24,
-	0xd6, 0xa7, 0xf7, 0xed, 0xa0, 0xfd, 0x04, 0xd9, 0x19, 0x0b, 0x32, 0x25, 0x1d, 0xbc, 0x07, 0x2a,
-	0x6c, 0x3f, 0x68, 0xd1, 0xb6, 0x5a, 0xce, 0x88, 0xe7, 0x4f, 0xa0, 0xc2, 0x8e, 0x4c, 0x09, 0x80,
-	0x6f, 0xc0, 0x3c, 0xe6, 0x3e, 0x8e, 0x70, 0x37, 0xb0, 0x1c, 0xdf, 0x26, 0xa1, 0x45, 0x5c, 0x75,
-	0x62, 0x41, 0x59, 0x2e, 0x1b, 0x37, 0x93, 0x58, 0x57, 0x45, 0xd4, 0x29, 0x08, 0x32, 0x67, 0x73,
-	0xdb, 0x7a, 0x6a, 0xda, 0x70, 0xe1, 0x46, 0x81, 0x29, 0xc2, 0x0e, 0x26, 0x3d, 0x1c, 0xa9, 0x97,
-	0xb3, 0xf3, 0x87, 0x31, 0xe5, 0x10, 0x64, 0xce, 0xe5, 0x36, 0x53, 0x9a, 0x20, 0x06, 0x53, 0x0e,
-	0xe6, 0xbe, 0x25, 0xee, 0xa5, 0x56, 0x32, 0x92, 0x97, 0xe7, 0xae, 0x0e, 0x14, 0x47, 0x16, 0xa8,
-	0x90, 0x09, 0xd2, 0x2f, 0x51, 0x26, 0x34, 0x0f, 0x66, 0xfb, 0xb2, 0xb1, 0x0e, 0x0d, 0x19, 0x46,
-	0x3f, 0x84, 0x94, 0x46, 0x37, 0x0a, 0x73, 0x29, 0x9f, 0x0e, 0x95, 0xd2, 0x50, 0x93, 0x58, 0xaf,
-	0xca, 0x03, 0x8a, 0x6e, 0x74, 0x5a, 0x64, 0xfb, 0x62, 0x45, 0xb6, 0xff, 0x8b, 0x7c, 0x6e, 0x91,
-	0x85, 0xa0, 0x52, 0xe4, 0xcf, 0x0a, 0xd0, 0x9a, 0xcc, 0x5b, 0x8f, 0xb0, 0xcd, 0xf1, 0x2b, 0xee,
-	0x1b, 0xd9, 0x54, 0xaf, 0xb7, 0x6d, 0x12, 0xe4, 0xa2, 0xef, 0x82, 0x34, 0x61, 0x4b, 0xcc, 0xbb,
-	0xe5, 0xa4, 0xae, 0x4c, 0xf7, 0xa9, 0xb5, 0x3b, 0xf5, 0x61, 0xbb, 0xa3, 0x3e, 0x48, 0x63, 0xdc,
-	0x48, 0x62, 0xfd, 0x5a, 0xbf, 0x18, 0x03, 0x3c, 0xc8, 0x9c, 0xc1, 0x03, 0x60, 0x74, 0x1b, 0xe8,
-	0x23, 0xd3, 0x91, 0x29, 0xff, 0x52, 0x00, 0x6a, 0x32, 0xef, 0x5d, 0xc7, 0xb5, 0x39, 0xde, 0xf6,
-	0x09, 0xc7, 0x9b, 0x84, 0xf1, 0xf7, 0x76, 0x9b, 0xb8, 0x36, 0xa7, 0xd1, 0x05, 0xf5, 0xea, 0x1a,
-	0x98, 0xec, 0xe5, 0x94, 0xb2, 0x5d, 0xab, 0x49, 0xac, 0xcf, 0x89, 0xd0, 0xbe, 0x0b, 0x99, 0x27,
-	0x30, 0xf8, 0x1c, 0xcc, 0xd0, 0x0e, 0x8e, 0x6c, 0x4e, 0x68, 0x68, 0xa5, 0xc2, 0xc8, 0x76, 0xbc,
-	0x9e, 0xc4, 0xfa, 0x55, 0x11, 0x38, 0xe8, 0x47, 0xe6, 0x74, 0xdf, 0xf0, 0x36, 0xfd, 0x5e, 0x02,
-	0x8b, 0x63, 0xaf, 0x26, 0x4a, 0xb0, 0xf6, 0xbd, 0x0c, 0xca, 0x4d, 0xe6, 0xc1, 0x2d, 0x30, 0x91,
-	0x8e, 0x2c, 0x1c, 0x21, 0xc4, 0xe0, 0x22, 0xae, 0x2d, 0x9d, 0x81, 0x12, 0xe4, 0x29, 0x69, 0xda,
-	0x22, 0x63, 0x48, 0x0b, 0x2b, 0x61, 0x0c, 0x69, 0xb1, 0xcf, 0xe0, 0x27, 0x05, 0x54, 0x87, 0xa9,
-	0x0a, 0x1f, 0x8c, 0x8c, 0x1f, 0xd3, 0x93, 0xb5, 0x87, 0xe7, 0x8c, 0x92, 0x59, 0x7c, 0x51, 0x80,
-	0x3a, 0xaa, 0xb8, 0xf0, 0xd1, 0x48, 0xce, 0x33, 0x5a, 0xad, 0xf6, 0xf8, 0x1f, 0x22, 0x45, 0x46,
-	0xc6, 0xeb, 0x83, 0x23, 0x4d, 0x39, 0x3c, 0xd2, 0x94, 0x3f, 0x47, 0x9a, 0xf2, 0xf5, 0x58, 0x2b,
-	0x1d, 0x1e, 0x6b, 0xa5, 0x9f, 0xc7, 0x5a, 0xe9, 0xc3, 0x4a, 0x61, 0xec, 0xb7, 0xc8, 0x4e, 0xb6,
-	0x88, 0x1a, 0xf9, 0xfb, 0xbb, 0x57, 0x78, 0x81, 0xb3, 0x0d, 0xd0, 0xaa, 0x64, 0xef, 0xef, 0xfd,
-	0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x85, 0x45, 0x47, 0x68, 0xee, 0x07, 0x00, 0x00,
+	// 662 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x55, 0xcd, 0x6e, 0xd3, 0x4c,
+	0x14, 0x8d, 0xbf, 0xf4, 0x0b, 0xea, 0x94, 0xfe, 0x8d, 0x82, 0x6a, 0x52, 0x1a, 0x97, 0x29, 0x45,
+	0x65, 0xd1, 0x44, 0x2d, 0x62, 0x01, 0x12, 0x02, 0x5c, 0x10, 0x54, 0x6a, 0x36, 0x2e, 0x50, 0x89,
+	0x8d, 0xe5, 0xd8, 0x53, 0x7b, 0xd4, 0xd8, 0x13, 0x79, 0x26, 0x51, 0x2b, 0xb1, 0x46, 0x2c, 0x79,
+	0x0e, 0x16, 0x3c, 0x47, 0x97, 0x15, 0x2b, 0xc4, 0xc2, 0x42, 0xed, 0x1b, 0xe4, 0x09, 0x90, 0x67,
+	0x6c, 0xd7, 0x51, 0xed, 0x4a, 0x11, 0x2c, 0x59, 0x25, 0x3e, 0xf7, 0xdc, 0x33, 0x77, 0xe6, 0xdc,
+	0x3b, 0x03, 0x56, 0x18, 0x39, 0x0c, 0xa8, 0x83, 0xdb, 0x98, 0x7b, 0xdd, 0x90, 0x38, 0x2e, 0x6e,
+	0x0f, 0xb7, 0xda, 0xfc, 0xb8, 0xd5, 0x0f, 0x29, 0xa7, 0xb0, 0x9e, 0x84, 0x5b, 0x59, 0xb8, 0x35,
+	0xdc, 0x6a, 0xd4, 0x5d, 0xea, 0x52, 0x41, 0x68, 0xc7, 0xff, 0x24, 0xb7, 0xb1, 0x5a, 0x2c, 0x75,
+	0xd2, 0xc7, 0x4c, 0x32, 0xd0, 0xb7, 0x2a, 0xb8, 0xd1, 0x61, 0xee, 0x1e, 0xb5, 0x8f, 0xe0, 0x1a,
+	0x98, 0xb5, 0x29, 0xf3, 0x29, 0x33, 0x19, 0x0e, 0x1c, 0x1c, 0xaa, 0xca, 0xaa, 0xb2, 0x31, 0x6d,
+	0xdc, 0x94, 0xe0, 0xbe, 0xc0, 0xe0, 0x01, 0xa8, 0xbd, 0xf0, 0xe9, 0x20, 0xe0, 0xea, 0x7f, 0x71,
+	0x54, 0x7f, 0x76, 0x1a, 0x69, 0x95, 0x9f, 0x91, 0x76, 0xdf, 0x25, 0xdc, 0x1b, 0x74, 0x5b, 0x36,
+	0xf5, 0xdb, 0x32, 0x21, 0xf9, 0xd9, 0x64, 0xce, 0x51, 0xb2, 0xe4, 0x6e, 0xc0, 0x47, 0x91, 0x36,
+	0x7b, 0x62, 0xf9, 0xbd, 0x27, 0xc8, 0x12, 0x2a, 0xc8, 0x48, 0xe4, 0xe0, 0x03, 0x50, 0x63, 0x27,
+	0x7e, 0x97, 0xf6, 0xd4, 0xaa, 0x10, 0x5e, 0xbc, 0xa4, 0x4a, 0x1c, 0x19, 0x09, 0x01, 0xbe, 0x01,
+	0x8b, 0x98, 0x7b, 0x38, 0xc4, 0x03, 0xdf, 0xb4, 0x3d, 0x8b, 0x04, 0x26, 0x71, 0xd4, 0xa9, 0x55,
+	0x65, 0xa3, 0xaa, 0xdf, 0x19, 0x45, 0x9a, 0x2a, 0xb3, 0xae, 0x50, 0x90, 0x31, 0x9f, 0x62, 0x3b,
+	0x31, 0xb4, 0xeb, 0xc0, 0xdd, 0x9c, 0x52, 0x88, 0x6d, 0x4c, 0x86, 0x38, 0x54, 0xff, 0x17, 0xeb,
+	0x17, 0x29, 0xa5, 0x14, 0x64, 0x2c, 0xa4, 0x98, 0x91, 0x40, 0x10, 0x83, 0x19, 0x1b, 0x73, 0xcf,
+	0x94, 0xfb, 0x52, 0x6b, 0x42, 0xe4, 0xe5, 0xc4, 0xa7, 0x03, 0xe5, 0x92, 0x39, 0x29, 0x64, 0x80,
+	0xf8, 0x4b, 0x1e, 0x13, 0x5a, 0x04, 0xf3, 0x89, 0x5f, 0x06, 0x66, 0x7d, 0x1a, 0x30, 0x8c, 0x4e,
+	0xa5, 0x87, 0xfa, 0x20, 0x0c, 0xe0, 0xd3, 0x42, 0x0f, 0x75, 0x75, 0x14, 0x69, 0xf5, 0x44, 0x39,
+	0x1f, 0x46, 0x57, 0xdd, 0xb5, 0xfe, 0xae, 0xbb, 0xd6, 0x3f, 0x77, 0x27, 0x76, 0x37, 0x76, 0x32,
+	0x73, 0xf7, 0x93, 0x02, 0x96, 0x3a, 0xcc, 0xdd, 0x09, 0xb1, 0xc5, 0xf1, 0x2b, 0xee, 0xe9, 0x62,
+	0x8e, 0x77, 0x7a, 0x16, 0xf1, 0xe1, 0x11, 0x88, 0x2b, 0x35, 0xe5, 0x68, 0x9b, 0x76, 0x8c, 0x09,
+	0xc3, 0x67, 0xb6, 0xef, 0xb5, 0x8a, 0xae, 0x89, 0xd6, 0x78, 0xbe, 0xbe, 0x3c, 0x8a, 0xb4, 0xa5,
+	0xec, 0x14, 0xc6, 0x74, 0x90, 0x31, 0x87, 0xc7, 0xc8, 0xe8, 0x2e, 0xd0, 0x4a, 0xea, 0xc8, 0x6a,
+	0xfd, 0xae, 0x80, 0xe5, 0x0e, 0x73, 0xdf, 0xf5, 0x1d, 0x8b, 0xe3, 0x03, 0x8f, 0x70, 0xbc, 0x47,
+	0x18, 0x7f, 0x6f, 0xf5, 0x88, 0x63, 0x71, 0x1a, 0xfe, 0x69, 0x77, 0x6e, 0x83, 0xe9, 0x61, 0xaa,
+	0x95, 0x34, 0x68, 0x7d, 0x14, 0x69, 0x0b, 0x32, 0x35, 0x0b, 0x21, 0xe3, 0x92, 0x06, 0x9f, 0x83,
+	0x39, 0xda, 0xc7, 0xa1, 0xc5, 0x09, 0x0d, 0xcc, 0xd8, 0x8a, 0xa4, 0x01, 0x6f, 0x8f, 0x22, 0xed,
+	0x96, 0x4c, 0x1c, 0x8f, 0x23, 0x63, 0x36, 0x03, 0xde, 0xc6, 0xdf, 0xeb, 0x60, 0xed, 0x9a, 0x3d,
+	0xa5, 0x7b, 0xdf, 0xfe, 0x5a, 0x05, 0xd5, 0x0e, 0x73, 0xe1, 0x1e, 0x98, 0x12, 0xb7, 0xe9, 0x4a,
+	0xb1, 0x03, 0xc9, 0xf0, 0x36, 0xd6, 0xaf, 0x0d, 0xa7, 0xaa, 0xb1, 0x9a, 0x98, 0xeb, 0x72, 0xb5,
+	0x38, 0x7c, 0x8d, 0x5a, 0xbe, 0x97, 0xe0, 0x47, 0x50, 0x2f, 0xec, 0xa3, 0xcd, 0xd2, 0xf4, 0x22,
+	0x7a, 0xe3, 0xd1, 0x44, 0xf4, 0x6c, 0xf5, 0xcf, 0x0a, 0x50, 0x4b, 0x5b, 0x63, 0xab, 0x54, 0xb3,
+	0x2c, 0xa5, 0xf1, 0x78, 0xe2, 0x94, 0xb4, 0x14, 0xfd, 0xf5, 0xe9, 0x79, 0x53, 0x39, 0x3b, 0x6f,
+	0x2a, 0xbf, 0xce, 0x9b, 0xca, 0x97, 0x8b, 0x66, 0xe5, 0xec, 0xa2, 0x59, 0xf9, 0x71, 0xd1, 0xac,
+	0x7c, 0xd8, 0xcc, 0xcd, 0xf2, 0x3e, 0x39, 0x14, 0xb7, 0x4b, 0x3b, 0x7d, 0x46, 0x8f, 0x73, 0x0f,
+	0xa9, 0x18, 0xeb, 0x6e, 0x4d, 0x3c, 0xa3, 0x0f, 0x7f, 0x07, 0x00, 0x00, 0xff, 0xff, 0x31, 0x4f,
+	0x80, 0x5c, 0xb5, 0x07, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -491,10 +491,10 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	Lock(ctx context.Context, in *MsgLockRequest, opts ...grpc.CallOption) (*MsgLockResponse, error)
-	Burn(ctx context.Context, in *MsgBurnRequest, opts ...grpc.CallOption) (*MsgBurnResponse, error)
-	CreateEthBridgeClaim(ctx context.Context, in *MsgCreateEthBridgeClaimRequest, opts ...grpc.CallOption) (*MsgCreateEthBridgeClaimResponse, error)
-	UpdateWhiteListValidator(ctx context.Context, in *MsgUpdateWhiteListValidatorRequest, opts ...grpc.CallOption) (*MsgUpdateWhiteListValidatorResponse, error)
+	Lock(ctx context.Context, in *MsgLock, opts ...grpc.CallOption) (*MsgLockResponse, error)
+	Burn(ctx context.Context, in *MsgBurn, opts ...grpc.CallOption) (*MsgBurnResponse, error)
+	CreateEthBridgeClaim(ctx context.Context, in *MsgCreateEthBridgeClaim, opts ...grpc.CallOption) (*MsgCreateEthBridgeClaimResponse, error)
+	UpdateWhiteListValidator(ctx context.Context, in *MsgUpdateWhiteListValidator, opts ...grpc.CallOption) (*MsgUpdateWhiteListValidatorResponse, error)
 }
 
 type msgClient struct {
@@ -505,7 +505,7 @@ func NewMsgClient(cc grpc1.ClientConn) MsgClient {
 	return &msgClient{cc}
 }
 
-func (c *msgClient) Lock(ctx context.Context, in *MsgLockRequest, opts ...grpc.CallOption) (*MsgLockResponse, error) {
+func (c *msgClient) Lock(ctx context.Context, in *MsgLock, opts ...grpc.CallOption) (*MsgLockResponse, error) {
 	out := new(MsgLockResponse)
 	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/Lock", in, out, opts...)
 	if err != nil {
@@ -514,7 +514,7 @@ func (c *msgClient) Lock(ctx context.Context, in *MsgLockRequest, opts ...grpc.C
 	return out, nil
 }
 
-func (c *msgClient) Burn(ctx context.Context, in *MsgBurnRequest, opts ...grpc.CallOption) (*MsgBurnResponse, error) {
+func (c *msgClient) Burn(ctx context.Context, in *MsgBurn, opts ...grpc.CallOption) (*MsgBurnResponse, error) {
 	out := new(MsgBurnResponse)
 	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/Burn", in, out, opts...)
 	if err != nil {
@@ -523,7 +523,7 @@ func (c *msgClient) Burn(ctx context.Context, in *MsgBurnRequest, opts ...grpc.C
 	return out, nil
 }
 
-func (c *msgClient) CreateEthBridgeClaim(ctx context.Context, in *MsgCreateEthBridgeClaimRequest, opts ...grpc.CallOption) (*MsgCreateEthBridgeClaimResponse, error) {
+func (c *msgClient) CreateEthBridgeClaim(ctx context.Context, in *MsgCreateEthBridgeClaim, opts ...grpc.CallOption) (*MsgCreateEthBridgeClaimResponse, error) {
 	out := new(MsgCreateEthBridgeClaimResponse)
 	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/CreateEthBridgeClaim", in, out, opts...)
 	if err != nil {
@@ -532,7 +532,7 @@ func (c *msgClient) CreateEthBridgeClaim(ctx context.Context, in *MsgCreateEthBr
 	return out, nil
 }
 
-func (c *msgClient) UpdateWhiteListValidator(ctx context.Context, in *MsgUpdateWhiteListValidatorRequest, opts ...grpc.CallOption) (*MsgUpdateWhiteListValidatorResponse, error) {
+func (c *msgClient) UpdateWhiteListValidator(ctx context.Context, in *MsgUpdateWhiteListValidator, opts ...grpc.CallOption) (*MsgUpdateWhiteListValidatorResponse, error) {
 	out := new(MsgUpdateWhiteListValidatorResponse)
 	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/UpdateWhiteListValidator", in, out, opts...)
 	if err != nil {
@@ -543,26 +543,26 @@ func (c *msgClient) UpdateWhiteListValidator(ctx context.Context, in *MsgUpdateW
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	Lock(context.Context, *MsgLockRequest) (*MsgLockResponse, error)
-	Burn(context.Context, *MsgBurnRequest) (*MsgBurnResponse, error)
-	CreateEthBridgeClaim(context.Context, *MsgCreateEthBridgeClaimRequest) (*MsgCreateEthBridgeClaimResponse, error)
-	UpdateWhiteListValidator(context.Context, *MsgUpdateWhiteListValidatorRequest) (*MsgUpdateWhiteListValidatorResponse, error)
+	Lock(context.Context, *MsgLock) (*MsgLockResponse, error)
+	Burn(context.Context, *MsgBurn) (*MsgBurnResponse, error)
+	CreateEthBridgeClaim(context.Context, *MsgCreateEthBridgeClaim) (*MsgCreateEthBridgeClaimResponse, error)
+	UpdateWhiteListValidator(context.Context, *MsgUpdateWhiteListValidator) (*MsgUpdateWhiteListValidatorResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
-func (*UnimplementedMsgServer) Lock(ctx context.Context, req *MsgLockRequest) (*MsgLockResponse, error) {
+func (*UnimplementedMsgServer) Lock(ctx context.Context, req *MsgLock) (*MsgLockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Lock not implemented")
 }
-func (*UnimplementedMsgServer) Burn(ctx context.Context, req *MsgBurnRequest) (*MsgBurnResponse, error) {
+func (*UnimplementedMsgServer) Burn(ctx context.Context, req *MsgBurn) (*MsgBurnResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Burn not implemented")
 }
-func (*UnimplementedMsgServer) CreateEthBridgeClaim(ctx context.Context, req *MsgCreateEthBridgeClaimRequest) (*MsgCreateEthBridgeClaimResponse, error) {
+func (*UnimplementedMsgServer) CreateEthBridgeClaim(ctx context.Context, req *MsgCreateEthBridgeClaim) (*MsgCreateEthBridgeClaimResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateEthBridgeClaim not implemented")
 }
-func (*UnimplementedMsgServer) UpdateWhiteListValidator(ctx context.Context, req *MsgUpdateWhiteListValidatorRequest) (*MsgUpdateWhiteListValidatorResponse, error) {
+func (*UnimplementedMsgServer) UpdateWhiteListValidator(ctx context.Context, req *MsgUpdateWhiteListValidator) (*MsgUpdateWhiteListValidatorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateWhiteListValidator not implemented")
 }
 
@@ -571,7 +571,7 @@ func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
 }
 
 func _Msg_Lock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgLockRequest)
+	in := new(MsgLock)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -583,13 +583,13 @@ func _Msg_Lock_Handler(srv interface{}, ctx context.Context, dec func(interface{
 		FullMethod: "/sifnode.ethbridge.v1.Msg/Lock",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).Lock(ctx, req.(*MsgLockRequest))
+		return srv.(MsgServer).Lock(ctx, req.(*MsgLock))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Msg_Burn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgBurnRequest)
+	in := new(MsgBurn)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -601,13 +601,13 @@ func _Msg_Burn_Handler(srv interface{}, ctx context.Context, dec func(interface{
 		FullMethod: "/sifnode.ethbridge.v1.Msg/Burn",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).Burn(ctx, req.(*MsgBurnRequest))
+		return srv.(MsgServer).Burn(ctx, req.(*MsgBurn))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Msg_CreateEthBridgeClaim_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgCreateEthBridgeClaimRequest)
+	in := new(MsgCreateEthBridgeClaim)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -619,13 +619,13 @@ func _Msg_CreateEthBridgeClaim_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/sifnode.ethbridge.v1.Msg/CreateEthBridgeClaim",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).CreateEthBridgeClaim(ctx, req.(*MsgCreateEthBridgeClaimRequest))
+		return srv.(MsgServer).CreateEthBridgeClaim(ctx, req.(*MsgCreateEthBridgeClaim))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Msg_UpdateWhiteListValidator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgUpdateWhiteListValidatorRequest)
+	in := new(MsgUpdateWhiteListValidator)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -637,7 +637,7 @@ func _Msg_UpdateWhiteListValidator_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/sifnode.ethbridge.v1.Msg/UpdateWhiteListValidator",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).UpdateWhiteListValidator(ctx, req.(*MsgUpdateWhiteListValidatorRequest))
+		return srv.(MsgServer).UpdateWhiteListValidator(ctx, req.(*MsgUpdateWhiteListValidator))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -667,7 +667,7 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	Metadata: "sifnode/ethbridge/v1/tx.proto",
 }
 
-func (m *MsgLockRequest) Marshal() (dAtA []byte, err error) {
+func (m *MsgLock) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -677,12 +677,12 @@ func (m *MsgLockRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgLockRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgLock) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgLockRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgLock) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -759,7 +759,7 @@ func (m *MsgLockResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgBurnRequest) Marshal() (dAtA []byte, err error) {
+func (m *MsgBurn) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -769,12 +769,12 @@ func (m *MsgBurnRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgBurnRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgBurn) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgBurnRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgBurn) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -851,7 +851,7 @@ func (m *MsgBurnResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgCreateEthBridgeClaimRequest) Marshal() (dAtA []byte, err error) {
+func (m *MsgCreateEthBridgeClaim) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -861,12 +861,12 @@ func (m *MsgCreateEthBridgeClaimRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgCreateEthBridgeClaimRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgCreateEthBridgeClaim) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgCreateEthBridgeClaimRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgCreateEthBridgeClaim) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -909,7 +909,7 @@ func (m *MsgCreateEthBridgeClaimResponse) MarshalToSizedBuffer(dAtA []byte) (int
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgUpdateWhiteListValidatorRequest) Marshal() (dAtA []byte, err error) {
+func (m *MsgUpdateWhiteListValidator) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -919,12 +919,12 @@ func (m *MsgUpdateWhiteListValidatorRequest) Marshal() (dAtA []byte, err error) 
 	return dAtA[:n], nil
 }
 
-func (m *MsgUpdateWhiteListValidatorRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgUpdateWhiteListValidator) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgUpdateWhiteListValidatorRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgUpdateWhiteListValidator) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -987,7 +987,7 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *MsgLockRequest) Size() (n int) {
+func (m *MsgLock) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1024,7 +1024,7 @@ func (m *MsgLockResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgBurnRequest) Size() (n int) {
+func (m *MsgBurn) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1061,7 +1061,7 @@ func (m *MsgBurnResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgCreateEthBridgeClaimRequest) Size() (n int) {
+func (m *MsgCreateEthBridgeClaim) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1083,7 +1083,7 @@ func (m *MsgCreateEthBridgeClaimResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgUpdateWhiteListValidatorRequest) Size() (n int) {
+func (m *MsgUpdateWhiteListValidator) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1119,7 +1119,7 @@ func sovTx(x uint64) (n int) {
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *MsgLockRequest) Unmarshal(dAtA []byte) error {
+func (m *MsgLock) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1142,10 +1142,10 @@ func (m *MsgLockRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgLockRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgLock: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgLockRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgLock: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1402,7 +1402,7 @@ func (m *MsgLockResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgBurnRequest) Unmarshal(dAtA []byte) error {
+func (m *MsgBurn) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1425,10 +1425,10 @@ func (m *MsgBurnRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgBurnRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgBurn: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgBurnRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgBurn: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1685,7 +1685,7 @@ func (m *MsgBurnResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgCreateEthBridgeClaimRequest) Unmarshal(dAtA []byte) error {
+func (m *MsgCreateEthBridgeClaim) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1708,10 +1708,10 @@ func (m *MsgCreateEthBridgeClaimRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgCreateEthBridgeClaimRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgCreateEthBridgeClaim: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgCreateEthBridgeClaimRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgCreateEthBridgeClaim: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1821,7 +1821,7 @@ func (m *MsgCreateEthBridgeClaimResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgUpdateWhiteListValidatorRequest) Unmarshal(dAtA []byte) error {
+func (m *MsgUpdateWhiteListValidator) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1844,10 +1844,10 @@ func (m *MsgUpdateWhiteListValidatorRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgUpdateWhiteListValidatorRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgUpdateWhiteListValidator: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgUpdateWhiteListValidatorRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgUpdateWhiteListValidator: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:

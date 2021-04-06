@@ -8,14 +8,14 @@ option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
 
 // Msg service for messages
 service Msg {
-  rpc Lock(MsgLockRequest) returns (MsgLockResponse);
-  rpc Burn(MsgBurnRequest) returns (MsgBurnResponse);
-  rpc CreateEthBridgeClaim(MsgCreateEthBridgeClaimRequest) returns (MsgCreateEthBridgeClaimResponse);
-  rpc UpdateWhiteListValidator(MsgUpdateWhiteListValidatorRequest) returns (MsgUpdateWhiteListValidatorResponse);
+  rpc Lock(MsgLock) returns (MsgLockResponse);
+  rpc Burn(MsgBurn) returns (MsgBurnResponse);
+  rpc CreateEthBridgeClaim(MsgCreateEthBridgeClaim) returns (MsgCreateEthBridgeClaimResponse);
+  rpc UpdateWhiteListValidator(MsgUpdateWhiteListValidator) returns (MsgUpdateWhiteListValidatorResponse);
 }
 
 // MsgLock defines a message for locking coins and triggering a related event
-message MsgLockRequest {
+message MsgLock {
   string cosmos_sender     = 1;
   string Amount            = 2 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable)   = false,
@@ -31,7 +31,7 @@ message MsgLockRequest {
 message MsgLockResponse {}
 
 // MsgBurn defines a message for burning coins and triggering a related event
-message MsgBurnRequest {
+message MsgBurn {
   string cosmos_sender     = 1 [(gogoproto.moretags) = "yaml:\"cosmos_sender\""];
   string amount            = 2 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable)   = false,
@@ -46,14 +46,14 @@ message MsgBurnRequest {
 
 message MsgBurnResponse {}
 
-message MsgCreateEthBridgeClaimRequest {
+message MsgCreateEthBridgeClaim {
   EthBridgeClaim eth_bridge_claim = 1 [(gogoproto.moretags) = "yaml:\"eth_bridge_claim\""];
 }
 
 message MsgCreateEthBridgeClaimResponse {}
 
 // MsgUpdateWhiteListValidator add or remove validator from whitelist
-message MsgUpdateWhiteListValidatorRequest {
+message MsgUpdateWhiteListValidator {
   string cosmos_sender  = 1 [(gogoproto.moretags) = "yaml:\"cosmos_sender\""];
   string validator      = 2 [(gogoproto.moretags) = "yaml:\"validator\""];
   string operation_type = 3 [(gogoproto.moretags) = "yaml:\"operation_type\""];
