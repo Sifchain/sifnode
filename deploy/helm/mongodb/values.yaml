@@ -1,0 +1,6 @@
+service:
+  type: LoadBalancer
+externalAccess:
+  enabled: true
+persistence:
+  size: 50Gi
