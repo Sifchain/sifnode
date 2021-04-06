@@ -275,7 +275,7 @@ describe("connect to page", () => {
       "Balance: 9,950.00 cUSDC",
     );
 
-    expect(await dexPage.innerText('[data-handle="cusdc-balance-label"]')).toBe(
+    expect(await dexPage.innerText('[data-handle="rowan-balance-label"]')).toBe(
       "Balance: 10,049.99 ROWAN",
     );
   });
