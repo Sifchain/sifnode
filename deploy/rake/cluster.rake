@@ -573,7 +573,7 @@ echo ${future_block_height}
 echo 'go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
 	--from #{args[:from]} \
 	--deposit #{args[:deposit]} \
-	--upgrade-height ${future_block_height} \
+	--upgrade-height '${future_block_height}' \
 	--info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/devnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
 	--title release-#{args[:release_version]} \
 	--description release-#{args[:release_version]} \

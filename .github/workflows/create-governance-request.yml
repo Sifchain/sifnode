@@ -35,7 +35,6 @@ on:
         description: aws region
         required: true
         default: us-east-1
-
 jobs:
   create_governance_request_us:
     name: create_governance_request_us
@@ -105,7 +104,7 @@ jobs:
         shell: bash
         run: |
           set +x
-          echo "Create Governance Release Request"
+          echo "Create Governance Release Request with deposit ammount $deposit"
           rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}, ${checksum}]"
 
       - name: Create Governance Vote 1
