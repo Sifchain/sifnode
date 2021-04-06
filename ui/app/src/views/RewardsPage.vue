@@ -22,7 +22,7 @@ async function getRewardsData(address: ComputedRef<any>) {
   const data = await fetch(
     `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
   );
-  if (data.status !== 200) return [];
+  if (data.status !== 200) return [{ type: "lm", multiplier: 0, start: "", amount: null }];
   return await data.json();
 }
 export default defineComponent({
@@ -38,9 +38,7 @@ export default defineComponent({
   setup() {
     const { store } = useCore();
     const address = computed(() => store.wallet.sif.address);
-    let rewards = ref<Array<Object>>([
-      { type: "lm", multiplier: 0, start: "", amount: null },
-    ]);
+    let rewards = ref<Array<Object>>([]);
 
     watch(address, async () => {
       rewards.value = await getRewardsData(address);
