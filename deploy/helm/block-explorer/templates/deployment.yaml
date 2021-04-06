@@ -5,9 +5,11 @@ metadata:
   labels:
     {{- include "block-explorer.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
+{{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
+{{- end }}
+  strategy:
+    type: {{ .Values.strategyType }}
   selector:
     matchLabels:
       {{- include "block-explorer.selectorLabels" . | nindent 6 }}
@@ -43,7 +45,7 @@ spec:
             - name: ROOT_URL
               value: {{ .Values.blockExplorer.env.rootURL }}
             - name: MONGO_URL
-              value: "mongodb://{{ include "block-explorer.fullname" . }}-mongodb:27017/meteor"
+              value: "mongodb://{{ .Values.blockExplorer.args.mongoUsername }}:{{ .Values.blockExplorer.args.mongoPassword }}@mongodb.mongodb:27017/{{ .Values.blockExplorer.args.mongoDatabase }}"
             - name: PORT
               value: "3000"
             - name: METEOR_SETTINGS
