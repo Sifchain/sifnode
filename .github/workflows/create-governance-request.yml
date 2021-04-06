@@ -93,12 +93,19 @@ jobs:
         shell: bash
         run: |
           set +x
-          echo "Get Keys for Environment. Coming Soon..."
+          echo "Generate Keyring."
           #export PATH=$PATH:$GOPATH/bin
           #make CHAINNET=${chainnet} IMAGE_TAG=${env}-${release_version} BINARY=sifnodecli build-image
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
           rake "cluster:release:generate_keyring[${moniker}, ${mnemonic}]"
+
+      - name: Wait For Release
+        shell: bash
+        run: |
+          set +x
+          echo "Wait for release with version to finish building befor continuing."
+          rake "cluster:release:wait_for_release[${release_version}]"
 
       - name: Create Governance Release Request
         shell: bash

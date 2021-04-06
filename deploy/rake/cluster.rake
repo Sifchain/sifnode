@@ -594,6 +594,52 @@ echo 'go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{
     end
   end
 
+  desc "Wait for Release.."
+  namespace :release do
+    desc "Wait for Release."
+    task :wait_for_release, [:release] do |t, args|
+
+      cluster_automation = %Q{
+#!/usr/bin/env bash
+set +x
+pip install requests
+
+cat << EOF > pyscript.py
+#!/usr/bin/env python
+import requests
+import time
+import sys
+workflow_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows', verify=False)
+workflow_request_json = workflow_request.json()
+find_realease="#{args[:release]}"
+max_loop = 50
+loop_count = 0
+while True:
+    if loop_count >= max_loop:
+        sys.exit(1)
+    for workflow in workflow_request_json["workflows"]:
+        if workflow["name"] == "Release":
+            release_workflow_id = workflow["id"]
+            workflow_info_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows/{workflow_id}/runs'.format(workflow_id=release_workflow_id), verify=False)
+            workflow_info_request_json = workflow_info_request.json()
+            for workflow_run in workflow_info_request_json["workflow_runs"]:
+                if find_realease in workflow_run["head_branch"]:
+                    print("Found pipeline, lets see if its done running yet.")
+                    if workflow_run["status"] == "completed":
+                        print("Workflow run has completed good to create governance and begin release chain.")
+                        sys.exit(0)
+                    else:
+                        print("Release hasn't finished yet going to sleep and loop until max loops is reached waiting for Release pipeline to finish.")
+            loop_count += 1
+            time.sleep(10)
+EOF
+python pyscript.py
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+
   desc "Generate Test Key Ring."
   namespace :release do
     desc "Generate Test Key Ring."
