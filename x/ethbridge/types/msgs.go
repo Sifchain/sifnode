@@ -90,24 +90,14 @@ func (msg MsgLock) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.CosmosSender}
 }
 
-// MsgBurn defines a message for burning coins and triggering a related event
-type MsgBurn struct {
-	CosmosSender     sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`
-	Amount           sdk.Int         `json:"amount" yaml:"amount"`
-	Symbol           string          `json:"symbol" yaml:"symbol"`
-	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
-	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
-	CethAmount       sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
-}
-
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
-	ethereumChainID int, cosmosSender sdk.AccAddress,
+	ethereumChainID int64, cosmosSender sdk.AccAddress,
 	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgBurn {
 	return MsgBurn{
-		EthereumChainID:  ethereumChainID,
-		CosmosSender:     cosmosSender,
-		EthereumReceiver: ethereumReceiver,
+		EthereumChainId:  ethereumChainID,
+		CosmosSender:     cosmosSender.String(),
+		EthereumReceiver: ethereumReceiver.String(),
 		Amount:           amount,
 		Symbol:           symbol,
 		CethAmount:       cethAmount,
@@ -122,29 +112,36 @@ func (msg MsgBurn) Type() string { return "burn" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgBurn) ValidateBasic() error {
-	if strconv.Itoa(msg.EthereumChainID) == "" {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainID)
+	if msg.EthereumChainId == 0 {
+		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainId)
 	}
-	if msg.CosmosSender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
-	if msg.EthereumReceiver.String() == "" {
+
+	if msg.EthereumReceiver == "" {
 		return ErrInvalidEthAddress
 	}
-	if !gethCommon.IsHexAddress(msg.EthereumReceiver.String()) {
+
+	if !gethCommon.IsHexAddress(msg.EthereumReceiver) {
 		return ErrInvalidEthAddress
 	}
+
 	if msg.Amount.LTE(sdk.NewInt(0)) {
 		return ErrInvalidAmount
 	}
+
 	prefixLength := len(PeggedCoinPrefix)
 	if len(msg.Symbol) <= prefixLength+1 {
 		return ErrInvalidBurnSymbol
 	}
+
 	symbolPrefix := msg.Symbol[:prefixLength]
 	if symbolPrefix != PeggedCoinPrefix {
 		return ErrInvalidBurnSymbol
 	}
+
 	// check that enough ceth is sent to cover the gas cost.
 	if msg.CethAmount.LT(sdk.NewInt(burnGasCost)) {
 		return ErrCethAmount
@@ -154,6 +151,7 @@ func (msg MsgBurn) ValidateBasic() error {
 	if len(symbolSuffix) == 0 {
 		return ErrInvalidBurnSymbol
 	}
+
 	return nil
 }
 

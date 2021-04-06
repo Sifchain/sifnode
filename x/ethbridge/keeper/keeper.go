@@ -22,16 +22,18 @@ const errorMessageKey = "errorMessageKey"
 type Keeper struct {
 	cdc      codec.BinaryMarshaler // The wire codec for binary encoding/decoding.
 
+	accountKeeper types.AccountKeeper
 	bankKeeper   types.BankKeeper
 	oracleKeeper types.OracleKeeper
 	storeKey     sdk.StoreKey
 }
 
 // NewKeeper creates new instances of the oracle Keeper
-func NewKeeper(cdc codec.BinaryMarshaler, supplyKeeper types.BankKeeper, oracleKeeper types.OracleKeeper, storeKey sdk.StoreKey) Keeper {
+func NewKeeper(cdc codec.BinaryMarshaler, bankKeeper types.BankKeeper, oracleKeeper types.OracleKeeper, accountKeeper types.AccountKeeper, storeKey sdk.StoreKey) Keeper {
 	return Keeper{
 		cdc:          cdc,
-		bankKeeper:   supplyKeeper,
+		accountKeeper: accountKeeper,
+		bankKeeper:   bankKeeper,
 		oracleKeeper: oracleKeeper,
 		storeKey:     storeKey,
 	}
@@ -98,7 +100,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 }
 
 // ProcessBurn processes the burn of bridged coins from the given sender
-func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg types.MsgBurn) error {
+func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgBurn) error {
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 

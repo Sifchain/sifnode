@@ -42,7 +42,7 @@ func (AppModuleBasic) Name() string {
 
 // RegisterCodec registers the ethbridge module's types for the given codec.
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	types.RegisterCodec(cdc)
+	types.RegisterLegacyAminoCodec(cdc)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the ethbridge

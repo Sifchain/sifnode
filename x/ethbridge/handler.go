@@ -25,10 +25,10 @@ func NewHandler(k Keeper) sdk.Handler {
 		switch msg := msg.(type) {
 		case *types.MsgCreateEthBridgeClaim:
 			res, err := msgServer.CreateEthBridgeClaim(sdk.WrapSDKContext(ctx), msg)
-
 			return sdk.WrapServiceResult(ctx, res, err)
-		case MsgBurn:
-			return handleMsgBurn(ctx, cdc, accountKeeper, bridgeKeeper, msg)
+		case *types.MsgBurn:
+			res, err := msgServer.Burn(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		case MsgLock:
 			return handleMsgLock(ctx, cdc, accountKeeper, bridgeKeeper, msg)
 		case MsgUpdateWhiteListValidator:
@@ -42,60 +42,6 @@ func NewHandler(k Keeper) sdk.Handler {
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
 		}
 	}
-}
-
-func handleMsgBurn(
-	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
-	bridgeKeeper Keeper, msg MsgBurn,
-) (*sdk.Result, error) {
-	logger := bridgeKeeper.Logger(ctx)
-
-	if !bridgeKeeper.ExistsPeggyToken(ctx, msg.Symbol) {
-		logger.Error("Native token can't be burn.",
-			"tokenSymbol", msg.Symbol)
-		return nil, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
-	}
-
-	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
-	if account == nil {
-		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender.String())
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
-	}
-
-	if err := bridgeKeeper.ProcessBurn(ctx, msg.CosmosSender, msg); err != nil {
-		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
-		return nil, err
-	}
-
-	logger.Info("sifnode emit burn event.",
-		"EthereumChainID", strconv.Itoa(msg.EthereumChainID),
-		"CosmosSender", msg.CosmosSender.String(),
-		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
-		"EthereumReceiver", msg.EthereumReceiver.String(),
-		"Amount", msg.Amount.String(),
-		"Symbol", msg.Symbol,
-		"CethAmount", msg.CethAmount.String())
-
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender.String()),
-		),
-		sdk.NewEvent(
-			types.EventTypeBurn,
-			sdk.NewAttribute(types.AttributeKeyEthereumChainID, strconv.Itoa(msg.EthereumChainID)),
-			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender.String()),
-			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
-			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver.String()),
-			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
-			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
-			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
-		),
-	})
-
-	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
-
 }
 
 func handleMsgLock(

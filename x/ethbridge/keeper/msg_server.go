@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"context"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/pkg/errors"
 	"strconv"
 	"sync"
 
@@ -24,14 +26,59 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
-func (k msgServer) Lock(goCtx context.Context, msg *types.MsgLockRequest) (*types.MsgLockResponse, error) {
+func (k msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.MsgLockResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	return &types.MsgLockResponse{}, nil
 
 }
-func (k msgServer) Burn(goCtx context.Context, msg *types.MsgBurnRequest) (*types.MsgBurnResponse, error) {
+func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBurnResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	if !srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
+		logger.Error("Native token can't be burn.",
+			"tokenSymbol", msg.Symbol)
+		return nil, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.CosmosSender))
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	if err := srv.Keeper.ProcessBurn(ctx, sdk.AccAddress(msg.CosmosSender), msg); err != nil {
+		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
+		return nil, err
+	}
+
+	logger.Info("sifnode emit burn event.",
+		"EthereumChainID", strconv.FormatInt(msg.EthereumChainId, 10),
+		"CosmosSender", msg.CosmosSender,
+		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
+		"EthereumReceiver", msg.EthereumReceiver,
+		"Amount", msg.Amount.String(),
+		"Symbol", msg.Symbol,
+		"CethAmount", msg.CethAmount.String())
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+		),
+		sdk.NewEvent(
+			types.EventTypeBurn,
+			sdk.NewAttribute(types.AttributeKeyEthereumChainID, strconv.FormatInt(msg.EthereumChainId, 10)),
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
+			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
+			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
+			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
+			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
+		),
+	})
 
 	return &types.MsgBurnResponse{}, nil
 
@@ -94,7 +141,7 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	return &types.MsgCreateEthBridgeClaimResponse{}, nil
 }
 
-func (k msgServer) UpdateWhiteListValidator(goCtx context.Context, msg *types.MsgUpdateWhiteListValidatorRequest) (*types.MsgUpdateWhiteListValidatorResponse, error) {
+func (k msgServer) UpdateWhiteListValidator(goCtx context.Context, msg *types.MsgUpdateWhiteListValidator) (*types.MsgUpdateWhiteListValidatorResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	return &types.MsgUpdateWhiteListValidatorResponse{}, nil

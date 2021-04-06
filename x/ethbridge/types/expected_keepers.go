@@ -10,7 +10,6 @@ import (
 type AccountKeeper interface {
 	GetAccount(sdk.Context, sdk.AccAddress) authtypes.AccountI
 	SetModuleAccount(sdk.Context, authtypes.ModuleAccountI)
-
 }
 
 // BankKeeper defines the expected supply keeper

@@ -180,6 +180,7 @@ func NewSimApp(
 		app.cdc,
 		app.SupplyKeeper,
 		app.OracleKeeper,
+		app.AccountKeeper,
 		keys[ethbridge.StoreKey],
 	)
 
