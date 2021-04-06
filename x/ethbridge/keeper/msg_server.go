@@ -184,9 +184,45 @@ func (srv msgServer) CreateEthBridgeClaim(goCtx context.Context, msg *types.MsgC
 	return &types.MsgCreateEthBridgeClaimResponse{}, nil
 }
 
-func (k msgServer) UpdateWhiteListValidator(goCtx context.Context, msg *types.MsgUpdateWhiteListValidator) (*types.MsgUpdateWhiteListValidatorResponse, error) {
+func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
+	msg *types.MsgUpdateWhiteListValidator) (*types.MsgUpdateWhiteListValidatorResponse, error) {
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.CosmosSender))
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	err := srv.Keeper.ProcessUpdateWhiteListValidator(ctx, sdk.AccAddress(msg.CosmosSender),
+		sdk.ValAddress(msg.Validator), msg.OperationType);
+	if err != nil {
+		logger.Error("bridge keeper failed to process update validator.", errorMessageKey, err.Error())
+		return nil, err
+	}
+
+	logger.Info("sifnode emit update whitelist validators event.",
+		"CosmosSender", msg.CosmosSender,
+		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
+		"Validator", msg.Validator,
+		"OperationType", msg.OperationType)
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+		),
+		sdk.NewEvent(
+			types.EventTypeLock,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+			sdk.NewAttribute(types.AttributeKeyValidator, msg.Validator),
+			sdk.NewAttribute(types.AttributeKeyOperationType, msg.OperationType),
+		),
+	})
 
 	return &types.MsgUpdateWhiteListValidatorResponse{}, nil
-
 }

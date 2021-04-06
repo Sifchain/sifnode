@@ -311,19 +311,12 @@ func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.CosmosSender}
 }
 
-// MsgUpdateWhiteListValidator add or remove validator from whitelist
-type MsgUpdateWhiteListValidator struct {
-	CosmosSender  sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
-	Validator     sdk.ValAddress `json:"validator" yaml:"validator"`
-	OperationType string         `json:"operation_type" yaml:"operation_type"`
-}
-
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
 func NewMsgUpdateWhiteListValidator(cosmosSender sdk.AccAddress,
 	validator sdk.ValAddress, operationType string) MsgUpdateWhiteListValidator {
 	return MsgUpdateWhiteListValidator{
-		CosmosSender:  cosmosSender,
-		Validator:     validator,
+		CosmosSender:  cosmosSender.String(),
+		Validator:     validator.String(),
 		OperationType: operationType,
 	}
 }
@@ -336,13 +329,14 @@ func (msg MsgUpdateWhiteListValidator) Type() string { return "update_whitelist_
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgUpdateWhiteListValidator) ValidateBasic() error {
-	if msg.CosmosSender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if msg.Validator.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator.String())
+	if msg.Validator == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator)
 	}
+
 	return nil
 }
 
@@ -358,7 +352,7 @@ func (msg MsgUpdateWhiteListValidator) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.CosmosSender}
+	return []sdk.AccAddress{sdk.AccAddress(msg.CosmosSender)}
 }
 
 // MapOracleClaimsToEthBridgeClaims maps a set of generic oracle claim data into EthBridgeClaim objects
