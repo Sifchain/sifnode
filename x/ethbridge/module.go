@@ -18,6 +18,7 @@ import (
 
 	"github.com/Sifchain/sifnode/x/ethbridge/client"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	"github.com/Sifchain/sifnode/x/ethbridge/keeper"
 )
 
 var (
@@ -93,8 +94,8 @@ type AppModule struct {
 }
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	// types.RegisterMsgServer(cfg.QueryServer(), am.OracleKeeper)
-	// types.RegisterQueryServer(cfg.MsgServer(), am.OracleKeeper)
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.BridgeKeeper))
+	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServer(am.BridgeKeeper))
 }
 
 // NewAppModule creates a new AppModule object
@@ -134,7 +135,6 @@ func (am AppModule) NewHandler() sdk.Handler {
 	return NewHandler(am.AccountKeeper, am.BridgeKeeper, am.Codec)
 }
 
-// Deprecated: use RegisterServices
 // QuerierRoute returns the ethbridge module's querier route name.
 func (AppModule) QuerierRoute() string {
 	return QuerierRoute
