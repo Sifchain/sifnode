@@ -4,8 +4,9 @@ import { ref, defineComponent } from "vue";
 
 export default defineComponent({
   components: { ModalView },
+  props: ["open"],
   setup(props, context) {
-    const isOpen = ref(false);
+    const isOpen = ref(props.open || false);
 
     return {
       isOpen,

@@ -8,6 +8,9 @@ import AssetItem from "@/components/shared/AssetItem.vue";
 import Box from "@/components/shared/Box.vue";
 import { Copy, SubHeading } from "@/components/shared/Text";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
+import Modal from "@/components/shared/Modal.vue";
+import ModalView from "@/components/shared/ModalView.vue";
+import PairTable from "@/components/shared/PairTable.vue";
 
 const REWARD_INFO = {
   lm: {
@@ -34,6 +37,9 @@ export default defineComponent({
     Copy,
     SubHeading,
     Box,
+    Modal,
+    ModalView,
+    PairTable,
   },
   setup() {
     const { store } = useCore();
@@ -53,6 +59,10 @@ export default defineComponent({
     return {
       rewards,
       REWARD_INFO,
+      items: [
+        { key: "Your Multiplier Date", value: "12 Aug 2020" },
+        { key: "Your Current Multiplier", value: "1.2x" },
+      ],
     };
   },
 });
@@ -100,6 +110,27 @@ export default defineComponent({
       </Box>
     </div>
     <ActionsPanel connectType="connectToSif" />
+    <Modal open="true">
+      <ModalView :isOpen="true">
+        <div class="claim-container">
+          <SubHeading>Claim Rewards</SubHeading>
+          <Copy>
+            Are you sure you want to claim your rewards? Once you claim these
+            rewards, your multiplier will reset to 1x for all remaining amounts
+            and will continue to accumulate if within the reward eligibility
+            timeframe. 
+            <br />
+            <br />
+            Please note that the rewards will be released at the end of the
+            week.
+            <br />
+            <br />
+            Find out additional information here.
+          </Copy>
+          <PairTable :items="items" />
+        </div>
+      </ModalView>
+    </Modal>
   </Layout>
 </template>
 
@@ -175,5 +206,14 @@ export default defineComponent({
       transform: scale(0.85);
     }
   }
+}
+
+/* MODAL Styles */
+.claim-container {
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px 20px 20px;
+  min-height: 50vh;
 }
 </style>
