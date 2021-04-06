@@ -747,16 +747,19 @@ python helmvaulereplace.py
   desc "Block Explorer"
   namespace :blockexplorer do
     desc "Deploy a Block Explorer to an existing cluster"
-    task :deploy, [:cluster, :chainnet, :provider, :namespace, :root_url, :genesis_url, :rpc_url, :lcd_url] do |t, args|
+    task :deploy, [:cluster, :chainnet, :provider, :namespace, :image, :image_tag, :root_url, :genesis_url, :rpc_url, :api_url, :mongo_password] do |t, args|
       check_args(args)
 
       cmd = %Q{helm upgrade block-explorer #{cwd}/../../deploy/helm/block-explorer \
         --install -n #{ns(args)} --create-namespace \
+        --set image.repository=#{image_repository(args)} \
+        --set image.tag=#{image_tag(args)} \
         --set blockExplorer.env.chainnet=#{args[:chainnet]} \
         --set blockExplorer.env.rootURL=#{args[:root_url]} \
         --set blockExplorer.env.genesisURL=#{args[:genesis_url]} \
         --set blockExplorer.env.remote.rpcURL=#{args[:rpc_url]} \
-        --set blockExplorer.env.remote.lcdURL=#{args[:lcd_url]}
+        --set blockExplorer.env.remote.apiURL=#{args[:api_url]} \
+        --set blockExplorer.args.mongoPassword=#{args[:mongo_password]}
       }
 
       system({"KUBECONFIG" => kubeconfig(args)}, cmd)
