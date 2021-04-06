@@ -12,6 +12,8 @@ service Msg {
   rpc Burn(MsgBurn) returns (MsgBurnResponse);
   rpc CreateEthBridgeClaim(MsgCreateEthBridgeClaim) returns (MsgCreateEthBridgeClaimResponse);
   rpc UpdateWhiteListValidator(MsgUpdateWhiteListValidator) returns (MsgUpdateWhiteListValidatorResponse);
+  rpc UpdateCethReceiverAccount(MsgUpdateCethReceiverAccount) returns (MsgUpdateCethReceiverAccountResponse);
+  rpc RescueCeth(MsgRescueCeth) returns (MsgRescueCethResponse);
 }
 
 // MsgLock defines a message for locking coins and triggering a related event
@@ -60,3 +62,19 @@ message MsgUpdateWhiteListValidator {
 }
 
 message MsgUpdateWhiteListValidatorResponse {}
+
+message MsgUpdateCethReceiverAccount {
+  string cosmos_sender = 1;
+  string ceth_receiver_account = 2;
+}
+
+message MsgUpdateCethReceiverAccountResponse {}
+
+message MsgRescueCeth {
+  string cosmos_sender = 1;
+  string cosmos_receiver = 2;
+  string ceth_amount = 3 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable)   = false];
+}
+
+message MsgRescueCethResponse {}

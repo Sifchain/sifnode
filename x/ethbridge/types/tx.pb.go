@@ -420,6 +420,183 @@ func (m *MsgUpdateWhiteListValidatorResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgUpdateWhiteListValidatorResponse proto.InternalMessageInfo
 
+type MsgUpdateCethReceiverAccount struct {
+	CosmosSender        string `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
+	CethReceiverAccount string `protobuf:"bytes,2,opt,name=ceth_receiver_account,json=cethReceiverAccount,proto3" json:"ceth_receiver_account,omitempty"`
+}
+
+func (m *MsgUpdateCethReceiverAccount) Reset()         { *m = MsgUpdateCethReceiverAccount{} }
+func (m *MsgUpdateCethReceiverAccount) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateCethReceiverAccount) ProtoMessage()    {}
+func (*MsgUpdateCethReceiverAccount) Descriptor() ([]byte, []int) {
+	return fileDescriptor_44d60f3dabe1980f, []int{8}
+}
+func (m *MsgUpdateCethReceiverAccount) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgUpdateCethReceiverAccount) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUpdateCethReceiverAccount.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgUpdateCethReceiverAccount) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateCethReceiverAccount.Merge(m, src)
+}
+func (m *MsgUpdateCethReceiverAccount) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgUpdateCethReceiverAccount) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateCethReceiverAccount.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUpdateCethReceiverAccount proto.InternalMessageInfo
+
+func (m *MsgUpdateCethReceiverAccount) GetCosmosSender() string {
+	if m != nil {
+		return m.CosmosSender
+	}
+	return ""
+}
+
+func (m *MsgUpdateCethReceiverAccount) GetCethReceiverAccount() string {
+	if m != nil {
+		return m.CethReceiverAccount
+	}
+	return ""
+}
+
+type MsgUpdateCethReceiverAccountResponse struct {
+}
+
+func (m *MsgUpdateCethReceiverAccountResponse) Reset()         { *m = MsgUpdateCethReceiverAccountResponse{} }
+func (m *MsgUpdateCethReceiverAccountResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateCethReceiverAccountResponse) ProtoMessage()    {}
+func (*MsgUpdateCethReceiverAccountResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_44d60f3dabe1980f, []int{9}
+}
+func (m *MsgUpdateCethReceiverAccountResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgUpdateCethReceiverAccountResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUpdateCethReceiverAccountResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgUpdateCethReceiverAccountResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateCethReceiverAccountResponse.Merge(m, src)
+}
+func (m *MsgUpdateCethReceiverAccountResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgUpdateCethReceiverAccountResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateCethReceiverAccountResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUpdateCethReceiverAccountResponse proto.InternalMessageInfo
+
+type MsgRescueCeth struct {
+	CosmosSender   string                                 `protobuf:"bytes,1,opt,name=cosmos_sender,json=cosmosSender,proto3" json:"cosmos_sender,omitempty"`
+	CosmosReceiver string                                 `protobuf:"bytes,2,opt,name=cosmos_receiver,json=cosmosReceiver,proto3" json:"cosmos_receiver,omitempty"`
+	CethAmount     github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,3,opt,name=ceth_amount,json=cethAmount,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"ceth_amount"`
+}
+
+func (m *MsgRescueCeth) Reset()         { *m = MsgRescueCeth{} }
+func (m *MsgRescueCeth) String() string { return proto.CompactTextString(m) }
+func (*MsgRescueCeth) ProtoMessage()    {}
+func (*MsgRescueCeth) Descriptor() ([]byte, []int) {
+	return fileDescriptor_44d60f3dabe1980f, []int{10}
+}
+func (m *MsgRescueCeth) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgRescueCeth) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgRescueCeth.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgRescueCeth) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRescueCeth.Merge(m, src)
+}
+func (m *MsgRescueCeth) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgRescueCeth) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRescueCeth.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgRescueCeth proto.InternalMessageInfo
+
+func (m *MsgRescueCeth) GetCosmosSender() string {
+	if m != nil {
+		return m.CosmosSender
+	}
+	return ""
+}
+
+func (m *MsgRescueCeth) GetCosmosReceiver() string {
+	if m != nil {
+		return m.CosmosReceiver
+	}
+	return ""
+}
+
+type MsgRescueCethResponse struct {
+}
+
+func (m *MsgRescueCethResponse) Reset()         { *m = MsgRescueCethResponse{} }
+func (m *MsgRescueCethResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgRescueCethResponse) ProtoMessage()    {}
+func (*MsgRescueCethResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_44d60f3dabe1980f, []int{11}
+}
+func (m *MsgRescueCethResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgRescueCethResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgRescueCethResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgRescueCethResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgRescueCethResponse.Merge(m, src)
+}
+func (m *MsgRescueCethResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgRescueCethResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgRescueCethResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgRescueCethResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgLock)(nil), "sifnode.ethbridge.v1.MsgLock")
 	proto.RegisterType((*MsgLockResponse)(nil), "sifnode.ethbridge.v1.MsgLockResponse")
@@ -429,54 +606,66 @@ func init() {
 	proto.RegisterType((*MsgCreateEthBridgeClaimResponse)(nil), "sifnode.ethbridge.v1.MsgCreateEthBridgeClaimResponse")
 	proto.RegisterType((*MsgUpdateWhiteListValidator)(nil), "sifnode.ethbridge.v1.MsgUpdateWhiteListValidator")
 	proto.RegisterType((*MsgUpdateWhiteListValidatorResponse)(nil), "sifnode.ethbridge.v1.MsgUpdateWhiteListValidatorResponse")
+	proto.RegisterType((*MsgUpdateCethReceiverAccount)(nil), "sifnode.ethbridge.v1.MsgUpdateCethReceiverAccount")
+	proto.RegisterType((*MsgUpdateCethReceiverAccountResponse)(nil), "sifnode.ethbridge.v1.MsgUpdateCethReceiverAccountResponse")
+	proto.RegisterType((*MsgRescueCeth)(nil), "sifnode.ethbridge.v1.MsgRescueCeth")
+	proto.RegisterType((*MsgRescueCethResponse)(nil), "sifnode.ethbridge.v1.MsgRescueCethResponse")
 }
 
 func init() { proto.RegisterFile("sifnode/ethbridge/v1/tx.proto", fileDescriptor_44d60f3dabe1980f) }
 
 var fileDescriptor_44d60f3dabe1980f = []byte{
-	// 662 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x55, 0xcd, 0x6e, 0xd3, 0x4c,
-	0x14, 0x8d, 0xbf, 0xf4, 0x0b, 0xea, 0x94, 0xfe, 0x8d, 0x82, 0x6a, 0x52, 0x1a, 0x97, 0x29, 0x45,
-	0x65, 0xd1, 0x44, 0x2d, 0x62, 0x01, 0x12, 0x02, 0x5c, 0x10, 0x54, 0x6a, 0x36, 0x2e, 0x50, 0x89,
-	0x8d, 0xe5, 0xd8, 0x53, 0x7b, 0xd4, 0xd8, 0x13, 0x79, 0x26, 0x51, 0x2b, 0xb1, 0x46, 0x2c, 0x79,
-	0x0e, 0x16, 0x3c, 0x47, 0x97, 0x15, 0x2b, 0xc4, 0xc2, 0x42, 0xed, 0x1b, 0xe4, 0x09, 0x90, 0x67,
-	0x6c, 0xd7, 0x51, 0xed, 0x4a, 0x11, 0x2c, 0x59, 0x25, 0x3e, 0xf7, 0xdc, 0x33, 0x77, 0xe6, 0xdc,
-	0x3b, 0x03, 0x56, 0x18, 0x39, 0x0c, 0xa8, 0x83, 0xdb, 0x98, 0x7b, 0xdd, 0x90, 0x38, 0x2e, 0x6e,
-	0x0f, 0xb7, 0xda, 0xfc, 0xb8, 0xd5, 0x0f, 0x29, 0xa7, 0xb0, 0x9e, 0x84, 0x5b, 0x59, 0xb8, 0x35,
-	0xdc, 0x6a, 0xd4, 0x5d, 0xea, 0x52, 0x41, 0x68, 0xc7, 0xff, 0x24, 0xb7, 0xb1, 0x5a, 0x2c, 0x75,
-	0xd2, 0xc7, 0x4c, 0x32, 0xd0, 0xb7, 0x2a, 0xb8, 0xd1, 0x61, 0xee, 0x1e, 0xb5, 0x8f, 0xe0, 0x1a,
-	0x98, 0xb5, 0x29, 0xf3, 0x29, 0x33, 0x19, 0x0e, 0x1c, 0x1c, 0xaa, 0xca, 0xaa, 0xb2, 0x31, 0x6d,
-	0xdc, 0x94, 0xe0, 0xbe, 0xc0, 0xe0, 0x01, 0xa8, 0xbd, 0xf0, 0xe9, 0x20, 0xe0, 0xea, 0x7f, 0x71,
-	0x54, 0x7f, 0x76, 0x1a, 0x69, 0x95, 0x9f, 0x91, 0x76, 0xdf, 0x25, 0xdc, 0x1b, 0x74, 0x5b, 0x36,
-	0xf5, 0xdb, 0x32, 0x21, 0xf9, 0xd9, 0x64, 0xce, 0x51, 0xb2, 0xe4, 0x6e, 0xc0, 0x47, 0x91, 0x36,
-	0x7b, 0x62, 0xf9, 0xbd, 0x27, 0xc8, 0x12, 0x2a, 0xc8, 0x48, 0xe4, 0xe0, 0x03, 0x50, 0x63, 0x27,
-	0x7e, 0x97, 0xf6, 0xd4, 0xaa, 0x10, 0x5e, 0xbc, 0xa4, 0x4a, 0x1c, 0x19, 0x09, 0x01, 0xbe, 0x01,
-	0x8b, 0x98, 0x7b, 0x38, 0xc4, 0x03, 0xdf, 0xb4, 0x3d, 0x8b, 0x04, 0x26, 0x71, 0xd4, 0xa9, 0x55,
-	0x65, 0xa3, 0xaa, 0xdf, 0x19, 0x45, 0x9a, 0x2a, 0xb3, 0xae, 0x50, 0x90, 0x31, 0x9f, 0x62, 0x3b,
-	0x31, 0xb4, 0xeb, 0xc0, 0xdd, 0x9c, 0x52, 0x88, 0x6d, 0x4c, 0x86, 0x38, 0x54, 0xff, 0x17, 0xeb,
-	0x17, 0x29, 0xa5, 0x14, 0x64, 0x2c, 0xa4, 0x98, 0x91, 0x40, 0x10, 0x83, 0x19, 0x1b, 0x73, 0xcf,
-	0x94, 0xfb, 0x52, 0x6b, 0x42, 0xe4, 0xe5, 0xc4, 0xa7, 0x03, 0xe5, 0x92, 0x39, 0x29, 0x64, 0x80,
-	0xf8, 0x4b, 0x1e, 0x13, 0x5a, 0x04, 0xf3, 0x89, 0x5f, 0x06, 0x66, 0x7d, 0x1a, 0x30, 0x8c, 0x4e,
-	0xa5, 0x87, 0xfa, 0x20, 0x0c, 0xe0, 0xd3, 0x42, 0x0f, 0x75, 0x75, 0x14, 0x69, 0xf5, 0x44, 0x39,
-	0x1f, 0x46, 0x57, 0xdd, 0xb5, 0xfe, 0xae, 0xbb, 0xd6, 0x3f, 0x77, 0x27, 0x76, 0x37, 0x76, 0x32,
-	0x73, 0xf7, 0x93, 0x02, 0x96, 0x3a, 0xcc, 0xdd, 0x09, 0xb1, 0xc5, 0xf1, 0x2b, 0xee, 0xe9, 0x62,
-	0x8e, 0x77, 0x7a, 0x16, 0xf1, 0xe1, 0x11, 0x88, 0x2b, 0x35, 0xe5, 0x68, 0x9b, 0x76, 0x8c, 0x09,
-	0xc3, 0x67, 0xb6, 0xef, 0xb5, 0x8a, 0xae, 0x89, 0xd6, 0x78, 0xbe, 0xbe, 0x3c, 0x8a, 0xb4, 0xa5,
-	0xec, 0x14, 0xc6, 0x74, 0x90, 0x31, 0x87, 0xc7, 0xc8, 0xe8, 0x2e, 0xd0, 0x4a, 0xea, 0xc8, 0x6a,
-	0xfd, 0xae, 0x80, 0xe5, 0x0e, 0x73, 0xdf, 0xf5, 0x1d, 0x8b, 0xe3, 0x03, 0x8f, 0x70, 0xbc, 0x47,
-	0x18, 0x7f, 0x6f, 0xf5, 0x88, 0x63, 0x71, 0x1a, 0xfe, 0x69, 0x77, 0x6e, 0x83, 0xe9, 0x61, 0xaa,
-	0x95, 0x34, 0x68, 0x7d, 0x14, 0x69, 0x0b, 0x32, 0x35, 0x0b, 0x21, 0xe3, 0x92, 0x06, 0x9f, 0x83,
-	0x39, 0xda, 0xc7, 0xa1, 0xc5, 0x09, 0x0d, 0xcc, 0xd8, 0x8a, 0xa4, 0x01, 0x6f, 0x8f, 0x22, 0xed,
-	0x96, 0x4c, 0x1c, 0x8f, 0x23, 0x63, 0x36, 0x03, 0xde, 0xc6, 0xdf, 0xeb, 0x60, 0xed, 0x9a, 0x3d,
-	0xa5, 0x7b, 0xdf, 0xfe, 0x5a, 0x05, 0xd5, 0x0e, 0x73, 0xe1, 0x1e, 0x98, 0x12, 0xb7, 0xe9, 0x4a,
-	0xb1, 0x03, 0xc9, 0xf0, 0x36, 0xd6, 0xaf, 0x0d, 0xa7, 0xaa, 0xb1, 0x9a, 0x98, 0xeb, 0x72, 0xb5,
-	0x38, 0x7c, 0x8d, 0x5a, 0xbe, 0x97, 0xe0, 0x47, 0x50, 0x2f, 0xec, 0xa3, 0xcd, 0xd2, 0xf4, 0x22,
-	0x7a, 0xe3, 0xd1, 0x44, 0xf4, 0x6c, 0xf5, 0xcf, 0x0a, 0x50, 0x4b, 0x5b, 0x63, 0xab, 0x54, 0xb3,
-	0x2c, 0xa5, 0xf1, 0x78, 0xe2, 0x94, 0xb4, 0x14, 0xfd, 0xf5, 0xe9, 0x79, 0x53, 0x39, 0x3b, 0x6f,
-	0x2a, 0xbf, 0xce, 0x9b, 0xca, 0x97, 0x8b, 0x66, 0xe5, 0xec, 0xa2, 0x59, 0xf9, 0x71, 0xd1, 0xac,
-	0x7c, 0xd8, 0xcc, 0xcd, 0xf2, 0x3e, 0x39, 0x14, 0xb7, 0x4b, 0x3b, 0x7d, 0x46, 0x8f, 0x73, 0x0f,
-	0xa9, 0x18, 0xeb, 0x6e, 0x4d, 0x3c, 0xa3, 0x0f, 0x7f, 0x07, 0x00, 0x00, 0xff, 0xff, 0x31, 0x4f,
-	0x80, 0x5c, 0xb5, 0x07, 0x00, 0x00,
+	// 787 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x56, 0xcb, 0x6e, 0xd3, 0x40,
+	0x14, 0x8d, 0x49, 0x1b, 0xd4, 0x29, 0xe9, 0xc3, 0xa4, 0xaa, 0x9b, 0xb6, 0x71, 0x99, 0x3e, 0x28,
+	0x42, 0x4d, 0xd4, 0x20, 0x16, 0x54, 0x42, 0xd0, 0x04, 0x04, 0x95, 0x1a, 0x21, 0xb9, 0x40, 0x25,
+	0x16, 0x58, 0x8e, 0x3d, 0xb5, 0xad, 0x26, 0x9e, 0xc8, 0x33, 0x09, 0xad, 0xc4, 0x1a, 0x21, 0xb1,
+	0x61, 0xc9, 0x57, 0xf4, 0x3b, 0xba, 0xac, 0x58, 0x21, 0x16, 0x16, 0x6a, 0xff, 0x20, 0x5f, 0x80,
+	0x3c, 0x63, 0xbb, 0x89, 0x6a, 0x87, 0x46, 0xb0, 0x64, 0x95, 0xf8, 0xde, 0x73, 0xcf, 0xdc, 0x99,
+	0x73, 0xcf, 0xd8, 0x60, 0x91, 0xd8, 0x07, 0x0e, 0x36, 0x50, 0x09, 0x51, 0xab, 0xee, 0xda, 0x86,
+	0x89, 0x4a, 0x9d, 0xcd, 0x12, 0x3d, 0x2a, 0xb6, 0x5c, 0x4c, 0xb1, 0x98, 0x0b, 0xd2, 0xc5, 0x28,
+	0x5d, 0xec, 0x6c, 0xe6, 0x73, 0x26, 0x36, 0x31, 0x03, 0x94, 0xfc, 0x7f, 0x1c, 0x9b, 0x5f, 0x8a,
+	0xa7, 0x3a, 0x6e, 0x21, 0xc2, 0x11, 0xf0, 0x24, 0x0d, 0x6e, 0xd6, 0x88, 0xb9, 0x8b, 0xf5, 0x43,
+	0x71, 0x19, 0x64, 0x75, 0x4c, 0x9a, 0x98, 0xa8, 0x04, 0x39, 0x06, 0x72, 0x25, 0x61, 0x49, 0x58,
+	0x1f, 0x53, 0x6e, 0xf1, 0xe0, 0x1e, 0x8b, 0x89, 0xfb, 0x20, 0xb3, 0xdd, 0xc4, 0x6d, 0x87, 0x4a,
+	0x37, 0xfc, 0x6c, 0xe5, 0xc9, 0xa9, 0x27, 0xa7, 0x7e, 0x7a, 0xf2, 0x9a, 0x69, 0x53, 0xab, 0x5d,
+	0x2f, 0xea, 0xb8, 0x59, 0xe2, 0x05, 0xc1, 0xcf, 0x06, 0x31, 0x0e, 0x83, 0x25, 0x77, 0x1c, 0xda,
+	0xf5, 0xe4, 0xec, 0xb1, 0xd6, 0x6c, 0x6c, 0x41, 0x8d, 0xb1, 0x40, 0x25, 0xa0, 0x13, 0xef, 0x81,
+	0x0c, 0x39, 0x6e, 0xd6, 0x71, 0x43, 0x4a, 0x33, 0xe2, 0xe9, 0x4b, 0x28, 0x8f, 0x43, 0x25, 0x00,
+	0x88, 0x2f, 0xc1, 0x34, 0xa2, 0x16, 0x72, 0x51, 0xbb, 0xa9, 0xea, 0x96, 0x66, 0x3b, 0xaa, 0x6d,
+	0x48, 0x23, 0x4b, 0xc2, 0x7a, 0xba, 0xb2, 0xd0, 0xf5, 0x64, 0x89, 0x57, 0x5d, 0x81, 0x40, 0x65,
+	0x32, 0x8c, 0x55, 0xfd, 0xd0, 0x8e, 0x21, 0xee, 0xf4, 0x30, 0xb9, 0x48, 0x47, 0x76, 0x07, 0xb9,
+	0xd2, 0x28, 0x5b, 0x3f, 0x8e, 0x29, 0x84, 0x40, 0x65, 0x2a, 0x8c, 0x29, 0x41, 0x48, 0x44, 0x60,
+	0x5c, 0x47, 0xd4, 0x52, 0xf9, 0xbe, 0xa4, 0x0c, 0x23, 0x79, 0x36, 0xf4, 0xe9, 0x88, 0x7c, 0xc9,
+	0x1e, 0x2a, 0xa8, 0x00, 0xff, 0x89, 0x1f, 0x13, 0x9c, 0x06, 0x93, 0x81, 0x5e, 0x0a, 0x22, 0x2d,
+	0xec, 0x10, 0x04, 0x4f, 0xb9, 0x86, 0x95, 0xb6, 0xeb, 0x88, 0x8f, 0x63, 0x35, 0xac, 0x48, 0x5d,
+	0x4f, 0xce, 0x05, 0xcc, 0xbd, 0x69, 0x78, 0x55, 0x5d, 0xed, 0xdf, 0xaa, 0xab, 0xfd, 0x57, 0x77,
+	0x68, 0x75, 0x7d, 0x25, 0x23, 0x75, 0x3f, 0x09, 0x60, 0xb6, 0x46, 0xcc, 0xaa, 0x8b, 0x34, 0x8a,
+	0x9e, 0x53, 0xab, 0xc2, 0x7c, 0x5c, 0x6d, 0x68, 0x76, 0x53, 0x3c, 0x04, 0x7e, 0xa7, 0x2a, 0xb7,
+	0xb6, 0xaa, 0xfb, 0x31, 0x26, 0xf8, 0x78, 0x79, 0xa5, 0x18, 0x77, 0x4d, 0x14, 0xfb, 0xeb, 0x2b,
+	0xf3, 0x5d, 0x4f, 0x9e, 0x8d, 0x4e, 0xa1, 0x8f, 0x07, 0x2a, 0x13, 0xa8, 0x0f, 0x0c, 0xef, 0x00,
+	0x39, 0xa1, 0x8f, 0xa8, 0xd7, 0xef, 0x02, 0x98, 0xaf, 0x11, 0xf3, 0x4d, 0xcb, 0xd0, 0x28, 0xda,
+	0xb7, 0x6c, 0x8a, 0x76, 0x6d, 0x42, 0xdf, 0x6a, 0x0d, 0xdb, 0xd0, 0x28, 0x76, 0xff, 0x76, 0x3a,
+	0xcb, 0x60, 0xac, 0x13, 0x72, 0x05, 0x03, 0x9a, 0xeb, 0x7a, 0xf2, 0x14, 0x2f, 0x8d, 0x52, 0x50,
+	0xb9, 0x84, 0x89, 0x4f, 0xc1, 0x04, 0x6e, 0x21, 0x57, 0xa3, 0x36, 0x76, 0x54, 0x5f, 0x8a, 0x60,
+	0x00, 0xe7, 0xba, 0x9e, 0x3c, 0xc3, 0x0b, 0xfb, 0xf3, 0x50, 0xc9, 0x46, 0x81, 0xd7, 0xfe, 0xf3,
+	0x2a, 0x58, 0x1e, 0xb0, 0xa7, 0x68, 0xef, 0x1f, 0xc0, 0x42, 0x04, 0xab, 0x22, 0x6a, 0x85, 0xa3,
+	0xb3, 0xad, 0xeb, 0xcc, 0x01, 0xd7, 0xba, 0x5d, 0xcb, 0x60, 0x86, 0xcd, 0x46, 0x38, 0x8a, 0xaa,
+	0xc6, 0xab, 0xf9, 0x6e, 0x95, 0xdb, 0xfa, 0x55, 0x62, 0xb8, 0x06, 0x56, 0x06, 0x2d, 0x1c, 0x35,
+	0x78, 0x22, 0x80, 0x6c, 0x8d, 0x98, 0x0a, 0x22, 0x7a, 0x9b, 0x01, 0xaf, 0xd7, 0xd2, 0x5d, 0x30,
+	0x19, 0x80, 0x22, 0x0b, 0xf1, 0x66, 0x26, 0x78, 0x38, 0xb2, 0xc8, 0xab, 0x7e, 0x8b, 0xf0, 0x63,
+	0x2e, 0x0e, 0x67, 0x91, 0x3e, 0x33, 0xcc, 0x82, 0x99, 0xbe, 0x7e, 0xc3, 0x9d, 0x94, 0xbf, 0x8d,
+	0x82, 0x74, 0x8d, 0x98, 0xe2, 0x2e, 0x18, 0x61, 0x2f, 0xae, 0xc5, 0xf8, 0x61, 0x0f, 0xee, 0xc9,
+	0xfc, 0xea, 0xc0, 0x74, 0xc8, 0xea, 0xb3, 0xb1, 0x2b, 0x34, 0x99, 0xcd, 0x4f, 0x0f, 0x60, 0xeb,
+	0xb5, 0xad, 0xf8, 0x11, 0xe4, 0x62, 0x2d, 0xbb, 0x91, 0x58, 0x1e, 0x07, 0xcf, 0x3f, 0x1c, 0x0a,
+	0x1e, 0xad, 0xfe, 0x59, 0x00, 0x52, 0xa2, 0x0b, 0x37, 0x13, 0x39, 0x93, 0x4a, 0xf2, 0x8f, 0x86,
+	0x2e, 0x89, 0x5a, 0xf9, 0x22, 0x80, 0xb9, 0x64, 0x57, 0x94, 0xff, 0x40, 0x1c, 0x53, 0x93, 0xdf,
+	0x1a, 0xbe, 0x26, 0xea, 0xe6, 0x3d, 0x00, 0xbd, 0x06, 0x48, 0x64, 0xba, 0x04, 0xe5, 0xef, 0x5f,
+	0x03, 0x14, 0xf2, 0x57, 0x5e, 0x9c, 0x9e, 0x17, 0x84, 0xb3, 0xf3, 0x82, 0xf0, 0xeb, 0xbc, 0x20,
+	0x7c, 0xbd, 0x28, 0xa4, 0xce, 0x2e, 0x0a, 0xa9, 0x1f, 0x17, 0x85, 0xd4, 0xbb, 0x8d, 0x1e, 0x07,
+	0xec, 0xd9, 0x07, 0xec, 0xb5, 0x55, 0x0a, 0xbf, 0xcf, 0x8e, 0x7a, 0xbe, 0xd0, 0x98, 0x19, 0xea,
+	0x19, 0xf6, 0x7d, 0xf6, 0xe0, 0x77, 0x00, 0x00, 0x00, 0xff, 0xff, 0x9f, 0x5c, 0x4d, 0xd8, 0x0e,
+	0x0a, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -495,6 +684,8 @@ type MsgClient interface {
 	Burn(ctx context.Context, in *MsgBurn, opts ...grpc.CallOption) (*MsgBurnResponse, error)
 	CreateEthBridgeClaim(ctx context.Context, in *MsgCreateEthBridgeClaim, opts ...grpc.CallOption) (*MsgCreateEthBridgeClaimResponse, error)
 	UpdateWhiteListValidator(ctx context.Context, in *MsgUpdateWhiteListValidator, opts ...grpc.CallOption) (*MsgUpdateWhiteListValidatorResponse, error)
+	UpdateCethReceiverAccount(ctx context.Context, in *MsgUpdateCethReceiverAccount, opts ...grpc.CallOption) (*MsgUpdateCethReceiverAccountResponse, error)
+	RescueCeth(ctx context.Context, in *MsgRescueCeth, opts ...grpc.CallOption) (*MsgRescueCethResponse, error)
 }
 
 type msgClient struct {
@@ -541,12 +732,32 @@ func (c *msgClient) UpdateWhiteListValidator(ctx context.Context, in *MsgUpdateW
 	return out, nil
 }
 
+func (c *msgClient) UpdateCethReceiverAccount(ctx context.Context, in *MsgUpdateCethReceiverAccount, opts ...grpc.CallOption) (*MsgUpdateCethReceiverAccountResponse, error) {
+	out := new(MsgUpdateCethReceiverAccountResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/UpdateCethReceiverAccount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) RescueCeth(ctx context.Context, in *MsgRescueCeth, opts ...grpc.CallOption) (*MsgRescueCethResponse, error) {
+	out := new(MsgRescueCethResponse)
+	err := c.cc.Invoke(ctx, "/sifnode.ethbridge.v1.Msg/RescueCeth", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	Lock(context.Context, *MsgLock) (*MsgLockResponse, error)
 	Burn(context.Context, *MsgBurn) (*MsgBurnResponse, error)
 	CreateEthBridgeClaim(context.Context, *MsgCreateEthBridgeClaim) (*MsgCreateEthBridgeClaimResponse, error)
 	UpdateWhiteListValidator(context.Context, *MsgUpdateWhiteListValidator) (*MsgUpdateWhiteListValidatorResponse, error)
+	UpdateCethReceiverAccount(context.Context, *MsgUpdateCethReceiverAccount) (*MsgUpdateCethReceiverAccountResponse, error)
+	RescueCeth(context.Context, *MsgRescueCeth) (*MsgRescueCethResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -564,6 +775,12 @@ func (*UnimplementedMsgServer) CreateEthBridgeClaim(ctx context.Context, req *Ms
 }
 func (*UnimplementedMsgServer) UpdateWhiteListValidator(ctx context.Context, req *MsgUpdateWhiteListValidator) (*MsgUpdateWhiteListValidatorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateWhiteListValidator not implemented")
+}
+func (*UnimplementedMsgServer) UpdateCethReceiverAccount(ctx context.Context, req *MsgUpdateCethReceiverAccount) (*MsgUpdateCethReceiverAccountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateCethReceiverAccount not implemented")
+}
+func (*UnimplementedMsgServer) RescueCeth(ctx context.Context, req *MsgRescueCeth) (*MsgRescueCethResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RescueCeth not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -642,6 +859,42 @@ func _Msg_UpdateWhiteListValidator_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_UpdateCethReceiverAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgUpdateCethReceiverAccount)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).UpdateCethReceiverAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sifnode.ethbridge.v1.Msg/UpdateCethReceiverAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).UpdateCethReceiverAccount(ctx, req.(*MsgUpdateCethReceiverAccount))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_RescueCeth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRescueCeth)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).RescueCeth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sifnode.ethbridge.v1.Msg/RescueCeth",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).RescueCeth(ctx, req.(*MsgRescueCeth))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "sifnode.ethbridge.v1.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -661,6 +914,14 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateWhiteListValidator",
 			Handler:    _Msg_UpdateWhiteListValidator_Handler,
+		},
+		{
+			MethodName: "UpdateCethReceiverAccount",
+			Handler:    _Msg_UpdateCethReceiverAccount_Handler,
+		},
+		{
+			MethodName: "RescueCeth",
+			Handler:    _Msg_RescueCeth_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -976,6 +1237,136 @@ func (m *MsgUpdateWhiteListValidatorResponse) MarshalToSizedBuffer(dAtA []byte) 
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgUpdateCethReceiverAccount) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUpdateCethReceiverAccount) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUpdateCethReceiverAccount) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.CethReceiverAccount) > 0 {
+		i -= len(m.CethReceiverAccount)
+		copy(dAtA[i:], m.CethReceiverAccount)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CethReceiverAccount)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.CosmosSender) > 0 {
+		i -= len(m.CosmosSender)
+		copy(dAtA[i:], m.CosmosSender)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CosmosSender)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgUpdateCethReceiverAccountResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUpdateCethReceiverAccountResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUpdateCethReceiverAccountResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgRescueCeth) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgRescueCeth) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgRescueCeth) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.CethAmount.Size()
+		i -= size
+		if _, err := m.CethAmount.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintTx(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	if len(m.CosmosReceiver) > 0 {
+		i -= len(m.CosmosReceiver)
+		copy(dAtA[i:], m.CosmosReceiver)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CosmosReceiver)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.CosmosSender) > 0 {
+		i -= len(m.CosmosSender)
+		copy(dAtA[i:], m.CosmosSender)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.CosmosSender)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgRescueCethResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgRescueCethResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgRescueCethResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -1105,6 +1496,60 @@ func (m *MsgUpdateWhiteListValidator) Size() (n int) {
 }
 
 func (m *MsgUpdateWhiteListValidatorResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgUpdateCethReceiverAccount) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.CosmosSender)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.CethReceiverAccount)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgUpdateCethReceiverAccountResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgRescueCeth) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.CosmosSender)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.CosmosReceiver)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = m.CethAmount.Size()
+	n += 1 + l + sovTx(uint64(l))
+	return n
+}
+
+func (m *MsgRescueCethResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1994,6 +2439,368 @@ func (m *MsgUpdateWhiteListValidatorResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgUpdateWhiteListValidatorResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgUpdateCethReceiverAccount) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUpdateCethReceiverAccount: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUpdateCethReceiverAccount: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CosmosSender", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CosmosSender = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CethReceiverAccount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CethReceiverAccount = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgUpdateCethReceiverAccountResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUpdateCethReceiverAccountResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUpdateCethReceiverAccountResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgRescueCeth) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgRescueCeth: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgRescueCeth: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CosmosSender", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CosmosSender = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CosmosReceiver", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CosmosReceiver = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CethAmount", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.CethAmount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgRescueCethResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgRescueCethResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgRescueCethResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

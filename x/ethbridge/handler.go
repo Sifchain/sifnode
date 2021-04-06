@@ -3,14 +3,11 @@ package ethbridge
 
 import (
 	"fmt"
-	"strconv"
-
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
 const errorMessageKey = "errorMessage"
@@ -34,73 +31,15 @@ func NewHandler(k Keeper) sdk.Handler {
 		case *types.MsgUpdateWhiteListValidator:
 			res, err := msgServer.UpdateWhiteListValidator(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case MsgUpdateCethReceiverAccount:
-			return handleMsgUpdateCethReceiverAccount(ctx, cdc, accountKeeper, bridgeKeeper, msg)
-		case MsgRescueCeth:
-			return handleMsgRescueCeth(ctx, cdc, accountKeeper, bridgeKeeper, msg)
+		case *types.MsgUpdateCethReceiverAccount:
+			res, err := msgServer.UpdateCethReceiverAccount(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
+		case *types.MsgRescueCeth:
+			res, err := msgServer.RescueCeth(sdk.WrapSDKContext(ctx), msg)
+			return sdk.WrapServiceResult(ctx, res, err)
 		default:
 			errMsg := fmt.Sprintf("unrecognized ethbridge message type: %v", msg.Type())
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
 		}
 	}
-}
-
-func handleMsgUpdateCethReceiverAccount(
-	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
-	bridgeKeeper Keeper, msg MsgUpdateCethReceiverAccount,
-) (*sdk.Result, error) {
-	logger := bridgeKeeper.Logger(ctx)
-	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
-	if account == nil {
-		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender.String())
-
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
-	}
-
-	if err := bridgeKeeper.ProcessUpdateCethReceiverAccount(ctx, msg.CosmosSender, msg.CethReceiverAccount); err != nil {
-		logger.Error("keeper failed to process update ceth receiver account.", errorMessageKey, err.Error())
-		return nil, err
-	}
-
-	logger.Info("sifnode emit update ceth receiver account event.",
-		"CosmosSender", msg.CosmosSender.String(),
-		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
-		"CethReceiverAccount", msg.CethReceiverAccount.String())
-
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			sdk.EventTypeMessage,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender.String()),
-		),
-		sdk.NewEvent(
-			types.EventTypeLock,
-			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender.String()),
-			sdk.NewAttribute(types.AttributeKeyCethReceiverAccount, msg.CethReceiverAccount.String()),
-		),
-	})
-
-	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
-}
-
-func handleMsgRescueCeth(
-	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
-	bridgeKeeper Keeper, msg MsgRescueCeth) (*sdk.Result, error) {
-	logger := bridgeKeeper.Logger(ctx)
-	account := accountKeeper.GetAccount(ctx, msg.CosmosSender)
-	if account == nil {
-		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender.String())
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
-	}
-	if err := bridgeKeeper.ProcessRescueCeth(ctx, msg); err != nil {
-		logger.Error("keeper failed to process rescue ceth message.", errorMessageKey, err.Error())
-		return nil, err
-	}
-	logger.Info("sifnode emit rescue ceth event.",
-		"CosmosSender", msg.CosmosSender.String(),
-		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
-		"CosmosReceiver", msg.CosmosReceiver.String(),
-		"CethAmount", msg.CethAmount.String())
-
-	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }

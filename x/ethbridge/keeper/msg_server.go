@@ -226,3 +226,66 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 
 	return &types.MsgUpdateWhiteListValidatorResponse{}, nil
 }
+
+func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
+	msg *types.MsgUpdateCethReceiverAccount) (*types.MsgUpdateCethReceiverAccountResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	logger := srv.Keeper.Logger(ctx)
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.CosmosSender))
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	err := srv.Keeper.ProcessUpdateCethReceiverAccount(ctx,
+		sdk.AccAddress(msg.CosmosSender), sdk.AccAddress(msg.CethReceiverAccount));
+	if err != nil {
+		logger.Error("keeper failed to process update ceth receiver account.", errorMessageKey, err.Error())
+		return nil, err
+	}
+
+	logger.Info("sifnode emit update ceth receiver account event.",
+		"CosmosSender", msg.CosmosSender,
+		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
+		"CethReceiverAccount", msg.CethReceiverAccount)
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+		),
+		sdk.NewEvent(
+			types.EventTypeLock,
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+			sdk.NewAttribute(types.AttributeKeyCethReceiverAccount, msg.CethReceiverAccount),
+		),
+	})
+
+	return &types.MsgUpdateCethReceiverAccountResponse{}, nil
+}
+
+func (srv msgServer) RescueCeth(goCtx context.Context, msg *types.MsgRescueCeth) (*types.MsgRescueCethResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	logger := srv.Keeper.Logger(ctx)
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.CosmosSender))
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	if err := srv.Keeper.ProcessRescueCeth(ctx, msg); err != nil {
+		logger.Error("keeper failed to process rescue ceth message.", errorMessageKey, err.Error())
+		return nil, err
+	}
+	logger.Info("sifnode emit rescue ceth event.",
+		"CosmosSender", msg.CosmosSender,
+		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
+		"CosmosReceiver", msg.CosmosReceiver,
+		"CethAmount", msg.CethAmount)
+
+	return &types.MsgRescueCethResponse{}, nil
+}

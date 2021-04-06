@@ -215,18 +215,12 @@ func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
 }
 
-// MsgUpdateCethReceiverAccount add or remove validator from whitelist
-type MsgUpdateCethReceiverAccount struct {
-	CosmosSender        sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
-	CethReceiverAccount sdk.AccAddress `json:"ceth_receiver_account" yaml:"ceth_receiver_account"`
-}
-
 // NewMsgUpdateCethReceiverAccount is a constructor function for MsgUpdateCethReceiverAccount
 func NewMsgUpdateCethReceiverAccount(cosmosSender sdk.AccAddress,
 	cethReceiverAccount sdk.AccAddress) MsgUpdateCethReceiverAccount {
 	return MsgUpdateCethReceiverAccount{
-		CosmosSender:        cosmosSender,
-		CethReceiverAccount: cethReceiverAccount,
+		CosmosSender:        cosmosSender.String(),
+		CethReceiverAccount: cethReceiverAccount.String(),
 	}
 }
 
@@ -261,13 +255,6 @@ func (msg MsgUpdateCethReceiverAccount) GetSignBytes() []byte {
 // GetSigners defines whose signature is required
 func (msg MsgUpdateCethReceiverAccount) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{msg.CosmosSender}
-}
-
-// MsgRescueCeth transfer the ceth from ethbridge module to an account
-type MsgRescueCeth struct {
-	CosmosSender   sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
-	CosmosReceiver sdk.AccAddress `json:"cosmos_receiver" yaml:"cosmos_receiver"`
-	CethAmount     sdk.Int        `json:"ceth_amount" yaml:"ceth_amount"`
 }
 
 // NewMsgRescueCeth is a constructor function for NewMsgRescueCeth
