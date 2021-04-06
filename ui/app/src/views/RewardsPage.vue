@@ -42,13 +42,13 @@ export default defineComponent({
       { type: "lm", multiplier: 0, start: "", amount: null },
     ]);
 
-    // watch(address, async () => {
-    //   rewards.value = await getRewardsData(address);
-    // });
-    //
-    // onMounted(async () => {
-    //   rewards.value = await getRewardsData(address);
-    // });
+    watch(address, async () => {
+      rewards.value = await getRewardsData(address);
+    });
+
+    onMounted(async () => {
+      rewards.value = await getRewardsData(address);
+    });
 
     return {
       rewards,
