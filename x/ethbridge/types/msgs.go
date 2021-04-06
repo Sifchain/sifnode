@@ -417,6 +417,50 @@ func (msg MsgUpdateGasPrice) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
 }
 
+// MsgUpdateGasMultiplier add or remove validator from whitelist
+type MsgUpdateGasMultiplier struct {
+	ValidatorAddress sdk.ValAddress `json:"validator_address" yaml:"validator_address"`
+	GasMultiplier    sdk.Int        `json:"gas_multiplier" yaml:"gas_multiplier"`
+}
+
+// NewMsgUpdateGasMultiplier is a constructor function for MsgUpdateGasMultiplier
+func NewMsgUpdateGasMultiplier(validatorAddress sdk.ValAddress, GasMultiplier sdk.Int) MsgUpdateGasMultiplier {
+	return MsgUpdateGasMultiplier{
+		ValidatorAddress: validatorAddress,
+		GasMultiplier:    GasMultiplier,
+	}
+}
+
+// Route should return the name of the module
+func (msg MsgUpdateGasMultiplier) Route() string { return RouterKey }
+
+// Type should return the action
+func (msg MsgUpdateGasMultiplier) Type() string { return "update_gas_multiplier" }
+
+// ValidateBasic runs stateless checks on the message
+func (msg MsgUpdateGasMultiplier) ValidateBasic() error {
+	if msg.ValidatorAddress.Empty() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
+	}
+
+	return nil
+}
+
+// GetSignBytes encodes the message for signing
+func (msg MsgUpdateGasMultiplier) GetSignBytes() []byte {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners defines whose signature is required
+func (msg MsgUpdateGasMultiplier) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
+}
+
 // MapOracleClaimsToEthBridgeClaims maps a set of generic oracle claim data into EthBridgeClaim objects
 func MapOracleClaimsToEthBridgeClaims(
 	ethereumChainID int, bridgeContract EthereumAddress, nonce int, symbol string,

@@ -453,3 +453,29 @@ func TestUpdateGasPriceMsg(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 }
+
+func TestUpdateGasMultiplierMsg(t *testing.T) {
+	ctx, oracleKeeper, _, supplyKeeper, _, validatorAddresses, handler := CreateTestHandler(t, 0.5, []int64{5})
+	cosmosSender := sdk.AccAddress(validatorAddresses[0])
+	cosmosValidatorAddress := validatorAddresses[0]
+	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, sdk.NewInt(10000)))
+	err := supplyKeeper.MintCoins(ctx, ModuleName, coins)
+	require.NoError(t, err)
+	testGasPrice := sdk.NewInt(1000000000000)
+	testUpdatePriceMsg := types.NewMsgUpdateGasMultiplier(cosmosValidatorAddress, testGasPrice)
+
+	_, err = handler(ctx, testUpdatePriceMsg)
+	require.Error(t, err)
+
+	err = supplyKeeper.SendCoinsFromModuleToAccount(ctx, ModuleName, cosmosSender, coins)
+	require.NoError(t, err)
+
+	_, err = handler(ctx, testUpdatePriceMsg)
+	require.Error(t, err)
+
+	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+
+	res, err := handler(ctx, testUpdatePriceMsg)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+}

@@ -18,6 +18,17 @@ sifnodecli tx ethbridge update_gas_price [cosmos-validator-address] [ethereum-bl
 2. transaction example
 sifnodecli tx ethbridge update_gas_price sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna 100 100 --from=sif --yes
 
+## Gas Multiplier
+To speed up the unpeg, the relayer set the gas price higher than suggested from Ethereum client. So we have other parameter gas multiplier, the gas price in the Ethereum transaction will be the gas price times with gas multiplier.
+As the same with gas price, only admin account can update it via a transaction in Sifchain.
+
+## Transaction
+1. transaction format, the unit gas-multiplier is percent
+sifnodecli tx ethbridge update_gas_multiplier [cosmos-validator-address] [gas-multiplier]
+
+2. transaction example, set the gas price as the same as suggested
+sifnodecli tx ethbridge update_gas_multiplier sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna 100 --from=sif --yes
+
 ## Future features
 1. peg multiple EVM-based chains
 We need a map to record the gas price for different blockchains like bsc, etc.

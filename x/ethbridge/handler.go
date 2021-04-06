@@ -52,7 +52,8 @@ func NewHandler(
 			return handleMsgRescueCeth(ctx, cdc, accountKeeper, bridgeKeeper, msg, sugaredLogger)
 		case types.MsgUpdateGasPrice:
 			return handleMsgUpdateGasPrice(ctx, cdc, accountKeeper, bridgeKeeper, msg, sugaredLogger)
-
+		case types.MsgUpdateGasMultiplier:
+			return handleMsgUpdateGasMultiplier(ctx, cdc, accountKeeper, bridgeKeeper, msg, sugaredLogger)
 		default:
 			errMsg := fmt.Sprintf("unrecognized ethbridge message type: %v", msg.Type())
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
@@ -329,7 +330,7 @@ func handleMsgUpdateGasPrice(
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
 	}
 	if err := bridgeKeeper.ProcessUpdateGasPrice(ctx, msg, sugaredLogger); err != nil {
-		sugaredLogger.Errorw("keeper failed to process rescue ceth message.", errorMessageKey, err.Error())
+		sugaredLogger.Errorw("keeper failed to process update gas price message.", errorMessageKey, err.Error())
 		return nil, err
 	}
 	sugaredLogger.Infow("sifnode emit update gas price event.",
@@ -337,6 +338,27 @@ func handleMsgUpdateGasPrice(
 		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
 		"EthereumBlockNumber", msg.BlockNumber.String(),
 		"EthereumGasPrice", msg.GasPrice.String())
+
+	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
+}
+
+func handleMsgUpdateGasMultiplier(
+	ctx sdk.Context, cdc *codec.Codec, accountKeeper types.AccountKeeper,
+	bridgeKeeper Keeper, msg MsgUpdateGasMultiplier, sugaredLogger *zap.SugaredLogger,
+) (*sdk.Result, error) {
+	account := accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.ValidatorAddress))
+	if account == nil {
+		sugaredLogger.Errorw("account is nil.", "CosmosSender", msg.ValidatorAddress.String())
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
+	}
+	if err := bridgeKeeper.ProcessUpdateGasMultiplier(ctx, msg, sugaredLogger); err != nil {
+		sugaredLogger.Errorw("keeper failed to process update gas multiplier message.", errorMessageKey, err.Error())
+		return nil, err
+	}
+	sugaredLogger.Infow("sifnode emit update gas price event.",
+		"CosmosSender", msg.ValidatorAddress.String(),
+		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
+		"EthereumGasMultiplier", msg.GasMultiplier.String())
 
 	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
 }

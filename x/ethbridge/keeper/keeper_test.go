@@ -367,3 +367,20 @@ func TestProcessUpdateGasPrice(t *testing.T) {
 	err = keeper.ProcessUpdateGasPrice(ctx, msg, sugaredLogger)
 	require.NoError(t, err)
 }
+
+func TestProcessUpdateGasMultiplier(t *testing.T) {
+	ctx, keeper, _, _, _, validatorAddresses := CreateTestKeepers(t, 0.7, []int64{3, 3}, "")
+	validatorAddress := validatorAddresses[0]
+	cosmosSender := sdk.AccAddress(validatorAddress)
+
+	testGasMultiplier := sdk.NewInt(1000000000000)
+	msg := types.NewMsgUpdateGasMultiplier(validatorAddress, testGasMultiplier)
+
+	err := keeper.ProcessUpdateGasMultiplier(ctx, msg, sugaredLogger)
+	require.Equal(t, err.Error(), "only admin account can update gas multiplier")
+
+	keeper.oracleKeeper.SetAdminAccount(ctx, cosmosSender)
+
+	err = keeper.ProcessUpdateGasMultiplier(ctx, msg, sugaredLogger)
+	require.NoError(t, err)
+}

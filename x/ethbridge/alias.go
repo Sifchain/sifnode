@@ -37,6 +37,7 @@ var (
 	NewEthereumAddress                = types.NewEthereumAddress
 	NewMsgCreateEthBridgeClaim        = types.NewMsgCreateEthBridgeClaim
 	NewMsgUpdateGasPrice              = types.NewMsgUpdateGasPrice
+	NewMsgUpdateGasMultiplier         = types.NewMsgUpdateGasMultiplier
 	MapOracleClaimsToEthBridgeClaims  = types.MapOracleClaimsToEthBridgeClaims
 	NewQueryEthProphecyParams         = types.NewQueryEthProphecyParams
 	NewQueryEthProphecyResponse       = types.NewQueryEthProphecyResponse
@@ -59,6 +60,7 @@ type (
 	MsgUpdateCethReceiverAccount = types.MsgUpdateCethReceiverAccount
 	MsgRescueCeth                = types.MsgRescueCeth
 	MsgUpdateGasPrice            = types.MsgUpdateGasPrice
+	MsgUpdateGasMultiplier       = types.MsgUpdateGasMultiplier
 	QueryEthProphecyParams       = types.QueryEthProphecyParams
 	QueryEthProphecyResponse     = types.QueryEthProphecyResponse
 )

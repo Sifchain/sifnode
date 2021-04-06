@@ -365,3 +365,35 @@ func GetCmdUpdateGasPrice(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 }
+
+// GetCmdUpdateGasMultiplier is the CLI command to send the message to update gas multiplier
+func GetCmdUpdateGasMultiplier(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "update_gas_multiplier [cosmos-sender-address] [gas_multiplier]",
+		Short: "This should be used to send gas multiplier to sifnode.",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			cosmosSender, err := sdk.ValAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			GasMultiplier, err := strconv.Atoi(args[1])
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgUpdateGasMultiplier(cosmosSender, sdk.NewInt(int64(GasMultiplier)))
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
