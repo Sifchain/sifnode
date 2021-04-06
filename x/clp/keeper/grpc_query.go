@@ -80,32 +80,22 @@ func (k Keeper) GetAssetList(c context.Context, req *types.AssetListReq) (*types
 	}
 
 	ctx := sdk.UnwrapSDKContext(c)
-	store := ctx.KVStore(k.storeKey)
-	assetStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
 
-	pageRes, err := query.FilteredPaginate(assetStore, req.Pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
-		// val, err := types.UnmarshalValidator(k.cdc, value)
-		// if err != nil {
-		// 	return false, err
-		// }
-
-		// if req.Status != "" && !strings.EqualFold(val.GetStatus().String(), req.Status) {
-		// 	return false, nil
-		// }
-
-		// if accumulate {
-		// 	validators = append(validators, val)
-		// }
-
-		return true, nil
-	})
-
+	addr, err := sdk.AccAddressFromBech32(req.LpAddress)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, err
+	}
+
+	assetList := k.GetAssetsForLiquidityProvider(ctx, addr)
+
+	var al []*types.Asset
+
+	for _, asset := range assetList {
+		al = append(al, &asset)
 	}
 
 	return &types.AssetListRes{
-		Pagination: pageRes,
+		Assets: al,
 	}, nil
 }
 
@@ -115,22 +105,40 @@ func (k Keeper) GetLiquidityProviderList(c context.Context, req *types.Liquidity
 	}
 
 	ctx := sdk.UnwrapSDKContext(c)
+
+	searchingAsset := types.NewAsset(req.Symbol)
+	lpList := k.GetLiquidityProvidersForAsset(ctx, searchingAsset)
+
+	var lpl []*types.LiquidityProvider
+	for _, lp := range lpList {
+		lpl = append(lpl, &lp)
+	}
+	return &types.LiquidityProviderListRes{
+		LiquidityProviders: lpl,
+		Height:             ctx.BlockHeight(),
+	}, nil
+}
+
+func (k Keeper) QueryGetLiquidityProviders(c context.Context, req *types.LiquidityProvidersReq) (*types.LiquidityProvidersRes, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "empty request")
+	}
+
+	var lpl []*types.LiquidityProvider
+	ctx := sdk.UnwrapSDKContext(c)
 	store := ctx.KVStore(k.storeKey)
-	lpStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
+	valStore := prefix.NewStore(store, types.LiquidityProviderPrefix)
 
-	pageRes, err := query.FilteredPaginate(lpStore, req.Pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
-		// val, err := types.UnmarshalValidator(k.cdc, value)
-		// if err != nil {
-		// 	return false, err
-		// }
+	pageRes, err := query.FilteredPaginate(valStore, req.Pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
+		var lp types.LiquidityProvider
+		err := k.cdc.UnmarshalBinaryBare(value, &lp)
+		if err != nil {
+			return false, err
+		}
 
-		// if req.Status != "" && !strings.EqualFold(val.GetStatus().String(), req.Status) {
-		// 	return false, nil
-		// }
-
-		// if accumulate {
-		// 	validators = append(validators, val)
-		// }
+		if accumulate {
+			lpl = append(lpl, &lp)
+		}
 
 		return true, nil
 	})
@@ -139,7 +147,9 @@ func (k Keeper) GetLiquidityProviderList(c context.Context, req *types.Liquidity
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.LiquidityProviderListRes{
-		Pagination: pageRes,
+	return &types.LiquidityProvidersRes{
+		LiquidityProviders: lpl,
+		Height:             ctx.BlockHeight(),
+		Pagination:         pageRes,
 	}, nil
 }

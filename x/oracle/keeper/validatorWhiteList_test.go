@@ -15,7 +15,9 @@ func TestKeeper_SetValidatorWhiteList(t *testing.T) {
 
 	addresses := sifapp.CreateRandomAccounts(2)
 	valAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
+
 	app.OracleKeeper.SetOracleWhiteList(ctx, valAddresses)
+
 	vList := app.OracleKeeper.GetOracleWhiteList(ctx)
 	assert.Equal(t, len(vList), 2)
 	assert.True(t, app.OracleKeeper.ExistsOracleWhiteList(ctx))

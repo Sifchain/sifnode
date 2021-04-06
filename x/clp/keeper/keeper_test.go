@@ -116,6 +116,7 @@ func TestKeeper_BankKeeper(t *testing.T) {
 
 func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
+
 	lpList := test.GenerateRandomLP(10)
 	for _, lp := range lpList {
 		keeper.SetLiquidityProvider(ctx, &lp)
@@ -129,6 +130,7 @@ func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 
 func TestKeeper_GetModuleAccount(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
+
 	moduleAccount := keeper.GetAuthKeeper().GetModuleAccount(ctx, types.ModuleName)
 	assert.Equal(t, moduleAccount.GetName(), types.ModuleName)
 	assert.Equal(t, moduleAccount.GetPermissions(), []string{authtypes.Burner, authtypes.Minter})

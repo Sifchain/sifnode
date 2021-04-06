@@ -1,6 +1,7 @@
 package clp_test
 
 import (
+	"fmt"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -14,6 +15,7 @@ import (
 
 func TestExportGenesis(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
+	// pop
 	// Generate State
 	poolscount, lpCount := CreateState(ctx, keeper, t)
 	state := clp.ExportGenesis(ctx, keeper)
@@ -72,12 +74,16 @@ func CreateState(ctx sdk.Context, keeper keeper.Keeper, t *testing.T) (int, int)
 	//Setting Liquidity providers
 	lpList := test.GenerateRandomLP(10)
 	for _, lp := range lpList {
+		lp := lp
 		keeper.SetLiquidityProvider(ctx, &lp)
 	}
+	fmt.Println(lpList[1])
+
 	v1 := test.GenerateWhitelistAddress("")
 	keeper.SetClpWhiteList(ctx, []sdk.AccAddress{v1})
-	accAddr, err := sdk.AccAddressFromBech32(lpList[0].LiquidityProviderAddress)
+	accAddr, err := sdk.AccAddressFromBech32(lpList[1].LiquidityProviderAddress)
 	assert.NoError(t, err)
+
 	assetList := keeper.GetAssetsForLiquidityProvider(ctx, accAddr)
 	assert.LessOrEqual(t, len(assetList), len(lpList))
 	lpCount := len(assetList)

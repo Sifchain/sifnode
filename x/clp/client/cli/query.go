@@ -118,18 +118,12 @@ func GetCmdAssets(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			pageReq, err := client.ReadPageRequest(cmd.Flags())
-			if err != nil {
-				return err
-			}
-
 			queryClient := types.NewQueryClient(clientCtx)
 
 			lpAddress := args[1]
 
 			assetReq := types.AssetListReq{
-				LpAddress:  lpAddress,
-				Pagination: pageReq,
+				LpAddress: lpAddress,
 			}
 
 			res, err := queryClient.GetAssetList(context.Background(), &assetReq)
@@ -201,16 +195,11 @@ func GetCmdLpList(queryRoute string) *cobra.Command {
 			}
 
 			queryClient := types.NewQueryClient(clientCtx)
-			pageReq, err := client.ReadPageRequest(cmd.Flags())
-			if err != nil {
-				return err
-			}
 
 			assetSymbol := args[0]
 
 			result, err := queryClient.GetLiquidityProviderList(context.Background(), &types.LiquidityProviderListReq{
-				Symbol:     assetSymbol,
-				Pagination: pageReq,
+				Symbol: assetSymbol,
 			})
 			if err != nil {
 				return err
@@ -221,7 +210,6 @@ func GetCmdLpList(queryRoute string) *cobra.Command {
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
-	flags.AddPaginationFlagsToCmd(cmd, "assets")
 
 	return cmd
 }
@@ -242,7 +230,7 @@ func GetCmdAllLps(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			result, err := queryClient.GetAssetList(context.Background(), &types.AssetListReq{
+			result, err := queryClient.QueryGetLiquidityProviders(context.Background(), &types.LiquidityProvidersReq{
 				Pagination: pageReq,
 			})
 			if err != nil {
