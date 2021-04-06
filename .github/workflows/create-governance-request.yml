@@ -36,7 +36,6 @@ on:
         required: true
         default: us-east-1
 
-
 jobs:
   create_governance_request_us:
     name: create_governance_request_us
