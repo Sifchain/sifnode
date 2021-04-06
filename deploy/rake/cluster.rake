@@ -556,13 +556,20 @@ check_exist=$(cat app/app.go | grep 'release-#{args[:release_version]}')
 [ -z "$check_exist" ] && exit 1 || echo "release version exists."
 
 set +x
-export CURRENT_HEIGHT=`curl -s http://rpc-devnet.sifchain.finance/abci_info? | jq --raw-output '.result.response.last_block_height'`
+
+env_check="#{args[:app_env]}"
+if [ "${env_check}" == "prod" ]; then
+    export CURRENT_HEIGHT=`curl -s http://rpc.sifchain.finance/abci_info? | jq --raw-output '.result.response.last_block_height'`
+else
+    export CURRENT_HEIGHT=`curl -s http://rpc-#{args[:app_env]}.sifchain.finance/abci_info? | jq --raw-output '.result.response.last_block_height'`
+fi
+
 cat << EOF > pyscript.py
 #!/usr/bin/env python
 import os
 current_height = float(os.environ["CURRENT_HEIGHT"])
 block_time=#{args[:block_time]}
-average_time = block_time / 60
+average_time = 60 / block_time
 average_time = average_time * 60 * #{args[:upgrade_hours]}
 future_block_height = average_time + current_height + 100
 print(round(future_block_height,0))
