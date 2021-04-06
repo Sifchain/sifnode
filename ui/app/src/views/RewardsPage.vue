@@ -70,7 +70,7 @@ export default defineComponent({
       and how to become eligible.
     </Copy>
     <div class="rewards-container">
-      <div v-if="rewards.length === 0" class="loader-container">
+      <div v-if="!rewards || rewards.length === 0" class="loader-container">
         <div class="loader" />
       </div>
       <Box v-else v-for="reward in rewards" v-bind:key="reward.type">
