@@ -257,6 +257,8 @@ func NewInitApp(
 	skipUpgradeHeights := make(map[int64]bool)
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
+	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.cdc)
+	app.UpgradeKeeper.SetUpgradeHandler("changePoolFormula", GetPoolChangeFunc(app))
 
 	app.UpgradeKeeper.SetUpgradeHandler("release-20210401000000", func(ctx sdk.Context, plan upgrade.Plan) {})
 
