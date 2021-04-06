@@ -380,7 +380,7 @@ func MapOracleClaimsToEthBridgeClaims(
 	tokenContract EthereumAddress,
 	ethereumSender EthereumAddress,
 	oracleValidatorClaims map[string]string,
-	f func(int64, EthereumAddress, int64, EthereumAddress, sdk.ValAddress, string) (EthBridgeClaim, error),
+	f func(int64, EthereumAddress, int64, EthereumAddress, sdk.ValAddress, string) (*EthBridgeClaim, error),
 ) ([]*EthBridgeClaim, error) {
 
 	mappedClaims := make([]*EthBridgeClaim, len(oracleValidatorClaims))
@@ -396,7 +396,7 @@ func MapOracleClaimsToEthBridgeClaims(
 		if err != nil {
 			return nil, err
 		}
-		mappedClaims[i] = &mappedClaim
+		mappedClaims[i] = mappedClaim
 		i++
 	}
 

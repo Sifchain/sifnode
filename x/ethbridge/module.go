@@ -86,7 +86,7 @@ type AppModule struct {
 	AppModuleSimulation
 
 	OracleKeeper  types.OracleKeeper
-	SupplyKeeper  types.SupplyKeeper
+	BankKeeper    types.BankKeeper
 	AccountKeeper types.AccountKeeper
 	BridgeKeeper  Keeper
 	Codec         *codec.Marshaler
@@ -99,7 +99,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 // NewAppModule creates a new AppModule object
 func NewAppModule(
-	oracleKeeper types.OracleKeeper, supplyKeeper types.SupplyKeeper,
+	oracleKeeper types.OracleKeeper, bankKeeper types.BankKeeper,
 	accountKeeper types.AccountKeeper, bridgeKeeper Keeper,
 	cdc *codec.Marshaler) AppModule {
 
@@ -108,7 +108,7 @@ func NewAppModule(
 		AppModuleSimulation: AppModuleSimulation{},
 
 		OracleKeeper:  oracleKeeper,
-		SupplyKeeper:  supplyKeeper,
+		BankKeeper:    bankKeeper,
 		AccountKeeper: accountKeeper,
 		BridgeKeeper:  bridgeKeeper,
 		Codec:         cdc,
@@ -142,14 +142,14 @@ func (AppModule) QuerierRoute() string {
 
 // Deprecated: LegacyQuerierHandler use RegisterServices
 func (am AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
-	return NewQuerier(am.OracleKeeper, amino)
+	return NewQuerier(am.BridgeKeeper, amino)
 }
 
 // InitGenesis performs genesis initialization for the ethbridge module. It returns
 // no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, marshaler codec.JSONMarshaler, _ json.RawMessage) []abci.ValidatorUpdate {
 	bridgeAccount := authtypes.NewEmptyModuleAccount(ModuleName, authtypes.Burner, authtypes.Minter)
-	am.SupplyKeeper.SetModuleAccount(ctx, bridgeAccount)
+	am.AccountKeeper.SetModuleAccount(ctx, bridgeAccount)
 	return nil
 }
 

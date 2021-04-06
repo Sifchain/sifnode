@@ -17,20 +17,20 @@ import (
 
 // TODO: move to x/oracle
 
-// NewQuerier is the module level router for state queries
-func NewQuerier(keeper types.OracleKeeper, cdc codec.LegacyAmino) sdk.Querier {
+// NewLegacyQuerier is the module level router for state queries
+func NewLegacyQuerier(keeper Keeper, cdc *codec.LegacyAmino) sdk.Querier {
 
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, error) {
 		switch path[0] {
 		case types.QueryEthProphecy:
-			return queryEthProphecy(ctx, cdc, req, keeper)
+			return legacyQueryEthProphecy(ctx, cdc, req, keeper)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown ethbridge query endpoint")
 		}
 	}
 }
 
-func queryEthProphecy(ctx sdk.Context, cdc codec.LegacyAmino, query abci.RequestQuery, keeper types.OracleKeeper) ([]byte, error) {
+func legacyQueryEthProphecy(ctx sdk.Context, cdc *codec.LegacyAmino, query abci.RequestQuery, keeper Keeper) ([]byte, error) {
 	var req types.QueryEthProphecyRequest
 	
 	if err := cdc.UnmarshalJSON(query.Data, &req); err != nil {
@@ -39,7 +39,7 @@ func queryEthProphecy(ctx sdk.Context, cdc codec.LegacyAmino, query abci.Request
 
 	id := strconv.FormatInt(req.EthereumChainId, 10) + strconv.FormatInt(req.Nonce, 10) + req.EthereumSender
 
-	prophecy, found := keeper.GetProphecy(ctx, id)
+	prophecy, found := keeper.oracleKeeper.GetProphecy(ctx, id)
 	if !found {
 		return nil, sdkerrors.Wrap(oracletypes.ErrProphecyNotFound, id)
 	}

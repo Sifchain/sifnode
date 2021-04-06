@@ -11,29 +11,18 @@ const (
 	QueryEthProphecy = "prophecies"
 )
 
-// QueryEthProphecyParams defines the params for the following queries:
-// - 'custom/ethbridge/prophecies/'
-type QueryEthProphecyParams struct {
-	EthereumChainID       int             `json:"ethereum_chain_id"`
-	BridgeContractAddress EthereumAddress `json:"bridge_registry_contract_address"`
-	Nonce                 int             `json:"nonce"`
-	Symbol                string          `json:"symbol"`
-	TokenContractAddress  EthereumAddress `json:"token_contract_address"`
-	EthereumSender        EthereumAddress `json:"ethereum_sender"`
-}
-
-// NewQueryEthProphecyParams creates a new QueryEthProphecyParams
-func NewQueryEthProphecyParams(
-	ethereumChainID int, bridgeContractAddress EthereumAddress, nonce int, symbol string,
+// NewQueryEthProphecyRequest creates a new QueryEthProphecyParams
+func NewQueryEthProphecyRequest(
+	ethereumChainID int64, bridgeContractAddress EthereumAddress, nonce int64, symbol string,
 	tokenContractAddress EthereumAddress, ethereumSender EthereumAddress,
-) QueryEthProphecyParams {
-	return QueryEthProphecyParams{
-		EthereumChainID:       ethereumChainID,
-		BridgeContractAddress: bridgeContractAddress,
+) *QueryEthProphecyRequest {
+	return &QueryEthProphecyRequest{
+		EthereumChainId:       ethereumChainID,
+		BridgeContractAddress: bridgeContractAddress.String(),
 		Nonce:                 nonce,
 		Symbol:                symbol,
-		TokenContractAddress:  tokenContractAddress,
-		EthereumSender:        ethereumSender,
+		TokenContractAddress:  tokenContractAddress.String(),
+		EthereumSender:        ethereumSender.String(),
 	}
 }
 
