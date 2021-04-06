@@ -11,8 +11,7 @@ import (
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-
-	)
+)
 
 type msgServer struct {
 	Keeper
@@ -26,12 +25,56 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
-func (k msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.MsgLockResponse, error) {
+func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.MsgLockResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	return &types.MsgLockResponse{}, nil
+	logger := srv.Keeper.Logger(ctx)
+	if srv.Keeper.ExistsPeggyToken(ctx, msg.Symbol) {
+		logger.Error("pegged token can't be lock.", "tokenSymbol", msg.Symbol)
+		return nil, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
+	}
 
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.CosmosSender))
+	if account == nil {
+		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
+	}
+
+	if err := srv.Keeper.ProcessLock(ctx, sdk.AccAddress(msg.CosmosSender), msg); err != nil {
+		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
+		return nil, err
+	}
+
+	logger.Info("sifnode emit lock event.",
+		"EthereumChainID", strconv.FormatInt(msg.EthereumChainId, 10),
+		"CosmosSender", msg.CosmosSender,
+		"CosmosSenderSequence", strconv.FormatUint(account.GetSequence(), 10),
+		"EthereumReceiver", msg.EthereumReceiver,
+		"Amount", msg.Amount.String(),
+		"Symbol", msg.Symbol,
+		"CethAmount", msg.CethAmount.String())
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, msg.CosmosSender),
+		),
+		sdk.NewEvent(
+			types.EventTypeLock,
+			sdk.NewAttribute(types.AttributeKeyEthereumChainID, strconv.FormatInt(msg.EthereumChainId, 100)),
+			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
+			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
+			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
+			sdk.NewAttribute(types.AttributeKeyAmount, msg.Amount.String()),
+			sdk.NewAttribute(types.AttributeKeySymbol, msg.Symbol),
+			sdk.NewAttribute(types.AttributeKeyCethAmount, msg.CethAmount.String()),
+		),
+	})
+
+	return &types.MsgLockResponse{}, nil
 }
+
 func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBurnResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)

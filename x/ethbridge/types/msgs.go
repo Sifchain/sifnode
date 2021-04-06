@@ -3,7 +3,6 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 
 	gethCommon "github.com/ethereum/go-ethereum/common"
@@ -17,24 +16,14 @@ const (
 	lockGasCost = 160000000000 * 338000
 )
 
-// MsgLock defines a message for locking coins and triggering a related event
-type MsgLock struct {
-	CosmosSender     sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`
-	Amount           sdk.Int         `json:"amount" yaml:"amount"`
-	Symbol           string          `json:"symbol" yaml:"symbol"`
-	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
-	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
-	CethAmount       sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
-}
-
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
-	ethereumChainID int, cosmosSender sdk.AccAddress,
+	ethereumChainID int64, cosmosSender sdk.AccAddress,
 	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgLock {
 	return MsgLock{
-		EthereumChainID:  ethereumChainID,
-		CosmosSender:     cosmosSender,
-		EthereumReceiver: ethereumReceiver,
+		EthereumChainId:  ethereumChainID,
+		CosmosSender:     cosmosSender.String(),
+		EthereumReceiver: ethereumReceiver.String(),
 		Amount:           amount,
 		Symbol:           symbol,
 		CethAmount:       cethAmount,
@@ -49,19 +38,19 @@ func (msg MsgLock) Type() string { return "lock" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgLock) ValidateBasic() error {
-	if strconv.Itoa(msg.EthereumChainID) == "" {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainID)
+	if msg.EthereumChainId == 0 {
+		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainId)
 	}
 
-	if msg.CosmosSender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if msg.EthereumReceiver.String() == "" {
+	if msg.EthereumReceiver == "" {
 		return ErrInvalidEthAddress
 	}
 
-	if !gethCommon.IsHexAddress(msg.EthereumReceiver.String()) {
+	if !gethCommon.IsHexAddress(msg.EthereumReceiver) {
 		return ErrInvalidEthAddress
 	}
 
@@ -82,12 +71,12 @@ func (msg MsgLock) ValidateBasic() error {
 
 // GetSignBytes encodes the message for signing
 func (msg MsgLock) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
 }
 
 // GetSigners defines whose signature is required
 func (msg MsgLock) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.CosmosSender}
+	return []sdk.AccAddress{sdk.AccAddress(msg.CosmosSender)}
 }
 
 // NewMsgBurn is a constructor function for MsgBurn
@@ -157,12 +146,12 @@ func (msg MsgBurn) ValidateBasic() error {
 
 // GetSignBytes encodes the message for signing
 func (msg MsgBurn) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
 }
 
 // GetSigners defines whose signature is required
 func (msg MsgBurn) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.CosmosSender}
+	return []sdk.AccAddress{sdk.AccAddress(msg.CosmosSender)}
 }
 
 // NewMsgCreateEthBridgeClaim is a constructor function for MsgCreateBridgeClaim
