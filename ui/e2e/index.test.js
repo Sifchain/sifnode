@@ -120,7 +120,7 @@ describe("connect to page", () => {
     );
   });
 
-  it.skip("pegs", async () => {
+  it("pegs", async () => {
     // XXX: This currently reuses the page from a previous test - this might be ok for now but we will probably want to provide that state some other way
     // assumes wallets connected
     const mmEthBalance = await getEthBalance(MM_CONFIG.options.address);
@@ -262,15 +262,15 @@ describe("connect to page", () => {
     await keplrPage.waitForLoadState();
     await keplrPage.click("text=Approve");
     await keplrPage.waitForLoadState();
-
-    // haven't yet figured out how to capture close popup event
-    await dexPage.waitForTimeout(1000);
-    await dexPage.click("text=×");
     await dexPage.waitForTimeout(10000); // wait for blockchain to update...
+
     // Wait for balances to be the amounts expected
     expect(await dexPage.innerText('[data-handle="swap-message"]')).toBe(
       "Swapped 50 cusdc for 49.9995000037 rowan",
     );
+
+    await dexPage.click("[data-handle='modal-view-close']");
+    await dexPage.pause();
   });
 });
 

@@ -16,7 +16,13 @@ export default defineComponent({
         <div class="backdrop" v-if="isOpen" @click="requestClose">
           <Panel class="modal-panel" v-if="isOpen" @click.stop>
             <slot :requestClose="requestClose"></slot>
-            <div class="close" @click="requestClose">&times;</div>
+            <div
+              class="close"
+              data-handle="modal-view-close"
+              @click="requestClose"
+            >
+              &times;
+            </div>
           </Panel>
         </div>
       </transition>
