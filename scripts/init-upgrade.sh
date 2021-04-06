@@ -37,10 +37,10 @@ sifnoded validate-genesis
 
 
 mkdir -p $DAEMON_HOME/cosmovisor/genesis/bin
-mkdir -p $DAEMON_HOME/cosmovisor/upgrades/changePoolFormula/bin
+mkdir -p $DAEMON_HOME/cosmovisor/upgrades/release-20210501000000-AddDispensation/bin
 
 cp $GOPATH/bin/old/sifnoded $DAEMON_HOME/cosmovisor/genesis/bin
-cp $GOPATH/bin/sifnoded $DAEMON_HOME/cosmovisor/upgrades/changePoolFormula/bin/
+cp $GOPATH/bin/sifnoded $DAEMON_HOME/cosmovisor/upgrades/release-20210501000000-AddDispensation/bin/
 
 
 #contents="$(jq '.gov.voting_params.voting_period = 10' $DAEMON_HOME/config/genesis.json)" && \
