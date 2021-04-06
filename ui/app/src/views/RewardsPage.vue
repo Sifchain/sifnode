@@ -13,7 +13,7 @@ const REWARD_INFO = {
   lm: {
     label: "Liquidity Minining",
     description:
-      "Earn additional rewards by staking a node or delegating to a staked node.",
+      "Earn additional rewards by providing liquidity to any of Sifchain's pools.",
   },
 };
 
@@ -22,6 +22,7 @@ async function getRewardsData(address: ComputedRef<any>) {
   const data = await fetch(
     `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
   );
+  if (data.status === 502) return [];
   return await data.json();
 }
 export default defineComponent({
@@ -80,11 +81,15 @@ export default defineComponent({
             node.
           </Copy>
           <div class="details-container">
-            <div class="amount-container">
-              <AssetItem symbol="Rowan" :label="false" />
-              <span>{{ reward.amount?.toFixed() }}</span>
+            <div class="amount-container w50 jcsb">
+              <div class="df fdr">
+                <AssetItem symbol="Rowan" :label="false" />
+                <span>{{ reward.amount?.toFixed() }}</span>
+              </div>
+              <span>ROWAN</span>
             </div>
             <a
+              class="more-info-button"
               target="_blank"
               href="https://docs.sifchain.finance/resources/rewards-programs#liquidity-mining-and-validator-subsidy-rewards-on-sifchain"
               >More Info</a
@@ -100,6 +105,19 @@ export default defineComponent({
 <style scoped lang="scss">
 // TODO - Get variable margin/padding sizes in
 // TODO - Discuss how we should manage positioning
+.more-info-button {
+  // TODO - This Button !
+  background: #f3f3f3;
+  color: #343434;
+  font-size: 12px;
+  border-radius: 6px;
+  width: 96px;
+  height: 30px;
+  font-weight: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 .rewards-container {
   display: flex;
