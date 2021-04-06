@@ -10,6 +10,7 @@ import (
 func (k Keeper) SetCethReceiverAccount(ctx sdk.Context, cethReceiverAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.CethReceiverAccountPrefix
+	// TODO Wrap in proto
 	store.Set(key, k.cdc.MustMarshalBinaryBare(cethReceiverAccount))
 }
 
