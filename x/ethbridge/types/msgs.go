@@ -373,19 +373,24 @@ func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
 
 // MapOracleClaimsToEthBridgeClaims maps a set of generic oracle claim data into EthBridgeClaim objects
 func MapOracleClaimsToEthBridgeClaims(
-	ethereumChainID int, bridgeContract EthereumAddress, nonce int, symbol string,
-	tokenContract EthereumAddress, ethereumSender EthereumAddress,
+	ethereumChainID int64,
+	bridgeContract EthereumAddress,
+	nonce int64,
+	symbol string,
+	tokenContract EthereumAddress,
+	ethereumSender EthereumAddress,
 	oracleValidatorClaims map[string]string,
-	f func(int, EthereumAddress, int, EthereumAddress, sdk.ValAddress, string,
-	) (EthBridgeClaim, error),
-) ([]EthBridgeClaim, error) {
-	mappedClaims := make([]EthBridgeClaim, len(oracleValidatorClaims))
+	f func(int64, EthereumAddress, int64, EthereumAddress, sdk.ValAddress, string) (*EthBridgeClaim, error),
+) ([]*EthBridgeClaim, error) {
+
+	mappedClaims := make([]*EthBridgeClaim, len(oracleValidatorClaims))
 	i := 0
 	for validatorBech32, validatorClaim := range oracleValidatorClaims {
 		validatorAddress, parseErr := sdk.ValAddressFromBech32(validatorBech32)
 		if parseErr != nil {
 			return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("failed to parse claim: %s", parseErr))
 		}
+
 		mappedClaim, err := f(
 			ethereumChainID, bridgeContract, nonce, ethereumSender, validatorAddress, validatorClaim)
 		if err != nil {
@@ -394,5 +399,6 @@ func MapOracleClaimsToEthBridgeClaims(
 		mappedClaims[i] = mappedClaim
 		i++
 	}
+
 	return mappedClaims, nil
 }

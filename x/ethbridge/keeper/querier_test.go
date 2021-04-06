@@ -27,7 +27,7 @@ func TestNewQuerier(t *testing.T) {
 		Data: []byte{},
 	}
 
-	querier := NewQuerier(oracleKeeper, cdc)
+	querier := NewLegacyQuerier(oracleKeeper, cdc)
 
 	//Test wrong paths
 	bz, err := querier(ctx, []string{"other"}, query)
@@ -56,7 +56,7 @@ func TestQueryEthProphecy(t *testing.T) {
 	//Test query String()
 	require.Equal(t, testResponse.String(), TestResponseJSON)
 
-	bz, err2 := cdc.MarshalJSON(types.NewQueryEthProphecyParams(
+	bz, err2 := cdc.MarshalJSON(types.NewQueryEthProphecyRequest(
 		types.TestEthereumChainID, testBridgeContractAddress, types.TestNonce,
 		types.TestCoinsSymbol, testTokenContractAddress, testEthereumAddress))
 	require.Nil(t, err2)
@@ -67,7 +67,7 @@ func TestQueryEthProphecy(t *testing.T) {
 	}
 
 	//Test query
-	res, err3 := queryEthProphecy(ctx, cdc, query, oracleKeeper)
+	res, err3 := legacyQueryEthProphecy(ctx, cdc, query, oracleKeeper)
 	require.Nil(t, err3)
 
 	var ethProphecyResp types.QueryEthProphecyResponse
@@ -78,13 +78,13 @@ func TestQueryEthProphecy(t *testing.T) {
 	// Test error with bad request
 	query.Data = bz[:len(bz)-1]
 
-	_, err5 := queryEthProphecy(ctx, cdc, query, oracleKeeper)
+	_, err5 := legacyQueryEthProphecy(ctx, cdc, query, oracleKeeper)
 	require.NotNil(t, err5)
 
 	// Test error with nonexistent request
 	badEthereumAddress := types.NewEthereumAddress("badEthereumAddress")
 
-	bz2, err6 := cdc.MarshalJSON(types.NewQueryEthProphecyParams(
+	bz2, err6 := cdc.MarshalJSON(types.NewQueryEthProphecyRequest(
 		types.TestEthereumChainID, testBridgeContractAddress, 12,
 		types.TestCoinsSymbol, testTokenContractAddress, badEthereumAddress))
 	require.Nil(t, err6)
@@ -94,14 +94,14 @@ func TestQueryEthProphecy(t *testing.T) {
 		Data: bz2,
 	}
 
-	_, err7 := queryEthProphecy(ctx, cdc, query2, oracleKeeper)
+	_, err7 := legacyQueryEthProphecy(ctx, cdc, query2, oracleKeeper)
 	require.NotNil(t, err7)
 
 	// Test error with empty address
 	emptyEthereumAddress := types.NewEthereumAddress("")
 
 	bz3, err8 := cdc.MarshalJSON(
-		types.NewQueryEthProphecyParams(
+		types.NewQueryEthProphecyRequest(
 			types.TestEthereumChainID, testBridgeContractAddress, 12,
 			types.TestCoinsSymbol, testTokenContractAddress, emptyEthereumAddress))
 
@@ -112,6 +112,6 @@ func TestQueryEthProphecy(t *testing.T) {
 		Data: bz3,
 	}
 
-	_, err9 := queryEthProphecy(ctx, cdc, query3, oracleKeeper)
+	_, err9 := legacyQueryEthProphecy(ctx, cdc, query3, oracleKeeper)
 	require.NotNil(t, err9)
 }

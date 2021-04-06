@@ -24,7 +24,7 @@ var (
 	// functions aliases
 
 	NewKeeper                         = keeper.NewKeeper
-	NewQuerier                        = keeper.NewQuerier
+	NewQuerier                        = keeper.NewLegacyQuerier
 	NewEthBridgeClaim                 = types.NewEthBridgeClaim
 	NewOracleClaimContent             = types.NewOracleClaimContent
 	CreateOracleClaimFromEthClaim     = types.CreateOracleClaimFromEthClaim
@@ -37,7 +37,7 @@ var (
 	NewEthereumAddress                = types.NewEthereumAddress
 	NewMsgCreateEthBridgeClaim        = types.NewMsgCreateEthBridgeClaim
 	MapOracleClaimsToEthBridgeClaims  = types.MapOracleClaimsToEthBridgeClaims
-	NewQueryEthProphecyParams         = types.NewQueryEthProphecyParams
+	NewQueryEthProphecyParams         = types.NewQueryEthProphecyRequest
 	NewQueryEthProphecyResponse       = types.NewQueryEthProphecyResponse
 
 	CreateTestEthMsg                   = types.CreateTestEthMsg

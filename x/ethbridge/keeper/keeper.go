@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"fmt"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -19,18 +20,18 @@ const errorMessageKey = "errorMessageKey"
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc *codec.Codec // The wire codec for binary encoding/decoding.
+	cdc      codec.BinaryMarshaler // The wire codec for binary encoding/decoding.
 
-	supplyKeeper types.SupplyKeeper
+	bankKeeper   types.BankKeeper
 	oracleKeeper types.OracleKeeper
 	storeKey     sdk.StoreKey
 }
 
 // NewKeeper creates new instances of the oracle Keeper
-func NewKeeper(cdc *codec.Codec, supplyKeeper types.SupplyKeeper, oracleKeeper types.OracleKeeper, storeKey sdk.StoreKey) Keeper {
+func NewKeeper(cdc codec.BinaryMarshaler, supplyKeeper types.BankKeeper, oracleKeeper types.OracleKeeper, storeKey sdk.StoreKey) Keeper {
 	return Keeper{
 		cdc:          cdc,
-		supplyKeeper: supplyKeeper,
+		bankKeeper:   supplyKeeper,
 		oracleKeeper: oracleKeeper,
 		storeKey:     storeKey,
 	}
@@ -42,13 +43,13 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 // ProcessClaim processes a new claim coming in from a validator
-func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.EthBridgeClaim) (oracle.Status, error) {
+func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.EthBridgeClaim) (oracletypes.Status, error) {
 	logger := k.Logger(ctx)
 	oracleClaim, err := types.CreateOracleClaimFromEthClaim(k.cdc, claim)
 	if err != nil {
 		logger.Error("failed to create oracle claim from eth claim.",
 			errorMessageKey, err.Error())
-		return oracle.Status{}, err
+		return oracletypes.Status{}, err
 	}
 
 	return k.oracleKeeper.ProcessClaim(ctx, oracleClaim)
@@ -73,10 +74,10 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 		k.AddPeggyToken(ctx, symbol)
 
 		coins = sdk.Coins{sdk.NewCoin(symbol, oracleClaim.Amount)}
-		err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
+		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	case types.BurnText:
 		coins = sdk.Coins{sdk.NewCoin(oracleClaim.Symbol, oracleClaim.Amount)}
-		err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
+		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	default:
 		err = types.ErrInvalidClaimType
 	}
@@ -87,7 +88,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 		return err
 	}
 
-	if err := k.supplyKeeper.SendCoinsFromModuleToAccount(
+	if err := k.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx, types.ModuleName, receiverAddress, coins,
 	); err != nil {
 		panic(err)
@@ -107,7 +108,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 		coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
 	}
 
-	err := k.supplyKeeper.SendCoinsFromAccountToModule(
+	err := k.bankKeeper.SendCoinsFromAccountToModule(
 		ctx, cosmosSender, types.ModuleName, coins,
 	)
 
@@ -119,7 +120,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 
 	if k.IsCethReceiverAccountSet(ctx) {
 		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
-		err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
 		if err != nil {
 			logger.Error("failed to send ceth from module to account.",
 				errorMessageKey, err.Error())
@@ -128,7 +129,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 	}
 
 	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
-	err = k.supplyKeeper.BurnCoins(ctx, types.ModuleName, coins)
+	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
 	if err != nil {
 		logger.Error("failed to burn locked coin.",
 			errorMessageKey, err.Error())
@@ -143,7 +144,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
 	logger := k.Logger(ctx)
 
-	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
+	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, cosmosSender, types.ModuleName, coins)
 
 	if err != nil {
 		logger.Error("failed to transfer coin from account to module.",
@@ -153,7 +154,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 
 	if k.IsCethReceiverAccountSet(ctx) {
 		coins = sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
-		err = k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, k.GetCethReceiverAccount(ctx), coins)
 		if err != nil {
 			logger.Error("failed to transfer ceth from module to account.",
 				errorMessageKey, err.Error())
@@ -162,7 +163,7 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 	}
 
 	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
-	err = k.supplyKeeper.BurnCoins(ctx, types.ModuleName, coins)
+	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
 	if err != nil {
 		logger.Error("failed to burn burned coin.",
 			errorMessageKey, err.Error())
@@ -197,7 +198,7 @@ func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg types.MsgRescueCeth) erro
 	}
 
 	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
-	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, msg.CosmosReceiver, coins)
+	err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, msg.CosmosReceiver, coins)
 
 	if err != nil {
 		logger.Error("failed to transfer coin from module to account.",

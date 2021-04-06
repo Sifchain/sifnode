@@ -2,6 +2,7 @@ package rest
 
 import (
 	"fmt"
+	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	"net/http"
 	"strconv"
 	"strings"
@@ -52,7 +53,7 @@ type burnOrLockEthReq struct {
 }
 
 // RegisterRESTRoutes - Central function to define routes that get registered by the main application
-func RegisterRESTRoutes(cliCtx context.CLIContext, r *mux.Router, storeName string) {
+func RegisterRESTRoutes(cliCtx sdkclient.Context, r *mux.Router, storeName string) {
 	r.HandleFunc(fmt.Sprintf("/%s/prophecies", storeName), createClaimHandler(cliCtx)).Methods("POST")
 	r.HandleFunc(
 		fmt.Sprintf("/%s/prophecies/{%s}/{%s}/{%s}/{%s}/{%s}/{%s}",
@@ -114,12 +115,12 @@ func createClaimHandler(cliCtx context.CLIContext) http.HandlerFunc {
 	}
 }
 
-func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
+func getProphecyHandler(cliCtx sdk.Context, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
 		ethereumChainID := vars[restEthereumChainID]
-		ethereumChainIDString, err := strconv.Atoi(ethereumChainID)
+		ethereumChainIDString, err := strconv.ParseInt(ethereumChainID, 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -128,7 +129,7 @@ func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.Handle
 		bridgeContract := types.NewEthereumAddress(vars[restBridgeContract])
 
 		nonce := vars[restNonce]
-		nonceString, err := strconv.Atoi(nonce)
+		nonceString, err := strconv.ParseInt(nonce, 10, 64)
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
@@ -145,7 +146,7 @@ func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.Handle
 		ethereumSender := types.NewEthereumAddress(vars[restEthereumSender])
 
 		bz, err := cliCtx.Codec.MarshalJSON(
-			types.NewQueryEthProphecyParams(
+			types.NewQueryEthProphecyRequest(
 				ethereumChainIDString, bridgeContract, nonceString, symbol, tokenContract, ethereumSender))
 		if err != nil {
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())

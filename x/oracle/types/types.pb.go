@@ -27,26 +27,26 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type StatusText int32
 
 const (
-	// Default value
+	// STATUS_TEXT_UNSPECIFIED unspecified
 	StatusText_STATUS_TEXT_UNSPECIFIED StatusText = 0
-	// Pending status
-	StatusText_STATUS_TEXT_PENDING StatusText = 1
-	// Success status
+	// STATUS_TEXT_PEDNING pending
+	StatusText_STATUS_TEXT_PEDNING StatusText = 1
+	// STATUS_TEXT_SUCCESS success
 	StatusText_STATUS_TEXT_SUCCESS StatusText = 2
-	// Failed status
+	// STATUS_TEXT_FAILED failed
 	StatusText_STATUS_TEXT_FAILED StatusText = 3
 )
 
 var StatusText_name = map[int32]string{
 	0: "STATUS_TEXT_UNSPECIFIED",
-	1: "STATUS_TEXT_PENDING",
+	1: "STATUS_TEXT_PEDNING",
 	2: "STATUS_TEXT_SUCCESS",
 	3: "STATUS_TEXT_FAILED",
 }
 
 var StatusText_value = map[string]int32{
 	"STATUS_TEXT_UNSPECIFIED": 0,
-	"STATUS_TEXT_PENDING":     1,
+	"STATUS_TEXT_PEDNING":     1,
 	"STATUS_TEXT_SUCCESS":     2,
 	"STATUS_TEXT_FAILED":      3,
 }
@@ -60,7 +60,8 @@ func (StatusText) EnumDescriptor() ([]byte, []int) {
 }
 
 // GenesisState - all clp state that must be provided at genesis
-//TODO: Add parameters to Genesis state ,such as minimum liquidity required to create a pool
+// TODO: Add parameters to Genesis state ,such as minimum liquidity required to
+// create a pool
 type GenesisState struct {
 	AddressWhitelist []string `protobuf:"bytes,1,rep,name=address_whitelist,json=addressWhitelist,proto3" json:"address_whitelist,omitempty"`
 	AdminAddress     string   `protobuf:"bytes,2,opt,name=admin_address,json=adminAddress,proto3" json:"admin_address,omitempty"`
@@ -113,7 +114,8 @@ func (m *GenesisState) GetAdminAddress() string {
 	return ""
 }
 
-// Claim contrains an arbitrary claim with arbitrary content made by a given validator
+// Claim contrains an arbitrary claim with arbitrary content made by a given
+// validator
 type Claim struct {
 	Id               string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	ValidatorAddress string `protobuf:"bytes,2,opt,name=validator_address,json=validatorAddress,proto3" json:"validator_address,omitempty"`
@@ -175,7 +177,8 @@ func (m *Claim) GetContent() string {
 }
 
 // DBProphecy is what the prophecy becomes when being saved to the database.
-//  Tendermint/Amino does not support maps so we must serialize those variables into bytes.
+//  Tendermint/Amino does not support maps so we must serialize those variables
+//  into bytes.
 type DBProphecy struct {
 	Id              string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Status          Status `protobuf:"bytes,2,opt,name=status,proto3" json:"status"`
@@ -332,12 +335,12 @@ var fileDescriptor_dac1b931484f4203 = []byte{
 	0xd1, 0x01, 0x6c, 0x8f, 0x58, 0x4a, 0x92, 0x3c, 0xa3, 0xb8, 0x15, 0x28, 0x49, 0x8d, 0x3f, 0x16,
 	0x00, 0x37, 0x1f, 0xa1, 0xd7, 0xb0, 0x87, 0x83, 0x76, 0x30, 0xc4, 0x61, 0xe0, 0x7d, 0x09, 0xc2,
 	0x61, 0x1f, 0x0f, 0xbc, 0x6e, 0xef, 0xb4, 0xe7, 0xb9, 0x86, 0x86, 0xf6, 0xe0, 0xd9, 0x6d, 0x38,
-	0xf0, 0xfa, 0x6e, 0xaf, 0x7f, 0x66, 0xe8, 0x77, 0x01, 0x1e, 0x76, 0xbb, 0x1e, 0xc6, 0x46, 0x05,
+	0xf0, 0xdc, 0x7e, 0xaf, 0x7f, 0x66, 0xe8, 0x77, 0x01, 0x1e, 0x76, 0xbb, 0x1e, 0xc6, 0x46, 0x05,
 	0xbd, 0x00, 0x74, 0x1b, 0x9c, 0xb6, 0x7b, 0x1f, 0x3d, 0xd7, 0xa8, 0x76, 0xdc, 0xab, 0xa5, 0xa5,
 	0x5f, 0x2f, 0x2d, 0xfd, 0xdf, 0xd2, 0xd2, 0x7f, 0xad, 0x2c, 0xed, 0x7a, 0x65, 0x69, 0x7f, 0x56,
-	0x96, 0xf6, 0xf5, 0x78, 0xcc, 0xe4, 0xe4, 0xe2, 0xdc, 0x8e, 0xf8, 0xd4, 0x11, 0x6c, 0x14, 0x4d,
+	0x96, 0xf6, 0xf5, 0x78, 0xcc, 0xe4, 0xe4, 0xe2, 0xdc, 0x8e, 0xf8, 0xd4, 0xc1, 0x6c, 0x14, 0x4d,
 	0x08, 0x4b, 0x9d, 0x4d, 0x71, 0x17, 0x9b, 0xea, 0xaa, 0xde, 0x9e, 0xd7, 0x55, 0x1f, 0xdf, 0xff,
-	0x0f, 0x00, 0x00, 0xff, 0xff, 0x4a, 0xec, 0xf5, 0xc1, 0xd9, 0x02, 0x00, 0x00,
+	0x0f, 0x00, 0x00, 0xff, 0xff, 0x73, 0xb9, 0x58, 0xe1, 0xd9, 0x02, 0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {

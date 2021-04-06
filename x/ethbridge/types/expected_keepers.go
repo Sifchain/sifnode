@@ -1,31 +1,30 @@
 package types
 
 import (
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
-	supplyexported "github.com/cosmos/cosmos-sdk/x/supply/exported"
-
-	"github.com/Sifchain/sifnode/x/oracle"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 // AccountKeeper defines the expected account keeper
 type AccountKeeper interface {
-	GetAccount(sdk.Context, sdk.AccAddress) authexported.Account
+	GetAccount(sdk.Context, sdk.AccAddress) authtypes.AccountI
+	SetModuleAccount(sdk.Context, authtypes.ModuleAccountI)
+
 }
 
-// SupplyKeeper defines the expected supply keeper
-type SupplyKeeper interface {
+// BankKeeper defines the expected supply keeper
+type BankKeeper interface {
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 	MintCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
-	SetModuleAccount(sdk.Context, supplyexported.ModuleAccountI)
 }
 
 // OracleKeeper defines the expected oracle keeper
 type OracleKeeper interface {
-	ProcessClaim(ctx sdk.Context, claim oracle.Claim) (oracle.Status, error)
-	GetProphecy(ctx sdk.Context, id string) (oracle.Prophecy, bool)
+	ProcessClaim(ctx sdk.Context, claim oracletypes.Claim) (oracletypes.Status, error)
+	GetProphecy(ctx sdk.Context, id string) (oracletypes.Prophecy, bool)
 	ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string) error
 	IsAdminAccount(ctx sdk.Context, cosmosSender sdk.AccAddress) bool
 	GetAdminAccount(ctx sdk.Context) sdk.AccAddress
