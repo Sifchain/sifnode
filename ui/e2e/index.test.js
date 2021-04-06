@@ -270,7 +270,6 @@ describe("connect to page", () => {
     );
 
     await dexPage.click("[data-handle='modal-view-close']");
-    await dexPage.pause();
   });
 });
 
