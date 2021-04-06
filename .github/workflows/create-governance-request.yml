@@ -95,12 +95,10 @@ jobs:
         run: |
           set +x
           echo "Get Keys for Environment. Coming Soon..."
-          export PATH=$PATH:$GOPATH/bin
-          make CHAINNET=${chainnet} IMAGE_TAG=${env}-${release_version} BINARY=sifnodecli build-image
+          #export PATH=$PATH:$GOPATH/bin
+          #make CHAINNET=${chainnet} IMAGE_TAG=${env}-${release_version} BINARY=sifnodecli build-image
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
-          echo "${mnemonic}" > mnemonic_file
-          ls -lah
           rake "cluster:release:generate_keyring[${moniker}, ${mnemonic}]"
 
       - name: Create Governance Release Request
