@@ -7,7 +7,10 @@
         <slot name="annotation" v-bind="item"></slot>
       </div>
       <div class="action">
-        <slot v-if="Number(item.amount.toFixed()) >= 0.00001" :asset="item"></slot>
+        <slot
+          v-if="Number(item.amount.toFixed()) >= 0.00001"
+          :asset="item"
+        ></slot>
       </div>
     </div>
   </div>
