@@ -47,7 +47,7 @@ jobs:
       app_env: "${{ github.event.inputs.environment }}"
       block_time: "${{ github.event.inputs.block_time }}"
       checksum: "${{ github.event.inputs.checksum }}"
-      deposit: "${{ github.event.deposit }}"
+      deposit: "${{ github.event.inputs.deposit }}"
       from: "${{ github.event.inputs.environment }}-us-1"
       release_version: "${{ github.event.inputs.release_version }}"
       chainnet: "sifchain-${{ github.event.inputs.environment }}"
