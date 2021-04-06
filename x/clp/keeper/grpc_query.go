@@ -13,16 +13,21 @@ import (
 	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
-var _ types.QueryServer = Keeper{}
+// Querier is used as Keeper will have duplicate methods if used directly, and gRPC names take precedence over keeper
+type Querier struct {
+	Keeper
+}
 
-func (k Keeper) QueryGetPool(c context.Context, req *types.PoolReq) (*types.PoolRes, error) {
+var _ types.QueryServer = Querier{}
+
+func (k Querier) GetPool(c context.Context, req *types.PoolReq) (*types.PoolRes, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
 	ctx := sdk.UnwrapSDKContext(c)
 
-	pool, err := k.GetPool(ctx, req.Symbol)
+	pool, err := k.Keeper.GetPool(ctx, req.Symbol)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "validator %s not found", req.Symbol)
 	}
@@ -34,14 +39,14 @@ func (k Keeper) QueryGetPool(c context.Context, req *types.PoolReq) (*types.Pool
 	}, nil
 }
 
-func (k Keeper) QueryGetPools(c context.Context, req *types.PoolsReq) (*types.PoolsRes, error) {
+func (k Querier) GetPools(c context.Context, req *types.PoolsReq) (*types.PoolsRes, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
 	ctx := sdk.UnwrapSDKContext(c)
 
-	pool := k.GetPools(ctx)
+	pool := k.Keeper.GetPools(ctx)
 
 	return &types.PoolsRes{
 		Pools:            pool,
@@ -50,18 +55,18 @@ func (k Keeper) QueryGetPools(c context.Context, req *types.PoolsReq) (*types.Po
 	}, nil
 }
 
-func (k Keeper) LiquidityProvider(c context.Context, req *types.LiquidityProviderReq) (*types.LiquidityProviderRes, error) {
+func (k Querier) GetLiquidityProvider(c context.Context, req *types.LiquidityProviderReq) (*types.LiquidityProviderRes, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
 	ctx := sdk.UnwrapSDKContext(c)
 
-	lp, err := k.GetLiquidityProvider(ctx, req.Symbol, req.LpAddress)
+	lp, err := k.Keeper.GetLiquidityProvider(ctx, req.Symbol, req.LpAddress)
 	if err != nil {
 		return nil, err
 	}
-	pool, err := k.GetPool(ctx, req.Symbol)
+	pool, err := k.Keeper.GetPool(ctx, req.Symbol)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +79,7 @@ func (k Keeper) LiquidityProvider(c context.Context, req *types.LiquidityProvide
 	return &lpResponse, nil
 }
 
-func (k Keeper) GetAssetList(c context.Context, req *types.AssetListReq) (*types.AssetListRes, error) {
+func (k Querier) GetAssetList(c context.Context, req *types.AssetListReq) (*types.AssetListRes, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -99,7 +104,7 @@ func (k Keeper) GetAssetList(c context.Context, req *types.AssetListReq) (*types
 	}, nil
 }
 
-func (k Keeper) GetLiquidityProviderList(c context.Context, req *types.LiquidityProviderListReq) (*types.LiquidityProviderListRes, error) {
+func (k Querier) GetLiquidityProviderList(c context.Context, req *types.LiquidityProviderListReq) (*types.LiquidityProviderListRes, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -110,7 +115,9 @@ func (k Keeper) GetLiquidityProviderList(c context.Context, req *types.Liquidity
 	lpList := k.GetLiquidityProvidersForAsset(ctx, searchingAsset)
 
 	var lpl []*types.LiquidityProvider
+
 	for _, lp := range lpList {
+		lp := lp
 		lpl = append(lpl, &lp)
 	}
 	return &types.LiquidityProviderListRes{
@@ -119,7 +126,7 @@ func (k Keeper) GetLiquidityProviderList(c context.Context, req *types.Liquidity
 	}, nil
 }
 
-func (k Keeper) QueryGetLiquidityProviders(c context.Context, req *types.LiquidityProvidersReq) (*types.LiquidityProvidersRes, error) {
+func (k Querier) GetLiquidityProviders(c context.Context, req *types.LiquidityProvidersReq) (*types.LiquidityProvidersRes, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}

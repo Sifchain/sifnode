@@ -57,7 +57,7 @@ $ %s pool ETH ROWAN`,
 			ticker := args[0]
 			params := types.NewQueryReqGetPool(ticker)
 
-			result, err := queryClient.QueryGetPool(context.Background(), &params)
+			result, err := queryClient.GetPool(context.Background(), &params)
 
 			if err != nil {
 				return err
@@ -89,7 +89,7 @@ func GetCmdPools(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			result, err := queryClient.QueryGetPools(context.Background(), &types.PoolsReq{
+			result, err := queryClient.GetPools(context.Background(), &types.PoolsReq{
 				Pagination: pageReq,
 			})
 
@@ -169,7 +169,7 @@ $ %s pool ETH sif1h2zjknvr3xlpk22q4dnv396ahftzqhyeth7egd`,
 				LpAddress: lpAddress,
 			}
 
-			res, err := queryClient.LiquidityProvider(context.Background(), &lpReq)
+			res, err := queryClient.GetLiquidityProvider(context.Background(), &lpReq)
 			if err != nil {
 				return err
 			}
@@ -230,7 +230,7 @@ func GetCmdAllLps(queryRoute string) *cobra.Command {
 				return err
 			}
 
-			result, err := queryClient.QueryGetLiquidityProviders(context.Background(), &types.LiquidityProvidersReq{
+			result, err := queryClient.GetLiquidityProviders(context.Background(), &types.LiquidityProvidersReq{
 				Pagination: pageReq,
 			})
 			if err != nil {
