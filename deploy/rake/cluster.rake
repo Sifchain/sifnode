@@ -572,7 +572,7 @@ block_time=#{args[:block_time]}
 average_time = 60 / block_time
 average_time = average_time * 60 * #{args[:upgrade_hours]}
 future_block_height = average_time + current_height + 100
-print(round(future_block_height,0))
+print(int(future_block_height))
 EOF
 future_block_height=$(python pyscript.py)
 echo ${future_block_height}
