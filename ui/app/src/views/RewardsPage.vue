@@ -22,7 +22,8 @@ async function getRewardsData(address: ComputedRef<any>) {
   const data = await fetch(
     `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
   );
-  if (data.status !== 200) return [{ type: "lm", multiplier: 0, start: "", amount: null }];
+  if (data.status !== 200)
+    return [{ type: "lm", multiplier: 0, start: "", amount: null }];
   return await data.json();
 }
 export default defineComponent({
