@@ -212,7 +212,7 @@ func (msg MsgCreateEthBridgeClaim) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
+	return []sdk.AccAddress{sdk.AccAddress(msg.EthBridgeClaim.ValidatorAddress)}
 }
 
 // NewMsgUpdateCethReceiverAccount is a constructor function for MsgUpdateCethReceiverAccount
@@ -232,12 +232,12 @@ func (msg MsgUpdateCethReceiverAccount) Type() string { return "update_ceth_rece
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgUpdateCethReceiverAccount) ValidateBasic() error {
-	if msg.CosmosSender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if msg.CethReceiverAccount.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CethReceiverAccount.String())
+	if msg.CethReceiverAccount == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CethReceiverAccount)
 	}
 	return nil
 }
@@ -254,14 +254,14 @@ func (msg MsgUpdateCethReceiverAccount) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgUpdateCethReceiverAccount) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.CosmosSender}
+	return []sdk.AccAddress{sdk.AccAddress(msg.CosmosSender)}
 }
 
 // NewMsgRescueCeth is a constructor function for NewMsgRescueCeth
 func NewMsgRescueCeth(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, cethAmount sdk.Int) MsgRescueCeth {
 	return MsgRescueCeth{
-		CosmosSender:   cosmosSender,
-		CosmosReceiver: cosmosReceiver,
+		CosmosSender:   cosmosSender.String(),
+		CosmosReceiver: cosmosReceiver.String(),
 		CethAmount:     cethAmount,
 	}
 }
@@ -274,12 +274,14 @@ func (msg MsgRescueCeth) Type() string { return "rescue_ceth" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgRescueCeth) ValidateBasic() error {
-	if msg.CosmosSender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
-	if msg.CosmosReceiver.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosReceiver.String())
+
+	if msg.CosmosReceiver == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosReceiver)
 	}
+
 	return nil
 }
 
@@ -295,7 +297,7 @@ func (msg MsgRescueCeth) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.CosmosSender}
+	return []sdk.AccAddress{sdk.AccAddress(msg.CosmosSender)}
 }
 
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator

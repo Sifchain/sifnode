@@ -12,6 +12,10 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 
 		&MsgCreateEthBridgeClaim{},
 		&MsgBurn{},
+		&MsgLock{},
+		&MsgUpdateWhiteListValidator{},
+		&MsgUpdateCethReceiverAccount{},
+		&MsgRescueCeth{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

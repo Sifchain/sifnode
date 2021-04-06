@@ -57,6 +57,6 @@ type (
 	MsgUpdateWhiteListValidator  = types.MsgUpdateWhiteListValidator
 	MsgUpdateCethReceiverAccount = types.MsgUpdateCethReceiverAccount
 	MsgRescueCeth                = types.MsgRescueCeth
-	QueryEthProphecyParams       = types.QueryEthProphecyParams
+	QueryEthProphecyParams       = types.QueryEthProphecyRequest
 	QueryEthProphecyResponse     = types.QueryEthProphecyResponse
 )
