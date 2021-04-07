@@ -6,17 +6,14 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	// "github.com/Sifchain/sifnode/x/oracle"
+
+	oracle "github.com/Sifchain/sifnode/x/oracle"
+	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/store"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	"github.com/Sifchain/sifnode/x/oracle"
-	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
-	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authexported "github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/cosmos/cosmos-sdk/x/bank"
@@ -25,7 +22,10 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/crypto"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
@@ -50,7 +50,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	keyParams := sdk.NewKVStoreKey(params.StoreKey)
 	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
-	keyOracle := sdk.NewKVStoreKey(oracletypes.StoreKey)
+	keyOracle := sdk.NewKVStoreKey(oracleTypes.StoreKey)
 	keyEthBridge := sdk.NewKVStoreKey(types.StoreKey)
 
 	db := dbm.NewMemDB()
@@ -76,6 +76,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	)
 	ctx = ctx.WithLogger(log.NewNopLogger())
 	cdc := MakeTestCodec()
+
 	bridgeAccount := supply.NewEmptyModuleAccount(types.ModuleName, supply.Burner, supply.Minter)
 
 	feeCollectorAcc := supply.NewEmptyModuleAccount(auth.FeeCollectorName)
@@ -88,12 +89,12 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	blacklistedAddrs[bondPool.GetAddress().String()] = true
 
 	paramsKeeper := params.NewKeeper(cdc, keyParams, tkeyParams)
-
+	//accountKeeper gets maccParams in 0.40, module accounts moved from supplykeeper to authkeeper
 	accountKeeper := auth.NewAccountKeeper(
 		cdc,    // amino codec
 		keyAcc, // target store
 		paramsKeeper.Subspace(auth.DefaultParamspace),
-		auth.ProtoBaseAccount, // prototype
+		auth.ProtoBaseAccount, // prototype,
 	)
 
 	bankKeeper := bank.NewBaseKeeper(
@@ -106,12 +107,12 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		auth.FeeCollectorName:          nil,
 		stakingtypes.NotBondedPoolName: {supply.Burner, supply.Staking},
 		stakingtypes.BondedPoolName:    {supply.Burner, supply.Staking},
+		types.ModuleName:               {supply.Burner, supply.Minter},
 	}
 
 	if extraMaccPerm != "" {
 		maccPerms[extraMaccPerm] = []string{supply.Burner, supply.Minter}
 	}
-
 	supplyKeeper := supply.NewKeeper(cdc, keySupply, accountKeeper, bankKeeper, maccPerms)
 
 	initTokens := sdk.TokensFromConsensusPower(10000)
@@ -121,7 +122,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 
 	stakingKeeper := staking.NewKeeper(cdc, keyStaking, supplyKeeper, paramsKeeper.Subspace(staking.DefaultParamspace))
 	stakingKeeper.SetParams(ctx, stakingtypes.DefaultParams())
-	oracleKeeper := oraclekeeper.NewKeeper(cdc, keyOracle, stakingKeeper, consensusNeeded)
+	oracleKeeper := oracle.NewKeeper(cdc, keyOracle, stakingKeeper, consensusNeeded)
 	bridgeKeeper := NewKeeper(cdc, supplyKeeper, oracleKeeper, keyEthBridge)
 
 	// set module accounts
@@ -153,6 +154,7 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 	}
 
 	oracleKeeper.SetOracleWhiteList(ctx, valAddrs)
+
 	return ctx, bridgeKeeper, oracleKeeper, bankKeeper, supplyKeeper, accountKeeper, valAddrs, keyEthBridge
 }
 
