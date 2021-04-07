@@ -84,8 +84,8 @@ func CreateTestQueryEthProphecyResponse(
 	ethBridgeClaims := []EthBridgeClaim{ethBridgeClaim}
 
 	return NewQueryEthProphecyResponse(
-		oracleClaim.ID,
-		oracle.NewStatus(oracle.PendingStatusText, ""),
+		oracleClaim.Id,
+		oracle.Status(oracle.PendingStatusText, ""),
 		ethBridgeClaims,
 	)
 }
