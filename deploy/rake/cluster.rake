@@ -734,7 +734,7 @@ python pyscript.py
 #!/usr/bin/env bash
 set +x
 echo -e "${keyring_pem}" > tmp_keyring
-yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} ./tmp_keyring
+yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring
       }
       system(cluster_automation) or exit 1
     end
