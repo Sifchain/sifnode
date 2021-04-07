@@ -735,6 +735,7 @@ python pyscript.py
 set +x
 echo -e "${keyring_pem}" > tmp_keyring
 cat tmp_keyring | sed -e 's/-e//g' | sed -e 's/ //g' > tmp_keyring
+cat tmp_keyring
 yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring
       }
       system(cluster_automation) or exit 1
