@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -18,11 +19,13 @@ import (
 // TODO: move to x/oracle
 
 // NewQuerier is the module level router for state queries
-func NewQuerier(keeper types.OracleKeeper, cdc *codec.Codec) sdk.Querier {
+func NewQuerier(keeper types.OracleKeeper, cdc *codec.Codec, bridgerKeeper Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, error) {
 		switch path[0] {
 		case types.QueryEthProphecy:
 			return queryEthProphecy(ctx, cdc, req, keeper)
+		case types.QueryGasPrice:
+			return queryGasPrice(ctx, bridgerKeeper)
 		default:
 			return nil, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "unknown ethbridge query endpoint")
 		}
@@ -54,4 +57,19 @@ func queryEthProphecy(
 	response := types.NewQueryEthProphecyResponse(prophecy.ID, prophecy.Status, bridgeClaims)
 
 	return cdc.MarshalJSONIndent(response, "", "  ")
+}
+
+func queryGasPrice(
+	ctx sdk.Context, keeper Keeper,
+) ([]byte, error) {
+	gasPrice := keeper.GetEthGasPrice(ctx)
+	gasMultiPlier := keeper.GetGasMultiplier(ctx)
+
+	if gasPrice == nil || gasMultiPlier == nil {
+		return nil, errors.New("not get the gas price from keeper")
+	}
+
+	*gasPrice = gasPrice.Mul(*gasMultiPlier)
+
+	return []byte(gasPrice.String()), nil
 }

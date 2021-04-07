@@ -46,6 +46,7 @@ var (
 	CreateTestEthClaim                 = types.CreateTestEthClaim
 	CreateTestQueryEthProphecyResponse = types.CreateTestQueryEthProphecyResponse
 	CethReceiverAccountPrefix          = types.CethReceiverAccountPrefix
+	CreateTestKeepers                  = keeper.CreateTestKeepers
 )
 
 type (

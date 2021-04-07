@@ -10,6 +10,7 @@ import (
 // query endpoints supported by the oracle Querier
 const (
 	QueryEthProphecy = "prophecies"
+	QueryGasPrice    = "gasPrice"
 )
 
 // QueryEthProphecyParams defines the params for the following queries:
