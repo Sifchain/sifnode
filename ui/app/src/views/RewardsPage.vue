@@ -60,7 +60,7 @@ export default defineComponent({
 <template>
   <Layout :header="true" title="Rewards">
     <Copy>
-      Earn rewards by participating in of our rewards-earning programs. Please
+      Earn rewards by participating in any of our rewards-earning programs. Please
       see additional information of our
       <a
         target="_blank"
