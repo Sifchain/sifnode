@@ -1,25 +1,27 @@
 package keeper_test
 
 import (
-	"github.com/Sifchain/sifnode/x/clp"
-	"github.com/Sifchain/sifnode/x/clp/test"
-	"github.com/Sifchain/sifnode/x/clp/types"
+	"testing"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"testing"
+
+	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
+	"github.com/Sifchain/sifnode/x/clp/test"
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
 func TestQueryErrorPool(t *testing.T) {
-	app, ctx := test.CreateTestApp(false)
-	cdc := app.Codec()
+	cdc, app, ctx := createTestInput()
+
 	keeper := app.ClpKeeper
 	//Set Data
 	pool, _, _ := SetData(keeper, ctx)
-	querier := clp.NewQuerier(keeper)
+	querier := clpkeeper.NewQuerier(keeper, cdc)
 	//Test Pool
-	queryPool := types.QueryReqGetPool{
+	queryPool := types.PoolReq{
 		Symbol: pool.ExternalAsset.Symbol,
 	}
 	qp, errRes := cdc.MarshalJSON(queryPool)
@@ -42,9 +44,8 @@ func TestQueryErrorPool(t *testing.T) {
 }
 
 func TestQueryGetPool(t *testing.T) {
-	//cdc := codec.New()
-	app, ctx := test.CreateTestApp(false)
-	cdc := app.Codec()
+	cdc, app, ctx := createTestInput()
+
 	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
@@ -52,9 +53,9 @@ func TestQueryGetPool(t *testing.T) {
 	}
 	//Set Data
 	pool, _, _ := SetData(keeper, ctx)
-	querier := clp.NewQuerier(keeper)
+	querier := clpkeeper.NewQuerier(keeper, cdc)
 	//Test Pool
-	queryPool := types.QueryReqGetPool{
+	queryPool := types.PoolReq{
 		Symbol: pool.ExternalAsset.Symbol,
 	}
 	qp, errRes := cdc.MarshalJSON(queryPool)
@@ -64,18 +65,19 @@ func TestQueryGetPool(t *testing.T) {
 	qpool, err := querier(ctx, []string{types.QueryPool}, query)
 	assert.NoError(t, err)
 	var p types.PoolResponse
-	err = keeper.Codec().UnmarshalJSON(qpool, &p)
+	err = cdc.UnmarshalJSON(qpool, &p)
 	assert.NoError(t, err)
 	assert.Equal(t, pool.ExternalAsset, p.ExternalAsset)
 }
 
 func TestQueryErrorPools(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
+	cdc, app, ctx := createTestInput()
+
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
-	querier := clp.NewQuerier(keeper)
+	querier := clpkeeper.NewQuerier(app.ClpKeeper, cdc)
 	query.Path = ""
 	query.Data = nil
 	//Test Pools
@@ -84,14 +86,15 @@ func TestQueryErrorPools(t *testing.T) {
 }
 
 func TestQueryGetPools(t *testing.T) {
-	ctx, keeper := test.CreateTestAppClp(false)
+	cdc, app, ctx := createTestInput()
+
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
 	//Set Data
-	_, pools, _ := SetData(keeper, ctx)
-	querier := clp.NewQuerier(keeper)
+	_, pools, _ := SetData(app.ClpKeeper, ctx)
+	querier := clpkeeper.NewQuerier(app.ClpKeeper, cdc)
 	query.Path = ""
 	query.Data = nil
 	//Test Pools
@@ -99,30 +102,33 @@ func TestQueryGetPools(t *testing.T) {
 	assert.NoError(t, err)
 	var poolsRes types.PoolsResponse
 
-	err = keeper.Codec().UnmarshalJSON(qpools, &poolsRes)
+	err = cdc.UnmarshalJSON(qpools, &poolsRes)
 	assert.NoError(t, err)
 	assert.Greater(t, len(poolsRes.Pools), 0, "More than one pool added")
 	assert.LessOrEqual(t, len(poolsRes.Pools), len(pools), "Set pool will ignore duplicates")
 }
 
 func TestQueryErrorLiquidityProvider(t *testing.T) {
-	app, ctx := test.CreateTestApp(false)
-	cdc := app.Codec()
+	cdc, app, ctx := createTestInput()
+
 	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
 		Data: []byte{},
 	}
-	querier := clp.NewQuerier(keeper)
+	querier := clpkeeper.NewQuerier(keeper, cdc)
 	_, err := querier(ctx, []string{types.QueryLiquidityProvider}, query)
 	assert.Error(t, err)
 	//Set Data
 	_, _, lp := SetData(keeper, ctx)
 	//Test Get Liquidity Provider
 
-	queryLp := types.QueryReqLiquidityProvider{
+	addr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
+	assert.Error(t, err)
+
+	queryLp := types.LiquidityProviderReq{
 		Symbol:    "", //lp.Asset.Ticker,
-		LpAddress: lp.LiquidityProviderAddress,
+		LpAddress: addr.String(),
 	}
 	qlp, errRes := cdc.MarshalJSON(queryLp)
 	require.NoError(t, errRes)
@@ -133,8 +139,8 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 }
 
 func TestQueryGetLiquidityProvider(t *testing.T) {
-	app, ctx := test.CreateTestApp(false)
-	cdc := app.Codec()
+	cdc, app, ctx := createTestInput()
+
 	keeper := app.ClpKeeper
 	query := abci.RequestQuery{
 		Path: "",
@@ -142,11 +148,14 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	}
 	//Set Data
 	_, _, lp := SetData(keeper, ctx)
-	querier := clp.NewQuerier(keeper)
+	querier := clpkeeper.NewQuerier(keeper, cdc)
 	//Test Get Liquidity Provider
-	queryLp := types.QueryReqLiquidityProvider{
+	addr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
+	assert.Error(t, err)
+
+	queryLp := types.LiquidityProviderReq{
 		Symbol:    lp.Asset.Symbol,
-		LpAddress: lp.LiquidityProviderAddress,
+		LpAddress: addr.String(),
 	}
 	qlp, errRes := cdc.MarshalJSON(queryLp)
 	require.NoError(t, errRes)
@@ -154,27 +163,27 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	query.Data = qlp
 	qliquidityprovider, err := querier(ctx, []string{types.QueryLiquidityProvider}, query)
 	assert.NoError(t, err)
-	var l types.LiquidityProviderResponse
-	err = keeper.Codec().UnmarshalJSON(qliquidityprovider, &l)
+	var l types.LiquidityProviderRes
+	err = cdc.UnmarshalJSON(qliquidityprovider, &l)
 	assert.NoError(t, err)
-	assert.Equal(t, lp.Asset, l.Asset)
+	assert.Equal(t, lp.Asset, l.LiquidityProvider.Asset)
 
 }
 
-func SetData(keeper clp.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {
+func SetData(keeper clpkeeper.Keeper, ctx sdk.Context) (types.Pool, []types.Pool, types.LiquidityProvider) {
 	pool := test.GenerateRandomPool(1)[0]
-	err := keeper.SetPool(ctx, pool)
+	err := keeper.SetPool(ctx, &pool)
 	if err != nil {
 		ctx.Logger().Error("Unable to set pool")
 	}
 	pools := test.GenerateRandomPool(10)
 	for _, p := range pools {
-		err = keeper.SetPool(ctx, p)
+		err = keeper.SetPool(ctx, &p)
 		if err != nil {
 			ctx.Logger().Error("Unable to set pool")
 		}
 	}
 	lp := test.GenerateRandomLP(1)[0]
-	keeper.SetLiquidityProvider(ctx, lp)
+	keeper.SetLiquidityProvider(ctx, &lp)
 	return pool, pools, lp
 }

@@ -1,13 +1,13 @@
 package cli_test
 
 import (
+	"io/ioutil"
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/clp/client/cli"
-	"github.com/Sifchain/sifnode/x/clp/test"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"testing"
 )
 
 func SetupViper() {
@@ -18,8 +18,7 @@ func SetupViper() {
 }
 
 func TestGetCmdCreatePool(t *testing.T) {
-	cdc := test.MakeTestCodec()
-	clpcmd := cli.GetCmdCreatePool(cdc)
+	clpcmd := cli.GetCmdCreatePool()
 	SetupViper()
 	viper.Set(cli.FlagExternalAssetAmount, "100")
 	viper.Set(cli.FlagNativeAssetAmount, "100")
@@ -33,8 +32,8 @@ func TestGetCmdCreatePool(t *testing.T) {
 }
 
 func TestGetCmdAddLiquidity(t *testing.T) {
-	cdc := test.MakeTestCodec()
-	clpcmd := cli.GetCmdAddLiquidity(cdc)
+
+	clpcmd := cli.GetCmdAddLiquidity()
 	SetupViper()
 	viper.Set(cli.FlagExternalAssetAmount, "5000000000000000000")
 	viper.Set(cli.FlagNativeAssetAmount, "5000000000000000000000")
@@ -48,8 +47,8 @@ func TestGetCmdAddLiquidity(t *testing.T) {
 }
 
 func TestGetCmdRemoveLiquidity(t *testing.T) {
-	cdc := test.MakeTestCodec()
-	clpcmd := cli.GetCmdRemoveLiquidity(cdc)
+
+	clpcmd := cli.GetCmdRemoveLiquidity()
 	SetupViper()
 	viper.Set(cli.FlagWBasisPoints, "100")
 	viper.Set(cli.FlagAsymmetry, "1000")
@@ -86,8 +85,8 @@ func TestGetCmdRemoveLiquidity(t *testing.T) {
 }
 
 func TestGetCmdSwap(t *testing.T) {
-	cdc := test.MakeTestCodec()
-	clpcmd := cli.GetCmdSwap(cdc)
+
+	clpcmd := cli.GetCmdSwap()
 	SetupViper()
 
 	viper.Set(cli.FlagSentAssetSymbol, "eth")
@@ -104,8 +103,8 @@ func TestGetCmdSwap(t *testing.T) {
 }
 
 func TestGetCmdDecommissionPool(t *testing.T) {
-	cdc := test.MakeTestCodec()
-	clpcmd := cli.GetCmdDecommissionPool(cdc)
+
+	clpcmd := cli.GetCmdDecommissionPool()
 	SetupViper()
 	viper.Set(cli.FlagAssetSymbol, "eth")
 	clpcmd.SetArgs([]string{

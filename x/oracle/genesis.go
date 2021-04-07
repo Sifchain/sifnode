@@ -17,7 +17,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		for i, entry := range data.AddressWhitelist {
 			wlAddress, err := sdk.ValAddressFromBech32(entry)
 			if err != nil {
-				// todo: panic?
+				panic(err)
 			}
 			wl[i] = wlAddress
 		}
@@ -25,7 +25,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState)
 		keeper.SetOracleWhiteList(ctx, wl)
 	}
 
-	if len(strings.TrimSpace(data.AdminAddress)) == 0 {
+	if len(strings.TrimSpace(data.AdminAddress)) != 0 {
 		adminAddress, err := sdk.AccAddressFromBech32(data.AdminAddress)
 		if err != nil {
 			panic(err)

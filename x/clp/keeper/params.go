@@ -5,13 +5,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) MinCreatePoolThreshold(ctx sdk.Context) (res uint) {
+func (k Keeper) GetMinCreatePoolThreshold(ctx sdk.Context) (res uint64) {
 	k.paramstore.Get(ctx, types.KeyMinCreatePoolThreshold, &res)
-	return
+
+	return res
 }
 
-func (k Keeper) GetParams(ctx sdk.Context) types.Params {
-	return types.NewParams(k.MinCreatePoolThreshold(ctx))
+func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
+	k.paramstore.GetParamSet(ctx, &params)
+
+	return params
 }
 
 // set the params
