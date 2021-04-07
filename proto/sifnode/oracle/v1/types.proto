@@ -3,7 +3,7 @@ package sifnode.oracle.v1;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/sifchain/sifnode/x/oracle/types";
+option go_package = "github.com/Sifchain/sifnode/x/oracle/types";
 
 // GenesisState - all clp state that must be provided at genesis
 //TODO: Add parameters to Genesis state ,such as minimum liquidity required to create a pool
