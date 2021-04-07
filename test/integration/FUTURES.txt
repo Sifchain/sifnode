@@ -1,0 +1,83 @@
+Ethereum
+  Two ethereum environments:
+    - geth
+    - ganache
+
+  Need geth for load, it's what production uses.  Need ganache for smart contract devs.
+
+  Inputs
+
+    chain id
+    network id
+    rpc endpoint (port number)
+
+  Outputs
+
+    addresses with eth, including private keys
+
+  Side effects
+
+    ethereum node running
+
+Relayers
+
+  need to be able to start n relayers
+
+  must be able to rebuild quickly when inputs to ebrelayer binary (go files etc) change
+  so this can't be just a static docker image
+
+  Inputs
+
+    private key for ethereum account (passed in as environment variable)
+    tendermintNode
+    web3Provider
+    bridgeRegistryContractAddress
+    validatorMoniker
+    validatorMnemonic
+    sifnode chain id
+    gas
+    gas-prices
+
+  Outputs
+
+    log file
+
+  Side ffects
+
+    relayers listening to ethereum and sifchain
+
+Smart contracts
+
+  Build and deploy to an ethereum node
+
+  Wants to use stanzas inside smart-contracts/truffle-config.js to connect to ethereum node,
+  doesn't want to be configured from the command line.  truffle-config.js can probably use
+  environment variables though.
+
+  Inputs
+
+    A network stanza in truffle-config.js like:
+      ropsten: {
+        provider: function () {
+          return new HDWalletProvider(
+            process.env.ETHEREUM_PRIVATE_KEY,
+            "https://ropsten.infura.io/v3/".concat(process.env.INFURA_PROJECT_ID)
+          );
+        },
+        network_id: 3,
+        gas: 6000000
+      },
+
+    Outputs
+
+      json in smart-contracts/build
+      Includes all addresses for smart contracts reference by networkId
+
+Typescript/javascript utilities
+
+    A variety of scripts in smart-contracts/scripts
+
+    Inputs
+
+      The location of the smart contract json artifacts
+      Addresses of the

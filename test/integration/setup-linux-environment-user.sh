@@ -27,4 +27,6 @@ echo '. ~/.bash_profile' >> ~/.bashrc
 . ~/.bash_profile
 curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.33.0
 
-python3 -m pip install -U pytest
+python3 -m pip install -U pytest pyyml
+# go install github.com/gochain/web3/cmd/web3
+curl -LSs https://raw.githubusercontent.com/gochain/web3/master/install.sh | sh -s v0.2.51

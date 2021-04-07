@@ -34,6 +34,15 @@ module.exports = {
       network_id: 3,
       gas: 6000000
     },
+    dynamic: {
+      provider: function () {
+        return new HDWalletProvider(
+            process.env.ETHEREUM_PRIVATE_KEY,
+            process.env.ETHEREUM_WEBSOCKET_ADDRESS
+        );
+      },
+      network_id: process.env.ETHEREUM_NETWORK_ID,
+    },
     mainnet: {
       provider: function () {
         return new HDWalletProvider(
