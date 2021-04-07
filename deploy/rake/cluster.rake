@@ -678,7 +678,7 @@ data_payload = {
     "tag_name": "#{args[:env]}-#{args[:release]}",
     "name": "#{args[:env]} v#{args[:release]}",
     "body": "Sifchain #{args[:env]} Release v#{args[:release]}",
-    "draft": True
+    "prerelease": True
 }
 print("sending payload")
 print(data_payload)
