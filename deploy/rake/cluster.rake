@@ -608,7 +608,7 @@ echo '
         --from #{args[:from]} \
         --deposit #{args[:deposit]} \
         --upgrade-height '${future_block_height}' \
-        --info \\'{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}\\' \
+        --info \'{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}\' \
         --title release-#{args[:release_version]} \
         --description release-#{args[:release_version]} \
         --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
@@ -620,7 +620,7 @@ echo '
         --from #{args[:from]} \
         --deposit #{args[:deposit]} \
         --upgrade-height ${future_block_height} \
-        --info \\'{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}\\' \
+        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
         --title release-#{args[:release_version]} \
         --description release-#{args[:release_version]} \
         --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
@@ -734,7 +734,6 @@ python pyscript.py
 #!/usr/bin/env bash
 set +x
 go run ./cmd/sifnodecli keys delete #{args[:moniker]} --keyring-backend test --trace
-echo 'yes "#{args[:mnemonic]}" | go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test --trace'
 yes "#{args[:mnemonic]}" | go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test --trace
       }
       system(cluster_automation) or exit 1
