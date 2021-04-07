@@ -587,7 +587,7 @@ echo '
         --title release-#{args[:release_version]} \
         --description release-#{args[:release_version]} \
         --node tcp://rpc.sifchain.finance:80 \
-        --keyring-backend test \
+        --keyring-backend file \
         --chain-id #{args[:chainnet]} \
         --gas-prices "#{args[:rowan]}"
 '
@@ -599,7 +599,7 @@ echo '
         --title release-#{args[:release_version]} \
         --description release-#{args[:release_version]} \
         --node tcp://rpc.sifchain.finance:80 \
-        --keyring-backend test \
+        --keyring-backend file \
         --chain-id #{args[:chainnet]} \
         --gas-prices "#{args[:rowan]}"
 else
@@ -612,7 +612,7 @@ echo '
         --title release-#{args[:release_version]} \
         --description release-#{args[:release_version]} \
         --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
-        --keyring-backend test \
+        --keyring-backend file \
         --chain-id #{args[:chainnet]} \
         --gas-prices "#{args[:rowan]}"
 '
@@ -624,7 +624,7 @@ echo '
         --title release-#{args[:release_version]} \
         --description release-#{args[:release_version]} \
         --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
-        --keyring-backend test \
+        --keyring-backend file \
         --chain-id #{args[:chainnet]} \
         --gas-prices "#{args[:rowan]}"
 fi
@@ -733,18 +733,10 @@ python pyscript.py
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
-mkdir -p /home/runner/.password-store
-git config --global user.email "gzukel@sifchain.finance"
-git config --global user.name "Grant Zukel"
-pass git init
-gpg --list-keys
-gpg --list-secret-keys
-pass init
-
 echo -e "${keyring_pem}" > tmp_keyring
 tail -c +4 tmp_keyring > tmp_keyring_rendered
 rm -rf tmp_keyring
-yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered
+yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file
       }
       system(cluster_automation) or exit 1
     end
@@ -765,7 +757,7 @@ if [ "${env_check}" == "prod" ]; then
     echo "vote_id $vote_id"
     echo 'go run ./cmd/sifnodecli tx gov vote 2 yes \
         --from #{args[:from]} \
-        --keyring-backend test \
+        --keyring-backend file \
         --chain-id #{args[:chainnet]}  \
         --node tcp://rpc.sifchain.finance:80 \
         --gas-prices "#{args[:rowan]}" -y
@@ -775,7 +767,7 @@ else
     echo "vote_id $vote_id"
     echo 'go run ./cmd/sifnodecli tx gov vote 2 yes \
         --from #{args[:from]} \
-        --keyring-backend test \
+        --keyring-backend file \
         --chain-id #{args[:chainnet]}  \
         --node tcp://rpc-#{args[:env]}.sifchain.finance:80 \
         --gas-prices "#{args[:rowan]}" -y
