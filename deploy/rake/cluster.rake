@@ -577,18 +577,33 @@ EOF
 future_block_height=$(python pyscript.py)
 echo ${future_block_height}
 
-echo 'go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
-	--from #{args[:from]} \
-	--deposit #{args[:deposit]} \
-	--upgrade-height '${future_block_height}' \
-	--info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/devnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
-	--title release-#{args[:release_version]} \
-	--description release-#{args[:release_version]} \
-	--node tcp://rpc-devnet.sifchain.finance:80 \
-	--keyring-backend test \
-	--chain-id #{args[:chainnet]} \
-	--gas-prices "#{args[:rowan]}"
-	'
+if [ "${env_check}" == "prod" ]; then
+    echo 'go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+        --from #{args[:from]} \
+        --deposit #{args[:deposit]} \
+        --upgrade-height '${future_block_height}' \
+        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
+        --title release-#{args[:release_version]} \
+        --description release-#{args[:release_version]} \
+        --node tcp://rpc.sifchain.finance:80 \
+        --keyring-backend test \
+        --chain-id #{args[:chainnet]} \
+        --gas-prices "#{args[:rowan]}"
+        '
+else
+    echo 'go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+        --from #{args[:from]} \
+        --deposit #{args[:deposit]} \
+        --upgrade-height '${future_block_height}' \
+        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
+        --title release-#{args[:release_version]} \
+        --description release-#{args[:release_version]} \
+        --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
+        --keyring-backend test \
+        --chain-id #{args[:chainnet]} \
+        --gas-prices "#{args[:rowan]}"
+        '
+fi
       }
       system(cluster_automation) or exit 1
     end
@@ -641,12 +656,10 @@ python pyscript.py
     end
   end
 
-
-
   desc "Create Github Release."
   namespace :release do
     desc "Create Github Release."
-    task :create_release, [:release, :env] do |t, args|
+    task :create_release, [:release, :env, :token] do |t, args|
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
@@ -666,7 +679,7 @@ data_payload = {
     "name": "#{args[:env]} v#{args[:release]}",
     "body": "Sifchain #{args[:env]} Release v#{args[:release]}"
 }
-headers = {"Accept": "application/vnd.github.v3+json"}
+headers = {"Accept": "application/vnd.github.v3+json","Authorization":"#{args[:token]}"}
 releases_request = requests.post('https://api.github.com/repos/Sifchain/sifnode/releases',
                                  data=json.dumps(data_payload),
                                  headers=headers,
@@ -677,9 +690,7 @@ if releases_request.status_code == 201 or releases_request.status_code == 200:
     print(str(release_request_json))
 
 EOF
-#python pyscript.py
-cat pyscript.py
-
+python pyscript.py
       }
       system(cluster_automation) or exit 1
     end
@@ -709,18 +720,28 @@ yes "#{args[:mnemonic]}" | go run ./cmd/sifnodecli keys add #{args[:moniker]} -i
 #!/usr/bin/env bash
 set +x
 
-vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
-
-echo "vote_id $vote_id"
-
-echo 'go run ./cmd/sifnodecli tx gov vote 2 yes \
-    --from #{args[:from]} \
-    --keyring-backend test \
-    --chain-id #{args[:chainnet]}  \
-    --node tcp://rpc-devnet.sifchain.finance:80 \
-    --gas-prices "#{args[:rowan]}" -y
-    '
-
+env_check="#{args[:env]}"
+if [ "${env_check}" == "prod" ]; then
+    vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+    echo "vote_id $vote_id"
+    echo 'go run ./cmd/sifnodecli tx gov vote 2 yes \
+        --from #{args[:from]} \
+        --keyring-backend test \
+        --chain-id #{args[:chainnet]}  \
+        --node tcp://rpc.sifchain.finance:80 \
+        --gas-prices "#{args[:rowan]}" -y
+        '
+else
+    vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+    echo "vote_id $vote_id"
+    echo 'go run ./cmd/sifnodecli tx gov vote 2 yes \
+        --from #{args[:from]} \
+        --keyring-backend test \
+        --chain-id #{args[:chainnet]}  \
+        --node tcp://rpc-#{args[:env]}.sifchain.finance:80 \
+        --gas-prices "#{args[:rowan]}" -y
+        '
+fi
       }
       system(cluster_automation) or exit 1
     end

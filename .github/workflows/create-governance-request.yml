@@ -104,8 +104,11 @@ jobs:
         shell: bash
         run: |
           set +x
+          echo "Get github token from vault and create release"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
           echo "Wait for release with version to finish building befor continuing."
-          rake "cluster:release:create_release[${release_version},${env}]"
+          rake "cluster:release:create_release[${release_version}, ${env}, ${github_token}]"
 
       - name: Wait For Release
         shell: bash
