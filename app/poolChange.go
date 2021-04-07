@@ -1,16 +1,15 @@
-package upgrades
+package app
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/clp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	"io/ioutil"
 )
 
-func GetPoolChangeFunc(app *app.SifchainApp) func(ctx sdk.Context, plan upgrade.Plan) {
+func GetPoolChangeFunc(app *SifchainApp) func(ctx sdk.Context, plan upgrade.Plan) {
 	return func(ctx sdk.Context, plan upgrade.Plan) {
 		ctx.Logger().Info("Starting to execute upgrade plan for pool re-balance")
 
@@ -70,7 +69,7 @@ func GetPoolChangeFunc(app *app.SifchainApp) func(ctx sdk.Context, plan upgrade.
 	}
 }
 
-func ExportAppState(name string, app *app.SifchainApp, ctx sdk.Context) {
+func ExportAppState(name string, app *SifchainApp, ctx sdk.Context) {
 	appState, vallist, err := app.ExportAppStateAndValidators(true, []string{})
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("failed to export app state: %s", err))

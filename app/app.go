@@ -2,13 +2,10 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/Sifchain/sifnode/upgrades"
 	"github.com/Sifchain/sifnode/x/clp"
 	"github.com/Sifchain/sifnode/x/dispensation"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/tendermint/tendermint/libs/log"
-	"io/ioutil"
 	"math/big"
 
 	tmos "github.com/tendermint/tendermint/libs/os"
@@ -258,7 +255,7 @@ func NewInitApp(
 	skipUpgradeHeights := make(map[int64]bool)
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.Cdc)
-	upgrades.SetupHandlers(app)
+	SetupHandlers(app)
 
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
