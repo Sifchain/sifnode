@@ -22,6 +22,7 @@ import (
 func NewQuerier(keeper types.OracleKeeper, cdc *codec.Codec, bridgerKeeper Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) ([]byte, error) {
 		switch path[0] {
+
 		case types.QueryEthProphecy:
 			return queryEthProphecy(ctx, cdc, req, keeper)
 		case types.QueryGasPrice:
@@ -59,9 +60,7 @@ func queryEthProphecy(
 	return cdc.MarshalJSONIndent(response, "", "  ")
 }
 
-func queryGasPrice(
-	ctx sdk.Context, keeper Keeper,
-) ([]byte, error) {
+func queryGasPrice(ctx sdk.Context, keeper Keeper) ([]byte, error) {
 	gasPrice := keeper.GetEthGasPrice(ctx)
 	gasMultiPlier := keeper.GetGasMultiplier(ctx)
 

@@ -64,3 +64,29 @@ func GetCmdGetEthBridgeProphecy(queryRoute string, cdc *codec.Codec) *cobra.Comm
 		},
 	}
 }
+
+// GetCmdGetGasPriceHandler queries information about current gas price
+func GetCmdGetGasPriceHandler(queryRoute string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   `gasPrice`,
+		Short: "query gas price",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryGasPrice)
+			res, _, err := cliCtx.Query(route)
+			if err != nil {
+				return err
+			}
+
+			var out types.QueryEthProphecyResponse
+			err = cdc.UnmarshalJSON(res, &out)
+			if err != nil {
+				return err
+			}
+
+			return cliCtx.PrintOutput(out)
+		},
+	}
+}

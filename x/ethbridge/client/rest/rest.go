@@ -117,6 +117,7 @@ func createClaimHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("getProphecyHandler \n")
 		vars := mux.Vars(r)
 
 		ethereumChainID := vars[restEthereumChainID]
@@ -166,11 +167,12 @@ func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.Handle
 
 func getGasPriceHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// res := 12345
 
 		route := fmt.Sprintf("custom/%s/%s", storeName, types.QueryGasPrice)
-		res, _, err := cliCtx.QueryWithData(route, nil)
+		fmt.Printf("getGasPriceHandler route is %s\n", route)
+		res, _, err := cliCtx.Query(route)
 		if err != nil {
+			fmt.Printf("error is %s\n", err.Error())
 			rest.WriteErrorResponse(w, http.StatusNotFound, err.Error())
 			return
 		}

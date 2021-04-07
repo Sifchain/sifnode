@@ -26,6 +26,7 @@ func GetQueryCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 
 	ethBridgeQueryCmd.AddCommand(flags.GetCommands(
 		cli.GetCmdGetEthBridgeProphecy(storeKey, cdc),
+		cli.GetCmdGetGasPriceHandler(storeKey, cdc),
 	)...)
 
 	return ethBridgeQueryCmd
