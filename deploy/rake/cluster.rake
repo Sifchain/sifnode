@@ -734,10 +734,10 @@ python pyscript.py
 #!/usr/bin/env bash
 set +x
 echo -e "${keyring_pem}" > tmp_keyring
-cat tmp_keyring | sed -e 's/-e //g' > tmp_keyring
-#tail -c +2 tmp_keyring > tmp_keyring
-
-echo "check the temp keyring"
+cat tmp_keyring | sed -e 's/-e//g' > tmp_keyring
+cat tmp_keyring
+tail -c +2 tmp_keyring > tmp_keyring
+echo ""
 cat tmp_keyring
 
 yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring
