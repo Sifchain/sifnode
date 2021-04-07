@@ -642,6 +642,49 @@ python pyscript.py
   end
 
 
+
+  desc "Create Github Release."
+  namespace :release do
+    desc "Create Github Release."
+    task :create_release, [:release, :env] do |t, args|
+
+      cluster_automation = %Q{
+#!/usr/bin/env bash
+set +x
+pip install requests
+
+cat << EOF > pyscript.py
+#!/usr/bin/env python
+import requests
+import time
+import sys
+import urllib3
+import json
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+data_payload = {
+    "tag_name": "#{args[:env]}-#{args[:release]}",
+    "name": "#{args[:env]} v#{args[:release]}",
+    "body": "Sifchain #{args[:env]} Release v#{args[:release]}"
+}
+headers = {"Accept": "application/vnd.github.v3+json"}
+releases_request = requests.post('https://api.github.com/repos/Sifchain/sifnode/releases',
+                                 data=json.dumps(data_payload),
+                                 headers=headers,
+                                 verify=False)
+release_request_json = releases_request.json()
+if releases_request.status_code == 201 or releases_request.status_code == 200:
+    print("Release Published")
+    print(str(release_request_json))
+
+EOF
+#python pyscript.py
+cat pyscript.py
+
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
   desc "Generate Test Key Ring."
   namespace :release do
     desc "Generate Test Key Ring."
