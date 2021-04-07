@@ -609,6 +609,8 @@ cat << EOF > pyscript.py
 import requests
 import time
 import sys
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 workflow_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows', verify=False)
 workflow_request_json = workflow_request.json()
 find_realease="#{args[:release]}"
