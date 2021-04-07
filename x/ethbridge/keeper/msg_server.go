@@ -2,12 +2,12 @@ package keeper
 
 import (
 	"context"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/pkg/errors"
 	"strconv"
 	"sync"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/pkg/errors"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -198,7 +198,7 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 	}
 
 	err := srv.Keeper.ProcessUpdateWhiteListValidator(ctx, sdk.AccAddress(msg.CosmosSender),
-		sdk.ValAddress(msg.Validator), msg.OperationType);
+		sdk.ValAddress(msg.Validator), msg.OperationType)
 	if err != nil {
 		logger.Error("bridge keeper failed to process update validator.", errorMessageKey, err.Error())
 		return nil, err
@@ -240,7 +240,7 @@ func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 	}
 
 	err := srv.Keeper.ProcessUpdateCethReceiverAccount(ctx,
-		sdk.AccAddress(msg.CosmosSender), sdk.AccAddress(msg.CethReceiverAccount));
+		sdk.AccAddress(msg.CosmosSender), sdk.AccAddress(msg.CethReceiverAccount))
 	if err != nil {
 		logger.Error("keeper failed to process update ceth receiver account.", errorMessageKey, err.Error())
 		return nil, err
