@@ -578,19 +578,6 @@ future_block_height=$(python pyscript.py)
 echo ${future_block_height}
 
 if [ "${env_check}" == "prod" ]; then
-echo '
-    go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
-        --from #{args[:from]} \
-        --deposit #{args[:deposit]} \
-        --upgrade-height '${future_block_height}' \
-        --info \'{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}\' \
-        --title release-#{args[:release_version]} \
-        --description release-#{args[:release_version]} \
-        --node tcp://rpc.sifchain.finance:80 \
-        --keyring-backend file \
-        --chain-id #{args[:chainnet]} \
-        --gas-prices "#{args[:rowan]}"
-'
     yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
         --from #{args[:from]} \
         --deposit #{args[:deposit]} \
@@ -600,22 +587,10 @@ echo '
         --description release-#{args[:release_version]} \
         --node tcp://rpc.sifchain.finance:80 \
         --keyring-backend file \
+        -y \
         --chain-id #{args[:chainnet]} \
         --gas-prices "#{args[:rowan]}"
 else
-echo '
-    go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
-        --from #{args[:from]} \
-        --deposit #{args[:deposit]} \
-        --upgrade-height '${future_block_height}' \
-        --info \'{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}\' \
-        --title release-#{args[:release_version]} \
-        --description release-#{args[:release_version]} \
-        --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
-        --keyring-backend file \
-        --chain-id #{args[:chainnet]} \
-        --gas-prices "#{args[:rowan]}"
-'
     yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
         --from #{args[:from]} \
         --deposit #{args[:deposit]} \
@@ -625,6 +600,7 @@ echo '
         --description release-#{args[:release_version]} \
         --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
         --keyring-backend file \
+        -y \
         --chain-id #{args[:chainnet]} \
         --gas-prices "#{args[:rowan]}"
 fi
