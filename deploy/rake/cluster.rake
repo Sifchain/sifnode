@@ -734,6 +734,8 @@ python pyscript.py
 #!/usr/bin/env bash
 set +x
 mkdir -p /home/runner/.password-store
+git config --global user.email "gzukel@sifchain.finance"
+git config --global user.name "Grant Zukel"
 pass git init
 echo -e "${keyring_pem}" > tmp_keyring
 tail -c +4 tmp_keyring > tmp_keyring_rendered
