@@ -54,8 +54,14 @@ export default defineComponent({
     const router = useRouter();
     const route = useRoute();
 
-    const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
-    const toSymbol = ref("rowan");
+    const {
+      fromSymbol,
+      fromAmount,
+      toAmount,
+      toSymbol,
+    } = useCurrencyFieldState({
+      pooling: ref(true),
+    });
     const isFromMaxActive = computed(() => {
       const accountBalance = balances.value.find(
         (balance) => balance.asset.symbol === fromSymbol.value,
@@ -203,11 +209,16 @@ export default defineComponent({
             return "Select Tokens";
           case PoolState.ZERO_AMOUNTS:
             return "Please enter an amount";
+          case PoolState.ZERO_AMOUNTS_NEW_POOL:
+            return "Both inputs required";
           case PoolState.INSUFFICIENT_FUNDS:
             return "Insufficient Funds";
           case PoolState.VALID_INPUT:
             return preExistingPool.value ? "Add liquidity" : "Create Pool";
         }
+      }),
+      toggleLabel: computed(() => {
+        return !preExistingPool.value ? null : "Pool Equally";
       }),
       nextStepAllowed: computed(() => {
         return state.value === PoolState.VALID_INPUT;
@@ -332,7 +343,7 @@ export default defineComponent({
           :isToMaxActive="isToMaxActive"
           toSymbolFixed
           canSwapIcon="plus"
-          toggleLabel="Pool Equally"
+          :toggleLabel="toggleLabel"
           :asyncPooling="asyncPooling"
           @toggleAsyncPooling="toggleAsyncPooling"
       /></template>
