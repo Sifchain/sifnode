@@ -688,7 +688,9 @@ release_request_json = releases_request.json()
 if releases_request.status_code == 201 or releases_request.status_code == 200:
     print("Release Published")
     print(str(release_request_json))
-
+else:
+    print(releases_request.content, releases_request.status_code)
+    sys.exit(2)
 EOF
 python pyscript.py
       }
