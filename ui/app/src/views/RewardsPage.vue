@@ -77,8 +77,7 @@ export default defineComponent({
         <div class="reward-container">
           <SubHeading>{{ REWARD_INFO[reward.type].label }}</SubHeading>
           <Copy>
-            Earn additional rewards by staking a node or delegating to a staked
-            node.
+            {{ REWARD_INFO[reward.type].description }}
           </Copy>
           <div class="details-container">
             <div class="amount-container w50 jcsb">
