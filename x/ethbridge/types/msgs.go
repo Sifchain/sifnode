@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	gethCommon "github.com/ethereum/go-ethereum/common"
@@ -38,7 +39,7 @@ func (msg MsgLock) Type() string { return "lock" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgLock) ValidateBasic() error {
-	if msg.EthereumChainId == 0 {
+	if strconv.FormatInt(msg.EthereumChainId, 10) == "" {
 		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainId)
 	}
 
@@ -194,7 +195,7 @@ func (msg MsgCreateEthBridgeClaim) ValidateBasic() error {
 	}
 
 	if strings.ToLower(msg.EthBridgeClaim.Symbol) == "eth" &&
-		msg.EthBridgeClaim.TokenContractAddress != "0x0000000000000000000000000000000000000000" {
+		NewEthereumAddress(msg.EthBridgeClaim.TokenContractAddress) != NewEthereumAddress("0x0000000000000000000000000000000000000000") {
 		return ErrInvalidEthSymbol
 	}
 
