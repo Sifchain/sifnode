@@ -49,11 +49,11 @@ func EthereumEventToEthBridgeClaim(valAddr sdk.ValAddress, event types.EthereumE
 	// Symbol formatted to lowercase
 	symbol := strings.ToLower(event.Symbol)
 	switch event.ClaimType {
-	case ethbridge.LockText:
+	case ethbridge.ClaimType_CLAIM_TYPE_LOCK:
 		if symbol == "eth" && !isZeroAddress(event.Token) {
 			return witnessClaim, errors.New("symbol \"eth\" must have null address set as token address")
 		}
-	case ethbridge.BurnText:
+	case ethbridge.ClaimType_CLAIM_TYPE_BURN:
 		if !strings.Contains(symbol, defaultEthereumPrefix) {
 			log.Printf("Can only relay burns of '%v' prefixed tokens", defaultEthereumPrefix)
 			return witnessClaim, errors.New("symbol of burn token must start with prefix")

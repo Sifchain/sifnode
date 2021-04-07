@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"fmt"
+
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 
 	"github.com/tendermint/tendermint/libs/log"
@@ -19,22 +20,22 @@ const errorMessageKey = "errorMessageKey"
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc      codec.BinaryMarshaler // The wire codec for binary encoding/decoding.
+	cdc codec.BinaryMarshaler // The wire codec for binary encoding/decoding.
 
 	accountKeeper types.AccountKeeper
-	bankKeeper   types.BankKeeper
-	oracleKeeper types.OracleKeeper
-	storeKey     sdk.StoreKey
+	bankKeeper    types.BankKeeper
+	oracleKeeper  types.OracleKeeper
+	storeKey      sdk.StoreKey
 }
 
 // NewKeeper creates new instances of the oracle Keeper
 func NewKeeper(cdc codec.BinaryMarshaler, bankKeeper types.BankKeeper, oracleKeeper types.OracleKeeper, accountKeeper types.AccountKeeper, storeKey sdk.StoreKey) Keeper {
 	return Keeper{
-		cdc:          cdc,
+		cdc:           cdc,
 		accountKeeper: accountKeeper,
-		bankKeeper:   bankKeeper,
-		oracleKeeper: oracleKeeper,
-		storeKey:     storeKey,
+		bankKeeper:    bankKeeper,
+		oracleKeeper:  oracleKeeper,
+		storeKey:      storeKey,
 	}
 }
 
@@ -70,13 +71,13 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 
 	var coins sdk.Coins
 	switch oracleClaim.ClaimType {
-	case types.LockText:
+	case types.ClaimType_CLAIM_TYPE_LOCK:
 		symbol := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, oracleClaim.Symbol)
 		k.AddPeggyToken(ctx, symbol)
 
 		coins = sdk.Coins{sdk.NewCoin(symbol, oracleClaim.Amount)}
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
-	case types.BurnText:
+	case types.ClaimType_CLAIM_TYPE_BURN:
 		coins = sdk.Coins{sdk.NewCoin(oracleClaim.Symbol, oracleClaim.Amount)}
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	default:

@@ -64,7 +64,7 @@ func CreateTestLogEthereumEvent(t *testing.T) types.EthereumEvent {
 		ID:                    testProphecyID32,
 		From:                  testEthereumSender,
 		To:                    testCosmosRecipient, Token: testTokenAddress,
-		Symbol: TestSymbol, Value: testAmount, Nonce: testNonce, ClaimType: ethbridge.LockText}
+		Symbol: TestSymbol, Value: testAmount, Nonce: testNonce, ClaimType: ethbridge.ClaimType_CLAIM_TYPE_LOCK}
 }
 
 // CreateTestProphecyClaimEvent creates a sample ProphecyClaimEvent for testing purposes

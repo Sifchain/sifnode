@@ -38,7 +38,7 @@ func TestBasicMsgs(t *testing.T) {
 	require.True(t, strings.Contains(err.Error(), "unrecognized ethbridge message type: "))
 
 	//Normal Creation
-	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.LockText)
+	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err = handler(ctx, normalCreateMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -66,7 +66,7 @@ func TestBasicMsgs(t *testing.T) {
 			case statusString:
 				require.Equal(t, value, oracle.StatusTextToString[oracle.PendingStatusText])
 			case "claim_type":
-				require.Equal(t, value, types.ClaimTypeToString[types.LockText])
+				require.Equal(t, value, types.ClaimTypeToString[types.ClaimType_CLAIM_TYPE_LOCK])
 			case "cosmos_sender":
 				require.Equal(t, value, valAddress.String())
 			default:
@@ -76,7 +76,7 @@ func TestBasicMsgs(t *testing.T) {
 	}
 
 	//Bad Creation
-	badCreateMsg := types.CreateTestEthMsg(t, valAddress, types.LockText)
+	badCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
 	badCreateMsg.Nonce = -1
 	err = badCreateMsg.ValidateBasic()
 	require.Error(t, err)
@@ -87,7 +87,7 @@ func TestDuplicateMsgs(t *testing.T) {
 
 	valAddress := validatorAddresses[0]
 
-	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.LockText)
+	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err := handler(ctx, normalCreateMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -116,13 +116,13 @@ func TestMintSuccess(t *testing.T) {
 	valAddressVal3Pow1 := validatorAddresses[2]
 
 	//Initial message
-	normalCreateMsg := types.CreateTestEthMsg(t, valAddressVal1Pow2, types.LockText)
+	normalCreateMsg := types.CreateTestEthMsg(t, valAddressVal1Pow2, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err := handler(ctx, normalCreateMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
 	//Message from second validator succeeds and mints new tokens
-	normalCreateMsg = types.CreateTestEthMsg(t, valAddressVal2Pow7, types.LockText)
+	normalCreateMsg = types.CreateTestEthMsg(t, valAddressVal2Pow7, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err = handler(ctx, normalCreateMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -141,7 +141,7 @@ func TestMintSuccess(t *testing.T) {
 	}
 
 	//Additional message from third validator fails and does not mint
-	normalCreateMsg = types.CreateTestEthMsg(t, valAddressVal3Pow1, types.LockText)
+	normalCreateMsg = types.CreateTestEthMsg(t, valAddressVal3Pow1, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err = handler(ctx, normalCreateMsg)
 	require.Error(t, err)
 	require.Nil(t, res)
@@ -164,15 +164,15 @@ func TestNoMintFail(t *testing.T) {
 
 	ethClaim1 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
-		valAddressVal1Pow3, testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.LockText)
+		valAddressVal1Pow3, testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
 	ethMsg1 := NewMsgCreateEthBridgeClaim(ethClaim1)
 	ethClaim2 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
-		valAddressVal2Pow4, testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.LockText)
+		valAddressVal2Pow4, testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
 	ethMsg2 := NewMsgCreateEthBridgeClaim(ethClaim2)
 	ethClaim3 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
-		valAddressVal3Pow3, testEthereumAddress, types.AltTestCoinsAmountSDKInt, types.AltTestCoinsSymbol, types.LockText)
+		valAddressVal3Pow3, testEthereumAddress, types.AltTestCoinsAmountSDKInt, types.AltTestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
 	ethMsg3 := NewMsgCreateEthBridgeClaim(ethClaim3)
 
 	//Initial message
@@ -224,7 +224,7 @@ func TestLockFail(t *testing.T) {
 	ctx, _, _, _, _, _, handler := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 
 	//Initial message
-	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.LockText)
+	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.ClaimType_CLAIM_TYPE_LOCK)
 	res, err := handler(ctx, normalCreateMsg)
 
 	require.Error(t, err)
@@ -237,7 +237,7 @@ func TestBurnFail(t *testing.T) {
 	ctx, _, _, _, _, _, handler := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 
 	//Initial message
-	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.BurnText)
+	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.ClaimType_CLAIM_TYPE_BURN)
 	res, err := handler(ctx, normalCreateMsg)
 
 	require.Error(t, err)
@@ -263,7 +263,7 @@ func TestBurnEthSuccess(t *testing.T) {
 
 	ethClaim1 := types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
-		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.LockText)
+		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
 	ethMsg1 := NewMsgCreateEthBridgeClaim(ethClaim1)
 
 	// Initial message succeeds and mints eth
@@ -282,7 +282,7 @@ func TestBurnEthSuccess(t *testing.T) {
 
 	ethClaim1 = types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
-		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.LockText)
+		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
 	ethMsg1 = NewMsgCreateEthBridgeClaim(ethClaim1)
 
 	// Initial message succeeds and mints eth
@@ -362,7 +362,7 @@ func TestBurnEthSuccess(t *testing.T) {
 
 	ethClaim1 = types.CreateTestEthClaim(
 		t, testEthereumAddress, testTokenContractAddress,
-		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.LockText)
+		valAddressVal1Pow5, testEthereumAddress, coinsToMintAmount, coinsToMintSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
 	ethMsg1 = NewMsgCreateEthBridgeClaim(ethClaim1)
 
 	// Initial message succeeds and mints eth
