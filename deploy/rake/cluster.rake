@@ -578,31 +578,33 @@ future_block_height=$(python pyscript.py)
 echo ${future_block_height}
 
 if [ "${env_check}" == "prod" ]; then
-    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
-        --from #{args[:from]} \
-        --deposit #{args[:deposit]} \
-        --upgrade-height ${future_block_height} \
-        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
-        --title release-#{args[:release_version]} \
-        --description release-#{args[:release_version]} \
-        --node tcp://rpc.sifchain.finance:80 \
-        --keyring-backend file \
-        -y \
-        --chain-id #{args[:chainnet]} \
-        --gas-prices "#{args[:rowan]}"
+    #yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+    #    --from #{args[:from]} \
+    #    --deposit #{args[:deposit]} \
+    #    --upgrade-height ${future_block_height} \
+    #    --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
+    #    --title release-#{args[:release_version]} \
+    #    --description release-#{args[:release_version]} \
+    #    --node tcp://rpc.sifchain.finance:80 \
+    #    --keyring-backend file \
+    #    -y \
+    #    --chain-id #{args[:chainnet]} \
+    #    --gas-prices "#{args[:rowan]}"
+    echo "gov proposal prod"
 else
-    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
-        --from #{args[:from]} \
-        --deposit #{args[:deposit]} \
-        --upgrade-height ${future_block_height} \
-        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
-        --title release-#{args[:release_version]} \
-        --description release-#{args[:release_version]} \
-        --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
-        --keyring-backend file \
-        -y \
-        --chain-id #{args[:chainnet]} \
-        --gas-prices "#{args[:rowan]}"
+    #yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+    #    --from #{args[:from]} \
+    #    --deposit #{args[:deposit]} \
+    #    --upgrade-height ${future_block_height} \
+    #    --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
+    #    --title release-#{args[:release_version]} \
+    #    --description release-#{args[:release_version]} \
+    #    --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
+    #    --keyring-backend file \
+    #    -y \
+    #    --chain-id #{args[:chainnet]} \
+    #    --gas-prices "#{args[:rowan]}"
+    echo "gov proposal dev"
 fi
       }
       system(cluster_automation) or exit 1
@@ -731,23 +733,22 @@ env_check="#{args[:env]}"
 if [ "${env_check}" == "prod" ]; then
     vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
     echo "vote_id $vote_id"
-    echo 'go run ./cmd/sifnodecli tx gov vote 2 yes \
+    go run ./cmd/sifnodecli tx gov vote 2 yes \
         --from #{args[:from]} \
         --keyring-backend file \
         --chain-id #{args[:chainnet]}  \
         --node tcp://rpc.sifchain.finance:80 \
         --gas-prices "#{args[:rowan]}" -y
-        '
+
 else
     vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
     echo "vote_id $vote_id"
-    echo 'go run ./cmd/sifnodecli tx gov vote 2 yes \
+    go run ./cmd/sifnodecli tx gov vote 2 yes \
         --from #{args[:from]} \
         --keyring-backend file \
         --chain-id #{args[:chainnet]}  \
         --node tcp://rpc-#{args[:env]}.sifchain.finance:80 \
         --gas-prices "#{args[:rowan]}" -y
-        '
 fi
       }
       system(cluster_automation) or exit 1
