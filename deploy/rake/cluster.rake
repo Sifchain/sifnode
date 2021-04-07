@@ -449,7 +449,7 @@ vars_return = json.loads(output.decode('utf-8'))["data"]["data"]
 print("Opening temporary secrets file for writing secrets")
 temp_secrets = open("tmp_secrets", "w")
 for var in vars_return:
-    temp_secrets.write('export {key}='{values}' \\n'.format(key=var, values=vars_return[var]))
+    temp_secrets.write('export {key}=\\'{values}\\' \\n'.format(key=var, values=vars_return[var]))
 temp_secrets.close()
 print("secrets written.")
 EOF
