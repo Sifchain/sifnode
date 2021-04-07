@@ -591,7 +591,7 @@ echo '
         --chain-id #{args[:chainnet]} \
         --gas-prices "#{args[:rowan]}"
 '
-    go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
         --from #{args[:from]} \
         --deposit #{args[:deposit]} \
         --upgrade-height ${future_block_height} \
@@ -616,7 +616,7 @@ echo '
         --chain-id #{args[:chainnet]} \
         --gas-prices "#{args[:rowan]}"
 '
-    go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
         --from #{args[:from]} \
         --deposit #{args[:deposit]} \
         --upgrade-height ${future_block_height} \
