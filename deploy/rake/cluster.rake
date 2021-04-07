@@ -581,7 +581,7 @@ if [ "${env_check}" == "prod" ]; then
     go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
         --from #{args[:from]} \
         --deposit #{args[:deposit]} \
-        --upgrade-height '${future_block_height}' \
+        --upgrade-height ${future_block_height} \
         --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
         --title release-#{args[:release_version]} \
         --description release-#{args[:release_version]} \
@@ -593,7 +593,7 @@ else
     go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
         --from #{args[:from]} \
         --deposit #{args[:deposit]} \
-        --upgrade-height '${future_block_height}' \
+        --upgrade-height ${future_block_height} \
         --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
         --title release-#{args[:release_version]} \
         --description release-#{args[:release_version]} \
