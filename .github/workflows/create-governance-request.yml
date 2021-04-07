@@ -149,5 +149,5 @@ jobs:
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
           rm -rf ./tmp_secrets
-          rm -rf ./tmp_keyring
+          rm -rf ./tmp_keyring_rendered
 
