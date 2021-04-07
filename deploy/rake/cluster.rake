@@ -738,6 +738,7 @@ git config --global user.email "gzukel@sifchain.finance"
 git config --global user.name "Grant Zukel"
 pass git init
 gpg --list-keys
+gpg --list-secret-keys
 pass init
 
 echo -e "${keyring_pem}" > tmp_keyring
