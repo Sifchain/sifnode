@@ -19,6 +19,7 @@ class SifnodedRunner(env_utilities.SifchainCmdInput):
     network_config_file: str
     seed_ip_address: str
     bin_prefix: str
+    go_build_config_path: str
 
 
 # sequence
@@ -38,6 +39,9 @@ def sifgen_network_create_cmd(args: SifnodedRunner, fields) -> str:
 
 
 def build_chain(args: SifnodedRunner):
+    # we don't care about the actual go build configuration,
+    # we just need to know the build happened
+    env_utilities.read_config_file(args.go_build_config_path)
     fields = set_fields(args)
     network_create_cmd = sifgen_network_create_cmd(args, fields)
     ox = subprocess.run(

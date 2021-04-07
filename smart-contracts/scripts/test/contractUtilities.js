@@ -23,6 +23,14 @@ function buildProvider(context, argv, logging) {
                 provider = new Web3(netConnectionString);
             }
             break;
+        case "dynamic":
+            let websocketAddr = getRequiredEnvironmentVariable("ETHEREUM_WEBSOCKET_ADDRESS")
+            const privateKey = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
+            provider = new HDWalletProvider(
+                privateKey,
+                websocketAddr
+            );
+            break;
         case "http://localhost:7545":
             provider = new Web3.providers.HttpProvider(argv.ethereum_network);
             break;

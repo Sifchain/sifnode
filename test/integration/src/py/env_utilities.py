@@ -32,7 +32,7 @@ def base_docker_compose(name: str):
         "../..:/sifnode",
         "./configs:/configs",
         "./logs:/logs",
-        "${GOBIN}:/gobin"
+        "./gobin:/gobin"
     ]
     image = "sifdocker:latest"
     return {
@@ -82,7 +82,7 @@ def startup_complete(args, config):
     Path(args.configoutputfile).write_text(json.dumps({
         "input": args.__dict__,
         "config": config
-    }))
+    }, indent=2))
 
 
 def docker_compose_command(component: str) -> str:

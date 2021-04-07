@@ -10,6 +10,7 @@ import env_ebrelayer
 import env_ganache
 import env_geth
 import env_sifnoded
+import env_golang
 import env_smartcontractrunner
 import env_utilities
 from env_geth import start_geth
@@ -42,6 +43,14 @@ geth_input = env_geth.GethInput(
     http_port=7445,
     ethereum_addresses=4,
     configoutputfile=config_file_full_path(gethname)
+)
+
+golang_input = env_golang.GolangInput(
+    basedir=basedir,
+    logfile=log_file_full_path(gethname),
+    configoutputfile=config_file_full_path(env_golang.golangname),
+    go_bin="/gobin",
+    base_dir="/sifnode"
 )
 
 ganache_ws_port = 7545
@@ -85,7 +94,8 @@ sifnoded_input = env_sifnoded.SifnodedRunner(
     chain_id="localnet",
     network_config_file="/tmp/netconfig.yml",
     seed_ip_address="10.10.1.1",
-    n_validators=n_validators
+    n_validators=n_validators,
+    go_build_config_path=config_file_full_path(env_golang.golangname)
 )
 
 geth_docker = env_geth.geth_docker_compose(geth_input)
@@ -104,7 +114,12 @@ shared_docker = {
                 ]
             },
         }
-    }
+    },
+    # "volumes": {
+    #     "gobin": {
+    #         "name": "gobin"
+    #     }
+    # }
 }
 
 component = sys.argv[1] if len(sys.argv) > 1 else "dockerconfig"
@@ -127,6 +142,8 @@ elif component == "ganache":
     env_ganache.start_ganache(ganache_input).wait()
 elif component == "smartcontractrunner":
     time.sleep(100000000)
+elif component == "golang_build":
+    env_golang.golang_build(golang_input)
 elif component == "deploy_contracts":
     time.sleep(10)
     print(f"cffis: {smartcontractrunner_input.ethereum_config_file}")
