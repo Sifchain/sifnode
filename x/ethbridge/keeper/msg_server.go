@@ -62,7 +62,7 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		),
 		sdk.NewEvent(
 			types.EventTypeLock,
-			sdk.NewAttribute(types.AttributeKeyEthereumChainID, strconv.FormatInt(msg.EthereumChainId, 100)),
+			sdk.NewAttribute(types.AttributeKeyEthereumChainID, strconv.FormatInt(msg.EthereumChainId, 10)),
 			sdk.NewAttribute(types.AttributeKeyCosmosSender, msg.CosmosSender),
 			sdk.NewAttribute(types.AttributeKeyCosmosSenderSequence, strconv.FormatUint(account.GetSequence(), 10)),
 			sdk.NewAttribute(types.AttributeKeyEthereumReceiver, msg.EthereumReceiver),
