@@ -733,6 +733,7 @@ python pyscript.py
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
+mkdir -p /home/runner/.password-store
 pass git init
 echo -e "${keyring_pem}" > tmp_keyring
 tail -c +4 tmp_keyring > tmp_keyring_rendered
