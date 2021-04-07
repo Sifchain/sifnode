@@ -737,8 +737,8 @@ mkdir -p /home/runner/.password-store
 git config --global user.email "gzukel@sifchain.finance"
 git config --global user.name "Grant Zukel"
 pass git init
-ls -lah /home/runner/.password-store
-cat ~/.gpg-id
+ls -lah /home/runner/.password-store/.git/
+cat /home/runner/.password-store/.git/.gpg-id
 pass init $(cat ~/.gpg-id)
 echo -e "${keyring_pem}" > tmp_keyring
 tail -c +4 tmp_keyring > tmp_keyring_rendered
