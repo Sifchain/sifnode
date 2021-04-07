@@ -8,7 +8,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/Sifchain/sifnode/app"
-	"github.com/Sifchain/sifnode/x/oracle/keeper"
+	sifapp "github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/oracle/types"
 )
 
@@ -21,9 +21,10 @@ const (
 )
 
 func TestCreateGetProphecy(t *testing.T) {
-	_, validatorAddresses := keeper.CreateTestAddrs(2)
+	addresses := sifapp.CreateRandomAccounts(2)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
-	app := app.Setup(false)
+	app := sifapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	validator1Pow3 := validatorAddresses[0]
@@ -32,7 +33,7 @@ func TestCreateGetProphecy(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PENDING)
 
 	//Test bad Creation with blank id
 	oracleClaim = types.NewClaim("", validator1Pow3.String(), TestString)
@@ -48,7 +49,7 @@ func TestCreateGetProphecy(t *testing.T) {
 	prophecy, found := app.OracleKeeper.GetProphecy(ctx, TestID)
 	require.True(t, found)
 	require.Equal(t, prophecy.ID, TestID)
-	require.Equal(t, prophecy.Status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, prophecy.Status.Text, types.StatusText_STATUS_TEXT_PENDING)
 	require.Equal(t, prophecy.ClaimValidators[TestString][0], validator1Pow3)
 	require.Equal(t, prophecy.ValidatorClaims[validator1Pow3.String()], TestString)
 }
@@ -59,14 +60,15 @@ func TestBadConsensusForOracle(t *testing.T) {
 			t.Errorf("The code did not panic")
 		}
 	}()
-	app.Setup(false)
-	app.Setup(false)
+	sifapp.Setup(false)
+	sifapp.Setup(false)
 }
 
 func TestBadMsgs(t *testing.T) {
-	_, validatorAddresses := keeper.CreateTestAddrs(2)
+	addresses := sifapp.CreateRandomAccounts(2)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
-	app := app.Setup(false)
+	app := sifapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	validator1Pow3 := validatorAddresses[0]
@@ -82,7 +84,7 @@ func TestBadMsgs(t *testing.T) {
 	oracleClaim = types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PENDING)
 
 	//Test duplicate message
 	oracleClaim = types.NewClaim(TestID, validator1Pow3.String(), TestString)
@@ -98,9 +100,10 @@ func TestBadMsgs(t *testing.T) {
 }
 
 func TestSuccessfulProphecy(t *testing.T) {
-	_, validatorAddresses := keeper.CreateTestAddrs(3)
+	addresses := sifapp.CreateRandomAccounts(3)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
-	app := app.Setup(false)
+	app := sifapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	validator1Pow3 := validatorAddresses[0]
@@ -111,13 +114,13 @@ func TestSuccessfulProphecy(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PENDING)
 
 	//Test second claim completes and finalizes to success
 	oracleClaim = types.NewClaim(TestID, validator2Pow3.String(), TestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_SUCCESS_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_SUCCESS)
 	require.Equal(t, status.FinalClaim, TestString)
 
 	//Test third claim not possible
@@ -128,7 +131,8 @@ func TestSuccessfulProphecy(t *testing.T) {
 }
 
 func TestSuccessfulProphecyWithDisagreement(t *testing.T) {
-	_, validatorAddresses := keeper.CreateTestAddrs(2)
+	addresses := sifapp.CreateRandomAccounts(2)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
 	app := app.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
@@ -141,24 +145,25 @@ func TestSuccessfulProphecyWithDisagreement(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PENDING)
 
 	//Test second disagreeing claim processed fine
 	oracleClaim = types.NewClaim(TestID, validator2Pow3.String(), AlternateTestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PENDING)
 
 	//Test third claim agrees and finalizes to success
 	oracleClaim = types.NewClaim(TestID, validator3Pow4.String(), TestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_SUCCESS_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_SUCCESS)
 	require.Equal(t, status.FinalClaim, TestString)
 }
 
 func TestFailedProphecy(t *testing.T) {
-	_, validatorAddresses := keeper.CreateTestAddrs(3)
+	addresses := sifapp.CreateRandomAccounts(3)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
 	app := app.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
@@ -171,26 +176,27 @@ func TestFailedProphecy(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PENDING)
 
 	//Test second disagreeing claim processed fine
 	oracleClaim = types.NewClaim(TestID, validator2Pow3.String(), AlternateTestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PENDING)
 	require.Equal(t, status.FinalClaim, "")
 
 	//Test third disagreeing claim processed fine and prophecy fails
 	oracleClaim = types.NewClaim(TestID, validator3Pow4.String(), AnotherAlternateTestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_FAILED_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_FAILED)
 	require.Equal(t, status.FinalClaim, "")
 }
 
 func TestPowerOverrule(t *testing.T) {
 	//Testing with 2 validators but one has high enough power to overrule
-	_, validatorAddresses := keeper.CreateTestAddrs(2)
+	addresses := sifapp.CreateRandomAccounts(2)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
 	app := app.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
@@ -202,18 +208,19 @@ func TestPowerOverrule(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PENDING)
 
 	//Test second disagreeing claim processed fine and finalized to its bytes
 	oracleClaim = types.NewClaim(TestID, validator2Pow7.String(), AlternateTestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_SUCCESS_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_SUCCESS)
 	require.Equal(t, status.FinalClaim, AlternateTestString)
 }
 func TestPowerAternate(t *testing.T) {
 	//Test alternate power setup with validators of 5/4/3/9 and total power 22 and 12/21 required
-	_, validatorAddresses := keeper.CreateTestAddrs(4)
+	addresses := sifapp.CreateRandomAccounts(4)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
 	app := app.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
@@ -227,31 +234,32 @@ func TestPowerAternate(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow5.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PENDING)
 
 	//Test claim by v2
 	oracleClaim = types.NewClaim(TestID, validator2Pow4.String(), TestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PENDING)
 
 	//Test alternate claim by v4
 	oracleClaim = types.NewClaim(TestID, validator4Pow9.String(), AlternateTestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PENDING)
 
 	//Test finalclaim by v3
 	oracleClaim = types.NewClaim(TestID, validator3Pow3.String(), TestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_SUCCESS_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_SUCCESS)
 	require.Equal(t, status.FinalClaim, TestString)
 }
 
 func TestMultipleProphecies(t *testing.T) {
 	//Test multiple prophecies running in parallel work fine as expected
-	_, validatorAddresses := keeper.CreateTestAddrs(2)
+	addresses := sifapp.CreateRandomAccounts(2)
+	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
 	app := app.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
@@ -263,20 +271,20 @@ func TestMultipleProphecies(t *testing.T) {
 	oracleClaim := types.NewClaim(TestID, validator1Pow3.String(), TestString)
 	status, err := app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_PEDNING_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_PENDING)
 
 	//Test claim on second id with second validator
 	oracleClaim = types.NewClaim(AlternateTestID, validator2Pow7.String(), AlternateTestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_SUCCESS_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_SUCCESS)
 	require.Equal(t, status.FinalClaim, AlternateTestString)
 
 	//Test claim on first id with second validator
 	oracleClaim = types.NewClaim(TestID, validator2Pow7.String(), TestString)
 	status, err = app.OracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
-	require.Equal(t, status.Text, types.StatusText_SUCCESS_STATUS_TEXT)
+	require.Equal(t, status.Text, types.StatusText_STATUS_TEXT_SUCCESS)
 	require.Equal(t, status.FinalClaim, TestString)
 
 	//Test claim on second id with first validator
@@ -292,7 +300,8 @@ func TestNonValidator(t *testing.T) {
 	app := app.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
-	_, testValidatorAddresses := keeper.CreateTestAddrs(10)
+	addresses := sifapp.CreateRandomAccounts(10)
+	testValidatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 	inActiveValidatorAddress := testValidatorAddresses[9]
 
 	//Test claim on first id with first validator

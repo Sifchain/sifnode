@@ -10,5 +10,4 @@ type GenesisState map[string]json.RawMessage
 
 func NewDefaultGenesisState(cdc codec.JSONMarshaler) GenesisState {
 	return ModuleBasics.DefaultGenesis(cdc)
-
 }

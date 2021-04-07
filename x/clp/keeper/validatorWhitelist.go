@@ -1,14 +1,21 @@
 package keeper
 
 import (
-	"github.com/Sifchain/sifnode/x/clp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
 func (k Keeper) SetClpWhiteList(ctx sdk.Context, validatorList []sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
-	store.Set(key, k.cdc.MustMarshalBinaryBare(validatorList))
+	valList := make([]string, len(validatorList))
+	for i, entry := range validatorList {
+		valList[i] = entry.String()
+	}
+
+	store.Set(key, k.cdc.MustMarshalBinaryBare(&stakingtypes.ValAddresses{Addresses: valList}))
 }
 
 func (k Keeper) ExistsClpWhiteList(ctx sdk.Context) bool {
@@ -16,12 +23,24 @@ func (k Keeper) ExistsClpWhiteList(ctx sdk.Context) bool {
 	return k.Exists(ctx, key)
 }
 
-func (k Keeper) GetClpWhiteList(ctx sdk.Context) (valList []sdk.AccAddress) {
+func (k Keeper) GetClpWhiteList(ctx sdk.Context) []sdk.AccAddress {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
 	bz := store.Get(key)
-	k.cdc.MustUnmarshalBinaryBare(bz, &valList)
-	return
+
+	valList := []string{}
+	k.cdc.MustUnmarshalBinaryBare(bz, &stakingtypes.ValAddresses{Addresses: valList})
+
+	vl := make([]sdk.AccAddress, len(valList))
+	for i, entry := range valList {
+		addr, err := sdk.AccAddressFromBech32(entry)
+		if err != nil {
+			panic(err)
+		}
+		vl[i] = addr
+	}
+
+	return vl
 }
 
 func (k Keeper) ValidateAddress(ctx sdk.Context, address sdk.AccAddress) bool {

@@ -39,7 +39,7 @@ enum StatusText {
   // Default value
   STATUS_TEXT_UNSPECIFIED = 0;
   // Pending status
-  STATUS_TEXT_PEDNING = 1;
+  STATUS_TEXT_PENDING = 1;
   // Success status
   STATUS_TEXT_SUCCESS = 2;
   // Failed status

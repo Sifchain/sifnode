@@ -3,24 +3,19 @@ package test
 import (
 	"bytes"
 	"fmt"
-	"github.com/Sifchain/sifnode/simapp"
-	"github.com/Sifchain/sifnode/x/clp/keeper"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
-	"github.com/Sifchain/sifnode/x/clp/types"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
 
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/supply"
-	abci "github.com/tendermint/tendermint/abci/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	sifapp "github.com/Sifchain/sifnode/app"
+	"github.com/Sifchain/sifnode/x/clp/keeper"
+	"github.com/Sifchain/sifnode/x/clp/types"
 )
 
 // Constants for test scripts only .
@@ -31,28 +26,15 @@ const (
 	AddressKey3 = "A58856F0FD53BF058B4909A21AEC019107BA9"
 )
 
-// create a codec used only for testing
-func MakeTestCodec() *codec.Codec {
-	var cdc = codec.New()
-	bank.RegisterCodec(cdc)
-	staking.RegisterCodec(cdc)
-	auth.RegisterCodec(cdc)
-	supply.RegisterCodec(cdc)
-	sdk.RegisterCodec(cdc)
-	codec.RegisterCrypto(cdc)
-
-	types.RegisterCodec(cdc) // distr
-	return cdc
-}
-
 //// returns context and app with params set on account keeper
-func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
-	app := simapp.Setup(isCheckTx)
-	ctx := app.BaseApp.NewContext(isCheckTx, abci.Header{})
+func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
+	app := sifapp.Setup(isCheckTx)
+	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
+
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000)
-	app.SupplyKeeper.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
-	_ = simapp.AddTestAddrs(app, ctx, 6, initTokens)
+	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
+
 	return app, ctx
 }
 
@@ -61,7 +43,7 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, keeper.Keeper) {
 	return ctx, app.ClpKeeper
 }
 
-func GetSimApp(isCheckTx bool) (sdk.Context, *simapp.SimApp) {
+func GetSimApp(isCheckTx bool) (sdk.Context, *sifapp.SifchainApp) {
 	app, ctx := CreateTestApp(isCheckTx)
 	return ctx, app
 
@@ -75,7 +57,7 @@ func GenerateRandomPool(numberOfPools int) []types.Pool {
 		// initialize global pseudo random generator
 		externalToken := tokens[rand.Intn(len(tokens))]
 		externalAsset := types.NewAsset(trimFirstRune(externalToken))
-		pool, err := types.NewPool(externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
+		pool, err := types.NewPool(&externalAsset, sdk.NewUint(1000), sdk.NewUint(100), sdk.NewUint(1))
 		if err != nil {
 			fmt.Println("Error Generating new pool :", err)
 		}
@@ -88,13 +70,20 @@ func GenerateRandomLP(numberOfLp int) []types.LiquidityProvider {
 	var lpList []types.LiquidityProvider
 	tokens := []string{"ceth", "cbtc", "ceos", "cbch", "cbnb", "cusdt", "cada", "ctrx"}
 	rand.Seed(time.Now().Unix())
+
 	for i := 0; i < numberOfLp; i++ {
 		externalToken := tokens[rand.Intn(len(tokens))]
 		asset := types.NewAsset(trimFirstRune(externalToken))
-		lpAddess, _ := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
-		lp := types.NewLiquidityProvider(asset, sdk.NewUint(1), lpAddess)
+
+		lpAddess, err := sdk.AccAddressFromBech32("sif1azpar20ck9lpys89r8x7zc8yu0qzgvtp48ng5v")
+		if err != nil {
+			panic(err)
+		}
+
+		lp := types.NewLiquidityProvider(&asset, sdk.NewUint(1), lpAddess)
 		lpList = append(lpList, lp)
 	}
+
 	return lpList
 }
 
