@@ -131,6 +131,8 @@ jobs:
         run: |
           set +x
           echo "Create Governance Release Request"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
           rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
 
       - name: Create Governance Vote 2
@@ -138,6 +140,8 @@ jobs:
         run: |
           set +x
           echo "Create Governance Release Request"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
           rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
 
       - name: Clean Temp Files and Secrets
