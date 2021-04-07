@@ -682,7 +682,7 @@ data_payload = {
 }
 print("sending payload")
 print(data_payload)
-headers = {"Accept": "application/vnd.github.v3+json","Authorization":"#{args[:token]}"}
+headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
 releases_request = requests.post('https://api.github.com/repos/Sifchain/sifnode/releases',data=json.dumps(data_payload),headers=headers,verify=False)
 release_request_json = releases_request.json()
 if releases_request.status_code == 201 or releases_request.status_code == 200:
