@@ -89,6 +89,17 @@ jobs:
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File...."
           rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
 
+      - name: Get Keys
+        shell: bash
+        run: |
+          set +x
+          echo "Generate Keyring."
+          #export PATH=$PATH:$GOPATH/bin
+          #make CHAINNET=${chainnet} IMAGE_TAG=${env}-${release_version} BINARY=sifnodecli build-image
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
+          rake "cluster:release:generate_keyring[${moniker}, ${mnemonic}]"
+
       - name: Create Release
         shell: bash
         run: |
@@ -113,7 +124,6 @@ jobs:
           echo "Create Governance Release Request with deposit ammount $deposit"
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
-          rake "cluster:release:generate_keyring[${moniker}, ${mnemonic}]"
           rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}, ${checksum}]"
 
       - name: Create Governance Vote 1
