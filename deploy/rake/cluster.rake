@@ -733,8 +733,8 @@ python pyscript.py
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
-go run ./cmd/sifnodecli keys delete #{args[:moniker]} --keyring-backend test --trace
-yes "#{args[:mnemonic]}" | go run ./cmd/sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test --trace
+echo -e "${keyring_pem}" > tmp_keyring
+yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} ./tmp_keyring
       }
       system(cluster_automation) or exit 1
     end
