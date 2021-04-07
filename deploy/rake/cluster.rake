@@ -578,7 +578,7 @@ future_block_height=$(python pyscript.py)
 echo ${future_block_height}
 
 if [ "${env_check}" == "prod" ]; then
-    echo 'go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+    go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
         --from #{args[:from]} \
         --deposit #{args[:deposit]} \
         --upgrade-height '${future_block_height}' \
@@ -589,9 +589,8 @@ if [ "${env_check}" == "prod" ]; then
         --keyring-backend test \
         --chain-id #{args[:chainnet]} \
         --gas-prices "#{args[:rowan]}"
-        '
 else
-    echo 'go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+    go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
         --from #{args[:from]} \
         --deposit #{args[:deposit]} \
         --upgrade-height '${future_block_height}' \
@@ -602,7 +601,6 @@ else
         --keyring-backend test \
         --chain-id #{args[:chainnet]} \
         --gas-prices "#{args[:rowan]}"
-        '
 fi
       }
       system(cluster_automation) or exit 1
@@ -688,6 +686,9 @@ release_request_json = releases_request.json()
 if releases_request.status_code == 201 or releases_request.status_code == 200:
     print("Release Published")
     print(str(release_request_json))
+elif releases_request.status_code == 422:
+    print(releases_request.content, releases_request.status_code)
+    print("Release already exists.")
 else:
     print(releases_request.content, releases_request.status_code)
     sys.exit(2)
