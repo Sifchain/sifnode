@@ -532,9 +532,6 @@ func (sub EthereumSub) StartGasOracle() {
 					errorMessageKey, err.Error())
 
 			} else {
-				// multiple with 150% to guarantee the speedy unpeg
-				gasPrice = gasPrice.Mul(gasPrice, big.NewInt(3))
-				gasPrice = gasPrice.Div(gasPrice, big.NewInt(2))
 				err := txs.SendGasPrice(sub.Cdc, sub.ValidatorName, sub.TempPassword, sub.ValidatorAddress,
 					sdk.NewIntFromBigInt(newHead.Number), sdk.NewIntFromBigInt(gasPrice), sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
 
