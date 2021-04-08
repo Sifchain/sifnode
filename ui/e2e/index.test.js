@@ -444,8 +444,6 @@ describe("connect to page", () => {
         await dexPage.innerText('[data-handle="total-pool-share"]'),
       ),
     ).toBe("Your pool share: 0.0602 %");
-
-    await dexPage.pause();
   });
 });
 
