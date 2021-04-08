@@ -583,7 +583,7 @@ for release in release_request_json:
         for asset in release["assets"]:
             if ".sha256" in asset["name"]:
                 get_sha = requests.get(asset["browser_download_url"], headers=headers, verify=False)
-                retrieved_sha = get_sha.text.replace("\n", "")
+                retrieved_sha = get_sha.text.replace("\\n", "")
                 print(retrieved_sha)
                 break
 if not retrieved_sha:
