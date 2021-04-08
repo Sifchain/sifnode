@@ -202,9 +202,13 @@ export default defineComponent({
         if (fromSymbol.value !== "rowan") {
           fromAmount.value = accountBalance.toFixed(18);
         } else {
-          fromAmount.value = accountBalance
-            .subtract(new Fraction("1", "2"))
-            .toFixed(18);
+          if (accountBalance.greaterThan(new Fraction("1", "2"))) {
+            fromAmount.value = accountBalance
+              .subtract(new Fraction("1", "2"))
+              .toFixed(18);
+          } else {
+            // TODO alert the user
+          }
         }
       },
       nextStepAllowed: computed(() => {
