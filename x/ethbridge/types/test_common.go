@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cosmos/cosmos-sdk/codec"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-	"github.com/Sifchain/sifnode/x/oracle"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -79,11 +79,11 @@ func CreateTestQueryEthProphecyResponse(cdc codec.BinaryMarshaler, t *testing.T,
 	ethBridgeClaim := CreateTestEthClaim(t, testContractAddress, testTokenAddress, validatorAddress,
 		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
 	oracleClaim, _ := CreateOracleClaimFromEthClaim(cdc, ethBridgeClaim)
-	ethBridgeClaims := []EthBridgeClaim{ethBridgeClaim}
+	ethBridgeClaims := []*EthBridgeClaim{ethBridgeClaim}
 
 	return NewQueryEthProphecyResponse(
 		oracleClaim.Id,
-		oracletypes.NewStatus(oracle.PendingStatusText, ""),
+		oracletypes.NewStatus(oracletypes.StatusText_STATUS_TEXT_PENDING, ""),
 		ethBridgeClaims,
 	)
 }
