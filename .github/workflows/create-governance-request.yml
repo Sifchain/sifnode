@@ -14,7 +14,7 @@ on:
       release_version:
         description: release version.
         required: true
-        default: devnet-20210407042000
+        default: 20210407042000
       deposit:
         description: the ammount of rowan.
         required: true
