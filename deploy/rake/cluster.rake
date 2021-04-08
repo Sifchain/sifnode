@@ -619,6 +619,9 @@ else
         --chain-id #{args[:chainnet]} \
         --gas-prices "#{args[:rowan]}"
 fi
+
+echo "Sleeping for 1 minute to allow for proposal to finalize"
+sleep 60
       }
       system(cluster_automation) or exit 1
     end
