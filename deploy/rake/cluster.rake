@@ -668,7 +668,7 @@ while True:
                     print(workflow_run["head_branch"])
                     print("Found pipeline, lets see if its done running yet.")
                     print(workflow_run)
-                    if workflow_run["status"] == "completed":
+                    if workflow_run["status"] == "completed" and workflow_run["conclusion"] == "success":
                         print("Workflow run has completed good to create governance and begin release chain.")
                         sys.exit(0)
                     else:
