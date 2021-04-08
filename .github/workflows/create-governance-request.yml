@@ -19,10 +19,6 @@ on:
         description: the ammount of rowan.
         required: true
         default: 10000000000000000000rowan
-      checksum:
-        description: the checksum for the release
-        required: true
-        default: sha256:1fa3cce1785083c1bf99e8312ae3b5f830261be965dbfff19e147e82b1f0004d
       upgrade_hours:
         description: how long until the upgrade takes palce
         required: true
@@ -46,7 +42,6 @@ jobs:
       env: "${{ github.event.inputs.environment }}"
       app_env: "${{ github.event.inputs.environment }}"
       block_time: "${{ github.event.inputs.block_time }}"
-      checksum: "${{ github.event.inputs.checksum }}"
       deposit: "${{ github.event.inputs.deposit }}"
       from: "${{ github.event.inputs.environment }}-us-1"
       release_version: "${{ github.event.inputs.release_version }}"
@@ -124,7 +119,7 @@ jobs:
           echo "Create Governance Release Request with deposit ammount $deposit"
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
-          rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}, ${checksum}]"
+          rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}]"
 
       - name: Create Governance Vote 1
         shell: bash

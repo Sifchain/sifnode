@@ -546,7 +546,7 @@ fi
   desc "Create Release Governance Request."
   namespace :release do
     desc "Create Release Governance Request."
-    task :generate_governance_release_request, [:upgrade_hours, :block_time, :deposit, :rowan, :chainnet, :release_version, :from, :app_env, :checksum] do |t, args|
+    task :generate_governance_release_request, [:upgrade_hours, :block_time, :deposit, :rowan, :chainnet, :release_version, :from, :app_env] do |t, args|
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
@@ -577,12 +577,41 @@ EOF
 future_block_height=$(python pyscript.py)
 echo ${future_block_height}
 
+
+cat << EOF > pyscript.py
+#!/usr/bin/env python
+import requests
+import urllib3
+import sys
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+releases_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/releases', verify=False)
+release_request_json = releases_request.json()
+find_realease="#{args[:app_env]}-#{args[:release_version]}"
+retrieved_sha = ""
+for release in release_request_json:
+    release_name = release["name"]
+    release_body = release["body"]
+    published_at = release["published_at"]
+    if find_realease in release["tag_name"]:
+        for asset in release["assets"]:
+            if ".sha256" in asset["name"]:
+                get_sha = requests.get(asset["browser_download_url"], verify=False)
+                retrieved_sha = get_sha.text.replace("\n", "")
+                print(retrieved_sha)
+                break
+if not retrieved_sha:
+    print("retrieved sha not found ",retrieved_sha)
+    sys.exit(2)
+EOF
+retrieved_sha=$(python pyscript.py)
+echo ${retrieved_sha}
+
 if [ "${env_check}" == "prod" ]; then
     yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
         --from #{args[:from]} \
         --deposit #{args[:deposit]} \
         --upgrade-height ${future_block_height} \
-        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
+        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='${retrieved_sha}'"}}' \
         --title release-#{args[:release_version]} \
         --description release-#{args[:release_version]} \
         --node tcp://rpc.sifchain.finance:80 \
@@ -595,7 +624,7 @@ else
         --from #{args[:from]} \
         --deposit #{args[:deposit]} \
         --upgrade-height ${future_block_height} \
-        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}"}}' \
+        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='${retrieved_sha}'"}}' \
         --title release-#{args[:release_version]} \
         --description release-#{args[:release_version]} \
         --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
@@ -603,7 +632,6 @@ else
         -y \
         --chain-id #{args[:chainnet]} \
         --gas-prices "#{args[:rowan]}"
-
 fi
       }
       system(cluster_automation) or exit 1
@@ -629,7 +657,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 workflow_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows', verify=False)
 workflow_request_json = workflow_request.json()
-find_realease="#{args[:release]}"
+find_realease="#{args[:app_env]}-#{args[:release_version]}"
 max_loop = 50
 loop_count = 0
 while True:
