@@ -664,6 +664,7 @@ while True:
             for workflow_run in workflow_info_request_json["workflow_runs"]:
                 if find_realease in workflow_run["head_branch"]:
                     print("Found pipeline, lets see if its done running yet.")
+                    print(workflow_run)
                     if workflow_run["status"] == "completed":
                         print("Workflow run has completed good to create governance and begin release chain.")
                         sys.exit(0)
