@@ -120,7 +120,7 @@ describe("connect to page", () => {
     );
   });
 
-  it.skip("pegs", async () => {
+  it("pegs", async () => {
     // XXX: This currently reuses the page from a previous test - this might be ok for now but we will probably want to provide that state some other way
     // assumes wallets connected
     const mmEthBalance = await getEthBalance(MM_CONFIG.options.address);
@@ -152,7 +152,7 @@ describe("connect to page", () => {
     expect(rowAmount.trim()).toBe(expected);
   });
 
-  it.skip("swaps", async () => {
+  it("swaps", async () => {
     // Navigate to swap page
     await dexPage.goto(DEX_TARGET, {
       waitUntil: "domcontentloaded",
@@ -280,7 +280,7 @@ describe("connect to page", () => {
     );
   });
 
-  it("addsLiquidity", async () => {
+  it("adds liquidity", async () => {
     // Click pool page
     await dexPage.click('[data-handle="pool-page-button"]');
 
@@ -310,22 +310,152 @@ describe("connect to page", () => {
     await dexPage.click('[data-handle="token-a-max-button"]');
 
     expect(await getInputValue(dexPage, '[data-handle="token-a-input"]')).toBe(
-      "100.000000000000000000",
+      "101.000000000000000000",
     );
 
     await dexPage.click('[data-handle="token-b-input"]');
 
     expect(await getInputValue(dexPage, '[data-handle="token-b-input"]')).toBe(
-      "120481.92771",
+      "121686.74699",
     );
 
-    expect(await dexPage.innterText('[data-handle="actions-go"]')).toBe(
-      "Insufficient Funds",
+    expect(
+      (await dexPage.innerText('[data-handle="actions-go"]')).toUpperCase(),
+    ).toBe("INSUFFICIENT FUNDS");
+
+    await dexPage.click('[data-handle="token-a-max-button"]');
+    await dexPage.fill('[data-handle="token-a-input"]', "5");
+
+    expect(await getInputValue(dexPage, '[data-handle="token-b-input"]')).toBe(
+      "6024.09639",
     );
+
+    expect(
+      (await dexPage.innerText('[data-handle="actions-go"]')).toUpperCase(),
+    ).toBe("ADD LIQUIDITY");
+
+    expect(
+      await dexPage.innerText('[data-handle="pool-prices-forward-number"]'),
+    ).toBe("0.000830");
+    expect(
+      await dexPage.innerText('[data-handle="pool-prices-forward-symbols"]'),
+    ).toBe("cETH per ROWAN");
+
+    expect(
+      await dexPage.innerText('[data-handle="pool-prices-backward-number"]'),
+    ).toBe("1204.819277");
+    expect(
+      await dexPage.innerText('[data-handle="pool-prices-backward-symbols"]'),
+    ).toBe("ROWAN per cETH");
+
+    expect(
+      await dexPage.innerText('[data-handle="pool-estimates-forwards-number"]'),
+    ).toBe("0.000830");
+    expect(
+      await dexPage.innerText(
+        '[data-handle="pool-estimates-forwards-symbols"]',
+      ),
+    ).toBe("CETH per ROWAN"); // <-- this is a bug TODO: cETH
+
+    expect(
+      await dexPage.innerText(
+        '[data-handle="pool-estimates-backwards-number"]',
+      ),
+    ).toBe("1204.819277");
+    expect(
+      await dexPage.innerText(
+        '[data-handle="pool-estimates-backwards-symbols"]',
+      ),
+    ).toBe("ROWAN per CETH"); // <-- this is a bug TODO: cETH
+    expect(
+      await dexPage.innerText('[data-handle="pool-estimates-share-number"]'),
+    ).toBe("0.06%");
+
+    await dexPage.click('[data-handle="actions-go"]');
+
+    expect(
+      await dexPage.innerText('[data-handle="confirmation-modal-title"]'),
+    ).toBe("You are depositing");
+
+    expect(
+      prepareRowText(
+        await dexPage.innerText(
+          '[data-handle="token-a-details-panel-pool-row"]',
+        ),
+      ),
+    ).toBe("cETH Deposited 5");
+
+    expect(
+      prepareRowText(
+        await dexPage.innerText(
+          '[data-handle="token-b-details-panel-pool-row"]',
+        ),
+      ),
+    ).toBe("ROWAN Deposited 6024.09639");
+
+    expect(
+      prepareRowText(
+        await dexPage.innerText('[data-handle="real-b-per-a-row"]'),
+      ),
+    ).toBe("Rates 1 cETH = 1204.81927711 ROWAN");
+    expect(
+      prepareRowText(
+        await dexPage.innerText('[data-handle="real-a-per-b-row"]'),
+      ),
+    ).toBe("1 ROWAN = 0.00083000 cETH");
+    expect(
+      prepareRowText(
+        await dexPage.innerText('[data-handle="real-share-of-pool"]'),
+      ),
+    ).toBe("Share of Pool: 0.06%"); // TODO: remove ":"
+
+    await dexPage.click("button:has-text('CONFIRM SUPPLY')");
+
+    expect(
+      await dexPage.innerText('[data-handle="confirmation-wait-message"]'),
+    ).toBe("Supplying 5 ceth and 6024.09639 rowan");
+
+    // Confirm transaction popup
+
+    const keplrPage = await getExtensionPage(browserContext, KEPLR_CONFIG.id);
+
+    await keplrPage.waitForLoadState();
+    await keplrPage.click("text=Approve");
+    await keplrPage.waitForLoadState();
+    await dexPage.waitForTimeout(10000); // wait for blockchain to update...
+
+    await dexPage.click("text=×");
+    await dexPage.click('[data-handle="ceth-rowan-pool-list-item"]');
+
+    expect(
+      prepareRowText(
+        await dexPage.innerText('[data-handle="total-pooled-ceth"]'),
+      ),
+    ).toBe("Total Pooled cETH: 8305.00000");
+
+    expect(
+      prepareRowText(
+        await dexPage.innerText('[data-handle="total-pooled-rowan"]'),
+      ),
+    ).toBe("Total Pooled ROWAN: 10006024.09639");
+
+    expect(
+      prepareRowText(
+        await dexPage.innerText('[data-handle="total-pool-share"]'),
+      ),
+    ).toBe("Your pool share: 0.0602 %");
 
     await dexPage.pause();
   });
 });
+
+function prepareRowText(row) {
+  return row
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .join(" ");
+}
 
 async function extractExtensionPackages() {
   await extractFile(`downloads/${KEPLR_CONFIG.id}.zip`, "./extensions");

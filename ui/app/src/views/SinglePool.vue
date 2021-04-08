@@ -146,7 +146,10 @@ export default defineComponent({
       </div>
       <div class="section">
         <div class="details">
-          <div class="row">
+          <div
+            class="row"
+            :data-handle="'total-pooled-' + fromSymbol.toLowerCase()"
+          >
             <span>Total Pooled {{ fromSymbol }}:</span>
             <span class="value">
               <span>{{ fromTotalValue }}</span>
@@ -164,7 +167,10 @@ export default defineComponent({
               ></div>
             </span>
           </div>
-          <div class="row">
+          <div
+            class="row"
+            :data-handle="'total-pooled-' + toSymbol.toLowerCase()"
+          >
             <span>Total Pooled {{ toSymbol.toUpperCase() }}:</span>
             <span class="value">
               <span>{{ toTotalValue }}</span>
@@ -178,7 +184,7 @@ export default defineComponent({
               <div class="placeholder" :style="toBackgroundStyle" v-else></div>
             </span>
           </div>
-          <div class="row">
+          <div class="row" data-handle="total-pool-share">
             <span>Your pool share:</span>
             <span class="value">{{ myPoolShare }}</span>
           </div>
