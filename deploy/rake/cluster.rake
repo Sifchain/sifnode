@@ -651,7 +651,7 @@ workflow_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/a
 workflow_request_json = workflow_request.json()
 find_realease="#{args[:app_env]}-#{args[:release]}"
 print("Looking for release", find_realease)
-max_loop = 10
+max_loop = 20
 loop_count = 0
 while True:
     print("You are on attempt", loop_count, " of ", max_loop)
