@@ -14,15 +14,11 @@ on:
       release_version:
         description: release version.
         required: true
-        default: 20210401000000
+        default: 20210407042000
       deposit:
         description: the ammount of rowan.
         required: true
         default: 10000000000000000000rowan
-      checksum:
-        description: the checksum for the release
-        required: true
-        default: sha256:1fa3cce1785083c1bf99e8312ae3b5f830261be965dbfff19e147e82b1f0004d
       upgrade_hours:
         description: how long until the upgrade takes palce
         required: true
@@ -35,8 +31,6 @@ on:
         description: aws region
         required: true
         default: us-east-1
-
-
 jobs:
   create_governance_request_us:
     name: create_governance_request_us
@@ -48,12 +42,12 @@ jobs:
       env: "${{ github.event.inputs.environment }}"
       app_env: "${{ github.event.inputs.environment }}"
       block_time: "${{ github.event.inputs.block_time }}"
-      checksum: "${{ github.event.inputs.checksum }}"
-      deposit: "${{ github.event.deposit }}"
+      deposit: "${{ github.event.inputs.deposit }}"
       from: "${{ github.event.inputs.environment }}-us-1"
       release_version: "${{ github.event.inputs.release_version }}"
       chainnet: "sifchain-${{ github.event.inputs.environment }}"
       rowan: "0.5rowan"
+      region: "us"
       upgrade_hours: "${{ github.event.inputs.upgrade_hours }}"
 
     strategy:
@@ -66,6 +60,11 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15
 
       - name: Install Rake
         run: gem install rake
@@ -89,32 +88,60 @@ jobs:
         shell: bash
         run: |
           set +x
-          echo "Get Keys for Environment. Coming Soon..."
-          make CHAINNET=${chainnet} IMAGE_TAG=${env}-${release_version} BINARY=sifnodecli build-image
-          ls -lah ./
-          #rake "cluster:release:generate_vote[${moniker}, \"${mnemonic}\"]"
+          echo "Generate Keyring."
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
+          rake "cluster:release:generate_keyring[${moniker}, ${mnemonic}]"
 
+      - name: Create Release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +x
+          echo "Get github token from vault and create release"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
+          echo "Wait for release with version to finish building befor continuing."
+          rake "cluster:release:create_release[${release_version}, ${env}]"
+
+      - name: Wait For Release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +x
+          echo "Wait for release with version to finish building befor continuing."
+          rake "cluster:release:wait_for_release[${env},${release_version}]"
 
       - name: Create Governance Release Request
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set +x
-          echo "Create Governance Release Request"
-          rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}, ${checksum}]"
+          echo "Create Governance Release Request with deposit ammount $deposit"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
+          #rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}]"
 
       - name: Create Governance Vote 1
         shell: bash
         run: |
           set +x
           echo "Create Governance Release Request"
-          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}]"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
+          #rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
 
       - name: Create Governance Vote 2
         shell: bash
         run: |
           set +x
           echo "Create Governance Release Request"
-          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}]"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
+          #rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
 
       - name: Clean Temp Files and Secrets
         shell: bash
@@ -124,4 +151,6 @@ jobs:
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
+          rm -rf ./tmp_secrets
+          rm -rf ./tmp_keyring_rendered
 
