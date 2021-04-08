@@ -227,6 +227,7 @@ type AppState struct {
 	Slashing     Slashing     `json:"slashing"`
 	Distribution Distribution `json:"distribution"`
 	Faucet       Faucet       `json:"faucet"`
+	Dispensation interface{}  `json:"dispensation"`
 }
 
 type Evidence struct {

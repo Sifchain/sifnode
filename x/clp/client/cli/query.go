@@ -49,7 +49,6 @@ $ %s pool ETH ROWAN`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
 			ticker := args[0]
 			params := types.NewQueryReqGetPool(ticker)
 			bz, err := cliCtx.Codec.MarshalJSON(params)
@@ -75,7 +74,6 @@ func GetCmdPools(queryRoute string, cdc *codec.Codec) *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
 			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryPools)
 			res, _, err := cliCtx.QueryWithData(route, nil)
 			if err != nil {
