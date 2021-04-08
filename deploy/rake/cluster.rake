@@ -583,7 +583,7 @@ for release in release_request_json:
         for asset in release["assets"]:
             if ".sha256" in asset["name"]:
                 get_sha = requests.get(asset["browser_download_url"], headers=headers, verify=False)
-                retrieved_sha = get_sha.text.replace("\n", "")
+                retrieved_sha = get_sha.text.replace("\\n", "")
                 print(retrieved_sha)
                 break
 if not retrieved_sha:
@@ -668,7 +668,7 @@ while True:
                     print(workflow_run["head_branch"])
                     print("Found pipeline, lets see if its done running yet.")
                     print(workflow_run)
-                    if workflow_run["status"] == "completed":
+                    if workflow_run["status"] == "completed" and workflow_run["conclusion"] == "success":
                         print("Workflow run has completed good to create governance and begin release chain.")
                         sys.exit(0)
                     else:
@@ -687,7 +687,7 @@ python pyscript.py
   desc "Create Github Release."
   namespace :release do
     desc "Create Github Release."
-    task :create_release, [:release, :env] do |t, args|
+    task :create_release, [:release, :env, :token] do |t, args|
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
@@ -711,7 +711,7 @@ data_payload = {
 }
 print("sending payload")
 print(data_payload)
-headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token " + os.environ["GITHUB_TOKEN"]}
+headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
 releases_request = requests.post('https://api.github.com/repos/Sifchain/sifnode/releases',data=json.dumps(data_payload),headers=headers,verify=False)
 release_request_json = releases_request.json()
 if releases_request.status_code == 201 or releases_request.status_code == 200:

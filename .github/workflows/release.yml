@@ -4,9 +4,6 @@ on:
   release:
     types:
       - published
-      - prereleased
-      - created
-  repository_dispatch:
 
 jobs:
   release:
