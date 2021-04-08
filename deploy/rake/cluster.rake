@@ -760,7 +760,7 @@ env_check="#{args[:env]}"
 if [ "${env_check}" == "prod" ]; then
     vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
     echo "vote_id $vote_id"
-    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote 2 yes \
+    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
         --from #{args[:from]} \
         --keyring-backend file \
         --chain-id #{args[:chainnet]}  \
@@ -770,7 +770,7 @@ if [ "${env_check}" == "prod" ]; then
 else
     vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
     echo "vote_id $vote_id"
-    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote 2 yes \
+    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
         --from #{args[:from]} \
         --keyring-backend file \
         --chain-id #{args[:chainnet]}  \
