@@ -122,7 +122,7 @@ jobs:
           echo "Create Governance Release Request with deposit ammount $deposit"
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
-          rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}]"
+          #rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}]"
 
       - name: Create Governance Vote 1
         shell: bash
@@ -131,7 +131,7 @@ jobs:
           echo "Create Governance Release Request"
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
-          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
+          #rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
 
       - name: Create Governance Vote 2
         shell: bash
@@ -140,7 +140,7 @@ jobs:
           echo "Create Governance Release Request"
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
-          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
+          #rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
 
       - name: Clean Temp Files and Secrets
         shell: bash
