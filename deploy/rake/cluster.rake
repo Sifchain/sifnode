@@ -650,6 +650,7 @@ headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token " +
 workflow_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows', headers=headers, verify=False)
 workflow_request_json = workflow_request.json()
 find_realease="#{args[:app_env]}-#{args[:release_version]}"
+print("Looking for release", find_realease)
 max_loop = 10
 loop_count = 0
 while True:
@@ -663,6 +664,8 @@ while True:
             workflow_info_request_json = workflow_info_request.json()
             for workflow_run in workflow_info_request_json["workflow_runs"]:
                 if find_realease in workflow_run["head_branch"]:
+                    print(find_realease)
+                    print(workflow_run["head_branch"])
                     print("Found pipeline, lets see if its done running yet.")
                     print(workflow_run)
                     if workflow_run["status"] == "completed":
