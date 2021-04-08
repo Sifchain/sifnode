@@ -41,10 +41,6 @@ func RunReplayEthereumCmd(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// if !relayer.IsWebsocketURL(args[0]) {
-	// 	return errors.Errorf("invalid [web3-provider]: %s", args[0])
-	// }
-
 	tendermintNode := args[0]
 	web3Provider := args[1]
 
@@ -239,10 +235,6 @@ func RunStartGasOracleCmd(cmd *cobra.Command, args []string) error {
 			return errors.Wrapf(err, "invalid RPC URL: %v", rpcURL)
 		}
 	}
-
-	// if !relayer.IsWebsocketURL(args[0]) {
-	// 	return errors.Errorf("invalid [web3-provider]: %s", args[0])
-	// }
 
 	tendermintNode := args[0]
 	web3Provider := args[1]
