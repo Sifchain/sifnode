@@ -568,6 +568,7 @@ cat << EOF > pyscript.py
 import requests
 import urllib3
 import sys
+import os
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token " + os.environ["GITHUB_TOKEN"]}
 releases_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/releases', headers=headers, verify=False)
@@ -696,6 +697,7 @@ import time
 import sys
 import urllib3
 import json
+import os
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 data_payload = {
     "tag_name": "#{args[:env]}-#{args[:release]}",
