@@ -5,6 +5,7 @@ on:
     types:
       - published
       - prereleased
+      - created
 
 jobs:
   release:
