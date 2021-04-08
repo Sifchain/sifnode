@@ -42,7 +42,7 @@ func (AppModuleBasic) Name() string {
 
 // RegisterCodec registers the ethbridge module's types for the given codec.
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	types.RegisterCodec(cdc)
+	types.RegisterLegacyAminoCodec(cdc)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the ethbridge
@@ -132,7 +132,7 @@ func (am AppModule) Route() sdk.Route {
 
 // NewHandler returns an sdk.Handler for the ethbridge module.
 func (am AppModule) NewHandler() sdk.Handler {
-	return NewHandler(am.AccountKeeper, am.BridgeKeeper, am.Codec)
+	return NewHandler(am.BridgeKeeper)
 }
 
 // QuerierRoute returns the ethbridge module's querier route name.

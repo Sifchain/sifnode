@@ -7,32 +7,27 @@ import (
 )
 
 // ClaimType is an enum used to represent the type of claim
-type ClaimType int
-
-const (
-	LockText = ClaimType(iota)
-	BurnText
-)
+// type ClaimType int
 
 var ClaimTypeToString = [...]string{"lock", "burn"}
 
 func StringToClaimType(text string) (ClaimType, error) {
 	switch text {
 	case "lock":
-		return LockText, nil
+		return ClaimType_CLAIM_TYPE_LOCK, nil
 	case "burn":
-		return BurnText, nil
+		return ClaimType_CLAIM_TYPE_BURN, nil
 	default:
 		return 0, ErrInvalidClaimType
 	}
 }
 
-func (text ClaimType) String() string {
-	return ClaimTypeToString[text]
+func SerializeClaimType(claimType ClaimType) string {
+	return ClaimTypeToString[claimType]
 }
 
-func (text ClaimType) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("\"%v\"", text.String())), nil
+func (ct ClaimType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("\"%v\"", SerializeClaimType(ct))), nil
 }
 
 func (text *ClaimType) UnmarshalJSON(b []byte) error {

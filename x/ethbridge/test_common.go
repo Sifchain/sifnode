@@ -30,7 +30,7 @@ func CreateTestHandler(
 	bridgeKeeper := NewKeeper(cdc, supplyKeeper, oracleKeeper, keyEthBridge)
 	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestAddress)
 	bridgeKeeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
-	handler := NewHandler(accountKeeper, bridgeKeeper, cdc)
+	handler := NewHandler(bridgeKeeper)
 
 	return ctx, oracleKeeper, bankKeeper, supplyKeeper, accountKeeper, validatorAddresses, handler
 }

@@ -30,7 +30,7 @@ var (
 	CreateOracleClaimFromEthClaim     = types.CreateOracleClaimFromEthClaim
 	CreateEthClaimFromOracleString    = types.CreateEthClaimFromOracleString
 	CreateOracleClaimFromOracleString = types.CreateOracleClaimFromOracleString
-	RegisterCodec                     = types.RegisterCodec
+	RegisterCodec                     = types.RegisterLegacyAminoCodec
 	ErrInvalidEthNonce                = types.ErrInvalidEthNonce
 	ErrInvalidEthAddress              = types.ErrInvalidEthAddress
 	ErrJSONMarshalling                = types.ErrJSONMarshalling
@@ -57,6 +57,6 @@ type (
 	MsgUpdateWhiteListValidator  = types.MsgUpdateWhiteListValidator
 	MsgUpdateCethReceiverAccount = types.MsgUpdateCethReceiverAccount
 	MsgRescueCeth                = types.MsgRescueCeth
-	QueryEthProphecyParams       = types.QueryEthProphecyParams
+	QueryEthProphecyParams       = types.QueryEthProphecyRequest
 	QueryEthProphecyResponse     = types.QueryEthProphecyResponse
 )

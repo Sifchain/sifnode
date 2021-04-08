@@ -447,9 +447,9 @@ func (sub EthereumSub) logToEvent(clientChainID *big.Int, contractAddress common
 	event.BridgeContractAddress = contractAddress
 	event.EthereumChainID = clientChainID
 	if eventName == types.LogBurn.String() {
-		event.ClaimType = ethbridge.BurnText
+		event.ClaimType = ethbridge.ClaimType_CLAIM_TYPE_BURN
 	} else {
-		event.ClaimType = ethbridge.LockText
+		event.ClaimType = ethbridge.ClaimType_CLAIM_TYPE_LOCK
 	}
 	sub.SugaredLogger.Infow("receive an event.",
 		"event", event.String())

@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"bytes"
-
+	protobuftypes "github.com/gogo/protobuf/types"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -10,7 +10,7 @@ import (
 func (k Keeper) SetCethReceiverAccount(ctx sdk.Context, cethReceiverAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.CethReceiverAccountPrefix
-	store.Set(key, k.cdc.MustMarshalBinaryBare(cethReceiverAccount))
+	store.Set(key, k.cdc.MustMarshalBinaryBare(&protobuftypes.StringValue{Value: cethReceiverAccount.String()}))
 }
 
 func (k Keeper) IsCethReceiverAccount(ctx sdk.Context, cethReceiverAccount sdk.AccAddress) bool {
@@ -30,6 +30,6 @@ func (k Keeper) GetCethReceiverAccount(ctx sdk.Context) (cethReceiverAccount sdk
 	if len(bz) == 0 {
 		return nil
 	}
-	k.cdc.MustUnmarshalBinaryBare(bz, &cethReceiverAccount)
+	k.cdc.MustUnmarshalBinaryBare(bz, &protobuftypes.StringValue{Value: cethReceiverAccount.String()})
 	return
 }

@@ -28,6 +28,10 @@ message EthBridgeClaim {
   ClaimType claim_type = 10;
 }
 
+message PeggyTokens {
+  repeated string tokens = 1;
+}
+
 enum ClaimType {
   CLAIM_TYPE_UNSPECIFIED = 0;
   CLAIM_TYPE_LOCK        = 1;

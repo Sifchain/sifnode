@@ -1,8 +1,6 @@
 package types
 
 import (
-	"encoding/json"
-	"fmt"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
@@ -33,14 +31,4 @@ func NewQueryEthProphecyResponse(id string, status oracletypes.Status, claims []
 		Status: &status,
 		Claims: claims,
 	}
-}
-
-// String implements fmt.Stringer interface
-func (response QueryEthProphecyResponse) String() string {
-	prophecyJSON, err := json.Marshal(response)
-	if err != nil {
-		return fmt.Sprintf("Error marshalling json: %v", err)
-	}
-
-	return string(prophecyJSON)
 }

@@ -15,14 +15,14 @@ func (k Keeper) AddPeggyToken(ctx sdk.Context, token string) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.PeggyTokenKeyPrefix
 
-	tokens = append(tokens, token)
-	store.Set(key, k.cdc.MustMarshalBinaryBare(tokens))
+	tokens.Tokens = append(tokens.Tokens, token)
+	store.Set(key, k.cdc.MustMarshalBinaryBare(&tokens))
 }
 
 // ExistsPeggyToken return if token in peggy token list
 func (k Keeper) ExistsPeggyToken(ctx sdk.Context, token string) bool {
 	tokens := k.GetPeggyToken(ctx)
-	for _, value := range tokens {
+	for _, value := range tokens.Tokens {
 		if value == token {
 			return true
 		}
@@ -31,13 +31,17 @@ func (k Keeper) ExistsPeggyToken(ctx sdk.Context, token string) bool {
 }
 
 // GetPeggyToken get peggy token list
-func (k Keeper) GetPeggyToken(ctx sdk.Context) (tokens []string) {
+func (k Keeper) GetPeggyToken(ctx sdk.Context) (types.PeggyTokens) {
 	if !k.Exists(ctx, types.PeggyTokenKeyPrefix) {
-		return make([]string, 0)
+		return types.PeggyTokens{}
 	}
+
 	store := ctx.KVStore(k.storeKey)
 	key := types.PeggyTokenKeyPrefix
 	bz := store.Get(key)
+
+	tokens := types.PeggyTokens{}
 	k.cdc.MustUnmarshalBinaryBare(bz, &tokens)
-	return
+
+	return tokens
 }

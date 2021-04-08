@@ -17,24 +17,14 @@ const (
 	lockGasCost = 160000000000 * 338000
 )
 
-// MsgLock defines a message for locking coins and triggering a related event
-type MsgLock struct {
-	CosmosSender     sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`
-	Amount           sdk.Int         `json:"amount" yaml:"amount"`
-	Symbol           string          `json:"symbol" yaml:"symbol"`
-	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
-	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
-	CethAmount       sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
-}
-
 // NewMsgLock is a constructor function for MsgLock
 func NewMsgLock(
-	ethereumChainID int, cosmosSender sdk.AccAddress,
+	ethereumChainID int64, cosmosSender sdk.AccAddress,
 	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgLock {
 	return MsgLock{
-		EthereumChainID:  ethereumChainID,
-		CosmosSender:     cosmosSender,
-		EthereumReceiver: ethereumReceiver,
+		EthereumChainId:  ethereumChainID,
+		CosmosSender:     cosmosSender.String(),
+		EthereumReceiver: ethereumReceiver.String(),
 		Amount:           amount,
 		Symbol:           symbol,
 		CethAmount:       cethAmount,
@@ -49,19 +39,19 @@ func (msg MsgLock) Type() string { return "lock" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgLock) ValidateBasic() error {
-	if strconv.Itoa(msg.EthereumChainID) == "" {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainID)
+	if strconv.FormatInt(msg.EthereumChainId, 10) == "" {
+		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainId)
 	}
 
-	if msg.CosmosSender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if msg.EthereumReceiver.String() == "" {
+	if msg.EthereumReceiver == "" {
 		return ErrInvalidEthAddress
 	}
 
-	if !gethCommon.IsHexAddress(msg.EthereumReceiver.String()) {
+	if !gethCommon.IsHexAddress(msg.EthereumReceiver) {
 		return ErrInvalidEthAddress
 	}
 
@@ -82,32 +72,27 @@ func (msg MsgLock) ValidateBasic() error {
 
 // GetSignBytes encodes the message for signing
 func (msg MsgLock) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
 }
 
 // GetSigners defines whose signature is required
 func (msg MsgLock) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.CosmosSender}
-}
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		// TODO panic?
+	}
 
-// MsgBurn defines a message for burning coins and triggering a related event
-type MsgBurn struct {
-	CosmosSender     sdk.AccAddress  `json:"cosmos_sender" yaml:"cosmos_sender"`
-	Amount           sdk.Int         `json:"amount" yaml:"amount"`
-	Symbol           string          `json:"symbol" yaml:"symbol"`
-	EthereumChainID  int             `json:"ethereum_chain_id" yaml:"ethereum_chain_id"`
-	EthereumReceiver EthereumAddress `json:"ethereum_receiver" yaml:"ethereum_receiver"`
-	CethAmount       sdk.Int         `json:"ceth_amount" yaml:"ceth_amount"`
+	return []sdk.AccAddress{cosmosSender}
 }
 
 // NewMsgBurn is a constructor function for MsgBurn
 func NewMsgBurn(
-	ethereumChainID int, cosmosSender sdk.AccAddress,
+	ethereumChainID int64, cosmosSender sdk.AccAddress,
 	ethereumReceiver EthereumAddress, amount sdk.Int, symbol string, cethAmount sdk.Int) MsgBurn {
 	return MsgBurn{
-		EthereumChainID:  ethereumChainID,
-		CosmosSender:     cosmosSender,
-		EthereumReceiver: ethereumReceiver,
+		EthereumChainId:  ethereumChainID,
+		CosmosSender:     cosmosSender.String(),
+		EthereumReceiver: ethereumReceiver.String(),
 		Amount:           amount,
 		Symbol:           symbol,
 		CethAmount:       cethAmount,
@@ -122,29 +107,36 @@ func (msg MsgBurn) Type() string { return "burn" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgBurn) ValidateBasic() error {
-	if strconv.Itoa(msg.EthereumChainID) == "" {
-		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainID)
+	if msg.EthereumChainId == 0 {
+		return sdkerrors.Wrapf(ErrInvalidEthereumChainID, "%d", msg.EthereumChainId)
 	}
-	if msg.CosmosSender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
-	if msg.EthereumReceiver.String() == "" {
+
+	if msg.EthereumReceiver == "" {
 		return ErrInvalidEthAddress
 	}
-	if !gethCommon.IsHexAddress(msg.EthereumReceiver.String()) {
+
+	if !gethCommon.IsHexAddress(msg.EthereumReceiver) {
 		return ErrInvalidEthAddress
 	}
+
 	if msg.Amount.LTE(sdk.NewInt(0)) {
 		return ErrInvalidAmount
 	}
+
 	prefixLength := len(PeggedCoinPrefix)
 	if len(msg.Symbol) <= prefixLength+1 {
 		return ErrInvalidBurnSymbol
 	}
+
 	symbolPrefix := msg.Symbol[:prefixLength]
 	if symbolPrefix != PeggedCoinPrefix {
 		return ErrInvalidBurnSymbol
 	}
+
 	// check that enough ceth is sent to cover the gas cost.
 	if msg.CethAmount.LT(sdk.NewInt(burnGasCost)) {
 		return ErrCethAmount
@@ -154,25 +146,30 @@ func (msg MsgBurn) ValidateBasic() error {
 	if len(symbolSuffix) == 0 {
 		return ErrInvalidBurnSymbol
 	}
+
 	return nil
 }
 
 // GetSignBytes encodes the message for signing
 func (msg MsgBurn) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&msg))
 }
 
 // GetSigners defines whose signature is required
 func (msg MsgBurn) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.CosmosSender}
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		// TODO panic?
+	}
+
+	return []sdk.AccAddress{cosmosSender}
 }
 
-// MsgCreateEthBridgeClaim defines a message for creating claims on the ethereum bridge
-type MsgCreateEthBridgeClaim EthBridgeClaim
-
 // NewMsgCreateEthBridgeClaim is a constructor function for MsgCreateBridgeClaim
-func NewMsgCreateEthBridgeClaim(ethBridgeClaim EthBridgeClaim) MsgCreateEthBridgeClaim {
-	return MsgCreateEthBridgeClaim(ethBridgeClaim)
+func NewMsgCreateEthBridgeClaim(ethBridgeClaim *EthBridgeClaim) MsgCreateEthBridgeClaim {
+	return MsgCreateEthBridgeClaim{
+		EthBridgeClaim: ethBridgeClaim,
+	}
 }
 
 // Route should return the name of the module
@@ -183,31 +180,35 @@ func (msg MsgCreateEthBridgeClaim) Type() string { return "create_bridge_claim" 
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgCreateEthBridgeClaim) ValidateBasic() error {
-	if msg.CosmosReceiver.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosReceiver.String())
+	if msg.EthBridgeClaim.CosmosReceiver == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.EthBridgeClaim.CosmosReceiver)
 	}
 
-	if msg.ValidatorAddress.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.ValidatorAddress.String())
+	if msg.EthBridgeClaim.ValidatorAddress == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.EthBridgeClaim.ValidatorAddress)
 	}
 
-	if msg.Nonce < 0 {
+	if msg.EthBridgeClaim.Nonce < 0 {
 		return ErrInvalidEthNonce
 	}
 
-	if !gethCommon.IsHexAddress(msg.EthereumSender.String()) {
+	if !gethCommon.IsHexAddress(msg.EthBridgeClaim.EthereumSender) {
 		return ErrInvalidEthAddress
 	}
-	if !gethCommon.IsHexAddress(msg.BridgeContractAddress.String()) {
+
+	if !gethCommon.IsHexAddress(msg.EthBridgeClaim.BridgeContractAddress) {
 		return ErrInvalidEthAddress
 	}
-	if !gethCommon.IsHexAddress(msg.TokenContractAddress.String()) {
+
+	if !gethCommon.IsHexAddress(msg.EthBridgeClaim.TokenContractAddress) {
 		return ErrInvalidEthAddress
 	}
-	if strings.ToLower(msg.Symbol) == "eth" &&
-		msg.TokenContractAddress != NewEthereumAddress("0x0000000000000000000000000000000000000000") {
+
+	if strings.ToLower(msg.EthBridgeClaim.Symbol) == "eth" &&
+		NewEthereumAddress(msg.EthBridgeClaim.TokenContractAddress) != NewEthereumAddress("0x0000000000000000000000000000000000000000") {
 		return ErrInvalidEthSymbol
 	}
+
 	return nil
 }
 
@@ -222,21 +223,20 @@ func (msg MsgCreateEthBridgeClaim) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
-}
+	validatorAddress, err := sdk.AccAddressFromBech32(msg.EthBridgeClaim.ValidatorAddress)
+	if err != nil {
+		// TODO panic?
+	}
 
-// MsgUpdateCethReceiverAccount add or remove validator from whitelist
-type MsgUpdateCethReceiverAccount struct {
-	CosmosSender        sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
-	CethReceiverAccount sdk.AccAddress `json:"ceth_receiver_account" yaml:"ceth_receiver_account"`
+	return []sdk.AccAddress{validatorAddress}
 }
 
 // NewMsgUpdateCethReceiverAccount is a constructor function for MsgUpdateCethReceiverAccount
 func NewMsgUpdateCethReceiverAccount(cosmosSender sdk.AccAddress,
 	cethReceiverAccount sdk.AccAddress) MsgUpdateCethReceiverAccount {
 	return MsgUpdateCethReceiverAccount{
-		CosmosSender:        cosmosSender,
-		CethReceiverAccount: cethReceiverAccount,
+		CosmosSender:        cosmosSender.String(),
+		CethReceiverAccount: cethReceiverAccount.String(),
 	}
 }
 
@@ -248,12 +248,12 @@ func (msg MsgUpdateCethReceiverAccount) Type() string { return "update_ceth_rece
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgUpdateCethReceiverAccount) ValidateBasic() error {
-	if msg.CosmosSender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if msg.CethReceiverAccount.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CethReceiverAccount.String())
+	if msg.CethReceiverAccount == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CethReceiverAccount)
 	}
 	return nil
 }
@@ -270,21 +270,19 @@ func (msg MsgUpdateCethReceiverAccount) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgUpdateCethReceiverAccount) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.CosmosSender}
-}
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		// TODO panic?
+	}
 
-// MsgRescueCeth transfer the ceth from ethbridge module to an account
-type MsgRescueCeth struct {
-	CosmosSender   sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
-	CosmosReceiver sdk.AccAddress `json:"cosmos_receiver" yaml:"cosmos_receiver"`
-	CethAmount     sdk.Int        `json:"ceth_amount" yaml:"ceth_amount"`
+	return []sdk.AccAddress{cosmosSender}
 }
 
 // NewMsgRescueCeth is a constructor function for NewMsgRescueCeth
 func NewMsgRescueCeth(cosmosSender sdk.AccAddress, cosmosReceiver sdk.AccAddress, cethAmount sdk.Int) MsgRescueCeth {
 	return MsgRescueCeth{
-		CosmosSender:   cosmosSender,
-		CosmosReceiver: cosmosReceiver,
+		CosmosSender:   cosmosSender.String(),
+		CosmosReceiver: cosmosReceiver.String(),
 		CethAmount:     cethAmount,
 	}
 }
@@ -297,12 +295,14 @@ func (msg MsgRescueCeth) Type() string { return "rescue_ceth" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgRescueCeth) ValidateBasic() error {
-	if msg.CosmosSender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
-	if msg.CosmosReceiver.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosReceiver.String())
+
+	if msg.CosmosReceiver == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosReceiver)
 	}
+
 	return nil
 }
 
@@ -318,22 +318,20 @@ func (msg MsgRescueCeth) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.CosmosSender}
-}
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		// TODO panic?
+	}
 
-// MsgUpdateWhiteListValidator add or remove validator from whitelist
-type MsgUpdateWhiteListValidator struct {
-	CosmosSender  sdk.AccAddress `json:"cosmos_sender" yaml:"cosmos_sender"`
-	Validator     sdk.ValAddress `json:"validator" yaml:"validator"`
-	OperationType string         `json:"operation_type" yaml:"operation_type"`
+	return []sdk.AccAddress{cosmosSender}
 }
 
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
 func NewMsgUpdateWhiteListValidator(cosmosSender sdk.AccAddress,
 	validator sdk.ValAddress, operationType string) MsgUpdateWhiteListValidator {
 	return MsgUpdateWhiteListValidator{
-		CosmosSender:  cosmosSender,
-		Validator:     validator,
+		CosmosSender:  cosmosSender.String(),
+		Validator:     validator.String(),
 		OperationType: operationType,
 	}
 }
@@ -346,13 +344,14 @@ func (msg MsgUpdateWhiteListValidator) Type() string { return "update_whitelist_
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgUpdateWhiteListValidator) ValidateBasic() error {
-	if msg.CosmosSender.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender.String())
+	if msg.CosmosSender == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if msg.Validator.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator.String())
+	if msg.Validator == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.Validator)
 	}
+
 	return nil
 }
 
@@ -368,7 +367,12 @@ func (msg MsgUpdateWhiteListValidator) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{msg.CosmosSender}
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		// TODO panic?
+	}
+
+	return []sdk.AccAddress{cosmosSender}
 }
 
 // MapOracleClaimsToEthBridgeClaims maps a set of generic oracle claim data into EthBridgeClaim objects

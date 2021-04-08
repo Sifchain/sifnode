@@ -5,10 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/Sifchain/sifnode/x/oracle"
 )
 
 const (
@@ -47,7 +46,7 @@ func CreateTestEthMsg(t *testing.T, validatorAddress sdk.ValAddress, claimType C
 func CreateTestEthClaim(
 	t *testing.T, testContractAddress EthereumAddress, testTokenAddress EthereumAddress,
 	validatorAddress sdk.ValAddress, testEthereumAddress EthereumAddress, amount sdk.Int, symbol string, claimType ClaimType,
-) EthBridgeClaim {
+) *EthBridgeClaim {
 	testCosmosAddress, err1 := sdk.AccAddressFromBech32(TestAddress)
 	require.NoError(t, err1)
 	ethClaim := NewEthBridgeClaim(
@@ -72,8 +71,7 @@ func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	return lockEth
 }
 
-func CreateTestQueryEthProphecyResponse(
-	cdc *codec.Codec, t *testing.T, validatorAddress sdk.ValAddress, claimType ClaimType,
+func CreateTestQueryEthProphecyResponse(cdc codec.BinaryMarshaler, t *testing.T, validatorAddress sdk.ValAddress, claimType ClaimType,
 ) QueryEthProphecyResponse {
 	testEthereumAddress := NewEthereumAddress(TestEthereumAddress)
 	testContractAddress := NewEthereumAddress(TestBridgeContractAddress)
@@ -81,11 +79,11 @@ func CreateTestQueryEthProphecyResponse(
 	ethBridgeClaim := CreateTestEthClaim(t, testContractAddress, testTokenAddress, validatorAddress,
 		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
 	oracleClaim, _ := CreateOracleClaimFromEthClaim(cdc, ethBridgeClaim)
-	ethBridgeClaims := []EthBridgeClaim{ethBridgeClaim}
+	ethBridgeClaims := []*EthBridgeClaim{ethBridgeClaim}
 
 	return NewQueryEthProphecyResponse(
-		oracleClaim.ID,
-		oracle.NewStatus(oracle.PendingStatusText, ""),
+		oracleClaim.Id,
+		oracletypes.NewStatus(oracletypes.StatusText_STATUS_TEXT_PENDING, ""),
 		ethBridgeClaims,
 	)
 }

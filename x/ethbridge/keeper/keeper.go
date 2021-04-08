@@ -3,6 +3,7 @@ package keeper
 import (
 	"errors"
 	"fmt"
+
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 
 	"github.com/tendermint/tendermint/libs/log"
@@ -12,7 +13,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	"github.com/Sifchain/sifnode/x/oracle"
 )
 
 const errorMessageKey = "errorMessageKey"
@@ -20,20 +20,22 @@ const errorMessageKey = "errorMessageKey"
 // Keeper maintains the link to data storage and
 // exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	cdc      codec.BinaryMarshaler // The wire codec for binary encoding/decoding.
+	cdc codec.BinaryMarshaler // The wire codec for binary encoding/decoding.
 
-	bankKeeper   types.BankKeeper
-	oracleKeeper types.OracleKeeper
-	storeKey     sdk.StoreKey
+	accountKeeper types.AccountKeeper
+	bankKeeper    types.BankKeeper
+	oracleKeeper  types.OracleKeeper
+	storeKey      sdk.StoreKey
 }
 
 // NewKeeper creates new instances of the oracle Keeper
-func NewKeeper(cdc codec.BinaryMarshaler, supplyKeeper types.BankKeeper, oracleKeeper types.OracleKeeper, storeKey sdk.StoreKey) Keeper {
+func NewKeeper(cdc codec.BinaryMarshaler, bankKeeper types.BankKeeper, oracleKeeper types.OracleKeeper, accountKeeper types.AccountKeeper, storeKey sdk.StoreKey) Keeper {
 	return Keeper{
-		cdc:          cdc,
-		bankKeeper:   supplyKeeper,
-		oracleKeeper: oracleKeeper,
-		storeKey:     storeKey,
+		cdc:           cdc,
+		accountKeeper: accountKeeper,
+		bankKeeper:    bankKeeper,
+		oracleKeeper:  oracleKeeper,
+		storeKey:      storeKey,
 	}
 }
 
@@ -43,7 +45,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 // ProcessClaim processes a new claim coming in from a validator
-func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.EthBridgeClaim) (oracletypes.Status, error) {
+func (k Keeper) ProcessClaim(ctx sdk.Context, claim *types.EthBridgeClaim) (oracletypes.Status, error) {
 	logger := k.Logger(ctx)
 	oracleClaim, err := types.CreateOracleClaimFromEthClaim(k.cdc, claim)
 	if err != nil {
@@ -69,13 +71,13 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 
 	var coins sdk.Coins
 	switch oracleClaim.ClaimType {
-	case types.LockText:
+	case types.ClaimType_CLAIM_TYPE_LOCK:
 		symbol := fmt.Sprintf("%v%v", types.PeggedCoinPrefix, oracleClaim.Symbol)
 		k.AddPeggyToken(ctx, symbol)
 
 		coins = sdk.Coins{sdk.NewCoin(symbol, oracleClaim.Amount)}
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
-	case types.BurnText:
+	case types.ClaimType_CLAIM_TYPE_BURN:
 		coins = sdk.Coins{sdk.NewCoin(oracleClaim.Symbol, oracleClaim.Amount)}
 		err = k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	default:
@@ -98,7 +100,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string) error {
 }
 
 // ProcessBurn processes the burn of bridged coins from the given sender
-func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg types.MsgBurn) error {
+func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgBurn) error {
 	logger := k.Logger(ctx)
 	var coins sdk.Coins
 
@@ -140,7 +142,7 @@ func (k Keeper) ProcessBurn(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 }
 
 // ProcessLock processes the lockup of cosmos coins from the given sender
-func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg types.MsgLock) error {
+func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg *types.MsgLock) error {
 	coins := sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount), sdk.NewCoin(types.CethSymbol, msg.CethAmount))
 	logger := k.Logger(ctx)
 
@@ -190,15 +192,26 @@ func (k Keeper) ProcessUpdateCethReceiverAccount(ctx sdk.Context, cosmosSender s
 }
 
 // ProcessRescueCeth transfer ceth from ethbridge module to an account
-func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg types.MsgRescueCeth) error {
+func (k Keeper) ProcessRescueCeth(ctx sdk.Context, msg *types.MsgRescueCeth) error {
 	logger := k.Logger(ctx)
-	if !k.oracleKeeper.IsAdminAccount(ctx, msg.CosmosSender) {
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return err
+	}
+
+	cosmosReceiver, err := sdk.AccAddressFromBech32(msg.CosmosReceiver)
+	if err != nil {
+		return err
+	}
+
+	if !k.oracleKeeper.IsAdminAccount(ctx, cosmosSender) {
 		logger.Error("cosmos sender is not admin account.")
 		return errors.New("only admin account can call rescue ceth")
 	}
 
 	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, msg.CethAmount))
-	err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, msg.CosmosReceiver, coins)
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, cosmosReceiver, coins)
 
 	if err != nil {
 		logger.Error("failed to transfer coin from module to account.",
