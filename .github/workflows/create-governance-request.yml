@@ -89,24 +89,26 @@ jobs:
         run: |
           set +x
           echo "Generate Keyring."
-          #export PATH=$PATH:$GOPATH/bin
-          #make CHAINNET=${chainnet} IMAGE_TAG=${env}-${release_version} BINARY=sifnodecli build-image
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
           rake "cluster:release:generate_keyring[${moniker}, ${mnemonic}]"
 
       - name: Create Release
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set +x
           echo "Get github token from vault and create release"
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
           echo "Wait for release with version to finish building befor continuing."
-          rake "cluster:release:create_release[${release_version}, ${env}, ${github_token}]"
+          rake "cluster:release:create_release[${release_version}, ${env}]"
 
       - name: Wait For Release
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set +x
           echo "Wait for release with version to finish building befor continuing."
@@ -114,6 +116,8 @@ jobs:
 
       - name: Create Governance Release Request
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set +x
           echo "Create Governance Release Request with deposit ammount $deposit"

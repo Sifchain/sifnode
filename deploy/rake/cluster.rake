@@ -397,15 +397,10 @@ path \\"+/sys/internal/counters/activity\\" {
   capabilities = [\\"read\\"]
 }
         " > #{args[:app_name]}-policy.hcl
-
         kubectl cp --kubeconfig=./kubeconfig #{args[:app_name]}-policy.hcl vault-0:/home/vault/#{args[:app_name]}-policy.hcl -n vault
-
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault policy delete #{args[:app_name]}
-
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault policy write #{args[:app_name]} /home/vault/#{args[:app_name]}-policy.hcl
-
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write sys/internal/counters/config enabled=enable
-
         rm -rf #{args[:app_name]}-policy.hcl
       }
       system(cluster_automation) or exit 1
@@ -418,11 +413,8 @@ path \\"+/sys/internal/counters/activity\\" {
     task :enablekubernetes, [] do |t, args|
       cluster_automation = %Q{
         set +x
-
         echo "APPLY VAULT AUTH ENABLE KUBERNETES"
-
         check_installed=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth list | grep kubernetes`
-
         [ -z "$check_installed" ] && kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth enable kubernetes || echo "Kubernetes Already Enabled"
       }
       system(cluster_automation) or exit 1
@@ -473,19 +465,12 @@ metadata:
   namespace: #{args[:app_namespace]}
   labels:
     app: #{args[:app_name]} " > service_account.yaml
-
         kubectl delete --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}
-
         kubectl create --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}
-
         token=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- cat /var/run/secrets/kubernetes.io/serviceaccount/token`
-
         kubernetes_cluster_ip=`kubectl exec --kubeconfig=./kubeconfig -it vault-0 -n vault -- printenv | grep KUBERNETES_PORT_443_TCP_ADDR | cut -d '=' -f 2 | tr -d '\n' | tr -d '\r'`
-
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write auth/kubernetes/config token_reviewer_jwt="$token" kubernetes_host="https://$kubernetes_cluster_ip:443" kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write auth/kubernetes/role/#{args[:app_name]} bound_service_account_names=#{args[:app_name]} bound_service_account_namespaces=#{args[:app_namespace]} policies=#{args[:app_name]} ttl=1h
-
         rm -rf service_account.yaml
       }
       system(cluster_automation) or exit 1
@@ -584,7 +569,8 @@ import requests
 import urllib3
 import sys
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-releases_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/releases', verify=False)
+headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token " + os.environ["GITHUB_TOKEN"]}
+releases_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/releases', headers=headers, verify=False)
 release_request_json = releases_request.json()
 find_realease="#{args[:app_env]}-#{args[:release_version]}"
 retrieved_sha = ""
@@ -595,7 +581,7 @@ for release in release_request_json:
     if find_realease in release["tag_name"]:
         for asset in release["assets"]:
             if ".sha256" in asset["name"]:
-                get_sha = requests.get(asset["browser_download_url"], verify=False)
+                get_sha = requests.get(asset["browser_download_url"], headers=headers, verify=False)
                 retrieved_sha = get_sha.text.replace("\n", "")
                 print(retrieved_sha)
                 break
@@ -654,19 +640,22 @@ import requests
 import time
 import sys
 import urllib3
+import os
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-workflow_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows', verify=False)
+headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token " + os.environ["GITHUB_TOKEN"]}
+workflow_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows', headers=headers, verify=False)
 workflow_request_json = workflow_request.json()
 find_realease="#{args[:app_env]}-#{args[:release_version]}"
-max_loop = 50
+max_loop = 10
 loop_count = 0
 while True:
+    print("You are on attempt", loop_count, " of ", max_loop)
     if loop_count >= max_loop:
         sys.exit(1)
     for workflow in workflow_request_json["workflows"]:
         if workflow["name"] == "Release":
             release_workflow_id = workflow["id"]
-            workflow_info_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows/{workflow_id}/runs'.format(workflow_id=release_workflow_id), verify=False)
+            workflow_info_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows/{workflow_id}/runs'.format(workflow_id=release_workflow_id), headers=headers, verify=False)
             workflow_info_request_json = workflow_info_request.json()
             for workflow_run in workflow_info_request_json["workflow_runs"]:
                 if find_realease in workflow_run["head_branch"]:
@@ -676,8 +665,10 @@ while True:
                         sys.exit(0)
                     else:
                         print("Release hasn't finished yet going to sleep and loop until max loops is reached waiting for Release pipeline to finish.")
+            print("release not found")
+            print("Sleeping for 60 seconds.")
             loop_count += 1
-            time.sleep(10)
+            time.sleep(60)
 EOF
 python pyscript.py
       }
@@ -688,7 +679,7 @@ python pyscript.py
   desc "Create Github Release."
   namespace :release do
     desc "Create Github Release."
-    task :create_release, [:release, :env, :token] do |t, args|
+    task :create_release, [:release, :env] do |t, args|
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
@@ -711,7 +702,7 @@ data_payload = {
 }
 print("sending payload")
 print(data_payload)
-headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
+headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token " + os.environ["GITHUB_TOKEN"]}
 releases_request = requests.post('https://api.github.com/repos/Sifchain/sifnode/releases',data=json.dumps(data_payload),headers=headers,verify=False)
 release_request_json = releases_request.json()
 if releases_request.status_code == 201 or releases_request.status_code == 200:
