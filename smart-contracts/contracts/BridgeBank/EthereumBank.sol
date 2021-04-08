@@ -1,4 +1,4 @@
-pragma solidity 0.6.9;
+pragma solidity 0.6.6;
 
 import "./BridgeToken.sol";
 import "./EthereumBankStorage.sol";

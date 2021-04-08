@@ -1,4 +1,4 @@
-pragma solidity 0.6.9;
+pragma solidity 0.6.6;
 
 /**
  * @notice deprecated contract that only contains storage variables to keep offsets correct

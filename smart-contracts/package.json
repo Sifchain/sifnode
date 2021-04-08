@@ -9,7 +9,11 @@
   "authors": "Elliot Friedman, James Moore, Junius Zhou, Denali Marsh",
   "license": "ISC",
   "dependencies": {
+    "@nomiclabs/buidler": "^1.4.8",
+    "@nomiclabs/hardhat-ethers": "^2.0.0",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/contracts": "3.4.1",
+    "@openzeppelin/hardhat-upgrades": "^1.6.0",
     "@truffle/artifactor": "^4.0.90",
     "@truffle/hdwallet-provider": "^1.1.0",
     "big-integer": "^1.6.48",
@@ -22,8 +26,10 @@
     "cross-env": "5.0.5",
     "dotenv": "^8.1.0",
     "eth-lib": "^0.2.8",
+    "ethereum-waffle": "^3.2.0",
     "ethereumjs-util": "^7.0.6",
     "ganache-cli": "^6.12.0",
+    "hardhat": "^2.1.2",
     "keccak": "^3.0.1",
     "lodash": "^4.17.19",
     "openzeppelin-solidity": "3.0.0",
@@ -79,6 +85,7 @@
     "token:approve": "npx truffle exec scripts/sendApproveTx.js",
     "test:setup": "cp .env.example .env",
     "coverage": "truffle run coverage",
+    "compile": "hardhat compile",
     "test": "concurrently -r -k -s first \"yarn develop\" \"truffle test --network develop\" "
   }
 }

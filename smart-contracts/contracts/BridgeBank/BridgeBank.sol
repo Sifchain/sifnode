@@ -1,8 +1,8 @@
-pragma solidity 0.6.9;
+pragma solidity 0.6.6;
 
 import "./CosmosBank.sol";
 import "./EthereumBank.sol";
-import "./EthereumWhiteList.sol";
+import "./EthereumWhitelist.sol";
 import "./CosmosWhiteList.sol";
 import "../Oracle.sol";
 import "../CosmosBridge.sol";
@@ -131,7 +131,7 @@ contract BridgeBank is BankStorage,
      * @param _symbol: The new BridgeToken's symbol
      * @return: The new BridgeToken contract's address
      */
-    function createNewBridgeToken(string memory _symbol)
+    function createNewBridgeToken(string calldata _symbol)
         external
         onlyCosmosBridge
         returns (address)

@@ -1,10 +1,8 @@
-pragma solidity 0.6.9;
+pragma solidity 0.6.6;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./Valset.sol";
 import "./OracleStorage.sol";
-import "./Valset.sol";
-
 
 contract Oracle is OracleStorage, Valset {
     using SafeMath for uint256;
@@ -48,7 +46,6 @@ contract Oracle is OracleStorage, Valset {
         operator = _operator;
         consensusThreshold = _consensusThreshold;
         _initialized = true;
-
         Valset._initialize(_operator, _initValidators, _initPowers);
     }
 

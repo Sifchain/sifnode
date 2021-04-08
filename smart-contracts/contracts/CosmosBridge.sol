@@ -1,11 +1,9 @@
-pragma solidity 0.6.9;
+pragma solidity =0.6.6;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./Valset.sol";
 import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
-
 
 contract CosmosBridge is CosmosBridgeStorage, Oracle {
     using SafeMath for uint256;
@@ -16,7 +14,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     /*
      * @dev: Event declarations
      */
-
     event LogOracleSet(address _oracle);
 
     event LogBridgeBankSet(address _bridgeBank);
@@ -60,7 +57,6 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     ) external {
         require(!_initialized, "Initialized");
 
-        COSMOS_NATIVE_ASSET_PREFIX = "e";
         operator = _operator;
         hasBridgeBank = false;
         _initialized = true;
@@ -122,7 +118,8 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
      */
     function newProphecyClaim(
         ClaimType _claimType,
-        bytes memory _cosmosSender,
+        bytes calldata _cosmosSender,
+        string calldata _symbol,
         uint256 _cosmosSenderSequence,
         address _ethereumReceiver,
         address _tokenAddress,
@@ -145,7 +142,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             if (_claimType == ClaimType.Lock && _tokenAddress == address(0)) {
                 // need to make a business decision on what this symbol should be
                 // First lock of this asset, deploy new contract and get new symbol/token address
-                // BridgeBank(bridgeBank).createNewBridgeToken(symbol);
+                _tokenAddress = BridgeBank(bridgeBank).createNewBridgeToken(_symbol);
             }
 
             emit LogNewProphecyClaim(
@@ -189,19 +186,5 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         );
 
         emit LogProphecyCompleted(_prophecyID, _claimType);
-    }
-
-    /*
-     * @dev: Performs low gas-comsuption string concatenation
-     *
-     * @param _prefix: start of the string
-     * @param _suffix: end of the string
-     */
-    function concat(string memory _prefix, string memory _suffix)
-        internal
-        pure
-        returns (string memory)
-    {
-        return string(abi.encodePacked(_prefix, _suffix));
     }
 }
