@@ -117,7 +117,6 @@ func createClaimHandler(cliCtx context.CLIContext) http.HandlerFunc {
 
 func getProphecyHandler(cliCtx context.CLIContext, storeName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("getProphecyHandler \n")
 		vars := mux.Vars(r)
 
 		ethereumChainID := vars[restEthereumChainID]
