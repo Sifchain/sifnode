@@ -6,10 +6,7 @@ on:
       - published
       - prereleased
       - created
-  workflow_run:
-    workflows: ["Create Governance Request"]
-    types:
-      - requested
+  repository_dispatch:
 
 jobs:
   release:

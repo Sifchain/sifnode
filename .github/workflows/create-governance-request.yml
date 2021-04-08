@@ -104,6 +104,10 @@ jobs:
           source ./tmp_secrets
           echo "Wait for release with version to finish building befor continuing."
           rake "cluster:release:create_release[${release_version}, ${env}]"
+          curl -X POST https://api.github.com/repos/Sifchain/sifnode/dispatches \
+                    -H 'Accept: application/vnd.github.everest-preview+json' \
+                    -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
+                    --data '{"event_type": "ack", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
 
       - name: Wait For Release
         shell: bash

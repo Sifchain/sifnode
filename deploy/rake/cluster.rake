@@ -706,7 +706,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 data_payload = {
     "tag_name": "#{args[:env]}-#{args[:release]}",
     "name": "#{args[:env]} v#{args[:release]}",
-    "body": "Sifchain #{args[:env]} Release v#{args[:release]}"
+    "body": "Sifchain #{args[:env]} Release v#{args[:release]}",
+    "prerelease": True
 }
 print("sending payload")
 print(data_payload)
