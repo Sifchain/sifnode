@@ -537,7 +537,7 @@ fi
 #!/usr/bin/env bash
 
 echo "Checking to see if the release version exist in app.go"
-check_exist=$(cat app/app.go | grep 'release-#{args[:release_version]}')
+check_exist=$(cat app/setupHandlers.go | grep 'release-#{args[:release_version]}')
 [ -z "$check_exist" ] && exit 1 || echo "release version exists."
 
 set +x
