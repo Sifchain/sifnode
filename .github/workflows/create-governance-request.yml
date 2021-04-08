@@ -94,17 +94,15 @@ jobs:
           rake "cluster:release:generate_keyring[${moniker}, ${mnemonic}]"
 
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.event.inputs.environment }}-${{ github.event.inputs.release_version }}
-          release_name: ${{ github.event.inputs.environment }} v${{ github.event.inputs.release_version }}
-          body: |
-            DevNet Release v${{ github.event.inputs.release_version }}
-          draft: false
-          prerelease: true
+        run: |
+          set +x
+          echo "Create Create and Execute Workflow Dispatch"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
+          rake "cluster:release:create_release[${release_version}, ${env}, ${github_token}]"
 
       - name: Wait For Release
         shell: bash

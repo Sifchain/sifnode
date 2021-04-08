@@ -687,7 +687,7 @@ python pyscript.py
   desc "Create Github Release."
   namespace :release do
     desc "Create Github Release."
-    task :create_release, [:release, :env] do |t, args|
+    task :create_release, [:release, :env, :token] do |t, args|
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
@@ -711,7 +711,7 @@ data_payload = {
 }
 print("sending payload")
 print(data_payload)
-headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token " + os.environ["GITHUB_TOKEN"]}
+headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
 releases_request = requests.post('https://api.github.com/repos/Sifchain/sifnode/releases',data=json.dumps(data_payload),headers=headers,verify=False)
 release_request_json = releases_request.json()
 if releases_request.status_code == 201 or releases_request.status_code == 200:
