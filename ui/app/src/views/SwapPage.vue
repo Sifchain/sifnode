@@ -16,6 +16,7 @@ import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import SlippagePanel from "@/components/slippagePanel/Index.vue";
 import { ConfirmState } from "../types";
 import { toConfirmState } from "./utils/toConfirmState";
+import { Fraction } from "../../../core/src/entities";
 
 export default defineComponent({
   components: {
@@ -198,7 +199,13 @@ export default defineComponent({
         selectedField.value = "from";
         const accountBalance = getAccountBalance();
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.toFixed(18);
+        if (fromSymbol.value !== "rowan") {
+          fromAmount.value = accountBalance.toFixed(18);
+        } else {
+          fromAmount.value = accountBalance
+            .subtract(new Fraction("1", "2"))
+            .toFixed(18);
+        }
       },
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;

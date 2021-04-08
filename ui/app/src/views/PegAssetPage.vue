@@ -6,6 +6,7 @@ import { useCore } from "@/hooks/useCore";
 import { Asset, AssetAmount } from "ui-core";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
+import { Fraction } from "../../../core/src/entities";
 
 import RaisedPanel from "@/components/shared/RaisedPanel.vue";
 import { useRouter } from "vue-router";
@@ -163,10 +164,20 @@ export default defineComponent({
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
         const decimals = Asset.get(symbol.value).decimals;
-        const afterMaxValue =
-          symbol.value === "ceth"
-            ? accountBalance.value.subtract(feeAmount.value)
-            : accountBalance.value;
+
+        // Sometimes we want to subtract the gas fee from the max amount
+        // So the user has sufficient funds to execute the transaction
+        let fee = new Fraction("0");
+
+        if (symbol.value === "ceth") {
+          fee = feeAmount.value;
+        }
+        if (symbol.value === "rowan") {
+          fee = new Fraction("1", "2"); // 0.5 RWN to offset gas
+        }
+
+        const afterMaxValue = accountBalance.value.subtract(fee);
+
         amount.value = afterMaxValue.lessThan("0")
           ? "0.0"
           : afterMaxValue.toFixed(decimals);
