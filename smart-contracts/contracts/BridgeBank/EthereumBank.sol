@@ -91,8 +91,13 @@ contract EthereumBank is EthereumBankStorage {
         uint256 _amount
     ) internal {
         // Transfer funds to intended recipient
-        IERC20 tokenToTransfer = IERC20(_token);
-        tokenToTransfer.safeTransfer(_recipient, _amount);
+        if (_token == address(0)) {
+            (bool success,) = _recipient.call{value: _amount}("");
+            require(success, "error sending ether");
+        } else {
+            IERC20 tokenToTransfer = IERC20(_token);
+            tokenToTransfer.safeTransfer(_recipient, _amount);
+        }
 
         emit LogUnlock(_recipient, _token, _amount);
     }

@@ -155,7 +155,7 @@ contract BridgeBank is BankStorage,
     }
 
     function handleUnpeg(
-        address _ethereumReceiver,
+        address payable _ethereumReceiver,
         address _tokenAddress,
         uint256 _amount   
     ) external onlyCosmosBridge whenNotPaused {
@@ -221,7 +221,7 @@ contract BridgeBank is BankStorage,
      * @param _amount: wei amount or ERC20 token count
      */
     function unlock(
-        address _recipient,
+        address payable _recipient,
         address _tokenAddress,
         uint256 _amount
     ) public onlyCosmosBridge whenNotPaused {

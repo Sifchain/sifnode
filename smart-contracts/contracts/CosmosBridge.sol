@@ -121,7 +121,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         bytes calldata _cosmosSender,
         string calldata _symbol,
         uint256 _cosmosSenderSequence,
-        address _ethereumReceiver,
+        address payable _ethereumReceiver,
         address _tokenAddress,
         uint256 _amount
     ) external onlyValidator validClaimType(_claimType) {
@@ -175,7 +175,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
     function completeProphecyClaim(
         ClaimType _claimType,
         uint256 _prophecyID,
-        address ethereumReceiver,
+        address payable ethereumReceiver,
         address _tokenAddress,
         uint256 amount
     ) internal {
