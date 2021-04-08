@@ -30,6 +30,7 @@ func GetQueryCmd(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return dispensationQueryCmd
 }
 
+//GetCmdDistributions returns a list of all distributions ever created
 func GetCmdDistributions(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "distributions-all",
@@ -50,6 +51,7 @@ func GetCmdDistributions(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
+// GetCmdDistributionRecordForRecipient returns the completed and pending records for the recipient address
 func GetCmdDistributionRecordForRecipient(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "records-by-addr [recipient address]",
@@ -80,6 +82,7 @@ func GetCmdDistributionRecordForRecipient(queryRoute string, cdc *codec.Codec) *
 	}
 }
 
+//GetCmdDistributionRecordForDistNameAll returns all records for a given distribution name
 func GetCmdDistributionRecordForDistNameAll(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "records-by-name-all [distribution name]",
@@ -106,6 +109,7 @@ func GetCmdDistributionRecordForDistNameAll(queryRoute string, cdc *codec.Codec)
 	}
 }
 
+//GetCmdDistributionRecordForDistNamePending returns all pending records for a given distribution name
 func GetCmdDistributionRecordForDistNamePending(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "records-by-name-pending [distribution name]",
@@ -132,6 +136,7 @@ func GetCmdDistributionRecordForDistNamePending(queryRoute string, cdc *codec.Co
 	}
 }
 
+//GetCmdDistributionRecordForDistNamePending returns all completed records for a given distribution name
 func GetCmdDistributionRecordForDistNameCompleted(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "records-by-name-completed [distribution name]",

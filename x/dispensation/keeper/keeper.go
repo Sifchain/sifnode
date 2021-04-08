@@ -16,7 +16,7 @@ type Keeper struct {
 	supplyKeeper types.SupplyKeeper
 }
 
-// NewKeeper creates a clp keeper
+// NewKeeper creates a dispensation keeper
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, bankkeeper types.BankKeeper, supplyKeeper types.SupplyKeeper) Keeper {
 	keeper := Keeper{
 		storeKey:     key,
