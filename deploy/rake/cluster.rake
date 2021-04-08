@@ -631,7 +631,7 @@ sleep 60
   desc "Wait for Release.."
   namespace :release do
     desc "Wait for Release."
-    task :wait_for_release, [:release] do |t, args|
+    task :wait_for_release, [:app_env, :release] do |t, args|
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
@@ -649,7 +649,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token " + os.environ["GITHUB_TOKEN"]}
 workflow_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows', headers=headers, verify=False)
 workflow_request_json = workflow_request.json()
-find_realease="#{args[:app_env]}-#{args[:release_version]}"
+find_realease="#{args[:app_env]}-#{args[:release]}"
 print("Looking for release", find_realease)
 max_loop = 10
 loop_count = 0

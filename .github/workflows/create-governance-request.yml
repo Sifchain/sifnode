@@ -112,7 +112,7 @@ jobs:
         run: |
           set +x
           echo "Wait for release with version to finish building befor continuing."
-          rake "cluster:release:wait_for_release[${release_version}]"
+          rake "cluster:release:wait_for_release[${env},${release_version}]"
 
       - name: Create Governance Release Request
         shell: bash
