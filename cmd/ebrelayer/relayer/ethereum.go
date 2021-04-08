@@ -46,7 +46,7 @@ const (
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
 type EthereumSub struct {
-	Cdc                     *codec.Codec
+	Cdc                     *codec.LegacyAmino
 	EthProvider             string
 	TmProvider              string
 	RegistryContractAddress common.Address
@@ -74,7 +74,7 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keys.Keybase, keys
 }
 
 // NewEthereumSub initializes a new EthereumSub
-func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.Codec, validatorMoniker, chainID, ethProvider string,
+func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.LegacyAmino, validatorMoniker, chainID, ethProvider string,
 	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
 
 	tempPassword, _ := password.Generate(32, 5, 0, false, false)
@@ -316,7 +316,8 @@ func (sub EthereumSub) getAllClaims(fromBlock int64, toBlock int64) []types.Ethe
 
 	for blockNumber := fromBlock; blockNumber < toBlock; {
 		tmpBlockNumber := blockNumber
-		block, err := client.BlockResults(&tmpBlockNumber)
+		ctx := context.Background()
+		block, err := client.BlockResults(ctx, &tmpBlockNumber)
 		blockNumber++
 		log.Printf("Replay start to process block %d\n", blockNumber)
 
