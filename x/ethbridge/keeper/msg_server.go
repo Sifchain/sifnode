@@ -34,13 +34,18 @@ func (srv msgServer) Lock(goCtx context.Context, msg *types.MsgLock) (*types.Msg
 		return nil, errors.Errorf("Pegged token %s can't be lock.", msg.Symbol)
 	}
 
-	account := srv.Keeper.accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.CosmosSender))
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessLock(ctx, sdk.AccAddress(msg.CosmosSender), msg); err != nil {
+	if err := srv.Keeper.ProcessLock(ctx, cosmosSender, msg); err != nil {
 		logger.Error("bridge keeper failed to process lock.", errorMessageKey, err.Error())
 		return nil, err
 	}
@@ -85,13 +90,18 @@ func (srv msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.Msg
 		return nil, errors.Errorf("Native token %s can't be burn.", msg.Symbol)
 	}
 
-	account := srv.Keeper.accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.CosmosSender))
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	if err := srv.Keeper.ProcessBurn(ctx, sdk.AccAddress(msg.CosmosSender), msg); err != nil {
+	if err := srv.Keeper.ProcessBurn(ctx, cosmosSender, msg); err != nil {
 		logger.Error("bridge keeper failed to process burn.", errorMessageKey, err.Error())
 		return nil, err
 	}
@@ -190,14 +200,19 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	account := srv.Keeper.accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.CosmosSender))
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
 
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	err := srv.Keeper.ProcessUpdateWhiteListValidator(ctx, sdk.AccAddress(msg.CosmosSender),
+	err = srv.Keeper.ProcessUpdateWhiteListValidator(ctx, cosmosSender,
 		sdk.ValAddress(msg.Validator), msg.OperationType)
 	if err != nil {
 		logger.Error("bridge keeper failed to process update validator.", errorMessageKey, err.Error())
@@ -229,18 +244,29 @@ func (srv msgServer) UpdateWhiteListValidator(goCtx context.Context,
 
 func (srv msgServer) UpdateCethReceiverAccount(goCtx context.Context,
 	msg *types.MsgUpdateCethReceiverAccount) (*types.MsgUpdateCethReceiverAccountResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
-	account := srv.Keeper.accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.CosmosSender))
+
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	cethReceiverAddress, err := sdk.AccAddressFromBech32(msg.CethReceiverAccount)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
 
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)
 	}
 
-	err := srv.Keeper.ProcessUpdateCethReceiverAccount(ctx,
-		sdk.AccAddress(msg.CosmosSender), sdk.AccAddress(msg.CethReceiverAccount))
+	err = srv.Keeper.ProcessUpdateCethReceiverAccount(ctx,
+		cosmosSender, cethReceiverAddress)
 	if err != nil {
 		logger.Error("keeper failed to process update ceth receiver account.", errorMessageKey, err.Error())
 		return nil, err
@@ -271,7 +297,12 @@ func (srv msgServer) RescueCeth(goCtx context.Context, msg *types.MsgRescueCeth)
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	logger := srv.Keeper.Logger(ctx)
 
-	account := srv.Keeper.accountKeeper.GetAccount(ctx, sdk.AccAddress(msg.CosmosSender))
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		return nil, err
+	}
+
+	account := srv.Keeper.accountKeeper.GetAccount(ctx, cosmosSender)
 	if account == nil {
 		logger.Error("account is nil.", "CosmosSender", msg.CosmosSender)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, msg.CosmosSender)

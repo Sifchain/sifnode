@@ -77,7 +77,12 @@ func (msg MsgLock) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgLock) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.CosmosSender)}
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		// TODO panic?
+	}
+
+	return []sdk.AccAddress{cosmosSender}
 }
 
 // NewMsgBurn is a constructor function for MsgBurn
@@ -152,7 +157,12 @@ func (msg MsgBurn) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgBurn) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.CosmosSender)}
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		// TODO panic?
+	}
+
+	return []sdk.AccAddress{cosmosSender}
 }
 
 // NewMsgCreateEthBridgeClaim is a constructor function for MsgCreateBridgeClaim
@@ -213,7 +223,12 @@ func (msg MsgCreateEthBridgeClaim) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.EthBridgeClaim.ValidatorAddress)}
+	validatorAddress, err := sdk.AccAddressFromBech32(msg.EthBridgeClaim.ValidatorAddress)
+	if err != nil {
+		// TODO panic?
+	}
+
+	return []sdk.AccAddress{validatorAddress}
 }
 
 // NewMsgUpdateCethReceiverAccount is a constructor function for MsgUpdateCethReceiverAccount
@@ -255,7 +270,12 @@ func (msg MsgUpdateCethReceiverAccount) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgUpdateCethReceiverAccount) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.CosmosSender)}
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		// TODO panic?
+	}
+
+	return []sdk.AccAddress{cosmosSender}
 }
 
 // NewMsgRescueCeth is a constructor function for NewMsgRescueCeth
@@ -298,7 +318,12 @@ func (msg MsgRescueCeth) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.CosmosSender)}
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		// TODO panic?
+	}
+
+	return []sdk.AccAddress{cosmosSender}
 }
 
 // NewMsgUpdateWhiteListValidator is a constructor function for MsgUpdateWhiteListValidator
@@ -342,7 +367,12 @@ func (msg MsgUpdateWhiteListValidator) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.CosmosSender)}
+	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
+	if err != nil {
+		// TODO panic?
+	}
+
+	return []sdk.AccAddress{cosmosSender}
 }
 
 // MapOracleClaimsToEthBridgeClaims maps a set of generic oracle claim data into EthBridgeClaim objects

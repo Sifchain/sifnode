@@ -68,7 +68,13 @@ func NewOracleClaimContent(
 func CreateOracleClaimFromEthClaim(cdc codec.BinaryMarshaler, ethClaim *EthBridgeClaim) (oracletypes.Claim, error) {
 	oracleID := strconv.FormatInt(ethClaim.EthereumChainId, 10) + strconv.FormatInt(ethClaim.Nonce, 10) +
 		ethClaim.EthereumSender
-	claimContent := NewOracleClaimContent(sdk.AccAddress(ethClaim.CosmosReceiver), ethClaim.Amount,
+
+	cosmosReceiver, err := sdk.AccAddressFromBech32(ethClaim.CosmosReceiver)
+	if err != nil {
+		return oracletypes.Claim{}, err
+	}
+
+	claimContent := NewOracleClaimContent(cosmosReceiver, ethClaim.Amount,
 		ethClaim.Symbol, NewEthereumAddress(ethClaim.TokenContractAddress), ethClaim.ClaimType)
 	claimBytes, err := json.Marshal(claimContent)
 	if err != nil {
