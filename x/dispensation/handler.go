@@ -33,7 +33,7 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 	if err != nil {
 		return nil, err
 	}
-	//Distribute rewards and Store Historical Data
+	//Create drops and Store Historical Data
 	err = keeper.CreateDrops(ctx, msg.Output, msg.DistributionName)
 	if err != nil {
 		return nil, err
