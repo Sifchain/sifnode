@@ -120,7 +120,7 @@ describe("connect to page", () => {
     );
   });
 
-  it("pegs", async () => {
+  it.skip("pegs", async () => {
     // XXX: This currently reuses the page from a previous test - this might be ok for now but we will probably want to provide that state some other way
     // assumes wallets connected
     const mmEthBalance = await getEthBalance(MM_CONFIG.options.address);
@@ -152,7 +152,7 @@ describe("connect to page", () => {
     expect(rowAmount.trim()).toBe(expected);
   });
 
-  it("swaps", async () => {
+  it.skip("swaps", async () => {
     // Navigate to swap page
     await dexPage.goto(DEX_TARGET, {
       waitUntil: "domcontentloaded",
@@ -278,6 +278,52 @@ describe("connect to page", () => {
     expect(await dexPage.innerText('[data-handle="rowan-balance-label"]')).toBe(
       "Balance: 10,049.99 ROWAN",
     );
+  });
+
+  it("addsLiquidity", async () => {
+    // Click pool page
+    await dexPage.click('[data-handle="pool-page-button"]');
+
+    // Click add liquidity button
+    await dexPage.click('[data-handle="add-liquidity-button"]');
+
+    // Select ceth
+    await dexPage.click("[data-handle='token-a-select-button']");
+    await dexPage.click("[data-handle='ceth-select-button']");
+
+    await dexPage.click('[data-handle="token-a-input"]');
+    await dexPage.fill('[data-handle="token-a-input"]', "10");
+
+    expect(await getInputValue(dexPage, '[data-handle="token-b-input"]')).toBe(
+      "12048.19277",
+    );
+
+    await dexPage.click('[data-handle="token-b-input"]');
+    await dexPage.fill('[data-handle="token-b-input"]', "10000");
+
+    await dexPage.click('[data-handle="token-a-input"]');
+
+    expect(await getInputValue(dexPage, '[data-handle="token-a-input"]')).toBe(
+      "8.30000",
+    );
+
+    await dexPage.click('[data-handle="token-a-max-button"]');
+
+    expect(await getInputValue(dexPage, '[data-handle="token-a-input"]')).toBe(
+      "100.000000000000000000",
+    );
+
+    await dexPage.click('[data-handle="token-b-input"]');
+
+    expect(await getInputValue(dexPage, '[data-handle="token-b-input"]')).toBe(
+      "120481.92771",
+    );
+
+    expect(await dexPage.innterText('[data-handle="actions-go"]')).toBe(
+      "Insufficient Funds",
+    );
+
+    await dexPage.pause();
   });
 });
 
