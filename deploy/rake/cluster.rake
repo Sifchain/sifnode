@@ -767,6 +767,8 @@ if [ "${env_check}" == "prod" ]; then
         --node tcp://rpc.sifchain.finance:80 \
         --gas-prices "#{args[:rowan]}" -y
 
+    sleep 15
+
 else
     vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
     echo "vote_id $vote_id"
@@ -776,6 +778,8 @@ else
         --chain-id #{args[:chainnet]}  \
         --node tcp://rpc-#{args[:env]}.sifchain.finance:80 \
         --gas-prices "#{args[:rowan]}" -y
+
+    sleep 15
 fi
       }
       system(cluster_automation) or exit 1
