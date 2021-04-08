@@ -6,8 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 )
 
@@ -53,7 +52,7 @@ func CreateTestEthClaim(
 	ethClaim := NewEthBridgeClaim(
 		TestEthereumChainID, testContractAddress, TestNonce, symbol,
 		testTokenAddress, testEthereumAddress, testCosmosAddress, validatorAddress, amount, claimType)
-	return &ethClaim
+	return ethClaim
 }
 
 func CreateTestBurnMsg(t *testing.T, testCosmosSender string, ethereumReceiver EthereumAddress,
@@ -72,7 +71,7 @@ func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	return lockEth
 }
 
-func CreateTestQueryEthProphecyResponse(t *testing.T, validatorAddress sdk.ValAddress, claimType ClaimType,
+func CreateTestQueryEthProphecyResponse(cdc codec.BinaryMarshaler, t *testing.T, validatorAddress sdk.ValAddress, claimType ClaimType,
 ) QueryEthProphecyResponse {
 	testEthereumAddress := NewEthereumAddress(TestEthereumAddress)
 	testContractAddress := NewEthereumAddress(TestBridgeContractAddress)
@@ -84,7 +83,7 @@ func CreateTestQueryEthProphecyResponse(t *testing.T, validatorAddress sdk.ValAd
 
 	return NewQueryEthProphecyResponse(
 		oracleClaim.Id,
-		oracle.Status(oracle.PendingStatusText, ""),
+		oracletypes.NewStatus(oracle.PendingStatusText, ""),
 		ethBridgeClaims,
 	)
 }
