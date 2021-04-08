@@ -18,3 +18,5 @@ anchore-reports
 .vercel
 nohup.out
 relayerdb
+gobin
+
