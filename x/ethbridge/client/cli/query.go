@@ -79,13 +79,8 @@ func GetCmdGetGasPriceHandler(queryRoute string, cdc *codec.Codec) *cobra.Comman
 			if err != nil {
 				return err
 			}
-
-			var out types.QueryEthProphecyResponse
-			err = cdc.UnmarshalJSON(res, &out)
-			if err != nil {
-				return err
-			}
-
+			var out types.QueryGasPriceResponse
+			out.GasPrice = string(res)
 			return cliCtx.PrintOutput(out)
 		},
 	}

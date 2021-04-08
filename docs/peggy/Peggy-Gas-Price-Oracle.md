@@ -16,7 +16,7 @@ For UI, we provide a REST API to get current gas price from sifnoded.
 sifnodecli tx ethbridge update_gas_price [cosmos-validator-address] [ethereum-block-number] [gas-price]
 
 2. transaction example
-sifnodecli tx ethbridge update_gas_price sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna 100 100 --from=sif --yes
+sifnodecli tx ethbridge update_gas_price sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna 100 1000000000000 --from=sif --yes
 
 ## Gas Multiplier
 To speed up the unpeg, the relayer set the gas price higher than suggested from Ethereum client. So we have other parameter gas multiplier, the gas price in the Ethereum transaction will be the gas price times with gas multiplier.
@@ -28,6 +28,21 @@ sifnodecli tx ethbridge update_gas_multiplier [cosmos-validator-address] [gas-mu
 
 2. transaction example, set the gas price as the same as suggested
 sifnodecli tx ethbridge update_gas_multiplier sifvaloper1syavy2npfyt9tcncdtsdzf7kny9lh777dzsqna 100 --from=sif --yes
+
+## REST API
+1. try it via command line
+sifnodecli q ethbridge gasPrice
+{
+  "gasPrice": "100000000000000"
+}
+
+2. get the gas price via REST API
+curl 127.0.0.1:1317/gasPrice
+output is like
+{
+  "height": "0",
+  "result": 100000000000000
+}
 
 ## Future features
 1. peg multiple EVM-based chains

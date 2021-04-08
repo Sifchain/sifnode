@@ -66,3 +66,8 @@ func (response QueryEthProphecyResponse) String() string {
 
 	return string(prophecyJSON)
 }
+
+// QueryGasPriceResponse
+type QueryGasPriceResponse struct {
+	GasPrice string `json:"gasPrice"`
+}
