@@ -165,7 +165,7 @@ def get_password(network_definition_file_json):
 
 
 def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
-    network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    network_element = f"--network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
     private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
     command_line = " ".join(
@@ -182,7 +182,7 @@ def get_eth_balance(transfer_request: EthereumToSifchainTransferRequest):
 
 
 def get_whitelisted_tokens(transfer_request: EthereumToSifchainTransferRequest):
-    network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    network_element = f"--network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
     private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
     command_line = " ".join(
@@ -207,7 +207,7 @@ def get_token_ethereum_address(
 
 
 def mint_tokens(transfer_request: EthereumToSifchainTransferRequest, operator_address):
-    network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    network_element = f"--network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     symbol_element = f"--symbol {transfer_request.ethereum_symbol} " if transfer_request.ethereum_symbol else ""
     private_element = f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\"" if transfer_request.ethereum_private_key_env_var else ""
     command_line = " ".join(
@@ -429,7 +429,7 @@ def send_from_ethereum_to_sifchain(transfer_request: EthereumToSifchainTransferR
                    f"--ethereum_private_key_env_var \"{transfer_request.ethereum_private_key_env_var}\" " \
                    f"--json_path {transfer_request.solidity_json_path} " \
                    f"--gas estimate "
-    command_line += f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    command_line += f"--network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     transaction_result = run_yarn_command(command_line)
     if "burn" in transaction_result:
         result = transaction_result["burn"]["receipt"]["blockNumber"]
@@ -500,7 +500,7 @@ def current_ethereum_block_number(smart_contracts_dir: str):
 
 
 def wait_for_ethereum_block_number(block_number: int, transfer_request: EthereumToSifchainTransferRequest):
-    network_element = f"--ethereum_network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
+    network_element = f"--network {transfer_request.ethereum_network} " if transfer_request.ethereum_network else ""
     command_line = f"yarn --cwd {transfer_request.smart_contracts_dir} " \
                    f"integrationtest:waitForBlock " \
                    f"{network_element} " \
@@ -562,7 +562,7 @@ def set_lock_burn_limit(smart_contracts_dir: str, token: str, amount: int):
 def create_ethereum_address(smart_contracts_dir: str, ethereum_network: str) -> (str, str):
     cmd = f"yarn -s --cwd {smart_contracts_dir} " \
           "integrationtest:createEthereumAddress " \
-          f"--ethereum_network {ethereum_network} "
+          f"--network {ethereum_network} "
     result = run_yarn_command(cmd)
     return result["address"], result["privateKey"]
 
@@ -572,7 +572,7 @@ def create_ethereum_addresses(smart_contracts_dir: str, ethereum_network: str, c
     cmd = f"yarn -s --cwd {smart_contracts_dir} " \
           "integrationtest:createEthereumAddress " \
           f"{count_element} " \
-          f"--ethereum_network {ethereum_network} "
+          f"--network {ethereum_network} "
     return run_yarn_command(cmd)
 
 
@@ -595,7 +595,7 @@ def create_new_currency(
     """returns {'destination': '0x627306090abaB3A6e1400e9345bC60c78a8BEf57', 'amount': '9000000000000000000', 'newtoken_address': '0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc', 'newtoken_symbol': 'a3c626b'}"""
     if not operator_address:
         operator_address = ganache_owner_account(smart_contracts_dir)
-    network_element = f"--ethereum_network {ethereum_network} " if ethereum_network else ""
+    network_element = f"--network {ethereum_network} " if ethereum_network else ""
     return run_yarn_command(
         f"yarn --cwd {smart_contracts_dir} "
         f"integrationtest:enableNewToken "

@@ -6,13 +6,13 @@ function buildProvider(context, argv, logging) {
     const {getRequiredEnvironmentVariable} = context.require('./sifchainUtilities');
 
     let provider;
-    if (!argv.ethereum_network)
+    if (!argv.network)
         throw "Must supply argv.ethereum_network";
 
-    switch (argv.ethereum_network) {
+    switch (argv.network) {
         case "ropsten":
         case "mainnet":
-            let netConnectionString = `https://${argv.ethereum_network}.infura.io/v3/${process.env.INFURA_PROJECT_ID}`;
+            let netConnectionString = `https://${argv.network}.infura.io/v3/${process.env.INFURA_PROJECT_ID}`;
             if (argv.ethereum_private_key_env_var) {
                 const privateKey = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
                 provider = new HDWalletProvider(
@@ -24,21 +24,22 @@ function buildProvider(context, argv, logging) {
             }
             break;
         case "dynamic":
-            let websocketAddr = getRequiredEnvironmentVariable("ETHEREUM_WEBSOCKET_ADDRESS")
+            const websocketAddr = getRequiredEnvironmentVariable("ETHEREUM_WEBSOCKET_ADDRESS")
             const privateKey = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
+            logging.info(`in dynamic, ${websocketAddr}, ${privateKey}`);
             provider = new HDWalletProvider(
                 privateKey,
                 websocketAddr
             );
             break;
         case "http://localhost:7545":
-            provider = new Web3.providers.HttpProvider(argv.ethereum_network);
+            provider = new Web3.providers.HttpProvider(argv.network);
             break;
         default:
             const privateKeyDefault = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
             provider = new HDWalletProvider(
                 privateKeyDefault,
-                argv.ethereum_network,
+                argv.network,
             );
             break;
     }

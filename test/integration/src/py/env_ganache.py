@@ -23,7 +23,7 @@ def ganache_cmd(args: GanacheInput, keysfile) -> str:
     block_delay = f"-b {args.block_delay}" if args.block_delay and args.block_delay > 0 else ""
     mnemonic = args.mnemonic if args.mnemonic else "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
     cmd = " ".join([
-        "ganache-cli",
+        "/home/vagrant/.npm-global/bin/ganache-cli",
         block_delay,
         "-h 0.0.0.0",
         f'-d --mnemonic "{mnemonic}"',
@@ -67,8 +67,8 @@ def start_ganache(args: GanacheInput):
                 cmd,
                 shell=True,
                 # stdout=logfile,
-                stdin=None,
-                stderr=subprocess.STDOUT,
+                # stdin=None,
+                # stderr=subprocess.STDOUT,
             )
             wait_for_port("localhost", args.port)
             keys = env_utilities.read_config_file(keysfile.name)

@@ -9,12 +9,12 @@ import yaml
 import env_ebrelayer
 import env_ganache
 import env_geth
-import env_sifnoded
 import env_golang
+import env_sifnoded
 import env_smartcontractrunner
+import env_testrunner
 import env_utilities
 from env_geth import start_geth
-import os
 
 configbase = "/configs"
 logbase = "/logs/"
@@ -22,6 +22,7 @@ logbase = "/logs/"
 ganachename = "ganache"
 gethname = "geth"
 basedir = "/sifnode"
+deployment_name="local"
 n_validators = 1
 
 
@@ -54,7 +55,7 @@ golang_input = env_golang.GolangInput(
 )
 
 ganache_ws_port = 7545
-ganache_ws_addr = f"ws://ganache:{ganache_ws_port}"
+ganache_ws_addr = f"https://ganache:{ganache_ws_port}"
 ganache_network_id = 5777
 
 ganache_input = env_ganache.GanacheInput(
@@ -79,10 +80,14 @@ smartcontractrunner_input = env_smartcontractrunner.SmartContractDeployInput(
     ws_addr=ganache_ws_addr,
     truffle_network="dynamic",
     operator_private_key=None,
+    operator_address=None,
+    ethereum_address=None,
+    ethereum_private_key=None,
     validator_ethereum_credentials=None,
     n_validators=n_validators,
     validator_powers=[100],
-    consensus_threshold=100
+    consensus_threshold=100,
+    deployment_dir=os.path.join(basedir, f"smart-contracts/deployments/{deployment_name}")
 )
 
 sifnoded_input = env_sifnoded.SifnodedRunner(
@@ -95,7 +100,8 @@ sifnoded_input = env_sifnoded.SifnodedRunner(
     network_config_file="/tmp/netconfig.yml",
     seed_ip_address="10.10.1.1",
     n_validators=n_validators,
-    go_build_config_path=config_file_full_path(env_golang.golangname)
+    go_build_config_path=config_file_full_path(env_golang.golangname),
+    sifnode_host=env_sifnoded.sifnodename
 )
 
 geth_docker = env_geth.geth_docker_compose(geth_input)
@@ -115,11 +121,6 @@ shared_docker = {
             },
         }
     },
-    # "volumes": {
-    #     "gobin": {
-    #         "name": "gobin"
-    #     }
-    # }
 }
 
 component = sys.argv[1] if len(sys.argv) > 1 else "dockerconfig"
@@ -145,17 +146,18 @@ elif component == "smartcontractrunner":
 elif component == "golang_build":
     env_golang.golang_build(golang_input)
 elif component == "deploy_contracts":
-    time.sleep(10)
-    print(f"cffis: {smartcontractrunner_input.ethereum_config_file}")
     ethereum_config = env_utilities.read_config_file(smartcontractrunner_input.ethereum_config_file)
     print(f"ethereumconfig: {json.dumps(ethereum_config, indent=2)}")
     private_keys_stanza = ethereum_config["config"]["private_keys"]
     private_keys = list(private_keys_stanza.values())
-    print(f"kis: {private_keys[0]}")
+    ethereum_addresses = list(private_keys_stanza.keys())
     i = dataclasses.replace(
         smartcontractrunner_input,
+        operator_address=ethereum_addresses[0],
         operator_private_key=private_keys[0],
-        validator_ethereum_credentials=list(private_keys_stanza.items())[1:smartcontractrunner_input.n_validators + 1]
+        validator_ethereum_credentials=list(private_keys_stanza.items())[1:smartcontractrunner_input.n_validators + 1],
+        ethereum_address=ethereum_addresses[-1],
+        ethereum_private_key=private_keys[-1]
     )
     env_smartcontractrunner.deploy_contracts(i)
 elif component == "startsifnoded":
@@ -185,6 +187,20 @@ elif component == "startsifnoded":
         )
         env_ebrelayer.run(x)
     time.sleep(10000)
+elif component == "tr":
+    i = env_testrunner.build_testrunner_input(
+        basedir=basedir,
+        logfile=log_file_full_path(env_testrunner.testrunnername),
+        configoutputfile=config_file_full_path(env_testrunner.testrunnername),
+        ebrelayer_config_file=config_file_full_path(env_ebrelayer.ebrelayername),
+        sifnode_config_file=config_file_full_path(env_sifnoded.sifnodename),
+        deployment_name=deployment_name,
+        ethereum_config_file=config_file_full_path(env_ganache.ganachename),
+        smart_contract_config_file=config_file_full_path(env_smartcontractrunner.smartcontractrunner_name)
+    )
+    j = env_testrunner.testrunner_config_contents(i)
+    print(j)
+
 
 # TODO
 # start ganache

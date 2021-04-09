@@ -20,6 +20,7 @@ class SifnodedRunner(env_utilities.SifchainCmdInput):
     seed_ip_address: str
     bin_prefix: str
     go_build_config_path: str
+    sifnode_host: str
 
 
 # sequence

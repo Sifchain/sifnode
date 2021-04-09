@@ -1,5 +1,7 @@
 import json
 import os
+import pathlib
+import shutil
 import subprocess
 from dataclasses import dataclass
 from typing import List, Tuple
@@ -16,11 +18,15 @@ class SmartContractDeployInput(env_utilities.SifchainCmdInput):
     network_id: int
     ws_addr: str
     truffle_network: str
+    operator_address: str
     operator_private_key: str
+    ethereum_address: str  # an ethereum address with eth to hand out
+    ethereum_private_key: str
     n_validators: int
     validator_ethereum_credentials: List[Tuple[str, str]]
     validator_powers: List[int]
     consensus_threshold: int
+    deployment_dir: str
 
 
 def smartcontractrunner_docker_compose(args: env_ethereum.EthereumInput):
@@ -40,12 +46,12 @@ def smart_contract_dir(args: SmartContractDeployInput):
 
 
 def deploy_contracts_cmd(args: SmartContractDeployInput):
-    print(f"argsare: {args}")
+    print(f"argsare: {json.dumps(args.__dict__, indent=2)}")
     os.environ["ETHEREUM_PRIVATE_KEY"] = args.operator_private_key
     os.environ["ETHEREUM_WEBSOCKET_ADDRESS"] = args.ws_addr
     os.environ["ETHEREUM_NETWORK_ID"] = str(args.network_id)
     print(f"creds: {args}")
-    validator_addresses=",".join(map(lambda x: x[0], args.validator_ethereum_credentials))
+    validator_addresses = ",".join(map(lambda x: x[0], args.validator_ethereum_credentials))
     valpowers = ",".join(map(lambda x: str(x), args.validator_powers))
     env_vars = " ".join([
         f"INITIAL_VALIDATOR_ADDRESSES={validator_addresses}",
@@ -54,21 +60,27 @@ def deploy_contracts_cmd(args: SmartContractDeployInput):
     return f"cd {smart_contract_dir(args)} && {env_vars} npx truffle deploy --network {args.truffle_network} --reset"
 
 
-def read_smart_contract_artifacts(args: SmartContractDeployInput):
-    contracts = ["BridgeBank", "BridgeRegistry", "BridgeToken"]
-    for c in contracts:
-        p = os.path.join(smart_contract_dir(args), "build/contracts", f"{c}.json")
+# def read_smart_contract_artifacts(args: SmartContractDeployInput):
+#     contracts = ["BridgeBank", "BridgeRegistry", "BridgeToken"]
+#     for c in contracts:
+#         p = os.path.join(smart_contract_dir(args), "build/contracts", f"{c}.json")
 
 
 def deploy_contracts(args: SmartContractDeployInput):
     cmd = deploy_contracts_cmd(args)
-    print(f"cmdis: {cmd}")
     output = subprocess.run(
         cmd,
         shell=True,
         text=True
     )
-    print(f"inputis: \n{json.dumps(args.__dict__)}")
+    build_artifacts_directory = os.path.join(args.basedir, "smart-contracts/build/contracts")
+    build_artifacts = os.listdir(build_artifacts_directory)
+    print(f"buildartifacts: {build_artifacts_directory} {build_artifacts}, dd: {args.deployment_dir}")
+    pathlib.Path(args.deployment_dir).mkdir(exist_ok=True)
+    for jsfile in filter(lambda f: ".json" in f, build_artifacts):
+        srcfile = os.path.join(build_artifacts_directory, jsfile)
+        print(f"copy {srcfile} to {args.deployment_dir}")
+        shutil.copy(srcfile, args.deployment_dir)
     env_utilities.startup_complete(
         args, {
             "stdout": output.stdout,

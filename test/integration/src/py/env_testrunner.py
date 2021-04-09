@@ -7,13 +7,11 @@ import env_ethereum
 import env_utilities
 from env_utilities import wait_for_port
 
-golangname = "golang"
-
+testrunnername="testrunner"
 
 @dataclass
 class TestrunnerInput(env_utilities.SifchainCmdInput):
     ebrelayer_config_file: str
-    base_dir: str
     sifnode: str
     deployment_name: str
     operator_address: str
@@ -27,9 +25,42 @@ class TestrunnerInput(env_utilities.SifchainCmdInput):
     infura_id: str
 
 
+def build_testrunner_input(
+        basedir: str,
+        logfile: str,
+        configoutputfile: str,
+        ebrelayer_config_file: str,
+        sifnode_config_file: str,
+        deployment_name: str,
+        ethereum_config_file: str,
+        smart_contract_config_file: str
+):
+    sifnode_config = env_utilities.read_config_file(sifnode_config_file)
+    ethereum_config = env_utilities.read_config_file(ethereum_config_file)
+    smart_contract_config = env_utilities.read_config_file(smart_contract_config_file)
+    return TestrunnerInput(
+        basedir=basedir,
+        logfile=logfile,
+        configoutputfile=configoutputfile,
+        ebrelayer_config_file=ebrelayer_config_file,
+        sifnode=f'tcp://{sifnode_config["input"]["sifnode_host"]}:{sifnode_config["input"]["rpc_port"]}',
+        deployment_name=deployment_name,
+        operator_address=smart_contract_config["input"]["operator_address"],
+        operator_private_key=smart_contract_config["input"]["operator_private_key"],
+        ethereum_address=smart_contract_config["input"]["ethereum_address"],
+        ethereum_private_key=smart_contract_config["input"]["ethereum_private_key"],
+        rowan_source=sifnode_config["config"]["adminuser"]["address"],
+        ethereum_network=smart_contract_config["input"]["truffle_network"],
+        ethereum_network_id=smart_contract_config["input"]["network_id"],
+        ethereum_websocket_address=smart_contract_config["input"]["ws_addr"],
+        infura_id=8
+    )
+    pass
+
+
 def testrunner_config_contents(args: TestrunnerInput):
     config = f"""
-export BASEDIR={args.base_dir}
+export BASEDIR={args.basedir}
 export SIFNODE={args.sifnode}
 export DEPLOYMENT_NAME={args.deployment_name}
 export OPERATOR_ADDRESS={args.operator_address}
@@ -44,14 +75,4 @@ export OPERATOR_PRIVATE_KEY={args.operator_private_key}
 
 . $BASEDIR/test/integration/environment_setup.sh
     """
-    return f"cd {args.base_dir} && GOBIN={args.go_bin} PATH=$PATH:/usr/local/go/bin make install"
-
-
-
-def golang_build(args: GolangInput):
-    cmd = golang_build_cmd(args)
-    subprocess.run(
-        cmd,
-        shell=True
-    )
-    env_utilities.startup_complete(args, {})
+    return config

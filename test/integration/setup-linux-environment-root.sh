@@ -27,7 +27,7 @@ sudo apt-get install -y nodejs
 
 apt-get update
 
-apt-get install -y jq make rake docker-ce docker-ce-cli containerd.io libc6-dev gcc python3-venv python3-dev python3-pip parallel netcat uuid-runtime vim tmux rsync psmisc ethereum
+apt-get install -y jq make rake docker-ce docker-ce-cli containerd.io libc6-dev gcc python3-venv python3-dev python3-pip parallel netcat uuid-runtime vim tmux rsync psmisc ethereum inetutils-ping
 apt-get install -y --no-install-recommends yarn
 
 # don't want to require root to run docker
@@ -39,3 +39,4 @@ curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compo
 # install go
 wget -O /tmp/go.tar.gz https://golang.org/dl/go1.15.5.linux-amd64.tar.gz
 sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+

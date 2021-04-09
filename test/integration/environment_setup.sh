@@ -29,7 +29,7 @@ echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:getTokenBalance \
   --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
   --gas estimate \
-  --ethereum_network $ETHEREUM_NETWORK \
+  --network $ETHEREUM_NETWORK \
   --ethereum_address $ETHEREUM_ADDRESS \
 
 echo; echo == eth balance
@@ -38,7 +38,7 @@ echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:getTokenBalance \
   --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
   --gas estimate \
-  --ethereum_network $ETHEREUM_NETWORK \
+  --network $ETHEREUM_NETWORK \
   --ethereum_address $ETHEREUM_ADDRESS \
 
 echo; echo == mint erowan
@@ -47,7 +47,7 @@ echo yarn -s --cwd /home/james/workspace/sifnode/smart-contracts integrationtest
   --ethereum_private_key_env_var "OPERATOR_PRIVATE_KEY" \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
   --gas estimate \
-  --ethereum_network $ETHEREUM_NETWORK \
+  --network $ETHEREUM_NETWORK \
   --ethereum_address $ETHEREUM_ADDRESS \
   --operator_address $OPERATOR_ADDRESS \
   --amount 100000000000000000000000000
@@ -58,7 +58,7 @@ echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:sendLockTx --sifchai
   --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
   --gas estimate \
-  --ethereum_network $ETHEREUM_NETWORK \
+  --network $ETHEREUM_NETWORK \
   --bridgebank_address $BRIDGE_BANK_ADDRESS \
   --ethereum_address $ETHEREUM_ADDRESS \
   --amount 1700000000000000000
@@ -69,7 +69,7 @@ echo yarn -s --cwd $BASEDIR/smart-contracts integrationtest:sendBurnTx \
   --ethereum_private_key_env_var "ETHEREUM_PRIVATE_KEY" \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
   --gas estimate \
-  --ethereum_network $ETHEREUM_NETWORK \
+  --network $ETHEREUM_NETWORK \
   --bridgebank_address $BRIDGE_BANK_ADDRESS \
   --ethereum_address $ETHEREUM_ADDRESS \
   --sifchain_address $ROWAN_SOURCE \
@@ -81,7 +81,7 @@ echo yarn -s --cwd /home/james/workspace/sifnode/smart-contracts integrationtest
   --ethereum_private_key_env_var "OPERATOR_PRIVATE_KEY" \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
   --gas estimate \
-  --ethereum_network $ETHEREUM_NETWORK \
+  --network $ETHEREUM_NETWORK \
   --bridgebank_address $BRIDGE_BANK_ADDRESS \
   --ethereum_address $OPERATOR_ADDRESS \
   --sifchain_address $ROWAN_SOURCE \
@@ -92,7 +92,7 @@ echo yarn -s --cwd $BASEDIR/smart-contracts \
   integrationtest:whitelistedTokens \
   --bridgebank_address $BRIDGE_BANK_ADDRESS \
   --json_path $BASEDIR/smart-contracts/deployments/$DEPLOYMENT_NAME \
-  --ethereum_network $ETHEREUM_NETWORK \
+  --network $ETHEREUM_NETWORK \
 
 echo; echo == sifchain balance
 echo sifnodecli q auth account --node $SIFNODE $ROWAN_SOURCE

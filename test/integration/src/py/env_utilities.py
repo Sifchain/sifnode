@@ -107,11 +107,9 @@ def wait_for_file(f: str):
                 return f
         except Exception as e:
             time.sleep(1)
-            print(f"still waiting for {f}")
             pass
 
 
 def read_config_file(f: str):
-    print(f"waiting for file {f}")
     wait_for_file(f)
     return read_json_file(f)
