@@ -31,13 +31,20 @@ on:
         description: aws region
         required: true
         default: us-east-1
+      aws_region_second_vote:
+        description: aws region
+        required: true
+        default: eu-west-1
+
 jobs:
   create_governance_request:
     name: create_governance_request
     runs-on: ${{ matrix.os }}
     env:
+      aws_region_second_vote: "${{ github.event.inputs.aws_region_second_vote }}"
       aws_region: "${{ github.event.inputs.aws_region }}"
       aws_cluster_name: "sifchain-aws-${{ github.event.inputs.environment }}-us"
+      aws_cluster_name_second_vote: "sifchain-aws-${{ github.event.inputs.environment }}-eu"
       aws_role: "${{ github.event.inputs.aws_role }}"
       env: "${{ github.event.inputs.environment }}"
       app_env: "${{ github.event.inputs.environment }}"
@@ -124,7 +131,7 @@ jobs:
           echo "Create Governance Release Request with deposit ammount $deposit"
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
-          rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}]"
+          #rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}]"
 
       - name: Create Governance Vote 1
         shell: bash
@@ -133,7 +140,20 @@ jobs:
           echo "Create Governance Release Request"
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
-          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
+          #rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
+
+      - name: Setup AWS Profile and KUBECONFIG Second Voter
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File...."
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region_second_vote}, ${aws_role}, ${aws_cluster_name_second_vote}]"
 
       - name: Create Governance Vote 2
         shell: bash
