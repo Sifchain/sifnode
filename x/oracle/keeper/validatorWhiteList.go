@@ -10,7 +10,7 @@ import (
 func (k Keeper) SetOracleWhiteList(ctx sdk.Context, validatorList []sdk.ValAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
-	valList := make([]string, 0, len(validatorList))
+	valList := make([]string, len(validatorList))
 	for i, entry := range validatorList {
 		valList[i] = entry.String()
 	}

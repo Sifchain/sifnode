@@ -6,12 +6,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	"github.com/Sifchain/sifnode/x/oracle"
+	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 )
 
 const (
@@ -27,19 +28,19 @@ var (
 
 func TestBasicMsgs(t *testing.T) {
 	//Setup
-	ctx, _, _, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.7, []int64{3, 7})
+	ctx, _, _, _, handler, validatorAddresses := CreateTestHandler(t, 0.7, []int64{3, 7})
 
 	valAddress := validatorAddresses[0]
 
 	//Unrecognized type
-	res, err := handler(ctx, sdk.NewTestMsg())
+	res, err := handler(ctx, testdata.NewTestMsg())
 	require.Error(t, err)
 	require.Nil(t, res)
 	require.True(t, strings.Contains(err.Error(), "unrecognized ethbridge message type: "))
 
 	//Normal Creation
 	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
-	res, err = handler(ctx, normalCreateMsg)
+	res, err = handler(ctx, &normalCreateMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
@@ -64,7 +65,7 @@ func TestBasicMsgs(t *testing.T) {
 			case "token_contract_address":
 				require.Equal(t, value, types.TestTokenContractAddress)
 			case statusString:
-				require.Equal(t, value, oracle.StatusTextToString[oracle.PendingStatusText])
+				require.Equal(t, value, oracletypes.StatusTextToString[oracletypes.StatusText_STATUS_TEXT_PENDING])
 			case "claim_type":
 				require.Equal(t, value, types.ClaimTypeToString[types.ClaimType_CLAIM_TYPE_LOCK])
 			case "cosmos_sender":
@@ -77,31 +78,31 @@ func TestBasicMsgs(t *testing.T) {
 
 	//Bad Creation
 	badCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
-	badCreateMsg.Nonce = -1
+	badCreateMsg.EthBridgeClaim.Nonce = -1
 	err = badCreateMsg.ValidateBasic()
 	require.Error(t, err)
 }
 
 func TestDuplicateMsgs(t *testing.T) {
-	ctx, _, _, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.7, []int64{3, 7})
+	ctx, _, _, _, handler, validatorAddresses := CreateTestHandler(t, 0.7, []int64{3, 7})
 
 	valAddress := validatorAddresses[0]
 
 	normalCreateMsg := types.CreateTestEthMsg(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
-	res, err := handler(ctx, normalCreateMsg)
+	res, err := handler(ctx, &normalCreateMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracle.StatusTextToString[oracle.PendingStatusText])
+				require.Equal(t, value, oracletypes.StatusTextToString[oracletypes.StatusText_STATUS_TEXT_PENDING])
 			}
 		}
 	}
 
 	//Duplicate message from same validator
-	res, err = handler(ctx, normalCreateMsg)
+	res, err = handler(ctx, &normalCreateMsg)
 	require.Error(t, err)
 	require.Nil(t, res)
 	require.True(t, strings.Contains(err.Error(), "already processed message from validator for this id"))
@@ -109,7 +110,7 @@ func TestDuplicateMsgs(t *testing.T) {
 
 func TestMintSuccess(t *testing.T) {
 	//Setup
-	ctx, _, bankKeeper, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+	ctx, _, bankKeeper, _, handler, validatorAddresses := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 
 	valAddressVal1Pow2 := validatorAddresses[0]
 	valAddressVal2Pow7 := validatorAddresses[1]
@@ -117,43 +118,43 @@ func TestMintSuccess(t *testing.T) {
 
 	//Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, valAddressVal1Pow2, types.ClaimType_CLAIM_TYPE_LOCK)
-	res, err := handler(ctx, normalCreateMsg)
+	res, err := handler(ctx, &normalCreateMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
 	//Message from second validator succeeds and mints new tokens
 	normalCreateMsg = types.CreateTestEthMsg(t, valAddressVal2Pow7, types.ClaimType_CLAIM_TYPE_LOCK)
-	res, err = handler(ctx, normalCreateMsg)
+	res, err = handler(ctx, &normalCreateMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
-	receiverCoins := bankKeeper.GetCoins(ctx, receiverAddress)
+	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
 	expectedCoins := sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracle.StatusTextToString[oracle.SuccessStatusText])
+				require.Equal(t, value, oracletypes.StatusTextToString[oracletypes.StatusText_STATUS_TEXT_SUCCESS])
 			}
 		}
 	}
 
 	//Additional message from third validator fails and does not mint
 	normalCreateMsg = types.CreateTestEthMsg(t, valAddressVal3Pow1, types.ClaimType_CLAIM_TYPE_LOCK)
-	res, err = handler(ctx, normalCreateMsg)
+	res, err = handler(ctx, &normalCreateMsg)
 	require.Error(t, err)
 	require.Nil(t, res)
 	require.True(t, strings.Contains(err.Error(), "prophecy already finalized"))
-	receiverCoins = bankKeeper.GetCoins(ctx, receiverAddress)
+	receiverCoins = bankKeeper.GetAllBalances(ctx, receiverAddress)
 	expectedCoins = sdk.Coins{sdk.NewInt64Coin(types.TestCoinsLockedSymbol, types.TestCoinIntAmount)}
 	require.True(t, receiverCoins.IsEqual(expectedCoins))
 }
 
 func TestNoMintFail(t *testing.T) {
 	//Setup
-	ctx, _, bankKeeper, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.71, []int64{3, 4, 3})
+	ctx, _, bankKeeper, _, handler, validatorAddresses := CreateTestHandler(t, 0.71, []int64{3, 4, 3})
 
 	valAddressVal1Pow3 := validatorAddresses[0]
 	valAddressVal2Pow4 := validatorAddresses[1]
@@ -176,56 +177,57 @@ func TestNoMintFail(t *testing.T) {
 	ethMsg3 := NewMsgCreateEthBridgeClaim(ethClaim3)
 
 	//Initial message
-	res, err := handler(ctx, ethMsg1)
+	res, err := handler(ctx, &ethMsg1)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracle.StatusTextToString[oracle.PendingStatusText])
+				require.Equal(t, value, oracletypes.StatusTextToString[oracletypes.StatusText_STATUS_TEXT_PENDING])
 			}
 		}
 	}
 
 	//Different message from second validator succeeds
-	res, err = handler(ctx, ethMsg2)
+	res, err = handler(ctx, &ethMsg2)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracle.StatusTextToString[oracle.PendingStatusText])
+				require.Equal(t, value, oracletypes.StatusTextToString[oracletypes.StatusText_STATUS_TEXT_PENDING])
 			}
 		}
 	}
 
 	//Different message from third validator succeeds but results in failed prophecy with no minting
-	res, err = handler(ctx, ethMsg3)
+	res, err = handler(ctx, &ethMsg3)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	for _, event := range res.Events {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracle.StatusTextToString[oracle.FailedStatusText])
+				require.Equal(t, value, oracletypes.StatusTextToString[oracletypes.StatusText_STATUS_TEXT_FAILED])
 			}
 		}
 	}
+
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
-	receiver1Coins := bankKeeper.GetCoins(ctx, receiverAddress)
+	receiver1Coins := bankKeeper.GetAllBalances(ctx, receiverAddress)
 	require.True(t, receiver1Coins.IsZero())
 }
 
 func TestLockFail(t *testing.T) {
 	//Setup
-	ctx, _, _, _, _, _, handler := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+	ctx, _, _, _, handler, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 
 	//Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.ClaimType_CLAIM_TYPE_LOCK)
-	res, err := handler(ctx, normalCreateMsg)
+	res, err := handler(ctx, &normalCreateMsg)
 
 	require.Error(t, err)
 	require.Nil(t, res)
@@ -234,11 +236,11 @@ func TestLockFail(t *testing.T) {
 
 func TestBurnFail(t *testing.T) {
 	//Setup
-	ctx, _, _, _, _, _, handler := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+	ctx, _, _, _, handler, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 
 	//Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.ClaimType_CLAIM_TYPE_BURN)
-	res, err := handler(ctx, normalCreateMsg)
+	res, err := handler(ctx, &normalCreateMsg)
 
 	require.Error(t, err)
 	require.Nil(t, res)
@@ -250,7 +252,7 @@ func TestBurnEthFail(t *testing.T) {
 }
 
 func TestBurnEthSuccess(t *testing.T) {
-	ctx, _, bankKeeper, _, _, validatorAddresses, handler := CreateTestHandler(t, 0.5, []int64{5})
+	ctx, _, bankKeeper, _, handler, validatorAddresses := CreateTestHandler(t, 0.5, []int64{5})
 	valAddressVal1Pow5 := validatorAddresses[0]
 
 	// Initial message to mint some eth
@@ -267,12 +269,12 @@ func TestBurnEthSuccess(t *testing.T) {
 	ethMsg1 := NewMsgCreateEthBridgeClaim(ethClaim1)
 
 	// Initial message succeeds and mints eth
-	res, err := handler(ctx, ethMsg1)
+	res, err := handler(ctx, &ethMsg1)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	receiverAddress, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
-	receiverCoins := bankKeeper.GetCoins(ctx, receiverAddress)
+	receiverCoins := bankKeeper.GetAllBalances(ctx, receiverAddress)
 	mintedCoins := sdk.Coins{sdk.NewCoin(coinsToMintSymbolLocked, coinsToMintAmount)}
 	require.True(t, receiverCoins.IsEqual(mintedCoins))
 
@@ -286,7 +288,7 @@ func TestBurnEthSuccess(t *testing.T) {
 	ethMsg1 = NewMsgCreateEthBridgeClaim(ethClaim1)
 
 	// Initial message succeeds and mints eth
-	res, err = handler(ctx, ethMsg1)
+	res, err = handler(ctx, &ethMsg1)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
@@ -299,14 +301,14 @@ func TestBurnEthSuccess(t *testing.T) {
 	// Second message succeeds, burns eth and fires correct event
 	burnMsg := types.CreateTestBurnMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,
 		coinsToBurnSymbolPrefixed)
-	res, err = handler(ctx, burnMsg)
+	res, err = handler(ctx, &burnMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 	senderAddress := receiverAddress
 	burnedCoins := sdk.Coins{sdk.NewCoin(coinsToBurnSymbolPrefixed, coinsToBurnAmount)}
 	senderSequence := "0"
 	remainingCoins := mintedCoins.Sub(burnedCoins)
-	senderCoins := bankKeeper.GetCoins(ctx, senderAddress)
+	senderCoins := bankKeeper.GetAllBalances(ctx, senderAddress)
 	require.True(t, senderCoins.IsEqual(remainingCoins))
 	eventEthereumChainID := ""
 	eventCosmosSender := ""
@@ -366,48 +368,49 @@ func TestBurnEthSuccess(t *testing.T) {
 	ethMsg1 = NewMsgCreateEthBridgeClaim(ethClaim1)
 
 	// Initial message succeeds and mints eth
-	res, err = handler(ctx, ethMsg1)
+	res, err = handler(ctx, &ethMsg1)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
 	// Third message failed since pegged token can be lock.
 	lockMsg := types.CreateTestLockMsg(t, types.TestAddress, ethereumReceiver, coinsToBurnAmount,
 		coinsToBurnSymbolPrefixed)
-	_, err = handler(ctx, lockMsg)
+	_, err = handler(ctx, &lockMsg)
 	require.NotNil(t, err)
 	require.Equal(t, "Pegged token cether can't be lock.", err.Error())
 
 	// Fourth message OK
-	_, err = handler(ctx, burnMsg)
+	_, err = handler(ctx, &burnMsg)
 	require.Nil(t, err)
 
 	// Fifth message fails, not enough eth
-	res, err = handler(ctx, burnMsg)
+	res, err = handler(ctx, &burnMsg)
 	require.Error(t, err)
 	require.Nil(t, res)
 }
 
 func TestUpdateCethReceiverAccountMsg(t *testing.T) {
-	ctx, oracleKeeper, bankKeeper, _, _, _, handler := CreateTestHandler(t, 0.5, []int64{5})
+	ctx, _, bankKeeper, oracleKeeper, handler, _ := CreateTestHandler(t, 0.5, []int64{5})
 	coins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(10000)))
 
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
-	_, _ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
+	err = bankKeeper.AddCoins(ctx, cosmosSender, coins)
+	require.NoError(t, err)
 
 	testUpdateCethReceiverAccountMsg := types.CreateTestUpdateCethReceiverAccountMsg(
 		t, types.TestAddress, types.TestAddress)
 
-	res, err := handler(ctx, testUpdateCethReceiverAccountMsg)
+	res, err := handler(ctx, &testUpdateCethReceiverAccountMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 }
 
 func TestRescueCethMsg(t *testing.T) {
-	ctx, oracleKeeper, bankKeeper, supplyKeeper, _, _, handler := CreateTestHandler(t, 0.5, []int64{5})
+	ctx, _, bankKeeper, oracleKeeper, handler, _ := CreateTestHandler(t, 0.5, []int64{5})
 	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, sdk.NewInt(10000)))
-	err := supplyKeeper.MintCoins(ctx, ModuleName, coins)
+	err := bankKeeper.MintCoins(ctx, ModuleName, coins)
 	require.NoError(t, err)
 
 	testRescueCethMsg := types.CreateTestRescueCethMsg(
@@ -416,13 +419,13 @@ func TestRescueCethMsg(t *testing.T) {
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
 
-	_, err = handler(ctx, testRescueCethMsg)
+	_, err = handler(ctx, &testRescueCethMsg)
 	require.Error(t, err)
 
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
-	_, _ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
+	_ = bankKeeper.AddCoins(ctx, cosmosSender, coins)
 
-	res, err := handler(ctx, testRescueCethMsg)
+	res, err := handler(ctx, &testRescueCethMsg)
 	require.NoError(t, err)
 	require.NotNil(t, res)
 }

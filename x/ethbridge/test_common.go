@@ -4,33 +4,23 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	keeperLib "github.com/Sifchain/sifnode/x/oracle/keeper"
-	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/supply"
-
-	"github.com/Sifchain/sifnode/x/oracle"
+	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 )
 
 const (
 	TestAddress = "cosmos1xdp5tvt7lxh8rf9xx07wy2xlagzhq24ha48xtq"
 )
 
-func CreateTestHandler(
-	t *testing.T, consensusNeeded float64, validatorAmounts []int64,
-) (sdk.Context, oracle.Keeper, bank.Keeper, supply.Keeper, auth.AccountKeeper, []sdk.ValAddress, sdk.Handler) {
-	ctx, oracleKeeper, bankKeeper, supplyKeeper,
-		accountKeeper, validatorAddresses, keyEthBridge := oracle.CreateTestKeepers(t, consensusNeeded, validatorAmounts, ModuleName)
-	bridgeAccount := supply.NewEmptyModuleAccount(ModuleName, supply.Burner, supply.Minter)
-	supplyKeeper.SetModuleAccount(ctx, bridgeAccount)
+func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts []int64) (sdk.Context, ethbridgekeeper.Keeper, bankkeeper.Keeper, oraclekeeper.Keeper, sdk.Handler, []sdk.ValAddress) {
 
-	cdc := keeperLib.MakeTestCodec()
-	// keyEthBridge := sdk.NewKVStoreKey(types.StoreKey)
-	bridgeKeeper := NewKeeper(cdc, supplyKeeper, oracleKeeper, keyEthBridge)
+	ctx, keeper, bankKeeper, _, oracleKeeper, _, validatorAddresses := ethbridgekeeper.CreateTestKeepers(t, consensusNeeded, validatorAmounts, "")
+
 	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestAddress)
-	bridgeKeeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
-	handler := NewHandler(bridgeKeeper)
+	keeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
+	handler := NewHandler(keeper)
 
-	return ctx, oracleKeeper, bankKeeper, supplyKeeper, accountKeeper, validatorAddresses, handler
+	return ctx, keeper, bankKeeper, oracleKeeper, handler, validatorAddresses
 }

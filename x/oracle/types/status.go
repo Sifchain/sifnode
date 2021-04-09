@@ -6,7 +6,12 @@ import (
 	"strconv"
 )
 
-var StatusTextToString = [...]string{"pending", "success", "failed"}
+var StatusTextToString = map[StatusText]string{
+	StatusText_STATUS_TEXT_UNSPECIFIED: "unspecified",
+	StatusText_STATUS_TEXT_PENDING: "pending",
+	StatusText_STATUS_TEXT_SUCCESS: "success",
+	StatusText_STATUS_TEXT_FAILED: "failed",
+}
 var StringToStatusText = map[string]StatusText{
 	"pending": StatusText_STATUS_TEXT_PENDING,
 	"success": StatusText_STATUS_TEXT_SUCCESS,
