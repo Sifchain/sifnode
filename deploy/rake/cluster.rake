@@ -743,7 +743,7 @@ tail -c +4 tmp_keyring > tmp_keyring_rendered
 cat tmp_keyring_rendered | wc
 rm -rf tmp_keyring
 echo "moniker #{args[:moniker]}"
-yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend test
+yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file
       }
       system(cluster_automation) or exit 1
     end
