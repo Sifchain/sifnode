@@ -18,6 +18,9 @@ const (
 
 	// ceth symbol
 	CethSymbol = "ceth"
+
+	// native symbol
+	NativeSymbol = "rowan"
 )
 
 var (
