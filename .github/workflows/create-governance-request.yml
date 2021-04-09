@@ -152,6 +152,8 @@ jobs:
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
+          rm -rf ./tmp_secrets
+          rm -rf ./tmp_keyring_rendered
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File...."
           rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region_second_vote}, ${aws_role}, ${aws_cluster_name_second_vote}]"
 
