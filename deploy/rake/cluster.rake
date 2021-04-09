@@ -733,7 +733,7 @@ python pyscript.py
   desc "Generate Test Key Ring."
   namespace :release do
     desc "Generate Test Key Ring."
-    task :generate_keyring, [:moniker,:mnemonic] do |t, args|
+    task :generate_keyring, [:moniker] do |t, args|
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
@@ -741,6 +741,7 @@ set +x
 echo -e "${keyring_pem}" > tmp_keyring
 tail -c +4 tmp_keyring > tmp_keyring_rendered
 rm -rf tmp_keyring
+echo "moniker #{args[:moniker]}"
 yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file
       }
       system(cluster_automation) or exit 1

@@ -100,7 +100,7 @@ jobs:
           echo "Generate Keyring."
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
           source ./tmp_secrets
-          rake "cluster:release:generate_keyring[${moniker}, ${mnemonic}]"
+          rake "cluster:release:generate_keyring[${moniker}]"
 
       - name: Create Release
         shell: bash
@@ -162,7 +162,7 @@ jobs:
           echo "Create Governance Release Request"
           rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region_second_vote}/governance]"
           source ./tmp_secrets
-          rake "cluster:release:generate_keyring[${moniker}, ${mnemonic}]"
+          rake "cluster:release:generate_keyring[${moniker}]"
           rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from_second_vote}, ${env}]"
 
       - name: Clean Temp Files and Secrets
