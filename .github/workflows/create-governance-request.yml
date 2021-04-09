@@ -32,8 +32,8 @@ on:
         required: true
         default: us-east-1
 jobs:
-  create_governance_request_us:
-    name: create_governance_request_us
+  create_governance_request:
+    name: create_governance_request
     runs-on: ${{ matrix.os }}
     env:
       aws_region: "${{ github.event.inputs.aws_region }}"
@@ -44,10 +44,12 @@ jobs:
       block_time: "${{ github.event.inputs.block_time }}"
       deposit: "${{ github.event.inputs.deposit }}"
       from: "${{ github.event.inputs.environment }}-us-1"
+      from_second_vote: "${{ github.event.inputs.environment }}-eu-1"
       release_version: "${{ github.event.inputs.release_version }}"
       chainnet: "sifchain-${{ github.event.inputs.environment }}"
       rowan: "0.5rowan"
       region: "us"
+      region_second_vote: "eu"
       upgrade_hours: "${{ github.event.inputs.upgrade_hours }}"
 
     strategy:
@@ -138,9 +140,10 @@ jobs:
         run: |
           set +x
           echo "Create Governance Release Request"
-          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region_second_vote}/governance]"
           source ./tmp_secrets
-          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
+          rake "cluster:release:generate_keyring[${moniker}, ${mnemonic}]"
+          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from_second_vote}, ${env}]"
 
       - name: Clean Temp Files and Secrets
         shell: bash
