@@ -55,7 +55,7 @@ golang_input = env_golang.GolangInput(
 )
 
 ganache_ws_port = 7545
-ganache_ws_addr = f"https://ganache:{ganache_ws_port}"
+ganache_ws_addr = f"http://ganache:{ganache_ws_port}"
 ganache_network_id = 5777
 
 ganache_input = env_ganache.GanacheInput(

@@ -6,3 +6,5 @@ RUN echo "vagrant ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/vagrant
 COPY setup-linux-environment-root.sh setup-linux-environment.sh setup-linux-environment-user.sh /setup/
 USER vagrant
 RUN cd /setup && ./setup-linux-environment.sh
+RUN sudo apt-get install -y inetutils-ping
+ENV PATH=/gobin:${PATH}:/home/vagrant/.npm-global/bin
