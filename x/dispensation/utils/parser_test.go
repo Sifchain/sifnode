@@ -2,6 +2,7 @@ package utils_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -9,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -62,7 +64,7 @@ func TestParseInput(t *testing.T) {
 	filename := "input.json"
 	createInput(t, filename)
 	defer removeFile(t, filename)
-	inputs, err := utils.ParseInput(filename)
+	inputs, err := utils.ParseInput("/Users/tanmay/Documents/sifnode/input.json")
 	assert.NoError(t, err)
 	assert.Equal(t, len(inputs), 2)
 }
@@ -72,7 +74,29 @@ func TestParseOutput(t *testing.T) {
 	count := 3000
 	createOutput(filename, count)
 	defer removeFile(t, filename)
-	outputs, err := utils.ParseOutput(filename)
+	outputs, err := utils.ParseOutput("/Users/tanmay/Documents/sifnode/output.json")
 	assert.NoError(t, err)
 	assert.Equal(t, len(outputs), count)
+}
+
+func TestAddressFilter(t *testing.T) {
+	var addresStrings []string
+	file, err := filepath.Abs("sample.json")
+	if err != nil {
+		panic("Err getting filepath :" + err.Error())
+	}
+	o, err := ioutil.ReadFile(file)
+	if err != nil {
+		panic("Err Reading file :" + err.Error())
+	}
+	err = json.Unmarshal(o, &addresStrings)
+	if err != nil {
+		panic("Err Unmarshall :" + err.Error())
+	}
+	for _, add := range addresStrings {
+		_, err := sdk.AccAddressFromBech32(add)
+		if err != nil {
+			fmt.Println("Invalid :", add)
+		}
+	}
 }
