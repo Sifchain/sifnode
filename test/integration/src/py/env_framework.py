@@ -22,7 +22,7 @@ logbase = "/logs/"
 ganachename = "ganache"
 gethname = "geth"
 basedir = "/sifnode"
-deployment_name="local"
+deployment_name = "local"
 n_validators = 1
 
 
@@ -161,23 +161,30 @@ elif component == "deploy_contracts":
     )
     env_smartcontractrunner.deploy_contracts(i)
 elif component == "startsifnoded":
+    sifnoded_chain_data = env_sifnoded.build_chain(sifnoded_input)
+    print(f"build_chain result: \n{json.dumps(sifnoded_chain_data)}")
+    env_sifnoded.run(sifnoded_input, sifnoded_chain_data)
+elif "relayer" in component:
     f = config_file_full_path(env_smartcontractrunner.smartcontractrunner_name)
-    print(f"about to read {f}")
     smart_contract_config = env_utilities.read_config_file(f)
     print(f"smart contract config: {json.dumps(smart_contract_config, indent=2)}")
-    rslt = env_sifnoded.build_chain(sifnoded_input)
-    print(f"build_chain result: \n{json.dumps(rslt)}")
-    env_sifnoded.run(sifnoded_input, rslt)
-    for v in rslt["validators"]:
+    sifnodedconfig = env_utilities.read_config_file(config_file_full_path(env_sifnoded.sifnodename))["config"]
+    bridge_registry_address = env_smartcontractrunner.contract_address(
+        smart_contract_config["input"]["deployment_dir"],
+        "BridgeRegistry",
+        smart_contract_config["input"]["network_id"]
+    )
+    for v in sifnodedconfig["validators"]:
         print(f"sifnode validator:\n{json.dumps(v, indent=2)}")
         x = env_ebrelayer.EbrelayerInput(
             basedir=basedir,
             logfile=log_file_full_path(env_ebrelayer.ebrelayername),
             configoutputfile=config_file_full_path(env_ebrelayer.ebrelayername),
+            ethereum_address=smart_contract_config["input"]["validator_ethereum_credentials"][0][0],
             ethereum_private_key=smart_contract_config["input"]["validator_ethereum_credentials"][0][1],
             web3_provider="ws://ganache:7545",
             tendermint_node="tcp://0.0.0.0:26657",
-            bridge_registry_address="0xf204a4Ef082f5c04bB89F7D5E6568B796096735a",
+            bridge_registry_address=bridge_registry_address,
             moniker=v["moniker"],
             mnemonic=v["mnemonic"],
             chain_id="localnet",
@@ -200,8 +207,8 @@ elif component == "tr":
     )
     j = env_testrunner.testrunner_config_contents(i)
     print(j)
-
-
+elif component == "keyexport":
+    env_sifnoded.export_key("fnord", "test", "aaaaaaaa")
 # TODO
 # start ganache
 # start geth

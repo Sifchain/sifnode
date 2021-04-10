@@ -47,15 +47,17 @@ def smart_contract_dir(args: SmartContractDeployInput):
 
 def deploy_contracts_cmd(args: SmartContractDeployInput):
     print(f"argsare: {json.dumps(args.__dict__, indent=2)}")
+    for i in ["OWNER", "PAUSER", "OPERATOR"]:
+        os.environ[i] = args.operator_address
     os.environ["ETHEREUM_PRIVATE_KEY"] = args.operator_private_key
     os.environ["ETHEREUM_WEBSOCKET_ADDRESS"] = args.ws_addr
     os.environ["ETHEREUM_NETWORK_ID"] = str(args.network_id)
-    print(f"creds: {args}")
     validator_addresses = ",".join(map(lambda x: x[0], args.validator_ethereum_credentials))
     valpowers = ",".join(map(lambda x: str(x), args.validator_powers))
     env_vars = " ".join([
         f"INITIAL_VALIDATOR_ADDRESSES={validator_addresses}",
         f"INITIAL_VALIDATOR_POWERS={valpowers}",
+        f''
     ])
     return f"cd {smart_contract_dir(args)} && {env_vars} npx truffle deploy --network {args.truffle_network} --reset"
 
@@ -75,11 +77,9 @@ def deploy_contracts(args: SmartContractDeployInput):
     )
     build_artifacts_directory = os.path.join(args.basedir, "smart-contracts/build/contracts")
     build_artifacts = os.listdir(build_artifacts_directory)
-    print(f"buildartifacts: {build_artifacts_directory} {build_artifacts}, dd: {args.deployment_dir}")
     pathlib.Path(args.deployment_dir).mkdir(exist_ok=True)
     for jsfile in filter(lambda f: ".json" in f, build_artifacts):
         srcfile = os.path.join(build_artifacts_directory, jsfile)
-        print(f"copy {srcfile} to {args.deployment_dir}")
         shutil.copy(srcfile, args.deployment_dir)
     env_utilities.startup_complete(
         args, {
@@ -91,4 +91,4 @@ def deploy_contracts(args: SmartContractDeployInput):
 
 def contract_address(dirname: str, contract_name: str, network: str):
     j = env_utilities.read_json_file(os.path.join(dirname, contract_name + ".json"))
-    return j["networks"][network]["address"]
+    return j["networks"][str(network)]["address"]

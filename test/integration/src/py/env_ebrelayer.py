@@ -13,6 +13,7 @@ ebrelayername = "ebrelayer"
 
 @dataclass
 class EbrelayerInput(env_utilities.SifchainCmdInput):
+    ethereum_address: str
     ethereum_private_key: str
     web3_provider: str
     tendermint_node: str # something like tcp://0.0.0.0:26657
@@ -28,6 +29,7 @@ class EbrelayerInput(env_utilities.SifchainCmdInput):
 def ebrelayer_cmd(args: EbrelayerInput):
     quote = "\""
     cmd = " ".join([
+        "cd ~ &&",
         f"ETHEREUM_PRIVATE_KEY={args.ethereum_private_key}",
         "ebrelayer init",
         args.tendermint_node,
@@ -48,11 +50,9 @@ def run(args: EbrelayerInput):
     cmd = ebrelayer_cmd(args)
     sout = open("/logs/ebrelayer.stdout.log", "w")
     serr = open("/logs/ebrelayer.stderr.log", "w")
-    sout.write(f"ebrelayercmd: \n{cmd}")
-    subprocess.Popen(
+    print(f"ebrelayercmd: \n{cmd}")
+    subprocess.run(
         cmd,
         shell=True,
-        stdout=sout,
-        stderr=serr,
     )
     env_utilities.startup_complete(args, {})

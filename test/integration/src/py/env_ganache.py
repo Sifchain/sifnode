@@ -33,6 +33,8 @@ def ganache_cmd(args: GanacheInput, keysfile) -> str:
         f"--db {args.db_dir}",
         f"-e {args.starting_ether}"
     ])
+    print("cmdis")
+    print(cmd)
     return cmd
 
 
@@ -59,8 +61,6 @@ def start_ganache(args: GanacheInput):
     """returns an object with a wait() method"""
     with tempfile.NamedTemporaryFile(mode="w", delete=False) as keysfile:
         cmd = ganache_cmd(args, keysfile.name)
-        logparent = pathlib.Path(args.logfile).parent
-        print(f"logparentis: {logparent}")
         pathlib.Path(args.logfile).parent.mkdir(exist_ok=True)
         with env_utilities.open_and_create_parent_dirs(args.logfile) as logfile:
             proc = subprocess.Popen(
@@ -72,7 +72,7 @@ def start_ganache(args: GanacheInput):
             )
             wait_for_port("localhost", args.port)
             keys = env_utilities.read_config_file(keysfile.name)
-            env_utilities.startup_complete(args, keys)
+            env_utilities.startup_complete(args, {"private_keys": keys["private_keys"]})
             args.configoutputfile = "ethereum.json"
             env_utilities.startup_complete(args, keys)
             return proc

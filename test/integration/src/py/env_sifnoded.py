@@ -9,8 +9,11 @@ import yaml
 import env_utilities
 
 sifnodename = "sifnoded"
+key_password = "aaaaaaaa"
 
 
+# Note that a validator doesn't have an intrinsic ethereum address and password; you assign
+# it one when the validator starts
 @dataclass
 class SifnodedRunner(env_utilities.SifchainCmdInput):
     rpc_port: int
@@ -129,16 +132,63 @@ def sifnoded_docker_compose(args: SifnodedRunner):
     }
 
 
-def run(args: SifnodedRunner, data):
-    """runs the first validator as the only validator - this needs improvement"""
+def run(args: SifnodedRunner, sifnoded_chain_data):
     p = args.rpc_port
-    for v in data["validators"]:
+    for v in sifnoded_chain_data["validators"]:
         sndp = v["sifnodedpath"]
         addr = v["address"]
-        cmd = f"{args.bin_prefix}/sifnoded start --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:{p} --home {sndp}"
-        subprocess.Popen(cmd, shell=True)
+        cmd = f'{args.bin_prefix}/sifnoded start --minimum-gas-prices 0.5rowan --rpc.laddr tcp://0.0.0.0:{p} --home {sndp}'
+        sifnoded_process = subprocess.Popen(cmd, shell=True)
+
+        # It takes a while before the validator account is available, so need to wait for that
         subprocess.run(
             f"python3 src/py/wait_for_sif_account.py 0 {addr}",
             shell=True
         )
-        env_utilities.startup_complete(args, data)
+
+        env_utilities.startup_complete(args, sifnoded_chain_data)
+
+        sifnoded_process.wait()
+
+
+def export_key(
+        key_name: str,
+        backend: str,
+        password: str
+):
+    cmd = f'yes {password} | sifnodecli keys export --keyring-backend {backend} {key_name}'
+    output = subprocess.run(
+        cmd,
+        shell=True,
+        text=True,
+        capture_output=True,
+        check=True
+    )
+    key_contents = output.stderr
+    print(f"outputis: {json.dumps(output.__dict__, indent=2)}")
+    output = import_key("mykey", "test", key_password, key_contents)
+    print(f"outputis: {json.dumps(output.__dict__, indent=2)}")
+    return output.stdout
+
+
+def import_key(
+        key_name: str,
+        backend: str,
+        password: str,
+        key_contents: str
+):
+    # note that you can also get keys with
+    # sifnodecli keys add --keyring-backend test --recover fnord
+    # using a mnemonic
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as keyfile:
+        keyfile.write(key_contents)
+        cmd = f'yes {password} | sifnodecli keys import {key_name} --keyring-backend {backend} {keyfile.name}'
+        output = subprocess.run(
+            cmd,
+            shell=True,
+            text=True,
+            capture_output=True,
+            check=True
+        )
+        print(f"outputis: {json.dumps(output.__dict__, indent=2)}")
+        return output.stdout

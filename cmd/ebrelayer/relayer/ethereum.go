@@ -40,7 +40,7 @@ import (
 
 const (
 	transactionInterval = 10 * time.Second
-	trailingBlocks      = 50
+	trailingBlocks      = 4
 	ethLevelDBKey       = "ethereumLastProcessedBlock"
 )
 

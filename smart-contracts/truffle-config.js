@@ -24,6 +24,13 @@ module.exports = {
       gas: 6721975, // Truffle default development block gas limit
       gasPrice: 200000000000
     },
+    mydocker: {
+      host: "ganache",
+      port: 7545, // Match default network 'ganache'
+      network_id: 5777,
+      gas: 6721975, // Truffle default development block gas limit
+      gasPrice: 200000000000
+    },
     ropsten: {
       provider: function () {
         return new HDWalletProvider(
