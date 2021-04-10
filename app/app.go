@@ -35,6 +35,9 @@ import (
 	distrclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	"github.com/cosmos/cosmos-sdk/x/evidence"
+	evidencekeeper "github.com/cosmos/cosmos-sdk/x/evidence/keeper"
+	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
@@ -88,6 +91,7 @@ var (
 		params.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
 		slashing.AppModuleBasic{},
+		evidence.AppModuleBasic{},
 
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
@@ -140,6 +144,7 @@ type SifchainApp struct {
 	StakingKeeper  stakingkeeper.Keeper
 	SlashingKeeper slashingkeeper.Keeper
 	DistrKeeper    distrkeeper.Keeper
+	EvidenceKeeper evidencekeeper.Keeper
 
 	ClpKeeper    clpkeeper.Keeper
 	OracleKeeper oraclekeeper.Keeper
@@ -172,6 +177,7 @@ func NewSifApp(
 		govtypes.StoreKey,
 		distrtypes.StoreKey,
 		slashingtypes.StoreKey,
+		evidencetypes.StoreKey,
 
 		// ethbridge.StoreKey,
 		clptypes.StoreKey,
@@ -256,6 +262,13 @@ func NewSifApp(
 		govRouter,
 	)
 
+	// create evidence keeper with router
+	evidenceKeeper := evidencekeeper.NewKeeper(
+		appCodec, keys[evidencetypes.StoreKey], &app.StakingKeeper, app.SlashingKeeper,
+	)
+	// If evidence needs to be handled for the app, set routes in router here and seal
+	app.EvidenceKeeper = *evidenceKeeper
+
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 	app.mm = module.NewManager(
@@ -272,15 +285,19 @@ func NewSifApp(
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
+		evidence.NewAppModule(app.EvidenceKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
-	app.mm.SetOrderBeginBlockers(distrtypes.ModuleName,
+	app.mm.SetOrderBeginBlockers(
+		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
-		upgradetypes.ModuleName)
+		upgradetypes.ModuleName,
+		evidencetypes.ModuleName,
+		stakingtypes.ModuleName)
 
 	app.mm.SetOrderEndBlockers(
 		stakingtypes.ModuleName,
@@ -297,6 +314,7 @@ func NewSifApp(
 		slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		govtypes.ModuleName,
+		evidencetypes.ModuleName,
 
 		clptypes.ModuleName,
 		oracletypes.ModuleName,
