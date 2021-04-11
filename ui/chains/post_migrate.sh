@@ -50,3 +50,4 @@ yarn peggy:whiteList "$LINK_ADDRESS" true
 cd $BASE_DIR/ui/core/
 ./scripts/updateLocalTestAddresses.js
 
+echo "1" > $BASE_DIR/ui/node_modules/.migrate-complete

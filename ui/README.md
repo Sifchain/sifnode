@@ -4,14 +4,14 @@
 
 ## Installation
 
-#### Prerequisites
+### Prerequisites
 
 - [Go](https://golang.org/doc/install) (to build the sifchain to test against)
 - [Node 14](https://nodejs.org/en/)
 - [Yarn Classic](https://classic.yarnpkg.com/en/docs/install#mac-stable)
 - A linux like environment
 
-#### Setup
+### Setup
 
 1. Install the base sifnode repo in your go directory: `~/go/src/github.com/Sifchain/sifnode`
 1. `cd ./ui` - To work on the frontend UI
@@ -20,21 +20,48 @@
 
 NOTE: If you are using VSCode you should use the code-workspace at `./ui/SifnodeUI.code-workspace` to ensure that Vetur works correctly.
 
-#### Launching locally
+### Launching locally
 
-Run the backing services using tmux. (Requires [tmux](https://github.com/tmux/tmux/wiki/Installing))
+There are a few ways you can launch the project stack locally. Most of the time working on frontend you will probably just want to use:
 
-```bash
+```
 yarn stack
 ```
 
-<img src="docs/tmux-example.png" />
+NOTE: This command requires [tmux](https://github.com/tmux/tmux/wiki/Installing)
 
-#### Run tests in core
+### How do I change something about the backing stack?
+
+Let's say you want to do one of the following type of things:
+
+- Add a new account
+- Provide some genesis tokens
+- Add a new token for localnet
+- Change anything about our blockchain setup
+- Respond to an environment request from one of the blockchain teams
+
+For any of these things you will want ot create a new snapshot. Backend state is saved to a snapshot that is shared with the team or quick start development and also affects our e2e tests. You can create a new snapshot if you need by using the scripts below. Some of these commands are a little confusing so this table shows you when to use which.
+
+| command                                 | I want to                                                                     | quick start | ongoing | sif | eth | ebrelayer | FE  | setup scripts | save snapshot |
+| --------------------------------------- | ----------------------------------------------------------------------------- | ----------- | ------- | --- | --- | --------- | --- | ------------- | ------------- |
+| `yarn stack`                            | Work on frontend (requires tmux)                                              | ✅          | ✅      | ✅  | ✅  | ✅        | ✅  | 🚫            | 🚫            |
+| `yarn stack:backend`                    | Run only backing services from a snapshot say during CI.                      | ✅          | ✅      | ✅  | ✅  | ✅        | 🚫  | 🚫            | 🚫            |
+| `yarn stack:backend-from-scripts`       | Run backing with setup scripts to manually change state and create a snapshot | 🚫          | ✅      | ✅  | ✅  | ✅        | 🚫  | ✅            | 🚫            |
+| `yarn stack:save-snapshot-from-scripts` | Save new setup scripts to a snapshot                                          | 🚫          | 🚫      | ✅  | ✅  | ✅        | 🚫  | ✅            | ✅            |
+| `yarn stack:save-snapshot`              | Save a snapshot from whatever is running                                      | 🚫          | 🚫      | 🚫  | 🚫  | 🚫        | 🚫  | 🚫            | ✅            |
+
+You can either
+
+- Alter the setup scripts that configure the blockchain and save the result as a snapshot (`yarn stack:save-snapshot-from-scripts`)
+- Run the setup scripts do some kind of account action manually and then create a snapshot. (`yarn stack:backend-from-scripts` -> make a transaction -> `yarn stack:save-snapshot`)
+
+It is preferrable that you include any changes you make in the setup scripts (say in `chains/post_migrate.sh`) as it means that it is possible your setup might get overwritten at a later date.
+
+### Run tests in core
 
 `yarn test`
 
-## Run App and Core tests
+### Run App and Core tests
 
 | Command                | Description                                                |
 | ---------------------- | ---------------------------------------------------------- |
@@ -57,11 +84,13 @@ yarn stack
 
 ## Folder structure
 
-| Path       | Description                      |
-| ---------- | -------------------------------- |
-| `./app`    | A Vue interface that uses core.  |
-| `./chains` | Blockchain projects for testing. |
-| `./core`   | All business functionality.      |
+| Path               | Description                      |
+| ------------------ | -------------------------------- |
+| `./app`            | A Vue interface that uses core.  |
+| `./chains`         | Blockchain projects for testing. |
+| `./core`           | All business functionality.      |
+| `./docs`           | Documentation.                   |
+| `./docs/decisions` | Architectural decisions.         |
 
 ## Architecture
 
