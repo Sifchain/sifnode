@@ -26,7 +26,6 @@ function buildProvider(context, argv, logging) {
         case "dynamic":
             const websocketAddr = getRequiredEnvironmentVariable("ETHEREUM_WEBSOCKET_ADDRESS")
             const privateKey = getRequiredEnvironmentVariable(argv.ethereum_private_key_env_var);
-            logging.info(`in dynamic, ${websocketAddr}, ${privateKey}`);
             provider = new HDWalletProvider(
                 privateKey,
                 websocketAddr
