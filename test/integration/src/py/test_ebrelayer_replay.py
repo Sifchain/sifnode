@@ -1,6 +1,8 @@
 import logging
 import os
 import time
+import pytest
+
 
 import burn_lock_functions
 import test_utilities
@@ -31,6 +33,7 @@ def build_request(
     return request, credentials
 
 
+@pytest.mark.skip(reason="requires local ganache")
 def test_transfer_eth_to_ceth_using_replay_blocks(
         integration_dir,
         smart_contracts_dir,

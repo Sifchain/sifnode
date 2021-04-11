@@ -22,6 +22,7 @@ def do_currency_test(
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
         ethereum_network,
         solidity_json_path,
+        operator_address
 ):
     amount = amount_in_wei(9)
     logging.info(f"create new currency")
@@ -32,7 +33,9 @@ def do_currency_test(
         18,
         smart_contracts_dir=smart_contracts_dir,
         bridgebank_address=bridgebank_address,
-        solidity_json_path=solidity_json_path
+        solidity_json_path=solidity_json_path,
+        operator_address=operator_address,
+        ethereum_network=ethereum_network
     )
 
     logging.info(f"create test account to use with new currency {new_currency_symbol}")
@@ -67,6 +70,7 @@ def test_transfer_tokens_with_some_currency(
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
         ethereum_network,
         solidity_json_path,
+        operator_address
 ):
     new_currency_symbol = ("a" + get_shell_output("uuidgen").replace("-", ""))[:4]
     do_currency_test(
@@ -76,7 +80,8 @@ def test_transfer_tokens_with_some_currency(
         rowan_source_integrationtest_env_credentials,
         rowan_source_integrationtest_env_transfer_request,
         ethereum_network,
-        solidity_json_path=solidity_json_path
+        solidity_json_path=solidity_json_path,
+        operator_address=operator_address,
     )
 
 

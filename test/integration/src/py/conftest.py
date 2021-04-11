@@ -24,9 +24,9 @@ def sifchain_admin_account():
 
 
 @pytest.fixture
-def sifchain_admin_account_credentials():
+def sifchain_admin_account_credentials(sifchain_admin_account):
     return test_utilities.SifchaincliCredentials(
-        from_key="sifnodeadmin"
+        from_key=sifchain_admin_account
     )
 
 
@@ -191,16 +191,12 @@ def sifchain_fees_int():
 
 @pytest.fixture
 def operator_address(smart_contracts_dir):
-    return test_utilities.get_optional_env_var("OPERATOR_ADDRESS",
-                                               test_utilities.ganache_owner_account(smart_contracts_dir))
+    return test_utilities.get_required_env_var("OPERATOR_ADDRESS")
 
 
 @pytest.fixture
 def operator_private_key(ganache_keys_file, operator_address):
-    result = test_utilities.get_optional_env_var(
-        "OPERATOR_PRIVATE_KEY",
-        test_utilities.ganache_private_key(ganache_keys_file, operator_address)
-    )
+    result = test_utilities.get_required_env_var("OPERATOR_PRIVATE_KEY")
     os.environ["OPERATOR_PRIVATE_KEY"] = result
     return result
 
@@ -222,17 +218,8 @@ def source_ethereum_address(is_ropsten_testnet, smart_contracts_dir):
     so if you set OPERATOR_ACCOUNT you have to set ETHEREUM_PRIVATE_KEY to the operator private key
     """
     addr = test_utilities.get_optional_env_var("ETHEREUM_ADDRESS", "")
-    if addr:
-        logging.debug("using ETHEREUM_ADDRESS provided for source_ethereum_address")
-        return addr
-    if is_ropsten_testnet:
-        # Ropsten requires that you manually set the ETHEREUM_ADDRESS environment variable
-        assert addr
-    result = test_utilities.ganache_owner_account(smart_contracts_dir)
-    logging.debug(
-        f"Using source_ethereum_address {result} from ganache_owner_account.  (Set ETHEREUM_ADDRESS env var to set it manually)")
-    assert result
-    return result
+    assert addr
+    return addr
 
 
 @pytest.fixture(scope="function")

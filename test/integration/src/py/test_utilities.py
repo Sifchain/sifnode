@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from functools import lru_cache
 
-n_wait_blocks = 50  # number of blocks to wait for the relayer to act
+n_wait_blocks = 4  # number of blocks to wait for the relayer to act
 burn_gas_cost = 160000000000 * 393000  # see x/ethbridge/types/msgs.go for gas
 lock_gas_cost = 160000000000 * 393000
 highest_gas_cost = max(burn_gas_cost, lock_gas_cost)
@@ -512,30 +512,30 @@ def amount_in_wei(amount):
     return amount * 10 ** 18
 
 
-@lru_cache(maxsize=1)
-def ganache_accounts(smart_contracts_dir: str):
-    accounts = run_yarn_command(
-        f"yarn -s --cwd {smart_contracts_dir} "
-        f"integrationtest:ganacheAccounts"
-    )
-    return accounts
-
-
-def ganache_owner_account(smart_contracts_dir: str):
-    return ganache_accounts(smart_contracts_dir)["accounts"][0].lower()
-
-
-def ganache_second_account(smart_contracts_dir: str):
-    """
-    Returns the second ganache account.
-
-    Useful for doing transfers so you can transfer to an
-    ethereum address that doesn't have anything to do with
-    paying gas fees.
-    """
-    return ganache_accounts(smart_contracts_dir)["accounts"][1].lower()
-
-
+# @lru_cache(maxsize=1)
+# def ganache_accounts(smart_contracts_dir: str):
+#     accounts = run_yarn_command(
+#         f"yarn -s --cwd {smart_contracts_dir} "
+#         f"integrationtest:ganacheAccounts"
+#     )
+#     return accounts
+#
+#
+# def ganache_owner_account(smart_contracts_dir: str):
+#     return ganache_accounts(smart_contracts_dir)["accounts"][0].lower()
+#
+#
+# def ganache_second_account(smart_contracts_dir: str):
+#     """
+#     Returns the second ganache account.
+#
+#     Useful for doing transfers so you can transfer to an
+#     ethereum address that doesn't have anything to do with
+#     paying gas fees.
+#     """
+#     return ganache_accounts(smart_contracts_dir)["accounts"][1].lower()
+#
+#
 def whitelist_token(token: str, smart_contracts_dir: str, setting: bool = True):
     setting = "true" if setting else "false"
     return get_shell_output(f"yarn --cwd {smart_contracts_dir} peggy:whiteList {token} {setting}")
@@ -589,12 +589,11 @@ def create_new_currency(
         smart_contracts_dir,
         bridgebank_address,
         solidity_json_path,
-        operator_address="",
-        ethereum_network: str = ""
+        operator_address: str,
+        ethereum_network: str
 ):
     """returns {'destination': '0x627306090abaB3A6e1400e9345bC60c78a8BEf57', 'amount': '9000000000000000000', 'newtoken_address': '0x74e3FC764c2474f25369B9d021b7F92e8441A2Dc', 'newtoken_symbol': 'a3c626b'}"""
-    if not operator_address:
-        operator_address = ganache_owner_account(smart_contracts_dir)
+    assert operator_address
     network_element = f"--network {ethereum_network} " if ethereum_network else ""
     return run_yarn_command(
         f"yarn --cwd {smart_contracts_dir} "
@@ -639,13 +638,6 @@ def contract_artifacts(
         item = read_json_file(os.path.join(smart_contract_artifact_dir, file))
         result[file[:-5]] = item
     return result
-
-
-@lru_cache(maxsize=10)
-def ganache_private_key(ganache_private_keys_file: str, address):
-    keys = read_json_file(ganache_private_keys_file)
-    pks = keys["private_keys"]
-    return pks[address]
 
 
 def sifchain_symbol_to_ethereum_symbol(s: str):

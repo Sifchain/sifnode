@@ -192,3 +192,16 @@ def import_key(
         )
         print(f"outputis: {json.dumps(output.__dict__, indent=2)}")
         return output.stdout
+
+
+def recover_key(
+        key_name: str,
+        backend: str,
+        mnemonic: str,
+):
+    cmd = f'echo "{mnemonic}" | sifnodecli keys add --keyring-backend {backend} {key_name} --recover'
+    subprocess.run(
+        cmd,
+        shell=True,
+        check=True
+    )

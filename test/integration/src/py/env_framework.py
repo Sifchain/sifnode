@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+from uuid import UUID, uuid4
 
 import yaml
 
@@ -22,7 +23,7 @@ logbase = "/logs/"
 ganachename = "ganache"
 gethname = "geth"
 basedir = "/sifnode"
-deployment_name = "local"
+deployment_name = "localnet"
 n_validators = 1
 
 
@@ -96,7 +97,7 @@ sifnoded_input = env_sifnoded.SifnodedRunner(
     logfile=log_file_full_path(ganachename),
     configoutputfile=config_file_full_path(env_sifnoded.sifnodename),
     rpc_port=26657,
-    chain_id="localnet",
+    chain_id=deployment_name,
     network_config_file="/tmp/netconfig.yml",
     seed_ip_address="10.10.1.1",
     n_validators=n_validators,
@@ -187,7 +188,7 @@ elif "relayer" in component:
             bridge_registry_address=bridge_registry_address,
             moniker=v["moniker"],
             mnemonic=v["mnemonic"],
-            chain_id="localnet",
+            chain_id=deployment_name,
             home_dir=v["sifnodeclipath"],
             gas="5000000000000",
             gas_prices="0.5rowan",
@@ -203,12 +204,16 @@ elif component == "tr":
         sifnode_config_file=config_file_full_path(env_sifnoded.sifnodename),
         deployment_name=deployment_name,
         ethereum_config_file=config_file_full_path(env_ganache.ganachename),
-        smart_contract_config_file=config_file_full_path(env_smartcontractrunner.smartcontractrunner_name)
+        smart_contract_config_file=config_file_full_path(env_smartcontractrunner.smartcontractrunner_name),
     )
     j = env_testrunner.testrunner_config_contents(i)
     print(j)
-elif component == "keyexport":
-    env_sifnoded.export_key("fnord", "test", "aaaaaaaa")
+elif component == "sifnodekeys":
+    sifnodedconfig = env_utilities.read_config_file(config_file_full_path(env_sifnoded.sifnodename))["config"]
+    env_sifnoded.recover_key(uuid4().hex, "test", sifnodedconfig["adminuser"]["mnemonic"])
+    for v in sifnodedconfig["validators"]:
+        env_sifnoded.recover_key(uuid4().hex, "test", v["mnemonic"])
+
 # TODO
 # start ganache
 # start geth

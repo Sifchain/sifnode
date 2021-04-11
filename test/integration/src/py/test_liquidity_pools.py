@@ -8,7 +8,7 @@ import burn_lock_functions
 from burn_lock_functions import EthereumToSifchainTransferRequest
 import test_utilities
 from pytest_utilities import generate_test_account
-from test_utilities import get_required_env_var, SifchaincliCredentials, get_optional_env_var, ganache_owner_account, \
+from test_utilities import get_required_env_var, SifchaincliCredentials, get_optional_env_var, \
     get_shell_output_json, get_shell_output, detect_errors_in_sifnodecli_output, get_transaction_result, amount_in_wei
 
 
