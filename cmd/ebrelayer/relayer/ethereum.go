@@ -482,7 +482,7 @@ func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
 	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
 }
 
-// StartGasOracle an Ethereum chain subscription
+// StartGasOracle an Ethereum gas oracle service
 func (sub EthereumSub) StartGasOracle() {
 	client, err := SetupWebsocketEthClient(sub.EthProvider)
 	if err != nil {
