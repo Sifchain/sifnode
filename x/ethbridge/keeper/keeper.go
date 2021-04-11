@@ -92,13 +92,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string, sugaredLog
 	if err := k.supplyKeeper.SendCoinsFromModuleToAccount(
 		ctx, types.ModuleName, receiverAddress, coins,
 	); err != nil {
-		coins = sdk.Coins{sdk.NewCoin(oracleClaim.Symbol, oracleClaim.Amount)}
-		err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
-		if err := k.supplyKeeper.SendCoinsFromModuleToAccount(
-			ctx, types.ModuleName, receiverAddress, coins,
-		); err != nil {
-			panic(err)
-		}
+		panic(err)
 	}
 
 	return nil
