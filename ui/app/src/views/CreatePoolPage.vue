@@ -291,7 +291,17 @@ export default defineComponent({
           (balance) => balance.asset.symbol === toSymbol.value,
         );
         if (!accountBalance) return;
-        toAmount.value = accountBalance.toFixed();
+        if (toSymbol.value !== "rowan") {
+          toAmount.value = accountBalance.toFixed(18);
+        } else {
+          if (accountBalance.greaterThan(new Fraction("1", "2"))) {
+            toAmount.value = accountBalance
+              .subtract(new Fraction("1", "2"))
+              .toFixed(18);
+          } else {
+            // TODO alert the user if insufficient rowan for gas
+          }
+        }
       },
       shareOfPoolPercent,
       formatNumber,

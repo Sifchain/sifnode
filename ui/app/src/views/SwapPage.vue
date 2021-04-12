@@ -207,7 +207,7 @@ export default defineComponent({
               .subtract(new Fraction("1", "2"))
               .toFixed(18);
           } else {
-            // TODO alert the user
+            // TODO alert the user if insufficient rowan for gas
           }
         }
       },
