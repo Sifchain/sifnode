@@ -51,8 +51,9 @@ def run(args: EbrelayerInput):
     sout = open("/logs/ebrelayer.stdout.log", "w")
     serr = open("/logs/ebrelayer.stderr.log", "w")
     print(f"ebrelayercmd: \n{cmd}")
-    subprocess.run(
+    process = subprocess.Popen(
         cmd,
         shell=True,
     )
     env_utilities.startup_complete(args, {})
+    return process

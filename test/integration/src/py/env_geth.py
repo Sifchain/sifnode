@@ -1,3 +1,4 @@
+import pathlib
 import subprocess
 import tempfile
 from dataclasses import dataclass
@@ -8,6 +9,7 @@ import env_utilities
 from env_utilities import wait_for_port
 
 gethname = "geth"
+datadir = "/home/vagrant/gethdata"
 
 
 @dataclass
@@ -21,7 +23,7 @@ def geth_cmd(args: env_ethereum.EthereumInput) -> str:
     apis = "personal,eth,net,web3,debug"
     cmd = " ".join([
         "geth",
-        "--datadir /tmp/gethdata",
+        f"--datadir {datadir}",
         f"--networkid {args.network_id}",
         f"--ws --ws.addr 0.0.0.0 --ws.port {args.ws_port} --ws.api {apis}",
         f"--http --http.addr 0.0.0.0 --http.port {args.http_port} --http.api {apis}",
@@ -41,7 +43,8 @@ def fund_initial_accounts(addresses: List[str], starting_amount: int):
     for addr in addresses:
         quotedaddr = f"\\{quote}{addr}\\{quote}"
         cmd = f'geth attach /tmp/gethdata/geth.ipc --exec "eth.sendTransaction({{from:eth.coinbase, to:{quotedaddr}, value:{starting_amount * 10 ** 18}}})"'
-        subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        # subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        subprocess.run(cmd, shell=True, check=True)
     for addr in addresses:
         quotedaddr = f"\\{quote}{addr}\\{quote}"
         while True:
@@ -51,8 +54,8 @@ def fund_initial_accounts(addresses: List[str], starting_amount: int):
                 check=True,
                 text=True,
                 shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                # stdout=subprocess.PIPE,
+                # stderr=subprocess.STDOUT,
                 timeout=10,
             )
             print(f"getbal: {balance_result}")
@@ -90,15 +93,16 @@ def format_new_accounts(accts):
 
 def start_geth(args: GethInput):
     """returns an object with a wait() method"""
-    print("starting geth")
+    pathlib.Path(datadir).mkdir(exist_ok=True)
     cmd = geth_cmd(args)
+    print(f"starting geth: \n{cmd}")
     logfile = open(args.logfile, "w")
     proc = subprocess.Popen(
         cmd,
         shell=True,
-        stdout=logfile,
-        stdin=None,
-        stderr=subprocess.STDOUT,
+        # stdout=logfile,
+        # stdin=None,
+        # stderr=subprocess.STDOUT,
     )
     wait_for_port("localhost", args.ws_port)
     wait_for_port("localhost", args.http_port)

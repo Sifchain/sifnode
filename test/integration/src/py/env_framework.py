@@ -3,7 +3,7 @@ import json
 import os
 import sys
 import time
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import yaml
 
@@ -42,7 +42,7 @@ geth_input = env_geth.GethInput(
     network_id=3,
     starting_ether=123,
     ws_port=8646,
-    http_port=7445,
+    http_port=7890,
     ethereum_addresses=4,
     configoutputfile=config_file_full_path(gethname)
 )
@@ -148,7 +148,6 @@ elif component == "golang_build":
     env_golang.golang_build(golang_input)
 elif component == "deploy_contracts":
     ethereum_config = env_utilities.read_config_file(smartcontractrunner_input.ethereum_config_file)
-    print(f"ethereumconfig: {json.dumps(ethereum_config, indent=2)}")
     private_keys_stanza = ethereum_config["config"]["private_keys"]
     private_keys = list(private_keys_stanza.values())
     ethereum_addresses = list(private_keys_stanza.keys())
