@@ -14,6 +14,7 @@ import (
 // to avoid messing with the hooks.
 func createTestInput() (*codec.LegacyAmino, *sifapp.SifchainApp, sdk.Context) {
 	app := sifapp.Setup(false)
+	sifapp.SetConfig(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	app.ClpKeeper = keeper.NewKeeper(
