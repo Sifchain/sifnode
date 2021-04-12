@@ -8,6 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/stretchr/testify/require"
 
@@ -28,7 +29,7 @@ var (
 
 func TestBasicMsgs(t *testing.T) {
 	//Setup
-	ctx, _, _, _, handler, validatorAddresses := CreateTestHandler(t, 0.7, []int64{3, 7})
+	ctx, _, _, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.7, []int64{3, 7})
 
 	valAddress := validatorAddresses[0]
 
@@ -84,7 +85,7 @@ func TestBasicMsgs(t *testing.T) {
 }
 
 func TestDuplicateMsgs(t *testing.T) {
-	ctx, _, _, _, handler, validatorAddresses := CreateTestHandler(t, 0.7, []int64{3, 7})
+	ctx, _, _, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.7, []int64{3, 7})
 
 	valAddress := validatorAddresses[0]
 
@@ -110,7 +111,7 @@ func TestDuplicateMsgs(t *testing.T) {
 
 func TestMintSuccess(t *testing.T) {
 	//Setup
-	ctx, _, bankKeeper, _, handler, validatorAddresses := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+	ctx, _, bankKeeper, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 
 	valAddressVal1Pow2 := validatorAddresses[0]
 	valAddressVal2Pow7 := validatorAddresses[1]
@@ -154,7 +155,7 @@ func TestMintSuccess(t *testing.T) {
 
 func TestNoMintFail(t *testing.T) {
 	//Setup
-	ctx, _, bankKeeper, _, handler, validatorAddresses := CreateTestHandler(t, 0.71, []int64{3, 4, 3})
+	ctx, _, bankKeeper, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.71, []int64{3, 4, 3})
 
 	valAddressVal1Pow3 := validatorAddresses[0]
 	valAddressVal2Pow4 := validatorAddresses[1]
@@ -223,7 +224,7 @@ func TestNoMintFail(t *testing.T) {
 
 func TestLockFail(t *testing.T) {
 	//Setup
-	ctx, _, _, _, handler, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+	ctx, _, _, _, handler, _, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 
 	//Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.ClaimType_CLAIM_TYPE_LOCK)
@@ -236,7 +237,7 @@ func TestLockFail(t *testing.T) {
 
 func TestBurnFail(t *testing.T) {
 	//Setup
-	ctx, _, _, _, handler, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
+	ctx, _, _, _, handler, _, _ := CreateTestHandler(t, 0.7, []int64{2, 7, 1})
 
 	//Initial message
 	normalCreateMsg := types.CreateTestEthMsg(t, UnregisteredValidatorAddress, types.ClaimType_CLAIM_TYPE_BURN)
@@ -252,7 +253,7 @@ func TestBurnEthFail(t *testing.T) {
 }
 
 func TestBurnEthSuccess(t *testing.T) {
-	ctx, _, bankKeeper, _, handler, validatorAddresses := CreateTestHandler(t, 0.5, []int64{5})
+	ctx, _, bankKeeper, _, handler, validatorAddresses, _ := CreateTestHandler(t, 0.5, []int64{5})
 	valAddressVal1Pow5 := validatorAddresses[0]
 
 	// Initial message to mint some eth
@@ -390,11 +391,12 @@ func TestBurnEthSuccess(t *testing.T) {
 }
 
 func TestUpdateCethReceiverAccountMsg(t *testing.T) {
-	ctx, _, bankKeeper, oracleKeeper, handler, _ := CreateTestHandler(t, 0.5, []int64{5})
+	ctx, _, bankKeeper, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
 	coins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(10000)))
 
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
+	accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(cosmosSender))
 	oracleKeeper.SetAdminAccount(ctx, cosmosSender)
 	err = bankKeeper.AddCoins(ctx, cosmosSender, coins)
 	require.NoError(t, err)
@@ -408,7 +410,7 @@ func TestUpdateCethReceiverAccountMsg(t *testing.T) {
 }
 
 func TestRescueCethMsg(t *testing.T) {
-	ctx, _, bankKeeper, oracleKeeper, handler, _ := CreateTestHandler(t, 0.5, []int64{5})
+	ctx, _, bankKeeper, accountKeeper, handler, _, oracleKeeper := CreateTestHandler(t, 0.5, []int64{5})
 	coins := sdk.NewCoins(sdk.NewCoin(types.CethSymbol, sdk.NewInt(10000)))
 	err := bankKeeper.MintCoins(ctx, ModuleName, coins)
 	require.NoError(t, err)
@@ -418,6 +420,8 @@ func TestRescueCethMsg(t *testing.T) {
 
 	cosmosSender, err := sdk.AccAddressFromBech32(types.TestAddress)
 	require.NoError(t, err)
+
+	accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(cosmosSender))
 
 	_, err = handler(ctx, &testRescueCethMsg)
 	require.Error(t, err)
