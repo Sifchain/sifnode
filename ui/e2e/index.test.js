@@ -1,17 +1,3 @@
-/* TODO
-  x Connect Metamask https://github.com/NodeFactoryIo/dappeteer/blob/master/src/index.ts#L57
-  x Different targets, local, sp, etc for deterministic addresses
-  x xvfb server for remote test run
-  - Peg, unpeg, happy path
-  - what's wrong w workflow big.js? (setup at ../ level ? )
-  - Cleanup
-
-
-  TO RUN:
-  1. yarn stack
-  2. in second terminal: cd e2e && yarn test
-*/
-
 /**
  * THIS IS PROTOTYPAL
  *
