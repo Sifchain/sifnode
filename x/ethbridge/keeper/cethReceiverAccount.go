@@ -23,13 +23,26 @@ func (k Keeper) IsCethReceiverAccountSet(ctx sdk.Context) bool {
 	return account != nil
 }
 
-func (k Keeper) GetCethReceiverAccount(ctx sdk.Context) (cethReceiverAccount sdk.AccAddress) {
+func (k Keeper) GetCethReceiverAccount(ctx sdk.Context) sdk.AccAddress {
 	store := ctx.KVStore(k.storeKey)
 	key := types.CethReceiverAccountPrefix
 	bz := store.Get(key)
 	if len(bz) == 0 {
 		return nil
 	}
-	k.cdc.MustUnmarshalBinaryBare(bz, &protobuftypes.StringValue{Value: cethReceiverAccount.String()})
-	return
+
+	strProto := &protobuftypes.StringValue{}
+	k.cdc.MustUnmarshalBinaryBare(bz, strProto)
+
+	if strProto.Value == "" {
+		return nil
+	}
+
+	accAddress, err := sdk.AccAddressFromBech32(strProto.Value)
+	if err != nil {
+		ctx.Logger().Error(err.Error(), "error decoding cethreceiveaccount")
+		return nil
+	}
+
+	return accAddress
 }
