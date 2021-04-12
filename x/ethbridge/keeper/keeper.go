@@ -92,7 +92,9 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string, sugaredLog
 	if err := k.supplyKeeper.SendCoinsFromModuleToAccount(
 		ctx, types.ModuleName, receiverAddress, coins,
 	); err != nil {
-		panic(err)
+		sugaredLogger.Errorw("SendCoinsFromModuleToAccount.",
+			errorMessageKey, err.Error())
+		// panic(err)
 	}
 
 	return nil
