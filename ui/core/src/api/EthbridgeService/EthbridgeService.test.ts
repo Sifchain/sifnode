@@ -211,46 +211,46 @@ describe("EthbridgeService", () => {
     ////////////////////////
     // eRowan -> Rowan
     ////////////////////////
-    // const startingRowanBalance = await getRowanBalance();
+    const startingRowanBalance = await getRowanBalance();
 
-    // const sendERowanAmount = AssetAmount(EROWAN, "10");
+    const sendERowanAmount = AssetAmount(EROWAN, "10");
 
-    // await EthbridgeService.approveBridgeBankSpend(
-    //   getEthAddress(),
-    //   sendERowanAmount,
-    // );
+    await EthbridgeService.approveBridgeBankSpend(
+      getEthAddress(),
+      sendERowanAmount,
+    );
 
     // Burn eRowan to Rowan
-    // await new Promise<void>((done, reject) => {
-    //   EthbridgeService.burnToSifchain(
-    //     getSifAddress(),
-    //     sendERowanAmount,
-    //     50,
-    //     getEthAddress(),
-    //   )
-    //     .onTxHash(() => {
-    //       advanceBlock(52);
-    //     })
-    //     .onComplete(async () => {
-    //       done();
-    //     })
-    //     .onError((err) => {
-    //       reject(err);
-    //     });
-    // });
+    await new Promise<void>((done, reject) => {
+      EthbridgeService.burnToSifchain(
+        getSifAddress(),
+        sendERowanAmount,
+        50,
+        getEthAddress(),
+      )
+        .onTxHash(() => {
+          advanceBlock(52);
+        })
+        .onComplete(async () => {
+          done();
+        })
+        .onError((err) => {
+          reject(err);
+        });
+    });
 
-    // await sleep(2000);
+    await sleep(2000);
 
-    // // wait for the balance to change
-    // const expectedRowanBalance = JSBI.add(
-    //   startingRowanBalance,
-    //   sendERowanAmount.toBaseUnits(),
-    // );
+    // wait for the balance to change
+    const expectedRowanBalance = JSBI.add(
+      startingRowanBalance,
+      sendERowanAmount.toBaseUnits(),
+    );
 
-    // await waitFor(
-    //   async () => await getRowanBalance(),
-    //   expectedRowanBalance,
-    //   "expectedRowanBalance",
-    // );
+    await waitFor(
+      async () => await getRowanBalance(),
+      expectedRowanBalance,
+      "expectedRowanBalance",
+    );
   });
 });
