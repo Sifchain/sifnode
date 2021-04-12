@@ -9,7 +9,11 @@ import (
 // ClaimType is an enum used to represent the type of claim
 // type ClaimType int
 
-var ClaimTypeToString = [...]string{"lock", "burn"}
+var ClaimTypeToString = map[ClaimType]string{
+	ClaimType_CLAIM_TYPE_UNSPECIFIED: "unspecified",
+	ClaimType_CLAIM_TYPE_LOCK: "lock",
+	ClaimType_CLAIM_TYPE_BURN: "burn",
+}
 
 func StringToClaimType(text string) (ClaimType, error) {
 	switch text {
