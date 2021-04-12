@@ -8,6 +8,7 @@ import (
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -228,7 +229,7 @@ func TestProcessLock(t *testing.T) {
 	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 
 	err := keeper.ProcessLock(ctx, cosmosReceivers[0], &msg)
-	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
+	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
@@ -290,7 +291,7 @@ func TestProcessLockWithReceiver(t *testing.T) {
 	msg := types.NewMsgLock(1, cosmosReceivers[0], ethereumSender, amount, "stake", amount)
 
 	err = keeper.ProcessLock(ctx, cosmosReceivers[0], &msg)
-	require.True(t, strings.Contains(err.Error(), "insufficient account funds"))
+	require.ErrorIs(t, err, sdkerrors.ErrInsufficientFunds)
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", amount), sdk.NewCoin(types.CethSymbol, amount))
 	_ = bankKeeper.MintCoins(ctx, types.ModuleName, coins)
