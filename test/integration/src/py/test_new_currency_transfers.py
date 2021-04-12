@@ -17,6 +17,7 @@ def build_request_for_new_sifchain_address(basic_transfer_request, source_ethere
     request.sifchain_symbol = "c" + new_currency["newtoken_symbol"]
     request.sifchain_address = sifaddress
     request.amount = amount
+    request.ethereum_private_key_env_var = "OPERATOR_PRIVATE_KEY"
     return request
 
 
@@ -48,7 +49,7 @@ def test_can_create_a_new_token_and_peg_it(
     )
     request = build_request_for_new_sifchain_address(
         basic_transfer_request,
-        source_ethereum_address,
+        operator_address,
         new_currency,
         amount / 10
     )
