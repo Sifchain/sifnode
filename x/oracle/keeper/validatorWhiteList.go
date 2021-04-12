@@ -27,18 +27,18 @@ func (k Keeper) GetOracleWhiteList(ctx sdk.Context) []sdk.ValAddress {
 	store := ctx.KVStore(k.storeKey)
 	key := types.WhiteListValidatorPrefix
 	bz := store.Get(key)
-	valList := []string{}
-	k.cdc.MustUnmarshalBinaryBare(bz, &stakingtypes.ValAddresses{valList})
+	valAddresses := &stakingtypes.ValAddresses{}
+	k.cdc.MustUnmarshalBinaryBare(bz, valAddresses)
 
-	vl := make([]sdk.ValAddress, len(valList))
-	for i, entry := range valList {
+	vl := make([]sdk.ValAddress, len(valAddresses.Addresses))
+	for i, entry := range valAddresses.Addresses {
 		addr, err := sdk.ValAddressFromBech32(entry)
 		if err != nil {
 			panic(err)
 		}
 		vl[i] = addr
-
 	}
+
 	return vl
 }
 
