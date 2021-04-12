@@ -62,7 +62,6 @@ export default defineComponent({
     <Plus v-if="icon === 'plus'" />
     <InfoBoxBlack v-if="icon === 'info-box-black'" />
     <InfoBoxWhite v-if="icon === 'info-box-white'" />
-    <InfoBoxWhite v-if="icon === 'info-box-white'" />
     <Sif v-if="icon === 'sif'" />
     <Exclaimation v-if="icon === 'exclaimation'" />
   </span>
