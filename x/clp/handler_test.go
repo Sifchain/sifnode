@@ -250,6 +250,7 @@ func TestRemoveLiquidity(t *testing.T) {
 	require.NotNil(t, res, "Can withdraw now as new LP has added liquidity")
 
 }
+
 func TestSwap(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
 	signer := test.GenerateAddress("")
@@ -259,14 +260,16 @@ func TestSwap(t *testing.T) {
 
 	// Test Parameters for swap
 
-	initialBalance := sdk.NewUintFromString("1000000000000000000000") // Initial account balance for all assets created
-	poolBalance := sdk.NewUintFromString("1000000000000000000")       // Amount funded to pool , This same amount is used both for native and external asset
+	// initialBalance: Initial account balance for all assets created.
+	initialBalance := sdk.NewUintFromString("1000000000000000000000")
+	// poolBalance: Amount funded to pool. The same amount is used both for native and external asset.
+	poolBalance := sdk.NewUintFromString("1000000000000000000")
 	swapSentAssetETH := sdk.NewUintFromString("1000000000000000")
 
 	externalCoin1 := sdk.NewCoin(assetEth.Symbol, sdk.Int(initialBalance))
 	externalCoin2 := sdk.NewCoin(assetDash.Symbol, sdk.Int(initialBalance))
 	nativeCoin := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance))
-	// Signer is given ETH and RWN ( Signer will creat pool and become LP)
+	// Signer is given ETH and RWN (Signer will creat pool and become LP)
 	_ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin1, nativeCoin})
 	_ = keeper.GetBankKeeper().AddCoins(ctx, signer, sdk.Coins{externalCoin2})
 
@@ -290,9 +293,13 @@ func TestSwap(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 
-	CoinsExt1 := sdk.NewCoin(assetEth.Symbol, sdk.Int(initialBalance.Sub(sdk.Uint(sdk.Int(poolBalance))).Sub(sdk.Uint(sdk.Int(swapSentAssetETH)))))    // Created ETH pool and Send amount for swap
-	CoinsNative := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance.Sub(sdk.Uint(sdk.Int(poolBalance))).Sub(sdk.Uint(sdk.Int(poolBalance))))) // Creating two pools
-	CoinsExt2 := sdk.NewCoin(assetDash.Symbol, sdk.Int(initialBalance.Sub(sdk.Uint(sdk.Int(poolBalance))).Add(sdk.Uint(sdk.Int(receivedAmount)))))     // Created one pool and Received swap amount
+	// Created ETH pool and Send amount for swap
+	CoinsExt1 := sdk.NewCoin(assetEth.Symbol, sdk.Int(initialBalance.Sub(sdk.Uint(sdk.Int(poolBalance))).Sub(sdk.Uint(sdk.Int(swapSentAssetETH)))))
+	// Creating two pools
+	CoinsNative := sdk.NewCoin(clptypes.NativeSymbol, sdk.Int(initialBalance.Sub(sdk.Uint(sdk.Int(poolBalance))).Sub(sdk.Uint(sdk.Int(poolBalance)))))
+	// Created one pool and Received swap amount
+	CoinsExt2 := sdk.NewCoin(assetDash.Symbol, sdk.Int(initialBalance.Sub(sdk.Uint(sdk.Int(poolBalance))).Add(sdk.Uint(sdk.Int(receivedAmount)))))
+
 	ok := keeper.HasBalance(ctx, signer, CoinsExt1)
 	assert.True(t, ok, "")
 	ok = keeper.HasBalance(ctx, signer, CoinsNative)
@@ -302,8 +309,8 @@ func TestSwap(t *testing.T) {
 
 	msg = clptypes.NewMsgSwap(signer, assetEth, assetDash, swapSentAssetETH, swapSentAssetETH)
 	res, err = handler(ctx, &msg)
-	require.Error(t, err)
-	require.NotNil(t, res)
+	require.ErrorIs(t, err, clptypes.ErrReceivedAmountBelowExpected)
+	require.Nil(t, res)
 
 }
 
