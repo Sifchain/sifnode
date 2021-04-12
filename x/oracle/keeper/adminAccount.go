@@ -15,6 +15,9 @@ func (k Keeper) SetAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) {
 
 func (k Keeper) IsAdminAccount(ctx sdk.Context, adminAccount sdk.AccAddress) bool {
 	account := k.GetAdminAccount(ctx)
+	if account == nil {
+		return false
+	}
 	return bytes.Equal(account, adminAccount)
 }
 
@@ -22,6 +25,9 @@ func (k Keeper) GetAdminAccount(ctx sdk.Context) (adminAccount sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.AdminAccountPrefix
 	bz := store.Get(key)
+	if len(bz) == 0 {
+		return nil
+	}
 	k.cdc.MustUnmarshalBinaryBare(bz, &adminAccount)
 	return
 }

@@ -12,18 +12,7 @@ import (
 // More details on the formula
 // https://github.com/Sifchain/sifnode/blob/develop/docs/1.Liquidity%20Pools%20Architecture.md
 func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, types.Pool, error) {
-	var X sdk.Uint
-	var Y sdk.Uint
-	toRowan := true
-	if to == types.GetSettlementAsset() {
-		Y = pool.NativeAssetBalance
-		X = pool.ExternalAssetBalance
-	} else {
-		X = pool.NativeAssetBalance
-		Y = pool.ExternalAssetBalance
-		toRowan = false
-	}
-	x := sentAmount
+    X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
 	liquidityFee, err := calcLiquidityFee(pool.ExternalAsset.Symbol, toRowan, X, x, Y)
 	if err != nil {
 		return sdk.Uint{}, sdk.Uint{}, sdk.Uint{}, types.Pool{}, err
@@ -50,19 +39,26 @@ func SwapOne(from types.Asset, sentAmount sdk.Uint, to types.Asset, pool types.P
 	return swapResult, liquidityFee, priceImpact, pool, nil
 }
 
+func SetInputs(sentAmount sdk.Uint, to types.Asset, pool types.Pool) (sdk.Uint, sdk.Uint, sdk.Uint, bool) {
+    var X sdk.Uint
+    var Y sdk.Uint
+    var x sdk.Uint
+    toRowan := true
+    if to == types.GetSettlementAsset() {
+        Y = pool.NativeAssetBalance
+        X = pool.ExternalAssetBalance
+    } else {
+        X = pool.NativeAssetBalance
+        Y = pool.ExternalAssetBalance
+        toRowan = false
+    }
+    x = sentAmount
+
+    return X, x, Y, toRowan
+}
+
 func GetSwapFee(sentAmount sdk.Uint, to types.Asset, pool types.Pool) sdk.Uint {
-	var X sdk.Uint
-	var Y sdk.Uint
-	toRowan := true
-	if to == types.GetSettlementAsset() {
-		Y = pool.NativeAssetBalance
-		X = pool.ExternalAssetBalance
-	} else {
-		X = pool.NativeAssetBalance
-		Y = pool.ExternalAssetBalance
-		toRowan = false
-	}
-	x := sentAmount
+    X, x, Y, toRowan := SetInputs(sentAmount, to, pool)
 	swapResult, err := calcSwapResult(pool.ExternalAsset.Symbol, toRowan, X, x, Y)
 	if err != nil {
 		return sdk.Uint{}
@@ -145,8 +141,9 @@ func CalculatePoolUnits(symbol string, oldPoolUnits, nativeAssetBalance, externa
 	nativeAssetAmount, externalAssetAmount sdk.Uint) (sdk.Uint, sdk.Uint, error) {
 	normalizationFactor := sdk.NewDec(1)
 	nf, ok := types.GetNormalizationMap()[symbol[1:]]
-	adjustExternalToken := true
+	adjustExternalToken := false
 	if ok {
+		adjustExternalToken = true
 		diffFactor := 18 - nf
 		if diffFactor < 0 {
 			diffFactor = nf - 18
@@ -233,8 +230,9 @@ func calcLiquidityFee(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, 
 	}
 	normalizationFactor := sdk.NewDec(1)
 	nf, ok := types.GetNormalizationMap()[symbol[1:]]
-	adjustExternalToken := true
+	adjustExternalToken := false
 	if ok {
+		adjustExternalToken = true
 		diffFactor := 18 - nf
 		if diffFactor < 0 {
 			diffFactor = nf - 18
@@ -252,10 +250,10 @@ func calcLiquidityFee(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, 
 		}
 	} else {
 		if toRowan {
+		    Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+		} else {
 			X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
 			x = x.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-		} else {
-			Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
 		}
 	}
 
@@ -285,8 +283,9 @@ func calcSwapResult(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, er
 	}
 	normalizationFactor := sdk.NewDec(1)
 	nf, ok := types.GetNormalizationMap()[symbol[1:]]
-	adjustExternalToken := true
+	adjustExternalToken := false
 	if ok {
+		adjustExternalToken = true
 		diffFactor := 18 - nf
 		if diffFactor < 0 {
 			diffFactor = nf - 18
@@ -304,10 +303,10 @@ func calcSwapResult(symbol string, toRowan bool, X, x, Y sdk.Uint) (sdk.Uint, er
 		}
 	} else {
 		if toRowan {
+			Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
+		} else {
 			X = X.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
 			x = x.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
-		} else {
-			Y = Y.Mul(sdk.NewUintFromBigInt(normalizationFactor.RoundInt().BigInt()))
 		}
 	}
 

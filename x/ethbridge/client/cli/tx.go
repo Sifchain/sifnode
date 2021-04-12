@@ -259,3 +259,72 @@ func GetCmdUpdateWhiteListValidator(cdc *codec.Codec) *cobra.Command {
 		},
 	}
 }
+
+// GetCmdUpdateCethReceiverAccount is the CLI command to update the sifchain account that receives the ceth proceeds
+func GetCmdUpdateCethReceiverAccount(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "update_ceth_receiver_account [cosmos-sender-address] [ceth_receiver_account]",
+		Short: "This should be used to set the ceth receiver account.",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			cosmosSender, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			cethReceiverAccount, err := sdk.AccAddressFromBech32(args[1])
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgUpdateCethReceiverAccount(cosmosSender, cethReceiverAccount)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}
+
+// GetCmdRescueCeth is the CLI command to send the message to transfer ceth from ethbridge module to account
+func GetCmdRescueCeth(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "rescue_ceth [cosmos-sender-address] [ceth_receiver_account] [ceth_amount]",
+		Short: "This should be used to send ceth from ethbridge to an account.",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authtypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			cosmosSender, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			cethReceiverAccount, err := sdk.AccAddressFromBech32(args[1])
+			if err != nil {
+				return err
+			}
+
+			cethAmount, ok := sdk.NewIntFromString(args[2])
+			if !ok {
+				return errors.New("Error parsing ceth amount")
+			}
+
+			msg := types.NewMsgRescueCeth(cosmosSender, cethReceiverAccount, cethAmount)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+}

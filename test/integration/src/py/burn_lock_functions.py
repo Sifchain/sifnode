@@ -215,6 +215,11 @@ def transfer_sifchain_to_sifchain(
         credentials
     )
     target_balance = transfer_request.amount + sifchain_starting_balance
+    wait_for_sif_account(
+        sif_addr=transfer_request.sifchain_destination_address,
+        sifchaincli_node=transfer_request.sifnodecli_node,
+        max_seconds=max_seconds
+    )
     wait_for_sifchain_addr_balance(
         sifchain_address=transfer_request.sifchain_destination_address,
         symbol=transfer_request.sifchain_symbol,
