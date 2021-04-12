@@ -10,19 +10,15 @@ on:
       block_time:
         description: please get the block time from blockexplorer-devnet.sifchain.finance/
         required: true
-        default: 5.56
+        default: 5.58
       release_version:
         description: release version.
         required: true
-        default: 20210401000000
+        default: 20210407042000
       deposit:
         description: the ammount of rowan.
         required: true
         default: 10000000000000000000rowan
-      checksum:
-        description: the checksum for the release
-        required: true
-        default: sha256:1fa3cce1785083c1bf99e8312ae3b5f830261be965dbfff19e147e82b1f0004d
       upgrade_hours:
         description: how long until the upgrade takes palce
         required: true
@@ -35,25 +31,32 @@ on:
         description: aws region
         required: true
         default: us-east-1
-
+      aws_region_second_vote:
+        description: aws region
+        required: true
+        default: eu-west-1
 
 jobs:
-  create_governance_request_us:
-    name: create_governance_request_us
+  create_governance_request:
+    name: create_governance_request
     runs-on: ${{ matrix.os }}
     env:
+      aws_region_second_vote: "${{ github.event.inputs.aws_region_second_vote }}"
       aws_region: "${{ github.event.inputs.aws_region }}"
       aws_cluster_name: "sifchain-aws-${{ github.event.inputs.environment }}-us"
+      aws_cluster_name_second_vote: "sifchain-aws-${{ github.event.inputs.environment }}-eu"
       aws_role: "${{ github.event.inputs.aws_role }}"
       env: "${{ github.event.inputs.environment }}"
       app_env: "${{ github.event.inputs.environment }}"
       block_time: "${{ github.event.inputs.block_time }}"
-      checksum: "${{ github.event.inputs.checksum }}"
-      deposit: "${{ github.event.deposit }}"
+      deposit: "${{ github.event.inputs.deposit }}"
       from: "${{ github.event.inputs.environment }}-us-1"
+      from_second_vote: "${{ github.event.inputs.environment }}-eu-1"
       release_version: "${{ github.event.inputs.release_version }}"
       chainnet: "sifchain-${{ github.event.inputs.environment }}"
       rowan: "0.5rowan"
+      region: "us"
+      region_second_vote: "eu"
       upgrade_hours: "${{ github.event.inputs.upgrade_hours }}"
 
     strategy:
@@ -66,6 +69,11 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15
 
       - name: Install Rake
         run: gem install rake
@@ -89,32 +97,75 @@ jobs:
         shell: bash
         run: |
           set +x
-          echo "Get Keys for Environment. Coming Soon..."
-          make CHAINNET=${chainnet} IMAGE_TAG=${env}-${release_version} BINARY=sifnodecli build-image
-          ls -lah ./
-          #rake "cluster:release:generate_vote[${moniker}, \"${mnemonic}\"]"
+          echo "Generate Keyring."
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
+          rake "cluster:release:generate_keyring[${moniker}]"
 
+      - name: Create Release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +x
+          echo "Create Create and Execute Workflow Dispatch"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
+          rake "cluster:release:create_release[${release_version}, ${env}, ${github_token}]"
+
+      - name: Wait For Release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +x
+          echo "Wait for release with version to finish building befor continuing."
+          rake "cluster:release:wait_for_release[${env},${release_version}]"
 
       - name: Create Governance Release Request
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set +x
-          echo "Create Governance Release Request"
-          rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}, ${checksum}]"
+          echo "Create Governance Release Request with deposit ammount $deposit"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
+          rake "cluster:release:generate_governance_release_request[${upgrade_hours}, ${block_time}, ${deposit}, ${rowan}, ${chainnet}, ${release_version}, ${from}, ${app_env}]"
 
       - name: Create Governance Vote 1
         shell: bash
         run: |
           set +x
           echo "Create Governance Release Request"
-          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}]"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region}/governance]"
+          source ./tmp_secrets
+          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}, ${env}]"
+
+      - name: Setup AWS Profile and KUBECONFIG Second Voter
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+          rm -rf ./tmp_secrets
+          rm -rf ./tmp_keyring_rendered
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File...."
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region_second_vote}, ${aws_role}, ${aws_cluster_name_second_vote}]"
 
       - name: Create Governance Vote 2
         shell: bash
         run: |
           set +x
           echo "Create Governance Release Request"
-          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from}]"
+          rake "cluster:vault:generate_vault_tmp_var_source_file[kv-v2/${region_second_vote}/governance]"
+          source ./tmp_secrets
+          rake "cluster:release:generate_keyring[${moniker}]"
+          rake "cluster:release:generate_vote[${rowan}, ${chainnet}, ${from_second_vote}, ${env}]"
 
       - name: Clean Temp Files and Secrets
         shell: bash
@@ -124,4 +175,6 @@ jobs:
           rm -rf ./kubeconfig
           rm -rf ~/.aws/credentials
           rm -rf ~/.aws/config
+          rm -rf ./tmp_secrets
+          rm -rf ./tmp_keyring_rendered
 
