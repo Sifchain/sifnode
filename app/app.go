@@ -257,7 +257,6 @@ func NewInitApp(
 	skipUpgradeHeights := make(map[int64]bool)
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.Cdc)
-	app.paramsKeeper = params.NewKeeper(app.Cdc, keys[params.StoreKey], tKeys[params.TStoreKey])
 	SetupHandlers(app)
 
 	govRouter := gov.NewRouter()
