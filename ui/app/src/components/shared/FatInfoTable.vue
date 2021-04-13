@@ -3,7 +3,7 @@
     v-if="show"
     v-bind:class="{ [`status-${status}`]: true, 'price-calculation': true }"
   >
-    <div class="pool-share">
+    <div class="pool-share" :data-handle="dataHandle">
       <h4 class="pool-share-title text--left"><slot name="header"></slot></h4>
       <div class="pool-share-details">
         <slot name="body"></slot>
@@ -15,7 +15,7 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  props: ["show", "status"],
+  props: ["show", "status", "dataHandle"],
 });
 </script>
 <style lang="scss" scoped>

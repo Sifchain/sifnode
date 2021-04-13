@@ -40,6 +40,7 @@ export default defineComponent({
         ><div>
           <SifButton
             v-if="nextStepMessage"
+            data-handle="actions-go"
             block
             primary
             :disabled="!nextStepAllowed"
