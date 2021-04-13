@@ -11,6 +11,10 @@ import {
 import SifInput from "@/components/shared/SifInput.vue";
 import { Asset } from "ui-core";
 
+type Balances = {
+  age: number;
+};
+
 export default defineComponent({
   name: "SelectTokenDialog",
   components: { AssetItem, SifInput },
@@ -25,7 +29,7 @@ export default defineComponent({
     },
   },
   setup(props, context) {
-    const { actions } = useCore();
+    const { store, actions } = useCore();
     const { forceShowAllATokens } = props;
     const searchText = ref("");
     const selectedTokens = props.selectedTokens || [];
@@ -34,17 +38,34 @@ export default defineComponent({
 
     const list = filterTokenList({
       searchText,
-      tokens: forceShowAllATokens ? allSifTokens : fullSearchList,
+      tokens: true ? allSifTokens : fullSearchList,
       displayList: forceShowAllATokens ? allSifTokens : displayList,
     });
-
-    const tokens = disableSelected({ list, selectedTokens });
+    console.log("allSifTokens", allSifTokens);
+    const balances = store.wallet.sif.balances;
+    // const balancesObj: Balances = {};
+    // const assetBalances = balances.forEach((balance) => {
+    //   console.log("hello");
+    //   console.log(balance.asset.symbol);
+    //   console.log(balance.toFixed());
+    //   balancesObj[balance.asset.symbol] = balance.toFixed();
+    // });
+    // console.log("balances1", balances);
+    // console.log("balances", balances.value);
+    let tokens = disableSelected({ list, selectedTokens });
 
     function selectToken(symbol: string) {
       context.emit("tokenselected", symbol);
     }
-
-    return { tokens, searchText, selectToken };
+    console.log("toaaa", tokens);
+    // const sifBalances =
+    // const tokenBalances = tokens.value.map((token) => {
+    // return { hey: 1 };
+    // balances.find((balance) => {
+    //   return balance.asset.symbol.toLowerCase() === symbol.value.toLowerCase();
+    // });
+    // });
+    return { balances, tokens, searchText, selectToken };
   },
 });
 </script>
@@ -74,6 +95,18 @@ export default defineComponent({
       @click="selectToken(token.symbol)"
     >
       <AssetItem :symbol="token.symbol" />
+      <div>
+        {{
+          balances
+            .find((balance) => {
+              return (
+                balance.asset.symbol.toLowerCase() ===
+                token.symbol.toLowerCase()
+              );
+            })
+            .toFixed()
+        }}
+      </div>
     </button>
   </div>
 </template>
@@ -125,7 +158,8 @@ export default defineComponent({
   text-align: left;
   background: transparent;
   border: none;
-
+  display: flex;
+  justify-content: space-between;
   @include listAnimation;
 
   &[disabled] {
