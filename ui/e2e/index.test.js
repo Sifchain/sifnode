@@ -58,6 +58,7 @@ describe("connect to page", () => {
         `--disable-extensions-except=${pathToKeplrExtension},${pathToMmExtension}`,
         `--load-extension=${pathToKeplrExtension},${pathToMmExtension}`,
       ],
+      // devtools: true,
     });
 
     // setup metamask
@@ -72,6 +73,7 @@ describe("connect to page", () => {
     await importKeplrAccount(keplrPage, KEPLR_CONFIG.options);
     // goto dex page
     dexPage = await browserContext.newPage();
+    dexPage.setDefaultTimeout(60000);
     await dexPage.goto(DEX_TARGET, { waitUntil: "domcontentloaded" });
   });
 
@@ -144,7 +146,11 @@ describe("connect to page", () => {
       waitUntil: "domcontentloaded",
     });
 
+    await dexPage.waitForTimeout(1000); // slowing down to avoid tokens not updating
+
     await dexPage.click("[data-handle='swap-page-button']");
+
+    await dexPage.waitForTimeout(1000); // slowing down to avoid tokens not updating
 
     // Get values of token A and token B in account
     // Select Token A
