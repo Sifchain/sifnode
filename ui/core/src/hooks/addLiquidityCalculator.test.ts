@@ -402,7 +402,7 @@ describe("addLiquidityCalculator", () => {
     tokenBAmount.value = "0";
     tokenASymbol.value = "atk";
     tokenBSymbol.value = "rowan";
-    expect(state.value).toBe(PoolState.ZERO_AMOUNTS);
+    expect(state.value).toBe(PoolState.ZERO_AMOUNTS_NEW_POOL);
     expect(aPerBRatioMessage.value).toBe("N/A");
     expect(bPerARatioMessage.value).toBe("N/A");
     expect(aPerBRatioProjectedMessage.value).toBe("N/A");
@@ -415,7 +415,7 @@ describe("addLiquidityCalculator", () => {
     tokenBAmount.value = "0";
     tokenASymbol.value = "atk";
     tokenBSymbol.value = "rowan";
-    expect(state.value).toBe(PoolState.INSUFFICIENT_FUNDS);
+    expect(state.value).toBe(PoolState.ZERO_AMOUNTS_NEW_POOL);
     expect(aPerBRatioMessage.value).toBe("N/A");
     expect(bPerARatioMessage.value).toBe("N/A");
     expect(aPerBRatioProjectedMessage.value).toBe("N/A");
@@ -427,7 +427,7 @@ describe("addLiquidityCalculator", () => {
     tokenBAmount.value = "1000";
     tokenASymbol.value = "atk";
     tokenBSymbol.value = "rowan";
-    expect(state.value).toBe(PoolState.INSUFFICIENT_FUNDS);
+    expect(state.value).toBe(PoolState.ZERO_AMOUNTS_NEW_POOL);
     expect(aPerBRatioMessage.value).toBe("N/A");
     expect(bPerARatioMessage.value).toBe("N/A");
     expect(aPerBRatioProjectedMessage.value).toBe("N/A");

@@ -68,6 +68,7 @@ export default function createSifService({
   let keplrProvider: any;
   let client: SifClient | null = null;
   let polling: any;
+  let connecting: boolean = false;
 
   const unSignedClient = new SifUnSignedClient(sifApiUrl, sifWsUrl, sifRpcUrl);
 
@@ -148,10 +149,24 @@ export default function createSifService({
       if (!keplrProvider) {
         return;
       }
+      console.log("setClient");
+      if (connecting || state.connected) {
+        return;
+      }
+      connecting = true;
+      /* 
+        Only load dev env keplr configs.
+        Will need to change chain id in devnet, testnet so keplr asks to add experimental chain. 
+        Otherwise, if sifchain, auto maps to production chain per keplr code.
+      */
+      if (!state.connected && keplrChainConfig.chainId !== "sifchain") {
+        await this.connect();
+      }
       const offlineSigner = keplrProvider.getOfflineSigner(
         keplrChainConfig.chainId,
       );
       const accounts = await offlineSigner.getAccounts();
+      console.log("account", accounts);
       const address = accounts.length > 0 ? accounts[0].address : "";
       if (!address) {
         throw "No address on sif account";
@@ -163,6 +178,7 @@ export default function createSifService({
         sifWsUrl,
         sifRpcUrl,
       );
+      connecting = false;
     },
 
     async initProvider() {

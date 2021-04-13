@@ -53,8 +53,14 @@ export default defineComponent({
     const router = useRouter();
     const route = useRoute();
 
-    const { fromSymbol, fromAmount, toAmount } = useCurrencyFieldState();
-    const toSymbol = ref("rowan");
+    const {
+      fromSymbol,
+      fromAmount,
+      toAmount,
+      toSymbol,
+    } = useCurrencyFieldState({
+      pooling: ref(true),
+    });
     const isFromMaxActive = computed(() => {
       const accountBalance = balances.value.find(
         (balance) => balance.asset.symbol === fromSymbol.value,
@@ -206,11 +212,16 @@ export default defineComponent({
             return "Select Tokens";
           case PoolState.ZERO_AMOUNTS:
             return "Please enter an amount";
+          case PoolState.ZERO_AMOUNTS_NEW_POOL:
+            return "Both inputs required";
           case PoolState.INSUFFICIENT_FUNDS:
             return "Insufficient Funds";
           case PoolState.VALID_INPUT:
             return preExistingPool.value ? "Add liquidity" : "Create Pool";
         }
+      }),
+      toggleLabel: computed(() => {
+        return !preExistingPool.value ? null : "Pool Equally";
       }),
       nextStepAllowed: computed(() => {
         return state.value === PoolState.VALID_INPUT;
@@ -333,7 +344,7 @@ export default defineComponent({
           :isToMaxActive="isToMaxActive"
           toSymbolFixed
           canSwapIcon="plus"
-          toggleLabel="Pool Equally"
+          :toggleLabel="toggleLabel"
           :asyncPooling="asyncPooling"
           @toggleAsyncPooling="toggleAsyncPooling"
       /></template>
@@ -346,15 +357,15 @@ export default defineComponent({
       </template>
     </Modal>
 
-    <FatInfoTable :show="nextStepAllowed">
+    <FatInfoTable :show="nextStepAllowed" data-handle="pool-prices">
       <template #header>Pool Token Prices</template>
       <template #body>
-        <FatInfoTableCell>
-          <span class="number">{{
+        <FatInfoTableCell data-handle="pool-prices-forward">
+          <span class="number" data-handle="pool-prices-forward-number">{{
             formatNumber(aPerBRatioMessage === "N/A" ? "0" : aPerBRatioMessage)
           }}</span
           ><br />
-          <span
+          <span data-handle="pool-prices-forward-symbols"
             >{{
               fromSymbol.toLowerCase().includes("rowan")
                 ? fromSymbol.toUpperCase()
@@ -368,12 +379,12 @@ export default defineComponent({
             }}</span
           >
         </FatInfoTableCell>
-        <FatInfoTableCell>
-          <span class="number">{{
+        <FatInfoTableCell data-handle="pool-prices-backward">
+          <span class="number" data-handle="pool-prices-backward-number">{{
             formatNumber(bPerARatioMessage === "N/A" ? "0" : bPerARatioMessage)
           }}</span
           ><br />
-          <span
+          <span data-handle="pool-prices-backward-symbols"
             >{{
               toSymbol.toLowerCase().includes("rowan")
                 ? toSymbol.toUpperCase()
@@ -390,7 +401,11 @@ export default defineComponent({
       </template>
     </FatInfoTable>
 
-    <FatInfoTable :status="riskFactorStatus" :show="nextStepAllowed">
+    <FatInfoTable
+      :status="riskFactorStatus"
+      :show="nextStepAllowed"
+      data-handle="pool-estimates"
+    >
       <template #header>
         <div class="pool-ratio-label">
           <span>Est. prices after pooling & pool share</span>
@@ -413,8 +428,8 @@ export default defineComponent({
         </div>
       </template>
       <template #body>
-        <FatInfoTableCell>
-          <span class="number">{{
+        <FatInfoTableCell data-handle="pool-estimates-forwards">
+          <span class="number" data-handle="pool-estimates-forwards-number">{{
             formatNumber(
               aPerBRatioProjectedMessage === "N/A"
                 ? "0"
@@ -422,13 +437,13 @@ export default defineComponent({
             )
           }}</span
           ><br />
-          <span
+          <span data-handle="pool-estimates-forwards-symbols"
             >{{ fromSymbol.toUpperCase() }} per
             {{ toSymbol.toUpperCase() }}</span
           >
         </FatInfoTableCell>
-        <FatInfoTableCell>
-          <span class="number">{{
+        <FatInfoTableCell data-handle="pool-estimates-backwards">
+          <span class="number" data-handle="pool-estimates-backwards-number">{{
             formatNumber(
               bPerARatioProjectedMessage === "N/A"
                 ? "0"
@@ -436,13 +451,15 @@ export default defineComponent({
             )
           }}</span
           ><br />
-          <span
+          <span data-handle="pool-estimates-backwards-symbols"
             >{{ toSymbol.toUpperCase() }} per
             {{ fromSymbol.toUpperCase() }}</span
           >
         </FatInfoTableCell>
-        <FatInfoTableCell>
-          <span class="number">{{ shareOfPoolPercent }}</span
+        <FatInfoTableCell data-handle="pool-estimates-share">
+          <span class="number" data-handle="pool-estimates-share-number">{{
+            shareOfPoolPercent
+          }}</span
           ><br />Share of Pool
         </FatInfoTableCell></template
       >
@@ -478,7 +495,7 @@ export default defineComponent({
       </template>
 
       <template v-slot:common>
-        <p class="text--normal">
+        <p class="text--normal" data-handle="confirmation-wait-message">
           Supplying
           <span class="text--bold">{{ fromAmount }} {{ fromSymbol }}</span>
           and

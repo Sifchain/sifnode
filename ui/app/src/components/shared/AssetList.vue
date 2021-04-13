@@ -2,12 +2,16 @@
   <div class="asset-list">
     <div class="line" v-for="item in items" :key="item.asset.symbol">
       <AssetItem class="token" :symbol="item.asset.symbol" />
-      <div class="amount">
+      <div :data-handle="item.asset.symbol + '-row-amount'" class="amount">
         {{ formatAssetAmount(item.amount) }}
         <slot name="annotation" v-bind="item"></slot>
       </div>
       <div class="action">
-        <slot v-if="item.amount.greaterThan('0')" :asset="item"></slot>
+        <slot
+          v-if="item.amount.greaterThan('0')"
+          :asset="item"
+          data-handle="item"
+        ></slot>
       </div>
     </div>
   </div>

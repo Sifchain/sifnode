@@ -301,7 +301,7 @@ data:
         "genesisFile": "{{ .Values.blockExplorer.env.genesisURL }}",
         "remote":{
             "rpc": "{{ .Values.blockExplorer.env.remote.rpcURL }}",
-            "lcd": "{{ .Values.blockExplorer.env.remote.lcdURL }}"
+            "lcd": "{{ .Values.blockExplorer.env.remote.apiURL }}"
         },
         "debug": {
             "startTimer": true,

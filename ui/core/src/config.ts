@@ -5,8 +5,8 @@ import testnetconfig from "./config.testnet.json";
 import mainnnetconfig from "./config.mainnet.json";
 
 import assetsEthereumLocalnet from "./assets.ethereum.localnet.json";
-import assetsEthereumDevnet from "./assets.ethereum.devnet.json";
-import assetsEthereumTestnet from "./assets.ethereum.testnet.json";
+import assetsEthereumDevnet from "./assets.ethereum.sifchain-devnet.json";
+import assetsEthereumTestnet from "./assets.ethereum.sifchain-testnet.json";
 import assetsEthereumMainnet from "./assets.ethereum.mainnet.json";
 
 import assetsSifchainLocalnet from "./assets.sifchain.localnet.json";
