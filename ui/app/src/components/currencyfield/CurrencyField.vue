@@ -21,6 +21,7 @@ export type BalanceShape = {
 export default defineComponent({
   props: {
     label: String,
+    slug: String,
     amount: String,
     symbol: String,
     available: String,
@@ -89,6 +90,7 @@ export default defineComponent({
         <Label>{{ label }}</Label>
         <SifInput
           bold
+          :data-handle="slug + '-input'"
           v-bind="$attrs"
           type="number"
           v-model="localAmount"
@@ -99,6 +101,7 @@ export default defineComponent({
           ><template v-slot:end
             ><SifButton
               v-if="max && !isMaxActive"
+              :data-handle="slug + '-max-button'"
               @click="$emit('maxclicked')"
               small
               ghost
@@ -114,6 +117,7 @@ export default defineComponent({
         </Label>
 
         <SifButton
+          :data-handle="slug + '-select-button'"
           nocase
           v-if="localSymbol !== null && !symbolFixed"
           secondary
@@ -128,6 +132,7 @@ export default defineComponent({
         </div>
 
         <SifButton
+          :data-handle="slug + '-select-button'"
           :disabled="!selectable"
           v-if="localSymbol === null"
           primary
