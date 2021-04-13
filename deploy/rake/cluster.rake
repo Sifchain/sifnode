@@ -909,6 +909,12 @@ python helmvaulereplace.py
         region = #{args[:AWS_REGION]}
         }
 
+        puts "config file"
+        puts config_file
+
+        puts "credential file"
+        puts credential_file
+
         puts "Write AWS Config File."
         File.open("~/.aws/config", 'w') { |file| file.write(config_file) }
 
