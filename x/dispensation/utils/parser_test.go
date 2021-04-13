@@ -64,7 +64,7 @@ func TestParseInput(t *testing.T) {
 	filename := "input.json"
 	createInput(t, filename)
 	defer removeFile(t, filename)
-	inputs, err := utils.ParseInput("/Users/tanmay/Documents/sifnode/input.json")
+	inputs, err := utils.ParseInput(filename)
 	assert.NoError(t, err)
 	assert.Equal(t, len(inputs), 2)
 }
@@ -74,7 +74,7 @@ func TestParseOutput(t *testing.T) {
 	count := 3000
 	createOutput(filename, count)
 	defer removeFile(t, filename)
-	outputs, err := utils.ParseOutput("/Users/tanmay/Documents/sifnode/output.json")
+	outputs, err := utils.ParseOutput(filename)
 	assert.NoError(t, err)
 	assert.Equal(t, len(outputs), count)
 }
