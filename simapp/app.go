@@ -1,6 +1,7 @@
 package simapp
 
 import (
+	"github.com/Sifchain/sifnode/x/dispensation"
 	"io"
 	"os"
 
@@ -62,6 +63,7 @@ var (
 		ethbridge.ModuleName:      {supply.Burner, supply.Minter},
 		clp.ModuleName:            {supply.Burner, supply.Minter},
 		faucet.ModuleName:         {supply.Burner, supply.Minter},
+		dispensation.ModuleName:   {supply.Burner, supply.Minter},
 	}
 )
 
@@ -102,9 +104,10 @@ type SimApp struct {
 	ParamsKeeper  params.Keeper
 	FaucetKeeper  faucet.Keeper
 	// Peggy keepers
-	EthBridgeKeeper ethbridge.Keeper
-	OracleKeeper    oracle.Keeper
-	ClpKeeper       clp.Keeper
+	EthBridgeKeeper    ethbridge.Keeper
+	OracleKeeper       oracle.Keeper
+	ClpKeeper          clp.Keeper
+	DispensationKeeper dispensation.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -128,7 +131,7 @@ func NewSimApp(
 	keys := sdk.NewKVStoreKeys(
 		bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
 		supply.StoreKey, params.StoreKey,
-		oracle.StoreKey, ethbridge.StoreKey, clp.StoreKey, faucet.StoreKey,
+		oracle.StoreKey, ethbridge.StoreKey, clp.StoreKey, faucet.StoreKey, dispensation.ModuleName,
 	)
 	tkeys := sdk.NewTransientStoreKeys(params.TStoreKey)
 
@@ -148,11 +151,13 @@ func NewSimApp(
 	app.subspaces[staking.ModuleName] = app.ParamsKeeper.Subspace(staking.DefaultParamspace)
 	app.subspaces[clp.ModuleName] = app.ParamsKeeper.Subspace(clp.DefaultParamspace)
 	app.subspaces[faucet.ModuleName] = app.ParamsKeeper.Subspace(faucet.DefaultParamspace)
+	app.subspaces[dispensation.ModuleName] = app.ParamsKeeper.Subspace(dispensation.DefaultParamspace)
 
 	feeCollectorAcc := supply.NewEmptyModuleAccount(auth.FeeCollectorName)
 	notBondedPool := supply.NewEmptyModuleAccount(staking.NotBondedPoolName, supply.Burner, supply.Staking)
 	bondPool := supply.NewEmptyModuleAccount(staking.BondedPoolName, supply.Burner, supply.Staking)
 	distrAcc := supply.NewEmptyModuleAccount(clp.ModuleName)
+	dispAcc := supply.NewEmptyModuleAccount(dispensation.ModuleName)
 	faucetAcc := supply.NewEmptyModuleAccount(faucet.ModuleName)
 
 	blacklistedAddrs := make(map[string]bool)
@@ -161,6 +166,7 @@ func NewSimApp(
 	blacklistedAddrs[bondPool.GetAddress().String()] = true
 	blacklistedAddrs[distrAcc.GetAddress().String()] = true
 	blacklistedAddrs[faucetAcc.GetAddress().String()] = true
+	blacklistedAddrs[dispAcc.GetAddress().String()] = true
 
 	// add keepers
 	app.AccountKeeper = auth.NewAccountKeeper(
@@ -201,6 +207,12 @@ func NewSimApp(
 	app.StakingKeeper = *stakingKeeper.SetHooks(
 		staking.NewMultiStakingHooks(),
 	)
+	app.DispensationKeeper = dispensation.NewKeeper(
+		cdc,
+		keys[clp.StoreKey],
+		app.BankKeeper,
+		app.SupplyKeeper)
+
 	app.FaucetKeeper = faucet.NewKeeper(app.SupplyKeeper, app.cdc, keys[faucet.ModuleName], app.BankKeeper)
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
