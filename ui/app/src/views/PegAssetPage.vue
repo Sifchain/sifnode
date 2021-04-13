@@ -201,6 +201,7 @@ export default defineComponent({
   <Layout :title="mode === 'peg' ? 'Peg Asset' : 'Unpeg Asset'" backLink="/peg">
     <div class="vspace">
       <CurrencyField
+        slug="peg"
         :amount="amount"
         :max="true"
         :isMaxActive="isMaxActive"
