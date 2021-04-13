@@ -36,7 +36,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
-	proposalclient "github.com/cosmos/cosmos-sdk/x/params/client"
+	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 )
@@ -54,7 +54,7 @@ var (
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(
 			upgradeclient.ProposalHandler,
-			proposalclient.ProposalHandler,
+			paramsclient.ProposalHandler,
 		),
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
