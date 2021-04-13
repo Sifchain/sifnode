@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from functools import lru_cache
 
 n_wait_blocks = 50  # number of blocks to wait for the relayer to act
-burn_gas_cost = 160000000000 * 366000  # see x/ethbridge/types/msgs.go for gas
-lock_gas_cost = 160000000000 * 338000
+burn_gas_cost = 160000000000 * 393000  # see x/ethbridge/types/msgs.go for gas
+lock_gas_cost = 160000000000 * 393000
 highest_gas_cost = max(burn_gas_cost, lock_gas_cost)
 
 
@@ -370,8 +370,15 @@ def send_from_sifchain_to_sifchain(
     return result
 
 
-def send_from_sifchain_to_ethereum_cmd(transfer_request: EthereumToSifchainTransferRequest,
-                                       credentials: SifchaincliCredentials):
+def send_from_sifchain_to_ethereum_cmd(
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials,
+):
+    """
+    Sends from Sifchain to Ethereum.
+
+    Picks a lock or a burn based on the token (rowan, anything else).
+    """
     assert transfer_request.amount > 0
     yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
     keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
@@ -380,13 +387,18 @@ def send_from_sifchain_to_ethereum_cmd(transfer_request: EthereumToSifchainTrans
     direction = "lock" if transfer_request.sifchain_symbol == "rowan" else "burn"
     home_entry = f"--home {credentials.sifnodecli_homedir}" if credentials.sifnodecli_homedir else ""
     from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
+    if not transfer_request.ceth_amount:
+        if direction == "lock":
+            ceth_charge = lock_gas_cost
+        else:
+            ceth_charge = burn_gas_cost
     command_line = f"{yes_entry} " \
                    f"sifnodecli tx ethbridge {direction} {node} " \
                    f"{transfer_request.sifchain_address} " \
                    f"{transfer_request.ethereum_address} " \
                    f"{int(transfer_request.amount):0} " \
                    f"{transfer_request.sifchain_symbol} " \
-                   f"{transfer_request.ceth_amount} " \
+                   f"{ceth_charge} " \
                    f"{keyring_backend_entry} " \
                    f"{sifchain_fees_entry} " \
                    f"--ethereum-chain-id={transfer_request.ethereum_chain_id} " \
@@ -643,3 +655,57 @@ def sifchain_symbol_to_ethereum_symbol(s: str):
         return NULL_ADDRESS
     else:
         return s[1:]
+
+
+def update_ceth_receiver_account(
+        receiver_account: str,
+        admin_account: str,
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials
+):
+    cmd = build_sifchain_command(
+        f"sifnodecli tx ethbridge update_ceth_receiver_account -y {admin_account} {receiver_account}",
+        transfer_request=transfer_request,
+        credentials=credentials
+    )
+    result = get_shell_output(cmd)
+    logging.critical(f"update_ceth_receiver_account result: {result}")
+
+
+def rescue_ceth(
+        receiver_account: str,
+        admin_account: str,
+        amount: int,
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials
+):
+    cmd = build_sifchain_command(
+        f"sifnodecli tx ethbridge rescue_ceth -y {admin_account} {receiver_account} {amount:d}",
+        transfer_request=transfer_request,
+        credentials=credentials
+    )
+    return get_shell_output(cmd)
+
+
+def build_sifchain_command(
+        command_contents: str,
+        transfer_request: EthereumToSifchainTransferRequest,
+        credentials: SifchaincliCredentials
+):
+    yes_entry = f"yes {credentials.keyring_passphrase} | " if credentials.keyring_passphrase else ""
+    keyring_backend_entry = f"--keyring-backend {credentials.keyring_backend}" if credentials.keyring_backend else ""
+    chain_id_entry = f"--chain-id {transfer_request.chain_id}" if transfer_request.chain_id else ""
+    node_entry = f"--node {transfer_request.sifnodecli_node}" if transfer_request.sifnodecli_node else ""
+    home_entry = f"--home {credentials.sifnodecli_homedir}" if credentials.sifnodecli_homedir else ""
+    from_entry = f"--from {credentials.from_key} " if credentials.from_key else ""
+    sifchain_fees_entry = f"--fees {transfer_request.sifchain_fees}" if transfer_request.sifchain_fees else ""
+    return " ".join([
+        yes_entry,
+        command_contents,
+        keyring_backend_entry,
+        chain_id_entry,
+        node_entry,
+        home_entry,
+        from_entry,
+        sifchain_fees_entry,
+    ])

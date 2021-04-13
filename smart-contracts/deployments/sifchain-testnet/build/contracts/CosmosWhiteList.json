@@ -2162,7 +2162,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.2",
-  "updatedAt": "2021-03-24T06:48:19.910Z",
+  "updatedAt": "2021-03-31T05:24:14.245Z",
   "devdoc": {
     "details": "WhiteList contract records the ERC 20 list that can be locked in BridgeBank.*",
     "methods": {},

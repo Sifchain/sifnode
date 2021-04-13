@@ -28,17 +28,29 @@
     "core:test:all": "yarn core:compile && concurrently -r -k -s first \"yarn chain:start:all\" \"sleep 5 && yarn chain:migrate && yarn core:test:with-peggy\"",
     "stack": "./scripts/run-stack.sh",
     "lint": "yarn prettier --config .prettierrc -c '**/*.{vue,ts,json}'",
+    "lint-quick": "yarn pretty-quick --staged --pattern 'ui/**/*.{vue,ts,js,json}'",
     "build": "yarn lint && yarn chain:compile:peggy && yarn core:build && yarn app:build",
-    "test": "yarn core:test:all"
+    "test": "yarn core:test:all",
+    "prepare": "cd .. && husky install ./ui/.husky",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^3.2.0",
     "@openzeppelin/test-helpers": "^0.5.10",
+    "@storybook/addon-actions": "^6.2.0-beta.13",
+    "@storybook/addon-docs": "^6.2.0-beta.13",
+    "@storybook/addon-essentials": "^6.2.0-beta.13",
+    "@storybook/addon-links": "^6.2.0-beta.13",
+    "@storybook/vue3": "^6.2.0-beta.13",
     "concurrently": "^5.3.0",
     "ganache-cli": "^6.12.0",
+    "husky": "^6.0.0",
     "lerna": "^3.22.1",
+    "pretty-quick": "^3.1.0",
     "truffle": "^5.1.48",
     "vercel": "^21.0.1",
+    "vue-loader": "^16.1.2",
     "wait-on": "^5.2.1",
     "wscat": "^4.0.1"
   },
@@ -49,8 +61,12 @@
       "chains/etherium"
     ]
   },
+  "resolutions": {
+    "vue-loader": "^16.1.2"
+  },
   "dependencies": {
     "codecov": "^3.8.0",
-    "prettier": "^2.2.1"
+    "prettier": "^2.2.1",
+    "tsconfig-paths-webpack-plugin": "^3.3.0"
   }
 }
