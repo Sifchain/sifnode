@@ -5,7 +5,7 @@
         <WithWallet>
           <template v-slot:disconnected="{ requestDialog }">
             <SifButton
-              data-handle="button-not-connected"
+              data-handle="button-connected"
               round
               small
               ghost

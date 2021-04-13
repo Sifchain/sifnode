@@ -1,6 +1,6 @@
 export const DEX_TARGET = process.env.PORT
   ? `localhost:${process.env.PORT}`
-  : "localhost:5000";
+  : "localhost:8080";
 
 export const KEPLR_CONFIG = {
   id: "dmkamcknogkgcdfhhbddcghachkejeap",
