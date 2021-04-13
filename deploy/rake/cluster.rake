@@ -886,7 +886,7 @@ python helmvaulereplace.py
         File.write("aws-iam-authenticator", Net::HTTP.get(URI.parse("https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator")))
 
         puts "Create AWS Directory!"
-        FileUtils.mkdir_p("~/.aws")
+        FileUtils.mkdir_p("/home/runner/.aws")
 
         credential_file = %Q{
         [default]
@@ -901,7 +901,7 @@ python helmvaulereplace.py
         }
 
         config_file = %Q{
-        [profile #{args[:AWS_ENV]}]
+        [profile #{args[:APP_ENV]}]
         source_profile = sifchain-base
         role_arn = #{args[:AWS_ROLE]}
         color = 83000a
@@ -916,10 +916,10 @@ python helmvaulereplace.py
         puts credential_file
 
         puts "Write AWS Config File."
-        File.open("~/.aws/config", 'w') { |file| file.write(config_file) }
+        File.open("/home/runner/.aws/config", 'w') { |file| file.write(config_file) }
 
         puts "Write AWS Credential File"
-        File.open("~/.aws/credentials", 'w') { |file| file.write(credential_file) }
+        File.open("/home/runner/.aws/credentials", 'w') { |file| file.write(credential_file) }
 
         puts "Generate Kubernetes Config from configured profile"
         get_kubectl = %Q{
