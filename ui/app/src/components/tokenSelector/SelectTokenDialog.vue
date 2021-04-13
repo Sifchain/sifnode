@@ -2,7 +2,9 @@
 import { defineComponent, PropType } from "vue"; /* eslint-disable-line */
 import { Ref, ref, toRefs } from "@vue/reactivity";
 import { useCore } from "../../hooks/useCore";
+import { sortAssetAmount } from "../../views/utils/sortAssetAmount";
 import AssetItem from "@/components/shared/AssetItem.vue";
+import { computed } from "@vue/reactivity";
 import {
   disableSelected,
   filterTokenList,
@@ -36,36 +38,39 @@ export default defineComponent({
     const allSifTokens = ref(actions.peg.getSifTokens());
     const { fullSearchList, displayList } = toRefs(props);
 
-    const list = filterTokenList({
-      searchText,
-      tokens: true ? allSifTokens : fullSearchList,
-      displayList: forceShowAllATokens ? allSifTokens : displayList,
-    });
-    console.log("allSifTokens", allSifTokens);
-    const balances = store.wallet.sif.balances;
-    // const balancesObj: Balances = {};
-    // const assetBalances = balances.forEach((balance) => {
-    //   console.log("hello");
-    //   console.log(balance.asset.symbol);
-    //   console.log(balance.toFixed());
-    //   balancesObj[balance.asset.symbol] = balance.toFixed();
-    // });
-    // console.log("balances1", balances);
-    // console.log("balances", balances.value);
-    let tokens = disableSelected({ list, selectedTokens });
-
     function selectToken(symbol: string) {
       context.emit("tokenselected", symbol);
     }
-    console.log("toaaa", tokens);
-    // const sifBalances =
-    // const tokenBalances = tokens.value.map((token) => {
-    // return { hey: 1 };
-    // balances.find((balance) => {
-    //   return balance.asset.symbol.toLowerCase() === symbol.value.toLowerCase();
-    // });
-    // });
-    return { balances, tokens, searchText, selectToken };
+
+    const tokenBalances = computed(() => {
+      const list = filterTokenList({
+        searchText,
+        tokens: true ? allSifTokens : fullSearchList,
+        displayList: forceShowAllATokens ? allSifTokens : displayList,
+      });
+
+      const balances = store.wallet.sif.balances;
+
+      let tokens = disableSelected({ list, selectedTokens });
+
+      let tokenBalances = tokens.value.map((asset) => {
+        let balance = null;
+        // If not connected to Keplr, we still want to display the possible assets to trade
+        if (balances) {
+          balance = balances.find((balance) => {
+            return (
+              balance.asset.symbol.toLowerCase() === asset.symbol.toLowerCase()
+            );
+          });
+        }
+        return { asset: asset, amount: balance };
+      });
+
+      tokenBalances = sortAssetAmount(tokenBalances);
+
+      return tokenBalances;
+    });
+    return { searchText, selectToken, tokenBalances };
   },
 });
 </script>
@@ -84,28 +89,19 @@ export default defineComponent({
   </div>
 
   <div class="body">
-    <div class="no-tokens-message" v-if="tokens.length === 0">
+    <div class="no-tokens-message" v-if="tokenBalances.length === 0">
       <p>No tokens available.</p>
     </div>
     <button
       class="option"
-      v-for="token in tokens"
-      :disabled="token.disabled"
-      :key="token.symbol"
-      @click="selectToken(token.symbol)"
+      v-for="tb in tokenBalances"
+      :disabled="tb.asset.disabled"
+      :key="tb.asset.symbol"
+      @click="selectToken(tb.asset.symbol)"
     >
-      <AssetItem :symbol="token.symbol" />
-      <div>
-        {{
-          balances
-            .find((balance) => {
-              return (
-                balance.asset.symbol.toLowerCase() ===
-                token.symbol.toLowerCase()
-              );
-            })
-            .toFixed()
-        }}
+      <AssetItem :symbol="tb.asset.symbol" />
+      <div class="balance">
+        {{ tb.amount.toFixed(4) }}
       </div>
     </button>
   </div>
@@ -166,6 +162,8 @@ export default defineComponent({
     color: #bbb;
     pointer-events: none;
   }
+}
+.balance {
 }
 .no-tokens-message {
   padding: 40px;

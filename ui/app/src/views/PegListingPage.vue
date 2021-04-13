@@ -79,11 +79,12 @@ import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
 
+import { sortAssetAmount } from "./utils/sortAssetAmount";
 import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";
 import { computed } from "@vue/reactivity";
 import { getUnpeggedSymbol } from "../components/shared/utils";
-import { TransactionStatus } from "ui-core";
+import { TransactionStatus, AssetAmount } from "ui-core";
 
 export default defineComponent({
   components: {
@@ -146,7 +147,7 @@ export default defineComponent({
 
       const pegList = pendingPegTxList.value;
 
-      return allTokens.value
+      let listedTokens = allTokens.value
         .filter(
           ({ symbol }) =>
             symbol
@@ -158,51 +159,35 @@ export default defineComponent({
             return asset.symbol.toLowerCase() === symbol.toLowerCase();
           });
 
-          // Get pegTxs for asset
-          const pegTxs = pegList
-            ? pegList.filter(
-                (txStatus) =>
-                  txStatus.symbol?.toLowerCase() ===
-                  getUnpeggedSymbol(asset.symbol.toLowerCase()),
-              )
-            : [];
-
           if (!amount) {
-            return { amount: 0, asset, pegTxs };
+            return { amount: AssetAmount(asset, "0"), asset };
           }
 
           return {
             amount,
             asset,
-            pegTxs,
           };
-        })
-        .sort((a, b) => {
-          // TODO - This could be more succint
-          // A good refactor candidate when we go to use it in another place
-          // Sort alphabetically
-          if (a.asset.symbol < b.asset.symbol) {
-            return -1;
-          }
-          if (a.asset.symbol > b.asset.symbol) {
-            return 1;
-          }
-          return 0;
-        })
-        .sort((a, b) => {
-          // Next sort by balance
-          return (
-            parseFloat(b.amount.toFixed()) - parseFloat(a.amount.toFixed())
-          );
-        })
-        .sort((a, b) => {
-          // Finally, sort and move rowan, erowan to the top
-          if (["rowan", "erowan"].includes(a.asset.symbol.toLowerCase())) {
-            return -1;
-          } else {
-            return 1;
-          }
         });
+
+      const listedTokensSorted = sortAssetAmount(listedTokens);
+
+      // attach pegTxs
+      const listedTokensPegTxs = listedTokensSorted.map((token) => {
+        // Get pegTxs for asset
+        const pegTxs = pegList
+          ? pegList.filter(
+              (txStatus) =>
+                txStatus.symbol?.toLowerCase() ===
+                getUnpeggedSymbol(token.asset.symbol.toLowerCase()),
+            )
+          : [];
+        return {
+          asset: token.asset,
+          amount: token.amount,
+          pegTxs,
+        };
+      });
+      return listedTokensPegTxs;
     });
 
     // TODO: add to utils
