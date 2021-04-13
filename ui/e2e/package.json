@@ -21,7 +21,8 @@
     "isomorphic-fetch": "^3.0.0"
   },
   "jest": {
-    "testTimeout": 1000000
+    "testTimeout": 1000000,
+    "collectCoverage": true
   },
   "scripts": {
     "test": "jest"

@@ -53,3 +53,11 @@ jobs:
 
       - name: Run e2e Tests
         run: yarn pw:test:stack
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./ui/e2e/coverage
+          flags: ui-e2e
+          verbose: true
