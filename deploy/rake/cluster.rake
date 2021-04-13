@@ -909,11 +909,13 @@ python helmvaulereplace.py
         region = #{args[:AWS_REGION]}
         }
 
-        puts "config file"
-        puts config_file
+        if ENV["pipeline_debug"] == "true"
+            puts "config file"
+            puts config_file
 
-        puts "credential file"
-        puts credential_file
+            puts "credential file"
+            puts credential_file
+        end
 
         puts "Write AWS Config File."
         File.open("/home/runner/.aws/config", 'w') { |file| file.write(config_file) }
