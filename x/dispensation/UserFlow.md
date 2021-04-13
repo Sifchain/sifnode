@@ -131,7 +131,7 @@ sifnodecli keys add mkey --multisig amara,zane --multisig-threshold 2
 ```
 - After this step ideally both amara and zane can take a copy of the `mkey` which they can use to create transactions ,and send it over to the other person to sign ( More details on this later). Amara and Zane can then leave ,they would be able to sign and broadcast tx from their own locations.
 ### Create offline tx
-- Zane and amara needs to decide how much of the total funding they would provide individually . Based on the output list above we need a total of 10rowan . They decide to fund 5rowan each.Based on this they will create an input file which looks like this.
+- Zane and amara needs to decide how much of the total funding they would provide individually . Looking at the output list above we need a total of 10rowan . They decide to fund 5rowan each .Based on this they will create an input file which looks like this.
 ```json
 {
  "Input": [
@@ -178,7 +178,7 @@ Sample sig-zane.json
 ```
 
 ### Amara Signs the transaction
-- Zane then sends the two json files offlinetx.json and sig-zane.json to amara
+- Zane then sends the offlinetx.json to amara
 - Amara creates her signature 
 ```shell
 sifnodecli tx sign --multisig sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd --from amara offlinetx.json --keyring-backend file --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet >> sig-amara.json
@@ -195,7 +195,7 @@ Sample sig-amara.json
 ```
 
 ### Create multi-sig 
-- Either amara or zane can do this step . They just need the two signature files and multi-sig key
+- Either amara or zane can do this step . They just need the two signature files , multi-sig key and the unsigned transaction.
 ```shell
 sifnodecli tx multisign offlinetx.json mkey sig1.json sig2.json --keyring-backend file --node tcp://rpc-mainnet.sifchain.finance:80 --chain-id sifchain-mainnet >> signedtx.json
 ```
