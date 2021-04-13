@@ -163,13 +163,6 @@ func (k Keeper) ProcessLock(ctx sdk.Context, cosmosSender sdk.AccAddress, msg ty
 		}
 	}
 
-	coins = sdk.NewCoins(sdk.NewCoin(msg.Symbol, msg.Amount))
-	err = k.supplyKeeper.BurnCoins(ctx, types.ModuleName, coins)
-	if err != nil {
-		sugaredLogger.Errorw("failed to burn burned coin.",
-			errorMessageKey, err.Error())
-		return err
-	}
 	return nil
 }
 
