@@ -58,14 +58,12 @@ jobs:
       - name: Setup AWS Profile and KUBECONFIG
         shell: bash
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_TEST }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_TEST }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           set +x
           echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
           rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
-          kubectl get pods --all-namespaces --kubeconfig=./kubeconfig
-          exit 1
 
 
       - name: Setup Helm Values with Variable Details
