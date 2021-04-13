@@ -257,11 +257,13 @@ func NewInitApp(
 	skipUpgradeHeights := make(map[int64]bool)
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgrade.NewKeeper(skipUpgradeHeights, keys[upgrade.StoreKey], app.Cdc)
+	app.paramsKeeper = params.NewKeeper(app.Cdc, keys[params.StoreKey], tKeys[params.TStoreKey])
 	SetupHandlers(app)
 
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
-		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
+		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
+		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper))
 	app.GovKeeper = gov.NewKeeper(
 		app.Cdc,
 		keys[gov.StoreKey],
