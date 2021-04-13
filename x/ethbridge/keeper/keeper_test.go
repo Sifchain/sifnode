@@ -17,10 +17,10 @@ var (
 	amount             = sdk.NewInt(10)
 	doubleAmount       = sdk.NewInt(20)
 
-	symbol                                     = "stake"
-	tokenContractAddress                       = types.NewEthereumAddress("0xbbbbca6a901c926f240b89eacb641d8aec7aeafd")
-	ethBridgeAddress     					   = types.NewEthereumAddress(strings.ToLower("0x30753E4A8aad7F8597332E813735Def5dD395028"))
-	ethereumSender                             = types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57")
+	symbol               = "stake"
+	tokenContractAddress = types.NewEthereumAddress("0xbbbbca6a901c926f240b89eacb641d8aec7aeafd")
+	ethBridgeAddress     = types.NewEthereumAddress(strings.ToLower("0x30753E4A8aad7F8597332E813735Def5dD395028"))
+	ethereumSender       = types.NewEthereumAddress("0x627306090abaB3A6e1400e9345bC60c78a8BEf57")
 	//BadValidatorAddress                        = sdk.ValAddress(CreateTestPubKeys(1)[0].Address().Bytes())
 )
 
@@ -36,8 +36,7 @@ func TestProcessClaimLock(t *testing.T) {
 	//require.Equal(t, claimType.String(), "lock")
 	//require.Error(t, err)
 
-	claimType, err := types.StringToClaimType("lock")
-	require.NoError(t, err)
+	claimType := types.ClaimType_CLAIM_TYPE_LOCK
 	require.Equal(t, claimType, types.ClaimType_CLAIM_TYPE_LOCK)
 
 	ethBridgeClaim := types.NewEthBridgeClaim(
@@ -89,8 +88,7 @@ func TestProcessClaimBurn(t *testing.T) {
 
 	nonce := int64(1)
 
-	claimType, err := types.StringToClaimType("burn")
-	require.NoError(t, err)
+	claimType := types.ClaimType_CLAIM_TYPE_BURN
 
 	ethBridgeClaim := types.NewEthBridgeClaim(
 		5777,
@@ -140,8 +138,7 @@ func TestProcessSuccessfulClaimLock(t *testing.T) {
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
 
-	claimType, err := types.StringToClaimType("lock")
-	require.NoError(t, err)
+	claimType := types.ClaimType_CLAIM_TYPE_LOCK
 	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
 
 	claimBytes, err := json.Marshal(claimContent)
@@ -168,8 +165,7 @@ func TestProcessSuccessfulClaimBurn(t *testing.T) {
 	receiverCoins := bankKeeper.GetAllBalances(ctx, cosmosReceivers[0])
 	require.Equal(t, receiverCoins, sdk.Coins{})
 
-	claimType, err := types.StringToClaimType("burn")
-	require.NoError(t, err)
+	claimType := types.ClaimType_CLAIM_TYPE_BURN
 	claimContent := types.NewOracleClaimContent(cosmosReceivers[0], amount, symbol, tokenContractAddress, claimType)
 
 	claimBytes, err := json.Marshal(claimContent)

@@ -66,9 +66,9 @@ func TestBasicMsgs(t *testing.T) {
 			case "token_contract_address":
 				require.Equal(t, value, types.TestTokenContractAddress)
 			case statusString:
-				require.Equal(t, value, oracletypes.StatusTextToString[oracletypes.StatusText_STATUS_TEXT_PENDING])
+				require.Equal(t, value, oracletypes.StatusText_STATUS_TEXT_PENDING.String())
 			case "claim_type":
-				require.Equal(t, value, types.ClaimTypeToString[types.ClaimType_CLAIM_TYPE_LOCK])
+				require.Equal(t, value, types.ClaimType_CLAIM_TYPE_LOCK.String())
 			case "cosmos_sender":
 				require.Equal(t, value, valAddress.String())
 			default:
@@ -97,7 +97,7 @@ func TestDuplicateMsgs(t *testing.T) {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracletypes.StatusTextToString[oracletypes.StatusText_STATUS_TEXT_PENDING])
+				require.Equal(t, value, oracletypes.StatusText_STATUS_TEXT_PENDING.String())
 			}
 		}
 	}
@@ -137,7 +137,7 @@ func TestMintSuccess(t *testing.T) {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracletypes.StatusTextToString[oracletypes.StatusText_STATUS_TEXT_SUCCESS])
+				require.Equal(t, value, oracletypes.StatusText_STATUS_TEXT_SUCCESS.String())
 			}
 		}
 	}
@@ -185,7 +185,7 @@ func TestNoMintFail(t *testing.T) {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracletypes.StatusTextToString[oracletypes.StatusText_STATUS_TEXT_PENDING])
+				require.Equal(t, value, oracletypes.StatusText_STATUS_TEXT_PENDING.String())
 			}
 		}
 	}
@@ -198,7 +198,7 @@ func TestNoMintFail(t *testing.T) {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracletypes.StatusTextToString[oracletypes.StatusText_STATUS_TEXT_PENDING])
+				require.Equal(t, value, oracletypes.StatusText_STATUS_TEXT_PENDING.String())
 			}
 		}
 	}
@@ -211,7 +211,7 @@ func TestNoMintFail(t *testing.T) {
 		for _, attribute := range event.Attributes {
 			value := string(attribute.Value)
 			if string(attribute.Key) == statusString {
-				require.Equal(t, value, oracletypes.StatusTextToString[oracletypes.StatusText_STATUS_TEXT_FAILED])
+				require.Equal(t, value, oracletypes.StatusText_STATUS_TEXT_FAILED.String())
 			}
 		}
 	}
