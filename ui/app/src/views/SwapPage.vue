@@ -17,6 +17,7 @@ import SlippagePanel from "@/components/slippagePanel/Index.vue";
 import { ConfirmState } from "../types";
 import { toConfirmState } from "./utils/toConfirmState";
 import { Fraction } from "../../../core/src/entities";
+import { getMaxAmount } from "./utils/getMaxAmount";
 
 export default defineComponent({
   components: {
@@ -199,17 +200,8 @@ export default defineComponent({
         selectedField.value = "from";
         const accountBalance = getAccountBalance();
         if (!accountBalance) return;
-        if (fromSymbol.value !== "rowan") {
-          fromAmount.value = accountBalance.toFixed(18);
-        } else {
-          if (accountBalance.greaterThan(new Fraction("1", "2"))) {
-            fromAmount.value = accountBalance
-              .subtract(new Fraction("1", "2"))
-              .toFixed(18);
-          } else {
-            // TODO alert the user if insufficient rowan for gas
-          }
-        }
+        const maxAmount = getMaxAmount(fromSymbol, accountBalance);
+        fromAmount.value = maxAmount;
       },
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;

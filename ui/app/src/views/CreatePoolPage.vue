@@ -19,6 +19,7 @@ import FatInfoTableCell from "@/components/shared/FatInfoTableCell.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import { useCurrencyFieldState } from "@/hooks/useCurrencyFieldState";
 import { toConfirmState } from "./utils/toConfirmState";
+import { getMaxAmount } from "./utils/getMaxAmount";
 import { ConfirmState } from "@/types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
@@ -291,17 +292,8 @@ export default defineComponent({
           (balance) => balance.asset.symbol === toSymbol.value,
         );
         if (!accountBalance) return;
-        if (toSymbol.value !== "rowan") {
-          toAmount.value = accountBalance.toFixed(18);
-        } else {
-          if (accountBalance.greaterThan(new Fraction("1", "2"))) {
-            toAmount.value = accountBalance
-              .subtract(new Fraction("1", "2"))
-              .toFixed(18);
-          } else {
-            // TODO alert the user if insufficient rowan for gas
-          }
-        }
+        const maxAmount = getMaxAmount(toSymbol, accountBalance);
+        toAmount.value = maxAmount;
       },
       shareOfPoolPercent,
       formatNumber,

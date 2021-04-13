@@ -23,6 +23,7 @@ import {
   useAssetItem,
 } from "@/components/shared/utils";
 import { toConfirmState } from "./utils/toConfirmState";
+import { getMaxAmount } from "./utils/getMaxAmount";
 import { ConfirmState } from "../types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 
@@ -165,20 +166,11 @@ export default defineComponent({
         if (!accountBalance.value) return;
         const decimals = Asset.get(symbol.value).decimals;
 
-        // Sometimes we want to subtract the gas fee from the max amount
-        // So the user has sufficient funds to execute the transaction
-        let fee = new Fraction("0");
+        const afterMaxValue = new BigNumber(
+          getMaxAmount(symbol, accountBalance.value),
+        );
 
-        if (symbol.value === "ceth") {
-          fee = feeAmount.value;
-        }
-        if (symbol.value === "rowan") {
-          fee = new Fraction("1", "2"); // 0.5 RWN to offset gas
-        }
-
-        const afterMaxValue = accountBalance.value.subtract(fee);
-
-        amount.value = afterMaxValue.lessThan("0")
+        amount.value = afterMaxValue.isLessThan("0")
           ? "0.0"
           : afterMaxValue.toFixed(decimals);
       },
