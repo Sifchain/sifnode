@@ -948,13 +948,13 @@ python helmvaulereplace.py
     desc "Utility for Doing Variable Replacement"
     task :template_variable_replace, [:template_file_name, :final_file_name] do |t, args|
         require 'fileutils'
-        template_file_text = File.read(template_file_name).strip
+        template_file_text = File.read(:template_file_name).strip
         ENV.each_pair do |k, v|
           replace_string="-=#{k}=-"
           puts replace_string
           template_file_text.include?(k) ? (template_file_text.gsub! replace_string, v) : (puts 'env matching...')
         end
-        File.open(final_file_name, 'w') { |file| file.write(template_file_text) }
+        File.open(:final_file_name, 'w') { |file| file.write(template_file_text) }
     end
   end
 
