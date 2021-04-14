@@ -1,6 +1,6 @@
 import { computed, Ref } from "@vue/reactivity";
-import { Amount, Asset, AssetAmount, IAsset } from "../entities";
-import { decimalShift } from "../utils/decimalShift";
+import { Asset, AssetAmount } from "../entities";
+import { toBaseUnits } from "../utils";
 
 export function useField(amount: Ref<string>, symbol: Ref<string | null>) {
   const asset = computed(() => {
@@ -10,8 +10,7 @@ export function useField(amount: Ref<string>, symbol: Ref<string | null>) {
 
   const fieldAmount = computed(() => {
     if (!asset.value || !amount.value) return null;
-    const shiftedAmountValue = decimalShift(amount.value, asset.value.decimals);
-    return AssetAmount(asset.value, shiftedAmountValue);
+    return AssetAmount(asset.value, toBaseUnits(amount.value, asset.value));
   });
 
   return {
