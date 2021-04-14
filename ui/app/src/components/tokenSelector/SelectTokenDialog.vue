@@ -102,7 +102,7 @@ export default defineComponent({
     >
       <AssetItem :symbol="tb.asset.symbol" />
       <div class="balance">
-        {{ tb.amount.toFixed(4) }}
+        {{ tb.amount ? tb.amount.toFixed(4) : "0" }}
       </div>
     </button>
   </div>
