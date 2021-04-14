@@ -74,9 +74,9 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string, sugaredLog
 		coins = sdk.Coins{sdk.NewCoin(symbol, oracleClaim.Amount)}
 		err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
 	case types.BurnText:
+		coins = sdk.Coins{sdk.NewCoin(oracleClaim.Symbol, oracleClaim.Amount)}
 		// not mint if burn token is rowan
 		if oracleClaim.Symbol != types.NativeSymbol {
-			coins = sdk.Coins{sdk.NewCoin(oracleClaim.Symbol, oracleClaim.Amount)}
 			err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, coins)
 		}
 	default:
@@ -92,9 +92,7 @@ func (k Keeper) ProcessSuccessfulClaim(ctx sdk.Context, claim string, sugaredLog
 	if err := k.supplyKeeper.SendCoinsFromModuleToAccount(
 		ctx, types.ModuleName, receiverAddress, coins,
 	); err != nil {
-		sugaredLogger.Errorw("SendCoinsFromModuleToAccount.",
-			errorMessageKey, err.Error())
-		// panic(err)
+		panic(err)
 	}
 
 	return nil
