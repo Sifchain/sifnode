@@ -112,7 +112,7 @@ func TestSplitBetweenReciepients(t *testing.T) {
 	var investors []funders
 	investors = append(investors, funders{
 		address:           "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
-		percentageFunding: 49.000,
+		percentageFunding: 50.000,
 	})
 	investors = append(investors, funders{
 		address:           "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
@@ -125,7 +125,7 @@ func TestSplitBetweenReciepients(t *testing.T) {
 	for _, out := range outputs {
 		total = total.Add(out.Coins.AmountOf("rowan").ToDec())
 	}
-	var inputList []bank.Input
+	inputList := make([]bank.Input, len(investors))
 	var totalPercentage float64
 	for _, investor := range investors {
 		totalPercentage = totalPercentage + investor.percentageFunding
@@ -137,7 +137,6 @@ func TestSplitBetweenReciepients(t *testing.T) {
 		in := bank.NewInput(add, sdk.Coins{sdk.NewCoin("rowan", investor.calculatedAmount)})
 		inputList = append(inputList, in)
 	}
-	fmt.Println(totalPercentage)
 	assert.True(t, totalPercentage == 100.00, "Total Percentage is not 100%")
 	tempInput := utils.TempInput{In: inputList}
 	f, _ := json.MarshalIndent(tempInput, "", " ")
