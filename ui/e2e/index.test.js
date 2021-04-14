@@ -218,7 +218,7 @@ describe("connect to page", () => {
     ).toBe("< 0.01%");
     expect(
       await dexPage.innerText("[data-handle='details-liquidity-provider-fee']"),
-    ).toBe("0.0002499975 ROWAN");
+    ).toBe("0.00025 ROWAN");
 
     // Click Swap Button
     await dexPage.click('button:has-text("Swap")');
@@ -243,7 +243,7 @@ describe("connect to page", () => {
       await dexPage.innerText(
         "[data-handle='confirm-swap-modal'] [data-handle='details-liquidity-provider-fee']",
       ),
-    ).toBe("0.0002499975 ROWAN");
+    ).toBe("0.00025 ROWAN");
 
     await dexPage.click('button:has-text("Confirm Swap")');
 
