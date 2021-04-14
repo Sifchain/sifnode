@@ -79,6 +79,8 @@ func TestParseOutput(t *testing.T) {
 	assert.Equal(t, len(outputs), count)
 }
 
+// TODO Add the following utils as its own separate cmd
+
 func TestAddressFilter(t *testing.T) {
 	var addresStrings []string
 	file, err := filepath.Abs("sample.json")
@@ -99,4 +101,45 @@ func TestAddressFilter(t *testing.T) {
 			fmt.Println("Invalid :", add)
 		}
 	}
+}
+
+func TestSplitBetweenReciepients(t *testing.T) {
+	type funders struct {
+		address           string
+		percentageFunding float64
+		calculatedAmount  sdk.Int
+	}
+	var investors []funders
+	investors = append(investors, funders{
+		address:           "sif1syavy2npfyt9tcncdtsdzf7kny9lh777yqc2nd",
+		percentageFunding: 49.000,
+	})
+	investors = append(investors, funders{
+		address:           "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
+		percentageFunding: 50.000,
+	})
+	file := "/Users/tanmay/Documents/sifnode/output.json"
+	outputs, err := utils.ParseOutput(file)
+	assert.NoError(t, err)
+	total := sdk.ZeroDec()
+	for _, out := range outputs {
+		total = total.Add(out.Coins.AmountOf("rowan").ToDec())
+	}
+	var inputList []bank.Input
+	var totalPercentage float64
+	for _, investor := range investors {
+		totalPercentage = totalPercentage + investor.percentageFunding
+		percentage := sdk.NewDec(int64(investor.percentageFunding))
+		denom := sdk.NewDec(100)
+		investor.calculatedAmount = percentage.Quo(denom).Mul(total).TruncateInt()
+		add, err := sdk.AccAddressFromBech32(investor.address)
+		assert.NoError(t, err)
+		in := bank.NewInput(add, sdk.Coins{sdk.NewCoin("rowan", investor.calculatedAmount)})
+		inputList = append(inputList, in)
+	}
+	fmt.Println(totalPercentage)
+	assert.True(t, totalPercentage == 100.00, "Total Percentage is not 100%")
+	tempInput := utils.TempInput{In: inputList}
+	f, _ := json.MarshalIndent(tempInput, "", " ")
+	_ = ioutil.WriteFile("input.json", f, 0600)
 }
