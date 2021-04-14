@@ -15,7 +15,7 @@ import (
 	"syscall"
 	"time"
 
-	sdkContext "github.com/cosmos/cosmos-sdk/client/context"
+	sdkContext "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
