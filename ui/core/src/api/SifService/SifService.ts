@@ -11,6 +11,7 @@ import {
   Address,
   Asset,
   AssetAmount,
+  IAssetAmount,
   Network,
   TransactionStatus,
   TxParams,
@@ -53,7 +54,7 @@ export default function createSifService({
     connected: boolean;
     address: Address;
     accounts: Address[];
-    balances: AssetAmount[];
+    balances: IAssetAmount[];
     log: string; // latest transaction hash
   } = reactive({
     connected: false,
@@ -247,7 +248,10 @@ export default function createSifService({
       // We currently delegate auth to Keplr so this is irrelevant
     },
 
-    async getBalance(address?: Address, asset?: Asset): Promise<AssetAmount[]> {
+    async getBalance(
+      address?: Address,
+      asset?: Asset,
+    ): Promise<IAssetAmount[]> {
       if (!client) {
         throw "No client. Please sign in.";
       }
@@ -269,7 +273,7 @@ export default function createSifService({
             const asset = supportedTokens.find(
               (token) => token.symbol === denom,
             )!; // will be found because of filter above
-            return AssetAmount(asset, amount, { inBaseUnit: true });
+            return AssetAmount(asset, amount);
           })
           .filter((balance) => {
             // If an aseet is supplied filter for it
