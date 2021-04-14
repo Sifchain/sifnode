@@ -268,7 +268,7 @@ describe("connect to page", () => {
     );
 
     expect(await dexPage.innerText('[data-handle="rowan-balance-label"]')).toBe(
-      "Balance: 10,049.99 ROWAN",
+      "Balance: 10,050.00 ROWAN",
     );
   });
 
