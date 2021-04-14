@@ -9,18 +9,19 @@
       />
     </div>
     <Tabs :defaultIndex="1" @tabselected="onTabSelected">
-      <Tab title="External Tokens">
+      <Tab title="External Tokens" slug="external-tab">
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
             :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
               asset.asset.symbol,
             )}`"
             primary
+            :data-handle="'peg-' + asset.asset.symbol"
             >Peg</SifButton
           >
         </AssetList>
       </Tab>
-      <Tab title="Sifchain Native">
+      <Tab title="Sifchain Native" slug="native-tab">
         <AssetList :items="assetList">
           <template #default="{ asset }">
             <SifButton
@@ -28,6 +29,7 @@
                 asset.asset.symbol,
               )}`"
               primary
+              :data-handle="'unpeg-' + asset.asset.symbol"
               >Unpeg</SifButton
             >
           </template>
