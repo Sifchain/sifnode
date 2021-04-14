@@ -93,7 +93,7 @@ export default defineComponent({
       <p>No tokens available.</p>
     </div>
     <button
-      :data-handle="tb.symbol + '-select-button'"
+      :data-handle="tb.asset.symbol + '-select-button'"
       class="option"
       v-for="tb in tokenBalances"
       :disabled="tb.asset.disabled"
