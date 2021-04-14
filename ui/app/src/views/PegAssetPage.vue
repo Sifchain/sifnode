@@ -24,7 +24,7 @@ import {
 import { toConfirmState } from "./utils/toConfirmState";
 import { ConfirmState } from "../types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
-import { format } from "ui-core/src/utils/format";
+import { format, toBaseUnits } from "ui-core";
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -86,6 +86,7 @@ export default defineComponent({
 
     async function handlePegRequested() {
       const asset = Asset.get(symbol.value);
+
       if (asset.symbol !== "eth") {
         // if not eth you need to approve spend before peg
         transactionState.value = "approving";
@@ -100,7 +101,10 @@ export default defineComponent({
       }
 
       transactionState.value = "signing";
-      const tx = await actions.peg.peg(AssetAmount(asset, amount.value));
+
+      const tx = await actions.peg.peg(
+        AssetAmount(asset, toBaseUnits(amount.value, asset)),
+      );
 
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
@@ -109,9 +113,10 @@ export default defineComponent({
 
     async function handleUnpegRequested() {
       transactionState.value = "signing";
+      const asset = Asset.get(symbol.value);
 
       const tx = await actions.peg.unpeg(
-        AssetAmount(Asset.get(symbol.value), amount.value),
+        AssetAmount(asset, toBaseUnits(amount.value, asset)),
       );
 
       transactionHash.value = tx.hash;

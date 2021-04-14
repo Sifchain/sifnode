@@ -129,7 +129,7 @@ describe("connect to page", () => {
 
     await confirmTransaction(dexPage, browserContext, pegAmount, MM_CONFIG.id);
     // move chain forward
-    await advanceEthBlocks(50);
+    await advanceEthBlocks(52);
 
     const rowAmount = await dexPage.innerText(
       "[data-handle='ceth-row-amount']",

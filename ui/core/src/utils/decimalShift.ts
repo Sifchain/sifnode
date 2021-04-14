@@ -1,3 +1,5 @@
+import { Asset } from "../entities";
+
 /**
  * Function to shift the magnitude of a string without using any Math libs
  * This helps us move between decimals and integers
@@ -37,6 +39,26 @@ export function decimalShift(decimal: string, shift: number) {
       : significand.padStart(Math.abs(targetIndex) + significand.length, "0");
 
   return `${sign}${[character, mantissa].filter(Boolean).join(".")}`;
+}
+
+/**
+ * Utility for converting to the base units of an asset
+ * @param decimal the decimal string
+ * @param asset the asset we want to get the base unit amount for
+ * @returns amount as a string
+ */
+export function toBaseUnits(decimal: string, asset: Asset): string {
+  return decimalShift(decimal, asset.decimals);
+}
+
+/**
+ * Utility for converting from the base units of an asset
+ * @param integer the integer string
+ * @param asset the asset we want to get the base unit amount for
+ * @returns amount as a string
+ */
+export function fromBaseUnits(integer: string, asset: Asset): string {
+  return decimalShift(integer, -1 * asset.decimals);
 }
 
 /**
