@@ -36,7 +36,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/supply"
 
-	proposalclient "github.com/cosmos/cosmos-sdk/x/params/client"
+	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 )
@@ -54,7 +54,7 @@ var (
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(
 			upgradeclient.ProposalHandler,
-			proposalclient.ProposalHandler,
+			paramsclient.ProposalHandler,
 		),
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
@@ -261,7 +261,8 @@ func NewInitApp(
 
 	govRouter := gov.NewRouter()
 	govRouter.AddRoute(gov.RouterKey, gov.ProposalHandler).
-		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
+		AddRoute(upgrade.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
+		AddRoute(params.RouterKey, params.NewParamChangeProposalHandler(app.paramsKeeper))
 	app.GovKeeper = gov.NewKeeper(
 		app.Cdc,
 		keys[gov.StoreKey],
