@@ -1,0 +1,76 @@
+replicaCount: 1
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  #create: true
+  annotations: {}
+  name: "-=app_name=-"
+
+podAnnotations:
+  vault.hashicorp.com/agent-inject: "true"
+  vault.hashicorp.com/agent-inject-status: "update"
+  vault.hashicorp.com/agent-inject-secret--=app_name=-: "kv-v2/-=region=-/-=env=-/-=app_name=-"
+  vault.hashicorp.com/ca-cert: "/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+  vault.hashicorp.com/role: -=app_name=-
+  vault.hashicorp.com/tls-skip-verify: "true"
+  vault.hashicorp.com/agent-inject-template--=app_name=-: |
+    {{- with secret "kv-v2/-=region=-/-=env=-/-=app_name=-" -}}
+    export chainnet={{ .Data.data.chainnet }}
+    export ethBridgeRegistryAddress={{ .Data.data.ethBridgeRegistryAddress }}
+    export ETHEREUM_PRIVATE_KEY={{ .Data.data.ethPrivateKey }}
+    export ethWebsocketAddress={{ .Data.data.ethWebsocketAddress }}
+    export gas={{ .Data.data.gas }}
+    export gasPrices={{ .Data.data.gasPrices }}
+    export mnemonic="{{ .Data.data.mnemonic }}"
+    export moniker={{ .Data.data.moniker }}
+    export nodeHost={{ .Data.data.nodeHost }}
+    {{- end }}
+
+podSecurityContext: {}
+securityContext: {}
+
+image:
+  repository: sifchain/ebrelayer
+  pullPolicy: Always
+  tag: "testnet"
+
+ebrelayer:
+  env:
+    updateforce: "force_update_change_this"
+
+persistence:
+  enabled: true
+  size: 25Gi
+  accessMode: ReadWriteOnce
+
+ingress:
+  enabled: false
+  annotations: {}
+  hosts:
+    - host: ebrelayer.local
+      paths: []
+  tls: []
+
+resources:
+  requests:
+    cpu: 0.5
+    memory: 4Gi
+  limits:
+    memory: 4Gi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+strategyType: Recreate
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

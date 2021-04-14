@@ -942,6 +942,101 @@ python helmvaulereplace.py
     end
   end
 
+
+  desc "Utility for Doing Variable Replacement"
+  namespace :utilities do
+    desc "Utility for Doing Variable Replacement"
+    task :template_variable_replace, [:template_file_name, :final_file_name] do |t, args|
+        require 'fileutils'
+        template_file_text = File.read(template_file_name).strip
+        ENV.each_pair do |k, v|
+          replace_string="-=#{k}=-"
+          puts replace_string
+          template_file_text.include?(k) ? (template_file_text.gsub! replace_string, v) : (puts 'env matching...')
+        end
+        File.open(final_file_name, 'w') { |file| file.write(template_file_text) }
+    end
+  end
+
+
+  desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+  namespace :kubernetes do
+    desc "Check kubernetes pod for specific log entry to ensure valid deployment."
+    task :log_validate, [:APP_NAME, :APP_NAMESPACE, :SEARCH_PATH] do |t, args|
+        ENV["APP_NAMESPACE"] = "#{args[:APP_NAMESPACE]}"
+        ENV["APP_NAME"] = "#{args[:APP_NAME]}"
+        was_successful = false
+        max_loops = 20
+        loop_count = 0
+        until was_successful == true
+            pod_name = `kubectl get pods -n #{ENV["APP_NAMESPACE"]} | grep #{ENV["APP_NAME"]} | cut -d ' ' -f 1`.strip
+            puts "looking up logs fo #{pod_name}"
+            pod_logs = `kubectl logs #{pod_name} -c ebrelayer -n #{ENV["APP_NAMESPACE"]}`
+            if pod_logs.include?(args[:SEARCH_PATH])
+                #:SEARCH_PATH "new transaction witnessed in sifchain client."
+                puts "Log Search Completed Container Running and Producing Valid Logs"
+                was_successful = true
+                break
+            end
+            loop_count += 1
+            puts "On Loop #{loop_count} of #{max_loops}"
+            if loop_count >= max_loops
+                puts "Reached Max Loops"
+                break
+            end
+            sleep(60)
+        end
+    end
+  end
+
+
+
+
+  desc "Wait for Release Pipeline to Finish."
+  namespace :release do
+    desc "Wait for Release Pipeline to Finish."
+    task :wait_for_release_pipeline, [:APP_ENV, :RELEASE, :GIT_TOKEN] do |t, args|
+        require 'rest-client'
+        require 'json'
+        job_succeeded = false
+        max_loops = 20
+        loop_count = 0
+        until job_succeeded == true
+            headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:GIT_TOKEN]}"}
+            response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/actions/workflows', headers
+            find_release="#{args[:APP_ENV]}-#{args[:RELEASE]}"
+            json_response_object = JSON.parse response.body
+            json_response_object["workflows"].each do |child|
+                if child["name"] == "Release"
+                    workflow_id = child["id"]
+                    response = RestClient.get "https://api.github.com/repos/Sifchain/sifnode/actions/workflows/#{workflow_id}/runs", headers
+                    json_response_job_object = JSON.parse response.body
+                    json_response_job_object["workflow_runs"].each do |job|
+                        if job["head_branch"] == find_release
+                            puts "Release Job: #{job["head_branch"]} finished with state: #{job["conclusion"]}"
+                            puts job["head_branch"]
+                            puts job["status"]
+                            puts job["conclusion"]
+                            job_succeeded = true
+                            break
+                        end
+                    end
+                end
+            end
+            loop_count += 1
+            puts loop_count
+            puts "On Loop #{loop_count} of #{max_loops}"
+            if loop_count >= max_loops
+                puts "Reached Max Loops"
+                break
+            end
+            sleep(60)
+        end
+    end
+  end
+
+
+
   #=======================================RUBY CONVERSIONS END=============================================#
 
   desc "Setup AWS Profile for Automation Pipelines"
