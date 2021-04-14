@@ -94,7 +94,7 @@ export default defineComponent({
         poolUnitsAsFraction.value
           .divide(accountPool?.value?.pool?.poolUnits)
           .multiply("100"),
-        { mantissa: 3 },
+        { mantissa: 4 },
       );
 
       return `${perc} %`;

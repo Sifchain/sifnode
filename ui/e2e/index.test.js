@@ -182,7 +182,7 @@ describe("connect to page", () => {
 
     // Check expected estimated values
     expect(await getInputValue(dexPage, '[data-handle="token-a-input"]')).toBe(
-      "10000.000000000000000000", // TODO: trim mantissa
+      "10000.0", // TODO: trim mantissa
     );
     expect(await getInputValue(dexPage, '[data-handle="token-b-input"]')).toBe(
       "9980.0299600499",
