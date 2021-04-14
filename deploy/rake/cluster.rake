@@ -957,6 +957,130 @@ python helmvaulereplace.py
     end
   end
 
+  desc "Vault Create Policy"
+  namespace :vault do
+    desc "Create vault policy for application to read secrets."
+    task :create_vault_policy, [:region, :app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+
+        puts "Build Vault Policy File For Application #{args[:app_name]}"
+        policy_file = %Q{
+path \\"#{args[:region]}/#{args[:env]}/#{args[:app_name]}\\" {capabilities = [\\"read\\"]}
+path \\"#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*\\" {capabilities = [\\"read\\"]}
+path \\"/#{args[:region]}/#{args[:env]}/#{args[:app_name]}\\" {capabilities = [\\"read\\"]}
+path \\"/#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*\\" {capabilities = [\\"read\\"]}
+path \\"*\\" {capabilities = [\\"read\\"]}
+        }
+        File.open("#{args[:app_name]}-policy.hcl", 'w') { |file| file.write(policy_file) }
+
+      puts "Copy Policy to the Vault Pod."
+      copy_policy_file_to_pod = %Q{kubectl cp --kubeconfig=./kubeconfig #{args[:app_name]}-policy.hcl vault-0:/home/vault/#{args[:app_name]}-policy.hcl -n vault}
+      system(copy_policy_file_to_pod) or exit 1
+
+      puts "Delete Policy if it Exists for Update"
+      delete_policy_if_exists = %Q{kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault policy delete #{args[:app_name]}}
+      system(delete_policy_if_exists) or exit 1
+
+      puts "Write Vault Policy Based on Copied File"
+      write_policy = %Q{kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault policy write #{args[:app_name]} /home/vault/#{args[:app_name]}-policy.hcl}
+      system(write_policy) or exit 1
+
+      puts "Enable Policy"
+      enable_policy = %Q{kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write sys/internal/counters/config enabled=enable}
+      system(enable_policy) or exit 1
+
+      puts "Delete the Policy File and Cleanup After."
+      File.delete("#{args[:app_name]}-policy.hcl") if File.exist?("#{args[:app_name]}-policy.hcl")
+
+    end
+  end
+
+  desc "Vault Enable Kubernetes"
+  namespace :vault do
+    desc "Enable Application and Vault to Talk to Kubernetes."
+    task :enable_kubernetes, [] do |t, args|
+      check_kubernetes_enabled = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth list | grep kubernetes`
+      if check_kubernetes_enabled.include?("kubernetes")
+        puts "Kubernetes Already Enabled"
+      else
+        enable_kubernetes = %Q{kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth enable kubernetes}
+        system(enable_kubernetes) or exit 1
+      end
+    end
+  end
+
+  desc "Vault Configure Kubernetes for Application"
+  namespace :vault do
+    desc "Setup Service Account, and Vault Security Connections for Application."
+    task :configure_application, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+      service_account = %Q{
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: #{args[:app_name]}
+  namespace: #{args[:app_namespace]}
+  labels:
+    app: #{args[:app_name]}
+}
+      puts "Create Service Account File."
+      puts service_account
+      File.open("service_account.yaml", 'w') { |file| file.write(service_account) }
+
+      puts "Delete Service Account If It Exists"
+      delete_service_account = `kubectl delete --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}`
+      puts delete_service_account
+
+      puts "Create Service Account If It Exists"
+      create_service_account = `kubectl create --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}`
+      puts create_service_account
+
+      puts "Get the Token from Pod"
+      token = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- cat /var/run/secrets/kubernetes.io/serviceaccount/token` or exit 1
+
+      puts "Get the Kubernetes Cluster IP"
+      kubernetes_cluster_ip = `kubectl exec --kubeconfig=./kubeconfig -it vault-0 -n vault -- printenv | grep KUBERNETES_PORT_443_TCP_ADDR | cut -d '=' -f 2 | tr -d '\\n' | tr -d '\\r'` or exit 1
+      puts kubernetes_cluster_ip
+
+      ENV["token"] = token
+      ENV["kubernetes_cluster_ip"] = kubernetes_cluster_ip
+
+      puts "Write Auth Config"
+      write_config_auth = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write auth/kubernetes/config token_reviewer_jwt="#{ENV["token"]}" kubernetes_host="https://#{ENV["kubernetes_cluster_ip"]}:443" kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt` or exit 1
+      puts write_config_auth
+
+      puts "Write Auth Role"
+      write_auth_role = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write auth/kubernetes/role/#{args[:app_name]} bound_service_account_names=#{args[:app_name]} bound_service_account_namespaces=#{args[:app_namespace]} policies=#{args[:app_name]} ttl=1h` or exit 1
+      puts write_auth_role
+
+      puts "Clean Up"
+      remove_service_account = `rm -rf service_account.yaml`
+      puts remove_service_account
+
+    end
+  end
+
+  desc "Execute Anchore Security Image Scan"
+  namespace :anchore do
+    desc "Execute Anchore Security Image Scan"
+    task :image_scan, [:image, :image_tag, :app_name] do |t, args|
+      anchore_image_scan = %Q{curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -f -r -d cmd/#{args[:app_name]}/Dockerfile -p "#{args[:image]}:#{args[:image_tag]}"}
+      system(anchore_image_scan) or exit 1
+    end
+  end
+
+  desc "Deploy Helm Files"
+  namespace :vault do
+    desc "Deploy Helm Files"
+    task :helm_deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+      puts "Deploy the Helm Files."
+      deoploy_helm = %Q{helm upgrade #{args[:app_name]} deploy/helm/#{args[:app_name]} --install -n #{args[:app_namespace]} --create-namespace --set image.repository=#{args[:image]} --set image.tag=#{args[:image_tag]} --kubeconfig=./kubeconfig}
+      system(deoploy_helm) or exit 1
+
+      puts "Use kubectl rollout to wait for pods to start."
+      check_kubernetes_rollout_status = %Q{kubectl rollout status --kubeconfig=./kubeconfig deployment/#{args[:app_name]} -n #{args[:app_namespace]}}
+      system(heck_kubernetes_rollout_status) or exit 1
+    end
+  end
+
 
   desc "Check kubernetes pod for specific log entry to ensure valid deployment."
   namespace :kubernetes do
