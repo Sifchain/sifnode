@@ -212,7 +212,7 @@ export default function createEthbridgeService({
           bridgebankContractAddress,
         );
         const accounts = await web3.eth.getAccounts();
-        const coinDenom = assetAmount.asset.address ?? ETH_ADDRESS;
+        const coinDenom = assetAmount.asset.address || ETH_ADDRESS; // eth address is ""
         const amount = assetAmount.toBigInt().toString();
         const fromAddress = accounts[0];
 
