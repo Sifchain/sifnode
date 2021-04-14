@@ -79,7 +79,7 @@ func (msg MsgLock) GetSignBytes() []byte {
 func (msg MsgLock) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
-		// TODO panic?
+		panic(err)
 	}
 
 	return []sdk.AccAddress{cosmosSender}
@@ -159,7 +159,7 @@ func (msg MsgBurn) GetSignBytes() []byte {
 func (msg MsgBurn) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
-		// TODO panic?
+		panic(err)
 	}
 
 	return []sdk.AccAddress{cosmosSender}
@@ -225,7 +225,7 @@ func (msg MsgCreateEthBridgeClaim) GetSignBytes() []byte {
 func (msg MsgCreateEthBridgeClaim) GetSigners() []sdk.AccAddress {
 	validatorAddress, err := sdk.AccAddressFromBech32(msg.EthBridgeClaim.ValidatorAddress)
 	if err != nil {
-		// TODO panic?
+		panic(err)
 	}
 
 	return []sdk.AccAddress{validatorAddress}
@@ -272,7 +272,7 @@ func (msg MsgUpdateCethReceiverAccount) GetSignBytes() []byte {
 func (msg MsgUpdateCethReceiverAccount) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
-		// TODO panic?
+		panic(err)
 	}
 
 	return []sdk.AccAddress{cosmosSender}
@@ -320,7 +320,7 @@ func (msg MsgRescueCeth) GetSignBytes() []byte {
 func (msg MsgRescueCeth) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
-		// TODO panic?
+		panic(err)
 	}
 
 	return []sdk.AccAddress{cosmosSender}
@@ -369,7 +369,7 @@ func (msg MsgUpdateWhiteListValidator) GetSignBytes() []byte {
 func (msg MsgUpdateWhiteListValidator) GetSigners() []sdk.AccAddress {
 	cosmosSender, err := sdk.AccAddressFromBech32(msg.CosmosSender)
 	if err != nil {
-		// TODO panic?
+		panic(err)
 	}
 
 	return []sdk.AccAddress{cosmosSender}

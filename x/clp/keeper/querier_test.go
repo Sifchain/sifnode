@@ -124,7 +124,7 @@ func TestQueryErrorLiquidityProvider(t *testing.T) {
 	//Test Get Liquidity Provider
 
 	addr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	queryLp := types.LiquidityProviderReq{
 		Symbol:    "", //lp.Asset.Ticker,
@@ -151,7 +151,7 @@ func TestQueryGetLiquidityProvider(t *testing.T) {
 	querier := clpkeeper.NewQuerier(keeper, cdc)
 	//Test Get Liquidity Provider
 	addr, err := sdk.AccAddressFromBech32(lp.LiquidityProviderAddress)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	queryLp := types.LiquidityProviderReq{
 		Symbol:    lp.Asset.Symbol,

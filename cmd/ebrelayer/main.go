@@ -46,7 +46,7 @@ func init() {
 
 	log.SetFlags(log.Lshortfile)
 
-	app.SetConfig()
+	app.SetConfig(true)
 
 	cdc = app.MakeCodec()
 

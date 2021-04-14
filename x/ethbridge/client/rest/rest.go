@@ -96,16 +96,18 @@ func createClaimHandler(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		claimType, err := types.StringToClaimType(req.ClaimType)
-		if err != nil {
+		claimType, exist := types.ClaimType_value[req.ClaimType]
+		if !exist {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, types.ErrInvalidClaimType.Error())
 			return
 		}
 
+		ct := types.ClaimType(claimType)
+
 		// create the message
 		ethBridgeClaim := types.NewEthBridgeClaim(
 			int64(req.EthereumChainID), bridgeContractAddress, int64(req.Nonce), req.Symbol,
-			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, claimType)
+			tokenContractAddress, ethereumSender, cosmosReceiver, validator, req.Amount, ct)
 		msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
 		err = msg.ValidateBasic()
 		if err != nil {
