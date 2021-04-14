@@ -157,7 +157,9 @@ describe("connect to page", () => {
     await dexPage.click("[data-handle='token-a-select-button']");
     await dexPage.click("[data-handle='cusdc-select-button']");
     // Select Token B
+    await dexPage.waitForTimeout(1000); // slowing down to avoid tokens not updating
     await dexPage.click("[data-handle='token-b-select-button']");
+    await dexPage.waitForTimeout(1000); // slowing down to avoid tokens not updating
     await dexPage.click("[data-handle='rowan-select-button']");
     // Input amount A
     await dexPage.click('[data-handle="token-a-input"]');
