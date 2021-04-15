@@ -302,7 +302,8 @@ def test_add_more_faucet_coins(
     )
     #Transfer Newly Generated Currency
     transfer_new_currency(request, sifchain_symbol, new_currency, target_new_currency_balance)
-   
+    time.sleep(10)
+
     sifaddress = request.sifchain_address
     logging.info("get balances just to have those commands in the history")
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
@@ -316,6 +317,7 @@ def test_add_more_faucet_coins(
     basic_transfer_request.sifchain_symbol = "rowan"
     basic_transfer_request.sifchain_address = sifaddress
     add_faucet_coins(basic_transfer_request, credentials)
+    time.sleep(10)
     get_faucet_balance(basic_transfer_request.sifnodecli_node)
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
 
@@ -324,9 +326,11 @@ def test_add_more_faucet_coins(
     request.sifchain_symbol = sifchain_symbol
     request.sifchain_address = sifaddress
     add_faucet_coins(request, credentials)
+    time.sleep(10)
     get_faucet_balance(request.sifnodecli_node)
     balance_new_currency = test_utilities.get_sifchain_addr_balance(sifaddress, request.sifnodecli_node, sifchain_symbol)
-    
+  
+
     #get faucet balances
     logging.info(sifchain_symbol+" balance="+ str(balance_new_currency))
     logging.info("rowan  balance="+ str(balance))
