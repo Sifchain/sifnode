@@ -1092,9 +1092,9 @@ metadata:
         max_loops = 20
         loop_count = 0
         until was_successful == true
-            pod_name = `kubectl get pods -n #{ENV["APP_NAMESPACE"]} | grep #{ENV["APP_NAME"]} | cut -d ' ' -f 1`.strip
+            pod_name = `kubectl get pods --kubeconfig=./kubeconfig -n #{ENV["APP_NAMESPACE"]} | grep #{ENV["APP_NAME"]} | cut -d ' ' -f 1`.strip
             puts "looking up logs fo #{pod_name}"
-            pod_logs = `kubectl logs #{pod_name} -c ebrelayer -n #{ENV["APP_NAMESPACE"]}`
+            pod_logs = `kubectl logs #{pod_name} --kubeconfig=./kubeconfig -c ebrelayer -n #{ENV["APP_NAMESPACE"]}`
             if pod_logs.include?(args[:SEARCH_PATH])
                 #:SEARCH_PATH "new transaction witnessed in sifchain client."
                 puts "Log Search Completed Container Running and Producing Valid Logs"
