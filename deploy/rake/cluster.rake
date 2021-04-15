@@ -964,19 +964,19 @@ python helmvaulereplace.py
 
         puts "Build Vault Policy File For Application #{args[:app_name]}"
         policy_file = %Q{
-path \\"#{args[:region]}/#{args[:env]}/#{args[:app_name]}\\" {
+path "#{args[:region]}/#{args[:env]}/#{args[:app_name]}" {
     capabilities = [\\"read\\"]
 }
-path \\"#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*\\" {
+path "#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*" {
     capabilities = [\\"read\\"]
 }
-path \\"/#{args[:region]}/#{args[:env]}/#{args[:app_name]}\\" {
+path "/#{args[:region]}/#{args[:env]}/#{args[:app_name]}" {
     capabilities = [\\"read\\"]
 }
-path \\"/#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*\\" {
+path "/#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*" {
     capabilities = [\\"read\\"]
 }
-path \\"*\\" {
+path "*" {
     capabilities = [\\"read\\"]
 }
         }
