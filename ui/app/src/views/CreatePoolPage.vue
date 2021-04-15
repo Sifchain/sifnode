@@ -6,11 +6,10 @@ import CurrencyPairPanel from "@/components/currencyPairPanel/Index.vue";
 import { useWalletButton } from "@/components/wallet/useWalletButton";
 import SelectTokenDialogSif from "@/components/tokenSelector/SelectTokenDialogSif.vue";
 import Modal from "@/components/shared/Modal.vue";
-import { PoolState, usePoolCalculator } from "ui-core";
+import { Amount, PoolState, usePoolCalculator } from "ui-core";
 import { useCore } from "@/hooks/useCore";
 
 import { slipAdjustment } from "../../../core/src/entities/formulae";
-import { Fraction } from "../../../core/src/entities";
 import { useWallet } from "@/hooks/useWallet";
 import { computed } from "@vue/reactivity";
 import FatInfoTable from "@/components/shared/FatInfoTable.vue";
@@ -26,6 +25,7 @@ import DetailsPanelPool from "@/components/shared/DetailsPanelPool.vue";
 import { formatNumber } from "@/components/shared/utils";
 import Tooltip from "@/components/shared/Tooltip.vue";
 import Icon from "@/components/shared/Icon.vue";
+import { format } from "ui-core/src/utils/format";
 
 export default defineComponent({
   components: {
@@ -38,7 +38,6 @@ export default defineComponent({
     DetailsPanelPool,
     FatInfoTable,
     FatInfoTableCell,
-    Checkbox,
     Tooltip,
     Icon,
   },
@@ -68,7 +67,9 @@ export default defineComponent({
         (balance) => balance.asset.symbol === fromSymbol.value,
       );
       if (!accountBalance) return;
-      return fromAmount.value === accountBalance.toFixed();
+      return (
+        fromAmount.value === format(accountBalance.amount, accountBalance.asset)
+      );
     });
 
     const isToMaxActive = computed(() => {
@@ -76,7 +77,9 @@ export default defineComponent({
         (balance) => balance.asset.symbol === toSymbol.value,
       );
       if (!accountBalance) return;
-      return toAmount.value === accountBalance.toFixed();
+      return (
+        toAmount.value === format(accountBalance.amount, accountBalance.asset)
+      );
     });
 
     fromSymbol.value = route.params.externalAsset
@@ -110,7 +113,7 @@ export default defineComponent({
     });
 
     const riskFactor = computed(() => {
-      const rFactor = new Fraction("1");
+      const rFactor = Amount("1");
       if (
         !tokenAFieldAmount.value ||
         !tokenBFieldAmount.value ||
@@ -125,7 +128,7 @@ export default defineComponent({
         tokenAFieldAmount.value,
         nativeBalance,
         externalBalance,
-        new Fraction(totalPoolUnits.value),
+        Amount(totalPoolUnits.value),
       );
       return rFactor.subtract(slipAdjustmentCalc);
     });
@@ -283,7 +286,7 @@ export default defineComponent({
         );
 
         if (!accountBalance) return;
-        fromAmount.value = accountBalance.toFixed();
+        fromAmount.value = format(accountBalance.amount, accountBalance.asset);
       },
       handleToMaxClicked() {
         selectedField.value = "to";
@@ -293,26 +296,26 @@ export default defineComponent({
         );
         if (!accountBalance) return;
         const maxAmount = getMaxAmount(toSymbol, accountBalance);
-        toAmount.value = maxAmount;
+        toAmount.value = format(maxAmount, accountBalance.asset, {
+          mantissa: 18,
+        });
       },
       shareOfPoolPercent,
       formatNumber,
       poolUnits: totalLiquidityProviderUnits,
       riskFactorStatus: computed(() => {
-        // TODO - These cutoffs need discussion
+        if (!riskFactor.value) return "";
+
         let status = "danger";
-        // TODO - Needs to us IFraction
-        // TODO - This conditional needs rethinking
+
         if (asyncPooling.value) {
           return "";
         }
-        if (Number(riskFactor.value.toFixed(8)) <= 0.2) {
+        if (riskFactor.value.lessThanOrEqual("0.2")) {
           status = "warning";
-        }
-        if (Number(riskFactor.value.toFixed(8)) <= 0.1) {
+        } else if (riskFactor.value.lessThanOrEqual("0.1")) {
           status = "bad";
-        }
-        if (Number(riskFactor.value.toFixed(8)) <= 0.01) {
+        } else if (riskFactor.value.lessThanOrEqual("0.01")) {
           status = "";
         }
         return status;
@@ -358,15 +361,15 @@ export default defineComponent({
       </template>
     </Modal>
 
-    <FatInfoTable :show="nextStepAllowed">
+    <FatInfoTable :show="nextStepAllowed" data-handle="pool-prices">
       <template #header>Pool Token Prices</template>
       <template #body>
-        <FatInfoTableCell>
-          <span class="number">{{
+        <FatInfoTableCell data-handle="pool-prices-forward">
+          <span class="number" data-handle="pool-prices-forward-number">{{
             formatNumber(aPerBRatioMessage === "N/A" ? "0" : aPerBRatioMessage)
           }}</span
           ><br />
-          <span
+          <span data-handle="pool-prices-forward-symbols"
             >{{
               fromSymbol.toLowerCase().includes("rowan")
                 ? fromSymbol.toUpperCase()
@@ -380,12 +383,12 @@ export default defineComponent({
             }}</span
           >
         </FatInfoTableCell>
-        <FatInfoTableCell>
-          <span class="number">{{
+        <FatInfoTableCell data-handle="pool-prices-backward">
+          <span class="number" data-handle="pool-prices-backward-number">{{
             formatNumber(bPerARatioMessage === "N/A" ? "0" : bPerARatioMessage)
           }}</span
           ><br />
-          <span
+          <span data-handle="pool-prices-backward-symbols"
             >{{
               toSymbol.toLowerCase().includes("rowan")
                 ? toSymbol.toUpperCase()
@@ -402,7 +405,11 @@ export default defineComponent({
       </template>
     </FatInfoTable>
 
-    <FatInfoTable :status="riskFactorStatus" :show="nextStepAllowed">
+    <FatInfoTable
+      :status="riskFactorStatus"
+      :show="nextStepAllowed"
+      data-handle="pool-estimates"
+    >
       <template #header>
         <div class="pool-ratio-label">
           <span>Est. prices after pooling & pool share</span>
@@ -425,8 +432,8 @@ export default defineComponent({
         </div>
       </template>
       <template #body>
-        <FatInfoTableCell>
-          <span class="number">{{
+        <FatInfoTableCell data-handle="pool-estimates-forwards">
+          <span class="number" data-handle="pool-estimates-forwards-number">{{
             formatNumber(
               aPerBRatioProjectedMessage === "N/A"
                 ? "0"
@@ -434,13 +441,13 @@ export default defineComponent({
             )
           }}</span
           ><br />
-          <span
+          <span data-handle="pool-estimates-forwards-symbols"
             >{{ fromSymbol.toUpperCase() }} per
             {{ toSymbol.toUpperCase() }}</span
           >
         </FatInfoTableCell>
-        <FatInfoTableCell>
-          <span class="number">{{
+        <FatInfoTableCell data-handle="pool-estimates-backwards">
+          <span class="number" data-handle="pool-estimates-backwards-number">{{
             formatNumber(
               bPerARatioProjectedMessage === "N/A"
                 ? "0"
@@ -448,13 +455,15 @@ export default defineComponent({
             )
           }}</span
           ><br />
-          <span
+          <span data-handle="pool-estimates-backwards-symbols"
             >{{ toSymbol.toUpperCase() }} per
             {{ fromSymbol.toUpperCase() }}</span
           >
         </FatInfoTableCell>
-        <FatInfoTableCell>
-          <span class="number">{{ shareOfPoolPercent }}</span
+        <FatInfoTableCell data-handle="pool-estimates-share">
+          <span class="number" data-handle="pool-estimates-share-number">{{
+            shareOfPoolPercent
+          }}</span
           ><br />Share of Pool
         </FatInfoTableCell></template
       >
@@ -490,7 +499,7 @@ export default defineComponent({
       </template>
 
       <template v-slot:common>
-        <p class="text--normal">
+        <p class="text--normal" data-handle="confirmation-wait-message">
           Supplying
           <span class="text--bold">{{ fromAmount }} {{ fromSymbol }}</span>
           and

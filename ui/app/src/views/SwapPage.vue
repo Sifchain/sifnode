@@ -16,8 +16,8 @@ import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import SlippagePanel from "@/components/slippagePanel/Index.vue";
 import { ConfirmState } from "../types";
 import { toConfirmState } from "./utils/toConfirmState";
-import { Fraction } from "../../../core/src/entities";
 import { getMaxAmount } from "./utils/getMaxAmount";
+import { format } from "ui-core/src/utils/format";
 
 export default defineComponent({
   components: {
@@ -65,7 +65,9 @@ export default defineComponent({
     const isFromMaxActive = computed(() => {
       const accountBalance = getAccountBalance();
       if (!accountBalance) return false;
-      return fromAmount.value === accountBalance.toFixed();
+      return (
+        fromAmount.value === format(accountBalance.amount, accountBalance.asset)
+      );
     });
 
     const {
@@ -191,7 +193,11 @@ export default defineComponent({
       fromAmount,
       toAmount,
       fromSymbol,
-      minimumReceived,
+      minimumReceived: computed(() => {
+        if (!minimumReceived.value) return "";
+        const { amount, asset } = minimumReceived.value;
+        return format(amount, asset, { mantissa: 18, trimMantissa: true });
+      }),
       toSymbol,
       priceMessage,
       priceImpact,
@@ -201,7 +207,9 @@ export default defineComponent({
         const accountBalance = getAccountBalance();
         if (!accountBalance) return;
         const maxAmount = getMaxAmount(fromSymbol, accountBalance);
-        fromAmount.value = maxAmount;
+        fromAmount.value = format(maxAmount, accountBalance.asset, {
+          mantissa: 18,
+        });
       },
       nextStepAllowed: computed(() => {
         return state.value === SwapState.VALID_INPUT;

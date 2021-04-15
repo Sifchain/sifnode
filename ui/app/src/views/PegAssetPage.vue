@@ -6,7 +6,6 @@ import { useCore } from "@/hooks/useCore";
 import { Asset, AssetAmount } from "ui-core";
 import CurrencyField from "@/components/currencyfield/CurrencyField.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
-import { Fraction } from "../../../core/src/entities";
 
 import RaisedPanel from "@/components/shared/RaisedPanel.vue";
 import { useRouter } from "vue-router";
@@ -26,6 +25,7 @@ import { toConfirmState } from "./utils/toConfirmState";
 import { getMaxAmount } from "./utils/getMaxAmount";
 import { ConfirmState } from "../types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
+import { format, toBaseUnits } from "ui-core";
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -78,11 +78,16 @@ export default defineComponent({
     );
 
     const isMaxActive = computed(() => {
-      return amount.value === accountBalance.value?.toFixed();
+      if (!accountBalance.value) return false;
+      return (
+        amount.value ===
+        format(accountBalance.value.amount, accountBalance.value.asset)
+      );
     });
 
     async function handlePegRequested() {
       const asset = Asset.get(symbol.value);
+
       if (asset.symbol !== "eth") {
         // if not eth you need to approve spend before peg
         transactionState.value = "approving";
@@ -97,7 +102,10 @@ export default defineComponent({
       }
 
       transactionState.value = "signing";
-      const tx = await actions.peg.peg(AssetAmount(asset, amount.value));
+
+      const tx = await actions.peg.peg(
+        AssetAmount(asset, toBaseUnits(amount.value, asset)),
+      );
 
       transactionHash.value = tx.hash;
       transactionState.value = toConfirmState(tx.state); // TODO: align states
@@ -106,9 +114,10 @@ export default defineComponent({
 
     async function handleUnpegRequested() {
       transactionState.value = "signing";
+      const asset = Asset.get(symbol.value);
 
       const tx = await actions.peg.unpeg(
-        AssetAmount(Asset.get(symbol.value), amount.value),
+        AssetAmount(asset, toBaseUnits(amount.value, asset)),
       );
 
       transactionHash.value = tx.hash;
@@ -130,7 +139,10 @@ export default defineComponent({
 
     const nextStepAllowed = computed(() => {
       const amountNum = new BigNumber(amount.value);
-      const balance = accountBalance.value?.toFixed() ?? "0.0";
+      const balance =
+        (accountBalance.value &&
+          format(accountBalance.value.amount, accountBalance.value.asset)) ??
+        "0.0";
       return (
         amountNum.isGreaterThan("0.0") &&
         address.value !== "" &&
@@ -149,6 +161,13 @@ export default defineComponent({
     const feeAmount = computed(() => {
       return actions.peg.calculateUnpegFee(Asset.get(symbol.value));
     });
+
+    const feeDisplayAmount = computed(() => {
+      if (!feeAmount.value) return "";
+      return format(feeAmount.value.amount, feeAmount.value.asset, {
+        mantissa: 8,
+      });
+    });
     const pageState = {
       mode,
       modeLabel: computed(() => capitalize(mode.value)),
@@ -165,14 +184,12 @@ export default defineComponent({
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
         const decimals = Asset.get(symbol.value).decimals;
-
-        const afterMaxValue = new BigNumber(
-          getMaxAmount(symbol, accountBalance.value),
-        );
-
-        amount.value = afterMaxValue.isLessThan("0")
+        const afterMaxValue = getMaxAmount(symbol, accountBalance.value);
+        amount.value = afterMaxValue.lessThan("0")
           ? "0.0"
-          : afterMaxValue.toFixed(decimals);
+          : format(afterMaxValue, accountBalance.value.asset, {
+              mantissa: decimals,
+            });
       },
       handleAmountUpdated: (newAmount: string) => {
         amount.value = newAmount;
@@ -190,6 +207,7 @@ export default defineComponent({
       transactionHash,
       nextStepAllowed,
       isMaxActive,
+      feeDisplayAmount,
       nextStepMessage: computed(() => {
         return mode.value === "peg" ? "Peg" : "Unpeg";
       }),
@@ -204,6 +222,7 @@ export default defineComponent({
   <Layout :title="mode === 'peg' ? 'Peg Asset' : 'Unpeg Asset'" backLink="/peg">
     <div class="vspace">
       <CurrencyField
+        slug="peg"
         :amount="amount"
         :max="true"
         :isMaxActive="isMaxActive"
@@ -238,9 +257,9 @@ export default defineComponent({
         }"
         :rows="[
           {
-            show: !!feeAmount,
+            show: !!feeDisplayAmount,
             label: 'Transaction Fee',
-            data: `${feeAmount.toFixed(8)} cETH`,
+            data: `${feeDisplayAmount} cETH`,
             tooltipMessage: `This is a fixed fee amount. This is a temporary solution as we are working towards improving this amount in upcoming versions of the network.`,
           },
         ]"
@@ -317,9 +336,9 @@ export default defineComponent({
               data: `${formatSymbol(symbol)} → ${formatSymbol(oppositeSymbol)}`,
             },
             {
-              show: !!feeAmount,
+              show: !!feeDisplayAmount,
               label: 'Transaction Fee',
-              data: `${feeAmount.toFixed(8)} cETH`,
+              data: `${feeDisplayAmount} cETH`,
             },
           ]"
         />

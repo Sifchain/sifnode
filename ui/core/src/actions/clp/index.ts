@@ -1,14 +1,7 @@
-import {
-  Asset,
-  AssetAmount,
-  Fraction,
-  LiquidityProvider,
-  Pool,
-} from "../../entities";
+import { IAsset, IAssetAmount } from "../../entities";
 import { ActionContext } from "..";
 import { PoolStore } from "../../store/pools";
 import { effect } from "@vue/reactivity";
-import JSBI from "jsbi";
 
 export default ({
   api,
@@ -97,9 +90,9 @@ export default ({
 
   const actions = {
     async swap(
-      sentAmount: AssetAmount,
-      receivedAsset: Asset,
-      minimumReceived: AssetAmount,
+      sentAmount: IAssetAmount,
+      receivedAsset: IAsset,
+      minimumReceived: IAssetAmount,
     ) {
       if (!state.address) throw "No from address provided for swap";
 
@@ -126,8 +119,8 @@ export default ({
     },
 
     async addLiquidity(
-      nativeAssetAmount: AssetAmount,
-      externalAssetAmount: AssetAmount,
+      nativeAssetAmount: IAssetAmount,
+      externalAssetAmount: IAssetAmount,
     ) {
       if (!state.address) throw "No from address provided for swap";
       const hasPool = !!findPool(
@@ -160,7 +153,7 @@ export default ({
     },
 
     async removeLiquidity(
-      asset: Asset,
+      asset: IAsset,
       wBasisPoints: string,
       asymmetry: string,
     ) {

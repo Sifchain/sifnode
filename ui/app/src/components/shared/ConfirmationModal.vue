@@ -1,5 +1,9 @@
 <template>
-  <ModalView :requestClose="requestClose" :isOpen="isOpen">
+  <ModalView
+    :requestClose="requestClose"
+    :isOpen="isOpen"
+    data-handle="confirmation-modal"
+  >
     <div class="modal-inner">
       <ConfirmationModalAsk
         v-if="state === 'confirming'"

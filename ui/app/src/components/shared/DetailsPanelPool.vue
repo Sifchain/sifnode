@@ -1,7 +1,7 @@
 <template>
   <div class="details">
     <div class="details-header">
-      <div class="details-row">
+      <div class="details-row" data-handle="token-a-details-panel-pool-row">
         <span class="details-row-asset">
           <AssetItem :symbol="fromTokenLabel" inline />&nbsp;Deposited
         </span>
@@ -9,7 +9,7 @@
           <span>{{ fromAmount ? fromAmount : 0 }}</span>
         </div>
       </div>
-      <div class="details-row">
+      <div class="details-row" data-handle="token-b-details-panel-pool-row">
         <span class="details-row-asset">
           <AssetItem :symbol="toTokenLabel" inline />&nbsp;Deposited
         </span>
@@ -26,7 +26,7 @@
       </div>
     </div>
     <div class="details-body">
-      <div class="details-row" v-if="realBPerA">
+      <div class="details-row" data-handle="real-b-per-a-row" v-if="realBPerA">
         <span>Rates</span>
         <span
           >1
@@ -43,7 +43,7 @@
           }}</span
         >
       </div>
-      <div class="details-row" v-if="realAPerB">
+      <div class="details-row" data-handle="real-a-per-b-row" v-if="realAPerB">
         <span>&nbsp;</span>
         <span
           >1
@@ -60,7 +60,7 @@
           }}</span
         >
       </div>
-      <div class="details-row">
+      <div class="details-row" data-handle="real-share-of-pool">
         <span>Share of Pool:</span>
         <span>{{ shareOfPool }}</span>
       </div>

@@ -9,18 +9,19 @@
       />
     </div>
     <Tabs :defaultIndex="1" @tabselected="onTabSelected">
-      <Tab title="External Tokens">
+      <Tab title="External Tokens" slug="external-tab">
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
             :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
               asset.asset.symbol,
             )}`"
             primary
+            :data-handle="'peg-' + asset.asset.symbol"
             >Peg</SifButton
           >
         </AssetList>
       </Tab>
-      <Tab title="Sifchain Native">
+      <Tab title="Sifchain Native" slug="native-tab">
         <AssetList :items="assetList">
           <template #default="{ asset }">
             <SifButton
@@ -28,6 +29,7 @@
                 asset.asset.symbol,
               )}`"
               primary
+              :data-handle="'unpeg-' + asset.asset.symbol"
               >Unpeg</SifButton
             >
           </template>
@@ -83,7 +85,7 @@ import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";
 import { computed } from "@vue/reactivity";
 import { getUnpeggedSymbol } from "../components/shared/utils";
-import { TransactionStatus } from "ui-core";
+import { AssetAmount, TransactionStatus } from "ui-core";
 
 export default defineComponent({
   components: {
@@ -168,7 +170,7 @@ export default defineComponent({
             : [];
 
           if (!amount) {
-            return { amount: 0, asset, pegTxs };
+            return { amount: AssetAmount(asset, "0"), asset, pegTxs };
           }
 
           return {
@@ -190,10 +192,9 @@ export default defineComponent({
           return 0;
         })
         .sort((a, b) => {
-          // Next sort by balance
-          return (
-            parseFloat(b.amount.toFixed()) - parseFloat(a.amount.toFixed())
-          );
+          if (b.amount.greaterThan(a.amount)) return 1;
+          if (b.amount.lessThan(a.amount)) return -1;
+          return 0;
         })
         .sort((a, b) => {
           // Finally, sort and move rowan, erowan to the top
