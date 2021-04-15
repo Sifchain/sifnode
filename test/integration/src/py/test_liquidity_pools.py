@@ -289,6 +289,7 @@ def test_add_more_faucet_coins(
     target_new_currency_balance = 3 * 10 ** 18
     new_currency = generate_new_currency(new_currency_symbol, target_new_currency_balance, solidity_json_path, operator_address, ethereum_network)
     sifchain_symbol = ("c" + new_currency["newtoken_symbol"]).lower()
+
     logging.info(f"request: {basic_transfer_request}")
     basic_transfer_request.ethereum_address = source_ethereum_address
     basic_transfer_request.check_wait_blocks = True
@@ -337,8 +338,6 @@ def test_add_more_faucet_coins(
     logging.info(get_faucet_balance(request.sifnodecli_node))
 
 
-
-
 def test_request_faucet_coins(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
@@ -369,6 +368,68 @@ def test_request_faucet_coins(
     time.sleep(10)
     get_faucet_balance(basic_transfer_request.sifnodecli_node)
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
+
+
+def test_request_more_faucet_coins(
+        basic_transfer_request: EthereumToSifchainTransferRequest,
+        source_ethereum_address: str,
+        rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
+        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
+        solidity_json_path,
+        operator_address,
+        ethereum_network
+):
+
+    #Generate New Random Currency
+    new_currency_symbol = ("a" + get_shell_output("uuidgen").replace("-", ""))[:8]
+    target_new_currency_balance = 3 * 10 ** 18
+    new_currency = generate_new_currency(new_currency_symbol, target_new_currency_balance, solidity_json_path, operator_address, ethereum_network)
+    sifchain_symbol = ("c" + new_currency["newtoken_symbol"]).lower()
+
+    basic_transfer_request.ethereum_address = source_ethereum_address
+    basic_transfer_request.check_wait_blocks = True
+    target_rowan_balance = 10 ** 18
+    request, credentials = generate_test_account(
+        basic_transfer_request,
+        rowan_source_integrationtest_env_transfer_request,
+        rowan_source_integrationtest_env_credentials,
+        target_ceth_balance=0,
+        target_rowan_balance=target_rowan_balance
+    )
+    #Transfer Newly Generated Currency
+    transfer_new_currency(request, sifchain_symbol, new_currency, target_new_currency_balance)
+    time.sleep(10)
+
+    sifaddress = request.sifchain_address
+    logging.info("get balances just to have those commands in the history")
+    balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
+    balance_new_currency = test_utilities.get_sifchain_addr_balance(sifaddress, request.sifnodecli_node, sifchain_symbol)
+    
+    logging.info(sifchain_symbol+" balance="+ str(balance_new_currency))
+    logging.info("rowan  balance="+ str(balance))
+
+    get_faucet_balance(basic_transfer_request.sifnodecli_node)
+    basic_transfer_request.amount = 10 ** 17
+    basic_transfer_request.sifchain_symbol = "rowan"
+    basic_transfer_request.sifchain_address = sifaddress
+    request_faucet_coins(basic_transfer_request, credentials)
+    time.sleep(10)
+    get_faucet_balance(basic_transfer_request.sifnodecli_node)
+    balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
+
+    get_faucet_balance(request.sifnodecli_node)
+    request.amount = 10 ** 18
+    request.sifchain_symbol = sifchain_symbol
+    request.sifchain_address = sifaddress
+    request_faucet_coins(request, credentials)
+    time.sleep(10)
+    get_faucet_balance(request.sifnodecli_node)
+    balance_new_currency = test_utilities.get_sifchain_addr_balance(sifaddress, request.sifnodecli_node, sifchain_symbol)
+
+    #get faucet balances
+    logging.info(sifchain_symbol+" balance="+ str(balance_new_currency))
+    logging.info("rowan  balance="+ str(balance))
+    logging.info(get_faucet_balance(request.sifnodecli_node))
 
 @pytest.mark.skip(reason="not now")
 def test_create_pools(

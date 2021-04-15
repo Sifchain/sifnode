@@ -1,10 +1,9 @@
-INFO     root:test_liquidity_pools.py:21 create new currency: a038E3E3
-INFO     root:test_liquidity_pools.py:292 request: EthereumToSifchainTransferRequest(sifchain_address='', sifchain_destination_address='', ethereum_address='', ethereum_private_key_env_var='ETHEREUM_PRIVATE_KEY', sifchain_symbol='ceth', ethereum_symbol='eth', ethereum_network='', amount=0, ceth_amount=0, sifchain_fees='200000rowan', smart_contracts_dir='/Users/gabriel/go/develop/sifnode/smart-contracts', ethereum_chain_id='5777', chain_id='localnet', manual_block_advance=True, n_wait_blocks=50, bridgebank_address='0x30753E4A8aad7F8597332E813735Def5dD395028', bridgetoken_address='0x82D50AD3C1091866E258Fd0f1a7cC9674609D254', sifnodecli_node=None, solidity_json_path='/Users/gabriel/go/develop/sifnode/smart-contracts/build/contracts', check_wait_blocks=False)
-INFO     root:pytest_utilities.py:67 created sifchain addr sif1dar6uk9nglxaw76lsztrd24mghk9ka8crxpden with (100 | 1e-16) ceth and (1000000000000000000 | 1.0) rowan
-INFO     root:test_liquidity_pools.py:37 transfer some of the new currency ca038e3e3 to the test sifchain address
-INFO     root:test_liquidity_pools.py:308 get balances just to have those commands in the history
-INFO     root:test_liquidity_pools.py:312 ca038e3e3 balance=3000000000000000000
-INFO     root:test_liquidity_pools.py:313 rowan  balance=1000000000000000000
-INFO     root:test_liquidity_pools.py:335 ca038e3e3 balance=2000000000000000000
-INFO     root:test_liquidity_pools.py:336 rowan  balance=899999999999800000
-INFO     root:test_liquidity_pools.py:337 [{'denom': 'ca038e3e3', 'amount': '1000000000000000000'}, {'denom': 'rowan', 'amount': '100000000000000000'}]
+INFO     root:test_liquidity_pools.py:21 create new currency: a39DF76F
+INFO     root:pytest_utilities.py:67 created sifchain addr sif1ddngy4pfe0lc7skqmrh4sx9nte2yr6rjfsz7m3 with (0 | 0.0) ceth and (1000000000000000000 | 1.0) rowan
+INFO     root:test_liquidity_pools.py:37 transfer some of the new currency ca39df76f to the test sifchain address
+INFO     root:test_liquidity_pools.py:404 get balances just to have those commands in the history
+INFO     root:test_liquidity_pools.py:408 ca39df76f balance=3000000000000000000
+INFO     root:test_liquidity_pools.py:409 rowan  balance=1000000000000000000
+INFO     root:test_liquidity_pools.py:430 ca39df76f balance=3000000000000000000
+INFO     root:test_liquidity_pools.py:431 rowan  balance=999999999999800000
+INFO     root:test_liquidity_pools.py:432 [{'denom': 'ca038e3e3', 'amount': '1000000000000000000'}, {'denom': 'ca1b683cd', 'amount': '1000000000000000000'}, {'denom': 'caa0eb148', 'amount': '1000000000000000000'}, {'denom': 'rowan', 'amount': '300000000000000000'}]

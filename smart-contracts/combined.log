@@ -31,3 +31,137 @@ debug: sendLockTx arguments: {
   "$0": "/Users/gabriel/go/develop/sifnode/smart-contracts/node_modules/.bin/truffle"
 }
 info: currentAllowance is 3000000000000000000, amount is 3000000000000000000, 3000000000000000000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1us99y539qevn6ntry963jdnw82l4aspyfv7syr",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "100",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/Users/gabriel/go/develop/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "/Users/gabriel/go/develop/sifnode/smart-contracts/node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1us99y539qevn6ntry963jdnw82l4aspyfv7syr",
+  "symbol": "0x8273e4B8ED6c78e252a9fCa5563Adfcc75C91b2A",
+  "amount": "3000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/Users/gabriel/go/develop/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "/Users/gabriel/go/develop/sifnode/smart-contracts/node_modules/.bin/truffle"
+}
+info: currentAllowance is 3000000000000000000, amount is 3000000000000000000, 3000000000000000000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1nelrrpq2v8gl0tw730ycutqudfg6ddp23tddgf",
+  "symbol": "0x855d1c79Ad3fb086D516554Dc7187E3Fdfc1C79a",
+  "amount": "3000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/Users/gabriel/go/develop/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "/Users/gabriel/go/develop/sifnode/smart-contracts/node_modules/.bin/truffle"
+}
+info: currentAllowance is 3000000000000000000, amount is 3000000000000000000, 3000000000000000000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1rgkngzcr62nj8mykf9ej8nt0xcpztkakdjevgn",
+  "symbol": "0x23e84570f7b28aD0d5E5545d398009194a8734f3",
+  "amount": "3000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/Users/gabriel/go/develop/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "/Users/gabriel/go/develop/sifnode/smart-contracts/node_modules/.bin/truffle"
+}
+info: currentAllowance is 3000000000000000000, amount is 3000000000000000000, 3000000000000000000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif17tt7d3cp9a44s2pkpd08q6g7qht0dr9cw9kenl",
+  "symbol": "0x0000000000000000000000000000000000000000",
+  "amount": "100",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/Users/gabriel/go/develop/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "/Users/gabriel/go/develop/sifnode/smart-contracts/node_modules/.bin/truffle"
+}
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif17tt7d3cp9a44s2pkpd08q6g7qht0dr9cw9kenl",
+  "symbol": "0xD95B1DbEc167C6cf547d018dDEcF41a4cb2e2f73",
+  "amount": "3000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/Users/gabriel/go/develop/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "/Users/gabriel/go/develop/sifnode/smart-contracts/node_modules/.bin/truffle"
+}
+info: currentAllowance is 3000000000000000000, amount is 3000000000000000000, 3000000000000000000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif146yye7vmvc25xlckv3qnykw243a6cquwhp8rkk",
+  "symbol": "0xA4516018d6B0313A03a69130356f23a168C0AB10",
+  "amount": "3000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/Users/gabriel/go/develop/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "/Users/gabriel/go/develop/sifnode/smart-contracts/node_modules/.bin/truffle"
+}
+info: currentAllowance is 3000000000000000000, amount is 3000000000000000000, 3000000000000000000
+debug: sendLockTx arguments: {
+  "_": [
+    "exec",
+    "scripts/test/sendLockTx.js"
+  ],
+  "sifchain_address": "sif1ddngy4pfe0lc7skqmrh4sx9nte2yr6rjfsz7m3",
+  "symbol": "0x2e335F247E91caa168c64b63104C4475b2af3942",
+  "amount": "3000000000000000000",
+  "bridgebank_address": "0x30753E4A8aad7F8597332E813735Def5dD395028",
+  "ethereum_address": "0x627306090abab3a6e1400e9345bc60c78a8bef57",
+  "ethereum_private_key_env_var": "ETHEREUM_PRIVATE_KEY",
+  "json_path": "/Users/gabriel/go/develop/sifnode/smart-contracts/build/contracts",
+  "gas": "estimate",
+  "ethereum_network": "http://localhost:7545",
+  "$0": "/Users/gabriel/go/develop/sifnode/smart-contracts/node_modules/.bin/truffle"
+}
+info: currentAllowance is 3000000000000000000, amount is 3000000000000000000, 3000000000000000000
