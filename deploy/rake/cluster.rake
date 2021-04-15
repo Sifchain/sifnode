@@ -964,13 +964,26 @@ python helmvaulereplace.py
 
         puts "Build Vault Policy File For Application #{args[:app_name]}"
         policy_file = %Q{
-path \\"#{args[:region]}/#{args[:env]}/#{args[:app_name]}\\" {capabilities = [\\"read\\"]}
-path \\"#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*\\" {capabilities = [\\"read\\"]}
-path \\"/#{args[:region]}/#{args[:env]}/#{args[:app_name]}\\" {capabilities = [\\"read\\"]}
-path \\"/#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*\\" {capabilities = [\\"read\\"]}
-path \\"*\\" {capabilities = [\\"read\\"]}
+path \\"#{args[:region]}/#{args[:env]}/#{args[:app_name]}\\" {
+    capabilities = [\\"read\\"]
+}
+path \\"#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*\\" {
+    capabilities = [\\"read\\"]
+}
+path \\"/#{args[:region]}/#{args[:env]}/#{args[:app_name]}\\" {
+    capabilities = [\\"read\\"]
+}
+path \\"/#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*\\" {
+    capabilities = [\\"read\\"]
+}
+path \\"*\\" {
+    capabilities = [\\"read\\"]
+}
         }
         File.open("#{args[:app_name]}-policy.hcl", 'w') { |file| file.write(policy_file) }
+
+      debug_policy = `cat #{args[:app_name]}-policy.hcl`
+      puts debug_policy
 
       puts "Copy Policy to the Vault Pod."
       copy_policy_file_to_pod = %Q{kubectl cp --kubeconfig=./kubeconfig #{args[:app_name]}-policy.hcl vault-0:/home/vault/#{args[:app_name]}-policy.hcl -n vault}
