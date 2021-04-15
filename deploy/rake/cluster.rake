@@ -920,6 +920,10 @@ metadata:
       create_service_account = `kubectl apply --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}`
       puts create_service_account
 
+      puts "Create Service Account If It Exists"
+      create_service_account = `kubectl apply --kubeconfig=./kubeconfig -f service_account.yaml`
+      puts create_service_account
+
       puts "Get the Token from Pod"
       token = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- cat /var/run/secrets/kubernetes.io/serviceaccount/token` or exit 1
 
