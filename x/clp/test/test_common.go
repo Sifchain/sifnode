@@ -64,7 +64,6 @@ func CreateTestAppClp(isCheckTx bool) (sdk.Context, keeper.Keeper) {
 func GetSimApp(isCheckTx bool) (sdk.Context, *simapp.SimApp) {
 	app, ctx := CreateTestApp(isCheckTx)
 	return ctx, app
-
 }
 
 func GenerateRandomPool(numberOfPools int) []types.Pool {

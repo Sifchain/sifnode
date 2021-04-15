@@ -8,6 +8,8 @@ import AssetItem from "@/components/shared/AssetItem.vue";
 import Box from "@/components/shared/Box.vue";
 import { Copy, SubHeading } from "@/components/shared/Text";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
+import Tooltip from "@/components/shared/Tooltip.vue";
+import Icon from "@/components/shared/Icon.vue";
 
 const REWARD_INFO = {
   lm: {
@@ -16,6 +18,19 @@ const REWARD_INFO = {
       "Earn additional rewards by providing liquidity to any of Sifchain's pools.",
   },
 };
+
+// NOTE - This will be removed and replaced with Amount API
+function format(amount: number) {
+  if (amount < 1) {
+    return amount.toFixed(6);
+  } else if (amount < 1000) {
+    return amount.toFixed(4);
+  } else if (amount < 100000) {
+    return amount.toFixed(2);
+  } else {
+    return amount.toFixed(0);
+  }
+}
 
 async function getRewardsData(address: ComputedRef<any>) {
   if (!address.value) return;
@@ -35,6 +50,8 @@ export default defineComponent({
     Copy,
     SubHeading,
     Box,
+    Tooltip,
+    Icon,
   },
   setup() {
     const { store } = useCore();
@@ -52,6 +69,7 @@ export default defineComponent({
     return {
       rewards,
       REWARD_INFO,
+      format,
     };
   },
 });
@@ -83,9 +101,17 @@ export default defineComponent({
             <div class="amount-container w50 jcsb">
               <div class="df fdr">
                 <AssetItem symbol="Rowan" :label="false" />
-                <span>{{ reward.amount ? reward.amount?.toFixed() : 0 }}</span>
+                <span>{{ format(+reward.amount) }}</span>
               </div>
               <span>ROWAN</span>
+              <Tooltip>
+                <template #message>
+                  <div class="tooltip">
+                    Current multiplier: {{ format(+reward.multiplier) }}x
+                  </div>
+                </template>
+                <Icon icon="info-box-black" />
+              </Tooltip>
             </div>
             <a
               class="more-info-button"

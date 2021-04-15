@@ -9,6 +9,7 @@ import { computed } from "@vue/reactivity";
 export default {
   props: {
     title: String,
+    slug: String,
   },
   setup(props) {
     const selectedTitle = inject("Tabs_selectedTitle");
