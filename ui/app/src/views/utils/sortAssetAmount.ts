@@ -25,7 +25,8 @@ export function sortAssetAmount(
       if (!b.amount || !a.amount) {
         return 0;
       }
-      return parseFloat(b.amount.toFixed()) - parseFloat(a.amount.toFixed());
+      return b.amount.greaterThanOrEqual(a.amount) ? 1 : -1;
+      // return b.amount.subtract(a.amount).toBigInt();
     })
     .sort((a) => {
       // Finally, sort and move rowan, erowan to the top
