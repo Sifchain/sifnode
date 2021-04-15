@@ -42,13 +42,13 @@ Let's say you want to do one of the following type of things:
 
 For any of these things you will want ot create a new snapshot. Backend state is saved to a snapshot that is shared with the team or quick start development and also affects our e2e tests. You can create a new snapshot if you need by using the scripts below. Some of these commands are a little confusing so this table shows you when to use which.
 
-| command                                 | I want to                                                                     | quick start | ongoing | sif | eth | ebrelayer | FE  | setup scripts | save snapshot |
-| --------------------------------------- | ----------------------------------------------------------------------------- | ----------- | ------- | --- | --- | --------- | --- | ------------- | ------------- |
-| `yarn stack`                            | Work on frontend (requires tmux)                                              | ✅          | ✅      | ✅  | ✅  | ✅        | ✅  | 🚫            | 🚫            |
-| `yarn stack:backend`                    | Run only backing services from a snapshot say during CI.                      | ✅          | ✅      | ✅  | ✅  | ✅        | 🚫  | 🚫            | 🚫            |
-| `yarn stack:backend-from-scripts`       | Run backing with setup scripts to manually change state and create a snapshot | 🚫          | ✅      | ✅  | ✅  | ✅        | 🚫  | ✅            | 🚫            |
-| `yarn stack:save-snapshot-from-scripts` | Save new setup scripts to a snapshot                                          | 🚫          | 🚫      | ✅  | ✅  | ✅        | 🚫  | ✅            | ✅            |
-| `yarn stack:save-snapshot`              | Save a snapshot from whatever is running                                      | 🚫          | 🚫      | 🚫  | 🚫  | 🚫        | 🚫  | 🚫            | ✅            |
+| command                            | I want to                                                                     | quick start | ongoing | sif | eth | ebrelayer | FE  | setup scripts | save snapshot |
+| ---------------------------------- | ----------------------------------------------------------------------------- | ----------- | ------- | --- | --- | --------- | --- | ------------- | ------------- |
+| `yarn stack`                       | Work on frontend (requires tmux)                                              | ✅          | ✅      | ✅  | ✅  | ✅        | ✅  | 🚫            | 🚫            |
+| `yarn stack:backend`               | Run only backing services from a snapshot say during CI.                      | ✅          | ✅      | ✅  | ✅  | ✅        | 🚫  | 🚫            | 🚫            |
+| `yarn stack:backend-from-scripts`  | Run backing with setup scripts to manually change state and create a snapshot | 🚫          | ✅      | ✅  | ✅  | ✅        | 🚫  | ✅            | 🚫            |
+| `yarn stack:save-default-snapshot` | Save new setup scripts to a snapshot                                          | 🚫          | 🚫      | ✅  | ✅  | ✅        | 🚫  | ✅            | ✅            |
+| `yarn stack:save-snapshot`         | Save a snapshot from whatever is running                                      | 🚫          | 🚫      | 🚫  | 🚫  | 🚫        | 🚫  | 🚫            | ✅            |
 
 You can either
 

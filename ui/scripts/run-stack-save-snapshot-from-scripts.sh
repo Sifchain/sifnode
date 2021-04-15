@@ -7,4 +7,4 @@ rm node_modules/.migrate-complete
 
 yarn concurrently -r \
   "yarn stack:backend-from-scripts" \
-  "yarn wait-on http-get://localhost:1317/node_info tcp:localhost:7545 node_modules/.migrate-complete && sleep 10 && yarn chain:snapshot"
+  "yarn wait-on http-get://localhost:1317/node_info node_modules/.migrate-complete && sleep 10 && yarn chain:snapshot"
