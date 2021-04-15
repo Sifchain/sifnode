@@ -4,6 +4,7 @@ import { Ref, ref, toRefs } from "@vue/reactivity";
 import { useCore } from "../../hooks/useCore";
 import { sortAssetAmount } from "../../views/utils/sortAssetAmount";
 import AssetItem from "@/components/shared/AssetItem.vue";
+import { format } from "ui-core/src/utils/format";
 import { computed } from "@vue/reactivity";
 import {
   disableSelected,
@@ -70,7 +71,7 @@ export default defineComponent({
 
       return tokenBalances;
     });
-    return { searchText, selectToken, tokenBalances };
+    return { searchText, selectToken, tokenBalances, format };
   },
 });
 </script>
@@ -102,7 +103,7 @@ export default defineComponent({
     >
       <AssetItem :symbol="tb.asset.symbol" />
       <div class="balance">
-        {{ tb.amount ? tb.amount.toFixed(4) : "0" }}
+        {{ tb.amount ? format(tb.amount, tb.asset, { mantissa: 4 }) : "0" }}
       </div>
     </button>
   </div>
