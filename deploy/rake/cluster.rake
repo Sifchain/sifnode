@@ -971,7 +971,7 @@ path "/#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*" { capabilities = ["r
 path "*" { capabilities = ["read"] }
         }
         File.open("#{args[:app_name]}-policy.hcl", 'w') { |file| file.write(policy_file) }
-
+x
       puts "Copy Policy to the Vault Pod."
       copy_policy_file_to_pod = %Q{kubectl cp --kubeconfig=./kubeconfig #{args[:app_name]}-policy.hcl vault-0:/home/vault/#{args[:app_name]}-policy.hcl -n vault}
       system(copy_policy_file_to_pod) or exit 1
@@ -1077,7 +1077,7 @@ metadata:
 
       puts "Use kubectl rollout to wait for pods to start."
       check_kubernetes_rollout_status = %Q{kubectl rollout status --kubeconfig=./kubeconfig deployment/#{args[:app_name]} -n #{args[:app_namespace]}}
-      system(heck_kubernetes_rollout_status) or exit 1
+      system(check_kubernetes_rollout_status) or exit 1
     end
   end
 
