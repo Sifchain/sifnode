@@ -129,7 +129,7 @@ describe("connect to page", () => {
 
     await confirmTransaction(dexPage, browserContext, pegAmount, MM_CONFIG.id);
     // move chain forward
-    await advanceEthBlocks(50);
+    await advanceEthBlocks(52);
 
     const rowAmount = await dexPage.innerText(
       "[data-handle='ceth-row-amount']",
@@ -184,7 +184,7 @@ describe("connect to page", () => {
 
     // Check expected estimated values
     expect(await getInputValue(dexPage, '[data-handle="token-a-input"]')).toBe(
-      "10000.000000000000000000", // TODO: trim mantissa
+      "10000.0", // TODO: trim mantissa
     );
     expect(await getInputValue(dexPage, '[data-handle="token-b-input"]')).toBe(
       "9980.0299600499",
@@ -220,7 +220,7 @@ describe("connect to page", () => {
     ).toBe("< 0.01%");
     expect(
       await dexPage.innerText("[data-handle='details-liquidity-provider-fee']"),
-    ).toBe("0.0002499975 ROWAN");
+    ).toBe("0.00025 ROWAN");
 
     // Click Swap Button
     await dexPage.click('button:has-text("Swap")');
@@ -245,7 +245,7 @@ describe("connect to page", () => {
       await dexPage.innerText(
         "[data-handle='confirm-swap-modal'] [data-handle='details-liquidity-provider-fee']",
       ),
-    ).toBe("0.0002499975 ROWAN");
+    ).toBe("0.00025 ROWAN");
 
     await dexPage.click('button:has-text("Confirm Swap")');
 
@@ -270,7 +270,7 @@ describe("connect to page", () => {
     );
 
     expect(await dexPage.innerText('[data-handle="rowan-balance-label"]')).toBe(
-      "Balance: 10,049.99 ROWAN",
+      "Balance: 10,050.00 ROWAN",
     );
   });
 

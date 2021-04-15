@@ -39,15 +39,15 @@ describe("EthereumService", () => {
 
     const balances = EthereumService.getState().balances;
 
-    const ethAmount = getBalance(balances, "eth").amount;
-    const atkAmount = getBalance(balances, "atk").amount;
-    const btkAmount = getBalance(balances, "btk").amount;
+    const ethAmount = getBalance(balances, "eth");
+    const atkAmount = getBalance(balances, "atk");
+    const btkAmount = getBalance(balances, "btk");
 
     // We dont know what the amount is going to be as it changes
     // depending on a bunch of factors so just checking for a string of digits
     expect(/^\d+/.test(ethAmount.toString())).toBeTruthy();
-    expect(atkAmount.toString()).toEqual("10000000000000000000000");
-    expect(btkAmount.toString()).toEqual("10000000000000000000000");
+    expect(atkAmount.toBigInt().toString()).toEqual("10000000000000000000000");
+    expect(btkAmount.toBigInt().toString()).toEqual("10000000000000000000000");
   });
 
   test("isConnected", async () => {
@@ -59,9 +59,11 @@ describe("EthereumService", () => {
     const state = EthereumService.getState();
 
     const balances = state.balances;
-    const account0AtkAmount = getBalance(balances, "atk").amount;
+    const account0AtkAmount = getBalance(balances, "atk");
 
-    expect(account0AtkAmount.toString()).toEqual("10000000000000000000000");
+    expect(account0AtkAmount.toBigInt().toString()).toEqual(
+      "10000000000000000000000",
+    );
 
     await EthereumService.transfer({
       amount: JSBI.BigInt("10000000"),
@@ -72,14 +74,16 @@ describe("EthereumService", () => {
     const account0NewAtkAmount = getBalance(
       await EthereumService.getBalance(),
       "atk",
-    ).amount;
+    );
     const account1NewAtkAmount = getBalance(
       await EthereumService.getBalance(state.accounts[1]),
       "atk",
-    ).amount;
+    );
 
-    expect(account0NewAtkAmount.toString()).toEqual("9999999999999990000000");
-    expect(account1NewAtkAmount.toString()).toEqual("10000000");
+    expect(account0NewAtkAmount.toBigInt().toString()).toEqual(
+      "9999999999999990000000",
+    );
+    expect(account1NewAtkAmount.toBigInt().toString()).toEqual("10000000");
   });
 
   test("transfer ETH", async () => {
@@ -94,9 +98,11 @@ describe("EthereumService", () => {
     });
 
     const balanceAccount1 = await EthereumService.getBalance(state.accounts[1]);
-    const account1NewBalance = getBalance(balanceAccount1, "ETH").amount;
+    const account1NewBalance = getBalance(balanceAccount1, "ETH");
 
-    expect(account1NewBalance.toString()).toEqual("110000000000000000000");
+    expect(account1NewBalance.toBigInt().toString()).toEqual(
+      "110000000000000000000",
+    );
   });
 
   it("should not do anything with phase and purgingClient", async () => {
