@@ -528,106 +528,6 @@ fi
   end
 
 
-  desc "Create Release Governance Request."
-  namespace :release do
-    desc "Create Release Governance Request."
-    task :generate_governance_release_request, [:upgrade_hours, :block_time, :deposit, :rowan, :chainnet, :release_version, :from, :app_env] do |t, args|
-
-      cluster_automation = %Q{
-#!/usr/bin/env bash
-
-echo "Checking to see if the release version exist in app.go"
-check_exist=$(cat app/setupHandlers.go | grep 'release-#{args[:release_version]}')
-[ -z "$check_exist" ] && exit 1 || echo "release version exists."
-
-set +x
-
-env_check="#{args[:app_env]}"
-if [ "${env_check}" == "prod" ]; then
-    export CURRENT_HEIGHT=`curl -s http://rpc.sifchain.finance/abci_info? | jq --raw-output '.result.response.last_block_height'`
-else
-    export CURRENT_HEIGHT=`curl -s http://rpc-#{args[:app_env]}.sifchain.finance/abci_info? | jq --raw-output '.result.response.last_block_height'`
-fi
-
-cat << EOF > pyscript.py
-#!/usr/bin/env python
-import os
-current_height = float(os.environ["CURRENT_HEIGHT"])
-block_time=#{args[:block_time]}
-average_time = 60 / block_time
-average_time = average_time * 60 * #{args[:upgrade_hours]}
-future_block_height = average_time + current_height + 100
-print(int(future_block_height))
-EOF
-future_block_height=$(python pyscript.py)
-echo ${future_block_height}
-
-
-cat << EOF > pyscript.py
-#!/usr/bin/env python
-import requests
-import urllib3
-import sys
-import os
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token " + os.environ["GITHUB_TOKEN"]}
-releases_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/releases', headers=headers, verify=False)
-release_request_json = releases_request.json()
-find_realease="#{args[:app_env]}-#{args[:release_version]}"
-retrieved_sha = ""
-for release in release_request_json:
-    release_name = release["name"]
-    release_body = release["body"]
-    published_at = release["published_at"]
-    if find_realease in release["tag_name"]:
-        for asset in release["assets"]:
-            if ".sha256" in asset["name"]:
-                get_sha = requests.get(asset["browser_download_url"], headers=headers, verify=False)
-                retrieved_sha = get_sha.text.replace("\\n", "")
-                print(retrieved_sha)
-                break
-if not retrieved_sha:
-    print("retrieved sha not found ",retrieved_sha)
-    sys.exit(2)
-EOF
-retrieved_sha=$(python pyscript.py)
-echo ${retrieved_sha}
-
-if [ "${env_check}" == "prod" ]; then
-    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
-        --from #{args[:from]} \
-        --deposit #{args[:deposit]} \
-        --upgrade-height ${future_block_height} \
-        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='${retrieved_sha}'"}}' \
-        --title release-#{args[:release_version]} \
-        --description release-#{args[:release_version]} \
-        --node tcp://rpc.sifchain.finance:80 \
-        --keyring-backend file \
-        -y \
-        --chain-id #{args[:chainnet]} \
-        --gas-prices "#{args[:rowan]}"
-else
-    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
-        --from #{args[:from]} \
-        --deposit #{args[:deposit]} \
-        --upgrade-height ${future_block_height} \
-        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='${retrieved_sha}'"}}' \
-        --title release-#{args[:release_version]} \
-        --description release-#{args[:release_version]} \
-        --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
-        --keyring-backend file \
-        -y \
-        --chain-id #{args[:chainnet]} \
-        --gas-prices "#{args[:rowan]}"
-fi
-
-echo "Sleeping for 1 minute to allow for proposal to finalize"
-sleep 60
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
   desc "Wait for Release.."
   namespace :release do
     desc "Wait for Release."
@@ -749,45 +649,6 @@ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:monike
     end
   end
 
-  desc "Create Release Governance Request Vote."
-  namespace :release do
-    desc "Create Release Governance Request Vote."
-    task :generate_vote, [:rowan, :chainnet, :from, :env] do |t, args|
-
-      cluster_automation = %Q{
-#!/usr/bin/env bash
-set +x
-
-env_check="#{args[:env]}"
-if [ "${env_check}" == "prod" ]; then
-    vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
-    echo "vote_id $vote_id"
-    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
-        --from #{args[:from]} \
-        --keyring-backend file \
-        --chain-id #{args[:chainnet]}  \
-        --node tcp://rpc.sifchain.finance:80 \
-        --gas-prices "#{args[:rowan]}" -y
-
-    sleep 15
-
-else
-    vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
-    echo "vote_id $vote_id"
-    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
-        --from #{args[:from]} \
-        --keyring-backend file \
-        --chain-id #{args[:chainnet]}  \
-        --node tcp://rpc-#{args[:env]}.sifchain.finance:80 \
-        --gas-prices "#{args[:rowan]}" -y
-
-    sleep 15
-fi
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
   desc "Sifchain Art."
   namespace :generate do
     desc "Sifchain Art."
@@ -870,6 +731,36 @@ python helmvaulereplace.py
         curl -s https://ci-tools.anchore.io/inline_scan-latest | bash -s -- -f -r -d cmd/#{args[:app_name]}/Dockerfile -p "#{args[:image]}:#{args[:image_tag]}"
       }
       system(cluster_automation) or exit 1
+    end
+  end
+
+  desc "Generate Temp Secrets For Application Path In Vault"
+  namespace :vault do
+    desc "Generate Temp Secrets For Application Path In Vault"
+    task :pull_temp_secrets_file_app, [:app_name,:app_region,:app_env] do |t, args|
+        require "json"
+        secrets_json = `kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault kv get -format json kv-v2/#{args[:app_region]}/#{args[:app_env]}/#{args[:app_name]}`
+        data = JSON.parse(secrets_json)
+        temp_secrets_string = ""
+        data['data']['data'].each do |key, value|
+          temp_secrets_string += "export #{key}='#{value}' \n"
+        end
+        File.open("tmp_secrets", 'w') { |file| file.write(temp_secrets_string) }
+    end
+  end
+
+  desc "Generate Temp Secrets For Path"
+  namespace :vault do
+    desc "Generate Temp Secrets For Path"
+    task :pull_temp_secrets_file, [:path] do |t, args|
+        require "json"
+        secrets_json = `kubectl exec -n vault --kubeconfig=./kubeconfig -it vault-0 -- vault kv get -format json #{args[:path]}`
+        data = JSON.parse(secrets_json)
+        temp_secrets_string = ""
+        data['data']['data'].each do |key, value|
+          temp_secrets_string += "export #{key}='#{value}' \n"
+        end
+        File.open("tmp_secrets", 'w') { |file| file.write(temp_secrets_string) }
     end
   end
 
@@ -1127,8 +1018,6 @@ metadata:
   end
 
 
-
-
   desc "Wait for Release Pipeline to Finish."
   namespace :release do
     desc "Wait for Release Pipeline to Finish."
@@ -1172,7 +1061,146 @@ metadata:
     end
   end
 
+  desc "Import Key Ring"
+  namespace :release do
+    desc "Import Key Ring"
+    task :import_keyring, [:moniker] do |t, args|
+        require 'fileutils'
+        File.open("tmp_keyring_rendered", 'w') { |file| file.write(ENV["keyring_pem"]) }
+        keyring_import=`yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file`
+        FileUtils.rm_rf("tmp_keyring_rendered")
+    end
+  end
 
+
+  desc "Create Github Release."
+  namespace :release do
+    desc "Create Github Release."
+    task :create_github_release, [:release, :env, :token] do |t, args|
+        require 'rest-client'
+        require 'json'
+        begin
+            headers = {content_type: :json, "Accept": "application/vnd.github.v3+json", "Authorization":"token #{args[:token]}"}
+            payload = {"tag_name"  =>  "#{args[:env]}-#{args[:release]}","name"  =>  "#{args[:env]} v#{args[:release]}","body"  => "Sifchain #{args[:env]} Release v#{args[:release]}","prerelease"  =>  true}.to_json
+            response = RestClient.post 'https://api.github.com/repos/Sifchain/sifnode/releases', payload, headers
+            json_response_job_object = JSON.parse response.body
+            puts json_response_job_object
+        rescue
+            puts 'Release Already Exists'
+        end
+    end
+  end
+
+  desc "Create Release Governance Request."
+  namespace :release do
+    desc "Create Release Governance Request."
+    task :generate_governance_release_request, [:upgrade_hours, :block_time, :deposit, :rowan, :chainnet, :release_version, :from, :app_env, :token] do |t, args|
+        require 'rest-client'
+        require 'json'
+
+        puts "Looking for the Release Handler"
+        release_search = "release-#{args[:release_version]}"
+        setupHandlers = File.read("setupHandlers.go").strip
+        setupHandlers.include?(release_search) ? (puts 'Found') : (exit 1)
+
+        puts "Calculating Upgrade Block Height"
+        if "#{args[:app_env]}" == "mainnet"
+            puts "Mainnet"
+            response = RestClient.get "http://rpc.sifchain.finance/abci_info?"
+            json_response_object = JSON.parse response.body
+        else
+            puts "Testnet"
+            response = RestClient.get "http://rpc-#{args[:app_env]}.sifchain.finance/abci_info?"
+            json_response_object = JSON.parse response.body
+        end
+        current_height = json_response_object["result"]["response"]["last_block_height"].to_f
+        average_block_time = "#{args[:block_time]}".to_f
+        average_time = 50 / average_block_time
+        average_time = average_time * 60 * "#{args[:upgrade_hours]}".to_f
+        future_block_height = current_height + average_time + 100
+        block_height = future_block_height.round
+        puts "Block Height #{block_height}"
+
+        headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
+        response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
+        json_response_job_object = JSON.parse response.body
+        json_response_job_object.each do |release|
+            if release["tag_name"].include?("#{args[:app_env]}-#{args[:release_version]}")
+                release["assets"].each do |asset|
+                    if asset["name"].include?(".sha256")
+                        response = RestClient.get asset["browser_download_url"], headers
+                        sha_token = response.body.strip
+                        puts "Sha found #{sha_token}"
+                    end
+                end
+            end
+        end
+
+        if "#{args[:app_env]}" == "mainnet"
+            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+                --from #{args[:from]} \
+                --deposit #{args[:deposit]} \
+                --upgrade-height #{block_height} \
+                --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
+                --title release-#{args[:release_version]} \
+                --description release-#{args[:release_version]} \
+                --node tcp://rpc.sifchain.finance:80 \
+                --keyring-backend file \
+                -y \
+                --chain-id #{args[:chainnet]} \
+                --gas-prices "#{args[:rowan]}"
+                sleep 60 }
+            system(governance_request) or exit 1
+        else
+            governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+                --from #{args[:from]} \
+                --deposit #{args[:deposit]} \
+                --upgrade-height #{block_height} \
+                --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='#{sha_token}'"}}' \
+                --title release-#{args[:release_version]} \
+                --description release-#{args[:release_version]} \
+                --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
+                --keyring-backend file \
+                -y \
+                --chain-id #{args[:chainnet]} \
+                --gas-prices "#{args[:rowan]}"
+                sleep 60 }
+            system(governance_request) or exit 1
+        end
+    end
+  end
+
+  desc "Create Release Governance Request Vote."
+  namespace :release do
+    desc "Create Release Governance Request Vote."
+    task :generate_vote, [:rowan, :chainnet, :from, :env] do |t, args|
+        if "#{args[:app_env]}" == "mainnet"
+            governance_request = %Q{
+vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+echo "vote_id $vote_id"
+yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
+    --from #{args[:from]} \
+    --keyring-backend file \
+    --chain-id #{args[:chainnet]}  \
+    --node tcp://rpc.sifchain.finance:80 \
+    --gas-prices "#{args[:rowan]}" -y
+sleep 15  }
+            system(governance_request) or exit 1
+        else
+            governance_request = %Q{
+vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+echo "vote_id $vote_id"
+yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
+    --from #{args[:from]} \
+    --keyring-backend file \
+    --chain-id #{args[:chainnet]}  \
+    --node tcp://rpc-#{args[:env]}.sifchain.finance:80 \
+    --gas-prices "#{args[:rowan]}" -y
+sleep 15 }
+             system(governance_request) or exit 1
+        end
+    end
+  end
 
   #=======================================RUBY CONVERSIONS END=============================================#
 
