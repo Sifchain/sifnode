@@ -27,6 +27,7 @@ jobs:
     - name: Get dependencies
       run: |
         go get -v -t -d ./...
+        printenv
 
     - name: Build
       run: make install
