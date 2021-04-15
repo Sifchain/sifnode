@@ -971,7 +971,7 @@ path "/#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*" { capabilities = ["r
 path "*" { capabilities = ["read"] }
         }
         File.open("#{args[:app_name]}-policy.hcl", 'w') { |file| file.write(policy_file) }
-x
+
       puts "Copy Policy to the Vault Pod."
       copy_policy_file_to_pod = %Q{kubectl cp --kubeconfig=./kubeconfig #{args[:app_name]}-policy.hcl vault-0:/home/vault/#{args[:app_name]}-policy.hcl -n vault}
       system(copy_policy_file_to_pod) or exit 1
