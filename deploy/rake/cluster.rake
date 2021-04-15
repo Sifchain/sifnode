@@ -1067,6 +1067,20 @@ metadata:
     end
   end
 
+  desc "Check Vault Secret Exists"
+  namespace :vault do
+    desc "Check Vault Secret Exists"
+    task :check_application_configured, [:app_env, :region, :app_name] do |t, args|
+      vault_secret_check = `kubectl exec -n vault -it vault-0 -- vault kv get kv-v2/#{args[:region]}/#{args[:app_env]}/#{args[:app_name]}`
+      if vault_secret_check.include?("#No value found")
+        puts "Application Not Configured Please Run https://github.com/Sifchain/chainOps/actions/workflows/setup_new_application_in_vault.yaml"
+        exit 1
+      else
+        puts "Secret Exists"
+      end
+    end
+  end
+
   desc "Deploy Helm Files"
   namespace :vault do
     desc "Deploy Helm Files"
