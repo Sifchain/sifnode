@@ -85,13 +85,14 @@ func GetCmdCreateEthBridgeClaim() *cobra.Command {
 				return types.ErrInvalidAmount
 			}
 
-			claimType, err := types.StringToClaimType(args[7])
-			if err != nil {
+			claimType, exist := types.ClaimType_value[args[7]]
+			if !exist {
 				return err
 			}
+			ct := types.ClaimType(claimType)
 
 			ethBridgeClaim := types.NewEthBridgeClaim(ethereumChainID, bridgeContract, nonce, symbol, tokenContract,
-				ethereumSender, cosmosReceiver, validator, bigIntAmount, claimType)
+				ethereumSender, cosmosReceiver, validator, bigIntAmount, ct)
 
 			msg := types.NewMsgCreateEthBridgeClaim(ethBridgeClaim)
 			if err := msg.ValidateBasic(); err != nil {

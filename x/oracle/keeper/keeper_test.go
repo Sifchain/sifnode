@@ -131,7 +131,7 @@ func TestSuccessfulProphecy(t *testing.T) {
 }
 
 func TestSuccessfulProphecyWithDisagreement(t *testing.T) {
-	addresses := sifapp.CreateRandomAccounts(2)
+	addresses := sifapp.CreateRandomAccounts(3)
 	validatorAddresses := sifapp.ConvertAddrsToValAddrs(addresses)
 
 	app := app.Setup(false)

@@ -40,6 +40,7 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 
 func CreateTestAppClp(isCheckTx bool) (sdk.Context, keeper.Keeper) {
 	ctx, app := GetSimApp(isCheckTx)
+	sifapp.SetConfig(false)
 	return ctx, app.ClpKeeper
 }
 

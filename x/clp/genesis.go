@@ -54,7 +54,7 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 
 	whiteList := keeper.GetClpWhiteList(ctx)
 
-	wl := make([]string, 0, len(whiteList))
+	wl := make([]string, len(whiteList))
 	for i, entry := range whiteList {
 		wl[i] = entry.String()
 	}

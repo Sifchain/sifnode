@@ -28,11 +28,11 @@ func (k Keeper) GetClpWhiteList(ctx sdk.Context) []sdk.AccAddress {
 	key := types.WhiteListValidatorPrefix
 	bz := store.Get(key)
 
-	valList := []string{}
-	k.cdc.MustUnmarshalBinaryBare(bz, &stakingtypes.ValAddresses{Addresses: valList})
+	valAddresses := &stakingtypes.ValAddresses{}
+	k.cdc.MustUnmarshalBinaryBare(bz, valAddresses)
 
-	vl := make([]sdk.AccAddress, len(valList))
-	for i, entry := range valList {
+	vl := make([]sdk.AccAddress, len(valAddresses.Addresses))
+	for i, entry := range valAddresses.Addresses {
 		addr, err := sdk.AccAddressFromBech32(entry)
 		if err != nil {
 			panic(err)

@@ -58,6 +58,7 @@ func TestValidateGenesis(t *testing.T) {
 	assert.NoError(t, err)
 
 }
+
 func CreateState(ctx sdk.Context, keeper keeper.Keeper, t *testing.T) (int, int) {
 	// Setting Pools
 	pools := test.GenerateRandomPool(10)
