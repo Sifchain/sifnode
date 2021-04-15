@@ -965,19 +965,19 @@ python helmvaulereplace.py
         puts "Build Vault Policy File For Application #{args[:app_name]}"
         policy_file = %Q{
 path "#{args[:region]}/#{args[:env]}/#{args[:app_name]}" {
-    capabilities = [\\"read\\"]
+    capabilities = ["read"]
 }
 path "#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*" {
-    capabilities = [\\"read\\"]
+    capabilities = ["read"]
 }
 path "/#{args[:region]}/#{args[:env]}/#{args[:app_name]}" {
-    capabilities = [\\"read\\"]
+    capabilities = ["read"]
 }
 path "/#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*" {
-    capabilities = [\\"read\\"]
+    capabilities = ["read"]
 }
 path "*" {
-    capabilities = [\\"read\\"]
+    capabilities = ["read"]
 }
         }
         File.open("#{args[:app_name]}-policy.hcl", 'w') { |file| file.write(policy_file) }
