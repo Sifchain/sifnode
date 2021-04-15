@@ -23,7 +23,7 @@ const [ETH, CETH, ATK, CATK, ROWAN, EROWAN] = getTestingTokens([
   "EROWAN",
 ]);
 
-describe("EthbridgeService", () => {
+describe.only("EthbridgeService", () => {
   let EthbridgeService: ReturnType<typeof createEthbridgeService>;
 
   beforeEach(async () => {
@@ -80,7 +80,7 @@ describe("EthbridgeService", () => {
     await new Promise<void>(async (done) => {
       EthbridgeService.lockToSifchain(getSifAddress(), amountToLock, 100)
         .onTxHash(() => {
-          advanceBlock(100);
+          advanceBlock(101);
         })
         .onComplete(async () => {
           done();

@@ -12,15 +12,15 @@ export async function getWeb3Provider() {
   );
 }
 
-let snapshotId: any;
+// let snapshotId: any;
 
-beforeEach(async () => {
-  // Unfortunately ganache-time-traveler requires web3 on the global object 🤦‍♂️
-  (globalThis as any).web3 = new Web3(await getWeb3Provider());
-  let snapshot = await timeMachine.takeSnapshot();
-  snapshotId = snapshot["result"];
-});
+// beforeEach(async () => {
+//   // Unfortunately ganache-time-traveler requires web3 on the global object 🤦‍♂️
+//   (globalThis as any).web3 = new Web3(await getWeb3Provider());
+//   let snapshot = await timeMachine.takeSnapshot();
+//   snapshotId = snapshot["result"];
+// });
 
-afterEach(async () => {
-  await timeMachine.revertToSnapshot(snapshotId);
-});
+// afterEach(async () => {
+//   await timeMachine.revertToSnapshot(snapshotId);
+// });
