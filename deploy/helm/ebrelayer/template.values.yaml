@@ -37,7 +37,7 @@ image:
   pullPolicy: Always
   tag: "testnet"
 
-ebrelayer:
+-=app_name=-:
   env:
     updateforce: "force_update_change_this"
 
@@ -50,7 +50,7 @@ ingress:
   enabled: false
   annotations: {}
   hosts:
-    - host: ebrelayer.local
+    - host: -=app_name=-.local
       paths: []
   tls: []
 
