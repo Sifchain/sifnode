@@ -1065,15 +1065,28 @@ metadata:
   namespace :release do
     desc "Import Key Ring"
     task :import_keyring, [:moniker] do |t, args|
-              cluster_automation = %Q{
+       import_keys = %Q{
 #!/usr/bin/env bash
 set +x
 echo -e "${keyring_pem}" > tmp_keyring && tail -c +4 tmp_keyring > tmp_keyring_rendered
 rm -rf tmp_keyring
 echo "moniker #{args[:moniker]}"
 yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file
-rm -rf tmp_keyring_rendered
       }
+      system(import_keys) or exit 1
+
+        if "#{args[:app_env]}" == "mainnet"
+            governance_request = %Q{
+vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+echo "vote_id $vote_id" }
+            system(governance_request) or exit 1
+        else
+            governance_request = %Q{
+vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+echo "vote_id $vote_id" }
+             system(governance_request) or exit 1
+        end
+
     end
   end
 
