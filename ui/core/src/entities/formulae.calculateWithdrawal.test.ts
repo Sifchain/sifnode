@@ -1,5 +1,5 @@
+import { Amount } from "./Amount";
 import { calculateWithdrawal } from "./formulae";
-import { Fraction } from "./fraction/Fraction";
 
 const tests = [
   {
@@ -221,17 +221,17 @@ tests.forEach(({ name, only, skip, input, expected }) => {
 
   tester(name, () => {
     const output = calculateWithdrawal({
-      poolUnits: new Fraction(input.poolUnits),
-      wBasisPoints: new Fraction(input.wBasisPoints),
-      asymmetry: new Fraction(input.asymmetry),
-      lpUnits: new Fraction(input.lpUnits),
-      externalAssetBalance: new Fraction(input.externalAssetBalance),
-      nativeAssetBalance: new Fraction(input.nativeAssetBalance),
+      poolUnits: Amount(input.poolUnits),
+      wBasisPoints: Amount(input.wBasisPoints),
+      asymmetry: Amount(input.asymmetry),
+      lpUnits: Amount(input.lpUnits),
+      externalAssetBalance: Amount(input.externalAssetBalance),
+      nativeAssetBalance: Amount(input.nativeAssetBalance),
     });
-    expect(output.withdrawExternalAssetAmount.toFixed(0)).toEqual(
+    expect(output.withdrawExternalAssetAmount.toBigInt().toString()).toEqual(
       expected.withdrawExternalAssetAmount,
     );
-    expect(output.withdrawNativeAssetAmount.toFixed(0)).toEqual(
+    expect(output.withdrawNativeAssetAmount.toBigInt().toString()).toEqual(
       expected.withdrawNativeAssetAmount,
     );
   });

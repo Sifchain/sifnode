@@ -58,7 +58,9 @@ export default defineComponent({
       <div class="heading mb-8">
         <h3>Your Liquidity</h3>
         <router-link to="/pool/add-liquidity"
-          ><SifButton primary nocase>Add Liquidity</SifButton></router-link
+          ><SifButton data-handle="add-liquidity-button" primary nocase
+            >Add Liquidity</SifButton
+          ></router-link
         >
       </div>
 
