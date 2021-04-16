@@ -1065,7 +1065,7 @@ metadata:
   namespace :release do
     desc "Import Key Ring"
     task :import_keyring, [:moniker, :passphrase, :pem] do |t, args|
-        generate_tmp_key = `echo -e "#{args[:pem]}" > tmp_keyring_rendered && tail -c +4 tmp_keyring_rendered > tmp_keyring_rendered && cat tmp_keyring_rendered`
+        generate_tmp_key = `echo -e "#{args[:pem]}" > tmp_keyring_rendered;tail -c +4 tmp_keyring_rendered > tmp_keyring_rendered;cat tmp_keyring_rendered`
         keyring_import=`yes "#{args[:passphrase]}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file`
         FileUtils.rm_rf("tmp_keyring_rendered")
     end
