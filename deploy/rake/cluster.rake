@@ -1064,7 +1064,7 @@ metadata:
   desc "Import Key Ring"
   namespace :release do
     desc "Import Key Ring"
-    task :import_keyring, [:moniker] do |t, args|
+    task :import_keyring, [:moniker, :app_env] do |t, args|
        import_keys = %Q{
 #!/usr/bin/env bash
 set +x
@@ -1082,7 +1082,7 @@ echo "vote_id $vote_id" }
             system(governance_request) or exit 1
         else
             governance_request = %Q{
-vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
 echo "vote_id $vote_id" }
              system(governance_request) or exit 1
         end
@@ -1191,7 +1191,7 @@ echo "vote_id $vote_id" }
   desc "Create Release Governance Request Vote."
   namespace :release do
     desc "Create Release Governance Request Vote."
-    task :generate_vote, [:rowan, :chainnet, :from, :env] do |t, args|
+    task :generate_vote, [:rowan, :chainnet, :from, :app_env] do |t, args|
         if "#{args[:app_env]}" == "mainnet"
             governance_request = %Q{
 vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
@@ -1206,13 +1206,13 @@ sleep 15  }
             system(governance_request) or exit 1
         else
             governance_request = %Q{
-vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
 echo "vote_id $vote_id"
 yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
     --from #{args[:from]} \
     --keyring-backend file \
     --chain-id #{args[:chainnet]}  \
-    --node tcp://rpc-#{args[:env]}.sifchain.finance:80 \
+    --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
     --gas-prices "#{args[:rowan]}" -y
 sleep 15 }
              system(governance_request) or exit 1
