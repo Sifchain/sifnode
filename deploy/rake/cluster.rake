@@ -1139,6 +1139,7 @@ echo "vote_id $vote_id" }
         block_height = future_block_height.round
         puts "Block Height #{block_height}"
 
+        sha_token=""
         headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
         response = RestClient.get 'https://api.github.com/repos/Sifchain/sifnode/releases', headers
         json_response_job_object = JSON.parse response.body
@@ -1148,11 +1149,11 @@ echo "vote_id $vote_id" }
                     if asset["name"].include?(".sha256")
                         response = RestClient.get asset["browser_download_url"], headers
                         sha_token = response.body.strip
-                        puts "Sha found #{sha_token}"
                     end
                 end
             end
         end
+        puts "Sha found #{sha_token}"
 
         if "#{args[:app_env]}" == "mainnet"
             governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
@@ -1170,6 +1171,7 @@ echo "vote_id $vote_id" }
                 sleep 60 }
             system(governance_request) or exit 1
         else
+            puts "create dev net gov request #{sha_token}"
             governance_request = %Q{ yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
                 --from #{args[:from]} \
                 --deposit #{args[:deposit]} \
