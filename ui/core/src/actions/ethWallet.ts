@@ -28,13 +28,14 @@ export default ({
 
   const actions = {
     isSupportedNetwork() {
-      const supportedEthChains = [
+      // List of supported EVM chainIds
+      const supportedEVMChainIds = [
         "0x1", // 1 Mainnet
         "0x3", // 3 Ropsten
         "0x539", // 1337 Ganache/Hardhat
       ];
 
-      return supportedEthChains.includes(store.wallet.eth.chainId ?? "");
+      return supportedEVMChainIds.includes(store.wallet.eth.chainId ?? "");
     },
 
     async disconnectWallet() {

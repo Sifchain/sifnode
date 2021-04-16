@@ -67,7 +67,6 @@ export default defineComponent({
         return actions.ethWallet.isSupportedNetwork();
       }
 
-      // For now business rules around this are not clear
       return true;
     });
 
