@@ -1,18 +1,21 @@
 <template>
   <div class="panel-nav">
     <PanelNavItem
+      data-handle="peg-page-button"
       to="/peg"
       color="pink"
       icon="circle-half"
       label="Peg"
     ></PanelNavItem>
     <PanelNavItem
+      data-handle="swap-page-button"
       to="/swap"
       icon="circle-arrows"
       label="Swap"
       color="blue"
     ></PanelNavItem>
     <PanelNavItem
+      data-handle="pool-page-button"
       to="/pool"
       icon="pool"
       label="Pool"

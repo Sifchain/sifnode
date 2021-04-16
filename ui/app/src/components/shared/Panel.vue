@@ -1,10 +1,17 @@
 <template>
   <div :class="{ panel: true, dark }">
-    <div class="header" v-if="!!$slots.header">
+    <div
+      class="header"
+      v-if="!!$slots.header"
+      :data-handle="[dataHandle, 'panel-header'].filter(Boolean).join('-')"
+    >
       <slot name="header"></slot>
     </div>
 
-    <div class="body">
+    <div
+      class="body"
+      :data-handle="[dataHandle, 'panel-body'].filter(Boolean).join('-')"
+    >
       <slot></slot>
     </div>
 
@@ -18,6 +25,7 @@
 export default {
   props: {
     dark: Boolean,
+    dataHandle: String,
   },
 };
 </script>
