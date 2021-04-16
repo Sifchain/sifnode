@@ -1,9 +1,14 @@
-INFO     root:test_liquidity_pools.py:21 create new currency: a39DF76F
-INFO     root:pytest_utilities.py:67 created sifchain addr sif1ddngy4pfe0lc7skqmrh4sx9nte2yr6rjfsz7m3 with (0 | 0.0) ceth and (1000000000000000000 | 1.0) rowan
-INFO     root:test_liquidity_pools.py:37 transfer some of the new currency ca39df76f to the test sifchain address
-INFO     root:test_liquidity_pools.py:404 get balances just to have those commands in the history
-INFO     root:test_liquidity_pools.py:408 ca39df76f balance=3000000000000000000
-INFO     root:test_liquidity_pools.py:409 rowan  balance=1000000000000000000
-INFO     root:test_liquidity_pools.py:430 ca39df76f balance=3000000000000000000
-INFO     root:test_liquidity_pools.py:431 rowan  balance=999999999999800000
-INFO     root:test_liquidity_pools.py:432 [{'denom': 'ca038e3e3', 'amount': '1000000000000000000'}, {'denom': 'ca1b683cd', 'amount': '1000000000000000000'}, {'denom': 'caa0eb148', 'amount': '1000000000000000000'}, {'denom': 'rowan', 'amount': '300000000000000000'}]
+INFO     root:test_liquidity_pools.py:21 create new currency: a3FE3328
+INFO     root:pytest_utilities.py:67 created sifchain addr sif152qmrnt8dlsqtc6ve4z4gu7slm2aa5lcp2t2dq with (100 | 1e-16) ceth and (1000000000000000000 | 1.0) rowan
+INFO     root:test_liquidity_pools.py:37 transfer some of the new currency ca3fe3328 to the test sifchain address
+INFO     root:test_liquidity_pools.py:417 get balances just to have those commands in the history
+INFO     root:test_liquidity_pools.py:422 ca3fe3328 balance=3000000000000000000
+INFO     root:test_liquidity_pools.py:423 ceth  balance=100
+INFO     root:test_liquidity_pools.py:424 rowan  balance=1000000000000000000
+INFO     root:test_liquidity_pools.py:465 ca3fe3328 balance after add, should be lower=2000000000000000000
+INFO     root:test_liquidity_pools.py:466 [{'denom': 'ca038e3e3', 'amount': '1000000000000000000'}, {'denom': 'ca0629012', 'amount': '1000000000000000000'}, {'denom': 'ca1b683cd', 'amount': '1000000000000000000'}, {'denom': 'ca3fe3328', 'amount': '1000000000000000000'}, {'denom': 'ca55dd2b0', 'amount': '1000000000000000000'}, {'denom': 'caa0eb148', 'amount': '1000000000000000000'}, {'denom': 'cab5258b2', 'amount': '1000000000000000000'}, {'denom': 'caba4ebd3', 'amount': '1000000000000000000'}, {'denom': 'cada4c73e', 'amount': '1000000000000000000'}, {'denom': 'cafd8acb5', 'amount': '1000000000000000000'}, {'denom': 'ceth', 'amount': '40'}, {'denom': 'rowan', 'amount': '1800000000000000000'}]
+INFO     root:test_liquidity_pools.py:471 [{'denom': 'ca038e3e3', 'amount': '1000000000000000000'}, {'denom': 'ca0629012', 'amount': '1000000000000000000'}, {'denom': 'ca1b683cd', 'amount': '1000000000000000000'}, {'denom': 'ca55dd2b0', 'amount': '1000000000000000000'}, {'denom': 'caa0eb148', 'amount': '1000000000000000000'}, {'denom': 'cab5258b2', 'amount': '1000000000000000000'}, {'denom': 'caba4ebd3', 'amount': '1000000000000000000'}, {'denom': 'cada4c73e', 'amount': '1000000000000000000'}, {'denom': 'cafd8acb5', 'amount': '1000000000000000000'}, {'denom': 'ceth', 'amount': '40'}, {'denom': 'rowan', 'amount': '1800000000000000000'}]
+INFO     root:test_liquidity_pools.py:475 ca3fe3328 balance after request shoiuld be back=3000000000000000000
+INFO     root:test_liquidity_pools.py:476 ceth  balance=100
+INFO     root:test_liquidity_pools.py:477 rowan  balance=899999999999600000
+INFO     root:test_liquidity_pools.py:478 [{'denom': 'ca038e3e3', 'amount': '1000000000000000000'}, {'denom': 'ca0629012', 'amount': '1000000000000000000'}, {'denom': 'ca1b683cd', 'amount': '1000000000000000000'}, {'denom': 'ca55dd2b0', 'amount': '1000000000000000000'}, {'denom': 'caa0eb148', 'amount': '1000000000000000000'}, {'denom': 'cab5258b2', 'amount': '1000000000000000000'}, {'denom': 'caba4ebd3', 'amount': '1000000000000000000'}, {'denom': 'cada4c73e', 'amount': '1000000000000000000'}, {'denom': 'cafd8acb5', 'amount': '1000000000000000000'}, {'denom': 'ceth', 'amount': '40'}, {'denom': 'rowan', 'amount': '1800000000000000000'}]
