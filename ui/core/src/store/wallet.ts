@@ -18,7 +18,6 @@ export type WalletStore = {
 
 export const wallet = reactive<WalletStore>({
   eth: {
-    chainId: "",
     isConnected: false,
     address: "",
     balances: [],

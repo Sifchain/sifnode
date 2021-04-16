@@ -36,7 +36,6 @@ const initState = {
   accounts: [],
   balances: [],
   address: "",
-  chainId: "",
   log: "unset",
 };
 
