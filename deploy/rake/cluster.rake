@@ -1070,9 +1070,14 @@ metadata:
         pem_file_lines = pem_file.split("\\n")
         string_concat = ""
         pem_file_lines.each do |v|
-            string_concat += v + "\n"
+            if v.include?("TENDERMINT")
+                string_concat += v
+            else
+                string_concat += v + "\n"
+            end
         end
         File.open("tmp_keyring_rendered", 'w') { |file| file.write(string_concat) }
+        cat = `tmp_keyring_rendered`
         keyring_import=`yes "#{args[:passphrase]}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file`
         FileUtils.rm_rf("tmp_keyring_rendered")
     end
