@@ -17,6 +17,11 @@ const REWARD_INFO = {
     description:
       "Earn additional rewards by providing liquidity to any of Sifchain's pools.",
   },
+  vs: {
+    label: "Validator Subsidy",
+    description:
+      "Earn additional rewards by staking a node or delegating to a staked node.",
+  },
 };
 
 async function getRewardsData(address: ComputedRef<any>) {
@@ -25,7 +30,10 @@ async function getRewardsData(address: ComputedRef<any>) {
     `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
   );
   if (data.status !== 200)
-    return [{ type: "lm", multiplier: 0, start: "", amount: null }];
+    return [
+      { type: "lm", multiplier: 0, start: "", amount: null },
+      { type: "vs", multiplier: 0, start: "", amount: null },
+    ];
   return await data.json();
 }
 
