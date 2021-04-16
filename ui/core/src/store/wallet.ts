@@ -4,7 +4,7 @@ import { Address, IAssetAmount } from "../entities";
 
 export type WalletStore = {
   eth: {
-    chainId?: string; // 0x1 is mainnet
+    chainId?: string;
     balances: IAssetAmount[];
     isConnected: boolean;
     address: Address;
@@ -18,6 +18,7 @@ export type WalletStore = {
 
 export const wallet = reactive<WalletStore>({
   eth: {
+    chainId: "",
     isConnected: false,
     address: "",
     balances: [],
