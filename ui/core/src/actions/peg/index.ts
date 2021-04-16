@@ -140,7 +140,7 @@ export default ({
       );
     },
 
-    async peg(assetAmount: IAssetAmount) {
+    async peg(assetAmount: IAssetAmount): Promise<TransactionStatus> {
       if (
         assetAmount.asset.network === Network.ETHEREUM &&
         !isSupportedEVMChain(store.wallet.eth.chainId)
@@ -151,7 +151,10 @@ export default ({
             message: "EVM Network not supported!",
           },
         });
-        return;
+        return {
+          hash: "",
+          state: "failed",
+        };
       }
 
       const subscribeToTx = SubscribeToTx(ctx);
