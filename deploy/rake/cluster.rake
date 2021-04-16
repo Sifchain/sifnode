@@ -1076,8 +1076,11 @@ metadata:
                 string_concat += v + "\n"
             end
         end
+        puts string_concat
+        puts "render file"
         File.open("tmp_keyring_rendered", 'w') { |file| file.write(string_concat) }
-        cat = `tmp_keyring_rendered`
+        puts "cat file"
+        cat_file = `cat tmp_keyring_rendered`
         keyring_import=`yes "#{args[:passphrase]}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file`
         FileUtils.rm_rf("tmp_keyring_rendered")
     end
