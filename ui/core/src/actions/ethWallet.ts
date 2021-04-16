@@ -20,6 +20,10 @@ export default ({
     });
   });
 
+  api.EthereumService.onChainIdDetected((chainId) => {
+    store.wallet.eth.chainId = chainId;
+  });
+
   const etheriumState = api.EthereumService.getState();
 
   const actions = {
