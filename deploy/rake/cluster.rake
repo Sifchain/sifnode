@@ -1066,9 +1066,13 @@ metadata:
     desc "Import Key Ring"
     task :import_keyring, [:moniker, :passphrase, :pem] do |t, args|
         require 'fileutils'
-        File.open("tmp_keyring_rendered", 'w') { |file| file.write("#{args[:pem]}") }
-        cat_file = `cat tmp_keyring_rendered`
-        puts "#{args[:passphrase]}"
+        pem_file = "#{args[:pem]}"
+        pem_file_lines = pem_file.split("\\n")
+        string_concat = ""
+        pem_file_lines.each do |v|
+            string_concat += v + "\n"
+        end
+        File.open("tmp_keyring_rendered", 'w') { |file| file.write(string_concat) }
         keyring_import=`yes "#{args[:passphrase]}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file`
         FileUtils.rm_rf("tmp_keyring_rendered")
     end
