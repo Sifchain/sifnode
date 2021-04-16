@@ -17,8 +17,11 @@ echo "race draft rival universe maid cheese steel logic crowd fork comic easy tr
 echo "Generating deterministic account - akasha"
 echo "hand inmate canvas head lunar naive increase recycle dog ecology inhale december wide bubble hockey dice worth gravity ketchup feed balance parent secret orchard" | sifnodecli keys add akasha --recover
 
+
+sifnodecli keys add mkey --multisig sif,akasha --multisig-threshold 2
 sifnoded add-genesis-account $(sifnodecli keys show sif -a) 500000000000000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000stake,500000000000000000000000cdash,500000000000000000000000clink
 sifnoded add-genesis-account $(sifnodecli keys show akasha -a) 500000000000000000000000rowan,500000000000000000000000catk,500000000000000000000000cbtk,500000000000000000000000ceth,990000000000000000000000000stake,500000000000000000000000cdash,500000000000000000000000clink
+sifnoded add-genesis-account $(sifnodecli keys show mkey -a) 500000000000000000000000rowan
 
 sifnoded add-genesis-clp-admin $(sifnodecli keys show sif -a)
 sifnoded add-genesis-clp-admin $(sifnodecli keys show akasha -a)
@@ -35,10 +38,10 @@ sifnoded validate-genesis
 
 
 mkdir -p $DAEMON_HOME/cosmovisor/genesis/bin
-mkdir -p $DAEMON_HOME/cosmovisor/upgrades/changePoolFormula/bin
+mkdir -p $DAEMON_HOME/cosmovisor/upgrades/release-20210414000000/bin
 
 cp $GOPATH/bin/old/sifnoded $DAEMON_HOME/cosmovisor/genesis/bin
-cp $GOPATH/bin/sifnoded $DAEMON_HOME/cosmovisor/upgrades/changePoolFormula/bin/
+cp $GOPATH/bin/new/sifnoded $DAEMON_HOME/cosmovisor/upgrades/release-20210414000000/bin/
 
 
 #contents="$(jq '.gov.voting_params.voting_period = 10' $DAEMON_HOME/config/genesis.json)" && \

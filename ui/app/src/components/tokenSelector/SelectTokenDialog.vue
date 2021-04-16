@@ -67,6 +67,7 @@ export default defineComponent({
       <p>No tokens available.</p>
     </div>
     <button
+      :data-handle="token.symbol + '-select-button'"
       class="option"
       v-for="token in tokens"
       :disabled="token.disabled"

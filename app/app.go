@@ -95,6 +95,7 @@ var (
 
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
+		dispensation.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -104,6 +105,7 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
 		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
+		dispensation.ModuleName:        {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -146,8 +148,9 @@ type SifchainApp struct {
 	DistrKeeper    distrkeeper.Keeper
 	EvidenceKeeper evidencekeeper.Keeper
 
-	ClpKeeper    clpkeeper.Keeper
-	OracleKeeper oraclekeeper.Keeper
+	ClpKeeper          clpkeeper.Keeper
+	OracleKeeper       oraclekeeper.Keeper
+	DispensationKeeper dispensation.Keeper
 
 	mm *module.Manager
 	sm *module.SimulationManager
@@ -182,6 +185,7 @@ func NewSifApp(
 		// ethbridge.StoreKey,
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
+		dispensation.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -239,13 +243,18 @@ func NewSifApp(
 		oracletypes.DefaultConsensusNeeded,
 	)
 
+	app.DispensationKeeper = dispensation.NewKeeper(
+		app.Cdc,
+		keys[dispensation.StoreKey],
+		app.BankKeeper,
+		app.AuthKeeper,
+	)
+
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
 	// will be skipped even if we have a update proposal for it
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, DefaultNodeHome)
-
-	app.UpgradeKeeper.SetUpgradeHandler("release-20210401000000", func(ctx sdk.Context, plan upgradetypes.Plan) {})
 
 	govRouter := govtypes.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
@@ -287,6 +296,7 @@ func NewSifApp(
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
+		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AuthKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -318,6 +328,7 @@ func NewSifApp(
 
 		clptypes.ModuleName,
 		oracletypes.ModuleName,
+		dispensation.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
