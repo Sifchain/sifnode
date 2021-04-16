@@ -1118,7 +1118,7 @@ echo "vote_id $vote_id" }
 
         puts "Looking for the Release Handler"
         release_search = "release-#{args[:release_version]}"
-        setupHandlers = File.read("setupHandlers.go").strip
+        setupHandlers = File.read("app/setupHandlers.go").strip
         setupHandlers.include?(release_search) ? (puts 'Found') : (exit 1)
 
         puts "Calculating Upgrade Block Height"
