@@ -2,6 +2,7 @@ import { effect } from "@vue/reactivity";
 import { ActionContext } from "..";
 import { Asset, IAsset } from "../entities";
 import B from "../entities/utils/B";
+import { isSupportedEVMChain } from "./utils";
 
 export default ({
   api,
@@ -28,14 +29,7 @@ export default ({
 
   const actions = {
     isSupportedNetwork() {
-      // List of supported EVM chainIds
-      const supportedEVMChainIds = [
-        "0x1", // 1 Mainnet
-        "0x3", // 3 Ropsten
-        "0x539", // 1337 Ganache/Hardhat
-      ];
-
-      return supportedEVMChainIds.includes(store.wallet.eth.chainId ?? "");
+      return isSupportedEVMChain(store.wallet.eth.chainId);
     },
 
     async disconnectWallet() {
