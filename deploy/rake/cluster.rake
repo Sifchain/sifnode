@@ -1067,7 +1067,7 @@ metadata:
     task :import_keyring, [:moniker, :passphrase] do |t, args|
         require 'fileutils'
         File.open("tmp_keyring_rendered", 'w') { |file| file.write(ENV["keyring_pem"]) }
-        keyring_import=`yes "${#{args[:passphrase]}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file`
+        keyring_import=`yes "#{args[:passphrase]}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file`
         FileUtils.rm_rf("tmp_keyring_rendered")
     end
   end
