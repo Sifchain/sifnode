@@ -1,31 +1,31 @@
 import { Asset } from "./Asset";
-import { AssetAmount } from "./AssetAmount";
+import { IAssetAmount } from "./AssetAmount";
 
 export type Pair = ReturnType<typeof Pair>;
 
-export function Pair(a: AssetAmount, b: AssetAmount) {
-  const amounts: [AssetAmount, AssetAmount] = [a, b];
+export function Pair(a: IAssetAmount, b: IAssetAmount) {
+  const amounts: [IAssetAmount, IAssetAmount] = [a, b];
 
   return {
     amounts,
 
     otherAsset(asset: Asset) {
       const otherAsset = amounts.find(
-        (amount) => amount.asset.symbol !== asset.symbol,
+        (amount) => amount.symbol !== asset.symbol,
       );
       if (!otherAsset) throw new Error("Asset doesnt exist in pair");
-      return otherAsset.asset;
+      return otherAsset;
     },
 
     symbol() {
       return amounts
-        .map((a) => a.asset.symbol)
+        .map((a) => a.symbol)
         .sort()
         .join("_");
     },
 
     contains(...assets: Asset[]) {
-      const local = amounts.map((a) => a.asset.symbol);
+      const local = amounts.map((a) => a.symbol);
 
       const other = assets.map((a) => a.symbol);
 
@@ -35,7 +35,7 @@ export function Pair(a: AssetAmount, b: AssetAmount) {
     getAmount(asset: Asset | string) {
       const assetSymbol = typeof asset === "string" ? asset : asset.symbol;
       const found = this.amounts.find((amount) => {
-        return amount.asset.symbol === assetSymbol;
+        return amount.symbol === assetSymbol;
       });
       if (!found) throw new Error(`Asset ${assetSymbol} doesnt exist in pair`);
       return found;
