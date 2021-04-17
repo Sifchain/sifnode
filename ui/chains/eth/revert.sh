@@ -1,3 +1,4 @@
+#!/bin/bash
 . ./config.sh
 
 # replace chain data with archive if exists
