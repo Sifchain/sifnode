@@ -9,8 +9,7 @@
     "compile": "tsc --noEmit",
     "build": "tsc --noEmit && tsc -p ./tsconfig.compile.json",
     "watch": "tsc -p ./tsconfig.compile.json -w",
-    "test": "jest --coverage --runInBand",
-    "prepare": "npm run build"
+    "test": "jest --coverage --runInBand"
   },
   "files": [
     "lib/**/*"
@@ -45,19 +44,31 @@
     "@types/big.js": "^6.0.0",
     "@types/jest": "^26.0.14",
     "@types/lodash": "^4.14.167",
+    "@types/node": "^14.14.41",
     "babel-jest": "^26.5.2",
     "concurrently": "^5.3.0",
     "jest": "^24.9.0",
     "jest-websocket-mock": "^2.2.0",
     "mock-socket": "^9.0.3",
     "tinyify": "^3.0.0",
+    "tree-kill": "^1.2.2",
     "tsify": "^5.0.2",
     "typescript": "~3.9.3"
   },
   "jest": {
-    "testMatch": [
-      "**/**.test.ts",
-      "**/tests/unit/*.js"
+    "projects": [
+      {
+        "displayName": "unit",
+        "testMatch": [
+          "<rootDir>/**/**.test.ts"
+        ]
+      },
+      {
+        "displayName": "integration",
+        "testMatch": [
+          "<rootDir>/**/**.spec.ts"
+        ]
+      }
     ],
     "testTimeout": 1000000
   }

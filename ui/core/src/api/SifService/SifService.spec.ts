@@ -3,7 +3,7 @@ import JSBI from "jsbi";
 import { AssetAmount } from "../../entities";
 import createSifService, { SifServiceContext } from ".";
 import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
-
+import { withStack } from "../../../test/stack";
 const [ROWAN, CATK, CBTK, CETH] = getTestingTokens([
   "ROWAN",
   "CATK",
@@ -99,37 +99,47 @@ describe("sifService", () => {
     expect(await sifService.setPhrase(mnemonic)).toBe(account.address);
   });
 
-  it("should get cosmos balance", async () => {
-    const sifService = createSifService(testConfig);
-    await sifService.setPhrase(mnemonic);
-    try {
-      await sifService.getBalance("");
-    } catch (error) {
-      expect(error).toEqual("Address undefined. Fail");
-    }
-    try {
-      await sifService.getBalance("asdfasdsdf");
-    } catch (error) {
-      expect(error).toEqual("Address not valid (length). Fail");
-    }
+  it(
+    "should get cosmos balance",
+    withStack(async () => {
+      const sifService = createSifService(testConfig);
+      await sifService.setPhrase(mnemonic);
+      try {
+        await sifService.getBalance("");
+      } catch (error) {
+        expect(error).toEqual("Address undefined. Fail");
+      }
+      try {
+        await sifService.getBalance("asdfasdsdf");
+      } catch (error) {
+        expect(error).toEqual("Address not valid (length). Fail");
+      }
 
-    const balances = await sifService.getBalance(account.address);
-    const balance = getBalance(balances, "rowan");
-    expect(balance?.toString()).toEqual("100000000000000000000000000000 ROWAN");
-  });
+      const balances = await sifService.getBalance(account.address);
+      const balance = getBalance(balances, "rowan");
+      expect(balance?.toString()).toEqual(
+        "100000000000000000000000000000 ROWAN",
+      );
+    }),
+  );
 
-  it("should transfer transaction", async () => {
-    const sifService = createSifService(testConfig);
+  it(
+    "should transfer transaction",
+    withStack(async () => {
+      const sifService = createSifService(testConfig);
 
-    const address = await sifService.setPhrase(mnemonic);
-    await sifService.transfer({
-      amount: JSBI.BigInt("50"),
-      asset: TOKENS.rowan,
-      recipient: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
-      memo: "",
-    });
-    const balances = await sifService.getBalance(address);
-    const balance = getBalance(balances, "rowan");
-    expect(balance?.toString()).toEqual("99999999999999999999999999950 ROWAN");
-  });
+      const address = await sifService.setPhrase(mnemonic);
+      await sifService.transfer({
+        amount: JSBI.BigInt("50"),
+        asset: TOKENS.rowan,
+        recipient: "sif1l7hypmqk2yc334vc6vmdwzp5sdefygj2ad93p5",
+        memo: "",
+      });
+      const balances = await sifService.getBalance(address);
+      const balance = getBalance(balances, "rowan");
+      expect(balance?.toString()).toEqual(
+        "99999999999999999999999999950 ROWAN",
+      );
+    }),
+  );
 });

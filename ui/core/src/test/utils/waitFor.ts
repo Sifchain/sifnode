@@ -14,7 +14,6 @@ export async function waitFor(
   for (let i = 0; i < 100; i++) {
     await sleep(1000);
     value = await getter();
-    console.log(`${value.toString()} ==? ${expected.toString()}`);
     if (value.toString() === expected.toString()) {
       return;
     }
