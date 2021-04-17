@@ -1,6 +1,8 @@
 <template>
   <div class="ask-wrapper">
-    <h3 class="title mb-10">{{ title }}</h3>
+    <h3 class="title mb-10" data-handle="confirmation-modal-title">
+      {{ title }}
+    </h3>
     <div class="ask-body">
       <slot name="body"></slot>
     </div>

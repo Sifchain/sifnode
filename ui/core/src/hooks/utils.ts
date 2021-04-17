@@ -1,28 +1,18 @@
 import { computed, Ref } from "@vue/reactivity";
-import { Asset, Token, AssetAmount, IPool, Pool } from "../entities";
+import { IAssetAmount, IPool } from "../entities";
+import { format } from "../utils/format";
 
 export function assetPriceMessage(
-  amount: AssetAmount | null,
+  amount: IAssetAmount | null,
   pair: IPool | null,
-  decimals: number = -1,
+  decimals: number,
 ) {
   if (!pair || !amount || amount.equalTo("0")) return "";
   const swapResult = pair.calcSwapResult(amount);
 
-  const assetPriceStr = [
-    swapResult
-      .divide(amount)
-      .toFixed(decimals > -1 ? decimals : amount.asset.decimals),
-    swapResult.asset.symbol.toLowerCase().includes("rowan")
-      ? swapResult.asset.symbol.toUpperCase()
-      : "c" + swapResult.asset.symbol.slice(1).toUpperCase(),
-  ].join(" ");
-
-  const formattedPerSymbol = amount.asset.symbol.toLowerCase().includes("rowan")
-    ? amount.asset.symbol.toUpperCase()
-    : "c" + amount.asset.symbol.slice(1).toUpperCase();
-
-  return `${assetPriceStr} per ${formattedPerSymbol}`;
+  return `${format(swapResult.divide(amount), {
+    mantissa: decimals,
+  })} ${swapResult.label} per ${amount.label}`;
 }
 
 export function trimZeros(amount: string) {
@@ -31,21 +21,13 @@ export function trimZeros(amount: string) {
   return tenDecimalsMax.replace(/0+$/, "").replace(/\.$/, ".0");
 }
 
-export function useBalances(balances: Ref<AssetAmount[]>) {
+export function useBalances(balances: Ref<IAssetAmount[]>) {
   return computed(() => {
-    const map = new Map<string, AssetAmount>();
+    const map = new Map<string, IAssetAmount>();
 
     for (const item of balances.value) {
       map.set(item.asset.symbol, item);
     }
     return map;
   });
-}
-
-export function buildAsset(val: string | null) {
-  return val === null ? val : Asset.get(val);
-}
-
-export function buildAssetAmount(asset: Asset | null, amount: string) {
-  return asset ? AssetAmount(asset, amount) : asset;
 }

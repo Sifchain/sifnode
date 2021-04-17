@@ -44,6 +44,7 @@ export default defineComponent({
         green: this.color === "green",
         blue: this.color === "blue",
         pink: this.color === "pink",
+        gold: this.color === "gold",
       },
     };
   },
@@ -164,6 +165,15 @@ export default defineComponent({
       }
       &::before {
         background: linear-gradient(to bottom, #f3afb7 0%, #f1a4ae 100%);
+      }
+    }
+    .icon.gold {
+      border-color: $c_gold;
+      &::after {
+        background: linear-gradient(to bottom, $c_gold 0%, #fbe59d 100%);
+      }
+      &::before {
+        background: linear-gradient(to bottom, #fbe59d 0%, $c_gold 100%);
       }
     }
   }

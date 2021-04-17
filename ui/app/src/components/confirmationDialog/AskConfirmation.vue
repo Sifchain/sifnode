@@ -27,7 +27,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="confirm-swap">
+  <div data-handle="confirm-swap-modal" class="confirm-swap">
     <h3 class="title mb-10">Confirm Swap</h3>
     <div class="info">
       <AssetItemLarge :amount="fromAmount" :symbol="fromToken" />

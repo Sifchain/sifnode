@@ -25,7 +25,7 @@ func (d ClaimStatus) String() string {
 }
 
 // DistributionRecord is created for every recipient for a distribution
-// TODO : Remove ClaimStatus from this struct and use it as prefix.
+// TODO : Add ClaimStatus to the prefixed key for records
 type DistributionRecord struct {
 	ClaimStatus                 ClaimStatus
 	DistributionName            string         `json:"distribution_name"`
@@ -56,7 +56,10 @@ func (dr DistributionRecord) Validate() bool {
 func (dr DistributionRecord) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s
 	RecipientAddress: %s
-	Coins: %s`, dr.DistributionName, dr.RecipientAddress.String(), dr.Coins.String()))
+	Coins: %s
+    ClaimStatus :%s
+    DistributionStartHeight :%d 
+    DistributionCompletedHeight :%d `, dr.DistributionName, dr.RecipientAddress.String(), dr.Coins.String(), dr.ClaimStatus.String(), dr.DistributionStartHeight, dr.DistributionCompletedHeight))
 }
 
 func (dr DistributionRecord) Add(dr2 DistributionRecord) DistributionRecord {
@@ -96,5 +99,5 @@ func (ar Distribution) Validate() bool {
 }
 
 func (ar Distribution) String() string {
-	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s DistributionType :%s`, ar.DistributionName, ar.DistributionType))
+	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s DistributionType :%s`, ar.DistributionName, ar.DistributionType.String()))
 }
