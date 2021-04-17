@@ -1,3 +1,4 @@
+#!/bin/bash
 . ./config.sh
 . ../credentials.sh
 

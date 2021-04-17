@@ -1,4 +1,4 @@
-
+#!/bin/bash
 
 parallelizr() {
   for cmd in "$@"; do {
