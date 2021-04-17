@@ -12,7 +12,7 @@ then
     exit
 fi
 
-killall sifnoded sifnodecli ganache-cli
+killall sifnoded sifnodecli ebrelayer ganache-cli
 
 #!/bin/bash
 

@@ -1,5 +1,6 @@
+. ./config.sh
 . ../credentials.sh
 
-rm -rf $BASE_DIR/relayerdb
+rm -rf $db_loc
 
 ./start.sh
