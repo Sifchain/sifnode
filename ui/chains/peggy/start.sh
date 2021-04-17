@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script should be run with a CWD that is the local folder
-. $PWD/../credentials.sh
+. ../credentials.sh
 
 if [[ -f "$PWD/../../../smart-contracts/.env" ]]; then
   . $PWD/../../../smart-contracts/.env

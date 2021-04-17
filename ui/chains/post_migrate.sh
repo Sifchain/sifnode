@@ -2,7 +2,7 @@
 
 BASE_DIR=$PWD/../..
 
-. $BASE_DIR/ui/chains/credentials.sh
+. $PWD/../../ui/chains/credentials.sh
 
 if [[ -f "$BASE_DIR/smart-contracts/.env" ]]; then
   . $BASE_DIR/smart-contracts/.env
