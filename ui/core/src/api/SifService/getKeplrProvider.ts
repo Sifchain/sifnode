@@ -52,6 +52,10 @@ export default async function getKeplrProvider(): Promise<provider | null> {
   const win = window as WindowWithPossibleKeplr;
 
   if (!win) return null;
+  console.log({
+    "win.keplr": win.keplr,
+    "win.getOfflineSigner": win.getOfflineSigner,
+  });
 
   if (!win.keplr || !win.getOfflineSigner) {
     numChecks++;

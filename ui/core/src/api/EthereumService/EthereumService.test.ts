@@ -5,7 +5,6 @@ import { getWeb3Provider } from "../../test/utils/getWeb3Provider";
 import { Asset } from "../../entities";
 import JSBI from "jsbi";
 import { getBalance, getTestingTokens } from "../../test/utils/getTestingToken";
-import { restartStack } from "../../../test/stack";
 
 // ^ NOTE: we have had issues where truffle deploys contracts that cost a different amount of gas in CI versus locally.
 // These test have been altered to be less deterministic as a consequence
@@ -15,14 +14,6 @@ describe("EthereumService", () => {
   let ATK: Asset;
   let BTK: Asset;
   let ETH: Asset;
-
-  let kill: () => Promise<any>;
-  beforeAll(async () => {
-    kill = await restartStack();
-  });
-  afterAll(async () => {
-    await kill();
-  });
 
   beforeEach(async () => {
     [ATK, BTK, ETH] = getTestingTokens(["ATK", "BTK", "ETH"]);
