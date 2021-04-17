@@ -1,8 +1,5 @@
 . ./config.sh
 
-# pause sifnode
-./pause.sh
-
 # replace chain data with archive if exists
 if [[ -f "$snapshot_loc" ]]; then
   rm -rf $db_loc

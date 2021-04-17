@@ -169,7 +169,7 @@ export default function createFooService(context: FooServiceContext) {
 
 To test our blockchain backed apps we use ganache-cli and truffle to create a local etherium chain that is migrated to contain a couple of fake tokens.
 
-You can find the token contracts [here](../chains/ethereum/contracts).
+You can find the token contracts [here](../chains/eth/contracts).
 
 Our API setup asks for getters to supply environment information. It may make sense to convert this to a function that returns a config object we inject everywhere.
 
