@@ -122,7 +122,6 @@ namespace :cluster do
     end
   end
 
-
   desc "ebrelayer Operations"
   namespace :ebrelayer do
     desc "Deploy a new ebrelayer to an existing cluster"
@@ -146,505 +145,34 @@ namespace :cluster do
     end
   end
 
+  desc "Vault ebrelayer Operations"
+  namespace :vault do
+    desc "Deploy a new ebrelayer to an existing cluster"
+    task :deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
+      cluster_automation = %Q{
+        set +x
+        helm upgrade #{args[:app_name]} deploy/helm/#{args[:app_name]} \
+            --install -n #{args[:app_namespace]} \
+            --create-namespace \
+            --set image.repository=#{args[:image]} \
+            --set image.tag=#{args[:image_tag]} \
+            --kubeconfig=./kubeconfig
+
+        kubectl rollout status \
+            --kubeconfig=./kubeconfig deployment/#{args[:app_name]} \
+            -n #{args[:app_namespace]}
+
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+  #======================================= PIPELINE AUTOMATION RUBY CONVERSIONS =============================================#
   desc "Vault Login"
   namespace :vault do
     desc "Ensure vault-0 pod has been successfully logged into with token. "
     task :login, [] do |t, args|
-      cluster_automation = %Q{
-        set +x
-        kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
-        echo "Vault Ready"
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
-  desc "Install Cert-Manager If Not Exists"
-  namespace :certmanager do
-    desc "Install Cert-Manager Into Kubernetes"
-    task :install, [] do |t, args|
-      cluster_automation = %Q{
-#!/usr/bin/env bash
-set +x
-
-echo "===================STAGE INIT - GLOBAL REQUIREMENT CHECKS==================="
-check_created=`kubectl get namespaces --kubeconfig=./kubeconfig | grep cert-manager`
-[ -z "$check_created" ] && kubectl create namespace --kubeconfig=./kubeconfig cert-manager || echo "Namespace Exists"
-
-echo "===================STAGE 2 - SETUP & UPDATE HELM==================="
-check_created=`helm repo list --kubeconfig=./kubeconfig | grep jetstack`
-[ -z "$check_created" ] && helm repo add jetstack https://charts.jetstack.io --kubeconfig=./kubeconfig && helm repo update --kubeconfig=./kubeconfig || echo "Helm Repo Already Added For Cert-Manager"
-
-echo "===================STAGE 3 - INSTALL CERT MANAGER==================="
-echo "Install Cert Manager"
-check_installed=`kubectl get deployment -n cert-manager --kubeconfig=./kubeconfig | grep cert-manager`
-[ -z "$check_installed" ] && helm install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.2.0 --kubeconfig=./kubeconfig --set installCRDs=true || echo "CERT-MANAGER already seems to be installed."
-
-echo "===================STAGE 4 - CHECK CERT-MANAGER ROLLOUT STATUS ==================="
-echo "Use KUBECTL roll out to check status"
-kubectl rollout status deployment/cert-manager -n cert-manager  --kubeconfig=./kubeconfig
-
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
-  desc "Install Vault If Not Exists"
-  namespace :vault do
-    desc "Install Vault into Kubernetes Env Configured"
-    task :install, [:env, :region, :path, :kmskey, :aws_role] do |t, args|
-      cluster_automation = %Q{
-#!/usr/bin/env bash
-set +x
-
-echo "===================STAGE INIT - GLOBAL REQUIREMENT CHECKS==================="
-APP_NAME=vault
-APP_NAMESPACE=vault
-POD=vault-0
-SERVICE=vault-internal
-export CSR_NAME=vault-csr
-NAMESPACE=${APP_NAMESPACE}
-SECRET_NAME=${APP_NAME}-${POD}-tls
-TMPDIR=/tmp
-
-echo "ENSURE NAMESPACE EXISTS"
-check_secret=`kubectl get namespaces --kubeconfig=./kubeconfig | grep vault | grep -v grep`
-[ -z "$check_secret" ] && kubectl create namespace --kubeconfig=./kubeconfig vault || echo "Namespace Exists"
-
-echo "Check to see if VAULT AWS SECRET EXISTS IF NOT CREATE."
-check_created=`kubectl get secret -n vault --kubeconfig=./kubeconfig | grep vault-eks-creds`
-[ -z "$check_created" ] && kubectl create secret generic --kubeconfig=./kubeconfig vault-eks-creds --from-literal=AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" --from-literal=AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" -n vault || echo "Vault EKS Secret Already Created"
-
-echo "===================STAGE 1 - GENERATE CA AND TLS KEY AND CERT==================="
-openssl genrsa -out ${TMPDIR}/vault.key 2048
-
-cat <<EOF >${TMPDIR}/csr.conf
-[req]
-req_extensions = v3_req
-distinguished_name = req_distinguished_name
-[req_distinguished_name]
-[ v3_req ]
-basicConstraints = CA:FALSE
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-extendedKeyUsage = serverAuth
-subjectAltName = @alt_names
-[alt_names]
-DNS.1 = ${SERVICE}
-DNS.2 = ${SERVICE}.${NAMESPACE}
-DNS.3 = ${SERVICE}.${NAMESPACE}.svc
-DNS.4 = ${SERVICE}.${NAMESPACE}.svc.cluster.local
-
-DNS.5 = vault-0.${SERVICE}
-DNS.6 = vault-0.${SERVICE}.${NAMESPACE}
-DNS.7 = vault-0.${SERVICE}.${NAMESPACE}.svc
-DNS.8 = vault-0.${SERVICE}.${NAMESPACE}.svc.cluster.local
-
-DNS.9 = vault-1.${SERVICE}
-DNS.10 = vault-1.${SERVICE}.${NAMESPACE}
-DNS.11 = vault-1.${SERVICE}.${NAMESPACE}.svc
-DNS.12 = vault-1.${SERVICE}.${NAMESPACE}.svc.cluster.local
-
-DNS.13 = vault-2.${SERVICE}
-DNS.14 = vault-2.${SERVICE}.${NAMESPACE}
-DNS.15 = vault-2.${SERVICE}.${NAMESPACE}.svc
-DNS.16 = vault-2.${SERVICE}.${NAMESPACE}.svc.cluster.local
-
-IP.1 = 127.0.0.1
-EOF
-
-openssl req -new -key ${TMPDIR}/vault.key -subj "/CN=${SERVICE}.${NAMESPACE}.svc" -config ${TMPDIR}/csr.conf -out ${TMPDIR}/server.csr
-
-cat <<EOF >${TMPDIR}/csr.yaml
-apiVersion: certificates.k8s.io/v1beta1
-kind: CertificateSigningRequest
-metadata:
-  name: ${CSR_NAME}
-  namespace: ${NAMESPACE}
-spec:
-  groups:
-  - system:authenticated
-  request: $(cat ${TMPDIR}/server.csr | base64 | tr -d '\\n')
-  usages:
-  - digital signature
-  - key encipherment
-  - server auth
-EOF
-
-kubectl apply --kubeconfig=./kubeconfig -f ${TMPDIR}/csr.yaml
-
-kubectl certificate approve --kubeconfig=./kubeconfig ${CSR_NAME}
-
-serverCert=$(kubectl get csr --kubeconfig=./kubeconfig ${CSR_NAME} -o jsonpath='{.status.certificate}')
-
-echo "${serverCert}" | openssl base64 -d -A -out ${TMPDIR}/vault.crt
-
-kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > ${TMPDIR}/vault.ca
-
-vault_ca_base64=$(kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}')
-
-kubectl create secret generic --kubeconfig=./kubeconfig ${SECRET_NAME} \
-        --namespace ${NAMESPACE} \
-        --from-file=vault.key=${TMPDIR}/vault.key \
-        --from-file=vault.crt=${TMPDIR}/vault.crt \
-        --from-file=vault.ca=${TMPDIR}/vault.ca \
-        --from-file=vault.ca.key=${TMPDIR}/vault.key
-
-echo "Clean up files"
-rm -rf ${TMPDIR}/csr.conf
-rm -rf ${TMPDIR}/csr.yaml
-rm -rf ${TMPDIR}/vault.ca
-rm -rf ${TMPDIR}/vault.key
-rm -rf ${TMPDIR}/vault.crt
-rm -rf ${TMPDIR}/vault.key
-
-echo "===================STAGE 2 - SETUP and UPDATE VAULT REPO ==================="
-check_created=`helm repo list --kubeconfig=./kubeconfig | grep hashicorp`
-[ -z "$check_created" ] && helm repo add hashicorp https://helm.releases.hashicorp.com --kubeconfig=./kubeconfig && helm repo update --kubeconfig=./kubeconfig || echo "Helm Repo Already Added For Cert-Manager"
-
-cat << EOF > helmvaulereplace.py
-#!/usr/bin/env python
-vaules_yaml = open("#{args[:path]}override-values.yaml", "r").read()
-vaules_yaml = vaules_yaml.replace("-=region=-", "#{args[:region]}" )
-vaules_yaml = vaules_yaml.replace("-=kmskey=-", "#{args[:kmskey]}" )
-vaules_yaml = vaules_yaml.replace("-=role_arn=-", "#{args[:aws_role]}" )
-open("#{args[:path]}override-values.yaml", "w").write(vaules_yaml)
-EOF
-python helmvaulereplace.py
-
-echo "===================STAGE 3 - INSTALL VAULT ==================="
-check_deployment=`kubectl get statefulsets --kubeconfig=./kubeconfig -n vault | grep vault`
-[ -z "$check_deployment" ] && helm install vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig || helm upgrade vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig
-
-echo "sleep for 2 min to let vault start up"
-sleep 180
-
-check_deployment=`kubectl get pod --kubeconfig=./kubeconfig -n vault | grep vault`
-[ -z "$check_deployment" ] && echo "Something Went Wrong" || echo "Vault Deployed ${check_deployment}"
-
-vault_init_output=`kubectl exec --kubeconfig=./kubeconfig -n vault vault-0 -- vault operator init -n 1 -t 1`
-echo "sleep for 30 seconds to let vault init."
-sleep 30
-
-echo -e ${vault_init_output} > vault_output
-export VAULT_TOKEN=$(echo $vault_init_output | cut -d ':' -f 7 | cut -d ' ' -f 2)
-
-vault_output_wordcount=$(cat vault_output | wc | sed -e 's/ //g')
-
-echo "vault output word count ${vault_output_wordcount}"
-
-if [ "${vault_output_wordcount}" -ge "200" ]; then
-    aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2
-fi
-
-kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null
-
-echo "create kv v2 engine"
-kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault secrets enable kv-v2
-
-echo "create test secret"
-kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv put kv-v2/staging/test username=test123 password=foobar123
-
-echo "validate secret made it in vault."
-get_secrets=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv get kv-v2/staging/test | grep "test123"`
-[ -z "$get_secrets" ] && echo "not present ${get_secrets}" && exit 1 || echo "Secre Present"
-
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
-  desc "Vault Create Policy"
-  namespace :vault do
-    desc "Create vault policy for application to read secrets."
-    task :createpolicy, [:region, :app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
-      cluster_automation = %Q{
-        set +x
-        echo "
-path \\"#{args[:region]}/#{args[:env]}/#{args[:app_name]}\\" {
-    capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
-}
-path \\"#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*\\" {
-    capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
-}
-path \\"/#{args[:region]}/#{args[:env]}/#{args[:app_name]}\\" {
-    capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
-}
-path \\"/#{args[:region]}/#{args[:env]}/#{args[:app_name]}/*\\" {
-    capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
-}
-path \\"*\\" {
-    capabilities = [\\"create\\", \\"read\\", \\"update\\", \\"delete\\", \\"list\\"]
-}
-path \\"sys/internal/counters/activity\\" {
-  capabilities = [\\"read\\"]
-}
-path \\"sys/internal/counters/config\\" {
-  capabilities = [\\"read\\", \\"update\\"]
-}
-path \\"sys/namespaces\\" {
-  capabilities = [\\"list\\", \\"read\\", \\"update\\"]
-}
-path \\"sys/internal/ui/namespaces\\" {
-  capabilities = [\\"read\\", \\"list\\", \\"update\\", \\"sudo\\"]
-}
-path \\"sys/internal/ui/mounts\\" {
-  capabilities = [\\"read\\", \\"sudo\\"]
-}
-path \\"+/sys/internal/counters/config\\" {
-  capabilities = [\\"read\\", \\"update\\"]
-}
-path \\"+/sys/internal/counters/activity\\" {
-  capabilities = [\\"read\\"]
-}
-        " > #{args[:app_name]}-policy.hcl
-        kubectl cp --kubeconfig=./kubeconfig #{args[:app_name]}-policy.hcl vault-0:/home/vault/#{args[:app_name]}-policy.hcl -n vault
-        kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault policy delete #{args[:app_name]}
-        kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault policy write #{args[:app_name]} /home/vault/#{args[:app_name]}-policy.hcl
-        kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write sys/internal/counters/config enabled=enable
-        rm -rf #{args[:app_name]}-policy.hcl
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
-  desc "Vault Enable Kubernetes"
-  namespace :vault do
-    desc "Enable Application and Vault to Talk to Kubernetes."
-    task :enablekubernetes, [] do |t, args|
-      cluster_automation = %Q{
-        set +x
-        echo "APPLY VAULT AUTH ENABLE KUBERNETES"
-        check_installed=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth list | grep kubernetes`
-        [ -z "$check_installed" ] && kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth enable kubernetes || echo "Kubernetes Already Enabled"
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
-  desc "Generate tmp_secrets file with vault secrest to source and remove in your automations."
-  namespace :vault do
-    desc "Generate tmp_secrets file with vault secrest to source and remove in your automations."
-    task :generate_vault_tmp_var_source_file, [:path] do |t, args|
-      cluster_automation = %Q{
-#!/usr/bin/env bash
-set +x
-cat << EOF > pyscript.py
-#!/usr/bin/env python
-import json
-import urllib3
-http = urllib3.PoolManager()
-import subprocess
-print("Starting to Pull Secrets")
-result = subprocess.Popen(["kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv get -format json #{args[:path]}"], stdout=subprocess.PIPE, shell=True)
-output,error = result.communicate()
-vars_return = json.loads(output.decode('utf-8'))["data"]["data"]
-print("Opening temporary secrets file for writing secrets")
-temp_secrets = open("tmp_secrets", "w")
-for var in vars_return:
-    temp_secrets.write('export {key}=\\'{values}\\' \\n'.format(key=var, values=vars_return[var]))
-temp_secrets.close()
-print("secrets written.")
-EOF
-python pyscript.py
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
-  desc "Vault Configure Kubernetes for Application"
-  namespace :vault do
-    desc "Setup Service Account, and Vault Security Connections for Application."
-    task :configureapplication, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
-      cluster_automation = %Q{
-        set +x
-        echo "
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: #{args[:app_name]}
-  namespace: #{args[:app_namespace]}
-  labels:
-    app: #{args[:app_name]} " > service_account.yaml
-        kubectl delete --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}
-        kubectl create --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}
-        token=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- cat /var/run/secrets/kubernetes.io/serviceaccount/token`
-        kubernetes_cluster_ip=`kubectl exec --kubeconfig=./kubeconfig -it vault-0 -n vault -- printenv | grep KUBERNETES_PORT_443_TCP_ADDR | cut -d '=' -f 2 | tr -d '\n' | tr -d '\r'`
-        kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write auth/kubernetes/config token_reviewer_jwt="$token" kubernetes_host="https://$kubernetes_cluster_ip:443" kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write auth/kubernetes/role/#{args[:app_name]} bound_service_account_names=#{args[:app_name]} bound_service_account_namespaces=#{args[:app_namespace]} policies=#{args[:app_name]} ttl=1h
-        rm -rf service_account.yaml
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
-  desc "Check ebrelayer logs for service running serach string basically use logs to ensure events are processed."
-  namespace :ebrelayer do
-    desc "Check ebrelayer logs for service running serach string basically use logs to ensure events are processed."
-    task :check_deployment, [:app_name, :app_namespace, :search_string] do |t, args|
-      cluster_automation = %Q{
-#!/usr/bin/env bash
-set +x
-APP_NAMESPACE=#{args[:app_namespace]}
-APP_NAME=#{args[:app_name]}
-echo "get pod name"
-pod_name=$(kubectl get pods --kubeconfig=./kubeconfig -n ${APP_NAMESPACE} | grep ${APP_NAME} | cut -d ' ' -f 1 | sed -e 's/ //g')
-echo "POD NAME ${pod_name}"
-echo "see if there is log output for the pod"
-logs_check=$(kubectl logs --kubeconfig=./kubeconfig -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep '#{args[:search_string]}')
-
-echo "set the max check loop and current count"
-max_check=50
-check_count=0
-
-echo "check if the logs output was empty"
-if [ -z "${logs_check}" ]; then
-    while true; do
-        if [ "${max_check}" == "${check_count}" ]; then
-            echo "max count reached"
-            break
-        fi
-        echo "get pod name"
-        pod_name=$(kubectl get pods --kubeconfig=./kubeconfig -n ${APP_NAMESPACE} | grep ${APP_NAME} | cut -d ' ' -f 1 | sed -e 's/ //g')
-        echo "POD NAME ${pod_name}"
-        echo "see if there is log output for the pod"
-        logs_check_loop=$(kubectl logs --kubeconfig=./kubeconfig -n ${APP_NAME} ${pod_name} -c ${APP_NAME} | grep '#{args[:search_string]}')
-        echo "see if log check had data meaning search string found"
-        if [ -z "${logs_check_loop}" ]; then
-            echo "sleep and wait for logs"
-            sleep 5
-        else
-            echo "service successfully started."
-            break
-        fi
-        check_count=$((check_count+1))
-        echo "${check_count} of ${max_check}"
-    done
-else
-    echo "service successfully started."
-fi
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
-
-  desc "Wait for Release.."
-  namespace :release do
-    desc "Wait for Release."
-    task :wait_for_release, [:app_env, :release] do |t, args|
-
-      cluster_automation = %Q{
-#!/usr/bin/env bash
-set +x
-pip install requests
-
-cat << EOF > pyscript.py
-#!/usr/bin/env python
-import requests
-import time
-import sys
-import urllib3
-import os
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token " + os.environ["GITHUB_TOKEN"]}
-workflow_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows', headers=headers, verify=False)
-workflow_request_json = workflow_request.json()
-find_realease="#{args[:app_env]}-#{args[:release]}"
-print("Looking for release", find_realease)
-max_loop = 20
-loop_count = 0
-while True:
-    print("You are on attempt", loop_count, " of ", max_loop)
-    if loop_count >= max_loop:
-        sys.exit(1)
-    for workflow in workflow_request_json["workflows"]:
-        if workflow["name"] == "Release":
-            release_workflow_id = workflow["id"]
-            workflow_info_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows/{workflow_id}/runs'.format(workflow_id=release_workflow_id), headers=headers, verify=False)
-            workflow_info_request_json = workflow_info_request.json()
-            for workflow_run in workflow_info_request_json["workflow_runs"]:
-                if find_realease in workflow_run["head_branch"]:
-                    print(find_realease)
-                    print(workflow_run["head_branch"])
-                    print("Found pipeline, lets see if its done running yet.")
-                    print(workflow_run)
-                    if workflow_run["status"] == "completed" and workflow_run["conclusion"] == "success":
-                        print("Workflow run has completed good to create governance and begin release chain.")
-                        sys.exit(0)
-                    else:
-                        print("Release hasn't finished yet going to sleep and loop until max loops is reached waiting for Release pipeline to finish.")
-            print("release not found")
-            print("Sleeping for 60 seconds.")
-            loop_count += 1
-            time.sleep(60)
-EOF
-python pyscript.py
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
-  desc "Create Github Release."
-  namespace :release do
-    desc "Create Github Release."
-    task :create_release, [:release, :env, :token] do |t, args|
-
-      cluster_automation = %Q{
-#!/usr/bin/env bash
-set +x
-pip install requests
-
-cat << EOF > pyscript.py
-#!/usr/bin/env python
-import requests
-import time
-import sys
-import urllib3
-import json
-import os
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-data_payload = {
-    "tag_name": "#{args[:env]}-#{args[:release]}",
-    "name": "#{args[:env]} v#{args[:release]}",
-    "body": "Sifchain #{args[:env]} Release v#{args[:release]}",
-    "prerelease": True
-}
-print("sending payload")
-print(data_payload)
-headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
-releases_request = requests.post('https://api.github.com/repos/Sifchain/sifnode/releases',data=json.dumps(data_payload),headers=headers,verify=False)
-release_request_json = releases_request.json()
-if releases_request.status_code == 201 or releases_request.status_code == 200:
-    print("Release Published")
-    print(str(release_request_json))
-elif releases_request.status_code == 422:
-    print(releases_request.content, releases_request.status_code)
-    print("Release already exists.")
-else:
-    print(releases_request.content, releases_request.status_code)
-    sys.exit(2)
-EOF
-python pyscript.py
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
-
-  desc "Generate Test Key Ring."
-  namespace :release do
-    desc "Generate Test Key Ring."
-    task :generate_keyring, [:moniker] do |t, args|
-
-      cluster_automation = %Q{
-#!/usr/bin/env bash
-set +x
-echo -e "${keyring_pem}" > tmp_keyring
-tail -c +4 tmp_keyring > tmp_keyring_rendered
-cat tmp_keyring_rendered | wc
-rm -rf tmp_keyring
-echo "moniker #{args[:moniker]}"
-yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file
-      }
+      cluster_automation = %Q{kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login ${VAULT_TOKEN} > /dev/null}
       system(cluster_automation) or exit 1
     end
   end
@@ -678,47 +206,235 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
     end
   end
 
+  desc "Install Cert-Manager If Not Exists"
+  namespace :certmanager do
+    desc "Install Cert-Manager Into Kubernetes"
+    task :install, [] do |t, args|
 
-  desc "Update Dynamic Variables For Helm Values"
-  namespace :ebrelayer do
-    desc "Update Dynamic Variables For Helm Values"
-    task :update_helm_values, [:region, :env, :app_name, :path] do |t, args|
-      cluster_automation = %Q{
-#!/usr/bin/env bash
-set +x
-cat << EOF > helmvaulereplace.py
-#!/usr/bin/env python
-vaules_yaml = open("#{args[:path]}values.yaml", "r").read()
-vaules_yaml = vaules_yaml.replace("-=app_name=-", "#{args[:app_name]}" )
-vaules_yaml = vaules_yaml.replace("-=region=-", "#{args[:region]}" )
-vaules_yaml = vaules_yaml.replace("-=env=-", "#{args[:env]}" )
-open("#{args[:path]}/values.yaml", "w").write(vaules_yaml)
-EOF
-python helmvaulereplace.py
-      }
-      system(cluster_automation) or exit 1
+      check_namespace=`kubectl get namespaces --kubeconfig=./kubeconfig | grep cert-manager`
+      puts "check namespace #{check_namespace}"
+      if check_namespace.empty?
+            create_namespace=`kubectl create namespace --kubeconfig=./kubeconfig cert-manager`
+            puts "create namespace #{create_namespace}"
+        else
+            puts "Namespace exists"
+      end
+
+      check_helm_repo_installed = `helm repo list --kubeconfig=./kubeconfig | grep jetstack`
+      puts "check helm repo installed #{check_helm_repo_installed}"
+      if check_helm_repo_installed.empty?
+            add_helm_repo=`helm repo add jetstack https://charts.jetstack.io --kubeconfig=./kubeconfig`
+            puts "add helm repo #{add_helm_repo}"
+            helm_repo_update=`helm repo update --kubeconfig=./kubeconfig`
+            puts "helm repo update #{helm_repo_update}"
+      else
+            puts "helm repo already installed."
+      end
+
+      check_cert_manager_installed = `kubectl get deployment -n cert-manager --kubeconfig=./kubeconfig | grep cert-manager`
+      if check_helm_repo_installed.empty?
+            helm_install=`helm install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.2.0 --kubeconfig=./kubeconfig --set installCRDs=true`
+            puts "cert-manager install: #{helm_install}"
+      else
+            puts "cert-manager already installed."
+      end
+
+      rollout_status = `kubectl rollout status deployment/cert-manager -n cert-manager  --kubeconfig=./kubeconfig`
+
+      puts rollout_status
+
     end
   end
 
-  desc "Vault ebrelayer Operations"
+  desc "Install Vault If Not Exists"
   namespace :vault do
-    desc "Deploy a new ebrelayer to an existing cluster"
-    task :deploy, [:app_namespace, :image, :image_tag, :env, :app_name] do |t, args|
-      cluster_automation = %Q{
-        set +x
-        helm upgrade #{args[:app_name]} deploy/helm/#{args[:app_name]} \
-            --install -n #{args[:app_namespace]} \
-            --create-namespace \
-            --set image.repository=#{args[:image]} \
-            --set image.tag=#{args[:image_tag]} \
-            --kubeconfig=./kubeconfig
+    desc "Install Vault into Kubernetes Env Configured"
+    task :install, [:env, :region, :path, :kmskey, :aws_role] do |t, args|
+      require 'fileutils'
+      require 'net/http'
 
-        kubectl rollout status \
-            --kubeconfig=./kubeconfig deployment/#{args[:app_name]} \
-            -n #{args[:app_namespace]}
+      APP_NAME='vault'
+      APP_NAMESPACE='vault'
+      POD='vault-0'
+      SERVICE='vault-internal'
+      CSR_NAME='vault-csr'
+      NAMESPACE='vault'
+      SECRET_NAME="#{APP_NAME}-#{POD}-tls"
+      TMPDIR='/tmp'
 
-      }
-      system(cluster_automation) or exit 1
+      check_namespace=`kubectl get namespaces --kubeconfig=./kubeconfig | grep vault`
+      puts "check namespace #{check_namespace}"
+      if check_namespace.empty?
+            create_namespace=`kubectl create namespace --kubeconfig=./kubeconfig vault`
+            puts "create namespace #{create_namespace}"
+        else
+            puts "Namespace exists"
+      end
+
+      delete_secret_if_exists = `kubectl delete secret -n vault vault-eks-creds --ignore-not-found=true`
+      puts delete_secret_if_exists
+
+      create_aws_secret=`kubectl create secret generic --kubeconfig=./kubeconfig vault-eks-creds --from-literal=AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" --from-literal=AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" -n vault`
+      puts create_aws_secret
+
+      check_vault_installed = `kubectl get pods -n vault --kubeconfig=./kubeconfig | grep vault`
+      if check_vault_installed.empty?
+        generate_certificate_key=`openssl genrsa -out #{TMPDIR}/vault.key 2048`
+        puts generate_certificate_key
+        csr_config = %Q{
+[req]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[ v3_req ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = #{SERVICE}
+DNS.2 = #{SERVICE}.#{NAMESPACE}
+DNS.3 = #{SERVICE}.#{NAMESPACE}.svc
+DNS.4 = #{SERVICE}.#{NAMESPACE}.svc.cluster.local
+
+DNS.5 = vault-0.#{SERVICE}
+DNS.6 = vault-0.#{SERVICE}.#{NAMESPACE}
+DNS.7 = vault-0.#{SERVICE}.#{NAMESPACE}.svc
+DNS.8 = vault-0.#{SERVICE}.#{NAMESPACE}.svc.cluster.local
+
+DNS.9 = vault-1.#{SERVICE}
+DNS.10 = vault-1.#{SERVICE}.#{NAMESPACE}
+DNS.11 = vault-1.#{SERVICE}.#{NAMESPACE}.svc
+DNS.12 = vault-1.#{SERVICE}.#{NAMESPACE}.svc.cluster.local
+
+DNS.13 = vault-2.#{SERVICE}
+DNS.14 = vault-2.#{SERVICE}.#{NAMESPACE}
+DNS.15 = vault-2.#{SERVICE}.#{NAMESPACE}.svc
+DNS.16 = vault-2.#{SERVICE}.#{NAMESPACE}.svc.cluster.local
+
+IP.1 = 127.0.0.1
+}
+        File.open("#{TMPDIR}/csr.conf", 'w') { |file| file.write(csr_config) }
+        generate_server_csr = `openssl req -new -key #{TMPDIR}/vault.key -subj "/CN=#{SERVICE}.#{NAMESPACE}.svc" -config #{TMPDIR}/csr.conf -out #{TMPDIR}/server.csr`
+        puts generate_server_csr
+
+        certificate_request = %Q{
+apiVersion: certificates.k8s.io/v1beta1
+kind: CertificateSigningRequest
+metadata:
+  name: #{CSR_NAME}
+  namespace: #{NAMESPACE}
+spec:
+  groups:
+  - system:authenticated
+  request: $(cat #{TMPDIR}/server.csr | base64 | tr -d '\\n')
+  usages:
+  - digital signature
+  - key encipherment
+  - server auth
+}
+        File.open("#{TMPDIR}/csr.yaml", 'w') { |file| file.write(certificate_request) }
+
+        apply_certificate_signing_requests = `kubectl apply --kubeconfig=./kubeconfig -f #{TMPDIR}/csr.yaml`
+        puts apply_certificate_signing_requests
+
+        approve_certificate_signing_requets = `kubectl certificate approve --kubeconfig=./kubeconfig #{CSR_NAME}`
+        puts approve_certificate_signing_requets
+
+        retrieve_server_certificate = `kubectl get csr --kubeconfig=./kubeconfig #{CSR_NAME} -o jsonpath='{.status.certificate}') | openssl base64 -d -A -out #{TMPDIR}/vault.crt`
+        puts retrieve_server_certificate
+
+        get_vault_ca = `kubectl config view --kubeconfig=./kubeconfig --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > #{TMPDIR}/vault.ca`
+
+        cluster_automation = `kubectl create secret generic --kubeconfig=./kubeconfig #{SECRET_NAME} --namespace #{NAMESPACE} --from-file=vault.key=#{TMPDIR}/vault.key --from-file=vault.crt=#{TMPDIR}/vault.crt --from-file=vault.ca=#{TMPDIR}/vault.ca --from-file=vault.ca.key=#{TMPDIR}/vault.key`
+
+        FileUtils.rm_rf("#{TMPDIR}/csr.conf")
+        FileUtils.rm_rf("#{TMPDIR}/csr.yaml")
+        FileUtils.rm_rf("#{TMPDIR}/vault.ca")
+        FileUtils.rm_rf("#{TMPDIR}/vault.key")
+        FileUtils.rm_rf("#{TMPDIR}/vault.crt")
+        FileUtils.rm_rf("#{TMPDIR}/vault.key")
+
+        check_helm_repo_setup = `helm repo list --kubeconfig=./kubeconfig | grep hashicorp`
+        if check_helm_repo_setup.empty?
+                add_helm_repo=`helm repo add hashicorp https://helm.releases.hashicorp.com --kubeconfig=./kubeconfig`
+                puts "add helm repo #{add_helm_repo}"
+                helm_repo_update = `helm repo update --kubeconfig=./kubeconfig`
+                puts "helm repo update #{helm_repo_update}"
+        else
+                puts "Namespace exists"
+        end
+      end
+      template_file_text = File.read("#{args[:path]}override-values.yaml").strip
+      ENV.each_pair do |k, v|
+          replace_string="-=#{k}=-"
+          puts replace_string
+          if replace_string == "-=region=-"
+            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:region]}") : (puts 'env matching...')
+          elsif replace_string == "-=kmskey=-"
+            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:kmskey]}") : (puts 'env matching...')
+          elsif replace_string == "-=role_arn=-"
+            template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_role]}") : (puts 'env matching...')
+          end
+      end
+      File.open(file_name, 'w') { |file| file.write("#{args[:path]}override-values.yaml") }
+
+      check_vault_deployment_exist = `kubectl get statefulsets --kubeconfig=./kubeconfig -n vault | grep vault`
+      if check_vault_deployment_exist.empty?
+            helm_install = `helm install vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig`
+            puts "helm install #{helm_install}"
+        else
+            helm_upgrade = `helm upgrade vault hashicorp/vault --namespace vault -f #{args[:path]}override-values.yaml --kubeconfig=./kubeconfig`
+            puts "helm upgrade #{helm_upgrade}"
+      end
+
+      puts "sleep for 300 seconds to wait for vault to start."
+      sleep(300)
+
+      check_vault_pod_exist = `kubectl get pod --kubeconfig=./kubeconfig -n vault | grep vault`
+      if check_vault_pod_exist.empty?
+            puts "Something went wrong no vault pods. #{check_vault_pod_exist}"
+            exit 1
+        else
+            puts "Everything Looks Good. #{check_vault_pod_exist}"
+      end
+
+      check_vault_init = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault status | grep Initialized | grep true`
+      if check_vault_init.empty?
+          puts "vault init"
+          vault_init = `kubectl exec --kubeconfig=./kubeconfig -n vault vault-0 -- vault operator init -n 1 -t 1`
+          puts "vault init #{vault_init}"
+          vault_token = `echo -e "#{vault_init}" | cut -d ':' -f 7 | cut -d ' ' -f 2`
+          if vault_init.includ?("token")
+            upload_to_s3 = `aws s3 cp ./vault_output s3://sifchain-vault-output-backup/#{args[:env]}/#{args[:region]}/vault-master-keys.$(date  | sed -e 's/ //g').backup --region us-west-2`
+          end
+          vault_login = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault login #{vault_token} > /dev/null`
+        else
+            puts "Vaul Already Inited."
+      end
+
+      check_kv_engine_enabled=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault secrets list | grep kv-v2`
+      if check_kv_engine_enabled.empty?
+           enable_kv_enagine=`kubectl exec --kubeconfig=./kubeconfig -n vault  vault-0 -- vault secrets enable kv-v2`
+           puts "enable kv engine #{enable_kv_enagine}"
+      else
+           puts "kv engine already enabled."
+      end
+
+      create_test_secret = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv put kv-v2/staging/test username=test123 password=foobar123`
+      puts create_test_secret
+
+      puts "sleep for 30 seconds"
+      sleep(30)
+
+      get_test_secret = `kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault kv get kv-v2/staging/test | grep "test123"`
+      if get_test_secret.empty?
+           puts "Secret not found"
+           exit 1
+      else
+           puts "Secret Found Vault Running Properly"
+      end
+
     end
   end
 
@@ -763,8 +479,6 @@ python helmvaulereplace.py
         File.open("tmp_secrets", 'w') { |file| file.write(temp_secrets_string) }
     end
   end
-
-  #=======================================RUBY CONVERSIONS START=============================================#
 
   desc "CONFIGURE AWS PROFILE AND KUBECONFIG"
   namespace :automation do
@@ -1223,40 +937,6 @@ sleep 15 }
   end
 
   #=======================================RUBY CONVERSIONS END=============================================#
-
-  desc "Setup AWS Profile for Automation Pipelines"
-  namespace :automation do
-    desc "Deploy a new ebrelayer to an existing cluster"
-    task :configure_aws_kube_profile, [:app_env, :aws_access_key_id, :aws_secret_access_key, :aws_region, :aws_role, :cluster_name] do |t, args|
-      cluster_automation = %Q{
-          set +x
-          curl -s -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator
-          chmod +x ./aws-iam-authenticator
-          export PATH=$(pwd):${PATH}
-          mkdir -p ~/.aws
-
-          echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id = #{args[:aws_access_key_id]}" >> ~/.aws/credentials
-          echo "aws_secret_access_key = #{args[:aws_secret_access_key]}" >> ~/.aws/credentials
-          echo "region = #{args[:aws_region]}" >> ~/.aws/credentials
-
-          echo "[sifchain-base]" >> ~/.aws/credentials
-          echo "aws_access_key_id = #{args[:aws_access_key_id]}" >> ~/.aws/credentials
-          echo "aws_secret_access_key = #{args[:aws_secret_access_key]}" >> ~/.aws/credentials
-          echo "region = #{args[:aws_region]}" >> ~/.aws/credentials
-
-          echo "[profile #{args[:app_env]}]" > ~/.aws/config
-          echo "source_profile = sifchain-base" >> ~/.aws/config
-          echo "role_arn = #{args[:aws_role]}" >> ~/.aws/config
-          echo "color = 83000a" >> ~/.aws/config
-          echo "role_session_name = elk_stack" >> ~/.aws/config
-          echo "region = #{args[:aws_region]}" >> ~/.aws/config
-
-          aws eks update-kubeconfig --name #{args[:cluster_name]} --region #{args[:aws_region]} --profile #{args[:app_env]} --kubeconfig ./kubeconfig
-      }
-      system(cluster_automation) or exit 1
-    end
-  end
 
   desc "Block Explorer"
   namespace :blockexplorer do
