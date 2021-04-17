@@ -20,7 +20,7 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string) 
 			}
 			distributionRecord.Add(oldRecord)
 		}
-		distributionRecord.ClaimStatus = types.Pending
+		distributionRecord.DistributionStatus = types.Pending
 		err := k.SetDistributionRecord(ctx, distributionRecord)
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", distributionRecord.String())
@@ -38,13 +38,16 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 		if err != nil {
 			return errors.Wrapf(types.ErrFailedOutputs, "for address  : %s", record.RecipientAddress.String())
 		}
-		record.ClaimStatus = types.Completed
+		record.DistributionStatus = types.Completed
 		record.DistributionCompletedHeight = height
 		err = k.SetDistributionRecord(ctx, record)
 		if err != nil {
-			return errors.Wrapf(types.ErrFailedOutputs, "error setting distibution record  : %s", record.String())
+			return errors.Wrapf(types.ErrDistribution, "error setting distibution record  : %s", record.String())
 		}
 		err = k.DeleteDistributionRecord(ctx, record.DistributionName, record.RecipientAddress.String(), types.Pending) // Delete the record in the pending prefix so the iteration is cheaper.
+		if err != nil {
+			return errors.Wrapf(types.ErrDistribution, "error deleting pending distibution record  : %s", record.String())
+		}
 		ctx.Logger().Info(fmt.Sprintf("Distributed to : %s | At height : %d | Amount :%s \n", record.RecipientAddress.String(), height, record.Coins.String()))
 	}
 	return nil

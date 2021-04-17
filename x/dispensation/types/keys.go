@@ -28,7 +28,7 @@ var (
 	DistributionsPrefix               = []byte{0x02} // key for storing airdropRecords
 )
 
-func GetDistributionRecordKey(status ClaimStatus, name string, recipient string) []byte {
+func GetDistributionRecordKey(status DistributionStatus, name string, recipient string) []byte {
 	key := []byte(fmt.Sprintf("%s_%s", name, recipient))
 	switch status {
 	case Pending:

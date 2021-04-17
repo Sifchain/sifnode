@@ -28,16 +28,16 @@ This is stored in the keeper with the key DistributionType_DistributionName for 
 ```go
 package records
 
-type ClaimStatus int64
+type DistributionStatus int64
 
-const Pending ClaimStatus = 1
-const Completed ClaimStatus = 2
+const Pending DistributionStatus = 1
+const Completed DistributionStatus = 2
 
 type DistributionRecord struct {
-	ClaimStatus                 ClaimStatus    `json:"claimstatus"`
-	DistributionName            string         `json:"distribution_name"`
-	RecipientAddress            sdk.AccAddress `json:"recipient_address"`
-	Coins                       sdk.Coins      `json:"coins"`
+	DistributionStatus           DistributionStatus    `json:"distribution"`
+	DistributionName            string                  `json:"distribution_name"`
+	RecipientAddress            sdk.AccAddress          `json:"recipient_address"`
+	Coins                       sdk.Coins           `json:"coins"`
 	DistributionStartHeight     int64          `json:"distribution_start_height"`
 	DistributionCompletedHeight int64          `json:"distribution_completed_height"`
 }

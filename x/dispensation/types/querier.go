@@ -11,11 +11,11 @@ const (
 )
 
 type QueryRecordsByDistributionName struct {
-	DistributionName string      `json:"distribution_name"`
-	Status           ClaimStatus `json:"status"`
+	DistributionName string             `json:"distribution_name"`
+	Status           DistributionStatus `json:"status"`
 }
 
-func NewQueryRecordsByDistributionName(distributionName string, status ClaimStatus) QueryRecordsByDistributionName {
+func NewQueryRecordsByDistributionName(distributionName string, status DistributionStatus) QueryRecordsByDistributionName {
 	return QueryRecordsByDistributionName{DistributionName: distributionName, Status: status}
 }
 

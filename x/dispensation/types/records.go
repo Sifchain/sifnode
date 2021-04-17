@@ -8,12 +8,12 @@ import (
 
 //This package is used to keep historical data. This will later be used to distribute rewards over different blocks through a gov proposal
 
-type ClaimStatus int64
+type DistributionStatus int64
 
-const Pending ClaimStatus = 1
-const Completed ClaimStatus = 2
+const Pending DistributionStatus = 1
+const Completed DistributionStatus = 2
 
-func (d ClaimStatus) String() string {
+func (d DistributionStatus) String() string {
 	switch d {
 	case Pending:
 		return "Pending"
@@ -25,9 +25,9 @@ func (d ClaimStatus) String() string {
 }
 
 // DistributionRecord is created for every recipient for a distribution
-// TODO : Add ClaimStatus to the prefixed key for records
+// TODO : Add DistributionStatus to the prefixed key for records
 type DistributionRecord struct {
-	ClaimStatus                 ClaimStatus
+	DistributionStatus          DistributionStatus
 	DistributionName            string         `json:"distribution_name"`
 	RecipientAddress            sdk.AccAddress `json:"recipient_address"`
 	Coins                       sdk.Coins      `json:"coins"`
@@ -36,8 +36,8 @@ type DistributionRecord struct {
 }
 type DistributionRecords []DistributionRecord
 
-func NewDistributionRecord(status ClaimStatus, distributionName string, recipientAddress sdk.AccAddress, coins sdk.Coins, start int64, end int64) DistributionRecord {
-	return DistributionRecord{ClaimStatus: status, DistributionName: distributionName, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
+func NewDistributionRecord(status DistributionStatus, distributionName string, recipientAddress sdk.AccAddress, coins sdk.Coins, start int64, end int64) DistributionRecord {
+	return DistributionRecord{DistributionStatus: status, DistributionName: distributionName, RecipientAddress: recipientAddress, Coins: coins, DistributionStartHeight: start, DistributionCompletedHeight: end}
 }
 
 func (dr DistributionRecord) Validate() bool {
@@ -57,9 +57,9 @@ func (dr DistributionRecord) String() string {
 	return strings.TrimSpace(fmt.Sprintf(`DistributionName: %s
 	RecipientAddress: %s
 	Coins: %s
-    ClaimStatus :%s
+    DistributionStatus :%s
     DistributionStartHeight :%d 
-    DistributionCompletedHeight :%d `, dr.DistributionName, dr.RecipientAddress.String(), dr.Coins.String(), dr.ClaimStatus.String(), dr.DistributionStartHeight, dr.DistributionCompletedHeight))
+    DistributionCompletedHeight :%d `, dr.DistributionName, dr.RecipientAddress.String(), dr.Coins.String(), dr.DistributionStatus.String(), dr.DistributionStartHeight, dr.DistributionCompletedHeight))
 }
 
 func (dr DistributionRecord) Add(dr2 DistributionRecord) DistributionRecord {
