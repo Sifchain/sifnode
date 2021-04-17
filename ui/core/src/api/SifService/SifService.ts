@@ -230,6 +230,10 @@ export default function createSifService({
       unSignedClient.onNewBlock(handler);
     },
 
+    async getChainId() {
+      return await unSignedClient.getChainId();
+    },
+
     // Required solely for testing purposes
     async setPhrase(mnemonic: Mnemonic): Promise<Address> {
       try {

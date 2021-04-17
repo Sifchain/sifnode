@@ -21,6 +21,7 @@ import {
 } from "./utils/ethereumUtils";
 
 import { Msg } from "@cosmjs/launchpad";
+import { EventEmitter2 } from "eventemitter2";
 
 type Address = string;
 type Balances = IAssetAmount[];
@@ -40,6 +41,9 @@ const initState = {
 };
 
 // TODO: Refactor to be Module pattern with constructor function ie. `EthereumService()`
+// TODO: Refactor all blockchain services to be RxJS
+
+const PROVIDER_NOT_FOUND_EVENT = "PROVIDER_NOT_FOUND_EVENT";
 
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
@@ -47,8 +51,7 @@ export class EthereumService implements IWalletService {
   private blockSubscription: any;
   private provider: PossibleProvider | undefined;
   private providerPromise: Promise<PossibleProvider>;
-  private reportProviderNotFound = () => {};
-  private chainIdDetectedHandler = (_chainId: string) => {};
+  private emitter: EventEmitter2;
 
   // This is shared reactive state
   private state: {
@@ -66,24 +69,19 @@ export class EthereumService implements IWalletService {
     this.state = reactive({ ...initState });
     this.supportedTokens = assets.filter((t) => t.network === Network.ETHEREUM);
     this.providerPromise = getWeb3Provider();
+    this.emitter = new EventEmitter2();
     this.providerPromise
       .then((provider) => {
         // Provider not found
         if (!provider) {
           this.provider = null;
-          this.reportProviderNotFound();
+          this.emitter.emit(PROVIDER_NOT_FOUND_EVENT);
           return;
         }
 
         if (isEventEmittingProvider(provider)) {
           provider.on("chainChanged", () => window.location.reload());
           provider.on("accountsChanged", () => this.updateData());
-        }
-        // What network is the provider on
-        if (isMetaMaskInpageProvider(provider)) {
-          provider.request({ method: "eth_chainId" }).then((chainId) => {
-            this.chainIdDetectedHandler(chainId as string);
-          });
         }
 
         this.web3 = new Web3(provider as provider);
@@ -96,12 +94,17 @@ export class EthereumService implements IWalletService {
       });
   }
 
-  onChainIdDetected(handler: (chainId: string) => void) {
-    this.chainIdDetectedHandler = handler;
+  async getChainId() {
+    if (isMetaMaskInpageProvider(this.provider)) {
+      return (await this.provider?.request({
+        method: "eth_chainId",
+      })) as string;
+    }
+    return "";
   }
 
   onProviderNotFound(handler: () => void) {
-    this.reportProviderNotFound = handler;
+    this.emitter.on(PROVIDER_NOT_FOUND_EVENT, handler);
   }
 
   getState() {

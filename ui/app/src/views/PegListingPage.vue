@@ -108,7 +108,7 @@ export default defineComponent({
     const { store, actions } = useCore();
     function getIsSupportedNetwork(asset: IAsset): boolean {
       if (asset.network === "ethereum") {
-        return actions.ethWallet.isSupportedNetwork();
+        return actions.peg.isSupportedEVMNetwork();
       }
 
       if (asset.network === "sifchain") {

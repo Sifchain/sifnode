@@ -8,7 +8,6 @@ import {
   Network,
   TransactionStatus,
 } from "../../entities";
-import { isSupportedEVMChain } from "../utils";
 
 import { SubscribeToUnconfirmedPegTxs } from "./subscribeToUnconfirmedPegTxs";
 import { SubscribeToTx } from "./utils/subscribeToTx";
@@ -67,6 +66,43 @@ export default ({
   // Rename and split this up to subscriptions, commands, queries
   const actions = {
     subscribeToUnconfirmedPegTxs: SubscribeToUnconfirmedPegTxs(ctx),
+
+    isSupportedEVMNetwork() {
+      const chainId = store.wallet.eth.chainId;
+      if (!chainId) return false;
+      // List of supported EVM chainIds
+      const supportedEVMChainIds = [
+        "0x1", // 1 Mainnet
+        "0x3", // 3 Ropsten
+        "0x539", // 1337 Ganache/Hardhat
+      ];
+
+      return supportedEVMChainIds.includes(chainId);
+    },
+
+    isSupportedNetworkCombination(ethChainId: string, sifChainId: string) {
+      const ETH_MAINNET = "0x1";
+      const ETH_ROPSTEN = "0x3";
+      const ETH_LOCALNET = "0x539";
+
+      const SIF_MAINNET = "sifchain-mainnet";
+      const SIF_TESTNET = "sifchain-testnet";
+      const SIF_DEVNET = "sifchain-devnet";
+      const SIF_LOCALNET = "sifchain-local";
+
+      const allowedCombinations = [
+        `${ETH_MAINNET}:${SIF_MAINNET}`,
+        `${ETH_ROPSTEN}:${SIF_TESTNET}`,
+        `${ETH_ROPSTEN}:${SIF_DEVNET}`,
+        `${ETH_LOCALNET}:${SIF_LOCALNET}`,
+      ];
+
+      const netcom = [ethChainId, sifChainId].join(":");
+
+      const found = allowedCombinations.includes(netcom);
+
+      return found;
+    },
 
     getSifTokens() {
       return api.SifService.getSupportedTokens();
@@ -143,7 +179,7 @@ export default ({
     async peg(assetAmount: IAssetAmount): Promise<TransactionStatus> {
       if (
         assetAmount.asset.network === Network.ETHEREUM &&
-        !isSupportedEVMChain(store.wallet.eth.chainId)
+        !actions.isSupportedEVMNetwork()
       ) {
         api.EventBusService.dispatch({
           type: "ErrorEvent",

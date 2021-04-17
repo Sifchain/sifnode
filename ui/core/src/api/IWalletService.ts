@@ -10,8 +10,8 @@ export type IWalletService = {
     balances: IAssetAmount[];
     log: string;
   };
+  getChainId(): Promise<string>;
   onProviderNotFound(handler: () => void): void;
-  onChainIdDetected(handler: (chainId: string) => void): void;
   isConnected(): boolean;
   getSupportedTokens: () => Asset[];
   connect(): Promise<void>;

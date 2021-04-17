@@ -73,5 +73,10 @@ export default ({
     store.wallet.sif.balances = state.balances;
   });
 
+  effect(async () => {
+    state.connected; // Trigger when connection changes
+    store.wallet.sif.chainId = await api.SifService.getChainId();
+  });
+
   return actions;
 };

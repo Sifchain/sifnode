@@ -56,18 +56,13 @@ export default defineComponent({
     const transactionStateMsg = ref<string>("");
     const transactionHash = ref<string | null>(null);
 
-    // const symbol = ref<string | null>(null);
     const symbol = computed(() => {
       const assetFrom = router.currentRoute.value.params.assetFrom;
       return Array.isArray(assetFrom) ? assetFrom[0] : assetFrom;
     });
 
     const networkIsSupported = computed(() => {
-      if (mode.value === "peg") {
-        return actions.ethWallet.isSupportedNetwork();
-      }
-
-      return true;
+      return actions.peg.isSupportedEVMNetwork();
     });
 
     const oppositeSymbol = computed(() => {

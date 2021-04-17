@@ -10,6 +10,7 @@ export type WalletStore = {
     address: Address;
   };
   sif: {
+    chainId?: string;
     balances: IAssetAmount[];
     isConnected: boolean;
     address: Address;
