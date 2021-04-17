@@ -115,7 +115,7 @@ func (k Keeper) GetRecordsLimited(ctx sdk.Context, status types.ClaimStatus) typ
 			res = append(res, dr)
 			count++
 		}
-		if count == types.MAX_RECORDS_PER_BLOCK {
+		if count == types.MaxRecordsPerBlock {
 			break
 		}
 	}
