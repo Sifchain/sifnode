@@ -110,6 +110,7 @@ var (
 
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
+		dispensation.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -120,7 +121,8 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 
-		clptypes.ModuleName: {authtypes.Burner, authtypes.Minter},
+		clptypes.ModuleName:     {authtypes.Burner, authtypes.Minter},
+		dispensation.ModuleName: {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -171,8 +173,9 @@ type SifchainApp struct {
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
 	ScopedIBCMockKeeper  capabilitykeeper.ScopedKeeper
 
-	ClpKeeper    clpkeeper.Keeper
-	OracleKeeper oraclekeeper.Keeper
+	ClpKeeper          clpkeeper.Keeper
+	OracleKeeper       oraclekeeper.Keeper
+	DispensationKeeper dispensation.Keeper
 
 	mm *module.Manager
 	sm *module.SimulationManager
@@ -210,6 +213,7 @@ func NewSifApp(
 		// ethbridge.StoreKey,
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
+		dispensation.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -275,13 +279,18 @@ func NewSifApp(
 		oracletypes.DefaultConsensusNeeded,
 	)
 
+	app.DispensationKeeper = dispensation.NewKeeper(
+		app.Cdc,
+		keys[dispensation.StoreKey],
+		app.BankKeeper,
+		app.AuthKeeper,
+	)
+
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
 	// will be skipped even if we have a update proposal for it
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, DefaultNodeHome)
-
-	app.UpgradeKeeper.SetUpgradeHandler("release-20210401000000", func(ctx sdk.Context, plan upgradetypes.Plan) {})
 
 	// Create IBC Keeper
 	app.IBCKeeper = ibckeeper.NewKeeper(
@@ -350,6 +359,7 @@ func NewSifApp(
 		transferModule,
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
+		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AuthKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -386,6 +396,7 @@ func NewSifApp(
 
 		clptypes.ModuleName,
 		oracletypes.ModuleName,
+		dispensation.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)

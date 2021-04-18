@@ -1,0 +1,481 @@
+name: Deployment Pipeline EBRELAYER
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "devnet, testnet the name of the environment."
+        required: true
+        default: "devnet"
+      docker_image_tag:
+        description: "version ex. 20210401000000"
+        required: true
+        default: "20210401000000"
+      app_name:
+        description: "ebrelayer i.e. the name of the application you are deploying"
+        required: true
+        default: "ebrelayer"
+      aws_role:
+        description: "role that will be used to generate the kubeconfig organizational access role."
+        required: true
+        default: "arn:aws:iam::346064283538:role/OrganizationAccountAccessRole"
+
+jobs:
+  #US DEPLOYMENT
+  deploy_ebrelayer_us:
+    name: deploy-ebrelayer-us
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "us-east-1"
+      aws_cluster_name: "sifchain-aws-${{ github.event.inputs.environment }}-us"
+      aws_role: "${{ github.event.inputs.aws_role }}"
+      app_namespace: "${{ github.event.inputs.app_name }}"
+      image: "sifchain/${{ github.event.inputs.app_name }}"
+      image_tag: "${{ github.event.inputs.environment }}-${{ github.event.inputs.docker_image_tag }}"
+      env: "${{ github.event.inputs.environment }}"
+      app_name: "${{ github.event.inputs.app_name }}"
+      app_env: "${{ github.event.inputs.environment }}"
+      app_region: "us"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        run: |
+          rake "cluster:generate:art[]"
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Setup Helm Values with Variable Details
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
+          rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
+
+      - name: Setup Vault Policy
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will create the vault app policy for the kubernetes appliation."
+          rake "cluster:vault:createpolicy[${app_region},${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Enable Kubernetes Vault Communication If Not Enabled
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will ensure enablement of kubernetes ability to talk to vault"
+          rake "cluster:vault:enablekubernetes[]"
+
+      - name: Configure Vault to Mount Secrets To Application
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This finishes configuring the application to talk to vault and assigns the policy to the deployment name and namespace name"
+          rake "cluster:vault:configureapplication[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Anchore Image Scan
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This executes a anchore image scan on the specified docker image and app name, it will fail when the scan fails to pass. Prints report to window."
+          rake "cluster:anchore:scan[${image}, ${image_tag}, ${app_name}]"
+
+      - name: Deploy Ebrelayer to Kubernetes Via Helm.
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This deploys a helm application configured to utilize vault secrets."
+          rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Validate ebrelayer is running by searching logs.
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will check to ensure ebrelayer is running by searching the logs for specific string."
+          rake "cluster:ebrelayer:check_deployment[${app_name},${app_namespace}, Processing events ]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+          rm -rf ./tmp_secrets
+          rm -rf ./pyscript.py
+
+
+
+  #EU DEPLOYMENT
+  deploy_ebrelayer_eu:
+    name: deploy-ebrelayer-eu
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "eu-west-1"
+      aws_cluster_name: "sifchain-aws-${{ github.event.inputs.environment }}-eu"
+      aws_role: "${{ github.event.inputs.aws_role }}"
+      app_namespace: "${{ github.event.inputs.app_name }}"
+      image: "sifchain/${{ github.event.inputs.app_name }}"
+      image_tag: "${{ github.event.inputs.environment }}-${{ github.event.inputs.docker_image_tag }}"
+      env: "${{ github.event.inputs.environment }}"
+      app_name: "${{ github.event.inputs.app_name }}"
+      app_env: "${{ github.event.inputs.environment }}"
+      app_region: "eu"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        run: |
+          rake "cluster:generate:art[]"
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Setup Helm Values with Variable Details
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
+          rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
+
+      - name: Setup Vault Policy
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will create the vault app policy for the kubernetes appliation."
+          rake "cluster:vault:createpolicy[${app_region},${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Enable Kubernetes Vault Communication If Not Enabled
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will ensure enablement of kubernetes ability to talk to vault"
+          rake "cluster:vault:enablekubernetes[]"
+
+      - name: Configure Vault to Mount Secrets To Application
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This finishes configuring the application to talk to vault and assigns the policy to the deployment name and namespace name"
+          rake "cluster:vault:configureapplication[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Anchore Image Scan
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This executes a anchore image scan on the specified docker image and app name, it will fail when the scan fails to pass. Prints report to window."
+          rake "cluster:anchore:scan[${image}, ${image_tag}, ${app_name}]"
+
+      - name: Deploy Ebrelayer to Kubernetes Via Helm.
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This deploys a helm application configured to utilize vault secrets."
+          rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Validate ebrelayer is running by searching logs.
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will check to ensure ebrelayer is running by searching the logs for specific string."
+          rake "cluster:ebrelayer:check_deployment[${app_name},${app_namespace}, Processing events ]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        if: github.event.inputs.environment == 'devnet'
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+          rm -rf ./tmp_secrets
+          rm -rf ./pyscript.py
+
+
+  #AU DEPLOYMENT
+  deploy_ebrelayer_au:
+    name: deploy-ebrelayer-au
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "ap-southeast-2"
+      aws_cluster_name: "sifchain-aws-${{ github.event.inputs.environment }}-au"
+      aws_role: "${{ github.event.inputs.aws_role }}"
+      app_namespace: "${{ github.event.inputs.app_name }}"
+      image: "sifchain/${{ github.event.inputs.app_name }}"
+      image_tag: "${{ github.event.inputs.environment }}-${{ github.event.inputs.docker_image_tag }}"
+      env: "${{ github.event.inputs.environment }}"
+      app_name: "${{ github.event.inputs.app_name }}"
+      app_env: "${{ github.event.inputs.environment }}"
+      app_region: "au"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        run: |
+          rake "cluster:generate:art[]"
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Setup Helm Values with Variable Details
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
+          rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
+
+      - name: Setup Vault Policy
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will create the vault app policy for the kubernetes appliation."
+          rake "cluster:vault:createpolicy[${app_region},${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Enable Kubernetes Vault Communication If Not Enabled
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will ensure enablement of kubernetes ability to talk to vault"
+          rake "cluster:vault:enablekubernetes[]"
+
+      - name: Configure Vault to Mount Secrets To Application
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This finishes configuring the application to talk to vault and assigns the policy to the deployment name and namespace name"
+          rake "cluster:vault:configureapplication[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Anchore Image Scan
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This executes a anchore image scan on the specified docker image and app name, it will fail when the scan fails to pass. Prints report to window."
+          rake "cluster:anchore:scan[${image}, ${image_tag}, ${app_name}]"
+
+      - name: Deploy Ebrelayer to Kubernetes Via Helm.
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This deploys a helm application configured to utilize vault secrets."
+          rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Validate ebrelayer is running by searching logs.
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will check to ensure ebrelayer is running by searching the logs for specific string."
+          rake "cluster:ebrelayer:check_deployment[${app_name},${app_namespace}, Processing events ]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+          rm -rf ./tmp_secrets
+          rm -rf ./pyscript.py
+
+
+
+
+  #SG DEPLOYMENT
+  deploy_ebrelayer_sg:
+    name: deploy-ebrelayer-sg
+    runs-on: ${{ matrix.os }}
+    env:
+      aws_region: "ap-southeast-1"
+      aws_cluster_name: "sifchain-aws-${{ github.event.inputs.environment }}-sg"
+      aws_role: "${{ github.event.inputs.aws_role }}"
+      app_namespace: "${{ github.event.inputs.app_name }}"
+      image: "sifchain/${{ github.event.inputs.app_name }}"
+      image_tag: "${{ github.event.inputs.environment }}-${{ github.event.inputs.docker_image_tag }}"
+      env: "${{ github.event.inputs.environment }}"
+      app_name: "${{ github.event.inputs.app_name }}"
+      app_env: "${{ github.event.inputs.environment }}"
+      app_region: "sg"
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu-latest' ]
+        ruby: [ 2.3 ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Install Rake
+        run: gem install rake
+
+      - name: Sifchain Art
+        shell: bash
+        run: |
+          rake "cluster:generate:art[]"
+
+      - name: Setup AWS Profile and KUBECONFIG
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "Configure AWSCLI Profile and Credentials from Git Secrets and Pull Temp Kubernetes Config File"
+          rake "cluster:automation:configure_aws_kube_profile[${app_env}, ${AWS_ACCESS_KEY_ID}, ${AWS_SECRET_ACCESS_KEY}, ${aws_region}, ${aws_role}, ${aws_cluster_name}]"
+
+      - name: Setup Helm Values with Variable Details
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set +x
+          echo "replace values in helm chart values.yaml to match our region and env. This changes annotations that reference where the secret is in vault."
+          rake "cluster:ebrelayer:update_helm_values[${app_region}, ${env}, ${app_name}, deploy/helm/${app_name}/]"
+
+      - name: Setup Vault Policy
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will create the vault app policy for the kubernetes appliation."
+          rake "cluster:vault:createpolicy[${app_region},${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Enable Kubernetes Vault Communication If Not Enabled
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will ensure enablement of kubernetes ability to talk to vault"
+          rake "cluster:vault:enablekubernetes[]"
+
+      - name: Configure Vault to Mount Secrets To Application
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This finishes configuring the application to talk to vault and assigns the policy to the deployment name and namespace name"
+          rake "cluster:vault:configureapplication[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Anchore Image Scan
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This executes a anchore image scan on the specified docker image and app name, it will fail when the scan fails to pass. Prints report to window."
+          rake "cluster:anchore:scan[${image}, ${image_tag}, ${app_name}]"
+
+      - name: Deploy Ebrelayer to Kubernetes Via Helm.
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This deploys a helm application configured to utilize vault secrets."
+          rake "cluster:vault:deploy[${app_namespace}, ${image}, ${image_tag}, ${env}, ${app_name}]"
+
+      - name: Validate ebrelayer is running by searching logs.
+        shell: bash
+        run: |
+          set +x
+          export PATH=$(pwd):${PATH}
+          echo "This will check to ensure ebrelayer is running by searching the logs for specific string."
+          rake "cluster:ebrelayer:check_deployment[${app_name},${app_namespace}, Processing events ]"
+
+      - name: Clean Temp Files and Secrets
+        shell: bash
+        run: |
+          set +x
+          echo "Clean up all temporary files that were generated"
+          rm -rf ./kubeconfig
+          rm -rf ~/.aws/credentials
+          rm -rf ~/.aws/config
+          rm -rf ./tmp_secrets
+          rm -rf ./pyscript.py

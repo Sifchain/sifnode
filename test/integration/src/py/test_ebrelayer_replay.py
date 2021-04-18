@@ -26,7 +26,6 @@ def build_request(
         bridgebank_address=get_required_env_var("BRIDGE_BANK_ADDRESS"),
         ethereum_network=(os.environ.get("ETHEREUM_NETWORK") or ""),
         amount=9 * 10 ** 18,
-        ceth_amount=2 * (10 ** 16),
         solidity_json_path=solidity_json_path
     )
     return request, credentials

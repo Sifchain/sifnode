@@ -1,8 +1,8 @@
 <script lang="ts">
 import { useCore } from "@/hooks/useCore";
 import { computed } from "@vue/reactivity";
+import { format } from "ui-core/src/utils/format";
 import { defineComponent } from "vue";
-import { getAssetLabel } from "../shared/utils";
 
 export default defineComponent({
   props: ["symbol"],
@@ -20,12 +20,11 @@ export default defineComponent({
       if (!found) return "0";
 
       return [
-        found.toFormatted({
-          decimals: Math.min(found.asset.decimals, 2),
+        format(found.amount, found.asset, {
           separator: true,
-          symbol: false,
+          mantissa: Math.min(found.asset.decimals, 2),
         }),
-        getAssetLabel(found.asset),
+        found.asset.label,
       ].join(" ");
     });
 
@@ -35,6 +34,8 @@ export default defineComponent({
 </script>
 
 <template>
-  <span v-if="available !== '0'">Balance: {{ available }}</span>
+  <span v-if="available !== '0'" :data-handle="symbol + '-balance-label'"
+    >Balance: {{ available }}</span
+  >
   <span v-else>&nbsp;</span>
 </template>

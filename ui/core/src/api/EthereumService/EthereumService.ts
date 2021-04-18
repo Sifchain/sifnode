@@ -8,8 +8,8 @@ import {
   TxParams,
   Asset,
   AssetAmount,
-  Token,
   Network,
+  IAssetAmount,
 } from "../../entities";
 import {
   getEtheriumBalance,
@@ -17,11 +17,11 @@ import {
   isEventEmittingProvider,
   transferAsset,
 } from "./utils/ethereumUtils";
-import { isToken } from "../../entities/utils/isToken";
+
 import { Msg } from "@cosmjs/launchpad";
 
 type Address = string;
-type Balances = AssetAmount[];
+type Balances = IAssetAmount[];
 
 export type EthereumServiceContext = {
   getWeb3Provider: () => Promise<provider>;
@@ -60,7 +60,7 @@ export class EthereumService implements IWalletService {
     connected: boolean;
     address: Address;
     accounts: Address[];
-    balances: AssetAmount[];
+    balances: IAssetAmount[];
     log: string;
   };
 
@@ -182,10 +182,7 @@ export class EthereumService implements IWalletService {
     await this.updateData();
   }
 
-  async getBalance(
-    address?: Address,
-    asset?: Asset | Token,
-  ): Promise<Balances> {
+  async getBalance(address?: Address, asset?: Asset): Promise<Balances> {
     const supportedTokens = this.getSupportedTokens();
     const addr = address || this.state.address;
     if (!this.web3 || !addr) {
@@ -196,7 +193,7 @@ export class EthereumService implements IWalletService {
     let balances = [];
 
     if (asset) {
-      if (!isToken(asset)) {
+      if (!asset.address) {
         // Asset must be eth
         const ethBalance = await getEtheriumBalance(web3, addr);
         balances = [ethBalance];
@@ -212,7 +209,7 @@ export class EthereumService implements IWalletService {
         ...supportedTokens
           .filter((t) => t.symbol !== "eth")
           .map((token: Asset) => {
-            if (isToken(token)) return getTokenBalance(web3, addr, token);
+            if (token.address) return getTokenBalance(web3, addr, token);
             return AssetAmount(token, "0");
           }),
       ]);
