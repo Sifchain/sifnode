@@ -1,8 +1,8 @@
 package key
 
 import (
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tyler-smith/go-bip39"
 
@@ -20,14 +20,14 @@ type Key struct {
 	Address          string
 	ValidatorAddress string
 	ConsensusAddress string
-	Keybase          keyring.Keyring
+	Keyring          keyring.Keyring
 }
 
 func NewKey(name, password *string) *Key {
 	return &Key{
 		Name:     name,
 		Password: password,
-		Keybase:  keyring.NewInMemory(keyring.WithSupportedAlgosLedger([]hd.SigningAlgo{hd.Secp256k1Type, hd.Ed25519Type})),
+		Keyring:  keyring.NewInMemory(),
 	}
 }
 
@@ -41,7 +41,7 @@ func (k *Key) RecoverFromMnemonic(mnemonic string) error {
 	k.setConfig()
 	k.Mnemonic = mnemonic
 
-	account, err := k.Keybase.CreateAccount(*k.Name, k.Mnemonic, "", *k.Password, hdpath.String(), hd.Secp256k1Type)
+	account, err := k.Keyring.NewAccount(*k.Name, k.Mnemonic, *k.Password, hdpath.String(), hd.Secp256k1)
 	if err != nil {
 		return err
 	}

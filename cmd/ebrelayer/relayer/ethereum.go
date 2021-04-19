@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"io"
 	"log"
 	"math/big"
@@ -29,6 +28,7 @@ import (
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
 
+	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/contract"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/types"
@@ -44,7 +44,6 @@ const (
 
 // EthereumSub is an Ethereum listener that can relay txs to Cosmos and Ethereum
 type EthereumSub struct {
-	Cdc                     *codec.LegacyAmino
 	EthProvider             string
 	TmProvider              string
 	RegistryContractAddress common.Address
@@ -61,34 +60,27 @@ type EthereumSub struct {
 
 // NewKeybase create a new keybase instance
 func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, keyring.Info, error) {
-	//keyringBackend, err := cmd.Flags().GetString(flags.FlagKeyringBackend)
-	//if err != nil {
-	//	return err
-	//}
-	//kb, err := keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf)
-	//if err != nil {
-	//	return err
-	//}
-
-	keyring.NewInMemory()
+	kr := keyring.NewInMemory()
 	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
-	info, err := keyring.CreateAccount(validatorMoniker, mnemonic, "", password, hdpath.String(), hd.Secp256k1Type)
+	info, err := kr.NewAccount(validatorMoniker, mnemonic, password, hdpath.String(), hd.Secp256k1)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return keyring, info, nil
+	return kr, info, nil
 }
 
 // NewEthereumSub initializes a new EthereumSub
 func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, ethProvider string,
-	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
+	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string,
+	db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
 
 	tempPassword, _ := password.Generate(32, 5, 0, false, false)
-	keybase, info, err := NewKeybase(validatorMoniker, mnemonic, tempPassword)
+	kr := keyring.NewInMemory()
+	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
+
+	info, err := kr.NewAccount(validatorMoniker, mnemonic, tempPassword, hdpath.String(), hd.Secp256k1)
 	if err != nil {
-		sugaredLogger.Errorw("failed to initialize a new key base.",
-			errorMessageKey, err.Error())
 		return EthereumSub{}, err
 	}
 
@@ -99,9 +91,6 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, e
 	if err != nil {
 		return EthereumSub{}, err
 	}
-
-	signer := cliCtx.GetFromAddress()
-
 
 	return EthereumSub{
 		EthProvider:             ethProvider,
@@ -124,7 +113,7 @@ func LoadTendermintCLIContext(validatorAddress sdk.ValAddress, validatorName str
 	// Create the new CLI context
 	encodingConfig := app.MakeTestEncodingConfig()
 	cliCtx := client.Context{}.
-		WithLegacyAmino(encodingConfig).
+		WithLegacyAmino(encodingConfig.Amino).
 		WithFromAddress(sdk.AccAddress(validatorAddress)).
 		WithFromName(validatorName)
 
@@ -134,13 +123,14 @@ func LoadTendermintCLIContext(validatorAddress sdk.ValAddress, validatorName str
 	cliCtx.SkipConfirm = true
 
 	// Confirm that the validator's address exists
-	accountRetriever := authtypes.NewAccountRetriever(cliCtx)
-	err := accountRetriever.EnsureExists(sdk.AccAddress(validatorAddress))
+	accountRetriever := authtypes.AccountRetriever{}
+	err := accountRetriever.EnsureExists(cliCtx, sdk.AccAddress(validatorAddress))
 	if err != nil {
 		sugaredLogger.Errorw("validator address not exists.",
 			errorMessageKey, err.Error())
 		return client.Context{}, err
 	}
+	cliCtx.WithAccountRetriever(accountRetriever)
 	return cliCtx, nil
 }
 

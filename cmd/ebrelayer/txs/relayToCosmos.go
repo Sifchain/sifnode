@@ -31,10 +31,10 @@ func RelayToCosmos(moniker, password string, claims []*types.EthBridgeClaim, cli
 		// Packages the claim as a Tendermint message
 		msg := types.NewMsgCreateEthBridgeClaim(claim)
 
-		err := msg.ValidateBasic()
-		if err != nil {
+		e := msg.ValidateBasic()
+		if e != nil {
 			sugaredLogger.Errorw("failed to get message from claim.",
-				errorMessageKey, err.Error())
+				errorMessageKey, e.Error())
 			continue
 		} else {
 			messages = append(messages, &msg)
@@ -42,42 +42,41 @@ func RelayToCosmos(moniker, password string, claims []*types.EthBridgeClaim, cli
 	}
 
 	sugaredLogger.Infow("relay sequenceNumber from builder.",
-		"nextSequenceNumber", txBldr.Sequence())
+		"nextSequenceNumber", nextSequenceNumber)
 
 	// If we start to control sequence
 	if nextSequenceNumber > 0 {
-		txBldr.WithSequence(nextSequenceNumber)
 		sugaredLogger.Infow("txBldr.WithSequence(nextSequenceNumber) passed")
 	}
 
 	log.Println("building and signing")
 	// Build and sign the transaction
-	txBytes, err := txBldr.BuildAndSign(moniker, password, messages)
-	if err != nil {
-		sugaredLogger.Errorw("failed to sign transaction.",
-			errorMessageKey, err.Error())
-		return err
-	}
+	//txBytes, err := client.TxBuilder.SetSignatures().BuildAndSign(moniker, password, messages)
+	//if err != nil {
+	//	sugaredLogger.Errorw("failed to sign transaction.",
+	//		errorMessageKey, err.Error())
+	//	return err
+	//}
 
 	log.Println("built tx, now broadcasting")
 	// Broadcast to a Tendermint node
-	res, err := cliCtx.BroadcastTxAsync(txBytes)
-	if err != nil {
-		sugaredLogger.Errorw("failed to broadcast tx to sifchain.",
-			errorMessageKey, err.Error())
-		return err
-	}
+	//res, err := cliCtx.BroadcastTxAsync(txBytes)
+	//if err != nil {
+	//	sugaredLogger.Errorw("failed to broadcast tx to sifchain.",
+	//		errorMessageKey, err.Error())
+	//	return err
+	//}
 	log.Println("Broadcasted tx without error")
 
-	if err = cliCtx.PrintProto(res); err != nil {
-		sugaredLogger.Errorw("failed to print out result.",
-			errorMessageKey, err.Error())
-		return err
-	}
+	//if err = cliCtx.PrintProto(res); err != nil {
+	//	sugaredLogger.Errorw("failed to print out result.",
+	//		errorMessageKey, err.Error())
+	//	return err
+	//}
 
 	// start to control sequence number after first successful tx
 	if nextSequenceNumber == 0 {
-		setNextSequenceNumber(txBldr.Sequence() + 1)
+		setNextSequenceNumber(nextSequenceNumber + 1)
 	} else {
 		incrementNextSequenceNumber()
 	}
