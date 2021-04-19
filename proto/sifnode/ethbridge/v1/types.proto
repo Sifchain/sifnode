@@ -5,6 +5,12 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/Sifchain/sifnode/x/ethbridge/types";
 
+// GenesisState for ethbridge
+message GenesisState {
+  string ceth_receive_account = 1;
+  PeggyTokens peggy_tokens = 2;
+}
+
 // EthBridgeClaim is a structure that contains all the data for a particular bridge claim
 message EthBridgeClaim {
   int64  ethereum_chain_id        = 1 [(gogoproto.moretags) = "yaml:\"ethereum_chain_id\""];
