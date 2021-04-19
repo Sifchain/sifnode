@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/pkg/errors"
 )
 
 //CreateAndDistributeDrops creates new drop Records . These records are then used to facilitate distribution
 // Each Recipient and DropName generate a unique Record
-func (k Keeper) CreateDrops(ctx sdk.Context, output []bank.Output, name string) error {
+func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name string) error {
 	for _, receiver := range output {
-		distributionRecord := types.NewDistributionRecord(name, receiver.Address, receiver.Coins, ctx.BlockHeight(), -1)
-		if k.ExistsDistributionRecord(ctx, name, receiver.Address.String()) {
-			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address.String())
+		distributionRecord := types.NewDistributionRecord(name, sdk.AccAddress{}, receiver.Coins, ctx.BlockHeight(), -1)
+		if k.ExistsDistributionRecord(ctx, name, receiver.Address) {
+			oldRecord, err := k.GetDistributionRecord(ctx, name, receiver.Address)
 			if err != nil {
 				return errors.Wrapf(types.ErrDistribution, "failed appending record for : %s", distributionRecord.RecipientAddress)
 			}
@@ -50,11 +50,11 @@ func (k Keeper) DistributeDrops(ctx sdk.Context, height int64) error {
 }
 
 // AccumulateDrops collects funds from a senders account and transfers it to the Dispensation module account
-func (k Keeper) AccumulateDrops(ctx sdk.Context, input []bank.Input) error {
+func (k Keeper) AccumulateDrops(ctx sdk.Context, input []banktypes.Input) error {
 	for _, fundingInput := range input {
-		err := k.GetSupplyKeeper().SendCoinsFromAccountToModule(ctx, fundingInput.Address, types.ModuleName, fundingInput.Coins)
+		err := k.GetSupplyKeeper().SendCoinsFromAccountToModule(ctx, sdk.AccAddress(fundingInput.Address), types.ModuleName, fundingInput.Coins)
 		if err != nil {
-			return errors.Wrapf(types.ErrFailedInputs, "for address  : %s", fundingInput.Address.String())
+			return errors.Wrapf(types.ErrFailedInputs, "for address  : %s", fundingInput.Address)
 		}
 	}
 	return nil

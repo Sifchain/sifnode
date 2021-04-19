@@ -6,20 +6,18 @@ import (
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	dispensationUtils "github.com/Sifchain/sifnode/x/dispensation/utils"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/crypto/multisig"
 )
 
 // GetTxCmd returns the transaction commands for this module
-func GetTxCmd(cdc *codec.Codec) *cobra.Command {
+func GetTxCmd(cdc *codec.LegacyAmino) *cobra.Command {
 	dispensationTxCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("%s transactions subcommands", types.ModuleName),
@@ -37,14 +35,14 @@ func GetTxCmd(cdc *codec.Codec) *cobra.Command {
 
 // GetCmdCreate adds a new command to the main dispensationTxCmd to create a new airdrop
 // Airdrop is a type of distribution on the network .
-func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
+func GetCmdCreate(cdc *codec.LegacyAmino) *cobra.Command {
 	// Note ,the command only creates a airdrop for now .
 	cmd := &cobra.Command{
 		Use:   "create [MultiSigKeyName] [DistributionName] [Input JSON File Path] [Output JSON File Path]",
 		Short: "Create new distribution",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			inBuf := bufio.NewReader(cmd.InOrStdin())
-			kb, err := keys.NewKeyring(sdk.KeyringServiceName(),
+			kb, err := keyring.NewLegacy(sdk.KeyringServiceName(),
 				viper.GetString(flags.FlagKeyringBackend), viper.GetString(flags.FlagHome), inBuf)
 			if err != nil {
 				return err
@@ -55,16 +53,16 @@ func GetCmdCreate(cdc *codec.Codec) *cobra.Command {
 				return err
 			}
 
-			ko, err := keys.Bech32KeyOutput(multisigInfo)
+			ko, err := keyring.Bech32KeyOutput(multisigInfo)
 			if err != nil {
 				return err
 			}
-			if multisigInfo.GetType() != keys.TypeMulti {
+			if multisigInfo.GetType() != keyring.TypeMulti {
 				return fmt.Errorf("%q must be of type %s: %s", args[0], keys.TypeMulti, multisigInfo.GetType())
 			}
 
 			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-			cliCtx := context.NewCLIContextWithInputAndFrom(inBuf, ko.Address).WithCodec(cdc)
+			cliCtx := client.NewCLIContextWithInputAndFrom(inBuf, ko.Address)
 
 			inputList, err := dispensationUtils.ParseInput(args[2])
 			if err != nil {

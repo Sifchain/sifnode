@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"os"
 	"testing"
 
@@ -22,7 +23,7 @@ func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	app := NewSifApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, EmptyAppOptions{})
 
 	for acc := range maccPerms {
-		require.True(t, app.BankKeeper.BlacklistedAddr(app.SupplyKeeper.GetModuleAddress(acc)))
+		require.True(t, app.BankKeeper.BlockedAddr(types.SupplyKeeper.GetModuleAccount(ctx, acc)))
 	}
 
 	genesisState := NewDefaultGenesisState(encCfg.Marshaler)

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/Sifchain/sifnode/x/dispensation"
 	"io"
 	"math/big"
 	"net/http"
@@ -280,10 +281,10 @@ func NewSifApp(
 	)
 
 	app.DispensationKeeper = dispensation.NewKeeper(
-		app.Cdc,
+		app.legacyAmino,
 		keys[dispensation.StoreKey],
 		app.BankKeeper,
-		app.AuthKeeper,
+		app.AccountKeeper,
 	)
 
 	// This map defines heights to skip for updates

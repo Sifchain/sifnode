@@ -44,5 +44,5 @@ func handleMsgCreateDistribution(ctx sdk.Context, keeper Keeper, msg MsgDistribu
 			sdk.NewAttribute(types.AttributeKeyFromModuleAccount, types.GetDistributionModuleAddress().String()),
 		),
 	})
-	return &sdk.Result{Events: ctx.EventManager().Events()}, nil
+	return &sdk.Result{Events: ctx.EventManager().Events().ToABCIEvents()}, nil
 }

@@ -3,7 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 var (
@@ -13,14 +13,27 @@ var (
 // Basic message type to create a new distribution
 // TODO modify this struct to keep adding more fields to identify different types of distributions
 type MsgDistribution struct {
+	Msg              sdk.Msg          `json:"Msg"`
 	Signer           sdk.AccAddress   `json:"Signer"`
 	DistributionName string           `json:"distribution_name"`
 	DistributionType DistributionType `json:"distribution_type"`
-	Input            []bank.Input     `json:"Input"`
-	Output           []bank.Output    `json:"Output"`
+	Input            []types.Input     `json:"Input"`
+	Output           []types.Output    `json:"Output"`
 }
 
-func NewMsgDistribution(signer sdk.AccAddress, DistributionName string, DistributionType DistributionType, input []bank.Input, output []bank.Output) MsgDistribution {
+func (m MsgDistribution) Reset() {
+	panic("implement me")
+}
+
+func (m MsgDistribution) String() string {
+	panic("implement me")
+}
+
+func (m MsgDistribution) ProtoMessage() {
+	panic("implement me")
+}
+
+func NewMsgDistribution(signer sdk.AccAddress, DistributionName string, DistributionType DistributionType, input []types.Input, output []types.Output) MsgDistribution {
 	return MsgDistribution{Signer: signer, DistributionName: DistributionName, DistributionType: DistributionType, Input: input, Output: output}
 }
 
@@ -39,7 +52,7 @@ func (m MsgDistribution) ValidateBasic() error {
 	if m.DistributionName == "" {
 		return sdkerrors.Wrap(ErrInvalid, "Name cannot be empty")
 	}
-	err := bank.ValidateInputsOutputs(m.Input, m.Output)
+	err := types.ValidateInputsOutputs(m.Input, m.Output)
 	if err != nil {
 		return err
 	}

@@ -3,27 +3,27 @@ package test
 import (
 	"bytes"
 	"fmt"
-	"github.com/Sifchain/sifnode/simapp"
+	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/supply"
-	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/tendermint/tendermint/crypto"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"strconv"
 )
 
 func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
 	app := simapp.Setup(isCheckTx)
-	ctx := app.BaseApp.NewContext(isCheckTx, abci.Header{})
+	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000)
-	app.SupplyKeeper.SetSupply(ctx, supply.NewSupply(sdk.Coins{}))
+	app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(sdk.Coins{}))
 	_ = simapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }
 
-func GenerateInputList(rowanamount string) []bank.Input {
+func GenerateInputList(rowanamount string) []types.Input {
 	addressList := []string{"A58856F0FD53BF058B4909A21AEC019107BA6", "A58856F0FD53BF058B4909A21AEC019107BA7"}
 	accAddrList := GenerateAddressList(addressList)
 	rowan, ok := sdk.NewIntFromString(rowanamount)
@@ -31,15 +31,15 @@ func GenerateInputList(rowanamount string) []bank.Input {
 		panic(fmt.Sprintf("Err in getting amount : %s", rowanamount))
 	}
 	rowanAmount := sdk.Coins{sdk.NewCoin("rowan", rowan)}
-	res := []bank.Input{}
+	res := []types.Input{}
 	for _, address := range accAddrList {
-		in := bank.NewInput(address, rowanAmount)
+		in := types.NewInput(address, rowanAmount)
 		res = append(res, in)
 	}
 	return res
 }
 
-func GenerateOutputList(rowanamount string) []bank.Output {
+func GenerateOutputList(rowanamount string) []types.Output {
 	addressList := []string{"A58856F0FD53BF058B4909A21AEC019107BA3", "A58856F0FD53BF058B4909A21AEC019107BA4", "A58856F0FD53BF058B4909A21AEC019107BA5"}
 	accAddrList := GenerateAddressList(addressList)
 	rowan, ok := sdk.NewIntFromString(rowanamount)
@@ -47,9 +47,9 @@ func GenerateOutputList(rowanamount string) []bank.Output {
 		panic(fmt.Sprintf("Err in getting amount : %s", rowanamount))
 	}
 	rowanAmount := sdk.Coins{sdk.NewCoin("rowan", rowan)}
-	res := []bank.Output{}
+	res := []types.Output{}
 	for _, address := range accAddrList {
-		out := bank.NewOutput(address, rowanAmount)
+		out := types.NewOutput(address, rowanAmount)
 		res = append(res, out)
 	}
 	return res
@@ -87,8 +87,8 @@ func GenerateAddressList(addressList []string) []sdk.AccAddress {
 	return acclist
 }
 
-func CreatOutputList(count int, rowanAmount string) []bank.Output {
-	outputList := make([]bank.Output, count)
+func CreatOutputList(count int, rowanAmount string) []types.Output {
+	outputList := make([]types.Output, count)
 	amount, ok := sdk.NewIntFromString(rowanAmount)
 	if !ok {
 		panic("Unable to generate rowan amount")
@@ -96,14 +96,14 @@ func CreatOutputList(count int, rowanAmount string) []bank.Output {
 	coin := sdk.Coins{sdk.NewCoin("rowan", amount)}
 	for i := 0; i < count; i++ {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
-		out := bank.NewOutput(address, coin)
+		out := types.NewOutput(address, coin)
 		outputList[i] = out
 	}
 	return outputList
 }
 
-func CreatInputList(count int, rowanAmount string) []bank.Input {
-	list := make([]bank.Input, count)
+func CreatInputList(count int, rowanAmount string) []types.Input {
+	list := make([]types.Input, count)
 	amount, ok := sdk.NewIntFromString(rowanAmount)
 	if !ok {
 		panic("Unable to generate rowan amount")
@@ -111,7 +111,7 @@ func CreatInputList(count int, rowanAmount string) []bank.Input {
 	coin := sdk.Coins{sdk.NewCoin("rowan", amount)}
 	for i := 0; i < count; i++ {
 		address := sdk.AccAddress(crypto.AddressHash([]byte("Output1" + strconv.Itoa(i))))
-		out := bank.NewInput(address, coin)
+		out := types.NewInput(address, coin)
 		list[i] = out
 	}
 	return list

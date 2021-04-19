@@ -4,27 +4,42 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/client/cli"
-	"github.com/Sifchain/sifnode/x/dispensation/types"
+	distypes "github.com/Sifchain/sifnode/x/dispensation/types"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/Sifchain/sifnode/x/dispensation/keeper"
-	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
 )
 
 // Type check to ensure the interface is properly implemented
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ AppModule      = AppModule{}
+	_ AppModuleBasic = AppModuleBasic{}
 )
 
 // AppModuleBasic defines the basic application module used by the dispensation module.
 type AppModuleBasic struct{}
+
+func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
+	panic("implement me")
+}
+
+func (b AppModuleBasic) RegisterInterfaces(registry types.InterfaceRegistry) {
+	panic("implement me")
+}
+
+
+func (b AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, serveMux *runtime.ServeMux) {
+	panic("implement me")
+}
+
 
 // Name returns the clp module's name.
 func (AppModuleBasic) Name() string {
@@ -32,7 +47,7 @@ func (AppModuleBasic) Name() string {
 }
 
 // RegisterCodec registers the dispensation module's types for the given codec.
-func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
+func (AppModuleBasic) RegisterCodec(cdc *codec.LegacyAmino) {
 	RegisterCodec(cdc)
 }
 
@@ -53,16 +68,16 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 }
 
 // RegisterRESTRoutes registers the REST routes for the dispensation module.
-func (AppModuleBasic) RegisterRESTRoutes(_ context.CLIContext, _ *mux.Router) {
+func (AppModuleBasic) RegisterRESTRoutes(_ client.Context, _ *mux.Router) {
 }
 
 // GetTxCmd returns the root tx command for the dispensation module.
-func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
+func (AppModuleBasic) GetTxCmd(cdc *codec.LegacyAmino) *cobra.Command {
 	return cli.GetTxCmd(cdc)
 }
 
 // GetQueryCmd returns no root query command for the dispensation module.
-func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
+func (AppModuleBasic) GetQueryCmd(cdc *codec.LegacyAmino) *cobra.Command {
 	return cli.GetQueryCmd(StoreKey, cdc)
 }
 
@@ -73,12 +88,12 @@ type AppModule struct {
 	AppModuleBasic
 
 	keeper       keeper.Keeper
-	bankKeeper   types.BankKeeper
-	supplyKeeper types.SupplyKeeper
+	bankKeeper   distypes.BankKeeper
+	supplyKeeper distypes.SupplyKeeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper, bankKeeper types.BankKeeper, supplyKeeper types.SupplyKeeper) AppModule {
+func NewAppModule(k keeper.Keeper, bankKeeper distypes.BankKeeper, supplyKeeper distypes.SupplyKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         k,
