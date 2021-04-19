@@ -8,6 +8,7 @@ import (
 
 	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,8 +23,8 @@ var (
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
-func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.EthBridgeClaim, cliCtx context.CLIContext,
-	txBldr authtypes.TxBuilder, sugaredLogger *zap.SugaredLogger) error {
+func RelayToCosmos(moniker, password string, claims []*EthBridgeClaim, cliCtx client.Context,
+	txBldr types.NewTxBuilder, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
 
 	sugaredLogger.Infow("relay prophecies to cosmos.",
@@ -32,7 +33,7 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 
 	for _, claim := range claims {
 		// Packages the claim as a Tendermint message
-		msg := ethbridge.NewMsgCreateEthBridgeClaim(claim)
+		msg := types.NewMsgCreateEthBridgeClaim(claim)
 
 		err := msg.ValidateBasic()
 		if err != nil {
@@ -42,15 +43,6 @@ func RelayToCosmos(cdc *codec.Codec, moniker, password string, claims []types.Et
 		} else {
 			messages = append(messages, msg)
 		}
-	}
-
-	// Prepare tx
-	txBldr, err := utils.PrepareTxBuilder(txBldr, cliCtx)
-	if err != nil {
-		sugaredLogger.Errorw("failed to get tx builder.",
-			errorMessageKey, err.Error(),
-			"transactionBuilder", txBldr)
-		return err
 	}
 
 	sugaredLogger.Infow("relay sequenceNumber from builder.",

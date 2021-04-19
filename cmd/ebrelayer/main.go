@@ -3,6 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/server"
+	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"log"
 	"net/url"
 	"os"
@@ -15,17 +19,11 @@ import (
 	"github.com/Sifchain/sifnode/cmd/ebrelayer/txs"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/pkg/errors"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/tendermint/tendermint/libs/cli"
 	"go.uber.org/zap"
 )
-
-var cdc *codec.Codec
 
 const (
 	// FlagRPCURL defines the URL for the tendermint RPC connection
@@ -44,18 +42,18 @@ func init() {
 	// config.SetBech32PrefixForConsensusNode(sdk.Bech32PrefixConsAddr, sdk.Bech32PrefixConsPub)
 	// config.Seal()
 
+	rootCmd := &cobra.Command{Use: "ebrelayer"}
+
 	log.SetFlags(log.Lshortfile)
 
 	app.SetConfig(true)
-
-	cdc = app.MakeCodec()
 
 	// Add --chain-id to persistent flags and mark it required
 	rootCmd.PersistentFlags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend,
 		"Select keyring's backend (os|file|test)")
 	rootCmd.PersistentFlags().String(flags.FlagChainID, "", "Chain ID of tendermint node")
 	rootCmd.PersistentFlags().String(FlagRPCURL, "", "RPC URL of tendermint node")
-	rootCmd.PersistentFlags().Var(&flags.GasFlagVar, "gas", fmt.Sprintf(
+	rootCmd.PersistentFlags().String(flags.FlagGas, "gas", fmt.Sprintf(
 		"gas limit to set per-transaction; set to %q to calculate required gas automatically (default %d)",
 		flags.GasFlagAuto, flags.DefaultGasLimit,
 	))
@@ -183,7 +181,7 @@ func RunInitRelayerCmd(cmd *cobra.Command, args []string) error {
 
 	// Initialize new Ethereum event listener
 	inBuf := bufio.NewReader(cmd.InOrStdin())
-	ethSub, err := relayer.NewEthereumSub(inBuf, rpcURL, cdc, validatorMoniker, chainID, web3Provider,
+	ethSub, err := relayer.NewEthereumSub(inBuf, rpcURL, validatorMoniker, chainID, web3Provider,
 		contractAddress, privateKey, mnemonic, db, sugaredLogger)
 	if err != nil {
 		return err
@@ -259,11 +257,13 @@ func listMissedCosmosEventCmd() *cobra.Command {
 }
 
 func main() {
-	DefaultCLIHome := os.ExpandEnv("$HOME/.sifnodecli")
-	executor := cli.PrepareMainCmd(rootCmd, EnvPrefix, os.ExpandEnv(DefaultCLIHome))
-	err := executor.Execute()
-	if err != nil {
-		log.Fatal("failed executing CLI command", err)
-		os.Exit(1)
+	if err := svrcmd.Execute(rootCmd, app.DefaultNodeHome); err != nil {
+		switch e := err.(type) {
+		case server.ErrorCode:
+			os.Exit(e.Code)
+
+		default:
+			os.Exit(1)
+		}
 	}
 }

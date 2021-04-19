@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"io"
 	"log"
 	"math/big"
@@ -15,10 +16,9 @@ import (
 	"syscall"
 	"time"
 
-	sdkContext "github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/hd"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum"
@@ -27,7 +27,6 @@ import (
 	ctypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/sethvargo/go-password/password"
 	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/tendermint/go-amino"
 	tmClient "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
 
@@ -51,8 +50,8 @@ type EthereumSub struct {
 	RegistryContractAddress common.Address
 	ValidatorName           string
 	ValidatorAddress        sdk.ValAddress
-	CliCtx                  sdkContext.CLIContext
-	TxBldr                  authtypes.TxBuilder
+	CliCtx                  client.Context
+	TxBldr                  client.TxBuilder
 	PrivateKey              *ecdsa.PrivateKey
 	TempPassword            string
 	EventsBuffer            types.EthEventBuffer
@@ -61,10 +60,13 @@ type EthereumSub struct {
 }
 
 // NewKeybase create a new keybase instance
-func NewKeybase(validatorMoniker, mnemonic, password string) (keys.Keybase, keys.Info, error) {
-	keybase := keys.NewInMemory()
+func NewKeybase(validatorMoniker, mnemonic, password string) (keyring.Keyring, keyring.Info, error) {
+	kb, err := keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf)
+	if err != nil {
+		return err
+	}
 	hdpath := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
-	info, err := keybase.CreateAccount(validatorMoniker, mnemonic, "", password, hdpath.String(), keys.Secp256k1)
+	info, err := keybase.CreateAccount(validatorMoniker, mnemonic, "", password, hdpath.String(), hd.Secp256k1Type)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,7 +75,7 @@ func NewKeybase(validatorMoniker, mnemonic, password string) (keys.Keybase, keys
 }
 
 // NewEthereumSub initializes a new EthereumSub
-func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.LegacyAmino, validatorMoniker, chainID, ethProvider string,
+func NewEthereumSub(inBuf io.Reader, rpcURL string, validatorMoniker, chainID, ethProvider string,
 	registryContractAddress common.Address, privateKey *ecdsa.PrivateKey, mnemonic string, db *leveldb.DB, sugaredLogger *zap.SugaredLogger) (EthereumSub, error) {
 
 	tempPassword, _ := password.Generate(32, 5, 0, false, false)
@@ -87,18 +89,17 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.LegacyAmino, vali
 	validatorAddress := sdk.ValAddress(info.GetAddress())
 
 	// Load CLI context and Tx builder
-	cliCtx, err := LoadTendermintCLIContext(cdc, validatorAddress, validatorMoniker, rpcURL, chainID, sugaredLogger)
+	cliCtx, err := LoadTendermintCLIContext(validatorAddress, validatorMoniker, rpcURL, chainID, sugaredLogger)
 	if err != nil {
 		return EthereumSub{}, err
 	}
 
 	txBldr := authtypes.NewTxBuilderFromCLI(inBuf).
-		WithTxEncoder(utils.GetTxEncoder(cdc)).
+		WithTxEncoder(client.GetTxEncoder(cdc)).
 		WithChainID(chainID).
 		WithKeybase(keybase)
 
 	return EthereumSub{
-		Cdc:                     cdc,
 		EthProvider:             ethProvider,
 		TmProvider:              rpcURL,
 		RegistryContractAddress: registryContractAddress,
@@ -115,11 +116,12 @@ func NewEthereumSub(inBuf io.Reader, rpcURL string, cdc *codec.LegacyAmino, vali
 }
 
 // LoadTendermintCLIContext : loads CLI context for tendermint txs
-func LoadTendermintCLIContext(appCodec *amino.Codec, validatorAddress sdk.ValAddress, validatorName string,
-	rpcURL string, chainID string, sugaredLogger *zap.SugaredLogger) (sdkContext.CLIContext, error) {
+func LoadTendermintCLIContext(validatorAddress sdk.ValAddress, validatorName string,
+	rpcURL string, chainID string, sugaredLogger *zap.SugaredLogger) (client.Context, error) {
 	// Create the new CLI context
-	cliCtx := sdkContext.NewCLIContext().
-		WithCodec(appCodec).
+	encodingConfig := app.MakeTestEncodingConfig()
+	cliCtx := client.Context{}.
+		WithLegacyAmino(encodingConfig).
 		WithFromAddress(sdk.AccAddress(validatorAddress)).
 		WithFromName(validatorName)
 
@@ -134,7 +136,7 @@ func LoadTendermintCLIContext(appCodec *amino.Codec, validatorAddress sdk.ValAdd
 	if err != nil {
 		sugaredLogger.Errorw("validator address not exists.",
 			errorMessageKey, err.Error())
-		return sdkContext.CLIContext{}, err
+		return client.Context{}, err
 	}
 	return cliCtx, nil
 }
@@ -481,5 +483,5 @@ func (sub EthereumSub) handleEthereumEvent(events []types.EthereumEvent) error {
 		return nil
 	}
 
-	return txs.RelayToCosmos(sub.Cdc, sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
+	return txs.RelayToCosmos(sub.ValidatorName, sub.TempPassword, prophecyClaims, sub.CliCtx, sub.TxBldr, sub.SugaredLogger)
 }
