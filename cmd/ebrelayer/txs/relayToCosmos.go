@@ -6,13 +6,9 @@ import (
 	"log"
 	"sync/atomic"
 
-	"github.com/Sifchain/sifnode/x/ethbridge"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
-	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"go.uber.org/zap"
 )
 
@@ -23,8 +19,8 @@ var (
 
 // RelayToCosmos applies validator's signature to an EthBridgeClaim message containing
 // information about an event on the Ethereum blockchain before relaying to the Bridge
-func RelayToCosmos(moniker, password string, claims []*EthBridgeClaim, cliCtx client.Context,
-	txBldr types.NewTxBuilder, sugaredLogger *zap.SugaredLogger) error {
+func RelayToCosmos(moniker, password string, claims []*types.EthBridgeClaim, cliCtx client.Context,
+	txBldr client.TxBuilder, sugaredLogger *zap.SugaredLogger) error {
 	var messages []sdk.Msg
 
 	sugaredLogger.Infow("relay prophecies to cosmos.",
@@ -41,7 +37,7 @@ func RelayToCosmos(moniker, password string, claims []*EthBridgeClaim, cliCtx cl
 				errorMessageKey, err.Error())
 			continue
 		} else {
-			messages = append(messages, msg)
+			messages = append(messages, &msg)
 		}
 	}
 
@@ -73,7 +69,7 @@ func RelayToCosmos(moniker, password string, claims []*EthBridgeClaim, cliCtx cl
 	}
 	log.Println("Broadcasted tx without error")
 
-	if err = cliCtx.PrintOutput(res); err != nil {
+	if err = cliCtx.PrintProto(res); err != nil {
 		sugaredLogger.Errorw("failed to print out result.",
 			errorMessageKey, err.Error())
 		return err

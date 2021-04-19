@@ -63,20 +63,20 @@ func (s Sifgen) NodeReset(nodeHomeDir *string) {
 }
 
 func (s Sifgen) KeyGenerateMnemonic(name, password *string) {
-	key := key.NewKey(name, password)
-	key.GenerateMnemonic()
-	fmt.Println(key.Mnemonic)
+	k := key.NewKey(name, password)
+	k.GenerateMnemonic()
+	fmt.Println(k.Mnemonic)
 }
 
 func (s Sifgen) KeyRecoverFromMnemonic(mnemonic string) {
-	key := key.NewKey(nil, nil)
-	if err := key.RecoverFromMnemonic(mnemonic); err != nil {
+	k := key.NewKey(nil, nil)
+	if err := k.RecoverFromMnemonic(mnemonic); err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println(heredoc.Doc(`
-		Address: ` + key.Address + `
-		Validator Address: ` + key.ValidatorAddress + `
-		Consensus Address: ` + key.ConsensusAddress + `
+		Address: ` + k.Address + `
+		Validator Address: ` + k.ValidatorAddress + `
+		Consensus Address: ` + k.ConsensusAddress + `
 	`))
 }

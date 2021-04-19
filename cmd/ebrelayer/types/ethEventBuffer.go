@@ -145,7 +145,7 @@ func (buff *EthEventBuffer) GetHeaderEvents() []EthereumEvent {
 	eventsInHeight, ok := buff.Buffer[buff.MinHeight.String()]
 	if ok {
 		maxDepth := uint64(0)
-		result := []EthereumEvent{}
+		var result []EthereumEvent
 		one := big.NewInt(1)
 		one.Add(one, buff.MinHeight)
 		for blockHash, eventsInBlock := range eventsInHeight.EventsMap {

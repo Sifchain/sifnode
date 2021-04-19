@@ -152,8 +152,8 @@ func (sub CosmosSub) Start(completionEvent *sync.WaitGroup) {
 					continue
 				}
 
-				for _, log := range block.TxsResults {
-					for _, event := range log.Events {
+				for _, logg := range block.TxsResults {
+					for _, event := range logg.Events {
 
 						claimType := getOracleClaimType(event.GetType())
 

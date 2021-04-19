@@ -10,8 +10,3 @@ var EventRecords = make(map[string]EthereumEvent)
 func NewEventWrite(txHash string, event EthereumEvent) {
 	EventRecords[txHash] = event
 }
-
-// IsEventRecorded checks the sessions stored events for this transaction hash
-func IsEventRecorded(txHash string) bool {
-	return EventRecords[txHash].Nonce != nil
-}
