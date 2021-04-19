@@ -31,6 +31,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/cosmos/cosmos-sdk/x/capability"
+	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
+	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	distrclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
@@ -43,6 +46,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer"
+	ibctransferkeeper "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/keeper"
+	ibctransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	ibc "github.com/cosmos/cosmos-sdk/x/ibc/core"
+	ibcclient "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client"
+	porttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/05-port/types"
+	ibchost "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
+	ibckeeper "github.com/cosmos/cosmos-sdk/x/ibc/core/keeper"
+	ibcmock "github.com/cosmos/cosmos-sdk/x/ibc/testing/mock"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
@@ -64,6 +76,7 @@ import (
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	"github.com/tendermint/tendermint/libs/log"
 	tmos "github.com/tendermint/tendermint/libs/os"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/Sifchain/sifnode/x/clp"
@@ -83,6 +96,7 @@ var (
 		genutil.AppModuleBasic{},
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
+		capability.AppModuleBasic{},
 		staking.AppModuleBasic{},
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(
@@ -92,9 +106,11 @@ var (
 		upgrade.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		evidence.AppModuleBasic{},
+		ibc.AppModuleBasic{},
 
 		clp.AppModuleBasic{},
 		oracle.AppModuleBasic{},
+		dispensation.AppModuleBasic{},
 	)
 
 	maccPerms = map[string][]string{
@@ -103,7 +119,10 @@ var (
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner, authtypes.Staking},
-		clptypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
+		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+
+		clptypes.ModuleName:     {authtypes.Burner, authtypes.Minter},
+		dispensation.ModuleName: {authtypes.Burner, authtypes.Minter},
 	}
 )
 
@@ -136,18 +155,27 @@ type SifchainApp struct {
 	tkeys   map[string]*sdk.TransientStoreKey
 	memKeys map[string]*sdk.MemoryStoreKey
 
-	AccountKeeper  authkeeper.AccountKeeper
-	ParamsKeeper   paramskeeper.Keeper
-	UpgradeKeeper  upgradekeeper.Keeper
-	GovKeeper      govkeeper.Keeper
-	BankKeeper     bankkeeper.Keeper
-	StakingKeeper  stakingkeeper.Keeper
-	SlashingKeeper slashingkeeper.Keeper
-	DistrKeeper    distrkeeper.Keeper
-	EvidenceKeeper evidencekeeper.Keeper
+	AccountKeeper    authkeeper.AccountKeeper
+	BankKeeper       bankkeeper.Keeper
+	CapabilityKeeper *capabilitykeeper.Keeper
+	ParamsKeeper     paramskeeper.Keeper
+	UpgradeKeeper    upgradekeeper.Keeper
+	GovKeeper        govkeeper.Keeper
+	StakingKeeper    stakingkeeper.Keeper
+	SlashingKeeper   slashingkeeper.Keeper
+	DistrKeeper      distrkeeper.Keeper
+	EvidenceKeeper   evidencekeeper.Keeper
+	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	TransferKeeper   ibctransferkeeper.Keeper
 
-	ClpKeeper    clpkeeper.Keeper
-	OracleKeeper oraclekeeper.Keeper
+	// make scoped keepers public for test purposes
+	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
+	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
+	ScopedIBCMockKeeper  capabilitykeeper.ScopedKeeper
+
+	ClpKeeper          clpkeeper.Keeper
+	OracleKeeper       oraclekeeper.Keeper
+	DispensationKeeper dispensation.Keeper
 
 	mm *module.Manager
 	sm *module.SimulationManager
@@ -178,14 +206,18 @@ func NewSifApp(
 		distrtypes.StoreKey,
 		slashingtypes.StoreKey,
 		evidencetypes.StoreKey,
+		ibchost.StoreKey,
+		ibctransfertypes.StoreKey,
+		capabilitytypes.StoreKey,
 
 		// ethbridge.StoreKey,
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
+		dispensation.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
-	memKeys := sdk.NewMemoryStoreKeys()
+	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 
 	var app = &SifchainApp{
 		BaseApp:           bApp,
@@ -202,6 +234,14 @@ func NewSifApp(
 
 	// set the BaseApp's parameter store
 	bApp.SetParamStore(app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramskeeper.ConsensusParamsKeyTable()))
+
+	// add capability keeper and ScopeToModule for ibc module
+	app.CapabilityKeeper = capabilitykeeper.NewKeeper(appCodec, keys[capabilitytypes.StoreKey], memKeys[capabilitytypes.MemStoreKey])
+	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
+	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
+	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
+	// note replicate if you do not need to test core IBC or light clients.
+	scopedIBCMockKeeper := app.CapabilityKeeper.ScopeToModule(ibcmock.ModuleName)
 
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
 		appCodec, keys[authtypes.StoreKey], app.GetSubspace(authtypes.ModuleName), authtypes.ProtoBaseAccount, maccPerms,
@@ -239,19 +279,30 @@ func NewSifApp(
 		oracletypes.DefaultConsensusNeeded,
 	)
 
+	app.DispensationKeeper = dispensation.NewKeeper(
+		app.Cdc,
+		keys[dispensation.StoreKey],
+		app.BankKeeper,
+		app.AuthKeeper,
+	)
+
 	// This map defines heights to skip for updates
 	// The mapping represents height to bool. if the value is true for a height that height
 	// will be skipped even if we have a update proposal for it
 	skipUpgradeHeights[0] = true
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, DefaultNodeHome)
 
-	app.UpgradeKeeper.SetUpgradeHandler("release-20210401000000", func(ctx sdk.Context, plan upgradetypes.Plan) {})
+	// Create IBC Keeper
+	app.IBCKeeper = ibckeeper.NewKeeper(
+		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, scopedIBCKeeper,
+	)
 
 	govRouter := govtypes.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
-		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
+		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
+		AddRoute(ibchost.RouterKey, ibcclient.NewClientUpdateProposalHandler(app.IBCKeeper.ClientKeeper))
 	app.GovKeeper = govkeeper.NewKeeper(
 		appCodec,
 		keys[govtypes.StoreKey],
@@ -261,6 +312,24 @@ func NewSifApp(
 		app.StakingKeeper,
 		govRouter,
 	)
+
+	// Create Transfer Keepers
+	app.TransferKeeper = ibctransferkeeper.NewKeeper(
+		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
+		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
+		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
+	)
+	transferModule := transfer.NewAppModule(app.TransferKeeper)
+
+	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
+	// note replicate if you do not need to test core IBC or light clients.
+	mockModule := ibcmock.NewAppModule(scopedIBCMockKeeper)
+
+	// Create static IBC router, add transfer route, then set and seal it
+	ibcRouter := porttypes.NewRouter()
+	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferModule)
+	ibcRouter.AddRoute(ibcmock.ModuleName, mockModule)
+	app.IBCKeeper.SetRouter(ibcRouter)
 
 	// create evidence keeper with router
 	evidenceKeeper := evidencekeeper.NewKeeper(
@@ -278,15 +347,19 @@ func NewSifApp(
 		),
 		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
+		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		params.NewAppModule(app.ParamsKeeper),
-		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
+		ibc.NewAppModule(app.IBCKeeper),
+		transferModule,
+		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
+		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AuthKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -297,7 +370,9 @@ func NewSifApp(
 		slashingtypes.ModuleName,
 		upgradetypes.ModuleName,
 		evidencetypes.ModuleName,
-		stakingtypes.ModuleName)
+		stakingtypes.ModuleName,
+		ibchost.ModuleName,
+	)
 
 	app.mm.SetOrderEndBlockers(
 		stakingtypes.ModuleName,
@@ -309,21 +384,25 @@ func NewSifApp(
 	app.mm.SetOrderInitGenesis(
 		authtypes.ModuleName,
 		banktypes.ModuleName,
+		capabilitytypes.ModuleName,
 		distrtypes.ModuleName,
 		stakingtypes.ModuleName,
 		slashingtypes.ModuleName,
 		genutiltypes.ModuleName,
 		govtypes.ModuleName,
 		evidencetypes.ModuleName,
+		ibchost.ModuleName,
+		ibctransfertypes.ModuleName,
 
 		clptypes.ModuleName,
 		oracletypes.ModuleName,
+		dispensation.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
 	app.mm.RegisterServices(module.NewConfigurator(app.MsgServiceRouter(), app.GRPCQueryRouter()))
 
-	// app.sm.RegisterStoreDecoders()
+	app.sm.RegisterStoreDecoders()
 
 	// initialize stores
 	app.MountKVStores(keys)
@@ -346,7 +425,23 @@ func NewSifApp(
 		if err != nil {
 			tmos.Exit(err.Error())
 		}
+		// Initialize and seal the capability keeper so all persistent capabilities
+		// are loaded in-memory and prevent any further modules from creating scoped
+		// sub-keepers.
+		// This must be done during creation of baseapp rather than in InitChain so
+		// that in-memory capabilities get regenerated on app restart.
+		// Note that since this reads from the store, we can only perform it when
+		// `loadLatest` is set to true.
+		ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
+		app.CapabilityKeeper.InitializeAndSeal(ctx)
 	}
+
+	app.ScopedIBCKeeper = scopedIBCKeeper
+	app.ScopedTransferKeeper = scopedTransferKeeper
+
+	// NOTE: the IBC mock keeper and application module is used only for testing core IBC. Do
+	// note replicate if you do not need to test core IBC or light clients.
+	app.ScopedIBCMockKeeper = scopedIBCMockKeeper
 
 	return app
 }
@@ -487,6 +582,8 @@ func initParamsKeeper(appCodec codec.BinaryMarshaler, legacyAmino *codec.LegacyA
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(clptypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
+	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
+	paramsKeeper.Subspace(ibchost.ModuleName)
 
 	return paramsKeeper
 }

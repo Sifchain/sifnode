@@ -1,6 +1,7 @@
 <template>
   <div class="field-wrappers">
     <CurrencyField
+      slug="token-a"
       :label="tokenALabel"
       tabindex="1"
       :max="fromMax && !isFromMaxActive"
@@ -27,6 +28,7 @@
     />
     <Icon icon="plus" v-if="canSwapIcon === 'plus'" />
     <CurrencyField
+      slug="token-b"
       :label="tokenBLabel"
       tabindex="2"
       :max="toMax && !isToMaxActive"
