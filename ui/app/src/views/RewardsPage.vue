@@ -19,16 +19,6 @@ const REWARD_INFO = {
   },
 };
 
-async function getRewardsData(address: ComputedRef<any>) {
-  if (!address.value) return;
-  const data = await fetch(
-    `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
-  );
-  if (data.status !== 200)
-    return [{ type: "lm", multiplier: 0, start: "", amount: null }];
-  return await data.json();
-}
-
 // NOTE - This will be removed and replaced with Amount API
 function format(amount: number) {
   if (amount < 1) {
@@ -42,6 +32,15 @@ function format(amount: number) {
   }
 }
 
+async function getRewardsData(address: ComputedRef<any>) {
+  if (!address.value) return;
+  const data = await fetch(
+    `https://vtdbgplqd6.execute-api.us-west-2.amazonaws.com/default/rewards/${address.value}`,
+  );
+  if (data.status !== 200)
+    return [{ type: "lm", multiplier: 0, start: "", amount: null }];
+  return await data.json();
+}
 export default defineComponent({
   components: {
     Layout,
