@@ -13,7 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/tendermint/tendermint/crypto/multisig"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -26,9 +25,9 @@ func GetTxCmd(cdc *codec.LegacyAmino) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	dispensationTxCmd.AddCommand(flags.PostCommands(
+	dispensationTxCmd.AddCommand(
 		GetCmdCreate(cdc),
-	)...)
+	)
 
 	return dispensationTxCmd
 }
