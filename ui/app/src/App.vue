@@ -4,33 +4,27 @@
       <template v-slot:right>
         <WithWallet>
           <template v-slot:disconnected="{ requestDialog }">
-            <SifButton
+            <Pill
               data-handle="button-connected"
-              round
-              small
-              ghost
-              secondary
+              color="danger"
               @click="requestDialog"
             >
               Not connected
-            </SifButton>
+            </Pill>
           </template>
           <template v-slot:connected="{ requestDialog }">
-            <SifButton
+            <Pill
               data-handle="button-connected"
-              small
-              ghost
-              success
-              round
               @click="requestDialog"
+              color="success"
+              >Connected</Pill
             >
-              Connected
-            </SifButton>
           </template>
         </WithWallet>
       </template>
     </Header>
     <router-view />
+    <Footer />
     <Notifications />
   </div>
 </template>
@@ -38,7 +32,9 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import WithWallet from "@/components/wallet/WithWallet.vue";
-import Header from "./components/shared/Header.vue";
+import Header from "./components/shared/Header/Header.vue";
+import Pill from "./components/shared/Pill/Pill.vue";
+import Footer from "./components/shared/Footer/Footer.vue";
 import SifButton from "./components/shared/SifButton.vue";
 import Notifications from "./components/Notifications.vue";
 import { useInitialize } from "./hooks/useInitialize";
@@ -49,6 +45,8 @@ export default defineComponent({
     Notifications,
     WithWallet,
     SifButton,
+    Footer,
+    Pill,
   },
   setup() {
     /// Initialize app

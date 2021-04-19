@@ -48,6 +48,7 @@ export default {};
     font-size: 40px;
     font-weight: normal;
     margin-right: 46px;
+    color: #c1a04f;
   }
 
   .link {
@@ -56,7 +57,7 @@ export default {};
     font-weight: normal;
     opacity: 1;
     transition: opacity $trans_fast;
-
+    color: #c1a04f;
     &:hover {
       opacity: 0.5;
     }

@@ -1,8 +1,8 @@
 <script lang="ts">
 import { defineComponent } from "vue";
-import Menu from "./Menu.vue";
-import RowanPrice from "./RowanPrice.vue";
-import TVL from "./TVL.vue";
+import Menu from "../Menu/Menu.vue";
+import RowanPrice from "../RowanPrice.vue";
+import TVL from "../TVL.vue";
 
 export default defineComponent({
   components: {
@@ -60,6 +60,9 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  .primary-header-container {
+    background: #000;
+  }
   .primary-header-container,
   .secondary-header-container {
     display: flex;
@@ -81,6 +84,9 @@ export default defineComponent({
   .third-container {
     display: flex;
     justify-content: center;
+    > div {
+      margin-left: 15px;
+    }
   }
 }
 </style>
