@@ -3,23 +3,23 @@ package test
 import (
 	"bytes"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/tendermint/tendermint/crypto"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	"github.com/tendermint/tendermint/crypto"
+	sifapp "github.com/Sifchain/sifnode/app"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"strconv"
 )
 
-func CreateTestApp(isCheckTx bool) (*simapp.SimApp, sdk.Context) {
-	app := simapp.Setup(isCheckTx)
+func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
+	app := sifapp.Setup(isCheckTx)
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000)
 	app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(sdk.Coins{}))
-	_ = simapp.AddTestAddrs(app, ctx, 6, initTokens)
+	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }
 
