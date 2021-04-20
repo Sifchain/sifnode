@@ -12,6 +12,7 @@
       <Tab title="External Tokens" slug="external-tab">
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
+            :disabled="!asset.supported"
             :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
               asset.asset.symbol,
             )}`"
@@ -19,6 +20,9 @@
             :data-handle="'peg-' + asset.asset.symbol"
             >Peg</SifButton
           >
+          <Tooltip v-if="!asset.supported" message="Network not supported">
+            &nbsp;<Icon icon="info-box-black" />
+          </Tooltip>
         </AssetList>
       </Tab>
       <Tab title="Sifchain Native" slug="native-tab">
@@ -80,12 +84,13 @@ import SifInput from "@/components/shared/SifInput.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
+import Icon from "@/components/shared/Icon.vue";
 
 import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";
 import { computed } from "@vue/reactivity";
 import { getUnpeggedSymbol } from "../components/shared/utils";
-import { AssetAmount, TransactionStatus } from "ui-core";
+import { AssetAmount, IAsset, TransactionStatus } from "ui-core";
 
 export default defineComponent({
   components: {
@@ -97,10 +102,20 @@ export default defineComponent({
     SifInput,
     ActionsPanel,
     Tooltip,
+    Icon,
   },
   setup(_, context) {
     const { store, actions } = useCore();
+    function getIsSupportedNetwork(asset: IAsset): boolean {
+      if (asset.network === "ethereum") {
+        return actions.ethWallet.isSupportedNetwork();
+      }
 
+      if (asset.network === "sifchain") {
+        return true; // TODO: Handle the case of whether the network is supported
+      }
+      return false;
+    }
     const searchText = ref("");
     const selectedTab = ref("Sifchain Native");
 
@@ -169,14 +184,23 @@ export default defineComponent({
               )
             : [];
 
+          // Is the asset from a supported network
+          const supported = getIsSupportedNetwork(asset);
+
           if (!amount) {
-            return { amount: AssetAmount(asset, "0"), asset, pegTxs };
+            return {
+              amount: AssetAmount(asset, "0"),
+              asset,
+              pegTxs,
+              supported,
+            };
           }
 
           return {
             amount,
             asset,
             pegTxs,
+            supported,
           };
         })
         .sort((a, b) => {
@@ -217,7 +241,6 @@ export default defineComponent({
       shortenHash,
       assetList,
       searchText,
-
       peggedSymbol(unpeggedSymbol: string) {
         if (unpeggedSymbol.toLowerCase() === "erowan") {
           return "rowan";

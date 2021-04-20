@@ -63,6 +63,14 @@ export default defineComponent({
       return Array.isArray(assetFrom) ? assetFrom[0] : assetFrom;
     });
 
+    const networkIsSupported = computed(() => {
+      if (mode.value === "peg") {
+        return actions.ethWallet.isSupportedNetwork();
+      }
+
+      return true;
+    });
+
     const oppositeSymbol = computed(() => {
       if (mode.value === "peg") {
         return getPeggedSymbol(symbol.value);
@@ -138,16 +146,24 @@ export default defineComponent({
     });
 
     const nextStepAllowed = computed(() => {
+      if (!networkIsSupported.value) return false;
+
       const amountNum = new BigNumber(amount.value);
       const balance =
         (accountBalance.value &&
           format(accountBalance.value.amount, accountBalance.value.asset)) ??
         "0.0";
+
       return (
         amountNum.isGreaterThan("0.0") &&
         address.value !== "" &&
         amountNum.isLessThanOrEqualTo(balance)
       );
+    });
+
+    const nextStepMessage = computed(() => {
+      if (!networkIsSupported.value) return "Network Not Supported";
+      return mode.value === "peg" ? "Peg" : "Unpeg";
     });
 
     function requestTransactionModalClose() {
@@ -208,9 +224,7 @@ export default defineComponent({
       nextStepAllowed,
       isMaxActive,
       feeDisplayAmount,
-      nextStepMessage: computed(() => {
-        return mode.value === "peg" ? "Peg" : "Unpeg";
-      }),
+      nextStepMessage,
     };
     (window as any).pageState = pageState;
     return pageState;
