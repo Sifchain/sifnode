@@ -1,67 +1,69 @@
 <template>
   <Layout>
-    <div class="search-text">
-      <SifInput
-        gold
-        placeholder="Search name or paste address"
-        type="text"
-        v-model="searchText"
-      />
-    </div>
-    <Tabs :defaultIndex="1" @tabselected="onTabSelected">
-      <Tab title="External Tokens" slug="external-tab">
-        <AssetList :items="assetList" v-slot="{ asset }">
-          <SifButton
-            :disabled="!asset.supported"
-            :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
-              asset.asset.symbol,
-            )}`"
-            primary
-            :data-handle="'peg-' + asset.asset.symbol"
-            >Peg</SifButton
-          >
-          <Tooltip v-if="!asset.supported" message="Network not supported">
-            &nbsp;<Icon icon="info-box-black" />
-          </Tooltip>
-        </AssetList>
-      </Tab>
-      <Tab title="Sifchain Native" slug="native-tab">
-        <AssetList :items="assetList">
-          <template #default="{ asset }">
+    <MismatchedNetworkGuard>
+      <div class="search-text">
+        <SifInput
+          gold
+          placeholder="Search name or paste address"
+          type="text"
+          v-model="searchText"
+        />
+      </div>
+      <Tabs :defaultIndex="1" @tabselected="onTabSelected">
+        <Tab title="External Tokens" slug="external-tab">
+          <AssetList :items="assetList" v-slot="{ asset }">
             <SifButton
-              :to="`/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
+              :disabled="!asset.supported"
+              :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
                 asset.asset.symbol,
               )}`"
               primary
-              :data-handle="'unpeg-' + asset.asset.symbol"
-              >Unpeg</SifButton
+              :data-handle="'peg-' + asset.asset.symbol"
+              >Peg</SifButton
             >
-          </template>
-          <template #annotation="{ pegTxs }">
-            <span v-if="pegTxs.length > 0">
-              <Tooltip>
-                <template #message>
-                  <p>You have the following pending transactions:</p>
-                  <br />
-                  <p v-for="tx in pegTxs" :key="tx.hash">
-                    <a
-                      :href="`https://etherscan.io/tx/${tx.hash}`"
-                      :title="tx.hash"
-                      target="_blank"
-                      >{{ shortenHash(tx.hash) }}</a
-                    >
-                  </p></template
-                >
-                <template #default
-                  >&nbsp;<span class="footnote">*</span></template
-                >
-              </Tooltip>
-            </span>
-          </template>
-        </AssetList>
-      </Tab>
-    </Tabs>
-    <ActionsPanel connectType="connectToAll" />
+            <Tooltip v-if="!asset.supported" message="Network not supported">
+              &nbsp;<Icon icon="info-box-black" />
+            </Tooltip>
+          </AssetList>
+        </Tab>
+        <Tab title="Sifchain Native" slug="native-tab">
+          <AssetList :items="assetList">
+            <template #default="{ asset }">
+              <SifButton
+                :to="`/peg/reverse/${asset.asset.symbol}/${unpeggedSymbol(
+                  asset.asset.symbol,
+                )}`"
+                primary
+                :data-handle="'unpeg-' + asset.asset.symbol"
+                >Unpeg</SifButton
+              >
+            </template>
+            <template #annotation="{ pegTxs }">
+              <span v-if="pegTxs.length > 0">
+                <Tooltip>
+                  <template #message>
+                    <p>You have the following pending transactions:</p>
+                    <br />
+                    <p v-for="tx in pegTxs" :key="tx.hash">
+                      <a
+                        :href="`https://etherscan.io/tx/${tx.hash}`"
+                        :title="tx.hash"
+                        target="_blank"
+                        >{{ shortenHash(tx.hash) }}</a
+                      >
+                    </p></template
+                  >
+                  <template #default
+                    >&nbsp;<span class="footnote">*</span></template
+                  >
+                </Tooltip>
+              </span>
+            </template>
+          </AssetList>
+        </Tab>
+      </Tabs>
+      <ActionsPanel connectType="connectToAll" />
+    </MismatchedNetworkGuard>
   </Layout>
 </template>
 <style lang="scss" scoped>
@@ -85,13 +87,13 @@ import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
 import Icon from "@/components/shared/Icon.vue";
+import MismatchedNetworkGuard from "@/components/mismatchedNetworkGuard/MismatchedNetworkGuard.vue";
 
 import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";
 import { computed } from "@vue/reactivity";
 import { getUnpeggedSymbol } from "../components/shared/utils";
 import { AssetAmount, IAsset, TransactionStatus } from "ui-core";
-
 export default defineComponent({
   components: {
     Tab,
@@ -103,6 +105,7 @@ export default defineComponent({
     ActionsPanel,
     Tooltip,
     Icon,
+    MismatchedNetworkGuard,
   },
   setup(_, context) {
     const { store, actions } = useCore();

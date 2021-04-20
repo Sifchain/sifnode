@@ -26,6 +26,7 @@ import { getMaxAmount } from "./utils/getMaxAmount";
 import { ConfirmState } from "../types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import { format, toBaseUnits } from "ui-core";
+import MismatchedNetworkGuard from "@/components/mismatchedNetworkGuard/MismatchedNetworkGuard.vue";
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -42,6 +43,7 @@ export default defineComponent({
     ActionsPanel,
     RaisedPanelColumn,
     ConfirmationModal,
+    MismatchedNetworkGuard,
   },
 
   setup(props, context) {
@@ -229,135 +231,141 @@ export default defineComponent({
 
 <template>
   <Layout :title="mode === 'peg' ? 'Peg Asset' : 'Unpeg Asset'" backLink="/peg">
-    <div class="vspace">
-      <CurrencyField
-        slug="peg"
-        :amount="amount"
-        :max="true"
-        :isMaxActive="isMaxActive"
-        :selectable="true"
-        :symbol="symbol"
-        :symbolFixed="true"
-        @blur="handleBlur"
-        @maxclicked="handleMaxClicked"
-        @update:amount="handleAmountUpdated"
-        label="Amount"
-      />
-      <RaisedPanel>
-        <RaisedPanelColumn v-if="mode === 'peg'">
-          <Label>Sifchain Recipient Address</Label>
-          <SifInput disabled v-model="address" />
-        </RaisedPanelColumn>
-        <RaisedPanelColumn v-if="mode === 'unpeg'">
-          <Label>Ethereum Recipient Address</Label>
-          <SifInput
-            disabled
-            v-model="address"
-            placeholder="Eg. 0xeaf65652e380528fffbb9fc276dd8ef608931e3c"
-          />
-        </RaisedPanelColumn>
-      </RaisedPanel>
-      <DetailsTable
-        v-if="mode === 'unpeg'"
-        :header="{
-          show: amount !== '0.0',
-          label: `${modeLabel} Amount`,
-          data: `${amount} ${symbolLabel}`,
-        }"
-        :rows="[
-          {
-            show: !!feeDisplayAmount,
-            label: 'Transaction Fee',
-            data: `${feeDisplayAmount} cETH`,
-            tooltipMessage: `This is a fixed fee amount. This is a temporary solution as we are working towards improving this amount in upcoming versions of the network.`,
-          },
-        ]"
-      />
-      <ActionsPanel
-        connectType="connectToAll"
-        @nextstepclick="handleActionClicked"
-        :nextStepAllowed="nextStepAllowed"
-        :nextStepMessage="nextStepMessage"
-      />
-    </div>
-    <ConfirmationModal
-      v-if="mode === 'peg'"
-      @confirmed="handlePegRequested"
-      :requestClose="requestTransactionModalClose"
-      :state="transactionState"
-      :transactionHash="transactionHash"
-      :transactionStateMsg="transactionStateMsg"
-      confirmButtonText="Confirm Peg"
-      :title="`Peg token to Sifchain`"
-    >
-      <template v-slot:selecting>
-        <DetailsTable
-          :header="{
-            show: amount !== '0.0',
-            label: `${modeLabel} Amount`,
-            data: `${amount} ${formatSymbol(symbol)}`,
-          }"
-          :rows="[
-            {
-              show: true,
-              label: 'Direction',
-              data: `${formatSymbol(symbol)} → ${formatSymbol(oppositeSymbol)}`,
-            },
-          ]"
+    <MismatchedNetworkGuard>
+      <div class="vspace">
+        <CurrencyField
+          slug="peg"
+          :amount="amount"
+          :max="true"
+          :isMaxActive="isMaxActive"
+          :selectable="true"
+          :symbol="symbol"
+          :symbolFixed="true"
+          @blur="handleBlur"
+          @maxclicked="handleMaxClicked"
+          @update:amount="handleAmountUpdated"
+          label="Amount"
         />
-        <br />
-        <p class="text--normal">
-          *Please note your funds will be available for use on Sifchain only
-          after 50 Ethereum block confirmations. This can take upwards of 20
-          minutes.
-        </p>
-      </template>
-      <template v-slot:approving>
-        <p>Approving</p>
-      </template>
-      <template v-slot:common>
-        <p class="text--normal">
-          Pegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
-        </p>
-      </template>
-    </ConfirmationModal>
-    <ConfirmationModal
-      v-if="mode === 'unpeg'"
-      @confirmed="handleUnpegRequested"
-      :requestClose="requestTransactionModalClose"
-      :state="transactionState"
-      :transactionHash="transactionHash"
-      :transactionStateMsg="transactionStateMsg"
-      confirmButtonText="Confirm Unpeg"
-      title="Unpeg token from Sifchain"
-    >
-      <template v-slot:selecting>
+        <RaisedPanel>
+          <RaisedPanelColumn v-if="mode === 'peg'">
+            <Label>Sifchain Recipient Address</Label>
+            <SifInput disabled v-model="address" />
+          </RaisedPanelColumn>
+          <RaisedPanelColumn v-if="mode === 'unpeg'">
+            <Label>Ethereum Recipient Address</Label>
+            <SifInput
+              disabled
+              v-model="address"
+              placeholder="Eg. 0xeaf65652e380528fffbb9fc276dd8ef608931e3c"
+            />
+          </RaisedPanelColumn>
+        </RaisedPanel>
         <DetailsTable
+          v-if="mode === 'unpeg'"
           :header="{
             show: amount !== '0.0',
             label: `${modeLabel} Amount`,
-            data: `${amount} ${formatSymbol(symbol)}`,
+            data: `${amount} ${symbolLabel}`,
           }"
           :rows="[
-            {
-              show: true,
-              label: 'Direction',
-              data: `${formatSymbol(symbol)} → ${formatSymbol(oppositeSymbol)}`,
-            },
             {
               show: !!feeDisplayAmount,
               label: 'Transaction Fee',
               data: `${feeDisplayAmount} cETH`,
+              tooltipMessage: `This is a fixed fee amount. This is a temporary solution as we are working towards improving this amount in upcoming versions of the network.`,
             },
           ]"
         />
-      </template>
-      <template v-slot:common>
-        <p class="text--normal">
-          Unpegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
-        </p>
-      </template>
-    </ConfirmationModal>
+        <ActionsPanel
+          connectType="connectToAll"
+          @nextstepclick="handleActionClicked"
+          :nextStepAllowed="nextStepAllowed"
+          :nextStepMessage="nextStepMessage"
+        />
+      </div>
+      <ConfirmationModal
+        v-if="mode === 'peg'"
+        @confirmed="handlePegRequested"
+        :requestClose="requestTransactionModalClose"
+        :state="transactionState"
+        :transactionHash="transactionHash"
+        :transactionStateMsg="transactionStateMsg"
+        confirmButtonText="Confirm Peg"
+        :title="`Peg token to Sifchain`"
+      >
+        <template v-slot:selecting>
+          <DetailsTable
+            :header="{
+              show: amount !== '0.0',
+              label: `${modeLabel} Amount`,
+              data: `${amount} ${formatSymbol(symbol)}`,
+            }"
+            :rows="[
+              {
+                show: true,
+                label: 'Direction',
+                data: `${formatSymbol(symbol)} → ${formatSymbol(
+                  oppositeSymbol,
+                )}`,
+              },
+            ]"
+          />
+          <br />
+          <p class="text--normal">
+            *Please note your funds will be available for use on Sifchain only
+            after 50 Ethereum block confirmations. This can take upwards of 20
+            minutes.
+          </p>
+        </template>
+        <template v-slot:approving>
+          <p>Approving</p>
+        </template>
+        <template v-slot:common>
+          <p class="text--normal">
+            Pegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
+          </p>
+        </template>
+      </ConfirmationModal>
+      <ConfirmationModal
+        v-if="mode === 'unpeg'"
+        @confirmed="handleUnpegRequested"
+        :requestClose="requestTransactionModalClose"
+        :state="transactionState"
+        :transactionHash="transactionHash"
+        :transactionStateMsg="transactionStateMsg"
+        confirmButtonText="Confirm Unpeg"
+        title="Unpeg token from Sifchain"
+      >
+        <template v-slot:selecting>
+          <DetailsTable
+            :header="{
+              show: amount !== '0.0',
+              label: `${modeLabel} Amount`,
+              data: `${amount} ${formatSymbol(symbol)}`,
+            }"
+            :rows="[
+              {
+                show: true,
+                label: 'Direction',
+                data: `${formatSymbol(symbol)} → ${formatSymbol(
+                  oppositeSymbol,
+                )}`,
+              },
+              {
+                show: !!feeDisplayAmount,
+                label: 'Transaction Fee',
+                data: `${feeDisplayAmount} cETH`,
+              },
+            ]"
+          />
+        </template>
+        <template v-slot:common>
+          <p class="text--normal">
+            Unpegging <span class="text--bold">{{ amount }} {{ symbol }}</span>
+          </p>
+        </template>
+      </ConfirmationModal>
+    </MismatchedNetworkGuard>
   </Layout>
 </template>
 

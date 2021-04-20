@@ -32,7 +32,6 @@
     </Header>
     <router-view />
     <Notifications />
-    <MismatchedNetworkGuard />
   </div>
 </template>
 
@@ -42,7 +41,6 @@ import WithWallet from "@/components/wallet/WithWallet.vue";
 import Header from "./components/shared/Header.vue";
 import SifButton from "./components/shared/SifButton.vue";
 import Notifications from "./components/Notifications.vue";
-import MismatchedNetworkGuard from "./components/mismatchedNetworkGuard/MismatchedNetworkGuard.vue";
 
 import { useInitialize } from "./hooks/useInitialize";
 
@@ -53,7 +51,6 @@ export default defineComponent({
     Notifications,
     WithWallet,
     SifButton,
-    MismatchedNetworkGuard,
   },
   setup() {
     /// Initialize app

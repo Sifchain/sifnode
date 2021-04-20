@@ -32,6 +32,7 @@ import { defineComponent } from "vue";
 import Panel from "@/components/shared/Panel.vue";
 import PanelNav from "@/components/navigation/PanelNav.vue";
 import Icon from "@/components/shared/Icon.vue";
+
 export default defineComponent({
   components: { Panel, PanelNav, Icon },
   props: {

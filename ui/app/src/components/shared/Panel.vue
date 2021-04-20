@@ -44,6 +44,10 @@ export default {
     padding: 20px 20px 10px 20px;
   }
 
+  .body {
+    position: relative; // relative to allow for absolute positioned panel content to extend to the edges if required
+  }
+
   &.dark {
     .header {
       padding: 20px 20px 10px 20px;
