@@ -9,6 +9,10 @@ export default defineComponent({
     symbol: String,
     asset: Object as PropType<Asset>,
     inline: Boolean,
+    label: {
+      type: Boolean,
+      default: true,
+    },
   },
   setup(props) {
     const symbol = computed(() => props.symbol);
@@ -29,7 +33,7 @@ export default defineComponent({
   <div class="row" :class="{ inline: inline }">
     <img v-if="token.imageUrl" width="16" :src="token.imageUrl" />
     <div class="placeholder" :style="backgroundStyle" v-else></div>
-    <span>{{ tokenLabel }}</span>
+    <span v-if="label">{{ tokenLabel }}</span>
   </div>
 </template>
 
