@@ -22,6 +22,7 @@ import {
   useAssetItem,
 } from "@/components/shared/utils";
 import { toConfirmState } from "./utils/toConfirmState";
+import { getMaxAmount } from "./utils/getMaxAmount";
 import { ConfirmState } from "../types";
 import ConfirmationModal from "@/components/shared/ConfirmationModal.vue";
 import { format, toBaseUnits } from "ui-core";
@@ -183,10 +184,7 @@ export default defineComponent({
       handleMaxClicked: () => {
         if (!accountBalance.value) return;
         const decimals = Asset.get(symbol.value).decimals;
-        const afterMaxValue =
-          symbol.value === "ceth"
-            ? accountBalance.value.subtract(feeAmount.value)
-            : accountBalance.value;
+        const afterMaxValue = getMaxAmount(symbol, accountBalance.value);
         amount.value = afterMaxValue.lessThan("0")
           ? "0.0"
           : format(afterMaxValue, accountBalance.value.asset, {
