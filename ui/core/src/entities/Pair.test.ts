@@ -1,35 +1,37 @@
-import JSBI from "jsbi";
 import { Asset } from "./Asset";
 import { AssetAmount } from "./AssetAmount";
-import { Coin } from "./Coin";
+
 import { Network } from "./Network";
 import { Pair } from "./Pair";
-import { Token } from "./Token";
 
 describe("Pair", () => {
-  const ATK = Token({
+  const ATK = Asset({
     decimals: 6,
     symbol: "atk",
+    label: "ATK",
     name: "AppleToken",
     address: "123",
     network: Network.ETHEREUM,
   });
-  const BTK = Token({
+  const BTK = Asset({
     decimals: 18,
     symbol: "btk",
+    label: "BTK",
     name: "BananaToken",
     address: "1234",
     network: Network.ETHEREUM,
   });
-  const ETH = Coin({
+  const ETH = Asset({
     decimals: 18,
     symbol: "eth",
+    label: "ETH",
     name: "Ethereum",
     network: Network.ETHEREUM,
   });
-  const ROWAN = Coin({
+  const ROWAN = Asset({
     decimals: 18,
     symbol: "rowan",
+    label: "ROWAN",
     name: "Rowan",
     network: Network.SIFCHAIN,
   });
