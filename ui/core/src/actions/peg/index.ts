@@ -63,6 +63,28 @@ export default ({
     }
   */
 
+  const ETH_MAINNET = "0x1";
+  const ETH_ROPSTEN = "0x3";
+  const ETH_LOCALNET = "0x539";
+
+  const SIF_MAINNET = "sifchain-mainnet";
+  const SIF_TESTNET = "sifchain-testnet";
+  const SIF_DEVNET = "sifchain-devnet";
+  const SIF_LOCALNET = "sifchain-local";
+
+  const networkCombinations = {
+    [SIF_MAINNET]: ETH_MAINNET,
+    [SIF_TESTNET]: ETH_ROPSTEN,
+    [SIF_DEVNET]: ETH_ROPSTEN,
+    [SIF_LOCALNET]: ETH_LOCALNET,
+  };
+  // List of supported EVM chainIds
+  const supportedEVMChainIds = [
+    ETH_MAINNET, // 1 Mainnet
+    ETH_ROPSTEN, // 3 Ropsten
+    ETH_LOCALNET, // 1337 Ganache/Hardhat
+  ];
+
   // Rename and split this up to subscriptions, commands, queries
   const actions = {
     subscribeToUnconfirmedPegTxs: SubscribeToUnconfirmedPegTxs(ctx),
@@ -70,38 +92,21 @@ export default ({
     isSupportedEVMNetwork() {
       const chainId = store.wallet.eth.chainId;
       if (!chainId) return false;
-      // List of supported EVM chainIds
-      const supportedEVMChainIds = [
-        "0x1", // 1 Mainnet
-        "0x3", // 3 Ropsten
-        "0x539", // 1337 Ganache/Hardhat
-      ];
-
       return supportedEVMChainIds.includes(chainId);
     },
 
     isSupportedNetworkCombination(ethChainId: string, sifChainId: string) {
-      const ETH_MAINNET = "0x1";
-      const ETH_ROPSTEN = "0x3";
-      const ETH_LOCALNET = "0x539";
+      return (
+        networkCombinations[sifChainId as keyof typeof networkCombinations] ===
+        ethChainId
+      );
+    },
 
-      const SIF_MAINNET = "sifchain-mainnet";
-      const SIF_TESTNET = "sifchain-testnet";
-      const SIF_DEVNET = "sifchain-devnet";
-      const SIF_LOCALNET = "sifchain-local";
-
-      const allowedCombinations = [
-        `${ETH_MAINNET}:${SIF_MAINNET}`,
-        `${ETH_ROPSTEN}:${SIF_TESTNET}`,
-        `${ETH_ROPSTEN}:${SIF_DEVNET}`,
-        `${ETH_LOCALNET}:${SIF_LOCALNET}`,
-      ];
-
-      const netcom = [ethChainId, sifChainId].join(":");
-
-      const found = allowedCombinations.includes(netcom);
-
-      return found;
+    getSuggestedEVMNetwork(sifChainId: string) {
+      return (
+        networkCombinations[sifChainId as keyof typeof networkCombinations] ||
+        null
+      );
     },
 
     getSifTokens() {

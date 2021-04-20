@@ -18,9 +18,9 @@ const Template = (args: any) => ({
 });
 
 export const Basic = Template.bind({});
-Basic.args = {};
+(Basic as any).args = {};
 
-Basic.parameters = {
+(Basic as any).parameters = {
   design: {
     type: "figma",
     url:
