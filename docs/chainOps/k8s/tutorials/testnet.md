@@ -112,7 +112,7 @@ _Please note: the image tag *must* be `testnet-genesis`._
 5. Once deployed, check the status of the pods:
 
 ```
-kubectl get pods -n sifnode --kubeconfig ./.live/sifchain-aws-testnet/kubeconfig_sifchain-testnet
+kubectl get pods -n sifnode --kubeconfig ./.live/sifchain-aws-my-cluster/kubeconfig_sifchain-aws-my-cluster
 ```
 
 and you should see something that resembles the following:
