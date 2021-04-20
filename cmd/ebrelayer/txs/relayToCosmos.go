@@ -8,6 +8,7 @@ import (
 
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"go.uber.org/zap"
 )
@@ -50,29 +51,16 @@ func RelayToCosmos(moniker, password string, claims []*types.EthBridgeClaim, cli
 	}
 
 	log.Println("building and signing")
-	// Build and sign the transaction
-	//txBytes, err := client.TxBuilder.SetSignatures().BuildAndSign(moniker, password, messages)
-	//if err != nil {
-	//	sugaredLogger.Errorw("failed to sign transaction.",
-	//		errorMessageKey, err.Error())
-	//	return err
-	//}
 
 	log.Println("built tx, now broadcasting")
 	// Broadcast to a Tendermint node
-	//res, err := cliCtx.BroadcastTxAsync(txBytes)
-	//if err != nil {
-	//	sugaredLogger.Errorw("failed to broadcast tx to sifchain.",
-	//		errorMessageKey, err.Error())
-	//	return err
-	//}
+	err := tx.GenerateOrBroadcastTxCLI(cliCtx, nil, messages...)
+	if err != nil {
+		sugaredLogger.Errorw("failed to broadcast tx to sifchain.",
+			errorMessageKey, err.Error())
+		return err
+	}
 	log.Println("Broadcasted tx without error")
-
-	//if err = cliCtx.PrintProto(res); err != nil {
-	//	sugaredLogger.Errorw("failed to print out result.",
-	//		errorMessageKey, err.Error())
-	//	return err
-	//}
 
 	// start to control sequence number after first successful tx
 	if nextSequenceNumber == 0 {
