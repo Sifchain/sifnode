@@ -5,16 +5,16 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/errors"
 
 	"github.com/Sifchain/sifnode/x/dispensation/types"
-	"github.com/tendermint/tendermint/crypto"
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
 )
 
-func VerifyInputList(inputList []banktypes.Input, pubKeys []crypto.PubKey) error {
+func VerifyInputList(inputList []banktypes.Input, pubKeys []*cdctypes.Any) error {
 	for _, i := range inputList {
 		addressFound := false
 		for _, signPubKeys := range pubKeys {
-			if bytes.Equal(signPubKeys.Address().Bytes(), []byte(i.Address)) {
+			if bytes.Equal(signPubKeys.Value, []byte(i.Address)) {
 				addressFound = true
 				continue
 			}
