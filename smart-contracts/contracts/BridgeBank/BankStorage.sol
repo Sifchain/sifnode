@@ -1,4 +1,4 @@
-pragma solidity 0.6.6;
+pragma solidity 0.8.0;
 
 import "./CosmosBankStorage.sol";
 import "./EthereumBankStorage.sol";
@@ -31,7 +31,7 @@ contract BankStorage is
 
     mapping (string => uint256) public maxTokenAmount;
 
-    /**
+    /*
     * @notice gap of storage for future upgrades
     */
     uint256[100] private ____gap;

@@ -1,4 +1,4 @@
-pragma solidity 0.6.6;
+pragma solidity 0.8.0;
 
 contract EthereumBankStorage {
 
@@ -17,7 +17,7 @@ contract EthereumBankStorage {
     */
     mapping(string => address) public lockedTokenList;
 
-    /**
+    /*
     * @notice gap of storage for future upgrades
     */
     uint256[100] private ____gap;

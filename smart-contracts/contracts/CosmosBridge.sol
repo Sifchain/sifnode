@@ -1,16 +1,10 @@
-pragma solidity =0.6.6;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.8.0;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
 
-import "hardhat/console.sol";
-
 contract CosmosBridge is CosmosBridgeStorage, Oracle {
-    using SafeMath for uint256;
-    
     bool private _initialized;
     uint256[100] private ___gap;
 

@@ -1,8 +1,8 @@
-pragma solidity 0.6.6;
+pragma solidity 0.8.0;
 
 import "./BridgeToken.sol";
 import "./EthereumBankStorage.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /*
  *  @title: EthereumBank
@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
  *        Ethereum/ERC20 tokens once the prophecy has been successfully processed.
  */
 contract EthereumBank is EthereumBankStorage {
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     /*
@@ -44,7 +43,7 @@ contract EthereumBank is EthereumBankStorage {
         uint256 _value
     );
 
-    function getChainID() public pure returns (uint256) {
+    function getChainID() public view returns (uint256) {
         uint256 id;
         assembly {
             id := chainid()
@@ -68,7 +67,7 @@ contract EthereumBank is EthereumBankStorage {
         uint256 _amount,
         uint8 _decimals
     ) internal {
-        lockBurnNonce = lockBurnNonce.add(1);
+        lockBurnNonce = lockBurnNonce + 1;
         uint256 _chainid = getChainID();
 
         emit LogBurn(
@@ -99,7 +98,7 @@ contract EthereumBank is EthereumBankStorage {
         string memory symbol,
         uint8 decimals
     ) internal {
-        lockBurnNonce = lockBurnNonce.add(1);
+        lockBurnNonce = lockBurnNonce + 1;
         uint256 _chainid = getChainID();
 
         emit LogLock(

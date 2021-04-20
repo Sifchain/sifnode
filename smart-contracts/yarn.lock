@@ -1582,10 +1582,10 @@
     find-up "^4.1.0"
     fs-extra "^8.1.0"
 
-"@openzeppelin/contracts@3.4.1":
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.4.1.tgz#03c891fec7f93be0ae44ed74e57a122a38732ce7"
-  integrity sha512-cUriqMauq1ylzP2TxePNdPqkwI7Le3Annh4K9rrpvKfSBB/bdW+Iu1ihBaTIABTAAJ85LmKL5SSPPL9ry8d1gQ==
+"@openzeppelin/contracts@4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.0.0.tgz#54d1de30911635020c383cb73b160b698e7ae179"
+  integrity sha512-UcIJl/vUVjTr3H1yYXZi7Sr2PlXzBEHVUJKOUlVyzyy0FI8oQCCy0Wx+BuK/fojdnmLeMvUk4KUvhKUybP+C7Q==
 
 "@openzeppelin/hardhat-upgrades@^1.6.0":
   version "1.6.0"
@@ -10542,10 +10542,10 @@ opencollective-postinstall@^2.0.0:
   resolved "https://registry.yarnpkg.com/opencollective-postinstall/-/opencollective-postinstall-2.0.3.tgz#7a0fff978f6dbfa4d006238fbac98ed4198c3259"
   integrity sha512-8AV/sCtuzUeTo8gQK5qDZzARrulB3egtLzFgteqB2tcT4Mw7B8Kt7JcDHmltjz6FOAHsvTevk70gZEbhM4ZS9Q==
 
-openzeppelin-solidity@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/openzeppelin-solidity/-/openzeppelin-solidity-3.0.0.tgz#b68f82529ea1f7131018866b8dcc8d932e698bb5"
-  integrity sha512-jW6p145prFEf9k0fXGeF7o0Op88SetcRdaFLvB7UVaZb7NQVCIazB6OBVC9NW28R+/mzumoxGf+VvWvz5oiYhQ==
+openzeppelin-solidity@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/openzeppelin-solidity/-/openzeppelin-solidity-4.0.0.tgz#6452bc183eed149df924d03404c13ee38434da48"
+  integrity sha512-m05OqHUXR6oc3pbJcYpFtyAYMwH5Ot0p/RlbKVEDnAuFrNsyjQd5bYyqvf62Jz7JQX/w21LGguyFsDrU38gdYQ==
 
 optimism@^0.14.0:
   version "0.14.0"

@@ -1,4 +1,4 @@
-pragma solidity 0.6.6;
+pragma solidity 0.8.0;
 
 contract OracleStorage {
     /*
@@ -27,7 +27,7 @@ contract OracleStorage {
     mapping(uint256 => bool) public prophecyRedeemed;
 
 
-    /**
+    /*
     * @notice gap of storage for future upgrades
     */
     uint256[99] private ____gap;

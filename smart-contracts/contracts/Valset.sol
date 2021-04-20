@@ -1,10 +1,8 @@
-pragma solidity 0.6.6;
+pragma solidity 0.8.0;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./ValsetStorage.sol";
 
 contract Valset is ValsetStorage {
-    using SafeMath for uint256;
 
     bool private _initialized;
 
@@ -97,8 +95,8 @@ contract Valset is ValsetStorage {
 
         // Adjust total power by new validator power
         uint256 priorPower = powers[_validatorAddress][currentValsetVersion];
-        totalPower = totalPower.sub(priorPower);
-        totalPower = totalPower.add(_newValidatorPower);
+        totalPower = totalPower - priorPower;
+        totalPower = totalPower + _newValidatorPower;
 
         // Set validator's new power
         powers[_validatorAddress][currentValsetVersion] = _newValidatorPower;
@@ -119,8 +117,8 @@ contract Valset is ValsetStorage {
         require(validators[_validatorAddress][currentValsetVersion], "Can only remove active validators");
 
         // Update validator count and total power
-        validatorCount = validatorCount.sub(1);
-        totalPower = totalPower.sub(powers[_validatorAddress][currentValsetVersion]);
+        validatorCount = validatorCount - 1;
+        totalPower = totalPower - powers[_validatorAddress][currentValsetVersion];
 
         // Delete validator and power
         delete validators[_validatorAddress][currentValsetVersion];
@@ -149,7 +147,7 @@ contract Valset is ValsetStorage {
 
         resetValset();
 
-        for (uint256 i = 0; i < _validators.length; i = i.add(1)) {
+        for (uint256 i = 0; i < _validators.length; i++) {
             addValidatorInternal(_validators[i], _powers[i]);
         }
 
@@ -202,8 +200,8 @@ contract Valset is ValsetStorage {
         address _validatorAddress,
         uint256 _validatorPower
     ) internal {
-        validatorCount = validatorCount.add(1);
-        totalPower = totalPower.add(_validatorPower);
+        validatorCount = validatorCount + 1;
+        totalPower = totalPower + _validatorPower;
 
         // Set validator as active and set their power
         validators[_validatorAddress][currentValsetVersion] = true;
@@ -222,7 +220,7 @@ contract Valset is ValsetStorage {
      * @dev: resetValset
      */
     function resetValset() internal {
-        currentValsetVersion = currentValsetVersion.add(1);
+        currentValsetVersion = currentValsetVersion + 1;
         validatorCount = 0;
         totalPower = 0;
 

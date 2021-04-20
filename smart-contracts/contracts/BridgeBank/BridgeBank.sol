@@ -1,4 +1,4 @@
-pragma solidity 0.6.6;
+pragma solidity 0.8.0;
 
 import "./CosmosBank.sol";
 import "./EthereumBank.sol";
@@ -25,14 +25,13 @@ contract BridgeBank is BankStorage,
     EthereumWhiteList,
     CosmosWhiteList,
     Pausable {
+    using SafeERC20 for IERC20;
 
     bool private _initialized;
 
     mapping (address => uint8) public contractDecimals;
     mapping (address => string) public contractSymbol;
     mapping (address => string) public contractName;
-
-    using SafeMath for uint256;
 
     /*
      * @dev: Initializer, sets operator
@@ -214,7 +213,7 @@ contract BridgeBank is BankStorage,
         // decimals defaults to 18 if call to decimals fails
         uint8 decimals = getDecimals(_token);
 
-        lockBurnNonce = lockBurnNonce.add(1);
+        lockBurnNonce = lockBurnNonce + 1;
         uint256 _chainid = getChainID();
 
         emit LogBurn(
@@ -298,7 +297,7 @@ contract BridgeBank is BankStorage,
         string memory name = getName(_token);
         string memory symbol = getSymbol(_token);
 
-        lockBurnNonce = lockBurnNonce.add(1);
+        lockBurnNonce = lockBurnNonce + 1;
         uint256 _chainid = getChainID();
         {
             emit LogLock(

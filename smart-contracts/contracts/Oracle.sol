@@ -1,12 +1,9 @@
-pragma solidity 0.6.6;
+pragma solidity 0.8.0;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./Valset.sol";
 import "./OracleStorage.sol";
 
 contract Oracle is OracleStorage, Valset {
-    using SafeMath for uint256;
-
     bool private _initialized;
 
     /*
@@ -66,9 +63,7 @@ contract Oracle is OracleStorage, Valset {
         );
 
         hasMadeClaim[_prophecyID][validatorAddress] = true;
-        oracleClaimValidators[_prophecyID] = oracleClaimValidators[_prophecyID].add(
-            getValidatorPower(validatorAddress)
-        );
+        oracleClaimValidators[_prophecyID] = oracleClaimValidators[_prophecyID] + getValidatorPower(validatorAddress);
 
         emit LogNewOracleClaim(
             _prophecyID,
@@ -98,9 +93,9 @@ contract Oracle is OracleStorage, Valset {
         signedPower = oracleClaimValidators[_prophecyID];
 
         // Prophecy must reach total signed power % threshold in order to pass consensus
-        uint256 prophecyPowerThreshold = totalPower.mul(consensusThreshold);
+        uint256 prophecyPowerThreshold = totalPower * consensusThreshold;
         // consensusThreshold is a decimal multiplied by 100, so signedPower must also be multiplied by 100
-        uint256 prophecyPowerCurrent = signedPower.mul(100);
+        uint256 prophecyPowerCurrent = signedPower * 100;
         bool hasReachedThreshold = prophecyPowerCurrent >=
             prophecyPowerThreshold;
 
