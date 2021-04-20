@@ -54,6 +54,7 @@ const sifChainNameLookup = {
   "sifchain-betanet": "Sifchain BetaNet",
   "sifchain-devnet": "Sifchain DevNet",
 };
+
 function lookupEVMName(id?: string) {
   const key = id as keyof typeof evmChainNameLookup;
   return evmChainNameLookup[key] || "the unknown network you are connected to";
@@ -101,7 +102,6 @@ export default defineComponent({
       );
     });
 
-    // console.log({ isMismatchedNetwork: isMismatchedNetwork.value });
     return {
       isMismatchedNetwork,
       sifNetworkName,
