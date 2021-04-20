@@ -105,7 +105,7 @@ export default ({
     getSuggestedEVMNetwork(sifChainId: string) {
       return (
         networkCombinations[sifChainId as keyof typeof networkCombinations] ||
-        null
+        ""
       );
     },
 
