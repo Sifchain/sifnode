@@ -1,4 +1,4 @@
-# Pay from Treasury (BetaNet/Mainnet)
+# Pay from Treasury (BetaNet)
 
 ## Setup
 
