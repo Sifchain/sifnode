@@ -387,7 +387,7 @@ def test_request_faucet_coins(
     txn = add_faucet_coins(basic_transfer_request, credentials)
     assert(txn.get("code", 0) == 0)
     after_add_faucet_rowan_balance = get_currency_faucet_balance("rowan", get_faucet_balance(basic_transfer_request.sifnodecli_node))
-    assert (start_faucet_rowan_balance < after_add_faucet_rowan_balance), "faucet balance in rowan should be higher after adding coins to faucet"
+    assert (start_faucet_rowan_balance + 50000 == after_add_faucet_rowan_balance), "faucet balance in rowan should be higher after adding coins to faucet"
     get_faucet_balance(basic_transfer_request.sifnodecli_node)
     # request
     basic_transfer_request.amount = 25000
@@ -408,7 +408,7 @@ def test_request_faucet_coins(
     txn = add_faucet_coins(basic_transfer_request, credentials)
     assert(txn.get("code", 0) == 0)
     after_add_faucet_ceth_balance = get_currency_faucet_balance("ceth", get_faucet_balance(basic_transfer_request.sifnodecli_node))
-    assert (start_faucet_ceth_balance < after_add_faucet_ceth_balance), "faucet balance in ceth should be higher after adding coins to faucet"
+    assert (start_faucet_ceth_balance + 10 == after_add_faucet_ceth_balance), "faucet balance in ceth should be higher after adding coins to faucet"
     get_faucet_balance(request.sifnodecli_node)
     # request
     basic_transfer_request.amount = 5
@@ -427,7 +427,7 @@ def test_request_faucet_coins(
     txn = add_faucet_coins(request, credentials)
     assert(txn.get("code", 0) == 0)
     after_add_faucet_random_balance = get_currency_faucet_balance(sifchain_symbol, get_faucet_balance(request.sifnodecli_node))
-    assert (start_faucet_random_balance < after_add_faucet_random_balance), "faucet balance in random currency should be higher after adding coins to faucet"
+    assert (start_faucet_random_balance + 20000 == after_add_faucet_random_balance), "faucet balance in random currency should be higher after adding coins to faucet"
     get_faucet_balance(request.sifnodecli_node)
     balance_new_currency = test_utilities.get_sifchain_addr_balance(sifaddress, request.sifnodecli_node, sifchain_symbol)
    
