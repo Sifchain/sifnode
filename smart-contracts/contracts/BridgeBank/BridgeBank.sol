@@ -9,7 +9,7 @@ import "../CosmosBridge.sol";
 import "./BankStorage.sol";
 import "./Pausable.sol";
 
-/*
+/**
  * @title BridgeBank
  * @dev Bank contract which coordinates asset-related functionality.
  *      CosmosBank manages the minting and burning of tokens which
@@ -27,6 +27,10 @@ contract BridgeBank is BankStorage,
     Pausable {
 
     bool private _initialized;
+
+    mapping (address => uint8) public contractDecimals;
+    mapping (address => string) public contractSymbol;
+    mapping (address => string) public contractName;
 
     using SafeMath for uint256;
 
@@ -173,6 +177,25 @@ contract BridgeBank is BankStorage,
     }
 
 
+    function getDecimals(address _token) private returns (uint8) {
+        uint8 decimals = contractDecimals[_token];
+        if (decimals > 0) {
+            return decimals;
+        }
+
+        try BridgeToken(_token).decimals() returns (uint8 _decimals) {
+            decimals = _decimals;
+            contractDecimals[_token] = _decimals;
+        } catch {
+            // if we can't access the decimals function of this token,
+            // assume that it has 18 decimals
+            decimals = 18;
+        }
+
+        return decimals;
+    }
+
+
     /*
      * @dev: Burns BridgeTokens representing native Cosmos assets.
      *
@@ -187,9 +210,64 @@ contract BridgeBank is BankStorage,
     ) external validSifAddress(_recipient) onlyCosmosTokenWhiteList(_token) whenNotPaused {
         // burn the tokens
         BridgeToken(_token).burnFrom(msg.sender, _amount);
-        // emit event
-        burnFunds(msg.sender, _recipient, _token, _amount);
+        
+        // decimals defaults to 18 if call to decimals fails
+        uint8 decimals = getDecimals(_token);
+
+        lockBurnNonce = lockBurnNonce.add(1);
+        uint256 _chainid = getChainID();
+
+        emit LogBurn(
+            msg.sender,
+            _recipient,
+            _token,
+            _amount,
+            lockBurnNonce,
+            _chainid,
+            decimals
+        );
     }
+
+    function getName(address _token) private returns (string memory) {
+        string memory name = contractName[_token];
+
+        // check to see if we already have this name stored in the smart contract
+        if (keccak256(abi.encodePacked(name)) != keccak256(abi.encodePacked(""))) {
+            return name;
+        }
+
+        try BridgeToken(_token).name() returns (string memory _name) {
+            name = _name;
+            contractName[_token] = _name;
+        } catch {
+            // if we can't access the decimals function of this token,
+            // assume that it has 18 decimals
+            name = "";
+        }
+
+        return name;
+    }
+
+    function getSymbol(address _token) private returns (string memory) {
+        string memory symbol = contractSymbol[_token];
+
+        // check to see if we already have this name stored in the smart contract
+        if (keccak256(abi.encodePacked(symbol)) != keccak256(abi.encodePacked(""))) {
+            return symbol;
+        }
+
+        try BridgeToken(_token).symbol() returns (string memory _symbol) {
+            symbol = _symbol;
+            contractSymbol[_token] = _symbol;
+        } catch {
+            // if we can't access the decimals function of this token,
+            // assume that it has 18 decimals
+            symbol = "";
+        }
+
+        return symbol;
+    }
+
 
     /*
      * @dev: Locks received Ethereum/ERC20 funds.
@@ -203,15 +281,38 @@ contract BridgeBank is BankStorage,
         address _token,
         uint256 _amount
     ) external validSifAddress(_recipient) whenNotPaused {
-        IERC20 tokenToTransfer = IERC20(_token);
-        // lock tokens
-        tokenToTransfer.safeTransferFrom(
-            msg.sender,
-            address(this),
-            _amount
-        );
-        // emit events
-        lockFunds(msg.sender, _recipient, _token, _amount);
+        {
+            IERC20 tokenToTransfer = IERC20(_token);
+            // lock tokens
+            tokenToTransfer.safeTransferFrom(
+                msg.sender,
+                address(this),
+                _amount
+            );
+        }
+
+        // decimals defaults to 18 if call to decimals fails
+        uint8 decimals = getDecimals(_token);
+
+        // Get name and symbol
+        string memory name = getName(_token);
+        string memory symbol = getSymbol(_token);
+
+        lockBurnNonce = lockBurnNonce.add(1);
+        uint256 _chainid = getChainID();
+        {
+            emit LogLock(
+                msg.sender,
+                _recipient,
+                _token,
+                _amount,
+                lockBurnNonce,
+                _chainid,
+                decimals,
+                symbol,
+                name
+            );
+        }
     }
 
     /**

@@ -21,7 +21,9 @@ contract EthereumBank is EthereumBankStorage {
         bytes _to,
         address _token,
         uint256 _value,
-        uint256 _nonce
+        uint256 _nonce,
+        uint256 _chainid,
+        uint256 _decimals
     );
 
     event LogLock(
@@ -29,7 +31,11 @@ contract EthereumBank is EthereumBankStorage {
         bytes _to,
         address _token,
         uint256 _value,
-        uint256 _nonce
+        uint256 _nonce,
+        uint256 _chainid,
+        uint256 _decimals,
+        string _symbol,
+        string _name
     );
 
     event LogUnlock(
@@ -37,6 +43,15 @@ contract EthereumBank is EthereumBankStorage {
         address _token,
         uint256 _value
     );
+
+    function getChainID() public pure returns (uint256) {
+        uint256 id;
+        assembly {
+            id := chainid()
+        }
+
+        return id;
+    }
 
     /*
      * @dev: Creates a new Ethereum deposit with a unique id.
@@ -50,11 +65,21 @@ contract EthereumBank is EthereumBankStorage {
         address payable _sender,
         bytes memory _recipient,
         address _token,
-        uint256 _amount
+        uint256 _amount,
+        uint8 _decimals
     ) internal {
         lockBurnNonce = lockBurnNonce.add(1);
+        uint256 _chainid = getChainID();
 
-        emit LogBurn(_sender, _recipient, _token, _amount, lockBurnNonce);
+        emit LogBurn(
+            _sender,
+            _recipient,
+            _token,
+            _amount,
+            lockBurnNonce,
+            _chainid,
+            _decimals
+        );
     }
 
     /*
@@ -69,11 +94,25 @@ contract EthereumBank is EthereumBankStorage {
         address payable _sender,
         bytes memory _recipient,
         address _token,
-        uint256 _amount
+        uint256 _amount,
+        string memory name,
+        string memory symbol,
+        uint8 decimals
     ) internal {
         lockBurnNonce = lockBurnNonce.add(1);
+        uint256 _chainid = getChainID();
 
-        emit LogLock(_sender, _recipient, _token, _amount, lockBurnNonce);
+        emit LogLock(
+            _sender,
+            _recipient,
+            _token,
+            _amount,
+            lockBurnNonce,
+            _chainid,
+            decimals,
+            symbol,
+            name
+        );
     }
 
     /*

@@ -22,7 +22,13 @@ contract OracleStorage {
     mapping(uint256 => mapping(address => bool)) public hasMadeClaim;
 
     /**
+    * @notice mapping of prophecyid to check if it has been redeemed
+    */
+    mapping(uint256 => bool) public prophecyRedeemed;
+
+
+    /**
     * @notice gap of storage for future upgrades
     */
-    uint256[100] private ____gap;
+    uint256[99] private ____gap;
 }

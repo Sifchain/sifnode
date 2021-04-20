@@ -1,9 +1,12 @@
 pragma solidity =0.6.6;
+pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./Oracle.sol";
 import "./BridgeBank/BridgeBank.sol";
 import "./CosmosBridgeStorage.sol";
+
+import "hardhat/console.sol";
 
 contract CosmosBridge is CosmosBridgeStorage, Oracle {
     using SafeMath for uint256;
@@ -135,8 +138,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             _amount
         );
 
-        (bool prophecyCompleted, , ) = getProphecyThreshold(_prophecyID);
-        require(!prophecyCompleted, "prophecyCompleted");
+        require(!prophecyRedeemed[_prophecyID], "prophecy already redeemed");
 
         if (oracleClaimValidators[_prophecyID] == 0) {
             if (_claimType == ClaimType.Lock && _tokenAddress == address(0)) {
@@ -156,6 +158,7 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
         bool claimComplete = newOracleClaim(_prophecyID, msg.sender);
 
         if (claimComplete) {
+            prophecyRedeemed[_prophecyID] = true;
             completeProphecyClaim(
                 _claimType,
                 _prophecyID,
@@ -165,6 +168,24 @@ contract CosmosBridge is CosmosBridgeStorage, Oracle {
             );
         }
     }
+
+    // struct prophecyBundle {
+    //     ClaimType _claimType;
+    //     bytes _cosmosSender;
+    //     string _symbol;
+    //     uint256 _cosmosSenderSequence;
+    //     address payable _ethereumReceiver;
+    //     address _tokenAddress;
+    //     uint256 _amount;
+    // }
+
+    // function batchSubmitProphecies(
+    //     prophecyBundle[] calldata _prophecies
+    // ) external onlyValidator {
+    //     for (uint256 i = 0; i < _prophecies.length; i++) {
+            
+    //     }
+    // }
 
     /*
      * @dev: completeProphecyClaim

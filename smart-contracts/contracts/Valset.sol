@@ -172,7 +172,7 @@ contract Valset is ValsetStorage {
      * @dev: getValidatorPower
      */
     function getValidatorPower(address _validatorAddress)
-        external
+        public
         view
         returns (uint256)
     {
