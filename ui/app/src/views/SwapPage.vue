@@ -16,6 +16,7 @@ import DetailsPanel from "@/components/shared/DetailsPanel.vue";
 import SlippagePanel from "@/components/slippagePanel/Index.vue";
 import { ConfirmState } from "../types";
 import { toConfirmState } from "./utils/toConfirmState";
+import { getMaxAmount } from "./utils/getMaxAmount";
 import { format } from "ui-core/src/utils/format";
 
 export default defineComponent({
@@ -205,9 +206,9 @@ export default defineComponent({
         selectedField.value = "from";
         const accountBalance = getAccountBalance();
         if (!accountBalance) return;
-        fromAmount.value = format(accountBalance.amount, accountBalance.asset, {
-          mantissa: 18,
-          trimMantissa: true,
+        const maxAmount = getMaxAmount(fromSymbol, accountBalance);
+        fromAmount.value = format(maxAmount, accountBalance.asset, {
+          mantissa: 1,
         });
       },
       nextStepAllowed: computed(() => {

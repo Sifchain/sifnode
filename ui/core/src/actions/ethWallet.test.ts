@@ -27,6 +27,7 @@ beforeEach(() => {
     setPhrase: async (phrase: string) => "",
     purgeClient: () => {},
     onProviderNotFound: () => {},
+    onChainIdDetected: () => {},
   };
 
   mockEventBusService = {
