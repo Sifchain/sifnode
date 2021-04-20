@@ -377,7 +377,7 @@ spec:
             template_file_text.include?(k) ? (template_file_text.gsub! replace_string, "#{args[:aws_role]}") : (puts 'env matching...')
           end
       end
-      File.open(file_name, 'w') { |file| file.write("#{args[:path]}override-values.yaml") }
+      File.open("#{args[:path]}override-values.yaml", 'w') { |file| file.write(template_file_text) }
 
       check_vault_deployment_exist = `kubectl get statefulsets --kubeconfig=./kubeconfig -n vault | grep vault`
       if check_vault_deployment_exist.empty?
