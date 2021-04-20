@@ -53,7 +53,7 @@ func (AppModuleBasic) RegisterCodec(cdc *codec.LegacyAmino) {
 
 // ValidateGenesis performs genesis state validation for the dispensation module.
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONMarshaler, config client.TxEncodingConfig, bz json.RawMessage) error {
-	var data cdctypes.Any
+	var data GenesisState
 	err := cdc.UnmarshalJSON(bz, &data)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", ModuleName, err)
@@ -139,7 +139,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 // InitGenesis performs genesis initialization for the dispensation module. It returns
 // no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, codec codec.JSONMarshaler, data json.RawMessage) []abci.ValidatorUpdate {
-	var genesisState cdctypes.Any
+	var genesisState GenesisState
 	codec.MustUnmarshalJSON(data, &genesisState)
 	return InitGenesis(ctx, am.keeper, genesisState)
 }

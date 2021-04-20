@@ -1,20 +1,19 @@
 package dispensation
 
 import (
-	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 // TODO Add import and export state
-func InitGenesis(ctx sdk.Context, keeper Keeper, data cdctypes.Any) (res []abci.ValidatorUpdate) {
+func InitGenesis(ctx sdk.Context, keeper Keeper, data GenesisState) (res []abci.ValidatorUpdate) {
 	return []abci.ValidatorUpdate{}
 }
 
-func ExportGenesis(ctx sdk.Context, keeper Keeper) *cdctypes.Any {
-	return &cdctypes.Any{}
+func ExportGenesis(ctx sdk.Context, keeper Keeper) *GenesisState {
+	return &GenesisState{}
 }
 
-func ValidateGenesis(data cdctypes.Any) error {
+func ValidateGenesis(data GenesisState) error {
 	return nil
 }
