@@ -149,7 +149,6 @@ export default function createSifService({
       if (!keplrProvider) {
         return;
       }
-      console.log("setClient");
       if (connecting || state.connected) {
         return;
       }
