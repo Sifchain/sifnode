@@ -31,7 +31,6 @@ def generate_new_currency(symbol, amount, solidity_json_path, operator_address, 
         ethereum_network=ethereum_network
     )
     return new_currency
-#endDef
 
 
 def transfer_new_currency(request, symbol, currency, amount):
@@ -40,7 +39,6 @@ def transfer_new_currency(request, symbol, currency, amount):
     request.sifchain_symbol = symbol
     request.amount = amount
     burn_lock_functions.transfer_ethereum_to_sifchain(request)
-#endDef
 
 
 def get_currency_faucet_balance(currency, json_input):
@@ -50,7 +48,6 @@ def get_currency_faucet_balance(currency, json_input):
             if value == currency:
                 amount = int(obj['amount'])
     return amount
-#endIf
 
 
 def get_faucet_balance(sifnodecli_node):
@@ -220,11 +217,14 @@ def add_faucet_coins(
         node,
         sifchain_fees_entry,
         f"--home {credentials.sifnodecli_homedir} ",
-        "-y"
+        "-y -o json"
     ])
-    result = get_shell_output(cmd)
-    detect_errors_in_sifnodecli_output(result)
-    return result
+    json_str = get_shell_output_json(cmd)
+    assert(json_str.get("code", 0) == 0)
+    txn = get_transaction_result(json_str["txhash"], transfer_request.sifnodecli_node, transfer_request.chain_id)
+    tx = txn["tx"]
+    logging.debug(f"resulting tx: {tx}")
+    return txn
 
 
 def request_faucet_coins(
@@ -247,49 +247,20 @@ def request_faucet_coins(
         node,
         sifchain_fees_entry,
         f"--home {credentials.sifnodecli_homedir} ",
-        "-y"
+        "-y -o json"
     ])
-    result = get_shell_output(cmd)
-    detect_errors_in_sifnodecli_output(result)
-    return result
+    json_str = get_shell_output_json(cmd)
+    assert(json_str.get("code", 0) == 0)
+    txn = get_transaction_result(json_str["txhash"], transfer_request.sifnodecli_node, transfer_request.chain_id)
+    tx = txn["tx"]
+    logging.debug(f"resulting tx: {tx}")
+    return txn
 
 
 def test_add_faucet_coins(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
-        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest
-):
-    logging.info(f"request: {basic_transfer_request}")
-    basic_transfer_request.ethereum_address = source_ethereum_address
-    basic_transfer_request.check_wait_blocks = True
-    target_rowan_balance = 10 ** 18
-    request, credentials = generate_test_account(
-        basic_transfer_request,
-        rowan_source_integrationtest_env_transfer_request,
-        rowan_source_integrationtest_env_credentials,
-        target_ceth_balance=0,
-        target_rowan_balance=target_rowan_balance
-    )
-    time.sleep(10)
-
-    sifaddress = request.sifchain_address
-    logging.info("get balances just to have those commands in the history")
-    balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
-
-    get_faucet_balance(basic_transfer_request.sifnodecli_node)
-    basic_transfer_request.amount = 10 ** 17
-    basic_transfer_request.sifchain_symbol = "rowan"
-    basic_transfer_request.sifchain_address = sifaddress
-    add_faucet_coins(basic_transfer_request, credentials)
-    time.sleep(10)
-    get_faucet_balance(basic_transfer_request.sifnodecli_node)
-    balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
-
-def test_add_more_faucet_coins(
-        basic_transfer_request: EthereumToSifchainTransferRequest,
-        source_ethereum_address: str,
-        rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
         solidity_json_path,
         operator_address,
@@ -314,90 +285,59 @@ def test_add_more_faucet_coins(
     )
     #Transfer Newly Generated Currency
     transfer_new_currency(request, sifchain_symbol, new_currency, target_new_currency_balance)
-    time.sleep(10)
 
     sifaddress = request.sifchain_address
     logging.info("get balances just to have those commands in the history")
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
     balance_ceth = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth")
     balance_new_currency = test_utilities.get_sifchain_addr_balance(sifaddress, request.sifnodecli_node, sifchain_symbol)
-    
-    logging.info(sifchain_symbol+" balance="+ str(balance_new_currency))
-    logging.info("ceth  balance="+ str(balance_ceth))
-    logging.info("rowan  balance="+ str(balance))
+    assert balance_new_currency == 300000, "new currency balance is wrong in the test account"
+    assert balance_ceth == 100, "new ceth currency balance is wrong in the test account"
+    assert balance == 10 ** 18, "new rowan currency balance is wrong in the test account"
+    logging.info(f"{sifchain_symbol} balance = {balance_new_currency}")
+    logging.info(f"ceth  balance = {balance_ceth}")
+    logging.info(f"rowan  balance = {balance}")
 
+    # add rowan
     get_faucet_balance(basic_transfer_request.sifnodecli_node)
     basic_transfer_request.amount = 50000
     basic_transfer_request.sifchain_symbol = "rowan"
     basic_transfer_request.sifchain_address = sifaddress
-    add_faucet_coins(basic_transfer_request, credentials)
-    time.sleep(10)
-    get_faucet_balance(basic_transfer_request.sifnodecli_node)
+    txn = add_faucet_coins(basic_transfer_request, credentials)
+    assert(txn.get("code", 0) == 0)
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
-
+    # add ceth
     get_faucet_balance(basic_transfer_request.sifnodecli_node)
     basic_transfer_request.amount = 10
     basic_transfer_request.sifchain_symbol = "ceth"
     basic_transfer_request.sifchain_address = sifaddress
-    add_faucet_coins(basic_transfer_request, credentials)
-    time.sleep(10)
-    get_faucet_balance(basic_transfer_request.sifnodecli_node)
+    txn = add_faucet_coins(basic_transfer_request, credentials)
+    assert(txn.get("code", 0) == 0)
     balance_ceth = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth")
-
-
+    # add randome currency
     get_faucet_balance(request.sifnodecli_node)
     request.amount = 200000
     request.sifchain_symbol = sifchain_symbol
     request.sifchain_address = sifaddress
-    add_faucet_coins(request, credentials)
-    time.sleep(10)
-    get_faucet_balance(request.sifnodecli_node)
+    txn = add_faucet_coins(request, credentials)
+    assert(txn.get("code", 0) == 0)
     balance_new_currency = test_utilities.get_sifchain_addr_balance(sifaddress, request.sifnodecli_node, sifchain_symbol)
   
+    #get account remaining balances
+    logging.info("get ending balances just to have those commands in the history")
+    assert balance_new_currency == 100000, "new currency balance is wrong in the test account"
+    assert balance_ceth == 90, "new ceth currency balance is wrong in the test account"
+    assert balance == 999999999999750000, "new rowan currency balance is wrong in the test account"
 
-    #get faucet balances
-    logging.info(sifchain_symbol+" balance="+ str(balance_new_currency))
-    logging.info("ceth  balance="+ str(balance_ceth))
-    logging.info("rowan  balance="+ str(balance))
-    logging.info(get_faucet_balance(request.sifnodecli_node))
-
+    logging.info(f"{sifchain_symbol} balance = {balance_new_currency}")
+    logging.info(f"ceth  balance = {balance_ceth}")
+    logging.info(f"rowan  balance = {balance}")
+    get_faucet_balance(request.sifnodecli_node)
 
 def test_request_faucet_coins(
         basic_transfer_request: EthereumToSifchainTransferRequest,
         source_ethereum_address: str,
         rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
-        rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest
-):
-    basic_transfer_request.ethereum_address = source_ethereum_address
-    basic_transfer_request.check_wait_blocks = True
-    target_rowan_balance = 10 ** 18
-    request, credentials = generate_test_account(
-        basic_transfer_request,
-        rowan_source_integrationtest_env_transfer_request,
-        rowan_source_integrationtest_env_credentials,
-        target_ceth_balance=100,
-        target_rowan_balance=target_rowan_balance
-    )
-    time.sleep(10)
-
-    sifaddress = request.sifchain_address
-    logging.info("get balances just to have those commands in the history")
-    balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
-
-    get_faucet_balance(basic_transfer_request.sifnodecli_node)
-    basic_transfer_request.amount = 10 ** 17
-    basic_transfer_request.sifchain_symbol = "rowan"
-    basic_transfer_request.sifchain_address = sifaddress
-    request_faucet_coins(basic_transfer_request, credentials)
-    time.sleep(10)
-    get_faucet_balance(basic_transfer_request.sifnodecli_node)
-    balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
-
-
-def test_request_more_faucet_coins(
-        basic_transfer_request: EthereumToSifchainTransferRequest,
-        source_ethereum_address: str,
-        rowan_source_integrationtest_env_credentials: SifchaincliCredentials,
         rowan_source_integrationtest_env_transfer_request: EthereumToSifchainTransferRequest,
         solidity_json_path,
         operator_address,
@@ -422,7 +362,6 @@ def test_request_more_faucet_coins(
     )
     #Transfer Newly Generated Currency
     transfer_new_currency(request, sifchain_symbol, new_currency, target_new_currency_balance)
-    time.sleep(10)
 
     sifaddress = request.sifchain_address
     logging.info("get balances just to have those commands in the history")
@@ -434,82 +373,79 @@ def test_request_more_faucet_coins(
     assert balance_ceth == 100, "new ceth currency balance is wrong in the test account"
     assert balance == 10 ** 18, "new rowan currency balance is wrong in the test account"
 
-    logging.info(sifchain_symbol+" balance="+ str(balance_new_currency))
-    logging.info("ceth  balance="+ str(balance_ceth))
-    logging.info("rowan  balance="+ str(balance))
+    logging.info(f"{sifchain_symbol} balance = {balance_new_currency}")
+    logging.info(f"ceth  balance = {balance_ceth}")
+    logging.info(f"rowan  balance = {balance}")
 
     #rowan
-    start_faucet_rowan_ballance = get_currency_faucet_balance("rowan", get_faucet_balance(basic_transfer_request.sifnodecli_node))
+    start_faucet_rowan_balance = get_currency_faucet_balance("rowan", get_faucet_balance(basic_transfer_request.sifnodecli_node))
     logging.info(get_faucet_balance(basic_transfer_request.sifnodecli_node))
     basic_transfer_request.amount = 50000
     basic_transfer_request.sifchain_symbol = "rowan"
     basic_transfer_request.sifchain_address = sifaddress
     # add
-    add_faucet_coins(basic_transfer_request, credentials)
-    time.sleep(20)
-    logging.info(get_faucet_balance(basic_transfer_request.sifnodecli_node))
-    after_add_faucet_rowan_ballance = get_currency_faucet_balance("rowan", get_faucet_balance(basic_transfer_request.sifnodecli_node))
-    assert (start_faucet_rowan_ballance < after_add_faucet_rowan_ballance), "faucet ballance in rowan should be higher after adding coins to faucet"
+    txn = add_faucet_coins(basic_transfer_request, credentials)
+    assert(txn.get("code", 0) == 0)
+    after_add_faucet_rowan_balance = get_currency_faucet_balance("rowan", get_faucet_balance(basic_transfer_request.sifnodecli_node))
+    assert (start_faucet_rowan_balance < after_add_faucet_rowan_balance), "faucet balance in rowan should be higher after adding coins to faucet"
+    get_faucet_balance(basic_transfer_request.sifnodecli_node)
     # request
     basic_transfer_request.amount = 25000
-    basic_transfer_request.sifchain_symbol = "rowan"
-    basic_transfer_request.sifchain_address = sifaddress
-    request_faucet_coins(basic_transfer_request, credentials)
-    time.sleep(20)
-    after_request_faucet_rowan_ballance = get_currency_faucet_balance("rowan", get_faucet_balance(basic_transfer_request.sifnodecli_node))
-    logging.info(get_faucet_balance(basic_transfer_request.sifnodecli_node))
-    assert (start_faucet_rowan_ballance + 25000 == after_request_faucet_rowan_ballance), "current faucet ballance in rowan should be equal with the initial faucet balance + 25000"
+    txn = request_faucet_coins(basic_transfer_request, credentials)
+    assert(txn.get("code", 0) == 0)
+    after_request_faucet_rowan_balance = get_currency_faucet_balance("rowan", get_faucet_balance(basic_transfer_request.sifnodecli_node))
+    assert (start_faucet_rowan_balance + 25000 == after_request_faucet_rowan_balance), "current faucet balance in rowan should be equal with the initial faucet balance + 25000"
     get_faucet_balance(basic_transfer_request.sifnodecli_node)
     balance = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "rowan")
      
-    
     #ceth
-    start_faucet_ceth_ballance = get_currency_faucet_balance("ceth", get_faucet_balance(basic_transfer_request.sifnodecli_node))
+    start_faucet_ceth_balance = get_currency_faucet_balance("ceth", get_faucet_balance(basic_transfer_request.sifnodecli_node))
     get_faucet_balance(basic_transfer_request.sifnodecli_node)
     basic_transfer_request.amount = 10
     basic_transfer_request.sifchain_symbol = "ceth"
     basic_transfer_request.sifchain_address = sifaddress
     # add
-    add_faucet_coins(basic_transfer_request, credentials)
-    time.sleep(20)
-    after_add_faucet_ceth_ballance = get_currency_faucet_balance("ceth", get_faucet_balance(basic_transfer_request.sifnodecli_node))
-    assert (start_faucet_ceth_ballance < after_add_faucet_ceth_ballance), "faucet ballance in ceth should be higher after adding coins to faucet"
+    txn = add_faucet_coins(basic_transfer_request, credentials)
+    assert(txn.get("code", 0) == 0)
+    after_add_faucet_ceth_balance = get_currency_faucet_balance("ceth", get_faucet_balance(basic_transfer_request.sifnodecli_node))
+    assert (start_faucet_ceth_balance < after_add_faucet_ceth_balance), "faucet balance in ceth should be higher after adding coins to faucet"
     get_faucet_balance(request.sifnodecli_node)
     # request
     basic_transfer_request.amount = 5
-    request_faucet_coins(basic_transfer_request, credentials)
-    time.sleep(20)
+    txn = request_faucet_coins(basic_transfer_request, credentials)
+    assert(txn.get("code", 0) == 0)
     get_faucet_balance(basic_transfer_request.sifnodecli_node)
     balance_ceth = test_utilities.get_sifchain_addr_balance(sifaddress, basic_transfer_request.sifnodecli_node, "ceth")
     
     #random currency
-    start_faucet_random_ballance = get_currency_faucet_balance(sifchain_symbol, get_faucet_balance(request.sifnodecli_node))
+    start_faucet_random_balance = get_currency_faucet_balance(sifchain_symbol, get_faucet_balance(request.sifnodecli_node))
     get_faucet_balance(request.sifnodecli_node)
     request.amount = 20000
     request.sifchain_symbol = sifchain_symbol
     request.sifchain_address = sifaddress
     # add
-    add_faucet_coins(request, credentials)
-    time.sleep(20)
-    after_add_faucet_random_ballance = get_currency_faucet_balance(sifchain_symbol, get_faucet_balance(request.sifnodecli_node))
-    assert (start_faucet_random_ballance < after_add_faucet_random_ballance), "faucet ballance in random currency should be higher after adding coins to faucet"
-   
+    txn = add_faucet_coins(request, credentials)
+    assert(txn.get("code", 0) == 0)
+    after_add_faucet_random_balance = get_currency_faucet_balance(sifchain_symbol, get_faucet_balance(request.sifnodecli_node))
+    assert (start_faucet_random_balance < after_add_faucet_random_balance), "faucet balance in random currency should be higher after adding coins to faucet"
     get_faucet_balance(request.sifnodecli_node)
     balance_new_currency = test_utilities.get_sifchain_addr_balance(sifaddress, request.sifnodecli_node, sifchain_symbol)
-    logging.info(sifchain_symbol+" balance after add, should be lower="+ str(balance_new_currency))
-    logging.info(get_faucet_balance(request.sifnodecli_node))
+   
     # request
     request.amount = 1000
-    request_faucet_coins(request, credentials)
-    time.sleep(20)
+    txn = request_faucet_coins(request, credentials)
+    assert(txn.get("code", 0) == 0)
     get_faucet_balance(request.sifnodecli_node)
-    logging.info(get_faucet_balance(request.sifnodecli_node))
     balance_new_currency = test_utilities.get_sifchain_addr_balance(sifaddress, request.sifnodecli_node, sifchain_symbol)
     
     #get faucet balances
-    logging.info(sifchain_symbol+" balance after request should be back="+ str(balance_new_currency))
-    logging.info("ceth  balance="+ str(balance_ceth))
-    logging.info("rowan  balance="+ str(balance))
+    logging.info("get remaining balances just to have those commands in the history")
+    assert balance_new_currency == 281000, "new currency balance is wrong in the test account"
+    assert balance_ceth == 95, "new ceth currency balance is wrong in the test account"
+    assert balance == 999999999999575000, "new rowan currency balance is wrong in the test account"
+    logging.info(f"{sifchain_symbol} balance = {balance_new_currency}")
+    logging.info(f"ceth  balance = {balance_ceth}")
+    logging.info(f"rowan  balance = {balance}")
     logging.info(get_faucet_balance(request.sifnodecli_node))
 
 
