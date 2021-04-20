@@ -17,8 +17,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 
 	"github.com/Sifchain/sifnode/x/ethbridge/client"
-	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/Sifchain/sifnode/x/ethbridge/keeper"
+	"github.com/Sifchain/sifnode/x/ethbridge/types"
 )
 
 var (

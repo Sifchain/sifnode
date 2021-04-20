@@ -5,19 +5,20 @@ import (
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/tendermint/tendermint/libs/log"
 )
 
 // Keeper of the clp store
 type Keeper struct {
 	storeKey     sdk.StoreKey
-	cdc          *codec.LegacyAmino
+	cdc          codec.BinaryMarshaler
 	bankKeeper   types.BankKeeper
 	supplyKeeper types.SupplyKeeper
 }
 
 // NewKeeper creates a dispensation keeper
-func NewKeeper(cdc *codec.LegacyAmino, key sdk.StoreKey, bankkeeper types.BankKeeper, supplyKeeper types.SupplyKeeper) Keeper {
+func NewKeeper(cdc codec.BinaryMarshaler, key sdk.StoreKey, bankkeeper types.BankKeeper, supplyKeeper types.SupplyKeeper, ps paramtypes.Subspace) Keeper {
 	keeper := Keeper{
 		storeKey:     key,
 		cdc:          cdc,
@@ -32,7 +33,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) Codec() *codec.LegacyAmino {
+func (k Keeper) Codec() codec.BinaryMarshaler {
 	return k.cdc
 }
 

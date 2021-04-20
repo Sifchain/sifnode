@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"encoding/hex"
+	"github.com/Sifchain/sifnode/app"
 	"strconv"
 	"testing"
 
@@ -28,7 +29,6 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/Sifchain/sifnode/app"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracleTypes "github.com/Sifchain/sifnode/x/oracle/types"

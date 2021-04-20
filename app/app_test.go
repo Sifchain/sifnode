@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/Sifchain/sifnode/x/dispensation/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"os"
 	"testing"
@@ -21,11 +20,13 @@ func TestGetMaccPerms(t *testing.T) {
 func TestSimAppExportAndBlockedAddrs(t *testing.T) {
 	encCfg := MakeTestEncodingConfig()
 	db := dbm.NewMemDB()
-	app := NewSifApp(log.NewTMLogger(log.NewSyncWriter(os.Stdout)), db, nil, true, map[int64]bool{}, DefaultNodeHome, 0, encCfg, EmptyAppOptions{})
+
+	app := Setup(false)
+	SetConfig(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	for acc := range maccPerms {
-		require.True(t, app.BankKeeper.BlockedAddr(types.SupplyKeeper.GetModuleAccount(ctx, ctx, acc).GetAddress()))
+		require.True(t, app.BankKeeper.BlockedAddr(app.SupplyKeeper.GetModuleAccount(ctx, acc).GetAddress()))
 	}
 
 	genesisState := NewDefaultGenesisState(encCfg.Marshaler)

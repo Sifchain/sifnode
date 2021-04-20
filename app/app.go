@@ -1,14 +1,13 @@
 package app
 
 import (
-	"github.com/Sifchain/sifnode/x/dispensation"
-	"github.com/Sifchain/sifnode/x/ethbridge"
 	"io"
 	"math/big"
 	"net/http"
 	"os"
 	"path/filepath"
 
+	ethbridgetypes "github.com/Sifchain/sifnode/x/ethbridge/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -84,6 +83,8 @@ import (
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	"github.com/Sifchain/sifnode/x/dispensation"
+	dispkeeper "github.com/Sifchain/sifnode/x/dispensation/keeper"
 	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
@@ -179,7 +180,7 @@ type SifchainApp struct {
 
 	ClpKeeper          clpkeeper.Keeper
 	OracleKeeper       oraclekeeper.Keeper
-	DispensationKeeper dispensation.Keeper
+	DispensationKeeper dispkeeper.Keeper
 
 	mm *module.Manager
 	sm *module.SimulationManager
@@ -213,11 +214,10 @@ func NewSifApp(
 		ibchost.StoreKey,
 		ibctransfertypes.StoreKey,
 		capabilitytypes.StoreKey,
-		dispensation.StoreKey,
-		ethbridge.StoreKey,
+		disptypes.StoreKey,
+		ethbridgetypes.StoreKey,
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
-		dispensation.StoreKey,
 	)
 
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -283,11 +283,12 @@ func NewSifApp(
 		oracletypes.DefaultConsensusNeeded,
 	)
 
-	app.DispensationKeeper = dispensation.NewKeeper(
-		app.legacyAmino,
-		keys[dispensation.StoreKey],
-		app.DispensationKeeper.GetBankKeeper(),
+	app.DispensationKeeper = dispkeeper.NewKeeper(
+		appCodec,
+		keys[disptypes.StoreKey],
+		app.BankKeeper,
 		app.SupplyKeeper,
+		app.GetSubspace(disptypes.ModuleName),
 	)
 
 	// This map defines heights to skip for updates
@@ -363,7 +364,7 @@ func NewSifApp(
 		transferModule,
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
-		dispensation.NewAppModule(app.DispensationKeeper, app.DispensationKeeper.GetBankKeeper(), app.SupplyKeeper),
+		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.SupplyKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
