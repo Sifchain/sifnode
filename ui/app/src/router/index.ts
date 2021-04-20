@@ -138,6 +138,7 @@ router.beforeEach((to, from, next) => {
 
   // If a route with a title was found, set the document (page) title to that value.
   if (nearestWithTitle) {
+    // @ts-ignore
     document.title = nearestWithTitle.meta.title;
     // Let's log the page view to Google Analytics manually
     (window as any).gtag("event", "page_view", {
