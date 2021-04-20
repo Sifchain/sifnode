@@ -159,13 +159,20 @@ export default defineComponent({
   display: flex;
   justify-content: space-between;
   @include listAnimation;
-
+  color: #818181;
+  font-family: "PT Serif", serif;
+  font-size: 14px;
+  font-style: italic;
   &[disabled] {
     color: #bbb;
     pointer-events: none;
   }
 }
 .balance {
+  color: #818181;
+  font-family: "PT Serif", serif;
+  font-size: 14px;
+  font-style: italic;
 }
 .no-tokens-message {
   padding: 40px;
