@@ -11,6 +11,7 @@ export type IWalletService = {
     log: string;
   };
   onProviderNotFound(handler: () => void): void;
+  onChainIdDetected(handler: (chainId: string) => void): void;
   isConnected(): boolean;
   getSupportedTokens: () => Asset[];
   connect(): Promise<void>;
