@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/types"
 )
 
 // GenesisState - all clp state that must be provided at genesis
@@ -16,8 +17,8 @@ func NewGenesisState() GenesisState {
 }
 
 // DefaultGenesisState gets the raw genesis raw message for testing
-func DefaultGenesisState() GenesisState {
-	return GenesisState{}
+func DefaultGenesisState() *types.Any {
+	return &types.Any{}
 }
 
 func GetGenesisStateFromAppState(cdc *codec.LegacyAmino, appState map[string]json.RawMessage) GenesisState {

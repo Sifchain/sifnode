@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/Sifchain/sifnode/x/dispensation"
+	"github.com/Sifchain/sifnode/x/ethbridge"
 	"io"
 	"math/big"
 	"net/http"
@@ -83,6 +84,7 @@ import (
 	"github.com/Sifchain/sifnode/x/clp"
 	clpkeeper "github.com/Sifchain/sifnode/x/clp/keeper"
 	clptypes "github.com/Sifchain/sifnode/x/clp/types"
+	disptypes "github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/Sifchain/sifnode/x/oracle"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
@@ -158,6 +160,7 @@ type SifchainApp struct {
 
 	AccountKeeper    authkeeper.AccountKeeper
 	BankKeeper       bankkeeper.Keeper
+	SupplyKeeper     disptypes.SupplyKeeper
 	CapabilityKeeper *capabilitykeeper.Keeper
 	ParamsKeeper     paramskeeper.Keeper
 	UpgradeKeeper    upgradekeeper.Keeper
@@ -210,8 +213,8 @@ func NewSifApp(
 		ibchost.StoreKey,
 		ibctransfertypes.StoreKey,
 		capabilitytypes.StoreKey,
-
-		// ethbridge.StoreKey,
+		dispensation.StoreKey,
+		ethbridge.StoreKey,
 		clptypes.StoreKey,
 		oracletypes.StoreKey,
 		dispensation.StoreKey,
@@ -283,8 +286,8 @@ func NewSifApp(
 	app.DispensationKeeper = dispensation.NewKeeper(
 		app.legacyAmino,
 		keys[dispensation.StoreKey],
-		app.BankKeeper,
-		app.AccountKeeper,
+		app.DispensationKeeper.GetBankKeeper(),
+		app.SupplyKeeper,
 	)
 
 	// This map defines heights to skip for updates
@@ -360,7 +363,7 @@ func NewSifApp(
 		transferModule,
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
-		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AuthKeeper),
+		dispensation.NewAppModule(app.DispensationKeeper, app.DispensationKeeper.GetBankKeeper(), app.SupplyKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that

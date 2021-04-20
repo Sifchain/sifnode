@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 )
 
-func GetQueryCmd(queryRoute string, cdc *codec.LegacyAmino) *cobra.Command {
+func GetQueryCmd(queryRoute string) *cobra.Command {
 	// Group dispensation queries under a subcommand
 	dispensationQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
@@ -19,41 +17,43 @@ func GetQueryCmd(queryRoute string, cdc *codec.LegacyAmino) *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 	dispensationQueryCmd.AddCommand(
-		GetCmdDistributions(queryRoute, cdc),
-		GetCmdDistributionRecordForRecipient(queryRoute, cdc),
-		GetCmdDistributionRecordForDistNameAll(queryRoute, cdc),
-		GetCmdDistributionRecordForDistNamePending(queryRoute, cdc),
-		GetCmdDistributionRecordForDistNameCompleted(queryRoute, cdc),
+		GetCmdDistributions(queryRoute),
+		GetCmdDistributionRecordForRecipient(queryRoute),
+		GetCmdDistributionRecordForDistNameAll(queryRoute),
+		GetCmdDistributionRecordForDistNamePending(queryRoute),
+		GetCmdDistributionRecordForDistNameCompleted(queryRoute),
 	)
 	return dispensationQueryCmd
 }
 
 //GetCmdDistributions returns a list of all distributions ever created
-func GetCmdDistributions(queryRoute string, cdc *codec.LegacyAmino) *cobra.Command {
+func GetCmdDistributions(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "distributions-all",
 		Short: "get a list of all distributions ",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
+			return clientCtx.PrintObjectLegacy("temp")
 			if err != nil {
 				return err
 			}
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryAllDistributions)
-			res, height, err := clientCtx.QueryWithData(route, nil)
-			if err != nil {
-				return err
-			}
-			var dr types.Distributions
-			cdc.MustUnmarshalJSON(res, &dr)
-			out := types.NewDistributionsResponse(dr, height)
-			return clientCtx.PrintObjectLegacy(out)
+			return clientCtx.PrintObjectLegacy("temp")
+			//route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryAllDistributions)
+			//res, height, err := clientCtx.QueryWithData(route, nil)
+			//if err != nil {
+			//	return err
+			//}
+			//var dr types.Distributions
+			//types.ModuleCdc.MustUnmarshalJSON(res, &dr)
+			//out := types.NewDistributionsResponse(dr, height)
+			//return clientCtx.PrintObjectLegacy(out)
 		},
 	}
 }
 
 // GetCmdDistributionRecordForRecipient returns the completed and pending records for the recipient address
-func GetCmdDistributionRecordForRecipient(queryRoute string, cdc *codec.LegacyAmino) *cobra.Command {
+func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "records-by-addr [recipient address]",
 		Short: "get a list of all distribution records ",
@@ -63,31 +63,32 @@ func GetCmdDistributionRecordForRecipient(queryRoute string, cdc *codec.LegacyAm
 			if err != nil {
 				return err
 			}
-			address := args[0]
-			recipientAddress, err := sdk.AccAddressFromBech32(address)
-			if err != nil {
-				return err
-			}
-			params := types.NewQueryRecordsByRecipientAddr(recipientAddress)
-			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
-			if err != nil {
-				return err
-			}
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByRecipient)
-			res, height, err := clientCtx.QueryWithData(route, bz)
-			if err != nil {
-				return err
-			}
-			var drs types.DistributionRecords
-			cdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewDistributionRecordsResponse(drs, height)
-			return clientCtx.PrintObjectLegacy(out)
+			return clientCtx.PrintObjectLegacy("temp")
+			//address := args[0]
+			//recipientAddress, err := sdk.AccAddressFromBech32(address)
+			//if err != nil {
+			//	return err
+			//}
+			//params := types.NewQueryRecordsByRecipientAddr(recipientAddress)
+			//bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
+			//if err != nil {
+			//	return err
+			//}
+			//route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByRecipient)
+			//res, height, err := clientCtx.QueryWithData(route, bz)
+			//if err != nil {
+			//	return err
+			//}
+			//var drs types.DistributionRecords
+			//types.ModuleCdc.MustUnmarshalJSON(res, &drs)
+			//out := types.NewDistributionRecordsResponse(drs, height)
+			//return clientCtx.PrintObjectLegacy(out)
 		},
 	}
 }
 
 //GetCmdDistributionRecordForDistNameAll returns all records for a given distribution name
-func GetCmdDistributionRecordForDistNameAll(queryRoute string, cdc *codec.LegacyAmino) *cobra.Command {
+func GetCmdDistributionRecordForDistNameAll(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "records-by-name-all [distribution name]",
 		Short: "get a list of all distribution records ",
@@ -97,27 +98,28 @@ func GetCmdDistributionRecordForDistNameAll(queryRoute string, cdc *codec.Legacy
 			if err != nil {
 				return err
 			}
-			name := args[0]
-			params := types.NewQueryRecordsByDistributionName(name, 3)
-			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
-			if err != nil {
-				return err
-			}
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
-			res, height, err := clientCtx.QueryWithData(route, bz)
-			if err != nil {
-				return err
-			}
-			var drs types.DistributionRecords
-			cdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewDistributionRecordsResponse(drs, height)
-			return clientCtx.PrintObjectLegacy(out)
+			return clientCtx.PrintObjectLegacy("temp")
+			//name := args[0]
+			//params := types.NewQueryRecordsByDistributionName(name, 3)
+			//bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
+			//if err != nil {
+			//	return err
+			//}
+			//route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
+			//res, height, err := clientCtx.QueryWithData(route, bz)
+			//if err != nil {
+			//	return err
+			//}
+			//var drs types.DistributionRecords
+			//types.ModuleCdc.MustUnmarshalJSON(res, &drs)
+			//out := types.NewDistributionRecordsResponse(drs, height)
+			//return clientCtx.PrintObjectLegacy(out)
 		},
 	}
 }
 
 //GetCmdDistributionRecordForDistNamePending returns all pending records for a given distribution name
-func GetCmdDistributionRecordForDistNamePending(queryRoute string, cdc *codec.LegacyAmino) *cobra.Command {
+func GetCmdDistributionRecordForDistNamePending(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "records-by-name-pending [distribution name]",
 		Short: "get a list of all distribution records ",
@@ -127,27 +129,28 @@ func GetCmdDistributionRecordForDistNamePending(queryRoute string, cdc *codec.Le
 			if err != nil {
 				return err
 			}
-			name := args[0]
-			params := types.NewQueryRecordsByDistributionName(name, types.Pending)
-			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
-			if err != nil {
-				return err
-			}
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
-			res, height, err := clientCtx.QueryWithData(route, bz)
-			if err != nil {
-				return err
-			}
-			var drs types.DistributionRecords
-			cdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewDistributionRecordsResponse(drs, height)
-			return clientCtx.PrintObjectLegacy(out)
+			return clientCtx.PrintObjectLegacy("temp")
+			//name := args[0]
+			//params := types.NewQueryRecordsByDistributionName(name, types.Pending)
+			//bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
+			//if err != nil {
+			//	return err
+			//}
+			//route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
+			//res, height, err := clientCtx.QueryWithData(route, bz)
+			//if err != nil {
+			//	return err
+			//}
+			//var drs types.DistributionRecords
+			//types.ModuleCdc.MustUnmarshalJSON(res, &drs)
+			//out := types.NewDistributionRecordsResponse(drs, height)
+			//return clientCtx.PrintObjectLegacy(out)
 		},
 	}
 }
 
 //GetCmdDistributionRecordForDistNamePending returns all completed records for a given distribution name
-func GetCmdDistributionRecordForDistNameCompleted(queryRoute string, cdc *codec.LegacyAmino) *cobra.Command {
+func GetCmdDistributionRecordForDistNameCompleted(queryRoute string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "records-by-name-completed [distribution name]",
 		Short: "get a list of all distribution records ",
@@ -157,21 +160,22 @@ func GetCmdDistributionRecordForDistNameCompleted(queryRoute string, cdc *codec.
 			if err != nil {
 				return err
 			}
-			name := args[0]
-			params := types.NewQueryRecordsByDistributionName(name, types.Completed)
-			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
-			if err != nil {
-				return err
-			}
-			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
-			res, height, err := clientCtx.QueryWithData(route, bz)
-			if err != nil {
-				return err
-			}
-			var drs types.DistributionRecords
-			cdc.MustUnmarshalJSON(res, &drs)
-			out := types.NewDistributionRecordsResponse(drs, height)
-			return clientCtx.PrintObjectLegacy(out)
+			return clientCtx.PrintObjectLegacy("temp")
+			//name := args[0]
+			//params := types.NewQueryRecordsByDistributionName(name, types.Completed)
+			//bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
+			//if err != nil {
+			//	return err
+			//}
+			//route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
+			//res, height, err := clientCtx.QueryWithData(route, bz)
+			//if err != nil {
+			//	return err
+			//}
+			//var drs types.DistributionRecords
+			//types.ModuleCdc.MustUnmarshalJSON(res, &drs)
+			//out := types.NewDistributionRecordsResponse(drs, height)
+			//return clientCtx.PrintObjectLegacy(out)
 		},
 	}
 }
