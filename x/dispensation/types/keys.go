@@ -23,9 +23,9 @@ const (
 )
 
 var (
-	DistributionRecordPrefixPending   = []byte{0x00} // key for storing DistributionRecords
-	DistributionRecordPrefixCompleted = []byte{0x01} // key for storing DistributionRecords
-	DistributionsPrefix               = []byte{0x02} // key for storing airdropRecords
+	DistributionRecordPrefixPending   = []byte{0x000} // key for storing DistributionRecords pending
+	DistributionRecordPrefixCompleted = []byte{0x011} // key for storing DistributionRecords completed
+	DistributionsPrefix               = []byte{0x012} // key for storing Distributions [Why does this not work for []byte{0x02} ?!]
 )
 
 func GetDistributionRecordKey(status DistributionStatus, name string, recipient string) []byte {

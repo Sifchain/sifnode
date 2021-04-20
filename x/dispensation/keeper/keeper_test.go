@@ -14,6 +14,7 @@ func TestKeeper_GetDistributions(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		name := uuid.New().String()
 		distribution := types.NewDistribution(types.Airdrop, name)
+		assert.True(t, distribution.Validate())
 		err := keeper.SetDistribution(ctx, distribution)
 		assert.NoError(t, err)
 		_, err = keeper.GetDistribution(ctx, name, types.Airdrop)
