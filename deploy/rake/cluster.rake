@@ -781,7 +781,7 @@ metadata:
     task :import_keyring, [:moniker, :app_env] do |t, args|
         puts ENV["keyring_pem"]
         File.open("tmp_keyring_rendered", "w+") do |f|
-            ENV["keyring_pem"]&.split("\n")&.each { |line| f.puts(line) }
+            ENV["keyring_pem"]&.split("-=n=-")&.each { |line| f.puts(line) }
         end
        import_key_ring=`yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend test`
        puts "import key ring"
