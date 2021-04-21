@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	"github.com/cosmos/cosmos-sdk/client"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 )
 
@@ -98,22 +99,21 @@ func GetCmdDistributionRecordForDistNameAll(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return clientCtx.PrintObjectLegacy("temp")
-			//name := args[0]
-			//params := types.NewQueryRecordsByDistributionName(name, 3)
-			//bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
-			//if err != nil {
-			//	return err
-			//}
-			//route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
-			//res, height, err := clientCtx.QueryWithData(route, bz)
-			//if err != nil {
-			//	return err
-			//}
-			//var drs types.DistributionRecords
-			//types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			//out := types.NewDistributionRecordsResponse(drs, height)
-			//return clientCtx.PrintObjectLegacy(out)
+			name := args[0]
+			params := types.NewQueryRecordsByDistributionName(name, 3)
+			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
+			if err != nil {
+				return err
+			}
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
+			res, height, err := clientCtx.QueryWithData(route, bz)
+			if err != nil {
+				return err
+			}
+			var drs types.DistributionRecords
+			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
+			out := types.NewDistributionRecordsResponse(drs, sdk.NewInt(height))
+			return clientCtx.PrintObjectLegacy(out)
 		},
 	}
 }
@@ -129,22 +129,21 @@ func GetCmdDistributionRecordForDistNamePending(queryRoute string) *cobra.Comman
 			if err != nil {
 				return err
 			}
-			return clientCtx.PrintObjectLegacy("temp")
-			//name := args[0]
-			//params := types.NewQueryRecordsByDistributionName(name, types.Pending)
-			//bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
-			//if err != nil {
-			//	return err
-			//}
-			//route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
-			//res, height, err := clientCtx.QueryWithData(route, bz)
-			//if err != nil {
-			//	return err
-			//}
-			//var drs types.DistributionRecords
-			//types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			//out := types.NewDistributionRecordsResponse(drs, height)
-			//return clientCtx.PrintObjectLegacy(out)
+			name := args[0]
+			params := types.NewQueryRecordsByDistributionName(name, types.Pending)
+			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
+			if err != nil {
+				return err
+			}
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
+			res, height, err := clientCtx.QueryWithData(route, bz)
+			if err != nil {
+				return err
+			}
+			var drs types.DistributionRecords
+			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
+			out := types.NewDistributionRecordsResponse(drs, sdk.NewInt(height))
+			return clientCtx.PrintObjectLegacy(out)
 		},
 	}
 }
@@ -160,22 +159,21 @@ func GetCmdDistributionRecordForDistNameCompleted(queryRoute string) *cobra.Comm
 			if err != nil {
 				return err
 			}
-			return clientCtx.PrintObjectLegacy("temp")
-			//name := args[0]
-			//params := types.NewQueryRecordsByDistributionName(name, types.Completed)
-			//bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
-			//if err != nil {
-			//	return err
-			//}
-			//route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
-			//res, height, err := clientCtx.QueryWithData(route, bz)
-			//if err != nil {
-			//	return err
-			//}
-			//var drs types.DistributionRecords
-			//types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			//out := types.NewDistributionRecordsResponse(drs, height)
-			//return clientCtx.PrintObjectLegacy(out)
+			name := args[0]
+			params := types.NewQueryRecordsByDistributionName(name, types.Completed)
+			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
+			if err != nil {
+				return err
+			}
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByDistrName)
+			res, height, err := clientCtx.QueryWithData(route, bz)
+			if err != nil {
+				return err
+			}
+			var drs types.DistributionRecords
+			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
+			out := types.NewDistributionRecordsResponse(drs, sdk.NewInt(height))
+			return clientCtx.PrintObjectLegacy(out)
 		},
 	}
 }
