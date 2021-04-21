@@ -31,7 +31,7 @@ const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 const { getSifchainBalances } = require("./sifchain.js");
 const { getEthBalance, advanceEthBlocks } = require("./ethereum.js");
 const { extractFile, getExtensionPage } = require("./utils");
-const { restartStack, killStack } = require("./stack");
+const { sleep, restartStack, killStack } = require("./stack");
 
 async function getInputValue(page, selector) {
   return await page.evaluate((el) => el.value, await page.$(selector));
@@ -41,6 +41,11 @@ let browserContext;
 let dexPage;
 beforeAll(async () => {
   await restartStack();
+});
+
+afterEach(async () => {
+  await restartStack();
+  await sleep(1000);
 });
 
 afterAll(async () => {
@@ -83,40 +88,21 @@ describe("connect to page", () => {
     dexPage = await browserContext.newPage();
     dexPage.setDefaultTimeout(60000);
     await dexPage.goto(DEX_TARGET, { waitUntil: "domcontentloaded" });
+
+    await connectKeplrAccount(dexPage, browserContext);
+
+    await connectMmAccount(dexPage, browserContext, MM_CONFIG.id);
   });
 
   afterAll(async () => {
     browserContext.close();
   });
 
-  it("connect to keplr, check balance", async () => {
-    const cEthBalance = await getSifchainBalances(
-      keplrConfig.sifApiUrl,
-      KEPLR_CONFIG.options.address,
-      "ceth",
-    );
-
-    await connectKeplrAccount(dexPage, browserContext);
-    await dexPage.waitForTimeout(1000); // todo capture out extension page close event
-    expect(
-      (await dexPage.innerText("[data-handle='ceth-row-amount']")).trim(),
-    ).toBe(Number(cEthBalance).toFixed(6));
-  });
-
-  it("connects to metamask, check balance", async () => {
-    const mmEthBalance = await getEthBalance(MM_CONFIG.options.address);
-    // connect wallet
-    await connectMmAccount(dexPage, browserContext, MM_CONFIG.id);
-    await dexPage.waitForTimeout(1000); // todo capture out extension page close event
-    // click external tokens tab
-    await dexPage.click("text=External Tokens");
-    // expect
-    expect(await dexPage.innerText("[data-handle='eth-row-amount']")).toBe(
-      Number(mmEthBalance).toFixed(6),
-    );
-  });
-
   it("pegs", async () => {
+    // Navigate to swap page
+    await dexPage.goto(DEX_TARGET, {
+      waitUntil: "domcontentloaded",
+    });
     // XXX: This currently reuses the page from a previous test - this might be ok for now but we will probably want to provide that state some other way
     // assumes wallets connected
     const mmEthBalance = await getEthBalance(MM_CONFIG.options.address);
@@ -281,6 +267,10 @@ describe("connect to page", () => {
   });
 
   it("adds liquidity", async () => {
+    // Navigate to swap page
+    await dexPage.goto(DEX_TARGET, {
+      waitUntil: "domcontentloaded",
+    });
     // Click pool page
     await dexPage.click('[data-handle="pool-page-button"]');
 
@@ -310,13 +300,13 @@ describe("connect to page", () => {
     await dexPage.click('[data-handle="token-a-max-button"]');
 
     expect(await getInputValue(dexPage, '[data-handle="token-a-input"]')).toBe(
-      "101.000000000000000000",
+      "100.000000000000000000",
     );
 
     await dexPage.click('[data-handle="token-b-input"]');
 
     expect(await getInputValue(dexPage, '[data-handle="token-b-input"]')).toBe(
-      "121686.74699",
+      "120481.92771",
     );
 
     expect(

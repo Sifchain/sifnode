@@ -53,8 +53,8 @@ async function killStack() {
 }
 
 module.exports.restartStack = restartStack;
-
 module.exports.killStack = killStack;
+module.exports.sleep = sleep;
 
 // restartStack().then(() => {
 //   console.log("Next");
