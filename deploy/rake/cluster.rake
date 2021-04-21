@@ -782,7 +782,8 @@ metadata:
        import_keys = %Q{
 #!/usr/bin/env bash
 set +x
-echo -e "${keyring_pem}" > tmp_keyring && tail -c +4 tmp_keyring > tmp_keyring_rendered
+echo -e "${keyring_pem}" | sed -e 's/-e //g' > tmp_keyring_rendered
+cat tmp_keyring_rendered
 key_ring=`cat tmp_keyring_rendered`
 echo -e $key_ring | sed -e 's/-e //g'
 rm -rf tmp_keyring
