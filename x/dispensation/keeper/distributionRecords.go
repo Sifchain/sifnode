@@ -121,3 +121,23 @@ func (k Keeper) GetRecordsLimited(ctx sdk.Context, status types.DistributionStat
 	}
 	return res
 }
+
+func (k Keeper) GetRecords(ctx sdk.Context) types.DistributionRecords {
+	var res types.DistributionRecords
+	iterator := k.GetDistributionRecordsIterator(ctx, types.Pending)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		res = append(res, dr)
+	}
+	iterator = k.GetDistributionRecordsIterator(ctx, types.Completed)
+	for ; iterator.Valid(); iterator.Next() {
+		var dr types.DistributionRecord
+		bytesValue := iterator.Value()
+		k.cdc.MustUnmarshalBinaryBare(bytesValue, &dr)
+		res = append(res, dr)
+	}
+	return res
+}

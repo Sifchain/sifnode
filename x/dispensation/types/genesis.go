@@ -8,6 +8,8 @@ import (
 // GenesisState - all clp state that must be provided at genesis
 //TODO: Add parameters to Genesis state ,such as minimum liquidity required to create a pool
 type GenesisState struct {
+	DistributionRecords DistributionRecords `json:"distribution_records"`
+	Distributions       Distributions       `json:"distributions"`
 }
 
 // NewGenesisState creates a new GenesisState instance

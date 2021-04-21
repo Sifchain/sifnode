@@ -27,7 +27,7 @@ func TestKeeper_GetDistributions(t *testing.T) {
 func TestKeeper_GetRecordsForName(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	outList := test.GenerateOutputList("1000000000")
+	outList := test.CreatOutputList(3, "1000000000")
 	name := uuid.New().String()
 	for _, rec := range outList {
 		record := types.NewDistributionRecord(types.Pending, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
@@ -43,7 +43,7 @@ func TestKeeper_GetRecordsForName(t *testing.T) {
 func TestKeeper_GetRecordsForRecipient(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	outList := test.GenerateOutputList("1000000000")
+	outList := test.CreatOutputList(3, "1000000000")
 	name := uuid.New().String()
 	for _, rec := range outList {
 		record := types.NewDistributionRecord(types.Pending, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
@@ -54,6 +54,40 @@ func TestKeeper_GetRecordsForRecipient(t *testing.T) {
 	}
 	list := keeper.GetRecordsForRecipient(ctx, outList[0].Address)
 	assert.Len(t, list, 1)
+}
+
+func TestKeeper_GetRecords(t *testing.T) {
+	app, ctx := test.CreateTestApp(false)
+	keeper := app.DispensationKeeper
+	outList := test.CreatOutputList(3000, "1000000000")
+	name := uuid.New().String()
+	for _, rec := range outList {
+		record := types.NewDistributionRecord(types.Pending, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		err := keeper.SetDistributionRecord(ctx, record)
+		assert.NoError(t, err)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address.String(), types.Pending)
+		assert.NoError(t, err)
+	}
+	outList2 := test.CreatOutputList(3000, "1000000000")
+	name = uuid.New().String()
+	for _, rec := range outList2 {
+		record := types.NewDistributionRecord(types.Pending, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		err := keeper.SetDistributionRecord(ctx, record)
+		assert.NoError(t, err)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address.String(), types.Pending)
+		assert.NoError(t, err)
+	}
+	outList3 := test.CreatOutputList(3000, "1000000000")
+	name = uuid.New().String()
+	for _, rec := range outList3 {
+		record := types.NewDistributionRecord(types.Completed, name, rec.Address, rec.Coins, ctx.BlockHeight(), -1)
+		err := keeper.SetDistributionRecord(ctx, record)
+		assert.NoError(t, err)
+		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address.String(), types.Completed)
+		assert.NoError(t, err)
+	}
+	list := keeper.GetRecords(ctx)
+	assert.Len(t, list, 9000)
 }
 
 func TestKeeper_GetRecordsForNamePrefixed(t *testing.T) {

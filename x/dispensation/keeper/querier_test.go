@@ -33,7 +33,7 @@ func GenerateQueryData(app *simapp.SimApp, ctx sdk.Context, name string, outList
 func TestQueryRecordsName(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	name := uuid.New().String()
-	outList := test.GenerateOutputList("1000000000")
+	outList := test.CreatOutputList(3, "1000000000")
 	GenerateQueryData(app, ctx, name, outList)
 	keeper := app.DispensationKeeper
 	querier := dispensation.NewQuerier(keeper)
@@ -59,7 +59,7 @@ func TestQueryRecordsName(t *testing.T) {
 func TestQueryRecordsAddr(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	name := uuid.New().String()
-	outList := test.GenerateOutputList("1000000000")
+	outList := test.CreatOutputList(3, "1000000000")
 	GenerateQueryData(app, ctx, name, outList)
 	keeper := app.DispensationKeeper
 	querier := dispensation.NewQuerier(keeper)
@@ -85,7 +85,7 @@ func TestQueryRecordsAddr(t *testing.T) {
 func TestQueryAllDistributions(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	name := uuid.New().String()
-	outList := test.GenerateOutputList("1000000000")
+	outList := test.CreatOutputList(3, "1000000000")
 	GenerateQueryData(app, ctx, name, outList)
 	keeper := app.DispensationKeeper
 	querier := dispensation.NewQuerier(keeper)

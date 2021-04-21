@@ -11,8 +11,7 @@ import (
 func TestKeeper_AccumulateDrops(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	inputList := test.GenerateInputList("15000000000000000000")
-	//outputList := test.GenerateOutputList("10000000000000000000")
+	inputList := test.CreatInputList(3, "15000000000000000000")
 
 	for _, in := range inputList {
 		_, err := keeper.GetBankKeeper().AddCoins(ctx, in.Address, in.Coins)
@@ -28,8 +27,8 @@ func TestKeeper_AccumulateDrops(t *testing.T) {
 func TestKeeper_CreateAndDistributeDrops(t *testing.T) {
 	app, ctx := test.CreateTestApp(false)
 	keeper := app.DispensationKeeper
-	inputList := test.GenerateInputList("15000000000000000000")
-	outputList := test.GenerateOutputList("10000000000000000000")
+	inputList := test.CreatInputList(3, "15000000000000000000")
+	outputList := test.CreatOutputList(3, "10000000000000000000")
 	for _, in := range inputList {
 		_, err := keeper.GetBankKeeper().AddCoins(ctx, in.Address, in.Coins)
 		assert.NoError(t, err)
