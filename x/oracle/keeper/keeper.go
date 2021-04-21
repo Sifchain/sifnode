@@ -74,10 +74,10 @@ func (k Keeper) setProphecy(ctx sdk.Context, prophecy types.Prophecy) {
 }
 
 // ProcessClaim ...
-func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim, sugaredLogger *zap.SugaredLogger) (types.Status, error) {
+func (k Keeper) ProcessClaim(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, claim types.Claim, sugaredLogger *zap.SugaredLogger) (types.Status, error) {
 	inWhiteList := false
 	// Check if claim from whitelist validators
-	for _, address := range k.GetOracleWhiteList(ctx) {
+	for _, address := range k.GetOracleWhiteList(ctx, networkDescriptor) {
 
 		if address.Equals(claim.ValidatorAddress) {
 			inWhiteList = true
@@ -122,7 +122,7 @@ func (k Keeper) ProcessClaim(ctx sdk.Context, claim types.Claim, sugaredLogger *
 	}
 
 	prophecy.AddClaim(claim.ValidatorAddress, claim.Content)
-	prophecy = k.processCompletion(ctx, prophecy)
+	prophecy = k.processCompletion(ctx, networkDescriptor, prophecy)
 
 	k.setProphecy(ctx, prophecy)
 	return prophecy.Status, nil
@@ -138,7 +138,7 @@ func (k Keeper) checkActiveValidator(ctx sdk.Context, validatorAddress sdk.ValAd
 }
 
 // ProcessUpdateWhiteListValidator processes the update whitelist validator from admin
-func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
+func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, cosmosSender sdk.AccAddress, validator sdk.ValAddress, operationtype string, sugaredLogger *zap.SugaredLogger) error {
 	if !k.IsAdminAccount(ctx, cosmosSender) {
 		sugaredLogger.Errorw("cosmos sender is not admin account.")
 		return types.ErrNotAdminAccount
@@ -146,9 +146,9 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sd
 
 	switch operationtype {
 	case "add":
-		k.AddOracleWhiteList(ctx, validator)
+		k.AddOracleWhiteList(ctx, networkDescriptor, validator)
 	case "remove":
-		k.RemoveOracleWhiteList(ctx, validator)
+		k.RemoveOracleWhiteList(ctx, networkDescriptor, validator)
 	default:
 		return types.ErrInvalidOperationType
 	}
@@ -161,8 +161,8 @@ func (k Keeper) ProcessUpdateWhiteListValidator(ctx sdk.Context, cosmosSender sd
 // power to be considered successful, or alternatively,
 // will never be able to become successful due to not enough validation power being
 // left to push it over the threshold required for consensus.
-func (k Keeper) processCompletion(ctx sdk.Context, prophecy types.Prophecy) types.Prophecy {
-	highestClaim, highestClaimPower, totalClaimsPower, totalPower := prophecy.FindHighestClaim(ctx, k.stakeKeeper, k.GetOracleWhiteList(ctx))
+func (k Keeper) processCompletion(ctx sdk.Context, networkDescriptor types.NetworkDescriptor, prophecy types.Prophecy) types.Prophecy {
+	highestClaim, highestClaimPower, totalClaimsPower, totalPower := prophecy.FindHighestClaim(ctx, k.stakeKeeper, k.GetOracleWhiteList(ctx, networkDescriptor))
 
 	highestConsensusRatio := float64(highestClaimPower) / float64(totalPower)
 	remainingPossibleClaimPower := totalPower - totalClaimsPower

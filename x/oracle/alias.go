@@ -24,14 +24,10 @@ const (
 
 var (
 	// functions aliases
-
-	NewKeeper         = keeper.NewKeeper
-	CreateTestAddrs   = keeper.CreateTestAddrs
-	CreateTestPubKeys = keeper.CreateTestPubKeys
-	CreateTestKeepers = keeper.CreateTestKeepers
-
-	// ProcessUpdateWhiteListValidator = keeper.ProcessUpdateWhiteListValidator
-
+	NewKeeper                        = keeper.NewKeeper
+	CreateTestAddrs                  = keeper.CreateTestAddrs
+	CreateTestPubKeys                = keeper.CreateTestPubKeys
+	CreateTestKeepers                = keeper.CreateTestKeepers
 	NewClaim                         = types.NewClaim
 	ErrProphecyNotFound              = types.ErrProphecyNotFound
 	ErrMinimumConsensusNeededInvalid = types.ErrMinimumConsensusNeededInvalid
@@ -46,18 +42,21 @@ var (
 	NewStatus                        = types.NewStatus
 	ModuleCdc                        = types.ModuleCdc
 	GetGenesisStateFromAppState      = types.GetGenesisStateFromAppState
-	// variable aliases
+	NewNetworkDescriptor             = types.NewNetworkDescriptor
 
-	StatusTextToString = types.StatusTextToString
-	StringToStatusText = types.StringToStatusText
+	// variable aliases
+	StatusTextToString   = types.StatusTextToString
+	StringToStatusText   = types.StringToStatusText
+	MaxNetworkDescriptor = types.MaxNetworkDescriptor
 )
 
 type (
-	Keeper       = keeper.Keeper
-	Claim        = types.Claim
-	Prophecy     = types.Prophecy
-	DBProphecy   = types.DBProphecy
-	Status       = types.Status
-	StatusText   = types.StatusText
-	GenesisState = types.GenesisState
+	Keeper            = keeper.Keeper
+	Claim             = types.Claim
+	Prophecy          = types.Prophecy
+	DBProphecy        = types.DBProphecy
+	Status            = types.Status
+	StatusText        = types.StatusText
+	GenesisState      = types.GenesisState
+	NetworkDescriptor = types.NetworkDescriptor
 )

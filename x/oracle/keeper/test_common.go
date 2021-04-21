@@ -143,7 +143,8 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		stakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
 	}
 
-	oracleKeeper.SetOracleWhiteList(ctx, valAddrs)
+	networkDescriptor := types.NewNetworkDescriptor(1)
+	oracleKeeper.SetOracleWhiteList(ctx, networkDescriptor, valAddrs)
 	return ctx, oracleKeeper, bankKeeper, supplyKeeper, accountKeeper, valAddrs, keyEthBridge
 }
 

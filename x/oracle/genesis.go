@@ -9,7 +9,10 @@ import (
 func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 
 	if data.AddressWhitelist != nil {
-		keeper.SetOracleWhiteList(ctx, data.AddressWhitelist)
+		for k, v := range data.AddressWhitelist {
+			keeper.SetOracleWhiteList(ctx, NewNetworkDescriptor(k), v)
+		}
+
 	}
 
 	if data.AdminAddress != nil {
@@ -20,7 +23,12 @@ func InitGenesis(ctx sdk.Context, keeper Keeper, data types.GenesisState) (res [
 }
 
 func ExportGenesis(ctx sdk.Context, keeper Keeper) types.GenesisState {
-	whiteList := keeper.GetOracleWhiteList(ctx)
+	var whiteList map[int32][]sdk.ValAddress
+	var i int32 = 0
+	for ; i <= MaxNetworkDescriptor; i++ {
+		whiteList[i] = keeper.GetOracleWhiteList(ctx, NewNetworkDescriptor(i))
+	}
+
 	return GenesisState{
 		AddressWhitelist: whiteList,
 	}
