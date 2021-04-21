@@ -784,6 +784,8 @@ metadata:
        import_key_ring=`yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend test`
        puts "current pem"
        puts current_pem
+       current_pem = current_pem.gsub! "\\\\n", "\\n")
+       puts current_pem
        puts "import key ring"
        puts import_key_ring
        exit 2
