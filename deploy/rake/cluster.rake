@@ -397,15 +397,10 @@ path \\"+/sys/internal/counters/activity\\" {
   capabilities = [\\"read\\"]
 }
         " > #{args[:app_name]}-policy.hcl
-
         kubectl cp --kubeconfig=./kubeconfig #{args[:app_name]}-policy.hcl vault-0:/home/vault/#{args[:app_name]}-policy.hcl -n vault
-
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault policy delete #{args[:app_name]}
-
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault policy write #{args[:app_name]} /home/vault/#{args[:app_name]}-policy.hcl
-
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write sys/internal/counters/config enabled=enable
-
         rm -rf #{args[:app_name]}-policy.hcl
       }
       system(cluster_automation) or exit 1
@@ -418,11 +413,8 @@ path \\"+/sys/internal/counters/activity\\" {
     task :enablekubernetes, [] do |t, args|
       cluster_automation = %Q{
         set +x
-
         echo "APPLY VAULT AUTH ENABLE KUBERNETES"
-
         check_installed=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth list | grep kubernetes`
-
         [ -z "$check_installed" ] && kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault auth enable kubernetes || echo "Kubernetes Already Enabled"
       }
       system(cluster_automation) or exit 1
@@ -449,7 +441,7 @@ vars_return = json.loads(output.decode('utf-8'))["data"]["data"]
 print("Opening temporary secrets file for writing secrets")
 temp_secrets = open("tmp_secrets", "w")
 for var in vars_return:
-    temp_secrets.write("export {key}={values} \\n".format(key=var, values=vars_return[var]))
+    temp_secrets.write('export {key}=\\'{values}\\' \\n'.format(key=var, values=vars_return[var]))
 temp_secrets.close()
 print("secrets written.")
 EOF
@@ -473,19 +465,12 @@ metadata:
   namespace: #{args[:app_namespace]}
   labels:
     app: #{args[:app_name]} " > service_account.yaml
-
         kubectl delete --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}
-
         kubectl create --kubeconfig=./kubeconfig -f service_account.yaml -n #{args[:app_namespace]}
-
         token=`kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- cat /var/run/secrets/kubernetes.io/serviceaccount/token`
-
         kubernetes_cluster_ip=`kubectl exec --kubeconfig=./kubeconfig -it vault-0 -n vault -- printenv | grep KUBERNETES_PORT_443_TCP_ADDR | cut -d '=' -f 2 | tr -d '\n' | tr -d '\r'`
-
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write auth/kubernetes/config token_reviewer_jwt="$token" kubernetes_host="https://$kubernetes_cluster_ip:443" kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-
         kubectl exec --kubeconfig=./kubeconfig -n vault -it vault-0 -- vault write auth/kubernetes/role/#{args[:app_name]} bound_service_account_names=#{args[:app_name]} bound_service_account_namespaces=#{args[:app_namespace]} policies=#{args[:app_name]} ttl=1h
-
         rm -rf service_account.yaml
       }
       system(cluster_automation) or exit 1
@@ -546,42 +531,200 @@ fi
   desc "Create Release Governance Request."
   namespace :release do
     desc "Create Release Governance Request."
-    task :generate_governance_release_request, [:upgrade_hours, :block_time, :deposit, :rowan, :chainnet, :release_version, :from, :app_env, :checksum] do |t, args|
+    task :generate_governance_release_request, [:upgrade_hours, :block_time, :deposit, :rowan, :chainnet, :release_version, :from, :app_env] do |t, args|
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
 
 echo "Checking to see if the release version exist in app.go"
-check_exist=$(cat app/app.go | grep 'release-20210401000000')
+check_exist=$(cat app/setupHandlers.go | grep 'release-#{args[:release_version]}')
 [ -z "$check_exist" ] && exit 1 || echo "release version exists."
 
 set +x
-export CURRENT_HEIGHT=`curl -s http://rpc-devnet.sifchain.finance/abci_info? | jq --raw-output '.result.response.last_block_height'`
+
+env_check="#{args[:app_env]}"
+if [ "${env_check}" == "prod" ]; then
+    export CURRENT_HEIGHT=`curl -s http://rpc.sifchain.finance/abci_info? | jq --raw-output '.result.response.last_block_height'`
+else
+    export CURRENT_HEIGHT=`curl -s http://rpc-#{args[:app_env]}.sifchain.finance/abci_info? | jq --raw-output '.result.response.last_block_height'`
+fi
+
 cat << EOF > pyscript.py
 #!/usr/bin/env python
 import os
 current_height = float(os.environ["CURRENT_HEIGHT"])
 block_time=#{args[:block_time]}
-average_time = block_time / 60
+average_time = 60 / block_time
 average_time = average_time * 60 * #{args[:upgrade_hours]}
-future_block_height= average_time + current_height
-print(future_block_height)
+future_block_height = average_time + current_height + 100
+print(int(future_block_height))
 EOF
 future_block_height=$(python pyscript.py)
 echo ${future_block_height}
 
-echo "sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
-	--from #{args[:from]} \
-	--deposit #{args[:deposit]} \
-	--upgrade-height ${future_block_height} \
-	--info '{\\"binaries\\":{\\"linux/amd64\\":\\"https://github.com/Sifchain/sifnode/releases/download/devnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum=#{args[:checksum]}\\"}}' \
-	--title release-#{args[:release_version]} \
-	--description release-#{args[:release_version]} \
-	--node tcp://rpc-devnet.sifchain.finance:80 \
-	--keyring-backend test \
-	--chain-id #{args[:chainnet]} \
-	--gas-prices \\"#{args[:rowan]}\\"
-	"
+
+cat << EOF > pyscript.py
+#!/usr/bin/env python
+import requests
+import urllib3
+import sys
+import os
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token " + os.environ["GITHUB_TOKEN"]}
+releases_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/releases', headers=headers, verify=False)
+release_request_json = releases_request.json()
+find_realease="#{args[:app_env]}-#{args[:release_version]}"
+retrieved_sha = ""
+for release in release_request_json:
+    release_name = release["name"]
+    release_body = release["body"]
+    published_at = release["published_at"]
+    if find_realease in release["tag_name"]:
+        for asset in release["assets"]:
+            if ".sha256" in asset["name"]:
+                get_sha = requests.get(asset["browser_download_url"], headers=headers, verify=False)
+                retrieved_sha = get_sha.text.replace("\\n", "")
+                print(retrieved_sha)
+                break
+if not retrieved_sha:
+    print("retrieved sha not found ",retrieved_sha)
+    sys.exit(2)
+EOF
+retrieved_sha=$(python pyscript.py)
+echo ${retrieved_sha}
+
+if [ "${env_check}" == "prod" ]; then
+    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+        --from #{args[:from]} \
+        --deposit #{args[:deposit]} \
+        --upgrade-height ${future_block_height} \
+        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/mainnet-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='${retrieved_sha}'"}}' \
+        --title release-#{args[:release_version]} \
+        --description release-#{args[:release_version]} \
+        --node tcp://rpc.sifchain.finance:80 \
+        --keyring-backend file \
+        -y \
+        --chain-id #{args[:chainnet]} \
+        --gas-prices "#{args[:rowan]}"
+else
+    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release_version]} \
+        --from #{args[:from]} \
+        --deposit #{args[:deposit]} \
+        --upgrade-height ${future_block_height} \
+        --info '{"binaries":{"linux/amd64":"https://github.com/Sifchain/sifnode/releases/download/#{args[:app_env]}-#{args[:release_version]}/sifnoded-#{args[:app_env]}-#{args[:release_version]}-linux-amd64.zip?checksum='${retrieved_sha}'"}}' \
+        --title release-#{args[:release_version]} \
+        --description release-#{args[:release_version]} \
+        --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 \
+        --keyring-backend file \
+        -y \
+        --chain-id #{args[:chainnet]} \
+        --gas-prices "#{args[:rowan]}"
+fi
+
+echo "Sleeping for 1 minute to allow for proposal to finalize"
+sleep 60
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+  desc "Wait for Release.."
+  namespace :release do
+    desc "Wait for Release."
+    task :wait_for_release, [:app_env, :release] do |t, args|
+
+      cluster_automation = %Q{
+#!/usr/bin/env bash
+set +x
+pip install requests
+
+cat << EOF > pyscript.py
+#!/usr/bin/env python
+import requests
+import time
+import sys
+import urllib3
+import os
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token " + os.environ["GITHUB_TOKEN"]}
+workflow_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows', headers=headers, verify=False)
+workflow_request_json = workflow_request.json()
+find_realease="#{args[:app_env]}-#{args[:release]}"
+print("Looking for release", find_realease)
+max_loop = 20
+loop_count = 0
+while True:
+    print("You are on attempt", loop_count, " of ", max_loop)
+    if loop_count >= max_loop:
+        sys.exit(1)
+    for workflow in workflow_request_json["workflows"]:
+        if workflow["name"] == "Release":
+            release_workflow_id = workflow["id"]
+            workflow_info_request = requests.get('https://api.github.com/repos/Sifchain/sifnode/actions/workflows/{workflow_id}/runs'.format(workflow_id=release_workflow_id), headers=headers, verify=False)
+            workflow_info_request_json = workflow_info_request.json()
+            for workflow_run in workflow_info_request_json["workflow_runs"]:
+                if find_realease in workflow_run["head_branch"]:
+                    print(find_realease)
+                    print(workflow_run["head_branch"])
+                    print("Found pipeline, lets see if its done running yet.")
+                    print(workflow_run)
+                    if workflow_run["status"] == "completed" and workflow_run["conclusion"] == "success":
+                        print("Workflow run has completed good to create governance and begin release chain.")
+                        sys.exit(0)
+                    else:
+                        print("Release hasn't finished yet going to sleep and loop until max loops is reached waiting for Release pipeline to finish.")
+            print("release not found")
+            print("Sleeping for 60 seconds.")
+            loop_count += 1
+            time.sleep(60)
+EOF
+python pyscript.py
+      }
+      system(cluster_automation) or exit 1
+    end
+  end
+
+  desc "Create Github Release."
+  namespace :release do
+    desc "Create Github Release."
+    task :create_release, [:release, :env, :token] do |t, args|
+
+      cluster_automation = %Q{
+#!/usr/bin/env bash
+set +x
+pip install requests
+
+cat << EOF > pyscript.py
+#!/usr/bin/env python
+import requests
+import time
+import sys
+import urllib3
+import json
+import os
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+data_payload = {
+    "tag_name": "#{args[:env]}-#{args[:release]}",
+    "name": "#{args[:env]} v#{args[:release]}",
+    "body": "Sifchain #{args[:env]} Release v#{args[:release]}",
+    "prerelease": True
+}
+print("sending payload")
+print(data_payload)
+headers = {"Accept": "application/vnd.github.v3+json","Authorization":"token #{args[:token]}"}
+releases_request = requests.post('https://api.github.com/repos/Sifchain/sifnode/releases',data=json.dumps(data_payload),headers=headers,verify=False)
+release_request_json = releases_request.json()
+if releases_request.status_code == 201 or releases_request.status_code == 200:
+    print("Release Published")
+    print(str(release_request_json))
+elif releases_request.status_code == 422:
+    print(releases_request.content, releases_request.status_code)
+    print("Release already exists.")
+else:
+    print(releases_request.content, releases_request.status_code)
+    sys.exit(2)
+EOF
+python pyscript.py
       }
       system(cluster_automation) or exit 1
     end
@@ -590,12 +733,17 @@ echo "sifnodecli tx gov submit-proposal software-upgrade release-#{args[:release
   desc "Generate Test Key Ring."
   namespace :release do
     desc "Generate Test Key Ring."
-    task :generate_keyring, [:moniker, :mnemonic] do |t, args|
+    task :generate_keyring, [:moniker] do |t, args|
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
-echo "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover --keyring-backend test=
+echo -e "${keyring_pem}" > tmp_keyring
+tail -c +4 tmp_keyring > tmp_keyring_rendered
+cat tmp_keyring_rendered | wc
+rm -rf tmp_keyring
+echo "moniker #{args[:moniker]}"
+yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend file
       }
       system(cluster_automation) or exit 1
     end
@@ -604,19 +752,37 @@ echo "#{args[:mnemonic]}" | sifnodecli keys add #{args[:moniker]} -i --recover -
   desc "Create Release Governance Request Vote."
   namespace :release do
     desc "Create Release Governance Request Vote."
-    task :generate_vote, [:rowan, :chainnet, :from] do |t, args|
+    task :generate_vote, [:rowan, :chainnet, :from, :env] do |t, args|
 
       cluster_automation = %Q{
 #!/usr/bin/env bash
 set +x
 
-echo "sifnodecli tx gov vote 2 yes \
-    --from #{args[:from]} \
-    --keyring-backend test \
-    --chain-id #{args[:chainnet]}  \
-    --node tcp://rpc-devnet.sifchain.finance:80 \
-    --gas-prices \\"#{args[:rowan]}\\" -y"
+env_check="#{args[:env]}"
+if [ "${env_check}" == "prod" ]; then
+    vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+    echo "vote_id $vote_id"
+    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
+        --from #{args[:from]} \
+        --keyring-backend file \
+        --chain-id #{args[:chainnet]}  \
+        --node tcp://rpc.sifchain.finance:80 \
+        --gas-prices "#{args[:rowan]}" -y
 
+    sleep 15
+
+else
+    vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
+    echo "vote_id $vote_id"
+    yes "${keyring_passphrase}" | go run ./cmd/sifnodecli tx gov vote ${vote_id} yes \
+        --from #{args[:from]} \
+        --keyring-backend file \
+        --chain-id #{args[:chainnet]}  \
+        --node tcp://rpc-#{args[:env]}.sifchain.finance:80 \
+        --gas-prices "#{args[:rowan]}" -y
+
+    sleep 15
+fi
       }
       system(cluster_automation) or exit 1
     end
@@ -650,9 +816,6 @@ echo '      sssssssssss    iiiiiiiifffffffff            cccccccccccccccchhhhhhh 
       system(cluster_automation) or exit 1
     end
   end
-
-
-
 
 
   desc "Update Dynamic Variables For Helm Values"

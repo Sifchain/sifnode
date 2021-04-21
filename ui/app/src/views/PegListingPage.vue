@@ -9,18 +9,23 @@
       />
     </div>
     <Tabs :defaultIndex="1" @tabselected="onTabSelected">
-      <Tab title="External Tokens">
+      <Tab title="External Tokens" slug="external-tab">
         <AssetList :items="assetList" v-slot="{ asset }">
           <SifButton
+            :disabled="!asset.supported"
             :to="`/peg/${asset.asset.symbol}/${peggedSymbol(
               asset.asset.symbol,
             )}`"
             primary
+            :data-handle="'peg-' + asset.asset.symbol"
             >Peg</SifButton
           >
+          <Tooltip v-if="!asset.supported" message="Network not supported">
+            &nbsp;<Icon icon="info-box-black" />
+          </Tooltip>
         </AssetList>
       </Tab>
-      <Tab title="Sifchain Native">
+      <Tab title="Sifchain Native" slug="native-tab">
         <AssetList :items="assetList">
           <template #default="{ asset }">
             <SifButton
@@ -28,6 +33,7 @@
                 asset.asset.symbol,
               )}`"
               primary
+              :data-handle="'unpeg-' + asset.asset.symbol"
               >Unpeg</SifButton
             >
           </template>
@@ -78,12 +84,13 @@ import SifInput from "@/components/shared/SifInput.vue";
 import ActionsPanel from "@/components/actionsPanel/ActionsPanel.vue";
 import SifButton from "@/components/shared/SifButton.vue";
 import Tooltip from "@/components/shared/Tooltip.vue";
+import Icon from "@/components/shared/Icon.vue";
 
 import { useCore } from "@/hooks/useCore";
 import { defineComponent, ref } from "vue";
 import { computed } from "@vue/reactivity";
 import { getUnpeggedSymbol } from "../components/shared/utils";
-import { TransactionStatus } from "ui-core";
+import { AssetAmount, IAsset, TransactionStatus } from "ui-core";
 
 export default defineComponent({
   components: {
@@ -95,10 +102,20 @@ export default defineComponent({
     SifInput,
     ActionsPanel,
     Tooltip,
+    Icon,
   },
   setup(_, context) {
     const { store, actions } = useCore();
+    function getIsSupportedNetwork(asset: IAsset): boolean {
+      if (asset.network === "ethereum") {
+        return actions.ethWallet.isSupportedNetwork();
+      }
 
+      if (asset.network === "sifchain") {
+        return true; // TODO: Handle the case of whether the network is supported
+      }
+      return false;
+    }
     const searchText = ref("");
     const selectedTab = ref("Sifchain Native");
 
@@ -167,14 +184,23 @@ export default defineComponent({
               )
             : [];
 
+          // Is the asset from a supported network
+          const supported = getIsSupportedNetwork(asset);
+
           if (!amount) {
-            return { amount: 0, asset, pegTxs };
+            return {
+              amount: AssetAmount(asset, "0"),
+              asset,
+              pegTxs,
+              supported,
+            };
           }
 
           return {
             amount,
             asset,
             pegTxs,
+            supported,
           };
         })
         .sort((a, b) => {
@@ -190,10 +216,9 @@ export default defineComponent({
           return 0;
         })
         .sort((a, b) => {
-          // Next sort by balance
-          return (
-            parseFloat(b.amount.toFixed()) - parseFloat(a.amount.toFixed())
-          );
+          if (b.amount.greaterThan(a.amount)) return 1;
+          if (b.amount.lessThan(a.amount)) return -1;
+          return 0;
         })
         .sort((a, b) => {
           // Finally, sort and move rowan, erowan to the top
@@ -216,7 +241,6 @@ export default defineComponent({
       shortenHash,
       assetList,
       searchText,
-
       peggedSymbol(unpeggedSymbol: string) {
         if (unpeggedSymbol.toLowerCase() === "erowan") {
           return "rowan";
