@@ -1,6 +1,9 @@
 package types
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 const (
 	QueryPool              = "pool"
@@ -15,12 +18,8 @@ func NewQueryReqGetPool(symbol string) PoolReq {
 	return PoolReq{Symbol: symbol}
 }
 
-func NewQueryReqLiquidityProvider(symbol string, lpAddress sdk.AccAddress) LiquidityProviderReq {
+func NewQueryReqLiquidityProvider(symbol string, lpAddress fmt.Stringer) LiquidityProviderReq {
 	return LiquidityProviderReq{Symbol: symbol, LpAddress: lpAddress.String()}
-}
-
-func NewQueryReqGetLiquidityProviderList(symbol string) LiquidityProviderListReq {
-	return LiquidityProviderListReq{Symbol: symbol}
 }
 
 func NewQueryReqGetAssetList(lpAddress sdk.AccAddress) AssetListReq {

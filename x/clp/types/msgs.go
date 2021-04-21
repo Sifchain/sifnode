@@ -16,7 +16,7 @@ var (
 	_ sdk.Msg = &MsgDecommissionPool{}
 )
 
-func NewMsgDecommissionPool(signer sdk.AccAddress, symbol string) MsgDecommissionPool {
+func NewMsgDecommissionPool(signer fmt.Stringer, symbol string) MsgDecommissionPool {
 	return MsgDecommissionPool{Signer: signer.String(), Symbol: symbol}
 }
 
@@ -50,7 +50,7 @@ func (m MsgDecommissionPool) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func NewMsgSwap(signer sdk.AccAddress, sentAsset Asset, receivedAsset Asset, sentAmount sdk.Uint, minReceivingAmount sdk.Uint) MsgSwap {
+func NewMsgSwap(signer fmt.Stringer, sentAsset Asset, receivedAsset Asset, sentAmount sdk.Uint, minReceivingAmount sdk.Uint) MsgSwap {
 	return MsgSwap{Signer: signer.String(), SentAsset: &sentAsset, ReceivedAsset: &receivedAsset, SentAmount: sentAmount, MinReceivingAmount: minReceivingAmount}
 }
 

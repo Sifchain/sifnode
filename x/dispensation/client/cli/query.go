@@ -35,20 +35,18 @@ func GetCmdDistributions(queryRoute string) *cobra.Command {
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
-			return clientCtx.PrintObjectLegacy("temp")
 			if err != nil {
 				return err
 			}
-			return clientCtx.PrintObjectLegacy("temp")
-			//route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryAllDistributions)
-			//res, height, err := clientCtx.QueryWithData(route, nil)
-			//if err != nil {
-			//	return err
-			//}
-			//var dr types.Distributions
-			//types.ModuleCdc.MustUnmarshalJSON(res, &dr)
-			//out := types.NewDistributionsResponse(dr, height)
-			//return clientCtx.PrintObjectLegacy(out)
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryAllDistributions)
+			res, height, err := clientCtx.QueryWithData(route, nil)
+			if err != nil {
+				return err
+			}
+			var dr types.Distributions
+			types.ModuleCdc.MustUnmarshalJSON(res, &dr)
+			out := types.NewDistributionsResponse(dr, height)
+			return clientCtx.PrintProto(&out)
 		},
 	}
 }
@@ -64,26 +62,25 @@ func GetCmdDistributionRecordForRecipient(queryRoute string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return clientCtx.PrintObjectLegacy("temp")
-			//address := args[0]
-			//recipientAddress, err := sdk.AccAddressFromBech32(address)
-			//if err != nil {
-			//	return err
-			//}
-			//params := types.NewQueryRecordsByRecipientAddr(recipientAddress)
-			//bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
-			//if err != nil {
-			//	return err
-			//}
-			//route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByRecipient)
-			//res, height, err := clientCtx.QueryWithData(route, bz)
-			//if err != nil {
-			//	return err
-			//}
-			//var drs types.DistributionRecords
-			//types.ModuleCdc.MustUnmarshalJSON(res, &drs)
-			//out := types.NewDistributionRecordsResponse(drs, height)
-			//return clientCtx.PrintObjectLegacy(out)
+			address := args[0]
+			recipientAddress, err := sdk.AccAddressFromBech32(address)
+			if err != nil {
+				return err
+			}
+			params := types.NewQueryRecordsByRecipientAddr(recipientAddress.String())
+			bz, err := clientCtx.LegacyAmino.MarshalJSON(params)
+			if err != nil {
+				return err
+			}
+			route := fmt.Sprintf("custom/%s/%s", queryRoute, types.QueryRecordsByRecipient)
+			res, height, err := clientCtx.QueryWithData(route, bz)
+			if err != nil {
+				return err
+			}
+			var drs types.DistributionRecords
+			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
+			out := types.NewDistributionRecordsResponse(drs, sdk.NewInt(height))
+			return clientCtx.PrintProto(&out)
 		},
 	}
 }
@@ -113,7 +110,7 @@ func GetCmdDistributionRecordForDistNameAll(queryRoute string) *cobra.Command {
 			var drs types.DistributionRecords
 			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
 			out := types.NewDistributionRecordsResponse(drs, sdk.NewInt(height))
-			return clientCtx.PrintObjectLegacy(out)
+			return clientCtx.PrintProto(&out)
 		},
 	}
 }
@@ -143,7 +140,7 @@ func GetCmdDistributionRecordForDistNamePending(queryRoute string) *cobra.Comman
 			var drs types.DistributionRecords
 			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
 			out := types.NewDistributionRecordsResponse(drs, sdk.NewInt(height))
-			return clientCtx.PrintObjectLegacy(out)
+			return clientCtx.PrintProto(&out)
 		},
 	}
 }
@@ -173,7 +170,7 @@ func GetCmdDistributionRecordForDistNameCompleted(queryRoute string) *cobra.Comm
 			var drs types.DistributionRecords
 			types.ModuleCdc.MustUnmarshalJSON(res, &drs)
 			out := types.NewDistributionRecordsResponse(drs, sdk.NewInt(height))
-			return clientCtx.PrintObjectLegacy(out)
+			return clientCtx.PrintProto(&out)
 		},
 	}
 }

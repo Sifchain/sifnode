@@ -49,9 +49,9 @@ func TestQueryEthProphecy(t *testing.T) {
 	testResponse := types.CreateTestQueryEthProphecyResponse(encCfg.Marshaler, t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
 
 	//Test query String()
-	testJson, err := encCfg.Amino.MarshalJSON(testResponse)
+	testJSON, err := encCfg.Amino.MarshalJSON(testResponse)
 	require.NoError(t, err)
-	require.Equal(t, TestResponseJSON, string(testJson))
+	require.Equal(t, TestResponseJSON, string(testJSON))
 
 	bz, err2 := encCfg.Amino.MarshalJSON(types.NewQueryEthProphecyRequest(
 		types.TestEthereumChainID, testBridgeContractAddress, types.TestNonce,

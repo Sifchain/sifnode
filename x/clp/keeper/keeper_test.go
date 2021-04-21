@@ -46,7 +46,8 @@ func TestKeeper_SetPool(t *testing.T) {
 func TestKeeper_GetPools(t *testing.T) {
 	pools := test.GenerateRandomPool(10)
 	ctx, keeper := test.CreateTestAppClp(false)
-	for _, pool := range pools {
+	for i := range pools {
+		pool := pools[i]
 		err := keeper.SetPool(ctx, &pool)
 		assert.NoError(t, err)
 	}

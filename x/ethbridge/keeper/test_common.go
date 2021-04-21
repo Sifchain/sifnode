@@ -158,7 +158,10 @@ func CreateTestKeepers(t *testing.T, consensusNeeded float64, validatorAmounts [
 		validator, _ = validator.AddTokensFromDel(valTokens)
 		stakingKeeper.SetValidator(ctx, validator)
 		stakingKeeper.SetValidatorByPowerIndex(ctx, validator)
-		stakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
+		_, err = stakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
+		if err != nil {
+			panic("Failed to apply validator set updates")
+		}
 	}
 
 	oracleKeeper.SetOracleWhiteList(ctx, valAddrs)

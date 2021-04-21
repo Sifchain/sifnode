@@ -29,7 +29,6 @@ const (
 	// FlagRPCURL defines the URL for the tendermint RPC connection
 	FlagRPCURL = "rpc-url"
 	// EnvPrefix defines the environment prefix for the root cmd
-	EnvPrefix   = "EBRELAYER"
 	levelDbFile = "relayerdb"
 )
 

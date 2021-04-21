@@ -58,10 +58,12 @@ func GetPoolChangeFunc(app *SifchainApp) func(ctx sdk.Context, plan upgradetypes
 		}
 		// If we have no errors , Set state .
 		if !hasError {
-			for _, pool := range poolList {
+			for i := range poolList {
+				pool := poolList[i]
 				_ = app.ClpKeeper.SetPool(ctx, &pool)
 			}
-			for _, l := range lps {
+			for i := range lps {
+				l := lps[i]
 				app.ClpKeeper.SetLiquidityProvider(ctx, &l)
 			}
 		}

@@ -3,12 +3,11 @@ package test
 import (
 	"bytes"
 	"fmt"
+	sifapp "github.com/Sifchain/sifnode/app"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/tendermint/tendermint/crypto"
-	sifapp "github.com/Sifchain/sifnode/app"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	"strconv"
 )
@@ -18,7 +17,7 @@ func CreateTestApp(isCheckTx bool) (*sifapp.SifchainApp, sdk.Context) {
 	ctx := app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
 	app.AccountKeeper.SetParams(ctx, authtypes.DefaultParams())
 	initTokens := sdk.TokensFromConsensusPower(1000)
-	app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(sdk.Coins{}))
+	app.BankKeeper.SetSupply(ctx, types.NewSupply(sdk.Coins{}))
 	_ = sifapp.AddTestAddrs(app, ctx, 6, initTokens)
 	return app, ctx
 }

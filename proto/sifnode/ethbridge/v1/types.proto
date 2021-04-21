@@ -32,8 +32,12 @@ message PeggyTokens {
   repeated string tokens = 1;
 }
 
+// Claim type enum
 enum ClaimType {
+  // Unspecified claim type
   CLAIM_TYPE_UNSPECIFIED = 0;
+  // Lock claim type
   CLAIM_TYPE_LOCK        = 1;
+  // Burn claim type
   CLAIM_TYPE_BURN        = 2;
 }

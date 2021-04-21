@@ -11,8 +11,11 @@ message GenesisState {
   string          admin_address     = 2;
 }
 
+// Distribution type enum
 enum DistributionType {
+  // Unspecified distribution type
   DISTRIBUTION_TYPE_UNSPECIFIED = 0;
+  // Airdrop distribution type
   DISTRIBUTION_TYPE_AIRDROP = 1;
 }
 
