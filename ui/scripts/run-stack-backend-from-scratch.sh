@@ -13,8 +13,7 @@ then
 fi
 
 killall sifnoded sifnodecli ebrelayer ganache-cli
-
-#!/bin/bash
+sleep 10
 
 yarn concurrently -k -r -s first \
   "yarn chain:eth" \

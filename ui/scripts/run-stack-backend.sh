@@ -1,6 +1,9 @@
 #!/bin/bash
 
+whoami
+
 killall sifnoded sifnodecli ebrelayer ganache-cli
+sleep 10
 
 yarn concurrently -k -r -s first \
   "yarn chain:eth:revert" \

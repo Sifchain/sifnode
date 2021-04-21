@@ -31,6 +31,7 @@ const { importKeplrAccount, connectKeplrAccount } = require("./keplr");
 const { getSifchainBalances } = require("./sifchain.js");
 const { getEthBalance, advanceEthBlocks } = require("./ethereum.js");
 const { extractFile, getExtensionPage } = require("./utils");
+const { restartStack, killStack } = require("./stack");
 
 async function getInputValue(page, selector) {
   return await page.evaluate((el) => el.value, await page.$(selector));
@@ -38,6 +39,13 @@ async function getInputValue(page, selector) {
 
 let browserContext;
 let dexPage;
+beforeAll(async () => {
+  await restartStack();
+});
+
+afterAll(async () => {
+  await killStack();
+});
 
 describe("connect to page", () => {
   beforeAll(async () => {
