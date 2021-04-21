@@ -94,7 +94,7 @@ func (m MsgSwap) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func NewMsgRemoveLiquidity(signer sdk.AccAddress, externalAsset Asset, wBasisPoints sdk.Int, asymmetry sdk.Int) MsgRemoveLiquidity {
+func NewMsgRemoveLiquidity(signer fmt.Stringer, externalAsset Asset, wBasisPoints sdk.Int, asymmetry sdk.Int) MsgRemoveLiquidity {
 	return MsgRemoveLiquidity{Signer: signer.String(), ExternalAsset: &externalAsset, WBasisPoints: wBasisPoints, Asymmetry: asymmetry}
 }
 
@@ -134,7 +134,7 @@ func (m MsgRemoveLiquidity) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func NewMsgAddLiquidity(signer sdk.AccAddress, externalAsset Asset, nativeAssetAmount sdk.Uint, externalAssetAmount sdk.Uint) MsgAddLiquidity {
+func NewMsgAddLiquidity(signer fmt.Stringer, externalAsset Asset, nativeAssetAmount sdk.Uint, externalAssetAmount sdk.Uint) MsgAddLiquidity {
 	return MsgAddLiquidity{Signer: signer.String(), ExternalAsset: &externalAsset, NativeAssetAmount: nativeAssetAmount, ExternalAssetAmount: externalAssetAmount}
 }
 
@@ -175,7 +175,7 @@ func (m MsgAddLiquidity) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{addr}
 }
 
-func NewMsgCreatePool(signer sdk.AccAddress, externalAsset Asset, nativeAssetAmount sdk.Uint, externalAssetAmount sdk.Uint) MsgCreatePool {
+func NewMsgCreatePool(signer fmt.Stringer, externalAsset Asset, nativeAssetAmount sdk.Uint, externalAssetAmount sdk.Uint) MsgCreatePool {
 	return MsgCreatePool{Signer: signer.String(), ExternalAsset: &externalAsset, NativeAssetAmount: nativeAssetAmount, ExternalAssetAmount: externalAssetAmount}
 }
 

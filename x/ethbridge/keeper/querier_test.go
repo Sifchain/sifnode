@@ -42,11 +42,11 @@ func TestQueryEthProphecy(t *testing.T) {
 	initialEthBridgeClaim := types.CreateTestEthClaim(
 		t, testBridgeContractAddress, testTokenContractAddress, valAddress,
 		testEthereumAddress, types.TestCoinsAmount, types.TestCoinsSymbol, types.ClaimType_CLAIM_TYPE_LOCK)
-	oracleClaim, _ := types.CreateOracleClaimFromEthClaim(encCfg.Marshaler, initialEthBridgeClaim)
+	oracleClaim, _ := types.CreateOracleClaimFromEthClaim(initialEthBridgeClaim)
 	_, err := keeper.oracleKeeper.ProcessClaim(ctx, oracleClaim)
 	require.NoError(t, err)
 
-	testResponse := types.CreateTestQueryEthProphecyResponse(encCfg.Marshaler, t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
+	testResponse := types.CreateTestQueryEthProphecyResponse(t, valAddress, types.ClaimType_CLAIM_TYPE_LOCK)
 
 	//Test query String()
 	testJSON, err := encCfg.Amino.MarshalJSON(testResponse)

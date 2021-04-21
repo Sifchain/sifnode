@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -22,6 +21,6 @@ func NewQueryReqLiquidityProvider(symbol string, lpAddress fmt.Stringer) Liquidi
 	return LiquidityProviderReq{Symbol: symbol, LpAddress: lpAddress.String()}
 }
 
-func NewQueryReqGetAssetList(lpAddress sdk.AccAddress) AssetListReq {
+func NewQueryReqGetAssetList(lpAddress fmt.Stringer) AssetListReq {
 	return AssetListReq{LpAddress: lpAddress.String()}
 }

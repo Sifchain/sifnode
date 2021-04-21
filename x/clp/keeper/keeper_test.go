@@ -119,7 +119,8 @@ func TestKeeper_GetAssetsForLiquidityProvider(t *testing.T) {
 	ctx, keeper := test.CreateTestAppClp(false)
 
 	lpList := test.GenerateRandomLP(10)
-	for _, lp := range lpList {
+	for i := range lpList {
+		lp := lpList[i]
 		keeper.SetLiquidityProvider(ctx, &lp)
 	}
 

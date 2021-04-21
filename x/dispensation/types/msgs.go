@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -8,7 +9,7 @@ import (
 
 
 func NewMsgDistribution(
-	signer sdk.AccAddress,
+	signer fmt.Stringer,
 	DistributionName string,
 	DistributionType DistributionType,
 	input []types.Input,

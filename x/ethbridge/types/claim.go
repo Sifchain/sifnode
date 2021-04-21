@@ -6,21 +6,20 @@ import (
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
 	"strconv"
 
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	)
+)
 
 // NewEthBridgeClaim is a constructor function for NewEthBridgeClaim
 func NewEthBridgeClaim(
 	ethereumChainID int64,
-	bridgeContract EthereumAddress,
+	bridgeContract fmt.Stringer,
 	nonce int64,
 	symbol string,
-	tokenContact EthereumAddress,
-	ethereumSender EthereumAddress,
-	cosmosReceiver sdk.AccAddress,
-	validator sdk.ValAddress,
+	tokenContact fmt.Stringer,
+	ethereumSender fmt.Stringer,
+	cosmosReceiver fmt.Stringer,
+	validator fmt.Stringer,
 	amount sdk.Int,
 	claimType ClaimType,
 ) *EthBridgeClaim {
@@ -65,7 +64,7 @@ func NewOracleClaimContent(
 // must be created in a deterministic way that all validators can follow.
 // For this, we use the Nonce an Ethereum Sender provided,
 // as all validators will see this same data from the smart contract.
-func CreateOracleClaimFromEthClaim(cdc codec.BinaryMarshaler, ethClaim *EthBridgeClaim) (oracletypes.Claim, error) {
+func CreateOracleClaimFromEthClaim(ethClaim *EthBridgeClaim) (oracletypes.Claim, error) {
 	oracleID := strconv.FormatInt(ethClaim.EthereumChainId, 10) + strconv.FormatInt(ethClaim.Nonce, 10) +
 		ethClaim.EthereumSender
 
@@ -89,7 +88,7 @@ func CreateOracleClaimFromEthClaim(cdc codec.BinaryMarshaler, ethClaim *EthBridg
 // from any generic claim from the oracle module into an ethereum bridge specific claim.
 func CreateEthClaimFromOracleString(
 	ethereumChainID int64,
-	bridgeContract EthereumAddress,
+	bridgeContract fmt.Stringer,
 	nonce int64,
 	ethereumAddress EthereumAddress,
 	validator sdk.ValAddress,

@@ -30,7 +30,7 @@ func GenerateInputList(rowanamount string) []types.Input {
 		panic(fmt.Sprintf("Err in getting amount : %s", rowanamount))
 	}
 	rowanAmount := sdk.Coins{sdk.NewCoin("rowan", rowan)}
-	res := []types.Input{}
+	var res []types.Input
 	for _, address := range accAddrList {
 		in := types.NewInput(address, rowanAmount)
 		res = append(res, in)
@@ -46,7 +46,7 @@ func GenerateOutputList(rowanamount string) []types.Output {
 		panic(fmt.Sprintf("Err in getting amount : %s", rowanamount))
 	}
 	rowanAmount := sdk.Coins{sdk.NewCoin("rowan", rowan)}
-	res := []types.Output{}
+	var res []types.Output
 	for _, address := range accAddrList {
 		out := types.NewOutput(address, rowanAmount)
 		res = append(res, out)
@@ -55,7 +55,7 @@ func GenerateOutputList(rowanamount string) []types.Output {
 }
 
 func GenerateAddressList(addressList []string) []sdk.AccAddress {
-	acclist := []sdk.AccAddress{}
+	var acclist []sdk.AccAddress
 	for _, key := range addressList {
 		var buffer bytes.Buffer
 		buffer.WriteString(key)

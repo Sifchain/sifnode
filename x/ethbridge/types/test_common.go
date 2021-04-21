@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	oracletypes "github.com/Sifchain/sifnode/x/oracle/types"
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -71,14 +70,14 @@ func CreateTestLockMsg(t *testing.T, testCosmosSender string, ethereumReceiver E
 	return lockEth
 }
 
-func CreateTestQueryEthProphecyResponse(cdc codec.BinaryMarshaler, t *testing.T, validatorAddress sdk.ValAddress, claimType ClaimType,
+func CreateTestQueryEthProphecyResponse(t *testing.T, validatorAddress sdk.ValAddress, claimType ClaimType,
 ) QueryEthProphecyResponse {
 	testEthereumAddress := NewEthereumAddress(TestEthereumAddress)
 	testContractAddress := NewEthereumAddress(TestBridgeContractAddress)
 	testTokenAddress := NewEthereumAddress(TestTokenContractAddress)
 	ethBridgeClaim := CreateTestEthClaim(t, testContractAddress, testTokenAddress, validatorAddress,
 		testEthereumAddress, TestCoinsAmount, TestCoinsSymbol, claimType)
-	oracleClaim, _ := CreateOracleClaimFromEthClaim(cdc, ethBridgeClaim)
+	oracleClaim, _ := CreateOracleClaimFromEthClaim(ethBridgeClaim)
 	ethBridgeClaims := []*EthBridgeClaim{ethBridgeClaim}
 
 	return NewQueryEthProphecyResponse(
