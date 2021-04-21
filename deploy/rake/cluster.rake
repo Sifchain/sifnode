@@ -779,30 +779,9 @@ metadata:
   namespace :release do
     desc "Import Key Ring"
     task :import_keyring, [:moniker, :app_env] do |t, args|
-       import_keys = %Q{
-#!/usr/bin/env bash
-set +x
-echo -e "${keyring_pem}" | sed -e 's/-e //g' > tmp_keyring_rendered
-cat tmp_keyring_rendered
-key_ring=`cat tmp_keyring_rendered`
-echo -e $key_ring | sed -e 's/-e //g'
-echo "moniker #{args[:moniker]}"
-yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend test
-      }
-      system(import_keys) or exit 1
-
-        if "#{args[:app_env]}" == "mainnet"
-            governance_request = %Q{
-vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
-echo "vote_id $vote_id" }
-            system(governance_request) or exit 1
-        else
-            governance_request = %Q{
-vote_id=$(go run ./cmd/sifnodecli q gov proposals --node tcp://rpc-#{args[:app_env]}.sifchain.finance:80 --trust-node -o json | jq --raw-output 'last(.[]).id' --raw-output)
-echo "vote_id $vote_id" }
-             system(governance_request) or exit 1
-        end
-
+       current_pem = ENV["keyring_pem"]
+       File.open("tmp_keyring_rendered", 'w') { |file| file.write(current_pem) }
+       import_key_ring=`yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend test`
     end
   end
 
