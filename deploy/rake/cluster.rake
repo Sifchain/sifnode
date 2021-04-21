@@ -779,7 +779,6 @@ metadata:
   namespace :release do
     desc "Import Key Ring"
     task :import_keyring, [:moniker, :app_env] do |t, args|
-        puts ENV["keyring_pem"]
         File.open("tmp_keyring_rendered", "w+") do |f|
             ENV["keyring_pem"]&.split("-=n=-")&.each { |line| f.puts(line) }
         end
