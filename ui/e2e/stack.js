@@ -4,7 +4,7 @@ const { spawn, exec } = require("child_process");
 const { resolve } = require("path");
 const treekill = require("tree-kill");
 const chalk = require("chalk");
-const sleep = (ms) => new Promise(resolve, setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const cmdStack = [];
 async function restartStack() {
   const uiFolder = resolve(__dirname, "../");
