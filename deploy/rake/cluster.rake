@@ -783,9 +783,9 @@ metadata:
 #!/usr/bin/env bash
 set +x
 echo -e "${keyring_pem}" | sed -e 's/-e //g' > tmp_keyring_rendered
-#cat tmp_keyring_rendered
-#key_ring=`cat tmp_keyring_rendered`
-#echo -e $key_ring | sed -e 's/-e //g'
+cat tmp_keyring_rendered
+key_ring=`cat tmp_keyring_rendered`
+echo -e $key_ring | sed -e 's/-e //g'
 echo "moniker #{args[:moniker]}"
 yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend test
       }
