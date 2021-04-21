@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Sifchain/sifnode/x/ethbridge"
-	"github.com/Sifchain/sifnode/x/ethbridge/internal"
+	"github.com/Sifchain/sifnode/x/ethbridge/test"
 	ethbridgekeeper "github.com/Sifchain/sifnode/x/ethbridge/keeper"
 	"github.com/Sifchain/sifnode/x/ethbridge/types"
 	oraclekeeper "github.com/Sifchain/sifnode/x/oracle/keeper"
@@ -445,7 +445,7 @@ func CreateTestHandler(t *testing.T, consensusNeeded float64, validatorAmounts [
 	ethbridgekeeper.Keeper, bankkeeper.Keeper, authkeeper.AccountKeeper,
 	sdk.Handler, []sdk.ValAddress, oraclekeeper.Keeper) {
 
-	ctx, keeper, bankKeeper, accountKeeper, oracleKeeper, _, validatorAddresses := internal.CreateTestKeepers(t, consensusNeeded, validatorAmounts, "")
+	ctx, keeper, bankKeeper, accountKeeper, oracleKeeper, _, validatorAddresses := test.CreateTestKeepers(t, consensusNeeded, validatorAmounts, "")
 
 	CethReceiverAccount, _ := sdk.AccAddressFromBech32(TestAddress)
 	keeper.SetCethReceiverAccount(ctx, CethReceiverAccount)
