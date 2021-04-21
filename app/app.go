@@ -377,7 +377,7 @@ func NewSifApp(
 		clp.NewAppModule(app.ClpKeeper, app.BankKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		ethbridge.NewAppModule(app.OracleKeeper, app.BankKeeper, app.AccountKeeper, app.EthbridgeKeeper, &appCodec),
-		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.SupplyKeeper),
+		dispensation.NewAppModule(app.DispensationKeeper, app.BankKeeper, app.AccountKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
