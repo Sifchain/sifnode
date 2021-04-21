@@ -779,18 +779,14 @@ metadata:
   namespace :release do
     desc "Import Key Ring"
     task :import_keyring, [:moniker, :app_env] do |t, args|
-       File.open("tmp_keyring_rendered", 'w') { |file| file.write(ENV["keyring_pem"]) }
+        File.open("tmp_keyring_rendered", "w+") do |f|
+            ENV["keyring_pem"]&.split("\n")&.each { |line| f.puts(line) }
+        end
        import_key_ring=`yes "${keyring_passphrase}" | go run ./cmd/sifnodecli keys import #{args[:moniker]} tmp_keyring_rendered --keyring-backend test`
-       puts "current pem"
-       puts current_pem
-       current_pem = current_pem.gsub! '\\n', '\n')
-       puts current_pem
        puts "import key ring"
        puts import_key_ring
-       exit 2
     end
   end
-
 
   desc "Create Github Release."
   namespace :release do
