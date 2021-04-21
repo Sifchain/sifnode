@@ -57,8 +57,9 @@ func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
-	records := keeper.GetRecordsForRecipient(ctx, sdk.AccAddress(params.Address))
-	res, err := types.ModuleCdc.MarshalJSON(&records)
+	addr, err := sdk.AccAddressFromBech32(params.Address)
+	records := keeper.GetRecordsForRecipient(ctx, addr)
+	res, err := types.ModuleCdc.MarshalJSON(records)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -67,7 +68,7 @@ func queryDistributionRecordsForRecipient(ctx sdk.Context, req abci.RequestQuery
 
 func queryAllDistributions(ctx sdk.Context, keeper Keeper) ([]byte, error) {
 	list := keeper.GetDistributions(ctx)
-	res, err := types.ModuleCdc.MarshalJSON(&list)
+	res, err := types.ModuleCdc.MarshalJSON(list)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

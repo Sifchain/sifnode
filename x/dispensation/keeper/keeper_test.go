@@ -1,12 +1,14 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"github.com/Sifchain/sifnode/x/dispensation/test"
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"testing"
+	"github.com/stretchr/testify/require"
 )
 
 func TestKeeper_GetDistributions(t *testing.T) {
@@ -52,6 +54,8 @@ func TestKeeper_GetRecordsForRecipient(t *testing.T) {
 		_, err = keeper.GetDistributionRecord(ctx, name, rec.Address)
 		assert.NoError(t, err)
 	}
-	list := keeper.GetRecordsForRecipient(ctx, sdk.AccAddress(outList[0].Address))
+	addr, err := sdk.AccAddressFromBech32(outList[0].Address)
+	require.NoError(t, err)
+	list := keeper.GetRecordsForRecipient(ctx, addr)
 	assert.Len(t, list.DistributionRecords, 1)
 }

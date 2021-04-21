@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/Sifchain/sifnode/x/dispensation/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -18,7 +19,7 @@ func (k Keeper) CreateDrops(ctx sdk.Context, output []banktypes.Output, name str
 			if err != nil {
 				return errors.Wrapf(types.ErrDistribution, "failed appending record for : %s", distributionRecord.RecipientAddress)
 			}
-			distributionRecord.Add(oldRecord)
+			distributionRecord.Add(*oldRecord)
 		}
 		distributionRecord.ClaimStatus = sdk.NewUint(1)
 		err := k.SetDistributionRecord(ctx, distributionRecord)
