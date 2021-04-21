@@ -21,7 +21,7 @@ func TestKeeper_GetDistributions(t *testing.T) {
 		assert.NoError(t, err)
 	}
 	list := keeper.GetDistributions(ctx)
-	assert.Len(t, list, 10)
+	assert.Len(t, list.Distributions, 10)
 }
 
 func TestKeeper_GetRecordsForName(t *testing.T) {
@@ -37,7 +37,7 @@ func TestKeeper_GetRecordsForName(t *testing.T) {
 		assert.NoError(t, err)
 	}
 	list := keeper.GetRecordsForNameAll(ctx, name)
-	assert.Len(t, list, 3)
+	assert.Len(t, list.DistributionRecords, 3)
 }
 
 func TestKeeper_GetRecordsForRecipient(t *testing.T) {
@@ -53,5 +53,5 @@ func TestKeeper_GetRecordsForRecipient(t *testing.T) {
 		assert.NoError(t, err)
 	}
 	list := keeper.GetRecordsForRecipient(ctx, sdk.AccAddress(outList[0].Address))
-	assert.Len(t, list, 1)
+	assert.Len(t, list.DistributionRecords, 1)
 }

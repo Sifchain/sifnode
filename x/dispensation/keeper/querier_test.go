@@ -25,7 +25,6 @@ func GenerateQueryData(app *app.SifchainApp, ctx sdk.Context, name string, outLi
 	for _, rec := range outList {
 		record := types.NewDistributionRecord(name, rec.Address, rec.Coins, sdk.NewInt(ctx.BlockHeight()), sdk.NewInt(-1))
 		_ = keeper.SetDistributionRecord(ctx, record)
-
 	}
 
 }
@@ -53,7 +52,7 @@ func TestQueryRecordsName(t *testing.T) {
 	var dr types.DistributionRecords
 	err = sifapp.AppCodec().UnmarshalJSON(res, &dr)
 	assert.NoError(t, err)
-	assert.Len(t, dr, 3)
+	assert.Len(t, dr.DistributionRecords, 3)
 }
 
 func TestQueryRecordsAddr(t *testing.T) {
@@ -79,7 +78,7 @@ func TestQueryRecordsAddr(t *testing.T) {
 	var dr types.DistributionRecords
 	err = sifapp.AppCodec().UnmarshalJSON(res, &dr)
 	assert.NoError(t, err)
-	assert.Len(t, dr, 1)
+	assert.Len(t, dr.DistributionRecords, 1)
 }
 
 func TestQueryAllDistributions(t *testing.T) {
@@ -100,5 +99,5 @@ func TestQueryAllDistributions(t *testing.T) {
 	var dr types.Distributions
 	err = sifapp.AppCodec().UnmarshalJSON(res, &dr)
 	assert.NoError(t, err)
-	assert.Len(t, dr, 10)
+	assert.Len(t, dr.Distributions, 10)
 }
